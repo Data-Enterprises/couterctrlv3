@@ -10,8 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.10.1",
+    "@tailwindcss/forms": "^0.5.9",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-markdown": "^10.1.0",
+    "react-redux": "^9.2.0",
+    "react-router": "^7.9.5",
+    "react-router-dom": "^7.9.5",
+    "tailwind-rounded-out": "^1.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
