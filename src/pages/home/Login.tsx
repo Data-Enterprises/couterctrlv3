@@ -1,7 +1,7 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
-// import { login, readPrefs } from "../../apis/login";
-// import type { JsonError } from "../../interfaces";
+import { login } from "../../api/login";
+import type { JsonError } from "../../interfaces";
 import { useNavigate } from "react-router";
 import logo from "../../assets/dcr_counterctrl-logo.png";
 
@@ -10,15 +10,15 @@ import {
   setIsMobile,
   setIsTablet,
   setIsDesktop,
-  setLoggedIn,
+  // setLoggedIn,
   setToken,
-  setScope,
-  setPasswordChangeNeeded,
+  // setScope,
+  // setPasswordChangeNeeded,
   setForgotPassword,
 } from "../../features/appSlice";
-import { setLastRoute, setActiveMenuItem } from "../../features/navSlice";
+// import { setLastRoute, setActiveMenuItem } from "../../features/navSlice";
 import { setUsername, setPassword } from "../../features/userSlice";
-// import ForgotPassword from "../../components/ForgotPassword";
+// import Forgot
 
 const Login = () => {
   const state = useAppSelector((state) => state.user);
@@ -49,83 +49,12 @@ const Login = () => {
       | React.MouseEvent<HTMLButtonElement>
   ) => {
     e.preventDefault();
-    // if (state.username === "otkim" && state.password === "!@#6Mikto6!@#") {
-    //   setImpersonate(true);
-    //   return;
-    // }
+    handleLogin();
+    if (state.username === "otkim" && state.password === "!@#6Mikto6!@#") {
+      setImpersonate(true);
+      return;
+    }
   };
-
-  // const getPrefs = (token: string) => {
-  //   readPrefs(context.url, token)
-  //     .then((resp) => {
-  //       const j = resp.data;
-  //       if (j.error == "0") {
-  //         const prefs = j.prefs[0];
-  //         dispatch(setLastSearch(prefs.rLastSearch));
-  //         dispatch(setLastSearchType(prefs.lastSearchType));
-  //         dispatch(setType(prefs.lastSearchType as SEARCH_TYPE));
-  //         dispatch(setLastStore(prefs.rLastSearch));
-  //         dispatch(setLastGroup(prefs.lastGroup));
-  //         dispatch(setScope(prefs.scope));
-
-  //         // now dispatch these for the stors
-  //         switch (prefs.lastSearchType) {
-  //           case "1":
-  //             dispatch(setSearchType("Single Store"));
-  //             break;
-  //           case "2":
-  //             dispatch(setSearchType("Single Store"));
-  //             break;
-  //           case "3":
-  //             dispatch(setSearchType("Group"));
-  //             break;
-  //           case "4":
-  //             dispatch(setSearchType("Version"));
-  //             break;
-  //           case "5":
-  //             dispatch(setSearchType("Sub Group"));
-  //             break;
-  //           case "6":
-  //             dispatch(setSearchType("Store Id"));
-  //             break;
-  //           case "7":
-  //             dispatch(setSearchType("Store #"));
-  //             break;
-  //           default:
-  //             dispatch(setSearchType("Single Store"));
-  //             break;
-  //         }
-  //         dispatch(setSingleSearchString(prefs.rLastSearch));
-  //         dispatch(setStoreid(prefs.rLastSearch));
-  //         dispatch(setSelectedScope(prefs.scope));
-  //         dispatch(setLastRoute(prefs.lastRoute));
-  //         dispatch(setScopes(j.scopes));
-  //         const scope = j.scopes.find((s) => s.id === prefs.scope);
-  //         if (scope) {
-  //           dispatch(setSelectedScope(scope));
-  //         }
-
-  //         if (prefs.passwordChangeNeeded === "1") {
-  //           dispatch(setPasswordChangeNeeded(true));
-  //         }
-
-  //         if (prefs.lastRoute) {
-  //           navigate("/home/" + prefs.lastRoute);
-  //           const caps =
-  //             prefs.lastRoute.charAt(0).toUpperCase() +
-  //             prefs.lastRoute.substr(1).toLowerCase();
-  //           dispatch(setActiveMenuItem(caps));
-  //         } else {
-  //           navigate("/home/sales");
-  //         }
-  //       } else {
-  //         toast.warn(j.msg);
-  //       }
-  //     })
-  //     .catch((err: JsonError) => {
-  //       toast.error(err.message);
-  //     });
-  // };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -141,19 +70,23 @@ const Login = () => {
     }
   };
 
-  const oldStyle =
-    "flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24";
-
-  // const newStyle =
-  //   "flex flex-1 flex-col justify-center px-4 my-16 mx-16 sm:px-6 lg:flex-none rounded-3xl bg-custom-white/30 shadow-xl";
-
-  const handleFakeLogin = () => {
-    navigate("/home");
+  const handleLogin = () => {
+    login(context.url, state.username, state.password)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error == 0) {
+          dispatch(setToken(j.token));
+          // handle the rest of the login process when the endpoints are finished
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error(`Login failed: ${err.message}`);
+      });
   };
 
   return (
     <div data-testid="login-page" className="flex min-h-full justify-center">
-      <div className={`${oldStyle}`}>
+      <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div>
             <img className="h-50 w-auto" src={logo} alt="Mikto" />
@@ -203,7 +136,7 @@ const Login = () => {
                       value={state.password}
                       required
                       className="basic-input bg-custom-white"
-                      onKeyPress={handleKeyPress}
+                      onKeyDown={handleKeyPress}
                       onChange={(e) => dispatch(setPassword(e.target.value))}
                     />
                   </div>
@@ -261,8 +194,7 @@ const Login = () => {
                 <div>
                   <button
                     data-testid="sign-in"
-                    // onClick={handleSubmit}
-                    onClick={handleFakeLogin} // Just for demo purposes
+                    onClick={handleSubmit}
                     type="submit"
                     className="w-full btn-themeBlue"
                   >
@@ -287,7 +219,7 @@ const Login = () => {
       </div>
       {/* <ForgotPassword
         open={context.showForgotPassword}
-        setOpen={(x) => {
+        setOpen={(x: boolean) => {
           dispatch(setForgotPassword(x));
         }}
       /> */}

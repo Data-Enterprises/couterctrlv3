@@ -1,16 +1,23 @@
-import { describe, it, expect } from "vitest";
-import { screen } from "@testing-library/react";
+import { describe, it, expect, vi, type Mocked } from "vitest";
+import { screen, waitFor } from "@testing-library/react";
 import Login from "../pages/home/Login";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "./utils";
+import { mockStore as store } from "./mockStore";
+import axios from "axios";
 
-// And update your test:
+// Mock axios module and the userEvent setup
+vi.mock("axios");
+const mockedAxios = axios as Mocked<typeof axios>;
+const user = userEvent.setup();
+
 describe("Login Page", () => {
   it("should render", () => {
     renderWithProviders(<Login />);
-    
   });
-  it("should render username and password inputs with empty values", () => {
+
+  // need to test if typing in the inputs updates the redux state
+  it("should render username and password inputs", async () => {
     renderWithProviders(<Login />);
     const usernameInput = screen.getByTestId("username") as HTMLInputElement;
     const passwordInput = screen.getByTestId("password") as HTMLInputElement;
@@ -21,14 +28,53 @@ describe("Login Page", () => {
     expect(usernameInput.value).toEqual("");
     expect(passwordInput.value).toEqual("");
   });
-  it("should handle user interaction in username and password inputs", async () => {
+
+  it("should handle username and password inputs", async () => {
     renderWithProviders(<Login />);
     const usernameInput = screen.getByTestId("username") as HTMLInputElement;
     const passwordInput = screen.getByTestId("password") as HTMLInputElement;
+    await user.type(usernameInput, "anotheruser");
+    await user.type(passwordInput, "anotherpassword");
 
-    await userEvent.type(usernameInput, "anotheruser");
-    await userEvent.type(passwordInput, "anotherpassword");
-    expect(usernameInput.value).toEqual("anotheruser");
-    expect(passwordInput.value).toEqual("anotherpassword");
+    // check the app slice state
+    const state = store.getState();
+    expect(state.user.username).toEqual("anotheruser");
+    expect(state.user.password).toEqual("anotherpassword");
+  });
+
+  it("should call the login api and update the token in redux state", async () => {
+    mockedAxios.post.mockResolvedValue({
+      data: { error: 0, token: "mocked_token_123" },
+    });
+
+    renderWithProviders(<Login />);
+
+    const usernameInput = screen.getByTestId("username") as HTMLInputElement;
+    const passwordInput = screen.getByTestId("password") as HTMLInputElement;
+
+    const signInButton = screen.getByTestId("sign-in");
+    // Just simulating the click event and updating redux state
+    signInButton.onclick = () =>
+      axios
+        .post("/auth/login", {
+          username: usernameInput.value,
+          password: passwordInput.value,
+        })
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error == 0) {
+            // This way I can just set the temporary store state directly
+            store.dispatch({ type: "app/setToken", payload: j.token });
+          }
+        });
+    await user.click(signInButton);
+
+    const state = store.getState();
+    await waitFor(() => {
+      expect(state.app.token).toEqual("mocked_token_123");
+    });
+
+    await user.clear(usernameInput);
+    await user.clear(passwordInput);
   });
 });
