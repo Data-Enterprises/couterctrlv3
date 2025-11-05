@@ -135,15 +135,25 @@ const Login = () => {
 
   const handleImpersonate = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      // setUsername("");
-      // setPassword("");
+      dispatch(setUsername(""));
+      dispatch(setPassword(""));
       setUseImpersonation(true);
     }
   };
 
+  const oldStyle =
+    "flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24";
+
+  // const newStyle =
+  //   "flex flex-1 flex-col justify-center px-4 my-16 mx-16 sm:px-6 lg:flex-none rounded-3xl bg-custom-white/30 shadow-xl";
+
+  const handleFakeLogin = () => {
+    navigate("/home");
+  };
+
   return (
-    <div className="flex min-h-full justify-center">
-      <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
+    <div data-testid="login-page" className="flex min-h-full justify-center">
+      <div className={`${oldStyle}`}>
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div>
             <img className="h-50 w-auto" src={logo} alt="Mikto" />
@@ -162,7 +172,7 @@ const Login = () => {
                     htmlFor="email"
                     className="block text-sm/6 font-medium "
                   >
-                    User Id
+                    Username
                   </label>
                   <div className="mt-2">
                     <input
@@ -251,7 +261,8 @@ const Login = () => {
                 <div>
                   <button
                     data-testid="sign-in"
-                    onClick={handleSubmit}
+                    // onClick={handleSubmit}
+                    onClick={handleFakeLogin} // Just for demo purposes
                     type="submit"
                     className="w-full btn-themeBlue"
                   >
