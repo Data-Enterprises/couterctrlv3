@@ -70,6 +70,7 @@ export default {
           lime: "rgb(var(--color-button-lime) / <alpha-value>)",
           purple: "rgb(var(--color-button-purple) / <alpha-value>)",
         },
+        themeText: "rgb(var(--color-themeText) / <alpha-value>)",
         mixed_surface: {},
       },
 

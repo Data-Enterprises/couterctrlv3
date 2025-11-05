@@ -9,6 +9,8 @@ import { ToastProvider } from "./components/toasts/ToastProvider.tsx";
 // Pages
 import App from "./App.tsx";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
+import Home from "./pages/home/Home.tsx";
+import Sales from "./pages/sales/Sales.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -18,6 +20,9 @@ createRoot(document.getElementById("root")!).render(
           <ToastProvider autoClose={true} duration={4000}>
             <Routes>
               <Route path="/" element={<App />} />
+              <Route path="/home" element={<Home />}>
+                <Route path="sales" element={<Sales />}></Route>
+              </Route>
             </Routes>
           </ToastProvider>
         </BrowserRouter>
