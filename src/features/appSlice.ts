@@ -1,0 +1,94 @@
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+interface AppState {
+  url: string;
+  chatUrl: string;
+  key: string;
+  stats: string;
+  statsKey: string;
+  loggedIn: boolean;
+  token: string;
+  isLoading: boolean;
+  autoReload: boolean;
+  showForgotPassword: boolean;
+  scope: number;
+  showPasswordChangeNeeded: boolean;
+  basketUrl: string;
+  basketyKey: string;
+  isMobile: boolean;
+  isTablet: boolean;
+  isDesktop: boolean;
+}
+
+export const initialState: AppState = {
+  url: "https://gbz4j6265j.execute-api.us-east-2.amazonaws.com/Prod/api/",
+  key: "7801882436271592",
+  stats: "https://v5o2brn6il.execute-api.us-east-2.amazonaws.com/Prod/api/",
+  statsKey: "7801882436271592",
+  basketUrl: "https://www.dmsonline.info/basketapi/api/",
+  basketyKey: "1627309573649176",
+  loggedIn: false,
+  token: "",
+  isLoading: false,
+  autoReload: true,
+  showForgotPassword: false,
+  scope: 0,
+  showPasswordChangeNeeded: false,
+  chatUrl: "http://12.96.144.112/",
+  isMobile: false,
+  isTablet: false,
+  isDesktop: true,
+};
+
+export const appSlice = createSlice({
+  name: "app",
+  initialState,
+  reducers: {
+    setToken: (state, action: PayloadAction<string>) => {
+      state.token = action.payload;
+    },
+    setLoggedIn: (state, action: PayloadAction<boolean>) => {
+      state.loggedIn = action.payload;
+    },
+    setIsLoading: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
+    },
+    setForgotPassword: (state, action: PayloadAction<boolean>) => {
+      state.showForgotPassword = action.payload;
+    },
+    setScope: (state, action: PayloadAction<number>) => {
+      state.scope = action.payload;
+    },
+    logout: (state) => {
+      state.loggedIn = false;
+      state.token = "";
+    },
+    setPasswordChangeNeeded: (state, action: PayloadAction<boolean>) => {
+      state.showPasswordChangeNeeded = action.payload;
+    },
+    setIsMobile: (state, action: PayloadAction<boolean>) => {
+      state.isMobile = action.payload;
+    },
+    setIsTablet: (state, action: PayloadAction<boolean>) => {
+      state.isTablet = action.payload;
+    },
+    setIsDesktop: (state, action: PayloadAction<boolean>) => {
+      state.isDesktop = action.payload;
+    },
+  },
+});
+
+export const {
+  setToken,
+  setLoggedIn,
+  logout,
+  setIsLoading,
+  setForgotPassword,
+  setScope,
+  setPasswordChangeNeeded,
+  setIsMobile,
+  setIsTablet,
+  setIsDesktop,
+} = appSlice.actions;
+
+export default appSlice.reducer;
