@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { login } from "../../api/login";
@@ -5,7 +6,6 @@ import type { JsonError } from "../../interfaces";
 import { useNavigate } from "react-router";
 import logo from "../../assets/dcr_counterctrl-logo.png";
 
-import React, { useEffect, useState } from "react";
 import {
   setIsMobile,
   setIsTablet,
@@ -75,12 +75,16 @@ const Login = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error == 0) {
-          dispatch(setToken(j.token));
+          console.log("Login successful", j);
+          dispatch(setToken(j.access_token));
           // handle the rest of the login process when the endpoints are finished
         }
       })
       .catch((err: JsonError) => {
         toast.error(`Login failed: ${err.message}`);
+      })
+      .finally(() => {
+        navigate("/home/sales");
       });
   };
 
@@ -207,7 +211,7 @@ const Login = () => {
         </div>
         {/* Change this before pushing for publishing */}
         <div className="absolute bottom-1 left-0 text-sm pl-2">
-          Last Updated on 10/27/2025 @ 8:43am
+          Last Updated on 11/5/2025 @ 6:00PM CST
         </div>
       </div>
       <div className="relative hidden w-0 flex-1 lg:block">
