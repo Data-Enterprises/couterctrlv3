@@ -20,6 +20,7 @@
     "ag-grid-react": "^34.3.1",
     "axios": "^1.13.2",
     "react": "^19.1.1",
+    "react-day-picker": "^9.11.1",
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
     "react-redux": "^9.2.0",

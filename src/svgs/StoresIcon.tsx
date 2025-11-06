@@ -10,8 +10,6 @@ const StoresIcon = ({
   height = 48,
   width = 48,
   className,
-  fill = "transparent",
-  stroke = "#000",
 }: StoresIconProps) => {
   return (
     <svg

@@ -28,8 +28,8 @@ const Login = () => {
   // const navigate = useNavigate();
   const toast = useToast();
   const [impersonate, setImpersonate] = useState(false);
-  const [rememberme, setrememberme] = useState(false);
-  const [useImpersonation, setUseImpersonation] = useState(false);
+  // const [rememberme, setrememberme] = useState(false);
+  // const [useImpersonation, setUseImpersonation] = useState(false);
 
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -67,7 +67,7 @@ const Login = () => {
     if (e.target.checked) {
       dispatch(setUsername(""));
       dispatch(setPassword(""));
-      setUseImpersonation(true);
+      // setUseImpersonation(true);
     }
   };
 
@@ -182,7 +182,8 @@ const Login = () => {
                         type="checkbox"
                         style={{ opacity: "1", visibility: "visible" }}
                         className="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                        value={rememberme as unknown as string}
+                        // value={rememberme as unknown as string}
+                        value={false as unknown as string}
                         onChange={handleImpersonate}
                         id="check1"
                       />
