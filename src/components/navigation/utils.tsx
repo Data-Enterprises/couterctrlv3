@@ -13,18 +13,20 @@ export type Navigation = {
   href: string;
   icon: typeof UsersIcon | typeof Radiation | typeof StoresIcon | any;
   current?: boolean;
-  children?: Navigation[];
-  childOpen?: boolean;
+  children: Navigation[];
+  childOpen: boolean;
   mobile: boolean;
   userTypes: string[];
 };
 
 export const navigation: Navigation[] = [
   {
-    name: "Dashboard",
+    name: "Home",
     href: "/",
     icon: HomeIcon,
     mobile: true,
+    children: [],
+    childOpen: false,
     userTypes: ["*"],
   },
   {
@@ -32,6 +34,8 @@ export const navigation: Navigation[] = [
     href: "sales",
     icon: SalesIconV2,
     mobile: true,
+    children: [],
+    childOpen: false,
     userTypes: ["*"],
   },
   {
@@ -39,6 +43,8 @@ export const navigation: Navigation[] = [
     href: "cashiers",
     icon: CashierIcon,
     mobile: true,
+    children: [],
+    childOpen: false,
     userTypes: ["*"],
   },
 ];

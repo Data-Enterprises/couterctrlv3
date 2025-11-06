@@ -2,7 +2,7 @@ import { navigation, type Navigation } from "./utils";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { NavLink } from "react-router";
 import { useRef } from "react";
-import { setIsNavOpen } from "../../features/navSlice";
+import { navSlice, setIsNavOpen } from "../../features/navSlice";
 
 const SideBar = () => {
   const ref = useRef<HTMLDivElement>(null);
@@ -12,6 +12,18 @@ const SideBar = () => {
 
   const handleiFrameClick = () => {
     dispatch(setIsNavOpen(false));
+  };
+
+  const handleNavClick = (item: Navigation) => {
+    // console.log('Nav Item Clicked', item);
+    if (item.children.length && item.href === "#") {
+      // Toggle the item's children => not implemented yet
+    }
+
+    // Otherwise, navigation is handled by NavLink and we then toggle nav off if it is open
+    if (nav.isNavOpen) {
+      dispatch(setIsNavOpen(false));
+    }
   };
 
   const slidingStyle =
@@ -28,7 +40,7 @@ const SideBar = () => {
       {nav.isNavOpen && (
         <div
           onClick={handleiFrameClick}
-          className="fixed inset-0 z-40 bg-opacity-0"
+          className="fixed inset-0 z-40 bg-opacity-0 top-12 left-48"
           style={{ cursor: "default" }}
         />
       )}
@@ -38,16 +50,30 @@ const SideBar = () => {
           <NavLink
             to={item.href}
             key={item.name}
-            className={`${
-              item.userTypes.includes(user.role.toString()) ||
-              item.userTypes.includes("*")
-                ? "flex"
-                : "hidden"
-            } hover:bg-blue-200 transition-all duration-200`}
+            draggable={false}
+            className={({ isActive }) =>
+              `${
+                item.userTypes.includes(user.role.toString()) ||
+                item.userTypes.includes("*")
+                  ? "flex"
+                  : "hidden"
+              } ${isActive ? "bg-panel_active/75 text-custom-white" : ""}`
+            }
+            onClick={() => handleNavClick(item)}
           >
-            <div className="flex items-center pl-2.5 py-2 gap-2 ">
-              <item.icon className="h-7 w-7" />
-              <span className="font-medium text-sm">{item.name}</span>
+            <div className="flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200">
+              <div className="flex-shrink-0 flex items-center justify-center">
+                <item.icon className="h-7 w-7" />
+              </div>
+              <div
+                className={`font-medium text-sm ${
+                  nav.isNavOpen
+                    ? "w-full opacity-100"
+                    : "w-0 opacity-0 pointer-events-none"
+                } transition-all duration-200`}
+              >
+                {item.name}
+              </div>
             </div>
           </NavLink>
         ))}
