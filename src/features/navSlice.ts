@@ -25,9 +25,10 @@ export const navSlice = createSlice({
     setLastRoute: (state, action: PayloadAction<string>) => {
       state.lastRoute = action.payload;
     },
+    resetNav: () => initialState,
   },
 });
 
-export const { setIsNavOpen, setActiveMenuItem, setLastRoute } =
+export const { setIsNavOpen, setActiveMenuItem, setLastRoute, resetNav } =
   navSlice.actions;
 export default navSlice.reducer;

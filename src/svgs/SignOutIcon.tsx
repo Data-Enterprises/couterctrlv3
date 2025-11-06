@@ -1,6 +1,6 @@
 import type { IconProps } from ".";
 
-const SignOutIcon = ({ size, className, onClick }: IconProps) => {
+const SignOutIcon = ({ className, onClick }: IconProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

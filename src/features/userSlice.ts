@@ -117,6 +117,7 @@ export const userSlice = createSlice({
     setNewQuestion: (state, action: PayloadAction<NewQuestion>) => {
       state.newQuestion = action.payload;
     },
+    resetUserSlice: () => initialState,
   },
 });
 
@@ -139,6 +140,7 @@ export const {
   setSecurityQuestion,
   setQuestions,
   setNewQuestion,
+  resetUserSlice,
 } = userSlice.actions;
 
 export default userSlice.reducer;

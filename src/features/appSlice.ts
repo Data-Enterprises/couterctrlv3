@@ -75,6 +75,7 @@ export const appSlice = createSlice({
     setIsDesktop: (state, action: PayloadAction<boolean>) => {
       state.isDesktop = action.payload;
     },
+    handleSigningOut: () => initialState,
   },
 });
 
@@ -89,6 +90,7 @@ export const {
   setIsMobile,
   setIsTablet,
   setIsDesktop,
+  handleSigningOut,
 } = appSlice.actions;
 
 export default appSlice.reducer;

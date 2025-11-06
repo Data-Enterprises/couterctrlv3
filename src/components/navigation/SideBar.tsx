@@ -1,10 +1,12 @@
 import { useRef, useState, useEffect } from "react";
 import { NavLink } from "react-router";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { setIsNavOpen } from "../../features/navSlice";
+import { resetNav, setIsNavOpen } from "../../features/navSlice";
 import { navigation, type Navigation } from "./utils";
 import SignOutIcon from "../../svgs/SignOutIcon";
 import { Cog6ToothIcon } from "@heroicons/react/16/solid";
+import { handleSigningOut } from "../../features/appSlice";
+import { resetUserSlice } from "../../features/userSlice";
 
 const SideBar = () => {
   const ref = useRef<HTMLDivElement>(null);
@@ -40,6 +42,12 @@ const SideBar = () => {
     }
   };
 
+  const handleSignOut = () => {
+    dispatch(handleSigningOut());
+    dispatch(resetUserSlice());
+    dispatch(resetNav());
+  };
+
   const slidingStyle =
     "data-[open=true]:w-48 data-[open=false]:w-12 transition-all duration-300 data-[open=true]:shadow-[0px_9px_10px_rgba(0,0,0,0.2)] data-[open=false]:shadow-[0px_3px_3px_rgba(0,0,0,0.2)]";
   return (
@@ -59,6 +67,8 @@ const SideBar = () => {
           style={{ cursor: "default" }}
         />
       )}
+
+      {/* NavLinks => working, but will need modifications when nav children are introduced */}
       <div>
         {navItems.map((item: Navigation) => (
           <NavLink
@@ -93,7 +103,7 @@ const SideBar = () => {
         ))}
       </div>
 
-      {/* Sign out and Settings */}
+      {/* Settings and Sign Out */}
       <div className="select-none cursor-pointer">
         <div className="flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200">
           <div className="flex-shrink-0 flex items-center justify-center">
@@ -109,7 +119,10 @@ const SideBar = () => {
             Settings
           </div>
         </div>
-        <div className="flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200">
+        <div
+          className="flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200"
+          onClick={handleSignOut}
+        >
           <div className="flex-shrink-0 flex items-center justify-center">
             <SignOutIcon className="h-7 w-7" />
           </div>
