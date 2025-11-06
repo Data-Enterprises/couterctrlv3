@@ -5,6 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "./utils";
 import { mockStore as store } from "./mockStore";
 import axios from "axios";
+import App from "../App";
 
 // Mock axios module and the userEvent setup
 vi.mock("axios");
@@ -76,5 +77,49 @@ describe("Login Page", () => {
 
     await user.clear(usernameInput);
     await user.clear(passwordInput);
+  });
+
+  it("should sign out the user when clicking the Sign Out nav item", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<App />);
+
+    const signInButton = screen.getByTestId("sign-in");
+
+    // Log the user in first then click sign out
+    signInButton.onclick = () =>
+      axios
+        .post("/auth/login", {
+          username: "username",
+          password: "password",
+        })
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error == 0) {
+            store.dispatch({ type: "app/setToken", payload: j.token });
+            store.dispatch({ type: "app/setLoggedIn", payload: true });
+          }
+        });
+    await user.click(signInButton);
+
+    // Check that the token is set in the redux state
+    const state = store.getState();
+    await waitFor(() => {
+      expect(state.app.token).toEqual("mocked_token_123");
+    });
+
+    // If token is set and loggedIn is true, the SideBar should be rendered
+    expect(await screen.findByTestId("side-bar")).toBeInTheDocument();
+
+    const signOutBtn = screen.getByTestId("signout-btn");
+    await user.click(signOutBtn);
+
+    // Sign Out should be resetting the redux slices
+    await waitFor(() => {
+      const state = store.getState();
+      expect(state.app.loggedIn).toBe(false);
+    });
+
+    // Everything is reset therefore we land back on the Login page
+    expect(await screen.findByTestId("login-page")).toBeInTheDocument();
   });
 });

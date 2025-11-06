@@ -7,7 +7,6 @@ import userEvent from "@testing-library/user-event";
 import { Routes, Route } from "react-router";
 import Sales from "../pages/sales/Sales";
 import Home from "../pages/home/Home";
-
 describe("TitleBar and SideBar Components", () => {
   it("should render", () => {
     renderWithProviders(<TitleBar />);

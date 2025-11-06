@@ -120,6 +120,7 @@ const SideBar = () => {
           </div>
         </div>
         <div
+          data-testid="signout-btn"
           className="flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200"
           onClick={handleSignOut}
         >
