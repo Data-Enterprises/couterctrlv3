@@ -4,8 +4,8 @@ import { formatGoliathDate } from "../../utils";
 import {
   getTopTen,
   getHourlyStoreDepts,
+  salesTwoDates,
   // getWeekly,
-  // salesTwoDates,
 } from "../../api/sales";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type { JsonError } from "../../interfaces";
@@ -16,9 +16,10 @@ import StorePicker from "../../components/storePicker/StorePicker";
 import WeeklyNetSales from "./WeeklyNetSales";
 import DepartmentSales from "./DepartmentSales";
 import TopTenItems from "./TopTenItems";
+import SalesPanels from "./SalesPanels";
 
 const Sales = () => {
-  const dummyCards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  // const dummyCards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   const toast = useToast();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
@@ -30,6 +31,7 @@ const Sales = () => {
   }, [context.token]);
 
   const getData = () => {
+    // For now I'm formatting the date before the api call since the api needs it that way
     const start = formatGoliathDate(search.startDate);
     const end = formatGoliathDate(search.endDate);
 
@@ -81,18 +83,9 @@ const Sales = () => {
         <div className="grid gap-4 overflow-scroll max-h-[calc(100vh-70px)] no-scrollbar">
           <div className="bg-custom-white rounded-lg p-2 shadow-lg">
             <StorePicker />
-            <DatePickers />
+            <DatePickers handleQuery={getData} />
           </div>
-          <div className="flex flex-col gap-2 rounded-lg overflow-hidden">
-            {dummyCards.map((card) => (
-              <div
-                key={card}
-                className="bg-custom-white rounded-lg p-4 shadow-lg"
-              >
-                Card {card}
-              </div>
-            ))}
-          </div>
+          <SalesPanels />
         </div>
         <div className="grid grid-rows-2 col-span-3 gap-4">
           <div className="grid grid-cols-3 gap-4">

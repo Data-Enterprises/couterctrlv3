@@ -1,5 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
 
+/**
+ * TODO: DO NOT FORGET TO ADD NEW REDUCERS TO THE MOCK STORE IN THE TESTS WHEN ADDING NEW REDUCERS HERE
+ */
+
 import appReducer from "../features/appSlice";
 import navReducer from "../features/navSlice";
 import userReducer from "../features/userSlice";

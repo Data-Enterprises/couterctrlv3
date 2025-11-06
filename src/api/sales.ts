@@ -65,9 +65,10 @@ export const salesTwoDates = async (
   token: string,
   startDate: string,
   endDate: string,
-  useGroups: string,
-  searchValue: string,
-  singleStore: string
+  useGroups: number,
+  searchValue: number,
+  singleStore: number,
+  storeid: number = 0
 ) => {
   const json = await axios({
     method: "POST",
@@ -77,6 +78,7 @@ export const salesTwoDates = async (
     },
     url: url + "sales/salestwodates",
     data: {
+      storeid,
       startDate,
       endDate,
       useGroups,
