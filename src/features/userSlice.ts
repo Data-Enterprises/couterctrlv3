@@ -52,7 +52,7 @@ export const initialState: UserState = {
   email: "",
   company: 0,
   security: 0,
-  role: '*',
+  role: userRole.ALL,
   securityQuestionId: 0,
   securityQuestion: "",
   questions: [],

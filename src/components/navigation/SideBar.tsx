@@ -1,14 +1,26 @@
-import { navigation, type Navigation } from "./utils";
-import { useAppSelector, useAppDispatch } from "../../hooks";
+import { useRef, useState, useEffect } from "react";
 import { NavLink } from "react-router";
-import { useRef } from "react";
-import { navSlice, setIsNavOpen } from "../../features/navSlice";
+import { useAppSelector, useAppDispatch } from "../../hooks";
+import { setIsNavOpen } from "../../features/navSlice";
+import { navigation, type Navigation } from "./utils";
 
 const SideBar = () => {
   const ref = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
+  const context = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
   const nav = useAppSelector((state) => state.nav);
+  const [navItems, setNavItems] = useState<Navigation[]>(navigation);
+
+  useEffect(() => {
+    if (context.isMobile) {
+      // On mobile, show only mobile nav items
+      setNavItems(navigation.filter((item) => item.mobile));
+    } else {
+      // On desktop/tablet, show all nav items
+      setNavItems(navigation);
+    }
+  }, [context.isMobile, context.isTablet, context.isDesktop]);
 
   const handleiFrameClick = () => {
     dispatch(setIsNavOpen(false));
@@ -46,7 +58,7 @@ const SideBar = () => {
       )}
       {/* NavLinks */}
       <div>
-        {navigation.map((item: Navigation) => (
+        {navItems.map((item: Navigation) => (
           <NavLink
             to={item.href}
             key={item.name}
