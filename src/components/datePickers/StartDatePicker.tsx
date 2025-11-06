@@ -7,11 +7,10 @@ import { setStartDate } from "../../features/searchSlice";
 import { useDispatch } from "react-redux";
 
 interface Props {
-  useSubComp?: boolean;
   inReports?: boolean;
 }
 
-const StartDatePicker = ({ useSubComp = false, inReports = false }: Props) => {
+const StartDatePicker = ({ inReports = false }: Props) => {
   const dispatch = useDispatch();
 
   const handleStartDate = (date: string) => {
@@ -36,12 +35,18 @@ const StartDatePicker = ({ useSubComp = false, inReports = false }: Props) => {
   };
 
   const styling = context.isDesktop
-    ? `relative inline-block text-left md:px-0 mx-auto ${inReports ? "lg:w-52" : "lg:w-32"}`
+    ? `relative inline-block text-left md:px-0 mx-auto ${
+        inReports ? "lg:w-52" : "lg:w-32"
+      }`
     : `relative inline-block text-left md:px-0 mx-auto w-full`;
 
   const menuStyle = context.isDesktop ? "px-2.5 md:px-0" : "";
   // const calendarStyle = inReports ? "md:w-[110%]" : "md:w-[180%]";
-  const calendarStyle = inReports ? (context.isTablet ? "w-[101%]" : "md:w-[110%]") : "md:w-[180%]";
+  const calendarStyle = inReports
+    ? context.isTablet
+      ? "w-[101%]"
+      : "md:w-[110%]"
+    : "md:w-[180%]";
 
   return (
     <Menu as="div" className={styling}>
@@ -54,7 +59,10 @@ const StartDatePicker = ({ useSubComp = false, inReports = false }: Props) => {
           className="inline-flex w-full bg-custom-white justify-between gap-x-1.5 rounded-md px-3 py-3 text-sm font-semibold  shadow-sm ring-1 ring-inset ring-gray-300 "
         >
           {formatDisplay()}
-          <ChevronDownIcon aria-hidden="true" className="-mr-1 size-5 text-gray-400" />
+          <ChevronDownIcon
+            aria-hidden="true"
+            className="-mr-1 size-5 text-gray-400"
+          />
         </MenuButton>
       </div>
 
@@ -74,7 +82,11 @@ const StartDatePicker = ({ useSubComp = false, inReports = false }: Props) => {
         <div className="py-1">
           <MenuItem>
             {({ close }) => (
-              <Calendar handleCancel={close} useSubComp={useSubComp} handleDate={handleStartDate} dateFlag="start" />
+              <Calendar
+                handleCancel={close}
+                handleDate={handleStartDate}
+                dateFlag="start"
+              />
             )}
           </MenuItem>
         </div>

@@ -1,25 +1,28 @@
 import StartDatePicker from "./StartDatePicker";
 import EndDatePicker from "./EndDatePicker";
-// import { useCustomEvent } from "../../hooks/useCustomEvent";
+import { useCustomEvent } from "../../hooks/useCustomEvent";
 import { useAppSelector } from "../../hooks";
 
 interface Props {
-  useSubComp?: boolean;
   useSingleDate?: boolean;
   handleQuery?: () => void;
   inReports?: boolean;
 }
 
-const DatePickers = ({ useSubComp = false, useSingleDate = false, handleQuery, inReports = false }: Props) => {
+const DatePickers = ({
+  useSingleDate = false,
+  handleQuery,
+  inReports = false,
+}: Props) => {
   const context = useAppSelector((state) => state.app);
-  // const { emit } = useCustomEvent("slicer-event");
+  const { emit } = useCustomEvent("slicer-event");
 
   const handleClick = () => {
     if (handleQuery) {
       handleQuery();
     }
 
-    // emit({ message: "", eventType: "slicer", value: "update" });
+    emit({ message: "", eventType: "slicer", value: "update" });
   };
 
   const btnStyle = context.isDesktop
@@ -37,8 +40,8 @@ const DatePickers = ({ useSubComp = false, useSingleDate = false, handleQuery, i
   return (
     <div className="flex flex-col md:flex-row gap-2 mb-4 md:px-0 items-center lg:items-end select-none md:w-auto">
       <div className={pickerStyle}>
-        {!useSubComp && <StartDatePicker inReports={inReports} />}
-        {!useSingleDate && <EndDatePicker useSubComp={useSubComp} inReports={inReports} />}
+        <StartDatePicker inReports={inReports} />
+        {!useSingleDate && <EndDatePicker inReports={inReports} />}
         {!inReports && context.isTablet ? (
           <div className={`btn-themeBlue ${btnStyle}`} onClick={handleClick}>
             Search
