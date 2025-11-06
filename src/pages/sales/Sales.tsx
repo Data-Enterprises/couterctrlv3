@@ -1,9 +1,17 @@
+// HOOKS
 import { useEffect } from "react";
-import { useAppSelector } from "../../hooks";
+import { useAppSelector, useAppDispatch } from "../../hooks";
 import { formatGoliathDate } from "../../utils";
-import { getTopTen, getHourlyStoreDepts } from "../../api/sales";
 import { useToast } from "../../components/toasts/hooks/useToast";
+
+// TYPES
 import type { JsonError } from "../../interfaces";
+
+// API
+import { getTopTen, getHourlyStoreDepts } from "../../api/sales";
+
+// REDUX
+import { setTopTenItems, setDepartmentSales } from "../../features/salesSlice";
 
 // Components
 import DatePickers from "../../components/datePickers/DatePickers";
@@ -15,6 +23,7 @@ import SalesPanels from "./SalesPanels";
 
 const Sales = () => {
   const toast = useToast();
+  const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
 
@@ -41,7 +50,7 @@ const Sales = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          console.log("Top Ten Data:", j);
+          dispatch(setTopTenItems(j.items));
         }
       })
       .catch((err: JsonError) => {
@@ -59,7 +68,7 @@ const Sales = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          console.log("Hourly Store Depts Data:", j);
+          dispatch(setDepartmentSales(j.sales));
         }
       })
       .catch((err: JsonError) => {

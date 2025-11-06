@@ -1,13 +1,24 @@
+// HOOKS
 import { useEffect } from "react";
-import { useAppSelector } from "../../hooks";
-import { salesTwoDates } from "../../api/sales";
-import type { JsonError } from "../../interfaces";
+import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
+
+// API
+import { salesTwoDates } from "../../api/sales";
+
+// TYPES
+import type { JsonError } from "../../interfaces";
+
+// REDUX
+import { setSalesTwoDates } from "../../features/salesSlice";
+
+// UTILS
 import { formatGoliathDate } from "../../utils";
 
 const SalesPanels = () => {
   const dummyCards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   const toast = useToast();
+  const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
 
@@ -41,7 +52,7 @@ const SalesPanels = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          console.log("Sales Two Dates Data:", j);
+          dispatch(setSalesTwoDates(j.items));
         }
       })
       .catch((err: JsonError) => {
