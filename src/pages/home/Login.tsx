@@ -3,7 +3,7 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { login } from "../../api/login";
 import type { JsonError } from "../../interfaces";
-import { useNavigate } from "react-router";
+// import { useNavigate } from "react-router";
 import logo from "../../assets/dcr_counterctrl-logo.png";
 
 import {
@@ -25,7 +25,7 @@ const Login = () => {
   const state = useAppSelector((state) => state.user);
   const context = useAppSelector((state) => state.app);
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const toast = useToast();
   const [impersonate, setImpersonate] = useState(false);
   const [rememberme, setrememberme] = useState(false);
