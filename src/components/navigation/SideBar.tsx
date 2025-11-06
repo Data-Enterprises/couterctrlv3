@@ -3,6 +3,8 @@ import { NavLink } from "react-router";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { setIsNavOpen } from "../../features/navSlice";
 import { navigation, type Navigation } from "./utils";
+import SignOutIcon from "../../svgs/SignOutIcon";
+import { Cog6ToothIcon } from "@heroicons/react/16/solid";
 
 const SideBar = () => {
   const ref = useRef<HTMLDivElement>(null);
@@ -57,7 +59,6 @@ const SideBar = () => {
           style={{ cursor: "default" }}
         />
       )}
-      {/* NavLinks */}
       <div>
         {navItems.map((item: Navigation) => (
           <NavLink
@@ -93,7 +94,36 @@ const SideBar = () => {
       </div>
 
       {/* Sign out and Settings */}
-      <div>Links</div>
+      <div className="select-none cursor-pointer">
+        <div className="flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200">
+          <div className="flex-shrink-0 flex items-center justify-center">
+            <Cog6ToothIcon className="h-7 w-7" />
+          </div>
+          <div
+            className={`font-medium text-sm ${
+              nav.isNavOpen
+                ? "w-full opacity-100"
+                : "w-0 opacity-0 pointer-events-none"
+            } transition-all duration-200 text-nowrap`}
+          >
+            Settings
+          </div>
+        </div>
+        <div className="flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200">
+          <div className="flex-shrink-0 flex items-center justify-center">
+            <SignOutIcon className="h-7 w-7" />
+          </div>
+          <div
+            className={`font-medium text-sm ${
+              nav.isNavOpen
+                ? "w-full opacity-100"
+                : "w-0 opacity-0 pointer-events-none"
+            } transition-all duration-200 text-nowrap`}
+          >
+            Sign Out
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

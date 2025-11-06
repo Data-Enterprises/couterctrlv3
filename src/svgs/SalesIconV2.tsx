@@ -1,13 +1,4 @@
-export type IconProps = {
-  size: number;
-  // fill?: string;
-  // stroke?: string;
-  // strokeWidth?: number;
-  className?: string;
-  // style?: React.CSSProperties;
-  onClick?: () => void;
-};
-
+import type { IconProps } from ".";
 const SalesIconV2 = ({ size, className, onClick }: IconProps) => {
   return (
     <svg
