@@ -13,8 +13,9 @@ const TitleBar = () => {
   };
 
   return (
-    <div className="h-12 w-full flex cursor-default select-none">
+    <div data-testid="title-bar" className="h-12 w-full flex cursor-default select-none">
       <div
+        data-testid="logo-area"
         className="w-48 flex items-center shadow shadow-content/10 border-r cursor-pointer hover:bg-blue-200 transition-all duration-300"
         onClick={toggleNav}
       >
