@@ -2,8 +2,8 @@ const CashierIcon = () => {
   return (
     <svg
       fill="CurrentColor"
-      width="24px"
-      height="24px"
+      width="27px"
+      height="27px"
       viewBox="0 0 24 24"
       id="cashier-machine-left"
       data-name="Flat Line"

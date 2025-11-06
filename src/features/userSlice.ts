@@ -12,6 +12,7 @@ const userRole = {
   SECURITY: 3,
   ACCOUNTING: 4,
   ADMIN_ROLE: 9,
+  ALL: "*",
 };
 
 export interface UserState {
@@ -29,7 +30,7 @@ export interface UserState {
   resetPassword: boolean;
   company: number;
   security: number;
-  role: number;
+  role: number | string;
   securityQuestionId: number;
   securityQuestion: string;
   questions: SecurityQuestion[];
@@ -51,7 +52,7 @@ export const initialState: UserState = {
   email: "",
   company: 0,
   security: 0,
-  role: userRole.MULTI_STORE,
+  role: '*',
   securityQuestionId: 0,
   securityQuestion: "",
   questions: [],

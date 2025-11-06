@@ -6,6 +6,7 @@ import SideBar from "./components/navigation/SideBar";
 
 const App = () => {
   const context = useAppSelector((state) => state.app);
+  const nav = useAppSelector((state) => state.nav);
 
   return (
     <div className="main-app h-dvh w-dvw bg-bkg text-content">
@@ -14,7 +15,11 @@ const App = () => {
           <TitleBar />
           <SideBar />
 
-          <div className="ml-16 min-w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)] bg-bkg">
+          <div
+            className={`ml-12 min-w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)] bg-bkg ${
+              nav.isNavOpen ? "opacity-30 pointer-events-none" : ""
+            }`}
+          >
             <Outlet />
           </div>
         </div>

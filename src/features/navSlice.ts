@@ -7,7 +7,7 @@ interface NavState {
 }
 
 export const initialState: NavState = {
-  isNavOpen: true,
+  isNavOpen: false,
   activeMenuItem: "",
   lastRoute: "",
 };

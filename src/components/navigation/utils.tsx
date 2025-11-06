@@ -22,23 +22,23 @@ export type Navigation = {
 export const navigation: Navigation[] = [
   {
     name: "Dashboard",
-    href: "/home",
+    href: "/",
     icon: HomeIcon,
     mobile: true,
-    userTypes: [],
+    userTypes: ["*"],
   },
   {
     name: "Sales",
     href: "sales",
     icon: SalesIconV2,
     mobile: true,
-    userTypes: [],
+    userTypes: ["*"],
   },
   {
     name: "Cashiers",
     href: "cashiers",
     icon: CashierIcon,
     mobile: true,
-    userTypes: [],
+    userTypes: ["*"],
   },
 ];
