@@ -20,3 +20,49 @@ export const formatGoliathDate = (date: string) => {
   const year = dte.getFullYear();
   return `${year}-${addZero(month)}-${addZero(day)}`;
 };
+
+const isValid = (val: string | number | undefined | null) => {
+  if (typeof val === "undefined" || val === null) {
+    return false;
+  } else {
+    if (typeof val === "string" && val.length === 0) {
+      return false;
+    }
+
+    if (typeof val === "object") {
+      if (Object.keys(val).length === 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+};
+
+const formatCurrency = (
+  value: string,
+  locale: string = "en-US",
+  currency: string = "USD"
+): string => {
+  if (!isValid(value)) return "";
+  const numberValue = parseFloat(value);
+  if (isNaN(numberValue)) {
+    throw new Error("Invalid number");
+  }
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: currency,
+  }).format(numberValue);
+};
+
+export const formatCurrency2 = (x: number) => {
+  const result = x.toString();
+  return x < 0 ? `${formatCurrency(result)}` : formatCurrency(result);
+};
+
+export const reformatDate = (date: string) => {
+  const dte = new Date(date);
+  const month = dte.getMonth() + 1;
+  const day = dte.getDate();
+  const year = dte.getFullYear();
+  return `${month}/${day}/${year}`;
+};

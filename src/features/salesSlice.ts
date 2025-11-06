@@ -4,13 +4,13 @@ import type { TopTenItem, DepartmentSale, SalesTwoDates } from "../interfaces";
 interface SalesState {
   topTenItems: TopTenItem[];
   departmentSales: DepartmentSale[];
-  salesTwoDates: SalesTwoDates[];
+  salesPanels: SalesTwoDates[];
 }
 
 const initialState: SalesState = {
   topTenItems: [],
   departmentSales: [],
-  salesTwoDates: [],
+  salesPanels: [],
 };
 
 export const salesSlice = createSlice({
@@ -23,12 +23,12 @@ export const salesSlice = createSlice({
     setDepartmentSales: (state, action: PayloadAction<DepartmentSale[]>) => {
       state.departmentSales = action.payload;
     },
-    setSalesTwoDates: (state, action: PayloadAction<SalesTwoDates[]>) => {
-      state.salesTwoDates = action.payload;
+    setSalesPanels: (state, action: PayloadAction<SalesTwoDates[]>) => {
+      state.salesPanels = action.payload;
     },
   },
 });
 
-export const { setTopTenItems, setDepartmentSales, setSalesTwoDates } =
+export const { setTopTenItems, setDepartmentSales, setSalesPanels } =
   salesSlice.actions;
 export default salesSlice.reducer;

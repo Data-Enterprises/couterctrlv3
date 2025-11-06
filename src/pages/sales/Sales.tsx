@@ -26,6 +26,9 @@ const Sales = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
+  const { topTenItems, departmentSales, salesPanels } = useAppSelector(
+    (state) => state.sales
+  );
 
   useEffect(() => {
     if (context.token) {
@@ -76,10 +79,17 @@ const Sales = () => {
       });
   };
 
+  const isReady =
+    topTenItems.length > 0 &&
+    departmentSales.length > 0 &&
+    salesPanels.length > 0;
+
   return (
     <div
       data-testid="sales-page"
-      className="w-full h-[calc(100vh-3rem)] px-4 pt-3"
+      className={`w-full h-[calc(100vh-3rem)] px-4 pt-3 ${
+        isReady ? "animate-windowIn" : "hidden"
+      }`}
     >
       <div className="grid grid-cols-4 gap-4">
         <div className="grid gap-4 overflow-scroll max-h-[calc(100vh-70px)] no-scrollbar">

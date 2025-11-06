@@ -2,25 +2,22 @@
 import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
-
 // API
 import { salesTwoDates } from "../../api/sales";
-
 // TYPES
 import type { JsonError } from "../../interfaces";
-
 // REDUX
-import { setSalesTwoDates } from "../../features/salesSlice";
-
+import { setSalesPanels } from "../../features/salesSlice";
 // UTILS
-import { formatGoliathDate } from "../../utils";
+import { formatGoliathDate, formatCurrency2, reformatDate } from "../../utils";
 
 const SalesPanels = () => {
-  const dummyCards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
+  const { salesPanels } = useAppSelector((state) => state.sales);
+  const placeHolders = [1,2,3,4,5,6,7,8,9,10]
 
   useEffect(() => {
     if (context.token) {
@@ -52,7 +49,8 @@ const SalesPanels = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          dispatch(setSalesTwoDates(j.items));
+          dispatch(setSalesPanels(j.items));
+          // make the call to weekly with the first returned item to get default behavior
         }
       })
       .catch((err: JsonError) => {
@@ -60,13 +58,50 @@ const SalesPanels = () => {
       });
   };
 
+  // When the sales panels are ready, onClick will call handlePanelClick() for that panel
   return (
-    <div className="flex flex-col gap-2 rounded-lg overflow-hidden">
-      {dummyCards.map((card) => (
-        <div key={card} className="bg-custom-white rounded-lg p-4 shadow-lg">
-          Card {card}
-        </div>
-      ))}
+    <div className="flex flex-col gap-2 rounded-lg overflow-hidden min-h-[100%] max-h-[100%] overflow-y-scroll no-scrollbar">
+      {salesPanels.length
+        ? salesPanels.map((panel, idx) => (
+            <div
+              key={idx}
+              className="bg-custom-white rounded-lg px-4 py-2 shadow-lg"
+            >
+              <div className="font-medium border-b border-content/30 flex justify-between">
+                <div className="w-1/3">{panel.store_name}</div>
+                <div className="w-1/3 text-center">
+                  {reformatDate(panel.sale_date.split("T")[0])}
+                </div>
+                <div className="w-1/3 text-right">Term: {panel.terminal}</div>
+              </div>
+              <div className="flex justify-between pb-1 pt-2 text-center">
+                <div className="w-1/3">
+                  <div>Total Sales</div>
+                  <div className="font-medium">
+                    {formatCurrency2(panel.total_sales)}
+                  </div>
+                </div>
+                <div className="w-1/3">
+                  {" "}
+                  <div>Weight</div>
+                  <div className="font-medium">
+                    {panel.weight.toFixed(2)}
+                  </div>
+                </div>
+                <div className="w-1/3">
+                  <div>Quantity</div>
+                  <div className="font-medium">{panel.qty}</div>
+                </div>
+              </div>
+            </div>
+          ))
+        : (
+          <div>
+            {placeHolders.map((ph) => (
+              <div key={ph} className="bg-white py-20">{ph}</div>
+            ))}
+          </div>
+        )}
     </div>
   );
 };
