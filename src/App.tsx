@@ -14,7 +14,7 @@ const App = () => {
           <TitleBar />
           <SideBar />
 
-          <div className="ml-12 w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)] bg-bkg">
+          <div className="ml-16 min-w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)] bg-bkg">
             <Outlet />
           </div>
         </div>

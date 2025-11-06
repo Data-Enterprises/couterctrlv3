@@ -7,11 +7,11 @@ const TitleBar = () => {
 
   return (
     <div className="h-12 w-full flex">
-      <div className="w-48 flex items-center shadow-md shadow-content/20">
+      <div className="w-48 flex items-center shadow shadow-content/10 border-r">
         <img src={logo} alt="Logo" className="h-8 w-8 m-2 inline-block" />
         <div className="font-medium">CounterCtrl</div>
       </div>
-      <div className="shadow-md shadow-content/10 w-[calc(100vw-12rem)] flex justify-between">
+      <div className="shadow shadow-content/10 w-[calc(100vw-12rem)] flex justify-between">
       {/* Replace this with the user's name coming from the api */}
         <div className="ml-4 flex items-center font-medium">Welcome Stephen</div>
         <div className="flex items-center h-full">
