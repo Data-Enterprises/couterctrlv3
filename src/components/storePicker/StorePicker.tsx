@@ -27,11 +27,8 @@ const StorePicker = ({
     }
   }, [searchState.sendPrefs]);
 
-  const style = context.isDesktop
-    ? "flex flex-col md:flex-row gap2 md:gap-4 items-center justify-center"
-    : context.isTablet
-    ? "flex mb-2 gap-6"
-    : "flex flex-col";
+  const style =
+    "flex flex-col md:grid md:grid-cols-2 gap2 md:gap-4 items-center justify-center";
 
   return (
     <div className={style}>
@@ -40,6 +37,8 @@ const StorePicker = ({
         useSubComp={useSubComp}
         inMarketing={inMarketing}
       />
+      {state == "1" ? <SearchStore /> : null}
+      {state === "Stores" ? <SearchStore /> : null}
       {state === "Single Store" ? <SearchStore /> : null}
       {state == "3" ? <SearchStore /> : null}
       {state === "Group" ? <SelectGroup /> : null}

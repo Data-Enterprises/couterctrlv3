@@ -46,10 +46,8 @@ const SelectStore = ({ onOutsideClick }: Props) => {
     }
   };
 
-  const styling = context.isDesktop ? "w-3/4 px-4 md:px-0 md:w-40" : "w-full";
-  const inputStyle = context.isDesktop
-    ? "basic-input bg-custom-white w-full md:w-40"
-    : "basic-input bg-custom-white w-full";
+  const styling = "w-full px-4 md:px-0";
+  const inputStyle = "basic-input focus:border bg-custom-white w-full";
 
   return (
     <div ref={componentRef} className={styling}>
@@ -87,7 +85,7 @@ const SelectStore = ({ onOutsideClick }: Props) => {
             ref={listRef}
             data-display="closed"
             className="absolute w-full p-2 py-2 bg-custom-white text-content
-            max-h-[350px] overflow-y-scroll z-20 rounded-b-xl shadow-lg
+            max-h-[350px] overflow-y-scroll z-20 rounded-b-xl shadow-lg no-scrollbar
             data-[display=open]:animate-appear
             data-[display=closed]:animate-dissapear
             data-[display=open]:pointer-events-auto

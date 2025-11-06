@@ -6,11 +6,7 @@ import { useAppSelector } from "../../hooks";
 import { setStartDate } from "../../features/searchSlice";
 import { useDispatch } from "react-redux";
 
-interface Props {
-  inReports?: boolean;
-}
-
-const StartDatePicker = ({ inReports = false }: Props) => {
+const StartDatePicker = () => {
   const dispatch = useDispatch();
 
   const handleStartDate = (date: string) => {
@@ -35,18 +31,11 @@ const StartDatePicker = ({ inReports = false }: Props) => {
   };
 
   const styling = context.isDesktop
-    ? `relative inline-block text-left md:px-0 mx-auto ${
-        inReports ? "lg:w-52" : "lg:w-40"
-      }`
+    ? `relative text-left md:px-0 w-full`
     : `relative inline-block text-left md:px-0 mx-auto w-full`;
 
   const menuStyle = context.isDesktop ? "px-2.5 md:px-0" : "";
-  // const calendarStyle = inReports ? "md:w-[110%]" : "md:w-[180%]";
-  const calendarStyle = inReports
-    ? context.isTablet
-      ? "w-[101%]"
-      : "md:w-[110%]"
-    : "md:w-[160%]";
+  const calendarStyle ="md:w-[135%]";
 
   return (
     <Menu as="div" className={styling}>

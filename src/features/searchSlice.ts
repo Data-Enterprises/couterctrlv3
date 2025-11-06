@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 // import { AssignedStore, Group } from "../interfaces";
-import { formatDate, addDays } from "../utils";
+import { formatDate, addDays, formatGoliathDate } from "../utils";
 
 export type SEARCH_TYPE =
   | "Stores"
@@ -37,8 +37,10 @@ export const initialState: SearchState = {
   // selectedGroup: undefined,
   startDate: formatDate(addDays(new Date(), -1).toString()),
   endDate: formatDate(new Date().toString()),
+  // startDate: formatGoliathDate(addDays(new Date(), -1).toString()),
+  // endDate: formatGoliathDate(new Date().toString()),
   sendPrefs: false,
-  lastStore: 0,
+  lastStore: 111,
   lastGroup: 0,
   // assignedStores: [],
   ledgerDate: "",
@@ -67,11 +69,15 @@ const searchSlice = createSlice({
     //   state.sendPrefs = true;
     // },
     setStartDate: (state, action: PayloadAction<string>) => {
-      state.startDate = action.payload;
+      const splitDate = action.payload.split("/");
+      const newDate = `${splitDate[2]}-${splitDate[0]}-${splitDate[1]}`;
+      state.startDate = newDate;
       state.sendPrefs = true;
     },
     setEndDate: (state, action: PayloadAction<string>) => {
-      state.endDate = action.payload;
+      const splitDate = action.payload.split("/");
+      const newDate = `${splitDate[2]}-${splitDate[0]}-${splitDate[1]}`;
+      state.endDate = newDate;
       state.sendPrefs = true;
     },
     setSendPrefs: (state, action: PayloadAction<boolean>) => {

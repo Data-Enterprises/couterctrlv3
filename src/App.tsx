@@ -9,7 +9,7 @@ const App = () => {
   const nav = useAppSelector((state) => state.nav);
 
   return (
-    <div className="main-app h-dvh w-dvw bg-bkg text-content">
+    <div className="main-app h-dvh w-dvw bg-bkg text-content no-scrollbar">
       {context.loggedIn ? (
         <div className="h-screen w-screen">
           <TitleBar />

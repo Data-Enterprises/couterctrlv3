@@ -6,11 +6,7 @@ import { useAppSelector } from "../../hooks";
 import { setEndDate } from "../../features/searchSlice";
 import { useDispatch } from "react-redux";
 
-interface Props {
-  inReports?: boolean;
-}
-
-const EndDatePicker = ({ inReports = false }: Props) => {
+const EndDatePicker = () => {
   const context = useAppSelector((state) => state.app);
   const searchState = useAppSelector((state) => state.search);
   const menuRef = useRef<HTMLButtonElement>(null);
@@ -34,17 +30,12 @@ const EndDatePicker = ({ inReports = false }: Props) => {
   };
 
   const styling = context.isDesktop
-    ? `relative inline-block text-left md:px-0 mx-auto ${
-        inReports ? "lg:w-52" : "lg:w-40"
-      }`
+    ? `relative text-left md:px-0 w-full`
     : `relative inline-block text-left md:px-0 mx-auto w-full`;
 
   const menuStyle = context.isDesktop ? "px-2.5 md:px-0" : "";
-  const calendarStyle = inReports
-    ? context.isTablet
-      ? "w-[101%]"
-      : "md:w-[110%]"
-    : "md:w-[160%]";
+  const calendarStyle = "md:w-[135%]";
+
   return (
     <Menu as="div" className={styling}>
       <div className={menuStyle}>
@@ -66,7 +57,7 @@ const EndDatePicker = ({ inReports = false }: Props) => {
       <MenuItems
         transition
         className={`-mx-9 md:mx-0 flex bg-custom-white w-[80%] ${calendarStyle} justify-center absolute 
-        right-10 md:left-0 z-20 origin-top-right rounded-md shadow-lg ring-1 
+        right-10 md:right-0 z-20 origin-top-right rounded-md shadow-lg ring-1 
         ring-black/5 transition focus:outline-none 
         data-[closed]:scale-95 
         data-[closed]:transform 

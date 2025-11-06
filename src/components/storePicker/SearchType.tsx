@@ -165,7 +165,7 @@ const SearchType = ({
               autoComplete="off"
               type="text"
               name="search"
-              className="basic-input bg-custom-white"
+              className="basic-input bg-custom-white focus:border"
             />
             <div className="absolute top-2 right-2 w-[24px] cursor-pointer ">
               <ChevronUpDownIcon className="fill-content" />
@@ -176,7 +176,7 @@ const SearchType = ({
             ref={listRef}
             data-display="closed"
             className="absolute w-full p-2 py-2 bg-custom-white text-content
-            max-h-[350px] overflow-y-scroll z-20 rounded-b-xl shadow-lg
+            max-h-[350px] overflow-y-scroll z-20 rounded-b-xl shadow-lg no-scrollbar
             data-[display=open]:animate-appear
             data-[display=closed]:animate-dissapear
             data-[display=closed]:hidden"

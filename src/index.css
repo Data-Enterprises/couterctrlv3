@@ -216,12 +216,12 @@ body {
   }
 }
 
-/* @layer utilities {
+@layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     width: 0em;
     height: 0em;
   }
-} */
+}
 
 .toast-error {
   @apply bg-red-500 text-white;
