@@ -36,7 +36,7 @@ const StartDatePicker = ({ inReports = false }: Props) => {
 
   const styling = context.isDesktop
     ? `relative inline-block text-left md:px-0 mx-auto ${
-        inReports ? "lg:w-52" : "lg:w-32"
+        inReports ? "lg:w-52" : "w-44"
       }`
     : `relative inline-block text-left md:px-0 mx-auto w-full`;
 
@@ -46,7 +46,7 @@ const StartDatePicker = ({ inReports = false }: Props) => {
     ? context.isTablet
       ? "w-[101%]"
       : "md:w-[110%]"
-    : "md:w-[180%]";
+    : "md:w-[160%]";
 
   return (
     <Menu as="div" className={styling}>
@@ -68,8 +68,8 @@ const StartDatePicker = ({ inReports = false }: Props) => {
 
       <MenuItems
         transition
-        className={`-mx-9 md:mx-0 flex bg-custom-white w-[80%] ${calendarStyle} justify-center absolute 
-        right-10 md:right-0 z-20 origin-top-right rounded-md shadow-lg ring-1 
+        className={`md:mx-0 flex bg-custom-white w-[80%] ${calendarStyle} justify-center absolute 
+        right-10 md:left-0 z-20 origin-top-right rounded-md shadow-lg ring-1 
         ring-black/5 transition focus:outline-none 
         data-[closed]:scale-95 
         data-[closed]:transform 

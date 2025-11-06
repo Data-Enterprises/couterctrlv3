@@ -32,23 +32,18 @@ const DatePickers = ({
     : "w-full text-center mt-2";
 
   const pickerStyle = context.isDesktop
-    ? "flex flex-row md:gap-6"
+    ? "flex flex-row md:gap-2"
     : context.isTablet
     ? `grid ${inReports ? "grid-cols-2" : "grid-cols-3"} gap-6 w-full`
     : "w-full grid";
 
   return (
-    <div className="flex flex-col md:flex-row gap-2 mb-4 md:px-0 items-center lg:items-end select-none md:w-auto">
+    <div className="flex flex-col gap-2 mb-4 md:px-0 items-center select-none md:w-auto bg-red-200">
       <div className={pickerStyle}>
         <StartDatePicker inReports={inReports} />
         {!useSingleDate && <EndDatePicker inReports={inReports} />}
-        {!inReports && context.isTablet ? (
-          <div className={`btn-themeBlue ${btnStyle}`} onClick={handleClick}>
-            Search
-          </div>
-        ) : null}
       </div>
-      {!inReports && !context.isTablet ? (
+      {!inReports ? (
         <div className={`btn-themeBlue ${btnStyle}`} onClick={handleClick}>
           Search
         </div>
