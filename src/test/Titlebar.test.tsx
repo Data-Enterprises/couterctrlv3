@@ -70,6 +70,7 @@ describe("TitleBar and SideBar Components", () => {
     );
 
     // Testing here to see if clicking on the sales nav link navigates to the Sales page
+    // Seems that the name property reflects the inner text of the link, so be careful here
     const salesLink = screen.getByRole("link", { name: /sales/i });
     await user.click(salesLink);
     expect(await screen.findByTestId("sales-page")).toBeInTheDocument();
