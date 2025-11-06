@@ -1,12 +1,7 @@
 import { useEffect } from "react";
 import { useAppSelector } from "../../hooks";
 import { formatGoliathDate } from "../../utils";
-import {
-  getTopTen,
-  getHourlyStoreDepts,
-  salesTwoDates,
-  // getWeekly,
-} from "../../api/sales";
+import { getTopTen, getHourlyStoreDepts } from "../../api/sales";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type { JsonError } from "../../interfaces";
 
@@ -19,7 +14,6 @@ import TopTenItems from "./TopTenItems";
 import SalesPanels from "./SalesPanels";
 
 const Sales = () => {
-  // const dummyCards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   const toast = useToast();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
@@ -78,7 +72,6 @@ const Sales = () => {
       data-testid="sales-page"
       className="w-full h-[calc(100vh-3rem)] px-4 pt-3"
     >
-      {/* grid layout */}
       <div className="grid grid-cols-4 gap-4">
         <div className="grid gap-4 overflow-scroll max-h-[calc(100vh-70px)] no-scrollbar">
           <div className="bg-custom-white rounded-lg p-2 shadow-lg">

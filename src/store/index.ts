@@ -8,6 +8,7 @@ import appReducer from "../features/appSlice";
 import navReducer from "../features/navSlice";
 import userReducer from "../features/userSlice";
 import searchReducer from "../features/searchSlice";
+import salesReducer from "../features/salesSlice";
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +16,7 @@ export const store = configureStore({
     nav: navReducer,
     user: userReducer,
     search: searchReducer,
+    sales: salesReducer,
   },
 });
 
