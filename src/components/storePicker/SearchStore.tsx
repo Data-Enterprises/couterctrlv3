@@ -1,16 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useAppSelector } from "../../hooks";
-// import { useDispatch } from "react-redux";
-// import { JsonError } from "../../interfaces";
-// import {
-//   setAssignedStores,
-//   setLastStoreName,
-// } from "../../features/searchSlice";
-// import { setLastStore } from "../../features/searchSlice";
-// import { assignedStores } from "../../apis/assign";
 import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
-// import { AssignedStore } from "../../interfaces";
-// import { setSelectedStore } from "../../features/salesSlice";
 
 interface Props {
   onOutsideClick?: () => void;
@@ -18,13 +8,6 @@ interface Props {
 
 const SelectStore = ({ onOutsideClick }: Props) => {
   const context = useAppSelector((state) => state.app);
-  // const searchState = useAppSelector((state) => state.search);
-  // const userState = useAppSelector((state) => state.user);
-  // const [error, setError] = useState("");
-  // const [query, setQuery] = useState("");
-  // const [filteredData, setFilteredData] = useState<AssignedStore[]>([]);
-  // const dispatch = useDispatch();
-
   const componentRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -53,55 +36,6 @@ const SelectStore = ({ onOutsideClick }: Props) => {
     };
   }, [context.token]);
 
-  // useEffect(() => {
-  //   const selectedStore = filteredData.find(
-  //     (s) => s.storeid == +searchState.lastStore
-  //   );
-  //   if (selectedStore) {
-  //     setQuery(selectedStore.store_Name);
-  //   }
-  // }, [filteredData, userState.lastSearch, searchState.type]);
-
-  // const getData = () => {
-  //   assignedStores(context.url, context.token, userState.userid)
-  //     .then((resp) => {
-  //       const j = resp.data;
-  //       if (j.error == "0") {
-  //         dispatch(setAssignedStores(j.stores));
-  //         setFilteredData(j.stores);
-  //       } else {
-  //         setError(j.msg);
-  //         dispatch(setAssignedStores([]));
-  //       }
-  //     })
-  //     .catch((e: JsonError) => {
-  //       setError(e.message);
-  //       dispatch(setAssignedStores([]));
-  //     });
-  // };
-
-  // const handleSelect = (store: AssignedStore) => {
-  //   dispatch(setLastStore(store.storeid));
-  //   dispatch(setLastStoreName(store.store_Name));
-
-  //   setQuery(store.store_Name);
-  //   if (listRef.current) {
-  //     listRef.current.setAttribute("data-display", "closed");
-  //   }
-  // };
-
-  // const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   setQuery(e.target.value);
-  //   if (e.target.value.length === 0) {
-  //     setFilteredData(searchState.assignedStores);
-  //   } else {
-  //     const filtered = searchState.assignedStores.filter((store) =>
-  //       store.store_Name.toLowerCase().includes(e.target.value.toLowerCase())
-  //     );
-  //     setFilteredData(filtered);
-  //   }
-  // };
-
   const handleTriggerClick = () => {
     if (listRef.current) {
       const currentStatus = listRef.current.getAttribute("data-display");
@@ -112,9 +46,9 @@ const SelectStore = ({ onOutsideClick }: Props) => {
     }
   };
 
-  const styling = context.isDesktop ? "w-3/4 px-4 md:px-0 md:w-full" : "w-full";
+  const styling = context.isDesktop ? "w-3/4 px-4 md:px-0 md:w-40" : "w-full";
   const inputStyle = context.isDesktop
-    ? "basic-input bg-custom-white w-full md:w-72"
+    ? "basic-input bg-custom-white w-full md:w-40"
     : "basic-input bg-custom-white w-full";
 
   return (
@@ -159,6 +93,8 @@ const SelectStore = ({ onOutsideClick }: Props) => {
             data-[display=open]:pointer-events-auto
             data-[display=closed]:pointer-events-none"
           >
+            <div>Houchens</div>
+            <div>IGA</div>
             {/* {filteredData.map((store, idx) => (
               <div key={`store-${idx}`} onClick={() => handleSelect(store)}>
                 <div className="px-2 hover:bg-scroll_hover transition-all duration-500 cursor-pointer">

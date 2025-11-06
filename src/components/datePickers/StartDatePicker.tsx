@@ -36,7 +36,7 @@ const StartDatePicker = ({ inReports = false }: Props) => {
 
   const styling = context.isDesktop
     ? `relative inline-block text-left md:px-0 mx-auto ${
-        inReports ? "lg:w-52" : "w-44"
+        inReports ? "lg:w-52" : "lg:w-40"
       }`
     : `relative inline-block text-left md:px-0 mx-auto w-full`;
 
@@ -52,7 +52,7 @@ const StartDatePicker = ({ inReports = false }: Props) => {
     <Menu as="div" className={styling}>
       <div className={menuStyle}>
         <label className="md:block flex justify-start md:justify-center pl-1 md:pl-0 text-sm/6 font-medium ">
-          Select Start Date
+          Start Date
         </label>
         <MenuButton
           ref={menuRef}

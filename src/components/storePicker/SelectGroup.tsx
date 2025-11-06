@@ -1,15 +1,11 @@
-// import { userGroups } from "../../apis/groups";
 import { useEffect } from "react";
 import { useAppSelector } from "../../hooks";
 import { useDispatch } from "react-redux";
-// import type { JsonError } from "../../interfaces";
-// import { setGroups } from "../../features/searchSlice";
 import { setLastGroup } from "../../features/searchSlice";
 
 const SelectGroup = () => {
   const context = useAppSelector((state) => state.app);
   const searchState = useAppSelector((state) => state.search);
-  // const [error, setError] = useState("");
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -55,7 +51,6 @@ const SelectGroup = () => {
           ))} */}
         </select>
       </div>
-      {/* {error.length > 0 ? <div>{error}</div> : null} */}
     </div>
   );
 };

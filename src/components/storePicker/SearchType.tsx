@@ -138,9 +138,9 @@ const SearchType = ({
     }
   };
 
-  const styling = context.isDesktop ? "w-3/4 px-4 md:px-0 md:w-full" : "w-full";
+  const styling = context.isDesktop ? "px-4 md:px-0 md:w-full" : "w-full";
   const width = context.isDesktop
-    ? "relative w-full md:w-44"
+    ? "relative w-full md:w-40"
     : "relative w-full";
 
   return (

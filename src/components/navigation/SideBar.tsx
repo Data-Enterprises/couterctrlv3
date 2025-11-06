@@ -55,7 +55,7 @@ const SideBar = () => {
       ref={ref}
       data-testid="side-bar"
       data-open={nav.isNavOpen}
-      className={`absolute top-12 left-0 h-[calc(100vh-3rem)] flex flex-col justify-between ${slidingStyle}`}
+      className={`bg-bkg absolute top-12 left-0 h-[calc(100vh-3rem)] flex flex-col justify-between ${slidingStyle}`}
       style={{ zIndex: 1000 }}
     >
       {/* using this to close the nav when clicking outside if it is open. User events are disabled in the Outlet when nav is open */}
@@ -63,7 +63,7 @@ const SideBar = () => {
         <div
           id="fixed-frame"
           onClick={handleiFrameClick}
-          className="fixed inset-0 z-40 bg-opacity-0 top-12 left-48"
+          className="fixed inset-0 z-40 bg-opacity-0 top-12 left-48 "
           style={{ cursor: "default" }}
         />
       )}

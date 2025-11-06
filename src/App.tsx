@@ -17,7 +17,7 @@ const App = () => {
 
           <div
             className={`ml-12 min-w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)] bg-bkg ${
-              nav.isNavOpen ? "opacity-30 pointer-events-none" : ""
+              nav.isNavOpen ? "pointer-events-none" : ""
             }`}
           >
             <Outlet />

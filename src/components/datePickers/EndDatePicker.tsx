@@ -35,12 +35,11 @@ const EndDatePicker = ({ inReports = false }: Props) => {
 
   const styling = context.isDesktop
     ? `relative inline-block text-left md:px-0 mx-auto ${
-        inReports ? "lg:w-52" : "lg:w-44"
+        inReports ? "lg:w-52" : "lg:w-40"
       }`
     : `relative inline-block text-left md:px-0 mx-auto w-full`;
 
   const menuStyle = context.isDesktop ? "px-2.5 md:px-0" : "";
-  // const calendarStyle = inReports ? "md:w-[110%]" : "md:w-[180%]";
   const calendarStyle = inReports
     ? context.isTablet
       ? "w-[101%]"
@@ -49,8 +48,8 @@ const EndDatePicker = ({ inReports = false }: Props) => {
   return (
     <Menu as="div" className={styling}>
       <div className={menuStyle}>
-        <label className="md:block flex justify-start md:justify-center pl-1 md:pl-0 text-sm/6 font-medium ">
-          Select End Date
+        <label className="md:block flex justify-start md:justify-center pl-1 md:pl-0 text-/6 font-medium ">
+          End Date
         </label>{" "}
         <MenuButton
           ref={menuRef}
