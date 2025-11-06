@@ -15,6 +15,7 @@ import {
   // setScope,
   // setPasswordChangeNeeded,
   setForgotPassword,
+  setLoggedIn,
 } from "../../features/appSlice";
 // import { setLastRoute, setActiveMenuItem } from "../../features/navSlice";
 import { setUsername, setPassword } from "../../features/userSlice";
@@ -75,16 +76,13 @@ const Login = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error == 0) {
-          console.log("Login successful", j);
           dispatch(setToken(j.access_token));
+          dispatch(setLoggedIn(true));
           // handle the rest of the login process when the endpoints are finished
         }
       })
       .catch((err: JsonError) => {
         toast.error(`Login failed: ${err.message}`);
-      })
-      .finally(() => {
-        navigate("/home/sales");
       });
   };
 

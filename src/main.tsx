@@ -11,6 +11,7 @@ import App from "./App.tsx";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
 import Home from "./pages/home/Home.tsx";
 import Sales from "./pages/sales/Sales.tsx";
+import Cashiers from "./pages/cashiers/Cashiers.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -19,9 +20,10 @@ createRoot(document.getElementById("root")!).render(
         <BrowserRouter>
           <ToastProvider autoClose={true} duration={4000}>
             <Routes>
-              <Route path="/" element={<App />} />
-              <Route path="/home" element={<Home />}>
-                <Route path="sales" element={<Sales />}></Route>
+              <Route path="/" element={<App />}>
+                <Route index element={<Home />} />
+                <Route path="sales" element={<Sales />} />
+                <Route path="cashiers" element={<Cashiers />} />
               </Route>
             </Routes>
           </ToastProvider>
