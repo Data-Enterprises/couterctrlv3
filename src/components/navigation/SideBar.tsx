@@ -63,7 +63,7 @@ const SideBar = () => {
         <div
           id="fixed-frame"
           onClick={handleiFrameClick}
-          className="fixed inset-0 z-40 bg-opacity-0 top-12 left-48 "
+          className="fixed inset-0 z-40 top-12 left-48 transition-all duration-300"
           style={{ cursor: "default" }}
         />
       )}

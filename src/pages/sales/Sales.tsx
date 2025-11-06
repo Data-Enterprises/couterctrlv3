@@ -76,8 +76,6 @@ const Sales = () => {
       data-testid="sales-page"
       className="w-full h-[calc(100vh-3rem)] px-4 pt-3"
     >
-      {/* top */}
-      <div className="flex gap-4 items-start justify-center"></div>
       {/* grid layout */}
       <div className="grid grid-cols-4 gap-4">
         <div className="grid gap-4 overflow-scroll max-h-[calc(100vh-70px)] no-scrollbar">
