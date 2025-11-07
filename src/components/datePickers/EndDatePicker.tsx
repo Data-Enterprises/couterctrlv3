@@ -43,6 +43,7 @@ const EndDatePicker = () => {
           End Date
         </label>{" "}
         <MenuButton
+          data-testid="end-date-menu-button"
           ref={menuRef}
           className="inline-flex w-full bg-custom-white justify-between gap-x-1.5 rounded-md px-3 py-3 text-sm font-semibold  shadow-sm ring-1 ring-inset ring-gray-300 "
         >
@@ -67,7 +68,7 @@ const EndDatePicker = () => {
         data-[enter]:ease-out 
         data-[leave]:ease-in`}
       >
-        <div className="py-1">
+        <div data-testid="end-calendar-container" className="py-1">
           <MenuItem>
             {({ close }) => (
               <Calendar

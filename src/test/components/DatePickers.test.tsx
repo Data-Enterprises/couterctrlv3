@@ -1,7 +1,6 @@
 import DatePickers from "../../components/datePickers/DatePickers";
 import { renderWithProviders } from "../utils";
-import { mockStore as store } from "../mockStore";
-import { screen, waitFor } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect } from "vitest";
 
@@ -18,16 +17,33 @@ describe("DatePickers Component", () => {
     expect(endDatePicker).toBeInTheDocument();
   });
 
-  // it("should display the calendar when clicking on the start date picker", async () => {
-  //   renderWithProviders(<DatePickers />);
-  //   const startDatePicker = screen.getByTestId("start-date-picker");
-  //   await user.click(startDatePicker);
-  //   // const calendar = screen.getByTestId("calendar-container");
+  it("should display the calendar when clicking on the start date picker", async () => {
+    renderWithProviders(<DatePickers />);
+    const startDatePicker = screen.getByTestId("start-date-picker");
+    expect(startDatePicker).toBeInTheDocument();
 
-  //   // console.log(calendar);
+    // Find the menu button and click it
+    const startDateMenuButton = screen.getByTestId("start-date-menu-button");
+    expect(startDateMenuButton).toBeInTheDocument();
+    await user.click(startDateMenuButton);
 
-  //   // await waitFor(() => {
-  //   //   expect(calendar).toBeInTheDocument();
-  //   // });
-  // });
+    // The headless ui component renders the menu items in a portal, so we need to wait for it
+    const calendar = await screen.findByTestId("calendar-container");
+    expect(calendar).toBeInTheDocument();
+  });
+
+    it("should display the calendar when clicking on the end date picker", async () => {
+      renderWithProviders(<DatePickers />);
+      const endDatePicker = screen.getByTestId("end-date-picker");
+      expect(endDatePicker).toBeInTheDocument();
+
+      // Find the menu button and click it
+      const endDateMenuButton = screen.getByTestId("end-date-menu-button");
+      expect(endDateMenuButton).toBeInTheDocument();
+      await user.click(endDateMenuButton);
+
+      // The headless ui component renders the menu items in a portal, so we need to wait for it
+      const calendar = await screen.findByTestId("end-calendar-container");
+      expect(calendar).toBeInTheDocument();
+    });
 });
