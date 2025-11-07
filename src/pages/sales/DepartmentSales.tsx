@@ -1,40 +1,75 @@
-import { useEffect } from "react";
 import { useAppSelector } from "../../hooks";
-import Carousel from "../../components/Carousel";
 import type { DepartmentSale } from "../../interfaces";
-import DeptCard from "./DeptCard";
+import { formatCurrency2 } from "../../utils";
+
+// Ag Grid React
+import {
+  themeQuartz,
+  AllCommunityModule,
+  ModuleRegistry,
+} from "ag-grid-community";
+
+import { AgGridReact } from "ag-grid-react";
+import type { ColDef, ColGroupDef } from "ag-grid-community";
+ModuleRegistry.registerModules([AllCommunityModule]);
+import './grid.css'
 
 const DepartmentSales = () => {
   const sales = useAppSelector((state) => state.sales);
+  const colDefs: (ColDef<DepartmentSale> | ColGroupDef<DepartmentSale>)[] = [
+    {
+      headerName: "Dept",
+      field: "sub_department_description",
+      flex: 1,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Sales",
+      field: "sales",
+      flex: 0.8,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus text-right",
+      valueFormatter: (params) => formatCurrency2(params.value as number),
+    },
+    {
+      headerName: "Qty",
+      field: "qty",
+      flex: 0.8,
+      resizable: false,
+      cellClass: "no-outline-on-focus text-right",
+    },
+  ];
 
-  useEffect(() => {
-    // Any necessary data processing can be done here
-  }, [sales.departmentSales]);
-
-  const chunkDeptSales = (data: DepartmentSale[], chunkSize: number) => {
-    const chunks: DepartmentSale[][] = [];
-    for (let i = 0; i < data.length; i += chunkSize) {
-      chunks.push(data.slice(i, i + chunkSize));
-    }
-    return chunks;
-  };
-
-  const deptChunks = chunkDeptSales(sales.departmentSales, 4);
+  const theme = themeQuartz.withParams({
+    headerHeight: 40,
+    rowHeight: 25.5,
+    headerBackgroundColor: "#3b82f6",
+    headerTextColor: "#ffffff",
+    oddRowBackgroundColor: "#bfdbfe",
+    rowHoverColor: "#93c5fd",
+    headerFontWeight: "bold",
+    dataFontSize: 13,
+    selectCellBorder: "transparent",
+    rowBorder: "1px solid white",
+  });
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg">
-      <div className="font-medium mx-2 border-b border-content/30 py-0.5">
-        Department Sales
+      <div className="h-[100%] relative">
+        <AgGridReact
+          rowData={sales.departmentSales}
+          columnDefs={colDefs}
+          headerHeight={28}
+          pagination={true}
+          paginationAutoPageSize={true}
+          animateRows={true}
+          enableCellTextSelection={true}
+          theme={theme}
+        />
       </div>
-      <Carousel className="h-[91%]">
-        {deptChunks.map((chunk, idx) => (
-          <div key={idx} className="grid grid-cols-2 gap-4">
-            {chunk.map((dept) => (
-              <DeptCard key={dept.sub_department} dept={dept} />
-            ))}
-          </div>
-        ))}
-      </Carousel>
     </div>
   );
 };

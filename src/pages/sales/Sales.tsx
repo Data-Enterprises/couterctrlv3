@@ -97,8 +97,8 @@ const Sales = () => {
             <StorePicker />
             <DatePickers handleQuery={getData} btnPadding="py-1" />
           </div>
-          <DepartmentSales />
           <TopTenItems />
+          <DepartmentSales />
         </div>
         <div className="grid grid-rows-2 col-span-3 gap-4">
           <div className="grid grid-cols-2 gap-4">
