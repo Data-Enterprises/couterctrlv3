@@ -57,8 +57,8 @@ const DepartmentSales = () => {
   });
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg">
-      <div className="h-[100%] relative">
+    <div className="bg-custom-white rounded-lg shadow-lg no-scrollbar">
+      <div className="h-[100%] relative no-scrollbar">
         <AgGridReact
           rowData={sales.departmentSales}
           columnDefs={colDefs}
@@ -68,6 +68,7 @@ const DepartmentSales = () => {
           animateRows={true}
           enableCellTextSelection={true}
           theme={theme}
+          className="no-scrollbar"
         />
       </div>
     </div>

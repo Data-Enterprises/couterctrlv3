@@ -1,18 +1,26 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { TopTenItem, DepartmentSale, SalesTwoDates } from "../interfaces";
+import type {
+  TopTenItem,
+  DepartmentSale,
+  SalesTwoDates,
+  SelectedSalesPanel,
+  WeeklySale,
+} from "../interfaces";
 
 interface SalesState {
   topTenItems: TopTenItem[];
   departmentSales: DepartmentSale[];
   salesPanels: SalesTwoDates[];
-  refreshData: boolean;
+  selectedSalesPanel: SelectedSalesPanel;
+  weeklySales?: WeeklySale[];
 }
 
 const initialState: SalesState = {
   topTenItems: [],
   departmentSales: [],
   salesPanels: [],
-  refreshData: false,
+  selectedSalesPanel: { sale_date: "", terminal: "", storeid: 0 },
+  weeklySales: [],
 };
 
 export const salesSlice = createSlice({
@@ -28,12 +36,25 @@ export const salesSlice = createSlice({
     setSalesPanels: (state, action: PayloadAction<SalesTwoDates[]>) => {
       state.salesPanels = action.payload;
     },
-    setRefreshData: (state, action: PayloadAction<boolean>) => {
-      state.refreshData = action.payload;
+    setSelectedSalesPanel: (
+      state,
+      action: PayloadAction<SelectedSalesPanel>
+    ) => {
+      state.selectedSalesPanel = action.payload;
     },
+    setWeeklySales: (state, action: PayloadAction<WeeklySale[]>) => {
+      state.weeklySales = action.payload;
+    },
+    resetSalesSlice: () => initialState,
   },
 });
 
-export const { setTopTenItems, setDepartmentSales, setSalesPanels, setRefreshData } =
-  salesSlice.actions;
+export const {
+  setTopTenItems,
+  setDepartmentSales,
+  setSalesPanels,
+  setSelectedSalesPanel,
+  setWeeklySales,
+  resetSalesSlice,
+} = salesSlice.actions;
 export default salesSlice.reducer;

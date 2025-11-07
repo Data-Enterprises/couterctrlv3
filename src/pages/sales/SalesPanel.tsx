@@ -1,6 +1,7 @@
-import type { SalesTwoDates } from "../../interfaces";
+import type { SalesTwoDates, SelectedSalesPanel } from "../../interfaces";
 import { formatCurrency2 } from "../../utils";
 import { useStyling } from "./hooks";
+import { useAppSelector } from "../../hooks";
 
 interface SalesPanelProps {
   panel: SalesTwoDates;
@@ -14,18 +15,39 @@ const SalesPanel = ({
   handleBtnClick,
 }: SalesPanelProps) => {
   const { style, text } = useStyling();
+  const selectedSalesPanel = useAppSelector(
+    (state) => state.sales.selectedSalesPanel
+  );
+
   const getDateLayout = (date: string) => {
     const [year, month, day] = date.split("-");
-    console.log(`${month}/${day}/${year}`);
     return `${month}/${day}/${year}`;
+  };
+
+  const bg = (panel: SalesTwoDates, selected: SelectedSalesPanel) => {
+    const date = panel.sale_date.split("T")[0];
+    if (
+      date === selected.sale_date &&
+      panel.terminal === selected.terminal &&
+      panel.storeid === selected.storeid
+    ) {
+      return "bg-blue-200/90";
+    } else {
+      return "bg-custom-white";
+    }
   };
 
   return (
     <div
-      className="bg-custom-white rounded-lg px-2 py-1 shadow-lg cursor-pointer hover:shadow-inner transition-shadow duration-500"
+      className={`${bg(
+        panel,
+        selectedSalesPanel
+      )} bg-custom-white rounded-lg px-2 py-1 shadow-lg cursor-pointer hover:shadow-inner transition-all duration-200`}
       onClick={() => handlePanelClick(panel)}
     >
-      <div className="font-medium border-b border-content/30 flex justify-between">
+      <div
+        className={`font-medium border-b border-content/30 flex justify-between ${text} py-[1px]`}
+      >
         <div className="">{panel.store_name}</div>
         <div className=" text-center">
           {getDateLayout(panel.sale_date.split("T")[0])}
@@ -51,7 +73,9 @@ const SalesPanel = ({
           </div>
         </div>
       </div>
-      <div className={`font-medium text-center ${text}`}>Terminal: {panel.terminal}</div>
+      <div className={`font-medium text-center ${text}`}>
+        Terminal: {panel.terminal}
+      </div>
       <div className="flex justify-around">
         <button
           className={`btn-themeBlue ${style}`}

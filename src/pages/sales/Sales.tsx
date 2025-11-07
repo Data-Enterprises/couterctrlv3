@@ -9,6 +9,7 @@ import {
   setTopTenItems,
   setDepartmentSales,
   setSalesPanels,
+  resetSalesSlice,
 } from "../../features/salesSlice";
 
 // Components
@@ -33,6 +34,10 @@ const Sales = () => {
     if (context.token) {
       getData();
     }
+
+    return () => {
+      dispatch(resetSalesSlice());
+    };
   }, [context.token]);
 
   const getData = () => {

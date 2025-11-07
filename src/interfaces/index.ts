@@ -46,3 +46,21 @@ export type TopTenData = {
   color: string;
   qty: number;
 };
+
+export type SelectedSalesPanel = {
+  sale_date: string;
+  terminal: string;
+  storeid: number;
+};
+
+export type WeeklySale = {
+  bin: number;
+  description: string;
+  qty: number;
+  sale_date: string;
+  sale: number;
+  store_name: string;
+  store_number: string;
+  storeid: number;
+  weight: number;
+};

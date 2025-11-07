@@ -68,7 +68,7 @@ const SelectStore = ({ onOutsideClick }: Props) => {
             <input
               data-testid="search-store-input"
               // value={query}
-              value={"<store name>"}
+              value={"Needs Data"}
               onFocus={(e) => e.target.select()}
               // onChange={handleQueryChange}
               autoComplete="off"

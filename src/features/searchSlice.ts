@@ -35,7 +35,7 @@ export const initialState: SearchState = {
   subCompSearchType: "2",
   // groups: [],
   // selectedGroup: undefined,
-  startDate: formatDate(addDays(new Date(), -1).toString()),
+  startDate: formatDate(addDays(new Date(), -6).toString()),
   endDate: formatDate(new Date().toString()),
   // startDate: formatGoliathDate(addDays(new Date(), -1).toString()),
   // endDate: formatGoliathDate(new Date().toString()),

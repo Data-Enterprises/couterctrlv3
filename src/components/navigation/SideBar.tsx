@@ -8,6 +8,7 @@ import { Cog6ToothIcon } from "@heroicons/react/16/solid";
 import { handleSigningOut } from "../../features/appSlice";
 import { resetUserSlice } from "../../features/userSlice";
 import { useNavigate } from "react-router";
+import { resetSalesSlice } from "../../features/salesSlice";
 
 const SideBar = () => {
   const navigate = useNavigate();
@@ -48,6 +49,7 @@ const SideBar = () => {
     dispatch(handleSigningOut());
     dispatch(resetUserSlice());
     dispatch(resetNav());
+    dispatch(resetSalesSlice());
     navigate("/");
   };
 
