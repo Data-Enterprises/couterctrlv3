@@ -79,8 +79,10 @@ const Sales = () => {
       });
   };
 
-  const isReady = topTenItems.length > 0 && departmentSales.length > 0;
-  // salesPanels.length > 0;
+  const isReady =
+    topTenItems.length > 0 &&
+    departmentSales.length > 0 &&
+    salesPanels.length > 0;
 
   return (
     <div
@@ -90,10 +92,10 @@ const Sales = () => {
       }`}
     >
       <div className="grid grid-cols-4 gap-4 h-full">
-        <div className="grid gap-4 overflow-scroll max-h-[calc(100vh-7px)] grid-rows-[0.7fr_1fr_1fr] no-scrollbar">
+        <div className="grid gap-2 overflow-scroll max-h-[calc(100vh-7px)] grid-rows-[0.7fr_1fr_1fr] no-scrollbar">
           <div className="bg-custom-white rounded-lg p-2 shadow-lg">
             <StorePicker />
-            <DatePickers handleQuery={getData} />
+            <DatePickers handleQuery={getData} btnPadding="py-1" />
           </div>
           <DepartmentSales />
           <TopTenItems />

@@ -33,8 +33,10 @@ const TopTenItems = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg h-full">
-      <div className="font-medium mx-2 border-b border-content/30 py-0.5">Top Ten Items</div>
+    <div className="bg-custom-white rounded-lg shadow-lg h-full overflow-visible">
+      <div className="font-medium mx-2 border-b border-content/30 py-0.5">
+        Top Ten Items
+      </div>
       <ResponsiveBar
         data={topTen}
         indexBy="label"
@@ -51,6 +53,14 @@ const TopTenItems = () => {
         layout="horizontal"
         axisBottom={null}
         tooltipLabel={(e) => `${e.data.id}`}
+        theme={{
+          tooltip: {
+            container: {
+              fontSize: "13px",
+              zIndex: 9999,
+            },
+          },
+        }}
       />
     </div>
   );

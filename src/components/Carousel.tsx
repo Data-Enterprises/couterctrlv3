@@ -12,7 +12,7 @@ type CarouselProps<T> = {
 
 const Carousel = <T,>({
   children,
-  className = "h-[440px]",
+  className = "min-h-[300px]",
   data,
   dataKey,
   payloadAction,
@@ -52,16 +52,16 @@ const Carousel = <T,>({
       <div className="absolute bottom-0 left-1/2 z-50 -translate-x-1/2 mb-4 flex gap-2">
         <button
           onClick={prev}
-          className="absolute -left-9 top-1/2 -translate-y-1/2 z-10 bg-panel_active/70 hover:bg-panel_active transition-all duration-300 rounded-full p-1 shadow"
+          className="absolute -left-7 top-1/2 -translate-y-1/2 z-10 bg-panel_active/70 hover:bg-panel_active transition-all duration-300 rounded-full p-1 shadow"
         >
-          <ChevronLeftIcon className="w-5 h-5" />
+          <ChevronLeftIcon className="w-4 h-4" />
         </button>
         <button
           aria-label="Next"
           onClick={next}
-          className="absolute -right-9 top-1/2 -translate-y-1/2 z-10 bg-panel_active/70 hover:bg-panel_active transition-all duration-300 rounded-full p-1 shadow"
+          className="absolute -right-7 top-1/2 -translate-y-1/2 z-10 bg-panel_active/70 hover:bg-panel_active transition-all duration-300 rounded-full p-1 shadow"
         >
-          <ChevronRightIcon className="w-5 h-5" />
+          <ChevronRightIcon className="w-4 h-4" />
         </button>
         {Array.from({ length: totalSlides }).map((_, i) => (
           <button
