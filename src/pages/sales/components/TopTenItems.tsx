@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { useAppSelector } from "../../hooks";
+import { useAppSelector } from "../../../hooks";
 
 // Bar Chart utils
 import { ResponsiveBar } from "@nivo/bar";
-import { barColors } from ".";
-import type { TopTenData } from "../../interfaces";
+import { barColors } from "../utils";
+import type { TopTenData } from "../../../interfaces";
 
 const TopTenItems = () => {
   const sales = useAppSelector((state) => state.sales);

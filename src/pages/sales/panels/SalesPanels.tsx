@@ -1,18 +1,18 @@
-import { useAppSelector, useAppDispatch } from "../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import type {
   JsonError,
   SalesTwoDates,
   SelectedSalesPanel,
-} from "../../interfaces";
+} from "../../../interfaces";
 import {
   setSelectedSalesPanel,
   setWeeklySales,
-} from "../../features/salesSlice";
-import Carousel from "../../components/Carousel";
+} from "../../../features/salesSlice";
+import Carousel from "../../../components/Carousel";
 import SalesPanel from "./SalesPanel";
-import { getWeekly } from "../../api/sales";
-import { formatGoliathDate } from "../../utils";
-import { useToast } from "../../components/toasts/hooks/useToast";
+import { getWeekly } from "../../../api/sales";
+import { formatGoliathDate } from "../../../utils";
+import { useToast } from "../../../components/toasts/hooks/useToast";
 
 const SalesPanels = () => {
   const toast = useToast();

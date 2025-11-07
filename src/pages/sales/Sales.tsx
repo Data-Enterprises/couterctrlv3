@@ -21,10 +21,10 @@ import {
 // Components
 import DatePickers from "../../components/datePickers/DatePickers";
 import StorePicker from "../../components/storePicker/StorePicker";
-import WeeklyNetSales from "./WeeklyNetSales";
-import DepartmentSales from "./DepartmentSales";
-import TopTenItems from "./TopTenItems";
-import SalesPanels from "./SalesPanels";
+import WeeklyNetSales from "./components/WeeklyNetSales";
+import DepartmentSales from "./components/DepartmentSales";
+import TopTenItems from "./components/TopTenItems";
+import SalesPanels from "./panels/SalesPanels";
 
 const Sales = () => {
   const toast = useToast();

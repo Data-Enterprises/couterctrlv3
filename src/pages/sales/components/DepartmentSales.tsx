@@ -1,6 +1,6 @@
-import { useAppSelector } from "../../hooks";
-import type { DepartmentSale } from "../../interfaces";
-import { formatCurrency2 } from "../../utils";
+import { useAppSelector } from "../../../hooks";
+import type { DepartmentSale } from "../../../interfaces";
+import { formatCurrency2 } from "../../../utils";
 
 // Ag Grid React
 import {
@@ -12,7 +12,7 @@ import {
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ColGroupDef } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
-import './grid.css'
+import "./grid.css";
 
 const DepartmentSales = () => {
   const sales = useAppSelector((state) => state.sales);

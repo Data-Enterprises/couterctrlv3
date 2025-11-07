@@ -1,7 +1,7 @@
-import type { SalesTwoDates, SelectedSalesPanel } from "../../interfaces";
-import { formatCurrency2 } from "../../utils";
-import { useStyling } from "./hooks";
-import { useAppSelector } from "../../hooks";
+import type { SalesTwoDates, SelectedSalesPanel } from "../../../interfaces";
+import { formatCurrency2 } from "../../../utils";
+import { useStyling } from "../utils/hooks";
+import { useAppSelector } from "../../../hooks";
 
 interface SalesPanelProps {
   panel: SalesTwoDates;
