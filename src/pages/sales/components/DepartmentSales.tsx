@@ -1,6 +1,7 @@
 import { useAppSelector } from "../../../hooks";
 import type { DepartmentSale } from "../../../interfaces";
-import { formatCurrency2 } from "../../../utils";
+import { formatCurrency2, formatBigNumber } from "../../../utils";
+import "../utils/grid.css";
 
 // Ag Grid React
 import {
@@ -12,7 +13,6 @@ import {
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ColGroupDef } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
-import "./grid.css";
 
 const DepartmentSales = () => {
   const sales = useAppSelector((state) => state.sales);
@@ -40,6 +40,7 @@ const DepartmentSales = () => {
       flex: 0.8,
       resizable: false,
       cellClass: "no-outline-on-focus text-right",
+      valueFormatter: (params) => formatBigNumber(params.value as number, 0),
     },
   ];
 

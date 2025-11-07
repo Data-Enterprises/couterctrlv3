@@ -66,3 +66,15 @@ export const reformatDate = (date: string) => {
   const year = dte.getFullYear();
   return `${month}/${day}/${year}`;
 };
+
+export const formatBigNumber = (
+  value: number,
+  decimals: number = 2,
+  locale: string = "en-US"
+): string => {
+  const options: Intl.NumberFormatOptions = {};
+  if (decimals !== undefined) {
+    options.minimumFractionDigits = decimals;
+  }
+  return new Intl.NumberFormat(locale, options).format(value);
+};

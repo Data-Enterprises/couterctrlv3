@@ -13,6 +13,7 @@ interface SalesState {
   salesPanels: SalesTwoDates[];
   selectedSalesPanel: SelectedSalesPanel;
   weeklySales?: WeeklySale[];
+  panelsLoading: boolean;
 }
 
 const initialState: SalesState = {
@@ -21,6 +22,7 @@ const initialState: SalesState = {
   salesPanels: [],
   selectedSalesPanel: { sale_date: "", terminal: "", storeid: 0 },
   weeklySales: [],
+  panelsLoading: false,
 };
 
 export const salesSlice = createSlice({
@@ -45,6 +47,9 @@ export const salesSlice = createSlice({
     setWeeklySales: (state, action: PayloadAction<WeeklySale[]>) => {
       state.weeklySales = action.payload;
     },
+    setPanelsLoading: (state, action: PayloadAction<boolean>) => {
+      state.panelsLoading = action.payload;
+    },
     resetSalesSlice: () => initialState,
   },
 });
@@ -55,6 +60,7 @@ export const {
   setSalesPanels,
   setSelectedSalesPanel,
   setWeeklySales,
+  setPanelsLoading,
   resetSalesSlice,
 } = salesSlice.actions;
 export default salesSlice.reducer;

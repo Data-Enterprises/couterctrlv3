@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 
 export const useStyling = () => {
-  const [style, setStyle] = useState<string>("");
-  const [text, setText] = useState<string>("");
+  const [style, setStyle] = useState<string>("px-2 py-0.5");
+  const [text, setText] = useState<string>("text-sm");
 
   useEffect(() => {
     const updateStyle = () => {

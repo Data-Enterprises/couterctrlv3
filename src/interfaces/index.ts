@@ -58,7 +58,7 @@ export type WeeklySale = {
   description: string;
   qty: number;
   sale_date: string;
-  sale: number;
+  sales: number;
   store_name: string;
   store_number: string;
   storeid: number;

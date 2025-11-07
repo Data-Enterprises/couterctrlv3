@@ -10,3 +10,8 @@ export const barColors = [
   "#FF9900",
   "#CC8844",
 ];
+
+export const getDateLayout = (date: string) => {
+  const [year, month, day] = date.split("-");
+  return `${month}/${day}/${year}`;
+};

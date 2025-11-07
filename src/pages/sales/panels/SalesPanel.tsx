@@ -2,6 +2,7 @@ import type { SalesTwoDates, SelectedSalesPanel } from "../../../interfaces";
 import { formatCurrency2 } from "../../../utils";
 import { useStyling } from "../utils/hooks";
 import { useAppSelector } from "../../../hooks";
+import { getDateLayout } from "../utils";
 
 interface SalesPanelProps {
   panel: SalesTwoDates;
@@ -18,11 +19,6 @@ const SalesPanel = ({
   const selectedSalesPanel = useAppSelector(
     (state) => state.sales.selectedSalesPanel
   );
-
-  const getDateLayout = (date: string) => {
-    const [year, month, day] = date.split("-");
-    return `${month}/${day}/${year}`;
-  };
 
   const bg = (panel: SalesTwoDates, selected: SelectedSalesPanel) => {
     const date = panel.sale_date.split("T")[0];

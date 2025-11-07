@@ -16,6 +16,7 @@ import {
   setSalesPanels,
   resetSalesSlice,
   setWeeklySales,
+  setPanelsLoading,
 } from "../../features/salesSlice";
 
 // Components
@@ -31,7 +32,7 @@ const Sales = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const { topTenItems, departmentSales, salesPanels } = useAppSelector(
+  const { topTenItems, departmentSales } = useAppSelector(
     (state) => state.sales
   );
 
@@ -96,6 +97,7 @@ const Sales = () => {
       search.type.toString() == "2" || search.type.toString() == "Group"
         ? 0
         : 1;
+    dispatch(setPanelsLoading(true));
     salesTwoDates(
       context.url,
       context.token,
@@ -109,28 +111,26 @@ const Sales = () => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setSalesPanels(j.items));
-          // make the call to weekly with the first returned item to get default behavior
-          getWeekly(context.url, context.token, search.lastStore, start, end)
-            .then((resp) => {
-              const j = resp.data;
-              if (j.error === 0) {
-                dispatch(setWeeklySales(j.sales));
-              }
-            })
-            .catch((err: JsonError) =>
-              toast.error("Error fetching weekly data: " + err.message)
-            );
         }
       })
       .catch((err: JsonError) => {
         toast.error("Error getting Sales Two Dates data: " + err.message);
-      });
+      })
+      .finally(() => dispatch(setPanelsLoading(false)));
+
+    getWeekly(context.url, context.token, search.lastStore, start, end)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(setWeeklySales(j.sales));
+        }
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error fetching weekly data: " + err.message)
+      );
   };
 
-  const isReady =
-    topTenItems.length > 0 &&
-    departmentSales.length > 0 &&
-    salesPanels.length > 0;
+  const isReady = topTenItems.length > 0 && departmentSales.length > 0;
 
   return (
     <div

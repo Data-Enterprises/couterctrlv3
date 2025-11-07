@@ -13,6 +13,7 @@ import SalesPanel from "./SalesPanel";
 import { getWeekly } from "../../../api/sales";
 import { formatGoliathDate } from "../../../utils";
 import { useToast } from "../../../components/toasts/hooks/useToast";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 
 const SalesPanels = () => {
   const toast = useToast();
@@ -75,7 +76,6 @@ const SalesPanels = () => {
     // Depending on the button type, different actions can be taken or just get rid of the buttons and call all three upon selection???
   };
 
-  // Get the chunks of 4 trends for the nested arrays
   const chunkTrends = (arr: SalesTwoDates[], chunkSize: number) => {
     const chunks: SalesTwoDates[][] = [];
     for (let i = 0; i < arr.length; i += chunkSize) {
@@ -84,26 +84,26 @@ const SalesPanels = () => {
     return chunks;
   };
 
-  // Create chunks of 4 trends each and iterate through those chunks to render rows
   const panelChunks = chunkTrends(sales.salesPanels, 10);
-
-  // When the sales panels are ready, onClick will call handlePanelClick() for that panel
+  const isReady = sales.salesPanels.length > 0 && !sales.panelsLoading;
   return (
-    <div className="min-h-[100%] max-h-[100%]">
-      <Carousel className="bg-transparent h-[100%]">
-        {panelChunks.map((chunk, chunkIdx) => (
-          <div key={chunkIdx} className="grid grid-cols-5 gap-2">
-            {chunk.map((panel, idx) => (
-              <SalesPanel
-                key={idx}
-                panel={panel}
-                handlePanelClick={handlePanelClick}
-                handleBtnClick={handleBtnClick}
-              />
-            ))}
-          </div>
-        ))}
+    <div className="min-h-[100%] max-h-[100%] relative">
+      <Carousel className="bg-transparent h-[100%] animate-windowIn">
+        {isReady &&
+          panelChunks.map((chunk, chunkIdx) => (
+            <div key={chunkIdx} className="grid grid-cols-5 gap-2">
+              {chunk.map((panel, idx) => (
+                <SalesPanel
+                  key={idx}
+                  panel={panel}
+                  handlePanelClick={handlePanelClick}
+                  handleBtnClick={handleBtnClick}
+                />
+              ))}
+            </div>
+          ))}
       </Carousel>
+      {!isReady && <LoadingIndicator message="Loading Sales Panels..." />}
     </div>
   );
 };
