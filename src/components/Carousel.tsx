@@ -1,0 +1,80 @@
+import React, { useEffect, useState } from "react";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+
+type CarouselProps<T> = {
+  children: React.ReactNode;
+  className?: string;
+  data?: T[];
+  dataKey?: keyof T;
+  payloadAction?: (payload: string) => void;
+  idxOffset?: number;
+};
+
+const Carousel = <T,>({
+  children,
+  className = "h-[440px]",
+  data,
+  dataKey,
+  payloadAction,
+  idxOffset = 0,
+}: CarouselProps<T>) => {
+  const [index, setIndex] = useState<number>(0);
+  const totalSlides = React.Children.count(children);
+  const goTo = (i: number) => setIndex((i + totalSlides) % totalSlides);
+  const next = () => goTo(index + 1);
+  const prev = () => goTo(index - 1);
+
+  useEffect(() => {
+    const currentChild = React.Children.toArray(children)[index];
+    if (React.isValidElement(currentChild)) {
+      if (data && dataKey && payloadAction)
+        payloadAction(data[index - idxOffset][dataKey] as string);
+    }
+  }, [index]);
+
+  return (
+    <div
+      className={`relative overflow-hidden bg-custom-white rounded-lg ${className}`}
+    >
+      <div
+        className="flex transition-transform duration-500"
+        style={{
+          transform: `translateX(-${index * 100}%)`,
+        }}
+      >
+        {React.Children.map(children, (child, i) => (
+          <div className="w-full flex-shrink-0" key={i}>
+            {child}
+          </div>
+        ))}
+      </div>
+
+      <div className="absolute bottom-0 left-1/2 z-50 -translate-x-1/2 mb-4 flex gap-2">
+        <button
+          onClick={prev}
+          className="absolute -left-9 top-1/2 -translate-y-1/2 z-10 bg-panel_active/70 hover:bg-panel_active transition-all duration-300 rounded-full p-1 shadow"
+        >
+          <ChevronLeftIcon className="w-5 h-5" />
+        </button>
+        <button
+          aria-label="Next"
+          onClick={next}
+          className="absolute -right-9 top-1/2 -translate-y-1/2 z-10 bg-panel_active/70 hover:bg-panel_active transition-all duration-300 rounded-full p-1 shadow"
+        >
+          <ChevronRightIcon className="w-5 h-5" />
+        </button>
+        {Array.from({ length: totalSlides }).map((_, i) => (
+          <button
+            key={i}
+            onClick={() => goTo(i)}
+            className={`w-2 h-2 rounded-full ${
+              i === index ? "bg-blue-500" : "bg-panel_active"
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default Carousel;

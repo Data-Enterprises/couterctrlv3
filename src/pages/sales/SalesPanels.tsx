@@ -17,7 +17,6 @@ const SalesPanels = () => {
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
   const { salesPanels } = useAppSelector((state) => state.sales);
-  const placeHolders = [1,2,3,4,5,6,7,8,9,10]
 
   useEffect(() => {
     if (context.token) {
@@ -60,7 +59,7 @@ const SalesPanels = () => {
 
   // When the sales panels are ready, onClick will call handlePanelClick() for that panel
   return (
-    <div className="flex flex-col gap-2 rounded-lg overflow-hidden min-h-[100%] max-h-[100%] overflow-y-scroll no-scrollbar">
+    <div className="grid grid-cols-4 gap-4 min-h-[100%] max-h-[100%]">
       {salesPanels.length
         ? salesPanels.map((panel, idx) => (
             <div
@@ -84,9 +83,7 @@ const SalesPanels = () => {
                 <div className="w-1/3">
                   {" "}
                   <div>Weight</div>
-                  <div className="font-medium">
-                    {panel.weight.toFixed(2)}
-                  </div>
+                  <div className="font-medium">{panel.weight.toFixed(2)}</div>
                 </div>
                 <div className="w-1/3">
                   <div>Quantity</div>
@@ -95,13 +92,7 @@ const SalesPanels = () => {
               </div>
             </div>
           ))
-        : (
-          <div>
-            {placeHolders.map((ph) => (
-              <div key={ph} className="bg-white py-20">{ph}</div>
-            ))}
-          </div>
-        )}
+        : null}
     </div>
   );
 };

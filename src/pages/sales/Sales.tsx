@@ -79,36 +79,38 @@ const Sales = () => {
       });
   };
 
-  const isReady =
-    topTenItems.length > 0 &&
-    departmentSales.length > 0 &&
-    salesPanels.length > 0;
+  const isReady = topTenItems.length > 0 && departmentSales.length > 0;
+  // salesPanels.length > 0;
 
   return (
     <div
       data-testid="sales-page"
-      className={`w-full h-[calc(100vh-3rem)] px-4 pt-3 ${
+      className={`w-full h-[calc(100vh-3rem)] p-4 ${
         isReady ? "animate-windowIn" : "hidden"
       }`}
     >
-      <div className="grid grid-cols-4 gap-4">
-        <div className="grid gap-4 overflow-scroll max-h-[calc(100vh-70px)] no-scrollbar">
+      <div className="grid grid-cols-4 gap-4 h-full">
+        <div className="grid gap-4 overflow-scroll max-h-[calc(100vh-7px)] grid-rows-[0.7fr_1fr_1fr] no-scrollbar">
           <div className="bg-custom-white rounded-lg p-2 shadow-lg">
             <StorePicker />
             <DatePickers handleQuery={getData} />
           </div>
-          <SalesPanels />
+          <DepartmentSales />
+          <TopTenItems />
         </div>
         <div className="grid grid-rows-2 col-span-3 gap-4">
-          <div className="grid grid-cols-3 gap-4">
-            <WeeklyNetSales />
-            <DepartmentSales />
-            <TopTenItems />
-          </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-custom-white rounded-lg p-4 shadow-lg">Subs</div>
-            <div className="bg-custom-white rounded-lg p-4 shadow-lg">Cats</div>
+            <WeeklyNetSales />
+            <div className="bg-custom-white rounded-lg p-2 shadow-lg flex flex-col justify-center items-center">
+              <div>Subs and Cats</div>
+              <div>Selecting a sales panel below will show this data</div>
+              <div>
+                By default, the first card if there was no last store or group
+                selected
+              </div>
+            </div>
           </div>
+          <SalesPanels />
         </div>
       </div>
     </div>

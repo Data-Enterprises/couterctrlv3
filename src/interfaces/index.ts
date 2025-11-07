@@ -37,3 +37,12 @@ export interface SalesTwoDates {
   total_sales: number;
   weight: number;
 }
+
+export type TopTenData = {
+  id: string;
+  label: string;
+  value: number;
+  fill: string;
+  color: string;
+  qty: number;
+};

@@ -7,10 +7,12 @@ import SignOutIcon from "../../svgs/SignOutIcon";
 import { Cog6ToothIcon } from "@heroicons/react/16/solid";
 import { handleSigningOut } from "../../features/appSlice";
 import { resetUserSlice } from "../../features/userSlice";
+import { useNavigate } from "react-router";
 
 const SideBar = () => {
-  const ref = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const ref = useRef<HTMLDivElement>(null);
   const context = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
   const nav = useAppSelector((state) => state.nav);
@@ -46,6 +48,7 @@ const SideBar = () => {
     dispatch(handleSigningOut());
     dispatch(resetUserSlice());
     dispatch(resetNav());
+    navigate("/");
   };
 
   const slidingStyle =
