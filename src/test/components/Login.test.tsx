@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, type Mocked } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
-import Login from "../pages/home/Login";
+import Login from "../../pages/home/Login";
 import userEvent from "@testing-library/user-event";
-import { renderWithProviders } from "./utils";
-import { mockStore as store } from "./mockStore";
+import { renderWithProviders } from "../utils";
+import { mockStore as store } from "../mockStore";
 import axios from "axios";
-import App from "../App";
+import App from "../../App";
 
 // Mock axios module and the userEvent setup
 vi.mock("axios");
