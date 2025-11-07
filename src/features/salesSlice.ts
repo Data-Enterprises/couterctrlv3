@@ -5,12 +5,14 @@ interface SalesState {
   topTenItems: TopTenItem[];
   departmentSales: DepartmentSale[];
   salesPanels: SalesTwoDates[];
+  refreshData: boolean;
 }
 
 const initialState: SalesState = {
   topTenItems: [],
   departmentSales: [],
   salesPanels: [],
+  refreshData: false,
 };
 
 export const salesSlice = createSlice({
@@ -26,9 +28,12 @@ export const salesSlice = createSlice({
     setSalesPanels: (state, action: PayloadAction<SalesTwoDates[]>) => {
       state.salesPanels = action.payload;
     },
+    setRefreshData: (state, action: PayloadAction<boolean>) => {
+      state.refreshData = action.payload;
+    },
   },
 });
 
-export const { setTopTenItems, setDepartmentSales, setSalesPanels } =
+export const { setTopTenItems, setDepartmentSales, setSalesPanels, setRefreshData } =
   salesSlice.actions;
 export default salesSlice.reducer;

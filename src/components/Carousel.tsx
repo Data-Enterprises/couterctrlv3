@@ -49,19 +49,19 @@ const Carousel = <T,>({
         ))}
       </div>
 
-      <div className="absolute bottom-0 left-1/2 z-50 -translate-x-1/2 mb-4 flex gap-2">
+      <div className="absolute bottom-0 left-1/2 z-50 -translate-x-1/2 mb-4 flex gap-1">
         <button
           onClick={prev}
-          className="absolute -left-7 top-1/2 -translate-y-1/2 z-10 bg-panel_active/70 hover:bg-panel_active transition-all duration-300 rounded-full p-1 shadow"
+          className="absolute flex -left-6 top-1/2 -translate-y-1/2 z-10 bg-blue-500/80 hover:bg-panel_active transition-all duration-300 rounded-full p-1 shadow"
         >
-          <ChevronLeftIcon className="w-4 h-4" />
+          <ChevronLeftIcon className="w-[13px] h-[13px] stroke-custom-white stroke-2 pr-[1px]" />
         </button>
         <button
           aria-label="Next"
           onClick={next}
-          className="absolute -right-7 top-1/2 -translate-y-1/2 z-10 bg-panel_active/70 hover:bg-panel_active transition-all duration-300 rounded-full p-1 shadow"
+          className="absolute flex -right-6 top-1/2 -translate-y-1/2 z-10 bg-blue-500/80 hover:bg-panel_active transition-all duration-300 rounded-full p-1 shadow"
         >
-          <ChevronRightIcon className="w-4 h-4" />
+          <ChevronRightIcon className="w-[13px] h-[13px] stroke-custom-white stroke-2 pl-[1px]" />
         </button>
         {Array.from({ length: totalSlides }).map((_, i) => (
           <button

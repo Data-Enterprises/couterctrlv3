@@ -3,15 +3,13 @@ import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { formatGoliathDate } from "../../utils";
 import { useToast } from "../../components/toasts/hooks/useToast";
-
-// TYPES
 import type { JsonError } from "../../interfaces";
-
-// API
-import { getTopTen, getHourlyStoreDepts } from "../../api/sales";
-
-// REDUX
-import { setTopTenItems, setDepartmentSales } from "../../features/salesSlice";
+import { getTopTen, getHourlyStoreDepts, salesTwoDates } from "../../api/sales";
+import {
+  setTopTenItems,
+  setDepartmentSales,
+  setSalesPanels,
+} from "../../features/salesSlice";
 
 // Components
 import DatePickers from "../../components/datePickers/DatePickers";
@@ -31,6 +29,7 @@ const Sales = () => {
   );
 
   useEffect(() => {
+    // On mount
     if (context.token) {
       getData();
     }
@@ -77,6 +76,34 @@ const Sales = () => {
       .catch((err: JsonError) => {
         toast.error("Error getting Hourly Store Depts data: " + err.message);
       });
+
+    const useGroups =
+      search.type.toString() == "2" || search.type.toString() == "Group"
+        ? 1
+        : 0;
+    const singleStore =
+      search.type.toString() == "2" || search.type.toString() == "Group"
+        ? 0
+        : 1;
+    salesTwoDates(
+      context.url,
+      context.token,
+      start,
+      end,
+      useGroups,
+      search.lastStore,
+      singleStore
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(setSalesPanels(j.items));
+          // make the call to weekly with the first returned item to get default behavior
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error("Error getting Sales Two Dates data: " + err.message);
+      });
   };
 
   const isReady =
@@ -87,12 +114,12 @@ const Sales = () => {
   return (
     <div
       data-testid="sales-page"
-      className={`w-full h-[calc(100vh-3rem)] p-4 ${
+      className={`w-full h-[calc(100vh-3rem)] px-4 pt-4 ${
         isReady ? "animate-windowIn" : "hidden"
       }`}
     >
       <div className="grid grid-cols-4 gap-4 h-full">
-        <div className="grid gap-2 overflow-scroll max-h-[calc(100vh-7px)] grid-rows-[0.7fr_1fr_1fr] no-scrollbar">
+        <div className="grid gap-2 overflow-scroll max-h-[calc(100vh-7px)] grid-rows-[0.7fr_1fr_1fr] no-scrollbar mb-4">
           <div className="bg-custom-white rounded-lg p-2 shadow-lg">
             <StorePicker />
             <DatePickers handleQuery={getData} btnPadding="py-1" />
@@ -100,8 +127,8 @@ const Sales = () => {
           <TopTenItems />
           <DepartmentSales />
         </div>
-        <div className="grid grid-rows-2 col-span-3 gap-4">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-rows-2 col-span-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <WeeklyNetSales />
             <div className="bg-custom-white rounded-lg p-2 shadow-lg flex flex-col justify-center items-center">
               <div>Subs and Cats</div>
