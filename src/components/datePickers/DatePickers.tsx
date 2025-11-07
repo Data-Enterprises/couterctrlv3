@@ -21,12 +21,13 @@ const DatePickers = ({ handleQuery, btnPadding = "" }: Props) => {
   const pickerStyle = "flex gap-2 mb-2";
 
   return (
-    <div className="w-full">
+    <div data-testid="date-pickers" className="w-full">
       <div className={pickerStyle}>
         <StartDatePicker />
         <EndDatePicker />
       </div>
       <div
+        data-testid="date-picker-search-btn"
         className={`btn-themeBlue w-full text-center col-span-2 ${btnPadding}`}
         onClick={handleClick}
       >

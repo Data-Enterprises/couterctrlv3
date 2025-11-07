@@ -20,7 +20,7 @@ const initialState: SalesState = {
   topTenItems: [],
   departmentSales: [],
   salesPanels: [],
-  selectedSalesPanel: { sale_date: "", terminal: "", storeid: 0 },
+  selectedSalesPanel: { sale_date: "", storeid: 0 },
   weeklySales: [],
   panelsLoading: false,
 };

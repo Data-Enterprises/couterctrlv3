@@ -1,13 +1,13 @@
-import type { SalesTwoDates, SelectedSalesPanel } from "../../../interfaces";
+import type { SelectedSalesPanel, SalesPanelInfo } from "../../../interfaces";
 import { formatCurrency2 } from "../../../utils";
 import { useStyling } from "../utils/hooks";
 import { useAppSelector } from "../../../hooks";
 import { getDateLayout } from "../utils";
 
 interface SalesPanelProps {
-  panel: SalesTwoDates;
-  handlePanelClick: (panel: SalesTwoDates) => void;
-  handleBtnClick: (panel: SalesTwoDates, type: string) => void;
+  panel: SalesPanelInfo;
+  handlePanelClick: (panel: SalesPanelInfo) => void;
+  handleBtnClick: (panel: SalesPanelInfo, type: string) => void;
 }
 
 const SalesPanel = ({
@@ -16,17 +16,11 @@ const SalesPanel = ({
   handleBtnClick,
 }: SalesPanelProps) => {
   const { style, text } = useStyling();
-  const selectedSalesPanel = useAppSelector(
-    (state) => state.sales.selectedSalesPanel
-  );
+  const { selectedSalesPanel } = useAppSelector((state) => state.sales);
 
-  const bg = (panel: SalesTwoDates, selected: SelectedSalesPanel) => {
+  const bg = (panel: SalesPanelInfo, selected: SelectedSalesPanel) => {
     const date = panel.sale_date.split("T")[0];
-    if (
-      date === selected.sale_date &&
-      panel.terminal === selected.terminal &&
-      panel.storeid === selected.storeid
-    ) {
+    if (date === selected.sale_date && panel.storeid === selected.storeid) {
       return "bg-blue-200/90";
     } else {
       return "bg-custom-white";
@@ -38,18 +32,18 @@ const SalesPanel = ({
       className={`${bg(
         panel,
         selectedSalesPanel
-      )} bg-custom-white rounded-lg px-2 py-1 shadow-lg cursor-pointer hover:shadow-inner transition-all duration-200`}
+      )} bg-custom-white rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-inner transition-all duration-200`}
       onClick={() => handlePanelClick(panel)}
     >
       <div
-        className={`font-medium border-b border-content/30 flex justify-between ${text} py-[1px]`}
+        className={`font-medium border-b border-content/30 flex justify-between ${text} pb-1`}
       >
         <div className="">{panel.store_name}</div>
         <div className=" text-center">
           {getDateLayout(panel.sale_date.split("T")[0])}
         </div>
       </div>
-      <div className={`flex justify-between px-2 mt-1 ${text}`}>
+      <div className={`flex justify-between px-2 pb-[1px] my-1.5 ${text}`}>
         <div>
           <div className={text}>
             <div>Sales</div>
@@ -68,9 +62,6 @@ const SalesPanel = ({
             <div className="font-medium">{panel.qty}</div>
           </div>
         </div>
-      </div>
-      <div className={`font-medium text-center ${text}`}>
-        Terminal: {panel.terminal}
       </div>
       <div className="flex justify-around">
         <button

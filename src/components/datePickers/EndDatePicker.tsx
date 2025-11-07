@@ -37,7 +37,7 @@ const EndDatePicker = () => {
   const calendarStyle = "md:w-[135%]";
 
   return (
-    <Menu as="div" className={styling}>
+    <Menu data-testid="end-date-picker" as="div" className={styling}>
       <div className={menuStyle}>
         <label className="md:block flex justify-start md:justify-center pl-1 md:pl-0 text-/6 font-medium ">
           End Date

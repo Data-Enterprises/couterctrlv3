@@ -33,7 +33,7 @@ export interface SalesTwoDates {
   store_name: string;
   store_number: string;
   storeid: number;
-  terminal: string;
+  terminal?: string;
   total_sales: number;
   weight: number;
 }
@@ -49,7 +49,6 @@ export type TopTenData = {
 
 export type SelectedSalesPanel = {
   sale_date: string;
-  terminal: string;
   storeid: number;
 };
 
@@ -62,5 +61,15 @@ export type WeeklySale = {
   store_name: string;
   store_number: string;
   storeid: number;
+  weight: number;
+};
+
+export type SalesPanelInfo = {
+  qty: number;
+  sale_date: string;
+  store_name: string;
+  store_number: string;
+  storeid: number;
+  total_sales: number;
   weight: number;
 };

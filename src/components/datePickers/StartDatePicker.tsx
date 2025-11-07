@@ -38,7 +38,7 @@ const StartDatePicker = () => {
   const calendarStyle ="md:w-[135%]";
 
   return (
-    <Menu as="div" className={styling}>
+    <Menu data-testid="start-date-picker" as="div" className={styling}>
       <div className={menuStyle}>
         <label className="md:block flex justify-start md:justify-center pl-1 md:pl-0 text-sm/6 font-medium ">
           Start Date
@@ -68,7 +68,7 @@ const StartDatePicker = () => {
         data-[enter]:ease-out 
         data-[leave]:ease-in`}
       >
-        <div className="py-1">
+        <div data-testid="calendar-container" className="py-1">
           <MenuItem>
             {({ close }) => (
               <Calendar

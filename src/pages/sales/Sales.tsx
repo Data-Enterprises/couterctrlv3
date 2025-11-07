@@ -32,9 +32,9 @@ const Sales = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const { topTenItems, departmentSales } = useAppSelector(
-    (state) => state.sales
-  );
+  // const { topTenItems, departmentSales } = useAppSelector(
+  //   (state) => state.sales
+  // );
 
   useEffect(() => {
     // On mount
@@ -130,7 +130,7 @@ const Sales = () => {
       );
   };
 
-  const isReady = topTenItems.length > 0 && departmentSales.length > 0;
+  const isReady = true;
 
   return (
     <div
