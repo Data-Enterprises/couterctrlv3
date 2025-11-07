@@ -4,12 +4,18 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import { formatGoliathDate } from "../../utils";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type { JsonError } from "../../interfaces";
-import { getTopTen, getHourlyStoreDepts, salesTwoDates } from "../../api/sales";
+import {
+  getTopTen,
+  getHourlyStoreDepts,
+  salesTwoDates,
+  getWeekly,
+} from "../../api/sales";
 import {
   setTopTenItems,
   setDepartmentSales,
   setSalesPanels,
   resetSalesSlice,
+  setWeeklySales,
 } from "../../features/salesSlice";
 
 // Components
@@ -104,6 +110,16 @@ const Sales = () => {
         if (j.error === 0) {
           dispatch(setSalesPanels(j.items));
           // make the call to weekly with the first returned item to get default behavior
+          getWeekly(context.url, context.token, search.lastStore, start, end)
+            .then((resp) => {
+              const j = resp.data;
+              if (j.error === 0) {
+                dispatch(setWeeklySales(j.sales));
+              }
+            })
+            .catch((err: JsonError) =>
+              toast.error("Error fetching weekly data: " + err.message)
+            );
         }
       })
       .catch((err: JsonError) => {

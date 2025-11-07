@@ -4,7 +4,10 @@ import type {
   SalesTwoDates,
   SelectedSalesPanel,
 } from "../../interfaces";
-import { setSelectedSalesPanel } from "../../features/salesSlice";
+import {
+  setSelectedSalesPanel,
+  setWeeklySales,
+} from "../../features/salesSlice";
 import Carousel from "../../components/Carousel";
 import SalesPanel from "./SalesPanel";
 import { getWeekly } from "../../api/sales";
@@ -47,21 +50,29 @@ const SalesPanels = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          console.log("getWeekly response", j);
+          dispatch(setWeeklySales(j.sales));
         }
       })
       .catch((err: JsonError) =>
         toast.error("Error fetching weekly data: " + err.message)
       );
-    // We could set the selected panel here as well but redux needs (storename, sale_date, terminal) for it to be unique
-    // Selected panel could have a bg-blue-200/20 or something
-    // then we call the weekly endpoint and get the new data for Weekly Net Sales
   };
 
   const handleBtnClick = (panel: SalesTwoDates, type: string) => {
-    console.log(`Clicked ${type} button for panel: `, panel);
-    // Similar to handlePanelClick but we know which button was clicked
-    // We can set some state in redux to indicate which view to show in Weekly Net Sales
+    // This date is being used to compare with the selected panel in redux
+    const date = panel.sale_date.split("T")[0];
+    if (!comparePanels(panel, sales.selectedSalesPanel)) {
+      dispatch(
+        setSelectedSalesPanel({
+          sale_date: date,
+          terminal: panel.terminal,
+          storeid: panel.storeid,
+        })
+      );
+    }
+    console.log(type);
+
+    // Depending on the button type, different actions can be taken or just get rid of the buttons and call all three upon selection???
   };
 
   // Get the chunks of 4 trends for the nested arrays
