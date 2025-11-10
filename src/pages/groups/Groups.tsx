@@ -10,9 +10,9 @@ const Groups = () => {
     >
       <div>
         <CreateGroup />
-        <GroupList />
+        <SelectGroup />
       </div>
-      <SelectGroup />
+      <GroupList />
     </div>
   );
 };
