@@ -15,7 +15,11 @@ const SelectStore = ({ onOutsideClick }: Props) => {
   const [display, setDisplay] = useState("flex");
 
   useEffect(() => {
-    setDisplay(search.type === "Store" ? "flex flex-col" : "hidden");
+    setDisplay(
+      search.type === "Store"
+        ? "flex flex-col"
+        : "flex flex-col opacity-50 pointer-events-none"
+    );
   }, [search.type]);
 
   const handleClickOutside = (e: MouseEvent) => {
@@ -53,7 +57,7 @@ const SelectStore = ({ onOutsideClick }: Props) => {
   };
 
   const styling = "w-full px-4 md:px-0";
-  const inputStyle = "basic-input focus:border bg-custom-white w-full";
+  const inputStyle = "basic-input focus:border bg-custom-white hover:bg-blue-200 transition-colors duration-200 cursor-pointer w-full";
 
   return (
     <div data-testid="search-store" ref={componentRef} className={styling}>
@@ -90,7 +94,7 @@ const SelectStore = ({ onOutsideClick }: Props) => {
             data-testid="list-ref"
             ref={listRef}
             data-display="closed"
-            className="absolute w-full p-2 py-2 bg-custom-white text-content
+            className="absolute w-full bg-custom-white text-content
             max-h-[350px] overflow-y-scroll z-20 rounded-b-xl shadow-lg no-scrollbar
             data-[display=open]:animate-appear
             data-[display=closed]:animate-dissapear
@@ -98,11 +102,11 @@ const SelectStore = ({ onOutsideClick }: Props) => {
             data-[display=open]:pointer-events-auto
             data-[display=closed]:pointer-events-none"
           >
-            <div>Houchens</div>
-            <div>IGA</div>
+            <div className="px-2 py-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer">Houchens</div>
+            <div className="px-2 py-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer">IGA</div>
             {/* {filteredData.map((store, idx) => (
               <div key={`store-${idx}`} onClick={() => handleSelect(store)}>
-                <div className="px-2 hover:bg-scroll_hover transition-all duration-500 cursor-pointer">
+                <div className="px-2 hover:bg-scroll_hover transition-all duration-200 cursor-pointer">
                   {store.store_Name}
                 </div>
               </div>
