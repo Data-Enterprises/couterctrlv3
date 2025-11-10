@@ -2,21 +2,17 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 // import { AssignedStore, Group } from "../interfaces";
 import { formatDate, addDays } from "../utils";
 
-export type SEARCH_TYPE =
-  | "Stores"
-  | "Group"
-  | "Single Store"
-  | "1"
-  | "2"
-  | "3"
-  | "Store"
-  | 1
-  | 2
-  | 3;
+export type SEARCH_TYPE = "Stores" | "Group" | "Store";
+// | "1"
+// | "2"
+// | "3"
+// | "Store"
+// | 1
+// | 2
+// | 3;
 
 export interface SearchState {
   type: SEARCH_TYPE;
-  subCompSearchType: SEARCH_TYPE;
   // groups: Group[];
   // selectedGroup?: Group;
   startDate: string;
@@ -32,7 +28,6 @@ export interface SearchState {
 
 export const initialState: SearchState = {
   type: "Stores",
-  subCompSearchType: "2",
   // groups: [],
   // selectedGroup: undefined,
   startDate: formatDate(addDays(new Date(), -6).toString()),
@@ -54,10 +49,6 @@ const searchSlice = createSlice({
   reducers: {
     setType: (state, action: PayloadAction<SEARCH_TYPE>) => {
       state.type = action.payload;
-      state.sendPrefs = true;
-    },
-    setSubCompSearchType: (state, action: PayloadAction<SEARCH_TYPE>) => {
-      state.subCompSearchType = action.payload;
       state.sendPrefs = true;
     },
     // setGroups: (state, action: PayloadAction<Group[]>) => {
@@ -113,7 +104,6 @@ export const {
   setLastStore,
   // setAssignedStores,
   setLedgerDate,
-  setSubCompSearchType,
   setLastStoreName,
   setDefaultSalesStore,
 } = searchSlice.actions;

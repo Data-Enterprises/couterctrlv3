@@ -1,10 +1,6 @@
 import { ChevronUpDownIcon } from "@heroicons/react/16/solid";
 import { useAppSelector } from "../../hooks";
-import {
-  type SEARCH_TYPE,
-  setSubCompSearchType,
-  setType,
-} from "../../features/searchSlice";
+import { type SEARCH_TYPE, setType } from "../../features/searchSlice";
 import { useDispatch } from "react-redux";
 import { useEffect, useState, useRef } from "react";
 
@@ -16,23 +12,22 @@ interface Props {
 }
 
 interface iOption {
-  id: number | SEARCH_TYPE;
+  id: number;
   name: string;
+  type: SEARCH_TYPE;
 }
 
 const options: iOption[] = [
-  { id: 1, name: "Stores" },
-  { id: 2, name: "Group" },
-  { id: 3, name: "Single Store" },
+  { id: 1, name: "Stores", type: "Stores" },
+  { id: 2, name: "Group", type: "Group" },
+  { id: 3, name: "Single Store", type: "Store" },
 ];
 
 const SearchType = ({
   singleStoreOnly = false,
   onOutsideClick,
-  useSubComp = false,
   inMarketing = false,
 }: Props) => {
-  const searchState = useAppSelector((state) => state.search);
   const context = useAppSelector((state) => state.app);
   const type = useAppSelector((state) => state.search.type);
   const [query, setQuery] = useState("");
@@ -61,7 +56,7 @@ const SearchType = ({
       document.addEventListener("mousedown", handleClickOutside);
     }
     if (singleStoreOnly) {
-      dispatch(setType("Single Store"));
+      dispatch(setType("Store"));
       setQuery("Single Store");
     }
 
@@ -75,52 +70,24 @@ const SearchType = ({
       return "Single Store";
     }
 
-    if (inMarketing) {
-      switch (searchState.type) {
-        case "Group":
-        case "2":
-        case 2:
-          setQuery("Group");
-          break;
-        case "3":
-        case 3:
-          setQuery("Single Store");
-          break;
-        default:
-          dispatch(setType(2));
-          setQuery("Group");
-          break;
-      }
-    } else {
-      switch (type) {
-        case "Stores":
-        case "1":
-        case 1:
-          setQuery("Stores");
-          break;
-        case "Group":
-        case "2":
-        case 2:
-          setQuery("Group");
-          break;
-        case "3":
-        case 3:
-          setQuery("Single Store");
-          break;
-        default:
-          setQuery("Single Store");
-          break;
-      }
+    switch (type) {
+      case "Stores":
+        setQuery("Stores");
+        break;
+      case "Group":
+        setQuery("Group");
+        break;
+      case "Store":
+        setQuery("Single Store");
+        break;
+      default:
+        setQuery("Single Store");
+        break;
     }
   };
 
   const handleSelect = (selection: iOption) => {
-    if (useSubComp) {
-      console.log(selection, "useComp is true");
-      dispatch(setSubCompSearchType(selection.id as SEARCH_TYPE));
-    } else {
-      dispatch(setType(selection.id as SEARCH_TYPE));
-    }
+    dispatch(setType(selection.type as SEARCH_TYPE));
     setQuery(selection.name);
 
     if (listRef.current) {
@@ -175,15 +142,17 @@ const SearchType = ({
             data-testid="type-list-ref"
             ref={listRef}
             data-display="closed"
-            className="absolute w-full p-2 py-2 bg-custom-white text-content
-            max-h-[350px] overflow-y-scroll z-20 rounded-b-xl shadow-lg no-scrollbar
+            className="absolute w-full bg-custom-white text-content
+            max-h-[350px] overflow-y-scroll z-20 rounded-lg shadow-lg no-scrollbar
             data-[display=open]:animate-appear
             data-[display=closed]:animate-dissapear
             data-[display=closed]:hidden"
           >
             {singleStoreOnly ? (
               <div
-                onClick={() => handleSelect({ id: 3, name: "Single Store" })}
+                onClick={() =>
+                  handleSelect({ id: 3, name: "Single Store", type: "Store" })
+                }
                 className="px-2 hover:bg-scroll_hover transition-all duration-500 cursor-pointer"
               >
                 <span
@@ -204,7 +173,7 @@ const SearchType = ({
                     <div
                       onClick={() => handleSelect(option)}
                       key={`st-option-${option.id}`}
-                      className="px-2 py-2 hover:bg-scroll_hover transition-all duration-500 cursor-pointer"
+                      className="px-2 py-2 hover:bg-blue-200 transition-all duration-500 cursor-pointer"
                     >
                       <span className="block truncate font-normal group-data-[selected]:font-semibold">
                         {option.name}

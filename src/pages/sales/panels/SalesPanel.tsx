@@ -1,5 +1,5 @@
 import type { SelectedSalesPanel, SalesPanelInfo } from "../../../interfaces";
-import { formatCurrency2 } from "../../../utils";
+import { formatCurrency2, formatBigNumber } from "../../../utils";
 import { useStyling } from "../utils/hooks";
 import { useAppSelector } from "../../../hooks";
 import { getDateLayout } from "../utils";
@@ -25,6 +25,15 @@ const SalesPanel = ({
     } else {
       return "bg-custom-white";
     }
+  };
+
+  const formatWeight = (weight: number) => {
+    const formatted = new Intl.NumberFormat("en-us", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(weight);
+    
+    return formatted;
   };
 
   return (
@@ -53,13 +62,13 @@ const SalesPanel = ({
           </div>
           <div className={text}>
             <div>Weight</div>
-            <div className="font-medium">{panel.weight.toFixed(2)}</div>
+            <div className="font-medium">{formatWeight(panel.weight)}</div>
           </div>
         </div>
         <div>
           <div className={text}>
             <div>Quantity</div>
-            <div className="font-medium">{panel.qty}</div>
+            <div className="font-medium">{formatBigNumber(panel.qty, 0)}</div>
           </div>
         </div>
       </div>
