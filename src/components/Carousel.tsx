@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 type CarouselProps<T> = {
+  id?: number;
   children: React.ReactNode;
   className?: string;
   data?: T[];
@@ -11,6 +12,7 @@ type CarouselProps<T> = {
 };
 
 const Carousel = <T,>({
+  id = 0,
   children,
   className = "min-h-[300px]",
   data,
@@ -34,6 +36,7 @@ const Carousel = <T,>({
 
   return (
     <div
+      data-testid={`carousel-${id}`}
       className={`relative overflow-hidden bg-custom-white rounded-lg ${className}`}
     >
       <div
@@ -65,6 +68,7 @@ const Carousel = <T,>({
         </button>
         {Array.from({ length: totalSlides }).map((_, i) => (
           <button
+            data-testid={`carousel-btn-${i}`}
             key={i}
             onClick={() => goTo(i)}
             className={`w-2 h-2 rounded-full ${
