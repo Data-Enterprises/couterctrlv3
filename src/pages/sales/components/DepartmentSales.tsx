@@ -26,6 +26,15 @@ const DepartmentSales = () => {
       cellClass: "no-outline-on-focus",
     },
     {
+      headerName: "Dept Id",
+      field: "sub_department",
+      flex: 0.5,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus text-right",
+      valueFormatter: (params) => formatBigNumber(params.value as number, 0),
+    },
+    {
       headerName: "Sales",
       field: "sales",
       flex: 0.8,
@@ -58,7 +67,10 @@ const DepartmentSales = () => {
   });
 
   return (
-    <div data-testid="dept-sales" className="bg-custom-white rounded-lg shadow-lg no-scrollbar">
+    <div
+      data-testid="dept-sales"
+      className="bg-custom-white rounded-lg shadow-lg no-scrollbar"
+    >
       <div className="h-[100%] relative no-scrollbar">
         <AgGridReact
           rowData={sales.departmentSales}

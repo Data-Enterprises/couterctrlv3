@@ -74,6 +74,9 @@ const SalesPanels = () => {
           storeid: panel.storeid,
         })
       );
+    } else {
+      dispatch(setSelectedSalesPanel({ sale_date: "", storeid: 0 }));
+      return;
     }
     getWeekly(context.url, context.token, panel.storeid, start, end)
       .then((resp) => {

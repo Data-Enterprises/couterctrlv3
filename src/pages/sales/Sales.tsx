@@ -160,7 +160,6 @@ const Sales = () => {
             <WeeklyNetSales />
             <TopTenItems />
           </div>
-          {/* <SalesPanels /> */}
           <div className="grid grid-cols-2 gap-3">
             <DepartmentSales />
             <div className="bg-custom-white rounded-lg shadow-lg">Card</div>

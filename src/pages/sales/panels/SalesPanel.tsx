@@ -1,6 +1,5 @@
 import type { SelectedSalesPanel, SalesPanelInfo } from "../../../interfaces";
 import { formatCurrency2, formatBigNumber } from "../../../utils";
-import { useStyling } from "../utils/hooks";
 import { useAppSelector } from "../../../hooks";
 import { getDateLayout } from "../utils";
 
@@ -15,7 +14,6 @@ const SalesPanel = ({
   handlePanelClick,
   handleBtnClick,
 }: SalesPanelProps) => {
-  const { text } = useStyling();
   const { selectedSalesPanel } = useAppSelector((state) => state.sales);
 
   const bg = (panel: SalesPanelInfo, selected: SelectedSalesPanel) => {
@@ -41,38 +39,34 @@ const SalesPanel = ({
       className={`${bg(
         panel,
         selectedSalesPanel
-      )} bg-custom-white rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-inner transition-all duration-200`}
+      )} bg-custom-white rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-inner transition-all duration-200 select-none`}
       onClick={() => handlePanelClick(panel)}
     >
-      <div
-        className={`font-medium border-b border-content/30 flex justify-between ${text} pb-1`}
-      >
+      <div className={`font-bold text-center`}>
         <div className="">{panel.store_name}</div>
-        <div className=" text-center">
+      </div>
+      <div className={`flex justify-between items-center px-2`}>
+        <div className="">
+          <div className="text-left">Sales</div>
+          <div className="font-medium">
+            {formatCurrency2(panel.total_sales)}
+          </div>
+        </div>
+        <div className="font-medium">
           {getDateLayout(panel.sale_date.split("T")[0])}
         </div>
-      </div>
-      <div className={`flex justify-between px-2 pb-[1px] my-1.5 ${text}`}>
-        <div>
-          <div className={text}>
-            <div>Sales</div>
-            <div className="font-medium">
-              {formatCurrency2(panel.total_sales)}
-            </div>
-          </div>
-          <div className={text}>
-            <div>Weight</div>
-            <div className="font-medium">{formatWeight(panel.weight)}</div>
-          </div>
-        </div>
-        <div>
-          <div className={text}>
-            <div>Quantity</div>
-            <div className="font-medium">{formatBigNumber(panel.qty, 0)}</div>
-          </div>
+        <div className=" pl-4">
+          <div>Quantity</div>
+          <div className="font-medium">{formatBigNumber(panel.qty, 0)}</div>
         </div>
       </div>
-      <div className="flex justify-around">
+      <div className="w-full flex flex-col items-center">
+        <div>
+          <div>Weight</div>
+          <div className="font-medium">{formatWeight(panel.weight)}</div>
+        </div>
+      </div>
+      <div className="flex justify-around mt-2">
         <button
           className={`btn-themeBlue py-1.5`}
           onClick={() => handleBtnClick(panel, "Subs")}
