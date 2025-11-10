@@ -13,15 +13,10 @@ describe("StorePicker Component", () => {
     expect(storePicker).toBeInTheDocument();
 
     const state = store.getState().search.type;
-    if (
-      state === "1" ||
-      state === "Stores" ||
-      state === "Single Store" ||
-      state === "3"
-    ) {
+    if (state === "Stores" || state === "Store") {
       const searchStore = screen.getByTestId("search-store");
       expect(searchStore).toBeInTheDocument();
-    } else if (state === "Group" || state === "2") {
+    } else if (state === "Group") {
       const selectGroup = screen.getByTestId("select-group");
       expect(selectGroup).toBeInTheDocument();
     }
