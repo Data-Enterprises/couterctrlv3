@@ -7,6 +7,7 @@ import { UsersIcon } from "@heroicons/react/24/outline";
 import { HomeIcon } from "@heroicons/react/16/solid";
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
+import GroupsIcon from "../../svgs/GroupsIcon";
 
 export type Navigation = {
   name: string;
@@ -42,6 +43,15 @@ export const navigation: Navigation[] = [
     name: "Cashiers",
     href: "cashiers",
     icon: CashierIcon,
+    mobile: true,
+    children: [],
+    childOpen: false,
+    userTypes: ["*"],
+  },
+  {
+    name: "Groups",
+    href: "groups",
+    icon: GroupsIcon,
     mobile: true,
     children: [],
     childOpen: false,

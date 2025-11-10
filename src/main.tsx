@@ -12,6 +12,7 @@ import ErrorBoundary from "./components/ErrorBoundary.tsx";
 import Home from "./pages/home/Home.tsx";
 import Sales from "./pages/sales/Sales.tsx";
 import Cashiers from "./pages/cashiers/Cashiers.tsx";
+import Groups from "./pages/groups/Groups.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -24,6 +25,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route index element={<Home />} />
                 <Route path="sales" element={<Sales />} />
                 <Route path="cashiers" element={<Cashiers />} />
+                <Route path="groups" element={<Groups />} />
               </Route>
             </Routes>
           </ToastProvider>

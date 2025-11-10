@@ -37,12 +37,11 @@ const StorePicker = ({
         useSubComp={useSubComp}
         inMarketing={inMarketing}
       />
-      {/* {state == "1" ? <SearchStore /> : null} */}
-      {state === "Stores" ? <SearchStore /> : null}
-      {state === "Store" ? <SearchStore /> : null}
-      {/* {state == "3" ? <SearchStore /> : null} */}
-      {state === "Group" ? <SelectGroup /> : null}
-      {/* {state == "2" ? <SelectGroup /> : null} */}
+      {state === "Stores" || state === "Store" ? (
+        <SearchStore />
+      ) : (
+        <SelectGroup />
+      )}
     </div>
   );
 };

@@ -21,7 +21,7 @@ interface AppState {
 }
 
 export const initialState: AppState = {
-  url: "https://go1cunexxh.execute-api.us-east-1.amazonaws.com/Prod/",
+  url: "https://y9v6viv36h.execute-api.us-east-1.amazonaws.com/Prod/",
   key: "7801882436271592", // for the url api if needed (above)
   stats: "https://v5o2brn6il.execute-api.us-east-2.amazonaws.com/Prod/api/",
   statsKey: "7801882436271592",

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppSelector } from "../../hooks";
 import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
 
@@ -8,9 +8,15 @@ interface Props {
 
 const SelectStore = ({ onOutsideClick }: Props) => {
   const context = useAppSelector((state) => state.app);
+  const search = useAppSelector((state) => state.search);
   const componentRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
+  const [display, setDisplay] = useState("flex");
+
+  useEffect(() => {
+    setDisplay(search.type === "Store" ? "flex flex-col" : "hidden");
+  }, [search.type]);
 
   const handleClickOutside = (e: MouseEvent) => {
     if (
@@ -51,7 +57,7 @@ const SelectStore = ({ onOutsideClick }: Props) => {
 
   return (
     <div data-testid="search-store" ref={componentRef} className={styling}>
-      <div className="flex flex-col">
+      <div className={display}>
         <label
           htmlFor="search"
           data-testid="store-label"
@@ -88,6 +94,7 @@ const SelectStore = ({ onOutsideClick }: Props) => {
             max-h-[350px] overflow-y-scroll z-20 rounded-b-xl shadow-lg no-scrollbar
             data-[display=open]:animate-appear
             data-[display=closed]:animate-dissapear
+            data-[display=closed]:hidden
             data-[display=open]:pointer-events-auto
             data-[display=closed]:pointer-events-none"
           >
