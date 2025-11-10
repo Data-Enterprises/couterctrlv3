@@ -1,17 +1,23 @@
+import { useAppSelector } from "../../hooks";
 import SingleSelect from "../../components/SingleSelect";
 
 const SelectGroup = () => {
+  const group = useAppSelector((state) => state.group);
+
+  const handleGroupSelect = (group: number) => {
+    console.log("Selected group:", group);
+    // Grabbing the group's id, make the api call to get the stores in that group
+  };
+
   return (
     <div data-testid="select-group">
       <div className="grid grid-cols-2 gap-4">
         <SingleSelect
           label="Select Group"
-          onSelect={(selection) => {
-            console.log("Selected group:", selection);
-          }}
-          data={[]}
-          valueKey={""}
-          displayKey={""}
+          onSelect={(selection) => handleGroupSelect(selection as number)}
+          data={group.groups}
+          valueKey={"id"}
+          displayKey={"group_name"}
         />
         <SingleSelect
           label="Filter Options"

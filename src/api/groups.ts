@@ -13,7 +13,26 @@ export const getGroups = async (url: string, token: string) => {
   return json;
 };
 
-// export const createGroup = (groupName: string, storeIds: number[]) => {};
+export const createGroup = async (
+  url: string,
+  token: string,
+  userid: number,
+  group_name: string
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "groups/create",
+    data: {
+      userid,
+      group_name,
+    },
+  });
+
+  return json;
+};
 
 // export const deleteGroup = (groupId: number) => {};
 

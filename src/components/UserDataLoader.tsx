@@ -1,6 +1,10 @@
 import { useEffect } from "react";
-import { useAppDispatch } from "../hooks";
-// import { useToast } from "./toasts/hooks/useToast";
+import { useAppDispatch, useAppSelector } from "../hooks";
+import { useToast } from "./toasts/hooks/useToast";
+
+//Groups
+import { getGroups } from "../api/groups";
+import { setGroups, type Group } from "../features/groupSlice";
 
 interface UserDataLoaderProps {
   token: string;
@@ -8,19 +12,30 @@ interface UserDataLoaderProps {
 
 // This component is hidden and is strictly used for fetching user data on user login
 const UserDataLoader = ({ token }: UserDataLoaderProps) => {
-  // const toast = useToast();
+  const toast = useToast();
   const dispatch = useAppDispatch();
-  // const user = useAppSelector((state) => state.user);
 
-  // console.log("Hidden UserDataLoader rendered with token:", token, user);
+  // Grabbing what I need to make the api calls
+  const context = useAppSelector((state) => state.app);
+  const user = useAppSelector((state) => state.user);
 
   useEffect(() => {
     if (!token) return;
 
-    // Use the token here to fetch all prefs and user data
-    // upon receiving the token from the login/auth endpoint
-    // then dispatch the values from the response objects to the related slices in the store
-    // still waiting on these endpoints to be built out
+    // Getting the user groups
+    getGroups(context.url, token)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error == "0") {
+          const groups = j.groups.filter(
+            (g: Group) => g.userid === user.userid
+          );
+          dispatch(setGroups(groups));
+        }
+      })
+      .catch((err) => {
+        toast.error(err.message);
+      });
   }, [token, dispatch]);
 
   return null;

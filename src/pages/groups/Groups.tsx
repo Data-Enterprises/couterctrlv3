@@ -1,8 +1,13 @@
 import { useEffect } from "react";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { getGroups } from "../../api/groups";
-import { useAppSelector } from "../../hooks";
-import type { Group, JsonError } from "../../interfaces";
+import { useAppSelector, useAppDispatch } from "../../hooks";
+import type { JsonError } from "../../interfaces";
+import {
+  setGroups,
+  setRefreshGroups,
+  type Group,
+} from "../../features/groupSlice";
 
 // Components
 import CreateGroup from "./CreateGroup";
@@ -11,13 +16,15 @@ import GroupList from "./GroupList";
 
 const Groups = () => {
   const toast = useToast();
+  const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
+  const group = useAppSelector((state) => state.group);
 
   useEffect(() => {
     if (!context.token) return;
-    getData();
-  }, []);
+    if (group.refreshGroups) getData();
+  }, [context.token, group.refreshGroups]);
 
   const getData = () => {
     getGroups(context.url, context.token)
@@ -27,7 +34,8 @@ const Groups = () => {
           const groups = j.groups.filter(
             (g: Group) => g.userid === user.userid
           );
-          console.log(groups);
+          dispatch(setGroups(groups));
+          dispatch(setRefreshGroups(false));
         } else {
           toast.warn(j.msg);
         }

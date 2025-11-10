@@ -160,7 +160,7 @@ const SingleSelect = <T,>({
               name="search"
               type="text"
               autoComplete="off"
-              className={`basic-input bg-custom-white ${innerClass}`}
+              className={`basic-input bg-custom-white focus:border ${innerClass}`}
             />
             <div
               onClick={handleTriggerClick}

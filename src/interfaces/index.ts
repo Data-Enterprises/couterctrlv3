@@ -73,11 +73,3 @@ export type SalesPanelInfo = {
   total_sales: number;
   weight: number;
 };
-
-////////////////////// For the Groups slice //////////////////////
-// GroupsInterfaces
-export type Group = {
-  id: number;
-  userid: number;
-  group_name: string;
-};
