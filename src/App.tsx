@@ -23,7 +23,7 @@ const App = () => {
 
   return (
     <div className="main-app h-dvh w-dvw bg-bkg text-content no-scrollbar">
-      <UserDataLoader token={context.token} />
+      <UserDataLoader />
       {context.loggedIn ? (
         <div className="h-screen w-screen">
           <TitleBar />

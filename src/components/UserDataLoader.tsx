@@ -6,12 +6,8 @@ import { useToast } from "./toasts/hooks/useToast";
 import { getGroups } from "../api/groups";
 import { setGroups, type Group } from "../features/groupSlice";
 
-interface UserDataLoaderProps {
-  token: string;
-}
-
 // This component is hidden and is strictly used for fetching user data on user login
-const UserDataLoader = ({ token }: UserDataLoaderProps) => {
+const UserDataLoader = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
 
@@ -20,10 +16,10 @@ const UserDataLoader = ({ token }: UserDataLoaderProps) => {
   const user = useAppSelector((state) => state.user);
 
   useEffect(() => {
-    if (!token) return;
+    if (!context.token) return;
 
     // Getting the user groups
-    getGroups(context.url, token)
+    getGroups(context.url, context.token)
       .then((resp) => {
         const j = resp.data;
         if (j.error == "0") {
@@ -36,7 +32,7 @@ const UserDataLoader = ({ token }: UserDataLoaderProps) => {
       .catch((err) => {
         toast.error(err.message);
       });
-  }, [token, dispatch]);
+  }, [context.token]); // having dispatch in the dependency array breaks the sign out test for Login.test.tsx
 
   return null;
 };

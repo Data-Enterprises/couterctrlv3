@@ -19,9 +19,7 @@ const SelectGroup = () => {
   const dispatch = useAppDispatch();
   const group = useAppSelector((state) => state.group);
 
-  // useEffect for when the filter option changes
   useEffect(() => {
-    // handle that option here
     // Show all, active, or inactive stores based on filterOption and selectedGroup
   }, [group.filterOption, group.selectedGroup]);
 
