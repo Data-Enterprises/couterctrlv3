@@ -35,7 +35,7 @@ const Modal = ({ isOpen, onClose, className = "", children }: ModalProps) => {
 
   return (
     <div
-    data-testid="modal" 
+      data-testid="modal"
       className={`fixed ${className} inset-0 bg-black bg-opacity-50 flex items-center justify-center `}
       style={{ zIndex: 1000 }}
     >

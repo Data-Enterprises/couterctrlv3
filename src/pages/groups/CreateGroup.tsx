@@ -91,7 +91,7 @@ const CreateGroup = () => {
           >
             Cancel
           </button>
-          <button className="btn-themeGreen w-full" onClick={handleDelete}>
+          <button data-testid="modal-confirm-btn" className="btn-themeGreen w-full" onClick={handleDelete}>
             Confirm
           </button>
         </div>
@@ -110,7 +110,7 @@ const CreateGroup = () => {
         />
       </div>
       <div className="flex justify-end gap-4 w-1/2">
-        <button className="btn-themeOrange w-1/2" onClick={openModal}>
+        <button data-testid="group-delete-btn" className="btn-themeOrange w-1/2" onClick={openModal}>
           Delete
         </button>
         <button className="btn-themeBlue w-1/2" onClick={handleCreate}>

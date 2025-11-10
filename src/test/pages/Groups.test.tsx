@@ -104,4 +104,74 @@ describe("Groups Page", () => {
       expect(state.group.filterOption).toEqual("active");
     });
   });
+
+  it("should render modal if deleting an existing group", async () => {
+    store.dispatch({
+      type: "group/setGroups",
+      payload: [
+        { id: 1, group_name: "Group A", userid: 517 },
+        { id: 2, group_name: "Group B", userid: 517 },
+      ],
+    });
+
+    // just checking if the Groups page renders correctly
+    renderWithProviders(<Groups />);
+    const createGroup = screen.getByTestId("create-group");
+    const groupSelect = screen.getByTestId("single-select-1");
+    const trigger = screen.getByTestId("single-select-trigger-icon-1");
+    expect(createGroup).toBeInTheDocument();
+    expect(groupSelect).toBeInTheDocument();
+    expect(trigger).toBeInTheDocument();
+
+    await user.click(trigger);
+
+    const secondGroup = screen.getByTestId("single-select-option-1-1");
+    expect(secondGroup).toBeInTheDocument();
+    expect(secondGroup).toHaveTextContent("Group B");
+
+    await user.click(secondGroup);
+
+    await waitFor(() => {
+      const state = store.getState();
+      expect(state.group.createInput).toEqual("Group B");
+      expect(state.group.selectedGroup).toEqual({
+        id: 2,
+        group_name: "Group B",
+        userid: 517,
+      });
+    });
+
+    const deleteBtn = screen.getByTestId("group-delete-btn");
+    expect(deleteBtn).toBeInTheDocument();
+    await user.click(deleteBtn);
+
+    const modal = await screen.findByTestId("modal");
+    expect(modal).toBeInTheDocument();
+  });
+
+  it("should not open modal if deleting a non-existing group", async () => {
+    store.dispatch({
+      type: "group/setGroups",
+      payload: [
+        { id: 1, group_name: "Group A", userid: 517 },
+        { id: 2, group_name: "Group B", userid: 517 },
+      ],
+    });
+    renderWithProviders(<Groups />);
+
+    const createGroup = screen.getByTestId("create-group");
+    expect(createGroup).toBeInTheDocument();
+
+    const input = screen.getByTestId("create-group-input");
+    await user.type(input, "NonExistingGroup");
+    
+    const deleteBtn = screen.getByTestId("group-delete-btn");
+    expect(deleteBtn).toBeInTheDocument();
+    await user.click(deleteBtn);
+
+    await waitFor(() => {
+      const modal = screen.queryByTestId("modal");
+      expect(modal).not.toBeInTheDocument();
+    });
+  });
 });
