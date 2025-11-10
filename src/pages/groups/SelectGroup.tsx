@@ -1,15 +1,38 @@
-import { useAppSelector } from "../../hooks";
+import { useEffect } from "react";
+import { useAppSelector, useAppDispatch } from "../../hooks";
+import {
+  setCreateInput,
+  setFilterOption,
+  setSelectedGroup,
+  type Group,
+  type FilterOption,
+} from "../../features/groupSlice";
 import SingleSelect from "../../components/SingleSelect";
-import { setCreateInput, type Group } from "../../features/groupSlice";
-import { useAppDispatch } from "../../hooks";
+
+const options = [
+  { display: "All Stores", value: "all" },
+  { display: "Active Stores", value: "active" },
+  { display: "Inactive Stores", value: "inactive" },
+];
 
 const SelectGroup = () => {
   const dispatch = useAppDispatch();
   const group = useAppSelector((state) => state.group);
 
+  // useEffect for when the filter option changes
+  useEffect(() => {
+    // handle that option here
+    // Show all, active, or inactive stores based on filterOption and selectedGroup
+  }, [group.filterOption, group.selectedGroup]);
+
   const handleGroupSelect = (groupId: number) => {
     const selected: Group = group.groups.find((g: Group) => g.id === groupId)!;
     dispatch(setCreateInput(selected.group_name));
+    dispatch(setSelectedGroup(selected));
+  };
+
+  const handleOptionSelect = (option: string) => {
+    dispatch(setFilterOption(option as FilterOption));
   };
 
   return (
@@ -25,12 +48,12 @@ const SelectGroup = () => {
         />
         <SingleSelect
           label="Filter Options"
-          onSelect={(selection) => {
-            console.log("Selected group:", selection);
-          }}
-          data={[]}
-          valueKey={""}
-          displayKey={""}
+          onSelect={(selection) => handleOptionSelect(selection as string)}
+          data={options}
+          valueKey={"value"}
+          displayKey={"display"}
+          resetQuery={true}
+          defaultQuery={"All Stores"}
         />
       </div>
       <div className="font-medium text-sm my-4">

@@ -15,6 +15,7 @@ interface SingleSelectProps<T> {
   innerClass?: string;
   resetQuery?: boolean;
   listClass?: string;
+  defaultValue?: string | number;
 }
 
 const SingleSelect = <T,>({
@@ -126,7 +127,7 @@ const SingleSelect = <T,>({
     }
   };
 
-  function positionDiv() {
+  const positionDiv = () => {
     if (!triggerRef.current || !listRef.current) return;
     const box = triggerRef.current.getBoundingClientRect();
     const availableSpace = window.innerHeight - box.bottom;
@@ -137,7 +138,7 @@ const SingleSelect = <T,>({
       listRef.current.style.borderTopLeftRadius = "10px";
       listRef.current.style.borderTopRightRadius = "10px";
     }
-  }
+  };
 
   return (
     <div
@@ -146,7 +147,7 @@ const SingleSelect = <T,>({
       className={`single-select ${className}`}
     >
       <div className="flex flex-col">
-        <label htmlFor="search" className="text-sm font-medium">
+        <label htmlFor="search" className="text-sm font-medium ml-1">
           {label}
         </label>
         <div className="relative">
