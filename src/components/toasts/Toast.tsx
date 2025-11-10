@@ -49,7 +49,7 @@ const Toast = ({ toast, onClick }: ToastCmpProps) => {
     <div
       query-id={toast.id}
       style={{ zIndex: 5000}}
-      className="flex flex-col justify-content-between items-center mb-2 ml-12 pl-4 border rounded-lg cursor-pointer min-h-[34px] animate-slidein shadow-lg bg-custom-white"
+      className="flex flex-col justify-content-between items-center mb-2 ml-16 border rounded-lg cursor-pointer min-h-[34px] animate-slidein shadow-lg bg-custom-white"
       onClick={onClick}
     >
       <div className="flex w-full">

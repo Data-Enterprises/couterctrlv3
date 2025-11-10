@@ -1,12 +1,16 @@
 import { useAppSelector } from "../../hooks";
 import SingleSelect from "../../components/SingleSelect";
+import { setCreateInput, type Group } from "../../features/groupSlice";
+import { useAppDispatch } from "../../hooks";
 
 const SelectGroup = () => {
+  const dispatch = useAppDispatch();
   const group = useAppSelector((state) => state.group);
 
-  const handleGroupSelect = (group: number) => {
-    console.log("Selected group:", group);
-    // Grabbing the group's id, make the api call to get the stores in that group
+  const handleGroupSelect = (groupId: number) => {
+    // Grabbing the group's id, make the api call to get the stores in that group and set the text in the create group input for optional delete
+    const selected: Group = group.groups.find((g: Group) => g.id === groupId)!;
+    dispatch(setCreateInput(selected.group_name));
   };
 
   return (
@@ -18,6 +22,7 @@ const SelectGroup = () => {
           data={group.groups}
           valueKey={"id"}
           displayKey={"group_name"}
+          resetQuery={true}
         />
         <SingleSelect
           label="Filter Options"
@@ -36,21 +41,21 @@ const SelectGroup = () => {
       </div>
       <div className="hidden md:block w-1/2 items-center rounded-lg mt-8">
         <div className="flex mb-4 bg-custom-white rounded-r-lg shadow-lg">
-          <div className="bg-[#3b82f6] text-custom-white p-2 rounded-r-lg uppercase">
+          <div className="bg-blue-500 text-custom-white p-2 rounded-r-lg uppercase">
             all stores
           </div>
           <div className="flex-1 text-right p-2 ">0</div>
         </div>
 
         <div className="flex mb-4 bg-custom-white rounded-r-lg shadow-lg">
-          <div className="bg-[#10b981] text-custom-white p-2 rounded-r-lg uppercase">
+          <div className="bg-emerald-500 text-custom-white p-2 rounded-r-lg uppercase">
             active stores
           </div>
           <div className="flex-1 text-right p-2 ">0</div>
         </div>
 
         <div className="flex mb-4 bg-custom-white rounded-r-lg shadow-lg">
-          <div className="bg-[#f97316] text-custom-white p-2 rounded-r-lg uppercase">
+          <div className="bg-orange-500 text-custom-white p-2 rounded-r-lg uppercase">
             inactive stores
           </div>
           <div className="flex-1 text-right p-2 ">0</div>

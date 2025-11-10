@@ -34,6 +34,19 @@ export const createGroup = async (
   return json;
 };
 
-// export const deleteGroup = (groupId: number) => {};
+export const deleteGroup = async (url: string, token: string, id: number) => {
+  const json = await axios({
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "groups/delete",
+    params: {
+      id,
+    },
+  });
+
+  return json;
+};
 
 // export const updateGroup = (groupId: number, groupName: string, storeIds: number[]) => {};
