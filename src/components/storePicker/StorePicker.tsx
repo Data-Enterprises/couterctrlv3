@@ -31,7 +31,7 @@ const StorePicker = ({
     "flex flex-col md:grid md:grid-cols-2 gap2 md:gap-4 items-center justify-center";
 
   return (
-    <div className={style}>
+    <div data-testid="store-picker" className={style}>
       <SearchType
         singleStoreOnly={singleStoreOnly}
         useSubComp={useSubComp}

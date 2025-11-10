@@ -50,7 +50,7 @@ const SelectStore = ({ onOutsideClick }: Props) => {
   const inputStyle = "basic-input focus:border bg-custom-white w-full";
 
   return (
-    <div ref={componentRef} className={styling}>
+    <div data-testid="search-store" ref={componentRef} className={styling}>
       <div className="flex flex-col">
         <label
           htmlFor="search"

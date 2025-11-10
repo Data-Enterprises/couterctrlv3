@@ -34,7 +34,7 @@ const SelectGroup = () => {
   const styling = !context.isMobile ? "px-4 md:px-0 md:w-full" : "w-full";
 
   return (
-    <div className={styling}>
+    <div data-testid="select-group" className={styling}>
       <label className="block text-sm/6 font-medium ">Group</label>
       <div className="grid grid-cols-1">
         <select
