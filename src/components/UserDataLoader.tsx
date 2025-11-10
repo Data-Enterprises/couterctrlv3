@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "../hooks";
+import { useAppDispatch } from "../hooks";
 // import { useToast } from "./toasts/hooks/useToast";
 
 interface UserDataLoaderProps {
@@ -10,9 +10,9 @@ interface UserDataLoaderProps {
 const UserDataLoader = ({ token }: UserDataLoaderProps) => {
   // const toast = useToast();
   const dispatch = useAppDispatch();
-  const user = useAppSelector((state) => state.user);
+  // const user = useAppSelector((state) => state.user);
 
-  console.log("Hidden UserDataLoader rendered with token:", token, user);
+  // console.log("Hidden UserDataLoader rendered with token:", token, user);
 
   useEffect(() => {
     if (!token) return;
