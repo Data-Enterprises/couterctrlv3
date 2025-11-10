@@ -67,7 +67,6 @@ const CreateGroup = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error == "0") {
-          console.log(j);
           dispatch(setCreateInput(""));
           dispatch(setRefreshGroups(true));
           toast.success("Group deleted successfully");
@@ -102,6 +101,7 @@ const CreateGroup = () => {
           Create Group
         </label>
         <input
+          data-testid="create-group-input"
           type="text"
           className="basic-input focus:border bg-custom-white w-full"
           placeholder="Group Name"

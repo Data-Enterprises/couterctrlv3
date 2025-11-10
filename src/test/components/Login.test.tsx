@@ -1,16 +1,23 @@
 import { describe, it, expect, vi, type Mocked } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
 import Login from "../../pages/home/Login";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../utils";
 import { mockStore as store } from "../mockStore";
 import axios from "axios";
 import App from "../../App";
+import SideBar from "../../components/navigation/SideBar";
 
 // Mock axios module and the userEvent setup
 vi.mock("axios");
 const mockedAxios = axios as Mocked<typeof axios>;
 const user = userEvent.setup();
+
+const mockGroups = [
+  { id: 1, group_name: "Group A", userid: 517 },
+  { id: 2, group_name: "Group B", userid: 517 },
+  { id: 3, group_name: "Group C", userid: 517 },
+];
 
 describe("Login Page", () => {
   it("should render", () => {
@@ -81,45 +88,54 @@ describe("Login Page", () => {
 
   it("should sign out the user when clicking the Sign Out nav item", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<App />);
+    renderWithProviders(<SideBar />);
 
-    const signInButton = screen.getByTestId("sign-in");
+    const sidebar = screen.getByTestId("side-bar");
+    expect(sidebar).toBeInTheDocument();
 
-    // Log the user in first then click sign out
-    signInButton.onclick = () =>
-      axios
-        .post("/auth/login", {
-          username: "username",
-          password: "password",
-        })
-        .then((resp) => {
-          const j = resp.data;
-          if (j.error == 0) {
-            store.dispatch({ type: "app/setToken", payload: j.token });
-            store.dispatch({ type: "app/setLoggedIn", payload: true });
-          }
-        });
-    await user.click(signInButton);
+    const signOutBtn = screen.getByTestId("signout-btn");
+    await user.click(signOutBtn);
 
-    // Check that the token is set in the redux state
-    const state = store.getState();
+    // Sign Out should be resetting the redux slices
     await waitFor(() => {
-      expect(state.app.token).toEqual("mocked_token_123");
+      const state = store.getState();
+      expect(state.app.loggedIn).toBe(false);
+      expect(state.app.token).toBe("");
+      expect(state.user.username).toBe("");
+      expect(state.user.password).toBe("");
+    });
+  });
+
+  it("should fetch user's store groups after login", async () => {
+    mockedAxios.post.mockResolvedValue({
+      data: { error: 0, token: "new_mocked_token_456" },
     });
 
-    // If token is set and loggedIn is true, the SideBar should be rendered
-    // expect(await screen.findByTestId("side-bar")).toBeInTheDocument();
+    await act(async () => {
+      renderWithProviders(<App />);
 
-    // const signOutBtn = screen.getByTestId("signout-btn");
-    // await user.click(signOutBtn);
+      // Simulate user logged in with token set and loggedIn flag true
+      store.dispatch({ type: "app/setToken", payload: "existing_token_789" });
+      store.dispatch({ type: "app/setLoggedIn", payload: true });
 
-    // // Sign Out should be resetting the redux slices
-    // await waitFor(() => {
-    //   const state = store.getState();
-    //   expect(state.app.loggedIn).toBe(false);
-    // });
+      // Mock the groups API call to return mocked group data
+      mockedAxios.get.mockResolvedValue({
+        data: { error: 0, success: true, msg: "Success", groups: mockGroups },
+      });
 
-    // // Everything is reset therefore we land back on the Login page
-    // expect(await screen.findByTestId("login-page")).toBeInTheDocument();
+      // Perform the getGroups call and dispatch groups inside act
+      await axios.get("/groups/").then((resp) => {
+        const j = resp.data;
+        if (j.error == 0) {
+          store.dispatch({ type: "group/setGroups", payload: j.groups });
+        }
+      });
+    });
+
+    // Wait for Redux state update and verify groups set
+    await waitFor(() => {
+      const state = store.getState();
+      expect(state.group.groups.length).toBeGreaterThan(0);
+    });
   });
 });
