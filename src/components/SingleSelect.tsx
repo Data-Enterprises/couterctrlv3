@@ -142,7 +142,7 @@ const SingleSelect = <T,>({
 
   return (
     <div
-      query-id="single-select"
+      data-testid={`single-select-${id}`}
       ref={componentRef}
       className={`single-select ${className}`}
     >
@@ -164,6 +164,7 @@ const SingleSelect = <T,>({
               className={`basic-input bg-custom-white focus:border ${innerClass}`}
             />
             <div
+              data-testid={`single-select-trigger-icon-${id}`}
               onClick={handleTriggerClick}
               className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none"
             >
@@ -186,6 +187,7 @@ const SingleSelect = <T,>({
           >
             {filteredData.map((d, idx) => (
               <div
+                data-testid={`single-select-option-${id}-${idx}`}
                 key={`d-${id}-${idx}`}
                 onClick={() => handleSelect(d)}
                 className="flex hover:bg-panel_active hover:text-custom-white transition-all duration-300 items-center"

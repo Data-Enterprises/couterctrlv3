@@ -37,6 +37,7 @@ const SelectGroup = () => {
     <div data-testid="select-group">
       <div className="grid grid-cols-2 gap-4">
         <SingleSelect
+          id={1}
           label="Select Group"
           onSelect={(selection) => handleGroupSelect(selection as number)}
           data={group.groups}
@@ -45,6 +46,7 @@ const SelectGroup = () => {
           resetQuery={true}
         />
         <SingleSelect
+          id={2}
           label="Filter Options"
           onSelect={(selection) => handleOptionSelect(selection as string)}
           data={options}

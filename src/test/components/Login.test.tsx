@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, type Mocked } from "vitest";
-import { act, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import Login from "../../pages/home/Login";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../utils";
@@ -22,6 +22,8 @@ const mockGroups = [
 describe("Login Page", () => {
   it("should render", () => {
     renderWithProviders(<Login />);
+    const login = screen.getByTestId("login-page");
+    expect(login).toBeInTheDocument();
   });
 
   // need to test if typing in the inputs updates the redux state
@@ -111,28 +113,23 @@ describe("Login Page", () => {
       data: { error: 0, token: "new_mocked_token_456" },
     });
 
-    await act(async () => {
-      renderWithProviders(<App />);
+    renderWithProviders(<App />);
 
-      // Simulate user logged in with token set and loggedIn flag true
-      store.dispatch({ type: "app/setToken", payload: "existing_token_789" });
-      store.dispatch({ type: "app/setLoggedIn", payload: true });
+    store.dispatch({ type: "app/setToken", payload: "existing_token_789" });
+    store.dispatch({ type: "app/setLoggedIn", payload: true });
 
-      // Mock the groups API call to return mocked group data
-      mockedAxios.get.mockResolvedValue({
-        data: { error: 0, success: true, msg: "Success", groups: mockGroups },
-      });
-
-      // Perform the getGroups call and dispatch groups inside act
-      await axios.get("/groups/").then((resp) => {
-        const j = resp.data;
-        if (j.error == 0) {
-          store.dispatch({ type: "group/setGroups", payload: j.groups });
-        }
-      });
+    mockedAxios.get.mockResolvedValue({
+      data: { error: 0, success: true, msg: "Success", groups: mockGroups },
     });
 
-    // Wait for Redux state update and verify groups set
+    await axios.get("/groups/").then((resp) => {
+      const j = resp.data;
+      if (j.error == 0) {
+        store.dispatch({ type: "group/setGroups", payload: j.groups });
+      }
+    });
+
+    // Call this after all async code has been run/resolved
     await waitFor(() => {
       const state = store.getState();
       expect(state.group.groups.length).toBeGreaterThan(0);
