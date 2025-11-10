@@ -41,7 +41,7 @@ const Modal = ({ isOpen, onClose, className = "", children }: ModalProps) => {
     >
       <div
         ref={modalRef}
-        className="bg-custom-white p-4 ml-12 rounded-xl shadow-xl"
+        className="bg-custom-white p-4 ml-12 rounded-xl shadow-xl max-w-md w-full"
       >
         {children}
       </div>

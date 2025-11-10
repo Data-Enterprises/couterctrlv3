@@ -8,7 +8,6 @@ const SelectGroup = () => {
   const group = useAppSelector((state) => state.group);
 
   const handleGroupSelect = (groupId: number) => {
-    // Grabbing the group's id, make the api call to get the stores in that group and set the text in the create group input for optional delete
     const selected: Group = group.groups.find((g: Group) => g.id === groupId)!;
     dispatch(setCreateInput(selected.group_name));
   };
@@ -39,7 +38,7 @@ const SelectGroup = () => {
         that Group. You can swith groups and change as many goups as you like.
         All selected stores in the group will have the blue indicator
       </div>
-      <div className="hidden md:block w-1/2 items-center rounded-lg mt-8">
+      <div className="hidden md:block w-1/2 items-center rounded-lg mt-4 pr-2.5">
         <div className="flex mb-4 bg-custom-white rounded-r-lg shadow-lg">
           <div className="bg-blue-500 text-custom-white p-2 rounded-r-lg uppercase">
             all stores

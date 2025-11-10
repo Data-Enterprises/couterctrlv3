@@ -79,9 +79,11 @@ const CreateGroup = () => {
   return (
     <div className="flex gap-4 mb-4 items-end" data-testid="create-group">
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <div>
-          Are you sure you want to delete the group {groupId()} -
-          {context.createInput}?
+        <div className="text-center">
+          Are you sure you want to delete this group?
+          <div className="font-medium mt-2">
+            {groupId()} -{context.createInput}
+          </div>
         </div>
         <div className="w-full flex gap-4 mt-4">
           <button
