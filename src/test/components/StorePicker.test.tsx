@@ -1,7 +1,7 @@
 import StorePicker from "../../components/storePicker/StorePicker";
 import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../utils";
-import userEvent from "@testing-library/user-event";
+// import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { mockStore as store } from "../mockStore";
 

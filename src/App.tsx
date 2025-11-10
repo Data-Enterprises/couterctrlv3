@@ -7,6 +7,7 @@ import { Outlet } from "react-router";
 import Login from "./pages/home/Login";
 import SideBar from "./components/navigation/SideBar";
 import TitleBar from "./components/navigation/TitleBar";
+import UserDataLoader from "./components/UserDataLoader";
 
 const App = () => {
   const context = useAppSelector((state) => state.app);
@@ -22,6 +23,7 @@ const App = () => {
 
   return (
     <div className="main-app h-dvh w-dvw bg-bkg text-content no-scrollbar">
+      <UserDataLoader token={context.token} />
       {context.loggedIn ? (
         <div className="h-screen w-screen">
           <TitleBar />
