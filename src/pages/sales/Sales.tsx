@@ -129,25 +129,30 @@ const Sales = () => {
       );
   };
 
-  const isReady = true;
-
-  // 22 for xl 27 for laptop screen
-
   return (
-    <div
-      data-testid="sales-page"
-      className={`w-full h-[calc(100vh-3rem)] p-4 ${
-        isReady ? "animate-windowIn" : "hidden"
-      }`}
-    >
+    <div data-testid="sales-page" className={`w-full h-[calc(100vh-3rem)] p-4`}>
       <div ref={gridRef} className="grid grid-cols-4 gap-4 h-full">
-        <div className="grid gap-2 max-h-[calc(100vh-7px)] grid-rows-[0.5fr_1fr_1fr] no-scrollbar">
+        <div className="grid gap-1 max-h-[calc(100vh-7px)] grid-rows-[0.5fr_1fr_1fr] no-scrollbar">
           <div className="bg-custom-white rounded-lg p-2 shadow-lg">
             <StorePicker />
             <DatePickers handleQuery={getData} />
           </div>
-          <div className="row-span-2 rounded-lg shadow-lg overflow-scroll no-scrollbar" style={{ height: height, maxHeight: height }}>
-            <SalesPanels />
+          <div className="row-span-2 rounded-lg">
+            <div className="mb-2 flex items-end justify-between gap-2">
+              <div className="w-full">
+                <label className="font-medium text-sm ml-1">Search Store</label>
+                <input className="basic-input focus:border bg-custom-white" />
+              </div>
+              <div>
+                <button className="btn-themeBlue px-4">Reset</button>
+              </div>
+            </div>
+            <div
+              className="overflow-scroll no-scrollbar rounded-lg"
+              style={{ height: height, maxHeight: height }}
+            >
+              <SalesPanels />
+            </div>
           </div>
         </div>
         <div className="grid grid-rows-2 col-span-3 gap-3">

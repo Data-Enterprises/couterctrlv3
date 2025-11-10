@@ -31,11 +31,10 @@ export const useHeight = () => {
     const updateHeight = () => {
       if (gridRef.current) {
         const newHeight = gridRef.current.getBoundingClientRect().height;
-        let mult = 0.755;
+        let mult = 0.676;
         if (window.innerWidth < 1537) {
-          mult = 0.729;
+          mult = 0.63;
         }
-        // need to set the height at 75 percent of the newHeight
         const newHeight75 = newHeight * mult;
         setHeight(newHeight75);
       }
