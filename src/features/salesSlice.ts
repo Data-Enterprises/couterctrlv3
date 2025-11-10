@@ -14,6 +14,7 @@ interface SalesState {
   selectedSalesPanel: SelectedSalesPanel;
   weeklySales?: WeeklySale[];
   panelsLoading: boolean;
+  salesPanelSearchText: string;
 }
 
 const initialState: SalesState = {
@@ -23,6 +24,7 @@ const initialState: SalesState = {
   selectedSalesPanel: { sale_date: "", storeid: 0 },
   weeklySales: [],
   panelsLoading: false,
+  salesPanelSearchText: "",
 };
 
 export const salesSlice = createSlice({
@@ -50,6 +52,9 @@ export const salesSlice = createSlice({
     setPanelsLoading: (state, action: PayloadAction<boolean>) => {
       state.panelsLoading = action.payload;
     },
+    setSalesPanelSearchText: (state, action: PayloadAction<string>) => {
+      state.salesPanelSearchText = action.payload;
+    },
     resetSalesSlice: () => initialState,
   },
 });
@@ -61,6 +66,7 @@ export const {
   setSelectedSalesPanel,
   setWeeklySales,
   setPanelsLoading,
+  setSalesPanelSearchText,
   resetSalesSlice,
 } = salesSlice.actions;
 export default salesSlice.reducer;

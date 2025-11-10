@@ -17,6 +17,7 @@ import {
   resetSalesSlice,
   setWeeklySales,
   setPanelsLoading,
+  setSalesPanelSearchText,
 } from "../../features/salesSlice";
 import { useHeight } from "./utils/hooks";
 
@@ -33,6 +34,7 @@ const Sales = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
+  const sales = useAppSelector((state) => state.sales);
   const { gridRef, height } = useHeight();
 
   useEffect(() => {
@@ -88,14 +90,10 @@ const Sales = () => {
         toast.error("Error getting Hourly Store Depts data: " + err.message);
       });
 
-    const useGroups =
-      search.type.toString() == "2" || search.type.toString() == "Group"
-        ? 1
-        : 0;
-    const singleStore =
-      search.type.toString() == "2" || search.type.toString() == "Group"
-        ? 0
-        : 1;
+    // If Stores is the search type, then both are 0 and we get all stores for salesTwoDates
+    const useGroups = search.type === "Group" ? 1 : 0;
+    const singleStore = search.type === "Store" ? 1 : 0;
+    console.log({ useGroups, singleStore });
     dispatch(setPanelsLoading(true));
     salesTwoDates(
       context.url,
@@ -129,6 +127,10 @@ const Sales = () => {
       );
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(setSalesPanelSearchText(e.target.value));
+  };
+
   return (
     <div data-testid="sales-page" className={`w-full h-[calc(100vh-3rem)] p-4`}>
       <div ref={gridRef} className="grid grid-cols-4 gap-4 h-full">
@@ -141,7 +143,11 @@ const Sales = () => {
             <div className="mb-2 flex items-end justify-between gap-2">
               <div className="w-full">
                 <label className="font-medium text-sm ml-1">Search Store</label>
-                <input className="basic-input focus:border bg-custom-white" />
+                <input
+                  className="basic-input focus:border bg-custom-white"
+                  value={sales.salesPanelSearchText}
+                  onChange={handleChange}
+                />
               </div>
               <div>
                 <button className="btn-themeBlue px-4">Reset</button>

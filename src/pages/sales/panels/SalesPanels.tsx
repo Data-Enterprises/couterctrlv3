@@ -23,6 +23,21 @@ const SalesPanels = () => {
   const sales = useAppSelector((state) => state.sales);
   const search = useAppSelector((state) => state.search);
   const [panels, setPanels] = useState<SalesPanelInfo[]>([]);
+  const [filtered, setFiltered] = useState<SalesPanelInfo[]>([]);
+
+  useEffect(() => {
+    console.log('checking')
+    if (sales.salesPanelSearchText && panels.length > 0) {
+      const filteredPanels = panels.filter((panel) =>
+        panel.store_name
+          .toLowerCase()
+          .includes(sales.salesPanelSearchText.toLowerCase())
+      );
+      setFiltered(filteredPanels);
+    } else if (panels.length > 0) {
+      setFiltered(panels);
+    }
+  }, [sales.salesPanelSearchText]);
 
   useEffect(() => {
     if (sales.salesPanels.length > 0) {
@@ -48,16 +63,13 @@ const SalesPanels = () => {
           new Date(a.sale_date) > new Date(b.sale_date) ? -1 : 1
         );
       setPanels(reducedPanels);
+      setFiltered(reducedPanels);
     }
   }, [sales.salesPanels]);
 
   const comparePanels = (a: SalesTwoDates, b: SelectedSalesPanel) => {
     const date = a.sale_date.split("T")[0];
-    return (
-      date === b.sale_date &&
-      // a.terminal === b.terminal &&
-      a.storeid === b.storeid
-    );
+    return date === b.sale_date && a.storeid === b.storeid;
   };
 
   const handlePanelClick = (panel: SalesTwoDates) => {
@@ -110,7 +122,7 @@ const SalesPanels = () => {
   return (
     <div className="min-h-[100%] max-h-[100%] relative flex flex-col gap-2">
       {isReady &&
-        panels.map((panel, idx) => (
+        filtered.map((panel, idx) => (
           <SalesPanel
             key={idx}
             panel={panel}
@@ -118,7 +130,9 @@ const SalesPanels = () => {
             handleBtnClick={handleBtnClick}
           />
         ))}
-      {!isReady && <LoadingIndicator message="Loading Sales Panels..." />}
+      {sales.salesPanels.length === 0 ? (
+        <LoadingIndicator message="Loading Sales Panels..." />
+      ) : null}
     </div>
   );
 };
