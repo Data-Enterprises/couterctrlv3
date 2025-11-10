@@ -10,7 +10,6 @@ import {
   setSelectedSalesPanel,
   setWeeklySales,
 } from "../../../features/salesSlice";
-import Carousel from "../../../components/Carousel";
 import SalesPanel from "./SalesPanel";
 import { getWeekly } from "../../../api/sales";
 import { formatGoliathDate } from "../../../utils";
@@ -23,7 +22,7 @@ const SalesPanels = () => {
   const context = useAppSelector((state) => state.app);
   const sales = useAppSelector((state) => state.sales);
   const search = useAppSelector((state) => state.search);
-  const [panels, setPanels] = useState<SalesPanelInfo[][]>([]);
+  const [panels, setPanels] = useState<SalesPanelInfo[]>([]);
 
   useEffect(() => {
     if (sales.salesPanels.length > 0) {
@@ -45,8 +44,10 @@ const SalesPanels = () => {
           }
           return acc;
         }, [] as SalesPanelInfo[])
-        .sort((a, b) => new Date(a.sale_date) > new Date(b.sale_date) ? -1 : 1);
-      setPanels(chunkPanels(reducedPanels, 10));
+        .sort((a, b) =>
+          new Date(a.sale_date) > new Date(b.sale_date) ? -1 : 1
+        );
+      setPanels(reducedPanels);
     }
   }, [sales.salesPanels]);
 
@@ -102,33 +103,18 @@ const SalesPanels = () => {
     // Depending on the button type, different actions can be taken or just get rid of the buttons and call all three upon selection???
   };
 
-  const chunkPanels = (arr: SalesTwoDates[], chunkSize: number) => {
-    const chunks: SalesTwoDates[][] = [];
-    for (let i = 0; i < arr.length; i += chunkSize) {
-      chunks.push(arr.slice(i, i + chunkSize));
-    }
-    return chunks;
-  };
-
-  // const panelChunks = chunkPanels(sales.salesPanels, 10);
   const isReady = panels.length > 0 && !sales.panelsLoading;
   return (
-    <div className="min-h-[100%] max-h-[100%] relative">
-      <Carousel className="bg-transparent h-[100%] animate-windowIn">
-        {isReady &&
-          panels.map((chunk, chunkIdx) => (
-            <div key={chunkIdx} className="grid grid-cols-5 gap-2">
-              {chunk.map((panel, idx) => (
-                <SalesPanel
-                  key={idx}
-                  panel={panel}
-                  handlePanelClick={handlePanelClick}
-                  handleBtnClick={handleBtnClick}
-                />
-              ))}
-            </div>
-          ))}
-      </Carousel>
+    <div className="min-h-[100%] max-h-[100%] relative flex flex-col gap-2">
+      {isReady &&
+        panels.map((panel, idx) => (
+          <SalesPanel
+            key={idx}
+            panel={panel}
+            handlePanelClick={handlePanelClick}
+            handleBtnClick={handleBtnClick}
+          />
+        ))}
       {!isReady && <LoadingIndicator message="Loading Sales Panels..." />}
     </div>
   );

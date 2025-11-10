@@ -33,8 +33,8 @@ const TopTenItems = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg h-full overflow-visible">
-      <div className="font-medium mx-2 border-b border-content/30 py-0.5">
+    <div data-testid="sales-top-ten" className="bg-custom-white rounded-lg shadow-lg h-full overflow-visible">
+      <div className="font-medium bg-blue-500 text-custom-white rounded-t-lg pl-4 py-0.5">
         Top Ten Items
       </div>
       <ResponsiveBar
@@ -43,7 +43,7 @@ const TopTenItems = () => {
         colors={(bar) => rgbaColor(bar.data.fill, 0.3)}
         borderWidth={2}
         borderColor={(bar) => rgbaColor(bar.data.data.color, 1)}
-        margin={{ top: 10, right: 20, bottom: 40, left: 100 }}
+        margin={{ top: 10, right: 10, bottom: 40, left: 90 }}
         padding={0.1}
         borderRadius={4}
         labelSkipWidth={12}

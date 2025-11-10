@@ -46,8 +46,8 @@ const WeeklyNetSales = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg">
-      <div className="font-medium mx-2 border-b border-content/30 py-0.5">
+    <div data-testid="weekly-net-sales" className="bg-custom-white rounded-lg shadow-lg">
+      <div className="font-medium bg-blue-500 text-custom-white py-0.5 rounded-t-lg pl-4">
         Weekly Net Sales
       </div>
       <ResponsiveLine

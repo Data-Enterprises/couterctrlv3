@@ -15,7 +15,7 @@ const SalesPanel = ({
   handlePanelClick,
   handleBtnClick,
 }: SalesPanelProps) => {
-  const { style, text } = useStyling();
+  const { text } = useStyling();
   const { selectedSalesPanel } = useAppSelector((state) => state.sales);
 
   const bg = (panel: SalesPanelInfo, selected: SelectedSalesPanel) => {
@@ -32,7 +32,7 @@ const SalesPanel = ({
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(weight);
-    
+
     return formatted;
   };
 
@@ -74,19 +74,19 @@ const SalesPanel = ({
       </div>
       <div className="flex justify-around">
         <button
-          className={`btn-themeBlue ${style}`}
+          className={`btn-themeBlue py-1.5`}
           onClick={() => handleBtnClick(panel, "Subs")}
         >
           Subs
         </button>
         <button
-          className={`btn-themeOrange ${style}`}
+          className={`btn-themeOrange py-1.5`}
           onClick={() => handleBtnClick(panel, "Hourly")}
         >
           Hourly
         </button>
         <button
-          className={`btn-themeGreen ${style}`}
+          className={`btn-themeGreen py-1.5`}
           onClick={() => handleBtnClick(panel, "Cats")}
         >
           Cats

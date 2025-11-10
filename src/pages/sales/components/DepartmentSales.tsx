@@ -58,7 +58,7 @@ const DepartmentSales = () => {
   });
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg no-scrollbar">
+    <div data-testid="dept-sales" className="bg-custom-white rounded-lg shadow-lg no-scrollbar">
       <div className="h-[100%] relative no-scrollbar">
         <AgGridReact
           rowData={sales.departmentSales}

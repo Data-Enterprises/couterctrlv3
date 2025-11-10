@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export const useStyling = () => {
   const [style, setStyle] = useState<string>("px-2 py-0.5");
@@ -22,4 +22,29 @@ export const useStyling = () => {
   }, []);
 
   return { style, text };
+};
+
+export const useHeight = () => {
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number>(0);
+  useEffect(() => {
+    const updateHeight = () => {
+      if (gridRef.current) {
+        const newHeight = gridRef.current.getBoundingClientRect().height;
+        let mult = 0.755;
+        if (window.innerWidth < 1537) {
+          mult = 0.729;
+        }
+        // need to set the height at 75 percent of the newHeight
+        const newHeight75 = newHeight * mult;
+        setHeight(newHeight75);
+      }
+    };
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => {
+      window.removeEventListener("resize", updateHeight);
+    };
+  }, []);
+  return { gridRef, height };
 };

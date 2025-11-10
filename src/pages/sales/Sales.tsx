@@ -18,6 +18,7 @@ import {
   setWeeklySales,
   setPanelsLoading,
 } from "../../features/salesSlice";
+import { useHeight } from "./utils/hooks";
 
 // Components
 import DatePickers from "../../components/datePickers/DatePickers";
@@ -32,9 +33,7 @@ const Sales = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  // const { topTenItems, departmentSales } = useAppSelector(
-  //   (state) => state.sales
-  // );
+  const { gridRef, height } = useHeight();
 
   useEffect(() => {
     // On mount
@@ -132,35 +131,35 @@ const Sales = () => {
 
   const isReady = true;
 
+  // 22 for xl 27 for laptop screen
+
   return (
     <div
       data-testid="sales-page"
-      className={`w-full h-[calc(100vh-3rem)] px-4 pt-4 ${
+      className={`w-full h-[calc(100vh-3rem)] p-4 ${
         isReady ? "animate-windowIn" : "hidden"
       }`}
     >
-      <div className="grid grid-cols-4 gap-4 h-full">
-        <div className="grid gap-2 overflow-scroll max-h-[calc(100vh-7px)] grid-rows-[0.7fr_1fr_1fr] no-scrollbar mb-4">
+      <div ref={gridRef} className="grid grid-cols-4 gap-4 h-full">
+        <div className="grid gap-2 max-h-[calc(100vh-7px)] grid-rows-[0.5fr_1fr_1fr] no-scrollbar">
           <div className="bg-custom-white rounded-lg p-2 shadow-lg">
             <StorePicker />
-            <DatePickers handleQuery={getData} btnPadding="py-1" />
+            <DatePickers handleQuery={getData} />
           </div>
-          <TopTenItems />
-          <DepartmentSales />
+          <div className="row-span-2 rounded-lg shadow-lg overflow-scroll no-scrollbar" style={{ height: height, maxHeight: height }}>
+            <SalesPanels />
+          </div>
         </div>
         <div className="grid grid-rows-2 col-span-3 gap-3">
           <div className="grid grid-cols-2 gap-3">
             <WeeklyNetSales />
-            <div className="bg-custom-white rounded-lg p-2 shadow-lg flex flex-col justify-center items-center">
-              <div>Subs and Cats</div>
-              <div>Selecting a sales panel below will show this data</div>
-              <div>
-                By default, the first card if there was no last store or group
-                selected
-              </div>
-            </div>
+            <TopTenItems />
           </div>
-          <SalesPanels />
+          {/* <SalesPanels /> */}
+          <div className="grid grid-cols-2 gap-3">
+            <DepartmentSales />
+            <div className="bg-custom-white rounded-lg shadow-lg">Card</div>
+          </div>
         </div>
       </div>
     </div>
