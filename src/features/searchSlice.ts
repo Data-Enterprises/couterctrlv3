@@ -30,7 +30,7 @@ export const initialState: SearchState = {
   type: "Stores",
   // groups: [],
   // selectedGroup: undefined,
-  startDate: formatDate(addDays(new Date(), -6).toString()),
+  startDate: formatDate(addDays(new Date(), -1).toString()),
   endDate: formatDate(new Date().toString()),
   // startDate: formatGoliathDate(addDays(new Date(), -1).toString()),
   // endDate: formatGoliathDate(new Date().toString()),

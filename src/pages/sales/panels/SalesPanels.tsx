@@ -12,7 +12,7 @@ import {
 } from "../../../features/salesSlice";
 import SalesPanel from "./SalesPanel";
 import { getWeekly } from "../../../api/sales";
-import { formatGoliathDate } from "../../../utils";
+import { addDays } from "../../../utils";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 
@@ -21,23 +21,21 @@ const SalesPanels = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const sales = useAppSelector((state) => state.sales);
-  const search = useAppSelector((state) => state.search);
   const [panels, setPanels] = useState<SalesPanelInfo[]>([]);
   const [filtered, setFiltered] = useState<SalesPanelInfo[]>([]);
 
-  useEffect(() => {
-    console.log('checking')
-    if (sales.salesPanelSearchText && panels.length > 0) {
-      const filteredPanels = panels.filter((panel) =>
-        panel.store_name
-          .toLowerCase()
-          .includes(sales.salesPanelSearchText.toLowerCase())
-      );
-      setFiltered(filteredPanels);
-    } else if (panels.length > 0) {
-      setFiltered(panels);
-    }
-  }, [sales.salesPanelSearchText]);
+  // useEffect(() => {
+  //   if (sales.salesPanelSearchText && panels.length > 0) {
+  //     const filteredPanels = panels.filter((panel) =>
+  //       panel.store_name
+  //         .toLowerCase()
+  //         .includes(sales.salesPanelSearchText.toLowerCase())
+  //     );
+  //     setFiltered(filteredPanels);
+  //   } else if (panels.length > 0) {
+  //     setFiltered(panels);
+  //   }
+  // }, [sales.salesPanelSearchText]);
 
   useEffect(() => {
     if (sales.salesPanels.length > 0) {
@@ -73,10 +71,6 @@ const SalesPanels = () => {
   };
 
   const handlePanelClick = (panel: SalesTwoDates) => {
-    // For now I'm formatting the date before the api call since the api needs it that way
-    const start = formatGoliathDate(search.startDate);
-    const end = formatGoliathDate(search.endDate);
-
     // This date is being used to compare with the selected panel in redux
     const date = panel.sale_date.split("T")[0];
     if (!comparePanels(panel, sales.selectedSalesPanel)) {
@@ -90,7 +84,12 @@ const SalesPanels = () => {
       dispatch(setSelectedSalesPanel({ sale_date: "", storeid: 0 }));
       return;
     }
-    getWeekly(context.url, context.token, panel.storeid, start, end)
+
+    const weeklyStart = addDays(panel.sale_date, -7)
+      .toISOString()
+      .split("T")[0];
+    const weeklyEnd = new Date(panel.sale_date).toISOString().split("T")[0];
+    getWeekly(context.url, context.token, panel.storeid, weeklyStart, weeklyEnd)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {

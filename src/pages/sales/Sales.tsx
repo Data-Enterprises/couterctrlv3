@@ -1,7 +1,7 @@
 // HOOKS
 import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { formatGoliathDate } from "../../utils";
+import { addDays, formatGoliathDate } from "../../utils";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type { JsonError } from "../../interfaces";
 import {
@@ -115,7 +115,9 @@ const Sales = () => {
       })
       .finally(() => dispatch(setPanelsLoading(false)));
 
-    getWeekly(context.url, context.token, search.lastStore, start, end)
+    // Works for now, but will need to handle groups and all stores (once I get those api endpoints)
+    const weeklyStart = addDays(search.endDate, -8).toISOString().split("T")[0];
+    getWeekly(context.url, context.token, search.lastStore, weeklyStart, end)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
