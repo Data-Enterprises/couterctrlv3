@@ -2,7 +2,6 @@ import SearchType from "./SearchType";
 import SearchStore from "./SearchStore";
 import SelectGroup from "./SelectGroup";
 import { useAppSelector } from "../../hooks";
-import { useEffect } from "react";
 
 interface Props {
   singleStoreOnly?: boolean;
@@ -16,17 +15,7 @@ const StorePicker = ({
   useSubComp = false,
   inMarketing = false,
 }: Props) => {
-  const searchState = useAppSelector((state) => state.search);
   const state = useAppSelector((state) => state.search.type);
-  const context = useAppSelector((state) => state.app);
-
-  useEffect(() => {
-    if (!context.token) return;
-    if ((context.token, searchState.sendPrefs)) {
-      return;
-    }
-  }, [searchState.sendPrefs]);
-
   const style =
     "flex flex-col md:grid md:grid-cols-2 gap2 md:gap-4 items-center justify-center select-none";
 

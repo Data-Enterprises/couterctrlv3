@@ -3,23 +3,28 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { login } from "../../api/login";
 import type { JsonError } from "../../interfaces";
-// import { useNavigate } from "react-router";
 import logo from "../../assets/dcr_counterctrl-logo.png";
 
 import {
   setIsMobile,
   setIsTablet,
   setIsDesktop,
-  // setLoggedIn,
   setToken,
-  // setScope,
   // setPasswordChangeNeeded,
   setForgotPassword,
   setLoggedIn,
 } from "../../features/appSlice";
-// import { setLastRoute, setActiveMenuItem } from "../../features/navSlice";
-import { setUsername, setPassword } from "../../features/userSlice";
-// import Forgot
+import {
+  setUsername,
+  setPassword,
+  setFirstName,
+  setLastName,
+  setRole,
+  setUserLevel,
+  setCompany,
+  setResetPassword,
+  setSecurityQuestionId,
+} from "../../features/userSlice";
 
 const Login = () => {
   const state = useAppSelector((state) => state.user);
@@ -78,7 +83,13 @@ const Login = () => {
         if (j.error == 0) {
           dispatch(setToken(j.access_token));
           dispatch(setLoggedIn(true));
-          // handle the rest of the login process when the endpoints are finished
+          dispatch(setFirstName(j.first_name));
+          dispatch(setLastName(j.last_name));
+          dispatch(setRole(j.role));
+          dispatch(setUserLevel(j.user_level));
+          dispatch(setCompany(j.company));
+          dispatch(setResetPassword(j.password_change_needed));
+          dispatch(setSecurityQuestionId(j.security_question_id));
         }
       })
       .catch((err: JsonError) => {

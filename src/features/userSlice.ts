@@ -68,8 +68,8 @@ export const userSlice = createSlice({
     setCompany: (state, action: PayloadAction<number>) => {
       state.company = action.payload;
     },
-    setResetPassword: (state, action: PayloadAction<boolean>) => {
-      state.resetPassword = action.payload;
+    setResetPassword: (state, action: PayloadAction<number>) => {
+      state.resetPassword = action.payload === 1;
     },
     setUserLevel: (state, action: PayloadAction<number>) => {
       state.userLevel = action.payload;

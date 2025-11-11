@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { useToast } from "./toasts/hooks/useToast";
 import type { JsonError } from "../interfaces";
+import { useNavigate } from "react-router";
 
 import { getUserStores, getUserPrefs } from "../api/user";
 import { getGroups } from "../api/groups";
@@ -22,6 +23,7 @@ import { setAllAvailableStores } from "../features/storeSlice";
 const UserDataLoader = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
+  const navigation = useNavigate();
   const context = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
 
@@ -58,6 +60,11 @@ const UserDataLoader = () => {
           dispatch(setType(type));
           const lastRoute = !prefs.last_route ? "/" : prefs.last_route;
           dispatch(setLastRoute(lastRoute));
+
+          // navigate to last route
+          if (lastRoute !== "/") {
+            navigation(lastRoute);
+          }
         }
       })
       .catch((err: JsonError) => {
