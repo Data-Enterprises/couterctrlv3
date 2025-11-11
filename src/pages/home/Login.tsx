@@ -10,7 +10,7 @@ import {
   setIsTablet,
   setIsDesktop,
   setToken,
-  // setPasswordChangeNeeded,
+  setPasswordChangeNeeded,
   setForgotPassword,
   setLoggedIn,
 } from "../../features/appSlice";
@@ -82,14 +82,15 @@ const Login = () => {
         const j = resp.data;
         if (j.error == 0) {
           dispatch(setToken(j.access_token));
-          dispatch(setLoggedIn(true));
           dispatch(setFirstName(j.first_name));
           dispatch(setLastName(j.last_name));
           dispatch(setRole(j.role));
           dispatch(setUserLevel(j.user_level));
           dispatch(setCompany(j.company));
           dispatch(setResetPassword(j.password_change_needed));
+          dispatch(setPasswordChangeNeeded(j.password_change_needed));
           dispatch(setSecurityQuestionId(j.security_question_id));
+          dispatch(setLoggedIn(true));
         }
       })
       .catch((err: JsonError) => {

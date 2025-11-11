@@ -56,15 +56,12 @@ export const appSlice = createSlice({
     setForgotPassword: (state, action: PayloadAction<boolean>) => {
       state.showForgotPassword = action.payload;
     },
-    setScope: (state, action: PayloadAction<number>) => {
-      state.scope = action.payload;
-    },
     logout: (state) => {
       state.loggedIn = false;
       state.token = "";
     },
-    setPasswordChangeNeeded: (state, action: PayloadAction<boolean>) => {
-      state.showPasswordChangeNeeded = action.payload;
+    setPasswordChangeNeeded: (state, action: PayloadAction<number>) => {
+      state.showPasswordChangeNeeded = action.payload === 1;
     },
     setIsMobile: (state, action: PayloadAction<boolean>) => {
       state.isMobile = action.payload;
@@ -85,7 +82,6 @@ export const {
   logout,
   setIsLoading,
   setForgotPassword,
-  setScope,
   setPasswordChangeNeeded,
   setIsMobile,
   setIsTablet,
