@@ -1,15 +1,5 @@
 import axios from "axios";
 
-/**
- *     {
-      "userid": 517,
-      "last_search": null,
-      "last_group": 30,
-      "template": 1,
-      "last_search_type": "2",
-      "last_route": "groups"
-    }
- */
 interface PrefsParams {
   userid: number;
   last_search?: number;
@@ -68,8 +58,18 @@ export const setUserPrefs = async (
   return json;
 };
 
-// GET
-export const getAllUsers = async () => {};
+// getting all users for Team.tsx
+export const getAllUsers = async (url: string, token: string) => {
+  const json = await axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "users/",
+  });
+  return json;
+};
 
 // POST
 export const createUser = async () => {};

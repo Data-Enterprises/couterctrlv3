@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { useAppSelector, useAppDispatch } from "../../hooks";
+import { useAppDispatch } from "../../hooks";
 import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
 import type { Store } from "../../interfaces";
 import { setLastStore, setSelectedStore } from "../../features/searchSlice";
+import { setUserPrefs } from "../../api/user";
+import { useStorePickerContext } from ".";
 
 interface Props {
   onOutsideClick?: () => void;
@@ -10,9 +12,7 @@ interface Props {
 
 const SelectStore = ({ onOutsideClick }: Props) => {
   const dispatch = useAppDispatch();
-  const context = useAppSelector((state) => state.app);
-  const search = useAppSelector((state) => state.search);
-  const user = useAppSelector((state) => state.user);
+  const context = useStorePickerContext();
   const componentRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -22,11 +22,51 @@ const SelectStore = ({ onOutsideClick }: Props) => {
 
   useEffect(() => {
     setDisplay(
-      search.type === "Store"
+      context.type === "Store"
         ? "flex flex-col"
         : "flex flex-col opacity-50 pointer-events-none"
     );
-  }, [search.type]);
+  }, [context.type]);
+
+  useEffect(() => {
+    if (componentRef.current) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    setFilteredStores(context.assignedStores);
+    const store = context.assignedStores.find(
+      (s) => s.storeid === context.lastStore
+    );
+    setQuery(store?.store_name || "");
+  }, [context.lastStore, context.assignedStores]);
+
+  useEffect(() => {
+    if (context.selectedStore) {
+      setQuery(context.selectedStore.store_name);
+      setFilteredStores(context.assignedStores);
+    }
+  }, [context.selectedStore]);
+
+  // Filter the stores based on the query
+  useEffect(() => {
+    // if typing, open the dropdown
+    listRef.current!.setAttribute("data-display", "open");
+
+    // Then filter
+    if (query.trim() === "" || !context.selectedStore) {
+      setFilteredStores(context.assignedStores);
+    } else if (query.length > 0) {
+      const filtered = context.assignedStores.filter((store) =>
+        store.store_name.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredStores(filtered);
+    }
+  }, [query]);
 
   const handleClickOutside = (e: MouseEvent) => {
     if (
@@ -40,28 +80,6 @@ const SelectStore = ({ onOutsideClick }: Props) => {
     }
   };
 
-  useEffect(() => {
-    if (!context.token) return;
-    if (componentRef.current) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [context.token]);
-
-  // Filter the stores based on the query
-  useEffect(() => {
-    if (query.trim() === "") {
-      setFilteredStores(user.assignedStores);
-    } else {
-      const filtered = user.assignedStores.filter((store) =>
-        store.store_name.toLowerCase().includes(query.toLowerCase())
-      );
-      setFilteredStores(filtered);
-    }
-  }, [query]);
-
   const handleTriggerClick = () => {
     if (listRef.current) {
       const currentStatus = listRef.current.getAttribute("data-display");
@@ -74,7 +92,7 @@ const SelectStore = ({ onOutsideClick }: Props) => {
 
   const styling = "w-full px-4 md:px-0";
   const inputStyle =
-    "basic-input focus:border bg-custom-white hover:bg-blue-200 transition-colors duration-200 cursor-pointer w-full";
+    "basic-input focus:border bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer w-full";
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
@@ -83,6 +101,12 @@ const SelectStore = ({ onOutsideClick }: Props) => {
   const handleSelect = (store: Store) => {
     dispatch(setSelectedStore(store));
     dispatch(setLastStore(store.storeid));
+    setUserPrefs(context.url, context.token, {
+      userid: context.userid,
+      last_search: store.storeid,
+      last_route: context.lastRoute,
+      last_search_type: context.type,
+    });
     setQuery(store.store_name);
 
     // Close the dropdown

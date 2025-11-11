@@ -132,7 +132,7 @@ const SearchType = ({
               autoComplete="off"
               type="text"
               name="search"
-              className="basic-input bg-custom-white hover:bg-blue-200 transition-colors duration-200 cursor-pointer focus:border"
+              className="basic-input bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer focus:border"
             />
             <div className="absolute top-2 right-2 w-[24px] cursor-pointer ">
               <ChevronUpDownIcon className="fill-content" />

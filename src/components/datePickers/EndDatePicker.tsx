@@ -45,7 +45,7 @@ const EndDatePicker = () => {
         <MenuButton
           data-testid="end-date-menu-button"
           ref={menuRef}
-          className="inline-flex w-full bg-custom-white hover:bg-blue-200 transition-colors duration-200 justify-between gap-x-1.5 rounded-md px-3 py-3 text-sm font-semibold  shadow-sm ring-1 ring-inset ring-gray-300 "
+          className="inline-flex w-full bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 justify-between gap-x-1.5 rounded-md px-3 py-3 text-sm font-semibold  shadow-sm ring-1 ring-inset ring-gray-300 "
         >
           {formatDisplay()}
           <ChevronDownIcon
