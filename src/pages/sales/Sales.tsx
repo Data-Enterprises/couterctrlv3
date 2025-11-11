@@ -53,11 +53,11 @@ const Sales = () => {
     const start = formatGoliathDate(search.startDate);
     const end = formatGoliathDate(search.endDate);
 
-    // topten => working
+    const topTenId = search.type === "Store" ? search.lastStore : search.lastGroup;
     getTopTen(
       context.url,
       context.token,
-      search.lastStore,
+      topTenId,
       search.type,
       start,
       end
@@ -72,7 +72,7 @@ const Sales = () => {
         toast.error("Error getting Top Ten data: " + err.message);
       });
 
-    // hourly store depts => working
+    // hourly store depts => working => needs to take in a group id as well???
     getHourlyStoreDepts(
       context.url,
       context.token,
@@ -94,7 +94,7 @@ const Sales = () => {
     const useGroups = search.type === "Group" ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
-    
+
     dispatch(setPanelsLoading(true));
     salesTwoDates(
       context.url,
