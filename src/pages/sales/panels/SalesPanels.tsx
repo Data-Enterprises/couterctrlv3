@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+// import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import type {
   JsonError,
   SalesTwoDates,
   SelectedSalesPanel,
-  SalesPanelInfo,
+  // SalesPanelInfo,
 } from "../../../interfaces";
 import {
   setSelectedSalesPanel,
@@ -21,8 +21,8 @@ const SalesPanels = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const sales = useAppSelector((state) => state.sales);
-  const [panels, setPanels] = useState<SalesPanelInfo[]>([]);
-  const [filtered, setFiltered] = useState<SalesPanelInfo[]>([]);
+  // const [panels, setPanels] = useState<SalesPanelInfo[]>([]);
+  // const [filtered, setFiltered] = useState<SalesPanelInfo[]>([]);
 
   // useEffect(() => {
   //   if (sales.salesPanelSearchText && panels.length > 0) {
@@ -37,33 +37,33 @@ const SalesPanels = () => {
   //   }
   // }, [sales.salesPanelSearchText]);
 
-  useEffect(() => {
-    if (sales.salesPanels.length > 0) {
-      // Reduce panels to combine same storeid and sale_date entries and sum their qty, total_sales, and weight without terminal
-      const reducedPanels: SalesPanelInfo[] = [...sales.salesPanels]
-        .reduce((acc, panel) => {
-          const found = acc.find(
-            (p) =>
-              p.storeid === panel.storeid && p.sale_date === panel.sale_date
-          );
-          if (found) {
-            found.qty += panel.qty;
-            found.total_sales += panel.total_sales;
-            found.weight += panel.weight;
-          } else {
-            const panelWithoutTerminal = { ...panel };
-            delete panelWithoutTerminal.terminal; // Remove terminal property, this has to be optional for TS to be okay with that
-            acc.push({ ...panelWithoutTerminal });
-          }
-          return acc;
-        }, [] as SalesPanelInfo[])
-        .sort((a, b) =>
-          new Date(a.sale_date) > new Date(b.sale_date) ? -1 : 1
-        );
-      setPanels(reducedPanels);
-      setFiltered(reducedPanels);
-    }
-  }, [sales.salesPanels]);
+  // useEffect(() => {
+  //   if (sales.salesPanels.length > 0) {
+  //     // Reduce panels to combine same storeid and sale_date entries and sum their qty, total_sales, and weight without terminal
+  //     const reducedPanels: SalesPanelInfo[] = [...sales.salesPanels]
+  //       .reduce((acc, panel) => {
+  //         const found = acc.find(
+  //           (p) =>
+  //             p.storeid === panel.storeid && p.sale_date === panel.sale_date
+  //         );
+  //         if (found) {
+  //           found.qty += panel.qty;
+  //           found.total_sales += panel.total_sales;
+  //           found.weight += panel.weight;
+  //         } else {
+  //           const panelWithoutTerminal = { ...panel };
+  //           delete panelWithoutTerminal.terminal; // Remove terminal property, this has to be optional for TS to be okay with that
+  //           acc.push({ ...panelWithoutTerminal });
+  //         }
+  //         return acc;
+  //       }, [] as SalesPanelInfo[])
+  //       .sort((a, b) =>
+  //         new Date(a.sale_date) > new Date(b.sale_date) ? -1 : 1
+  //       );
+  //     setPanels(reducedPanels);
+  //     setFiltered(reducedPanels);
+  //   }
+  // }, [sales.salesPanels]);
 
   const comparePanels = (a: SalesTwoDates, b: SelectedSalesPanel) => {
     const date = a.sale_date.split("T")[0];
@@ -117,11 +117,11 @@ const SalesPanels = () => {
     // Depending on the button type, different actions can be taken or just get rid of the buttons and call all three upon selection???
   };
 
-  const isReady = panels.length > 0 && !sales.panelsLoading;
+  const isReady = sales.salesPanels.length > 0 && !sales.panelsLoading;
   return (
     <div className="min-h-[100%] max-h-[100%] relative flex flex-col gap-2">
       {isReady &&
-        filtered.map((panel, idx) => (
+        sales.salesPanels.map((panel, idx) => (
           <SalesPanel
             key={idx}
             panel={panel}

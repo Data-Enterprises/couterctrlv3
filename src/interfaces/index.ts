@@ -33,7 +33,6 @@ export interface SalesTwoDates {
   store_name: string;
   store_number: string;
   storeid: number;
-  terminal?: string;
   total_sales: number;
   weight: number;
 }
@@ -73,3 +72,22 @@ export type SalesPanelInfo = {
   total_sales: number;
   weight: number;
 };
+/////////////////////// End sales slice //////////////////////
+
+//////////////////////////////////////////////////////////////
+// User Interfaces
+//////////////////////////////////////////////////////////////
+export interface UserPrefs {
+  userid: number;
+  last_searh: number | null;
+  last_group: number | null;
+  template: number;
+  last_search_type: string;
+  last_route: string;
+}
+
+export interface Store {
+  storeid: number;
+  store_number: string;
+  store_name: string;
+}

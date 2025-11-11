@@ -9,7 +9,7 @@ interface NavState {
 export const initialState: NavState = {
   isNavOpen: false,
   activeMenuItem: "",
-  lastRoute: "",
+  lastRoute: "/",
 };
 
 export const navSlice = createSlice({

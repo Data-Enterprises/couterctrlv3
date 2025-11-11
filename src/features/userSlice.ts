@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { type SecurityQuestion } from "../interfaces";
+import type { SecurityQuestion, Store } from "../interfaces";
 
 export interface NewQuestion {
   id: number;
@@ -23,10 +23,6 @@ export interface UserState {
   email: string;
   firstName: string;
   lastName: string;
-  lastGroup: string;
-  lastSearch: string;
-  lastSearchType: string;
-  lastStoreid: number;
   resetPassword: boolean;
   company: number;
   security: number;
@@ -35,19 +31,17 @@ export interface UserState {
   securityQuestion: string;
   questions: SecurityQuestion[];
   newQuestion: NewQuestion;
+  assignedStores: Store[];
+  unassignedStores: Store[];
 }
 
 export const initialState: UserState = {
-  userid: 517,
+  userid: 0,
   username: "",
   password: "",
   userLevel: 0,
   firstName: "",
   lastName: "",
-  lastGroup: "",
-  lastSearch: "",
-  lastSearchType: "",
-  lastStoreid: 0,
   resetPassword: false,
   email: "",
   company: 0,
@@ -57,6 +51,8 @@ export const initialState: UserState = {
   securityQuestion: "",
   questions: [],
   newQuestion: { id: 0, answer: "" },
+  assignedStores: [],
+  unassignedStores: [],
 };
 
 export const userSlice = createSlice({
@@ -90,15 +86,6 @@ export const userSlice = createSlice({
     setSecurity: (state, action: PayloadAction<number>) => {
       state.security = action.payload;
     },
-    setLastGroup: (state, action: PayloadAction<string>) => {
-      state.lastGroup = action.payload;
-    },
-    setLastSearch: (state, action: PayloadAction<string>) => {
-      state.lastSearch = action.payload;
-    },
-    setLastSearchType: (state, action: PayloadAction<string>) => {
-      state.lastSearchType = action.payload;
-    },
     setRole: (state, action: PayloadAction<number>) => {
       state.role = action.payload;
     },
@@ -117,6 +104,15 @@ export const userSlice = createSlice({
     setNewQuestion: (state, action: PayloadAction<NewQuestion>) => {
       state.newQuestion = action.payload;
     },
+    setUsePrefs: (state, action: PayloadAction<number>) => {
+      state.userid = action.payload;
+    },
+    setAssignedStores: (state, action: PayloadAction<Store[]>) => {
+      state.assignedStores = action.payload;
+    },
+    setUnassignedStores: (state, action: PayloadAction<Store[]>) => {
+      state.unassignedStores = action.payload;
+    },
     resetUserSlice: () => initialState,
   },
 });
@@ -131,15 +127,14 @@ export const {
   setFirstName,
   setLastName,
   setSecurity,
-  setLastGroup,
-  setLastSearch,
-  setLastSearchType,
   setRole,
   setEmail,
   setSecurityQuestionId,
   setSecurityQuestion,
   setQuestions,
   setNewQuestion,
+  setAssignedStores,
+  setUnassignedStores,
   resetUserSlice,
 } = userSlice.actions;
 

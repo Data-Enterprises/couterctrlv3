@@ -7,6 +7,7 @@ import userReducer from "../features/userSlice";
 import searchReducer from "../features/searchSlice";
 import salesReducer from "../features/salesSlice";
 import groupReducer from "../features/groupSlice";
+import storeReducer from "../features/storeSlice";
 
 export const mockStore = configureStore({
   reducer: {
@@ -16,5 +17,6 @@ export const mockStore = configureStore({
     search: searchReducer,
     sales: salesReducer,
     group: groupReducer,
+    stores: storeReducer,
   },
 });

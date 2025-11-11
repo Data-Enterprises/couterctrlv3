@@ -10,19 +10,9 @@ export const getTopTen = async (
   startDate: string,
   endDate: string
 ) => {
-  let type = "";
-  if (searchType === 3) {
-    type = "Store";
-  } else if (searchType === 2) {
-    type = "Group";
-  } else if (searchType === "Single Store") {
-    type = "Store";
-  } else {
-    type = "Store";
-  }
   const formData = new FormData();
   formData.append("storeid", storeid.toString());
-  formData.append("searchType", type);
+  formData.append("searchType", searchType);
   formData.append("startDate", startDate);
   formData.append("endDate", endDate);
   const json = await axios({
