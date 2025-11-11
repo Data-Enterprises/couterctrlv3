@@ -26,12 +26,19 @@ const TopTenItems = () => {
     );
     setStores(Array.from(storeNames));
 
+    // console.log(new Set(sales.topTenItems.map((item) => item.product_code)));
+    // console.log(sales.topTenItems.map((item) => item.product_code));
+    /**
+     * if we're in a group, check the search.type, if single store, then leave below as is.
+     * if group, then we need to aggregate all the total_sales and qty for each product_code/product_description
+     * Then slice the top 10 and then set that as the newTopTen below
+     */
+
     if (!currentStore) {
       setCurrentStore(Array.from(storeNames)[0]);
     }
 
     const store = currentStore ? currentStore : Array.from(storeNames)[0];
-
     const newTopTen = sales.topTenItems
       .filter((item) => item.store_name === store)
       .sort((a, b) => b.total_sales - a.total_sales)
@@ -68,8 +75,6 @@ const TopTenItems = () => {
       avgQty,
     });
   };
-
-  console.log(topTen);
 
   return (
     <div
