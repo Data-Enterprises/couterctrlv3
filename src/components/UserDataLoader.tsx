@@ -1,46 +1,45 @@
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { useToast } from "./toasts/hooks/useToast";
+import type { JsonError } from "../interfaces";
 
-// API
 import { getUserStores, getUserPrefs } from "../api/user";
 import { getGroups } from "../api/groups";
 
-// Slices
 import { setUserId } from "../features/userSlice";
 import { setGroups, type Group } from "../features/groupSlice";
 import { setLastRoute } from "../features/navSlice";
-import { setLastStore, setLastGroup, setType } from "../features/searchSlice";
-import type { JsonError } from "../interfaces";
+import {
+  setLastStore,
+  setLastGroup,
+  setType,
+  type SEARCH_TYPE,
+} from "../features/searchSlice";
+import { setAssignedStores, setUnassignedStores } from "../features/userSlice";
+import { setAllAvailableStores } from "../features/storeSlice";
 
 // This component is hidden and is strictly used for fetching user data on user login
 const UserDataLoader = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-
-  // Grabbing what I need to make the api calls
   const context = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
 
+  const getDefaultType = (searchType: string): SEARCH_TYPE => {
+    switch (searchType) {
+      case "1":
+        return "Stores";
+      case "2":
+        return "Group";
+      case "3":
+        return "Store";
+      default:
+        return searchType as SEARCH_TYPE;
+    }
+  };
+
   useEffect(() => {
     if (!context.token) return;
-
-    // Getting the user groups
-    getGroups(context.url, context.token)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error == "0") {
-          const groups = j.groups.filter(
-            (g: Group) => g.userid === user.userid
-          );
-          dispatch(setGroups(groups));
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error(err.message);
-      });
-
-    // Getting assigned stores
     getUserPrefs(context.url, context.token)
       .then((resp) => {
         const j = resp.data;
@@ -55,7 +54,7 @@ const UserDataLoader = () => {
           dispatch(setLastGroup(lastGroup));
           const type = !prefs.last_search_type
             ? "Stores"
-            : prefs.last_search_type;
+            : getDefaultType(prefs.last_search_type);
           dispatch(setType(type));
           const lastRoute = !prefs.last_route ? "/" : prefs.last_route;
           dispatch(setLastRoute(lastRoute));
@@ -64,7 +63,7 @@ const UserDataLoader = () => {
       .catch((err: JsonError) => {
         toast.error("Error getting user preferences: " + err.message);
       });
-  }, [context.token]); // having dispatch in the dependency array breaks the sign out test for Login.test.tsx
+  }, [context.token]);
 
   useEffect(() => {
     if (!context.token || !user.userid) return;
@@ -72,13 +71,27 @@ const UserDataLoader = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          const allUserStores = j.all_stores_for_user;
-          const assignedStores = j.assigned_stores;
-          const unassignedStores = j.unassigned_stores;
+          dispatch(setAllAvailableStores(j.all_stores_for_user));
+          dispatch(setAssignedStores(j.assigned_stores));
+          dispatch(setUnassignedStores(j.unassigned_stores));
         }
       })
       .catch((err: JsonError) => {
         toast.error("Error getting user stores: " + err.message);
+      });
+
+    getGroups(context.url, context.token)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error == "0") {
+          const groups = j.groups.filter(
+            (g: Group) => g.userid === user.userid
+          );
+          dispatch(setGroups(groups));
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error(err.message);
       });
   }, [user.userid]);
 
