@@ -40,10 +40,8 @@ const SideBar = () => {
 
   useEffect(() => {
     if (context.isMobile) {
-      // On mobile, show only mobile nav items
       setNavItems(navigation.filter((item) => item.mobile));
     } else {
-      // On desktop/tablet, show all nav items
       setNavItems(navigation);
     }
   }, [context.isMobile, context.isTablet, context.isDesktop]);
@@ -53,10 +51,10 @@ const SideBar = () => {
   };
 
   const handleNavClick = (item: Navigation) => {
-    // console.log('Nav Item Clicked', item);
     if (item.children.length && item.href === "#") {
       // Toggle the item's children => not implemented yet
     } else {
+      // Otherwise, set last route for user prefs
       dispatch(setLastRoute(item.href));
     }
 
@@ -76,7 +74,8 @@ const SideBar = () => {
 
   const slidingStyle =
     "data-[open=true]:w-48 data-[open=false]:w-12 transition-all duration-300 data-[open=true]:shadow-[0px_9px_10px_rgba(0,0,0,0.2)] data-[open=false]:shadow-[0px_3px_3px_rgba(0,0,0,0.2)]";
-  return (
+  
+    return (
     <div
       ref={ref}
       data-testid="side-bar"
