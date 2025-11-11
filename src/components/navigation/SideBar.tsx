@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { NavLink } from "react-router";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { resetNav, setIsNavOpen } from "../../features/navSlice";
+import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import { navigation, type Navigation } from "./utils";
 import SignOutIcon from "../../svgs/SignOutIcon";
 import { Cog6ToothIcon } from "@heroicons/react/16/solid";
@@ -9,8 +9,12 @@ import { handleSigningOut } from "../../features/appSlice";
 import { resetUserSlice } from "../../features/userSlice";
 import { useNavigate } from "react-router";
 import { resetSalesSlice } from "../../features/salesSlice";
+import { setUserPrefs } from "../../api/user";
+import type { JsonError } from "../../interfaces";
+import { useToast } from "../toasts/hooks/useToast";
 
 const SideBar = () => {
+  const toast = useToast();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const ref = useRef<HTMLDivElement>(null);
@@ -18,6 +22,21 @@ const SideBar = () => {
   const user = useAppSelector((state) => state.user);
   const nav = useAppSelector((state) => state.nav);
   const [navItems, setNavItems] = useState<Navigation[]>(navigation);
+
+  // make api call to set the user prefs when navigating to a new page
+  useEffect(() => {
+    if (nav.lastRoute) {
+      const prefs = {
+        userid: user.userid,
+        last_route: nav.lastRoute,
+      };
+      setUserPrefs(context.url, context.token, prefs).catch(
+        (err: JsonError) => {
+          toast.error("Error setting user prefs:" + err.message);
+        }
+      );
+    }
+  }, [nav.lastRoute]);
 
   useEffect(() => {
     if (context.isMobile) {
@@ -37,6 +56,8 @@ const SideBar = () => {
     // console.log('Nav Item Clicked', item);
     if (item.children.length && item.href === "#") {
       // Toggle the item's children => not implemented yet
+    } else {
+      dispatch(setLastRoute(item.href));
     }
 
     // Otherwise, navigation is handled by NavLink and we then toggle nav off if it is open
