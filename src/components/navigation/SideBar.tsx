@@ -75,14 +75,14 @@ const SideBar = () => {
   };
 
   const slidingStyle =
-    "data-[open=true]:w-48 data-[open=false]:w-12 transition-all duration-300 data-[open=true]:shadow-[0px_9px_10px_rgba(0,0,0,0.2)] data-[open=false]:shadow-[0px_3px_3px_rgba(0,0,0,0.2)]";
+    "data-[open=true]:w-[191px] data-[open=false]:w-12 transition-all duration-300 data-[open=true]:shadow-[0px_2px_4px_rgba(0,0,0,0.2)] data-[open=false]:shadow-[0px_3px_3px_rgba(0,0,0,0.2)]";
   
     return (
     <div
       ref={ref}
       data-testid="side-bar"
       data-open={nav.isNavOpen}
-      className={`bg-bkg absolute top-12 left-0 h-[calc(100vh-3rem)] flex flex-col justify-between ${slidingStyle}`}
+      className={`bg-bkg absolute top-12 left-0 h-[calc(100vh-3rem)] flex flex-col justify-between border-t ${slidingStyle}`}
       style={{ zIndex: 1000 }}
     >
       {/* using this to close the nav when clicking outside if it is open. User events are disabled in the Outlet when nav is open */}
