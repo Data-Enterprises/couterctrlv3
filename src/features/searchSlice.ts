@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-// import { AssignedStore, Group } from "../interfaces";
+import type { Store } from "../interfaces";
 import { formatDate, addDays } from "../utils";
 
 export type SEARCH_TYPE = "Stores" | "Group" | "Store";
@@ -13,6 +13,7 @@ export interface SearchState {
   ledgerDate: string;
   lastStoreName: string;
   defaultSalesStore: number;
+  selectedStore: Store | null;
 }
 
 export const initialState: SearchState = {
@@ -24,6 +25,7 @@ export const initialState: SearchState = {
   ledgerDate: "",
   lastStoreName: "",
   defaultSalesStore: 0,
+  selectedStore: null,
 };
 
 const searchSlice = createSlice({
@@ -51,6 +53,9 @@ const searchSlice = createSlice({
     setLastStoreName: (state, action: PayloadAction<string>) => {
       state.lastStoreName = action.payload;
     },
+    setSelectedStore: (state, action: PayloadAction<Store | null>) => {
+      state.selectedStore = action.payload;
+    },
     setDefaultSalesStore: (state, action: PayloadAction<number>) => {
       state.defaultSalesStore = action.payload;
     },
@@ -65,6 +70,7 @@ export const {
   setLastStore,
   setLedgerDate,
   setLastStoreName,
+  setSelectedStore,
   setDefaultSalesStore,
 } = searchSlice.actions;
 

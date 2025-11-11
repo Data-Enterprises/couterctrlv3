@@ -1,18 +1,24 @@
 import { useEffect, useRef, useState } from "react";
-import { useAppSelector } from "../../hooks";
+import { useAppSelector, useAppDispatch } from "../../hooks";
 import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
+import type { Store } from "../../interfaces";
+import { setLastStore, setSelectedStore } from "../../features/searchSlice";
 
 interface Props {
   onOutsideClick?: () => void;
 }
 
 const SelectStore = ({ onOutsideClick }: Props) => {
+  const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
+  const user = useAppSelector((state) => state.user);
   const componentRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const [display, setDisplay] = useState("flex");
+  const [query, setQuery] = useState<string>("");
+  const [filteredStores, setFilteredStores] = useState<Store[]>([]);
 
   useEffect(() => {
     setDisplay(
@@ -36,15 +42,25 @@ const SelectStore = ({ onOutsideClick }: Props) => {
 
   useEffect(() => {
     if (!context.token) return;
-    // getData();
     if (componentRef.current) {
       document.addEventListener("mousedown", handleClickOutside);
     }
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [context.token]);
+
+  // Filter the stores based on the query
+  useEffect(() => {
+    if (query.trim() === "") {
+      setFilteredStores(user.assignedStores);
+    } else {
+      const filtered = user.assignedStores.filter((store) =>
+        store.store_name.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredStores(filtered);
+    }
+  }, [query]);
 
   const handleTriggerClick = () => {
     if (listRef.current) {
@@ -57,7 +73,24 @@ const SelectStore = ({ onOutsideClick }: Props) => {
   };
 
   const styling = "w-full px-4 md:px-0";
-  const inputStyle = "basic-input focus:border bg-custom-white hover:bg-blue-200 transition-colors duration-200 cursor-pointer w-full";
+  const inputStyle =
+    "basic-input focus:border bg-custom-white hover:bg-blue-200 transition-colors duration-200 cursor-pointer w-full";
+
+  const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+  };
+
+  const handleSelect = (store: Store) => {
+    dispatch(setSelectedStore(store));
+    dispatch(setLastStore(store.storeid));
+    setQuery(store.store_name);
+
+    // Close the dropdown
+    if (listRef.current) {
+      listRef.current.setAttribute("data-display", "closed");
+      if (onOutsideClick) onOutsideClick();
+    }
+  };
 
   return (
     <div data-testid="search-store" ref={componentRef} className={styling}>
@@ -77,10 +110,9 @@ const SelectStore = ({ onOutsideClick }: Props) => {
           >
             <input
               data-testid="search-store-input"
-              // value={query}
-              value={"Needs Data"}
+              value={query}
               onFocus={(e) => e.target.select()}
-              // onChange={handleQueryChange}
+              onChange={handleQueryChange}
               autoComplete="off"
               type="text"
               name="search"
@@ -95,24 +127,22 @@ const SelectStore = ({ onOutsideClick }: Props) => {
             ref={listRef}
             data-display="closed"
             className="absolute w-full bg-custom-white text-content
-            max-h-[350px] overflow-y-scroll z-20 rounded-b-xl shadow-lg no-scrollbar
+            max-h-[300px] overflow-y-scroll z-20 rounded-b-xl shadow-lg no-scrollbar
             data-[display=open]:animate-appear
             data-[display=closed]:animate-dissapear
             data-[display=closed]:hidden
             data-[display=open]:pointer-events-auto
             data-[display=closed]:pointer-events-none"
           >
-            <div className="px-2 py-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer">Houchens</div>
-            <div className="px-2 py-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer">IGA</div>
-            {/* {filteredData.map((store, idx) => (
+            {/* This needs to be filtered data by query search */}
+            {filteredStores.map((store, idx) => (
               <div key={`store-${idx}`} onClick={() => handleSelect(store)}>
-                <div className="px-2 hover:bg-scroll_hover transition-all duration-200 cursor-pointer">
-                  {store.store_Name}
+                <div className="p-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer text-sm">
+                  {store.store_name}
                 </div>
               </div>
-            ))} */}
+            ))}
           </div>
-          {/* {error.length > 0 ? <div data-testid="error">{error}</div> : null} */}
         </div>
       </div>
     </div>

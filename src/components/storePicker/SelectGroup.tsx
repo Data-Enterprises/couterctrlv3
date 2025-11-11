@@ -13,6 +13,10 @@ const SelectGroup = () => {
   };
   const styling = !context.isMobile ? "px-4 md:px-0 md:w-full" : "w-full";
 
+  const handleGroupselect = (id: number) => {
+    dispatch(setLastGroup(id));
+  };
+
   return (
     <div data-testid="select-group" className={styling}>
       <label className="block text-sm/6 font-medium ">Group</label>
@@ -25,7 +29,11 @@ const SelectGroup = () => {
         >
           <option>Select a Group</option>
           {group.groups.map((group, idx) => (
-            <option key={`group-${idx}`} value={group.id}>
+            <option
+              key={`group-${idx}`}
+              value={group.id}
+              onClick={() => handleGroupselect(group.id)}
+            >
               {group.group_name}
             </option>
           ))}

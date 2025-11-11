@@ -93,7 +93,8 @@ const Sales = () => {
     // If Stores is the search type, then both are 0 and we get all stores for salesTwoDates
     const useGroups = search.type === "Group" ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
-    console.log({ useGroups, singleStore });
+    const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
+    
     dispatch(setPanelsLoading(true));
     salesTwoDates(
       context.url,
@@ -101,7 +102,7 @@ const Sales = () => {
       start,
       end,
       useGroups,
-      search.lastStore,
+      searchValue,
       singleStore
     )
       .then((resp) => {
