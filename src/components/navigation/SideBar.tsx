@@ -1,17 +1,19 @@
 import { useRef, useState, useEffect } from "react";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import { navigation, type Navigation } from "./utils";
-import SignOutIcon from "../../svgs/SignOutIcon";
-import { Cog6ToothIcon } from "@heroicons/react/16/solid";
+import { useToast } from "../toasts/hooks/useToast";
+
+import { setUserPrefs } from "../../api/user";
+
+import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import { handleSigningOut } from "../../features/appSlice";
 import { resetUserSlice } from "../../features/userSlice";
-import { useNavigate } from "react-router";
 import { resetSalesSlice } from "../../features/salesSlice";
-import { setUserPrefs } from "../../api/user";
+
 import type { JsonError } from "../../interfaces";
-import { useToast } from "../toasts/hooks/useToast";
+import { Cog6ToothIcon } from "@heroicons/react/16/solid";
+import SignOutIcon from "../../svgs/SignOutIcon";
 
 const SideBar = () => {
   const toast = useToast();

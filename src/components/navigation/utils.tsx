@@ -3,8 +3,7 @@ import type Radiation from "../../svgs/Radiation";
 import type StoresIcon from "../../svgs/StoresIcon";
 
 // Icons
-import { UsersIcon } from "@heroicons/react/24/outline";
-import { HomeIcon } from "@heroicons/react/16/solid";
+import { HomeIcon, UsersIcon } from "@heroicons/react/16/solid";
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
 import GroupsIcon from "../../svgs/GroupsIcon";
@@ -34,6 +33,15 @@ export const navigation: Navigation[] = [
     name: "Sales",
     href: "sales",
     icon: SalesIconV2,
+    mobile: true,
+    children: [],
+    childOpen: false,
+    userTypes: ["*"],
+  },
+  {
+    name: "Team",
+    href: "team",
+    icon: UsersIcon,
     mobile: true,
     children: [],
     childOpen: false,

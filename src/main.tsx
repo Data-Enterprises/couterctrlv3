@@ -7,12 +7,13 @@ import { BrowserRouter, Routes, Route } from "react-router";
 import { ToastProvider } from "./components/toasts/ToastProvider.tsx";
 
 // Pages
-import App from "./App.tsx";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
+import App from "./App.tsx";
 import Home from "./pages/home/Home.tsx";
 import Sales from "./pages/sales/Sales.tsx";
-import Cashiers from "./pages/cashiers/Cashiers.tsx";
+import Team from "./pages/team/Team.tsx";
 import Groups from "./pages/groups/Groups.tsx";
+import Cashiers from "./pages/cashiers/Cashiers.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -24,6 +25,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/" element={<App />}>
                 <Route index element={<Home />} />
                 <Route path="sales" element={<Sales />} />
+                <Route path="team" element={<Team />} />
                 <Route path="cashiers" element={<Cashiers />} />
                 <Route path="groups" element={<Groups />} />
               </Route>
