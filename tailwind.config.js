@@ -97,7 +97,7 @@ export default {
         },
         slidein: {
           "0%": { transform: "translateX(-100%)", opacity: 0 },
-          "90%": [{ transform: "translateX(5%)" }],
+          "90%": { transform: "translateX(5%)" },
           "100%": { transform: "translateX(0)", opacity: 1 },
         },
         slideout: {
