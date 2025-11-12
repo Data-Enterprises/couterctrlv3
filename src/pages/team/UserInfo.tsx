@@ -89,12 +89,12 @@ const UserInfo = () => {
             />
           );
         })}
-        <div className="flex justify-between items-end">
-          <div>
-            <button className="btn-themeGreen px-7">Reset Security</button>
+        <div className="flex justify-between items-end gap-4">
+          <div className="w-1/2">
+            <button className="btn-themeGreen px-2 py-[5px] w-full">Reset Security</button>
           </div>
-          <div>
-            <button className="btn-themeGreen px-7">Reset Password</button>
+          <div className="w-1/2">
+            <button className="btn-themeGreen px-2 py-[5px] w-full">Reset Password</button>
           </div>
         </div>
       </div>

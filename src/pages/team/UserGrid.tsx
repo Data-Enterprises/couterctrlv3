@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getAllUsers } from "../../api/user";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import type { JsonError, User } from "../../interfaces";
+import type { BaseGroup, JsonError, User } from "../../interfaces";
 import {
   setUsers,
   resetUserInfo,
@@ -60,12 +60,16 @@ const UserGrid = () => {
   };
 
   const handleRowClick = (e: RowClickedEvent) => {
+    setText("");
     dispatch(setSelectedUserInfo(e.data));
     getBaseGroupsAssignedToUser(context.url, context.token, e.data.id)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          dispatch(setBaseGroups(j.groups));
+          const sorted = [...j.groups].sort((a: BaseGroup, b: BaseGroup) =>
+            a.active > b.active ? -1 : 1
+          );
+          dispatch(setBaseGroups(sorted));
         }
       })
       .catch((err: JsonError) => {
