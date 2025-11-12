@@ -17,3 +17,21 @@ export const formData = {
   confirmPassword: "",
   role: "9",
 };
+
+export const userLevels = [
+  { levelId: 1, levelDescription: "USER" },
+  { levelId: 2, levelDescription: "TECH" },
+  { levelId: 3, levelDescription: "STORE MANAGER" },
+  { levelId: 4, levelDescription: "HELP DESK" },
+  { levelId: 5, levelDescription: "HELP DESK MANAGEMENT" },
+  { levelId: 6, levelDescription: "POWER USER" },
+  { levelId: 7, levelDescription: "OWNER" },
+  { levelId: 8, levelDescription: "ADMIN" },
+  { levelId: 9, levelDescription: "PROGRAMMER" },
+];
+
+
+export const getUserLevelDescription = (levelId: number) => {
+  const level = userLevels.find((lvl) => lvl.levelId === levelId);
+  return level ? level.levelDescription : "UNKNOWN";
+};

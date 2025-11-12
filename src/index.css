@@ -220,6 +220,9 @@ body {
   .no-scrollbar::-webkit-scrollbar {
     width: 0em;
     height: 0em;
+    display: none;
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 }
 

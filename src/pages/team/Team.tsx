@@ -1,4 +1,4 @@
-import UserInfo from "./UseInfo";
+import UserInfo from "./UserInfo";
 import UserGrid from "./UserGrid";
 
 const Team = () => {
