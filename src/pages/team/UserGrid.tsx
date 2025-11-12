@@ -5,7 +5,6 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 import type { BaseGroup, JsonError, User } from "../../interfaces";
 import {
   setUsers,
-  resetUserInfo,
   setSelectedUserInfo,
   setBaseGroups,
 } from "../../features/usersSlice";
@@ -55,10 +54,6 @@ const UserGrid = () => {
       });
   };
 
-  const handleReset = () => {
-    dispatch(resetUserInfo());
-  };
-
   const handleRowClick = (e: RowClickedEvent) => {
     setText("");
     dispatch(setSelectedUserInfo(e.data));
@@ -84,14 +79,11 @@ const UserGrid = () => {
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="basic-input focus:border"
+          className="basic-input focus:border bg-custom-white"
           placeholder="Search Users"
         />
-        <button className="btn-themeBlue" onClick={handleReset}>
-          Add User
-        </button>
       </div>
-      <div className="h-[93.1%]">
+      <div className="h-[93.3%]">
         <AgGridReact
           className="no-scrollbar"
           rowData={filtered}

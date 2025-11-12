@@ -1,7 +1,7 @@
 import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
 import type { User } from "../../interfaces";
 
-export const formData = {
+export const userData = {
   username: "",
   email: "",
   firstName: "",

@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { UserData } from "../features/usersSlice";
 
 // groups/base_groups_assigned_to_user
 export const getBaseGroupsAssignedToUser = async (
@@ -60,6 +61,23 @@ export const deleteUserBaseGroupLink = async (
       userid,
       groupid,
     },
+  });
+  return json;
+};
+
+export const createUser = async (
+  url: string,
+  token: string,
+  data: UserData
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "users/create_user",
+    data: data,
   });
   return json;
 };

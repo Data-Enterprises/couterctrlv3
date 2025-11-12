@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Eye from "../svgs/Eye";
+import { useAppSelector } from "../hooks";
 
 interface TextInputProps<T> {
   query: string;
@@ -23,16 +24,28 @@ const TextInput = <T,>({
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(name as keyof T, e.currentTarget.value);
   };
+  const userInfo = useAppSelector((state) => state.users.userInfo);
 
   const handleEncryptionToggle = () => {
     setEncrypted(!encrypted);
     setInputType(encrypted ? "text" : "password");
   };
 
+  const showMsg = () => {
+    if (name === "confirm_password" && query.length > 0) {
+      if (userInfo.password !== userInfo.confirm_password)
+        return "- Passwords do not match";
+    }
+
+    if (name === "password" && query.length > 0) {
+      // check password strength
+    }
+  };
+
   return (
     <div className="relative">
-      <label htmlFor={name} className="text-[13px] font-medium ml-1">
-        {title}
+      <label htmlFor={name} className="text-[13px] font-medium ml-1 flex gap-1">
+        {title} <div className="text-orange-500">{showMsg()}</div>
       </label>
       <input
         name={name}

@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { User, BaseGroup } from "../interfaces";
 
-export type FormData = {
+export type UserData = {
   username: string;
   email: string;
   first_name: string;
@@ -13,18 +13,12 @@ export type FormData = {
   role: number;
 };
 
-interface UsersState {
-  users: User[];
-  userInfo: FormData;
-  baseGroups: BaseGroup[];
-}
-
 type FormUpdate = {
-  key: keyof FormData;
+  key: keyof UserData;
   value: string | number;
 };
 
-const defaultInfo: FormData = {
+const defaultInfo: UserData = {
   username: "",
   email: "",
   first_name: "",
@@ -36,10 +30,21 @@ const defaultInfo: FormData = {
   role: 9,
 };
 
+// State for users slice /////////////
+interface UsersState {
+  users: User[];
+  userInfo: UserData;
+  baseGroups: BaseGroup[];
+  isCreating: boolean;
+  isUpdating: boolean;
+}
+
 const initialState: UsersState = {
   users: [],
   userInfo: defaultInfo,
   baseGroups: [],
+  isCreating: false,
+  isUpdating: false,
 };
 
 export const usersSlice = createSlice({
@@ -87,6 +92,13 @@ export const usersSlice = createSlice({
     resetUserInfo: (state) => {
       state.userInfo = defaultInfo;
     },
+    setIsCreating: (state, action: PayloadAction<boolean>) => {
+      state.isCreating = action.payload;
+    },
+    setIsUpdating: (state, action: PayloadAction<boolean>) => {
+      state.isUpdating = action.payload;
+    },
+    resetUsersSlice: () => initialState,
   },
 });
 
@@ -96,5 +108,8 @@ export const {
   setSelectedUserInfo,
   resetUserInfo,
   setBaseGroups,
+  setIsCreating,
+  setIsUpdating,
+  resetUsersSlice,
 } = usersSlice.actions;
 export default usersSlice.reducer;

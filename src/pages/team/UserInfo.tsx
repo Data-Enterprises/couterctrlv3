@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { setUserInfo, type FormData } from "../../features/usersSlice";
+import {
+  setUserInfo,
+  setIsCreating,
+  setIsUpdating,
+  type UserData,
+} from "../../features/usersSlice";
 import { inputs, roles, userLevels, sampleCompanies } from ".";
 import TextInput from "../../components/TextInput";
 import SingleSelect from "../../components/SingleSelect";
@@ -8,7 +13,6 @@ import SingleSelect from "../../components/SingleSelect";
 const UserInfo = () => {
   const dispatch = useAppDispatch();
   const userInfo = useAppSelector((state) => state.users.userInfo);
-
   const [role, setRole] = useState<string>("");
   const [level, setLevel] = useState<string>("");
   const [company, setCompany] = useState<string>("");
@@ -24,8 +28,15 @@ const UserInfo = () => {
     setCompany(companyObj ? companyObj.label : "");
   }, [userInfo]);
 
+  useEffect(() => {
+    return () => {
+      dispatch(setIsCreating(false));
+      dispatch(setIsUpdating(false));
+    };
+  }, []);
+
   // For the text fields
-  const handleQueryChange = (field: keyof FormData, value: string) => {
+  const handleQueryChange = (field: keyof UserData, value: string) => {
     dispatch(setUserInfo({ key: field, value }));
   };
 
@@ -58,18 +69,26 @@ const UserInfo = () => {
     if (val === "company") return company;
   };
 
+  const handleCreateClick = () => {
+    // dispatch(setIsCreating(true));
+  };
+
+  const handleUpdateClick = () => {
+    // dispatch(setIsUpdating(true));
+  };
+
   return (
     <div className="h-full w-full ">
       <div className="text-lg font-medium underline">Personal Information</div>
       <div className="grid grid-cols-2 gap-x-8 gap-y-1">
         {inputs.map((input, i) => {
-          return input.type !== 'select' ? (
+          return input.type !== "select" ? (
             <TextInput
               key={i}
               name={input.name}
-              query={userInfo[input.name as keyof FormData] as string}
+              query={userInfo[input.name as keyof UserData] as string}
               setQuery={(field, value) =>
-                handleQueryChange(field as keyof FormData, value)
+                handleQueryChange(field as keyof UserData, value)
               }
               title={input.title}
               type={input.type}
@@ -91,10 +110,20 @@ const UserInfo = () => {
         })}
         <div className="flex justify-between items-end gap-4">
           <div className="w-1/2">
-            <button className="btn-themeGreen px-2 py-[5px] w-full">Reset Security</button>
+            <button
+              className="btn-themeBlue py-[5px] w-full"
+              onClick={handleCreateClick}
+            >
+              Create User
+            </button>
           </div>
           <div className="w-1/2">
-            <button className="btn-themeGreen px-2 py-[5px] w-full">Reset Password</button>
+            <button
+              className="btn-themeBlue py-[5px] w-full"
+              onClick={handleUpdateClick}
+            >
+              Update User
+            </button>
           </div>
         </div>
       </div>
