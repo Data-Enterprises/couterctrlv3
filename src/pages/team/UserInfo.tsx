@@ -1,28 +1,25 @@
-import { useEffect, useState } from "react";
+import { useAppSelector, useAppDispatch } from "../../hooks";
+import { roles, userLevels } from ".";
+import { setUserInfo, type FormData } from "../../features/usersSlice";
 import TextInput from "../../components/TextInput";
 import SingleSelect from "../../components/SingleSelect";
-import { roles, formData } from ".";
-// import { setUserInfo } from "../../features/usersSlice";
 
 const UserInfo = () => {
-  const [userInfo, setUserInfo] = useState<typeof formData>(formData);
+  const dispatch = useAppDispatch();
+  const userInfo = useAppSelector((state) => state.users.userInfo);
 
-  useEffect(() => {
-    console.log(userInfo);
-  }, [userInfo]);
-
-  const handleQueryChange = (field: string, value: string) => {
-    setUserInfo((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const handleQueryChange = (field: keyof FormData, value: string) => {
+    dispatch(setUserInfo({ key: field, value }));
   };
 
   const handleRoleSelection = (selection: string | number) => {
-    setUserInfo((prev) => ({
-      ...prev,
-      role: selection as string,
-    }));
+    const role = Number(selection);
+    dispatch(setUserInfo({ key: "role", value: role }));
+  };
+
+  const handleLevelSelection = (selection: string | number) => {
+    const level = Number(selection);
+    dispatch(setUserInfo({ key: "user_level", value: level }));
   };
 
   return (
@@ -33,34 +30,40 @@ const UserInfo = () => {
           name="username"
           title="Username"
           query={userInfo.username}
-          setQuery={handleQueryChange}
+          setQuery={(key, value) =>
+            handleQueryChange(key as keyof FormData, value)
+          }
         />
         <TextInput
           name="email"
           title="Email"
           query={userInfo.email}
-          setQuery={handleQueryChange}
+          setQuery={(key, value) =>
+            handleQueryChange(key as keyof FormData, value)
+          }
         />
         <TextInput
           name="firstName"
           title="First Name"
           query={userInfo.firstName}
-          setQuery={handleQueryChange}
+          setQuery={(key, value) =>
+            handleQueryChange(key as keyof FormData, value)
+          }
         />
         <TextInput
           name="lastName"
           title="Last Name"
           query={userInfo.lastName}
-          setQuery={handleQueryChange}
+          setQuery={(key, value) =>
+            handleQueryChange(key as keyof FormData, value)
+          }
         />
         <SingleSelect
-          data={[]}
-          valueKey={""}
-          displayKey={""}
+          data={userLevels}
+          valueKey="levelId"
+          displayKey="levelDescription"
           label={"User Level"}
-          onSelect={function (selection: string | number): void {
-            throw new Error("Function not implemented." + selection);
-          }}
+          onSelect={handleLevelSelection}
         />
         <SingleSelect
           data={[]}
@@ -75,13 +78,17 @@ const UserInfo = () => {
           name="password"
           title="Password"
           query={userInfo.password}
-          setQuery={handleQueryChange}
+          setQuery={(key, value) =>
+            handleQueryChange(key as keyof FormData, value)
+          }
         />
         <TextInput
           name="confirmPassword"
           title="Confirm Password"
           query={userInfo["confirmPassword"]}
-          setQuery={handleQueryChange}
+          setQuery={(key, value) =>
+            handleQueryChange(key as keyof FormData, value)
+          }
         />
         <SingleSelect
           data={roles}

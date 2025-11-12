@@ -7,10 +7,10 @@ export type FormData = {
   firstName: string;
   lastName: string;
   password: string;
-  user_level: string;
-  company: string;
+  user_level: number;
+  company: number;
   confirmPassword: string;
-  role: string;
+  role: number;
 };
 
 interface UsersState {
@@ -20,7 +20,7 @@ interface UsersState {
 
 type FormUpdate = {
   key: keyof FormData;
-  value: string;
+  value: string | number;
 };
 
 const defaultInfo: FormData = {
@@ -29,10 +29,10 @@ const defaultInfo: FormData = {
   firstName: "",
   lastName: "",
   password: "",
-  user_level: "",
-  company: "",
+  user_level: 0,
+  company: 0,
   confirmPassword: "",
-  role: "9",
+  role: 9,
 };
 
 const initialState: UsersState = {
@@ -49,7 +49,11 @@ export const usersSlice = createSlice({
     },
     setUserInfo: (state, action: PayloadAction<FormUpdate>) => {
       const { key, value } = action.payload;
-      state.userInfo[key] = value;
+      if (key === "role" || key === "user_level" || key === "company") {
+        state.userInfo = { ...state.userInfo, [key]: value as number };
+      } else {
+        state.userInfo = { ...state.userInfo, [key]: value as string };
+      }
     },
     resetUserInfo: (state) => {
       state.userInfo = defaultInfo;

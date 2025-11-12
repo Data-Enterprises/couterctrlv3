@@ -6,7 +6,7 @@ interface SingleSelectProps<T> {
   valueKey: keyof T;
   displayKey: keyof T;
   label: string;
-  onSelect: (selection: string | number) => void;
+  onSelect?: (selection: string | number) => void;
   id?: number;
   value?: number;
   className?: string;
@@ -100,7 +100,7 @@ const SingleSelect = <T,>({
   };
 
   const handleSelect = (selection: T) => {
-    onSelect(selection[valueKey] as string);
+    if (onSelect) onSelect(selection[valueKey] as string);
     setQuery(selection[displayKey] as string);
     if (listRef.current && !keepOpen) {
       listRef.current.setAttribute("data-display", "closed");
@@ -178,11 +178,12 @@ const SingleSelect = <T,>({
           <div
             ref={listRef}
             data-display="closed"
-            className={`absolute w-full hover:cursor-pointer text-content rounded-lg bg-custom-white 
+            className={`absolute no-scrollbar w-full hover:cursor-pointer text-content rounded-lg bg-custom-white 
                 overflow-y-auto z-20 shadow-lg
                 data-[display=open]:animate-appear
                 data-[display=closed]:animate-dissapear
-                data-[display=open]:max-h-[235px]
+                data-[display=closed]:pointer-events-none
+                data-[display=open]:max-h-[280px]
                 data-[display=closed]:h-0 ${listClass}`}
           >
             {filteredData.map((d, idx) => (
@@ -190,7 +191,7 @@ const SingleSelect = <T,>({
                 data-testid={`single-select-option-${id}-${idx}`}
                 key={`d-${id}-${idx}`}
                 onClick={() => handleSelect(d)}
-                className="flex hover:bg-panel_active hover:text-custom-white transition-all duration-300 items-center"
+                className="flex hover:bg-panel_active py-0.5 hover:text-custom-white transition-all duration-300 items-center"
                 data-value={d[valueKey]}
               >
                 <div className="grid grid-cols-[14px_1fr] min-h-[27px]">
