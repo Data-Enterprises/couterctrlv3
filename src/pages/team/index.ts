@@ -103,11 +103,11 @@ export type FormInput = {
 export const inputs = [
   { name: "username", title: "Username", type: "text" },
   { name: "email", title: "Email", type: "text" },
-  { name: "firstName", title: "First Name", type: "text" },
-  { name: "lastName", title: "Last Name", type: "text" },
+  { name: "first_name", title: "First Name", type: "text" },
+  { name: "last_name", title: "Last Name", type: "text" },
   { name: "user_level", title: "User Level", type: "select", data: userLevels },
   { name: "company", title: "Company", type: "select", data: [] },
   { name: "password", title: "Password", type: "text" },
-  { name: "confirmPassword", title: "Confirm Password", type: "text" },
+  { name: "confirm_password", title: "Confirm Password", type: "text" },
   { name: "role", title: "Role", type: "select", data: roles },
 ];

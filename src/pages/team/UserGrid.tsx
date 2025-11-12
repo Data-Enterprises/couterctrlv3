@@ -3,11 +3,12 @@ import { getAllUsers } from "../../api/user";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type { JsonError, User } from "../../interfaces";
-import { setUsers, resetUserInfo } from "../../features/usersSlice";
+import { setUsers, resetUserInfo, setSelectedUserInfo } from "../../features/usersSlice";
 
 // For the table
 import { AgGridReact } from "ag-grid-react";
 import { colDefs, theme } from ".";
+import type { RowClickedEvent } from "ag-grid-community";
 
 const UserGrid = () => {
   const toast = useToast();
@@ -52,6 +53,22 @@ const UserGrid = () => {
     dispatch(resetUserInfo());
   };
 
+  const handleRowClick = (e: RowClickedEvent) => {
+    dispatch(setSelectedUserInfo(e.data));
+  };
+
+  /**
+   * username,
+   * email,
+   * first name,
+   * last name,
+   * user level,
+   * company,
+   * password,
+   * confirm password,
+   * role
+   */
+
   return (
     <div className="w-full no-scrollbar">
       <div className="mb-2 flex gap-2">
@@ -75,7 +92,7 @@ const UserGrid = () => {
           pagination={true}
           paginationPageSize={23}
           paginationPageSizeSelector={false}
-          // domLayout="autoHeight"
+          onRowClicked={handleRowClick}
         />
       </div>
     </div>

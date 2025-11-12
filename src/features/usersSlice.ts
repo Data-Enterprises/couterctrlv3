@@ -4,12 +4,12 @@ import type { User } from "../interfaces";
 export type FormData = {
   username: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   password: string;
   user_level: number;
   company: number;
-  confirmPassword: string;
+  confirm_password: string;
   role: number;
 };
 
@@ -26,12 +26,12 @@ type FormUpdate = {
 const defaultInfo: FormData = {
   username: "",
   email: "",
-  firstName: "",
-  lastName: "",
+  first_name: "",
+  last_name: "",
   password: "",
   user_level: 0,
   company: 0,
-  confirmPassword: "",
+  confirm_password: "",
   role: 9,
 };
 
@@ -55,11 +55,36 @@ export const usersSlice = createSlice({
         state.userInfo = { ...state.userInfo, [key]: value as string };
       }
     },
+    setSelectedUserInfo: (state, action: PayloadAction<User>) => {
+      const {
+        username,
+        email,
+        first_name,
+        last_name,
+        user_level,
+        company,
+        role,
+        password,
+      } = action.payload;
+      state.userInfo = {
+        ...state.userInfo,
+        username,
+        email,
+        first_name,
+        last_name,
+        user_level,
+        company,
+        role: role === null ? 0 : role,
+        password: password,
+        confirm_password: password,
+      };
+    },
     resetUserInfo: (state) => {
       state.userInfo = defaultInfo;
     },
   },
 });
 
-export const { setUsers, setUserInfo, resetUserInfo } = usersSlice.actions;
+export const { setUsers, setUserInfo, setSelectedUserInfo, resetUserInfo } =
+  usersSlice.actions;
 export default usersSlice.reducer;
