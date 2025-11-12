@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { User } from "../interfaces";
+import type { User, BaseGroup } from "../interfaces";
 
 export type FormData = {
   username: string;
@@ -16,6 +16,7 @@ export type FormData = {
 interface UsersState {
   users: User[];
   userInfo: FormData;
+  baseGroups: BaseGroup[];
 }
 
 type FormUpdate = {
@@ -38,6 +39,7 @@ const defaultInfo: FormData = {
 const initialState: UsersState = {
   users: [],
   userInfo: defaultInfo,
+  baseGroups: [],
 };
 
 export const usersSlice = createSlice({
@@ -79,12 +81,20 @@ export const usersSlice = createSlice({
         confirm_password: password,
       };
     },
+    setBaseGroups: (state, action: PayloadAction<BaseGroup[]>) => {
+      state.baseGroups = action.payload;
+    },
     resetUserInfo: (state) => {
       state.userInfo = defaultInfo;
     },
   },
 });
 
-export const { setUsers, setUserInfo, setSelectedUserInfo, resetUserInfo } =
-  usersSlice.actions;
+export const {
+  setUsers,
+  setUserInfo,
+  setSelectedUserInfo,
+  resetUserInfo,
+  setBaseGroups,
+} = usersSlice.actions;
 export default usersSlice.reducer;

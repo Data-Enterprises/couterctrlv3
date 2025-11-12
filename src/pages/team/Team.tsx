@@ -1,8 +1,31 @@
+import { useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "../../hooks";
+import { useToast } from "../../components/toasts/hooks/useToast";
+
+import { getBaseGroupsAssignedToUser } from "../../api/team";
+import { setBaseGroups, resetUserInfo } from "../../features/usersSlice";
+
 import UserInfo from "./UserInfo";
 import UserGrid from "./UserGrid";
 import BaseGroups from "./BaseGroups";
 
 const Team = () => {
+  const toast = useToast();
+  const dispatch = useAppDispatch();
+  const context = useAppSelector((state) => state.app);
+
+  useEffect(() => {
+    getBaseGroupsAssignedToUser(context.url, context.token, 0)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(setBaseGroups(j.groups));
+        }
+      })
+      .catch((err) => {
+        toast.error("Error fetching base groups " + err.message);
+      });
+  }, [resetUserInfo]);
 
   /**
    * After this is finished, make sure you account for houchens users???

@@ -110,5 +110,11 @@ export interface User {
   password_change_needed: number;
   logged_in: boolean | null;
   security_question_id: number;
-  security_answer: string; 
+  security_answer: string;
+}
+
+export interface BaseGroup {
+  id: number;
+  name: string;
+  active: 1 | 0;
 }

@@ -3,7 +3,13 @@ import { getAllUsers } from "../../api/user";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type { JsonError, User } from "../../interfaces";
-import { setUsers, resetUserInfo, setSelectedUserInfo } from "../../features/usersSlice";
+import {
+  setUsers,
+  resetUserInfo,
+  setSelectedUserInfo,
+  setBaseGroups,
+} from "../../features/usersSlice";
+import { getBaseGroupsAssignedToUser } from "../../api/team";
 
 // For the table
 import { AgGridReact } from "ag-grid-react";
@@ -55,19 +61,17 @@ const UserGrid = () => {
 
   const handleRowClick = (e: RowClickedEvent) => {
     dispatch(setSelectedUserInfo(e.data));
+    getBaseGroupsAssignedToUser(context.url, context.token, e.data.id)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(setBaseGroups(j.groups));
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error("Error fetching user's base groups " + err.message);
+      });
   };
-
-  /**
-   * username,
-   * email,
-   * first name,
-   * last name,
-   * user level,
-   * company,
-   * password,
-   * confirm password,
-   * role
-   */
 
   return (
     <div className="w-full no-scrollbar">
