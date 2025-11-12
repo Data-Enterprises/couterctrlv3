@@ -70,4 +70,48 @@ export const getStoresAssignedToUserGroup = async (
   return json;
 };
 
-// export const updateGroup = (groupId: number, groupName: string, storeIds: number[]) => {};
+export const addStoreToGroup = async (
+  url: string,
+  token: string,
+  userid: number,
+  groupid: number,
+  storeid: number
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "groups/assign_users_store_to_user_group",
+    params: {
+      userid,
+      groupid,
+      storeid,
+    },
+  });
+  return json;
+};
+
+export const removeStoreFromGroup = async (
+  url: string,
+  token: string,
+  userid: number,
+  groupid: number,
+  storeid: number
+) => {
+  const json = await axios({
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "groups/unassign_users_store_to_user_group",
+    params: {
+      userid,
+      groupid,
+      storeid,
+    },
+  });
+  return json;
+};

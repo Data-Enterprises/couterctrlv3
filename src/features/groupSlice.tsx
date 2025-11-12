@@ -58,6 +58,16 @@ const groupSlice = createSlice({
     ) {
       state.storesWithGroupStatus = action.payload;
     },
+    updateStoresWithStatus: (state, action: PayloadAction<number>) => {
+      const storeId = action.payload;
+      state.storesWithGroupStatus = state.storesWithGroupStatus
+        .map((store) =>
+          store.storeid === storeId
+            ? { ...store, active: store.active === 1 ? 0 : 1 }
+            : store
+        )
+        .sort((a, b) => b.active - a.active) as StoreWithGroupStatus[];
+    },
     resetGroupState: () => initialState,
   },
 });
@@ -69,6 +79,7 @@ export const {
   setCreateInput,
   setFilterOption,
   setStoresWithGroupStatus,
+  updateStoresWithStatus,
   resetGroupState,
 } = groupSlice.actions;
 export default groupSlice.reducer;

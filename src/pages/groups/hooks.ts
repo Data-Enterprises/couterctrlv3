@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 export const useGridCols = () => {
-  const [cols, setCols] = useState("grid-cols-2");
+  const [cols, setCols] = useState("grid-cols-3");
 
   useEffect(() => {
     const handleResize = () => {
@@ -9,7 +9,7 @@ export const useGridCols = () => {
       if (width < 768) {
         setCols("grid-cols-1");
       } else if (width < 1537) {
-        setCols("grid-cols-2");
+        setCols("grid-cols-3");
       } else {
         setCols("grid-cols-3");
       }

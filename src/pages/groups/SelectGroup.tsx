@@ -1,17 +1,12 @@
-import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import {
   setCreateInput,
   setFilterOption,
   setSelectedGroup,
-  setStoresWithGroupStatus,
   type Group,
   type FilterOption,
 } from "../../features/groupSlice";
 import SingleSelect from "../../components/SingleSelect";
-import { getStoresAssignedToUserGroup } from "../../api/groups";
-import type { JsonError } from "../../interfaces";
-import { useToast } from "../../components/toasts/hooks/useToast";
 
 const options = [
   { display: "All Stores", value: "all" },
@@ -19,46 +14,41 @@ const options = [
   { display: "Inactive Stores", value: "inactive" },
 ];
 
-const SelectGroup = () => {
-  const toast = useToast();
+interface SelectGroupProps {
+  getData: (id: number) => void;
+}
+
+const SelectGroup = ({ getData }: SelectGroupProps) => {
   const dispatch = useAppDispatch();
   const group = useAppSelector((state) => state.group);
-  const context = useAppSelector((state) => state.app);
-  const user = useAppSelector((state) => state.user);
-
-  useEffect(() => {
-    // Show all, active, or inactive stores based on filterOption and selectedGroup
-  }, [group.filterOption, group.selectedGroup]);
 
   const handleGroupSelect = (groupId: number) => {
     const selected: Group = group.groups.find((g: Group) => g.id === groupId)!;
     dispatch(setCreateInput(selected.group_name));
     dispatch(setSelectedGroup(selected));
-    getStoresAssignedToUserGroup(
-      context.url,
-      context.token,
-      user.userid,
-      groupId
-    )
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error == "0") {
-          const stores = [...j.stores].sort((a, b) => b.active - a.active);
-          dispatch(setStoresWithGroupStatus(stores));
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error(err.message);
-      });
+    getData(groupId);
   };
 
   const handleOptionSelect = (option: string) => {
     dispatch(setFilterOption(option as FilterOption));
   };
 
+  const showFilterAmount = (filter: FilterOption = "all") => {
+    switch (filter) {
+      case "all":
+        return group.storesWithGroupStatus.length;
+      case "active":
+        return group.storesWithGroupStatus.filter((s) => s.active === 1).length;
+      case "inactive":
+        return group.storesWithGroupStatus.filter((s) => s.active === 0).length;
+      default:
+        return group.storesWithGroupStatus.length;
+    }
+  };
+
   return (
     <div data-testid="select-group">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-2">
         <SingleSelect
           id={1}
           label="Select Group"
@@ -89,21 +79,25 @@ const SelectGroup = () => {
           <div className="bg-blue-500 text-custom-white p-2 rounded-r-lg uppercase">
             all stores
           </div>
-          <div className="flex-1 text-right p-2 ">0</div>
+          <div className="flex-1 text-right p-2 ">{showFilterAmount()}</div>
         </div>
 
         <div className="flex mb-4 bg-custom-white rounded-r-lg shadow-lg">
           <div className="bg-emerald-500 text-custom-white p-2 rounded-r-lg uppercase">
             active stores
           </div>
-          <div className="flex-1 text-right p-2 ">0</div>
+          <div className="flex-1 text-right p-2 ">
+            {showFilterAmount("active")}
+          </div>
         </div>
 
         <div className="flex mb-4 bg-custom-white rounded-r-lg shadow-lg">
           <div className="bg-orange-500 text-custom-white p-2 rounded-r-lg uppercase">
             inactive stores
           </div>
-          <div className="flex-1 text-right p-2 ">0</div>
+          <div className="flex-1 text-right p-2 ">
+            {showFilterAmount("inactive")}
+          </div>
         </div>
       </div>
     </div>
