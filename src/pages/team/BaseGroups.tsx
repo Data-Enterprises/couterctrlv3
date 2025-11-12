@@ -1,7 +1,15 @@
-import { useAppSelector } from "../../hooks";
+import { useAppSelector, useAppDispatch } from "../../hooks";
 import type { FilterOption } from "../../features/groupSlice";
+import { setBaseGroups } from "../../features/usersSlice";
+import type { BaseGroup } from "../../interfaces";
+import { useToast } from "../../components/toasts/hooks/useToast";
+import { assignBaseGroupToUser, deleteUserBaseGroupLink } from "../../api/team";
 
 const BaseGroups = () => {
+  const toast = useToast();
+  const dispatch = useAppDispatch();
+  const context = useAppSelector((state) => state.app);
+  const user = useAppSelector((state) => state.user);
   const baseGroups = useAppSelector((state) => state.users.baseGroups);
 
   const renderGroupAmount = (arg: FilterOption) => {
@@ -10,6 +18,48 @@ const BaseGroups = () => {
       return baseGroups.filter((group) => group.active).length;
     if (arg === "inactive")
       return baseGroups.filter((group) => !group.active).length;
+  };
+
+  const handlePanelClick = (group: BaseGroup) => {
+    const copy: BaseGroup[] = [...baseGroups].map((g) => {
+      if (g.id === group.id) {
+        return { ...g, active: g.active === 1 ? 0 : 1 };
+      } else {
+        return g;
+      }
+    });
+
+    const result = () => {
+      return copy.sort((a: BaseGroup, b: BaseGroup) =>
+        a.active > b.active ? -1 : 1
+      );
+    };
+
+    if (group.active === 1) {
+      // remove the group
+      deleteUserBaseGroupLink(context.url, context.token, user.userid, group.id)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            dispatch(setBaseGroups(result()));
+          }
+        })
+        .catch((err) => {
+          toast.error("Error removing group " + err.message);
+        });
+    } else {
+      // assign the group
+      assignBaseGroupToUser(context.url, context.token, user.userid, group.id)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            dispatch(setBaseGroups(result()));
+          }
+        })
+        .catch((err) => {
+          toast.error("Error assigning group " + err.message);
+        });
+    }
   };
 
   return (
@@ -35,6 +85,7 @@ const BaseGroups = () => {
               key={i}
               className="flex justify-between bg-custom-white p-4 rounded-lg shadow-lg hover:shadow-inner 
                 hover:bg-blue-200/50 transition-all duration-200 cursor-pointer"
+              onClick={() => handlePanelClick(group)}
             >
               <div>{group.name}</div>
               <div
