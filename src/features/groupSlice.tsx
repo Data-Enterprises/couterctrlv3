@@ -6,6 +6,13 @@ export type Group = {
   group_name: string;
 };
 
+export type StoreWithGroupStatus = {
+  store_number: string;
+  store_name: string;
+  storeid: number;
+  active: 1 | 0;
+};
+
 export type FilterOption = "all" | "active" | "inactive";
 
 export interface GroupState {
@@ -14,6 +21,7 @@ export interface GroupState {
   refreshGroups: boolean;
   createInput: string;
   filterOption: FilterOption;
+  storesWithGroupStatus: StoreWithGroupStatus[];
 }
 
 export const initialState: GroupState = {
@@ -22,6 +30,7 @@ export const initialState: GroupState = {
   createInput: "",
   filterOption: "all",
   selectedGroup: null,
+  storesWithGroupStatus: [],
 };
 
 const groupSlice = createSlice({
@@ -43,6 +52,12 @@ const groupSlice = createSlice({
     setFilterOption(state, action: PayloadAction<FilterOption>) {
       state.filterOption = action.payload;
     },
+    setStoresWithGroupStatus(
+      state,
+      action: PayloadAction<StoreWithGroupStatus[]>
+    ) {
+      state.storesWithGroupStatus = action.payload;
+    },
     resetGroupState: () => initialState,
   },
 });
@@ -53,6 +68,7 @@ export const {
   setRefreshGroups,
   setCreateInput,
   setFilterOption,
+  setStoresWithGroupStatus,
   resetGroupState,
 } = groupSlice.actions;
 export default groupSlice.reducer;

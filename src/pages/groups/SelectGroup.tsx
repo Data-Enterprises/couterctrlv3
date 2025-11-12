@@ -4,10 +4,14 @@ import {
   setCreateInput,
   setFilterOption,
   setSelectedGroup,
+  setStoresWithGroupStatus,
   type Group,
   type FilterOption,
 } from "../../features/groupSlice";
 import SingleSelect from "../../components/SingleSelect";
+import { getStoresAssignedToUserGroup } from "../../api/groups";
+import type { JsonError } from "../../interfaces";
+import { useToast } from "../../components/toasts/hooks/useToast";
 
 const options = [
   { display: "All Stores", value: "all" },
@@ -16,8 +20,11 @@ const options = [
 ];
 
 const SelectGroup = () => {
+  const toast = useToast();
   const dispatch = useAppDispatch();
   const group = useAppSelector((state) => state.group);
+  const context = useAppSelector((state) => state.app);
+  const user = useAppSelector((state) => state.user);
 
   useEffect(() => {
     // Show all, active, or inactive stores based on filterOption and selectedGroup
@@ -27,6 +34,22 @@ const SelectGroup = () => {
     const selected: Group = group.groups.find((g: Group) => g.id === groupId)!;
     dispatch(setCreateInput(selected.group_name));
     dispatch(setSelectedGroup(selected));
+    getStoresAssignedToUserGroup(
+      context.url,
+      context.token,
+      user.userid,
+      groupId
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error == "0") {
+          const stores = [...j.stores].sort((a, b) => b.active - a.active);
+          dispatch(setStoresWithGroupStatus(stores));
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error(err.message);
+      });
   };
 
   const handleOptionSelect = (option: string) => {

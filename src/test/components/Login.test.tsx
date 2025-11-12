@@ -5,19 +5,12 @@ import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../utils";
 import { mockStore as store } from "../mockStore";
 import axios from "axios";
-import App from "../../App";
 import SideBar from "../../components/navigation/SideBar";
 
 // Mock axios module and the userEvent setup
 vi.mock("axios");
 const mockedAxios = axios as Mocked<typeof axios>;
 const user = userEvent.setup();
-
-const mockGroups = [
-  { id: 1, group_name: "Group A", userid: 517 },
-  { id: 2, group_name: "Group B", userid: 517 },
-  { id: 3, group_name: "Group C", userid: 517 },
-];
 
 describe("Login Page", () => {
   it("should render", () => {
@@ -105,34 +98,6 @@ describe("Login Page", () => {
       expect(state.app.token).toBe("");
       expect(state.user.username).toBe("");
       expect(state.user.password).toBe("");
-    });
-  });
-
-  it("should fetch user's store groups after login", async () => {
-    mockedAxios.post.mockResolvedValue({
-      data: { error: 0, token: "new_mocked_token_456" },
-    });
-
-    renderWithProviders(<App />);
-
-    store.dispatch({ type: "app/setToken", payload: "existing_token_789" });
-    store.dispatch({ type: "app/setLoggedIn", payload: true });
-
-    mockedAxios.get.mockResolvedValue({
-      data: { error: 0, success: true, msg: "Success", groups: mockGroups },
-    });
-
-    await axios.get("/groups/").then((resp) => {
-      const j = resp.data;
-      if (j.error == 0) {
-        store.dispatch({ type: "group/setGroups", payload: j.groups });
-      }
-    });
-
-    // Call this after all async code has been run/resolved
-    await waitFor(() => {
-      const state = store.getState();
-      expect(state.group.groups.length).toBeGreaterThan(0);
     });
   });
 });

@@ -164,7 +164,7 @@ describe("Groups Page", () => {
 
     const input = screen.getByTestId("create-group-input");
     await user.type(input, "NonExistingGroup");
-    
+
     const deleteBtn = screen.getByTestId("group-delete-btn");
     expect(deleteBtn).toBeInTheDocument();
     await user.click(deleteBtn);

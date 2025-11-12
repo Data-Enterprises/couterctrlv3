@@ -32,18 +32,18 @@ describe("DatePickers Component", () => {
     expect(calendar).toBeInTheDocument();
   });
 
-    it("should display the calendar when clicking on the end date picker", async () => {
-      renderWithProviders(<DatePickers />);
-      const endDatePicker = screen.getByTestId("end-date-picker");
-      expect(endDatePicker).toBeInTheDocument();
+  it("should display the calendar when clicking on the end date picker", async () => {
+    renderWithProviders(<DatePickers />);
+    const endDatePicker = screen.getByTestId("end-date-picker");
+    expect(endDatePicker).toBeInTheDocument();
 
-      // Find the menu button and click it
-      const endDateMenuButton = screen.getByTestId("end-date-menu-button");
-      expect(endDateMenuButton).toBeInTheDocument();
-      await user.click(endDateMenuButton);
+    // Find the menu button and click it
+    const endDateMenuButton = screen.getByTestId("end-date-menu-button");
+    expect(endDateMenuButton).toBeInTheDocument();
+    await user.click(endDateMenuButton);
 
-      // The headless ui component renders the menu items in a portal, so we need to wait for it
-      const calendar = await screen.findByTestId("end-calendar-container");
-      expect(calendar).toBeInTheDocument();
-    });
+    // The headless ui component renders the menu items in a portal, so we need to wait for it
+    const calendar = await screen.findByTestId("end-calendar-container");
+    expect(calendar).toBeInTheDocument();
+  });
 });

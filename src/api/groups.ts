@@ -49,4 +49,25 @@ export const deleteGroup = async (url: string, token: string, id: number) => {
   return json;
 };
 
+export const getStoresAssignedToUserGroup = async (
+  url: string,
+  token: string,
+  userid: number,
+  groupid: number
+) => {
+  const json = await axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "groups/stores_assigned_to_user_group",
+    params: {
+      userid,
+      groupid,
+    },
+  });
+  return json;
+};
+
 // export const updateGroup = (groupId: number, groupName: string, storeIds: number[]) => {};
