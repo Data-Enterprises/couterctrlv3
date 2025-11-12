@@ -38,8 +38,8 @@ const UserInfo = () => {
 
   return (
     <div className="h-full w-full ">
-      <div className="text-lg font-medium">Personal Information</div>
-      <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+      <div className="text-lg font-medium underline">Personal Information</div>
+      <div className="grid grid-cols-2 gap-x-8 gap-y-1">
         {inputs.map((input, i) => {
           return input.type === "text" ? (
             <TextInput

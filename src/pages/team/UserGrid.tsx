@@ -53,7 +53,7 @@ const UserGrid = () => {
   };
 
   return (
-    <div className="h-full w-full no-scrollbar">
+    <div className="w-full no-scrollbar">
       <div className="mb-2 flex gap-2">
         <input
           type="text"
@@ -66,15 +66,16 @@ const UserGrid = () => {
           Add User
         </button>
       </div>
-      <div className="h-[88%]">
+      <div className="h-[93.1%]">
         <AgGridReact
           className="no-scrollbar"
           rowData={filtered}
           columnDefs={colDefs}
           theme={theme}
           pagination={true}
-          paginationPageSize={11}
+          paginationPageSize={23}
           paginationPageSizeSelector={false}
+          // domLayout="autoHeight"
         />
       </div>
     </div>
