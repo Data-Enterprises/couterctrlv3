@@ -11,6 +11,7 @@ import searchReducer from "../features/searchSlice";
 import salesReducer from "../features/salesSlice";
 import groupReducer from "../features/groupSlice";
 import storeReducer from "../features/storeSlice";
+import usersReducer from "../features/usersSlice";
 
 export const store = configureStore({
   reducer: {
@@ -21,6 +22,7 @@ export const store = configureStore({
     sales: salesReducer,
     group: groupReducer,
     stores: storeReducer,
+    users: usersReducer,
   },
 });
 

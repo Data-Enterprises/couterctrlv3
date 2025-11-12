@@ -1,4 +1,3 @@
-// need to recreate a mock store for testing purposes
 import { configureStore } from "@reduxjs/toolkit";
 
 import appReducer from "../features/appSlice";
@@ -8,6 +7,7 @@ import searchReducer from "../features/searchSlice";
 import salesReducer from "../features/salesSlice";
 import groupReducer from "../features/groupSlice";
 import storeReducer from "../features/storeSlice";
+import usersReducer from "../features/usersSlice";
 
 export const mockStore = configureStore({
   reducer: {
@@ -18,5 +18,6 @@ export const mockStore = configureStore({
     sales: salesReducer,
     group: groupReducer,
     stores: storeReducer,
+    users: usersReducer,
   },
 });

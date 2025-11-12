@@ -91,3 +91,24 @@ export interface Store {
   store_number: string;
   store_name: string;
 }
+
+export interface User {
+  id: number;
+  username: string;
+  password: string;
+  user_level: number;
+  last_visit: string | null;
+  join_date: string | null;
+  first_name: string;
+  last_name: string;
+  email: string;
+  company: number;
+  active: number;
+  template: number | null;
+  security: number | null;
+  role: number | null;
+  password_change_needed: number;
+  logged_in: boolean | null;
+  security_question_id: number;
+  security_answer: string; 
+}
