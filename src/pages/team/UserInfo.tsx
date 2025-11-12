@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import TextInput from "../../components/TextInput";
 import SingleSelect from "../../components/SingleSelect";
 import { roles, formData } from ".";
+// import { setUserInfo } from "../../features/usersSlice";
 
 const UserInfo = () => {
   const [userInfo, setUserInfo] = useState<typeof formData>(formData);

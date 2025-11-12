@@ -3,59 +3,36 @@ import { getAllUsers } from "../../api/user";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type { JsonError, User } from "../../interfaces";
-import { setUsers } from "../../features/usersSlice";
+import { setUsers, resetUserInfo } from "../../features/usersSlice";
 
-import { themeQuartz, type ColGroupDef, type ColDef } from "ag-grid-community";
-
+// For the table
 import { AgGridReact } from "ag-grid-react";
-import { getUserLevelDescription } from ".";
+import { colDefs, theme } from ".";
 
 const UserGrid = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
+  const users = useAppSelector((state) => state.users.users);
   const [text, setText] = useState<string>("");
-
-  const colDefs: (ColDef<User> | ColGroupDef<User>)[] = [
-    {
-      headerName: "Name",
-      field: "username",
-      flex: 0.5,
-      resizable: false,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
-    },
-    {
-      headerName: "Last Visit",
-      field: "last_visit",
-      flex: 0.5,
-      resizable: false,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
-    },
-    {
-      headerName: "Email",
-      field: "email",
-      flex: 1,
-      resizable: false,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
-    },
-    {
-      headerName: "Level",
-      field: "user_level",
-      flex: 0.72,
-      resizable: false,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
-      valueFormatter: (params) =>
-        getUserLevelDescription(params.value as number),
-    },
-  ];
+  const [filtered, setFiltered] = useState<User[]>([]);
 
   useEffect(() => {
     getData();
   }, []);
+
+  // Filter the table by searching for the username
+  useEffect(() => {
+    if (text.trim() === "") {
+      setFiltered(users);
+    } else {
+      const lowerText = text.toLowerCase();
+      const filteredUsers = users.filter((user) =>
+        user.username.toLowerCase().includes(lowerText)
+      );
+      setFiltered(filteredUsers);
+    }
+  }, [text]);
 
   const getData = () => {
     getAllUsers(context.url, context.token)
@@ -63,6 +40,7 @@ const UserGrid = () => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setUsers(j.users));
+          setFiltered(j.users);
         }
       })
       .catch((err: JsonError) => {
@@ -70,18 +48,9 @@ const UserGrid = () => {
       });
   };
 
-  const theme = themeQuartz.withParams({
-    headerHeight: 30,
-    rowHeight: 26.5,
-    headerBackgroundColor: "#3b82f6",
-    headerTextColor: "#ffffff",
-    oddRowBackgroundColor: "#bfdbfe",
-    rowHoverColor: "#93c5fd",
-    headerFontWeight: "bold",
-    dataFontSize: 13,
-    selectCellBorder: "transparent",
-    rowBorder: "1px solid white",
-  });
+  const handleReset = () => {
+    dispatch(resetUserInfo());
+  };
 
   return (
     <div className="h-full w-full no-scrollbar">
@@ -93,12 +62,14 @@ const UserGrid = () => {
           className="basic-input focus:border"
           placeholder="Search Users"
         />
-        <button className="btn-themeBlue">Add User</button>
+        <button className="btn-themeBlue" onClick={handleReset}>
+          Add User
+        </button>
       </div>
       <div className="h-[88%]">
         <AgGridReact
           className="no-scrollbar"
-          rowData={useAppSelector((state) => state.users.users)}
+          rowData={filtered}
           columnDefs={colDefs}
           theme={theme}
           pagination={true}
