@@ -138,7 +138,7 @@ const UserInfo = () => {
             <TextInput
               key={i}
               name={input.name}
-              query={userInfo[input.name as keyof UserData] as string}
+              query={userInfo[input.name as keyof UserData] as string || ""}
               setQuery={(field, value) =>
                 handleQueryChange(field as keyof UserData, value)
               }

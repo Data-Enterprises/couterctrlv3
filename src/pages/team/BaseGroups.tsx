@@ -65,28 +65,32 @@ const BaseGroups = () => {
   };
 
   const canSelect = () => {
-    return baseGroups.length > 0;
+    return baseGroups.length > 0 && selectedUserId > 0;
   };
 
   const renderGroupAmount = (arg: FilterOption) => {
     if (!canSelect()) return "";
-    if (arg === "all") return baseGroups.length;
     if (arg === "active")
       return baseGroups.filter((group) => group.active).length;
     if (arg === "inactive")
       return baseGroups.filter((group) => !group.active).length;
   };
 
+  const isInteractive = () => {
+    return canSelect() ? "" : "opacity-50 pointer-events-none";
+  };
+
   return (
     <div className="select-none">
       <div className="flex gap-2">
-        <div className="bg-blue-500 text-custom-white px-2 py-0.5 rounded-t-lg text-sm">
-          {renderGroupAmount("all")} All Groups
-        </div>
-        <div className="bg-emerald-500 text-custom-white px-2 py-0.5 rounded-t-lg text-sm">
+        <div
+          className={`bg-emerald-500 text-custom-white px-2 py-0.5 rounded-t-lg text-sm ${isInteractive()} transition-all duration-500`}
+        >
           {renderGroupAmount("active")} Active Groups
         </div>
-        <div className="bg-orange-500 text-custom-white px-2 py-0.5 rounded-t-lg text-sm">
+        <div
+          className={`bg-orange-500 text-custom-white px-2 py-0.5 rounded-t-lg text-sm ${isInteractive()} transition-all duration-500`}
+        >
           {renderGroupAmount("inactive")} Inactive Groups
         </div>
       </div>
@@ -115,11 +119,16 @@ const BaseGroups = () => {
               ))
             : null}
         </div>
-        <div className="grid grid-cols-4 gap-4 absolute w-full pr-8 bottom-4">
-          <button className="btn-themeBlue px-0">Update Password</button>
-          <button className="btn-themeGreen px-0">Reset Security</button>
-          <button className="btn-themeGreen px-0">Reset Password</button>
-          <button className="btn-themeOrange px-0">Delete User</button>
+        <div className="grid grid-cols-3 gap-4 absolute w-full pr-8 bottom-4">
+          <button className={`btn-themeGreen px-0 ${isInteractive()}`}>
+            Reset Security
+          </button>
+          <button className={`btn-themeGreen px-0 ${isInteractive()}`}>
+            Reset Password
+          </button>
+          <button className={`btn-themeOrange px-0 ${isInteractive()}`}>
+            Delete User
+          </button>
         </div>
       </div>
     </div>

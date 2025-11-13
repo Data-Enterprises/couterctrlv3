@@ -85,13 +85,13 @@ export const usersSlice = createSlice({
         password: password,
         confirm_password: password,
       };
-      state.selectedUserId = 0; 
     },
     setBaseGroups: (state, action: PayloadAction<BaseGroup[]>) => {
       state.baseGroups = action.payload;
     },
     resetUserInfo: (state) => {
       state.userInfo = defaultInfo;
+      state.selectedUserId = 0; 
     },
     setRefresh: (state, action: PayloadAction<boolean>) => {
       state.refresh = action.payload;

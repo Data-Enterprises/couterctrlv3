@@ -77,7 +77,7 @@ const TextInput = <T,>({
   };
 
   const showTextColor = () => {
-    if (name === "confirm_password" && query.length > 0) {
+    if (name === "confirm_password") {
       if (userInfo.password !== userInfo.confirm_password) {
         return "text-orange-500";
       } else if (userInfo.password === userInfo.confirm_password) {
