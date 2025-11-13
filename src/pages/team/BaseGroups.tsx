@@ -9,10 +9,8 @@ const BaseGroups = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const user = useAppSelector((state) => state.user);
-  const { baseGroups } = useAppSelector(
-    (state) => state.users
-  );
+  const { selectedUserId } = useAppSelector((state) => state.users);
+  const { baseGroups } = useAppSelector((state) => state.users);
 
   const handlePanelClick = (group: BaseGroup) => {
     const copy: BaseGroup[] = [...baseGroups].map((g) => {
@@ -31,7 +29,12 @@ const BaseGroups = () => {
 
     if (group.active === 1) {
       // remove the group
-      deleteUserBaseGroupLink(context.url, context.token, user.userid, group.id)
+      deleteUserBaseGroupLink(
+        context.url,
+        context.token,
+        selectedUserId,
+        group.id
+      )
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
@@ -43,7 +46,12 @@ const BaseGroups = () => {
         });
     } else {
       // assign the group
-      assignBaseGroupToUser(context.url, context.token, user.userid, group.id)
+      assignBaseGroupToUser(
+        context.url,
+        context.token,
+        selectedUserId,
+        group.id
+      )
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {

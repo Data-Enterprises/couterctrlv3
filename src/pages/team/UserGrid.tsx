@@ -7,6 +7,7 @@ import {
   setUsers,
   setSelectedUserInfo,
   setBaseGroups,
+  setSelectedUserId,
 } from "../../features/usersSlice";
 import { getBaseGroupsAssignedToUser } from "../../api/team";
 
@@ -59,6 +60,7 @@ const UserGrid = () => {
   const handleRowClick = (e: RowClickedEvent) => {
     setText("");
     dispatch(setSelectedUserInfo(e.data));
+    dispatch(setSelectedUserId(e.data.id));
     getBaseGroupsAssignedToUser(context.url, context.token, e.data.id)
       .then((resp) => {
         const j = resp.data;
