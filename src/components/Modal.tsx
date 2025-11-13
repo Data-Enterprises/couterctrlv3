@@ -5,9 +5,16 @@ interface ModalProps {
   onClose: () => void;
   className?: string;
   children: React.ReactNode;
+  modalClassName?: string;
 }
 
-const Modal = ({ isOpen, onClose, className = "", children }: ModalProps) => {
+const Modal = ({
+  isOpen,
+  onClose,
+  className = "",
+  children,
+  modalClassName = "bg-bkg max-w-md w-full",
+}: ModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -41,7 +48,7 @@ const Modal = ({ isOpen, onClose, className = "", children }: ModalProps) => {
     >
       <div
         ref={modalRef}
-        className="bg-custom-white p-4 ml-12 rounded-xl shadow-xl max-w-md w-full"
+        className={`${modalClassName} p-4 ml-12 rounded-xl shadow-xl`}
       >
         {children}
       </div>

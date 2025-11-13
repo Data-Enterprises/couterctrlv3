@@ -1,5 +1,9 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { setBaseGroups, setDeleteModalOpen } from "../../features/usersSlice";
+import {
+  setAssignModalOpen,
+  setBaseGroups,
+  setDeleteModalOpen,
+} from "../../features/usersSlice";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type { FilterOption } from "../../features/groupSlice";
 import type { BaseGroup } from "../../interfaces";
@@ -84,7 +88,9 @@ const BaseGroups = () => {
     dispatch(setDeleteModalOpen(true));
   };
 
-  // const handleResetPassword = () => {};
+  const openAssignStoreModal = () => {
+    dispatch(setAssignModalOpen(true));
+  };
 
   return (
     <div className="select-none">
@@ -125,7 +131,13 @@ const BaseGroups = () => {
               ))
             : null}
         </div>
-        <div className="grid grid-cols-3 gap-4 absolute w-full pr-8 bottom-4">
+        <div className="grid grid-cols-4 gap-4 absolute w-full pr-8 bottom-4">
+          <button
+            className={`btn-themeBlue px-0 ${isInteractive()}`}
+            onClick={openAssignStoreModal}
+          >
+            Assign Stores
+          </button>
           <button className={`btn-themeGreen px-0 ${isInteractive()}`}>
             Reset Security
           </button>

@@ -9,7 +9,7 @@ interface PrefsParams {
   last_route?: string;
 }
 
-// GET
+// getting all stores for the user, their assigned stores, and their unassigned stores
 export const getUserStores = async (
   url: string,
   token: string,

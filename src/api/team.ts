@@ -124,3 +124,46 @@ export const deleteUser = async (
   });
   return json;
 };
+
+// For store assigning/unassigning
+export const assignUserToStore = async (
+  url: string,
+  token: string,
+  userid: number,
+  storeids: number[]
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "stores/assign_store",
+    data: {
+      userid,
+      storeids,
+    },
+  });
+  return json;
+};
+
+export const unassignUserFromStore = async (
+  url: string,
+  token: string,
+  userid: number,
+  storeid: number
+) => {
+  const json = await axios({
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "stores/unassign_user",
+    params: {
+      userid,
+      storeid,
+    },
+  });
+  return json;
+};

@@ -121,7 +121,7 @@ const SideBar = () => {
                   nav.isNavOpen
                     ? "w-full opacity-100"
                     : "w-0 opacity-0 pointer-events-none"
-                } transition-all duration-200`}
+                } transition-all duration-200 text-nowrap`}
               >
                 {item.name}
               </div>

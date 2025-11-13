@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { User, BaseGroup } from "../interfaces";
+import type { User, BaseGroup, Store, UnassignedStore } from "../interfaces";
 
 export type UserData = {
   username: string;
@@ -16,6 +16,11 @@ export type UserData = {
 type FormUpdate = {
   key: keyof UserData;
   value: string | number;
+};
+
+export type UserStores = {
+  assigned: Store[];
+  unassigned: UnassignedStore[];
 };
 
 const defaultInfo: UserData = {
@@ -38,6 +43,8 @@ interface UsersState {
   refresh: boolean;
   selectedUserId: number;
   deleteModalOpen: boolean;
+  assignModalOpen: boolean;
+  selectedUserStores: UserStores;
 }
 
 const initialState: UsersState = {
@@ -47,6 +54,11 @@ const initialState: UsersState = {
   refresh: true,
   selectedUserId: 0,
   deleteModalOpen: false,
+  assignModalOpen: false,
+  selectedUserStores: {
+    assigned: [],
+    unassigned: [],
+  },
 };
 
 export const usersSlice = createSlice({
@@ -93,7 +105,7 @@ export const usersSlice = createSlice({
     },
     resetUserInfo: (state) => {
       state.userInfo = defaultInfo;
-      state.selectedUserId = 0; 
+      state.selectedUserId = 0;
     },
     setRefresh: (state, action: PayloadAction<boolean>) => {
       state.refresh = action.payload;
@@ -103,6 +115,13 @@ export const usersSlice = createSlice({
     },
     setDeleteModalOpen: (state, action: PayloadAction<boolean>) => {
       state.deleteModalOpen = action.payload;
+    },
+    setAssignModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.assignModalOpen = action.payload;
+    },
+    setSelectedUserStores: (state, action: PayloadAction<UserStores>) => {
+      state.selectedUserStores.assigned = action.payload.assigned;
+      state.selectedUserStores.unassigned = action.payload.unassigned;
     },
     resetUsersSlice: () => initialState,
   },
@@ -117,6 +136,8 @@ export const {
   setRefresh,
   setSelectedUserId,
   setDeleteModalOpen,
+  setAssignModalOpen,
+  setSelectedUserStores,
   resetUsersSlice,
 } = usersSlice.actions;
 export default usersSlice.reducer;
