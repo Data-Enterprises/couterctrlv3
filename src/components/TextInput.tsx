@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useAppSelector } from "../hooks";
 import zxcvbn from "zxcvbn";
 import Eye from "../svgs/Eye";
+import Check from "../svgs/Check";
+import X from "../svgs/X";
 
 interface TextInputProps<T> {
   query: string;
@@ -25,7 +27,7 @@ const TextInput = <T,>({
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(name as keyof T, e.currentTarget.value);
   };
-  const userInfo = useAppSelector((state) => state.users.userInfo);
+  const { userInfo, selectedUserId, users } = useAppSelector((state) => state.users);
 
   const handleEncryptionToggle = () => {
     setEncrypted(!encrypted);
@@ -102,6 +104,20 @@ const TextInput = <T,>({
     }
   };
 
+  const showOk = () => {
+    if (selectedUserId === 0 && query.length > 0) {
+      // find that username in users
+      const exists = users.find(
+        (user) => user.username.toLowerCase() === query.toLowerCase()
+      );
+      if (exists) {
+        return <X className="absolute top-7 right-2" />;
+      } else {
+        return <Check className="absolute top-7 right-2" />;
+      }
+    }
+  };
+
   return (
     <div className="relative">
       <label htmlFor={name} className="text-[13px] font-medium ml-1 flex gap-1">
@@ -122,6 +138,7 @@ const TextInput = <T,>({
           ></div>
         </div>
       ) : null}
+      {name === "username" ? showOk() : null}
     </div>
   );
 };
