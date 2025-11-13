@@ -2,20 +2,26 @@ import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import {
   setUserInfo,
-  setIsCreating,
-  setIsUpdating,
+  setRefresh,
   type UserData,
+  resetUserInfo,
 } from "../../features/usersSlice";
 import { inputs, roles, userLevels, sampleCompanies } from ".";
 import TextInput from "../../components/TextInput";
 import SingleSelect from "../../components/SingleSelect";
+import { useTeamErrorCheck } from "./utils";
+import { createUser, updateUser } from "../../api/team";
+import { useToast } from "../../components/toasts/hooks/useToast";
 
 const UserInfo = () => {
+  const toast = useToast();
   const dispatch = useAppDispatch();
-  const userInfo = useAppSelector((state) => state.users.userInfo);
+  const context = useAppSelector((state) => state.app);
+  const { userInfo, users } = useAppSelector((state) => state.users);
   const [role, setRole] = useState<string>("");
   const [level, setLevel] = useState<string>("");
   const [company, setCompany] = useState<string>("");
+  const { validateCreateUserInfo } = useTeamErrorCheck();
 
   useEffect(() => {
     const roleObj = roles.find((r) => r.value == userInfo.role);
@@ -27,13 +33,6 @@ const UserInfo = () => {
     const companyObj = sampleCompanies.find((c) => c.value == userInfo.company);
     setCompany(companyObj ? companyObj.label : "");
   }, [userInfo]);
-
-  useEffect(() => {
-    return () => {
-      dispatch(setIsCreating(false));
-      dispatch(setIsUpdating(false));
-    };
-  }, []);
 
   // For the text fields
   const handleQueryChange = (field: keyof UserData, value: string) => {
@@ -70,16 +69,69 @@ const UserInfo = () => {
   };
 
   const handleCreateClick = () => {
-    // dispatch(setIsCreating(true));
+    console.log("Create User clicked", userInfo);
+    // check required fields
+    if (!validateCreateUserInfo()) return;
+    // call api to create user
+    createUser(context.url, context.token, userInfo)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          toast.success("User created successfully");
+          dispatch(resetUserInfo());
+          dispatch(setRefresh(true));
+        }
+      })
+      .catch((err) => {
+        console.log("Error creating user " + err.message);
+      });
   };
 
   const handleUpdateClick = () => {
-    // dispatch(setIsUpdating(true));
+    const found = users.find((u) => u.username === userInfo.username);
+    if (!found || found.security === null || found.template === null) return;
+    if (!validateCreateUserInfo()) return;
+    // call api to update user
+    updateUser(
+      context.url,
+      context.token,
+      userInfo,
+      found.security,
+      found.template
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          toast.success("User updated successfully");
+          dispatch(resetUserInfo());
+          dispatch(setRefresh(true));
+        }
+      })
+      .catch((err) => {
+        console.log("Error updating user " + err.message);
+      });
+  };
+
+  const handleReset = () => {
+    dispatch(resetUserInfo());
   };
 
   return (
     <div className="h-full w-full ">
-      <div className="text-lg font-medium underline">Personal Information</div>
+      <div className="flex gap-4 items-center relative">
+        <div className="text-lg font-medium underline">
+          Personal Information
+        </div>
+        <div className="text-sm font-medium mt-1">
+          **All fields are required
+        </div>
+        <button
+          className="btn-themeBlue absolute right-0 top-0 py-[2px]"
+          onClick={handleReset}
+        >
+          Clear
+        </button>
+      </div>
       <div className="grid grid-cols-2 gap-x-8 gap-y-1">
         {inputs.map((input, i) => {
           return input.type !== "select" ? (

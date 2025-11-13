@@ -10,7 +10,7 @@ const BaseGroups = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
-  const { baseGroups, isCreating, isUpdating } = useAppSelector(
+  const { baseGroups } = useAppSelector(
     (state) => state.users
   );
 
@@ -57,7 +57,7 @@ const BaseGroups = () => {
   };
 
   const canSelect = () => {
-    return baseGroups.length > 0 && (isCreating || isUpdating);
+    return baseGroups.length > 0;
   };
 
   const renderGroupAmount = (arg: FilterOption) => {

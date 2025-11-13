@@ -35,16 +35,16 @@ interface UsersState {
   users: User[];
   userInfo: UserData;
   baseGroups: BaseGroup[];
-  isCreating: boolean;
-  isUpdating: boolean;
+  refresh: boolean;
+  selectedUserId: number;
 }
 
 const initialState: UsersState = {
   users: [],
   userInfo: defaultInfo,
   baseGroups: [],
-  isCreating: false,
-  isUpdating: false,
+  refresh: true,
+  selectedUserId: 0,
 };
 
 export const usersSlice = createSlice({
@@ -85,6 +85,7 @@ export const usersSlice = createSlice({
         password: password,
         confirm_password: password,
       };
+      state.selectedUserId = 0; 
     },
     setBaseGroups: (state, action: PayloadAction<BaseGroup[]>) => {
       state.baseGroups = action.payload;
@@ -92,11 +93,11 @@ export const usersSlice = createSlice({
     resetUserInfo: (state) => {
       state.userInfo = defaultInfo;
     },
-    setIsCreating: (state, action: PayloadAction<boolean>) => {
-      state.isCreating = action.payload;
+    setRefresh: (state, action: PayloadAction<boolean>) => {
+      state.refresh = action.payload;
     },
-    setIsUpdating: (state, action: PayloadAction<boolean>) => {
-      state.isUpdating = action.payload;
+    setSelectedUserId: (state, action: PayloadAction<number>) => {
+      state.selectedUserId = action.payload;
     },
     resetUsersSlice: () => initialState,
   },
@@ -108,8 +109,8 @@ export const {
   setSelectedUserInfo,
   resetUserInfo,
   setBaseGroups,
-  setIsCreating,
-  setIsUpdating,
+  setRefresh,
+  setSelectedUserId,
   resetUsersSlice,
 } = usersSlice.actions;
 export default usersSlice.reducer;

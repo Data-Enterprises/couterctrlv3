@@ -19,13 +19,15 @@ const UserGrid = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const users = useAppSelector((state) => state.users.users);
+  const { users, refresh } = useAppSelector((state) => state.users);
   const [text, setText] = useState<string>("");
   const [filtered, setFiltered] = useState<User[]>([]);
 
   useEffect(() => {
-    getData();
-  }, []);
+    if (refresh) {
+      getData();
+    }
+  }, [refresh]);
 
   // Filter the table by searching for the username
   useEffect(() => {

@@ -81,3 +81,29 @@ export const createUser = async (
   });
   return json;
 };
+
+export const updateUser = async (
+  url: string,
+  token: string,
+  data: UserData,
+  security: number,
+  template: number
+) => {
+  const json = await axios({
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "users/update_user",
+    data: {
+      ...data,
+      security,
+      template,
+    },
+  });
+
+  return json;
+};
+
+export const deleteUser = async () => {};

@@ -70,12 +70,3 @@ export const getAllUsers = async (url: string, token: string) => {
   });
   return json;
 };
-
-// POST
-export const createUser = async () => {};
-
-// PUT
-export const updateUser = async () => {};
-
-// DELETE
-export const deleteUser = async () => {};
