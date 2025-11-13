@@ -10,7 +10,7 @@ import UserInfo from "./UserInfo";
 import UserGrid from "./UserGrid";
 import BaseGroups from "./BaseGroups";
 import DeleteUserModal from "./DeleteUserModal";
-import AssignStoresModal from "./AssignStoresModal";
+import AssignStoresModal from "./assignModal/AssignStoresModal";
 
 const Team = () => {
   const toast = useToast();
