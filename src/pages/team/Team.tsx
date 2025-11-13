@@ -9,6 +9,7 @@ import type { BaseGroup } from "../../interfaces";
 import UserInfo from "./UserInfo";
 import UserGrid from "./UserGrid";
 import BaseGroups from "./BaseGroups";
+import DeleteUserModal from "./DeleteUserModal";
 
 const Team = () => {
   const toast = useToast();
@@ -44,6 +45,7 @@ const Team = () => {
 
   return (
     <div data-testid="team-page" className={`w-full h-[calc(100vh-3rem)] p-4`}>
+      <DeleteUserModal />
       <div className="grid grid-cols-2 gap-8 h-full">
         <div className="grid">
           <UserGrid />

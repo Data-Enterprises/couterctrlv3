@@ -1,16 +1,15 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import type { FilterOption } from "../../features/groupSlice";
-import { setBaseGroups } from "../../features/usersSlice";
-import type { BaseGroup } from "../../interfaces";
+import { setBaseGroups, setDeleteModalOpen } from "../../features/usersSlice";
 import { useToast } from "../../components/toasts/hooks/useToast";
+import type { FilterOption } from "../../features/groupSlice";
+import type { BaseGroup } from "../../interfaces";
 import { assignBaseGroupToUser, deleteUserBaseGroupLink } from "../../api/team";
 
 const BaseGroups = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { selectedUserId } = useAppSelector((state) => state.users);
-  const { baseGroups } = useAppSelector((state) => state.users);
+  const { selectedUserId, baseGroups } = useAppSelector((state) => state.users);
 
   const handlePanelClick = (group: BaseGroup) => {
     const copy: BaseGroup[] = [...baseGroups].map((g) => {
@@ -27,8 +26,8 @@ const BaseGroups = () => {
       );
     };
 
+    // remove the group
     if (group.active === 1) {
-      // remove the group
       deleteUserBaseGroupLink(
         context.url,
         context.token,
@@ -44,8 +43,9 @@ const BaseGroups = () => {
         .catch((err) => {
           toast.error("Error removing group " + err.message);
         });
-    } else {
+
       // assign the group
+    } else {
       assignBaseGroupToUser(
         context.url,
         context.token,
@@ -79,6 +79,12 @@ const BaseGroups = () => {
   const isInteractive = () => {
     return canSelect() ? "" : "opacity-50 pointer-events-none";
   };
+
+  const openDeleteUserModal = () => {
+    dispatch(setDeleteModalOpen(true));
+  };
+
+  // const handleResetPassword = () => {};
 
   return (
     <div className="select-none">
@@ -126,7 +132,10 @@ const BaseGroups = () => {
           <button className={`btn-themeGreen px-0 ${isInteractive()}`}>
             Reset Password
           </button>
-          <button className={`btn-themeOrange px-0 ${isInteractive()}`}>
+          <button
+            className={`btn-themeOrange px-0 ${isInteractive()}`}
+            onClick={openDeleteUserModal}
+          >
             Delete User
           </button>
         </div>

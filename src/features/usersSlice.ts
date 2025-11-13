@@ -37,6 +37,7 @@ interface UsersState {
   baseGroups: BaseGroup[];
   refresh: boolean;
   selectedUserId: number;
+  deleteModalOpen: boolean;
 }
 
 const initialState: UsersState = {
@@ -45,6 +46,7 @@ const initialState: UsersState = {
   baseGroups: [],
   refresh: true,
   selectedUserId: 0,
+  deleteModalOpen: false,
 };
 
 export const usersSlice = createSlice({
@@ -99,6 +101,9 @@ export const usersSlice = createSlice({
     setSelectedUserId: (state, action: PayloadAction<number>) => {
       state.selectedUserId = action.payload;
     },
+    setDeleteModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.deleteModalOpen = action.payload;
+    },
     resetUsersSlice: () => initialState,
   },
 });
@@ -111,6 +116,7 @@ export const {
   setBaseGroups,
   setRefresh,
   setSelectedUserId,
+  setDeleteModalOpen,
   resetUsersSlice,
 } = usersSlice.actions;
 export default usersSlice.reducer;

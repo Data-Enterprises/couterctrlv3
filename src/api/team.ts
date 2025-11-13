@@ -106,4 +106,21 @@ export const updateUser = async (
   return json;
 };
 
-export const deleteUser = async () => {};
+export const deleteUser = async (
+  url: string,
+  token: string,
+  username: string
+) => {
+  const json = await axios({
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "users/delete_user",
+    data: {
+      username,
+    },
+  });
+  return json;
+};

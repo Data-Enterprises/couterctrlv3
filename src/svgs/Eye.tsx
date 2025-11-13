@@ -14,7 +14,7 @@ const Eye = ({ onClick }: Props) => {
   return (
     <svg
       onClick={handleClick}
-      className={`size-6 absolute right-1.5 top-[33px] cursor-pointer tranistion-all duration-300 ${
+      className={`size-6 absolute right-1.5 top-[28px] cursor-pointer tranistion-all duration-300 ${
         active ? "fill-blue-500" : "fill-content"
       }`}
       xmlns="http://www.w3.org/2000/svg"

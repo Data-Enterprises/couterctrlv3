@@ -27,7 +27,9 @@ const TextInput = <T,>({
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(name as keyof T, e.currentTarget.value);
   };
-  const { userInfo, selectedUserId, users } = useAppSelector((state) => state.users);
+  const { userInfo, selectedUserId, users } = useAppSelector(
+    (state) => state.users
+  );
 
   const handleEncryptionToggle = () => {
     setEncrypted(!encrypted);
@@ -105,8 +107,16 @@ const TextInput = <T,>({
   };
 
   const showOk = () => {
-    if (selectedUserId === 0 && query.length > 0) {
-      // find that username in users
+    // If username is the same or doesn't change from the selected user, don't show anything
+    const selectedUser = users.find(
+      (user) =>
+        user.username.toLowerCase() === query.toLowerCase() &&
+        user.id === selectedUserId
+    );
+    if (selectedUser) return null;
+
+    // find that username in users
+    if (query.length > 0) {
       const exists = users.find(
         (user) => user.username.toLowerCase() === query.toLowerCase()
       );
@@ -116,6 +126,9 @@ const TextInput = <T,>({
         return <Check className="absolute top-7 right-2" />;
       }
     }
+
+    // return null by default
+    return null;
   };
 
   return (
