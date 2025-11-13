@@ -17,7 +17,7 @@ const UserInfo = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { userInfo, users } = useAppSelector((state) => state.users);
+  const { userInfo, users, selectedUserId } = useAppSelector((state) => state.users);
   const [role, setRole] = useState<string>("");
   const [level, setLevel] = useState<string>("");
   const [company, setCompany] = useState<string>("");
@@ -69,7 +69,6 @@ const UserInfo = () => {
   };
 
   const handleCreateClick = () => {
-    console.log("Create User clicked", userInfo);
     // check required fields
     if (!validateCreateUserInfo()) return;
     // call api to create user
@@ -83,7 +82,7 @@ const UserInfo = () => {
         }
       })
       .catch((err) => {
-        console.log("Error creating user " + err.message);
+        toast.error("Error creating user " + err.message);
       });
   };
 
@@ -108,12 +107,21 @@ const UserInfo = () => {
         }
       })
       .catch((err) => {
-        console.log("Error updating user " + err.message);
+        toast.error("Error updating user " + err.message);
       });
   };
 
   const handleReset = () => {
     dispatch(resetUserInfo());
+  };
+
+  const isCreatingOrUpdating = (type: "create" | "update") => {
+    if (type === "create" && selectedUserId > 0) {
+      return "opacity-50 pointer-events-none";
+    } else if (type === "update" && selectedUserId === 0) {
+      return "opacity-50 pointer-events-none";
+    }
+    return "";
   };
 
   return (
@@ -138,7 +146,7 @@ const UserInfo = () => {
             <TextInput
               key={i}
               name={input.name}
-              query={userInfo[input.name as keyof UserData] as string || ""}
+              query={(userInfo[input.name as keyof UserData] as string) || ""}
               setQuery={(field, value) =>
                 handleQueryChange(field as keyof UserData, value)
               }
@@ -163,7 +171,7 @@ const UserInfo = () => {
         <div className="flex justify-between items-end gap-4">
           <div className="w-1/2">
             <button
-              className="btn-themeBlue py-[5px] w-full"
+              className={`btn-themeBlue py-[5px] w-full ${isCreatingOrUpdating("create")}`}
               onClick={handleCreateClick}
             >
               Create User
@@ -171,7 +179,7 @@ const UserInfo = () => {
           </div>
           <div className="w-1/2">
             <button
-              className="btn-themeBlue py-[5px] w-full"
+              className={`btn-themeBlue py-[5px] w-full ${isCreatingOrUpdating("update")}`}
               onClick={handleUpdateClick}
             >
               Update User

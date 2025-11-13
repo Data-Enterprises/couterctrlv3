@@ -4,11 +4,18 @@ import zxcvbn from "zxcvbn";
 
 export const useTeamErrorCheck = () => {
   const toast = useToast();
-  const userInfo = useAppSelector((state) => state.users.userInfo);
+  const { userInfo, users } = useAppSelector((state) => state.users);
 
   const validateCreateUserInfo = (): boolean => {
     const passwordStrength = zxcvbn(userInfo.password).score;
-    if (userInfo.password !== userInfo.confirm_password) {
+    const findUsername = users.find(
+      (user) => user.username.toLowerCase() === userInfo.username.toLowerCase()
+    );
+
+    if (findUsername) {
+      toast.warn("Username already exists");
+      return false;
+    } else if (userInfo.password !== userInfo.confirm_password) {
       toast.warn("Passwords do not match");
       return false;
     } else if (!userInfo.username) {
