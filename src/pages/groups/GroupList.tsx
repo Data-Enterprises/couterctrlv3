@@ -98,7 +98,7 @@ const GroupList = () => {
           <div
             key={store.storeid}
             className="flex justify-between items-center bg-custom-white rounded-lg 
-              shadow-md p-4 hover:bg-blue-200/50 transition-all duration-200 cursor-pointer ripple-button"
+              shadow-md p-4 hover:shadow-inner transition-all duration-200 cursor-pointer ripple-button"
             onClick={(e) => handleCardClick(e, store)}
           >
             <div className="font-medium">

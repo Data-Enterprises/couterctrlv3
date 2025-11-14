@@ -118,8 +118,8 @@ const BaseGroups = () => {
                 <div
                   key={i}
                   data-te-ripple-init
-                  className="flex justify-between bg-custom-white p-4 rounded-lg shadow-lg hover:shadow-inner 
-                     hover:bg-blue-200/50 transition-all duration-200 cursor-pointer ripple-button"
+                  className="flex justify-between bg-custom-white p-4 rounded-lg shadow-md hover:shadow-inner 
+                     transition-all duration-200 cursor-pointer ripple-button"
                   onClick={(e) => handlePanelClick(e, group)}
                 >
                   <div>{group.name}</div>
