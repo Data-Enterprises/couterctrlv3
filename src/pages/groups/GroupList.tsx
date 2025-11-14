@@ -6,6 +6,7 @@ import {
 } from "../../features/groupSlice";
 import { useGridCols } from "./hooks";
 import { addStoreToGroup, removeStoreFromGroup } from "../../api/groups";
+import { handleRipple } from "../../utils";
 
 const GroupList = () => {
   const dispatch = useAppDispatch();
@@ -41,8 +42,9 @@ const GroupList = () => {
     }
   }, [searchText, group.storesWithGroupStatus, group.filterOption]);
 
-  const handleCardClick = (store: StoreWithGroupStatus) => {
+  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>, store: StoreWithGroupStatus) => {
     if (!group.selectedGroup) return;
+    handleRipple(e);
 
     if (store.active === 1) {
       removeStoreFromGroup(
@@ -96,8 +98,8 @@ const GroupList = () => {
           <div
             key={store.storeid}
             className="flex justify-between items-center bg-custom-white rounded-lg 
-              shadow-md p-4 hover:bg-blue-200/50 transition-all duration-200 cursor-pointer"
-            onClick={() => handleCardClick(store)}
+              shadow-md p-4 hover:bg-blue-200/50 transition-all duration-200 cursor-pointer ripple-button"
+            onClick={(e) => handleCardClick(e, store)}
           >
             <div className="font-medium">
               <div>Store {store.store_number}</div>
@@ -105,12 +107,12 @@ const GroupList = () => {
                 {store.storeid} - {store.store_name}
               </div>
             </div>
-            <div>
-              {store.active === 1 ? (
-                <span className="text-emerald-500 font-semibold">Active</span>
-              ) : (
-                <span className="text-orange-500 font-semibold">Inactive</span>
-              )}
+            <div
+              className={`status ${
+                store.active ? "text-emerald-500" : "text-orange-500"
+              } font-medium`}
+            >
+              {store.active ? "Active" : "Inactive"}
             </div>
           </div>
         ))}
