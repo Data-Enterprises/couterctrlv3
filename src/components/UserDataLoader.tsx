@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { useToast } from "./toasts/hooks/useToast";
 import type { JsonError } from "../interfaces";
@@ -15,9 +15,12 @@ import {
   setLastGroup,
   setType,
   type SEARCH_TYPE,
+  setSelectedGroup,
+  setSelectedStore,
 } from "../features/searchSlice";
 import { setAssignedStores, setUnassignedStores } from "../features/userSlice";
 import { setAllAvailableStores } from "../features/storeSlice";
+import { setLoggedIn } from "../features/appSlice";
 
 // This component is hidden and is strictly used for fetching user data on user login
 const UserDataLoader = () => {
@@ -26,6 +29,11 @@ const UserDataLoader = () => {
   const navigation = useNavigate();
   const context = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
+  const search = useAppSelector((state) => state.search);
+  const [readyToLogin, setReadyToLogin] = useState({
+    groups: false,
+    stores: false,
+  });
 
   const getDefaultType = (searchType: string): SEARCH_TYPE => {
     switch (searchType) {
@@ -81,7 +89,19 @@ const UserDataLoader = () => {
           dispatch(setAllAvailableStores(j.all_stores_for_user));
           dispatch(setAssignedStores(j.assigned_stores));
           dispatch(setUnassignedStores(j.unassigned_stores));
+          // On login, if last_search_type is Store => then set that selected store in search slice
+          // This is for default loading of data when user logs in
+          const stores = j.assigned_stores;
+          const selectedStore = stores.find(
+            (s: any) => s.storeid === search.lastStore
+          );
+          if (selectedStore) {
+            dispatch(setSelectedStore(selectedStore));
+          }
         }
+      })
+      .then(() => {
+        setReadyToLogin((prev) => ({ ...prev, stores: true }));
       })
       .catch((err: JsonError) => {
         toast.error("Error getting user stores: " + err.message);
@@ -95,14 +115,33 @@ const UserDataLoader = () => {
             (g: Group) => g.userid === user.userid
           );
           dispatch(setGroups(groups));
+          // On login, if last_search_type is Group => then set that selected group in search slice
+          // This is for default loading of data when user logs in
+          const selectedGroup = groups.find(
+            (g: Group) => g.id === search.lastGroup
+          );
+          if (selectedGroup) {
+            dispatch(setSelectedGroup(selectedGroup));
+          }
         }
+      })
+      .then(() => {
+        setReadyToLogin((prev) => ({ ...prev, groups: true }));
       })
       .catch((err: JsonError) => {
         toast.error(err.message);
       });
   }, [user.userid]);
 
+  useEffect(() => {
+    if (readyToLogin.groups && readyToLogin.stores) {
+      dispatch(setLoggedIn(true));
+    }
+  }, [readyToLogin.groups, readyToLogin.stores]);
+
+
   return null;
 };
+
 
 export default UserDataLoader;

@@ -15,8 +15,8 @@ type GroupTopTenItem = {
 };
 
 const TopTenItems = () => {
-  const search = useAppSelector((state) => state.search);
   const sales = useAppSelector((state) => state.sales);
+  const search = useAppSelector((state) => state.search);
   const [title, setTitle] = useState<string>("");
   const [topTen, setTopTen] = useState<TopTenData[]>([]);
   const [metrics, setMetrics] = useState({
@@ -76,9 +76,10 @@ const TopTenItems = () => {
           qty: item.qty || 0,
         }))
         .reverse();
+
       setTitle(
         search.type === "Group"
-          ? search.selectedGroup?.group_name || ""
+          ? search.selectedGroup!.group_name
           : "All Stores"
       );
     }

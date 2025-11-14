@@ -108,7 +108,7 @@ export const handleRipple = (e: React.MouseEvent<HTMLDivElement>) => {
       ? "bg-emerald-500/40"
       : text === "Active"
       ? "bg-orange-500/40"
-      : "bg-slate-50/40";
+      : "bg-slate-50/75";
 
   // then create the ripple element to append
   const circle = document.createElement("span");

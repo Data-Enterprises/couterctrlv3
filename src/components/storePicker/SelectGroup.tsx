@@ -93,7 +93,7 @@ const SelectGroup = ({ onOutsideClick }: Props) => {
           data-testid="store-label"
           className="block text-sm/6 font-medium "
         >
-          Store
+          Group
         </label>
         <div className="relative">
           <div

@@ -12,7 +12,6 @@ import {
   setToken,
   setPasswordChangeNeeded,
   setForgotPassword,
-  setLoggedIn,
 } from "../../features/appSlice";
 import {
   setUsername,
@@ -90,7 +89,6 @@ const Login = () => {
           dispatch(setResetPassword(j.password_change_needed));
           dispatch(setPasswordChangeNeeded(j.password_change_needed));
           dispatch(setSecurityQuestionId(j.security_question_id));
-          dispatch(setLoggedIn(true));
         }
       })
       .catch((err: JsonError) => {

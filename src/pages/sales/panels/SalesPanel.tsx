@@ -5,7 +5,7 @@ import { getDateLayout } from "../utils";
 
 interface SalesPanelProps {
   panel: SalesPanelInfo;
-  handlePanelClick: (panel: SalesPanelInfo) => void;
+  handlePanelClick: (e: React.MouseEvent<HTMLDivElement>, panel: SalesPanelInfo) => void;
   handleBtnClick: (panel: SalesPanelInfo, type: string) => void;
 }
 
@@ -39,8 +39,9 @@ const SalesPanel = ({
       className={`${bg(
         panel,
         selectedSalesPanel
-      )} bg-custom-white rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-inner transition-all duration-200 select-none`}
-      onClick={() => handlePanelClick(panel)}
+      )} bg-custom-white rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-inner 
+      transition-all duration-200 select-none ripple-button min-h-[185px]`}
+      onClick={(e) => handlePanelClick(e, panel)}
     >
       <div className={`font-bold text-center`}>
         <div className="">{panel.store_name}</div>

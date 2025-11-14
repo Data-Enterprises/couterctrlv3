@@ -17,7 +17,7 @@ const StorePicker = ({
 }: Props) => {
   const state = useAppSelector((state) => state.search.type);
   const style =
-    "flex flex-col md:grid md:grid-cols-2 gap2 md:gap-4 items-center justify-center select-none";
+    "flex flex-col md:grid md:grid-cols-2 gap-2 md:gap-2 items-center justify-center select-none";
 
   return (
     <div data-testid="store-picker" className={style}>

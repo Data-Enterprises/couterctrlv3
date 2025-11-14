@@ -152,9 +152,6 @@ const Sales = () => {
                   onChange={handleChange}
                 />
               </div>
-              <div>
-                <button className="btn-themeBlue px-4">Reset</button>
-              </div>
             </div>
             <div
               className="overflow-scroll no-scrollbar rounded-lg"
