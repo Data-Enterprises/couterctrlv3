@@ -7,6 +7,20 @@ import type {
   WeeklySale,
 } from "../interfaces";
 
+type TopTenItemsMetrics = {
+  totalSales: number;
+  avgSales: number;
+  totalQty: number;
+  avgQty: number;
+};
+
+const defaultTopTenMetrics: TopTenItemsMetrics = {
+  totalSales: 0,
+  avgSales: 0,
+  totalQty: 0,
+  avgQty: 0,
+};
+
 interface SalesState {
   topTenItems: TopTenItem[];
   departmentSales: DepartmentSale[];
@@ -15,16 +29,18 @@ interface SalesState {
   weeklySales?: WeeklySale[];
   panelsLoading: boolean;
   salesPanelSearchText: string;
+  topTenItemsMetrics: TopTenItemsMetrics;
 }
 
 const initialState: SalesState = {
   topTenItems: [],
   departmentSales: [],
   salesPanels: [],
-  selectedSalesPanel: { sale_date: "", storeid: 0 },
+  selectedSalesPanel: { sale_date: "", storeid: 0, store_name: "" },
   weeklySales: [],
   panelsLoading: false,
   salesPanelSearchText: "",
+  topTenItemsMetrics: defaultTopTenMetrics,
 };
 
 export const salesSlice = createSlice({
@@ -55,6 +71,12 @@ export const salesSlice = createSlice({
     setSalesPanelSearchText: (state, action: PayloadAction<string>) => {
       state.salesPanelSearchText = action.payload;
     },
+    setTopTenItemsMetrics: (
+      state,
+      action: PayloadAction<TopTenItemsMetrics>
+    ) => {
+      state.topTenItemsMetrics = action.payload;
+    },
     resetSalesSlice: () => initialState,
   },
 });
@@ -67,6 +89,7 @@ export const {
   setWeeklySales,
   setPanelsLoading,
   setSalesPanelSearchText,
+  setTopTenItemsMetrics,
   resetSalesSlice,
 } = salesSlice.actions;
 export default salesSlice.reducer;

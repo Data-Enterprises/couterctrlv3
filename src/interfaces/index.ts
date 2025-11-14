@@ -49,6 +49,7 @@ export type TopTenData = {
 export type SelectedSalesPanel = {
   sale_date: string;
   storeid: number;
+  store_name: string;
 };
 
 export type WeeklySale = {
@@ -72,6 +73,14 @@ export type SalesPanelInfo = {
   total_sales: number;
   weight: number;
 };
+
+export type GroupTopTenItem = {
+  product_code: string;
+  product_description: string;
+  total_sales: number;
+  qty: number;
+};
+
 /////////////////////// End sales slice //////////////////////
 
 //////////////////////////////////////////////////////////////

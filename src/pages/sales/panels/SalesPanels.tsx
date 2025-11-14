@@ -22,7 +22,11 @@ const SalesPanels = () => {
 
   const comparePanels = (a: SalesTwoDates, b: SelectedSalesPanel) => {
     const date = a.sale_date.split("T")[0];
-    return date === b.sale_date && a.storeid === b.storeid;
+    return (
+      date === b.sale_date &&
+      a.storeid === b.storeid &&
+      b.store_name === a.store_name
+    );
   };
 
   const handlePanelClick = (
@@ -37,10 +41,13 @@ const SalesPanels = () => {
         setSelectedSalesPanel({
           sale_date: date,
           storeid: panel.storeid,
+          store_name: panel.store_name,
         })
       );
     } else {
-      dispatch(setSelectedSalesPanel({ sale_date: "", storeid: 0 }));
+      dispatch(
+        setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" })
+      );
       return;
     }
 
@@ -61,17 +68,9 @@ const SalesPanels = () => {
   };
 
   const handleBtnClick = (panel: SalesTwoDates, type: string) => {
-    console.log(type);
-    // This date is being used to compare with the selected panel in redux
-    const date = panel.sale_date.split("T")[0];
-    if (!comparePanels(panel, sales.selectedSalesPanel)) {
-      dispatch(
-        setSelectedSalesPanel({
-          sale_date: date,
-          storeid: panel.storeid,
-        })
-      );
-    }
+    console.log(panel, type);
+    // The handlePanelClick is also being called which handles setting the selected panel
+    // Here we just need to fire off which window we want to open (subs, Hourly, or Cats)
   };
 
   const isReady = sales.salesPanels.length > 0 && !sales.panelsLoading;

@@ -1,49 +1,51 @@
 import { useState, useEffect } from "react";
-import { useAppSelector } from "../../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { formatCurrency2 } from "../../../utils";
+import { setTopTenItemsMetrics } from "../../../features/salesSlice";
 
 // Bar Chart utils
 import { ResponsiveBar } from "@nivo/bar";
-import { barColors } from "../utils";
-import type { TopTenData, TopTenItem } from "../../../interfaces";
-
-type GroupTopTenItem = {
-  product_code: string;
-  product_description: string;
-  total_sales: number;
-  qty: number;
-};
+import { formatTopTenData, calculateMetrics, rgbaColor } from "../utils";
+import type {
+  GroupTopTenItem,
+  TopTenData,
+  TopTenItem,
+} from "../../../interfaces";
 
 const TopTenItems = () => {
+  const dispatch = useAppDispatch();
   const sales = useAppSelector((state) => state.sales);
   const search = useAppSelector((state) => state.search);
   const [title, setTitle] = useState<string>("");
   const [topTen, setTopTen] = useState<TopTenData[]>([]);
-  const [metrics, setMetrics] = useState({
-    totalSales: 0,
-    avgSales: 0,
-    totalQty: 0,
-    avgQty: 0,
-  });
 
   useEffect(() => {
     let newTopTen: TopTenData[] = [];
 
-    if (search.type === "Store") {
-      newTopTen = [...sales.topTenItems]
-        .sort((a: TopTenItem, b: TopTenItem) => b.total_sales - a.total_sales)
-        .map((item, idx) => ({
-          id: item.product_description,
-          label: item.product_code,
-          value: item.total_sales || 0,
-          fill: barColors[idx],
-          color: barColors[idx],
-          qty: item.qty || 0,
-        }))
-        .reverse();
+    // Show the selected panel's top ten items if in group mode and a panel is selected
+    if (search.type === "Group" && sales.selectedSalesPanel.storeid !== 0) {
+      const panelItems = sales.topTenItems
+        .filter((item) => item.storeid === sales.selectedSalesPanel.storeid)
+        .sort((a: TopTenItem, b: TopTenItem) => b.total_sales - a.total_sales);
+
+      newTopTen = formatTopTenData(panelItems);
+
+      // Selecting a panel then sets up the title to the store name
+      setTitle(sales.selectedSalesPanel.store_name);
+
+      // If a search type is store, then we're only looking at one store's data so clicking a panel doesn't change anything
+    } else if (search.type === "Store") {
+      const panelItems = [...sales.topTenItems].sort(
+        (a: TopTenItem, b: TopTenItem) => b.total_sales - a.total_sales
+      );
+
+      newTopTen = formatTopTenData(panelItems);
+
+      // The storepicker for is setting the selected store in search slice
       setTitle(search.selectedStore?.store_name || "");
-    }
-    if (search.type === "Group" || search.type === "Stores") {
+
+      // If group or all stores, then aggregate the data from multiple stores if a panel is not selected
+    } else if (search.type === "Group" || search.type === "Stores") {
       const groupTopTen = [...sales.topTenItems]
         .reduce((acc: GroupTopTenItem[], item: TopTenItem) => {
           const existingItem = acc.find(
@@ -66,17 +68,9 @@ const TopTenItems = () => {
         .sort((a, b) => b.total_sales - a.total_sales)
         .slice(0, 10);
 
-      newTopTen = groupTopTen
-        .map((item, idx) => ({
-          id: item.product_description,
-          label: item.product_code,
-          value: item.total_sales || 0,
-          fill: barColors[idx],
-          color: barColors[idx],
-          qty: item.qty || 0,
-        }))
-        .reverse();
+      newTopTen = formatTopTenData(groupTopTen);
 
+      // Setting title for group or all stores
       setTitle(
         search.type === "Group"
           ? search.selectedGroup!.group_name
@@ -86,29 +80,9 @@ const TopTenItems = () => {
 
     // If single store, then it's all good, if multiple stores, then the data will be aggregated above and sliced
     setTopTen(newTopTen);
-    calculateMetrics(newTopTen);
-  }, [sales.topTenItems]);
-
-  const rgbaColor = (hex: string, alpha: number) => {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `rgba(${r},${g},${b},${alpha})`;
-  };
-
-  const calculateMetrics = (data: TopTenData[]) => {
-    const totalSales = data.reduce((sum, item) => sum + item.value, 0);
-    const totalQty = data.reduce((sum, item) => sum + item.qty, 0);
-    const avgSales = data.length ? totalSales / data.length : 0;
-    const avgQty = data.length ? totalQty / data.length : 0;
-
-    setMetrics({
-      totalSales,
-      avgSales,
-      totalQty,
-      avgQty,
-    });
-  };
+    const metrics = calculateMetrics(newTopTen);
+    dispatch(setTopTenItemsMetrics(metrics));
+  }, [sales.topTenItems, sales.selectedSalesPanel]);
 
   return (
     <div
@@ -135,31 +109,23 @@ const TopTenItems = () => {
         layout="horizontal"
         axisBottom={null}
         tooltipLabel={(e) => `${e.data.id}`}
-        theme={{
-          tooltip: {
-            container: {
-              fontSize: "13px",
-              zIndex: 9999,
-            },
-          },
-        }}
       />
       <div className="flex justify-around absolute bottom-0 border-t border-content/50 w-full py-3.5 place-items-center">
         <div className="flex gap-1 text-[13px]">
           <div className="font-medium">Total Sales:</div>
-          <div>{formatCurrency2(metrics.totalSales)}</div>
+          <div>{formatCurrency2(sales.topTenItemsMetrics.totalSales)}</div>
         </div>
         <div className="flex gap-1 text-[13px]">
           <div className="font-medium">Avg Sales:</div>
-          <div>{formatCurrency2(metrics.avgSales)}</div>
+          <div>{formatCurrency2(sales.topTenItemsMetrics.avgSales)}</div>
         </div>
         <div className="flex gap-1 text-[13px]">
           <div className="font-medium">Total Qty:</div>
-          <div>{metrics.totalQty}</div>
+          <div>{sales.topTenItemsMetrics.totalQty}</div>
         </div>
         <div className="flex gap-1 text-[13px]">
           <div className="font-medium">Avg Qty:</div>
-          <div>{metrics.avgQty}</div>
+          <div>{sales.topTenItemsMetrics.avgQty}</div>
         </div>
       </div>
     </div>
