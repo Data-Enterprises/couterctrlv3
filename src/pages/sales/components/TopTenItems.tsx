@@ -5,13 +5,20 @@ import { formatCurrency2 } from "../../../utils";
 // Bar Chart utils
 import { ResponsiveBar } from "@nivo/bar";
 import { barColors } from "../utils";
-import type { TopTenData } from "../../../interfaces";
+import type { TopTenData, TopTenItem } from "../../../interfaces";
+
+type GroupTopTenItem = {
+  product_code: string;
+  product_description: string;
+  total_sales: number;
+  qty: number;
+};
 
 const TopTenItems = () => {
+  const search = useAppSelector((state) => state.search);
   const sales = useAppSelector((state) => state.sales);
+  const [title, setTitle] = useState<string>("");
   const [topTen, setTopTen] = useState<TopTenData[]>([]);
-  const [stores, setStores] = useState<string[]>([]);
-  const [currentStore, setCurrentStore] = useState<string>("");
   const [metrics, setMetrics] = useState({
     totalSales: 0,
     avgSales: 0,
@@ -20,40 +27,66 @@ const TopTenItems = () => {
   });
 
   useEffect(() => {
-    // Grabbing the unique store names for the legend
-    const storeNames = new Set(
-      sales.topTenItems.map((item) => item.store_name)
-    );
-    setStores(Array.from(storeNames));
+    let newTopTen: TopTenData[] = [];
 
-    // console.log(new Set(sales.topTenItems.map((item) => item.product_code)));
-    // console.log(sales.topTenItems.map((item) => item.product_code));
-    /**
-     * if we're in a group, check the search.type, if single store, then leave below as is.
-     * if group, then we need to aggregate all the total_sales and qty for each product_code/product_description
-     * Then slice the top 10 and then set that as the newTopTen below
-     */
+    if (search.type === "Store") {
+      newTopTen = [...sales.topTenItems]
+        .sort((a: TopTenItem, b: TopTenItem) => b.total_sales - a.total_sales)
+        .map((item, idx) => ({
+          id: item.product_description,
+          label: item.product_code,
+          value: item.total_sales || 0,
+          fill: barColors[idx],
+          color: barColors[idx],
+          qty: item.qty || 0,
+        }))
+        .reverse();
+      setTitle(search.selectedStore?.store_name || "");
+    }
+    if (search.type === "Group" || search.type === "Stores") {
+      const groupTopTen = [...sales.topTenItems]
+        .reduce((acc: GroupTopTenItem[], item: TopTenItem) => {
+          const existingItem = acc.find(
+            (i) => i.product_code === item.product_code
+          );
+          if (!existingItem) {
+            acc.push({
+              product_code: item.product_code,
+              product_description: item.product_description,
+              total_sales: item.total_sales,
+              qty: item.qty,
+            });
+          } else {
+            existingItem.total_sales += item.total_sales;
+            existingItem.qty += item.qty;
+          }
 
-    if (!currentStore) {
-      setCurrentStore(Array.from(storeNames)[0]);
+          return acc;
+        }, [])
+        .sort((a, b) => b.total_sales - a.total_sales)
+        .slice(0, 10);
+
+      newTopTen = groupTopTen
+        .map((item, idx) => ({
+          id: item.product_description,
+          label: item.product_code,
+          value: item.total_sales || 0,
+          fill: barColors[idx],
+          color: barColors[idx],
+          qty: item.qty || 0,
+        }))
+        .reverse();
+      setTitle(
+        search.type === "Group"
+          ? search.selectedGroup?.group_name || ""
+          : "All Stores"
+      );
     }
 
-    const store = currentStore ? currentStore : Array.from(storeNames)[0];
-    const newTopTen = sales.topTenItems
-      .filter((item) => item.store_name === store)
-      .sort((a, b) => b.total_sales - a.total_sales)
-      .map((item, idx) => ({
-        id: item.product_description,
-        label: item.product_code,
-        value: item.total_sales || 0,
-        fill: barColors[idx],
-        color: barColors[idx],
-        qty: item.qty || 0,
-      }))
-      .reverse();
+    // If single store, then it's all good, if multiple stores, then the data will be aggregated above and sliced
     setTopTen(newTopTen);
     calculateMetrics(newTopTen);
-  }, [sales.topTenItems, currentStore]);
+  }, [sales.topTenItems]);
 
   const rgbaColor = (hex: string, alpha: number) => {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -81,8 +114,9 @@ const TopTenItems = () => {
       data-testid="sales-top-ten"
       className="bg-custom-white rounded-lg shadow-lg h-full overflow-visible relative"
     >
-      <div className="font-medium bg-blue-500 text-custom-white rounded-t-lg pl-4 py-0.5">
-        Top Ten Items
+      <div className="font-medium bg-blue-500 text-custom-white rounded-t-lg px-4 py-0.5 flex justify-between">
+        <div>Top Ten Items</div>
+        <div>{title}</div>
       </div>
       <ResponsiveBar
         data={topTen}
@@ -109,19 +143,6 @@ const TopTenItems = () => {
           },
         }}
       />
-      <div className="absolute top-8 right-2 h-[80%] max-h-[80%] overflow-y-scroll no-scrollbar text-right space-y-1">
-        {stores.map((store) => (
-          <div
-            key={store}
-            className={`text-xs font-medium flex gap-1 items-center select-none text-nowrap text-ellipsis ${
-              currentStore === store && "bg-blue-500 text-custom-white"
-            } px-2 py-1.5 rounded-md cursor-pointer hover:bg-blue-200 transition-all duration-200`}
-            onClick={() => setCurrentStore(store)}
-          >
-            {store}
-          </div>
-        ))}
-      </div>
       <div className="flex justify-around absolute bottom-0 border-t border-content/50 w-full py-3.5 place-items-center">
         <div className="flex gap-1 text-[13px]">
           <div className="font-medium">Total Sales:</div>

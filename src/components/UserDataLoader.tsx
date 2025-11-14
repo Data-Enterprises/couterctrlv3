@@ -74,11 +74,7 @@ const UserDataLoader = () => {
 
   useEffect(() => {
     if (!context.token && !user.userid) return;
-    getUserStores(
-      context.url,
-      context.token,
-      user.userid === 0 ? 547 : user.userid
-    )
+    getUserStores(context.url, context.token, user.userid)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
