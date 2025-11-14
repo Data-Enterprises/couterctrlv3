@@ -7,6 +7,8 @@ import type {
 import {
   setSelectedSalesPanel,
   setWeeklySales,
+  setWindowVisible,
+  type WindowVisible,
 } from "../../../features/salesSlice";
 import SalesPanel from "./SalesPanel";
 import { getWeekly } from "../../../api/sales";
@@ -68,10 +70,16 @@ const SalesPanels = () => {
       );
   };
 
-  const handleBtnClick = (panel: SalesTwoDates, type: string) => {
+  const handleBtnClick = (panel: SalesTwoDates, type: keyof WindowVisible) => {
     console.log(panel, type);
     // The handlePanelClick is also being called which handles setting the selected panel
     // Here we just need to fire off which window we want to open (subs, Hourly, or Cats)
+    dispatch(
+      setWindowVisible({
+        key: type,
+        show: false,
+      })
+    );
   };
 
   const isReady = sales.salesPanels.length > 0 && !sales.panelsLoading;

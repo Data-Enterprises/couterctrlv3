@@ -26,6 +26,20 @@ body {
   pointer-events: none;
 }
 
+.trans-window {
+  width: 650px;
+  height: 610px;
+  top: 100px;
+}
+
+.trans-main {
+  left: 400px;
+}
+
+.trans-details {
+  left: 1050px;
+}
+
 @keyframes ripple-animation {
   from {
     transform: scale(0);

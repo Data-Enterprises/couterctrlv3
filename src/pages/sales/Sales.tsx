@@ -28,6 +28,7 @@ import WeeklyNetSales from "./components/WeeklyNetSales";
 import DepartmentSales from "./components/DepartmentSales";
 import TopTenItems from "./components/TopTenItems";
 import SalesPanels from "./panels/SalesPanels";
+import Windows from "./components/Windows";
 
 const Sales = () => {
   const toast = useToast();
@@ -53,15 +54,9 @@ const Sales = () => {
     const start = formatGoliathDate(search.startDate);
     const end = formatGoliathDate(search.endDate);
 
-    const topTenId = search.type === "Store" ? search.lastStore : search.lastGroup;
-    getTopTen(
-      context.url,
-      context.token,
-      topTenId,
-      search.type,
-      start,
-      end
-    )
+    const topTenId =
+      search.type === "Store" ? search.lastStore : search.lastGroup;
+    getTopTen(context.url, context.token, topTenId, search.type, start, end)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
@@ -135,7 +130,11 @@ const Sales = () => {
   };
 
   return (
-    <div data-testid="sales-page" className={`w-full h-[calc(100vh-3rem)] p-4`}>
+    <div
+      data-testid="sales-page"
+      className={`w-full h-[calc(100vh-3rem)] p-4 select-none`}
+    >
+      <Windows />
       <div ref={gridRef} className="grid grid-cols-4 gap-4 h-full">
         <div className="grid gap-1 max-h-[calc(100vh-7px)] grid-rows-[0.5fr_1fr_1fr] no-scrollbar">
           <div className="bg-custom-white rounded-lg p-2 shadow-lg">

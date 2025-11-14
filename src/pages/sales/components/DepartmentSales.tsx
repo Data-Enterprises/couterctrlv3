@@ -23,7 +23,7 @@ const DepartmentSales = () => {
       flex: 1,
       resizable: false,
       headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
+      cellClass: "no-outline-on-focus select-none",
     },
     {
       headerName: "Dept Id",
@@ -31,7 +31,7 @@ const DepartmentSales = () => {
       flex: 0.5,
       resizable: false,
       headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus text-right",
+      cellClass: "no-outline-on-focus select-none text-right",
       valueFormatter: (params) => formatBigNumber(params.value as number, 0),
     },
     {
@@ -40,7 +40,7 @@ const DepartmentSales = () => {
       flex: 0.8,
       resizable: false,
       headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus text-right",
+      cellClass: "no-outline-on-focus select-none text-right",
       valueFormatter: (params) => formatCurrency2(params.value as number),
     },
     {
@@ -48,7 +48,7 @@ const DepartmentSales = () => {
       field: "qty",
       flex: 0.8,
       resizable: false,
-      cellClass: "no-outline-on-focus text-right",
+      cellClass: "no-outline-on-focus select-none text-right",
       valueFormatter: (params) => formatBigNumber(params.value as number, 0),
     },
   ];

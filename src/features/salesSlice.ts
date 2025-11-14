@@ -14,6 +14,17 @@ type TopTenItemsMetrics = {
   avgQty: number;
 };
 
+export type WindowVisible = {
+  subs: boolean;
+  hourly: boolean;
+  cats: boolean;
+};
+const defaultWindowVisible: WindowVisible = {
+  subs: true,
+  hourly: true,
+  cats: true,
+};
+
 const defaultTopTenMetrics: TopTenItemsMetrics = {
   totalSales: 0,
   avgSales: 0,
@@ -30,6 +41,7 @@ interface SalesState {
   panelsLoading: boolean;
   salesPanelSearchText: string;
   topTenItemsMetrics: TopTenItemsMetrics;
+  windowVisible: WindowVisible;
 }
 
 const initialState: SalesState = {
@@ -41,6 +53,7 @@ const initialState: SalesState = {
   panelsLoading: false,
   salesPanelSearchText: "",
   topTenItemsMetrics: defaultTopTenMetrics,
+  windowVisible: defaultWindowVisible,
 };
 
 export const salesSlice = createSlice({
@@ -77,6 +90,15 @@ export const salesSlice = createSlice({
     ) => {
       state.topTenItemsMetrics = action.payload;
     },
+    setWindowVisible: (
+      state,
+      action: PayloadAction<{ key: keyof WindowVisible; show: boolean }>
+    ) => {
+      state.windowVisible = {
+        ...state.windowVisible,
+        [action.payload.key]: action.payload.show,
+      };
+    },
     resetSalesSlice: () => initialState,
   },
 });
@@ -90,6 +112,7 @@ export const {
   setPanelsLoading,
   setSalesPanelSearchText,
   setTopTenItemsMetrics,
+  setWindowVisible,
   resetSalesSlice,
 } = salesSlice.actions;
 export default salesSlice.reducer;

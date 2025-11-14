@@ -2,11 +2,15 @@ import type { SelectedSalesPanel, SalesPanelInfo } from "../../../interfaces";
 import { formatCurrency2, formatBigNumber } from "../../../utils";
 import { useAppSelector } from "../../../hooks";
 import { getDateLayout } from "../utils";
+import type { WindowVisible } from "../../../features/salesSlice";
 
 interface SalesPanelProps {
   panel: SalesPanelInfo;
-  handlePanelClick: (e: React.MouseEvent<HTMLDivElement>, panel: SalesPanelInfo) => void;
-  handleBtnClick: (panel: SalesPanelInfo, type: string) => void;
+  handlePanelClick: (
+    e: React.MouseEvent<HTMLDivElement>,
+    panel: SalesPanelInfo
+  ) => void;
+  handleBtnClick: (panel: SalesPanelInfo, type: keyof WindowVisible) => void;
 }
 
 const SalesPanel = ({
@@ -70,19 +74,19 @@ const SalesPanel = ({
       <div className="flex justify-around mt-2">
         <button
           className={`btn-themeBlue py-1.5`}
-          onClick={() => handleBtnClick(panel, "Subs")}
+          onClick={() => handleBtnClick(panel, "subs")}
         >
           Subs
         </button>
         <button
           className={`btn-themeOrange py-1.5`}
-          onClick={() => handleBtnClick(panel, "Hourly")}
+          onClick={() => handleBtnClick(panel, "hourly")}
         >
           Hourly
         </button>
         <button
           className={`btn-themeGreen py-1.5`}
-          onClick={() => handleBtnClick(panel, "Cats")}
+          onClick={() => handleBtnClick(panel, "cats")}
         >
           Cats
         </button>
