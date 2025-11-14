@@ -26,8 +26,8 @@ const SelectGroup = ({ onOutsideClick }: Props) => {
   }, [context.lastGroup, context.groups]);
 
   useEffect(() => {
-    if (context.selectedStore) {
-      setQuery(context.selectedStore.store_name);
+    if (context.selectedGroup) {
+      setQuery(context.selectedGroup.group_name);
       setFiltered(context.groups);
     }
   }, [context.selectedGroup]);

@@ -58,9 +58,9 @@ const SelectStore = ({ onOutsideClick }: Props) => {
     listRef.current!.setAttribute("data-display", "open");
 
     // Then filter
-    if (query.trim() === "" || !context.selectedStore) {
+    if (!context.selectedStore || (!query.length && context.selectedStore)) {
       setFilteredStores(context.assignedStores);
-    } else if (query.length > 0) {
+    } else if (context.selectedStore && query.length > 0) {
       const filtered = context.assignedStores.filter((store) =>
         store.store_name.toLowerCase().includes(query.toLowerCase())
       );

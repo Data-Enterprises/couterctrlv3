@@ -80,9 +80,10 @@ const TopTenItems = () => {
 
     // If single store, then it's all good, if multiple stores, then the data will be aggregated above and sliced
     setTopTen(newTopTen);
+    
     const metrics = calculateMetrics(newTopTen);
     dispatch(setTopTenItemsMetrics(metrics));
-  }, [sales.topTenItems, sales.selectedSalesPanel]);
+  }, [sales.topTenItems, sales.selectedSalesPanel, sales.salesPanels]);
 
   return (
     <div

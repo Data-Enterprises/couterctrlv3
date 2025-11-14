@@ -33,7 +33,8 @@ const SalesPanels = () => {
     e: React.MouseEvent<HTMLDivElement>,
     panel: SalesTwoDates
   ) => {
-    handleRipple(e);
+    handleRipple(e); // Sets the ripple effect on click
+
     // This date is being used to compare with the selected panel in redux
     const date = panel.sale_date.split("T")[0];
     if (!comparePanels(panel, sales.selectedSalesPanel)) {

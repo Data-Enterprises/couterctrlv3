@@ -17,9 +17,10 @@ const SalesPanel = ({
   const { selectedSalesPanel } = useAppSelector((state) => state.sales);
 
   const bg = (panel: SalesPanelInfo, selected: SelectedSalesPanel) => {
+    console.log(panel, selected)
     const date = panel.sale_date.split("T")[0];
     if (date === selected.sale_date && panel.storeid === selected.storeid) {
-      return "bg-blue-200/90";
+      return "bg-panel_active/75";
     } else {
       return "bg-custom-white";
     }
@@ -39,7 +40,7 @@ const SalesPanel = ({
       className={`${bg(
         panel,
         selectedSalesPanel
-      )} bg-custom-white rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-inner 
+      )} rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-inner 
       transition-all duration-200 select-none ripple-button min-h-[185px]`}
       onClick={(e) => handlePanelClick(e, panel)}
     >
