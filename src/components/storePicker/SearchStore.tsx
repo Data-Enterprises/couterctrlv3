@@ -26,6 +26,13 @@ const SelectStore = ({ onOutsideClick }: Props) => {
         ? "flex flex-col"
         : "flex flex-col opacity-50 pointer-events-none"
     );
+    if (context.type === "Stores") {
+      listRef.current?.classList.add("hidden")
+      setQuery("");
+    } else {
+      listRef.current?.classList.remove("hidden")
+      setQuery(context.selectedStore?.store_name || "");
+    }
   }, [context.type]);
 
   useEffect(() => {
@@ -42,11 +49,11 @@ const SelectStore = ({ onOutsideClick }: Props) => {
     const store = context.assignedStores.find(
       (s) => s.storeid === context.lastStore
     );
-    setQuery(store?.store_name || "");
+    if (context.type === "Store") setQuery(store?.store_name || "");
   }, [context.lastStore, context.assignedStores]);
 
   useEffect(() => {
-    if (context.selectedStore) {
+    if (context.selectedStore && context.type === "Store") {
       setQuery(context.selectedStore.store_name);
       setFilteredStores(context.assignedStores);
     }

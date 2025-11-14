@@ -17,7 +17,6 @@ const SalesPanel = ({
   const { selectedSalesPanel } = useAppSelector((state) => state.sales);
 
   const bg = (panel: SalesPanelInfo, selected: SelectedSalesPanel) => {
-    console.log(panel, selected)
     const date = panel.sale_date.split("T")[0];
     if (date === selected.sale_date && panel.storeid === selected.storeid) {
       return "bg-panel_active/75";
