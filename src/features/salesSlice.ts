@@ -20,9 +20,9 @@ export type WindowVisible = {
   cats: boolean;
 };
 const defaultWindowVisible: WindowVisible = {
-  subs: true,
-  hourly: true,
-  cats: true,
+  subs: false,
+  hourly: false,
+  cats: false,
 };
 
 const defaultTopTenMetrics: TopTenItemsMetrics = {

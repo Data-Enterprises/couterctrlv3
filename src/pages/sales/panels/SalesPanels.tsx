@@ -15,12 +15,14 @@ import { getWeekly } from "../../../api/sales";
 import { addDays, handleRipple } from "../../../utils";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+// import { getCats } from "../../../api/sales";
 
 const SalesPanels = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const sales = useAppSelector((state) => state.sales);
+  // const search = useAppSelector((state) => state.search);
 
   const comparePanels = (a: SalesTwoDates, b: SelectedSalesPanel) => {
     const date = a.sale_date.split("T")[0];
@@ -77,9 +79,35 @@ const SalesPanels = () => {
     dispatch(
       setWindowVisible({
         key: type,
-        show: false,
+        show: sales.windowVisible[type] ? false : true,
       })
     );
+
+    // if (type === "cats") {
+    //   const start = formatGoliathDate(search.startDate);
+    //   const end = formatGoliathDate(search.endDate);
+    //   const useGroups = search.type === "Group" ? 1 : 0;
+    //   const singleStore = search.type === "Store" ? 1 : 0;
+    //   const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
+    //   getCats(
+    //     context.url,
+    //     context.token,
+    //     start,
+    //     end,
+    //     useGroups,
+    //     searchValue,
+    //     singleStore,
+    //     0,
+    //     1
+    //   )
+    //     .then((resp) => {
+    //       const j = resp.data;
+    //       console.log("Checking cats", j);
+    //     })
+    //     .catch((err: JsonError) => {
+    //       toast.error("Error fetching Categories data: " + err.message);
+    //     });
+    // }
   };
 
   const isReady = sales.salesPanels.length > 0 && !sales.panelsLoading;

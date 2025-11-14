@@ -101,3 +101,61 @@ export const getWeekly = async (
   });
   return json;
 };
+
+export const getHourly = async (
+  url: string,
+  token: string,
+  startDate: string,
+  endDate: string,
+  useGroups: number,
+  searchValue: number,
+  singleStore: number
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "sales/hourly_sales",
+    data: {
+      startDate,
+      endDate,
+      useGroups,
+      searchValue,
+      singleStore,
+    },
+  });
+  return json;
+};
+
+export const getCats = async (
+  url: string,
+  token: string,
+  startDate: string,
+  endDate: string,
+  useGroups: number,
+  searchValue: number,
+  singleStore: number,
+  consolidated: number = 0,
+  displayHourly: number = 0
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "categories/cat_sales",
+    data: {
+      startDate,
+      endDate,
+      useGroups,
+      searchValue,
+      singleStore,
+      consolidated,
+      displayHourly,
+    },
+  });
+  return json;
+};

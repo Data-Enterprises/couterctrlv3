@@ -1,5 +1,6 @@
 import { createPortal } from "react-dom";
 import { useRef, useEffect, useState } from "react";
+import { useAppSelector } from "../hooks";
 
 interface WindowProps {
   isShowing: boolean;
@@ -13,6 +14,7 @@ interface WindowProps {
   showClose?: boolean;
   zIndex?: number;
   window?: string;
+  setZIndex?: () => void;
 }
 
 const Window = ({
@@ -27,8 +29,10 @@ const Window = ({
   showClose = true,
   zIndex = 50,
   window,
+  setZIndex,
 }: WindowProps) => {
   const [isDragging, setIsDragging] = useState(false);
+  const nav = useAppSelector((state) => state.nav);
 
   const ref = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
@@ -47,6 +51,9 @@ const Window = ({
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     setIsDragging(true);
+    if (setZIndex) {
+      setZIndex();
+    }
 
     const l = ref.current?.offsetLeft;
     const t = ref.current?.offsetTop;
@@ -84,10 +91,12 @@ const Window = ({
     ? createPortal(
         <div
           ref={ref}
+          // Hidden may need to change here but keep note of it
           className={`absolute select-none opacity-0 text-content flex flex-col 
             rounded-b-xl rounded-t-2xl bg-custom-white shadow-2xl border-2 border-content/25
             animate-windowIn trans-window ${window}`}
           style={{
+            opacity: nav.isNavOpen ? 0.6 : 1,
             zIndex: zIndex,
             width: width,
             height: height,
