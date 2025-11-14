@@ -42,7 +42,12 @@ const AssignStoresModal = () => {
   }, [users.assignModalOpen]);
 
   const renderUserRole = () => {
-    return roles.find((level) => level.value == users.userInfo.role)!.label;
+    const role = roles.find((level) => level.value == users.userInfo.role);
+    if (role) {
+      return `${role.label} User`;
+    } else {
+      return "Role Unassigned";
+    }
   };
 
   return (
@@ -56,7 +61,7 @@ const AssignStoresModal = () => {
           {users.userInfo.first_name} {users.userInfo.last_name || ""}
         </div>
         <div className="w-full text-center">{users.userInfo.username}</div>
-        <div className="w-full text-right">{renderUserRole()} User</div>
+        <div className="w-full text-right">{renderUserRole()}</div>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <Unassigned getData={getData} />

@@ -41,7 +41,7 @@ const TextInput = <T,>({
       if (userInfo.password !== userInfo.confirm_password) {
         return "- Passwords do not match";
       } else if (userInfo.password === userInfo.confirm_password) {
-        return "- Passwords match";
+        return "- Passwords Match";
       }
     }
 
@@ -74,7 +74,7 @@ const TextInput = <T,>({
       case 3:
         return "w-3/4 bg-orange-500";
       case 4:
-        return "w-full bg-green-500";
+        return "w-full bg-emerald-500";
       default:
         return "w-0";
     }
@@ -100,7 +100,7 @@ const TextInput = <T,>({
       case 3:
         return "text-orange-500";
       case 4:
-        return "text-green-500";
+        return "text-emerald-500";
       default:
         return "text-content";
     }

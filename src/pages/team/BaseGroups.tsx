@@ -8,6 +8,7 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 import type { FilterOption } from "../../features/groupSlice";
 import type { BaseGroup } from "../../interfaces";
 import { assignBaseGroupToUser, deleteUserBaseGroupLink } from "../../api/team";
+import { handleRipple } from "../../utils";
 
 const BaseGroups = () => {
   const toast = useToast();
@@ -15,7 +16,8 @@ const BaseGroups = () => {
   const context = useAppSelector((state) => state.app);
   const { selectedUserId, baseGroups } = useAppSelector((state) => state.users);
 
-  const handlePanelClick = (group: BaseGroup) => {
+  const handlePanelClick = (e: React.MouseEvent<HTMLDivElement>, group: BaseGroup) => {
+    handleRipple(e);
     const copy: BaseGroup[] = [...baseGroups].map((g) => {
       if (g.id === group.id) {
         return { ...g, active: g.active === 1 ? 0 : 1 };
@@ -115,13 +117,14 @@ const BaseGroups = () => {
             ? baseGroups.map((group, i) => (
                 <div
                   key={i}
+                  data-te-ripple-init
                   className="flex justify-between bg-custom-white p-4 rounded-lg shadow-lg hover:shadow-inner 
-                hover:bg-blue-200/50 transition-all duration-200 cursor-pointer"
-                  onClick={() => handlePanelClick(group)}
+                     hover:bg-blue-200/50 transition-all duration-200 cursor-pointer ripple-button"
+                  onClick={(e) => handlePanelClick(e, group)}
                 >
                   <div>{group.name}</div>
                   <div
-                    className={`${
+                    className={`status ${
                       group.active ? "text-emerald-500" : "text-orange-500"
                     } font-medium`}
                   >
@@ -138,7 +141,10 @@ const BaseGroups = () => {
           >
             Assign Stores
           </button>
-          <button className={`btn-themeGreen px-0 ${isInteractive()}`}>
+          <button
+            className={`btn-themeGreen px-0 ${isInteractive()}`}
+            data-te-ripple-init
+          >
             Reset Security
           </button>
           <button className={`btn-themeGreen px-0 ${isInteractive()}`}>
