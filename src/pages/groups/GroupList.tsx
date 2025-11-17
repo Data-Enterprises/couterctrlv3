@@ -98,10 +98,10 @@ const GroupList = () => {
           <div
             key={store.storeid}
             className="flex justify-between items-center bg-custom-white rounded-lg 
-              shadow-md p-4 hover:shadow-inner transition-all duration-200 cursor-pointer ripple-button"
+              shadow-md py-4 px-3 hover:shadow-inner transition-all duration-200 cursor-pointer ripple-button"
             onClick={(e) => handleCardClick(e, store)}
           >
-            <div className="font-medium">
+            <div className="font-medium space-y-0.5">
               <div>Store {store.store_number}</div>
               <div>
                 {store.storeid} - {store.store_name}

@@ -68,7 +68,7 @@ const Groups = () => {
 
   return (
     <div
-      className="w-full h-[calc(100vh-3rem)] p-4 grid grid-cols-[38%_1fr] gap-4"
+      className="w-full h-[calc(100vh-3rem)] p-4 grid grid-cols-[40%_1fr] gap-4"
       data-testid="groups-page"
     >
       <div>

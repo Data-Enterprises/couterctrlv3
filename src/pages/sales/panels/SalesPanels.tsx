@@ -12,16 +12,17 @@ import {
 } from "../../../features/salesSlice";
 import SalesPanel from "./SalesPanel";
 import { getWeekly } from "../../../api/sales";
-import { addDays, handleRipple } from "../../../utils";
+// import { addDays, formatGoliathDate, handleRipple } from "../../../utils"; // => this is what is actually needed
+import { addDays, handleRipple } from "../../../utils"; // using this to avoid unused imports for now until hourly, subs, and cats are ready on the backend
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
-// import { getCats } from "../../../api/sales";
 
 const SalesPanels = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const sales = useAppSelector((state) => state.sales);
+  // uncomment this when cats, subs, and hourly endpoints are ready
   // const search = useAppSelector((state) => state.search);
 
   const comparePanels = (a: SalesTwoDates, b: SelectedSalesPanel) => {
@@ -72,42 +73,32 @@ const SalesPanels = () => {
       );
   };
 
-  const handleBtnClick = (panel: SalesTwoDates, type: keyof WindowVisible) => {
-    console.log(panel, type);
-    // The handlePanelClick is also being called which handles setting the selected panel
-    // Here we just need to fire off which window we want to open (subs, Hourly, or Cats)
+  const showWindow = (type: keyof WindowVisible) => {
     dispatch(
       setWindowVisible({
         key: type,
         show: sales.windowVisible[type] ? false : true,
       })
     );
+  };
 
-    // if (type === "cats") {
-    //   const start = formatGoliathDate(search.startDate);
-    //   const end = formatGoliathDate(search.endDate);
-    //   const useGroups = search.type === "Group" ? 1 : 0;
-    //   const singleStore = search.type === "Store" ? 1 : 0;
-    //   const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
-    //   getCats(
-    //     context.url,
-    //     context.token,
-    //     start,
-    //     end,
-    //     useGroups,
-    //     searchValue,
-    //     singleStore,
-    //     0,
-    //     1
-    //   )
-    //     .then((resp) => {
-    //       const j = resp.data;
-    //       console.log("Checking cats", j);
-    //     })
-    //     .catch((err: JsonError) => {
-    //       toast.error("Error fetching Categories data: " + err.message);
-    //     });
-    // }
+  const handleBtnClick = (panel: SalesTwoDates, type: keyof WindowVisible) => {
+    console.log("handleBtnClick", panel);
+    // const start = formatGoliathDate(search.startDate);
+    // const end = formatGoliathDate(search.endDate);
+    // const useGroups = search.type === "Group" ? 1 : 0;
+    // const singleStore = search.type === "Store" ? 1 : 0;
+    // const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
+    if (type === "cats") {
+      showWindow("cats");
+      return;
+    } else if (type === "subs") {
+      showWindow("subs");
+      return;
+    } else if (type === "hourly") {
+      showWindow("hourly");
+      return;
+    }
   };
 
   const isReady = sales.salesPanels.length > 0 && !sales.panelsLoading;

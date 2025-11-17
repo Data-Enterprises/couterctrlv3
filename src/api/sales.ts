@@ -159,3 +159,34 @@ export const getCats = async (
   });
   return json;
 };
+
+export const getSubs = async (
+  url: string,
+  token: string,
+  startDate: string,
+  endDate: string,
+  useGroups: number,
+  searchValue: number,
+  singleStore: number,
+  consolidated: number = 0,
+  displayHourly: number = 0
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "subs/sub_sales_v2",
+    data: {
+      startDate,
+      endDate,
+      useGroups,
+      searchValue,
+      singleStore,
+      consolidated,
+      displayHourly,
+    },
+  });
+  return json;
+};
