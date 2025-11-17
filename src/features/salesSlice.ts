@@ -40,6 +40,7 @@ interface SalesState {
   weeklySales: WeeklySale[];
   panelsLoading: boolean;
   salesPanelSearchText: string;
+  salesPanelDateText: string;
   topTenItemsMetrics: TopTenItemsMetrics;
   windowVisible: WindowVisible;
 }
@@ -52,6 +53,7 @@ const initialState: SalesState = {
   weeklySales: [],
   panelsLoading: false,
   salesPanelSearchText: "",
+  salesPanelDateText: "",
   topTenItemsMetrics: defaultTopTenMetrics,
   windowVisible: defaultWindowVisible,
 };
@@ -99,6 +101,9 @@ export const salesSlice = createSlice({
         [action.payload.key]: action.payload.show,
       };
     },
+    setSalesPanelDateText: (state, action: PayloadAction<string>) => {
+      state.salesPanelDateText = action.payload;
+    },
     resetSalesSlice: () => initialState,
   },
 });
@@ -113,6 +118,7 @@ export const {
   setSalesPanelSearchText,
   setTopTenItemsMetrics,
   setWindowVisible,
+  setSalesPanelDateText,
   resetSalesSlice,
 } = salesSlice.actions;
 export default salesSlice.reducer;

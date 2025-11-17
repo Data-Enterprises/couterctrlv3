@@ -18,6 +18,7 @@ import {
   setWeeklySales,
   setPanelsLoading,
   setSalesPanelSearchText,
+  setSalesPanelDateText,
 } from "../../features/salesSlice";
 import { useHeight } from "./utils/hooks";
 
@@ -103,7 +104,11 @@ const Sales = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          dispatch(setSalesPanels(j.items));
+          const sorted = [...j.items].sort(
+            (a, b) =>
+              new Date(b.sale_date).getTime() - new Date(a.sale_date).getTime()
+          );
+          dispatch(setSalesPanels(sorted));
         }
       })
       .catch((err: JsonError) => {
@@ -125,8 +130,15 @@ const Sales = () => {
       );
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(setSalesPanelSearchText(e.target.value));
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: "store" | "date"
+  ) => {
+    if (type === "date") {
+      dispatch(setSalesPanelDateText(e.target.value));
+    } else {
+      dispatch(setSalesPanelSearchText(e.target.value));
+    }
   };
 
   return (
@@ -148,7 +160,16 @@ const Sales = () => {
                 <input
                   className="basic-input focus:border bg-custom-white"
                   value={sales.salesPanelSearchText}
-                  onChange={handleChange}
+                  onChange={(e) => handleChange(e, "store")}
+                />
+              </div>
+              {/* Hiding for now */}
+              <div className="w-full hidden">
+                <label className="font-medium text-sm ml-1">Search Date</label>
+                <input
+                  className="basic-input focus:border bg-custom-white"
+                  value={sales.salesPanelDateText}
+                  onChange={(e) => handleChange(e, "date")}
                 />
               </div>
             </div>

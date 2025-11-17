@@ -27,7 +27,7 @@ const WeeklyNetSales = () => {
     // If there are weekly sales, then set up the line data
     if (search.type === "Group" && sales.selectedSalesPanel.storeid === 0) {
       setLineData([]);
-      console.log(sales.selectedSalesPanel);
+      // console.log(sales.selectedSalesPanel);
       
       // From clicking a sales panel
     } else if (sales.selectedSalesPanel.storeid !== 0) {

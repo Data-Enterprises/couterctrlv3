@@ -57,6 +57,7 @@ const SalesPanels = () => {
       return;
     }
 
+    // Getting the weekly net sales for the selected panel
     const weeklyStart = addDays(panel.sale_date, -7)
       .toISOString()
       .split("T")[0];
