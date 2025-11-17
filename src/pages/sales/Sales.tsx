@@ -163,7 +163,6 @@ const Sales = () => {
                   onChange={(e) => handleChange(e, "store")}
                 />
               </div>
-              {/* Hiding for now */}
               <div className="w-full hidden">
                 <label className="font-medium text-sm ml-1">Search Date</label>
                 <input
