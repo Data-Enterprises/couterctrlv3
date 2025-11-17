@@ -81,7 +81,7 @@ const TopTenItems = () => {
 
     // If single store, then it's all good, if multiple stores, then the data will be aggregated above and sliced
     setTopTen(newTopTen);
-    
+
     const metrics = calculateMetrics(newTopTen);
     dispatch(setTopTenItemsMetrics(metrics));
   }, [sales.topTenItems, sales.selectedSalesPanel, sales.salesPanels]);
@@ -110,7 +110,20 @@ const TopTenItems = () => {
         enableLabel={false}
         layout="horizontal"
         axisBottom={null}
-        tooltipLabel={(e) => `${e.data.id}`}
+        tooltip={({ data }) => (
+          <div
+            className={`bg-custom-white p-2 rounded-md shadow-md shadow-content whitespace-nowrap text-[13px] flex gap-1 items-center`}
+            style={{ color: data.color }}
+          >
+            <div
+              className={`h-3 w-3 rounded mr-1`}
+              style={{ backgroundColor: data.color }}
+            ></div>
+            <div className="text-content">{data.id}</div>
+            <div>-</div>
+            <div className="font-medium">{formatCurrency2(data.value)}</div>
+          </div>
+        )}
       />
       <div className="flex justify-around absolute bottom-0 border-t border-content/50 w-full py-3.5 place-items-center">
         <div className="flex gap-1 text-[13px]">
