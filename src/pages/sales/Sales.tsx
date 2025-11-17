@@ -144,7 +144,7 @@ const Sales = () => {
   return (
     <div
       data-testid="sales-page"
-      className={`w-full h-[calc(100vh-3rem)] p-4 select-none`}
+      className="w-full h-[calc(100vh-3rem)] p-4 select-none"
     >
       <Windows />
       <div ref={gridRef} className="grid grid-cols-4 gap-4 h-full">

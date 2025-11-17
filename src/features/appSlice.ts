@@ -4,16 +4,12 @@ interface AppState {
   url: string;
   chatUrl: string;
   key: string;
-  stats: string;
-  statsKey: string;
   loggedIn: boolean;
   token: string;
   isLoading: boolean;
   autoReload: boolean;
   showForgotPassword: boolean;
   scope: number;
-  basketUrl: string;
-  basketyKey: string;
   isMobile: boolean;
   isTablet: boolean;
   isDesktop: boolean;
@@ -22,10 +18,6 @@ interface AppState {
 export const initialState: AppState = {
   url: "https://y9v6viv36h.execute-api.us-east-1.amazonaws.com/Prod/",
   key: "7801882436271592", // for the url api if needed (above)
-  stats: "https://v5o2brn6il.execute-api.us-east-2.amazonaws.com/Prod/api/",
-  statsKey: "7801882436271592",
-  basketUrl: "https://www.dmsonline.info/basketapi/api/",
-  basketyKey: "1627309573649176",
   loggedIn: false,
   token: "",
   isLoading: false,
