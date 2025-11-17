@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import type { Question } from "../../../interfaces";
+import type { JsonError } from "../../../interfaces";
 import { setForgotPassword } from "../../../features/appSlice";
+import { useToast } from "../../../components/toasts/hooks/useToast";
 
 // None of these need a token
 import {
@@ -10,61 +11,81 @@ import {
   validateSecurityAnswer,
 } from "../../../api/password";
 
+import {
+  setIndex,
+  setEmail,
+  setUsername,
+  setQuestion,
+  setAnswer,
+  setNewPassword,
+  resetForgotPasswordState,
+} from "../../../features/forgotPasswordSlice";
+
 import Modal from "../../../components/Modal";
 import Carousel from "../../../components/Carousel";
-import SingleSelect from "../../../components/SingleSelect";
 import TextInput from "../../../components/TextInput";
 
-const dummyQuestions: Question[] = [
-  { id: 1, question: "What is your mother's maiden name?" },
-  { id: 2, question: "What was the name of your first pet?" },
-  { id: 3, question: "What was the make of your first car?" },
-];
-
 const ForgotPassword = () => {
+  const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [index, setIndex] = useState<number>(0);
+  const forgot = useAppSelector((state) => state.forgotPassword);
   const [height, setHeight] = useState<string>("h-[250px]");
-  const [text, setText] = useState<string>("");
 
   useEffect(() => {
-    // For now using dummy data
-    setQuestions(dummyQuestions);
-  }, []);
-
-  useEffect(() => {
-    if (index === 0) {
+    if (forgot.index === 0) {
       setHeight("h-[250px]");
-    } else if (index === 1) {
+    } else if (forgot.index === 1) {
       setHeight("h-[190px]");
-    } else if (index === 2) {
+    } else if (forgot.index === 2) {
       setHeight("h-[169px]");
     }
-  }, [index]);
-
-  if (!context.showForgotPassword) {
-    return null;
-  }
-
-  const handleChange = (id: string | number) => {
-    console.log("Selected question ID:", id);
-  };
-
-  const handleNext = () => {
-    setText("");
-    setIndex((prevIndex) => prevIndex + 1);
-  };
+  }, [forgot.index]);
 
   const setPasswordText = (text: string) => {
-    setText(text);
+    dispatch(setNewPassword(text));
   };
 
+  // For when the modal closes
   const onClose = () => {
     dispatch(setForgotPassword(false));
-    setIndex(0);
-    setText("");
+    dispatch(resetForgotPasswordState());
+  };
+
+  const verifyEmailAndUsername = () => {
+    forgotPWEmailVerify(context.url, forgot.username, forgot.email)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(setQuestion(j.question));
+          dispatch(setIndex());
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+  };
+
+  const verifySecurityAnswer = () => {
+    validateSecurityAnswer(context.url, forgot.username, forgot.answer)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          toast.success(j.msg);
+          dispatch(setIndex());
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+  };
+
+  const submitNewPassword = () => {
+    resetForgotPassword(context.url, forgot.username, forgot.newPassword)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          toast.success(j.msg);
+          onClose();
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
   };
 
   return (
@@ -77,7 +98,7 @@ const ForgotPassword = () => {
         className={`bg-bkg ${height} transition-all duration-500`}
         showButtons={false}
         useDynamicIndex={true}
-        dynamicIndex={index}
+        dynamicIndex={forgot.index}
       >
         <div className="h-[250px] px-2">
           <div className="text-center font-medium">
@@ -86,42 +107,44 @@ const ForgotPassword = () => {
           <div className="text-center mb-2">
             Please enter your valid username and email
           </div>
-          <label className="font-medium text-xs">Username</label>
-          <input
-            type="text"
-            className="basic-input focus:border bg-custom-white"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
+          <TextInput
+            query={forgot.username}
+            setText={(text) => dispatch(setUsername(text))}
+            title="Username"
+            isSimple={true}
+            name="forgot-username"
           />
-          <label className="font-medium text-xs mt-2">Email</label>
-          <input
-            type="text"
-            className="basic-input focus:border bg-custom-white"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
+
+          <TextInput
+            query={forgot.email}
+            setText={(text) => dispatch(setEmail(text))}
+            title="Email"
+            isSimple={true}
+            name="forgot-email"
           />
-          <button className="btn-themeBlue w-full mt-4" onClick={handleNext}>
+          <button
+            className="btn-themeBlue w-full mt-4"
+            onClick={verifyEmailAndUsername}
+          >
             Verify
           </button>
         </div>
         <div className="h-[190px] px-2">
-          <div className="font-medium text-center mb-4">
-            Select your security question and provide your answer
+          <div className="font-medium text-center mb-2">
+            Provide your Security Answer
           </div>
-          <SingleSelect
-            label=""
-            data={questions}
-            valueKey={"id"}
-            displayKey="question"
-            onSelect={handleChange}
+          <div className="text-center mb-2">{forgot.question}</div>
+          <TextInput
+            query={forgot.answer}
+            isSimple={true}
+            title="Answer"
+            name="forgot-question"
+            setText={(text) => dispatch(setAnswer(text))}
           />
-          <input
-            type="text"
-            className="basic-input focus:border bg-custom-white mt-2"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-          />
-          <button className="btn-themeBlue w-full mt-4" onClick={handleNext}>
+          <button
+            className="btn-themeBlue w-full mt-4"
+            onClick={verifySecurityAnswer}
+          >
             Submit Answer
           </button>
         </div>
@@ -131,14 +154,14 @@ const ForgotPassword = () => {
             Once updated, sign in with your new password
           </div>
           <TextInput
-            query={text}
+            query={forgot.newPassword}
             name="forgot-password"
             isSimple={true}
             type="password"
             title="Password"
             setText={setPasswordText}
           />
-          <button className="btn-themeBlue w-full mt-4" onClick={() => {}}>
+          <button className="btn-themeBlue w-full mt-4" onClick={submitNewPassword}>
             Change Password
           </button>
         </div>

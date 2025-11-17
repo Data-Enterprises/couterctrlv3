@@ -6,6 +6,7 @@ export interface ForgotPasswordState {
   question: string;
   answer: string;
   newPassword: string;
+  index: number;
 }
 
 export const initialState: ForgotPasswordState = {
@@ -14,6 +15,7 @@ export const initialState: ForgotPasswordState = {
   question: "",
   answer: "",
   newPassword: "",
+  index: 0,
 };
 
 export const forgotPasswordSlice = createSlice({
@@ -35,6 +37,9 @@ export const forgotPasswordSlice = createSlice({
     setNewPassword(state, action: PayloadAction<string>) {
       state.newPassword = action.payload;
     },
+    setIndex(state) {
+      state.index += 1;
+    },
     resetForgotPasswordState: () => initialState,
   },
 });
@@ -45,6 +50,7 @@ export const {
   setQuestion,
   setAnswer,
   setNewPassword,
+  setIndex,
   resetForgotPasswordState,
 } = forgotPasswordSlice.actions;
 
