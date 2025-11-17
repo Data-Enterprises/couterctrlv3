@@ -4,14 +4,9 @@ import type { JsonError } from "../../../interfaces";
 import { setForgotPassword } from "../../../features/appSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 
-import {
-  resetForgotPassword,
-  validateSecurityAnswer,
-} from "../../../api/password";
+import { resetForgotPassword } from "../../../api/password";
 
 import {
-  setIndex,
-  setAnswer,
   setNewPassword,
   resetForgotPasswordState,
 } from "../../../features/forgotPasswordSlice";
@@ -20,6 +15,7 @@ import Modal from "../../../components/Modal";
 import Carousel from "../../../components/Carousel";
 import TextInput from "../../../components/TextInput";
 import EmailVerify from "./EmailVerify";
+import SecurityAnswer from "./SecurityAnswer";
 
 const ForgotPassword = () => {
   const toast = useToast();
@@ -48,18 +44,6 @@ const ForgotPassword = () => {
     dispatch(resetForgotPasswordState());
   };
 
-  const verifySecurityAnswer = () => {
-    validateSecurityAnswer(context.url, forgot.username, forgot.answer)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          toast.success(j.msg);
-          dispatch(setIndex());
-        }
-      })
-      .catch((err: JsonError) => toast.error(err.message));
-  };
-
   const submitNewPassword = () => {
     resetForgotPassword(context.url, forgot.username, forgot.newPassword)
       .then((resp) => {
@@ -85,26 +69,7 @@ const ForgotPassword = () => {
         dynamicIndex={forgot.index}
       >
         <EmailVerify />
-        {/* Security Answer section */}
-        <div className="h-[190px] px-2">
-          <div className="font-medium text-center mb-2">
-            Provide your Security Answer
-          </div>
-          <div className="text-center mb-2">{forgot.question}</div>
-          <TextInput
-            query={forgot.answer}
-            isSimple={true}
-            title="Answer"
-            name="forgot-question"
-            setText={(text) => dispatch(setAnswer(text))}
-          />
-          <button
-            className="btn-themeBlue w-full mt-4"
-            onClick={verifySecurityAnswer}
-          >
-            Submit Answer
-          </button>
-        </div>
+        <SecurityAnswer />
 
         {/* Reset Password Section */}
         <div className="h-[169px] px-2">
