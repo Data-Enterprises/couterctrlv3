@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import type {
   JsonError,
@@ -24,6 +25,20 @@ const SalesPanels = () => {
   const sales = useAppSelector((state) => state.sales);
   // uncomment this when cats, subs, and hourly endpoints are ready
   // const search = useAppSelector((state) => state.search);
+  const [filtered, setFiltered] = useState<SalesTwoDates[]>([]);
+
+  useEffect(() => {
+    // Filter sales panels based on search text
+    if (sales.salesPanelSearchText.trim() === "") {
+      setFiltered(sales.salesPanels);
+    } else {
+      const searchText = sales.salesPanelSearchText.toLowerCase();
+      const filteredPanels = sales.salesPanels.filter((panel) =>
+        panel.store_name.toLowerCase().includes(searchText)
+      );
+      setFiltered(filteredPanels);
+    }
+  }, [sales.salesPanelSearchText]);
 
   const comparePanels = (a: SalesTwoDates, b: SelectedSalesPanel) => {
     const date = a.sale_date.split("T")[0];
@@ -106,7 +121,7 @@ const SalesPanels = () => {
   return (
     <div className="min-h-[100%] max-h-[100%] relative flex flex-col gap-2">
       {isReady &&
-        sales.salesPanels.map((panel, idx) => (
+        filtered.map((panel, idx) => (
           <SalesPanel
             key={idx}
             panel={panel}
