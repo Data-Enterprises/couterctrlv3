@@ -13,7 +13,10 @@ const TitleBar = () => {
   };
 
   return (
-    <div data-testid="title-bar" className="h-12 w-full flex cursor-default select-none">
+    <div
+      data-testid="title-bar"
+      className="h-12 w-full flex cursor-default select-none"
+    >
       <div
         data-testid="logo-area"
         className="w-48 flex items-center shadow shadow-content/10 border-r cursor-pointer hover:bg-blue-200 transition-all duration-300"
@@ -25,7 +28,7 @@ const TitleBar = () => {
       <div className="shadow shadow-content/10 w-[calc(100vw-12rem)] flex justify-between">
         {/* Replace this with the user's name coming from the api */}
         <div className="ml-4 flex items-center font-medium">
-          Welcome Stephen
+          Welcome {user.firstName} {user.lastName || ""}!
         </div>
         <div className="flex items-center h-full">
           <BellIcon className="h-6 w-6 m-2 cursor-pointer hover:text-accent1 transition-colors" />
