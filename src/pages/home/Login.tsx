@@ -23,7 +23,7 @@ import {
   setResetPassword,
   setSecurityQuestionId,
 } from "../../features/userSlice";
-import ForgotPassword from "./ForgotPassword";
+import ForgotPassword from "./forgot/ForgotPassword";
 
 const Login = () => {
   const state = useAppSelector((state) => state.user);

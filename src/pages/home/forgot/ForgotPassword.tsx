@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import type { Question } from "../../interfaces";
-import { setForgotPassword } from "../../features/appSlice";
-// import { getSecurityQuestions } from "../../api/security";
-import Modal from "../../components/Modal";
-import Carousel from "../../components/Carousel";
-import SingleSelect from "../../components/SingleSelect";
-import TextInput from "../../components/TextInput";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import type { Question } from "../../../interfaces";
+import { setForgotPassword } from "../../../features/appSlice";
+
+// None of these need a token
+import {
+  forgotPWEmailVerify,
+  resetForgotPassword,
+  validateSecurityAnswer,
+} from "../../../api/password";
+
+import Modal from "../../../components/Modal";
+import Carousel from "../../../components/Carousel";
+import SingleSelect from "../../../components/SingleSelect";
+import TextInput from "../../../components/TextInput";
 
 const dummyQuestions: Question[] = [
   { id: 1, question: "What is your mother's maiden name?" },
@@ -19,7 +26,7 @@ const ForgotPassword = () => {
   const context = useAppSelector((state) => state.app);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [index, setIndex] = useState<number>(0);
-  const [height, setHeight] = useState<string>("h-[157px]");
+  const [height, setHeight] = useState<string>("h-[250px]");
   const [text, setText] = useState<string>("");
 
   useEffect(() => {
@@ -29,7 +36,7 @@ const ForgotPassword = () => {
 
   useEffect(() => {
     if (index === 0) {
-      setHeight("h-[157px]");
+      setHeight("h-[250px]");
     } else if (index === 1) {
       setHeight("h-[190px]");
     } else if (index === 2) {
@@ -72,9 +79,21 @@ const ForgotPassword = () => {
         useDynamicIndex={true}
         dynamicIndex={index}
       >
-        <div className="h-[157px] px-2">
-          <div className="text-center font-medium">Verify Email</div>
-          <div className="text-center mb-2">Please enter your valid username and email</div>
+        <div className="h-[250px] px-2">
+          <div className="text-center font-medium">
+            Verify Username and Email
+          </div>
+          <div className="text-center mb-2">
+            Please enter your valid username and email
+          </div>
+          <label className="font-medium text-xs">Username</label>
+          <input
+            type="text"
+            className="basic-input focus:border bg-custom-white"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
+          <label className="font-medium text-xs mt-2">Email</label>
           <input
             type="text"
             className="basic-input focus:border bg-custom-white"
@@ -108,7 +127,9 @@ const ForgotPassword = () => {
         </div>
         <div className="h-[169px] px-2">
           <div className="font-medium text-center">Reset Password</div>
-          <div className="text-center">Once updated, sign in with your new password</div>
+          <div className="text-center">
+            Once updated, sign in with your new password
+          </div>
           <TextInput
             query={text}
             name="forgot-password"

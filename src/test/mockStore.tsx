@@ -8,6 +8,7 @@ import salesReducer from "../features/salesSlice";
 import groupReducer from "../features/groupSlice";
 import storeReducer from "../features/storeSlice";
 import usersReducer from "../features/usersSlice";
+import forgotPasswordReducer from "../features/forgotPasswordSlice";
 
 export const mockStore = configureStore({
   reducer: {
@@ -19,5 +20,6 @@ export const mockStore = configureStore({
     group: groupReducer,
     stores: storeReducer,
     users: usersReducer,
+    forgotPassword: forgotPasswordReducer,
   },
 });
