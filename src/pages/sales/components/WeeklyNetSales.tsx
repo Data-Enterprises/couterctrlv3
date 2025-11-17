@@ -11,7 +11,9 @@ type LineSeries = {
 
 const WeeklyNetSales = () => {
   const sales = useAppSelector((state) => state.sales);
+  const search = useAppSelector((state) => state.search);
   const [lineData, setLineData] = useState<LineSeries[]>([]);
+  const [title, setTitle] = useState<string>("");
 
   const getDayMonth = (date: string) => {
     const newDate = date.split("-");
@@ -19,7 +21,17 @@ const WeeklyNetSales = () => {
   };
 
   useEffect(() => {
-    if (sales.weeklySales) {
+    // Do nothing if there's no weekly sales data
+    if (!sales.weeklySales.length) return;
+
+    // If there are weekly sales, then set up the line data
+    if (search.type === "Group" && sales.selectedSalesPanel.storeid === 0) {
+      setLineData([]);
+      console.log(sales.selectedSalesPanel);
+      
+      // From clicking a sales panel
+    } else if (sales.selectedSalesPanel.storeid !== 0) {
+      // handle selected panel logic here
       const id = 1;
       const series: LineData = [...sales.weeklySales].map((day) => {
         const date = getDayMonth(day.sale_date.split("T")[0]);
@@ -35,8 +47,9 @@ const WeeklyNetSales = () => {
           data: series,
         },
       ]);
+      setTitle(sales.selectedSalesPanel.store_name);
     }
-  }, [sales.weeklySales]);
+  }, [sales.weeklySales, sales.selectedSalesPanel]);
 
   const getQty = (date: string) => {
     const found = sales.weeklySales?.find(
@@ -46,9 +59,13 @@ const WeeklyNetSales = () => {
   };
 
   return (
-    <div data-testid="weekly-net-sales" className="bg-custom-white rounded-lg shadow-lg">
-      <div className="font-medium bg-blue-500 text-custom-white py-0.5 rounded-t-lg pl-4">
-        Weekly Net Sales
+    <div
+      data-testid="weekly-net-sales"
+      className="bg-custom-white rounded-lg shadow-lg"
+    >
+      <div className="font-medium bg-blue-500 text-custom-white py-0.5 rounded-t-lg px-4 flex justify-between">
+        <div>Weekly Net Sales</div>
+        <div>{title}</div>
       </div>
       <ResponsiveLine
         data={lineData}

@@ -24,6 +24,7 @@ const TopTenItems = () => {
 
     // Show the selected panel's top ten items if in group mode and a panel is selected
     if (search.type === "Group" && sales.selectedSalesPanel.storeid !== 0) {
+      // If selecting a sales panel from a group of stores, we just filter for the top ten items for that store
       const panelItems = sales.topTenItems
         .filter((item) => item.storeid === sales.selectedSalesPanel.storeid)
         .sort((a: TopTenItem, b: TopTenItem) => b.total_sales - a.total_sales);
@@ -42,9 +43,9 @@ const TopTenItems = () => {
       newTopTen = formatTopTenData(panelItems);
 
       // The storepicker for is setting the selected store in search slice
-      setTitle(search.selectedStore?.store_name || "");
+      setTitle(search.selectedStore.store_name || "");
 
-      // If group or all stores, then aggregate the data from multiple stores if a panel is not selected
+      // If group or all stores, then aggregate the data from multiple stores if a panel is not selected!!!!!!!!!! AGGREGATED DATA
     } else if (search.type === "Group" || search.type === "Stores") {
       const groupTopTen = [...sales.topTenItems]
         .reduce((acc: GroupTopTenItem[], item: TopTenItem) => {

@@ -37,7 +37,7 @@ interface SalesState {
   departmentSales: DepartmentSale[];
   salesPanels: SalesTwoDates[];
   selectedSalesPanel: SelectedSalesPanel;
-  weeklySales?: WeeklySale[];
+  weeklySales: WeeklySale[];
   panelsLoading: boolean;
   salesPanelSearchText: string;
   topTenItemsMetrics: TopTenItemsMetrics;

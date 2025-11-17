@@ -14,8 +14,8 @@ export interface SearchState {
   ledgerDate: string;
   lastStoreName: string;
   defaultSalesStore: number;
-  selectedStore: Store | null;
-  selectedGroup: Group | null;
+  selectedStore: Store;
+  selectedGroup: Group;
 }
 
 export const initialState: SearchState = {
@@ -27,8 +27,8 @@ export const initialState: SearchState = {
   ledgerDate: "",
   lastStoreName: "",
   defaultSalesStore: 0,
-  selectedStore: null,
-  selectedGroup: null,
+  selectedStore: { storeid: 0, store_name: "", store_number: "" },
+  selectedGroup: { id: 0, group_name: "", userid: 0 },
 };
 
 const searchSlice = createSlice({
@@ -56,10 +56,10 @@ const searchSlice = createSlice({
     setLastStoreName: (state, action: PayloadAction<string>) => {
       state.lastStoreName = action.payload;
     },
-    setSelectedStore: (state, action: PayloadAction<Store | null>) => {
+    setSelectedStore: (state, action: PayloadAction<Store>) => {
       state.selectedStore = action.payload;
     },
-    setSelectedGroup: (state, action: PayloadAction<Group | null>) => {
+    setSelectedGroup: (state, action: PayloadAction<Group>) => {
       state.selectedGroup = action.payload;
     },
     setDefaultSalesStore: (state, action: PayloadAction<number>) => {
