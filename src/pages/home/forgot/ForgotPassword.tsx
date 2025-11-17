@@ -4,18 +4,13 @@ import type { JsonError } from "../../../interfaces";
 import { setForgotPassword } from "../../../features/appSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 
-// None of these need a token
 import {
-  forgotPWEmailVerify,
   resetForgotPassword,
   validateSecurityAnswer,
 } from "../../../api/password";
 
 import {
   setIndex,
-  setEmail,
-  setUsername,
-  setQuestion,
   setAnswer,
   setNewPassword,
   resetForgotPasswordState,
@@ -24,6 +19,7 @@ import {
 import Modal from "../../../components/Modal";
 import Carousel from "../../../components/Carousel";
 import TextInput from "../../../components/TextInput";
+import EmailVerify from "./EmailVerify";
 
 const ForgotPassword = () => {
   const toast = useToast();
@@ -50,18 +46,6 @@ const ForgotPassword = () => {
   const onClose = () => {
     dispatch(setForgotPassword(false));
     dispatch(resetForgotPasswordState());
-  };
-
-  const verifyEmailAndUsername = () => {
-    forgotPWEmailVerify(context.url, forgot.username, forgot.email)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          dispatch(setQuestion(j.question));
-          dispatch(setIndex());
-        }
-      })
-      .catch((err: JsonError) => toast.error(err.message));
   };
 
   const verifySecurityAnswer = () => {
@@ -100,35 +84,8 @@ const ForgotPassword = () => {
         useDynamicIndex={true}
         dynamicIndex={forgot.index}
       >
-        <div className="h-[250px] px-2">
-          <div className="text-center font-medium">
-            Verify Username and Email
-          </div>
-          <div className="text-center mb-2">
-            Please enter your valid username and email
-          </div>
-          <TextInput
-            query={forgot.username}
-            setText={(text) => dispatch(setUsername(text))}
-            title="Username"
-            isSimple={true}
-            name="forgot-username"
-          />
-
-          <TextInput
-            query={forgot.email}
-            setText={(text) => dispatch(setEmail(text))}
-            title="Email"
-            isSimple={true}
-            name="forgot-email"
-          />
-          <button
-            className="btn-themeBlue w-full mt-4"
-            onClick={verifyEmailAndUsername}
-          >
-            Verify
-          </button>
-        </div>
+        <EmailVerify />
+        {/* Security Answer section */}
         <div className="h-[190px] px-2">
           <div className="font-medium text-center mb-2">
             Provide your Security Answer
@@ -148,6 +105,8 @@ const ForgotPassword = () => {
             Submit Answer
           </button>
         </div>
+
+        {/* Reset Password Section */}
         <div className="h-[169px] px-2">
           <div className="font-medium text-center">Reset Password</div>
           <div className="text-center">
@@ -161,7 +120,10 @@ const ForgotPassword = () => {
             title="Password"
             setText={setPasswordText}
           />
-          <button className="btn-themeBlue w-full mt-4" onClick={submitNewPassword}>
+          <button
+            className="btn-themeBlue w-full mt-4"
+            onClick={submitNewPassword}
+          >
             Change Password
           </button>
         </div>
