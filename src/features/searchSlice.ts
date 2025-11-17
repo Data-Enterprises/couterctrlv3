@@ -11,7 +11,6 @@ export interface SearchState {
   endDate: string;
   lastStore: number;
   lastGroup: number;
-  ledgerDate: string;
   lastStoreName: string;
   defaultSalesStore: number;
   selectedStore: Store;
@@ -24,7 +23,6 @@ export const initialState: SearchState = {
   endDate: formatDate(new Date().toString()),
   lastStore: 0,
   lastGroup: 0,
-  ledgerDate: "",
   lastStoreName: "",
   defaultSalesStore: 0,
   selectedStore: { storeid: 0, store_name: "", store_number: "" },
@@ -50,9 +48,6 @@ const searchSlice = createSlice({
     setLastGroup: (state, action: PayloadAction<number>) => {
       state.lastGroup = action.payload;
     },
-    setLedgerDate: (state, action: PayloadAction<string>) => {
-      state.ledgerDate = action.payload;
-    },
     setLastStoreName: (state, action: PayloadAction<string>) => {
       state.lastStoreName = action.payload;
     },
@@ -74,7 +69,6 @@ export const {
   setStartDate,
   setEndDate,
   setLastStore,
-  setLedgerDate,
   setLastStoreName,
   setSelectedStore,
   setSelectedGroup,
