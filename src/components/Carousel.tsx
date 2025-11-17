@@ -9,22 +9,35 @@ type CarouselProps<T> = {
   dataKey?: keyof T;
   payloadAction?: (payload: string) => void;
   idxOffset?: number;
+  showButtons?: boolean;
+  useDynamicIndex?: boolean;
+  dynamicIndex?: number;
 };
 
 const Carousel = <T,>({
   id = 0,
   children,
-  className = "min-h-[300px]",
+  className = "bg-custom-white min-h-[300px]",
   data,
   dataKey,
   payloadAction,
   idxOffset = 0,
+  showButtons = true,
+  useDynamicIndex = false,
+  dynamicIndex,
 }: CarouselProps<T>) => {
   const [index, setIndex] = useState<number>(0);
   const totalSlides = React.Children.count(children);
   const goTo = (i: number) => setIndex((i + totalSlides) % totalSlides);
   const next = () => goTo(index + 1);
   const prev = () => goTo(index - 1);
+
+  useEffect(() => {
+    if (useDynamicIndex && dynamicIndex !== undefined) {
+      goTo(dynamicIndex);
+      console.log("Dynamic Index Changed:", dynamicIndex);
+    }
+  }, [useDynamicIndex, dynamicIndex]);
 
   useEffect(() => {
     const currentChild = React.Children.toArray(children)[index];
@@ -37,7 +50,7 @@ const Carousel = <T,>({
   return (
     <div
       data-testid={`carousel-${id}`}
-      className={`relative overflow-hidden bg-custom-white rounded-lg ${className}`}
+      className={`relative overflow-hidden rounded-lg ${className}`}
     >
       <div
         className="flex transition-transform duration-500"
@@ -52,7 +65,11 @@ const Carousel = <T,>({
         ))}
       </div>
 
-      <div className="absolute bottom-0 left-1/2 z-50 -translate-x-1/2 mb-4 flex gap-1">
+      <div
+        className={`absolute ${
+          !showButtons && "hidden"
+        } bottom-0 left-1/2 z-50 -translate-x-1/2 mb-4 flex gap-1`}
+      >
         <button
           onClick={prev}
           className="absolute flex -left-6 top-1/2 -translate-y-1/2 z-10 bg-blue-500/80 hover:bg-panel_active transition-all duration-300 rounded-full p-1 shadow"

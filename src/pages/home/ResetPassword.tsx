@@ -30,6 +30,11 @@ const ResetPassword = () => {
       });
   };
 
+  // Render only if resetPassword is true, otherwise return null to avoid clouding up the DOM
+  if (user.resetPassword === 0) {
+    return null;
+  }
+
   return (
     <Modal isOpen={user.resetPassword === 1} onClose={() => {}}>
       <div className="text-center font-medium text-orange-500 underline">

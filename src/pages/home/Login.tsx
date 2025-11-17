@@ -23,6 +23,7 @@ import {
   setResetPassword,
   setSecurityQuestionId,
 } from "../../features/userSlice";
+import ForgotPassword from "./ForgotPassword";
 
 const Login = () => {
   const state = useAppSelector((state) => state.user);
@@ -228,12 +229,7 @@ const Login = () => {
           alt=""
         />
       </div>
-      {/* <ForgotPassword
-        open={context.showForgotPassword}
-        setOpen={(x: boolean) => {
-          dispatch(setForgotPassword(x));
-        }}
-      /> */}
+      <ForgotPassword />
     </div>
   );
 };

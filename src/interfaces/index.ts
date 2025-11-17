@@ -2,7 +2,7 @@ export type JsonError = {
   message: string;
 };
 
-export interface SecurityQuestion {
+export interface Question {
   id: number;
   question: string;
 }

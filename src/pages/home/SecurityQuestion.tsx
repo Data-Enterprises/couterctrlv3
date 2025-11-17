@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import type { JsonError } from "../../interfaces";
+import type { JsonError, Question } from "../../interfaces";
 
 import {
   getSecurityQuestions,
@@ -12,11 +12,6 @@ import Modal from "../../components/Modal";
 import TextInput from "../../components/TextInput";
 import SingleSelect from "../../components/SingleSelect";
 import { setSecurityQuestionId } from "../../features/userSlice";
-
-type Question = {
-  id: number;
-  question: string;
-};
 
 const SecurityQuestion = () => {
   const toast = useToast();

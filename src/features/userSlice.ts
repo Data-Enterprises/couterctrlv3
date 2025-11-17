@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { SecurityQuestion, Store } from "../interfaces";
+import type { Store } from "../interfaces";
 
 export interface NewQuestion {
   id: number;
@@ -28,9 +28,6 @@ export interface UserState {
   security: number;
   role: number | string;
   securityQuestionId: number;
-  securityQuestion: string;
-  questions: SecurityQuestion[];
-  newQuestion: NewQuestion;
   assignedStores: Store[];
   unassignedStores: Store[];
 }
@@ -48,9 +45,6 @@ export const initialState: UserState = {
   security: 0,
   role: userRole.ALL,
   securityQuestionId: 0,
-  securityQuestion: "",
-  questions: [],
-  newQuestion: { id: 0, answer: "" },
   assignedStores: [],
   unassignedStores: [],
 };
@@ -95,15 +89,6 @@ export const userSlice = createSlice({
     setSecurityQuestionId: (state, action: PayloadAction<number>) => {
       state.securityQuestionId = action.payload;
     },
-    setSecurityQuestion: (state, action: PayloadAction<string>) => {
-      state.securityQuestion = action.payload;
-    },
-    setQuestions: (state, action: PayloadAction<SecurityQuestion[]>) => {
-      state.questions = action.payload;
-    },
-    setNewQuestion: (state, action: PayloadAction<NewQuestion>) => {
-      state.newQuestion = action.payload;
-    },
     setUsePrefs: (state, action: PayloadAction<number>) => {
       state.userid = action.payload;
     },
@@ -130,9 +115,6 @@ export const {
   setRole,
   setEmail,
   setSecurityQuestionId,
-  setSecurityQuestion,
-  setQuestions,
-  setNewQuestion,
   setAssignedStores,
   setUnassignedStores,
   resetUserSlice,
