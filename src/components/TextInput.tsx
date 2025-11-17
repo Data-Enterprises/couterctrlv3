@@ -7,10 +7,12 @@ import X from "../svgs/X";
 
 interface TextInputProps<T> {
   query: string;
-  setQuery: (field: keyof T, query: string) => void;
+  setQuery?: (field: keyof T, query: string) => void;
   title?: string;
   name: string;
   type?: string;
+  isSimple?: boolean;
+  setText?: (text: string) => void;
 }
 
 // This component is used to handle Redux form state updates for text inputs
@@ -21,11 +23,17 @@ const TextInput = <T,>({
   title,
   name,
   type = "text",
+  isSimple = false,
+  setText,
 }: TextInputProps<T>) => {
   const [encrypted, setEncrypted] = useState(type === "password");
   const [inputType, setInputType] = useState<string>(type);
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(name as keyof T, e.currentTarget.value);
+    if (isSimple && setText) {
+      setText(e.currentTarget.value);
+    } else if (!isSimple && setQuery) {
+      setQuery(name as keyof T, e.currentTarget.value);
+    }
   };
   const { userInfo, selectedUserId, users } = useAppSelector(
     (state) => state.users

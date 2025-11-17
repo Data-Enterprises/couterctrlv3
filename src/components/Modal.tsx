@@ -6,6 +6,7 @@ interface ModalProps {
   className?: string;
   children: React.ReactNode;
   modalClassName?: string;
+  allowClickOutside?: boolean;
 }
 
 const Modal = ({
@@ -14,6 +15,7 @@ const Modal = ({
   className = "",
   children,
   modalClassName = "bg-bkg max-w-md w-full",
+  allowClickOutside = true,
 }: ModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -21,7 +23,8 @@ const Modal = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (
         modalRef.current &&
-        !modalRef.current.contains(event.target as Node)
+        !modalRef.current.contains(event.target as Node) &&
+        allowClickOutside
       ) {
         onClose();
       }

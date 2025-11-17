@@ -8,6 +8,7 @@ import Login from "./pages/home/Login";
 import SideBar from "./components/navigation/SideBar";
 import TitleBar from "./components/navigation/TitleBar";
 import UserDataLoader from "./components/UserDataLoader";
+import SecurityQuestion from "./pages/home/SecurityQuestion";
 
 const App = () => {
   const context = useAppSelector((state) => state.app);
@@ -28,7 +29,6 @@ const App = () => {
         <div className="h-screen w-screen">
           <TitleBar />
           <SideBar />
-
           <div
             className={`ml-12 min-w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)] bg-bkg ${
               nav.isNavOpen
@@ -36,6 +36,8 @@ const App = () => {
                 : "bg-content/5 opacity-100"
             } transition-all duration-300`}
           >
+            {/* Show Security Question Modal if security_question_id === 0 */}
+            <SecurityQuestion />
             <Outlet />
           </div>
         </div>
