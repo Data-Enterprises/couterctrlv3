@@ -6,17 +6,23 @@ import {
 } from "../../features/usersSlice";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type { FilterOption } from "../../features/groupSlice";
-import type { BaseGroup } from "../../interfaces";
+import type { BaseGroup, JsonError } from "../../interfaces";
 import { assignBaseGroupToUser, deleteUserBaseGroupLink } from "../../api/team";
 import { handleRipple } from "../../utils";
+import { setTempPassword } from "../../api/security";
 
 const BaseGroups = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { selectedUserId, baseGroups } = useAppSelector((state) => state.users);
+  const { selectedUserId, baseGroups, userInfo } = useAppSelector(
+    (state) => state.users
+  );
 
-  const handlePanelClick = (e: React.MouseEvent<HTMLDivElement>, group: BaseGroup) => {
+  const handlePanelClick = (
+    e: React.MouseEvent<HTMLDivElement>,
+    group: BaseGroup
+  ) => {
     handleRipple(e);
     const copy: BaseGroup[] = [...baseGroups].map((g) => {
       if (g.id === group.id) {
@@ -94,6 +100,29 @@ const BaseGroups = () => {
     dispatch(setAssignModalOpen(true));
   };
 
+  const resetPassword = () => {
+    if (userInfo.password !== userInfo.confirm_password) {
+      toast.warn("Passwords do not match");
+      return;
+    }
+    console.log(userInfo.password, userInfo.username);
+    setTempPassword(
+      context.url,
+      context.token,
+      userInfo.username,
+      userInfo.password
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          toast.success(j.msg);
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error("Error resetting password: " + err.message);
+      });
+  };
+
   return (
     <div className="select-none">
       <div className="flex gap-2">
@@ -147,7 +176,10 @@ const BaseGroups = () => {
           >
             Reset Security
           </button>
-          <button className={`btn-themeGreen px-0 ${isInteractive()}`}>
+          <button
+            className={`btn-themeGreen px-0 ${isInteractive()}`}
+            onClick={resetPassword}
+          >
             Reset Password
           </button>
           <button

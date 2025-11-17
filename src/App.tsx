@@ -9,6 +9,7 @@ import SideBar from "./components/navigation/SideBar";
 import TitleBar from "./components/navigation/TitleBar";
 import UserDataLoader from "./components/UserDataLoader";
 import SecurityQuestion from "./pages/home/SecurityQuestion";
+import ResetPassword from "./pages/home/ResetPassword";
 
 const App = () => {
   const context = useAppSelector((state) => state.app);
@@ -36,7 +37,7 @@ const App = () => {
                 : "bg-content/5 opacity-100"
             } transition-all duration-300`}
           >
-            {/* Show Security Question Modal if security_question_id === 0 */}
+            <ResetPassword />
             <SecurityQuestion />
             <Outlet />
           </div>

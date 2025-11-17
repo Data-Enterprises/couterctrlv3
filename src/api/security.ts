@@ -34,3 +34,45 @@ export const setSecurityQuestionAnswer = async (
   });
   return json;
 };
+
+export const setTempPassword = async (
+  url: string,
+  token: string,
+  username: string,
+  password: string
+) => {
+  const json = await axios({
+    method: "PUT",
+    url: url + "forgot_password/temp_password",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data: {
+      username,
+      password,
+    },
+  });
+  return json;
+};
+
+export const resetPassword = async (
+  url: string,
+  token: string,
+  username: string,
+  password: string
+) => {
+  const json = await axios({
+    method: "PUT",
+    url: url + "forgot_password/reset_password",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    data: {
+      username,
+      password,
+    },
+  });
+  return json;
+};

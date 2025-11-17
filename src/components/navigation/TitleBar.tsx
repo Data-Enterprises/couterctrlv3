@@ -26,7 +26,6 @@ const TitleBar = () => {
         <div className="font-medium">CounterCtrl</div>
       </div>
       <div className="shadow shadow-content/10 w-[calc(100vw-12rem)] flex justify-between">
-        {/* Replace this with the user's name coming from the api */}
         <div className="ml-4 flex items-center font-medium">
           Welcome {user.firstName} {user.lastName || ""}!
         </div>

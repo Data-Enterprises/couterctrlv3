@@ -10,7 +10,6 @@ import {
   setIsTablet,
   setIsDesktop,
   setToken,
-  setPasswordChangeNeeded,
   setForgotPassword,
 } from "../../features/appSlice";
 import {
@@ -87,7 +86,6 @@ const Login = () => {
           dispatch(setUserLevel(j.user_level));
           dispatch(setCompany(j.company));
           dispatch(setResetPassword(j.password_change_needed));
-          dispatch(setPasswordChangeNeeded(j.password_change_needed));
           dispatch(setSecurityQuestionId(j.security_question_id));
         }
       })

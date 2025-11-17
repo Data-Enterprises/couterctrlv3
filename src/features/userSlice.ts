@@ -23,7 +23,7 @@ export interface UserState {
   email: string;
   firstName: string;
   lastName: string;
-  resetPassword: boolean;
+  resetPassword: number;
   company: number;
   security: number;
   role: number | string;
@@ -42,7 +42,7 @@ export const initialState: UserState = {
   userLevel: 0,
   firstName: "",
   lastName: "",
-  resetPassword: false,
+  resetPassword: 0,
   email: "",
   company: 0,
   security: 0,
@@ -69,7 +69,7 @@ export const userSlice = createSlice({
       state.company = action.payload;
     },
     setResetPassword: (state, action: PayloadAction<number>) => {
-      state.resetPassword = action.payload === 1;
+      state.resetPassword = action.payload;
     },
     setUserLevel: (state, action: PayloadAction<number>) => {
       state.userLevel = action.payload;

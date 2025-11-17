@@ -12,7 +12,6 @@ interface AppState {
   autoReload: boolean;
   showForgotPassword: boolean;
   scope: number;
-  showPasswordChangeNeeded: boolean;
   basketUrl: string;
   basketyKey: string;
   isMobile: boolean;
@@ -33,7 +32,6 @@ export const initialState: AppState = {
   autoReload: true,
   showForgotPassword: false,
   scope: 0,
-  showPasswordChangeNeeded: false,
   chatUrl: "http://12.96.144.112/",
   isMobile: false,
   isTablet: false,
@@ -60,9 +58,6 @@ export const appSlice = createSlice({
       state.loggedIn = false;
       state.token = "";
     },
-    setPasswordChangeNeeded: (state, action: PayloadAction<number>) => {
-      state.showPasswordChangeNeeded = action.payload === 1;
-    },
     setIsMobile: (state, action: PayloadAction<boolean>) => {
       state.isMobile = action.payload;
     },
@@ -82,7 +77,6 @@ export const {
   logout,
   setIsLoading,
   setForgotPassword,
-  setPasswordChangeNeeded,
   setIsMobile,
   setIsTablet,
   setIsDesktop,
