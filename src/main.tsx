@@ -14,6 +14,7 @@ import Sales from "./pages/sales/Sales.tsx";
 import Team from "./pages/team/Team.tsx";
 import Groups from "./pages/groups/Groups.tsx";
 import Cashiers from "./pages/cashiers/Cashiers.tsx";
+import Settings from "./pages/settings/Settings.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -28,6 +29,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="team" element={<Team />} />
                 <Route path="cashiers" element={<Cashiers />} />
                 <Route path="groups" element={<Groups />} />
+                <Route path="settings" element={<Settings />} />
               </Route>
             </Routes>
           </ToastProvider>

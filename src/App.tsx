@@ -17,7 +17,7 @@ const App = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Resetting the route to home on app load/browser refresh
+    // Resetting the route to home on app load/browser refresh => prevents stuck routes when refreshing the browser
     if (window.location.pathname !== "/") {
       navigate("/");
     }
@@ -37,6 +37,7 @@ const App = () => {
                 : "bg-content/5 opacity-100"
             } transition-all duration-300`}
           >
+            {/* ResetPassword and SecurityQuestion are only modals that render when the user is prompted, otherwise they are hidden */}
             <ResetPassword />
             <SecurityQuestion />
             <Outlet />
