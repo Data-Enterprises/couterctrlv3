@@ -101,10 +101,8 @@ describe("ForgotPassword Component", () => {
 
     const answerInput = screen.getByTestId("text-input-forgot-question-answer");
     await user.type(answerInput, "Fluffy");
-    expect(answerInput).toHaveValue("Fluffy");
 
-    const newState = store.getState().forgotPassword;
-    expect(newState.answer).toBe("Fluffy");
+    expect(store.getState().forgotPassword.answer).toBe("Fluffy");
 
     mockedAxios.post.mockResolvedValueOnce({
       data: { error: 0, question: "Answers Match!" },

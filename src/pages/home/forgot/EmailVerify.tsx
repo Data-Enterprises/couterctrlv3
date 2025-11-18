@@ -9,12 +9,16 @@ import {
 import type { JsonError } from "../../../interfaces";
 import TextInput from "../../../components/TextInput";
 import { forgotPWEmailVerify } from "../../../api/password";
+import { useState } from "react";
 
 const EmailVerify = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const forgot = useAppSelector((state) => state.forgotPassword);
+  const [message, setMessage] = useState<string>(
+    "Please enter your valid username and email"
+  );
 
   const verifyEmailAndUsername = () => {
     forgotPWEmailVerify(context.url, forgot.username, forgot.email)
@@ -24,7 +28,7 @@ const EmailVerify = () => {
           dispatch(setQuestion(j.question));
           dispatch(setIndex());
         } else {
-          toast.warn(`Unable to verify: ${j.message}`);
+          setMessage(j.msg);
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
@@ -33,9 +37,7 @@ const EmailVerify = () => {
   return (
     <div data-testid="email-verify" className="h-[250px] px-2">
       <div className="text-center font-medium">Verify Username and Email</div>
-      <div className="text-center mb-2">
-        Please enter your valid username and email
-      </div>
+      <div className="text-center mb-2">{message}</div>
       <TextInput
         query={forgot.username}
         setText={(text) => dispatch(setUsername(text))}
