@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../hooks";
+import { useAppSelector } from "../../hooks";
 import { navigation } from "../../components/navigation/utils";
 import TextInput from "../../components/TextInput";
 import SingleSelect from "../../components/SingleSelect";
 
 const Settings = () => {
-  const dispatch = useAppDispatch();
-  const context = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
   const [username, setUsername] = useState<string>(user.username);
   const [password, setPassword] = useState<string>(user.password);
