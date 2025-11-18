@@ -23,6 +23,8 @@ const EmailVerify = () => {
         if (j.error === 0) {
           dispatch(setQuestion(j.question));
           dispatch(setIndex());
+        } else {
+          toast.warn(`Unable to verify: ${j.message}`);
         }
       })
       .catch((err: JsonError) => toast.error(err.message));

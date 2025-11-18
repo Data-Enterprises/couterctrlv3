@@ -35,7 +35,6 @@ const Carousel = <T,>({
   useEffect(() => {
     if (useDynamicIndex && dynamicIndex !== undefined) {
       goTo(dynamicIndex);
-      console.log("Dynamic Index Changed:", dynamicIndex);
     }
   }, [useDynamicIndex, dynamicIndex]);
 

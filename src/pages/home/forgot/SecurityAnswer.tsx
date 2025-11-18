@@ -24,7 +24,7 @@ const SecurityAnswer = () => {
   };
 
   return (
-    <div className="h-[190px] px-2">
+    <div data-testid="security-answer-forgot" className="h-[190px] px-2">
       <div className="font-medium text-center mb-2">
         Provide your Security Answer
       </div>
@@ -33,10 +33,11 @@ const SecurityAnswer = () => {
         query={forgot.answer}
         isSimple={true}
         title="Answer"
-        name="forgot-question"
+        name="forgot-question-answer"
         setText={(text) => dispatch(setAnswer(text))}
       />
       <button
+        data-testid="submit-security-answer-button-forgot"
         className="btn-themeBlue w-full mt-4"
         onClick={verifySecurityAnswer}
       >

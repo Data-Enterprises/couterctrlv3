@@ -28,20 +28,20 @@ const NewPassword = ({ onClose }: NewPasswordProps) => {
   };
 
   return (
-    <div className="h-[177px] px-2">
+    <div data-testid="new-password-forgot" className="h-[177px] px-2">
       <div className="font-medium text-center">Reset Password</div>
       <div className="text-center">
         Once updated, sign in with your new password
       </div>
       <TextInput
         query={forgot.newPassword}
-        name="password"
+        name="password-new-forgot"
         isSimple={true}
         type="password"
         title="Password"
         setText={(text) => dispatch(setNewPassword(text))}
       />
-      <button className="btn-themeBlue w-full mt-4" onClick={submitNewPassword}>
+      <button data-testid="forgot-change-pw-btn" className="btn-themeBlue w-full mt-4" onClick={submitNewPassword}>
         Change Password
       </button>
     </div>
