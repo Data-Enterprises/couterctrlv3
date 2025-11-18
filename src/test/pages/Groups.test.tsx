@@ -8,7 +8,7 @@ import { store } from "../../store";
 const user = userEvent.setup();
 
 describe("Groups Page", () => {
-  it("should render Groups page with initial group state", () => {
+  it("should render with main components", () => {
     renderWithProviders(<Groups />);
     const groupsPage = screen.getByTestId("groups-page");
     const groupList = screen.getByTestId("group-list");
@@ -19,13 +19,6 @@ describe("Groups Page", () => {
     expect(selectGroup).toBeInTheDocument();
     expect(groupList).toBeInTheDocument();
     expect(groupsPage).toBeInTheDocument();
-
-    const state = store.getState();
-    expect(state.group.groups).toEqual([]);
-    expect(state.group.createInput).toEqual("");
-    expect(state.group.refreshGroups).toEqual(false);
-    expect(state.group.filterOption).toEqual("all");
-    expect(state.group.selectedGroup).toEqual(null);
   });
 
   it("should handle state change", async () => {

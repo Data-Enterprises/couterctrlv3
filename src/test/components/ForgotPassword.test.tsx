@@ -13,13 +13,9 @@ const mockedAxios = axios as Mocked<typeof axios>;
 const user = userEvent.setup();
 
 const mockToastError = vi.fn();
-const mockToastWarn = vi.fn();
-const mockToastSuccess = vi.fn();
 vi.mock("../../components/toasts/hooks/useToast", () => ({
   useToast: () => ({
     error: mockToastError,
-    warn: mockToastWarn,
-    success: mockToastSuccess,
   }),
 }));
 

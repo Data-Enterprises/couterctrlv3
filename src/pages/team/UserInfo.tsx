@@ -127,7 +127,7 @@ const UserInfo = () => {
   };
 
   return (
-    <div className="h-full w-full ">
+    <div data-testid="user-info" className="h-full w-full ">
       <div className="flex gap-4 items-center relative">
         <div className="text-lg font-medium underline">
           Personal Information
@@ -167,13 +167,14 @@ const UserInfo = () => {
               resetQuery={true}
               className="text-sm"
               innerClass="text-sm"
-              testId={input.name}
+              id={i}
             />
           );
         })}
         <div className="flex justify-between items-end gap-4">
           <div className="w-1/2">
             <button
+              data-testid="create-user-button"
               className={`btn-themeBlue py-[5px] w-full ${isCreatingOrUpdating(
                 "create"
               )}`}

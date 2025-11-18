@@ -142,7 +142,7 @@ const TextInput = <T,>({
   return (
     <div className="relative">
       <label htmlFor={name} className="text-[13px] font-medium ml-1 flex gap-1">
-        {title} <div className={showTextColor()}>{showMsg()}</div>
+        {title} <div data-testid={`text-input-${name}-message`} className={showTextColor()}>{showMsg()}</div>
       </label>
       <input
         data-testid={`text-input-${name}`}
