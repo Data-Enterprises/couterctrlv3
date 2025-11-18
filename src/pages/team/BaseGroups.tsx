@@ -105,7 +105,6 @@ const BaseGroups = () => {
       toast.warn("Passwords do not match");
       return;
     }
-    console.log(userInfo.password, userInfo.username);
     setTempPassword(
       context.url,
       context.token,
@@ -139,6 +138,7 @@ const BaseGroups = () => {
       </div>
       <div className="w-full min-h-[93.4%] max-h-[93.4%] rounded-b-lg rounded-tr-lg px-4 border-2 border-content/10 relative">
         <div
+          data-testid="base-groups-panels"
           className="absolute w-full pr-8 top-4 max-h-[75%] overflow-hidden grid grid-cols-3 
             text gap-4 overflow-y-scroll no-scrollbar rounded-lg text-sm"
         >

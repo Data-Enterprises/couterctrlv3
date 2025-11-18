@@ -17,7 +17,9 @@ const UserInfo = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { userInfo, users, selectedUserId } = useAppSelector((state) => state.users);
+  const { userInfo, users, selectedUserId } = useAppSelector(
+    (state) => state.users
+  );
   const [role, setRole] = useState<string>("");
   const [level, setLevel] = useState<string>("");
   const [company, setCompany] = useState<string>("");
@@ -165,13 +167,16 @@ const UserInfo = () => {
               resetQuery={true}
               className="text-sm"
               innerClass="text-sm"
+              testId={input.name}
             />
           );
         })}
         <div className="flex justify-between items-end gap-4">
           <div className="w-1/2">
             <button
-              className={`btn-themeBlue py-[5px] w-full ${isCreatingOrUpdating("create")}`}
+              className={`btn-themeBlue py-[5px] w-full ${isCreatingOrUpdating(
+                "create"
+              )}`}
               onClick={handleCreateClick}
             >
               Create User
@@ -179,7 +184,9 @@ const UserInfo = () => {
           </div>
           <div className="w-1/2">
             <button
-              className={`btn-themeBlue py-[5px] w-full ${isCreatingOrUpdating("update")}`}
+              className={`btn-themeBlue py-[5px] w-full ${isCreatingOrUpdating(
+                "update"
+              )}`}
               onClick={handleUpdateClick}
             >
               Update User

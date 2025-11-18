@@ -16,6 +16,7 @@ interface SingleSelectProps<T> {
   resetQuery?: boolean;
   listClass?: string;
   defaultValue?: string | number;
+  testId?: string;
 }
 
 const SingleSelect = <T,>({
