@@ -21,7 +21,7 @@ describe("Login Page", () => {
 
   // need to test if typing in the inputs updates the redux state
   it("should render username and password inputs", async () => {
-    renderWithProviders(<Login />);
+    renderWithProviders(<Login />, { store });
     const usernameInput = screen.getByTestId("username") as HTMLInputElement;
     const passwordInput = screen.getByTestId("password") as HTMLInputElement;
 
@@ -33,7 +33,7 @@ describe("Login Page", () => {
   });
 
   it("should handle username and password inputs", async () => {
-    renderWithProviders(<Login />);
+    renderWithProviders(<Login />, { store });
     const usernameInput = screen.getByTestId("username") as HTMLInputElement;
     const passwordInput = screen.getByTestId("password") as HTMLInputElement;
     await user.type(usernameInput, "anotheruser");
@@ -83,7 +83,7 @@ describe("Login Page", () => {
 
   it("should sign out the user when clicking the Sign Out nav item", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<SideBar />);
+    renderWithProviders(<SideBar />, { store });
 
     const sidebar = screen.getByTestId("side-bar");
     expect(sidebar).toBeInTheDocument();

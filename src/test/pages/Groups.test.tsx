@@ -9,7 +9,7 @@ const user = userEvent.setup();
 
 describe("Groups Page", () => {
   it("should render with main components", () => {
-    renderWithProviders(<Groups />);
+    renderWithProviders(<Groups />, { store });
     const groupsPage = screen.getByTestId("groups-page");
     const groupList = screen.getByTestId("group-list");
     const createGroup = screen.getByTestId("create-group");
@@ -22,7 +22,7 @@ describe("Groups Page", () => {
   });
 
   it("should handle state change", async () => {
-    renderWithProviders(<Groups />);
+    renderWithProviders(<Groups />, { store });
     const input = screen.getByTestId("create-group-input");
 
     await user.type(input, "Test Group");
@@ -40,7 +40,7 @@ describe("Groups Page", () => {
         { id: 2, group_name: "Group B", userid: 517 },
       ],
     });
-    renderWithProviders(<Groups />);
+    renderWithProviders(<Groups />, { store });
 
     const selectGroup = screen.getByTestId("select-group");
     expect(selectGroup).toBeInTheDocument();
@@ -73,7 +73,7 @@ describe("Groups Page", () => {
   });
 
   it("should render Filter Options and handle selection", async () => {
-    renderWithProviders(<Groups />);
+    renderWithProviders(<Groups />, { store });
 
     // in SelectGroup.tsx, the second SingleSelect is for filter options
     const selectGroup = screen.getByTestId("select-group");
@@ -108,7 +108,7 @@ describe("Groups Page", () => {
     });
 
     // just checking if the Groups page renders correctly
-    renderWithProviders(<Groups />);
+    renderWithProviders(<Groups />, { store });
     const createGroup = screen.getByTestId("create-group");
     const groupSelect = screen.getByTestId("single-select-1");
     const trigger = screen.getByTestId("single-select-trigger-icon-1");

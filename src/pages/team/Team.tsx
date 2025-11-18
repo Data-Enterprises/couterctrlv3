@@ -4,7 +4,7 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 
 import { getBaseGroupsAssignedToUser } from "../../api/team";
 import { setBaseGroups, setRefresh } from "../../features/usersSlice";
-import type { BaseGroup } from "../../interfaces";
+import type { BaseGroup, JsonError } from "../../interfaces";
 
 import UserInfo from "./UserInfo";
 import UserGrid from "./UserGrid";
@@ -35,13 +35,9 @@ const Team = () => {
           setDataReset(j.groups);
         }
       })
-      .catch((err) => {
+      .catch((err: JsonError) => {
         toast.error("Error fetching base groups " + err.message);
       });
-
-    return () => {
-      dispatch(setBaseGroups(dataReset));
-    };
   };
 
   return (

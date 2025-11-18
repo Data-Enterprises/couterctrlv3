@@ -3,9 +3,14 @@ import type { ReactNode } from "react";
 import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router";
 import { ToastProvider } from "../components/toasts/ToastProvider";
-import { store } from "../store";
+import { setupStore } from "../store";
 
-export const renderWithProviders = (ui: ReactNode) => {
+export const renderWithProviders = (
+  ui: ReactNode,
+  {
+    store = setupStore(),
+  } = {}
+) => {
   return render(
     <Provider store={store}>
       <MemoryRouter>

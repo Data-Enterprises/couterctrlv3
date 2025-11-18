@@ -9,5 +9,6 @@ import { cleanup } from "@testing-library/react";
 // Automatically unmount and cleanup DOM after the test is finished.
 afterEach(() => {
   cleanup();
-  vi.clearAllMocks(); // tests/mocks must be independent from one another
+  vi.resetModules();
+  vi.resetAllMocks();
 });

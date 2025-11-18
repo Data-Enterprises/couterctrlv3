@@ -5,6 +5,8 @@ import TitleBar from "../../components/navigation/TitleBar";
 import SideBar from "../../components/navigation/SideBar";
 import userEvent from "@testing-library/user-event";
 import { Routes, Route } from "react-router";
+import { store } from "../../store";
+
 import Sales from "../../pages/sales/Sales";
 import Home from "../../pages/home/Home";
 describe("TitleBar and SideBar Components", () => {
@@ -20,8 +22,8 @@ describe("TitleBar and SideBar Components", () => {
 
   it("should toggle nav open/close when clicking the TitleBar logo area", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<TitleBar />);
-    renderWithProviders(<SideBar />);
+    renderWithProviders(<TitleBar />, { store });
+    renderWithProviders(<SideBar />, { store });
     const sideBar = screen.getByTestId("side-bar");
     const logoArea = screen.getByTestId("logo-area");
 
@@ -38,8 +40,8 @@ describe("TitleBar and SideBar Components", () => {
 
   it("should close the nav when clicking outside the SideBar if it is open", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<TitleBar />);
-    renderWithProviders(<SideBar />);
+    renderWithProviders(<TitleBar />, { store });
+    renderWithProviders(<SideBar />, { store });
     const sideBar = screen.getByTestId("side-bar");
     const logoArea = screen.getByTestId("logo-area");
 
@@ -65,7 +67,7 @@ describe("TitleBar and SideBar Components", () => {
           <Route path="/" element={<Home />} />
           <Route path="/sales" element={<Sales />} />
         </Routes>
-      </>
+      </>, { store }
     );
 
     // Testing here to see if clicking on the sales nav link navigates to the Sales page

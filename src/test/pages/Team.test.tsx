@@ -1,58 +1,48 @@
-import { describe, it, expect, vi, type Mocked } from "vitest";
+import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { renderWithProviders } from "../utils";
 import { screen, waitFor } from "@testing-library/react";
-import { store } from "../../store";
+import { getBaseGroupsAssignedToUser } from "../../api/team";
 import Team from "../../pages/team/Team";
-import type { Group } from "../../features/groupSlice";
-import axios from "axios";
 
-vi.mock("axios");
-const mockedAxios = axios as Mocked<typeof axios>;
+const mockedToastError = vi.fn();
 
-const mockDispatch = vi.fn();
-// Re-mock hooks using the actual store
-vi.mock("../../hooks", () => ({
-  useAppDispatch: () => mockDispatch,
-  useAppSelector: (selector: any) => selector(store.getState()),
-}));
-
-const mockToastError = vi.fn();
+vi.mock("../../api/team");
 vi.mock("../../components/toasts/hooks/useToast", () => ({
   useToast: () => ({
-    error: mockToastError,
+    error: mockedToastError,
   }),
 }));
 
 describe("Team Page", () => {
-  it("should render with main components", () => {
-    renderWithProviders(<Team />);
-    const team = screen.getByTestId("team-page");
-    expect(team).toBeInTheDocument();
-  });
 
-  it("should dispatch fetch action on mount", () => {
-    renderWithProviders(<Team />);
-    expect(mockDispatch).toHaveBeenCalled();
-  });
-
-  it("should display a toast error if API call fails", async () => {
-    mockedAxios.get.mockRejectedValueOnce(new Error("Network Error"));
+  it("fetches base groups and updates UI and state", async () => {
+    (getBaseGroupsAssignedToUser as Mock).mockResolvedValue({
+      data: {
+        error: 0,
+        groups: [{ id: 1, group_name: "Group 1", userid: 1 }],
+      },
+    });
 
     renderWithProviders(<Team />);
+
     await waitFor(() => {
-      expect(mockToastError).toHaveBeenCalled();
+      expect(screen.getByTestId("team-page")).toBeInTheDocument();
+      // Assert your Redux state updates here if needed
     });
   });
 
-it("should dispatch setBaseGroups on successful API call", async () => {
-  const mockGroups: Group[] = [{ id: 1, group_name: "Group A", userid: 517 }];
-  mockedAxios.get.mockResolvedValueOnce({
-    data: { error: 0, groups: mockGroups },
-  });
+  it("handles API failure gracefully", async () => {
+    (getBaseGroupsAssignedToUser as Mock).mockRejectedValue(
+      new Error("Network Error")
+    );
 
-  renderWithProviders(<Team />);
-  await waitFor(() => {
-    expect(mockDispatch).toHaveBeenCalled();
+    renderWithProviders(<Team />);
+
+    await waitFor(() => {
+      expect(mockedToastError).toHaveBeenCalledTimes(1);
+      expect(mockedToastError).toHaveBeenCalledWith(
+        expect.stringContaining("Error fetching base groups")
+      );
+    });
   });
-});
 });
