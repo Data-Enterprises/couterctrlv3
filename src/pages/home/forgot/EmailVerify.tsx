@@ -50,6 +50,7 @@ const EmailVerify = () => {
         name="forgot-email"
       />
       <button
+        data-testid="verify-email-button-forgot"
         className="btn-themeBlue w-full mt-4"
         onClick={verifyEmailAndUsername}
       >

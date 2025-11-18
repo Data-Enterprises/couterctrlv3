@@ -37,6 +37,7 @@ const ForgotPassword = () => {
       onClose={onClose}
     >
       <Carousel
+        id={1}
         className={`bg-bkg ${height} transition-all duration-500`}
         showButtons={false}
         useDynamicIndex={true}

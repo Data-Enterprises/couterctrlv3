@@ -145,6 +145,7 @@ const TextInput = <T,>({
         {title} <div className={showTextColor()}>{showMsg()}</div>
       </label>
       <input
+        data-testid={`text-input-${name}`}
         name={name}
         type={inputType}
         value={query}
