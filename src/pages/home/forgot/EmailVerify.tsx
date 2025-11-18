@@ -29,7 +29,7 @@ const EmailVerify = () => {
   };
 
   return (
-    <div className="h-[250px] px-2">
+    <div data-testid="email-verify" className="h-[250px] px-2">
       <div className="text-center font-medium">Verify Username and Email</div>
       <div className="text-center mb-2">
         Please enter your valid username and email

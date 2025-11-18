@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, type Mocked } from "vitest";
 import { renderWithProviders } from "../utils";
 import { screen, waitFor } from "@testing-library/react";
-import { mockStore } from "../mockStore";
+import { store } from "../../store";
 import Team from "../../pages/team/Team";
 import type { Group } from "../../features/groupSlice";
 import axios from "axios";
@@ -10,10 +10,10 @@ vi.mock("axios");
 const mockedAxios = axios as Mocked<typeof axios>;
 
 const mockDispatch = vi.fn();
-// Re-mock hooks using mockState variable
+// Re-mock hooks using the actual store
 vi.mock("../../hooks", () => ({
   useAppDispatch: () => mockDispatch,
-  useAppSelector: (selector: any) => selector(mockStore.getState()),
+  useAppSelector: (selector: any) => selector(store.getState()),
 }));
 
 const mockToastError = vi.fn();

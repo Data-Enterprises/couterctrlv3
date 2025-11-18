@@ -3,7 +3,7 @@ import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../utils";
 import Groups from "../../pages/groups/Groups";
 import userEvent from "@testing-library/user-event";
-import { mockStore as store } from "../mockStore";
+import { store } from "../../store";
 
 const user = userEvent.setup();
 

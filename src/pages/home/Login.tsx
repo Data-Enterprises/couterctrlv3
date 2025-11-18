@@ -170,6 +170,7 @@ const Login = () => {
                   </div>
 
                   <div
+                    data-testid="forgot-password"
                     className="text-sm/6"
                     onClick={() => {
                       dispatch(setForgotPassword(true));

@@ -3,7 +3,7 @@ import { screen, waitFor } from "@testing-library/react";
 import Login from "../../pages/home/Login";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../utils";
-import { mockStore as store } from "../mockStore";
+import { store } from "../../store";
 import axios from "axios";
 import SideBar from "../../components/navigation/SideBar";
 
