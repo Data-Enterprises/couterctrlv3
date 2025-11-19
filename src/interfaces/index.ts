@@ -103,8 +103,8 @@ export interface Store {
 
 export interface UnassignedStore {
   storeid: number;
-  store_number_x: string;
-  store_name_x: string;
+  store_number: string;
+  store_name: string;
 }
 
 export interface User {

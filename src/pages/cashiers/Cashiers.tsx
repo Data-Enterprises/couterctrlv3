@@ -48,7 +48,7 @@ const Cashiers = () => {
       data-testid="cashiers-page"
       className="w-full h-[calc(100vh-3rem)] p-4"
     >
-      <div className="w-[30%] bg-custom-white px-4 py-2 rounded-lg shadow-lg">
+      <div className="w-[27%] bg-custom-white px-4 py-2.5 rounded-lg shadow-lg">
         <StorePicker />
         <DatePickers />
       </div>

@@ -27,8 +27,9 @@ const Unassigned = ({ getData }: UnassignedProps) => {
     ])
       .then((resp) => {
         const j = resp.data;
-        console.log("Assigned!!!", j);
-        getData();
+        if (j.error === 0) {
+          getData();
+        }
       })
       .catch((err: JsonError) => {
         toast.error("Error assigning store " + err.message);
@@ -38,7 +39,7 @@ const Unassigned = ({ getData }: UnassignedProps) => {
   return (
     <div>
       <label htmlFor="unassigned-user-stores" className="font-medium text-sm">
-        Unassigned
+        Unassigned - {users.selectedUserStores.unassigned.length}
       </label>
       <input
         name="unassigned-user-stores"
@@ -53,7 +54,7 @@ const Unassigned = ({ getData }: UnassignedProps) => {
                 className="bg-custom-white rounded-lg shadow p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200"
                 onClick={() => handleAssignStore(store.storeid)}
               >
-                {store.store_name_x} = ({store.storeid})
+                {store.store_name} = ({store.storeid})
               </div>
             ))
           : null}

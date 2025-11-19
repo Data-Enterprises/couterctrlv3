@@ -29,8 +29,9 @@ const Assigned = ({ getData }: AssignedProps) => {
     )
       .then((resp) => {
         const j = resp.data;
-        console.log("Unassigned!!!", j);
-        getData();
+        if (j.error === 0) {
+          getData();
+        }
       })
       .catch((err: JsonError) => {
         toast.error("Error unassigning store " + err.message);
@@ -40,7 +41,7 @@ const Assigned = ({ getData }: AssignedProps) => {
   return (
     <div>
       <label htmlFor="assigned-user-stores" className="font-medium text-sm">
-        Assigned
+        Assigned - {users.selectedUserStores.assigned.length}
       </label>
       <input
         type="text"
