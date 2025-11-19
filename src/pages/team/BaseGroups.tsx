@@ -7,7 +7,11 @@ import {
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type { FilterOption } from "../../features/groupSlice";
 import type { BaseGroup, JsonError } from "../../interfaces";
-import { assignBaseGroupToUser, deleteUserBaseGroupLink } from "../../api/team";
+import {
+  assignBaseGroupToUser,
+  deleteUserBaseGroupLink,
+  resetUserSecurityQuestion,
+} from "../../api/team";
 import { handleRipple } from "../../utils";
 import { setTempPassword } from "../../api/security";
 
@@ -122,6 +126,19 @@ const BaseGroups = () => {
       });
   };
 
+  const resetSecurity = () => {
+    resetUserSecurityQuestion(context.url, context.token, selectedUserId)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          toast.success(j.msg);
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error("Error resetting security question: " + err.message);
+      });
+  };
+
   return (
     <div className="select-none">
       <div className="flex gap-2">
@@ -172,7 +189,7 @@ const BaseGroups = () => {
           </button>
           <button
             className={`btn-themeGreen px-0 ${isInteractive()}`}
-            data-te-ripple-init
+            onClick={resetSecurity}
           >
             Reset Security
           </button>

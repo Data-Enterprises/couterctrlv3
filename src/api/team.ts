@@ -167,3 +167,22 @@ export const unassignUserFromStore = async (
   });
   return json;
 };
+
+export const resetUserSecurityQuestion = async (
+  url: string,
+  token: string,
+  userid: number
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "forgot_password/reset_security",
+    params: {
+      userid,
+    },
+  });
+  return json;
+};
