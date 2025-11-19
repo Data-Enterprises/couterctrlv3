@@ -38,7 +38,7 @@ const SalesPanels = () => {
       );
       setFiltered(filteredPanels);
     }
-  }, [sales.salesPanelSearchText]);
+  }, [sales.salesPanelSearchText, sales.salesPanels]);
 
   const comparePanels = (a: SalesTwoDates, b: SelectedSalesPanel) => {
     const date = a.sale_date.split("T")[0];

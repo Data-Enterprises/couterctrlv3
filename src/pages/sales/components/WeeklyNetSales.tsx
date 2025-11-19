@@ -28,7 +28,7 @@ const WeeklyNetSales = () => {
     if (search.type === "Group" && sales.selectedSalesPanel.storeid === 0) {
       setLineData([]);
       // console.log(sales.selectedSalesPanel);
-      
+
       // From clicking a sales panel
     } else if (sales.selectedSalesPanel.storeid !== 0) {
       // handle selected panel logic here
@@ -48,6 +48,22 @@ const WeeklyNetSales = () => {
         },
       ]);
       setTitle(sales.selectedSalesPanel.store_name);
+    } else {
+      const id = 1;
+      const series: LineData = [...sales.weeklySales].map((day) => {
+        const date = getDayMonth(day.sale_date.split("T")[0]);
+        return {
+          x: date,
+          y: day.sales,
+          z: day.qty,
+        };
+      });
+      setLineData([
+        {
+          id,
+          data: series,
+        },
+      ]);
     }
   }, [sales.weeklySales, sales.selectedSalesPanel]);
 
