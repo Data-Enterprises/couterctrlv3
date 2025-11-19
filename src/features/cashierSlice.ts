@@ -4,6 +4,7 @@ import type {
   CashierTransaction,
   CashierTrend,
   SaleType,
+  TransDrillDown,
 } from "../interfaces";
 
 export interface CashierState {
@@ -11,6 +12,9 @@ export interface CashierState {
   cashierTrends: CashierTrend[];
   cashierTransactions: CashierTransaction[];
   saleTypes: SaleType[];
+  selectedSaleTypes: string[];
+  selectedSaleType: string;
+  cashierTransDrillDown: TransDrillDown[];
 }
 
 const initialState: CashierState = {
@@ -18,6 +22,9 @@ const initialState: CashierState = {
   cashierTrends: [],
   cashierTransactions: [],
   saleTypes: [],
+  selectedSaleTypes: [],
+  selectedSaleType: "",
+  cashierTransDrillDown: [],
 };
 
 export const cashierSlice = createSlice({
@@ -39,6 +46,25 @@ export const cashierSlice = createSlice({
     setSaleTypes: (state, action: PayloadAction<SaleType[]>) => {
       state.saleTypes = action.payload;
     },
+    setSelectedSaleTypes: (state, action: PayloadAction<string>) => {
+      const found = state.selectedSaleTypes.find((s) => s === action.payload);
+      if (found) {
+        state.selectedSaleTypes = state.selectedSaleTypes.filter(
+          (s) => s !== action.payload
+        );
+      } else {
+        state.selectedSaleTypes.push(action.payload);
+      }
+    },
+    setSelectedSaleType: (state, action: PayloadAction<string>) => {
+      state.selectedSaleType = action.payload;
+    },
+    setCashierTransDrillDown: (
+      state,
+      action: PayloadAction<TransDrillDown[]>
+    ) => {
+      state.cashierTransDrillDown = action.payload;
+    },
     resetCashierState: () => initialState,
   },
 });
@@ -48,6 +74,9 @@ export const {
   setCashierTrends,
   setCashierTransactions,
   setSaleTypes,
+  setSelectedSaleTypes,
+  setSelectedSaleType,
+  setCashierTransDrillDown,
   resetCashierState,
 } = cashierSlice.actions;
 export default cashierSlice.reducer;

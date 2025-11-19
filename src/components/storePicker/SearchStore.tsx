@@ -60,20 +60,20 @@ const SelectStore = ({ onOutsideClick }: Props) => {
   }, [context.selectedStore]);
 
   // Filter the stores based on the query
-  useEffect(() => {
-    // if typing, open the dropdown
-    listRef.current!.setAttribute("data-display", "open");
+  // useEffect(() => {
+  //   // if typing, open the dropdown
+  //   listRef.current!.setAttribute("data-display", "open");
 
-    // Then filter
-    if (!context.selectedStore || (!query.length && context.selectedStore)) {
-      setFilteredStores(context.assignedStores);
-    } else if (context.selectedStore && query.length > 0) {
-      const filtered = context.assignedStores.filter((store) =>
-        store.store_name.toLowerCase().includes(query.toLowerCase())
-      );
-      setFilteredStores(filtered);
-    }
-  }, [query]);
+  //   // Then filter
+  //   if (!context.selectedStore || (!query.length && context.selectedStore)) {
+  //     setFilteredStores(context.assignedStores);
+  //   } else if (context.selectedStore && query.length > 0) {
+  //     const filtered = context.assignedStores.filter((store) =>
+  //       store.store_name.toLowerCase().includes(query.toLowerCase())
+  //     );
+  //     setFilteredStores(filtered);
+  //   }
+  // }, [query]);
 
   const handleClickOutside = (e: MouseEvent) => {
     if (

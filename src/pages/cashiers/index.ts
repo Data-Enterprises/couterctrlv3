@@ -1,0 +1,79 @@
+import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
+import type { CashierTransaction } from "../../interfaces";
+import { formatDate } from "../../utils";
+
+// sale date, upc, descption, total sales, sale_id
+export const colDefs: (
+  | ColDef<CashierTransaction>
+  | ColGroupDef<CashierTransaction>
+)[] = [
+  {
+    headerName: "Sale Date",
+    field: "sale_date",
+    flex: 0.8,
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus",
+    valueFormatter: (params) => formatDate(params.value),
+  },
+  {
+    headerName: "Cashier",
+    field: "cashier_name",
+    flex: 0.7,
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus",
+  },
+  {
+    headerName: "Cashier #",
+    field: "cashier_number",
+    flex: 0.6,
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus",
+  },
+  {
+    headerName: "Upc",
+    field: "product_code",
+    flex: 1,
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus",
+  },
+  {
+    headerName: "Description",
+    field: "product_description",
+    flex: 1,
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus",
+  },
+  {
+    headerName: "Total Sales",
+    field: "total_sales",
+    flex: 1,
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus",
+  },
+  {
+    headerName: "Sale ID",
+    field: "sale_id",
+    flex: 1,
+    resizable: false,
+    cellClass: "no-outline-on-focus",
+  },
+];
+
+export const theme = themeQuartz.withParams({
+  headerHeight: 30,
+  rowHeight: 26.5,
+  headerBackgroundColor: "#3b82f6",
+  headerTextColor: "#ffffff",
+  oddRowBackgroundColor: "#bfdbfe",
+  rowHoverColor: "#93c5fd",
+  headerFontWeight: "bold",
+  dataFontSize: 13,
+  selectCellBorder: "transparent",
+  rowBorder: "1px solid white",
+});

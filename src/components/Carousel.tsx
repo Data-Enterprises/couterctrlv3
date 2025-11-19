@@ -46,6 +46,8 @@ const Carousel = <T,>({
     }
   }, [index]);
 
+  const hasMultipleSlides = totalSlides > 1;
+
   return (
     <div
       data-testid={`carousel-${id}`}
@@ -66,7 +68,7 @@ const Carousel = <T,>({
 
       <div
         className={`absolute ${
-          !showButtons && "hidden"
+          !showButtons || !hasMultipleSlides ? "hidden" : ""
         } bottom-0 left-1/2 z-50 -translate-x-1/2 mb-4 flex gap-1`}
       >
         <button
