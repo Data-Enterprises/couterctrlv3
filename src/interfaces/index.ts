@@ -250,3 +250,10 @@ export interface TransDrillDown {
   wic: number;
   scalable: number;
 }
+
+export type UniqueCashier = {
+  cashier_name: string;
+  cashier_number: number;
+  total_sales: number;
+  transaction_count: number;
+};

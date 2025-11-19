@@ -2,11 +2,7 @@ import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
-import {
-  getCashierDetails,
-  getSaleTypes,
-  getCashierTransactions,
-} from "../../api/cashiers";
+import { getCashierDetails, getSaleTypes } from "../../api/cashiers";
 import { formatGoliathDate, formatCurrency2, handleRipple } from "../../utils";
 import {
   setSaleTypes,
@@ -15,14 +11,14 @@ import {
   setCashierTransactions,
   setSelectedSaleTypes,
   setSelectedSaleType,
-  setCashierTransDrillDown,
+  setFilteredTableData,
+  setCashiers,
 } from "../../features/cashierSlice";
 import type {
   CashierDetails,
   CashierTransaction,
   CashierTrend,
   JsonError,
-  TransDrillDown,
 } from "../../interfaces";
 
 // components
@@ -30,12 +26,9 @@ import DatePickers from "../../components/datePickers/DatePickers";
 import StorePicker from "../../components/storePicker/StorePicker";
 import Carousel from "../../components/Carousel";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import Modal from "../../components/Modal";
-
-// For the table
-import { AgGridReact } from "ag-grid-react";
-import { colDefs, theme } from ".";
-import type { CellClickedEvent } from "ag-grid-community";
+import TransactionModal from "./TransactionModal";
+import CashiersTable from "./CashiersTable";
+import UniqueCashiersTable from "./UniqueCashiersTable";
 
 type UniqueCashier = {
   cashier_name: string;
@@ -54,9 +47,6 @@ const Cashiers = () => {
   const [chunkedSales, setChunkedSales] = useState<CashierDetails[][]>([]);
   const [chunkedTrends, setChunkedTrends] = useState<CashierTrend[][]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-
-  const [filteredItems, setFilteredItems] = useState<CashierTransaction[]>([]);
-  const [cashiers, setCashiers] = useState<UniqueCashier[]>([]);
 
   // Modal
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -163,10 +153,8 @@ const Cashiers = () => {
           }
         }, []);
 
-      setFilteredItems(filtered);
-      /**
-       * sum of total sales, number of occurrences, cashier name, cashir number
-       */
+      dispatch(setFilteredTableData(filtered));
+
       const uniqueCashiers = [...filtered].reduce(
         (acc: UniqueCashier[], current) => {
           const cashier = acc.find(
@@ -188,59 +176,10 @@ const Cashiers = () => {
         },
         []
       );
-      setCashiers(uniqueCashiers);
+      dispatch(setCashiers(uniqueCashiers));
     } else if (option === "store_name") {
       //
     }
-  };
-
-  const onCellClicked = (e: CellClickedEvent) => {
-    const col = e.column.getColId();
-    if (col === "sale_id") {
-      const saleId = e.value;
-      const saleDate = e.data.sale_date.split("T")[0];
-      const storeid = e.data.storeid;
-      getCashierTransactions(
-        context.url,
-        context.token,
-        saleDate,
-        saleId,
-        storeid
-      )
-        .then((resp) => {
-          const j = resp.data;
-          if (j.error === 0) {
-            dispatch(setCashierTransDrillDown(j.transaction));
-          }
-        })
-        .catch((err: JsonError) =>
-          toast.error("Error fetching transactions: " + err.message)
-        )
-        .finally(() => setIsModalOpen(true));
-    }
-  };
-
-  const extractSaleId = (saleId: string) => {
-    return saleId.split("-")[1];
-  };
-
-  const splitDate = (dateStr: string) => {
-    return dateStr.split("T")[0] + " " + dateStr.split("T")[1];
-  };
-
-  const formatTime = (start: string, end: string) => {
-    const str1 =
-      start.slice(0, 2) + ":" + start.slice(2, 4) + ":" + start.slice(4);
-    const str2 = end.slice(0, 2) + ":" + end.slice(2, 4) + ":" + end.slice(4);
-    return str1 + " - " + str2;
-  };
-
-  const renderStamps = (item: TransDrillDown) => {
-    const stamps = [];
-    if (item.fs > 0) stamps.push("FS");
-    if (item.fsa > 0) stamps.push("FSA");
-    if (item.wic > 0) stamps.push("WIC");
-    return stamps.join(" ");
   };
 
   return (
@@ -248,91 +187,10 @@ const Cashiers = () => {
       data-testid="cashiers-page"
       className="w-full h-[calc(100vh-3rem)] p-4 flex gap-4"
     >
-      <Modal
-        isOpen={isModalOpen}
-        modalClassName="bg-custom-white w-1/3"
+      <TransactionModal
+        open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-      >
-        {/* Header */}
-        <div className="pb-2 border-b border-content">
-          <div className="flex gap-1">
-            <div className="font-medium">Store Name:</div>
-            <div>{cashier.cashierTransDrillDown[0].store_name}</div>
-          </div>
-          <div className="flex gap-1">
-            <div className="font-medium">Sale ID:</div>
-            <div>{extractSaleId(cashier.cashierTransDrillDown[0].sale_id)}</div>
-          </div>
-          <div className="flex gap-1">
-            <div className="font-medium">Date:</div>
-            <div>{splitDate(cashier.cashierTransDrillDown[0].sale_date)}</div>
-          </div>
-          <div className="flex gap-1">
-            <div className="font-medium">Cashier:</div>
-            <div>
-              {cashier.cashierTransDrillDown[0].cashier_number}:
-              {cashier.cashierTransDrillDown[0].cashier_name}
-            </div>
-          </div>
-          <div className="flex gap-1">
-            <div className="font-medium">Time:</div>
-            <div>
-              {formatTime(
-                cashier.cashierTransDrillDown[0].sale_start_time,
-                cashier.cashierTransDrillDown[0].sale_end_time
-              )}
-            </div>
-          </div>
-          <div className="flex gap-1">
-            <div className="font-medium">Terminal:</div>
-            <div>{cashier.cashierTransDrillDown[0].terminal}</div>
-          </div>
-        </div>
-
-        <div>
-          <div className="my-2 text-lg font-medium">Line Items</div>
-          {/* Line Items */}
-          {cashier.cashierTransDrillDown.map((item, i) => {
-            return (
-              <div
-                key={i}
-                className="grid grid-cols-[18%_40%_5%_10%_12%_1fr] gap-1 text-[13px] mt-1.5"
-              >
-                <div>{item.product_code}</div>
-                <div>{item.product_description}</div>
-                <div>0</div>
-                <div>{item.net_sales}</div>
-                <div>{renderStamps(item)}</div>
-                <div>{item.sale_type}</div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Totals */}
-        <div className="mt-2">
-          <div className="flex gap-1">
-            <div>Net Sales:</div>
-            <div>
-              {formatCurrency2(
-                cashier.cashierTransDrillDown[
-                  cashier.cashierTransDrillDown.length - 1
-                ].net_sales
-              )}
-            </div>
-          </div>
-          <div className="flex gap-1">
-            <div>Total Sales:</div>
-            <div>
-              {formatCurrency2(
-                cashier.cashierTransDrillDown[
-                  cashier.cashierTransDrillDown.length - 1
-                ].total_sales
-              )}
-            </div>
-          </div>
-        </div>
-      </Modal>
+      />
       <div className="w-[23%]">
         <div className="bg-custom-white px-4 py-2.5 rounded-lg shadow-lg">
           <StorePicker />
@@ -353,22 +211,9 @@ const Cashiers = () => {
           ))}
         </div>
 
-        {/* This will be a table too */}
-        <div className="bg-custom-white mt-4 px-4 py-2.5 rounded-lg shadow-lg">
-          {cashiers.map((c, i) => (
-            <div>
-              <div className="flex justify-between font-medium mb-1" key={i}>
-                <div>{c.cashier_name}</div>
-                <div>{c.cashier_number}</div>
-              </div>
-              <div>Transactions: {c.transaction_count}</div>
-              <div>Total Sales: {formatCurrency2(c.total_sales)}</div>
-            </div>
-          ))}
-        </div>
+        <UniqueCashiersTable />
       </div>
 
-      {/* Shows the data */}
       <div className="w-[77%]">
         {chunkedSales.length > 0 ? (
           <div className="w-full ">
@@ -457,19 +302,7 @@ const Cashiers = () => {
           </div>
         ) : null}
 
-        <div className="w-full">
-          <div style={{ height: 400 }}>
-            <AgGridReact
-              rowData={filteredItems}
-              columnDefs={colDefs}
-              theme={theme}
-              // onRowClicked={(e: RowClickedEvent) => {
-              //   console.log("Row clicked:", e.data);
-              // }}
-              onCellClicked={onCellClicked}
-            />
-          </div>
-        </div>
+        <CashiersTable />
       </div>
     </div>
   );
