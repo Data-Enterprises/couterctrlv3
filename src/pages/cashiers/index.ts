@@ -94,6 +94,14 @@ export const filterData = (
         return acc;
       }
     }, []);
-    
+
   return filtered;
+};
+
+export const chunkData = (arr: any[], chunkSize: number = 3) => {
+  const chunks = [];
+  for (let i = 0; i < arr.length; i += chunkSize) {
+    chunks.push(arr.slice(i, i + chunkSize));
+  }
+  return chunks;
 };

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
+import { chunkData } from ".";
 import { getCashierDetails, getSaleTypes } from "../../api/cashiers";
 import { formatGoliathDate, handleRipple } from "../../utils";
 import {
@@ -97,14 +98,6 @@ const Cashiers = () => {
       .finally(() => setLoading(false));
   };
 
-  const chunkData = (arr: any[], chunkSize: number = 3) => {
-    const chunks = [];
-    for (let i = 0; i < arr.length; i += chunkSize) {
-      chunks.push(arr.slice(i, i + chunkSize));
-    }
-    return chunks;
-  };
-
   const activePanelStyle = (type: string) => {
     if (cashier.selectedSaleType === type) {
       return "bg-blue-200 text-content shadow-inner";
@@ -134,7 +127,7 @@ const Cashiers = () => {
                 cursor-pointer transition-all duration-200 ripple-button`}
               onClick={handlePanelClick}
             >
-              <span className="">{st.sale_type}</span>
+              <span>{st.sale_type}</span>
             </div>
           ))}
         </div>
