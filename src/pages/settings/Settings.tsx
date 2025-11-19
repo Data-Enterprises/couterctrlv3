@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAppSelector } from "../../hooks";
 import { navigation } from "../../components/navigation/utils";
 import TextInput from "../../components/TextInput";
@@ -16,12 +16,8 @@ const Settings = () => {
     console.log("Set route pref to: ", route);
   };
 
-  useEffect(() => {
-    // On mount
-  }, []);
-
   return (
-    <div className="w-full h-[calc(100vh-3rem)] p-4 select-none flex justify-center items-center">
+    <div data-testid="settings-page" className="w-full h-[calc(100vh-3rem)] p-4 select-none flex justify-center items-center">
       <div className="bg-custom-white p-4 rounded-lg shadow-lg w-[40%]">
         <div className="text-xl font-medium text-center mb-4">
           Profile Settings
@@ -41,6 +37,7 @@ const Settings = () => {
             valueKey="href"
             displayKey="name"
             onSelect={handleRoutePref}
+            id={1}
           />
           <TextInput
             title="Password"

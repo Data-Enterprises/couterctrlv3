@@ -1,21 +1,23 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
+import { describe, it, expect, vi, type Mock } from "vitest";
 import { renderWithProviders } from "../utils";
 import { screen, waitFor } from "@testing-library/react";
 import { getBaseGroupsAssignedToUser } from "../../api/team";
+import { store } from "../../store";
 import Team from "../../pages/team/Team";
 
 const mockedToastError = vi.fn();
+const mockedToastWarning = vi.fn();
 
 vi.mock("../../api/team");
 vi.mock("../../components/toasts/hooks/useToast", () => ({
   useToast: () => ({
     error: mockedToastError,
+    warn: mockedToastWarning,
   }),
 }));
 
 describe("Team Page", () => {
-
-  it("fetches base groups and updates UI and state", async () => {
+  it("should fetch base groups and updates UI and state", async () => {
     (getBaseGroupsAssignedToUser as Mock).mockResolvedValue({
       data: {
         error: 0,
@@ -23,7 +25,7 @@ describe("Team Page", () => {
       },
     });
 
-    renderWithProviders(<Team />);
+    renderWithProviders(<Team />, { store });
 
     await waitFor(() => {
       expect(screen.getByTestId("team-page")).toBeInTheDocument();

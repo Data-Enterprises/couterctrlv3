@@ -13,6 +13,7 @@ const Eye = ({ onClick }: Props) => {
   };
   return (
     <svg
+      data-testid="eye-icon"
       onClick={handleClick}
       className={`size-6 absolute right-1.5 top-[28px] cursor-pointer tranistion-all duration-300 ${
         active ? "fill-blue-500" : "fill-content"

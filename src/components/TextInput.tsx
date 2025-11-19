@@ -156,6 +156,7 @@ const TextInput = <T,>({
       {name === "password" ? (
         <div className="h-1 w-[97%] mx-auto rounded-full bg-content/10 mt-1 ">
           <div
+            data-testid="pw-strength-bar"
             className={`${showPasswordStrength(zxcvbn(query).score)} h-full`}
           ></div>
         </div>

@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
 import { getBaseGroupsAssignedToUser } from "../../api/team";
 import { setBaseGroups, setRefresh } from "../../features/usersSlice";
-import type { BaseGroup, JsonError } from "../../interfaces";
+import type { JsonError } from "../../interfaces";
 
 import UserInfo from "./UserInfo";
 import UserGrid from "./UserGrid";
@@ -17,7 +17,6 @@ const Team = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const { refresh } = useAppSelector((state) => state.users);
-  const [dataReset, setDataReset] = useState<BaseGroup[]>([]);
 
   useEffect(() => {
     if (refresh) {
@@ -32,7 +31,6 @@ const Team = () => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setBaseGroups(j.groups));
-          setDataReset(j.groups);
         }
       })
       .catch((err: JsonError) => {

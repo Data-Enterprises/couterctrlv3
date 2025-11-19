@@ -58,7 +58,6 @@ const UserInfo = () => {
   };
 
   const returnOnSelectFunction = (name: string) => {
-    if (!name) return () => {};
     if (name === "role") return handleRoleSelection;
     if (name === "user_level") return handleLevelSelection;
     if (name === "company") return handleCompanySelection;
@@ -136,6 +135,7 @@ const UserInfo = () => {
           **All fields are required
         </div>
         <button
+          data-testid="clear-user-info-button"
           className="btn-themeBlue absolute right-0 top-0 py-[2px]"
           onClick={handleReset}
         >
@@ -185,6 +185,7 @@ const UserInfo = () => {
           </div>
           <div className="w-1/2">
             <button
+              data-testid="update-user-button"
               className={`btn-themeBlue py-[5px] w-full ${isCreatingOrUpdating(
                 "update"
               )}`}
