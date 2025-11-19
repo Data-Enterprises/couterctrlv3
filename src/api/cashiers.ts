@@ -26,6 +26,7 @@ export const getSaleTypes = async (
       saleTypes,
     },
   });
+  return json;
 };
 
 export const getCashierDetails = async (
