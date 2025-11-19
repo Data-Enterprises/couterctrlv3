@@ -77,3 +77,23 @@ export const theme = themeQuartz.withParams({
   selectCellBorder: "transparent",
   rowBorder: "1px solid white",
 });
+
+export const filterData = (
+  data: CashierTransaction[],
+  selectedSaleType: string
+) => {
+  const filtered = [...data]
+    .filter((t) => {
+      return t.sale_type === selectedSaleType;
+    })
+    .reduce((acc: CashierTransaction[], current: CashierTransaction) => {
+      const x = acc.find((item) => item.sale_id === current.sale_id);
+      if (!x) {
+        return acc.concat([current]);
+      } else {
+        return acc;
+      }
+    }, []);
+    
+  return filtered;
+};

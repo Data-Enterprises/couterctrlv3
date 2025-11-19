@@ -19,6 +19,8 @@ export interface CashierState {
   transModalOpen: boolean;
   filteredTableData: CashierTransaction[];
   cashiers: UniqueCashier[];
+  chunkedTrends: CashierTrend[][];
+  chunkedSales: CashierDetails[][];
 }
 
 const initialState: CashierState = {
@@ -32,6 +34,8 @@ const initialState: CashierState = {
   transModalOpen: false,
   filteredTableData: [],
   cashiers: [],
+  chunkedTrends: [],
+  chunkedSales: [],
 };
 
 export const cashierSlice = createSlice({
@@ -84,6 +88,12 @@ export const cashierSlice = createSlice({
     setCashiers: (state, action: PayloadAction<UniqueCashier[]>) => {
       state.cashiers = action.payload;
     },
+    setChunkedTrends: (state, action: PayloadAction<CashierTrend[][]>) => {
+      state.chunkedTrends = action.payload;
+    },
+    setChunkedSales: (state, action: PayloadAction<CashierDetails[][]>) => {
+      state.chunkedSales = action.payload;
+    },
     resetCashierState: () => initialState,
   },
 });
@@ -99,6 +109,8 @@ export const {
   setTransModalOpen,
   setFilteredTableData,
   setCashiers,
+  setChunkedTrends,
+  setChunkedSales,
   resetCashierState,
 } = cashierSlice.actions;
 export default cashierSlice.reducer;

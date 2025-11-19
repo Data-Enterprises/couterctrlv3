@@ -45,16 +45,17 @@ const CashiersTable = () => {
   };
   return (
     <div className="w-full">
-      <div style={{ height: 400 }}>
-        <AgGridReact
-          rowData={filteredTableData}
-          columnDefs={colDefs}
-          theme={theme}
-          // onRowClicked={(e: RowClickedEvent) => {
-          //   console.log("Row clicked:", e.data);
-          // }}
-          onCellClicked={onCellClicked}
-        />
+      <div>
+        {filteredTableData.length ? (
+          <div style={{ height: 400 }}>
+            <AgGridReact
+              rowData={filteredTableData}
+              columnDefs={colDefs}
+              theme={theme}
+              onCellClicked={onCellClicked}
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   );
