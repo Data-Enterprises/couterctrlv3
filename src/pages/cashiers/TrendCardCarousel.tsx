@@ -75,16 +75,16 @@ const TrendCardCarousel = () => {
   const titleStyle = "cursor-pointer pl-2 rounded-xl";
 
   return (
-    <Carousel className="h-[233px]">
+    <Carousel className="h-[215px]">
       {cashier.chunkedSales.map((_, i) => (
-        <div key={i} className="grid grid-cols-3 gap-3 pb-4">
+        <div key={i} className="grid grid-cols-3 gap-3 pb-2">
           {cashier.chunkedSales[i].map((s, idx) => (
             <div
               key={idx}
-              className="bg-custom-white pb-4 rounded-lg shadow-lg ripple-button"
+              className="bg-custom-white pb-2 rounded-lg shadow-lg ripple-button"
               onClick={handlePanelClick}
             >
-              <div className="text-center font-medium bg-blue-500 text-custom-white py-1 mb-1 rounded-t-lg flex px-4 justify-between">
+              <div className="text-center font-medium bg-blue-500 text-custom-white py-0.5 mb-1 rounded-t-lg flex px-4 justify-between">
                 <div>{s.store_name}</div>
                 <div>{s.sale_type}</div>
               </div>

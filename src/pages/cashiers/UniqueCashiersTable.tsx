@@ -1,12 +1,17 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
-
-import { AgGridReact } from "ag-grid-react";
-import { cashierColDefs, filterData, theme } from ".";
-import type { RowClickedEvent } from "ag-grid-community";
 import {
   setCashierSaleIds,
   setSelectedCashier,
 } from "../../features/cashierSlice";
+
+import { AgGridReact } from "ag-grid-react";
+import { cashierColDefs, filterData, theme } from ".";
+import {
+  AllCommunityModule,
+  ModuleRegistry,
+  type RowClickedEvent,
+} from "ag-grid-community";
+ModuleRegistry.registerModules([AllCommunityModule]);
 
 const UniqueCashiersTable = () => {
   const dispatch = useAppDispatch();
@@ -42,13 +47,13 @@ const UniqueCashiersTable = () => {
     <>
       {cashiers.length ? (
         <div className="bg-custom-white p-2 rounded-lg shadow-lg">
-          <div style={{ height: "280px" }}>
+          <div style={{ height: "275px" }}>
             <AgGridReact
               rowData={cashiers}
               columnDefs={cashierColDefs}
               theme={theme}
               pagination={true}
-              paginationPageSize={10}
+              paginationPageSize={9}
               paginationPageSizeSelector={false}
               onRowClicked={onRowClicked}
             />

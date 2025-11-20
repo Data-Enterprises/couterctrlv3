@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { AgGridReact } from "ag-grid-react";
 import { colDefs, theme } from ".";
-import type { CellClickedEvent } from "ag-grid-community";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { getCashierTransactions } from "../../api/cashiers";
 import {
@@ -10,6 +8,14 @@ import {
   setTransModalOpen,
 } from "../../features/cashierSlice";
 import type { JsonError, TransactionListItem } from "../../interfaces";
+
+import { AgGridReact } from "ag-grid-react";
+import {
+  AllCommunityModule,
+  ModuleRegistry,
+  type CellClickedEvent,
+} from "ag-grid-community";
+ModuleRegistry.registerModules([AllCommunityModule]);
 
 const CashiersTable = () => {
   const toast = useToast();
@@ -98,56 +104,14 @@ const CashiersTable = () => {
     <>
       {filtered.length ? (
         <div className="bg-custom-white mt-3 p-2 rounded-lg shadow-lg">
-          {/* <div className="bg-custom-white mt-2 px-4 py-2.5 rounded-lg shadow-lg h-[300px]"> */}
           <div className="">
-            {/* <div className="flex gap-4 mb-4 items-end">
-            <div>
-              <button className="btn-themeBlue">Show All</button>
-            </div>
-            <div className="w-1/12">
-              <label htmlFor="sales" className="text-xs font-medium">
-                Sales
-              </label>
-              <input
-                name="sales"
-                type="text"
-                value={salesFilter}
-                onChange={handleChange}
-                className="basic-input focus:border bg-custom-white cursor-default"
-              />
-            </div>
-            <div className="w-1/6">
-              <label htmlFor="cashier" className="text-xs font-medium">
-                Cashier
-              </label>
-              <input
-                name="cashier"
-                type="text"
-                value={cashierFilter}
-                onChange={handleChange}
-                className="basic-input focus:border bg-custom-white cursor-default"
-              />
-            </div>
-            <div className="w-1/6">
-              <label htmlFor="upc" className="text-xs font-medium">
-                Upc
-              </label>
-              <input
-                name="upc"
-                type="text"
-                value={upcFilter}
-                onChange={handleChange}
-                className="basic-input focus:border bg-custom-white cursor-default"
-              />
-            </div>
-          </div> */}
-            <div style={{ height: "310px" }}>
+            <div style={{ height: "320px" }}>
               <AgGridReact
                 rowData={filtered}
                 columnDefs={colDefs}
                 theme={theme}
                 pagination={true}
-                paginationPageSize={9}
+                paginationPageSize={10}
                 paginationPageSizeSelector={false}
                 onCellClicked={onCellClicked}
               />

@@ -14,7 +14,12 @@ import { getBaseGroupsAssignedToUser } from "../../api/team";
 // For the table
 import { AgGridReact } from "ag-grid-react";
 import { colDefs, theme } from ".";
-import type { RowClickedEvent } from "ag-grid-community";
+import {
+  AllCommunityModule,
+  ModuleRegistry,
+  type RowClickedEvent,
+} from "ag-grid-community";
+ModuleRegistry.registerModules([AllCommunityModule]);
 
 const UserGrid = () => {
   const toast = useToast();
