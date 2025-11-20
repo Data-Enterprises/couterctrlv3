@@ -2,19 +2,9 @@ import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
-import { chunkData } from ".";
-import { getCashierDetails, getSaleTypes } from "../../api/cashiers";
-import { formatGoliathDate, handleRipple } from "../../utils";
-import {
-  setSaleTypes,
-  setCashierDetails,
-  setCashierTrends,
-  setCashierTransactions,
-  setSelectedSaleTypes,
-  setSelectedSaleType,
-  setChunkedSales,
-  setChunkedTrends,
-} from "../../features/cashierSlice";
+import { getSaleTypes } from "../../api/cashiers";
+import { formatGoliathDate } from "../../utils";
+import { setSaleTypes } from "../../features/cashierSlice";
 import type { JsonError } from "../../interfaces";
 
 import DatePickers from "../../components/datePickers/DatePickers";

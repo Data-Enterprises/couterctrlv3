@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { AgGridReact } from "ag-grid-react";
 import { colDefs, theme } from ".";
@@ -8,15 +9,53 @@ import {
   setCashierTransDrillDown,
   setTransModalOpen,
 } from "../../features/cashierSlice";
-import type { JsonError } from "../../interfaces";
+import type { JsonError, CashierTransaction } from "../../interfaces";
 
 const CashiersTable = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
+  const [filtered, setFiltered] = useState<CashierTransaction[]>([]);
   const context = useAppSelector((state) => state.app);
+  const cashier = useAppSelector((state) => state.cashier);
   const filteredTableData = useAppSelector(
     (state) => state.cashier.filteredTableData
   );
+
+  // const [salesFilter, setSalesFilter] = useState<string>("");
+  // const [cashierFilter, setCashierFilter] = useState<string>("");
+  // const [upcFilter, setUpcFilter] = useState<string>("");
+
+  useEffect(() => {
+    if (cashier.selectedCashier.cashier_number !== 0) {
+      const selectedCashierRows = cashier.filteredTableData.filter((item) => {
+        return (
+          item.cashier_number === cashier.selectedCashier.cashier_number &&
+          item.store_number === cashier.selectedCashier.store_number
+        );
+      });
+      setFiltered(selectedCashierRows);
+    } else {
+      setFiltered(cashier.filteredTableData);
+    }
+  }, [cashier.filteredTableData, cashier.selectedCashier]);
+
+  // useEffect(() => {
+  //   if (salesFilter === "" && cashierFilter === "" && upcFilter === "") {
+  //     setFiltered(cashier.filteredTableData);
+  //     return;
+  //   }
+  //   const filteredResult = filtered.filter((item) => {
+  //     const upc = item.product_code !== null ? item.product_code : "";
+  //     const cashierName = item.cashier_name !== null ? item.cashier_name : "";
+
+  //     return (
+  //       upc.toLowerCase().includes(upcFilter.toLowerCase()) &&
+  //       cashierName.toLowerCase().includes(cashierFilter.toLowerCase())
+  //     );
+  //   });
+
+  //   setFiltered(filteredResult);
+  // }, [salesFilter, cashierFilter, upcFilter]);
 
   const onCellClicked = (e: CellClickedEvent) => {
     const col = e.column.getColId();
@@ -43,17 +82,75 @@ const CashiersTable = () => {
         .finally(() => dispatch(setTransModalOpen(true)));
     }
   };
+
+  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const { name, value } = e.target;
+  //   if (name === "sales") {
+  //     setSalesFilter(value);
+  //   } else if (name === "cashier") {
+  //     setCashierFilter(value);
+  //   } else if (name === "upc") {
+  //     setUpcFilter(value);
+  //   }
+  // };
+
   return (
-    <div className="bg-custom-white mt-4 px-4 py-2.5 rounded-lg shadow-lg">
+    <div className="bg-custom-white mt-2 px-4 py-2.5 rounded-lg shadow-lg">
       {filteredTableData.length ? (
         <div>
-          <AgGridReact
-            rowData={filteredTableData}
-            columnDefs={colDefs}
-            theme={theme}
-            onCellClicked={onCellClicked}
-            domLayout="autoHeight"
-          />
+          {/* <div className="flex gap-4 mb-4 items-end">
+            <div>
+              <button className="btn-themeBlue">Show All</button>
+            </div>
+            <div className="w-1/12">
+              <label htmlFor="sales" className="text-xs font-medium">
+                Sales
+              </label>
+              <input
+                name="sales"
+                type="text"
+                value={salesFilter}
+                onChange={handleChange}
+                className="basic-input focus:border bg-custom-white cursor-default"
+              />
+            </div>
+            <div className="w-1/6">
+              <label htmlFor="cashier" className="text-xs font-medium">
+                Cashier
+              </label>
+              <input
+                name="cashier"
+                type="text"
+                value={cashierFilter}
+                onChange={handleChange}
+                className="basic-input focus:border bg-custom-white cursor-default"
+              />
+            </div>
+            <div className="w-1/6">
+              <label htmlFor="upc" className="text-xs font-medium">
+                Upc
+              </label>
+              <input
+                name="upc"
+                type="text"
+                value={upcFilter}
+                onChange={handleChange}
+                className="basic-input focus:border bg-custom-white cursor-default"
+              />
+            </div>
+          </div> */}
+          <div style={{ height: "350px" }}>
+            <AgGridReact
+              rowData={filtered}
+              columnDefs={colDefs}
+              theme={theme}
+              pagination={true}
+              paginationPageSize={10}
+              paginationPageSizeSelector={false}
+              // domLayout="autoHeight"
+              onCellClicked={onCellClicked}
+            />
+          </div>
         </div>
       ) : null}
     </div>

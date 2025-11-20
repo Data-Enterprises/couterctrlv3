@@ -256,4 +256,5 @@ export type UniqueCashier = {
   cashier_number: number;
   total_sales: number;
   transaction_count: number;
+  store_number: string;
 };

@@ -8,6 +8,11 @@ import type {
   UniqueCashier,
 } from "../interfaces";
 
+type SelectedCashier = {
+  cashier_number: number;
+  store_number: string;
+};
+
 export interface CashierState {
   cashierDetails: CashierDetails[];
   cashierTrends: CashierTrend[];
@@ -21,6 +26,7 @@ export interface CashierState {
   cashiers: UniqueCashier[];
   chunkedTrends: CashierTrend[][];
   chunkedSales: CashierDetails[][];
+  selectedCashier: SelectedCashier;
 }
 
 const initialState: CashierState = {
@@ -36,6 +42,7 @@ const initialState: CashierState = {
   cashiers: [],
   chunkedTrends: [],
   chunkedSales: [],
+  selectedCashier: { cashier_number: 0, store_number: "" },
 };
 
 export const cashierSlice = createSlice({
@@ -94,6 +101,9 @@ export const cashierSlice = createSlice({
     setChunkedSales: (state, action: PayloadAction<CashierDetails[][]>) => {
       state.chunkedSales = action.payload;
     },
+    setSelectedCashier: (state, action: PayloadAction<SelectedCashier>) => {
+      state.selectedCashier = action.payload;
+    },
     resetCashierState: () => initialState,
   },
 });
@@ -111,6 +121,7 @@ export const {
   setCashiers,
   setChunkedTrends,
   setChunkedSales,
+  setSelectedCashier,
   resetCashierState,
 } = cashierSlice.actions;
 export default cashierSlice.reducer;

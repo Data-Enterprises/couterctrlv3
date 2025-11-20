@@ -31,6 +31,7 @@ const TrendCardCarousel = () => {
               cashier_number: current.cashier_number,
               total_sales: current.total_sales,
               transaction_count: 1,
+              store_number: current.store_number,
             });
             return acc;
           } else {

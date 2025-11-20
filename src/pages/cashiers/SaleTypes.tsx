@@ -68,7 +68,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
 
   const activePanelStyle = (type: string) => {
     if (cashier.selectedSaleType === type) {
-      return "bg-blue-200 text-content shadow-inner";
+      return "bg-emerald-500 text-custom-white font-medium shadow-inner";
     } else {
       return "bg-custom-white";
     }

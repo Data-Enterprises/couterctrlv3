@@ -3,10 +3,13 @@ import Modal from "../../components/Modal";
 import type { TransDrillDown } from "../../interfaces";
 import { formatCurrency2 } from "../../utils";
 import { setTransModalOpen } from "../../features/cashierSlice";
+import Print from "../../svgs/Print";
 
 const TransactionModal = () => {
   const dispatch = useAppDispatch();
-  const { cashierTransDrillDown, transModalOpen } = useAppSelector((state) => state.cashier);
+  const { cashierTransDrillDown, transModalOpen } = useAppSelector(
+    (state) => state.cashier
+  );
 
   const splitDate = (dateStr: string) => {
     return dateStr.split("T")[0] + " " + dateStr.split("T")[1];
@@ -31,16 +34,25 @@ const TransactionModal = () => {
     return saleId.split("-")[1];
   };
 
+  const handleClick = () => {
+    console.log("clicked");
+  };
+
   return (
     <Modal
       isOpen={transModalOpen}
-      modalClassName={`bg-custom-white w-1/3`}
+      modalClassName="bg-custom-white w-1/3 relative"
       onClose={() => dispatch(setTransModalOpen(false))}
     >
+      <Print
+        className="absolute right-6 top-6 hover:stroke-blue-500 transition-all duration-200"
+        size={25}
+        onClick={handleClick}
+      />
       {cashierTransDrillDown.length === 0 ? (
         <div>No Data</div>
       ) : (
-        <>
+        <div className="border border-blue-500 p-2 rounded-lg">
           <div className="pb-2 border-b border-content">
             <div className="flex gap-1">
               <div className="font-medium">Store Name:</div>
@@ -114,7 +126,7 @@ const TransactionModal = () => {
               </div>
             </div>
           </div>
-        </>
+        </div>
       )}
     </Modal>
   );
