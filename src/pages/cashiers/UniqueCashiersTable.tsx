@@ -29,8 +29,8 @@ const UniqueCashiersTable = () => {
   return (
     <>
       {cashiers.length ? (
-        <div className="bg-custom-white mt-4 px-4 py-2.5 rounded-lg shadow-lg">
-          <div style={{ height: "350px" }}>
+        <div className="bg-custom-white p-2 rounded-lg shadow-lg">
+          <div style={{ height: "280px" }}>
             <AgGridReact
               rowData={cashiers}
               columnDefs={cashierColDefs}

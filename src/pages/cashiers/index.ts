@@ -135,7 +135,7 @@ export const cashierColDefs: (
   {
     headerName: "Store",
     field: "store_number",
-    flex: 1,
+    flex: 0.9,
     resizable: false,
     cellClass: "no-outline-on-focus",
     // hide: true,

@@ -81,7 +81,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
   };
 
   return (
-    <div className="grid grid-cols-2 gap-2 mt-2">
+    <div className="grid gap-2 mt-2">
     {/* <div className="grid grid-cols-4 gap-4 mt-4"> */}
       {cashier.saleTypes.map((st, i) => (
         <div

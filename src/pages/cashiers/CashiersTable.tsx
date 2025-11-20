@@ -95,7 +95,8 @@ const CashiersTable = () => {
   return (
     <>
       {filtered.length ? (
-        <div className="bg-custom-white mt-2 px-4 py-2.5 rounded-lg shadow-lg h-[370px]">
+        <div className="bg-custom-white mt-3 p-2 rounded-lg shadow-lg">
+        {/* <div className="bg-custom-white mt-2 px-4 py-2.5 rounded-lg shadow-lg h-[300px]"> */}
           <div className="">
             {/* <div className="flex gap-4 mb-4 items-end">
             <div>
@@ -138,13 +139,13 @@ const CashiersTable = () => {
               />
             </div>
           </div> */}
-            <div style={{ height: "350px" }}>
+            <div style={{ height: "310px" }}>
               <AgGridReact
                 rowData={filtered}
                 columnDefs={colDefs}
                 theme={theme}
                 pagination={true}
-                paginationPageSize={10}
+                paginationPageSize={9}
                 paginationPageSizeSelector={false}
                 onCellClicked={onCellClicked}
               />

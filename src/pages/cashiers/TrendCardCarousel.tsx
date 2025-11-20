@@ -80,9 +80,9 @@ const TrendCardCarousel = () => {
     "cursor-pointer pl-2 rounded-xl hover:text-custom-white hover:text-blue-500 hover:font-medium hover:underline";
 
   return (
-    <Carousel className="h-[260px]">
+    <Carousel className="h-[233px]">
       {cashier.chunkedSales.map((_, i) => (
-        <div key={i} className="grid grid-cols-3 gap-4 pb-4">
+        <div key={i} className="grid grid-cols-3 gap-3 pb-4">
           {cashier.chunkedSales[i].map((s, idx) => (
             <div
               key={idx}
@@ -93,7 +93,7 @@ const TrendCardCarousel = () => {
                 <div>{s.store_name}</div>
                 <div>{s.sale_type}</div>
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-[40%_27%_33%] gap-4 text-sm">
                 <div className="pr-4 pl-2">
                   <div className="opacity-0 pointer-events-none">t</div>
                   <div
