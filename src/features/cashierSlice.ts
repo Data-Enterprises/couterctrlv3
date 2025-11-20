@@ -6,6 +6,7 @@ import type {
   SaleType,
   TransDrillDown,
   UniqueCashier,
+  TransactionListItem,
 } from "../interfaces";
 
 type SelectedCashier = {
@@ -27,6 +28,8 @@ export interface CashierState {
   chunkedTrends: CashierTrend[][];
   chunkedSales: CashierDetails[][];
   selectedCashier: SelectedCashier;
+  selectedSaleIds: string[];
+  transList: TransactionListItem[];
 }
 
 const initialState: CashierState = {
@@ -43,6 +46,8 @@ const initialState: CashierState = {
   chunkedTrends: [],
   chunkedSales: [],
   selectedCashier: { cashier_number: 0, store_number: "" },
+  selectedSaleIds: [],
+  transList: [],
 };
 
 export const cashierSlice = createSlice({
@@ -104,6 +109,12 @@ export const cashierSlice = createSlice({
     setSelectedCashier: (state, action: PayloadAction<SelectedCashier>) => {
       state.selectedCashier = action.payload;
     },
+    setSelectedSaleIds: (state, action: PayloadAction<string[]>) => {
+      state.selectedSaleIds = action.payload;
+    },
+    setTransList: (state, action: PayloadAction<TransactionListItem[]>) => {
+      state.transList = action.payload;
+    },
     resetCashierState: () => initialState,
   },
 });
@@ -122,6 +133,8 @@ export const {
   setChunkedTrends,
   setChunkedSales,
   setSelectedCashier,
+  setSelectedSaleIds,
+  setTransList,
   resetCashierState,
 } = cashierSlice.actions;
 export default cashierSlice.reducer;

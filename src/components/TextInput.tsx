@@ -83,8 +83,6 @@ const TextInput = <T,>({
         return "w-3/4 bg-orange-500";
       case 4:
         return "w-full bg-emerald-500";
-      default:
-        return "w-0";
     }
   };
 
@@ -109,8 +107,6 @@ const TextInput = <T,>({
         return "text-orange-500";
       case 4:
         return "text-emerald-500";
-      default:
-        return "text-content";
     }
   };
 
@@ -135,7 +131,7 @@ const TextInput = <T,>({
       }
     }
 
-    // return null by default
+    // return null by default for empty query
     return null;
   };
 

@@ -9,16 +9,16 @@ import {
   setCashierTransDrillDown,
   setTransModalOpen,
 } from "../../features/cashierSlice";
-import type { JsonError, CashierTransaction } from "../../interfaces";
+import type { JsonError, TransactionListItem } from "../../interfaces";
 
 const CashiersTable = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const [filtered, setFiltered] = useState<CashierTransaction[]>([]);
+  const [filtered, setFiltered] = useState<TransactionListItem[]>([]);
   const context = useAppSelector((state) => state.app);
   const cashier = useAppSelector((state) => state.cashier);
   const filteredTableData = useAppSelector(
-    (state) => state.cashier.filteredTableData
+    (state) => state.cashier.transList
   );
 
   // const [salesFilter, setSalesFilter] = useState<string>("");
@@ -27,7 +27,7 @@ const CashiersTable = () => {
 
   useEffect(() => {
     if (cashier.selectedCashier.cashier_number !== 0) {
-      const selectedCashierRows = cashier.filteredTableData.filter((item) => {
+      const selectedCashierRows = cashier.transList.filter((item) => {
         return (
           item.cashier_number === cashier.selectedCashier.cashier_number &&
           item.store_number === cashier.selectedCashier.store_number
@@ -35,9 +35,9 @@ const CashiersTable = () => {
       });
       setFiltered(selectedCashierRows);
     } else {
-      setFiltered(cashier.filteredTableData);
+      setFiltered(cashier.transList);
     }
-  }, [cashier.filteredTableData, cashier.selectedCashier]);
+  }, [cashier.transList, cashier.selectedCashier]);
 
   // useEffect(() => {
   //   if (salesFilter === "" && cashierFilter === "" && upcFilter === "") {

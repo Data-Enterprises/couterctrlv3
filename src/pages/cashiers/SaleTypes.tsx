@@ -1,7 +1,7 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
-import { getCashierDetails } from "../../api/cashiers";
+import { getCashierDetails, getCashierTable } from "../../api/cashiers";
 import {
   setSelectedSaleTypes,
   setSelectedSaleType,
@@ -12,7 +12,7 @@ import {
   setCashierTransactions,
 } from "../../features/cashierSlice";
 import type { JsonError } from "../../interfaces";
-import { formatGoliathDate } from "../../utils";
+import { formatGoliathDate, handleRipple } from "../../utils";
 import { chunkData } from ".";
 
 interface SaleTypesProps {
@@ -29,7 +29,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
   const handlePanelClick = (e: React.MouseEvent<HTMLDivElement>) => {
     dispatch(setSelectedSaleTypes(e.currentTarget.innerText));
     dispatch(setSelectedSaleType(e.currentTarget.innerText));
-    // handleRipple(e);
+    handleRipple(e);
 
     dispatch(setChunkedSales([]));
     dispatch(setChunkedTrends([]));
@@ -40,6 +40,28 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
     const singleStore = search.type === "Store" ? 1 : 0;
     const searchValue =
       search.type === "Group" ? search.lastGroup : search.lastStore;
+
+    getCashierTable(
+      context.url,
+      context.token,
+      formatGoliathDate(search.startDate),
+      formatGoliathDate(search.endDate),
+      useGroups,
+      searchValue,
+      singleStore,
+      [saleType],
+      1
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(setCashierTransactions(j.transactions));
+        }
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error fetching cashier table: " + err.message)
+      );
+
     getCashierDetails(
       context.url,
       context.token,
@@ -55,7 +77,6 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
         if (j.error === 0) {
           dispatch(setCashierDetails(j.sales));
           dispatch(setCashierTrends(j.trend));
-          dispatch(setCashierTransactions(j.transactions));
           dispatch(setChunkedSales(chunkData(j.sales)));
           dispatch(setChunkedTrends(chunkData(j.trend)));
         }

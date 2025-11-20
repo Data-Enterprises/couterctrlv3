@@ -1,11 +1,11 @@
 import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
-import type { CashierTransaction, UniqueCashier } from "../../interfaces";
+import type { CashierTransaction, TransactionListItem, UniqueCashier } from "../../interfaces";
 import { formatCurrency2, formatDate } from "../../utils";
 
 // sale date, upc, descption, total sales, sale_id
 export const colDefs: (
-  | ColDef<CashierTransaction>
-  | ColGroupDef<CashierTransaction>
+  | ColDef<TransactionListItem>
+  | ColGroupDef<TransactionListItem>
 )[] = [
   {
     headerName: "Sale ID",
@@ -86,15 +86,12 @@ export const colDefs: (
     field: "total_sales",
     flex: 0.6,
     resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
+    valueFormatter: (params) => formatCurrency2(params.value),
+    cellClass: "no-outline-on-focus text-right",
   },
 ];
 
-export const cashierColDefs: (
-  | ColDef<UniqueCashier>
-  | ColGroupDef<UniqueCashier>
-)[] = [
+export const cashierColDefs: (ColDef<UniqueCashier> | ColGroupDef<UniqueCashier>)[] = [
   {
     headerName: "Cashier ID",
     field: "cashier_number",
@@ -125,6 +122,7 @@ export const cashierColDefs: (
     flex: 1,
     resizable: false,
     cellClass: "no-outline-on-focus",
+    headerStyle: { borderRight: "1px solid white" },
     valueFormatter: (params) => formatCurrency2(params.value),
   },
   {
@@ -134,7 +132,7 @@ export const cashierColDefs: (
     resizable: false,
     cellClass: "no-outline-on-focus",
     // hide: true,
-  }
+  },
 ];
 
 export const theme = themeQuartz.withParams({
@@ -152,11 +150,12 @@ export const theme = themeQuartz.withParams({
 
 export const filterData = (
   data: CashierTransaction[],
-  selectedSaleType: string
+  selectedSaleType: string,
+  storeNumber: string
 ) => {
   const filtered = [...data]
     .filter((t) => {
-      return t.sale_type === selectedSaleType;
+      return t.sale_type === selectedSaleType && t.store_number === storeNumber;
     })
     .reduce((acc: CashierTransaction[], current: CashierTransaction) => {
       const x = acc.find((item) => item.sale_id === current.sale_id);

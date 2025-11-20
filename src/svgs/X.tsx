@@ -5,6 +5,7 @@ interface XProps {
 const X = ({ className }: XProps) => {
   return (
     <svg
+      data-testid="x-icon"
       fill="#f97316"
       width="24px"
       height="24px"

@@ -1,22 +1,50 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
+import { useToast } from "../../components/toasts/hooks/useToast";
 
 import { handleRipple, formatCurrency2 } from "../../utils";
 import { filterData } from ".";
 
 import Carousel from "../../components/Carousel";
-import type { UniqueCashier } from "../../interfaces";
-import { setCashiers, setFilteredTableData } from "../../features/cashierSlice";
+import type { JsonError, UniqueCashier } from "../../interfaces";
+import {
+  setCashiers,
+  setFilteredTableData,
+  setSelectedCashier,
+  setSelectedSaleIds,
+  setTransList,
+} from "../../features/cashierSlice";
+import { getTransactionList } from "../../api/cashiers";
+import type React from "react";
 
 const TrendCardCarousel = () => {
+  const toast = useToast();
   const dispatch = useAppDispatch();
+  const context = useAppSelector((state) => state.app);
   const cashier = useAppSelector((state) => state.cashier);
 
-  const filterTransactions = (option: string) => {
+  // Filter transactions based on option
+  const filterTransactions = (option: string, storeNumber: string) => {
     if (option === "sale_id") {
       const filtered = filterData(
         cashier.cashierTransactions,
-        cashier.selectedSaleType
+        cashier.selectedSaleType,
+        storeNumber
       );
+
+      const saleIds = filtered.map((item) => item.sale_id);
+      dispatch(setSelectedSaleIds(saleIds));
+
+      // call the api
+      getTransactionList(context.url, context.token, saleIds, 1)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            dispatch(setTransList(j.transactions));
+          }
+        })
+        .catch((err: JsonError) =>
+          toast.error("Error fetching transactions: " + err.message)
+        );
 
       dispatch(setFilteredTableData(filtered));
 
@@ -46,6 +74,11 @@ const TrendCardCarousel = () => {
     }
   };
 
+  const handlePanelClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    handleRipple(e);
+    dispatch(setSelectedCashier({ cashier_number: 0, store_number: "" }));
+  };
+
   return (
     <Carousel className="h-[260px]">
       {cashier.chunkedSales.map((_, i) => (
@@ -54,7 +87,7 @@ const TrendCardCarousel = () => {
             <div
               key={idx}
               className="bg-custom-white pb-4 rounded-lg shadow-lg ripple-button"
-              onClick={handleRipple}
+              onClick={handlePanelClick}
             >
               <div className="text-center font-medium bg-blue-500 text-custom-white py-1 mb-2 rounded-t-lg flex px-4 justify-between">
                 <div>{s.store_name}</div>
@@ -65,7 +98,9 @@ const TrendCardCarousel = () => {
                   <div className="opacity-0">t</div>
                   <div
                     className="cursor-pointer pl-2 rounded-xl hover:text-custom-white hover:bg-blue-500 transition-all duration-200"
-                    onClick={() => filterTransactions("sale_id")}
+                    onClick={() =>
+                      filterTransactions("sale_id", s.store_number)
+                    }
                   >
                     Transactions
                   </div>
