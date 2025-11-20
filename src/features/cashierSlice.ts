@@ -8,6 +8,7 @@ import type {
   UniqueCashier,
   TransactionListItem,
 } from "../interfaces";
+import { chunkData } from "../pages/cashiers";
 
 type SelectedCashier = {
   cashier_number: number;
@@ -15,20 +16,20 @@ type SelectedCashier = {
 };
 
 export interface CashierState {
+  // for raw data and the chunked versions for carousel view
   cashierDetails: CashierDetails[];
-  cashierTrends: CashierTrend[];
-  cashierTransactions: CashierTransaction[];
-  saleTypes: SaleType[];
-  selectedSaleTypes: string[];
-  selectedSaleType: string;
-  cashierTransDrillDown: TransDrillDown[];
-  transModalOpen: boolean;
-  cashiers: UniqueCashier[];
   chunkedTrends: CashierTrend[][];
+  cashierTrends: CashierTrend[];
   chunkedSales: CashierDetails[][];
+  cashiers: UniqueCashier[];
   selectedCashier: SelectedCashier;
-  selectedSaleIds: string[];
+  cashierTransactions: CashierTransaction[];
   transList: TransactionListItem[];
+  cashierTransDrillDown: TransDrillDown[];
+  saleTypes: SaleType[];
+  selectedSaleType: string;
+  selectedSaleIds: string[];
+  transModalOpen: boolean;
 }
 
 const initialState: CashierState = {
@@ -36,7 +37,6 @@ const initialState: CashierState = {
   cashierTrends: [],
   cashierTransactions: [],
   saleTypes: [],
-  selectedSaleTypes: [],
   selectedSaleType: "",
   cashierTransDrillDown: [],
   transModalOpen: false,
@@ -54,9 +54,11 @@ export const cashierSlice = createSlice({
   reducers: {
     setCashierDetails: (state, action: PayloadAction<CashierDetails[]>) => {
       state.cashierDetails = action.payload;
+      state.chunkedSales = chunkData(action.payload);
     },
     setCashierTrends: (state, action: PayloadAction<CashierTrend[]>) => {
       state.cashierTrends = action.payload;
+      state.chunkedTrends = chunkData(action.payload);
     },
     setCashierTransactions: (
       state,
@@ -66,16 +68,6 @@ export const cashierSlice = createSlice({
     },
     setSaleTypes: (state, action: PayloadAction<SaleType[]>) => {
       state.saleTypes = action.payload;
-    },
-    setSelectedSaleTypes: (state, action: PayloadAction<string>) => {
-      const found = state.selectedSaleTypes.find((s) => s === action.payload);
-      if (found) {
-        state.selectedSaleTypes = state.selectedSaleTypes.filter(
-          (s) => s !== action.payload
-        );
-      } else {
-        state.selectedSaleTypes.push(action.payload);
-      }
     },
     setSelectedSaleType: (state, action: PayloadAction<string>) => {
       state.selectedSaleType = action.payload;
@@ -91,12 +83,6 @@ export const cashierSlice = createSlice({
     },
     setCashiers: (state, action: PayloadAction<UniqueCashier[]>) => {
       state.cashiers = action.payload;
-    },
-    setChunkedTrends: (state, action: PayloadAction<CashierTrend[][]>) => {
-      state.chunkedTrends = action.payload;
-    },
-    setChunkedSales: (state, action: PayloadAction<CashierDetails[][]>) => {
-      state.chunkedSales = action.payload;
     },
     setSelectedCashier: (state, action: PayloadAction<SelectedCashier>) => {
       state.selectedCashier = action.payload;
@@ -116,13 +102,10 @@ export const {
   setCashierTrends,
   setCashierTransactions,
   setSaleTypes,
-  setSelectedSaleTypes,
   setSelectedSaleType,
   setCashierTransDrillDown,
   setTransModalOpen,
   setCashiers,
-  setChunkedTrends,
-  setChunkedSales,
   setSelectedCashier,
   setSelectedSaleIds,
   setTransList,

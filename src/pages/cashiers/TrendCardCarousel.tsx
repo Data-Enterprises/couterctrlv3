@@ -22,7 +22,7 @@ const TrendCardCarousel = () => {
   const cashier = useAppSelector((state) => state.cashier);
 
   // Filter transactions based on option
-  const filterTransactions = (option: string, storeNumber: string) => {
+  const showTrans = (option: string, storeNumber: string) => {
     if (option === "sale_id") {
       const filtered = filterData(
         cashier.cashierTransactions,
@@ -76,6 +76,9 @@ const TrendCardCarousel = () => {
     dispatch(setSelectedCashier({ cashier_number: 0, store_number: "" }));
   };
 
+  const titleStyle =
+    "cursor-pointer pl-2 rounded-xl hover:text-custom-white hover:text-blue-500 hover:font-medium hover:underline";
+
   return (
     <Carousel className="h-[260px]">
       {cashier.chunkedSales.map((_, i) => (
@@ -92,30 +95,18 @@ const TrendCardCarousel = () => {
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div className="pr-4 pl-2">
-                  <div className="opacity-0">t</div>
+                  <div className="opacity-0 pointer-events-none">t</div>
                   <div
-                    className="cursor-pointer pl-2 rounded-xl hover:text-custom-white hover:bg-blue-500 transition-all duration-200"
-                    onClick={() =>
-                      filterTransactions("sale_id", s.store_number)
-                    }
+                    className={titleStyle}
+                    onClick={() => showTrans("sale_id", s.store_number)}
                   >
                     Transactions
                   </div>
-                  <div className="cursor-pointer pl-2 rounded-xl hover:text-custom-white hover:bg-blue-500 transition-all duration-200">
-                    Total Items
-                  </div>
-                  <div className="cursor-pointer pl-2 rounded-xl hover:text-custom-white hover:bg-blue-500 transition-all duration-200">
-                    Cashiers
-                  </div>
-                  <div className="cursor-pointer pl-2 rounded-xl hover:text-custom-white hover:bg-blue-500 transition-all duration-200">
-                    Total Dollars
-                  </div>
-                  <div className="cursor-pointer pl-2 rounded-xl hover:text-custom-white hover:bg-blue-500 transition-all duration-200">
-                    Avg Dollars
-                  </div>
-                  <div className="cursor-pointer pl-2 rounded-xl hover:text-custom-white hover:bg-blue-500 transition-all duration-200">
-                    Avg Quantity
-                  </div>
+                  <div className={titleStyle}>Total Items</div>
+                  <div className={titleStyle}>Cashiers</div>
+                  <div className={titleStyle}>Total Dollars</div>
+                  <div className={titleStyle}>Avg Dollars</div>
+                  <div className={titleStyle}>Avg Quantity</div>
                 </div>
 
                 <div className="px-4">

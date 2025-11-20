@@ -1,11 +1,8 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
-
 import { getCashierDetails, getCashierTable } from "../../api/cashiers";
 import {
   setSelectedSaleType,
-  setChunkedSales,
-  setChunkedTrends,
   setCashierDetails,
   setCashierTrends,
   setCashierTransactions,
@@ -13,8 +10,8 @@ import {
   setSaleTypes,
 } from "../../features/cashierSlice";
 import type { JsonError } from "../../interfaces";
-import { formatGoliathDate } from "../../utils";
-import { activePanelStyle, chunkData } from ".";
+import { activePanelStyle } from ".";
+import { useApiContext } from "../hooks";
 
 interface SaleTypesProps {
   setLoading: (loading: boolean) => void;
@@ -22,10 +19,9 @@ interface SaleTypesProps {
 
 const SaleTypes = ({ setLoading }: SaleTypesProps) => {
   const toast = useToast();
+  const params = useApiContext();
   const dispatch = useAppDispatch();
-  const context = useAppSelector((state) => state.app);
   const cashier = useAppSelector((state) => state.cashier);
-  const search = useAppSelector((state) => state.search);
 
   const handlePanelClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Doing this to reset when looking for a different sale type
@@ -37,20 +33,16 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
     dispatch(setSelectedSaleType(e.currentTarget.innerText));
     setLoading(true);
 
+    // Using useApiContext hook to get the params
     const saleType = e.currentTarget.innerText;
-    const useGroups = search.type === "Group" ? 1 : 0;
-    const singleStore = search.type === "Store" ? 1 : 0;
-    const searchValue =
-      search.type === "Group" ? search.lastGroup : search.lastStore;
-
     getCashierTable(
-      context.url,
-      context.token,
-      formatGoliathDate(search.startDate),
-      formatGoliathDate(search.endDate),
-      useGroups,
-      searchValue,
-      singleStore,
+      params.url,
+      params.token,
+      params.start,
+      params.end,
+      params.useGroups,
+      params.searchValue,
+      params.singleStore,
       [saleType],
       1
     )
@@ -65,22 +57,21 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
       );
 
     getCashierDetails(
-      context.url,
-      context.token,
-      formatGoliathDate(search.startDate),
-      formatGoliathDate(search.endDate),
-      useGroups,
-      searchValue,
-      singleStore,
+      params.url,
+      params.token,
+      params.start,
+      params.end,
+      params.useGroups,
+      params.searchValue,
+      params.singleStore,
       [saleType]
     )
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
+          // The chunked sales and trends are being set in the dispatches
           dispatch(setCashierDetails(j.sales));
           dispatch(setCashierTrends(j.trend));
-          dispatch(setChunkedSales(chunkData(j.sales)));
-          dispatch(setChunkedTrends(chunkData(j.trend)));
         }
       })
       .catch((err: JsonError) =>
@@ -90,7 +81,8 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
   };
 
   return (
-    <div className="grid grid-cols-4 gap-4 mt-4">
+    <div className="grid grid-cols-2 gap-2 mt-2">
+    {/* <div className="grid grid-cols-4 gap-4 mt-4"> */}
       {cashier.saleTypes.map((st, i) => (
         <div
           key={i}
