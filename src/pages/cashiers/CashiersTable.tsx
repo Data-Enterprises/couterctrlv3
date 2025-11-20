@@ -60,6 +60,8 @@ const CashiersTable = () => {
       const saleId = e.value;
       const saleDate = e.data.sale_date.split("T")[0];
       const storeid = e.data.storeid;
+      dispatch(setCashierTransDrillDown([]));
+      dispatch(setTransModalOpen(true));
       getCashierTransactions(
         context.url,
         context.token,
@@ -73,10 +75,10 @@ const CashiersTable = () => {
             dispatch(setCashierTransDrillDown(j.transaction));
           }
         })
-        .catch((err: JsonError) =>
-          toast.error("Error fetching transactions: " + err.message)
-        )
-        .finally(() => dispatch(setTransModalOpen(true)));
+        .catch((err: JsonError) => {
+          dispatch(setTransModalOpen(false));
+          toast.error("Error fetching transactions: " + err.message);
+        });
     }
   };
 
@@ -96,7 +98,7 @@ const CashiersTable = () => {
     <>
       {filtered.length ? (
         <div className="bg-custom-white mt-3 p-2 rounded-lg shadow-lg">
-        {/* <div className="bg-custom-white mt-2 px-4 py-2.5 rounded-lg shadow-lg h-[300px]"> */}
+          {/* <div className="bg-custom-white mt-2 px-4 py-2.5 rounded-lg shadow-lg h-[300px]"> */}
           <div className="">
             {/* <div className="flex gap-4 mb-4 items-end">
             <div>

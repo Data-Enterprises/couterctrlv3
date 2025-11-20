@@ -1,9 +1,10 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import Modal from "../../components/Modal";
 import type { TransDrillDown } from "../../interfaces";
 import { formatCurrency2 } from "../../utils";
 import { setTransModalOpen } from "../../features/cashierSlice";
+import Modal from "../../components/Modal";
 import Print from "../../svgs/Print";
+import LoadingIndicator from "../../components/loading/LoadingIndicator";
 
 const TransactionModal = () => {
   const dispatch = useAppDispatch();
@@ -44,15 +45,17 @@ const TransactionModal = () => {
       modalClassName="bg-custom-white w-1/3 relative"
       onClose={() => dispatch(setTransModalOpen(false))}
     >
-      <Print
-        className="absolute right-6 top-6 hover:stroke-blue-500 transition-all duration-200"
-        size={25}
-        onClick={handleClick}
-      />
       {cashierTransDrillDown.length === 0 ? (
-        <div>No Data</div>
+        <div className="h-[320px]">
+          <LoadingIndicator message="Fetching transaction..." />
+        </div>
       ) : (
         <div className="border border-blue-500 p-2 rounded-lg">
+          <Print
+            className="absolute right-6 top-6 hover:stroke-blue-500 transition-all duration-200"
+            size={25}
+            onClick={handleClick}
+          />
           <div className="pb-2 border-b border-content">
             <div className="flex gap-1">
               <div className="font-medium">Store Name:</div>

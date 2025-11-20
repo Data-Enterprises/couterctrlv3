@@ -121,14 +121,14 @@ export const cashierColDefs: (
     flex: 1,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
+    cellClass: "no-outline-on-focus text-center",
   },
   {
     headerName: "Sales",
     field: "total_sales",
     flex: 1,
     resizable: false,
-    cellClass: "no-outline-on-focus",
+    cellClass: "no-outline-on-focus text-right",
     headerStyle: { borderRight: "1px solid white" },
     valueFormatter: (params) => formatCurrency2(params.value),
   },
@@ -137,8 +137,7 @@ export const cashierColDefs: (
     field: "store_number",
     flex: 0.9,
     resizable: false,
-    cellClass: "no-outline-on-focus",
-    // hide: true,
+    cellClass: "no-outline-on-focus text-center",
   },
 ];
 

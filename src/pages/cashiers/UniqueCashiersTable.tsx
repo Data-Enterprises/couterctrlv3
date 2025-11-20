@@ -1,29 +1,41 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
 
 import { AgGridReact } from "ag-grid-react";
-import { cashierColDefs, theme } from ".";
+import { cashierColDefs, filterData, theme } from ".";
 import type { RowClickedEvent } from "ag-grid-community";
-import { setSelectedCashier } from "../../features/cashierSlice";
+import {
+  setCashierSaleIds,
+  setSelectedCashier,
+} from "../../features/cashierSlice";
 
 const UniqueCashiersTable = () => {
   const dispatch = useAppDispatch();
-  const { cashiers, selectedCashier } = useAppSelector(
-    (state) => state.cashier
-  );
+  const { cashiers, selectedCashier, selectedSaleType, cashierTransactions } =
+    useAppSelector((state) => state.cashier);
 
   const onRowClicked = (e: RowClickedEvent) => {
-    const cashNum = e.data.cashier_number;
-    const storeNum = e.data.store_number;
+    const cashier_number = e.data.cashier_number;
+    const store_number = e.data.store_number;
+
     if (
-      cashNum === selectedCashier.cashier_number &&
-      storeNum === selectedCashier.store_number
+      cashier_number === selectedCashier.cashier_number &&
+      store_number === selectedCashier.store_number
     ) {
+      dispatch(setCashierSaleIds([]));
       dispatch(setSelectedCashier({ cashier_number: 0, store_number: "" }));
       return;
     }
-    dispatch(
-      setSelectedCashier({ cashier_number: cashNum, store_number: storeNum })
+    const filtered = filterData(
+      cashierTransactions,
+      selectedSaleType,
+      store_number
     );
+
+    const saleIds = filtered
+      .filter((row) => row.cashier_number === cashier_number)
+      .map((item) => item.sale_id);
+    dispatch(setCashierSaleIds(saleIds));
+    dispatch(setSelectedCashier({ cashier_number, store_number }));
   };
 
   return (

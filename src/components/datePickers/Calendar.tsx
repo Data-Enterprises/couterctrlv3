@@ -147,7 +147,7 @@ const Calendar = ({
           <span
             onClick={() => handleSelect(day)}
             key={`day-${id}`}
-            className={`day ${isSelectedDate(day)}`}
+            className={`day hover:bg-blue-200 transition-all duration-200 ${isSelectedDate(day)}`}
           >
             {day + 1}
           </span>

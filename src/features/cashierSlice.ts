@@ -30,6 +30,7 @@ export interface CashierState {
   selectedSaleType: string;
   selectedSaleIds: string[];
   transModalOpen: boolean;
+  cashierSaleIds: string[];
 }
 
 const initialState: CashierState = {
@@ -46,6 +47,7 @@ const initialState: CashierState = {
   selectedCashier: { cashier_number: 0, store_number: "" },
   selectedSaleIds: [],
   transList: [],
+  cashierSaleIds: [],
 };
 
 export const cashierSlice = createSlice({
@@ -93,6 +95,9 @@ export const cashierSlice = createSlice({
     setTransList: (state, action: PayloadAction<TransactionListItem[]>) => {
       state.transList = action.payload;
     },
+    setCashierSaleIds: (state, action: PayloadAction<string[]>) => {
+      state.cashierSaleIds = action.payload;
+    },
     resetCashierState: () => initialState,
   },
 });
@@ -109,6 +114,7 @@ export const {
   setSelectedCashier,
   setSelectedSaleIds,
   setTransList,
+  setCashierSaleIds,
   resetCashierState,
 } = cashierSlice.actions;
 export default cashierSlice.reducer;

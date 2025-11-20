@@ -1,10 +1,7 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
-
-import { handleRipple, formatCurrency2 } from "../../utils";
+import { formatCurrency2 } from "../../utils";
 import { filterData } from ".";
-
-import Carousel from "../../components/Carousel";
 import type { JsonError, UniqueCashier } from "../../interfaces";
 import {
   setCashiers,
@@ -13,7 +10,7 @@ import {
   setTransList,
 } from "../../features/cashierSlice";
 import { getTransactionList } from "../../api/cashiers";
-import type React from "react";
+import Carousel from "../../components/Carousel";
 
 const TrendCardCarousel = () => {
   const toast = useToast();
@@ -21,7 +18,7 @@ const TrendCardCarousel = () => {
   const context = useAppSelector((state) => state.app);
   const cashier = useAppSelector((state) => state.cashier);
 
-  // Filter transactions based on option
+  // Filter transactions based on option and store number
   const showTrans = (option: string, storeNumber: string) => {
     if (option === "sale_id") {
       const filtered = filterData(
@@ -71,13 +68,11 @@ const TrendCardCarousel = () => {
     }
   };
 
-  const handlePanelClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    handleRipple(e);
+  const handlePanelClick = () => {
     dispatch(setSelectedCashier({ cashier_number: 0, store_number: "" }));
   };
 
-  const titleStyle =
-    "cursor-pointer pl-2 rounded-xl hover:text-custom-white hover:text-blue-500 hover:font-medium hover:underline";
+  const titleStyle = "cursor-pointer pl-2 rounded-xl";
 
   return (
     <Carousel className="h-[233px]">
@@ -89,15 +84,15 @@ const TrendCardCarousel = () => {
               className="bg-custom-white pb-4 rounded-lg shadow-lg ripple-button"
               onClick={handlePanelClick}
             >
-              <div className="text-center font-medium bg-blue-500 text-custom-white py-1 mb-2 rounded-t-lg flex px-4 justify-between">
+              <div className="text-center font-medium bg-blue-500 text-custom-white py-1 mb-1 rounded-t-lg flex px-4 justify-between">
                 <div>{s.store_name}</div>
                 <div>{s.sale_type}</div>
               </div>
               <div className="grid grid-cols-[40%_27%_33%] gap-4 text-sm">
                 <div className="pr-4 pl-2">
-                  <div className="opacity-0 pointer-events-none">t</div>
+                  <div className="font-medium pl-2">Comparison</div>
                   <div
-                    className={titleStyle}
+                    className={`${titleStyle} hover:text-blue-500 hover:font-medium hover:underline`}
                     onClick={() => showTrans("sale_id", s.store_number)}
                   >
                     Transactions
