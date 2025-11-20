@@ -8,7 +8,6 @@ import Carousel from "../../components/Carousel";
 import type { JsonError, UniqueCashier } from "../../interfaces";
 import {
   setCashiers,
-  setFilteredTableData,
   setSelectedCashier,
   setSelectedSaleIds,
   setTransList,
@@ -45,8 +44,6 @@ const TrendCardCarousel = () => {
         .catch((err: JsonError) =>
           toast.error("Error fetching transactions: " + err.message)
         );
-
-      dispatch(setFilteredTableData(filtered));
 
       const uniqueCashiers = [...filtered].reduce(
         (acc: UniqueCashier[], current) => {

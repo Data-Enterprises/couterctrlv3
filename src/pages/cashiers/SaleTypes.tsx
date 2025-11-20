@@ -3,17 +3,18 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 
 import { getCashierDetails, getCashierTable } from "../../api/cashiers";
 import {
-  setSelectedSaleTypes,
   setSelectedSaleType,
   setChunkedSales,
   setChunkedTrends,
   setCashierDetails,
   setCashierTrends,
   setCashierTransactions,
+  resetCashierState,
+  setSaleTypes,
 } from "../../features/cashierSlice";
 import type { JsonError } from "../../interfaces";
-import { formatGoliathDate, handleRipple } from "../../utils";
-import { chunkData } from ".";
+import { formatGoliathDate } from "../../utils";
+import { activePanelStyle, chunkData } from ".";
 
 interface SaleTypesProps {
   setLoading: (loading: boolean) => void;
@@ -27,12 +28,13 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
   const search = useAppSelector((state) => state.search);
 
   const handlePanelClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    dispatch(setSelectedSaleTypes(e.currentTarget.innerText));
-    dispatch(setSelectedSaleType(e.currentTarget.innerText));
-    handleRipple(e);
+    // Doing this to reset when looking for a different sale type
+    const panels = cashier.saleTypes;
+    dispatch(resetCashierState());
+    dispatch(setSaleTypes(panels));
 
-    dispatch(setChunkedSales([]));
-    dispatch(setChunkedTrends([]));
+    // Setting this to handle selected css styling and show the loading indicator
+    dispatch(setSelectedSaleType(e.currentTarget.innerText));
     setLoading(true);
 
     const saleType = e.currentTarget.innerText;
@@ -87,21 +89,14 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
       .finally(() => setLoading(false));
   };
 
-  const activePanelStyle = (type: string) => {
-    if (cashier.selectedSaleType === type) {
-      return "bg-emerald-500 text-custom-white font-medium shadow-inner";
-    } else {
-      return "bg-custom-white";
-    }
-  };
-
   return (
     <div className="grid grid-cols-4 gap-4 mt-4">
       {cashier.saleTypes.map((st, i) => (
         <div
           key={i}
           className={`${activePanelStyle(
-            st.sale_type
+            st.sale_type,
+            cashier.selectedSaleType
           )} py-3 rounded-lg text-center shadow-lg hover:bg-panel_active/75 
                 cursor-pointer transition-all duration-200 ripple-button`}
           onClick={handlePanelClick}

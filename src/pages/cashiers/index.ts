@@ -1,5 +1,9 @@
 import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
-import type { CashierTransaction, TransactionListItem, UniqueCashier } from "../../interfaces";
+import type {
+  CashierTransaction,
+  TransactionListItem,
+  UniqueCashier,
+} from "../../interfaces";
 import { formatCurrency2, formatDate } from "../../utils";
 
 // sale date, upc, descption, total sales, sale_id
@@ -91,7 +95,10 @@ export const colDefs: (
   },
 ];
 
-export const cashierColDefs: (ColDef<UniqueCashier> | ColGroupDef<UniqueCashier>)[] = [
+export const cashierColDefs: (
+  | ColDef<UniqueCashier>
+  | ColGroupDef<UniqueCashier>
+)[] = [
   {
     headerName: "Cashier ID",
     field: "cashier_number",
@@ -175,4 +182,12 @@ export const chunkData = (arr: any[], chunkSize: number = 3) => {
     chunks.push(arr.slice(i, i + chunkSize));
   }
   return chunks;
+};
+
+export const activePanelStyle = (type: string, selected: string) => {
+  if (selected === type) {
+    return "bg-emerald-500 text-custom-white font-medium shadow-inner";
+  } else {
+    return "bg-custom-white";
+  }
 };

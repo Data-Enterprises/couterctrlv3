@@ -70,17 +70,17 @@ const Cashiers = () => {
             <TrendCardCarousel />
           </div>
         ) : (
-          <div className="h-[260px] w-full"></div>
-        )}
-
-        {loading ? (
-          <div className="w-full h-64 relative">
-            <LoadingIndicator
-              className="text-sm"
-              message={`Loading data for ${cashier.selectedSaleType}`}
-            />
+          <div className="h-[260px] w-full">
+            {loading ? (
+              <div className="w-full h-64 relative">
+                <LoadingIndicator
+                  className="text-sm"
+                  message={`Loading data for ${cashier.selectedSaleType}`}
+                />
+              </div>
+            ) : null}
           </div>
-        ) : null}
+        )}
 
         <CashiersTable />
       </div>

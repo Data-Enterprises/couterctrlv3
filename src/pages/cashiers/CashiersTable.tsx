@@ -17,9 +17,6 @@ const CashiersTable = () => {
   const [filtered, setFiltered] = useState<TransactionListItem[]>([]);
   const context = useAppSelector((state) => state.app);
   const cashier = useAppSelector((state) => state.cashier);
-  const filteredTableData = useAppSelector(
-    (state) => state.cashier.transList
-  );
 
   // const [salesFilter, setSalesFilter] = useState<string>("");
   // const [cashierFilter, setCashierFilter] = useState<string>("");
@@ -94,11 +91,13 @@ const CashiersTable = () => {
   //   }
   // };
 
+  // main div container should be 20px taller than the table for now
   return (
-    <div className="bg-custom-white mt-2 px-4 py-2.5 rounded-lg shadow-lg">
-      {filteredTableData.length ? (
-        <div>
-          {/* <div className="flex gap-4 mb-4 items-end">
+    <>
+      {filtered.length ? (
+        <div className="bg-custom-white mt-2 px-4 py-2.5 rounded-lg shadow-lg h-[370px]">
+          <div className="">
+            {/* <div className="flex gap-4 mb-4 items-end">
             <div>
               <button className="btn-themeBlue">Show All</button>
             </div>
@@ -139,21 +138,23 @@ const CashiersTable = () => {
               />
             </div>
           </div> */}
-          <div style={{ height: "350px" }}>
-            <AgGridReact
-              rowData={filtered}
-              columnDefs={colDefs}
-              theme={theme}
-              pagination={true}
-              paginationPageSize={10}
-              paginationPageSizeSelector={false}
-              // domLayout="autoHeight"
-              onCellClicked={onCellClicked}
-            />
+            <div style={{ height: "350px" }}>
+              <AgGridReact
+                rowData={filtered}
+                columnDefs={colDefs}
+                theme={theme}
+                pagination={true}
+                paginationPageSize={10}
+                paginationPageSizeSelector={false}
+                onCellClicked={onCellClicked}
+              />
+            </div>
           </div>
         </div>
-      ) : null}
-    </div>
+      ) : (
+        <></>
+      )}
+    </>
   );
 };
 

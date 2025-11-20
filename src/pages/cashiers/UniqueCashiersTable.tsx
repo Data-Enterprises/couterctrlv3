@@ -27,20 +27,25 @@ const UniqueCashiersTable = () => {
   };
 
   return (
-    <div className="bg-custom-white mt-4 px-4 py-2.5 rounded-lg shadow-lg">
-      <div style={{ height: "350px" }}>
-        <AgGridReact
-          rowData={cashiers}
-          columnDefs={cashierColDefs}
-          theme={theme}
-          pagination={true}
-          paginationPageSize={10}
-          paginationPageSizeSelector={false}
-          // domLayout="autoHeight"
-          onRowClicked={onRowClicked}
-        />
-      </div>
-    </div>
+    <>
+      {cashiers.length ? (
+        <div className="bg-custom-white mt-4 px-4 py-2.5 rounded-lg shadow-lg">
+          <div style={{ height: "350px" }}>
+            <AgGridReact
+              rowData={cashiers}
+              columnDefs={cashierColDefs}
+              theme={theme}
+              pagination={true}
+              paginationPageSize={10}
+              paginationPageSizeSelector={false}
+              onRowClicked={onRowClicked}
+            />
+          </div>
+        </div>
+      ) : (
+        <></>
+      )}
+    </>
   );
 };
 
