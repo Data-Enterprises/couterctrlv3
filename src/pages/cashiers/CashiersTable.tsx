@@ -44,19 +44,18 @@ const CashiersTable = () => {
     }
   };
   return (
-    <div className="w-full">
-      <div>
-        {filteredTableData.length ? (
-          <div style={{ height: 400 }}>
-            <AgGridReact
-              rowData={filteredTableData}
-              columnDefs={colDefs}
-              theme={theme}
-              onCellClicked={onCellClicked}
-            />
-          </div>
-        ) : null}
-      </div>
+    <div className="bg-custom-white mt-4 px-4 py-2.5 rounded-lg shadow-lg">
+      {filteredTableData.length ? (
+        <div>
+          <AgGridReact
+            rowData={filteredTableData}
+            columnDefs={colDefs}
+            theme={theme}
+            onCellClicked={onCellClicked}
+            domLayout="autoHeight"
+          />
+        </div>
+      ) : null}
     </div>
   );
 };

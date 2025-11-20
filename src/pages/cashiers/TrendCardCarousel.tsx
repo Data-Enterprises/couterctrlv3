@@ -60,16 +60,29 @@ const TrendCardCarousel = () => {
                 <div>{s.sale_type}</div>
               </div>
               <div className="grid grid-cols-3 gap-4">
-                <div className="px-4">
+                <div className="pr-4 pl-2">
                   <div className="opacity-0">t</div>
-                  <div onClick={() => filterTransactions("sale_id")}>
+                  <div
+                    className="cursor-pointer pl-2 rounded-xl hover:text-custom-white hover:bg-blue-500 transition-all duration-200"
+                    onClick={() => filterTransactions("sale_id")}
+                  >
                     Transactions
                   </div>
-                  <div>Total Items</div>
-                  <div>Cashiers</div>
-                  <div>Total Dollars</div>
-                  <div>Avg Dollars</div>
-                  <div>Avg Quantity</div>
+                  <div className="cursor-pointer pl-2 rounded-xl hover:text-custom-white hover:bg-blue-500 transition-all duration-200">
+                    Total Items
+                  </div>
+                  <div className="cursor-pointer pl-2 rounded-xl hover:text-custom-white hover:bg-blue-500 transition-all duration-200">
+                    Cashiers
+                  </div>
+                  <div className="cursor-pointer pl-2 rounded-xl hover:text-custom-white hover:bg-blue-500 transition-all duration-200">
+                    Total Dollars
+                  </div>
+                  <div className="cursor-pointer pl-2 rounded-xl hover:text-custom-white hover:bg-blue-500 transition-all duration-200">
+                    Avg Dollars
+                  </div>
+                  <div className="cursor-pointer pl-2 rounded-xl hover:text-custom-white hover:bg-blue-500 transition-all duration-200">
+                    Avg Quantity
+                  </div>
                 </div>
 
                 <div className="px-4">

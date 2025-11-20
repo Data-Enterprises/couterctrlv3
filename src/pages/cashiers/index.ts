@@ -1,6 +1,6 @@
 import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
-import type { CashierTransaction } from "../../interfaces";
-import { formatDate } from "../../utils";
+import type { CashierTransaction, UniqueCashier } from "../../interfaces";
+import { formatCurrency2, formatDate } from "../../utils";
 
 // sale date, upc, descption, total sales, sale_id
 export const colDefs: (
@@ -8,26 +8,50 @@ export const colDefs: (
   | ColGroupDef<CashierTransaction>
 )[] = [
   {
+    headerName: "Type",
+    field: "sale_type",
+    flex: 0.5,
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus",
+  },
+  {
+    headerName: "Price Type",
+    field: "price_type",
+    flex: 0.5,
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus",
+  },
+  {
     headerName: "Sale Date",
     field: "sale_date",
-    flex: 0.8,
+    flex: 0.45,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
     valueFormatter: (params) => formatDate(params.value),
   },
   {
-    headerName: "Cashier",
-    field: "cashier_name",
-    flex: 0.7,
+    headerName: "Store",
+    field: "store_number",
+    flex: 0.4,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
   },
   {
-    headerName: "Cashier #",
+    headerName: "Cashier",
+    field: "cashier_name",
+    flex: 0.5,
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus",
+  },
+  {
+    headerName: "Cashier ID",
     field: "cashier_number",
-    flex: 0.6,
+    flex: 0.5,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
@@ -35,7 +59,7 @@ export const colDefs: (
   {
     headerName: "Upc",
     field: "product_code",
-    flex: 1,
+    flex: 0.6,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
@@ -43,7 +67,7 @@ export const colDefs: (
   {
     headerName: "Description",
     field: "product_description",
-    flex: 1,
+    flex: 1.5,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
@@ -51,7 +75,7 @@ export const colDefs: (
   {
     headerName: "Total Sales",
     field: "total_sales",
-    flex: 1,
+    flex: 0.6,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
@@ -64,6 +88,44 @@ export const colDefs: (
     cellClass: "no-outline-on-focus",
   },
 ];
+
+export const cashierColDefs: (
+  | ColDef<UniqueCashier>
+  | ColGroupDef<UniqueCashier>)[] = [
+    
+    {
+      headerName: "Cashier",
+      field: "cashier_name",
+      flex: 1,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Cashier #",
+      field: "cashier_name",
+      flex: 1,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Trans Count",
+      field: "transaction_count",
+      flex: 1,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Sales",
+      field: "total_sales",
+      flex: 1,
+      resizable: false,
+      cellClass: "no-outline-on-focus",
+      valueFormatter: (params) => formatCurrency2(params.value),
+    },
+  ];
 
 export const theme = themeQuartz.withParams({
   headerHeight: 30,
