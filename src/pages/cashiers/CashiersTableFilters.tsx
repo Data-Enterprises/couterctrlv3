@@ -1,4 +1,13 @@
-import { setFilterModalOpen, setFilterType } from "../../features/cashierSlice";
+import {
+  setCashierTableThreshComp,
+  setDescFilter,
+  setFilterModalOpen,
+  setFilterType,
+  setPriceTypeFilter,
+  setSaleDateFilter,
+  setTotalSalesFilter,
+  setUpcFilter,
+} from "../../features/cashierSlice";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import FiltersModal from "./FiltersModal";
 
@@ -17,8 +26,42 @@ const CashiersTableFilters = () => {
   const panelStyle =
     "py-1.5 rounded-lg text-center shadow-md shadow-content/20 hover:bg-orange-200 cursor-pointer transition-all duration-200";
 
+  const activePanelStyle = (option: string) => {
+    const saleDate = cashier.saleDateFilter;
+    const upc = cashier.upcFilter;
+    const desc = cashier.descFilter;
+    const priceType = cashier.priceTypeFilter;
+    const totalSales = cashier.totalSalesFilter;
+
+    const style = "bg-orange-500 text-white font-semibold shadow-inner";
+    let result = false;
+    if (option === "Sale Date" && saleDate) result = true;
+    if (option === "UPC" && upc) result = true;
+    if (option === "Description" && desc) result = true;
+    if (option === "Price Type" && priceType) result = true;
+    if (option === "Total Sales" && totalSales > 0) result = true;
+    // if (
+    //   option === "Refresh" &&
+    //   (saleDate || upc || desc || priceType || totalSales)
+    // ) {
+    //   return style;
+    // }
+
+    return result ? style : "";
+  };
+
   const setFilterModal = (type: string) => {
-    if (type === "Refresh") return;
+    if (type === "Refresh") {
+      dispatch(setCashierTableThreshComp({ gt: false, lt: false }));
+      dispatch(setSaleDateFilter(""));
+      dispatch(setFilterType(""));
+      dispatch(setUpcFilter(""));
+      dispatch(setDescFilter(""));
+      dispatch(setPriceTypeFilter(""));
+      dispatch(setTotalSalesFilter(0));
+      return;
+    }
+
     dispatch(setFilterModalOpen(true));
     dispatch(setFilterType(type));
   };
@@ -26,7 +69,7 @@ const CashiersTableFilters = () => {
   return (
     <div
       className={`bg-custom-white rounded-lg shadow-lg ${
-        !cashier.saleTypes.length && "hidden"
+        !cashier.transList.length && "hidden"
       }`}
     >
       <FiltersModal />
@@ -37,7 +80,7 @@ const CashiersTableFilters = () => {
         {filterOptions.map((option, i) => (
           <div
             key={i}
-            className={panelStyle}
+            className={`${panelStyle} ${activePanelStyle(option)}`}
             onClick={() => setFilterModal(option)}
           >
             {option}

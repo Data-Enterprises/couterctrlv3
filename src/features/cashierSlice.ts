@@ -30,12 +30,15 @@ export interface CashierState {
   selectedSaleType: string;
   selectedSaleIds: string[];
   cashierSaleIds: string[];
-  cashierTableUpcFilter: string;
-  cashierTableDescFilter: string;
   cashierTableThreshComp: { gt: boolean; lt: boolean };
   transModalOpen: boolean;
   filterModalOpen: boolean;
   filterType: string;
+  saleDateFilter: string;
+  upcFilter: string;
+  descFilter: string;
+  priceTypeFilter: string;
+  totalSalesFilter: number;
 }
 
 const initialState: CashierState = {
@@ -53,11 +56,14 @@ const initialState: CashierState = {
   selectedSaleIds: [],
   transList: [],
   cashierSaleIds: [],
-  cashierTableUpcFilter: "",
-  cashierTableDescFilter: "",
   cashierTableThreshComp: { gt: false, lt: false },
   filterModalOpen: false,
   filterType: "",
+  saleDateFilter: "",
+  upcFilter: "",
+  descFilter: "",
+  priceTypeFilter: "",
+  totalSalesFilter: 0,
 };
 
 export const cashierSlice = createSlice({
@@ -108,11 +114,20 @@ export const cashierSlice = createSlice({
     setCashierSaleIds: (state, action: PayloadAction<string[]>) => {
       state.cashierSaleIds = action.payload;
     },
-    setCashierTableUpcFilter: (state, action: PayloadAction<string>) => {
-      state.cashierTableUpcFilter = action.payload;
+    setSaleDateFilter: (state, action: PayloadAction<string>) => {
+      state.saleDateFilter = action.payload;
     },
-    setCashierTableDescFilter: (state, action: PayloadAction<string>) => {
-      state.cashierTableDescFilter = action.payload;
+    setUpcFilter: (state, action: PayloadAction<string>) => {
+      state.upcFilter = action.payload;
+    },
+    setDescFilter: (state, action: PayloadAction<string>) => {
+      state.descFilter = action.payload;
+    },
+    setPriceTypeFilter: (state, action: PayloadAction<string>) => {
+      state.priceTypeFilter = action.payload;
+    },
+    setTotalSalesFilter: (state, action: PayloadAction<number>) => {
+      state.totalSalesFilter = action.payload;
     },
     setCashierTableThreshComp: (
       state,
@@ -143,11 +158,14 @@ export const {
   setSelectedSaleIds,
   setTransList,
   setCashierSaleIds,
-  setCashierTableUpcFilter,
-  setCashierTableDescFilter,
+  setSaleDateFilter,
+  setUpcFilter,
+  setDescFilter,
   setCashierTableThreshComp,
   setFilterModalOpen,
   setFilterType,
+  setPriceTypeFilter,
+  setTotalSalesFilter,
   resetCashierState,
 } = cashierSlice.actions;
 export default cashierSlice.reducer;
