@@ -80,6 +80,18 @@ const TrendCardCarousel = () => {
   const titleStyle = "cursor-pointer pl-2 rounded-xl flex justify-between";
 
   const renderIcon = (total: number, trend: number) => {
+    // if both are negative
+    if (total < 0 && trend < 0) {
+      if (total < trend) {
+        return (
+          <ArrowDownCircleIcon className="h-5 w-5 stroke-orange-500 stroke-2 inline-block ml-1" />
+        );
+      } else if (total > trend) {
+        return (
+          <ArrowUpCircleIcon className="h-5 w-5 stroke-green-500 stroke-2 inline-block ml-1" />
+        );
+      }
+    }
     if (total < trend) {
       return (
         <ArrowUpCircleIcon className="h-5 w-5 stroke-green-500 stroke-2 inline-block ml-1" />

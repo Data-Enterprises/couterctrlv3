@@ -112,7 +112,14 @@ const CashiersTable = () => {
       });
       return result;
     };
-    setFiltered(currentFiltered());
+
+    // Updating available price types and sale IDs based on the new filtered data
+    const newFiltered = currentFiltered();
+    const reducedSaleIds = reduceSaleIds(newFiltered);
+    const reducedPriceTypes = reducePriceTypes(newFiltered);
+    dispatch(setAvailablePriceTypes(reducedPriceTypes));
+    dispatch(setCashierSaleIds(reducedSaleIds));
+    setFiltered(newFiltered);
   }, [
     cashier.transList,
     cashier.selectedCashier,
