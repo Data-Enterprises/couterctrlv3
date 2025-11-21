@@ -29,11 +29,13 @@ export interface CashierState {
   saleTypes: SaleType[];
   selectedSaleType: string;
   selectedSaleIds: string[];
-  transModalOpen: boolean;
   cashierSaleIds: string[];
   cashierTableUpcFilter: string;
   cashierTableDescFilter: string;
   cashierTableThreshComp: { gt: boolean; lt: boolean };
+  transModalOpen: boolean;
+  filterModalOpen: boolean;
+  filterType: string;
 }
 
 const initialState: CashierState = {
@@ -54,6 +56,8 @@ const initialState: CashierState = {
   cashierTableUpcFilter: "",
   cashierTableDescFilter: "",
   cashierTableThreshComp: { gt: false, lt: false },
+  filterModalOpen: false,
+  filterType: "",
 };
 
 export const cashierSlice = createSlice({
@@ -116,6 +120,12 @@ export const cashierSlice = createSlice({
     ) => {
       state.cashierTableThreshComp = action.payload;
     },
+    setFilterModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.filterModalOpen = action.payload;
+    },
+    setFilterType: (state, action: PayloadAction<string>) => {
+      state.filterType = action.payload;
+    },
     resetCashierState: () => initialState,
   },
 });
@@ -136,6 +146,8 @@ export const {
   setCashierTableUpcFilter,
   setCashierTableDescFilter,
   setCashierTableThreshComp,
+  setFilterModalOpen,
+  setFilterType,
   resetCashierState,
 } = cashierSlice.actions;
 export default cashierSlice.reducer;
