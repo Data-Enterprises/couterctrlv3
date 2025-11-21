@@ -190,3 +190,23 @@ export const activePanelStyle = (type: string, selected: string) => {
     return "bg-custom-white";
   }
 };
+
+  // Grabbing the unique sale ids from the current state of the transaction list
+  export const reduceSaleIds = (data: TransactionListItem[]) => {
+    return [...data].reduce((acc: string[], item) => {
+      if (!acc.includes(item.sale_id)) {
+        acc.push(item.sale_id);
+      }
+      return acc;
+    }, []);
+  };
+
+  // Grabbing the unique price types from the current state of the transaction list
+  export const reducePriceTypes = (data: TransactionListItem[]) => {
+    return [...data].reduce((acc: string[], item) => {
+      if (!acc.includes(item.price_type)) {
+        acc.push(item.price_type);
+      }
+      return acc;
+    }, []);
+  };

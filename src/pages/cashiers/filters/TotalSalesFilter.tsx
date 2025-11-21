@@ -19,8 +19,8 @@ const TotalSalesFilter = ({
           <input
             type="checkbox"
             className="rounded focus:ring-0 focus:outline-none"
-            checked={cashierTableThreshComp.lt}
-            onChange={() => handleSelection("lt")}
+            checked={cashierTableThreshComp.gt}
+            onChange={() => handleSelection("gt")}
           />
         </div>
         <div className="flex gap-2 items-center">
@@ -28,8 +28,8 @@ const TotalSalesFilter = ({
           <input
             type="checkbox"
             className="rounded focus:ring-0 focus:outline-none"
-            checked={cashierTableThreshComp.gt}
-            onChange={() => handleSelection("gt")}
+            checked={cashierTableThreshComp.lt}
+            onChange={() => handleSelection("lt")}
           />
         </div>
       </div>

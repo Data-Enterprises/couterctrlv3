@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { colDefs, theme } from ".";
+import { colDefs, theme, reducePriceTypes, reduceSaleIds } from ".";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { getCashierTransactions } from "../../api/cashiers";
 import {
@@ -17,6 +17,7 @@ import {
   ModuleRegistry,
   type CellClickedEvent,
 } from "ag-grid-community";
+import { formatDate } from "../../utils";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const CashiersTable = () => {
@@ -26,54 +27,114 @@ const CashiersTable = () => {
   const context = useAppSelector((state) => state.app);
   const cashier = useAppSelector((state) => state.cashier);
 
-  // Grabbing the unique sale ids from the current state of the transaction list
-  const reduceSaleIds = (data: TransactionListItem[]) => {
-    return [...data].reduce((acc: string[], item) => {
-      if (!acc.includes(item.sale_id)) {
-        acc.push(item.sale_id);
-      }
-      return acc;
-    }, []);
-  };
-
-  // Grabbing the unique price types from the current state of the transaction list
-  const reducePriceTypes = (data: TransactionListItem[]) => {
-    return [...data].reduce((acc: string[], item) => {
-      if (!acc.includes(item.price_type)) {
-        acc.push(item.price_type);
-      }
-      return acc;
-    }, []);
-  };
-
   // Filtering the transaction list based on the selected cashier
+  // useEffect(() => {
+  //   if (cashier.selectedCashier.cashier_number !== 0) {
+  //     // Table is filtered by selected cashier here => this will need to be refactored to take into account all filters
+  //     const selectedCashierRows = cashier.transList.filter((item) => {
+  //       return (
+  //         item.cashier_number === cashier.selectedCashier.cashier_number &&
+  //         item.store_number === cashier.selectedCashier.store_number
+  //       );
+  //     });
+
+  //     const reducedSaleIds = reduceSaleIds(selectedCashierRows);
+  //     const reducedPriceTypes = reducePriceTypes(selectedCashierRows);
+  //     dispatch(setAvailablePriceTypes(reducedPriceTypes));
+  //     dispatch(setCashierSaleIds(reducedPriceTypes));
+  //     dispatch(setCashierSaleIds(reducedSaleIds));
+  //     setFiltered(selectedCashierRows);
+  //   } else {
+  //     // Table is unfiltered here
+  //     const reducedSaleIds = reduceSaleIds(cashier.transList);
+  //     const reducedPriceTypes = reducePriceTypes(cashier.transList);
+  //     dispatch(setAvailablePriceTypes(reducedPriceTypes));
+  //     dispatch(setCashierSaleIds(reducedSaleIds));
+  //     setFiltered(cashier.transList);
+  //   }
+  // }, [cashier.transList, cashier.selectedCashier]);
+
   useEffect(() => {
-    if (cashier.selectedCashier.cashier_number !== 0) {
+    // Applying all filters to the transaction list
+    const selectedCashier = cashier.selectedCashier.cashier_number;
+    const saleDate = cashier.saleDateFilter;
+    const upc = cashier.upcFilter.toLowerCase();
+    const desc = cashier.descFilter.toLowerCase();
+    const priceTypes = cashier.selectedPriceTypes;
+    const totalSales = cashier.totalSalesFilter;
+    const threshold = cashier.cashierTableThreshComp;
 
-      // Table is filtered by selected cashier here => this will need to be refactored to take into account all filters
-      const selectedCashierRows = cashier.transList.filter((item) => {
-        return (
-          item.cashier_number === cashier.selectedCashier.cashier_number &&
-          item.store_number === cashier.selectedCashier.store_number
-        );
-      });
-
-      const reducedSaleIds = reduceSaleIds(selectedCashierRows);
-      const reducedPriceTypes = reducePriceTypes(selectedCashierRows);
-      dispatch(setAvailablePriceTypes(reducedPriceTypes));
-      dispatch(setCashierSaleIds(reducedPriceTypes));
-      dispatch(setCashierSaleIds(reducedSaleIds));
-      setFiltered(selectedCashierRows);
-    } else {
-
-      // Table is unfiltered here
+    if (
+      !selectedCashier &&
+      !saleDate &&
+      !upc &&
+      !desc &&
+      priceTypes.length === 0 &&
+      totalSales === 0 &&
+      !threshold.gt &&
+      !threshold.lt
+    ) {
+      // No filters applied, show all data
       const reducedSaleIds = reduceSaleIds(cashier.transList);
       const reducedPriceTypes = reducePriceTypes(cashier.transList);
       dispatch(setAvailablePriceTypes(reducedPriceTypes));
       dispatch(setCashierSaleIds(reducedSaleIds));
       setFiltered(cashier.transList);
+      return;
     }
-  }, [cashier.transList, cashier.selectedCashier]);
+
+    const currentFiltered = () => {
+      const selectedCashier = cashier.selectedCashier.cashier_number;
+      const saleDate = cashier.saleDateFilter;
+      const upc = cashier.upcFilter.toLowerCase();
+      const desc = cashier.descFilter.toLowerCase();
+      const priceTypes = cashier.selectedPriceTypes;
+      const totalSales = cashier.totalSalesFilter;
+      const threshold = cashier.cashierTableThreshComp;
+
+      const result = cashier.transList.filter((item) => {
+        const matchCashier = selectedCashier
+          ? item.cashier_number === selectedCashier
+          : true;
+        const matchesDate = formatDate(item.sale_date).includes(saleDate);
+        const matchesUpc = item.product_code.toLowerCase().includes(upc);
+        const matchesDesc = item.product_description
+          .toLowerCase()
+          .includes(desc);
+        const matchesPriceType =
+          priceTypes.length > 0 ? priceTypes.includes(item.price_type) : true;
+        const matchesTotalSales = () => {
+          console.log(item.total_sales, totalSales, threshold)
+          if (totalSales === 0) return true;
+          if (threshold.gt) {
+            return item.total_sales > totalSales;
+          } else if (threshold.lt) {
+            return item.total_sales < totalSales;
+          }
+        };
+        // Then return all of these filters values
+        return (
+          matchCashier &&
+          matchesDate &&
+          matchesUpc &&
+          matchesDesc &&
+          matchesPriceType &&
+          matchesTotalSales()
+        );
+      });
+      return result;
+    };
+    // console.log(currentFiltered(), "Filtered Result");
+    setFiltered(currentFiltered());
+  }, [
+    cashier.transList,
+    cashier.selectedCashier,
+    cashier.saleDateFilter,
+    cashier.upcFilter,
+    cashier.descFilter,
+    cashier.totalSalesFilter,
+    cashier.selectedPriceTypes,
+  ]);
 
   const onCellClicked = (e: CellClickedEvent) => {
     const col = e.column.getColId();

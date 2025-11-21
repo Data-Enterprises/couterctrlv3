@@ -35,6 +35,7 @@ const FiltersModal = () => {
     setText("");
     setThreshold(0);
     dispatch(setFilterType(""));
+    setPriceTypes([]);
   };
 
   const handleSelection = (value: string) => {
