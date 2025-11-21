@@ -27,14 +27,6 @@ const CashiersTable = () => {
   const context = useAppSelector((state) => state.app);
   const cashier = useAppSelector((state) => state.cashier);
 
-  // !!!!!!!!! IF ANYTHING GOES WRONG WITH FILTERS, RERENDERING DATA BETWEEN API CALLS => CHECK HERE
-  // When fetching for a new round of data, clear the table (at this point cashier.transList is empty)
-  // useEffect(() => {
-  //   if (cashier.transList.length === 0) {
-  //     setFiltered([]);
-  //   }
-  // }, [cashier.transList]);
-
   useEffect(() => {
     if (cashier.transList.length === 0) {
       setFiltered([]);
@@ -161,7 +153,10 @@ const CashiersTable = () => {
   return (
     <>
       {filtered.length ? (
-        <div className="bg-custom-white p-2 rounded-lg shadow-lg h-full">
+        <div className="bg-custom-white p-2 rounded-lg shadow-lg h-full relative">
+          {/* <div className="absolute top-0 -translate-y-10">
+            <button className="btn-themeGreen py-1">Show All</button>
+          </div> */}
           <div className="h-full">
             <AgGridReact
               rowData={filtered}
@@ -172,6 +167,10 @@ const CashiersTable = () => {
               paginationPageSizeSelector={false}
               onCellClicked={onCellClicked}
             />
+          </div>
+          <div className="absolute bottom-4 left-6">
+            <button className="btn-themeGreen py-1">Show All</button>
+            <button className="btn-themeGreen py-1 ml-4">Export</button>
           </div>
         </div>
       ) : (

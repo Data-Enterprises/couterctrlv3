@@ -112,20 +112,20 @@ const TrendCardCarousel = () => {
   };
 
   return (
-    <Carousel className="h-[215px]">
+    <Carousel className="h-[225px]">
       {cashier.chunkedSales.map((_, i) => (
-        <div key={i} className="grid grid-cols-3 gap-3 pb-2">
+        <div key={i} className="grid grid-cols-3 gap-3">
           {cashier.chunkedSales[i].map((s, idx) => (
             <div
               key={idx}
-              className="bg-custom-white pb-2 rounded-lg shadow-lg ripple-button"
+              className="bg-custom-white rounded-lg shadow-lg ripple-button"
               onClick={handlePanelClick}
             >
               <div className="text-center font-medium bg-blue-500 text-custom-white py-0.5 mb-1 rounded-t-lg flex px-4 justify-between">
                 <div>{s.store_name}</div>
                 <div>{s.sale_type}</div>
               </div>
-              <div className="grid grid-cols-[45%_27%_33%] gap- text-sm">
+              <div className="grid grid-cols-[45%_27%_33%] py-2 text-sm">
                 <div className="px-2">
                   <div className="font-medium pl-2">Comparison</div>
                   <div
