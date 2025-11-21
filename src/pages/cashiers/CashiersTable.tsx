@@ -10,7 +10,6 @@ import {
   setTransModalOpen,
 } from "../../features/cashierSlice";
 import type { JsonError, TransactionListItem } from "../../interfaces";
-import { exportData } from "../../utils/export";
 
 import { AgGridReact } from "ag-grid-react";
 import {
@@ -19,6 +18,7 @@ import {
   type CellClickedEvent,
 } from "ag-grid-community";
 import { formatDate } from "../../utils";
+import ExportModal from "./export/ExportModal";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const CashiersTable = () => {
@@ -27,6 +27,7 @@ const CashiersTable = () => {
   const [filtered, setFiltered] = useState<TransactionListItem[]>([]);
   const context = useAppSelector((state) => state.app);
   const cashier = useAppSelector((state) => state.cashier);
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (cashier.transList.length === 0) {
@@ -151,21 +152,16 @@ const CashiersTable = () => {
     }
   };
 
-  const handleExport = () => {
-    exportData<TransactionListItem>(
-      filtered,
-      colDefs,
-      `cashier_transactions_${formatDate(new Date().toISOString())}.csv`
-    );
-  };
-
   return (
     <>
       {filtered.length ? (
         <div className="bg-custom-white p-2 rounded-lg shadow-lg h-full relative">
-          {/* <div className="absolute top-0 -translate-y-10">
-            <button className="btn-themeGreen py-1">Show All</button>
-          </div> */}
+          <ExportModal
+            isOpen={modalOpen}
+            onClose={() => setModalOpen(false)}
+            data={filtered}
+            columns={colDefs}
+          />
           <div className="h-full">
             <AgGridReact
               rowData={filtered}
@@ -179,7 +175,12 @@ const CashiersTable = () => {
           </div>
           <div className="absolute bottom-4 left-6">
             <button className="btn-themeGreen py-1">Show All</button>
-            <button className="btn-themeGreen py-1 ml-4" onClick={handleExport}>Export</button>
+            <button
+              className="btn-themeGreen py-1 ml-4"
+              onClick={() => setModalOpen(true)}
+            >
+              Export
+            </button>
           </div>
         </div>
       ) : (
