@@ -44,7 +44,7 @@ const UniqueCashiersTable = () => {
               columnDefs={cashierColDefs}
               theme={theme}
               pagination={true}
-              paginationPageSize={11}
+              paginationPageSize={10}
               paginationPageSizeSelector={false}
               onRowClicked={onRowClicked}
             />

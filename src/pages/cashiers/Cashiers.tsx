@@ -88,7 +88,18 @@ const Cashiers = () => {
             ) : null}
           </div>
         )}
-        <CashiersTable />
+        {cashier.transList.length > 0 ? (
+          <CashiersTable />
+        ) : (
+          <div className="relative">
+            {cashier.fetchingCashierTransactions && (
+              <LoadingIndicator
+                className="text-sm"
+                message={`Fetching Transactions`}
+              />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

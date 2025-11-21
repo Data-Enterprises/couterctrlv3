@@ -5,6 +5,7 @@ import { filterData } from ".";
 import type { JsonError, UniqueCashier } from "../../interfaces";
 import {
   setCashiers,
+  setFetchingCashierTransactions,
   setSelectedCashier,
   setSelectedSaleIds,
   setTransList,
@@ -34,6 +35,8 @@ const TrendCardCarousel = () => {
 
       const saleIds = filtered.map((item) => item.sale_id);
       dispatch(setSelectedSaleIds(saleIds));
+      dispatch(setTransList([]));
+      dispatch(setFetchingCashierTransactions(true));
 
       // call the api
       getTransactionList(context.url, context.token, saleIds, 1)
@@ -45,7 +48,10 @@ const TrendCardCarousel = () => {
         })
         .catch((err: JsonError) =>
           toast.error("Error fetching transactions: " + err.message)
-        );
+        )
+        .finally(() => {
+          dispatch(setFetchingCashierTransactions(false));
+        });
 
       const uniqueCashiers = [...filtered].reduce(
         (acc: UniqueCashier[], current) => {
@@ -92,6 +98,8 @@ const TrendCardCarousel = () => {
         );
       }
     }
+
+    // default
     if (total < trend) {
       return (
         <ArrowUpCircleIcon className="h-5 w-5 stroke-green-500 stroke-2 inline-block ml-1" />
