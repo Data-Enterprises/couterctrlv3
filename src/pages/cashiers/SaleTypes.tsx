@@ -90,7 +90,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
             className={`${activePanelStyle(
               st.sale_type,
               cashier.selectedSaleType
-            )} py-2 rounded-lg text-center shadow-md shadow-content/20 hover:bg-emerald-200
+            )} py-1.5 rounded-lg text-center shadow-md shadow-content/20 hover:bg-emerald-200
                 cursor-pointer transition-all duration-200 ripple-button`}
             onClick={handlePanelClick}
           >

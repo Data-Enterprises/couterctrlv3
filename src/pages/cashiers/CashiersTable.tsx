@@ -4,6 +4,7 @@ import { colDefs, theme } from ".";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { getCashierTransactions } from "../../api/cashiers";
 import {
+  setCashierSaleIds,
   setCashierTransDrillDown,
   setTransModalOpen,
 } from "../../features/cashierSlice";
@@ -24,6 +25,15 @@ const CashiersTable = () => {
   const context = useAppSelector((state) => state.app);
   const cashier = useAppSelector((state) => state.cashier);
 
+  const reduceData = (data: TransactionListItem[]) => {
+    return [...data].reduce((acc: string[], item) => {
+      if (!acc.includes(item.sale_id)) {
+        acc.push(item.sale_id);
+      }
+      return acc;
+    }, []);
+  };
+
   useEffect(() => {
     if (cashier.selectedCashier.cashier_number !== 0) {
       const selectedCashierRows = cashier.transList.filter((item) => {
@@ -32,39 +42,18 @@ const CashiersTable = () => {
           item.store_number === cashier.selectedCashier.store_number
         );
       });
+
+      // Set unique sale ids for the selected cashier
+      const reducedSaleIds = reduceData(selectedCashierRows);
+      dispatch(setCashierSaleIds(reducedSaleIds));
       setFiltered(selectedCashierRows);
     } else {
+      // When the table is unfiltered, set all unique sale ids
+      const reducedSaleIds = reduceData(cashier.transList);
+      dispatch(setCashierSaleIds(reducedSaleIds));
       setFiltered(cashier.transList);
     }
   }, [cashier.transList, cashier.selectedCashier]);
-
-  useEffect(() => {
-    // If both filters are empty, show all => this prevents unnecessary filtering/iterations
-    if (
-      cashier.cashierTableUpcFilter.trim() === "" &&
-      cashier.cashierTableDescFilter.trim() === ""
-    ) {
-      setFiltered(cashier.transList);
-    } else {
-      // .includes() for  comparing an empty string (from the inputs) to any string with length
-      // will always return true, so no need for extra checks
-      const upc = cashier.cashierTableUpcFilter.trim();
-      const desc = cashier.cashierTableDescFilter.trim().toLowerCase();
-      const applyFilters = [...cashier.transList].filter((item) => {
-        return (
-          item.product_code !== null &&
-          item.product_code.includes(upc) &&
-          item.product_description.toLowerCase().includes(desc)
-        );
-      });
-      setFiltered(applyFilters);
-
-      // Set the filtered sale ids for Show All Transactions button
-      // const saleIds = applyFilters.map((item) => item.sale_id);
-      // dispatch(setSelectedSaleIds(saleIds));
-
-    }
-  }, [cashier.cashierTableUpcFilter, cashier.cashierTableDescFilter]);
 
   const onCellClicked = (e: CellClickedEvent) => {
     const col = e.column.getColId();
@@ -97,14 +86,14 @@ const CashiersTable = () => {
   return (
     <>
       {filtered.length ? (
-        <div className="bg-custom-white mt-2 p-2 rounded-lg shadow-lg">
-          <div style={{ height: "320px" }}>
+        <div className="bg-custom-white p-2 rounded-lg shadow-lg h-full">
+          <div className="h-full">
             <AgGridReact
               rowData={filtered}
               columnDefs={colDefs}
               theme={theme}
               pagination={true}
-              paginationPageSize={10}
+              paginationPageSize={21}
               paginationPageSizeSelector={false}
               onCellClicked={onCellClicked}
             />

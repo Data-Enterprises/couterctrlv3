@@ -53,25 +53,22 @@ const Cashiers = () => {
   return (
     <div
       data-testid="cashiers-page"
-      className="w-full h-[calc(100vh-3rem)] p-4 flex gap-4"
+      className="w-full h-[calc(100vh-3rem)] p-4 grid grid-cols-[27%_73%] gap-4"
     >
       <TransactionModal />
-      <div className="w-[23%] grid grid-rows-[24%_1fr_1fr] gap-2">
+      <div className="grid grid-rows-[25%_0.9fr_1fr] gap-2">
         <div className="bg-custom-white px-4 py-2.5 rounded-lg shadow-lg">
           <StorePicker />
           <DatePickers handleQuery={getSaleTypesData} />
         </div>
         <div className="grid grid-cols-2 gap-2">
-
-          {/* Style these two first */}
           <SaleTypes setLoading={setLoading} />
           <CashiersTableFilters />
-
         </div>
         <UniqueCashiersTable />
       </div>
 
-      <div className="w-[77%]">
+      <div className="grid grid-rows-[25%_74.1%] mr-4 gap-2">
         {cashier.chunkedSales.length > 0 ? (
           <div className="w-full ">
             <TrendCardCarousel />
