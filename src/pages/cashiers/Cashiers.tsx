@@ -94,9 +94,9 @@ const Cashiers = () => {
           </div>
         )}
         {cashier.cashiers.length > 0 && (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <UniqueCashiersTable />
-            {/* <div className="col-span-2 bg-custom-white rounded-lg shadow-lg flex items-center justify-center p-2">
+            {/* <div className="bg-custom-white rounded-lg shadow-lg flex items-center justify-center p-2">
               <div className="text-xl font-bold text-center">
                 Some badass line chart or sum shit
               </div>

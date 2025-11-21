@@ -47,13 +47,13 @@ const UniqueCashiersTable = () => {
     <>
       {cashiers.length ? (
         <div className="bg-custom-white p-2 rounded-lg shadow-lg">
-          <div style={{ height: "275px" }}>
+          <div style={{ height: "225px" }}>
             <AgGridReact
               rowData={cashiers}
               columnDefs={cashierColDefs}
               theme={theme}
               pagination={true}
-              paginationPageSize={9}
+              paginationPageSize={6}
               paginationPageSizeSelector={false}
               onRowClicked={onRowClicked}
             />
