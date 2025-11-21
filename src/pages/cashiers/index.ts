@@ -204,7 +204,7 @@ export const activePanelStyle = (type: string, selected: string) => {
   // Grabbing the unique price types from the current state of the transaction list
   export const reducePriceTypes = (data: TransactionListItem[]) => {
     return [...data].reduce((acc: string[], item) => {
-      if (!acc.includes(item.price_type)) {
+      if (item.price_type !== null && !acc.includes(item.price_type)) {
         acc.push(item.price_type);
       }
       return acc;

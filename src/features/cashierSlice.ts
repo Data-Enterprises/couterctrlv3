@@ -40,6 +40,7 @@ export interface CashierState {
   totalSalesFilter: number;
   availablePriceTypes: string[];
   selectedPriceTypes: string[];
+  refreshTransTable: boolean;
 }
 
 const initialState: CashierState = {
@@ -66,6 +67,7 @@ const initialState: CashierState = {
   totalSalesFilter: 0,
   availablePriceTypes: [],
   selectedPriceTypes: [],
+  refreshTransTable: false,
 };
 
 export const cashierSlice = createSlice({
@@ -146,6 +148,9 @@ export const cashierSlice = createSlice({
     setSelectedPriceTypes: (state, action: PayloadAction<string[]>) => {
       state.selectedPriceTypes = action.payload;
     },
+    setRefreshTransTable: (state, action: PayloadAction<boolean>) => {
+      state.refreshTransTable = action.payload;
+    },
     resetCashierState: () => initialState,
   },
 });
@@ -172,6 +177,7 @@ export const {
   setTotalSalesFilter,
   setAvailablePriceTypes,
   setSelectedPriceTypes,
+  setRefreshTransTable,
   resetCashierState,
 } = cashierSlice.actions;
 export default cashierSlice.reducer;

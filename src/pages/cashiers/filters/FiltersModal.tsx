@@ -40,7 +40,6 @@ const FiltersModal = () => {
   };
 
   const handleSelection = (value: string) => {
-    console.log(value, "Value in handleSelection");
     if (value === "gt") {
       setThreshComp((prev) => {
         return { gt: !prev.gt, lt: false };
@@ -68,7 +67,7 @@ const FiltersModal = () => {
 
   const renderFilter = () => {
     if (filterType !== "Total Sales" && filterType !== "Price Type") {
-      return <TextFilter text={text} setText={setText} />;
+      return <TextFilter type={filterType} text={text} setText={setText} />;
     } else if (filterType === "Price Type") {
       return (
         <PriceTypeFilter
