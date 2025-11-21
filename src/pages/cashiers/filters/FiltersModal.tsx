@@ -20,15 +20,16 @@ import TotalSalesFilter from "./TotalSalesFilter";
 
 const FiltersModal = () => {
   const dispatch = useAppDispatch();
-  const {
-    filterType,
-    filterModalOpen,
-    cashierTableThreshComp,
-    availablePriceTypes,
-  } = useAppSelector((state) => state.cashier);
+  const { filterType, filterModalOpen, availablePriceTypes } = useAppSelector(
+    (state) => state.cashier
+  );
   const [text, setText] = useState<string>("");
   const [threshold, setThreshold] = useState<number>(0);
   const [priceTypes, setPriceTypes] = useState<string[]>([]);
+  const [threshComp, setThreshComp] = useState<{ gt: boolean; lt: boolean }>({
+    gt: false,
+    lt: false,
+  });
 
   const handleClose = () => {
     dispatch(setFilterModalOpen(false));
@@ -39,20 +40,15 @@ const FiltersModal = () => {
   };
 
   const handleSelection = (value: string) => {
+    console.log(value, "Value in handleSelection");
     if (value === "gt") {
-      dispatch(
-        setCashierTableThreshComp({
-          gt: !cashierTableThreshComp.gt,
-          lt: false,
-        })
-      );
+      setThreshComp((prev) => {
+        return { gt: !prev.gt, lt: false };
+      });
     } else if (value === "lt") {
-      dispatch(
-        setCashierTableThreshComp({
-          gt: false,
-          lt: !cashierTableThreshComp.lt,
-        })
-      );
+      setThreshComp((prev) => {
+        return { gt: false, lt: !prev.lt };
+      });
     }
   };
 
@@ -87,6 +83,7 @@ const FiltersModal = () => {
           threshold={threshold}
           setThreshold={setTotalSales}
           handleSelection={handleSelection}
+          threshComp={threshComp}
         />
       );
     }
@@ -107,6 +104,7 @@ const FiltersModal = () => {
         dispatch(setSelectedPriceTypes(priceTypes));
         break;
       case "Total Sales":
+        dispatch(setCashierTableThreshComp(threshComp));
         dispatch(setTotalSalesFilter(threshold));
         break;
       default:

@@ -97,14 +97,13 @@ const CashiersTable = () => {
           ? item.cashier_number === selectedCashier
           : true;
         const matchesDate = formatDate(item.sale_date).includes(saleDate);
-        const matchesUpc = item.product_code.toLowerCase().includes(upc);
+        const matchesUpc = item.product_code !== null ? item.product_code.toLowerCase().includes(upc) : true;
         const matchesDesc = item.product_description
           .toLowerCase()
           .includes(desc);
         const matchesPriceType =
           priceTypes.length > 0 ? priceTypes.includes(item.price_type) : true;
         const matchesTotalSales = () => {
-          console.log(item.total_sales, totalSales, threshold)
           if (totalSales === 0) return true;
           if (threshold.gt) {
             return item.total_sales > totalSales;

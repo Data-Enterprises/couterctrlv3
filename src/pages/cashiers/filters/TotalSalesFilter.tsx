@@ -1,16 +1,16 @@
-import { useAppSelector } from "../../../hooks";
-
 interface TotalSalesFilterProps {
   threshold: number;
   handleSelection: (value: string) => void;
   setThreshold: (value: number) => void;
+  threshComp: { gt: boolean; lt: boolean };
 }
 const TotalSalesFilter = ({
   handleSelection,
   setThreshold,
   threshold,
+  threshComp,
 }: TotalSalesFilterProps) => {
-  const { cashierTableThreshComp } = useAppSelector((state) => state.cashier);
+  console.log(threshComp, "Thresh Comp in TotalSalesFilter");
   return (
     <div>
       <div className="flex justify-center gap-4 mt-1">
@@ -19,7 +19,7 @@ const TotalSalesFilter = ({
           <input
             type="checkbox"
             className="rounded focus:ring-0 focus:outline-none"
-            checked={cashierTableThreshComp.gt}
+            checked={threshComp.gt}
             onChange={() => handleSelection("gt")}
           />
         </div>
@@ -28,7 +28,7 @@ const TotalSalesFilter = ({
           <input
             type="checkbox"
             className="rounded focus:ring-0 focus:outline-none"
-            checked={cashierTableThreshComp.lt}
+            checked={threshComp.lt}
             onChange={() => handleSelection("lt")}
           />
         </div>

@@ -9,6 +9,7 @@ import {
   setUpcFilter,
 } from "../../../features/cashierSlice";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { formatCurrency2 } from "../../../utils";
 import FiltersModal from "./FiltersModal";
 
 const filterOptions = [
@@ -51,6 +52,31 @@ const CashiersTableFilters = () => {
     return result ? style : "";
   };
 
+  const renderFilterText = (type: string) => {
+    if (type === "Sale Date") {
+      return cashier.saleDateFilter ? `${cashier.saleDateFilter}` : "Sale Date";
+    } else if (type === "UPC") {
+      return cashier.upcFilter ? `${cashier.upcFilter}` : "UPC";
+    } else if (type === "Description") {
+      return cashier.descFilter ? `${cashier.descFilter}` : "Description";
+    } else if (type === "Price Type") {
+      return cashier.selectedPriceTypes.length > 0
+        ? `${cashier.selectedPriceTypes.join(", ")}`
+        : "Price Type";
+    } else if (type === "Total Sales") {
+      const thresh = cashier.cashierTableThreshComp.gt
+        ? "Over"
+        : cashier.cashierTableThreshComp.lt
+        ? "Under"
+        : "";
+      return cashier.totalSalesFilter !== 0
+        ? `${thresh} ${formatCurrency2(cashier.totalSalesFilter)}`
+        : "Total Sales";
+    } else {
+      return type;
+    }
+  };
+
   const setFilterModal = (type: string) => {
     if (type === "Refresh") {
       dispatch(setCashierTableThreshComp({ gt: false, lt: false }));
@@ -84,7 +110,7 @@ const CashiersTableFilters = () => {
             className={`${panelStyle} ${activePanelStyle(option)}`}
             onClick={() => setFilterModal(option)}
           >
-            {option}
+            {renderFilterText(option)}
           </div>
         ))}
       </div>
