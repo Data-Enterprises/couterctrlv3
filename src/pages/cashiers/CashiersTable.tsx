@@ -10,6 +10,7 @@ import {
   setTransModalOpen,
 } from "../../features/cashierSlice";
 import type { JsonError, TransactionListItem } from "../../interfaces";
+import { exportData } from "../../utils/export";
 
 import { AgGridReact } from "ag-grid-react";
 import {
@@ -150,6 +151,14 @@ const CashiersTable = () => {
     }
   };
 
+  const handleExport = () => {
+    exportData<TransactionListItem>(
+      filtered,
+      colDefs,
+      `cashier_transactions_${formatDate(new Date().toISOString())}.csv`
+    );
+  };
+
   return (
     <>
       {filtered.length ? (
@@ -170,7 +179,7 @@ const CashiersTable = () => {
           </div>
           <div className="absolute bottom-4 left-6">
             <button className="btn-themeGreen py-1">Show All</button>
-            <button className="btn-themeGreen py-1 ml-4">Export</button>
+            <button className="btn-themeGreen py-1 ml-4" onClick={handleExport}>Export</button>
           </div>
         </div>
       ) : (

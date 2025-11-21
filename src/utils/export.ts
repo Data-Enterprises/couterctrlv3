@@ -25,7 +25,7 @@ export const csv = (headers: string, data: string, filename: string) => {
   }
 };
 
-export const handleUpcCsv = <T extends Record<string, any>>(
+export const handleCsv = <T extends Record<string, any>>(
   data: T[],
   filename: string,
   headers: ColDef<T>[]
@@ -41,7 +41,8 @@ export const handleUpcCsv = <T extends Record<string, any>>(
     headers.forEach((header) => {
       if (header.field) {
         const val = record[header.field as keyof T];
-        line += `"${val.replace(/"/g, '""')}",`;
+        const strVal = val !== null && val !== undefined ? String(val) : "";
+        line += `"${strVal.replace(/"/g, '""')}",`;
       }
     });
     body += line.substring(0, line.length - 1) + "\r\n";
@@ -56,7 +57,7 @@ export const exportData = <T extends Record<string, any>>(
   fileName: string
 ) => {
   const regex = new RegExp("\\.csv", "gi"); // 'gi' for global and case-insensitive
-  handleUpcCsv(
+  handleCsv(
     data,
     `${fileName
       .replace(regex, "")
