@@ -20,7 +20,7 @@ const ExportModal = <T extends Record<string, any>>({
 }: ExportModalProps<T>) => {
   const toast = useToast();
   const [fileName, setFileName] = useState<string>("");
-  
+
   const handleExport = () => {
     if (fileName.trim() === "") {
       toast.warn("Please enter a valid file name.");
@@ -33,6 +33,11 @@ const ExportModal = <T extends Record<string, any>>({
       `${fileName}_${formatDate(new Date().toISOString())}.csv`
     );
 
+    handleClose();
+  };
+
+  const handleClose = () => {
+    setFileName("");
     onClose();
   };
 
@@ -51,7 +56,7 @@ const ExportModal = <T extends Record<string, any>>({
         <button className="btn-themeBlue w-full" onClick={handleExport}>
           Export
         </button>
-        <button className="btn-themeOrange w-full" onClick={onClose}>
+        <button className="btn-themeOrange w-full" onClick={handleClose}>
           Cancel
         </button>
       </div>
