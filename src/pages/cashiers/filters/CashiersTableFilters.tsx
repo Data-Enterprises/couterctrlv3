@@ -3,6 +3,7 @@ import {
   setDescFilter,
   setFilterModalOpen,
   setFilterType,
+  setRefreshTransTable,
   setSaleDateFilter,
   setSelectedPriceTypes,
   setTotalSalesFilter,
@@ -86,6 +87,7 @@ const CashiersTableFilters = () => {
       dispatch(setDescFilter(""));
       dispatch(setSelectedPriceTypes([]));
       dispatch(setTotalSalesFilter(0));
+      dispatch(setRefreshTransTable(true));
       return;
     }
 

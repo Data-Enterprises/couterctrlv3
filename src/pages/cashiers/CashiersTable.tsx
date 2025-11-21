@@ -7,6 +7,7 @@ import {
   setAvailablePriceTypes,
   setCashierSaleIds,
   setCashierTransDrillDown,
+  setRefreshTransTable,
   setTransModalOpen,
 } from "../../features/cashierSlice";
 import type { JsonError, TransactionListItem } from "../../interfaces";
@@ -55,6 +56,7 @@ const CashiersTable = () => {
   // }, [cashier.transList, cashier.selectedCashier]);
 
   useEffect(() => {
+    if (!cashier.refreshTransTable) return;
     // Applying all filters to the transaction list
     const selectedCashier = cashier.selectedCashier.cashier_number;
     const saleDate = cashier.saleDateFilter;
@@ -128,15 +130,12 @@ const CashiersTable = () => {
     };
     // console.log(currentFiltered(), "Filtered Result");
     setFiltered(currentFiltered());
-  }, [
-    cashier.transList,
-    cashier.selectedCashier,
-    cashier.saleDateFilter,
-    cashier.upcFilter,
-    cashier.descFilter,
-    cashier.totalSalesFilter,
-    cashier.selectedPriceTypes,
-  ]);
+
+    // This resets the refresh variable to avoid infinite loops
+    // because this useEffect is watching for if refreshTransTable is true
+    // which then refreshes the table once all filters have been applied
+    dispatch(setRefreshTransTable(false));
+  }, [cashier.transList, cashier.refreshTransTable]);
 
   const onCellClicked = (e: CellClickedEvent) => {
     const col = e.column.getColId();
