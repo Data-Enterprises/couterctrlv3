@@ -31,6 +31,9 @@ export interface CashierState {
   selectedSaleIds: string[];
   transModalOpen: boolean;
   cashierSaleIds: string[];
+  cashierTableUpcFilter: string;
+  cashierTableDescFilter: string;
+  cashierTableThreshComp: { gt: boolean; lt: boolean };
 }
 
 const initialState: CashierState = {
@@ -48,6 +51,9 @@ const initialState: CashierState = {
   selectedSaleIds: [],
   transList: [],
   cashierSaleIds: [],
+  cashierTableUpcFilter: "",
+  cashierTableDescFilter: "",
+  cashierTableThreshComp: { gt: false, lt: false },
 };
 
 export const cashierSlice = createSlice({
@@ -98,6 +104,18 @@ export const cashierSlice = createSlice({
     setCashierSaleIds: (state, action: PayloadAction<string[]>) => {
       state.cashierSaleIds = action.payload;
     },
+    setCashierTableUpcFilter: (state, action: PayloadAction<string>) => {
+      state.cashierTableUpcFilter = action.payload;
+    },
+    setCashierTableDescFilter: (state, action: PayloadAction<string>) => {
+      state.cashierTableDescFilter = action.payload;
+    },
+    setCashierTableThreshComp: (
+      state,
+      action: PayloadAction<{ gt: boolean; lt: boolean }>
+    ) => {
+      state.cashierTableThreshComp = action.payload;
+    },
     resetCashierState: () => initialState,
   },
 });
@@ -115,6 +133,9 @@ export const {
   setSelectedSaleIds,
   setTransList,
   setCashierSaleIds,
+  setCashierTableUpcFilter,
+  setCashierTableDescFilter,
+  setCashierTableThreshComp,
   resetCashierState,
 } = cashierSlice.actions;
 export default cashierSlice.reducer;
