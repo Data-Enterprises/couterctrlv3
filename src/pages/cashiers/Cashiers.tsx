@@ -15,7 +15,7 @@ import CashiersTable from "./CashiersTable";
 import UniqueCashiersTable from "./UniqueCashiersTable";
 import TrendCardCarousel from "./TrendCardCarousel";
 import SaleTypes from "./SaleTypes";
-import CashiersTableFilters from "./CashiersTableFilters";
+import CashiersTableFilters from "./filters/CashiersTableFilters";
 
 const Cashiers = () => {
   const toast = useToast();

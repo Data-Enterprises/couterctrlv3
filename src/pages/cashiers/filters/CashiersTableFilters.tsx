@@ -3,13 +3,13 @@ import {
   setDescFilter,
   setFilterModalOpen,
   setFilterType,
-  setPriceTypeFilter,
   setSaleDateFilter,
+  setSelectedPriceTypes,
   setTotalSalesFilter,
   setUpcFilter,
-} from "../../features/cashierSlice";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import FiltersModal from "./filters/FiltersModal";
+} from "../../../features/cashierSlice";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import FiltersModal from "./FiltersModal";
 
 const filterOptions = [
   "Sale Date",
@@ -19,6 +19,7 @@ const filterOptions = [
   "Price Type",
   "Refresh",
 ];
+
 const CashiersTableFilters = () => {
   const dispatch = useAppDispatch();
   const cashier = useAppSelector((state) => state.cashier);
@@ -30,7 +31,7 @@ const CashiersTableFilters = () => {
     const saleDate = cashier.saleDateFilter;
     const upc = cashier.upcFilter;
     const desc = cashier.descFilter;
-    const priceType = cashier.priceTypeFilter;
+    const priceType = cashier.selectedPriceTypes.length > 0;
     const totalSales = cashier.totalSalesFilter;
 
     const style = "bg-orange-500 text-white font-semibold shadow-inner";
@@ -57,7 +58,7 @@ const CashiersTableFilters = () => {
       dispatch(setFilterType(""));
       dispatch(setUpcFilter(""));
       dispatch(setDescFilter(""));
-      dispatch(setPriceTypeFilter(""));
+      dispatch(setSelectedPriceTypes([]));
       dispatch(setTotalSalesFilter(0));
       return;
     }

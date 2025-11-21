@@ -1,18 +1,15 @@
 import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import {
-  setCashierTableThreshComp,
-  setFilterModalOpen,
-  setFilterType,
-  setSaleDateFilter,
-} from "../../../features/cashierSlice";
-
 // The respective filter setters
 import {
   setUpcFilter,
   setDescFilter,
-  setPriceTypeFilter,
   setTotalSalesFilter,
+  setCashierTableThreshComp,
+  setFilterModalOpen,
+  setFilterType,
+  setSaleDateFilter,
+  setSelectedPriceTypes,
 } from "../../../features/cashierSlice";
 
 // Modal and filter components
@@ -23,10 +20,15 @@ import TotalSalesFilter from "./TotalSalesFilter";
 
 const FiltersModal = () => {
   const dispatch = useAppDispatch();
-  const { filterType, filterModalOpen, cashierTableThreshComp } =
-    useAppSelector((state) => state.cashier);
+  const {
+    filterType,
+    filterModalOpen,
+    cashierTableThreshComp,
+    availablePriceTypes,
+  } = useAppSelector((state) => state.cashier);
   const [text, setText] = useState<string>("");
   const [threshold, setThreshold] = useState<number>(0);
+  const [priceTypes, setPriceTypes] = useState<string[]>([]);
 
   const handleClose = () => {
     dispatch(setFilterModalOpen(false));
@@ -57,11 +59,27 @@ const FiltersModal = () => {
     setThreshold(value);
   };
 
+  const handlePriceTypeSelection = (type: string) => {
+    setPriceTypes((prev) => {
+      if (prev.includes(type)) {
+        return prev.filter((t) => t !== type);
+      } else {
+        return [...prev, type];
+      }
+    });
+  };
+
   const renderFilter = () => {
     if (filterType !== "Total Sales" && filterType !== "Price Type") {
       return <TextFilter text={text} setText={setText} />;
     } else if (filterType === "Price Type") {
-      return <PriceTypeFilter />;
+      return (
+        <PriceTypeFilter
+          priceTypes={priceTypes}
+          handleSelection={handlePriceTypeSelection}
+          availablePriceTypes={availablePriceTypes}
+        />
+      );
     } else if (filterType === "Total Sales") {
       return (
         <TotalSalesFilter
@@ -85,7 +103,7 @@ const FiltersModal = () => {
         dispatch(setDescFilter(text));
         break;
       case "Price Type":
-        dispatch(setPriceTypeFilter(text));
+        dispatch(setSelectedPriceTypes(priceTypes));
         break;
       case "Total Sales":
         dispatch(setTotalSalesFilter(threshold));
