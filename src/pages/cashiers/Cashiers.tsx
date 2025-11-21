@@ -15,6 +15,7 @@ import CashiersTable from "./CashiersTable";
 import UniqueCashiersTable from "./UniqueCashiersTable";
 import TrendCardCarousel from "./TrendCardCarousel";
 import SaleTypes from "./SaleTypes";
+import CashiersTableFilters from "./CashiersTableFilters";
 
 const Cashiers = () => {
   const toast = useToast();
@@ -55,25 +56,19 @@ const Cashiers = () => {
       className="w-full h-[calc(100vh-3rem)] p-4 flex gap-4"
     >
       <TransactionModal />
-      <div className="w-[23%]">
+      <div className="w-[23%] grid grid-rows-[24%_1fr_1fr] gap-2">
         <div className="bg-custom-white px-4 py-2.5 rounded-lg shadow-lg">
           <StorePicker />
           <DatePickers handleQuery={getSaleTypesData} />
         </div>
-        <div className="grid grid-cols-[40%_56%] gap-4 mt-2">
+        <div className="grid grid-cols-2 gap-2">
+
+          {/* Style these two first */}
           <SaleTypes setLoading={setLoading} />
-          {/* <div className="grid gap-3 mt-2">
-            <div className="bg-custom-white rounded-lg shadow-lg p-4 flex justify-center items-center font-bold text-xl">Kpi</div>
-            <div className="bg-custom-white rounded-lg shadow-lg p-4 flex justify-center items-center font-bold text-xl">Kpi</div>
-            <div className="bg-custom-white rounded-lg shadow-lg p-4 flex justify-center items-center font-bold text-xl">Kpi</div>
-          </div> */}
+          <CashiersTableFilters />
+
         </div>
-        {/* <div className="bg-custom-white rounded-lg shadow-lg p-4 mt-4 flex justify-center items-center h-[245px]">
-          <div className="text-xl font-bold text-center">
-            Some badass pie chart or sum shit
-          </div>
-        </div> */}
-        {/* <UniqueCashiersTable /> */}
+        <UniqueCashiersTable />
       </div>
 
       <div className="w-[77%]">
@@ -91,16 +86,6 @@ const Cashiers = () => {
                 />
               </div>
             ) : null}
-          </div>
-        )}
-        {cashier.cashiers.length > 0 && (
-          <div className="grid grid-cols-2 gap-3">
-            <UniqueCashiersTable />
-            {/* <div className="bg-custom-white rounded-lg shadow-lg flex items-center justify-center p-2">
-              <div className="text-xl font-bold text-center">
-                Some badass line chart or sum shit
-              </div>
-            </div> */}
           </div>
         )}
         <CashiersTable />

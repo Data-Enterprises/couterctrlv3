@@ -15,7 +15,6 @@ import {
   ModuleRegistry,
   type CellClickedEvent,
 } from "ag-grid-community";
-import CashiersTableFilters from "./CashiersTableFilters";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const CashiersTable = () => {
@@ -59,6 +58,11 @@ const CashiersTable = () => {
         );
       });
       setFiltered(applyFilters);
+
+      // Set the filtered sale ids for Show All Transactions button
+      // const saleIds = applyFilters.map((item) => item.sale_id);
+      // dispatch(setSelectedSaleIds(saleIds));
+
     }
   }, [cashier.cashierTableUpcFilter, cashier.cashierTableDescFilter]);
 
@@ -93,8 +97,7 @@ const CashiersTable = () => {
   return (
     <>
       {filtered.length ? (
-        <div className="bg-custom-white mt-3 px-2 pb-2 rounded-lg shadow-lg">
-          <CashiersTableFilters />
+        <div className="bg-custom-white mt-2 p-2 rounded-lg shadow-lg">
           <div style={{ height: "320px" }}>
             <AgGridReact
               rowData={filtered}

@@ -185,7 +185,7 @@ export const chunkData = (arr: any[], chunkSize: number = 3) => {
 
 export const activePanelStyle = (type: string, selected: string) => {
   if (selected === type) {
-    return "bg-emerald-500 text-custom-white font-medium shadow-inner";
+    return "bg-emerald-500 text-custom-white font-medium shadow-inner hover:shadow-lg";
   } else {
     return "bg-custom-white";
   }

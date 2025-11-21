@@ -81,21 +81,23 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
   };
 
   return (
-    <div className="grid gap-2 mt-2">
-    {/* <div className="grid grid-cols-4 gap-4 mt-4"> */}
-      {cashier.saleTypes.map((st, i) => (
-        <div
-          key={i}
-          className={`${activePanelStyle(
-            st.sale_type,
-            cashier.selectedSaleType
-          )} py-3 rounded-lg text-center shadow-lg hover:bg-panel_active/75 
+    <div className={`bg-custom-white rounded-lg shadow-lg ${!cashier.saleTypes.length && 'hidden'}`}>
+      <div className="rounded-t-lg text-center py-0.5 bg-blue-500 text-custom-white font-medium">Select Exception</div>
+      <div className="grid grid-rows-6 gap-2 p-2">
+        {cashier.saleTypes.map((st, i) => (
+          <div
+            key={i}
+            className={`${activePanelStyle(
+              st.sale_type,
+              cashier.selectedSaleType
+            )} py-2 rounded-lg text-center shadow-md shadow-content/20 hover:bg-emerald-200
                 cursor-pointer transition-all duration-200 ripple-button`}
-          onClick={handlePanelClick}
-        >
-          <span>{st.sale_type}</span>
-        </div>
-      ))}
+            onClick={handlePanelClick}
+          >
+            <span>{st.sale_type}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
