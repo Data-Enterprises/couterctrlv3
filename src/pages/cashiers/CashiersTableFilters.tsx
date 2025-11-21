@@ -9,7 +9,7 @@ import {
   setUpcFilter,
 } from "../../features/cashierSlice";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import FiltersModal from "./FiltersModal";
+import FiltersModal from "./filters/FiltersModal";
 
 const filterOptions = [
   "Sale Date",
@@ -39,7 +39,7 @@ const CashiersTableFilters = () => {
     if (option === "UPC" && upc) result = true;
     if (option === "Description" && desc) result = true;
     if (option === "Price Type" && priceType) result = true;
-    if (option === "Total Sales" && totalSales > 0) result = true;
+    if (option === "Total Sales" && totalSales !== 0) result = true;
     // if (
     //   option === "Refresh" &&
     //   (saleDate || upc || desc || priceType || totalSales)

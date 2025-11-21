@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useAppSelector, useAppDispatch } from "../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import {
   setCashierTableThreshComp,
   setFilterModalOpen,
   setFilterType,
   setSaleDateFilter,
-} from "../../features/cashierSlice";
+} from "../../../features/cashierSlice";
 
 // The respective filter setters
 import {
@@ -13,9 +13,13 @@ import {
   setDescFilter,
   setPriceTypeFilter,
   setTotalSalesFilter,
-} from "../../features/cashierSlice";
+} from "../../../features/cashierSlice";
 
-import Modal from "../../components/Modal";
+// Modal and filter components
+import Modal from "../../../components/Modal";
+import PriceTypeFilter from "./PriceTypeFilter";
+import TextFilter from "./TextFilter";
+import TotalSalesFilter from "./TotalSalesFilter";
 
 const FiltersModal = () => {
   const dispatch = useAppDispatch();
@@ -49,13 +53,23 @@ const FiltersModal = () => {
     }
   };
 
+  const setTotalSales = (value: number) => {
+    setThreshold(value);
+  };
+
   const renderFilter = () => {
     if (filterType !== "Total Sales" && filterType !== "Price Type") {
       return <TextFilter text={text} setText={setText} />;
     } else if (filterType === "Price Type") {
       return <PriceTypeFilter />;
     } else if (filterType === "Total Sales") {
-      return <TotalSalesFilter handleSelection={handleSelection} />;
+      return (
+        <TotalSalesFilter
+          threshold={threshold}
+          setThreshold={setTotalSales}
+          handleSelection={handleSelection}
+        />
+      );
     }
   };
 
@@ -101,68 +115,6 @@ const FiltersModal = () => {
         </button>
       </div>
     </Modal>
-  );
-};
-
-interface TextFilterProps {
-  text: string;
-  setText: (text: string) => void;
-}
-
-const TextFilter = ({ text, setText }: TextFilterProps) => {
-  return (
-    <input
-      type="text"
-      className="basic-input focus:border my-4 bg-custom-white"
-      value={text}
-      onChange={(e) => setText(e.currentTarget.value)}
-    />
-  );
-};
-
-const PriceTypeFilter = () => {
-  return (
-    <div>
-      <div>Price Type Filter Component</div>
-    </div>
-  );
-};
-
-interface TotalSalesFilterProps {
-  handleSelection: (value: string) => void;
-}
-const TotalSalesFilter = ({ handleSelection }: TotalSalesFilterProps) => {
-  const { cashierTableThreshComp, totalSalesFilter } = useAppSelector(
-    (state) => state.cashier
-  );
-  return (
-    <div>
-      <div className="flex justify-center gap-4 mt-1">
-        <div className="flex gap-2 items-center">
-          <label>Greater than</label>
-          <input
-            type="checkbox"
-            className="rounded focus:ring-0 focus:outline-none"
-            checked={cashierTableThreshComp.lt}
-            onChange={() => handleSelection("lt")}
-          />
-        </div>
-        <div className="flex gap-2 items-center">
-          <label>Less than</label>
-          <input
-            type="checkbox"
-            className="rounded focus:ring-0 focus:outline-none"
-            checked={cashierTableThreshComp.gt}
-            onChange={() => handleSelection("gt")}
-          />
-        </div>
-      </div>
-      <input
-        className="basic-input focus:border my-4 bg-custom-white"
-        type="number"
-        value={totalSalesFilter}
-      />
-    </div>
   );
 };
 

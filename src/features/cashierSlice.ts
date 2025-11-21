@@ -39,6 +39,7 @@ export interface CashierState {
   descFilter: string;
   priceTypeFilter: string;
   totalSalesFilter: number;
+  availablePriceTypes: string[];
 }
 
 const initialState: CashierState = {
@@ -64,6 +65,7 @@ const initialState: CashierState = {
   descFilter: "",
   priceTypeFilter: "",
   totalSalesFilter: 0,
+  availablePriceTypes: [],
 };
 
 export const cashierSlice = createSlice({
@@ -141,6 +143,9 @@ export const cashierSlice = createSlice({
     setFilterType: (state, action: PayloadAction<string>) => {
       state.filterType = action.payload;
     },
+    setAvailablePriceTypes: (state, action: PayloadAction<string[]>) => {
+      state.availablePriceTypes = action.payload;
+    },
     resetCashierState: () => initialState,
   },
 });
@@ -166,6 +171,7 @@ export const {
   setFilterType,
   setPriceTypeFilter,
   setTotalSalesFilter,
+  setAvailablePriceTypes,
   resetCashierState,
 } = cashierSlice.actions;
 export default cashierSlice.reducer;

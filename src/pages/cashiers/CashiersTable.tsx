@@ -4,6 +4,7 @@ import { colDefs, theme } from ".";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { getCashierTransactions } from "../../api/cashiers";
 import {
+  setAvailablePriceTypes,
   setCashierSaleIds,
   setCashierTransDrillDown,
   setTransModalOpen,
@@ -25,7 +26,8 @@ const CashiersTable = () => {
   const context = useAppSelector((state) => state.app);
   const cashier = useAppSelector((state) => state.cashier);
 
-  const reduceData = (data: TransactionListItem[]) => {
+  // Grabbing the unique sale ids from the current state of the transaction list
+  const reduceSaleIds = (data: TransactionListItem[]) => {
     return [...data].reduce((acc: string[], item) => {
       if (!acc.includes(item.sale_id)) {
         acc.push(item.sale_id);
@@ -34,8 +36,21 @@ const CashiersTable = () => {
     }, []);
   };
 
+  // Grabbing the unique price types from the current state of the transaction list
+  const reducePriceTypes = (data: TransactionListItem[]) => {
+    return [...data].reduce((acc: string[], item) => {
+      if (!acc.includes(item.price_type)) {
+        acc.push(item.price_type);
+      }
+      return acc;
+    }, []);
+  };
+
+  // Filtering the transaction list based on the selected cashier
   useEffect(() => {
     if (cashier.selectedCashier.cashier_number !== 0) {
+
+      // Table is filtered by selected cashier here => this will need to be refactored to take into account all filters
       const selectedCashierRows = cashier.transList.filter((item) => {
         return (
           item.cashier_number === cashier.selectedCashier.cashier_number &&
@@ -43,13 +58,18 @@ const CashiersTable = () => {
         );
       });
 
-      // Set unique sale ids for the selected cashier
-      const reducedSaleIds = reduceData(selectedCashierRows);
+      const reducedSaleIds = reduceSaleIds(selectedCashierRows);
+      const reducedPriceTypes = reducePriceTypes(selectedCashierRows);
+      dispatch(setAvailablePriceTypes(reducedPriceTypes));
+      dispatch(setCashierSaleIds(reducedPriceTypes));
       dispatch(setCashierSaleIds(reducedSaleIds));
       setFiltered(selectedCashierRows);
     } else {
-      // When the table is unfiltered, set all unique sale ids
-      const reducedSaleIds = reduceData(cashier.transList);
+
+      // Table is unfiltered here
+      const reducedSaleIds = reduceSaleIds(cashier.transList);
+      const reducedPriceTypes = reducePriceTypes(cashier.transList);
+      dispatch(setAvailablePriceTypes(reducedPriceTypes));
       dispatch(setCashierSaleIds(reducedSaleIds));
       setFiltered(cashier.transList);
     }
