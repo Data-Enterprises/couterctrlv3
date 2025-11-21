@@ -4,7 +4,7 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 
 import { getSaleTypes } from "../../api/cashiers";
 import { formatGoliathDate } from "../../utils";
-import { setSaleTypes } from "../../features/cashierSlice";
+import { resetCashierState, setSaleTypes } from "../../features/cashierSlice";
 import type { JsonError } from "../../interfaces";
 
 import DatePickers from "../../components/datePickers/DatePickers";
@@ -26,6 +26,9 @@ const Cashiers = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const getSaleTypesData = () => {
+    if (cashier.saleTypes.length > 0) {
+      dispatch(resetCashierState());
+    }
     const useGroups = search.type === "Group" ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
     const searchValue =

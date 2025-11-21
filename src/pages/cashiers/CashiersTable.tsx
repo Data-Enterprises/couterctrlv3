@@ -7,7 +7,6 @@ import {
   setAvailablePriceTypes,
   setCashierSaleIds,
   setCashierTransDrillDown,
-  setRefreshTransTable,
   setTransModalOpen,
 } from "../../features/cashierSlice";
 import type { JsonError, TransactionListItem } from "../../interfaces";
@@ -28,35 +27,19 @@ const CashiersTable = () => {
   const context = useAppSelector((state) => state.app);
   const cashier = useAppSelector((state) => state.cashier);
 
-  // Filtering the transaction list based on the selected cashier
+  // !!!!!!!!! IF ANYTHING GOES WRONG WITH FILTERS, RERENDERING DATA BETWEEN API CALLS => CHECK HERE
+  // When fetching for a new round of data, clear the table (at this point cashier.transList is empty)
   // useEffect(() => {
-  //   if (cashier.selectedCashier.cashier_number !== 0) {
-  //     // Table is filtered by selected cashier here => this will need to be refactored to take into account all filters
-  //     const selectedCashierRows = cashier.transList.filter((item) => {
-  //       return (
-  //         item.cashier_number === cashier.selectedCashier.cashier_number &&
-  //         item.store_number === cashier.selectedCashier.store_number
-  //       );
-  //     });
-
-  //     const reducedSaleIds = reduceSaleIds(selectedCashierRows);
-  //     const reducedPriceTypes = reducePriceTypes(selectedCashierRows);
-  //     dispatch(setAvailablePriceTypes(reducedPriceTypes));
-  //     dispatch(setCashierSaleIds(reducedPriceTypes));
-  //     dispatch(setCashierSaleIds(reducedSaleIds));
-  //     setFiltered(selectedCashierRows);
-  //   } else {
-  //     // Table is unfiltered here
-  //     const reducedSaleIds = reduceSaleIds(cashier.transList);
-  //     const reducedPriceTypes = reducePriceTypes(cashier.transList);
-  //     dispatch(setAvailablePriceTypes(reducedPriceTypes));
-  //     dispatch(setCashierSaleIds(reducedSaleIds));
-  //     setFiltered(cashier.transList);
+  //   if (cashier.transList.length === 0) {
+  //     setFiltered([]);
   //   }
-  // }, [cashier.transList, cashier.selectedCashier]);
+  // }, [cashier.transList]);
 
   useEffect(() => {
-    if (!cashier.refreshTransTable) return;
+    if (cashier.transList.length === 0) {
+      setFiltered([]);
+      return;
+    }
     // Applying all filters to the transaction list
     const selectedCashier = cashier.selectedCashier.cashier_number;
     const saleDate = cashier.saleDateFilter;
@@ -94,6 +77,7 @@ const CashiersTable = () => {
       const totalSales = cashier.totalSalesFilter;
       const threshold = cashier.cashierTableThreshComp;
 
+      // Switch the default trues to false if we decide to see a strict comparison!!!!!!!!!
       const result = cashier.transList.filter((item) => {
         const matchCashier = selectedCashier
           ? item.cashier_number === selectedCashier
@@ -102,7 +86,7 @@ const CashiersTable = () => {
         const matchesUpc =
           item.product_code !== null
             ? item.product_code.toLowerCase().includes(upc.toLowerCase())
-            : false;
+            : true;
         const matchesDesc = item.product_description
           .toLowerCase()
           .includes(desc.toLowerCase());
@@ -128,14 +112,16 @@ const CashiersTable = () => {
       });
       return result;
     };
-    // console.log(currentFiltered(), "Filtered Result");
     setFiltered(currentFiltered());
-
-    // This resets the refresh variable to avoid infinite loops
-    // because this useEffect is watching for if refreshTransTable is true
-    // which then refreshes the table once all filters have been applied
-    dispatch(setRefreshTransTable(false));
-  }, [cashier.transList, cashier.refreshTransTable]);
+  }, [
+    cashier.transList,
+    cashier.selectedCashier,
+    cashier.saleDateFilter,
+    cashier.upcFilter,
+    cashier.descFilter,
+    cashier.selectedPriceTypes,
+    cashier.totalSalesFilter,
+  ]);
 
   const onCellClicked = (e: CellClickedEvent) => {
     const col = e.column.getColId();

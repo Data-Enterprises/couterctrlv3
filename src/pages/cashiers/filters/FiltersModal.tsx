@@ -10,7 +10,6 @@ import {
   setFilterType,
   setSaleDateFilter,
   setSelectedPriceTypes,
-  setRefreshTransTable,
 } from "../../../features/cashierSlice";
 
 // Modal and filter components
@@ -111,8 +110,6 @@ const FiltersModal = () => {
         break;
     }
 
-    // Dispatch refresh to true to trigger filtering in table
-    dispatch(setRefreshTransTable(true));
     handleClose();
   };
 
