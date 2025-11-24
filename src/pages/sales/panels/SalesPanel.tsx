@@ -1,8 +1,14 @@
-import type { SelectedSalesPanel, SalesPanelInfo } from "../../../interfaces";
-import { formatCurrency2, formatBigNumber } from "../../../utils";
-import { useAppSelector } from "../../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { formatCurrency2, formatBigNumber, addDays } from "../../../utils";
+import type {
+  SelectedSalesPanel,
+  SalesPanelInfo,
+  JsonError,
+} from "../../../interfaces";
+import { getHourly } from "../../../api/sales";
+import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getDateLayout } from "../utils";
-import type { WindowVisible } from "../../../features/salesSlice";
+import { setHourlySales } from "../../../features/salesSlice";
 
 interface SalesPanelProps {
   panel: SalesPanelInfo;
@@ -10,14 +16,12 @@ interface SalesPanelProps {
     e: React.MouseEvent<HTMLDivElement>,
     panel: SalesPanelInfo
   ) => void;
-  handleBtnClick: (panel: SalesPanelInfo, type: keyof WindowVisible) => void;
 }
 
-const SalesPanel = ({
-  panel,
-  handlePanelClick,
-  handleBtnClick,
-}: SalesPanelProps) => {
+const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
+  const toast = useToast();
+  const dispatch = useAppDispatch();
+  const context = useAppSelector((state) => state.app);
   const { selectedSalesPanel } = useAppSelector((state) => state.sales);
 
   const bg = (panel: SalesPanelInfo, selected: SelectedSalesPanel) => {
@@ -36,6 +40,21 @@ const SalesPanel = ({
     }).format(weight);
 
     return formatted;
+  };
+
+  const handleHourlyClick = (p: SalesPanelInfo) => {
+    const end = p.sale_date.split("T")[0];
+    const start = addDays(end, -7).toISOString().split("T")[0];
+    getHourly(context.url, context.token, start, end, 0, p.storeid, 1)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(setHourlySales(j.subs));
+        }
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error fetching hourly data: " + err.message)
+      );
   };
 
   return (
@@ -72,24 +91,14 @@ const SalesPanel = ({
         </div>
       </div>
       <div className="flex justify-around mt-2">
+        <button className={`btn-themeBlue py-1.5 px-6`}>Subs</button>
         <button
-          className={`btn-themeBlue py-1.5`}
-          onClick={() => handleBtnClick(panel, "subs")}
-        >
-          Subs
-        </button>
-        <button
-          className={`btn-themeOrange py-1.5`}
-          onClick={() => handleBtnClick(panel, "hourly")}
+          className={`btn-themeOrange py-1.5 px-6`}
+          onClick={() => handleHourlyClick(panel)}
         >
           Hourly
         </button>
-        <button
-          className={`btn-themeGreen py-1.5`}
-          onClick={() => handleBtnClick(panel, "cats")}
-        >
-          Cats
-        </button>
+        <button className={`btn-themeGreen py-1.5 px-6`}>Cats</button>
       </div>
     </div>
   );

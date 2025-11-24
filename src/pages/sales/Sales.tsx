@@ -30,6 +30,7 @@ import DepartmentSales from "./components/DepartmentSales";
 import TopTenItems from "./components/TopTenItems";
 import SalesPanels from "./panels/SalesPanels";
 import Windows from "./components/Windows";
+import Hourly from "./components/Hourly";
 
 const Sales = () => {
   const toast = useToast();
@@ -196,7 +197,7 @@ const Sales = () => {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <DepartmentSales />
-            <div className="bg-custom-white rounded-lg shadow-lg">Card</div>
+            <Hourly />
           </div>
         </div>
       </div>

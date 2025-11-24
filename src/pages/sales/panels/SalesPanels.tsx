@@ -8,8 +8,8 @@ import type {
 import {
   setSelectedSalesPanel,
   setWeeklySales,
-  setWindowVisible,
-  type WindowVisible,
+  // setWindowVisible,
+  // type WindowVisible,
 } from "../../../features/salesSlice";
 import { getWeekly } from "../../../api/sales";
 import { addDays, formatGoliathDate, handleRipple } from "../../../utils";
@@ -88,6 +88,7 @@ const SalesPanels = () => {
         .catch((err: JsonError) =>
           toast.error("Error fetching weekly data: " + err.message)
         );
+
     } else {
       dispatch(
         setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" })
@@ -124,33 +125,33 @@ const SalesPanels = () => {
     }
   };
 
-  const showWindow = (type: keyof WindowVisible) => {
-    dispatch(
-      setWindowVisible({
-        key: type,
-        show: sales.windowVisible[type] ? false : true,
-      })
-    );
-  };
+  // const showWindow = (type: keyof WindowVisible) => {
+  //   dispatch(
+  //     setWindowVisible({
+  //       key: type,
+  //       show: sales.windowVisible[type] ? false : true,
+  //     })
+  //   );
+  // };
 
-  const handleBtnClick = (panel: SalesTwoDates, type: keyof WindowVisible) => {
-    console.log("handleBtnClick", panel);
-    // const start = formatGoliathDate(search.startDate);
-    // const end = formatGoliathDate(search.endDate);
-    // const useGroups = search.type === "Group" ? 1 : 0;
-    // const singleStore = search.type === "Store" ? 1 : 0;
-    // const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
-    if (type === "cats") {
-      showWindow("cats");
-      return;
-    } else if (type === "subs") {
-      showWindow("subs");
-      return;
-    } else if (type === "hourly") {
-      showWindow("hourly");
-      return;
-    }
-  };
+  // const handleBtnClick = (panel: SalesTwoDates, type: keyof WindowVisible) => {
+  //   console.log("handleBtnClick", panel);
+  //   // const start = formatGoliathDate(search.startDate);
+  //   // const end = formatGoliathDate(search.endDate);
+  //   // const useGroups = search.type === "Group" ? 1 : 0;
+  //   // const singleStore = search.type === "Store" ? 1 : 0;
+  //   // const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
+  //   if (type === "cats") {
+  //     showWindow("cats");
+  //     return;
+  //   } else if (type === "subs") {
+  //     showWindow("subs");
+  //     return;
+  //   } else if (type === "hourly") {
+  //     showWindow("hourly");
+  //     return;
+  //   }
+  // };
 
   const isReady = sales.salesPanels.length > 0 && !sales.panelsLoading;
   return (
@@ -161,7 +162,7 @@ const SalesPanels = () => {
             key={idx}
             panel={panel}
             handlePanelClick={handlePanelClick}
-            handleBtnClick={handleBtnClick}
+            // handleBtnClick={handleBtnClick}
           />
         ))}
       {sales.salesPanels.length === 0 ? (

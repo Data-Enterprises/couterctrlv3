@@ -57,7 +57,7 @@ export type WeeklySale = {
   qty: number;
   sale_date: string;
   store_name: string;
-  store_number: string,
+  store_number: string;
   storeid: number;
   total_sales: number;
   total_tax: number;
@@ -78,6 +78,34 @@ export type GroupTopTenItem = {
   product_code: string;
   product_description: string;
   total_sales: number;
+  qty: number;
+};
+
+// used for the hourly/hourly endpoint
+export type HourlySale = {
+  avg_itemPrice: number;
+  avg_item_qty: number;
+  basket_size_qty: number;
+  basket_size_sales: number;
+  hour: number;
+  net_sales: number;
+  qty: number;
+  sale_date: string;
+  store_name: string;
+  store_number: string;
+  storeid: number;
+  total_sales: number;
+  total_tax: number;
+  transactions: number;
+  weight: number;
+};
+
+export type HourlyBarData = {
+  id: number;
+  label: string;
+  value: number;
+  fill: string;
+  color: string;
   qty: number;
 };
 

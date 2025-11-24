@@ -5,6 +5,7 @@ import type {
   SalesTwoDates,
   SelectedSalesPanel,
   WeeklySale,
+  HourlySale,
 } from "../interfaces";
 
 type TopTenItemsMetrics = {
@@ -43,6 +44,7 @@ interface SalesState {
   salesPanelDateText: string;
   topTenItemsMetrics: TopTenItemsMetrics;
   windowVisible: WindowVisible;
+  hourlySales: HourlySale[];
 }
 
 const initialState: SalesState = {
@@ -56,6 +58,7 @@ const initialState: SalesState = {
   salesPanelDateText: "",
   topTenItemsMetrics: defaultTopTenMetrics,
   windowVisible: defaultWindowVisible,
+  hourlySales: [],
 };
 
 export const salesSlice = createSlice({
@@ -104,6 +107,9 @@ export const salesSlice = createSlice({
     setSalesPanelDateText: (state, action: PayloadAction<string>) => {
       state.salesPanelDateText = action.payload;
     },
+    setHourlySales: (state, action: PayloadAction<HourlySale[]>) => {
+      state.hourlySales = action.payload;
+    },
     resetSalesSlice: () => initialState,
   },
 });
@@ -119,6 +125,7 @@ export const {
   setTopTenItemsMetrics,
   setWindowVisible,
   setSalesPanelDateText,
+  setHourlySales,
   resetSalesSlice,
 } = salesSlice.actions;
 export default salesSlice.reducer;

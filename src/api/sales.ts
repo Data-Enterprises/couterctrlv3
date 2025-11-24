@@ -121,7 +121,7 @@ export const getHourly = async (
       "Content-Type": "application/json",
       Authorization: "Bearer " + token,
     },
-    url: url + "sales/hourly_sales",
+    url: url + "hourly/hourly",
     data: {
       startDate,
       endDate,

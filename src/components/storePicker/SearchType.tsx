@@ -90,6 +90,9 @@ const SearchType = ({
     dispatch(setType(selection.type as SEARCH_TYPE));
     setQuery(selection.name);
 
+    // use selection.type to update the user prefs
+    // ///////////////////////////////////////////
+
     if (listRef.current) {
       listRef.current.setAttribute("data-display", "closed");
     }
