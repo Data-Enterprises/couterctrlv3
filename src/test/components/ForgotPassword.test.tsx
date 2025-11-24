@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, type Mocked } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { renderWithProviders } from "../utils";
 import { screen, waitFor } from "@testing-library/react";
 import { store } from "../../store";
