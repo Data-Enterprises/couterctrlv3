@@ -32,7 +32,6 @@ const CashiersTable = () => {
   useEffect(() => {
     if (cashier.transList.length === 0) {
       setFiltered([]);
-      return;
     }
     // Applying all filters to the transaction list
     const selectedCashier = cashier.selectedCashier.cashier_number;

@@ -1,12 +1,17 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import type { TransDrillDown } from "../../interfaces";
-import { formatCurrency2 } from "../../utils";
+import { formatCurrency2, formatDate } from "../../utils";
 import { setTransModalOpen } from "../../features/cashierSlice";
 import Modal from "../../components/Modal";
 import Print from "../../svgs/Print";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
+import { exportData } from "../../utils/export";
 
-const TransactionModal = () => {
+interface TransactionModalProps {
+  singleTransction: boolean;
+}
+
+const TransactionModal = ({ singleTransction }: TransactionModalProps) => {
   const dispatch = useAppDispatch();
   const { cashierTransDrillDown, transModalOpen } = useAppSelector(
     (state) => state.cashier
@@ -36,7 +41,24 @@ const TransactionModal = () => {
   };
 
   const handleClick = () => {
-    console.log("clicked");
+    if (singleTransction) {
+      const cashierName = cashierTransDrillDown[0].cashier_name;
+      const name = `${cashierName}_${
+        cashierTransDrillDown[0].sale_id.split("-")[1]
+      }_${formatDate(cashierTransDrillDown[0].sale_date)}.csv`;
+      exportData<TransDrillDown>(
+        cashierTransDrillDown,
+        [
+          { headerName: "Product Code", field: "product_code" },
+          { headerName: "Product Description", field: "product_description" },
+          { headerName: "Sale Start Time", field: "sale_start_time" },
+          { headerName: "Sale End Time", field: "sale_end_time" },
+          { headerName: "Net Sales", field: "net_sales" },
+          { headerName: "Sale Type", field: "sale_type" },
+        ],
+        name
+      );
+    }
   };
 
   return (
