@@ -196,38 +196,6 @@ export interface CashierTransaction {
 }
 
 // cashiers/transaction endpoint => transaction property from response object
-export interface TransDrillDown {
-  storeid: number;
-  store_name: string;
-  store_number: string;
-  sale_type: string;
-  sale_date: string;
-  line_number: number;
-  terminal: string;
-  total_sales: number;
-  net_sales: number;
-  sale_id: string;
-  product_code: string;
-  product_description: string;
-  price_type: string;
-  store_city: string;
-  store_state: string;
-  store_zipcode: string | null;
-  store_phone: string;
-  store_address: string | null;
-  brand: string | null;
-  size: string;
-  is_discounted: number;
-  is_coupon: number;
-  cashier_number: number;
-  cashier_name: string;
-  sale_start_time: string;
-  sale_end_time: string;
-  fs: number;
-  fsa: number;
-  wic: number;
-  scalable: number;
-}
 
 export type UniqueCashier = {
   cashier_name: string;

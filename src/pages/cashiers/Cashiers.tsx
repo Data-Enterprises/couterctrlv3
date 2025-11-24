@@ -58,7 +58,7 @@ const Cashiers = () => {
       data-testid="cashiers-page"
       className="w-full h-[calc(100vh-3rem)] p-4 grid grid-cols-[27%_73%] gap-4"
     >
-      <TransactionModal singleTransction={true} />
+      <TransactionModal />
       <div className="grid grid-rows-[25%_0.9fr_1fr] gap-2">
         <div className="bg-custom-white px-4 py-2.5 rounded-lg shadow-lg">
           <StorePicker />

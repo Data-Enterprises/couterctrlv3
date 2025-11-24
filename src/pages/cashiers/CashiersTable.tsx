@@ -7,6 +7,7 @@ import {
   setAvailablePriceTypes,
   setCashierSaleIds,
   setCashierTransDrillDown,
+  setTransactionDrillDown,
   setTransModalOpen,
 } from "../../features/cashierSlice";
 import type { JsonError, TransactionListItem } from "../../interfaces";
@@ -142,6 +143,7 @@ const CashiersTable = () => {
           const j = resp.data;
           if (j.error === 0) {
             dispatch(setCashierTransDrillDown(j.transaction));
+            dispatch(setTransactionDrillDown([j.transaction]));
           }
         })
         .catch((err: JsonError) => {
@@ -149,6 +151,38 @@ const CashiersTable = () => {
           toast.error("Error fetching transactions: " + err.message);
         });
     }
+  };
+
+  const handleShowAll = () => {
+    const chunked: TransactionListItem[][] = [];
+    let result: TransactionListItem[] = [];
+    filtered.forEach((item, i) => {
+      // if starting a new chunk or every item shares the same sale_id
+      if (
+        result.length === 0 ||
+        result.every((res) => res.sale_id === item.sale_id)
+      ) {
+        result.push(item);
+
+        // if at the end, then push the final chunk otherwise, it gets left out
+        if (i === filtered.length - 1) {
+          chunked.push(result);
+        }
+      } else {
+        // if this new sale_id is different, push the current chunk and start a new one
+        chunked.push(result);
+        result = [];
+        result.push(item);
+      }
+    });
+
+    dispatch(setTransactionDrillDown(chunked));
+    dispatch(setTransModalOpen(true));
+
+    // Using this to true the numbers and make usre we got everything accounted for with the chunking
+    // console.log(chunked);
+    // console.log(chunked.reduce((acc, cur) => acc + cur.length, 0));
+    // console.log(filtered.length);
   };
 
   return (
@@ -173,7 +207,9 @@ const CashiersTable = () => {
             />
           </div>
           <div className="absolute bottom-4 left-6">
-            <button className="btn-themeGreen py-1">Show All</button>
+            <button className="btn-themeGreen py-1" onClick={handleShowAll}>
+              Show All
+            </button>
             <button
               className="btn-themeGreen py-1 ml-4"
               onClick={() => setModalOpen(true)}
