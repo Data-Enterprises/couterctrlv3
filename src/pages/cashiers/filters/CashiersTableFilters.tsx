@@ -29,6 +29,7 @@ const CashiersTableFilters = () => {
     "py-1.5 rounded-lg text-center shadow-md shadow-content/20 hover:bg-orange-200 cursor-pointer transition-all duration-200";
 
   const activePanelStyle = (option: string) => {
+    // Grabbing the filters
     const saleDate = cashier.saleDateFilter;
     const upc = cashier.upcFilter;
     const desc = cashier.descFilter;
@@ -36,6 +37,7 @@ const CashiersTableFilters = () => {
     const totalSales = cashier.totalSalesFilter;
     const threshold = cashier.cashierTableThreshComp;
 
+    // Declaring the active style and applying it to the matching conditions
     const style = "bg-orange-500 text-white font-semibold shadow-inner";
     let result = false;
     if (option === "Sale Date" && saleDate) result = true;
