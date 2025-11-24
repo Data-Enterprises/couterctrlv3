@@ -1,0 +1,18 @@
+import { defineConfig, type UserConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    environment: "jsdom",
+    setupFiles: "./src/vitest.setup.ts",
+    globals: true,
+    // maxWorkers: 4,
+    coverage: {
+      enabled: true,
+      reporter: ["text", "json", "html"],
+      include: ["src/**/*.{ts,tsx}"],
+    },
+  },
+} as UserConfig);

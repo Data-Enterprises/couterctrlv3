@@ -1,0 +1,11 @@
+.ag-paging-row-summary-panel,
+.ag-paging-page-summary-panel {
+  font-size: 13px;
+  white-space: nowrap;
+  margin-bottom: 3px;
+}
+
+.ag-paging-row-summary-panel {
+  width: 80px;
+  margin-left: -5px;
+}
