@@ -24,7 +24,7 @@ const SalesPanels = () => {
   const context = useAppSelector((state) => state.app);
   const sales = useAppSelector((state) => state.sales);
   // uncomment this when cats, subs, and hourly endpoints are ready
-  // const search = useAppSelector((state) => state.search);
+  const search = useAppSelector((state) => state.search);
   const [filtered, setFiltered] = useState<SalesTwoDates[]>([]);
 
   useEffect(() => {
@@ -69,6 +69,32 @@ const SalesPanels = () => {
       dispatch(
         setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" })
       );
+
+      const useGroups = search.type === "Group" ? 1 : 0;
+      const singleStore = search.type === "Store" ? 1 : 0;
+      const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
+      const weeklyStart = addDays(panel.sale_date, -7)
+        .toISOString()
+        .split("T")[0];
+      const weeklyEnd = new Date(panel.sale_date).toISOString().split("T")[0];
+      getWeekly(
+        context.url,
+        context.token,
+        weeklyStart,
+        weeklyEnd,
+        useGroups,
+        searchValue,
+        singleStore
+      )
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            dispatch(setWeeklySales(j.sales));
+          }
+        })
+        .catch((err: JsonError) =>
+          toast.error("Error fetching weekly data: " + err.message)
+        );
       return;
     }
 
@@ -77,7 +103,16 @@ const SalesPanels = () => {
       .toISOString()
       .split("T")[0];
     const weeklyEnd = new Date(panel.sale_date).toISOString().split("T")[0];
-    getWeekly(context.url, context.token, panel.storeid, weeklyStart, weeklyEnd)
+
+    getWeekly(
+      context.url,
+      context.token,
+      weeklyStart,
+      weeklyEnd,
+      0,
+      panel.storeid,
+      1
+    )
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {

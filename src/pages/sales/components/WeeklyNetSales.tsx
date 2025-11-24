@@ -9,6 +9,12 @@ type LineSeries = {
   data: LineData;
 };
 
+type ReducedWeekly = {
+  sale_date: string;
+  total_sales: number;
+  qty: number;
+};
+
 const WeeklyNetSales = () => {
   const sales = useAppSelector((state) => state.sales);
   const search = useAppSelector((state) => state.search);
@@ -26,8 +32,36 @@ const WeeklyNetSales = () => {
 
     // If there are weekly sales, then set up the line data
     if (search.type === "Group" && sales.selectedSalesPanel.storeid === 0) {
-      setLineData([]);
-      // console.log(sales.selectedSalesPanel);
+      const id = 1;
+      const reduced = sales.weeklySales.reduce((acc: ReducedWeekly[], day) => {
+        const existing = acc.find((d) => d.sale_date === day.sale_date);
+        if (existing) {
+          existing.total_sales += day.total_sales;
+          existing.qty += day.qty;
+        } else {
+          acc.push({
+            sale_date: day.sale_date,
+            total_sales: day.total_sales,
+            qty: day.qty,
+          });
+        }
+        return acc;
+      }, []);
+      const series: LineData = [...reduced].map((day) => {
+        const date = getDayMonth(day.sale_date.split("T")[0]);
+        return {
+          x: date,
+          y: day.total_sales,
+          z: day.qty,
+        };
+      });
+      setLineData([
+        {
+          id,
+          data: series,
+        },
+      ]);
+      setTitle("All Stores");
 
       // From clicking a sales panel
     } else if (sales.selectedSalesPanel.storeid !== 0) {
@@ -37,7 +71,7 @@ const WeeklyNetSales = () => {
         const date = getDayMonth(day.sale_date.split("T")[0]);
         return {
           x: date,
-          y: day.sales,
+          y: day.total_sales,
           z: day.qty,
         };
       });
@@ -54,7 +88,7 @@ const WeeklyNetSales = () => {
         const date = getDayMonth(day.sale_date.split("T")[0]);
         return {
           x: date,
-          y: day.sales,
+          y: day.total_sales,
           z: day.qty,
         };
       });
@@ -65,7 +99,7 @@ const WeeklyNetSales = () => {
         },
       ]);
     }
-  }, [sales.weeklySales, sales.selectedSalesPanel]);
+  }, [sales.weeklySales]);
 
   const getQty = (date: string) => {
     const found = sales.weeklySales?.find(

@@ -53,14 +53,14 @@ export type SelectedSalesPanel = {
 };
 
 export type WeeklySale = {
-  bin: number;
-  description: string;
+  net_sales: number;
   qty: number;
   sale_date: string;
-  sales: number;
   store_name: string;
-  store_number: string;
+  store_number: string,
   storeid: number;
+  total_sales: number;
+  total_tax: number;
   weight: number;
 };
 

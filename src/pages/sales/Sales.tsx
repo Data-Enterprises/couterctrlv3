@@ -118,7 +118,16 @@ const Sales = () => {
 
     // Works for now, but will need to handle groups and all stores (once I get those api endpoints)
     const weeklyStart = addDays(search.endDate, -8).toISOString().split("T")[0];
-    getWeekly(context.url, context.token, search.lastStore, weeklyStart, end)
+
+    getWeekly(
+      context.url,
+      context.token,
+      weeklyStart,
+      end,
+      useGroups,
+      searchValue,
+      singleStore
+    )
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {

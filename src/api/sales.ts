@@ -82,14 +82,16 @@ export const salesTwoDates = async (
 export const getWeekly = async (
   url: string,
   token: string,
-  storeid: number,
   startDate: string,
-  endDate: string
+  endDate: string,
+  useGroups: number,
+  searchValue: number,
+  singleStore: number
 ) => {
-  const formData = new FormData();
-  formData.append("storeid", storeid.toString());
-  formData.append("startDate", startDate);
-  formData.append("endDate", endDate);
+  // const formData = new FormData();
+  // formData.append("storeid", storeid.toString());
+  // formData.append("startDate", startDate);
+  // formData.append("endDate", endDate);
   const json = await axios({
     method: "POST",
     headers: {
@@ -97,7 +99,13 @@ export const getWeekly = async (
       Authorization: "Bearer " + token,
     },
     url: url + "sales/weekly",
-    data: formData,
+    data: {
+      startDate,
+      endDate,
+      useGroups,
+      searchValue,
+      singleStore,
+    },
   });
   return json;
 };
