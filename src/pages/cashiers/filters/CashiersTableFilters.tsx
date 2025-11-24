@@ -34,6 +34,7 @@ const CashiersTableFilters = () => {
     const desc = cashier.descFilter;
     const priceType = cashier.selectedPriceTypes.length > 0;
     const totalSales = cashier.totalSalesFilter;
+    const threshold = cashier.cashierTableThreshComp;
 
     const style = "bg-orange-500 text-white font-semibold shadow-inner";
     let result = false;
@@ -41,7 +42,12 @@ const CashiersTableFilters = () => {
     if (option === "UPC" && upc) result = true;
     if (option === "Description" && desc) result = true;
     if (option === "Price Type" && priceType) result = true;
-    if (option === "Total Sales" && totalSales !== 0) result = true;
+    if (
+      option === "Total Sales" &&
+      totalSales !== 0 &&
+      (threshold.gt || threshold.lt)
+    )
+      result = true;
     // if (
     //   option === "Refresh" &&
     //   (saleDate || upc || desc || priceType || totalSales)
@@ -69,7 +75,9 @@ const CashiersTableFilters = () => {
         : cashier.cashierTableThreshComp.lt
         ? "Under"
         : "";
-      return cashier.totalSalesFilter !== 0
+
+        // This might change, but if no threshold is selected, just show "Total Sales"
+      return thresh.length > 0
         ? `${thresh} ${formatCurrency2(cashier.totalSalesFilter)}`
         : "Total Sales";
     } else {

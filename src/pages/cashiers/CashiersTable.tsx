@@ -87,13 +87,14 @@ const CashiersTable = () => {
         const matchesPriceType =
           priceTypes.length > 0 ? priceTypes.includes(item.price_type) : true;
         const matchesTotalSales = () => {
-          if (totalSales === 0) return true;
+          if (totalSales === 0 || (!threshold.gt && !threshold.lt)) return true;
           if (threshold.gt) {
             return item.total_sales > totalSales;
           } else if (threshold.lt) {
             return item.total_sales < totalSales;
           }
         };
+        
         // Then return all of these filters values
         return (
           matchCashier &&
