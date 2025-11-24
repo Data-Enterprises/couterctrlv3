@@ -163,7 +163,7 @@ const TrendCardCarousel = () => {
   };
 
   return (
-    <Carousel className="h-[225px]">
+    <Carousel className="h-[228px]">
       {cashier.chunkedSales.map((_, i) => (
         <div key={i} className="grid grid-cols-3 gap-3">
           {cashier.chunkedSales[i].map((s, idx) => (

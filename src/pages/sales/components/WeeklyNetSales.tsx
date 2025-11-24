@@ -18,6 +18,7 @@ type ReducedWeekly = {
 const WeeklyNetSales = () => {
   const sales = useAppSelector((state) => state.sales);
   const search = useAppSelector((state) => state.search);
+  const group = useAppSelector((state) => state.group);
   const [lineData, setLineData] = useState<LineSeries[]>([]);
   const [title, setTitle] = useState<string>("");
 
@@ -61,7 +62,9 @@ const WeeklyNetSales = () => {
           data: series,
         },
       ]);
-      setTitle("All Stores");
+      const groupid = search.lastGroup;
+      const lastGroup = group.groups.find((g) => g.id === groupid);
+      setTitle(lastGroup ? lastGroup.group_name : "All Stores");
 
       // From clicking a sales panel
     } else if (sales.selectedSalesPanel.storeid !== 0) {

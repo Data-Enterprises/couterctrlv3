@@ -1,6 +1,10 @@
-import { useAppSelector } from "../../../hooks";
-import type { DepartmentSale } from "../../../interfaces";
-import { formatCurrency2, formatBigNumber } from "../../../utils";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import type { DepartmentSale, JsonError } from "../../../interfaces";
+import {
+  formatCurrency2,
+  formatBigNumber,
+  formatGoliathDate,
+} from "../../../utils";
 import "../utils/grid.css";
 
 // Ag Grid React
@@ -12,10 +16,36 @@ import {
 
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ColGroupDef } from "ag-grid-community";
+import { useEffect } from "react";
+import { getHourlyStoreDepts } from "../../../api/sales";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+import { setDepartmentSales } from "../../../features/salesSlice";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const DepartmentSales = () => {
+  const toast = useToast();
+  const dispatch = useAppDispatch();
+  const context = useAppSelector((state) => state.app);
+  const search = useAppSelector((state) => state.search);
   const sales = useAppSelector((state) => state.sales);
+
+  useEffect(() => {
+    const start = formatGoliathDate(search.startDate);
+    const end = formatGoliathDate(search.endDate);
+    const panel = sales.selectedSalesPanel;
+    const searchValue = panel.storeid > 0 ? panel.storeid : search.lastStore;
+    getHourlyStoreDepts(context.url, context.token, searchValue, start, end)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(setDepartmentSales(j.sales));
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error("Error getting Hourly Store Depts data: " + err.message);
+      });
+  }, [sales.selectedSalesPanel]);
+
   const colDefs: (ColDef<DepartmentSale> | ColGroupDef<DepartmentSale>)[] = [
     {
       headerName: "Dept",

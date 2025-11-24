@@ -11,19 +11,17 @@ import {
   setWindowVisible,
   type WindowVisible,
 } from "../../../features/salesSlice";
-import SalesPanel from "./SalesPanel";
 import { getWeekly } from "../../../api/sales";
-// import { addDays, formatGoliathDate, handleRipple } from "../../../utils"; // => this is what is actually needed
-import { addDays, handleRipple } from "../../../utils"; // using this to avoid unused imports for now until hourly, subs, and cats are ready on the backend
+import { addDays, formatGoliathDate, handleRipple } from "../../../utils";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+import SalesPanel from "./SalesPanel";
 
 const SalesPanels = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const sales = useAppSelector((state) => state.sales);
-  // uncomment this when cats, subs, and hourly endpoints are ready
   const search = useAppSelector((state) => state.search);
   const [filtered, setFiltered] = useState<SalesTwoDates[]>([]);
 
@@ -65,23 +63,50 @@ const SalesPanels = () => {
           store_name: panel.store_name,
         })
       );
-    } else {
-      dispatch(
-        setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" })
-      );
 
-      const useGroups = search.type === "Group" ? 1 : 0;
-      const singleStore = search.type === "Store" ? 1 : 0;
-      const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
+      // Getting the weekly net sales for the selected panel
       const weeklyStart = addDays(panel.sale_date, -7)
         .toISOString()
         .split("T")[0];
       const weeklyEnd = new Date(panel.sale_date).toISOString().split("T")[0];
+
       getWeekly(
         context.url,
         context.token,
         weeklyStart,
         weeklyEnd,
+        0,
+        panel.storeid,
+        1
+      )
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            dispatch(setWeeklySales(j.sales));
+          }
+        })
+        .catch((err: JsonError) =>
+          toast.error("Error fetching weekly data: " + err.message)
+        );
+    } else {
+      dispatch(
+        setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" })
+      );
+
+      // need to handle getting all stores for the group again when unselecting a panel
+      // therefore the below logic is similar to the one in Sales.tsx useEffect
+      const useGroups = search.type === "Group" ? 1 : 0;
+      const singleStore = search.type === "Store" ? 1 : 0;
+      const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
+      const weeklyStart = addDays(search.endDate, -8)
+        .toISOString()
+        .split("T")[0];
+      const end = formatGoliathDate(search.endDate);
+      getWeekly(
+        context.url,
+        context.token,
+        weeklyStart,
+        end,
         useGroups,
         searchValue,
         singleStore
@@ -97,31 +122,6 @@ const SalesPanels = () => {
         );
       return;
     }
-
-    // Getting the weekly net sales for the selected panel
-    const weeklyStart = addDays(panel.sale_date, -7)
-      .toISOString()
-      .split("T")[0];
-    const weeklyEnd = new Date(panel.sale_date).toISOString().split("T")[0];
-
-    getWeekly(
-      context.url,
-      context.token,
-      weeklyStart,
-      weeklyEnd,
-      0,
-      panel.storeid,
-      1
-    )
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          dispatch(setWeeklySales(j.sales));
-        }
-      })
-      .catch((err: JsonError) =>
-        toast.error("Error fetching weekly data: " + err.message)
-      );
   };
 
   const showWindow = (type: keyof WindowVisible) => {

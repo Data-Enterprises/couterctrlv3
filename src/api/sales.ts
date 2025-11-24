@@ -88,10 +88,6 @@ export const getWeekly = async (
   searchValue: number,
   singleStore: number
 ) => {
-  // const formData = new FormData();
-  // formData.append("storeid", storeid.toString());
-  // formData.append("startDate", startDate);
-  // formData.append("endDate", endDate);
   const json = await axios({
     method: "POST",
     headers: {
