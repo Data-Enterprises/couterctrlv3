@@ -6,7 +6,7 @@ import {
   setCashierDetails,
   setCashierTrends,
   setCashierTransactions,
-  // resetCashierState,
+  resetCashierState,
   setSaleTypes,
 } from "../../features/cashierSlice";
 import type { JsonError } from "../../interfaces";
@@ -26,7 +26,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
   const handlePanelClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Doing this to reset when looking for a different sale type
     const panels = cashier.saleTypes;
-    // dispatch(resetCashierState());
+    dispatch(resetCashierState());
     dispatch(setSaleTypes(panels));
 
     // Setting this to handle selected css styling and show the loading indicator

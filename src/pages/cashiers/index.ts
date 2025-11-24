@@ -18,7 +18,7 @@ export const colDefs: (
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass:
-      "no-outline-on-focus underline text-orange-500 font-medium cursor-pointer hover:text-orange-200",
+      "no-outline-on-focus underline font-medium cursor-pointer",
   },
   {
     headerName: "Type",
@@ -146,12 +146,13 @@ export const theme = themeQuartz.withParams({
   rowHeight: 26,
   headerBackgroundColor: "#3b82f6",
   headerTextColor: "#ffffff",
-  oddRowBackgroundColor: "#bfdbfe",
+  oddRowBackgroundColor: "#dbeafe",
   rowHoverColor: "#93c5fd",
   headerFontWeight: "bold",
   dataFontSize: 13,
   selectCellBorder: "transparent",
   rowBorder: "1px solid white",
+  selectedRowBackgroundColor: "#93c5fd",
 });
 
 export const filterData = (
@@ -191,22 +192,22 @@ export const activePanelStyle = (type: string, selected: string) => {
   }
 };
 
-  // Grabbing the unique sale ids from the current state of the transaction list
-  export const reduceSaleIds = (data: TransactionListItem[]) => {
-    return [...data].reduce((acc: string[], item) => {
-      if (!acc.includes(item.sale_id)) {
-        acc.push(item.sale_id);
-      }
-      return acc;
-    }, []);
-  };
+// Grabbing the unique sale ids from the current state of the transaction list
+export const reduceSaleIds = (data: TransactionListItem[]) => {
+  return [...data].reduce((acc: string[], item) => {
+    if (!acc.includes(item.sale_id)) {
+      acc.push(item.sale_id);
+    }
+    return acc;
+  }, []);
+};
 
-  // Grabbing the unique price types from the current state of the transaction list
-  export const reducePriceTypes = (data: TransactionListItem[]) => {
-    return [...data].reduce((acc: string[], item) => {
-      if (item.price_type !== null && !acc.includes(item.price_type)) {
-        acc.push(item.price_type);
-      }
-      return acc;
-    }, []);
-  };
+// Grabbing the unique price types from the current state of the transaction list
+export const reducePriceTypes = (data: TransactionListItem[]) => {
+  return [...data].reduce((acc: string[], item) => {
+    if (item.price_type !== null && !acc.includes(item.price_type)) {
+      acc.push(item.price_type);
+    }
+    return acc;
+  }, []);
+};

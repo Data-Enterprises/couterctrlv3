@@ -6,7 +6,7 @@ import { getCashierTransactions } from "../../api/cashiers";
 import {
   setAvailablePriceTypes,
   setCashierSaleIds,
-  setCashierTransDrillDown,
+  // setCashierTransDrillDown,
   setTransactionDrillDown,
   setTransModalOpen,
 } from "../../features/cashierSlice";
@@ -94,7 +94,7 @@ const CashiersTable = () => {
             return item.total_sales < totalSales;
           }
         };
-        
+
         // Then return all of these filters values
         return (
           matchCashier &&
@@ -131,7 +131,7 @@ const CashiersTable = () => {
       const saleId = e.value;
       const saleDate = e.data.sale_date.split("T")[0];
       const storeid = e.data.storeid;
-      dispatch(setCashierTransDrillDown([]));
+      dispatch(setTransactionDrillDown([]));
       dispatch(setTransModalOpen(true));
       getCashierTransactions(
         context.url,
@@ -143,7 +143,6 @@ const CashiersTable = () => {
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
-            dispatch(setCashierTransDrillDown(j.transaction));
             dispatch(setTransactionDrillDown([j.transaction]));
           }
         })

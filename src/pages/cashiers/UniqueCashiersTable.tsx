@@ -47,6 +47,7 @@ const UniqueCashiersTable = () => {
               paginationPageSize={10}
               paginationPageSizeSelector={false}
               onRowClicked={onRowClicked}
+              rowSelection="single"
             />
           </div>
         </div>

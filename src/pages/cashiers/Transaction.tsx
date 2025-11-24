@@ -2,11 +2,13 @@ import type { TransactionListItem } from "../../interfaces";
 import Print from "../../svgs/Print";
 import { formatCurrency2, formatDate } from "../../utils";
 import { exportData } from "../../utils/export";
+import { useAppSelector } from "../../hooks";
 
 interface TransactionProps {
   trans: TransactionListItem[];
 }
 const Transaction = ({ trans }: TransactionProps) => {
+  const cashier = useAppSelector((state) => state.cashier);
   const extractSaleId = (saleId: string) => {
     return saleId.split("-")[1];
   };
@@ -47,6 +49,12 @@ const Transaction = ({ trans }: TransactionProps) => {
       ],
       name
     );
+  };
+
+  const agg = () => {
+    return trans.reduce((acc, cur) => {
+      return acc + cur.net_sales;
+    }, 0);
   };
 
   return (
@@ -108,11 +116,19 @@ const Transaction = ({ trans }: TransactionProps) => {
       <div className="mt-2">
         <div className="flex gap-1">
           <div>Net Sales:</div>
-          <div>{formatCurrency2(trans[trans.length - 1].net_sales)}</div>
+          {cashier.selectedSaleType.toLowerCase() === "cancelled" ? (
+            <div>{formatCurrency2(agg())}</div>
+          ) : (
+            <div>{formatCurrency2(trans[trans.length - 1].net_sales)}</div>
+          )}
         </div>
         <div className="flex gap-1">
           <div>Total Sales:</div>
-          <div>{formatCurrency2(trans[trans.length - 1].total_sales)}</div>
+          {cashier.selectedSaleType.toLowerCase() === "cancelled" ? (
+            <div>{formatCurrency2(agg())}</div>
+          ) : (
+            <div>{formatCurrency2(trans[trans.length - 1].total_sales)}</div>
+          )}
         </div>
       </div>
     </div>

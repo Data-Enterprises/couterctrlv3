@@ -41,6 +41,7 @@ export interface CashierState {
   availablePriceTypes: string[];
   selectedPriceTypes: string[];
   fetchingCashierTransactions: boolean;
+  selectedStoreId: number;
 }
 
 const initialState: CashierState = {
@@ -69,6 +70,7 @@ const initialState: CashierState = {
   selectedPriceTypes: [],
   fetchingCashierTransactions: false,
   transactionDrillDown: [],
+  selectedStoreId: 0,
 };
 
 export const cashierSlice = createSlice({
@@ -152,8 +154,14 @@ export const cashierSlice = createSlice({
     setFetchingCashierTransactions: (state, action: PayloadAction<boolean>) => {
       state.fetchingCashierTransactions = action.payload;
     },
-    setTransactionDrillDown: (state, action: PayloadAction<TransactionListItem[][]>) => {
+    setTransactionDrillDown: (
+      state,
+      action: PayloadAction<TransactionListItem[][]>
+    ) => {
       state.transactionDrillDown = action.payload;
+    },
+    setSelectedStoreId: (state, action: PayloadAction<number>) => {
+      state.selectedStoreId = action.payload;
     },
     resetCashierState: () => initialState,
   },
@@ -183,6 +191,7 @@ export const {
   setSelectedPriceTypes,
   setFetchingCashierTransactions,
   setTransactionDrillDown,
+  setSelectedStoreId,
   resetCashierState,
 } = cashierSlice.actions;
 export default cashierSlice.reducer;

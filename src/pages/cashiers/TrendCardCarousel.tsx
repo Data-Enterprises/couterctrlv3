@@ -2,12 +2,18 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { formatCurrency2 } from "../../utils";
 import { filterData } from ".";
-import type { JsonError, UniqueCashier } from "../../interfaces";
+import type {
+  CashierDetails,
+  CashierTrend,
+  JsonError,
+  UniqueCashier,
+} from "../../interfaces";
 import {
   setCashiers,
   setFetchingCashierTransactions,
   setSelectedCashier,
   setSelectedSaleIds,
+  setSelectedStoreId,
   setTransList,
 } from "../../features/cashierSlice";
 import { getTransactionList } from "../../api/cashiers";
@@ -79,11 +85,12 @@ const TrendCardCarousel = () => {
     }
   };
 
-  const handlePanelClick = () => {
+  const handlePanelClick = (storeid: number) => {
+    dispatch(setSelectedStoreId(storeid));
     dispatch(setSelectedCashier({ cashier_number: 0, store_number: "" }));
   };
 
-  const titleStyle = "cursor-pointer pl-2 rounded-xl flex justify-between";
+  const titleStyle = "cursor-default pl-2 rounded-xl flex justify-between";
 
   const renderIcon = (total: number, trend: number) => {
     // if both are negative
@@ -111,6 +118,50 @@ const TrendCardCarousel = () => {
     }
   };
 
+  const findTrend = (
+    row: CashierDetails,
+    key: keyof CashierDetails,
+    key2: keyof CashierTrend
+  ) => {
+    const trends = cashier.cashierTrends;
+    const exists = trends.find((t) => t.storeid === row.storeid);
+    if (!exists) return null;
+
+    // Otherwise return the icon
+    return renderIcon(row[key] as number, exists[key2] as number);
+  };
+
+  const defaultTrend = (row: CashierDetails) => {
+    const trends = cashier.cashierTrends;
+    const exists = trends.find((t) => t.storeid === row.storeid);
+    if (!exists) {
+      return {
+        transaction_count: 0,
+        total_items: 0,
+        amount: 0,
+        qty: 0,
+        avg_item_amount: 0,
+        avg_item_qty: 0,
+        weight: 0,
+        sale_type: row.sale_type,
+        storeid: row.storeid,
+        cashier_count: 0,
+        average_dollars: 0,
+        average_qty: 0,
+      };
+    }
+
+    return exists;
+  };
+
+  const activePanelStyle = (s: number) => {
+    if (s === cashier.selectedStoreId) {
+      return "shadow-inner border-2 border-content/70 rounded-xl";
+    } else {
+      return "shadow-lg";
+    }
+  };
+
   return (
     <Carousel className="h-[225px]">
       {cashier.chunkedSales.map((_, i) => (
@@ -118,8 +169,8 @@ const TrendCardCarousel = () => {
           {cashier.chunkedSales[i].map((s, idx) => (
             <div
               key={idx}
-              className="bg-custom-white rounded-lg shadow-lg ripple-button"
-              onClick={handlePanelClick}
+              className={`bg-custom-white rounded-lg ${activePanelStyle(s.storeid)}`}
+              onClick={() => handlePanelClick(s.storeid)}
             >
               <div className="text-center font-medium bg-blue-500 text-custom-white py-0.5 mb-1 rounded-t-lg flex px-4 justify-between">
                 <div>{s.store_name}</div>
@@ -129,41 +180,25 @@ const TrendCardCarousel = () => {
                 <div className="px-2">
                   <div className="font-medium pl-2">Comparison</div>
                   <div
-                    className={`${titleStyle} hover:text-blue-500 hover:font-medium hover:underline`}
+                    className={`${titleStyle} hover:text-blue-500 hover:font-medium underline cursor-pointer`}
                     onClick={() => showTrans("sale_id", s.store_number)}
                   >
                     Transactions
-                    {renderIcon(
-                      s.transaction_count,
-                      cashier.chunkedTrends[i][idx].transaction_count
-                    )}
+                    {findTrend(s, "transaction_count", "transaction_count")}
                   </div>
-                  <div
-                    className={`${titleStyle} hover:text-blue-500 hover:font-medium hover:underline`}
-                  >
+                  <div className={`${titleStyle}`}>
                     Total Items
-                    {renderIcon(
-                      s.total_items,
-                      cashier.chunkedTrends[i][idx].total_items
-                    )}
+                    {findTrend(s, "total_items", "total_items")}
                   </div>
                   <div className={titleStyle}>
-                    Total Dollars{" "}
-                    {renderIcon(s.amount, cashier.chunkedTrends[i][idx].amount)}
+                    Total Dollars {findTrend(s, "amount", "amount")}
                   </div>
                   <div className={titleStyle}>
                     Avg Dollars{" "}
-                    {renderIcon(
-                      s.average_dollars,
-                      cashier.chunkedTrends[i][idx].average_dollars
-                    )}
+                    {findTrend(s, "average_dollars", "average_dollars")}
                   </div>
                   <div className={titleStyle}>
-                    Avg Quantity{" "}
-                    {renderIcon(
-                      s.average_qty,
-                      cashier.chunkedTrends[i][idx].average_qty
-                    )}
+                    Avg Quantity {findTrend(s, "average_qty", "average_qty")}
                   </div>
                   <div className={titleStyle}>Cashiers</div>
                 </div>
@@ -180,20 +215,12 @@ const TrendCardCarousel = () => {
 
                 <div>
                   <div className="font-medium">Trend</div>
-                  <div>{cashier.chunkedTrends[i][idx].transaction_count}</div>
-                  <div>{cashier.chunkedTrends[i][idx].total_items}</div>
-                  <div>
-                    {formatCurrency2(cashier.chunkedTrends[i][idx].amount)}
-                  </div>
-                  <div>
-                    {formatCurrency2(
-                      cashier.chunkedTrends[i][idx].average_dollars
-                    )}
-                  </div>
-                  <div>
-                    {cashier.chunkedTrends[i][idx].average_qty.toFixed(2)}
-                  </div>
-                  <div>{cashier.chunkedTrends[i][idx].cashier_count}</div>
+                  <div>{defaultTrend(s).transaction_count}</div>
+                  <div>{defaultTrend(s).total_items}</div>
+                  <div>{formatCurrency2(defaultTrend(s).amount)}</div>
+                  <div>{formatCurrency2(defaultTrend(s).average_dollars)}</div>
+                  <div>{defaultTrend(s).avg_item_qty.toFixed(2)}</div>
+                  <div>{defaultTrend(s).cashier_count}</div>
                 </div>
               </div>
             </div>
