@@ -3,7 +3,7 @@ import { setTransModalOpen } from "../../features/cashierSlice";
 import Modal from "../../components/Modal";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import Transaction from "./Transaction";
-import Carousel from "../../components/Carousel";
+// import Carousel from "../../components/Carousel";
 
 const TransactionModal = () => {
   const dispatch = useAppDispatch();
