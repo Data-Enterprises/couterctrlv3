@@ -9,25 +9,32 @@ import SingleSelect from "../../../components/SingleSelect";
 const Hourly = () => {
   const sales = useAppSelector((state) => state.sales);
   const [hourly, setHourly] = useState<HourlyBarData[]>([]);
-  const [today, setToday] = useState<HourlySale[]>([]);
+  const [hours, setHours] = useState<HourlySale[]>([]);
   const [selectedHour, setSelectedHour] = useState<number>(0);
 
   useEffect(() => {
+    if (sales.hourlySales.length === 0) {
+      setHourly([]);
+      setHours([]);
+      setSelectedHour(0);
+      return;
+    }
     const todayHourly = () => {
       const date = sales.selectedSalesPanel.sale_date.split("T")[0];
       const todayHourly = [...sales.hourlySales].filter((sale) =>
         sale.sale_date.startsWith(date)
       );
-      setToday(todayHourly);
+      setHours(todayHourly);
     };
     todayHourly();
-  }, [sales.hourlySales]);
 
-  useEffect(() => {
     if (selectedHour === 0) {
       setSelectedHour(7);
       return;
     }
+  }, [sales.hourlySales]);
+
+  useEffect(() => {
     const result = [...sales.hourlySales]
       .filter((sale) => sale.hour === selectedHour)
       .sort(
@@ -53,24 +60,24 @@ const Hourly = () => {
       return acc;
     }, []);
     setHourly(newBarData);
-  }, [selectedHour]);
+  }, [selectedHour, sales.hourlySales]);
 
   const handleChange = (val: number | string) => {
     setSelectedHour(Number(val));
   };
 
   const handleDate = (dateStr: string) => {
+    if (!dateStr) return "";
     // yyyy-mm-dd to mm/dd/yyyy
     const parts = dateStr.split("-");
     return `${parts[1]}/${parts[2]}/${parts[0]}`;
   };
 
-  const handleCompareClick = () => {};
+  // const handleCompareClick = () => {};
 
   return (
     <div className="w-full h-full bg-custom-white rounded-lg shadow-lg ">
       <div className="h-[calc(100%-2px)]">
-        <div className="h-[100%] relative">
           <div className="bg-blue-500 text-custom-white flex justify-between py-0.5 px-4 font-medium rounded-t-lg">
             <div>Hourly</div>
             <div className="flex gap-4">
@@ -80,6 +87,7 @@ const Hourly = () => {
               </div>
             </div>
           </div>
+        <div className={`h-[100%] relative ${hours.length === 0 && "hidden"}`}>
           <ResponsiveBar
             data={hourly}
             indexBy="label"
@@ -132,7 +140,7 @@ const Hourly = () => {
 
           <div className="absolute flex flex-col gap-2 top-10 right-2">
             <SingleSelect
-              data={today}
+              data={hours}
               displayKey={"hour"}
               valueKey={"hour"}
               label="Select Hour"
@@ -142,12 +150,12 @@ const Hourly = () => {
               defaultQuery={selectedHour.toString()}
               resetQuery={true}
             />
-            <button
+            {/* <button
               className="btn-themeBlue px-4 py-2"
               onClick={handleCompareClick}
             >
               Compare
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
