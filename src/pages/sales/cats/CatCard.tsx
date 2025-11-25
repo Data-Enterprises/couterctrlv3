@@ -1,38 +1,34 @@
-import type { SubSale } from "../../../interfaces";
-import { formatBigNumber, formatCurrency2 } from "../../../utils";
+import type { CatSale } from "../../../interfaces";
+import { formatCurrency2, formatBigNumber } from "../../../utils";
 
-interface SubCardProps {
-  sub: SubSale;
+interface CatCardProps {
+  cat: CatSale;
 }
-const SubCard = ({ sub }: SubCardProps) => {
+const CatCard = ({ cat }: CatCardProps) => {
   return (
     <div className="rounded-lg shadow-md shadow-content/30 p-1.5 text-xs">
       <div className="flex justify-between border-b border-content/20 font-medium text-xs">
-        <div>{sub.sub_department_description}</div>
-        <div>{sub.store_name}</div>
+        <div>{cat.category_description || "n/a"}</div>
+        <div>{cat.store_name}</div>
       </div>
 
       <div className="font-medium mt-2">Totals</div>
       <div className="border-b border-content/20 grid grid-cols-[65%_35%] pb-2">
         <div className="flex gap-1">
           <div className="font-medium">Net Sales:</div>
-          <div>{formatCurrency2(sub.net_sales)}</div>
+          <div>{formatCurrency2(cat.net_sales)}</div>
         </div>
         <div className="flex gap-1 justify-end">
           <div className="font-medium">Qty:</div>
-          <div>
-            {formatBigNumber(sub.qty).split(".")[0]}
-          </div>
+          <div>{formatBigNumber(cat.qty).split(".")[0]}</div>
         </div>
         <div className="flex gap-1">
           <div className="font-medium">Total Sales:</div>
-          <div>{formatCurrency2(sub.total_sales)}</div>
+          <div>{formatCurrency2(cat.total_sales)}</div>
         </div>
         <div className="flex gap-1 justify-end">
           <div className="font-medium">Weight:</div>
-          <div>
-            {formatBigNumber(sub.weight).split(".")[0]}
-          </div>
+          <div>{formatBigNumber(cat.weight).split(".")[0]}</div>
         </div>
       </div>
 
@@ -40,23 +36,23 @@ const SubCard = ({ sub }: SubCardProps) => {
       <div className="grid grid-cols-[40%_60%]">
         <div className="flex gap-1">
           <div className="font-medium">Store:</div>
-          <div>{sub.store_coupon}</div>
+          <div>{cat.store_coupon}</div>
         </div>
         <div className="flex gap-1 justify-end">
           <div className="font-medium">Elect. Store:</div>
-          <div>{sub.elec_store_coupons}</div>
+          <div>{cat.elec_store_coupons}</div>
         </div>
         <div className="flex gap-1">
           <div className="font-medium">Digital:</div>
-          <div>{sub.digital_coupons}</div>
+          <div>{cat.digital_coupons}</div>
         </div>
         <div className="flex gap-1 justify-end">
           <div className="font-medium">Elect. In-store:</div>
-          <div>{sub.elec_instore_coupons}</div>
+          <div>{cat.elec_instore_coupons}</div>
         </div>
       </div>
     </div>
   );
 };
 
-export default SubCard;
+export default CatCard;

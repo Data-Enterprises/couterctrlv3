@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import type { JsonError, WeeklySale } from "../../../interfaces";
 import {
+  setHourlySales,
   setSelectedSalesPanel,
   setSubSales,
   setTopTenItems,
   setWeeklySales,
   setWindowVisible,
 } from "../../../features/salesSlice";
-import { getCats, getSubs, getTopTen, getWeekly } from "../../../api/sales";
+import { getHourly, getSubs, getTopTen, getWeekly } from "../../../api/sales";
 import { addDays, formatGoliathDate, handleRipple } from "../../../utils";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
@@ -37,6 +38,7 @@ const SalesPanels = () => {
   }, [sales.salesPanelSearchText, sales.salesPanels]);
 
   useEffect(() => {
+    if (sales.salesPanels.length === 0) return;
     const p = sales.selectedSalesPanel;
     const start = p.sale_date
       ? p.sale_date.split("T")[0]
@@ -81,6 +83,38 @@ const SalesPanels = () => {
         toast.error("Error fetching weekly data: " + err.message)
       );
 
+    getTopTen(context.url, context.token, searchParam, searchType, start, end)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(setTopTenItems(j.items));
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error("Error getting Top Ten data: " + err.message);
+      });
+
+    // Keep an eye on this - might need to adjust for weeklyStart and weeklyEnd
+    getHourly(
+      context.url,
+      context.token,
+      weeklyStart,
+      weeklyEnd,
+      groupParam,
+      searchParam,
+      singleStoreParam
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(setHourlySales(j.subs));
+          dispatch(setWindowVisible({ key: "hourly", show: true }));
+        }
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error fetching hourly data: " + err.message)
+      );
+
     getSubs(
       context.url,
       context.token,
@@ -94,43 +128,11 @@ const SalesPanels = () => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setSubSales(j.subs));
-          // dispatch(setWindowVisible({ key: "subs", show: true }));
+          dispatch(setWindowVisible({ key: "subs", show: true }));
         }
       })
       .catch((err: JsonError) =>
         toast.error("Error fetching subs data: " + err.message)
-      );
-
-    getTopTen(context.url, context.token, searchParam, searchType, start, end)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          dispatch(setTopTenItems(j.items));
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error("Error getting Top Ten data: " + err.message);
-      });
-
-    getCats(
-      context.url,
-      context.token,
-      start,
-      end,
-      groupParam,
-      searchParam,
-      singleStoreParam
-    )
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          console.log("CATS DATA: ", j.subs);
-          // dispatch(setCatSales(j.cats));
-          // dispatch(setWindowVisible({ key: "cats", show: true }));
-        }
-      })
-      .catch((err: JsonError) =>
-        toast.error("Error fetching cats data: " + err.message)
       );
   }, [sales.selectedSalesPanel]);
 

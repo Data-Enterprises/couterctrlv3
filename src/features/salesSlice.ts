@@ -104,14 +104,8 @@ export const salesSlice = createSlice({
       state,
       action: PayloadAction<{ key: keyof WindowVisible; show: boolean }>
     ) => {
-      // just passing in one key and need to set the rest to false
-      const reset = {
-        subs: false,
-        hourly: false,
-        cats: false,
-      };
       state.windowVisible = {
-        ...reset,
+        ...state.windowVisible,
         [action.payload.key]: action.payload.show,
       };
     },

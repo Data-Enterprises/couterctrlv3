@@ -84,48 +84,50 @@ const TopTenItems = () => {
 
     const metrics = calculateMetrics(newTopTen);
     dispatch(setTopTenItemsMetrics(metrics));
-  }, [sales.topTenItems, sales.selectedSalesPanel, sales.salesPanels]);
+  }, [sales.topTenItems, sales.selectedSalesPanel]);
 
   return (
     <div
       data-testid="sales-top-ten"
-      className="bg-custom-white rounded-lg shadow-lg h-full overflow-visible relative"
+      className="rounded-lg overflow-visible relative h-full"
     >
       <div className="font-medium bg-blue-500 text-custom-white rounded-t-lg px-4 py-0.5 flex justify-between">
         <div>Top Ten Items</div>
         <div>{title}</div>
       </div>
-      <ResponsiveBar
-        data={topTen}
-        indexBy="label"
-        colors={(bar) => rgbaColor(bar.data.fill, 0.3)}
-        borderWidth={2}
-        borderColor={(bar) => rgbaColor(bar.data.data.color, 1)}
-        margin={{ top: 10, right: 80, bottom: 80, left: 90 }}
-        padding={0.1}
-        borderRadius={4}
-        labelSkipWidth={12}
-        labelSkipHeight={12}
-        keys={["value"]}
-        enableLabel={false}
-        layout="horizontal"
-        axisBottom={null}
-        tooltip={({ data }) => (
-          <div
-            className={`bg-custom-white p-2 rounded-md shadow-md shadow-content whitespace-nowrap text-[13px] flex gap-1 items-center`}
-            style={{ color: data.color }}
-          >
+      <div className="h-[380px]">
+        <ResponsiveBar
+          data={topTen}
+          indexBy="label"
+          colors={(bar) => rgbaColor(bar.data.fill, 0.3)}
+          borderWidth={2}
+          borderColor={(bar) => rgbaColor(bar.data.data.color, 1)}
+          margin={{ top: 10, right: 80, bottom: 80, left: 90 }}
+          padding={0.1}
+          borderRadius={4}
+          labelSkipWidth={12}
+          labelSkipHeight={12}
+          keys={["value"]}
+          enableLabel={false}
+          layout="horizontal"
+          axisBottom={null}
+          tooltip={({ data }) => (
             <div
-              className={`h-3 w-3 rounded mr-1`}
-              style={{ backgroundColor: data.color }}
-            ></div>
-            <div className="text-content">{data.id}</div>
-            <div>-</div>
-            <div className="font-medium">{formatCurrency2(data.value)}</div>
-          </div>
-        )}
-      />
-      <div className="flex justify-around absolute bottom-0 border-t border-content/50 w-full py-3.5 place-items-center">
+              className={`bg-custom-white p-2 rounded-md shadow-md shadow-content whitespace-nowrap text-[13px] flex gap-1 items-center`}
+              style={{ color: data.color }}
+            >
+              <div
+                className={`h-3 w-3 rounded mr-1`}
+                style={{ backgroundColor: data.color }}
+              ></div>
+              <div className="text-content">{data.id}</div>
+              <div>-</div>
+              <div className="font-medium">{formatCurrency2(data.value)}</div>
+            </div>
+          )}
+        />
+      </div>
+      <div className="flex justify-around absolute bottom-3 border-t border-content/50 w-full py-3.5 place-items-center">
         <div className="flex gap-1 text-sm">
           <div className="font-medium">Total Sales:</div>
           <div>{formatCurrency2(sales.topTenItemsMetrics.totalSales)}</div>
