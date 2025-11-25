@@ -7,7 +7,7 @@ import {
 } from "../../../utils";
 import type {
   SelectedSalesPanel,
-  SalesPanelInfo,
+  WeeklySale,
   JsonError,
 } from "../../../interfaces";
 import { getHourly, getSubs } from "../../../api/sales";
@@ -21,10 +21,10 @@ import {
 } from "../../../features/salesSlice";
 
 interface SalesPanelProps {
-  panel: SalesPanelInfo;
+  panel: WeeklySale;
   handlePanelClick: (
     e: React.MouseEvent<HTMLDivElement>,
-    panel: SalesPanelInfo
+    panel: WeeklySale
   ) => void;
 }
 
@@ -35,7 +35,7 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
   const search = useAppSelector((state) => state.search);
   const { selectedSalesPanel } = useAppSelector((state) => state.sales);
 
-  const bg = (panel: SalesPanelInfo, selected: SelectedSalesPanel) => {
+  const bg = (panel: WeeklySale, selected: SelectedSalesPanel) => {
     const date = panel.sale_date.split("T")[0];
     if (date === selected.sale_date && panel.storeid === selected.storeid) {
       return "bg-panel_active/75";
@@ -53,7 +53,7 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
     return formatted;
   };
 
-  const handleHourlyClick = (p: SalesPanelInfo) => {
+  const handleHourlyClick = (p: WeeklySale) => {
     const date = p.sale_date.split("T")[0];
     dispatch(
       setSelectedSalesPanel({
@@ -77,7 +77,7 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
       );
   };
 
-  const handleSubClick = (p: SalesPanelInfo) => {
+  const handleSubClick = (p: WeeklySale) => {
     const date = p.sale_date.split("T")[0];
     dispatch(
       setSelectedSalesPanel({
@@ -102,7 +102,7 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
       );
   };
 
-  const handleCatClick = (p: SalesPanelInfo) => {
+  const handleCatClick = (p: WeeklySale) => {
     const date = p.sale_date.split("T")[0];
     dispatch(
       setSelectedSalesPanel({

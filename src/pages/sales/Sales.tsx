@@ -7,7 +7,7 @@ import type { JsonError } from "../../interfaces";
 import {
   getTopTen,
   getHourlyStoreDepts,
-  salesTwoDates,
+  getSalesPanels,
   getWeekly,
 } from "../../api/sales";
 import {
@@ -19,6 +19,7 @@ import {
   setPanelsLoading,
   setSalesPanelSearchText,
   setSalesPanelDateText,
+  setSelectedSalesPanel,
 } from "../../features/salesSlice";
 import { useHeight } from "./utils/hooks";
 
@@ -52,6 +53,12 @@ const Sales = () => {
   }, [context.token]);
 
   const getData = () => {
+    // Stops the line chart in WeeklyNetSales.tsx from going haywire
+    // on Search => no sales panels between calls means no data agg
+    dispatch(
+      setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" })
+    );
+
     // For now I'm formatting the date before the api call since the api needs it that way
     const start = formatGoliathDate(search.startDate);
     const end = formatGoliathDate(search.endDate);
@@ -93,7 +100,7 @@ const Sales = () => {
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 
     dispatch(setPanelsLoading(true));
-    salesTwoDates(
+    getSalesPanels(
       context.url,
       context.token,
       start,
@@ -105,7 +112,7 @@ const Sales = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          const sorted = [...j.items].sort(
+          const sorted = [...j.sales].sort(
             (a, b) =>
               new Date(b.sale_date).getTime() - new Date(a.sale_date).getTime()
           );
@@ -200,7 +207,6 @@ const Sales = () => {
             {/* These are currently set to render one by one until further development */}
             <Hourly />
             <Subs />
-
           </div>
         </div>
       </div>

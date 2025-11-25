@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { useAppSelector } from "../../../hooks";
 import { formatCurrency2 } from "../../../utils";
 import { rgbaColor } from "../utils";
-import type { HourlySale, HourlyBarData } from "../../../interfaces";
+import type { HourlySale, SalesBarData } from "../../../interfaces";
 import { ResponsiveBar } from "@nivo/bar";
 import SingleSelect from "../../../components/SingleSelect";
 
 const Hourly = () => {
   const sales = useAppSelector((state) => state.sales);
-  const [hourly, setHourly] = useState<HourlyBarData[]>([]);
+  const [hourly, setHourly] = useState<SalesBarData[]>([]);
   const [hours, setHours] = useState<HourlySale[]>([]);
   const [selectedHour, setSelectedHour] = useState<number>(0);
 
@@ -48,7 +48,7 @@ const Hourly = () => {
           new Date(a.sale_date).getTime() - new Date(b.sale_date).getTime()
       );
 
-    const newBarData = result.reduce((acc: HourlyBarData[], cur) => {
+    const newBarData = result.reduce((acc: SalesBarData[], cur) => {
       const existing = acc.find((item) => item.label === cur.sale_date);
       if (existing) {
         existing.value += cur.total_sales;

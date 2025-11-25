@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import type {
   JsonError,
-  SalesTwoDates,
+  WeeklySale,
   SelectedSalesPanel,
 } from "../../../interfaces";
 import {
@@ -23,7 +23,7 @@ const SalesPanels = () => {
   const context = useAppSelector((state) => state.app);
   const sales = useAppSelector((state) => state.sales);
   const search = useAppSelector((state) => state.search);
-  const [filtered, setFiltered] = useState<SalesTwoDates[]>([]);
+  const [filtered, setFiltered] = useState<WeeklySale[]>([]);
 
   useEffect(() => {
     // Filter sales panels based on search text
@@ -38,7 +38,7 @@ const SalesPanels = () => {
     }
   }, [sales.salesPanelSearchText, sales.salesPanels]);
 
-  const comparePanels = (a: SalesTwoDates, b: SelectedSalesPanel) => {
+  const comparePanels = (a: WeeklySale, b: SelectedSalesPanel) => {
     const date = a.sale_date.split("T")[0];
     return (
       date === b.sale_date &&
@@ -49,7 +49,7 @@ const SalesPanels = () => {
 
   const handlePanelClick = (
     e: React.MouseEvent<HTMLDivElement>,
-    panel: SalesTwoDates
+    panel: WeeklySale
   ) => {
     handleRipple(e); // Sets the ripple effect on click
 

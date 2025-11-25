@@ -2,7 +2,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {
   TopTenItem,
   DepartmentSale,
-  SalesTwoDates,
+  // SalesTwoDates,
   SelectedSalesPanel,
   WeeklySale,
   HourlySale,
@@ -37,7 +37,7 @@ const defaultTopTenMetrics: TopTenItemsMetrics = {
 interface SalesState {
   topTenItems: TopTenItem[];
   departmentSales: DepartmentSale[];
-  salesPanels: SalesTwoDates[];
+  salesPanels: WeeklySale[];
   selectedSalesPanel: SelectedSalesPanel;
   weeklySales: WeeklySale[];
   panelsLoading: boolean;
@@ -74,7 +74,7 @@ export const salesSlice = createSlice({
     setDepartmentSales: (state, action: PayloadAction<DepartmentSale[]>) => {
       state.departmentSales = action.payload;
     },
-    setSalesPanels: (state, action: PayloadAction<SalesTwoDates[]>) => {
+    setSalesPanels: (state, action: PayloadAction<WeeklySale[]>) => {
       state.salesPanels = action.payload;
     },
     setSelectedSalesPanel: (

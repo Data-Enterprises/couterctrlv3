@@ -50,15 +50,14 @@ export const getHourlyStoreDepts = async (
   return json;
 };
 
-export const salesTwoDates = async (
+export const getSalesPanels = async (
   url: string,
   token: string,
   startDate: string,
   endDate: string,
   useGroups: number,
   searchValue: number,
-  singleStore: number,
-  storeid: number = 0
+  singleStore: number
 ) => {
   const json = await axios({
     method: "POST",
@@ -66,9 +65,8 @@ export const salesTwoDates = async (
       "Content-Type": "application/json",
       Authorization: "Bearer " + token,
     },
-    url: url + "sales/salestwodates",
+    url: url + "sales/weekly",
     data: {
-      storeid,
       startDate,
       endDate,
       useGroups,

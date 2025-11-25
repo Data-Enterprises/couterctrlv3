@@ -27,16 +27,6 @@ export interface TopTenItem {
   total_sales: number;
 }
 
-export interface SalesTwoDates {
-  qty: number;
-  sale_date: string;
-  store_name: string;
-  store_number: string;
-  storeid: number;
-  total_sales: number;
-  weight: number;
-}
-
 export type TopTenData = {
   id: string;
   label: string;
@@ -51,6 +41,16 @@ export type SelectedSalesPanel = {
   storeid: number;
   store_name: string;
 };
+
+export interface SalesTwoDates {
+  qty: number;
+  sale_date: string;
+  store_name: string;
+  store_number: string;
+  storeid: number;
+  total_sales: number;
+  weight: number;
+}
 
 export type WeeklySale = {
   net_sales: number;
@@ -100,7 +100,7 @@ export type HourlySale = {
   weight: number;
 };
 
-export type HourlyBarData = {
+export type SalesBarData = {
   id: number;
   label: string;
   value: number;
@@ -109,13 +109,31 @@ export type HourlyBarData = {
   qty: number;
 };
 
-export type SubSale = {
+export type CatSale = {
   sale_date: string;
   storeid: number;
   store_name: string;
   store_number: string;
   category: number;
   category_description: string;
+  total_sales: number;
+  net_sales: number;
+  total_tax: number;
+  qty: number;
+  weight: number;
+  elec_instore_coupons: number;
+  elec_store_coupons: number;
+  digital_coupons: number;
+  store_coupon: number;
+};
+
+export type SubSale = {
+  sale_date: string;
+  storeid: number;
+  store_name: string;
+  store_number: string;
+  sub_department: number;
+  sub_department_description: string;
   total_sales: number;
   net_sales: number;
   total_tax: number;
