@@ -126,19 +126,19 @@ const TopTenItems = () => {
         )}
       />
       <div className="flex justify-around absolute bottom-0 border-t border-content/50 w-full py-3.5 place-items-center">
-        <div className="flex gap-1 text-[13px]">
+        <div className="flex gap-1 text-sm">
           <div className="font-medium">Total Sales:</div>
           <div>{formatCurrency2(sales.topTenItemsMetrics.totalSales)}</div>
         </div>
-        <div className="flex gap-1 text-[13px]">
+        <div className="flex gap-1 text-sm">
           <div className="font-medium">Avg Sales:</div>
           <div>{formatCurrency2(sales.topTenItemsMetrics.avgSales)}</div>
         </div>
-        <div className="flex gap-1 text-[13px]">
+        <div className="flex gap-1 text-sm">
           <div className="font-medium">Total Qty:</div>
           <div>{sales.topTenItemsMetrics.totalQty}</div>
         </div>
-        <div className="flex gap-1 text-[13px]">
+        <div className="flex gap-1 text-sm">
           <div className="font-medium">Avg Qty:</div>
           <div>{sales.topTenItemsMetrics.avgQty}</div>
         </div>

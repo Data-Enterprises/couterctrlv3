@@ -1,24 +1,19 @@
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import type {
-  JsonError,
-  WeeklySale,
-  SelectedSalesPanel,
-} from "../../../interfaces";
+import type { JsonError, WeeklySale } from "../../../interfaces";
 import {
   setSelectedSalesPanel,
   setSubSales,
   setTopTenItems,
   setWeeklySales,
   setWindowVisible,
-  // setWindowVisible,
-  // type WindowVisible,
 } from "../../../features/salesSlice";
 import { getSubs, getTopTen, getWeekly } from "../../../api/sales";
 import { addDays, formatGoliathDate, handleRipple } from "../../../utils";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import SalesPanel from "./SalesPanel";
+import { comparePanels } from "../utils";
 
 const SalesPanels = () => {
   const toast = useToast();
@@ -41,15 +36,6 @@ const SalesPanels = () => {
     }
   }, [sales.salesPanelSearchText, sales.salesPanels]);
 
-  const comparePanels = (a: WeeklySale, b: SelectedSalesPanel) => {
-    const date = a.sale_date.split("T")[0];
-    return (
-      date === b.sale_date &&
-      a.storeid === b.storeid &&
-      b.store_name === a.store_name
-    );
-  };
-
   useEffect(() => {
     const p = sales.selectedSalesPanel;
     const start = p.sale_date
@@ -59,16 +45,22 @@ const SalesPanels = () => {
       ? p.sale_date.split("T")[0]
       : formatGoliathDate(search.endDate);
 
+    // useGroups and singleStore logic
     const useGroups = search.type === "Group" ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 
+    // date logic for weekly sales
     const weeklyStart = addDays(end, -7).toISOString().split("T")[0];
     const weeklyEnd = new Date(end).toISOString().split("T")[0];
 
+    // Final logic for params based on if a store panel is selected
     const groupParam = p.storeid > 0 ? 0 : useGroups;
     const singleStoreParam = p.storeid > 0 ? 1 : singleStore;
     const searchParam = p.storeid > 0 ? p.storeid : searchValue;
+
+    // This is for determining the search type for Top Ten
+    const searchType = p.storeid > 0 ? "Store" : search.type;
 
     getWeekly(
       context.url,
@@ -108,8 +100,7 @@ const SalesPanels = () => {
       .catch((err: JsonError) =>
         toast.error("Error fetching subs data: " + err.message)
       );
-
-      const searchType = p.storeid > 0 ? "Store" : search.type;
+      
     getTopTen(context.url, context.token, searchParam, searchType, start, end)
       .then((resp) => {
         const j = resp.data;
