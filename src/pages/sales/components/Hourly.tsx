@@ -12,6 +12,12 @@ const Hourly = () => {
   const [hours, setHours] = useState<HourlySale[]>([]);
   const [selectedHour, setSelectedHour] = useState<number>(0);
 
+  // This gets fired on mount and when selected panel changes, so that way each panel
+  // loads Hourly data at hour 7 by default
+  useEffect(() => {
+    setSelectedHour(0);
+  }, [sales.selectedSalesPanel]);
+
   useEffect(() => {
     if (sales.hourlySales.length === 0) {
       setHourly([]);
@@ -60,7 +66,7 @@ const Hourly = () => {
       return acc;
     }, []);
     setHourly(newBarData);
-  }, [selectedHour, sales.hourlySales]);
+  }, [selectedHour]);
 
   const handleChange = (val: number | string) => {
     setSelectedHour(Number(val));
@@ -78,15 +84,15 @@ const Hourly = () => {
   return (
     <div className="w-full h-full bg-custom-white rounded-lg shadow-lg ">
       <div className="h-[calc(100%-2px)]">
-          <div className="bg-blue-500 text-custom-white flex justify-between py-0.5 px-4 font-medium rounded-t-lg">
-            <div>Hourly</div>
-            <div className="flex gap-4">
-              <div>{sales.selectedSalesPanel.store_name}</div>
-              <div>
-                {handleDate(sales.selectedSalesPanel.sale_date.split("T")[0])}
-              </div>
+        <div className="bg-blue-500 text-custom-white flex justify-between py-0.5 px-4 font-medium rounded-t-lg">
+          <div>Hourly</div>
+          <div className="flex gap-4">
+            <div>{sales.selectedSalesPanel.store_name}</div>
+            <div>
+              {handleDate(sales.selectedSalesPanel.sale_date.split("T")[0])}
             </div>
           </div>
+        </div>
         <div className={`h-[100%] relative ${hours.length === 0 && "hidden"}`}>
           <ResponsiveBar
             data={hourly}
@@ -147,7 +153,7 @@ const Hourly = () => {
               onSelect={handleChange}
               className="w-32 relative"
               listClass="mt-[52px]"
-              defaultQuery={selectedHour.toString()}
+              defaultQuery={selectedHour.toString() === "0" ? "7" : selectedHour.toString()}
               resetQuery={true}
             />
             {/* <button
