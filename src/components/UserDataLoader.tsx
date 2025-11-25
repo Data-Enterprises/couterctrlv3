@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { useToast } from "./toasts/hooks/useToast";
-import type { JsonError } from "../interfaces";
+import type { JsonError, Store } from "../interfaces";
 import { useNavigate } from "react-router";
 
 import { getUserStores, getUserPrefs } from "../api/user";
@@ -86,9 +86,19 @@ const UserDataLoader = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          dispatch(setAllAvailableStores(j.all_stores_for_user));
-          dispatch(setAssignedStores(j.assigned_stores));
-          dispatch(setUnassignedStores(j.unassigned_stores));
+          const all = j.all_stores_for_user.filter(
+            (s: Store) => s.store_number !== null && s.store_name !== null
+          );
+          const assigned = j.assigned_stores.filter(
+            (s: Store) => s.store_number !== null && s.store_name !== null
+          );
+          const unassigned = j.unassigned_stores.filter(
+            (s: Store) => s.store_number !== null && s.store_name !== null
+          );
+          
+          dispatch(setAllAvailableStores(all));
+          dispatch(setAssignedStores(assigned));
+          dispatch(setUnassignedStores(unassigned));
           // On login, if last_search_type is Store => then set that selected store in search slice
           // This is for default loading of data when user logs in
           const stores = j.assigned_stores;
@@ -139,9 +149,7 @@ const UserDataLoader = () => {
     }
   }, [readyToLogin.groups, readyToLogin.stores]);
 
-
   return null;
 };
-
 
 export default UserDataLoader;

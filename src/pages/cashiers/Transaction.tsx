@@ -1,13 +1,16 @@
-import type { TransactionListItem } from "../../interfaces";
-import Print from "../../svgs/Print";
+import type { JsonError, TransactionListItem } from "../../interfaces";
 import { formatCurrency2, formatDate } from "../../utils";
 import { exportData } from "../../utils/export";
 import { useAppSelector } from "../../hooks";
+import { emailTransaction } from "../../api/cashiers";
+import { useToast } from "../../components/toasts/hooks/useToast";
 
 interface TransactionProps {
   trans: TransactionListItem[];
 }
 const Transaction = ({ trans }: TransactionProps) => {
+  const toast = useToast();
+  const context = useAppSelector((state) => state.app);
   const cashier = useAppSelector((state) => state.cashier);
   const extractSaleId = (saleId: string) => {
     return saleId.split("-")[1];
@@ -32,7 +35,7 @@ const Transaction = ({ trans }: TransactionProps) => {
     return dateStr.split("T")[0] + " " + dateStr.split("T")[1];
   };
 
-  const handleClick = () => {
+  const handleExportClick = () => {
     const cashierName = trans[0].cashier_name;
     const name = `${cashierName}_${trans[0].sale_id.split("-")[1]}_${formatDate(
       trans[0].sale_date
@@ -57,13 +60,42 @@ const Transaction = ({ trans }: TransactionProps) => {
     }, 0);
   };
 
+  const handleEmailClick = () => {
+    emailTransaction(context.url, context.token, trans[0].sale_id)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          console.log("Email sent successfully");
+          console.log(j);
+          toast.success("Transaction emailed successfully");
+        }
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error emailing transaction: " + err.message)
+      );
+  };
+
   return (
     <div className="border border-blue-500 p-2 rounded-lg relative">
-      <Print
+      {/* <Print
         className="absolute right-2 top-2 hover:stroke-blue-500 transition-all duration-200"
         size={25}
         onClick={handleClick}
-      />
+      /> */}
+      <div className="absolute right-2 top-2 flex gap-2">
+        <button
+          className="btn-themeGreen px-4 py-0.5"
+          onClick={handleEmailClick}
+        >
+          Email
+        </button>
+        <button
+          className="btn-themeBlue px-4 py-0.5"
+          onClick={handleExportClick}
+        >
+          Export
+        </button>
+      </div>
       <div className="pb-2 border-b border-content">
         <div className="flex gap-1">
           <div className="font-medium">Store Name:</div>
