@@ -3,6 +3,9 @@ import type { UpcData } from "../interfaces";
 
 interface UpcState {
   index: number;
+  fileName: string;
+  selectedMode: number;
+  dataLoaded: boolean;
   isLoading: boolean;
   thisYear: UpcData[];
   lastYear: UpcData[];
@@ -10,6 +13,9 @@ interface UpcState {
 
 const initialState: UpcState = {
   index: 0,
+  fileName: "",
+  selectedMode: 0,
+  dataLoaded: false,
   isLoading: false,
   thisYear: [],
   lastYear: [],
@@ -21,6 +27,15 @@ export const upcSlice = createSlice({
   reducers: {
     setIndex: (state, action: PayloadAction<number>) => {
       state.index = action.payload;
+    },
+    setFileName: (state, action: PayloadAction<string>) => {
+      state.fileName = action.payload;
+    },
+    setDataLoaded: (state, action: PayloadAction<boolean>) => {
+      state.dataLoaded = action.payload;
+    },
+    setSelectedMode: (state, action: PayloadAction<number>) => {
+      state.selectedMode = action.payload;
     },
     setIsLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
@@ -37,6 +52,9 @@ export const upcSlice = createSlice({
 
 export const {
   setIndex,
+  setFileName,
+  setSelectedMode,
+  setDataLoaded,
   setIsLoading,
   setThisYear,
   setLastYear,
