@@ -30,15 +30,34 @@ const DepartmentSales = () => {
   const sales = useAppSelector((state) => state.sales);
 
   useEffect(() => {
-    const start = formatGoliathDate(search.startDate);
-    const end = formatGoliathDate(search.endDate);
-    const panel = sales.selectedSalesPanel;
-    const searchValue = panel.storeid > 0 ? panel.storeid : search.lastStore;
+    const p = sales.selectedSalesPanel;
+    console.log(p)
+    const date = sales.selectedSalesPanel.sale_date.split("T")[0];
+
+    const start = p.sale_date ? date : formatGoliathDate(search.startDate);
+    const end = p.sale_date ? date : formatGoliathDate(search.endDate);
+
+    const searchValue = p.storeid > 0 ? p.storeid : search.lastStore;
     getHourlyStoreDepts(context.url, context.token, searchValue, start, end)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setDepartmentSales(j.sales));
+          const test: DepartmentSale[] = [...j.sales];
+          console.log("ENDPOINT: sales/storedepts");
+          console.log(" ");
+          console.log(
+            "Total Sales from sales/storedepts ",
+            test.reduce((acc, cur) => acc + cur.sales, 0)
+          );
+          console.log(" ");
+
+          const qtyTest: DepartmentSale[] = [...j.sales].reduce(
+            (acc, cur) => acc + cur.qty,
+            0
+          );
+          console.log("Qty from sales/storedepts: ", qtyTest);
+          console.log(" ");
         }
       })
       .catch((err: JsonError) => {

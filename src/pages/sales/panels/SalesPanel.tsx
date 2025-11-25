@@ -1,22 +1,16 @@
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import {
-  formatCurrency2,
-  formatBigNumber,
-  addDays,
-  formatGoliathDate,
-} from "../../../utils";
+import { formatCurrency2, formatBigNumber, addDays } from "../../../utils";
 import type {
   SelectedSalesPanel,
   WeeklySale,
   JsonError,
 } from "../../../interfaces";
-import { getHourly, getSubs } from "../../../api/sales";
+import { getHourly } from "../../../api/sales";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getDateLayout } from "../utils";
 import {
   setHourlySales,
   setSelectedSalesPanel,
-  setSubSales,
   setWindowVisible,
 } from "../../../features/salesSlice";
 
@@ -32,7 +26,7 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const search = useAppSelector((state) => state.search);
+  // const search = useAppSelector((state) => state.search);
   const { selectedSalesPanel } = useAppSelector((state) => state.sales);
 
   const bg = (panel: WeeklySale, selected: SelectedSalesPanel) => {
@@ -77,30 +71,23 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
       );
   };
 
-  const handleSubClick = (p: WeeklySale) => {
-    const date = p.sale_date.split("T")[0];
-    dispatch(
-      setSelectedSalesPanel({
-        sale_date: date,
-        storeid: panel.storeid,
-        store_name: panel.store_name,
-      })
-    );
-    const start = formatGoliathDate(search.startDate);
-    const end = formatGoliathDate(search.endDate);
-    // currently useGroups is 0 and singleStore is 1 until we build out further
-    getSubs(context.url, context.token, start, end, 0, p.storeid, 1)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          dispatch(setSubSales(j.subs));
-          dispatch(setWindowVisible({ key: "subs", show: true }));
-        }
-      })
-      .catch((err: JsonError) =>
-        toast.error("Error fetching subs data: " + err.message)
-      );
-  };
+  // const handleSubClick = (p: WeeklySale) => {
+  //   const start = formatGoliathDate(search.startDate);
+  //   const end = formatGoliathDate(search.endDate);
+  //   const pDate = p.sale_date.split("T")[0];
+  //   // currently useGroups is 0 and singleStore is 1 until we build out further
+  //   getSubs(context.url, context.token, pDate, pDate, 0, p.storeid, 1)
+  //     .then((resp) => {
+  //       const j = resp.data;
+  //       if (j.error === 0) {
+  //         dispatch(setSubSales(j.subs));
+  //         dispatch(setWindowVisible({ key: "subs", show: true }));
+  //       }
+  //     })
+  //     .catch((err: JsonError) =>
+  //       toast.error("Error fetching subs data: " + err.message)
+  //     );
+  // };
 
   const handleCatClick = (p: WeeklySale) => {
     const date = p.sale_date.split("T")[0];
@@ -149,12 +136,6 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
         </div>
       </div>
       <div className="flex justify-around mt-2">
-        <button
-          className={`btn-themeBlue py-1.5 px-6`}
-          onClick={() => handleSubClick(panel)}
-        >
-          Subs
-        </button>
         <button
           className={`btn-themeOrange py-1.5 px-6`}
           onClick={() => handleHourlyClick(panel)}

@@ -31,7 +31,7 @@ import DepartmentSales from "./components/DepartmentSales";
 import TopTenItems from "./components/TopTenItems";
 import SalesPanels from "./panels/SalesPanels";
 import Hourly from "./components/Hourly";
-import Subs from "./components/Subs";
+import Subs from "./subs/Subs";
 
 const Sales = () => {
   const toast = useToast();
