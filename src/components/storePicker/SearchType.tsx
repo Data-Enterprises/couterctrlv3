@@ -3,6 +3,7 @@ import { useAppSelector } from "../../hooks";
 import { type SEARCH_TYPE, setType } from "../../features/searchSlice";
 import { useDispatch } from "react-redux";
 import { useEffect, useState, useRef } from "react";
+import { setUserPrefs } from "../../api/user";
 
 interface Props {
   singleStoreOnly?: boolean;
@@ -28,8 +29,11 @@ const SearchType = ({
   onOutsideClick,
   inMarketing = false,
 }: Props) => {
+  const user = useAppSelector((state) => state.user);
   const context = useAppSelector((state) => state.app);
   const type = useAppSelector((state) => state.search.type);
+  const nav = useAppSelector((state) => state.nav);
+  const search = useAppSelector((state) => state.search);
   const [query, setQuery] = useState("");
   const dispatch = useDispatch();
 
@@ -91,7 +95,13 @@ const SearchType = ({
     setQuery(selection.name);
 
     // use selection.type to update the user prefs
-    // ///////////////////////////////////////////
+    setUserPrefs(context.url, context.token, {
+      userid: user.userid,
+      last_search_type: selection.type,
+      last_route: nav.lastRoute,
+      last_search: search.lastStore,
+      last_group: search.lastGroup,
+    }).then((resp) => console.log(resp.data));
 
     if (listRef.current) {
       listRef.current.setAttribute("data-display", "closed");
