@@ -2,7 +2,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {
   TopTenItem,
   DepartmentSale,
-  // SalesTwoDates,
+  CatSale,
   SelectedSalesPanel,
   WeeklySale,
   HourlySale,
@@ -47,6 +47,7 @@ interface SalesState {
   windowVisible: WindowVisible;
   hourlySales: HourlySale[];
   subSales: SubSale[];
+  catSales: CatSale[];
 }
 
 const initialState: SalesState = {
@@ -62,6 +63,7 @@ const initialState: SalesState = {
   windowVisible: defaultWindowVisible,
   hourlySales: [],
   subSales: [],
+  catSales: [],
 };
 
 export const salesSlice = createSlice({
@@ -122,6 +124,9 @@ export const salesSlice = createSlice({
     setSubSales: (state, action: PayloadAction<SubSale[]>) => {
       state.subSales = action.payload;
     },
+    setCatSales: (state, action: PayloadAction<CatSale[]>) => {
+      state.catSales = action.payload;
+    },
     resetSalesSlice: () => initialState,
   },
 });
@@ -139,6 +144,7 @@ export const {
   setSalesPanelDateText,
   setHourlySales,
   setSubSales,
+  setCatSales,
   resetSalesSlice,
 } = salesSlice.actions;
 export default salesSlice.reducer;

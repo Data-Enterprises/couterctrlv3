@@ -42,16 +42,6 @@ export type SelectedSalesPanel = {
   store_name: string;
 };
 
-export interface SalesTwoDates {
-  qty: number;
-  sale_date: string;
-  store_name: string;
-  store_number: string;
-  storeid: number;
-  total_sales: number;
-  weight: number;
-}
-
 export type WeeklySale = {
   net_sales: number;
   qty: number;

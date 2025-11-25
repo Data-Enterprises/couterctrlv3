@@ -100,6 +100,7 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
     );
 
     // Get the category data here later
+    dispatch(setWindowVisible({ key: "cats", show: true }));
   };
 
   return (

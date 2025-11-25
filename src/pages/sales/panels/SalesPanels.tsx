@@ -8,7 +8,7 @@ import {
   setWeeklySales,
   setWindowVisible,
 } from "../../../features/salesSlice";
-import { getSubs, getTopTen, getWeekly } from "../../../api/sales";
+import { getCats, getSubs, getTopTen, getWeekly } from "../../../api/sales";
 import { addDays, formatGoliathDate, handleRipple } from "../../../utils";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
@@ -94,13 +94,13 @@ const SalesPanels = () => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setSubSales(j.subs));
-          dispatch(setWindowVisible({ key: "subs", show: true }));
+          // dispatch(setWindowVisible({ key: "subs", show: true }));
         }
       })
       .catch((err: JsonError) =>
         toast.error("Error fetching subs data: " + err.message)
       );
-      
+
     getTopTen(context.url, context.token, searchParam, searchType, start, end)
       .then((resp) => {
         const j = resp.data;
@@ -111,6 +111,27 @@ const SalesPanels = () => {
       .catch((err: JsonError) => {
         toast.error("Error getting Top Ten data: " + err.message);
       });
+
+    getCats(
+      context.url,
+      context.token,
+      start,
+      end,
+      groupParam,
+      searchParam,
+      singleStoreParam
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          console.log("CATS DATA: ", j.subs);
+          // dispatch(setCatSales(j.cats));
+          // dispatch(setWindowVisible({ key: "cats", show: true }));
+        }
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error fetching cats data: " + err.message)
+      );
   }, [sales.selectedSalesPanel]);
 
   const handlePanelClick = (

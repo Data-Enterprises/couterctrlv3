@@ -32,6 +32,7 @@ import TopTenItems from "./components/TopTenItems";
 import SalesPanels from "./panels/SalesPanels";
 import Hourly from "./components/Hourly";
 import Subs from "./subs/Subs";
+import Cats from "./cats/Cats";
 
 const Sales = () => {
   const toast = useToast();
@@ -207,6 +208,7 @@ const Sales = () => {
             {/* These are currently set to render one by one until further development */}
             <Hourly />
             <Subs />
+            <Cats />
           </div>
         </div>
       </div>
