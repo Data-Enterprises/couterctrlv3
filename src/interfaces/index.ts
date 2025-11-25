@@ -291,3 +291,20 @@ export interface TransactionListItem {
   wic: number;
   scalable: number;
 }
+
+//////////////////////////////////////////////////////////////
+// UPC List Interfaces
+//////////////////////////////////////////////////////////////
+
+// For upc sales comp data
+export type UpcData = {
+  storeid: number;
+  sale_date: string;
+  store_number: string;
+  terminal: string;
+  product_code: string;
+  description: string;
+  qty: number;
+  sales: number;
+  weight: number;
+};

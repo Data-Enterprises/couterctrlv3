@@ -10,6 +10,7 @@ import storeReducer from "../features/storeSlice";
 import usersReducer from "../features/usersSlice";
 import forgotPasswordReducer from "../features/forgotPasswordSlice";
 import cashierReducer from "../features/cashierSlice";
+import upcReducer from "../features/upcSlice";
 
 export const setupStore = () =>
   configureStore({
@@ -24,6 +25,7 @@ export const setupStore = () =>
       users: usersReducer,
       forgotPassword: forgotPasswordReducer,
       cashier: cashierReducer,
+      upc: upcReducer,
     },
   });
 
