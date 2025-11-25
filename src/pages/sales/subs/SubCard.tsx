@@ -6,36 +6,55 @@ interface SubCardProps {
 }
 const SubCard = ({ sub }: SubCardProps) => {
   return (
-    <div className="rounded-lg shadow-md shadow-content/30 py-2 text-sm">
-      {/* Header */}
-      <div className="flex justify-between mx-3 border-b border-content/20 font-medium">
+    <div className="rounded-lg shadow-md shadow-content/30 p-4 text-sm">
+      <div className="flex justify-between border-b border-content/20 font-medium">
         <div>{sub.store_name}</div>
         <div>{sub.sub_department_description}</div>
       </div>
 
-      {/* Body */}
-      <div className="mx-3 border-b border-content/20 my-2 grid grid-cols-2">
+      <div className="font-medium mt-2">Totals</div>
+      <div className="border-b border-content/20 grid grid-cols-2 pb-2">
         <div className="flex gap-1">
           <div>Net Sales:</div>
-          <div>{formatCurrency2(sub.net_sales)}</div>
+          <div className="font-medium">{formatCurrency2(sub.net_sales)}</div>
         </div>
-        {/* odd */}
         <div className="flex gap-1 justify-end">
           <div>Qty:</div>
-          <div>{formatBigNumber(sub.qty).split(".")[0]}</div>
+          <div className="font-medium">
+            {formatBigNumber(sub.qty).split(".")[0]}
+          </div>
         </div>
         <div className="flex gap-1">
           <div>Total Sales:</div>
-          <div>{formatCurrency2(sub.total_sales)}</div>
+          <div className="font-medium">{formatCurrency2(sub.total_sales)}</div>
         </div>
-        {/* odd */}
         <div className="flex gap-1 justify-end">
           <div>Weight:</div>
-          <div>{formatBigNumber(sub.weight).split(".")[0]}</div>
+          <div className="font-medium">
+            {formatBigNumber(sub.weight).split(".")[0]}
+          </div>
         </div>
       </div>
 
-      {/* Footer */}
+      <div className="font-medium pt-2">Coupons</div>
+      <div className="grid grid-cols-2">
+        <div className="flex gap-1">
+          <div>Store:</div>
+          <div className="font-medium">{sub.store_coupon}</div>
+        </div>
+        <div className="flex gap-1 justify-end">
+          <div>Digital:</div>
+          <div className="font-medium">{sub.digital_coupons}</div>
+        </div>
+        <div className="flex gap-1">
+          <div>Elect. Store:</div>
+          <div className="font-medium">{sub.elec_store_coupons}</div>
+        </div>
+        <div className="flex gap-1 justify-end">
+          <div>Elect. In-store:</div>
+          <div className="font-medium">{sub.elec_instore_coupons}</div>
+        </div>
+      </div>
     </div>
   );
 };

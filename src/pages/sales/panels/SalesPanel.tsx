@@ -109,12 +109,18 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
         selectedSalesPanel
       )} rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-inner 
       transition-all duration-200 select-none ripple-button min-h-[185px] relative`}
-      onClick={(e) => handlePanelClick(e, panel)}
+      // onClick={(e) => handlePanelClick(e, panel)}
     >
-      <div className={`font-bold text-center`}>
+      <div
+        className={`font-bold text-center`}
+        onClick={(e) => handlePanelClick(e, panel)}
+      >
         <div className="">{panel.store_name}</div>
       </div>
-      <div className={`flex justify-between items-center px-2`}>
+      <div
+        className={`flex justify-between items-center px-2`}
+        onClick={(e) => handlePanelClick(e, panel)}
+      >
         <div className="">
           <div className="text-left">Sales</div>
           <div className="font-medium">
@@ -129,21 +135,24 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
           <div className="font-medium">{formatBigNumber(panel.qty, 0)}</div>
         </div>
       </div>
-      <div className="w-full flex flex-col items-center">
+      <div
+        className="w-full flex flex-col items-center"
+        onClick={(e) => handlePanelClick(e, panel)}
+      >
         <div>
           <div>Weight</div>
           <div className="font-medium">{formatWeight(panel.weight)}</div>
         </div>
       </div>
-      <div className="flex justify-around mt-2">
+      <div className="flex justify-around mt-2 gap-4">
         <button
-          className={`btn-themeOrange py-1.5 px-6`}
+          className={`btn-themeGreen py-1.5 w-1/2`}
           onClick={() => handleHourlyClick(panel)}
         >
           Hourly
         </button>
         <button
-          className={`btn-themeGreen py-1.5 px-6`}
+          className={`btn-themeGreen py-1.5 w-1/2`}
           onClick={() => handleCatClick(panel)}
         >
           Cats
