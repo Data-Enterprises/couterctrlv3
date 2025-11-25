@@ -5,7 +5,6 @@ import { rgbaColor } from "../utils";
 import type { SalesBarData } from "../../../interfaces";
 import { ResponsiveBar } from "@nivo/bar";
 import SingleSelect from "../../../components/SingleSelect";
-import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 
 const Hourly = () => {
   const sales = useAppSelector((state) => state.sales);
@@ -73,13 +72,6 @@ const Hourly = () => {
     setSelectedHour(Number(val));
   };
 
-  const handleDate = (dateStr: string) => {
-    if (!dateStr) return "";
-    // yyyy-mm-dd => mm/dd/yyyy
-    const parts = dateStr.split("-");
-    return `${parts[1]}/${parts[2]}/${parts[0]}`;
-  };
-
   return (
     <div
       className={`w-full h-full bg-custom-white rounded-lg shadow-lg ${
@@ -89,16 +81,9 @@ const Hourly = () => {
       <div className="h-[calc(100%-2px)] relative">
         <div className="bg-blue-500 text-custom-white flex justify-between py-0.5 px-4 font-medium rounded-t-lg">
           <div>Hourly Sales</div>
-          <div className="flex gap-4">
-            <div>{sales.selectedSalesPanel.store_name}</div>
-            <div>
-              {handleDate(sales.selectedSalesPanel.sale_date.split("T")[0])}
-            </div>
-          </div>
+          <div>{sales.selectedSalesPanel.store_name}</div>
         </div>
-        {hourly.length === 0 ? (
-          <LoadingIndicator />
-        ) : (
+        {hourly.length > 0 && (
           <div className={`h-[100%] relative`}>
             <ResponsiveBar
               data={hourly}
