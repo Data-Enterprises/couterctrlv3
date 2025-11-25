@@ -142,7 +142,9 @@ export const getCats = async (
   searchValue: number,
   singleStore: number,
   consolidated: number = 0,
-  displayHourly: number = 0
+  displayHourly: number = 0,
+  page: number = 1,
+  download: number = 0
 ) => {
   const json = await axios({
     method: "POST",
@@ -159,6 +161,8 @@ export const getCats = async (
       singleStore,
       consolidated,
       displayHourly,
+      page,
+      download,
     },
   });
   return json;
@@ -181,7 +185,7 @@ export const getSubs = async (
       "Content-Type": "application/json",
       Authorization: "Bearer " + token,
     },
-    url: url + "subs/sub_sales_v2",
+    url: url + "subs/sub_sales",
     data: {
       startDate,
       endDate,

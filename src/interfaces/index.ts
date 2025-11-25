@@ -109,6 +109,24 @@ export type HourlyBarData = {
   qty: number;
 };
 
+export type SubSale = {
+  sale_date: string;
+  storeid: number;
+  store_name: string;
+  store_number: string;
+  category: number;
+  category_description: string;
+  total_sales: number;
+  net_sales: number;
+  total_tax: number;
+  qty: number;
+  weight: number;
+  elec_instore_coupons: number;
+  elec_store_coupons: number;
+  digital_coupons: number;
+  store_coupon: number;
+};
+
 /////////////////////// End sales slice //////////////////////
 
 //////////////////////////////////////////////////////////////

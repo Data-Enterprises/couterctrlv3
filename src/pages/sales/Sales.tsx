@@ -29,8 +29,8 @@ import WeeklyNetSales from "./components/WeeklyNetSales";
 import DepartmentSales from "./components/DepartmentSales";
 import TopTenItems from "./components/TopTenItems";
 import SalesPanels from "./panels/SalesPanels";
-import Windows from "./components/Windows";
 import Hourly from "./components/Hourly";
+import Subs from "./components/Subs";
 
 const Sales = () => {
   const toast = useToast();
@@ -156,7 +156,6 @@ const Sales = () => {
       data-testid="sales-page"
       className="w-full h-[calc(100vh-3rem)] p-4 select-none"
     >
-      <Windows />
       <div ref={gridRef} className="grid grid-cols-4 gap-4 h-full">
         <div className="grid gap-1 max-h-[calc(100vh-7px)] grid-rows-[0.5fr_1fr_1fr] no-scrollbar">
           <div className="bg-custom-white rounded-lg p-2 shadow-lg">
@@ -197,7 +196,11 @@ const Sales = () => {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <DepartmentSales />
+
+            {/* These are currently set to render one by one until further development */}
             <Hourly />
+            <Subs />
+
           </div>
         </div>
       </div>

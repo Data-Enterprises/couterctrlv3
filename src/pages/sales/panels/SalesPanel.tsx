@@ -1,14 +1,24 @@
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { formatCurrency2, formatBigNumber, addDays } from "../../../utils";
+import {
+  formatCurrency2,
+  formatBigNumber,
+  addDays,
+  formatGoliathDate,
+} from "../../../utils";
 import type {
   SelectedSalesPanel,
   SalesPanelInfo,
   JsonError,
 } from "../../../interfaces";
-import { getHourly } from "../../../api/sales";
+import { getHourly, getSubs } from "../../../api/sales";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getDateLayout } from "../utils";
-import { setHourlySales } from "../../../features/salesSlice";
+import {
+  setHourlySales,
+  setSelectedSalesPanel,
+  setSubSales,
+  setWindowVisible,
+} from "../../../features/salesSlice";
 
 interface SalesPanelProps {
   panel: SalesPanelInfo;
@@ -22,6 +32,7 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
+  const search = useAppSelector((state) => state.search);
   const { selectedSalesPanel } = useAppSelector((state) => state.sales);
 
   const bg = (panel: SalesPanelInfo, selected: SelectedSalesPanel) => {
@@ -43,6 +54,14 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
   };
 
   const handleHourlyClick = (p: SalesPanelInfo) => {
+    const date = p.sale_date.split("T")[0];
+    dispatch(
+      setSelectedSalesPanel({
+        sale_date: date,
+        storeid: panel.storeid,
+        store_name: panel.store_name,
+      })
+    );
     const end = p.sale_date.split("T")[0];
     const start = addDays(end, -7).toISOString().split("T")[0];
     getHourly(context.url, context.token, start, end, 0, p.storeid, 1)
@@ -50,11 +69,50 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setHourlySales(j.subs));
+          dispatch(setWindowVisible({ key: "hourly", show: true }));
         }
       })
       .catch((err: JsonError) =>
         toast.error("Error fetching hourly data: " + err.message)
       );
+  };
+
+  const handleSubClick = (p: SalesPanelInfo) => {
+    const date = p.sale_date.split("T")[0];
+    dispatch(
+      setSelectedSalesPanel({
+        sale_date: date,
+        storeid: panel.storeid,
+        store_name: panel.store_name,
+      })
+    );
+    const start = formatGoliathDate(search.startDate);
+    const end = formatGoliathDate(search.endDate);
+    // currently useGroups is 0 and singleStore is 1 until we build out further
+    getSubs(context.url, context.token, start, end, 0, p.storeid, 1)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(setSubSales(j.subs));
+          dispatch(setWindowVisible({ key: "subs", show: true }));
+        }
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error fetching subs data: " + err.message)
+      );
+  };
+
+  const handleCatClick = (p: SalesPanelInfo) => {
+    const date = p.sale_date.split("T")[0];
+    dispatch(
+      setSelectedSalesPanel({
+        sale_date: date,
+        storeid: panel.storeid,
+        store_name: panel.store_name,
+      })
+    );
+
+    // Get the category data here later
   };
 
   return (
@@ -63,7 +121,7 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
         panel,
         selectedSalesPanel
       )} rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-inner 
-      transition-all duration-200 select-none ripple-button min-h-[185px]`}
+      transition-all duration-200 select-none ripple-button min-h-[185px] relative`}
       onClick={(e) => handlePanelClick(e, panel)}
     >
       <div className={`font-bold text-center`}>
@@ -91,14 +149,24 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
         </div>
       </div>
       <div className="flex justify-around mt-2">
-        <button className={`btn-themeBlue py-1.5 px-6`}>Subs</button>
+        <button
+          className={`btn-themeBlue py-1.5 px-6`}
+          onClick={() => handleSubClick(panel)}
+        >
+          Subs
+        </button>
         <button
           className={`btn-themeOrange py-1.5 px-6`}
           onClick={() => handleHourlyClick(panel)}
         >
           Hourly
         </button>
-        <button className={`btn-themeGreen py-1.5 px-6`}>Cats</button>
+        <button
+          className={`btn-themeGreen py-1.5 px-6`}
+          onClick={() => handleCatClick(panel)}
+        >
+          Cats
+        </button>
       </div>
     </div>
   );

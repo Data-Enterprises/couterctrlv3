@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useAppSelector } from "../../../hooks";
-import { ResponsiveBar } from "@nivo/bar";
-import type { HourlySale, HourlyBarData } from "../../../interfaces";
 import { formatCurrency2 } from "../../../utils";
 import { rgbaColor } from "../utils";
+import type { HourlySale, HourlyBarData } from "../../../interfaces";
+import { ResponsiveBar } from "@nivo/bar";
 import SingleSelect from "../../../components/SingleSelect";
 
 const Hourly = () => {
@@ -74,18 +74,16 @@ const Hourly = () => {
 
   const handleDate = (dateStr: string) => {
     if (!dateStr) return "";
-    // yyyy-mm-dd to mm/dd/yyyy
+    // yyyy-mm-dd => mm/dd/yyyy
     const parts = dateStr.split("-");
     return `${parts[1]}/${parts[2]}/${parts[0]}`;
   };
 
-  // const handleCompareClick = () => {};
-
   return (
-    <div className="w-full h-full bg-custom-white rounded-lg shadow-lg ">
+    <div className={`w-full h-full bg-custom-white rounded-lg shadow-lg ${sales.windowVisible.hourly ? "" : "hidden"}`}>
       <div className="h-[calc(100%-2px)]">
         <div className="bg-blue-500 text-custom-white flex justify-between py-0.5 px-4 font-medium rounded-t-lg">
-          <div>Hourly</div>
+          <div>Hourly Sales</div>
           <div className="flex gap-4">
             <div>{sales.selectedSalesPanel.store_name}</div>
             <div>
@@ -100,7 +98,7 @@ const Hourly = () => {
             colors={(bar) => rgbaColor(bar.data.fill, 0.3)}
             borderWidth={2}
             borderColor={(bar) => rgbaColor(bar.data.data.color, 1)}
-            margin={{ top: 20, right: 140, bottom: 80, left: 70 }}
+            margin={{ top: 20, right: 20, bottom: 70, left: 180 }}
             padding={0.1}
             borderRadius={4}
             labelSkipWidth={12}
@@ -111,7 +109,7 @@ const Hourly = () => {
               tickSize: 5,
               tickPadding: 5,
               tickRotation: 0,
-              legend: "Sales",
+              legend: "",
               legendPosition: "middle",
               legendOffset: -55,
               format: (value) => `$${value}`,
@@ -120,7 +118,7 @@ const Hourly = () => {
               tickSize: 5,
               tickPadding: 5,
               tickRotation: 0,
-              legend: "Date",
+              legend: "",
               legendPosition: "middle",
               legendOffset: 35,
               format: (value) => `${value.toString().slice(5, 10)}`,
@@ -144,7 +142,7 @@ const Hourly = () => {
             )}
           />
 
-          <div className="absolute flex flex-col gap-2 top-10 right-2">
+          <div className="absolute flex flex-col gap-2 top-2 left-2">
             <SingleSelect
               data={hours}
               displayKey={"hour"}

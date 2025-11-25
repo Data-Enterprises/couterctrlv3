@@ -6,6 +6,7 @@ import type {
   SelectedSalesPanel,
   WeeklySale,
   HourlySale,
+  SubSale,
 } from "../interfaces";
 
 type TopTenItemsMetrics = {
@@ -45,6 +46,7 @@ interface SalesState {
   topTenItemsMetrics: TopTenItemsMetrics;
   windowVisible: WindowVisible;
   hourlySales: HourlySale[];
+  subSales: SubSale[];
 }
 
 const initialState: SalesState = {
@@ -59,6 +61,7 @@ const initialState: SalesState = {
   topTenItemsMetrics: defaultTopTenMetrics,
   windowVisible: defaultWindowVisible,
   hourlySales: [],
+  subSales: [],
 };
 
 export const salesSlice = createSlice({
@@ -99,8 +102,14 @@ export const salesSlice = createSlice({
       state,
       action: PayloadAction<{ key: keyof WindowVisible; show: boolean }>
     ) => {
+      // just passing in one key and need to set the rest to false
+      const reset = {
+        subs: false,
+        hourly: false,
+        cats: false,
+      };
       state.windowVisible = {
-        ...state.windowVisible,
+        ...reset,
         [action.payload.key]: action.payload.show,
       };
     },
@@ -109,6 +118,9 @@ export const salesSlice = createSlice({
     },
     setHourlySales: (state, action: PayloadAction<HourlySale[]>) => {
       state.hourlySales = action.payload;
+    },
+    setSubSales: (state, action: PayloadAction<SubSale[]>) => {
+      state.subSales = action.payload;
     },
     resetSalesSlice: () => initialState,
   },
@@ -126,6 +138,7 @@ export const {
   setWindowVisible,
   setSalesPanelDateText,
   setHourlySales,
+  setSubSales,
   resetSalesSlice,
 } = salesSlice.actions;
 export default salesSlice.reducer;
