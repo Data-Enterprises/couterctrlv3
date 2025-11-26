@@ -9,7 +9,6 @@ import {
 } from "../../../features/upcSlice";
 import type { JsonError, Store } from "../../../interfaces";
 import type { Group } from "../../../features/groupSlice";
-import { type Tooltip, info, defaultTooltips } from ".";
 import { useUpcContext } from "./hooks";
 
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
@@ -18,6 +17,7 @@ import TextInput from "../../../components/TextInput";
 import SingleSelect from "../../../components/SingleSelect";
 import SelectedStoreList from "./SelectedStoreList";
 import Tooltips from "./components/Tooltips";
+import Buttons from "./components/Buttons";
 
 interface StepTwoProps {
   className?: string;
@@ -86,7 +86,7 @@ const UpcStepTwo = ({ className = "" }: StepTwoProps) => {
   };
 
   const isReady = () => {
-    return upc.selectedStores.length > 0 && params.startDate && params.endDate;
+    return upc.selectedStores.length > 0;
   };
 
   const options = [
@@ -138,27 +138,14 @@ const UpcStepTwo = ({ className = "" }: StepTwoProps) => {
       </div>
       <SelectedStoreList />
       <div className="text-sm text-center text-content/70 mt-1">
-        Please make sure your date range and stores are valid before continuing.
+        Please make sure your date range is valid before continuing.
       </div>
       <Tooltips />
-      <div className="flex gap-4 justify-center">
-        <div
-          className={`btn-themeBlue`}
-          onClick={() => dispatch(setIndex(0))}
-        >
-          Back
-        </div>
-        <div
-          className={`${
-            isReady()
-              ? "btn-themeGreen"
-              : "btn-themeOrange opacity-40 pointer-events-none"
-          }`}
-          onClick={() => dispatch(setIndex(2))}
-        >
-          Next
-        </div>
-      </div>
+      <Buttons
+        isReady={isReady}
+        handleNext={() => dispatch(setIndex(2))}
+        handleBack={() => dispatch(setIndex(0))}
+      />
     </div>
   );
 };

@@ -18,13 +18,13 @@ const UpcList = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const [file, setFile] = useState<File | null>(null);
-  const [styling, setStyling] = useState<string>("h-[200px] w-[450px]");
+  const [styling, setStyling] = useState<string>("h-[290px] w-[400px]");
 
   const upc = useAppSelector((state) => state.upc);
 
   // To set the height and width of the wizard based on the step
   useEffect(() => {
-    if (upc.index === 0) setStyling("h-[200px] w-[450px]");
+    if (upc.index === 0) setStyling("h-[290px] w-[400px]");
     if (upc.index === 1) setStyling("h-[420px] w-[550px]");
     if (upc.index > 1) setStyling("h-[200px] w-[525px]");
   }, [upc.index]);
@@ -36,7 +36,7 @@ const UpcList = () => {
     if (upc.selectedMode == 4) return <TrendDetector />;
   };
 
-  // main get data function 
+  // main get data function
   const getData = () => {};
 
   return (
@@ -50,7 +50,7 @@ const UpcList = () => {
             index={upc.index}
           >
             <StepOne
-              className={"h-[280px] w-[450px]"}
+              className={"h-[280px] w-[400px]"}
               file={file}
               setFile={setFile}
             />
