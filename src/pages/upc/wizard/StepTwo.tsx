@@ -21,9 +21,10 @@ import Buttons from "./components/Buttons";
 
 interface StepTwoProps {
   className?: string;
+  getData: () => void;
 }
 
-const UpcStepTwo = ({ className = "" }: StepTwoProps) => {
+const UpcStepTwo = ({ className = "", getData }: StepTwoProps) => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const params = useUpcContext();
@@ -89,6 +90,11 @@ const UpcStepTwo = ({ className = "" }: StepTwoProps) => {
     { label: "Group", id: 2 },
   ];
 
+  const handleNext = () => {
+    dispatch(setIndex(2));
+    getData();
+  };
+
   return (
     <div className={`flex flex-col items-center p-4 gap-2 ${className}`}>
       <DatePickers showBtn={false} />
@@ -138,7 +144,7 @@ const UpcStepTwo = ({ className = "" }: StepTwoProps) => {
       <Tooltips />
       <Buttons
         isReady={isReady}
-        handleNext={() => dispatch(setIndex(2))}
+        handleNext={handleNext}
         handleBack={() => dispatch(setIndex(0))}
       />
     </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
+import { useUpcContext } from "./hooks";
 
 // wizard
 import UpcWizard from "./UpcWizard";
@@ -13,7 +14,13 @@ import SalesComp from "../modules/SalesComp";
 import Forcast from "../modules/Forecast";
 import PriceOpt from "../modules/PriceOpt";
 import TrendDetector from "../modules/TrendDetector";
-import { setIndex } from "../../../features/upcSlice";
+import {
+  setDataLoaded,
+  setIndex,
+  setIsLoading,
+} from "../../../features/upcSlice";
+import { getSalesComp } from "../../../api/upc";
+import type { JsonError } from "../../../interfaces";
 
 const UpcList = () => {
   const toast = useToast();
@@ -21,44 +28,75 @@ const UpcList = () => {
   const [file, setFile] = useState<File | null>(null);
   const [styling, setStyling] = useState<string>("h-[265px] w-[400px]");
 
-  const upc = useAppSelector((state) => state.upc);
+  // Scopes the useAppSelector to the UPC upload context
+  const context = useUpcContext();
 
   // To set the height and width of the wizard based on the step
   useEffect(() => {
-    if (upc.index === 0) setStyling("h-[265px] w-[400px]");
-    if (upc.index === 1) setStyling("h-[420px] w-[530px]");
-    if (upc.index === 2) setStyling("h-[200px] w-[530px]");
-  }, [upc.index]);
+    if (context.index === 0) setStyling("h-[265px] w-[400px]");
+    if (context.index === 1) setStyling("h-[420px] w-[530px]");
+    if (context.index === 2) setStyling("h-[200px] w-[530px]");
+  }, [context.index]);
 
-  const module = () => {
-    if (upc.selectedMode == 1) return <SalesComp />;
-    if (upc.selectedMode == 2) return <Forcast />;
-    if (upc.selectedMode == 3) return <PriceOpt />;
-    if (upc.selectedMode == 4) return <TrendDetector />;
+  // Data fetching based on selected mode
+  const getData = () => {
+    dispatch(setIsLoading(true));
+    dispatch(setIndex(3));
+    if (context.selectedMode == 1) {
+      getCompData();
+    } else if (context.selectedMode == 2) {
+      // getForecastsData();
+    } else if (context.selectedMode == 3) {
+      // getPriceOptData();
+    } else if (context.selectedMode == 4) {
+      // getTrendData();
+    }
   };
 
-  const test = () => dispatch(setIndex(1));
-  // test();
+  // The data fetching functions => aws permission issues => resolve MONDAY
+  const getCompData = () => {
+    getSalesComp(
+      context.url,
+      context.storeids,
+      context.userid,
+      context.startDate,
+      context.endDate,
+      file!
+    )
+      .then((resp) => {
+        const j = resp.data;
+        console.log("Sales Comp Data:", j);
+      })
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => dispatch(setIsLoading(false)));
 
-  // main get data function
-  const getData = () => {};
+    dispatch(setDataLoaded(true));
+  };
+
+  // The returned module based on selected mode
+  const module = () => {
+    if (context.selectedMode == 1) return <SalesComp />;
+    if (context.selectedMode == 2) return <Forcast />;
+    if (context.selectedMode == 3) return <PriceOpt />;
+    if (context.selectedMode == 4) return <TrendDetector />;
+  };
 
   return (
-    <div className="h-[calc(100vh-3rem)] px-4 py-2 flex flex-col items-center justify-center select-none relative">
-      {upc.dataLoaded ? (
+    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] w-full p-4 relative">
+      {context.dataLoaded ? (
         module()
       ) : (
         <>
           <UpcWizard
             className={`max-w-2xl mb-16 shadow-lg ${styling}`}
-            index={upc.index}
+            index={context.index}
           >
             <StepOne
               className={"h-[265px] w-[400px]"}
               file={file}
               setFile={setFile}
             />
-            <StepTwo className={"h-[420px] w-[530px]"} />
+            <StepTwo className={"h-[420px] w-[530px]"} getData={getData} />
             <StepThree className="h-[200px] w-[530px]" />
           </UpcWizard>
         </>
