@@ -13,20 +13,21 @@ import SalesComp from "../modules/SalesComp";
 import Forcast from "../modules/Forecast";
 import PriceOpt from "../modules/PriceOpt";
 import TrendDetector from "../modules/TrendDetector";
+import { setIndex } from "../../../features/upcSlice";
 
 const UpcList = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const [file, setFile] = useState<File | null>(null);
-  const [styling, setStyling] = useState<string>("h-[290px] w-[400px]");
+  const [styling, setStyling] = useState<string>("h-[265px] w-[400px]");
 
   const upc = useAppSelector((state) => state.upc);
 
   // To set the height and width of the wizard based on the step
   useEffect(() => {
-    if (upc.index === 0) setStyling("h-[290px] w-[400px]");
-    if (upc.index === 1) setStyling("h-[420px] w-[550px]");
-    if (upc.index > 1) setStyling("h-[200px] w-[525px]");
+    if (upc.index === 0) setStyling("h-[265px] w-[400px]");
+    if (upc.index === 1) setStyling("h-[420px] w-[530px]");
+    if (upc.index === 2) setStyling("h-[200px] w-[530px]");
   }, [upc.index]);
 
   const module = () => {
@@ -35,6 +36,9 @@ const UpcList = () => {
     if (upc.selectedMode == 3) return <PriceOpt />;
     if (upc.selectedMode == 4) return <TrendDetector />;
   };
+
+  const test = () => dispatch(setIndex(1));
+  // test();
 
   // main get data function
   const getData = () => {};
@@ -50,12 +54,12 @@ const UpcList = () => {
             index={upc.index}
           >
             <StepOne
-              className={"h-[280px] w-[400px]"}
+              className={"h-[265px] w-[400px]"}
               file={file}
               setFile={setFile}
             />
-            <StepTwo className={"h-[420px] w-[550px]"} />
-            <StepThree />
+            <StepTwo className={"h-[420px] w-[530px]"} />
+            <StepThree className="h-[200px] w-[530px]" />
           </UpcWizard>
         </>
       )}

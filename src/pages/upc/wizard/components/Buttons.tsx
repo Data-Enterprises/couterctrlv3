@@ -12,7 +12,7 @@ const Buttons = ({
   btnText = "Back",
 }: ButtonsProps) => {
   return (
-    <div className="flex gap-4 justify-center">
+    <div className="flex gap-4 justify-center w-3/4">
       <div className={`btn-themeBlue w-1/2 text-center`} onClick={handleBack}>
         {btnText}
       </div>

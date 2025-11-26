@@ -52,20 +52,15 @@ const UpcStepTwo = ({ className = "" }: StepTwoProps) => {
   const handleSelectClick = (id: string | number) => {
     // Store
     if (upc.radioId === 1) {
-      // Find the store in the filtered data
+      // Find the store in the filtered data and add/remove from selectedStores
       const store = filteredData.find(
         (item): item is Store => "storeid" in item && item.storeid === id
       );
-      // Check if it exists in selectedStores
       const existingStore = upc.selectedStores.find((s) => s.storeid === id);
-      // if found, remove it
       if (existingStore) {
         const copy = [...upc.selectedStores].filter((s) => s.storeid !== id);
         dispatch(setSelectedStores(copy));
-        return;
-      }
-      // if not found, add it
-      if (store) {
+      } else if (store) {
         dispatch(setSelectedStores([...upc.selectedStores, store]));
       }
     } else if (upc.radioId === 2) {
