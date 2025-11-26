@@ -5,9 +5,10 @@ import { useCustomEvent } from "../../hooks/useCustomEvent";
 interface Props {
   handleQuery?: () => void;
   btnPadding?: string;
+  showBtn?: boolean;
 }
 
-const DatePickers = ({ handleQuery, btnPadding = "" }: Props) => {
+const DatePickers = ({ handleQuery, btnPadding = "", showBtn = true }: Props) => {
   const { emit } = useCustomEvent("slicer-event");
 
   const handleClick = () => {
@@ -30,6 +31,7 @@ const DatePickers = ({ handleQuery, btnPadding = "" }: Props) => {
         data-testid="date-picker-search-btn"
         className={`btn-themeBlue w-full text-center col-span-2 ${btnPadding}`}
         onClick={handleClick}
+        style={{ display: showBtn ? "block" : "none" }}
       >
         Search
       </div>

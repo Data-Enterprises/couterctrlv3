@@ -1,75 +1,166 @@
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useState, useEffect } from "react";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
+import {
+  setIndex,
+  setRadioId,
+  setSelectedStores,
+  setTrendPeriods,
+} from "../../../features/upcSlice";
+import type { JsonError, Store } from "../../../interfaces";
+import type { Group } from "../../../features/groupSlice";
+import { type Tooltip, info, defaultTooltips } from ".";
+import { useUpcContext } from "./hooks";
+
+import { getStoresAssignedToUserGroup } from "../../../api/groups";
 import DatePickers from "../../../components/datePickers/DatePickers";
+import TextInput from "../../../components/TextInput";
+import SingleSelect from "../../../components/SingleSelect";
+import SelectedStoreList from "./SelectedStoreList";
+import Tooltips from "./components/Tooltips";
 
 interface StepTwoProps {
   className?: string;
-  getData?: () => void;
 }
 
-const StepTwo = ({ className = "", getData }: StepTwoProps) => {
-  const toast = useToast();
+const UpcStepTwo = ({ className = "" }: StepTwoProps) => {
   const dispatch = useAppDispatch();
-  const app = useAppSelector((state) => state.app);
+  const toast = useToast();
+  const params = useUpcContext();
   const user = useAppSelector((state) => state.user);
+  const group = useAppSelector((state) => state.group);
+  const upc = useAppSelector((state) => state.upc);
+  const [filteredData, setFilteredData] = useState<Store[] | Group[]>([]);
 
-    return (
-      <div className={`flex flex-col items-center pt-4 gap-2 ${className}`}>
-        <div className="text-sm text-center text-content/70 px-4 -mb-1">
-          Please ensure your date range and stores are valid before continuing.
-        </div>
-        <DatePickers />
-        {/* <div className="grid grid-cols-[1.1fr_1fr] gap-2 mb-2 -mt-4">
-          <RadioBox
+  useEffect(() => {
+    // On mount, if radioId is 0, set to 1 (Stores)
+    if (upc.radioId === 0) {
+      dispatch(setRadioId(1));
+      setFilteredData(user.assignedStores);
+    }
+  }, [upc.radioId]);
+
+  const handleRadioChange = (id: string | number) => {
+    dispatch(setRadioId(id as number));
+    if (id === 1) {
+      setFilteredData(user.assignedStores);
+    } else if (id === 2) {
+      setFilteredData(group.groups);
+    }
+  };
+
+  const handleSelectClick = (id: string | number) => {
+    // Store
+    if (upc.radioId === 1) {
+      // Find the store in the filtered data
+      const store = filteredData.find(
+        (item): item is Store => "storeid" in item && item.storeid === id
+      );
+      // Check if it exists in selectedStores
+      const existingStore = upc.selectedStores.find((s) => s.storeid === id);
+      // if found, remove it
+      if (existingStore) {
+        const copy = [...upc.selectedStores].filter((s) => s.storeid !== id);
+        dispatch(setSelectedStores(copy));
+        return;
+      }
+      // if not found, add it
+      if (store) {
+        dispatch(setSelectedStores([...upc.selectedStores, store]));
+      }
+    } else if (upc.radioId === 2) {
+      // Group
+      getStoresAssignedToUserGroup(
+        params.url,
+        params.token,
+        params.userid,
+        Number(id)
+      )
+        .then((resp) => {
+          const j = resp.data;
+          const filtered = [...j.stores].filter((store) => store.active === 1);
+          dispatch(setSelectedStores(filtered));
+        })
+        .catch((err: JsonError) => toast.error(err.message));
+    }
+  };
+
+  const isReady = () => {
+    return upc.selectedStores.length > 0 && params.startDate && params.endDate;
+  };
+
+  const options = [
+    { label: "Stores", id: 1 },
+    { label: "Group", id: 2 },
+  ];
+
+  return (
+    <div className={`flex flex-col items-center p-4 gap-2 ${className}`}>
+      <DatePickers showBtn={false} />
+      <div className={`w-full grid grid-cols-3 gap-2 -mt-2 mb-1`}>
+        <SingleSelect
+          data={options}
+          label="Store or Group"
+          displayKey="label"
+          valueKey="id"
+          onSelect={handleRadioChange}
+          defaultQuery="Stores"
+        />
+        {upc.radioId === 1 ? (
+          <SingleSelect
             label="Stores"
-            value={radioId === 1}
-            onChange={handleRadioChange}
-            id={1}
+            data={filteredData as Store[]}
+            displayKey={"store_name" as keyof Store}
+            valueKey={"storeid" as keyof Store}
+            onSelect={handleSelectClick}
+            keepOpen={true}
+            resetQuery={true}
+            innerClass="border-2 focus:border-blue-500 border-content/20"
           />
-          <div className="flex items-center gap-4">
-            Trend Periods
-            <Input
-              width={85}
-              className="py-1.5 px-1 ml-3 border-2 border-content/20 focus:border-blue-500"
-              type="number"
-              value={trendPeriods}
-              onChange={(e) => dispatch(setTrendPeriods(e.target.value))}
-            />
-          </div>
-          <RadioBox
-            label="Group"
-            value={radioId === 2}
-            onChange={handleRadioChange}
-            id={2}
+        ) : (
+          <SingleSelect
+            label="Groups"
+            data={filteredData as Group[]}
+            valueKey={"id" as keyof Group}
+            displayKey={"group_name" as keyof Group}
+            onSelect={handleSelectClick}
+            resetQuery={true}
+            innerClass="border-2 focus:border-blue-500 border-content/20"
           />
-          {radioId === 1 ? (
-            <SingleSelect
-              label=""
-              data={filteredData as AssignedStore[]}
-              displayKey={"store_Name" as keyof unknown}
-              valueKey={"storeid" as keyof unknown}
-              onSelect={handleSelectClick}
-              keepOpen={true}
-              resetQuery={true}
-              innerClass="border-2 focus:border-blue-500 border-content/20"
-            />
-          ) : (
-            <SingleSelect
-              label=""
-              data={filteredData as Group[]}
-              valueKey={"id" as keyof unknown}
-              displayKey={"group_name" as keyof unknown}
-              onSelect={handleSelectClick}
-              resetQuery={true}
-              innerClass="border-2 focus:border-blue-500 border-content/20"
-            />
-          )}
-        </div> */}
-        {/* <SelectedStoreList /> */}
-        <div className="my-8">???Global/extra query params???</div>
-        {/* <UpcListSubmit getData={getData} /> */}
+        )}
+        <TextInput
+          name="number"
+          query={upc.trendPeriods.toString()}
+          title="Trend Periods"
+          isSimple={true}
+          setText={(x) => dispatch(setTrendPeriods(x))}
+        />
       </div>
-    );
+      <SelectedStoreList />
+      <div className="text-sm text-center text-content/70 mt-1">
+        Please make sure your date range and stores are valid before continuing.
+      </div>
+      <Tooltips />
+      <div className="flex gap-4 justify-center">
+        <div
+          className={`btn-themeBlue`}
+          onClick={() => dispatch(setIndex(0))}
+        >
+          Back
+        </div>
+        <div
+          className={`${
+            isReady()
+              ? "btn-themeGreen"
+              : "btn-themeOrange opacity-40 pointer-events-none"
+          }`}
+          onClick={() => dispatch(setIndex(2))}
+        >
+          Next
+        </div>
+      </div>
+    </div>
+  );
 };
 
-export default StepTwo;
+export default UpcStepTwo;
