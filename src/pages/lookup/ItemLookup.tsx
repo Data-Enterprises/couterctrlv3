@@ -30,23 +30,22 @@ import TopStoreLookup from "./TopStoreLookup";
 import BottomStoreLookup from "./BottomStoreLookup";
 import ItemLookupHeader from "./ItemLookupHeader";
 import HistoryItemCard from "./HistoryItemCard";
+import { getAllUsers } from "../../api/user";
+import { setEmail } from "../../features/userSlice";
 
 const ItemLookup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  // const { awsUrl, api_key } = useAppSelector((state) => state.quickSight);
-
-  const { url } = useAppSelector((state) => state.app);
+  const { url, token } = useAppSelector((state) => state.app);
   const { upcCode, itemsLoaded, selectedStore, itemLookupHistory, storeList } =
     useAppSelector((state) => state.item);
-  const { email } = useAppSelector((state) => state.user);
+  const { email, userid } = useAppSelector((state) => state.user);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [pause, setPause] = useState<boolean>(true);
   const [deviceId, setDeviceId] = useState<string>("");
   const ref = useRef<HTMLDivElement>(null);
-  // const [processing, setProcessing] = useState(false);
 
   // teporary until quicksight is done
   const api_key = "12FE9864SBX50W79";
@@ -60,8 +59,23 @@ const ItemLookup = () => {
   const { height, topRef, bottomRef } = useHeight();
 
   useEffect(() => {
+    // Right now just getting the user's email since logging in does not return it
+    getAllUsers(url, token)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          const user = j.users.find((u: any) => u.id === userid);
+          if (user) {
+            dispatch(setEmail(user.email));
+          }
+        }
+      })
+      .catch((err) => toast.error(err.message));
+  }, []);
+
+  useEffect(() => {
     // Get the store list on mount or clear
-    if (storeList.length) return;
+    if (storeList.length || !email) return;
     getStoreList(url, email, api_key)
       .then((resp) => {
         const j = resp.data;
@@ -74,7 +88,7 @@ const ItemLookup = () => {
     return () => {
       dispatch(setUpcCode(""));
     };
-  }, [storeList]);
+  }, [storeList, email]);
 
   useEffect(() => {
     if (devices) {
@@ -217,7 +231,6 @@ const ItemLookup = () => {
         if (!err) {
           Quagga.start();
           setPause(false);
-          // setProcessing(false);
         } else {
           console.error(err);
         }
@@ -225,10 +238,6 @@ const ItemLookup = () => {
     );
 
     Quagga.onDetected((result) => {
-      // if (processing) return;
-      // setProcessing(true);
-      // setPause(true);
-
       Quagga.stop();
       Quagga.offDetected();
 
@@ -271,13 +280,11 @@ const ItemLookup = () => {
       <div ref={topRef} className="text-center font-bold underline">
         {storeList.find((s) => s.storeid === selectedStore)?.store_name}
       </div>
-      {/* copy this over to the other approaches */}
       {itemsLoaded ? (
         <>
           <ItemLookupHeader />
           {!selectedStore ? (
             <>
-              {/* Layout for non-selected store */}
               <TopStoreLookup />
               <BottomStoreLookup />
             </>

@@ -77,7 +77,7 @@ const CreateGroup = () => {
   };
 
   return (
-    <div className="flex gap-2 mb-4 items-end" data-testid="create-group">
+    <div className="md:flex md:gap-2 mb-2 md:mb-4 md:items-end" data-testid="create-group">
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <div className="text-center">
           Are you sure you want to delete this group?
@@ -101,7 +101,7 @@ const CreateGroup = () => {
           </button>
         </div>
       </Modal>
-      <div className="w-1/2">
+      <div className="md:w-1/2">
         <label className="block text-sm mb-0.5 ml-0.5 font-medium">
           Create Group
         </label>
@@ -114,7 +114,7 @@ const CreateGroup = () => {
           onChange={handleChange}
         />
       </div>
-      <div className="flex justify-end gap-2 w-1/2">
+      <div className="flex justify-end gap-2 mt-2 md:mt-0 md:w-1/2">
         <button
           data-testid="group-delete-btn"
           className="btn-themeOrange w-1/2"

@@ -51,19 +51,19 @@ const ItemLookupHeader = () => {
       </div>
       <div className={`${selectedStore ? "hidden" : "grid grid-cols-3 gap-2"}`}>
         <button
-          className={`${mode === "Sales" ? "btn-themeGreen" : "btn-themeBlue"}`}
+          className={`${mode === "Sales" ? "btn-themeGreen" : "btn-themeBlue"} px-4`}
           onClick={() => dispatch(setMode("Sales"))}
         >
           Sales
         </button>
         <button
-          className={`${mode === "Qty" ? "btn-themeGreen" : "btn-themeBlue"}`}
+          className={`${mode === "Qty" ? "btn-themeGreen" : "btn-themeBlue"} px-4`}
           onClick={() => dispatch(setMode("Qty"))}
         >
           Qty
         </button>
         <button
-          className={`${mode === "Price" ? "btn-themeGreen" : "btn-themeBlue"}`}
+          className={`${mode === "Price" ? "btn-themeGreen" : "btn-themeBlue"} px-4`}
           onClick={() => dispatch(setMode("Price"))}
         >
           Price

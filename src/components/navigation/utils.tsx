@@ -4,7 +4,7 @@ import type StoresIcon from "../../svgs/StoresIcon";
 
 // Icons
 import {
-  HomeIcon,
+  // HomeIcon,
   UsersIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/16/solid";
@@ -25,15 +25,15 @@ export type Navigation = {
 };
 
 export const navigation: Navigation[] = [
-  {
-    name: "Home",
-    href: "/",
-    icon: HomeIcon,
-    mobile: true,
-    children: [],
-    childOpen: false,
-    userTypes: ["*"],
-  },
+  // {
+  //   name: "Home",
+  //   href: "/",
+  //   icon: HomeIcon,
+  //   mobile: true,
+  //   children: [],
+  //   childOpen: false,
+  //   userTypes: ["*"],
+  // },
   {
     name: "Sales",
     href: "sales",
@@ -47,7 +47,7 @@ export const navigation: Navigation[] = [
     name: "Team",
     href: "team",
     icon: UsersIcon,
-    mobile: true,
+    mobile: false,
     children: [],
     childOpen: false,
     userTypes: ["*"],
@@ -83,7 +83,7 @@ export const navigation: Navigation[] = [
     name: "Item Lookup",
     href: "item-lookup",
     icon: MagnifyingGlassIcon,
-    mobile: false,
+    mobile: true,
     children: [],
     childOpen: false,
     userTypes: ["*"],
