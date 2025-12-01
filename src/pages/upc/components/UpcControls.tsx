@@ -66,7 +66,7 @@ const UpcControls = () => {
             value={false}
             label={"Show All - 0"}
             onChange={function (id: number): void {
-              throw new Error("Function not implemented.");
+              throw new Error("Function not implemented. " + id);
             }}
             id={1}
           />
@@ -74,7 +74,7 @@ const UpcControls = () => {
             value={false}
             label={"Show Selected - 0"}
             onChange={function (id: number): void {
-              throw new Error("Function not implemented.");
+              throw new Error("Function not implemented. " + id);
             }}
             id={2}
           />
@@ -82,7 +82,7 @@ const UpcControls = () => {
             value={false}
             label={"Show Stores - 0"}
             onChange={function (id: number): void {
-              throw new Error("Function not implemented.");
+              throw new Error("Function not implemented. " + id);
             }}
             id={3}
           />

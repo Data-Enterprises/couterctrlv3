@@ -86,7 +86,7 @@ const UpcList = () => {
       {context.dataLoaded ? (
         module()
       ) : (
-        <>
+        <div className="flex justify-center items-center min-h-[calc(100vh-3rem)]">
           <UpcWizard
             className={`max-w-2xl mb-16 shadow-lg ${styling}`}
             index={context.index}
@@ -99,7 +99,7 @@ const UpcList = () => {
             <StepTwo className={"h-[420px] w-[530px]"} getData={getData} />
             <StepThree className="h-[200px] w-[530px]" />
           </UpcWizard>
-        </>
+        </div>
       )}
     </div>
   );
