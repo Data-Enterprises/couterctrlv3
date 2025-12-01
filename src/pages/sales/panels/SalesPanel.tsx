@@ -5,8 +5,11 @@ import type {
   SelectedSalesPanel,
   WeeklySale,
 } from "../../../interfaces";
-import { getDateLayout } from "../utils";
-import { setCatSales } from "../../../features/salesSlice";
+import { comparePanels, getDateLayout } from "../utils";
+import {
+  setCatSales,
+  setCompareSalesPanel,
+} from "../../../features/salesSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getCats } from "../../../api/sales";
 
@@ -22,11 +25,15 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { selectedSalesPanel } = useAppSelector((state) => state.sales);
+  const { selectedSalesPanel, compareSalesPanel } = useAppSelector(
+    (state) => state.sales
+  );
 
-  const bg = (panel: WeeklySale, selected: SelectedSalesPanel) => {
+  const border = (panel: WeeklySale, selected: SelectedSalesPanel) => {
     const date = panel.sale_date.split("T")[0];
-    if (date === selected.sale_date && panel.storeid === selected.storeid) {
+    if (date === compareSalesPanel.sale_date && panel.storeid === compareSalesPanel.storeid) {
+      return "shadow-inner border-2 border-emerald-500 rounded-xl";
+    } else if (date === selected.sale_date && panel.storeid === selected.storeid) {
       return "shadow-inner border-2 border-content/70 rounded-xl";
     } else {
       return "";
@@ -58,19 +65,41 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
       );
   };
 
+  const handleCompareClick = (panel: WeeklySale) => {
+    const date = panel.sale_date.split("T")[0];
+    if (!comparePanels(panel, compareSalesPanel)) {
+      dispatch(
+        setCompareSalesPanel({
+          sale_date: date,
+          storeid: panel.storeid,
+          store_name: panel.store_name,
+        })
+      );
+    } else {
+      dispatch(
+        setCompareSalesPanel({ sale_date: "", storeid: 0, store_name: "" })
+      );
+    }
+  };
+
   return (
     <div
-      className={`${bg(
+      className={`${border(
         panel,
         selectedSalesPanel
       )} bg-custom-white rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-inner 
       transition-all duration-200 select-none ripple-button min-h-[185px] relative`}
-      onClick={(e) => handlePanelClick(e, panel)}
     >
-      <div className={`font-bold text-center`}>
+      <div
+        className={`font-bold text-center`}
+        onClick={(e) => handlePanelClick(e, panel)}
+      >
         <div className="">{panel.store_name}</div>
       </div>
-      <div className={`flex justify-between items-center px-2`}>
+      <div
+        className={`flex justify-between items-center px-2`}
+        onClick={(e) => handlePanelClick(e, panel)}
+      >
         <div className="">
           <div className="text-left">Sales</div>
           <div className="font-medium">
@@ -96,8 +125,12 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
       </div>
       <div className="flex justify-around mt-2 gap-4">
         <button
-          className={`btn-themeGreen py-1.5 w-full`}
-          // onClick={() => handleHourlyClick(panel)}
+          className={`btn-themeGreen py-1.5 w-full ${
+            selectedSalesPanel.storeid === 0
+              ? "opacity-50 pointer-events-none"
+              : ""
+          }`}
+          onClick={() => handleCompareClick(panel)}
         >
           Compare
         </button>

@@ -87,7 +87,7 @@ const DepartmentSales = () => {
   ];
 
   const theme = themeQuartz.withParams({
-    headerHeight: 40,
+    headerHeight: 39,
     rowHeight: 25.5,
     headerBackgroundColor: "#3b82f6",
     headerTextColor: "#ffffff",
@@ -97,13 +97,13 @@ const DepartmentSales = () => {
     dataFontSize: 13,
     selectCellBorder: "transparent",
     rowBorder: "1px solid white",
-    borderColor: "transparent",
+    // borderColor: "transparent",
   });
 
   return (
     <div
       data-testid="dept-sales"
-      className="rounded-lg no-scrollbar h-full"
+      className="shadow-lg rounded-lg no-scrollbar h-full"
     >
       <div className="h-[100%] relative no-scrollbar">
         <AgGridReact

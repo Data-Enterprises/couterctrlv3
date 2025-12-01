@@ -28,11 +28,9 @@ const WeeklyNetSales = () => {
   };
 
   useEffect(() => {
-    // Do nothing if there's no weekly sales data
-    if (!sales.weeklySales.length) return;
-
     // If there are weekly sales, then set up the line data
     if (search.type === "Group" && sales.selectedSalesPanel.storeid === 0) {
+      console.log(search.type, sales.selectedSalesPanel);
       const id = 1;
       const reduced = sales.weeklySales.reduce((acc: ReducedWeekly[], day) => {
         const existing = acc.find((d) => d.sale_date === day.sale_date);

@@ -63,7 +63,7 @@ const SalesPanels = () => {
 
     // This is for determining the search type for Top Ten
     const searchType = p.storeid > 0 ? "Store" : search.type;
-
+    
     getWeekly(
       context.url,
       context.token,
@@ -134,7 +134,7 @@ const SalesPanels = () => {
       .catch((err: JsonError) =>
         toast.error("Error fetching subs data: " + err.message)
       );
-  }, [sales.selectedSalesPanel]);
+  }, [sales.selectedSalesPanel, sales.salesPanels]);
 
   const handlePanelClick = (
     e: React.MouseEvent<HTMLDivElement>,

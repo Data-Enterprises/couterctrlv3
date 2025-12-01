@@ -74,7 +74,7 @@ const Hourly = () => {
 
   return (
     <div
-      className={`w-full h-full bg-custom-white rounded-lg shadow-lg ${
+      className={`w-full h-full bg-custom-white rounded-lg ${
         sales.windowVisible.hourly ? "" : "hidden"
       }`}
     >
@@ -91,7 +91,7 @@ const Hourly = () => {
               colors={(bar) => rgbaColor(bar.data.fill, 0.3)}
               borderWidth={2}
               borderColor={(bar) => rgbaColor(bar.data.data.color, 1)}
-              margin={{ top: 20, right: 20, bottom: 70, left: 135 }}
+              margin={{ top: 20, right:10, bottom: 70, left: 150 }}
               padding={0.1}
               borderRadius={4}
               labelSkipWidth={12}
@@ -142,7 +142,7 @@ const Hourly = () => {
                 data={hours}
                 displayKey={"hour"}
                 valueKey={"hour"}
-                label="Select Hour"
+                label="Hour"
                 onSelect={handleChange}
                 className="w-20 relative"
                 listClass="mt-[52px]"

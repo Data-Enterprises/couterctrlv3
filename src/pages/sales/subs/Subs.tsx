@@ -1,50 +1,52 @@
-import { useAppSelector } from "../../../hooks";
+import { useEffect } from "react";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useHeight } from "../../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+import { getSubs } from "../../../api/sales";
+import type { JsonError } from "../../../interfaces";
+import { formatGoliathDate } from "../../../utils";
 import SubCard from "./SubCard";
+import { setCompareSubs } from "../../../features/salesSlice";
 
 // type NewBarData = {
 //   date: string;
 // } & SalesBarData;
 
 const Subs = () => {
+  const toast = useToast();
+  const dispatch = useAppDispatch();
+  const context = useAppSelector((state) => state.app);
+  const search = useAppSelector((state) => state.search);
   const sales = useAppSelector((state) => state.sales);
   const { topRef, bottomRef, height } = useHeight();
 
-//   useEffect(() => {
-//     if (sales.subSales.length === 0) return;
+  useEffect(() => {
+    if (sales.selectedSalesPanel.storeid === 0) return;
+    console.log(sales.compareSalesPanel);
+    const p = sales.compareSalesPanel;
+    const start = p.sale_date
+      ? p.sale_date.split("T")[0]
+      : formatGoliathDate(search.startDate);
+    const end = p.sale_date
+      ? p.sale_date.split("T")[0]
+      : formatGoliathDate(search.endDate);
 
-//     // console.log("ENDPOINT: subs/sub_sales");
-//     // console.log(" ");
-    
-//     // const testing = [...sales.subSales].reduce(
-//     //   (acc, cur) => acc + cur.total_sales,
-//     //   0
-//     // );
-//     // console.log("Total Sales from subs/sub_sales: ", testing);
-//     // console.log(" ");
+    getSubs(context.url, context.token, start, end, 0, p.storeid, 1)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(setCompareSubs(j.subs));
+        }
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error fetching subs data: " + err.message)
+      );
+  }, [sales.compareSalesPanel]);
 
-//     // const netTest = [...sales.weeklySales].reduce(
-//     //   (acc, cur) => acc + cur.net_sales,
-//     //   0
-//     // );
-//     // console.log("Net Sales from subs/sub_sales: ", netTest);
-//     // console.log(" ");
-
-//     // const taxTest = [...sales.subSales].reduce(
-//     //   (acc, cur) => acc + (cur.net_sales + cur.total_tax),
-//     //   0
-//     // );
-//     // console.log("Net Sales + Tax from subs/sub_sales: ", taxTest);
-//     // console.log(" ");
-
-//     // const qtyTest = [...sales.subSales].reduce(
-//     //   (acc, cur) => acc + cur.qty,
-//     //   0
-//     // );
-//     // console.log("Qty from subs/sub_sales: ", qtyTest);
-//     // console.log(" ");
-
-// }, [sales.subSales]);
+  // Should be false by default when loading, only when compare is selected will this return true
+  const isComparing = () => {
+    return sales.compareSalesPanel.storeid === 0;
+  };
 
   return (
     <div
@@ -60,14 +62,32 @@ const Subs = () => {
         >
           <div>Sub Department Sales</div>
         </div>
-        <div
-          className={`grid grid-cols-2 no-scrollbar overflow-y-scroll p-2 gap-2`}
-          style={{ height: height, maxHeight: height }}
-        >
-          {sales.subSales.map((sub, i) => (
-            <SubCard key={i} sub={sub} />
-          ))}
-        </div>
+        {isComparing() ? (
+          <div
+            className={`grid grid-cols-2 no-scrollbar overflow-y-scroll p-2 gap-2`}
+            style={{ height: height, maxHeight: height }}
+          >
+            {sales.subSales.map((sub, i) => (
+              <SubCard key={i} sub={sub} />
+            ))}
+          </div>
+        ) : (
+          <div
+            className={`grid grid-cols-2 no-scrollbar overflow-y-scroll p-2 gap-2`}
+            style={{ height: height, maxHeight: height }}
+          >
+            <div className="space-y-2">
+              {sales.subSales.map((sub, i) => (
+                <SubCard key={i} sub={sub} />
+              ))}
+            </div>
+            <div className="space-y-2">
+              {sales.compareSubs.map((sub, i) => (
+                <SubCard key={i} sub={sub} type="compare" />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

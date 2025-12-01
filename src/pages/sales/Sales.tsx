@@ -131,15 +131,17 @@ const Sales = () => {
           <div className="grid grid-cols-2 gap-3">
             <WeeklyNetSales />
 
-            <div className="h-full">
+            <div className="h-full shadow-lg">
               <Carousel className="bg-custom-white h-[100%]">
+                <Hourly />
+                {/* <DepartmentSales /> */}
                 <TopTenItems />
-                <DepartmentSales />
               </Carousel>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Hourly />
+            {/* <Hourly /> */}
+            <DepartmentSales />
             <Subs />
           </div>
         </div>
