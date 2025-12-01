@@ -83,7 +83,13 @@ const UpcList = () => {
         dispatch(setDataLoaded(true));
       })
       .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setIsLoading(false)));
+      .finally(() => cleanUp());
+  };
+
+  const cleanUp = () => {
+    dispatch(setIsLoading(false));
+    dispatch(setIndex(0));
+    setFile(null);
   };
 
   // The returned module based on selected mode

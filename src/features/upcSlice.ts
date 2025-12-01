@@ -74,7 +74,9 @@ export const upcSlice = createSlice({
     setSelectedUpcs: (state, action: PayloadAction<string>) => {
       const upc = state.selectedUpcs.find((u) => u === action.payload);
       if (upc) {
-        state.selectedUpcs = state.selectedUpcs.filter((u) => u !== action.payload);
+        state.selectedUpcs = state.selectedUpcs.filter(
+          (u) => u !== action.payload
+        );
       } else {
         state.selectedUpcs.push(action.payload);
       }
@@ -90,6 +92,7 @@ export const upcSlice = createSlice({
       state.salesComp = [];
       state.storeids = "";
       state.selectedStores = [];
+      state.dataLoaded = false;
     },
     resetUpcState: () => initialState,
   },

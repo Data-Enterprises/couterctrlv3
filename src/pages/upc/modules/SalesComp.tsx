@@ -7,7 +7,7 @@ const SalesComp = () => {
   return (
     <div className="w-full grid grid-cols-[13%_87%] gap-4">
       <UpcControls />
-      <div className="grid grid-rows-[20%_80%] gap-4 mr-4">
+      <div className="grid grid-rows-[19%_81%] gap-4 mr-4">
         <SalesCompHeader />
 
         {/* Table and comparison */}
