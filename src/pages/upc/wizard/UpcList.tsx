@@ -44,7 +44,6 @@ const UpcList = () => {
   // Data fetching based on selected mode
   const getData = () => {
     dispatch(setIsLoading(true));
-    dispatch(setIndex(3));
     if (context.selectedMode == 1) {
       getCompData();
     } else if (context.selectedMode == 2) {

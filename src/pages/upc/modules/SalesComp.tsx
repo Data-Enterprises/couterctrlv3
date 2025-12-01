@@ -9,8 +9,6 @@ const SalesComp = () => {
       <UpcControls />
       <div className="grid grid-rows-[19%_81%] gap-4 mr-4">
         <SalesCompHeader />
-
-        {/* Table and comparison */}
         <div className="grid grid-cols-[80%_19%] gap-4 mb-4">
           <SalesCompGrid />
           <SalesComparison />
