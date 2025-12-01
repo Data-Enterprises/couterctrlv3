@@ -1,11 +1,11 @@
 export interface WeekDay {
-  Monday: number | null;
-  Tuesday: number | null;
-  Wednesday: number | null;
-  Thursday: number | null;
-  Friday: number | null;
-  Saturday: number | null;
-  Sunday: number | null;
+  Monday: number;
+  Tuesday: number;
+  Wednesday: number;
+  Thursday: number;
+  Friday: number;
+  Saturday: number;
+  Sunday: number;
 }
 
 export interface CardData {

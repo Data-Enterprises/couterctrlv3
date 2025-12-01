@@ -15,6 +15,8 @@ interface UpcState {
   upcItems: UpcItem[];
   selectedUpcs: string[];
   salesComp: UpcSalesComp[];
+  selectedCompOne: UpcSalesComp | null;
+  selectedCompTwo: UpcSalesComp | null;
 }
 
 const initialState: UpcState = {
@@ -31,6 +33,8 @@ const initialState: UpcState = {
   upcItems: [],
   salesComp: [],
   selectedUpcs: [],
+  selectedCompOne: null,
+  selectedCompTwo: null,
 };
 
 export const upcSlice = createSlice({
@@ -81,8 +85,24 @@ export const upcSlice = createSlice({
         state.selectedUpcs.push(action.payload);
       }
     },
+    setSelectedSalesComps: (state, action: PayloadAction<UpcSalesComp>) => {
+      if (!state.selectedCompOne) {
+        state.selectedCompOne = action.payload;
+      } else if (!state.selectedCompTwo) {
+        state.selectedCompTwo = action.payload;
+      } else {
+        state.selectedCompOne = action.payload;
+        state.selectedCompTwo = null;
+      }
+    },
+    clearSelectedComps: (state) => {
+      state.selectedCompOne = null;
+      state.selectedCompTwo = null;
+    },
     resetSelectedUpcs: (state) => {
       state.selectedUpcs = [];
+      state.selectedCompOne = null;
+      state.selectedCompTwo = null;
     },
     clearUpcData: (state) => {
       state.selectedMode = 0;
@@ -93,6 +113,8 @@ export const upcSlice = createSlice({
       state.storeids = "";
       state.selectedStores = [];
       state.dataLoaded = false;
+      state.selectedCompOne = null;
+      state.selectedCompTwo = null;
     },
     resetUpcState: () => initialState,
   },
@@ -108,6 +130,8 @@ export const {
   setDataLoaded,
   setIsLoading,
   setSalesComp,
+  setSelectedSalesComps,
+  clearSelectedComps,
   setUpcCount,
   setUpcItems,
   setSelectedUpcs,

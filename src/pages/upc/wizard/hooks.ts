@@ -15,6 +15,8 @@ export const useUpcContext = () => {
     trendPeriods,
     selectedUpcs,
     selectedStores,
+    selectedCompOne,
+    selectedCompTwo,
   } = useAppSelector((state) => state.upc);
 
   return {
@@ -33,5 +35,7 @@ export const useUpcContext = () => {
     trendPeriods,
     selectedUpcs,
     selectedStores,
+    selectedCompOne,
+    selectedCompTwo,
   };
 };

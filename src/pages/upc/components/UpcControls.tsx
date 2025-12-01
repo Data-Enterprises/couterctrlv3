@@ -36,7 +36,7 @@ const UpcControls = () => {
   };
 
   return (
-    <div className="grid bg-custom-white rounded-lg shadow-lg text-sm">
+    <div className="grid bg-custom-white rounded-lg shadow-lg text-sm select-none">
       <div
         ref={topRef}
         className="flex flex-col gap-2 rounded-t-lg px-2 pt-3 pb-2"
@@ -86,10 +86,12 @@ const UpcControls = () => {
             {upcDisplay === "code" ? "Show Desc" : "Show UPC"}
           </button>
         </div>
-        <input
-          type="text"
-          className="basic-input focus:border bg-custom-white py-1 w-full"
-        />
+        <div>
+          <input
+            type="text"
+            className="basic-input focus:border bg-custom-white py-1 w-full"
+          />
+        </div>
       </div>
 
       <div

@@ -46,13 +46,13 @@ const SalesCompHeader = () => {
   }, [context.salesComp, context.selectedUpcs]);
 
   return (
-    <div className="grid grid-cols-7 gap-4">
+    <div className="grid grid-cols-5 gap-4 mr-4">
       {cards.length > 0 ? (
         cards.map((card, i) => (
           <WeekCard key={i} week={card.week} sales={card.sales} />
         ))
       ) : (
-        <div className="bg-custom-white rounded-lg shadow-lg col-span-7 flex flex-col justify-center items-center text-content/70">
+        <div className="bg-custom-white rounded-lg shadow-lg col-span-5 flex flex-col justify-center items-center text-content/70">
           <div>Select one or more UPCs to view</div>
           <div>The aggregated weekday sales by week</div>
         </div>

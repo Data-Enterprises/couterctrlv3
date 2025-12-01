@@ -74,7 +74,7 @@ export const compCols: (ColDef<UpcSalesComp> | ColGroupDef<UpcSalesComp>)[] = [
     valueFormatter: (params) => {
       if (!params.value) return formatCurrency2(0);
       return formatCurrency2(params.value);
-    }
+    },
   },
   {
     headerName: "Tue",
@@ -86,7 +86,7 @@ export const compCols: (ColDef<UpcSalesComp> | ColGroupDef<UpcSalesComp>)[] = [
     valueFormatter: (params) => {
       if (!params.value) return formatCurrency2(0);
       return formatCurrency2(params.value);
-    }
+    },
   },
   {
     headerName: "Wed",
@@ -98,7 +98,7 @@ export const compCols: (ColDef<UpcSalesComp> | ColGroupDef<UpcSalesComp>)[] = [
     valueFormatter: (params) => {
       if (!params.value) return formatCurrency2(0);
       return formatCurrency2(params.value);
-    }
+    },
   },
   {
     headerName: "Thu",
@@ -110,7 +110,7 @@ export const compCols: (ColDef<UpcSalesComp> | ColGroupDef<UpcSalesComp>)[] = [
     valueFormatter: (params) => {
       if (!params.value) return formatCurrency2(0);
       return formatCurrency2(params.value);
-    }
+    },
   },
   {
     headerName: "Fri",
@@ -122,7 +122,7 @@ export const compCols: (ColDef<UpcSalesComp> | ColGroupDef<UpcSalesComp>)[] = [
     valueFormatter: (params) => {
       if (!params.value) return formatCurrency2(0);
       return formatCurrency2(params.value);
-    }
+    },
   },
   {
     headerName: "Sat",
@@ -134,7 +134,7 @@ export const compCols: (ColDef<UpcSalesComp> | ColGroupDef<UpcSalesComp>)[] = [
     valueFormatter: (params) => {
       if (!params.value) return formatCurrency2(0);
       return formatCurrency2(params.value);
-    }
+    },
   },
   {
     headerName: "Sun",
@@ -145,6 +145,6 @@ export const compCols: (ColDef<UpcSalesComp> | ColGroupDef<UpcSalesComp>)[] = [
     valueFormatter: (params) => {
       if (!params.value) return formatCurrency2(0);
       return formatCurrency2(params.value);
-    }
+    },
   },
 ];
