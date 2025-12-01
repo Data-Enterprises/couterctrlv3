@@ -8,10 +8,6 @@ import { formatGoliathDate } from "../../../utils";
 import SubCard from "./SubCard";
 import { setCompareSubs } from "../../../features/salesSlice";
 
-// type NewBarData = {
-//   date: string;
-// } & SalesBarData;
-
 const Subs = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
@@ -20,10 +16,10 @@ const Subs = () => {
   const sales = useAppSelector((state) => state.sales);
   const { topRef, bottomRef, height } = useHeight();
 
+  // For getting the compare subs data
   useEffect(() => {
-    if (sales.selectedSalesPanel.storeid === 0) return;
+    if (sales.compareSalesPanel.storeid === 0) return;
 
-    // Otherwise we got a live one and we need to get the compare data for subs
     const p = sales.compareSalesPanel;
     const start = p.sale_date
       ? p.sale_date.split("T")[0]
