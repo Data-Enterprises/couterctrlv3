@@ -2,6 +2,7 @@ import { ResponsiveLine } from "@nivo/line";
 import { useAppSelector } from "../../../hooks";
 import { useEffect, useState } from "react";
 import { formatCurrency2 } from "../../../utils";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 
 type LineData = { x: string; y: number; z: number }[];
 type LineSeries = {
@@ -30,7 +31,6 @@ const WeeklyNetSales = () => {
   useEffect(() => {
     // If there are weekly sales, then set up the line data
     if (search.type === "Group" && sales.selectedSalesPanel.storeid === 0) {
-      console.log(search.type, sales.selectedSalesPanel);
       const id = 1;
       const reduced = sales.weeklySales.reduce((acc: ReducedWeekly[], day) => {
         const existing = acc.find((d) => d.sale_date === day.sale_date);
@@ -118,40 +118,48 @@ const WeeklyNetSales = () => {
         <div>Weekly Net Sales</div>
         <div>{title}</div>
       </div>
-      <ResponsiveLine
-        data={lineData}
-        margin={{ top: 20, right: 30, bottom: 65, left: 80 }}
-        curve="natural"
-        pointSize={10}
-        pointBorderWidth={2}
-        pointBorderColor={{ from: "seriesColor" }}
-        enableTouchCrosshair={true}
-        useMesh={true}
-        enableGridX={true}
-        gridYValues={10}
-        colors={["#3b82f6"]}
-        animate={true}
-        axisLeft={{
-          tickValues: 10,
-          format: (value) => `${formatCurrency2(value)}`,
-        }}
-        tooltip={({ point }) => (
-          <div className="bg-custom-white p-2 rounded-lg shadow shadow-content text-sm">
-            <div className="flex gap-1">
-              <div>Date:</div>
-              <div className="font-medium">{point.data.x}</div>
+      {lineData.length > 0 ? (
+        <ResponsiveLine
+          data={lineData}
+          margin={{ top: 20, right: 30, bottom: 65, left: 80 }}
+          curve="natural"
+          pointSize={10}
+          pointBorderWidth={2}
+          pointBorderColor={{ from: "seriesColor" }}
+          enableTouchCrosshair={true}
+          useMesh={true}
+          enableGridX={true}
+          gridYValues={10}
+          colors={["#3b82f6"]}
+          animate={true}
+          axisLeft={{
+            tickValues: 10,
+            format: (value) => `${formatCurrency2(value)}`,
+          }}
+          tooltip={({ point }) => (
+            <div className="bg-custom-white p-2 rounded-lg shadow shadow-content text-sm">
+              <div className="flex gap-1">
+                <div>Date:</div>
+                <div className="font-medium">{point.data.x}</div>
+              </div>
+              <div className="flex gap-1">
+                <div>Sales:</div>
+                <div className="font-medium">
+                  {formatCurrency2(point.data.y)}
+                </div>
+              </div>
+              <div className="flex gap-1">
+                <div>Qty:</div>
+                <div className="font-medium">{getQty(point.data.x)}</div>
+              </div>
             </div>
-            <div className="flex gap-1">
-              <div>Sales:</div>
-              <div className="font-medium">{formatCurrency2(point.data.y)}</div>
-            </div>
-            <div className="flex gap-1">
-              <div>Qty:</div>
-              <div className="font-medium">{getQty(point.data.x)}</div>
-            </div>
-          </div>
-        )}
-      />
+          )}
+        />
+      ) : (
+        <div className="h-full w-full relative">
+          <LoadingIndicator message="Loading weekly sales..." />
+        </div>
+      )}
     </div>
   );
 };

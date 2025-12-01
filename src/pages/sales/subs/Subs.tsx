@@ -22,7 +22,8 @@ const Subs = () => {
 
   useEffect(() => {
     if (sales.selectedSalesPanel.storeid === 0) return;
-    console.log(sales.compareSalesPanel);
+
+    // Otherwise we got a live one and we need to get the compare data for subs
     const p = sales.compareSalesPanel;
     const start = p.sale_date
       ? p.sale_date.split("T")[0]
