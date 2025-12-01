@@ -1,4 +1,3 @@
-// Option 3 using Quagga2
 import { useState, useEffect, useRef } from "react";
 import Quagga from "@ericblade/quagga2";
 import { useMediaDevices } from "react-media-devices";
@@ -47,9 +46,6 @@ const ItemLookup = () => {
   const [deviceId, setDeviceId] = useState<string>("");
   const ref = useRef<HTMLDivElement>(null);
 
-  // teporary until quicksight is done
-  const api_key = "12FE9864SBX50W79";
-
   const constraints = {
     video: { facingMode: "environment", width: 1280, height: 720 },
   };
@@ -76,7 +72,7 @@ const ItemLookup = () => {
   useEffect(() => {
     // Get the store list on mount or clear
     if (storeList.length || !email) return;
-    getStoreList(url, email, api_key)
+    getStoreList(url, token, email)
       .then((resp) => {
         const j = resp.data;
         if (j.error == 0) {
@@ -116,7 +112,7 @@ const ItemLookup = () => {
   // copy this over to the other approaches
   const getSingleStoreData = (upc: string) => {
     setIsLoading(true);
-    getItemLookupSingleStore(url, upc, selectedStore, api_key)
+    getItemLookupSingleStore(url, token, upc, selectedStore)
       .then((resp) => {
         const j = resp.data;
         if (j.error == 0) {
@@ -149,7 +145,7 @@ const ItemLookup = () => {
 
   const getData = (upc: string) => {
     setIsLoading(true);
-    getItemLookup(url, upc, api_key)
+    getItemLookup(url, token, upc)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {

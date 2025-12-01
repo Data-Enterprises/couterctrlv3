@@ -1,16 +1,19 @@
 import axios from "axios";
-// add api key to both calls make call for single store
+
 export const getItemLookup = async (
   url: string,
-  upc: string,
-  apikey: string
+  token: string,
+  upc: string
 ) => {
   const json = await axios({
     method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
     url: url + "items/itemlookup",
     params: {
       upc,
-      apikey,
     },
   });
   return json;
@@ -18,15 +21,18 @@ export const getItemLookup = async (
 
 export const getStoreList = async (
   url: string,
-  email: string,
-  apikey: string
+  token: string,
+  email: string
 ) => {
   const json = await axios({
     method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
     url: url + "items/storelist",
     params: {
       email,
-      apikey,
     },
   });
   return json;
@@ -34,16 +40,19 @@ export const getStoreList = async (
 
 export const getItemLookupSingleStore = async (
   url: string,
+  token: string,
   upc: string,
-  storeId: number,
-  apikey: string
+  storeId: number
 ) => {
   const json = await axios({
     method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
     url: url + `items/itemlookup/${storeId}`,
     params: {
       upc,
-      apikey,
     },
   });
   return json;

@@ -20,7 +20,6 @@ const BottomStoreLookup = () => {
 
   return (
     <div className="text-sm">
-      {/* Details */}
       <div className="bg-custom-white shadow-md rounded-lg mb-2">
         <div className="font-medium bg-orange-500 text-custom-white rounded-t-lg py-0.5 px-2 flex justify-between">
           <div>Lowest {mode}</div>
@@ -28,18 +27,11 @@ const BottomStoreLookup = () => {
             {item.store_name} ({item.store_number})
           </div>
         </div>
-        {/* <div className="pl-2 py-0.5 flex gap-2">
-          <div className="font-medium">Store:</div>
-          <div>
-            {item.store_name} ({item.store_number})
-          </div>
-        </div> */}
         <div className="pl-2 py-0.5 flex gap-2">
           <div className="font-medium">Category:</div>
           <div>{item.category_description}</div>
         </div>
       </div>
-      {/* cost columns */}
       <div className="grid grid-cols-2 gap-4 mb-2">
         <div className="bg-custom-white shadow-md rounded-lg">
           <div className="font-medium bg-orange-500 text-custom-white rounded-t-lg py-0.5 pl-2">
@@ -59,7 +51,6 @@ const BottomStoreLookup = () => {
         </div>
       </div>
 
-      {/* Totals qty/sales */}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-custom-white shadow-md rounded-lg">
           <div className="font-medium bg-orange-500 text-custom-white rounded-t-lg py-0.5 pl-2">
