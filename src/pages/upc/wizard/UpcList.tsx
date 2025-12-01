@@ -18,9 +18,12 @@ import {
   setDataLoaded,
   setIndex,
   setIsLoading,
+  setSalesComp,
+  setUpcCount,
+  setUpcItems,
 } from "../../../features/upcSlice";
 import { getSalesComp } from "../../../api/upc";
-import type { JsonError } from "../../../interfaces";
+import type { JsonError, UpcItem } from "../../../interfaces";
 
 const UpcList = () => {
   const toast = useToast();
@@ -57,20 +60,30 @@ const UpcList = () => {
   const getCompData = () => {
     getSalesComp(
       context.url,
+      context.token,
       context.storeids,
-      context.userid,
       context.startDate,
       context.endDate,
       file!
     )
       .then((resp) => {
         const j = resp.data;
-        console.log("Sales Comp Data:", j);
+        const upcCopy = [...j.daily].reduce((acc: UpcItem[], cur) => {
+          if (!acc.find((item) => item.product_code === cur.product_code)) {
+            acc.push({
+              product_code: cur.product_code,
+              description: cur.description,
+            });
+          }
+          return acc;
+        }, []);
+        dispatch(setUpcItems(upcCopy));
+        dispatch(setUpcCount(j.upc_count));
+        dispatch(setSalesComp(j.daily));
+        dispatch(setDataLoaded(true));
       })
       .catch((err: JsonError) => toast.error(err.message))
       .finally(() => dispatch(setIsLoading(false)));
-
-    dispatch(setDataLoaded(true));
   };
 
   // The returned module based on selected mode

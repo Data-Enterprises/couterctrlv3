@@ -35,7 +35,7 @@ const StartDatePicker = () => {
     : `relative inline-block text-left md:px-0 mx-auto w-full`;
 
   const menuStyle = context.isDesktop ? "px-2.5 md:px-0" : "";
-  const calendarStyle ="md:w-[135%]";
+  const calendarStyle ="md:w-[126%]";
 
   return (
     <Menu data-testid="start-date-picker" as="div" className={styling}>
@@ -69,7 +69,7 @@ const StartDatePicker = () => {
         data-[enter]:ease-out 
         data-[leave]:ease-in`}
       >
-        <div data-testid="calendar-container" className="py-1">
+        <div data-testid="calendar-container" className="py-">
           <MenuItem>
             {({ close }) => (
               <Calendar

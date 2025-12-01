@@ -297,14 +297,20 @@ export interface TransactionListItem {
 //////////////////////////////////////////////////////////////
 
 // For upc sales comp data
-export type UpcData = {
-  storeid: number;
-  sale_date: string;
-  store_number: string;
-  terminal: string;
+export type UpcSalesComp = {
   product_code: string;
   description: string;
-  qty: number;
-  sales: number;
-  weight: number;
+  week: string;
+  Monday: number | null;
+  Tuesday: number | null;
+  Wednesday: number | null;
+  Thursday: number | null;
+  Friday: number | null;
+  Saturday: number | null;
+  Sunday: number | null;
+};
+
+export type UpcItem = {
+  product_code: string;
+  description: string;
 };

@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { UpcData, Store } from "../interfaces";
+import type { UpcSalesComp, UpcItem, Store } from "../interfaces";
 
 interface UpcState {
   index: number;
@@ -11,8 +11,10 @@ interface UpcState {
   trendPeriods: string;
   dataLoaded: boolean;
   isLoading: boolean;
-  thisYear: UpcData[];
-  lastYear: UpcData[];
+  upcCount: number;
+  upcItems: UpcItem[];
+  selectedUpcs: string[];
+  salesComp: UpcSalesComp[];
 }
 
 const initialState: UpcState = {
@@ -25,8 +27,10 @@ const initialState: UpcState = {
   trendPeriods: "120",
   dataLoaded: false,
   isLoading: false,
-  thisYear: [],
-  lastYear: [],
+  upcCount: 0,
+  upcItems: [],
+  salesComp: [],
+  selectedUpcs: [],
 };
 
 export const upcSlice = createSlice({
@@ -58,11 +62,34 @@ export const upcSlice = createSlice({
     setIsLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
     },
-    setThisYear: (state, action: PayloadAction<UpcData[]>) => {
-      state.thisYear = action.payload;
+    setSalesComp: (state, action: PayloadAction<UpcSalesComp[]>) => {
+      state.salesComp = action.payload;
     },
-    setLastYear: (state, action: PayloadAction<UpcData[]>) => {
-      state.lastYear = action.payload;
+    setUpcCount: (state, action: PayloadAction<number>) => {
+      state.upcCount = action.payload;
+    },
+    setUpcItems: (state, action: PayloadAction<UpcItem[]>) => {
+      state.upcItems = action.payload;
+    },
+    setSelectedUpcs: (state, action: PayloadAction<string>) => {
+      const upc = state.selectedUpcs.find((u) => u === action.payload);
+      if (upc) {
+        state.selectedUpcs = state.selectedUpcs.filter((u) => u !== action.payload);
+      } else {
+        state.selectedUpcs.push(action.payload);
+      }
+    },
+    resetSelectedUpcs: (state) => {
+      state.selectedUpcs = [];
+    },
+    clearUpcData: (state) => {
+      state.selectedMode = 0;
+      state.upcCount = 0;
+      state.upcItems = [];
+      state.selectedUpcs = [];
+      state.salesComp = [];
+      state.storeids = "";
+      state.selectedStores = [];
     },
     resetUpcState: () => initialState,
   },
@@ -77,8 +104,12 @@ export const {
   setSelectedMode,
   setDataLoaded,
   setIsLoading,
-  setThisYear,
-  setLastYear,
+  setSalesComp,
+  setUpcCount,
+  setUpcItems,
+  setSelectedUpcs,
+  resetSelectedUpcs,
+  clearUpcData,
   resetUpcState,
 } = upcSlice.actions;
 export default upcSlice.reducer;

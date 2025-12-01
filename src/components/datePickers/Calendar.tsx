@@ -101,10 +101,10 @@ const Calendar = ({
       <div className="calendar border-b">
         <div className="navigate-date flex items-center gap-2 mx-0 my-2 justify-between">
           <div className="flex">
-            <h2 className="month text-2xl px-2 font-bold">
+            <h2 className="month text-xl px-2 font-bold">
               {monthsOfYear[currentMonth]},
             </h2>
-            <h2 className="year text-2xl px-2 font-bold ">{currentYear}</h2>
+            <h2 className="year text-xl px-2 font-bold ">{currentYear}</h2>
           </div>
           <div className="buttons flex gap-2 px-2">
             <i

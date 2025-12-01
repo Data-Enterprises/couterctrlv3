@@ -2,8 +2,8 @@ import axios from "axios";
 
 export const getSalesComp = async (
   url: string,
+  token: string,
   storeids: string,
-  userid: number,
   startdate: string,
   enddate: string,
   file: File
@@ -13,11 +13,14 @@ export const getSalesComp = async (
 
   const json = await axios({
     method: "POST",
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    },
     url: url + "marketing/upload_upcs_daily_sales",
     data: formData,
     params: {
       storeids,
-      userid,
       startdate,
       enddate,
     },
