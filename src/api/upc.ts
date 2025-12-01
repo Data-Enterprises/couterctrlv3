@@ -31,8 +31,8 @@ export const getSalesComp = async (
 
 export const getForecasting = async (
   url: string,
+  token: string,
   storeids: string,
-  userid: number,
   startdate: string,
   enddate: string,
   file: File
@@ -42,11 +42,14 @@ export const getForecasting = async (
 
   const json = await axios({
     method: "POST",
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    },
     url: url + "marketing/upload_upcs",
     data: formData,
     params: {
       storeids,
-      userid,
       startdate,
       enddate,
     },

@@ -148,3 +148,16 @@ export const compCols: (ColDef<UpcSalesComp> | ColGroupDef<UpcSalesComp>)[] = [
     },
   },
 ];
+
+export const colorCodes = [
+  "#d946ef", // fuchsia-500
+  "#f0abfc", // fuchsia-300
+  "#3b82f6", // blue-500
+  "#60a5fa", // blue-300
+  "#10b981", // emerald-500
+  "#6ee7b7", // emerald-300
+  "#4fd1c5", // teal-400
+  "#99f6e4", // teal-200
+  "#f97316", // orange-500
+  "#fdba74", // orange-300
+];

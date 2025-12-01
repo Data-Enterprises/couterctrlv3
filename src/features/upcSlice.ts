@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { UpcSalesComp, UpcItem, Store } from "../interfaces";
+import type { UpcSalesComp, UpcItem, Store, UpcInfo, Forecast } from "../interfaces";
 
 interface UpcState {
   index: number;
@@ -17,6 +17,11 @@ interface UpcState {
   salesComp: UpcSalesComp[];
   selectedCompOne: UpcSalesComp | null;
   selectedCompTwo: UpcSalesComp | null;
+  forecast: Forecast[];
+  forecastHistory: Forecast[];
+  upcList: UpcInfo[];
+  forecastOption: "sales" | "quantity";
+  selectedLegendForecast: UpcInfo;
 }
 
 const initialState: UpcState = {
@@ -35,6 +40,11 @@ const initialState: UpcState = {
   selectedUpcs: [],
   selectedCompOne: null,
   selectedCompTwo: null,
+  forecast: [],
+  forecastHistory: [],
+  upcList: [],
+  forecastOption: "quantity",
+  selectedLegendForecast: {} as UpcInfo,
 };
 
 export const upcSlice = createSlice({
@@ -99,6 +109,21 @@ export const upcSlice = createSlice({
       state.selectedCompOne = null;
       state.selectedCompTwo = null;
     },
+    setUpcList: (state, action: PayloadAction<UpcInfo[]>) => {
+      state.upcList = action.payload;
+    },
+    setForecastOption: (state, action: PayloadAction<"sales" | "quantity">) => {
+      state.forecastOption = action.payload;
+    },
+    setSelectedLegendForecast: (state, action: PayloadAction<UpcInfo>) => {
+      state.selectedLegendForecast = action.payload;
+    },
+    setForecastData: (state, action: PayloadAction<Forecast[]>) => {
+      state.forecast = action.payload;
+    },
+    setForecastHistory: (state, action: PayloadAction<Forecast[]>) => {
+      state.forecastHistory = action.payload;
+    },
     resetSelectedUpcs: (state) => {
       state.selectedUpcs = [];
       state.selectedCompOne = null;
@@ -134,6 +159,11 @@ export const {
   clearSelectedComps,
   setUpcCount,
   setUpcItems,
+  setUpcList,
+  setForecastOption,
+  setSelectedLegendForecast,
+  setForecastData,
+  setForecastHistory,
   setSelectedUpcs,
   resetSelectedUpcs,
   clearUpcData,

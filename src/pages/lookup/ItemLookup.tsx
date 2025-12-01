@@ -109,7 +109,6 @@ const ItemLookup = () => {
     };
   }, [dispatch]);
 
-  // copy this over to the other approaches
   const getSingleStoreData = (upc: string) => {
     setIsLoading(true);
     getItemLookupSingleStore(url, token, upc, selectedStore)

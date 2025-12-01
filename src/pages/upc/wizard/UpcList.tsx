@@ -16,14 +16,23 @@ import PriceOpt from "../modules/PriceOpt";
 import TrendDetector from "../modules/TrendDetector";
 import {
   setDataLoaded,
+  setForecastData,
+  setForecastHistory,
   setIndex,
   setIsLoading,
   setSalesComp,
   setUpcCount,
   setUpcItems,
+  setUpcList,
 } from "../../../features/upcSlice";
-import { getSalesComp } from "../../../api/upc";
-import type { JsonError, UpcItem } from "../../../interfaces";
+import { getForecasting, getSalesComp } from "../../../api/upc";
+import type {
+  Forecast,
+  JsonError,
+  UpcForecast,
+  UpcItem,
+} from "../../../interfaces";
+import { colorCodes } from "../components";
 
 const UpcList = () => {
   const toast = useToast();
@@ -47,7 +56,7 @@ const UpcList = () => {
     if (context.selectedMode == 1) {
       getCompData();
     } else if (context.selectedMode == 2) {
-      // getForecastsData();
+      getForecastData();
     } else if (context.selectedMode == 3) {
       // getPriceOptData();
     } else if (context.selectedMode == 4) {
@@ -82,6 +91,101 @@ const UpcList = () => {
         dispatch(setDataLoaded(true));
       })
       .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => cleanUp());
+  };
+
+  const getForecastData = () => {
+    getForecasting(
+      context.url,
+      context.token,
+      context.storeids,
+      context.startDate,
+      context.endDate,
+      file!
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          const convertData = (
+            id: string,
+            data: { date: string; value: number }[],
+            idx: number,
+            type = "history"
+          ): Forecast => {
+            const newData = {
+              id: `${id} - ${type}`,
+              data: data
+                .map((item) => ({
+                  x: item.date.split("/").splice(0, 2).join("/"),
+                  y: item.value,
+                }))
+                .slice(-7),
+              color: colorCodes[idx % colorCodes.length],
+            };
+
+            if (type === "forecast") {
+              // Find the last date in the history data for that upc and shift the forecast dates accordingly => attaches both history and forecast on the chart
+              const historyEntry = Object.entries(j.results)
+                .map(([k, v]) => [k, structuredClone(v as UpcForecast).history])
+                .find(([k]) => k === id);
+              if (!historyEntry) return newData;
+              const historyDates = historyEntry[1] as {
+                date: string;
+                value: number;
+              }[];
+              const lastHistoryDate = historyDates[historyDates.length - 1] as {
+                date: string;
+                value: number;
+              };
+              newData.data.unshift({
+                x: lastHistoryDate.date.split("/").splice(0, 2).join("/"),
+                y: lastHistoryDate.value,
+              });
+            }
+            return newData;
+          };
+
+          const history = Object.entries(j.results)
+            .map(([k, v]) => [k, structuredClone(v as UpcForecast).history])
+            .map(([id, obj], idx) =>
+              convertData(
+                id as string,
+                obj as { date: string; value: number }[],
+                idx
+              )
+            );
+
+          const forecast = Object.entries(j.results)
+            .map(([k, v]) => [k, structuredClone(v as UpcForecast).forecast])
+            .map(([id, obj], idx) =>
+              convertData(
+                id as string,
+                obj as { date: string; value: number }[],
+                idx,
+                "forecast"
+              )
+            );
+
+          const upcList = Object.keys(j.results).map((k, idx) => ({
+            label: k,
+            value: k,
+            color: colorCodes[idx % colorCodes.length],
+            metrics: j.results[k as string].metrics,
+          }));
+
+          // const { data, metrics } = formatForecastExport(j.results);
+          // dispatch(setForecastExport(data));
+          // dispatch(setForecastMetricExport(metrics));
+          dispatch(setForecastData(forecast));
+          dispatch(setForecastHistory(history));
+          dispatch(setUpcList(upcList));
+          dispatch(setUpcCount(j.upc_count));
+          dispatch(setDataLoaded(true));
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error(err.message);
+      })
       .finally(() => cleanUp());
   };
 

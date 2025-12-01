@@ -314,3 +314,70 @@ export type UpcItem = {
   product_code: string;
   description: string;
 };
+
+export type UpcMetrics = {
+  avg_daily_qty: number;
+  days_active: number;
+  description: string;
+  max_day_qty: number;
+  qty: number;
+};
+
+export type UpcInfo = {
+  label: string;
+  value: string;
+  color: string;
+  metrics: UpcMetrics;
+};
+
+export type Forecast = {
+  // id === upc code
+  id: string;
+  // x === date and y === value
+  data: { x: string; y: number }[];
+  // for the chart color
+  color: string;
+};
+
+export interface UpcForecast {
+  forecast: { date: string; value: number }[];
+  forecast_dimension: number;
+  forecast_method: string;
+  history: { date: string; value: number }[];
+  history_dimension: number;
+  metrics: {
+    avg_daily_qty: number;
+    days_active: number;
+    description: string;
+    max_day_qty: number;
+    qty: number;
+  };
+}
+
+export type UpcData = {
+  storeid: number;
+  sale_date: string;
+  store_number: string;
+  terminal: string;
+  product_code: string;
+  description: string;
+  qty: number;
+  sales: number;
+  weight: number;
+};
+
+export type ForecastExport = {
+  upc: string;
+  description: string;
+  date: string;
+  quantity: number;
+};
+
+export type ForecastMetrics = {
+  upc: string;
+  description: string;
+  avg_daily_qty: number;
+  days_active: number;
+  max_day_qty: number;
+  qty: number;
+};
