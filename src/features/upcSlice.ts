@@ -213,6 +213,7 @@ export const upcSlice = createSlice({
     clearUpcData: (state) => {
       state.selectedMode = 0;
       state.upcCount = 0;
+      state.radioId = 0;
       state.upcItems = [];
       state.selectedUpcs = [];
       state.salesComp = [];
