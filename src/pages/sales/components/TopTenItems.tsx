@@ -14,6 +14,7 @@ import type {
 
 const TopTenItems = () => {
   const dispatch = useAppDispatch();
+  const context = useAppSelector((state) => state.app);
   const sales = useAppSelector((state) => state.sales);
   const search = useAppSelector((state) => state.search);
   const [title, setTitle] = useState<string>("");
@@ -80,7 +81,8 @@ const TopTenItems = () => {
     }
 
     // If single store, then it's all good, if multiple stores, then the data will be aggregated above and sliced
-    setTopTen(newTopTen);
+    const data = context.isDesktop ? newTopTen : newTopTen.reverse();
+    setTopTen(data);
 
     const metrics = calculateMetrics(newTopTen);
     dispatch(setTopTenItemsMetrics(metrics));
@@ -89,62 +91,87 @@ const TopTenItems = () => {
   return (
     <div
       data-testid="sales-top-ten"
-      className="rounded-lg overflow-visible relative h-full"
+      className="bg-custom-white rounded-lg overflow-visible relative h-full"
     >
-      <div className="font-medium bg-blue-500 text-custom-white rounded-t-lg px-4 py-0.5 flex justify-between">
-        <div>Top Ten Items</div>
-        <div>{title}</div>
-      </div>
-      <div className="h-[380px]">
-        <ResponsiveBar
-          data={topTen}
-          indexBy="label"
-          colors={(bar) => rgbaColor(bar.data.fill, 0.3)}
-          borderWidth={2}
-          borderColor={(bar) => rgbaColor(bar.data.data.color, 1)}
-          margin={{ top: 10, right: 80, bottom: 80, left: 90 }}
-          padding={0.1}
-          borderRadius={4}
-          labelSkipWidth={12}
-          labelSkipHeight={12}
-          keys={["value"]}
-          enableLabel={false}
-          layout="horizontal"
-          axisBottom={null}
-          tooltip={({ data }) => (
-            <div
-              className={`bg-custom-white p-2 rounded-md shadow-md shadow-content whitespace-nowrap text-[13px] flex gap-1 items-center`}
-              style={{ color: data.color }}
-            >
-              <div
-                className={`h-3 w-3 rounded mr-1`}
-                style={{ backgroundColor: data.color }}
-              ></div>
-              <div className="text-content">{data.id}</div>
-              <div>-</div>
-              <div className="font-medium">{formatCurrency2(data.value)}</div>
+      {context.isDesktop ? (
+        <>
+          <div className="font-medium bg-blue-500 text-custom-white rounded-t-lg px-4 py-0.5 flex justify-between">
+            <div>Top Ten Items</div>
+            <div>{title}</div>
+          </div>
+          <div className="h-[380px]">
+            <ResponsiveBar
+              data={topTen}
+              indexBy="label"
+              colors={(bar) => rgbaColor(bar.data.fill, 0.3)}
+              borderWidth={2}
+              borderColor={(bar) => rgbaColor(bar.data.data.color, 1)}
+              margin={{ top: 10, right: 80, bottom: 80, left: 90 }}
+              padding={0.1}
+              borderRadius={4}
+              labelSkipWidth={12}
+              labelSkipHeight={12}
+              keys={["value"]}
+              enableLabel={false}
+              layout="horizontal"
+              axisBottom={null}
+              tooltip={({ data }) => (
+                <div
+                  className={`bg-custom-white p-2 rounded-md shadow-md shadow-content whitespace-nowrap text-[13px] flex gap-1 items-center`}
+                  style={{ color: data.color }}
+                >
+                  <div
+                    className={`h-3 w-3 rounded mr-1`}
+                    style={{ backgroundColor: data.color }}
+                  ></div>
+                  <div className="text-content">{data.id}</div>
+                  <div>-</div>
+                  <div className="font-medium">
+                    {formatCurrency2(data.value)}
+                  </div>
+                </div>
+              )}
+            />
+          </div>
+          <div className="flex justify-around absolute bottom-3 border-t border-content/50 w-full py-3.5 place-items-center">
+            <div className="flex gap-1 text-sm">
+              <div className="font-medium">Total Sales:</div>
+              <div>{formatCurrency2(sales.topTenItemsMetrics.totalSales)}</div>
             </div>
-          )}
-        />
-      </div>
-      <div className="flex justify-around absolute bottom-3 border-t border-content/50 w-full py-3.5 place-items-center">
-        <div className="flex gap-1 text-sm">
-          <div className="font-medium">Total Sales:</div>
-          <div>{formatCurrency2(sales.topTenItemsMetrics.totalSales)}</div>
+            <div className="flex gap-1 text-sm">
+              <div className="font-medium">Avg Sales:</div>
+              <div>{formatCurrency2(sales.topTenItemsMetrics.avgSales)}</div>
+            </div>
+            <div className="flex gap-1 text-sm">
+              <div className="font-medium">Total Qty:</div>
+              <div>{sales.topTenItemsMetrics.totalQty}</div>
+            </div>
+            <div className="flex gap-1 text-sm">
+              <div className="font-medium">Avg Qty:</div>
+              <div>{sales.topTenItemsMetrics.avgQty}</div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div>
+          <div className="grid grid-cols-[50%_25%_25%] border-b border-content/30 px-2 py-1 bg-blue-500 text-custom-white rounded-t-lg text-sm font-medium">
+            <div>Top 10 Items</div>
+            <div className="text-right">Sales</div>
+            <div className="text-right">Qty</div>
+          </div>
+          {topTen.map((item, i) => (
+            <div key={i} className="even:bg-blue-200">
+              <div className="grid grid-cols-[50%_25%_25%] border-b border-content/30 px-2 py-1 text-xs">
+                <div className="text-nowrap overflow-hidden text-ellipsis">
+                  {item.id}
+                </div>
+                <div className="text-right">{formatCurrency2(item.value)}</div>
+                <div className="text-right">{item.qty}</div>
+              </div>
+            </div>
+          ))}
         </div>
-        <div className="flex gap-1 text-sm">
-          <div className="font-medium">Avg Sales:</div>
-          <div>{formatCurrency2(sales.topTenItemsMetrics.avgSales)}</div>
-        </div>
-        <div className="flex gap-1 text-sm">
-          <div className="font-medium">Total Qty:</div>
-          <div>{sales.topTenItemsMetrics.totalQty}</div>
-        </div>
-        <div className="flex gap-1 text-sm">
-          <div className="font-medium">Avg Qty:</div>
-          <div>{sales.topTenItemsMetrics.avgQty}</div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

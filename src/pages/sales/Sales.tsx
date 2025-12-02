@@ -97,53 +97,68 @@ const Sales = () => {
     }
   };
 
+  const pageContainer = context.isDesktop
+    ? "w-full h-[calc(100vh-3rem)] p-4 select-none"
+    : "p-4 max-h-screen overflow-y-scroll";
+  const gridContainer = context.isDesktop
+    ? " grid grid-cols-[20%_79%] gap-4 h-full"
+    : "";
+
   return (
-    <div
-      data-testid="sales-page"
-      className="w-full h-[calc(100vh-3rem)] p-4 select-none"
-    >
-      <div ref={gridRef} className="grid grid-cols-[20%_79%] gap-4 h-full">
-        <div className="grid gap-1 max-h-[calc(100vh-7px)] grid-rows-[0.5fr_1fr_1fr] no-scrollbar">
+    <div data-testid="sales-page" className={pageContainer}>
+      <div ref={gridRef} className={gridContainer}>
+        <div className="md:grid md:gap-1 md:max-h-[calc(100vh-7px)] md:grid-rows-[0.5fr_1fr_1fr] no-scrollbar">
           <div className="bg-custom-white rounded-lg p-2 shadow-lg">
             <StorePicker />
             <DatePickers handleQuery={getData} />
           </div>
-          <div className="row-span-2 rounded-lg">
-            <div className="mb-2 flex items-end justify-between gap-2">
-              <div className="w-full">
-                <label className="font-medium text-sm ml-1">Search Store</label>
-                <input
-                  className="basic-input focus:border bg-custom-white"
-                  value={sales.salesPanelSearchText}
-                  onChange={(e) => handleChange(e, "store")}
-                />
+          {context.isDesktop && (
+            <div className="md:row-span-2 rounded-lg">
+              <div className="mb-2 flex items-end justify-between gap-2">
+                <div className="w-full">
+                  <label className="font-medium text-sm ml-1">
+                    Search Store
+                  </label>
+                  <input
+                    className="basic-input focus:border bg-custom-white"
+                    value={sales.salesPanelSearchText}
+                    onChange={(e) => handleChange(e, "store")}
+                  />
+                </div>
+              </div>
+              <div
+                className="md:overflow-scroll md:no-scrollbar md:rounded-lg"
+                style={
+                  context.isDesktop
+                    ? { height: height, maxHeight: height }
+                    : { height: "auto", maxHeight: "none" }
+                }
+              >
+                <SalesPanels />
               </div>
             </div>
-            <div
-              className="overflow-scroll no-scrollbar rounded-lg"
-              style={{ height: height, maxHeight: height }}
-            >
-              <SalesPanels />
-            </div>
-          </div>
+          )}
         </div>
-        <div className="grid grid-rows-2 gap-3">
-          <div className="grid grid-cols-2 gap-3">
+        <div className="md:grid md:grid-rows-2 md:gap-3">
+          <div className="md:grid md:grid-cols-2 md:gap-3">
             <WeeklyNetSales />
 
             <div className="h-full shadow-lg">
-              <Carousel className="bg-custom-white h-[100%]">
-                <Hourly />
-                {/* <DepartmentSales /> */}
+              {context.isDesktop ? (
+                <Carousel className="bg-custom-white h-[100%]">
+                  <Hourly />
+                  <TopTenItems />
+                </Carousel>
+              ) : (
                 <TopTenItems />
-              </Carousel>
+              )}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            {/* <Hourly /> */}
-            <DepartmentSales />
+          <div className="md:grid md:grid-cols-2 md:gap-3">
+            {context.isDesktop && <DepartmentSales />}
             <Subs />
           </div>
+          {!context.isDesktop && <SalesPanels />}
         </div>
       </div>
     </div>

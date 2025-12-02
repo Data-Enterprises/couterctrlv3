@@ -112,7 +112,7 @@ const WeeklyNetSales = () => {
   return (
     <div
       data-testid="weekly-net-sales"
-      className="bg-custom-white rounded-lg shadow-lg"
+      className="bg-custom-white rounded-lg shadow-lg h-80 my-4 md:my-0 md:h-full"
     >
       <div className="font-medium bg-blue-500 text-custom-white py-0.5 rounded-t-lg px-4 flex justify-between">
         <div>Weekly Net Sales</div>

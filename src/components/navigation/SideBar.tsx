@@ -83,8 +83,8 @@ const SideBar = () => {
       return "h-7 w-7";
     } else {
       return !nav.isNavOpen
-        ? "opacity-0 h-7 w-7 transition-all duration-200"
-        : "opacity-100 h-7 w-7 transition-all duration-200";
+        ? "opacity-0 h-7 w-7 transition-all duration-200 ml-0"
+        : "opacity-100 h-7 w-7 transition-all duration-200 ml-2";
     }
   };
 
@@ -129,7 +129,7 @@ const SideBar = () => {
             }
             onClick={() => handleNavClick(item)}
           >
-            <div className="flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200">
+            <div className="flex w-full items-center md:pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200">
               <div className="flex-shrink-0 flex items-center justify-center">
                 <item.icon className={mobileIconStyle()} />
               </div>
@@ -150,7 +150,7 @@ const SideBar = () => {
       {/* Settings and Sign Out */}
       <div className="select-none cursor-pointer">
         <div
-          className="flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200"
+          className={`${context.isDesktop ? "" : "hidden"} flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200`}
           onClick={() => {
             navigate("settings");
           }}

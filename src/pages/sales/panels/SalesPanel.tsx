@@ -31,9 +31,15 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
 
   const border = (panel: WeeklySale, selected: SelectedSalesPanel) => {
     const date = panel.sale_date.split("T")[0];
-    if (date === compareSalesPanel.sale_date && panel.storeid === compareSalesPanel.storeid) {
+    if (
+      date === compareSalesPanel.sale_date &&
+      panel.storeid === compareSalesPanel.storeid
+    ) {
       return "shadow-inner border-2 border-emerald-500 rounded-xl";
-    } else if (date === selected.sale_date && panel.storeid === selected.storeid) {
+    } else if (
+      date === selected.sale_date &&
+      panel.storeid === selected.storeid
+    ) {
       return "shadow-inner border-2 border-content/70 rounded-xl";
     } else {
       return "";
@@ -88,7 +94,7 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
         panel,
         selectedSalesPanel
       )} bg-custom-white rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-inner 
-      transition-all duration-200 select-none ripple-button min-h-[185px] relative`}
+      transition-all duration-200 select-none ripple-button md:min-h-[185px] relative`}
     >
       <div
         className={`font-bold text-center`}
@@ -123,7 +129,11 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
           <div className="font-medium">{formatWeight(panel.weight)}</div>
         </div>
       </div>
-      <div className="flex justify-around mt-2 gap-4">
+      <div
+        className={`flex justify-around mt-2 gap-4 ${
+          !context.isDesktop && "hidden"
+        }`}
+      >
         <button
           className={`btn-themeGreen py-1.5 px-7 text-nowrap w-full ${
             selectedSalesPanel.storeid === 0

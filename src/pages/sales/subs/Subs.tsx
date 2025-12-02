@@ -45,9 +45,11 @@ const Subs = () => {
     return sales.compareSalesPanel.storeid === 0;
   };
 
+  const cols = context.isDesktop ? "grid-cols-2" : "grid-cols-1";
+
   return (
     <div
-      className={`w-full h-full bg-custom-white rounded-lg shadow-lg  ${
+      className={`w-full h-96 my-4 md:my-0 md:h-full bg-custom-white rounded-lg shadow-lg  ${
         sales.windowVisible.subs ? "" : "hidden"
       }`}
       ref={topRef}
@@ -61,7 +63,7 @@ const Subs = () => {
         </div>
         {isComparing() ? (
           <div
-            className={`grid grid-cols-2 no-scrollbar overflow-y-scroll p-2 gap-2`}
+            className={`grid ${cols} no-scrollbar overflow-y-scroll p-2 gap-2`}
             style={{ height: height, maxHeight: height }}
           >
             {sales.subSales.map((sub, i) => (
