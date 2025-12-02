@@ -5,6 +5,7 @@ import {
   clearUpcData,
   resetSelectedUpcs,
   setSelectedUpcs,
+  setTrendMode,
 } from "../../../features/upcSlice";
 import { useScrollHeight } from ".";
 import CheckBox from "../../../components/inputs/CheckBox";
@@ -62,6 +63,34 @@ const UpcControls = () => {
             Export Csv
           </button>
         </div>
+        {state.selectedMode === 4 ? (
+          <div className="border-y-2 py-1 border-content/40 flex flex-col gap-1">
+            <button
+              className={`btn-themeBlue py-1 w-full ${
+                state.trendMode === "Totals" ? "btn-themeGreen" : ""
+              }`}
+              onClick={() => dispatch(setTrendMode("Totals"))}
+            >
+              Totals
+            </button>
+            <button
+              className={`btn-themeBlue py-1 w-full ${
+                state.trendMode === "Mean" ? "btn-themeGreen" : ""
+              }`}
+              onClick={() => dispatch(setTrendMode("Mean"))}
+            >
+              Mean
+            </button>
+            <button
+              className={`btn-themeBlue py-1 w-full ${
+                state.trendMode === "Volatility" ? "btn-themeGreen" : ""
+              }`}
+              onClick={() => dispatch(setTrendMode("Volatility"))}
+            >
+              Volatility
+            </button>
+          </div>
+        ) : null}
         <div className="flex flex-col gap-2">
           <RadioBox
             value={showDisplay === "all"}
