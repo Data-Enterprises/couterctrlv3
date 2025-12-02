@@ -35,7 +35,7 @@ const StartDatePicker = () => {
     : `relative inline-block text-left md:px-0 mx-auto w-full`;
 
   const menuStyle = context.isDesktop ? "px-2.5 md:px-0" : "";
-  const calendarStyle ="md:w-[126%]";
+  const calendarStyle = "w-[98%] md:w-[126%]";
 
   return (
     <Menu data-testid="start-date-picker" as="div" className={styling}>
@@ -59,7 +59,7 @@ const StartDatePicker = () => {
       <MenuItems
         transition
         className={`md:mx-0 flex bg-custom-white w-[80%] ${calendarStyle} justify-center absolute 
-        right-10 md:left-0 z-20 origin-top-right rounded-md shadow-lg ring-1 
+        right-10 left-0 z-20 origin-top-right rounded-md shadow-lg ring-1 
         ring-black/5 transition focus:outline-none 
         data-[closed]:scale-95 
         data-[closed]:transform 

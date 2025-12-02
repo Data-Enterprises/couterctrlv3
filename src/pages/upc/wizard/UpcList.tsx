@@ -253,7 +253,7 @@ const UpcList = () => {
       {context.dataLoaded ? (
         module()
       ) : (
-        <div className="flex justify-center items-center min-h-[calc(100vh-3rem)]">
+        <div className="flex justify-center items-center translate-y-2/3">
           <UpcWizard
             className={`max-w-2xl mb-16 shadow-lg ${styling}`}
             index={context.index}

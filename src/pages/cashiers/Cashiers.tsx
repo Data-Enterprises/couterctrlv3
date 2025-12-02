@@ -55,7 +55,7 @@ const Cashiers = () => {
 
   const pageContainer = context.isDesktop
     ? "w-full h-[calc(100vh-3rem)] p-4 grid grid-cols-[27%_73%] gap-4"
-    : "p-4 w-full min-h-screen";
+    : "p-4 w-full min-h-full overflow-y-auto space-y-4 bg-bkg";
 
   const leftContainer = context.isDesktop
     ? "grid grid-rows-[25%_0.9fr_1fr] gap-2"
