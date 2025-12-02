@@ -4,11 +4,8 @@ import { useAppSelector } from "../../../hooks";
 import {
   setOptDisplayMode,
   setSelectedOptItem,
-  // setOptDisplayMode,
-  // setSelectedOptItem,
   setSelectedUpcs,
 } from "../../../features/upcSlice";
-// import { priceOptHeaders, exportData, options } from "./utils";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type { UpcPriceOpt } from "../../../interfaces";
 
@@ -18,11 +15,16 @@ import MetricsContainer from "../components/MetricsCarousel";
 import UpcControls from "../components/UpcControls";
 import PriceOptBar from "../charts/PriceOptBar";
 import PriceOptGrid from "../charts/PriceOptGrid";
+import { exportData } from "../exportHeaders/utils";
+import { reset } from "../../../features/upcModalSlice";
+import { priceOptHeaders } from "../exportHeaders";
+import UpcModal from "../modal/UpcModal";
 
 const PriceOpt = () => {
   const toast = useToast();
   const dispatch = useDispatch();
   const upcState = useAppSelector((state) => state.upc);
+  const modal = useAppSelector((state) => state.upcModal);
   const [filteredItems, setFilteredItems] = useState<UpcPriceOpt[]>(
     upcState.optBestPricesByUpc
   );
@@ -38,40 +40,40 @@ const PriceOpt = () => {
     }
   }, [upcState.selectedUpcs]);
 
-  // const handleExport = () => {
-  //   if (!modal.fileName) {
-  //     toast.warn("Please enter a file name...");
-  //     return;
-  //   } else if (
-  //     !upcState.selectedUpcs.length &&
-  //     modal.priceOptOption.list === "selected"
-  //   ) {
-  //     toast.warn("Please select at least one upc to export...");
-  //     return;
-  //   } else if (!modal.priceOptOption.list && !modal.priceOptOption.data) {
-  //     toast.warn("Please select the list and data for the export...");
-  //     return;
-  //   } else if (!modal.priceOptOption.list) {
-  //     toast.warn("Please select the list for the export...");
-  //     return;
-  //   } else if (!modal.priceOptOption.data) {
-  //     toast.warn("Please select the data for the export...");
-  //     return;
-  //   }
+  const handleExport = () => {
+    if (!modal.fileName) {
+      toast.warn("Please enter a file name...");
+      return;
+    } else if (
+      !upcState.selectedUpcs.length &&
+      modal.priceOptOption.list === "selected"
+    ) {
+      toast.warn("Please select at least one upc to export...");
+      return;
+    } else if (!modal.priceOptOption.list && !modal.priceOptOption.data) {
+      toast.warn("Please select the list and data for the export...");
+      return;
+    } else if (!modal.priceOptOption.list) {
+      toast.warn("Please select the list for the export...");
+      return;
+    } else if (!modal.priceOptOption.data) {
+      toast.warn("Please select the data for the export...");
+      return;
+    }
 
-  //   const data =
-  //     modal.priceOptOption.data === "allData"
-  //       ? upcState.optBestPrices
-  //       : upcState.optBestPricesByUpc;
-  //   const upcs = upcState.selectedUpcs;
-  //   const dataToExport =
-  //     modal.priceOptOption.list === "selected"
-  //       ? data.filter((item) => upcs.includes(item.product_code))
-  //       : data;
+    const data =
+      modal.priceOptOption.data === "allData"
+        ? upcState.optBestPrices
+        : upcState.optBestPricesByUpc;
+    const upcs = upcState.selectedUpcs;
+    const dataToExport =
+      modal.priceOptOption.list === "selected"
+        ? data.filter((item) => upcs.includes(item.product_code))
+        : data;
 
-  //   exportData(dataToExport, priceOptHeaders, modal.fileName);
-  //   dispatch(reset());
-  // };
+    exportData(dataToExport, priceOptHeaders, modal.fileName);
+    dispatch(reset());
+  };
 
   const onSelect = (x: string[]) => {
     dispatch(setSelectedUpcs(""));
@@ -115,6 +117,7 @@ const PriceOpt = () => {
   return (
     <div className="h-full w-full grid grid-cols-[15%_85%] gap-4">
       <UpcControls />
+      <UpcModal handleExport={handleExport} />
       <div className="gap-2 grid grid-cols-2 pt-[120px] relative mr-4">
         <div className="absolute w-full flex items-center justify-between">
           <MetricsCarousel className="w-full h-[115px]">

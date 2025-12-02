@@ -65,20 +65,6 @@ export const aggregateData = (x: UpcData[]) => {
   );
 };
 
-// export const getList = (data: any, type = "notForecast") => {
-//   if (type === "forecast") {
-//     return data.map(([k, v]) => ({
-//       product_code: k,
-//       product_description: (v as UpcForecast).metrics.description,
-//     }));
-//   } else {
-//     return data.map((item) => ({
-//       product_code: item.product_code,
-//       product_description: item.product_description,
-//     }));
-//   }
-// };
-
 export interface LineData {
   id: string;
   data: { x: string; y: number }[];

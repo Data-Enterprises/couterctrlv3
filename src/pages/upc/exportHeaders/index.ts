@@ -5,6 +5,130 @@ export interface ITableHeader {
   visible: boolean;
   dataType: IDataType;
 }
+
+export const tableHeaderUpc: ITableHeader[] = [
+  { column: "product_code", alias: "UPC", visible: true, dataType: "string" },
+  { column: "description", alias: "Desc", visible: true, dataType: "string" },
+  { column: "week", alias: "Week", visible: true, dataType: "string" },
+  { column: "Monday", alias: "Monday", visible: true, dataType: "number" },
+  { column: "Tuesday", alias: "Tuesday", visible: true, dataType: "number" },
+  {
+    column: "Wednesday",
+    alias: "Wednesday",
+    visible: true,
+    dataType: "number",
+  },
+  { column: "Thursday", alias: "Thursday", visible: true, dataType: "number" },
+  { column: "Friday", alias: "Friday", visible: true, dataType: "number" },
+  { column: "Saturday", alias: "Saturday", visible: true, dataType: "number" },
+  { column: "Sunday", alias: "Sunday", visible: true, dataType: "number" },
+];
+
+export const tableHeaderForecast: ITableHeader[] = [
+  {
+    column: "upc",
+    alias: "UPC",
+    visible: true,
+    dataType: "string",
+  },
+  {
+    column: "description",
+    alias: "Desc",
+    visible: true,
+    dataType: "string",
+  },
+  {
+    column: "date",
+    alias: "Date",
+    visible: true,
+    dataType: "string",
+  },
+  {
+    column: "quantity",
+    alias: "Quantity",
+    visible: true,
+    dataType: "number",
+  },
+];
+
+export const tableHeaderForecastMetrics: ITableHeader[] = [
+  {
+    column: "upc",
+    alias: "UPC",
+    visible: true,
+    dataType: "string",
+  },
+  {
+    column: "description",
+    alias: "Desc",
+    visible: true,
+    dataType: "string",
+  },
+  {
+    column: "avg_daily_qty",
+    alias: "Avg Daily Qty",
+    visible: true,
+    dataType: "number",
+  },
+  {
+    column: "days_active",
+    alias: "Days Active",
+    visible: true,
+    dataType: "number",
+  },
+  {
+    column: "max_day_qty",
+    alias: "Max Day Qty",
+    visible: true,
+    dataType: "number",
+  },
+  {
+    column: "qty",
+    alias: "Qty",
+    visible: true,
+    dataType: "number",
+  },
+];
+
+export const priceOptHeaders: ITableHeader[] = [
+  {
+    column: "product_code",
+    alias: "UPC",
+    visible: true,
+    dataType: "string",
+  },
+  {
+    column: "product_description",
+    alias: "Desc",
+    visible: true,
+    dataType: "string",
+  },
+  {
+    column: "price",
+    alias: "Price",
+    visible: true,
+    dataType: "number",
+  },
+  {
+    column: "total_qty",
+    alias: "Qty",
+    visible: true,
+    dataType: "number",
+  },
+  {
+    column: "total_revenue",
+    alias: "Revenue",
+    visible: true,
+    dataType: "number",
+  },
+  {
+    column: "total_weight",
+    alias: "Weight",
+    visible: true,
+    dataType: "number",
+  },
+];
+
 export const trendHeaders: ITableHeader[] = [
   {
     column: "product_code",

@@ -18,7 +18,9 @@ import {
   setBottomFiveTrends,
   setDataLoaded,
   setForecastData,
+  setForecastExport,
   setForecastHistory,
+  setForecastMetricExport,
   setIndex,
   setIsLoading,
   setOptBestPrices,
@@ -44,7 +46,7 @@ import type {
   UpcTrend,
 } from "../../../interfaces";
 import { colorCodes } from "../components";
-import { convertData } from "../utils";
+import { convertData, formatForecastExport } from "../utils";
 
 const UpcList = () => {
   const toast = useToast();
@@ -147,7 +149,6 @@ const UpcList = () => {
             product_code: k,
             description: j.qty_results[k as string].metrics.description,
           }));
-          dispatch(setUpcItems(upcItems));
 
           const upcList = Object.keys(j.qty_results).map((k, idx) => ({
             label: k,
@@ -156,6 +157,13 @@ const UpcList = () => {
             metrics: j.qty_results[k as string].metrics,
           }));
 
+          const qty = formatForecastExport(j.qty_results);
+          // Setting this up for later use when sales forecast is added
+          // const sales = formatForecastExport(j.sales_results);
+
+          dispatch(setForecastExport(qty.data));
+          dispatch(setForecastMetricExport(qty.metrics));
+          dispatch(setUpcItems(upcItems));
           dispatch(setForecastData(forecast));
           dispatch(setForecastHistory(history));
           dispatch(setUpcList(upcList));

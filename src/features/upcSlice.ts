@@ -7,6 +7,8 @@ import type {
   Forecast,
   UpcPriceOpt,
   UpcTrend,
+  ForecastExport,
+  ForecastMetrics,
 } from "../interfaces";
 
 interface UpcState {
@@ -27,6 +29,8 @@ interface UpcState {
   selectedCompTwo: UpcSalesComp | null;
   forecast: Forecast[];
   forecastHistory: Forecast[];
+  forecastExport: ForecastExport[];
+  forecastMetricExport: ForecastMetrics[];
   upcList: UpcInfo[];
   forecastOption: "sales" | "quantity";
   upcSelectorDisplay: "desc" | "upc";
@@ -63,6 +67,8 @@ const initialState: UpcState = {
   selectedCompTwo: null,
   forecast: [],
   forecastHistory: [],
+  forecastExport: [],
+  forecastMetricExport: [],
   upcList: [],
   forecastOption: "quantity",
   upcSelectorDisplay: "upc",
@@ -160,6 +166,15 @@ export const upcSlice = createSlice({
     setForecastHistory: (state, action: PayloadAction<Forecast[]>) => {
       state.forecastHistory = action.payload;
     },
+    setForecastExport: (state, action: PayloadAction<ForecastExport[]>) => {
+      state.forecastExport = action.payload;
+    },
+    setForecastMetricExport: (
+      state,
+      action: PayloadAction<ForecastMetrics[]>
+    ) => {
+      state.forecastMetricExport = action.payload;
+    },
     setOptBestPrices: (state, action: PayloadAction<UpcPriceOpt[]>) => {
       state.optBestPrices = action.payload;
     },
@@ -217,6 +232,8 @@ export const upcSlice = createSlice({
       state.topFiveTrends = [];
       state.bottomFiveTrends = [];
       state.trendMode = "Totals";
+      state.forecastExport = [];
+      state.forecastMetricExport = [];
     },
     resetUpcState: () => initialState,
   },
@@ -243,6 +260,8 @@ export const {
   setSelectedLegendForecast,
   setForecastData,
   setForecastHistory,
+  setForecastExport,
+  setForecastMetricExport,
   setSelectedUpcs,
   setOptBestPrices,
   setOptBestPricesByUpc,

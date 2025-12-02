@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAppDispatch } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useUpcContext } from "../wizard/hooks";
 import {
   clearUpcData,
@@ -9,6 +9,7 @@ import {
 import { useScrollHeight } from ".";
 import CheckBox from "../../../components/inputs/CheckBox";
 import RadioBox from "../../../components/inputs/RadioBox";
+import { setModalType, setOpenModal } from "../../../features/upcModalSlice";
 
 const UpcControls = () => {
   const [upcDisplay, setUpcDisplay] = useState<"code" | "desc">("code");
@@ -26,6 +27,7 @@ const UpcControls = () => {
   } = useUpcContext();
   const dispatch = useAppDispatch();
   const { height, topRef } = useScrollHeight();
+  const state = useAppSelector((state) => state.upc);
 
   const handleClearClick = () => {
     dispatch(clearUpcData());
@@ -33,6 +35,11 @@ const UpcControls = () => {
 
   const handleDisplay = (value: "all" | "selected" | "stores") => {
     setShowDisplay(value);
+  };
+
+  const handleExportBtnClick = () => {
+    dispatch(setModalType(state.selectedMode));
+    dispatch(setOpenModal(true));
   };
 
   return (
@@ -48,7 +55,12 @@ const UpcControls = () => {
           <button className="py-1 btn-themeBlue" onClick={handleClearClick}>
             Reset
           </button>
-          <button className="py-1 btn-themeGreen">Export Csv</button>
+          <button
+            className="py-1 btn-themeGreen"
+            onClick={handleExportBtnClick}
+          >
+            Export Csv
+          </button>
         </div>
         <div className="flex flex-col gap-2">
           <RadioBox
