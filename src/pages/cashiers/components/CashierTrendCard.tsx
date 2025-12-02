@@ -25,9 +25,10 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 
 interface CashierTrendCardProps {
   s: CashierDetails;
+  idx: number
 }
 
-const CashierTrendCard = ({ s }: CashierTrendCardProps) => {
+const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
@@ -182,6 +183,7 @@ const CashierTrendCard = ({ s }: CashierTrendCardProps) => {
         <div className="px-2">
           <div className="font-medium pl-2">Comparison</div>
           <div
+            data-testid={`cashier-trend-card-${idx}-${s.storeid}`}
             className={`${titleStyle} ${clickStyle}`}
             onClick={() => showTrans("sale_id", s.store_number)}
           >

@@ -81,12 +81,19 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
   };
 
   return (
-    <div className={`bg-custom-white rounded-lg shadow-lg ${!cashier.saleTypes.length && 'hidden'}`}>
-      <div className="rounded-t-lg text-center py-0.5 bg-blue-500 text-custom-white font-medium">Select Exception</div>
+    <div
+      className={`bg-custom-white rounded-lg shadow-lg ${
+        !cashier.saleTypes.length && "hidden"
+      }`}
+    >
+      <div className="rounded-t-lg text-center py-0.5 bg-blue-500 text-custom-white font-medium">
+        Select Exception
+      </div>
       <div className="grid grid-rows-6 gap-2 p-2">
         {cashier.saleTypes.map((st, i) => (
           <div
             key={i}
+            data-testid={`sale-type-panel-${st.sale_type}`}
             className={`${activePanelStyle(
               st.sale_type,
               cashier.selectedSaleType

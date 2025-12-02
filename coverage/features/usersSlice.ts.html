@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">40.9% </span>
+                <span class="strong">18.18% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>9/22</span>
+                <span class='fraction'>4/22</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.33% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>4/12</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">40.9% </span>
+                <span class="strong">18.18% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>9/22</span>
+                <span class='fraction'>4/22</span>
             </div>
         
             
@@ -323,20 +323,20 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -469,21 +469,21 @@ export const usersSlice = createSlice({
     setRefresh: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;boolean&gt;) =&gt; {
 <span class="cstat-no" title="statement not covered" >      state.refresh = action.payload;</span>
     },
-    setSelectedUserId: (state, action: PayloadAction&lt;number&gt;) =&gt; {
-      state.selectedUserId = action.payload;
+    setSelectedUserId: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;number&gt;) =&gt; {
+<span class="cstat-no" title="statement not covered" >      state.selectedUserId = action.payload;</span>
     },
     setDeleteModalOpen: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;boolean&gt;) =&gt; {
 <span class="cstat-no" title="statement not covered" >      state.deleteModalOpen = action.payload;</span>
     },
-    setAssignModalOpen: (state, action: PayloadAction&lt;boolean&gt;) =&gt; {
-      state.assignModalOpen = action.payload;
+    setAssignModalOpen: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;boolean&gt;) =&gt; {
+<span class="cstat-no" title="statement not covered" >      state.assignModalOpen = action.payload;</span>
     },
-    setSelectedUserStores: (state, action: PayloadAction&lt;UserStores&gt;) =&gt; {
-      state.selectedUserStores.assigned = action.payload.assigned;
-      state.selectedUserStores.unassigned = action.payload.unassigned;
+    setSelectedUserStores: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;UserStores&gt;) =&gt; {
+<span class="cstat-no" title="statement not covered" >      state.selectedUserStores.assigned = action.payload.assigned;</span>
+<span class="cstat-no" title="statement not covered" >      state.selectedUserStores.unassigned = action.payload.unassigned;</span>
     },
-    setRole: (state, action: PayloadAction&lt;number&gt;) =&gt; {
-      state.userInfo.role = action.payload;
+    setRole: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;number&gt;) =&gt; {
+<span class="cstat-no" title="statement not covered" >      state.userInfo.role = action.payload;</span>
     },
     resetUsersSlice: <span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >i</span>nitialState,</span>
   },
@@ -511,7 +511,7 @@ export default usersSlice.reducer;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-02T20:04:10.534Z
+                at 2025-12-02T23:34:42.048Z
             </div>
         <script src="../prettify.js"></script>
         <script>

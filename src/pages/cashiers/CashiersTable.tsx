@@ -188,7 +188,7 @@ const CashiersTable = () => {
   return (
     <>
       {filtered.length ? (
-        <div className="bg-custom-white p-2 rounded-lg shadow-lg h-full relative">
+        <div data-testid="cashiers-table" className="bg-custom-white p-2 rounded-lg shadow-lg h-full relative">
           <ExportModal
             isOpen={modalOpen}
             onClose={() => setModalOpen(false)}
@@ -211,6 +211,7 @@ const CashiersTable = () => {
               Show All
             </button>
             <button
+              data-testid="cashiers-table-export-btn"
               className="btn-themeGreen py-1 ml-4"
               onClick={() => setModalOpen(true)}
             >
