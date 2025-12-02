@@ -381,3 +381,26 @@ export type ForecastMetrics = {
   max_day_qty: number;
   qty: number;
 };
+
+export type Handlers = {
+  reset?: () => Promise<void> | void;
+  copy?: () => Promise<void> | void;
+  exportVisual?: () => Promise<void> | void;
+  clearDate?: () => Promise<void> | void;
+  mode?: (mode: string) => Promise<void> | void;
+  exportAll?: () => Promise<void> | void;
+  test?: () => Promise<void> | void;
+  copyUpc?: () => Promise<void> | void;
+  copyDesc?: () => Promise<void> | void;
+  selectUpc?: () => Promise<void> | void;
+};
+
+export type ContextEvent = React.MouseEvent<
+  HTMLTableRowElement | HTMLDivElement
+>;
+export type Option = {
+  label: string;
+  key: keyof Handlers;
+  children?: Option[];
+  value?: string;
+};

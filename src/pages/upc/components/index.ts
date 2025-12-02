@@ -1,6 +1,6 @@
 import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
 import { useRef, useState, useEffect } from "react";
-import type { UpcSalesComp } from "../../../interfaces";
+import type { UpcSalesComp, Forecast, UpcInfo } from "../../../interfaces";
 import { formatCurrency2, formatDate } from "../../../utils";
 
 export const useScrollHeight = () => {
@@ -149,6 +149,25 @@ export const compCols: (ColDef<UpcSalesComp> | ColGroupDef<UpcSalesComp>)[] = [
   },
 ];
 
+export const instructions = [
+  {
+    text: "1. Select one or more UPCs (left) to view the history/forecast data line chart",
+  },
+  {
+    text: "2. The forecast date range extends 7 days beyond the selected end date",
+  },
+  {
+    text: "3. Individual UPCs can be selected in the line chart legend (bottom)",
+  },
+  {
+    text: "4. Selected item metrics can be viewed inside the carousel (slide 2)",
+  },
+  { text: `5. Hovering over the icons will display each metric definition` },
+  {
+    text: "6. Export either the Date Range or Metrics to a .csv file (top right)",
+  },
+];
+
 export const colorCodes = [
   "#d946ef", // fuchsia-500
   "#f0abfc", // fuchsia-300
@@ -161,3 +180,86 @@ export const colorCodes = [
   "#f97316", // orange-500
   "#fdba74", // orange-300
 ];
+
+export const getOverallMetrics = (
+  upcList: UpcInfo[],
+  top: UpcInfo,
+  bottom: UpcInfo
+) => {
+  const totalQty = upcList.reduce((acc, cur) => (acc += cur.metrics.qty), 0);
+  const avgDailyQty =
+    upcList.reduce((acc, cur) => (acc += cur.metrics.avg_daily_qty), 0) /
+    upcList.length;
+
+  const totalQtyRange = top.metrics.qty - bottom.metrics.qty;
+  const avgDailyQtyRange =
+    top.metrics.avg_daily_qty - bottom.metrics.avg_daily_qty;
+
+  const sorted = [...upcList].sort((a, b) => a.metrics.qty - b.metrics.qty);
+  const mid = Math.floor(upcList.length / 2);
+  const medianQty =
+    upcList.length % 2 === 0
+      ? (sorted[mid - 1].metrics.qty + sorted[mid].metrics.qty) / 2
+      : sorted[mid].metrics.qty;
+
+  return [
+    { label: "Total Qty", value: totalQty, item: null, type: "quantity" },
+    {
+      label: "Total Range",
+      value: totalQtyRange,
+      item: null,
+      type: "qtyRange",
+    },
+    { label: "Median Qty", value: medianQty, item: null, type: "median" },
+    { label: "Avg Daily Qty", value: avgDailyQty, item: null, type: "avgQty" },
+    {
+      label: "ADQ Range",
+      value: avgDailyQtyRange,
+      item: null,
+      type: "avgQtyRange",
+    },
+  ];
+};
+
+export const getItemMetrics = (item: UpcInfo, expectedForecast: number) => {
+  return [
+    {
+      label: "Total Qty",
+      value: item.metrics.qty,
+      item: null,
+      type: "quantity",
+    },
+    {
+      label: "Max Daily Qty",
+      value: item.metrics.max_day_qty,
+      item: null,
+      type: "mdq",
+    },
+    {
+      label: "Days Active",
+      value: item.metrics.days_active,
+      item: null,
+      type: "active",
+    },
+    {
+      label: "Avg Daily Qty",
+      value: item.metrics.avg_daily_qty,
+      item: null,
+      type: "avgQty",
+    },
+    {
+      label: "Qty Forecast",
+      value: expectedForecast,
+      item: null,
+      type: "forecast",
+    },
+  ];
+};
+
+export const getForecast = (items: Forecast[], item: UpcInfo) => {
+  return (
+    items
+      .find((f) => f.id.includes(item.label))
+      ?.data.reduce((acc, cur) => (acc += cur.y), 0) ?? 0
+  );
+};

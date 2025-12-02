@@ -26,22 +26,16 @@ import {
   setUpcList,
 } from "../../../features/upcSlice";
 import { getForecasting, getSalesComp } from "../../../api/upc";
-import type {
-  Forecast,
-  JsonError,
-  UpcForecast,
-  UpcItem,
-} from "../../../interfaces";
+import type { JsonError, UpcForecast, UpcItem } from "../../../interfaces";
 import { colorCodes } from "../components";
+import { convertData } from "../utils";
 
 const UpcList = () => {
   const toast = useToast();
+  const context = useUpcContext();
   const dispatch = useAppDispatch();
   const [file, setFile] = useState<File | null>(null);
   const [styling, setStyling] = useState<string>("h-[265px] w-[400px]");
-
-  // Scopes the useAppSelector to the UPC upload context
-  const context = useUpcContext();
 
   // To set the height and width of the wizard based on the step
   useEffect(() => {
@@ -106,76 +100,46 @@ const UpcList = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          const convertData = (
-            id: string,
-            data: { date: string; value: number }[],
-            idx: number,
-            type = "history"
-          ): Forecast => {
-            const newData = {
-              id: `${id} - ${type}`,
-              data: data
-                .map((item) => ({
-                  x: item.date.split("/").splice(0, 2).join("/"),
-                  y: item.value,
-                }))
-                .slice(-7),
-              color: colorCodes[idx % colorCodes.length],
-            };
-
-            if (type === "forecast") {
-              // Find the last date in the history data for that upc and shift the forecast dates accordingly => attaches both history and forecast on the chart
-              const historyEntry = Object.entries(j.results)
-                .map(([k, v]) => [k, structuredClone(v as UpcForecast).history])
-                .find(([k]) => k === id);
-              if (!historyEntry) return newData;
-              const historyDates = historyEntry[1] as {
-                date: string;
-                value: number;
-              }[];
-              const lastHistoryDate = historyDates[historyDates.length - 1] as {
-                date: string;
-                value: number;
-              };
-              newData.data.unshift({
-                x: lastHistoryDate.date.split("/").splice(0, 2).join("/"),
-                y: lastHistoryDate.value,
-              });
-            }
-            return newData;
-          };
-
-          const history = Object.entries(j.results)
+          // Both of these need to have the naming conventions changed to match qty
+          // then need to add the logic for the sales forecast as well
+          const history = Object.entries(j.qty_results)
             .map(([k, v]) => [k, structuredClone(v as UpcForecast).history])
             .map(([id, obj], idx) =>
               convertData(
                 id as string,
                 obj as { date: string; value: number }[],
-                idx
+                idx,
+                "history",
+                j.qty_results
               )
             );
 
-          const forecast = Object.entries(j.results)
+          const forecast = Object.entries(j.qty_results)
             .map(([k, v]) => [k, structuredClone(v as UpcForecast).forecast])
             .map(([id, obj], idx) =>
               convertData(
                 id as string,
                 obj as { date: string; value: number }[],
                 idx,
-                "forecast"
+                "forecast",
+                j.qty_results
               )
             );
 
-          const upcList = Object.keys(j.results).map((k, idx) => ({
+          // This is the new way to set the upc items and upc list from the rest of the endpoints
+          const upcItems = Object.keys(j.qty_results).map((k) => ({
+            product_code: k,
+            description: j.qty_results[k as string].metrics.description,
+          }));
+          dispatch(setUpcItems(upcItems));
+
+          const upcList = Object.keys(j.qty_results).map((k, idx) => ({
             label: k,
             value: k,
             color: colorCodes[idx % colorCodes.length],
-            metrics: j.results[k as string].metrics,
+            metrics: j.qty_results[k as string].metrics,
           }));
 
-          // const { data, metrics } = formatForecastExport(j.results);
-          // dispatch(setForecastExport(data));
-          // dispatch(setForecastMetricExport(metrics));
           dispatch(setForecastData(forecast));
           dispatch(setForecastHistory(history));
           dispatch(setUpcList(upcList));

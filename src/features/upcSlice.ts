@@ -21,6 +21,7 @@ interface UpcState {
   forecastHistory: Forecast[];
   upcList: UpcInfo[];
   forecastOption: "sales" | "quantity";
+  upcSelectorDisplay: "desc" | "upc";
   selectedLegendForecast: UpcInfo;
 }
 
@@ -44,6 +45,7 @@ const initialState: UpcState = {
   forecastHistory: [],
   upcList: [],
   forecastOption: "quantity",
+  upcSelectorDisplay: "upc",
   selectedLegendForecast: {} as UpcInfo,
 };
 

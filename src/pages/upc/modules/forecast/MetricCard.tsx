@@ -14,7 +14,7 @@ import { formatBigNumber } from "../../../../utils";
 interface MetricCardProps {
   metric: number;
   label: string;
-  type?: string;
+  type: keyof typeof icons;
 }
 
 const icons = {
@@ -22,7 +22,7 @@ const icons = {
     <HashtagIcon
       height={42}
       width={42}
-      className="absolute -translate-y-0"
+      className="absolute ml-4 -translate-y-0"
       fill="#3b82f6"
     />
   ),
@@ -30,7 +30,7 @@ const icons = {
     <ArrowsRightLeftIcon
       height={42}
       width={42}
-      className="absolute -translate-y-0"
+      className="absolute ml-4 -translate-y-0"
       fill="#3b82f6"
     />
   ),
@@ -38,7 +38,7 @@ const icons = {
     <ArrowUpCircleIcon
       height={42}
       width={42}
-      className="absolute -translate-y-0"
+      className="absolute ml-4 -translate-y-0"
       fill="#3b82f6"
     />
   ),
@@ -46,7 +46,7 @@ const icons = {
     <AdjustmentsHorizontalIcon
       height={42}
       width={42}
-      className="absolute -translate-y-1"
+      className="absolute ml-4 -translate-y-1"
       fill="#f97316"
     />
   ),
@@ -54,7 +54,7 @@ const icons = {
     <HashtagIcon
       height={42}
       width={42}
-      className="absolute -translate-y-0"
+      className="absolute ml-4 -translate-y-0"
       fill="#10b981"
     />
   ),
@@ -62,7 +62,7 @@ const icons = {
     <ArrowsRightLeftIcon
       height={42}
       width={42}
-      className="absolute -translate-y-0"
+      className="absolute ml-4 -translate-y-0"
       fill="#10b981"
     />
   ),
@@ -70,7 +70,7 @@ const icons = {
     <ClockIcon
       height={42}
       width={42}
-      className="absolute -translate-y-0"
+      className="absolute ml-4 -translate-y-0"
       fill="#f97316"
     />
   ),
@@ -78,7 +78,7 @@ const icons = {
     <ArrowTrendingUpIcon
       height={42}
       width={42}
-      className="absolute -translate-y-0"
+      className="absolute ml-4 -translate-y-0"
       fill="#10b981"
     />
   ),

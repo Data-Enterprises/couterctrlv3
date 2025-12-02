@@ -1,13 +1,27 @@
 import { useEffect, useState } from "react";
 import { useAppSelector } from "../../../../hooks";
 import MetricCard from "./MetricCard";
-import { UpcMetrics } from "../../../features/upcListSlice";
-import { getOverallMetrics, getItemMetrics, getForecast } from "./utils";
+import type { UpcMetrics } from "../../../../interfaces";
+import {
+  getOverallMetrics,
+  getItemMetrics,
+  getForecast,
+} from "../../components";
 
 interface QtyMetricsProps {
   mode: "overall" | "top" | "selected";
   metric: "Quantity" | "Sales";
 }
+
+type MetricKey =
+  | "active"
+  | "forecast"
+  | "quantity"
+  | "qtyRange"
+  | "mdq"
+  | "median"
+  | "avgQty"
+  | "avgQtyRange";
 
 const QtyMetrics = ({ mode, metric }: QtyMetricsProps) => {
   const state = useAppSelector((state) => state.upc);
@@ -17,6 +31,7 @@ const QtyMetrics = ({ mode, metric }: QtyMetricsProps) => {
   const [title, setTitle] = useState<string>("");
 
   useEffect(() => {
+    // Grabbing the top and bottom items for overall metrics for qty
     const topItem = [...state.upcList].sort(
       (a, b) => b.metrics.qty - a.metrics.qty
     )[0];
@@ -25,17 +40,15 @@ const QtyMetrics = ({ mode, metric }: QtyMetricsProps) => {
     )[0];
 
     if (mode === "overall") {
-      setTitle(`${metric} Overview - ${state.upcList.length} Items`);
+      setTitle(`${metric} Overview`);
       setMetrics(getOverallMetrics(state.upcList, topItem, bottomItem));
-    } else if (mode === "top") {
-      const topForecast = getForecast(state.forecast, topItem);
 
-      setTitle(`Top Item - ${topItem.metrics.description} (${topItem.label})`);
-      setMetrics(getItemMetrics(topItem, topForecast));
     } else if (mode === "selected") {
-      const item = state.selectedLegendForecast || state.upcList[0];
+      // Handling the default behavior as well for on mount
+      const item = state.selectedLegendForecast.label
+        ? state.selectedLegendForecast
+        : state.upcList[0];
       const itemForecast = getForecast(state.forecast, item);
-
       setTitle(`${item.metrics.description} - (${item.label})`);
       setMetrics(getItemMetrics(item, itemForecast));
     }
@@ -50,8 +63,7 @@ const QtyMetrics = ({ mode, metric }: QtyMetricsProps) => {
             key={metric.label}
             metric={metric.value}
             label={metric.label}
-            item={metric.item}
-            type={metric.type}
+            type={metric.type as MetricKey}
           />
         ))}
       </div>
