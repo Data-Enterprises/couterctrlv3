@@ -2,6 +2,7 @@ import { useAppSelector } from "../../../hooks";
 import { useDispatch } from "react-redux";
 // import { setOpenModal, setUpc } from "../../../features/trendModalSlice";
 import type { UpcTrend } from "../../../interfaces";
+import { setUpc, setOpenModal } from "../../../features/trendModalSlice";
 
 interface TopBottomTrendsProps {
   type: "Top" | "Bottom";
@@ -13,9 +14,8 @@ const TopBottomTrends = ({ type }: TopBottomTrendsProps) => {
   const trends = type === "Top" ? state.topFiveTrends : state.bottomFiveTrends;
 
   const handleClick = (upc: string) => {
-    // dispatch(setUpc(upc));
-    // dispatch(setOpenModal(true));
-    console.log("Clicked UPC:", upc);
+    dispatch(setUpc(upc));
+    dispatch(setOpenModal(true));
   };
 
   return (

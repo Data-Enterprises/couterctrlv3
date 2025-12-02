@@ -49,7 +49,8 @@ const TrendModal = () => {
     <Modal
       isOpen={state.openModal && trend !== null}
       onClose={onClose}
-      className="pl-60 pb-40 select-none"
+      className="pl-28 pb-20 select-none"
+      modalClassName="bg-custom-white"
     >
       {trend ? (
         <div className="flex flex-col text-sm relative bg-custom-white">
