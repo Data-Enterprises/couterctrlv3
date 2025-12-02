@@ -125,14 +125,14 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
       </div>
       <div className="flex justify-around mt-2 gap-4">
         <button
-          className={`btn-themeGreen py-1.5 w-full ${
+          className={`btn-themeGreen py-1.5 px-7 text-nowrap w-full ${
             selectedSalesPanel.storeid === 0
               ? "opacity-50 pointer-events-none"
               : ""
           }`}
           onClick={() => handleCompareClick(panel)}
         >
-          Compare
+          Compare Subs
         </button>
         <button
           className={`btn-themeBlue py-1.5 w-full`}
