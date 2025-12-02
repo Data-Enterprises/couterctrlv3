@@ -71,7 +71,7 @@ export const upcModalSlice = createSlice({
       if (action.payload === 3) state.type = "priceOpt";
       if (action.payload === 4) state.type = "trend";
     },
-    reset: (state) => (state = emptyState),
+    reset: () => emptyState,
   },
 });
 
