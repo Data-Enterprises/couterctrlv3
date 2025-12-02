@@ -15,6 +15,7 @@ import Forcast from "../modules/Forecast";
 import PriceOpt from "../modules/PriceOpt";
 import TrendDetector from "../modules/TrendDetector";
 import {
+  setBottomFiveTrends,
   setDataLoaded,
   setForecastData,
   setForecastHistory,
@@ -23,16 +24,24 @@ import {
   setOptBestPrices,
   setOptBestPricesByUpc,
   setSalesComp,
+  setTopFiveTrends,
   setUpcCount,
   setUpcItems,
   setUpcList,
+  setUpcTrends,
 } from "../../../features/upcSlice";
-import { getForecasting, getPriceOpt, getSalesComp } from "../../../api/upc";
+import {
+  getForecasting,
+  getPriceOpt,
+  getSalesComp,
+  getTrendDetect,
+} from "../../../api/upc";
 import type {
   JsonError,
   UpcForecast,
   UpcItem,
   UpcPriceOpt,
+  UpcTrend,
 } from "../../../interfaces";
 import { colorCodes } from "../components";
 import { convertData } from "../utils";
@@ -61,7 +70,7 @@ const UpcList = () => {
     } else if (context.selectedMode == 3) {
       getPriceOptData();
     } else if (context.selectedMode == 4) {
-      // getTrendData();
+      getTrendData();
     }
   };
 
@@ -182,6 +191,34 @@ const UpcList = () => {
           dispatch(setUpcCount(j.best_prices_by_upc.length));
           dispatch(setOptBestPrices(j.best_prices));
           dispatch(setOptBestPricesByUpc(j.best_prices_by_upc));
+          dispatch(setDataLoaded(true));
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => cleanUp());
+  };
+
+  const getTrendData = () => {
+    getTrendDetect(
+      context.url,
+      context.token,
+      context.storeids,
+      context.startDate,
+      context.endDate,
+      parseInt(context.trendPeriods),
+      file!
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          const upcItems = [...j.trends].map((item: UpcTrend) => ({
+            product_code: item.product_code,
+            description: item.product_description,
+          }));
+          dispatch(setUpcItems(upcItems));
+          dispatch(setUpcTrends(j.trends));
+          dispatch(setTopFiveTrends(j.top_5));
+          dispatch(setBottomFiveTrends(j.bottom_5));
           dispatch(setDataLoaded(true));
         }
       })

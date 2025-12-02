@@ -12,6 +12,7 @@ import forgotPasswordReducer from "../features/forgotPasswordSlice";
 import cashierReducer from "../features/cashierSlice";
 import upcReducer from "../features/upcSlice";
 import itemLookupReducer from "../features/itemLookupSlice";
+import trendModalReducer from "../features/trendModalSlice";
 
 export const setupStore = () =>
   configureStore({
@@ -28,6 +29,7 @@ export const setupStore = () =>
       cashier: cashierReducer,
       upc: upcReducer,
       item: itemLookupReducer,
+      trendModal: trendModalReducer,
     },
   });
 

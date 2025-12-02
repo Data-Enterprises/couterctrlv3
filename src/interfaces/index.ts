@@ -391,6 +391,31 @@ export type UpcPriceOpt = {
   total_weight: number;
 };
 
+export type UpcTrend = {
+  product_code: string;
+  product_description: string;
+  trend_date: string;
+  slope_before: number;
+  slope_after: number;
+  slope_change: number;
+  trend: string;
+  mean_before: number;
+  mean_after: number;
+  pct_change_mean: number;
+  total_before: number;
+  total_after: number;
+  volatility_before: number;
+  volatility_after: number;
+  active_days_before: number;
+  active_days_after: number;
+  "r2-before": number;
+  "r2-after": number;
+  impact_units: number;
+  sparkline: number[];
+  tooltip: string;
+  rank: number;
+};
+
 export type Handlers = {
   reset?: () => Promise<void> | void;
   copy?: () => Promise<void> | void;

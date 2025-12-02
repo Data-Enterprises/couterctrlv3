@@ -6,6 +6,7 @@ import type {
   UpcInfo,
   Forecast,
   UpcPriceOpt,
+  UpcTrend,
 } from "../interfaces";
 
 interface UpcState {
@@ -36,6 +37,10 @@ interface UpcState {
   selectedOptItem: UpcPriceOpt;
   upcSearch: string;
   descSearch: string;
+  upcTrends: UpcTrend[];
+  topFiveTrends: UpcTrend[];
+  bottomFiveTrends: UpcTrend[];
+  trendMode: "Totals" | "Mean" | "Volatility";
 }
 
 const initialState: UpcState = {
@@ -66,6 +71,10 @@ const initialState: UpcState = {
   optBestPricesByUpc: [],
   optDisplayMode: "multiRow",
   selectedOptItem: {} as UpcPriceOpt,
+  upcTrends: [],
+  topFiveTrends: [],
+  bottomFiveTrends: [],
+  trendMode: "Totals",
 };
 
 export const upcSlice = createSlice({
@@ -166,6 +175,21 @@ export const upcSlice = createSlice({
     ) => {
       state.optDisplayMode = action.payload;
     },
+    setUpcTrends: (state, action: PayloadAction<UpcTrend[]>) => {
+      state.upcTrends = action.payload;
+    },
+    setTopFiveTrends: (state, action: PayloadAction<UpcTrend[]>) => {
+      state.topFiveTrends = action.payload;
+    },
+    setBottomFiveTrends: (state, action: PayloadAction<UpcTrend[]>) => {
+      state.bottomFiveTrends = action.payload;
+    },
+    setTrendMode: (
+      state,
+      action: PayloadAction<"Totals" | "Mean" | "Volatility">
+    ) => {
+      state.trendMode = action.payload;
+    },
     resetSelectedUpcs: (state) => {
       state.selectedUpcs = [];
       state.selectedCompOne = null;
@@ -187,6 +211,12 @@ export const upcSlice = createSlice({
       state.upcList = [];
       state.optBestPrices = [];
       state.optBestPricesByUpc = [];
+      state.selectedOptItem = {} as UpcPriceOpt;
+      state.optDisplayMode = "singleRow";
+      state.upcTrends = [];
+      state.topFiveTrends = [];
+      state.bottomFiveTrends = [];
+      state.trendMode = "Totals";
     },
     resetUpcState: () => initialState,
   },
@@ -218,6 +248,10 @@ export const {
   setOptBestPricesByUpc,
   setSelectedOptItem,
   setOptDisplayMode,
+  setUpcTrends,
+  setTopFiveTrends,
+  setBottomFiveTrends,
+  setTrendMode,
   resetSelectedUpcs,
   clearUpcData,
   resetUpcState,

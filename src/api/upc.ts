@@ -89,8 +89,8 @@ export const getPriceOpt = async (
 
 export const getTrendDetect = async (
   url: string,
+  token: string,
   storeids: string,
-  userid: number,
   startdate: string,
   enddate: string,
   periods: number = 120,
@@ -101,11 +101,14 @@ export const getTrendDetect = async (
 
   const json = await axios({
     method: "POST",
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    },
     url: url + "marketing/trend_detector",
     data: formData,
     params: {
       storeids,
-      userid,
       startdate,
       enddate,
       periods,
