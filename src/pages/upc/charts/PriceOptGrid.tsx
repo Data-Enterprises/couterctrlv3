@@ -16,14 +16,11 @@ import { setOptDisplayMode } from "../../../features/upcSlice";
 import type { UpcPriceOpt } from "../../../interfaces";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import "./grid.css";
-// import { setMenuPosition } from "../../../features/contextMenuSlice";
-// import { useDispatch } from "react-redux";
-// import { setClipboardText } from "../../../features/upcListSlice";
-// import { options } from "../utils";
+import { options } from "../utils";
+import { setClipboardText, setMenuPosition } from "../../../features/ctxMenuSlice";
 
 interface GridProps {
   rowData: UpcPriceOpt[];
-  onSelectionChanged?: (x: string[]) => void;
   handleCellClick?: (x: UpcPriceOpt) => void;
 }
 
@@ -36,7 +33,7 @@ type UpcRow = {
   total_weight: number;
 };
 
-const Grid = ({ rowData, onSelectionChanged, handleCellClick }: GridProps) => {
+const Grid = ({ rowData, handleCellClick }: GridProps) => {
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.upc);
   const [rows, setRows] = useState<UpcRow[]>(rowData);
@@ -84,24 +81,6 @@ const Grid = ({ rowData, onSelectionChanged, handleCellClick }: GridProps) => {
       valueFormatter: (params) => params.value.toLocaleString(),
       cellClass: "no-outline-on-focus select-none",
     },
-    // {
-    //   headerName: "Revenue",
-    //   field: "total_revenue",
-    //   flex: 1,
-    //   resizable: false,
-    //   cellStyle: { textAlign: "right" },
-    //   headerStyle: { borderRight: "1px solid white" },
-    //   valueFormatter: (params) => `$${params.value}`,
-    //   cellClass: "no-outline-on-focus select-none",
-    // },
-    // {
-    //   headerName: "Weight",
-    //   field: "total_weight",
-    //   flex: 0.8,
-    //   resizable: false,
-    //   cellStyle: { textAlign: "right" },
-    //   cellClass: "no-outline-on-focus select-none",
-    // },
   ];
 
   useEffect(() => {
@@ -145,19 +124,20 @@ const Grid = ({ rowData, onSelectionChanged, handleCellClick }: GridProps) => {
     rowBorder: "1px solid white",
   });
 
-  // const handleRightClick = (e: CellContextMenuEvent<UpcRow>) => {
-  //   e.event.preventDefault();
-  //   const mouseEvent = e.event as MouseEvent;
-  //   if (options.length < 3)
-  //     options.push({ label: "Show Prices", key: "selectUpc" });
-  //   dispatch(
-  //     setClipboardText({
-  //       upc: e.data.product_code,
-  //       desc: e.data.product_description,
-  //     })
-  //   );
-  //   dispatch(setMenuPosition({ x: mouseEvent.pageX + 5, y: mouseEvent.pageY }));
-  // };
+  const handleRightClick = (e: CellContextMenuEvent<UpcRow>) => {
+    if (!e.event || !e.data) return;
+    e.event.preventDefault();
+    const mouseEvent = e.event as MouseEvent;
+    if (options.length < 3)
+      options.push({ label: "Show Prices", key: "selectUpc" });
+    dispatch(
+      setClipboardText({
+        upc: e.data.product_code,
+        desc: e.data.product_description,
+      })
+    );
+    dispatch(setMenuPosition({ x: mouseEvent.pageX + 5, y: mouseEvent.pageY }));
+  };
 
   const handleClick = (e: CellClickedEvent<UpcRow>) => {
     e.event?.preventDefault();
@@ -215,7 +195,7 @@ const Grid = ({ rowData, onSelectionChanged, handleCellClick }: GridProps) => {
               checkboxes: false,
             }}
             theme={theme}
-            // onCellContextMenu={handleRightClick}
+            onCellContextMenu={handleRightClick}
             onCellClicked={handleClick}
             onRowClicked={handleRowSelection}
           />

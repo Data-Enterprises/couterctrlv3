@@ -438,3 +438,10 @@ export type Option = {
   children?: Option[];
   value?: string;
 };
+
+
+// Context Menu Interfaces
+export type ClipboardText = {
+  upc: string;
+  desc: string;
+};

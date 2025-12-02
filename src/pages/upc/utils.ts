@@ -5,6 +5,7 @@ import type {
   ForecastMetrics,
   UpcForecast,
   Forecast,
+  Handlers,
 } from "../../interfaces";
 
 export const formatForecastExport = (forecastData: any) => {
@@ -169,3 +170,19 @@ export const convertData = (
   }
   return newData;
 };
+
+export type ContextEvent = React.MouseEvent<
+  HTMLTableRowElement | HTMLDivElement
+>;
+export type Option = {
+  label: string;
+  key: keyof Handlers;
+  children?: Option[];
+  value?: string;
+};
+
+export const options: Option[] = [
+  { label: "Copy UPC", key: "copyUpc" },
+  { label: "Copy Description", key: "copyDesc" },
+  { label: "Show Prices", key: "selectUpc" },
+];

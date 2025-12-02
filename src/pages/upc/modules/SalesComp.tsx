@@ -9,12 +9,17 @@ import UpcModal from "../modal/UpcModal";
 import { exportData } from "../exportHeaders/utils";
 import { tableHeaderUpc } from "../exportHeaders";
 import { reset } from "../../../features/upcModalSlice";
+import type { Handlers } from "../../../interfaces";
+import { setMenuPosition } from "../../../features/ctxMenuSlice";
+import CtxMenu from "../../../components/CtxMenu";
+import { options } from "../utils";
 
 const SalesComp = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const upcState = useAppSelector((state) => state.upc);
   const modal = useAppSelector((state) => state.upcModal);
+  const ctx = useAppSelector((state) => state.ctxMenu);
   const { rows } = useRowHeight();
 
   const handleExport = () => {
@@ -27,8 +32,23 @@ const SalesComp = () => {
     dispatch(reset());
   };
 
+  const handleCopy = async (text: string) => {
+    await navigator.clipboard.writeText(text);
+    dispatch(setMenuPosition(null));
+  };
+
+  const handlers: Handlers = {
+    copyUpc: () => handleCopy(ctx.clipboardText.upc),
+    copyDesc: () => handleCopy(ctx.clipboardText.desc),
+  };
+
   return (
     <div className="h-full w-full grid grid-cols-[13%_87%] gap-4">
+      <CtxMenu
+        className="hover:bg-panel_active/70"
+        options={options}
+        handlers={handlers}
+      />
       <UpcModal handleExport={handleExport} />
       <UpcControls />
       <div className={`w-full h-full grid ${rows} gap-4`}>

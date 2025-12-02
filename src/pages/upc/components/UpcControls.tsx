@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useUpcContext } from "../wizard/hooks";
 import {
@@ -11,8 +11,16 @@ import { useScrollHeight } from ".";
 import CheckBox from "../../../components/inputs/CheckBox";
 import RadioBox from "../../../components/inputs/RadioBox";
 import { setModalType, setOpenModal } from "../../../features/upcModalSlice";
+import { options } from "../utils";
+import {
+  setClipboardText,
+  setMenuPosition,
+} from "../../../features/ctxMenuSlice";
+import type { UpcItem } from "../../../interfaces";
 
 const UpcControls = () => {
+  const [filtered, setFiltered] = useState<UpcItem[]>([]);
+  const [filterText, setFilterText] = useState<string>("");
   const [upcDisplay, setUpcDisplay] = useState<"code" | "desc">("code");
   const [showDisplay, setShowDisplay] = useState<"all" | "selected" | "stores">(
     "all"
@@ -42,6 +50,35 @@ const UpcControls = () => {
     dispatch(setModalType(state.selectedMode));
     dispatch(setOpenModal(true));
   };
+
+  const handleRightClick = (
+    e: React.MouseEvent<HTMLDivElement>,
+    option: UpcItem
+  ) => {
+    e.preventDefault();
+    if (options.length > 2) options.pop();
+
+    dispatch(
+      setClipboardText({
+        upc: option.product_code,
+        desc: option.description,
+      })
+    );
+    dispatch(setMenuPosition({ x: e.pageX + 5, y: e.pageY }));
+  };
+
+  useEffect(() => {
+    if (filterText === "") {
+      setFiltered(upcItems);
+    } else {
+      const filtered = upcItems.filter(
+        (item) =>
+          item.description.toLowerCase().includes(filterText.toLowerCase()) ||
+          item.product_code.toLowerCase().includes(filterText.toLowerCase())
+      );
+      setFiltered(filtered);
+    }
+  }, [filterText, upcItems]);
 
   return (
     <div className="grid bg-custom-white rounded-lg shadow-lg text-sm select-none">
@@ -131,6 +168,8 @@ const UpcControls = () => {
           <input
             type="text"
             className="basic-input focus:border bg-custom-white py-1 w-full"
+            value={filterText}
+            onChange={(e) => setFilterText(e.currentTarget.value)}
           />
         </div>
       </div>
@@ -140,11 +179,12 @@ const UpcControls = () => {
         style={{ minHeight: height, maxHeight: height }}
       >
         {showDisplay === "all" &&
-          upcItems.map((item, i) => (
+          filtered.map((item, i) => (
             <div
               key={i}
               className={`even:bg-blue-200 px-2 py-1 text-xs font-medium hover:bg-blue-100 transition-all duration-200 cursor-pointer`}
               onClick={() => dispatch(setSelectedUpcs(item.product_code))}
+              onContextMenu={(e) => handleRightClick(e, item)}
             >
               <CheckBox
                 id={i}
