@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import type { UpcTrend } from "../../../interfaces";
 import { useToast } from "../../../components/toasts/hooks/useToast";
+import { reset } from "../../../features/upcModalSlice";
+import { exportData } from "../exportHeaders/utils";
+import { trendHeaders } from "../exportHeaders";
 
 // Components
 import UpcControls from "../components/UpcControls";
@@ -10,11 +13,13 @@ import TopBottomTrends from "../components/TopBottomTrends";
 import TrendCardsList from "./trend/TrendCardsList";
 import TrendGroupBar from "../charts/TrendGroupBar";
 import TrendModal from "./trend/TrendModal";
+import UpcModal from "../modal/UpcModal";
 
 const TrendDetector = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const state = useAppSelector((state) => state.upc);
+  const modal = useAppSelector((state) => state.upcModal);
   const [selectedTrends, setSelectedTrends] = useState<UpcTrend[]>([]);
 
   useEffect(() => {
@@ -29,26 +34,26 @@ const TrendDetector = () => {
     }
   }, [state.upcTrends, state.selectedUpcs]);
 
-  // const handleExport = () => {
-  //   if (!modal.fileName) {
-  //     toast.warn("Please enter a file name...");
-  //     return;
-  //   }
+  const handleExport = () => {
+    if (!modal.fileName) {
+      toast.warn("Please enter a file name...");
+      return;
+    }
 
-  //   const data: UpcTrend[] = modal.trendOption.all
-  //     ? state.upcTrends
-  //     : modal.trendOption.top
-  //     ? state.topFiveTrends
-  //     : state.bottomFiveTrends;
+    const data: UpcTrend[] = modal.trendOption.all
+      ? state.upcTrends
+      : modal.trendOption.top
+      ? state.topFiveTrends
+      : state.bottomFiveTrends;
 
-  //   exportData(data, trendHeaders, modal.fileName);
-  //   dispatch(reset());
-  // };
+    exportData(data, trendHeaders, modal.fileName);
+    dispatch(reset());
+  };
 
   return (
     <div className="h-full w-full grid grid-cols-[12%_88%] gap-4">
       <TrendModal />
-      {/* <UpcModal handleExport={handleExport} /> */}
+      <UpcModal handleExport={handleExport} />
       <UpcControls />
       <div className="gap-2 grid grid-rows-[62%_38%] -mt-3 relative pt-[133px] mr-4">
         <div className="absolute w-full" style={{ zIndex: 0 }}>
