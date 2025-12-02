@@ -75,7 +75,24 @@ const SideBar = () => {
   };
 
   const slidingStyle =
-    "data-[open=true]:w-[191px] data-[open=false]:w-12 transition-all duration-300 data-[open=true]:shadow-[0px_2px_4px_rgba(0,0,0,0.2)] data-[open=false]:shadow-[0px_3px_3px_rgba(0,0,0,0.2)]";
+    "data-[open=true]:w-[145px] md:data-[open=true]:w-[191px] data-[open=false]:w-0 md:data-[open=false]:w-12 transition-all duration-300 data-[open=true]:shadow-[0px_2px_4px_rgba(0,0,0,0.2)] data-[open=false]:shadow-[0px_3px_3px_rgba(0,0,0,0.2)]";
+
+  // experimenting with this for mobile icon sizing
+  const mobileIconStyle = () => {
+    if (context.isDesktop) {
+      return "h-7 w-7";
+    } else {
+      return !nav.isNavOpen
+        ? "opacity-0 h-7 w-7 transition-all duration-200 ml-0"
+        : "opacity-100 h-7 w-7 transition-all duration-200 ml-2";
+    }
+  };
+
+  // const iconStyle = context.isDesktop
+  //   ? "h-7 w-7"
+  //   : !nav.isNavOpen
+  //   ? "opacity-0 h-7 w-7 transition-all duration-200"
+  //   : "opacity-100 h-7 w-7 transition-all duration-200";
 
   return (
     <div
@@ -112,9 +129,9 @@ const SideBar = () => {
             }
             onClick={() => handleNavClick(item)}
           >
-            <div className="flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200">
+            <div className="flex w-full items-center md:pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200">
               <div className="flex-shrink-0 flex items-center justify-center">
-                <item.icon className="h-7 w-7" />
+                <item.icon className={mobileIconStyle()} />
               </div>
               <div
                 className={`font-medium text-sm ${
@@ -133,13 +150,13 @@ const SideBar = () => {
       {/* Settings and Sign Out */}
       <div className="select-none cursor-pointer">
         <div
-          className="flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200"
+          className={`${context.isDesktop ? "" : "hidden"} flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200`}
           onClick={() => {
             navigate("settings");
           }}
         >
           <div className="flex-shrink-0 flex items-center justify-center">
-            <Cog6ToothIcon className="h-7 w-7" />
+            <Cog6ToothIcon className={mobileIconStyle()} />
           </div>
           <div
             className={`font-medium text-sm ${
@@ -157,7 +174,7 @@ const SideBar = () => {
           onClick={handleSignOut}
         >
           <div className="flex-shrink-0 flex items-center justify-center">
-            <SignOutIcon className="h-7 w-7" />
+            <SignOutIcon className={mobileIconStyle()} />
           </div>
           <div
             className={`font-medium text-sm ${

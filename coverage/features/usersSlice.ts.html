@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">28.57% </span>
+                <span class="strong">40.9% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>6/21</span>
+                <span class='fraction'>9/22</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">18.18% </span>
+                <span class="strong">33.33% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/11</span>
+                <span class='fraction'>4/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">28.57% </span>
+                <span class="strong">40.9% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>6/21</span>
+                <span class='fraction'>9/22</span>
             </div>
         
             
@@ -206,7 +206,11 @@
 <a name='L141'></a><a href='#L141'>141</a>
 <a name='L142'></a><a href='#L142'>142</a>
 <a name='L143'></a><a href='#L143'>143</a>
-<a name='L144'></a><a href='#L144'>144</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L144'></a><a href='#L144'>144</a>
+<a name='L145'></a><a href='#L145'>145</a>
+<a name='L146'></a><a href='#L146'>146</a>
+<a name='L147'></a><a href='#L147'>147</a>
+<a name='L148'></a><a href='#L148'>148</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -274,7 +278,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -325,13 +329,17 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -383,7 +391,7 @@ const defaultInfo: UserData = {
   user_level: 0,
   company: 0,
   confirm_password: "",
-  role: 9,
+  role: 0,
 };
 &nbsp;
 // State for users slice /////////////
@@ -416,8 +424,8 @@ export const usersSlice = createSlice({
   name: "users",
   initialState,
   reducers: {
-    setUsers: (state, action: PayloadAction&lt;User[]&gt;) =&gt; {
-      state.users = action.payload;
+    setUsers: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;User[]&gt;) =&gt; {
+<span class="cstat-no" title="statement not covered" >      state.users = action.payload;</span>
     },
     setUserInfo: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;FormUpdate&gt;) =&gt; {
       const { key, value } = <span class="cstat-no" title="statement not covered" >action.payload;</span>
@@ -467,12 +475,15 @@ export const usersSlice = createSlice({
     setDeleteModalOpen: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;boolean&gt;) =&gt; {
 <span class="cstat-no" title="statement not covered" >      state.deleteModalOpen = action.payload;</span>
     },
-    setAssignModalOpen: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;boolean&gt;) =&gt; {
-<span class="cstat-no" title="statement not covered" >      state.assignModalOpen = action.payload;</span>
+    setAssignModalOpen: (state, action: PayloadAction&lt;boolean&gt;) =&gt; {
+      state.assignModalOpen = action.payload;
     },
-    setSelectedUserStores: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;UserStores&gt;) =&gt; {
-<span class="cstat-no" title="statement not covered" >      state.selectedUserStores.assigned = action.payload.assigned;</span>
-<span class="cstat-no" title="statement not covered" >      state.selectedUserStores.unassigned = action.payload.unassigned;</span>
+    setSelectedUserStores: (state, action: PayloadAction&lt;UserStores&gt;) =&gt; {
+      state.selectedUserStores.assigned = action.payload.assigned;
+      state.selectedUserStores.unassigned = action.payload.unassigned;
+    },
+    setRole: (state, action: PayloadAction&lt;number&gt;) =&gt; {
+      state.userInfo.role = action.payload;
     },
     resetUsersSlice: <span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >i</span>nitialState,</span>
   },
@@ -489,6 +500,7 @@ export const {
   setDeleteModalOpen,
   setAssignModalOpen,
   setSelectedUserStores,
+  setRole,
   resetUsersSlice,
 } = usersSlice.actions;
 export default usersSlice.reducer;
@@ -499,7 +511,7 @@ export default usersSlice.reducer;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-20T17:47:10.955Z
+                at 2025-12-02T20:04:10.534Z
             </div>
         <script src="../prettify.js"></script>
         <script>

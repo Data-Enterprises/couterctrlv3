@@ -20,6 +20,7 @@ interface SelectGroupProps {
 
 const SelectGroup = ({ getData }: SelectGroupProps) => {
   const dispatch = useAppDispatch();
+  const context = useAppSelector((state) => state.app);
   const group = useAppSelector((state) => state.group);
 
   const handleGroupSelect = (groupId: number) => {
@@ -46,9 +47,11 @@ const SelectGroup = ({ getData }: SelectGroupProps) => {
     }
   };
 
+  const layout = context.isDesktop ? "grid grid-cols-2 gap-2" : "grid grid-cols-1 gap-2";
+
   return (
     <div data-testid="select-group">
-      <div className="grid grid-cols-2 gap-2">
+      <div className={layout}>
         <SingleSelect
           id={1}
           label="Select Group"
@@ -67,9 +70,10 @@ const SelectGroup = ({ getData }: SelectGroupProps) => {
           displayKey={"display"}
           resetQuery={true}
           defaultQuery={"All Stores"}
+          className="hidden md:block"
         />
       </div>
-      <div className="font-medium text-sm my-4 select-none">
+      <div className="hidden md:block font-medium text-sm my-4 select-none">
         Select a Group and then select each store that you would like to see in
         that Group. You can swith groups and change as many goups as you like.
         All selected stores in the group will have the blue indicator

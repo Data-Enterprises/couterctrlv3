@@ -1,9 +1,10 @@
-const CashierIcon = () => {
+import type { IconProps } from ".";
+
+const CashierIcon = (props: IconProps) => {
   return (
     <svg
       fill="CurrentColor"
-      width="27px"
-      height="27px"
+      className={`${props.className} cursor-pointer`}
       viewBox="0 0 24 24"
       id="cashier-machine-left"
       data-name="Flat Line"

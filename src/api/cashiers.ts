@@ -132,3 +132,22 @@ export const getTransactionList = async (
   });
   return json;
 };
+
+export const emailTransaction = async (
+  url: string,
+  token: string,
+  transaction_id: string
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "cashiers/email_transaction",
+    data: {
+      transaction_id,
+    },
+  });
+  return json;
+};

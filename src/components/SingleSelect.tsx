@@ -184,7 +184,7 @@ const SingleSelect = <T,>({
                 data-[display=open]:animate-appear
                 data-[display=closed]:animate-dissapear
                 data-[display=closed]:pointer-events-none
-                data-[display=open]:max-h-[280px]
+                data-[display=open]:max-h-[250px]
                 data-[display=closed]:h-0 ${listClass}`}
           >
             {filteredData.map((d, idx) => (

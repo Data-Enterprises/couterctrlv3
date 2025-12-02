@@ -27,16 +27,6 @@ export interface TopTenItem {
   total_sales: number;
 }
 
-export interface SalesTwoDates {
-  qty: number;
-  sale_date: string;
-  store_name: string;
-  store_number: string;
-  storeid: number;
-  total_sales: number;
-  weight: number;
-}
-
 export type TopTenData = {
   id: string;
   label: string;
@@ -53,14 +43,14 @@ export type SelectedSalesPanel = {
 };
 
 export type WeeklySale = {
-  bin: number;
-  description: string;
+  net_sales: number;
   qty: number;
   sale_date: string;
-  sales: number;
   store_name: string;
   store_number: string;
   storeid: number;
+  total_sales: number;
+  total_tax: number;
   weight: number;
 };
 
@@ -79,6 +69,70 @@ export type GroupTopTenItem = {
   product_description: string;
   total_sales: number;
   qty: number;
+};
+
+// used for the hourly/hourly endpoint
+export type HourlySale = {
+  avg_itemPrice: number;
+  avg_item_qty: number;
+  basket_size_qty: number;
+  basket_size_sales: number;
+  hour: number;
+  net_sales: number;
+  qty: number;
+  sale_date: string;
+  store_name: string;
+  store_number: string;
+  storeid: number;
+  total_sales: number;
+  total_tax: number;
+  transactions: number;
+  weight: number;
+};
+
+export type SalesBarData = {
+  id: number;
+  label: string;
+  value: number;
+  fill: string;
+  color: string;
+  qty: number;
+};
+
+export type CatSale = {
+  sale_date: string;
+  storeid: number;
+  store_name: string;
+  store_number: string;
+  category: number;
+  category_description: string;
+  total_sales: number;
+  net_sales: number;
+  total_tax: number;
+  qty: number;
+  weight: number;
+  elec_instore_coupons: number;
+  elec_store_coupons: number;
+  digital_coupons: number;
+  store_coupon: number;
+};
+
+export type SubSale = {
+  sale_date: string;
+  storeid: number;
+  store_name: string;
+  store_number: string;
+  sub_department: number;
+  sub_department_description: string;
+  total_sales: number;
+  net_sales: number;
+  total_tax: number;
+  qty: number;
+  weight: number;
+  elec_instore_coupons: number;
+  elec_store_coupons: number;
+  digital_coupons: number;
+  store_coupon: number;
 };
 
 /////////////////////// End sales slice //////////////////////
@@ -237,3 +291,157 @@ export interface TransactionListItem {
   wic: number;
   scalable: number;
 }
+
+//////////////////////////////////////////////////////////////
+// UPC List Interfaces
+//////////////////////////////////////////////////////////////
+
+// For upc sales comp data
+export type UpcSalesComp = {
+  product_code: string;
+  description: string;
+  week: string;
+  Monday: number | null;
+  Tuesday: number | null;
+  Wednesday: number | null;
+  Thursday: number | null;
+  Friday: number | null;
+  Saturday: number | null;
+  Sunday: number | null;
+};
+
+export type UpcItem = {
+  product_code: string;
+  description: string;
+};
+
+export type UpcMetrics = {
+  avg_daily_qty: number;
+  days_active: number;
+  description: string;
+  max_day_qty: number;
+  qty: number;
+};
+
+export type UpcInfo = {
+  label: string;
+  value: string;
+  color: string;
+  metrics: UpcMetrics;
+};
+
+export type Forecast = {
+  // id === upc code
+  id: string;
+  // x === date and y === value
+  data: { x: string; y: number }[];
+  // for the chart color
+  color: string;
+};
+
+export interface UpcForecast {
+  forecast: { date: string; value: number }[];
+  forecast_dimension: number;
+  forecast_method: string;
+  history: { date: string; value: number }[];
+  history_dimension: number;
+  metrics: {
+    avg_daily_qty: number;
+    days_active: number;
+    description: string;
+    max_day_qty: number;
+    qty: number;
+  };
+}
+
+export type UpcData = {
+  storeid: number;
+  sale_date: string;
+  store_number: string;
+  terminal: string;
+  product_code: string;
+  description: string;
+  qty: number;
+  sales: number;
+  weight: number;
+};
+
+export type ForecastExport = {
+  upc: string;
+  description: string;
+  date: string;
+  quantity: number;
+};
+
+export type ForecastMetrics = {
+  upc: string;
+  description: string;
+  avg_daily_qty: number;
+  days_active: number;
+  max_day_qty: number;
+  qty: number;
+};
+
+export type UpcPriceOpt = {
+  product_code: string;
+  product_description: string;
+  price: number;
+  total_qty: number;
+  total_revenue: number;
+  total_weight: number;
+};
+
+export type UpcTrend = {
+  product_code: string;
+  product_description: string;
+  trend_date: string;
+  slope_before: number;
+  slope_after: number;
+  slope_change: number;
+  trend: string;
+  mean_before: number;
+  mean_after: number;
+  pct_change_mean: number;
+  total_before: number;
+  total_after: number;
+  volatility_before: number;
+  volatility_after: number;
+  active_days_before: number;
+  active_days_after: number;
+  "r2-before": number;
+  "r2-after": number;
+  impact_units: number;
+  sparkline: number[];
+  tooltip: string;
+  rank: number;
+};
+
+export type Handlers = {
+  reset?: () => Promise<void> | void;
+  copy?: () => Promise<void> | void;
+  exportVisual?: () => Promise<void> | void;
+  clearDate?: () => Promise<void> | void;
+  mode?: (mode: string) => Promise<void> | void;
+  exportAll?: () => Promise<void> | void;
+  test?: () => Promise<void> | void;
+  copyUpc?: () => Promise<void> | void;
+  copyDesc?: () => Promise<void> | void;
+  selectUpc?: () => Promise<void> | void;
+};
+
+export type ContextEvent = React.MouseEvent<
+  HTMLTableRowElement | HTMLDivElement
+>;
+export type Option = {
+  label: string;
+  key: keyof Handlers;
+  children?: Option[];
+  value?: string;
+};
+
+
+// Context Menu Interfaces
+export type ClipboardText = {
+  upc: string;
+  desc: string;
+};

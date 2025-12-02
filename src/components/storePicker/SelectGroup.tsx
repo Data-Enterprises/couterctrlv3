@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useAppDispatch } from "../../hooks";
+import { useAppDispatch, useAppSelector } from "../../hooks";
 import { setLastGroup, setSelectedGroup } from "../../features/searchSlice";
 import { setUserPrefs } from "../../api/user";
 import { useStorePickerContext } from ".";
@@ -12,6 +12,7 @@ interface Props {
 
 const SelectGroup = ({ onOutsideClick }: Props) => {
   const context = useStorePickerContext();
+  const app = useAppSelector((state) => state.app);
   const dispatch = useAppDispatch();
   const componentRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -81,10 +82,13 @@ const SelectGroup = ({ onOutsideClick }: Props) => {
     }
   };
 
-  const styling = "w-full px-4 md:px-0";
+  const styling = "w-full md:px-0";
   const inputStyle =
     "basic-input focus:border bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer w-full";
 
+  const width = app.isDesktop
+    ? "relative w-full w-full"
+    : "relative w-full";
   return (
     <div data-testid="select-group" ref={componentRef} className={styling}>
       <div className="flex flex-col">
@@ -95,7 +99,7 @@ const SelectGroup = ({ onOutsideClick }: Props) => {
         >
           Group
         </label>
-        <div className="relative">
+        <div className={`relative ${width}`}>
           <div
             data-testid="trigger-ref"
             ref={triggerRef}

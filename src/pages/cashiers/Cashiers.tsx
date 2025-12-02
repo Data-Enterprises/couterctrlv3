@@ -53,25 +53,34 @@ const Cashiers = () => {
       );
   };
 
+  // Styles for mobile and desktop
+  const pageContainer = context.isDesktop
+    ? "w-full h-[calc(100vh-3rem)] p-4 grid grid-cols-[27%_73%] gap-4"
+    : "p-4 w-full min-h-full overflow-y-auto space-y-4 max-h-screen";
+  const leftContainer = context.isDesktop
+    ? "grid grid-rows-[25%_0.9fr_1fr] gap-2"
+    : "";
+  const cols = context.isDesktop ? "grid-cols-2" : "grid-cols-1 mt-4";
+  const cardContainer = context.isDesktop
+    ? "grid grid-rows-[25%_74.1%] mr-4 gap-2"
+    : "";
+
   return (
-    <div
-      data-testid="cashiers-page"
-      className="w-full h-[calc(100vh-3rem)] p-4 grid grid-cols-[27%_73%] gap-4"
-    >
+    <div data-testid="cashiers-page" className={pageContainer}>
       <TransactionModal />
-      <div className="grid grid-rows-[25%_0.9fr_1fr] gap-2">
-        <div className="bg-custom-white px-4 py-2.5 rounded-lg shadow-lg">
+      <div className={leftContainer}>
+        <div className="bg-custom-white px-4 py-2.5 rounded-lg shadow-lg space-y-1 md:space-y-0">
           <StorePicker />
           <DatePickers handleQuery={getSaleTypesData} />
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className={`grid ${cols} gap-2`}>
           <SaleTypes setLoading={setLoading} />
-          <CashiersTableFilters />
+          {context.isDesktop && <CashiersTableFilters />}
         </div>
-        <UniqueCashiersTable />
+        {context.isDesktop && <UniqueCashiersTable />}
       </div>
 
-      <div className="grid grid-rows-[25%_74.1%] mr-4 gap-2">
+      <div className={cardContainer}>
         {cashier.chunkedSales.length > 0 ? (
           <div className="w-full ">
             <TrendCardCarousel />

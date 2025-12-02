@@ -66,9 +66,13 @@ const Groups = () => {
       });
   };
 
+  const containerStyle = context.isDesktop
+    ? "w-full h-[calc(100vh-3rem)] p-4 grid grid-cols-[40%_1fr] gap-4"
+    : "w-full h-[calc(100vh-3rem)] p-2 flex flex-col gap-2";
+
   return (
     <div
-      className="w-full h-[calc(100vh-3rem)] p-4 grid grid-cols-[40%_1fr] gap-4"
+      className={containerStyle}
       data-testid="groups-page"
     >
       <div>

@@ -32,7 +32,7 @@ const defaultInfo: UserData = {
   user_level: 0,
   company: 0,
   confirm_password: "",
-  role: 9,
+  role: 0,
 };
 
 // State for users slice /////////////
@@ -123,6 +123,9 @@ export const usersSlice = createSlice({
       state.selectedUserStores.assigned = action.payload.assigned;
       state.selectedUserStores.unassigned = action.payload.unassigned;
     },
+    setRole: (state, action: PayloadAction<number>) => {
+      state.userInfo.role = action.payload;
+    },
     resetUsersSlice: () => initialState,
   },
 });
@@ -138,6 +141,7 @@ export const {
   setDeleteModalOpen,
   setAssignModalOpen,
   setSelectedUserStores,
+  setRole,
   resetUsersSlice,
 } = usersSlice.actions;
 export default usersSlice.reducer;

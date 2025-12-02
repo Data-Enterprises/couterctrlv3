@@ -9,7 +9,7 @@
 }
 
 body {
-  overflow: hidden;
+  /* overflow: hidden; */
   overscroll-behavior: contain;
 }
 

@@ -92,7 +92,7 @@ const GroupList = () => {
         </div>
       </div>
       <div
-        className={`grid ${cols} text-sm gap-x-4 gap-y-2 max-h-[80vh] overflow-y-scroll no-scrollbar rounded-lg pb-4 select-none`}
+        className={`grid ${cols} text-sm gap-x-4 gap-y-2 max-h-[51vh] md:max-h-[80vh] overflow-y-scroll no-scrollbar rounded-lg pb-4 select-none`}
       >
         {filteredStores.map((store) => (
           <div

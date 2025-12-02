@@ -15,6 +15,8 @@ import Team from "./pages/team/Team.tsx";
 import Groups from "./pages/groups/Groups.tsx";
 import Cashiers from "./pages/cashiers/Cashiers.tsx";
 import Settings from "./pages/settings/Settings.tsx";
+import UpcList from "./pages/upc/wizard/UpcList.tsx";
+import ItemLookup from "./pages/lookup/ItemLookup.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -30,6 +32,8 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="cashiers" element={<Cashiers />} />
                 <Route path="groups" element={<Groups />} />
                 <Route path="settings" element={<Settings />} />
+                <Route path="upc-upload" element={<UpcList />} />
+                <Route path="item-lookup" element={<ItemLookup />} />
               </Route>
             </Routes>
           </ToastProvider>

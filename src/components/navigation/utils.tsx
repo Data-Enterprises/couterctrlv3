@@ -3,10 +3,15 @@ import type Radiation from "../../svgs/Radiation";
 import type StoresIcon from "../../svgs/StoresIcon";
 
 // Icons
-import { HomeIcon, UsersIcon } from "@heroicons/react/16/solid";
+import {
+  // HomeIcon,
+  UsersIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/16/solid";
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
 import GroupsIcon from "../../svgs/GroupsIcon";
+import UpcListIcon from "../../svgs/UpcListIcon";
 
 export type Navigation = {
   name: string;
@@ -20,15 +25,15 @@ export type Navigation = {
 };
 
 export const navigation: Navigation[] = [
-  {
-    name: "Home",
-    href: "/",
-    icon: HomeIcon,
-    mobile: true,
-    children: [],
-    childOpen: false,
-    userTypes: ["*"],
-  },
+  // {
+  //   name: "Home",
+  //   href: "/",
+  //   icon: HomeIcon,
+  //   mobile: true,
+  //   children: [],
+  //   childOpen: false,
+  //   userTypes: ["*"],
+  // },
   {
     name: "Sales",
     href: "sales",
@@ -42,7 +47,7 @@ export const navigation: Navigation[] = [
     name: "Team",
     href: "team",
     icon: UsersIcon,
-    mobile: true,
+    mobile: false,
     children: [],
     childOpen: false,
     userTypes: ["*"],
@@ -60,6 +65,24 @@ export const navigation: Navigation[] = [
     name: "Groups",
     href: "groups",
     icon: GroupsIcon,
+    mobile: true,
+    children: [],
+    childOpen: false,
+    userTypes: ["*"],
+  },
+  {
+    name: "Upc List",
+    href: "upc-upload",
+    icon: UpcListIcon,
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userTypes: ["*"],
+  },
+  {
+    name: "Item Lookup",
+    href: "item-lookup",
+    icon: MagnifyingGlassIcon,
     mobile: true,
     children: [],
     childOpen: false,

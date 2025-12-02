@@ -23,6 +23,10 @@ const App = () => {
     }
   }, []);
 
+  const containerStyle = context.isDesktop
+    ? "ml-12 min-w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)]"
+    : "";
+
   return (
     <div className="main-app h-dvh w-dvw bg-bkg text-content no-scrollbar">
       <UserDataLoader />
@@ -31,7 +35,7 @@ const App = () => {
           <TitleBar />
           <SideBar />
           <div
-            className={`ml-12 min-w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)] bg-bkg ${
+            className={`${containerStyle} bg-bkg ${
               nav.isNavOpen
                 ? "opacity-20 pointer-events-none"
                 : "bg-content/5 opacity-100"

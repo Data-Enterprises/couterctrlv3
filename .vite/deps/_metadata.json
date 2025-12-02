@@ -1,0 +1,136 @@
+{
+  "hash": "b69c2d91",
+  "configHash": "80b97883",
+  "lockfileHash": "1849c84c",
+  "browserHash": "932136f4",
+  "optimized": {
+    "react/jsx-dev-runtime": {
+      "src": "../../node_modules/react/jsx-dev-runtime.js",
+      "file": "react_jsx-dev-runtime.js",
+      "fileHash": "ae3b35fd",
+      "needsInterop": true
+    },
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "4858bce4",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "e8ba2742",
+      "needsInterop": true
+    },
+    "react-redux": {
+      "src": "../../node_modules/react-redux/dist/react-redux.mjs",
+      "file": "react-redux.js",
+      "fileHash": "ccb07a96",
+      "needsInterop": false
+    },
+    "react-router": {
+      "src": "../../node_modules/react-router/dist/development/index.mjs",
+      "file": "react-router.js",
+      "fileHash": "33d83e04",
+      "needsInterop": false
+    },
+    "@reduxjs/toolkit": {
+      "src": "../../node_modules/@reduxjs/toolkit/dist/redux-toolkit.modern.mjs",
+      "file": "@reduxjs_toolkit.js",
+      "fileHash": "1ad12810",
+      "needsInterop": false
+    },
+    "@heroicons/react/16/solid": {
+      "src": "../../node_modules/@heroicons/react/16/solid/esm/index.js",
+      "file": "@heroicons_react_16_solid.js",
+      "fileHash": "fec53dce",
+      "needsInterop": false
+    },
+    "axios": {
+      "src": "../../node_modules/axios/index.js",
+      "file": "axios.js",
+      "fileHash": "c281e1eb",
+      "needsInterop": false
+    },
+    "ag-grid-react": {
+      "src": "../../node_modules/ag-grid-react/dist/package/index.esm.mjs",
+      "file": "ag-grid-react.js",
+      "fileHash": "63948fb6",
+      "needsInterop": false
+    },
+    "ag-grid-community": {
+      "src": "../../node_modules/ag-grid-community/dist/package/main.esm.mjs",
+      "file": "ag-grid-community.js",
+      "fileHash": "8023fd0e",
+      "needsInterop": false
+    },
+    "@nivo/line": {
+      "src": "../../node_modules/@nivo/line/dist/nivo-line.mjs",
+      "file": "@nivo_line.js",
+      "fileHash": "aa9e2190",
+      "needsInterop": false
+    },
+    "@heroicons/react/24/outline": {
+      "src": "../../node_modules/@heroicons/react/24/outline/esm/index.js",
+      "file": "@heroicons_react_24_outline.js",
+      "fileHash": "2a9ba602",
+      "needsInterop": false
+    },
+    "zxcvbn": {
+      "src": "../../node_modules/zxcvbn/lib/main.js",
+      "file": "zxcvbn.js",
+      "fileHash": "6e62f678",
+      "needsInterop": true
+    },
+    "@nivo/bar": {
+      "src": "../../node_modules/@nivo/bar/dist/nivo-bar.mjs",
+      "file": "@nivo_bar.js",
+      "fileHash": "88a8f316",
+      "needsInterop": false
+    },
+    "react-dom": {
+      "src": "../../node_modules/react-dom/index.js",
+      "file": "react-dom.js",
+      "fileHash": "7530ff65",
+      "needsInterop": true
+    },
+    "@headlessui/react": {
+      "src": "../../node_modules/@headlessui/react/dist/headlessui.esm.js",
+      "file": "@headlessui_react.js",
+      "fileHash": "09bd0f84",
+      "needsInterop": false
+    },
+    "@heroicons/react/20/solid": {
+      "src": "../../node_modules/@heroicons/react/20/solid/esm/index.js",
+      "file": "@heroicons_react_20_solid.js",
+      "fileHash": "cc131ee8",
+      "needsInterop": false
+    },
+    "@heroicons/react/24/solid": {
+      "src": "../../node_modules/@heroicons/react/24/solid/esm/index.js",
+      "file": "@heroicons_react_24_solid.js",
+      "fileHash": "6a651cc0",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-PIIVFRQC": {
+      "file": "chunk-PIIVFRQC.js"
+    },
+    "chunk-24M753MT": {
+      "file": "chunk-24M753MT.js"
+    },
+    "chunk-EKFKCRXB": {
+      "file": "chunk-EKFKCRXB.js"
+    },
+    "chunk-CPWE7IRB": {
+      "file": "chunk-CPWE7IRB.js"
+    },
+    "chunk-ULSRCYB6": {
+      "file": "chunk-ULSRCYB6.js"
+    },
+    "chunk-G3PMV62Z": {
+      "file": "chunk-G3PMV62Z.js"
+    }
+  }
+}

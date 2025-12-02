@@ -50,15 +50,14 @@ export const getHourlyStoreDepts = async (
   return json;
 };
 
-export const salesTwoDates = async (
+export const getSalesPanels = async (
   url: string,
   token: string,
   startDate: string,
   endDate: string,
   useGroups: number,
   searchValue: number,
-  singleStore: number,
-  storeid: number = 0
+  singleStore: number
 ) => {
   const json = await axios({
     method: "POST",
@@ -66,9 +65,8 @@ export const salesTwoDates = async (
       "Content-Type": "application/json",
       Authorization: "Bearer " + token,
     },
-    url: url + "sales/salestwodates",
+    url: url + "sales/weekly",
     data: {
-      storeid,
       startDate,
       endDate,
       useGroups,
@@ -82,14 +80,12 @@ export const salesTwoDates = async (
 export const getWeekly = async (
   url: string,
   token: string,
-  storeid: number,
   startDate: string,
-  endDate: string
+  endDate: string,
+  useGroups: number,
+  searchValue: number,
+  singleStore: number
 ) => {
-  const formData = new FormData();
-  formData.append("storeid", storeid.toString());
-  formData.append("startDate", startDate);
-  formData.append("endDate", endDate);
   const json = await axios({
     method: "POST",
     headers: {
@@ -97,7 +93,13 @@ export const getWeekly = async (
       Authorization: "Bearer " + token,
     },
     url: url + "sales/weekly",
-    data: formData,
+    data: {
+      startDate,
+      endDate,
+      useGroups,
+      searchValue,
+      singleStore,
+    },
   });
   return json;
 };
@@ -117,7 +119,7 @@ export const getHourly = async (
       "Content-Type": "application/json",
       Authorization: "Bearer " + token,
     },
-    url: url + "sales/hourly_sales",
+    url: url + "hourly/hourly",
     data: {
       startDate,
       endDate,
@@ -138,7 +140,9 @@ export const getCats = async (
   searchValue: number,
   singleStore: number,
   consolidated: number = 0,
-  displayHourly: number = 0
+  displayHourly: number = 0,
+  page: number = 1,
+  download: number = 0
 ) => {
   const json = await axios({
     method: "POST",
@@ -155,6 +159,8 @@ export const getCats = async (
       singleStore,
       consolidated,
       displayHourly,
+      page,
+      download,
     },
   });
   return json;
@@ -177,7 +183,7 @@ export const getSubs = async (
       "Content-Type": "application/json",
       Authorization: "Bearer " + token,
     },
-    url: url + "subs/sub_sales_v2",
+    url: url + "subs/sub_sales",
     data: {
       startDate,
       endDate,

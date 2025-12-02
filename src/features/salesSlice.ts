@@ -2,9 +2,11 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {
   TopTenItem,
   DepartmentSale,
-  SalesTwoDates,
+  CatSale,
   SelectedSalesPanel,
   WeeklySale,
+  HourlySale,
+  SubSale,
 } from "../interfaces";
 
 type TopTenItemsMetrics = {
@@ -35,27 +37,43 @@ const defaultTopTenMetrics: TopTenItemsMetrics = {
 interface SalesState {
   topTenItems: TopTenItem[];
   departmentSales: DepartmentSale[];
-  salesPanels: SalesTwoDates[];
+  salesPanels: WeeklySale[];
   selectedSalesPanel: SelectedSalesPanel;
+  compareSalesPanel: SelectedSalesPanel;
   weeklySales: WeeklySale[];
   panelsLoading: boolean;
   salesPanelSearchText: string;
   salesPanelDateText: string;
   topTenItemsMetrics: TopTenItemsMetrics;
   windowVisible: WindowVisible;
+  hourlySales: HourlySale[];
+  subSales: SubSale[];
+  compareSubs: SubSale[];
+  catSales: CatSale[];
 }
+
+export const defaultSelectedPanel: SelectedSalesPanel = {
+  sale_date: "",
+  storeid: 0,
+  store_name: "",
+};
 
 const initialState: SalesState = {
   topTenItems: [],
   departmentSales: [],
   salesPanels: [],
-  selectedSalesPanel: { sale_date: "", storeid: 0, store_name: "" },
+  selectedSalesPanel: defaultSelectedPanel,
+  compareSalesPanel: defaultSelectedPanel,
   weeklySales: [],
   panelsLoading: false,
   salesPanelSearchText: "",
   salesPanelDateText: "",
   topTenItemsMetrics: defaultTopTenMetrics,
   windowVisible: defaultWindowVisible,
+  hourlySales: [],
+  subSales: [],
+  compareSubs: [],
+  catSales: [],
 };
 
 export const salesSlice = createSlice({
@@ -68,7 +86,7 @@ export const salesSlice = createSlice({
     setDepartmentSales: (state, action: PayloadAction<DepartmentSale[]>) => {
       state.departmentSales = action.payload;
     },
-    setSalesPanels: (state, action: PayloadAction<SalesTwoDates[]>) => {
+    setSalesPanels: (state, action: PayloadAction<WeeklySale[]>) => {
       state.salesPanels = action.payload;
     },
     setSelectedSalesPanel: (
@@ -76,6 +94,12 @@ export const salesSlice = createSlice({
       action: PayloadAction<SelectedSalesPanel>
     ) => {
       state.selectedSalesPanel = action.payload;
+    },
+    setCompareSalesPanel: (
+      state,
+      action: PayloadAction<SelectedSalesPanel>
+    ) => {
+      state.compareSalesPanel = action.payload;
     },
     setWeeklySales: (state, action: PayloadAction<WeeklySale[]>) => {
       state.weeklySales = action.payload;
@@ -104,6 +128,18 @@ export const salesSlice = createSlice({
     setSalesPanelDateText: (state, action: PayloadAction<string>) => {
       state.salesPanelDateText = action.payload;
     },
+    setHourlySales: (state, action: PayloadAction<HourlySale[]>) => {
+      state.hourlySales = action.payload;
+    },
+    setSubSales: (state, action: PayloadAction<SubSale[]>) => {
+      state.subSales = action.payload;
+    },
+    setCompareSubs: (state, action: PayloadAction<SubSale[]>) => {
+      state.compareSubs = action.payload;
+    },
+    setCatSales: (state, action: PayloadAction<CatSale[]>) => {
+      state.catSales = action.payload;
+    },
     resetSalesSlice: () => initialState,
   },
 });
@@ -113,12 +149,17 @@ export const {
   setDepartmentSales,
   setSalesPanels,
   setSelectedSalesPanel,
+  setCompareSalesPanel,
   setWeeklySales,
   setPanelsLoading,
   setSalesPanelSearchText,
   setTopTenItemsMetrics,
   setWindowVisible,
   setSalesPanelDateText,
+  setHourlySales,
+  setSubSales,
+  setCompareSubs,
+  setCatSales,
   resetSalesSlice,
 } = salesSlice.actions;
 export default salesSlice.reducer;

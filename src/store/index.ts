@@ -10,6 +10,11 @@ import storeReducer from "../features/storeSlice";
 import usersReducer from "../features/usersSlice";
 import forgotPasswordReducer from "../features/forgotPasswordSlice";
 import cashierReducer from "../features/cashierSlice";
+import upcReducer from "../features/upcSlice";
+import itemLookupReducer from "../features/itemLookupSlice";
+import trendModalReducer from "../features/trendModalSlice";
+import upcModalReducer from "../features/upcModalSlice";
+import ctxMenuReducer from "../features/ctxMenuSlice";
 
 export const setupStore = () =>
   configureStore({
@@ -24,6 +29,11 @@ export const setupStore = () =>
       users: usersReducer,
       forgotPassword: forgotPasswordReducer,
       cashier: cashierReducer,
+      upc: upcReducer,
+      item: itemLookupReducer,
+      trendModal: trendModalReducer,
+      upcModal: upcModalReducer,
+      ctxMenu: ctxMenuReducer,
     },
   });
 

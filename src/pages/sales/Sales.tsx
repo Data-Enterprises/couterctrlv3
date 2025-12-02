@@ -1,24 +1,17 @@
 // HOOKS
 import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { addDays, formatGoliathDate } from "../../utils";
+import { formatGoliathDate } from "../../utils";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type { JsonError } from "../../interfaces";
+import { getSalesPanels } from "../../api/sales";
 import {
-  getTopTen,
-  getHourlyStoreDepts,
-  salesTwoDates,
-  getWeekly,
-} from "../../api/sales";
-import {
-  setTopTenItems,
-  setDepartmentSales,
   setSalesPanels,
   resetSalesSlice,
-  setWeeklySales,
   setPanelsLoading,
   setSalesPanelSearchText,
   setSalesPanelDateText,
+  setSelectedSalesPanel,
 } from "../../features/salesSlice";
 import { useHeight } from "./utils/hooks";
 
@@ -29,7 +22,9 @@ import WeeklyNetSales from "./components/WeeklyNetSales";
 import DepartmentSales from "./components/DepartmentSales";
 import TopTenItems from "./components/TopTenItems";
 import SalesPanels from "./panels/SalesPanels";
-import Windows from "./components/Windows";
+import Hourly from "./components/Hourly";
+import Subs from "./subs/Subs";
+import Carousel from "../../components/Carousel";
 
 const Sales = () => {
   const toast = useToast();
@@ -51,40 +46,14 @@ const Sales = () => {
   }, [context.token]);
 
   const getData = () => {
+    // Stops the line chart in WeeklyNetSales.tsx from going haywire
+    dispatch(
+      setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" })
+    );
+
     // For now I'm formatting the date before the api call since the api needs it that way
     const start = formatGoliathDate(search.startDate);
     const end = formatGoliathDate(search.endDate);
-
-    const topTenId =
-      search.type === "Store" ? search.lastStore : search.lastGroup;
-    getTopTen(context.url, context.token, topTenId, search.type, start, end)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          dispatch(setTopTenItems(j.items));
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error("Error getting Top Ten data: " + err.message);
-      });
-
-    // hourly store depts => working => needs to take in a group id as well???
-    getHourlyStoreDepts(
-      context.url,
-      context.token,
-      search.lastStore,
-      start,
-      end
-    )
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          dispatch(setDepartmentSales(j.sales));
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error("Error getting Hourly Store Depts data: " + err.message);
-      });
 
     // If Stores is the search type, then both are 0 and we get all stores for salesTwoDates
     const useGroups = search.type === "Group" ? 1 : 0;
@@ -92,7 +61,7 @@ const Sales = () => {
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 
     dispatch(setPanelsLoading(true));
-    salesTwoDates(
+    getSalesPanels(
       context.url,
       context.token,
       start,
@@ -104,7 +73,7 @@ const Sales = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          const sorted = [...j.items].sort(
+          const sorted = [...j.sales].sort(
             (a, b) =>
               new Date(b.sale_date).getTime() - new Date(a.sale_date).getTime()
           );
@@ -115,19 +84,6 @@ const Sales = () => {
         toast.error("Error getting Sales Two Dates data: " + err.message);
       })
       .finally(() => dispatch(setPanelsLoading(false)));
-
-    // Works for now, but will need to handle groups and all stores (once I get those api endpoints)
-    const weeklyStart = addDays(search.endDate, -8).toISOString().split("T")[0];
-    getWeekly(context.url, context.token, search.lastStore, weeklyStart, end)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          dispatch(setWeeklySales(j.sales));
-        }
-      })
-      .catch((err: JsonError) =>
-        toast.error("Error fetching weekly data: " + err.message)
-      );
   };
 
   const handleChange = (
@@ -141,54 +97,68 @@ const Sales = () => {
     }
   };
 
+  const pageContainer = context.isDesktop
+    ? "w-full h-[calc(100vh-3rem)] p-4 select-none"
+    : "p-4 max-h-screen overflow-y-scroll";
+  const gridContainer = context.isDesktop
+    ? " grid grid-cols-[20%_79%] gap-4 h-full"
+    : "";
+
   return (
-    <div
-      data-testid="sales-page"
-      className="w-full h-[calc(100vh-3rem)] p-4 select-none"
-    >
-      <Windows />
-      <div ref={gridRef} className="grid grid-cols-4 gap-4 h-full">
-        <div className="grid gap-1 max-h-[calc(100vh-7px)] grid-rows-[0.5fr_1fr_1fr] no-scrollbar">
+    <div data-testid="sales-page" className={pageContainer}>
+      <div ref={gridRef} className={gridContainer}>
+        <div className="md:grid md:gap-1 md:max-h-[calc(100vh-7px)] md:grid-rows-[0.5fr_1fr_1fr] no-scrollbar">
           <div className="bg-custom-white rounded-lg p-2 shadow-lg">
             <StorePicker />
             <DatePickers handleQuery={getData} />
           </div>
-          <div className="row-span-2 rounded-lg">
-            <div className="mb-2 flex items-end justify-between gap-2">
-              <div className="w-full">
-                <label className="font-medium text-sm ml-1">Search Store</label>
-                <input
-                  className="basic-input focus:border bg-custom-white"
-                  value={sales.salesPanelSearchText}
-                  onChange={(e) => handleChange(e, "store")}
-                />
+          {context.isDesktop && (
+            <div className="md:row-span-2 rounded-lg">
+              <div className="mb-2 flex items-end justify-between gap-2">
+                <div className="w-full">
+                  <label className="font-medium text-sm ml-1">
+                    Search Store
+                  </label>
+                  <input
+                    className="basic-input focus:border bg-custom-white"
+                    value={sales.salesPanelSearchText}
+                    onChange={(e) => handleChange(e, "store")}
+                  />
+                </div>
               </div>
-              <div className="w-full hidden">
-                <label className="font-medium text-sm ml-1">Search Date</label>
-                <input
-                  className="basic-input focus:border bg-custom-white"
-                  value={sales.salesPanelDateText}
-                  onChange={(e) => handleChange(e, "date")}
-                />
+              <div
+                className="md:overflow-scroll md:no-scrollbar md:rounded-lg"
+                style={
+                  context.isDesktop
+                    ? { height: height, maxHeight: height }
+                    : { height: "auto", maxHeight: "none" }
+                }
+              >
+                <SalesPanels />
               </div>
             </div>
-            <div
-              className="overflow-scroll no-scrollbar rounded-lg"
-              style={{ height: height, maxHeight: height }}
-            >
-              <SalesPanels />
-            </div>
-          </div>
+          )}
         </div>
-        <div className="grid grid-rows-2 col-span-3 gap-3">
-          <div className="grid grid-cols-2 gap-3">
+        <div className="md:grid md:grid-rows-2 md:gap-3">
+          <div className="md:grid md:grid-cols-2 md:gap-3">
             <WeeklyNetSales />
-            <TopTenItems />
+
+            <div className="h-full shadow-lg">
+              {context.isDesktop ? (
+                <Carousel className="bg-custom-white h-[100%]">
+                  <Hourly />
+                  <TopTenItems />
+                </Carousel>
+              ) : (
+                <TopTenItems />
+              )}
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <DepartmentSales />
-            <div className="bg-custom-white rounded-lg shadow-lg">Card</div>
+          <div className="md:grid md:grid-cols-2 md:gap-3">
+            {context.isDesktop && <DepartmentSales />}
+            <Subs />
           </div>
+          {!context.isDesktop && <SalesPanels />}
         </div>
       </div>
     </div>
