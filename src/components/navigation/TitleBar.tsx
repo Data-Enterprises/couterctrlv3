@@ -14,7 +14,7 @@ const TitleBar = () => {
   };
 
   const width = context.isDesktop ? "w-48" : "";
-  const welcomeWidth = context.isDesktop ? "w-[calc(100vw-12rem)]" : "w-[calc(100vw-4rem)]";
+  const welcomeWidth = context.isDesktop ? "w-[calc(100vw-12rem)]" : "w-[calc(100vw-3rem)]";
 
   return (
     <div

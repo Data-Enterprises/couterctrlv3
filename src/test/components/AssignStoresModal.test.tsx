@@ -3,7 +3,7 @@ import { renderWithProviders } from "../utils";
 import { setupStore } from "../../store";
 import { getUserStores } from "../../api/user";
 import AssignStoresModal from "../../pages/team/assignModal/AssignStoresModal";
-import { waitFor, screen } from "@testing-library/react";
+import { waitFor } from "@testing-library/react";
 import type { UserData } from "../../features/usersSlice";
 
 vi.mock("../../api/user");
