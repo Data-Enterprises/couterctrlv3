@@ -263,3 +263,39 @@ export const getForecast = (items: Forecast[], item: UpcInfo) => {
       ?.data.reduce((acc, cur) => (acc += cur.y), 0) ?? 0
   );
 };
+
+
+// Price Optimization Utils
+export const listSelect = [
+  { display: "All Upcs", value: "all" },
+  { display: "Selected Upcs", value: "selected" },
+];
+
+export const modeSelect = [
+  { display: "All Upc Prices", value: "allData" },
+  { display: "Prices by UPC", value: "byUpc" },
+];
+
+export const priceOptTooltipInfo = {
+  Price: [
+    "Maximum optimal price across all UPCs",
+    "Range between the highest and lowest optimal prices",
+    "Median optimal price across all UPCs",
+    "Average optimal price across all UPCs",
+    "Minimum optimal price across all UPCs",
+  ],
+  Qty: [
+    "Maximum optimal quantity across all UPCs",
+    "Range between the highest and lowest quantities",
+    "Median optimal quantity across all UPCs",
+    "Average optimal quantity across all UPCs",
+    "Minimum optimal quantity across all UPCs",
+  ],
+  Rev: [
+    "Maximum optimal revenue across all UPCs",
+    "Range between the highest and lowest revenues",
+    "Median optimal revenue across all UPCs",
+    "Average optimal revenue across all UPCs",
+    "Minimum optimal revenue across all UPCs",
+  ],
+};

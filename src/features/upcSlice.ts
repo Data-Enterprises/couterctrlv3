@@ -1,5 +1,12 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { UpcSalesComp, UpcItem, Store, UpcInfo, Forecast } from "../interfaces";
+import type {
+  UpcSalesComp,
+  UpcItem,
+  Store,
+  UpcInfo,
+  Forecast,
+  UpcPriceOpt,
+} from "../interfaces";
 
 interface UpcState {
   index: number;
@@ -23,6 +30,12 @@ interface UpcState {
   forecastOption: "sales" | "quantity";
   upcSelectorDisplay: "desc" | "upc";
   selectedLegendForecast: UpcInfo;
+  optBestPrices: UpcPriceOpt[];
+  optBestPricesByUpc: UpcPriceOpt[];
+  optDisplayMode: "singleRow" | "multiRow";
+  selectedOptItem: UpcPriceOpt;
+  upcSearch: string;
+  descSearch: string;
 }
 
 const initialState: UpcState = {
@@ -33,6 +46,8 @@ const initialState: UpcState = {
   selectedStores: [],
   storeids: "", // needed for backend API calls
   trendPeriods: "120",
+  upcSearch: "",
+  descSearch: "",
   dataLoaded: false,
   isLoading: false,
   upcCount: 0,
@@ -47,6 +62,10 @@ const initialState: UpcState = {
   forecastOption: "quantity",
   upcSelectorDisplay: "upc",
   selectedLegendForecast: {} as UpcInfo,
+  optBestPrices: [],
+  optBestPricesByUpc: [],
+  optDisplayMode: "multiRow",
+  selectedOptItem: {} as UpcPriceOpt,
 };
 
 export const upcSlice = createSlice({
@@ -68,6 +87,12 @@ export const upcSlice = createSlice({
     },
     setFileName: (state, action: PayloadAction<string>) => {
       state.fileName = action.payload;
+    },
+    setUpcSearch: (state, action: PayloadAction<string>) => {
+      state.upcSearch = action.payload;
+    },
+    setDescSearch: (state, action: PayloadAction<string>) => {
+      state.descSearch = action.payload;
     },
     setDataLoaded: (state, action: PayloadAction<boolean>) => {
       state.dataLoaded = action.payload;
@@ -126,6 +151,21 @@ export const upcSlice = createSlice({
     setForecastHistory: (state, action: PayloadAction<Forecast[]>) => {
       state.forecastHistory = action.payload;
     },
+    setOptBestPrices: (state, action: PayloadAction<UpcPriceOpt[]>) => {
+      state.optBestPrices = action.payload;
+    },
+    setOptBestPricesByUpc: (state, action: PayloadAction<UpcPriceOpt[]>) => {
+      state.optBestPricesByUpc = action.payload;
+    },
+    setSelectedOptItem: (state, action: PayloadAction<UpcPriceOpt>) => {
+      state.selectedOptItem = action.payload;
+    },
+    setOptDisplayMode: (
+      state,
+      action: PayloadAction<"singleRow" | "multiRow">
+    ) => {
+      state.optDisplayMode = action.payload;
+    },
     resetSelectedUpcs: (state) => {
       state.selectedUpcs = [];
       state.selectedCompOne = null;
@@ -142,6 +182,11 @@ export const upcSlice = createSlice({
       state.dataLoaded = false;
       state.selectedCompOne = null;
       state.selectedCompTwo = null;
+      state.forecast = [];
+      state.forecastHistory = [];
+      state.upcList = [];
+      state.optBestPrices = [];
+      state.optBestPricesByUpc = [];
     },
     resetUpcState: () => initialState,
   },
@@ -153,6 +198,8 @@ export const {
   setSelectedStores,
   setTrendPeriods,
   setFileName,
+  setUpcSearch,
+  setDescSearch,
   setSelectedMode,
   setDataLoaded,
   setIsLoading,
@@ -167,6 +214,10 @@ export const {
   setForecastData,
   setForecastHistory,
   setSelectedUpcs,
+  setOptBestPrices,
+  setOptBestPricesByUpc,
+  setSelectedOptItem,
+  setOptDisplayMode,
   resetSelectedUpcs,
   clearUpcData,
   resetUpcState,

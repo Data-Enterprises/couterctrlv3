@@ -382,6 +382,15 @@ export type ForecastMetrics = {
   qty: number;
 };
 
+export type UpcPriceOpt = {
+  product_code: string;
+  product_description: string;
+  price: number;
+  total_qty: number;
+  total_revenue: number;
+  total_weight: number;
+};
+
 export type Handlers = {
   reset?: () => Promise<void> | void;
   copy?: () => Promise<void> | void;

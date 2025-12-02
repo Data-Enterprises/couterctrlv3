@@ -1,9 +1,11 @@
 import { useAppSelector } from "../../../hooks";
 import { InformationCircleIcon } from "@heroicons/react/24/solid";
-import QtyMetrics from "./forecast/QtyMetrics";
+import { instructions } from "../components";
+
+// Components
 import UpcControls from "../components/UpcControls";
 import MetricsCarousel from "./forecast/MetricsCarousel";
-import { instructions } from "../components";
+import QtyMetrics from "./forecast/QtyMetrics";
 import ForecastLine from "../components/ForecastLine";
 
 const Forecast = () => {
@@ -16,6 +18,7 @@ const Forecast = () => {
         <MetricsCarousel className={"-mt-2"}>
           <QtyMetrics mode="overall" metric="Quantity" />
           <QtyMetrics mode="selected" metric="Quantity" />
+          {/* TODO: Add this back in once the sales results are added into redux */}
           {/* <QtyMetrics mode="overall" metric="Sales" /> */}
         </MetricsCarousel>
         <>

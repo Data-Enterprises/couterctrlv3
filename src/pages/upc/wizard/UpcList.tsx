@@ -20,13 +20,20 @@ import {
   setForecastHistory,
   setIndex,
   setIsLoading,
+  setOptBestPrices,
+  setOptBestPricesByUpc,
   setSalesComp,
   setUpcCount,
   setUpcItems,
   setUpcList,
 } from "../../../features/upcSlice";
-import { getForecasting, getSalesComp } from "../../../api/upc";
-import type { JsonError, UpcForecast, UpcItem } from "../../../interfaces";
+import { getForecasting, getPriceOpt, getSalesComp } from "../../../api/upc";
+import type {
+  JsonError,
+  UpcForecast,
+  UpcItem,
+  UpcPriceOpt,
+} from "../../../interfaces";
 import { colorCodes } from "../components";
 import { convertData } from "../utils";
 
@@ -52,7 +59,7 @@ const UpcList = () => {
     } else if (context.selectedMode == 2) {
       getForecastData();
     } else if (context.selectedMode == 3) {
-      // getPriceOptData();
+      getPriceOptData();
     } else if (context.selectedMode == 4) {
       // getTrendData();
     }
@@ -150,6 +157,35 @@ const UpcList = () => {
       .catch((err: JsonError) => {
         toast.error(err.message);
       })
+      .finally(() => cleanUp());
+  };
+
+  const getPriceOptData = () => {
+    getPriceOpt(
+      context.url,
+      context.token,
+      context.storeids,
+      context.startDate,
+      context.endDate,
+      file!
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          const upcItems = [...j.best_prices_by_upc].map(
+            (item: UpcPriceOpt) => ({
+              product_code: item.product_code,
+              description: item.product_description,
+            })
+          );
+          dispatch(setUpcItems(upcItems));
+          dispatch(setUpcCount(j.best_prices_by_upc.length));
+          dispatch(setOptBestPrices(j.best_prices));
+          dispatch(setOptBestPricesByUpc(j.best_prices_by_upc));
+          dispatch(setDataLoaded(true));
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message))
       .finally(() => cleanUp());
   };
 
