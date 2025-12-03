@@ -117,6 +117,7 @@ const CashiersTableFilters = () => {
         {filterOptions.map((option, i) => (
           <div
             key={i}
+            data-testid={`cashier-table-filter-${option.split(" ")[0].toLowerCase()}`}
             className={`${panelStyle} ${activePanelStyle(option)}`}
             onClick={() => setFilterModal(option)}
           >

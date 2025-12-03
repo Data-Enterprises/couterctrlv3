@@ -23,8 +23,6 @@ const UniqueCashiersTable = () => {
     const cashier_number = e.data.cashier_number;
     const store_number = e.data.store_number;
 
-    console.log(e.node.id);
-
     if (
       cashier_number === selectedCashier.cashier_number &&
       store_number === selectedCashier.store_number
@@ -39,7 +37,7 @@ const UniqueCashiersTable = () => {
   return (
     <>
       {cashiers.length ? (
-        <div className="bg-custom-white p-2 rounded-lg shadow-lg h-[100%]">
+        <div data-testid="unique-cashiers-table" className="bg-custom-white p-2 rounded-lg shadow-lg h-[100%]">
           <div className="h-full">
             <AgGridReact
               rowData={cashiers}
@@ -50,9 +48,6 @@ const UniqueCashiersTable = () => {
               paginationPageSizeSelector={false}
               onRowClicked={onRowClicked}
               rowSelection="single"
-              getRowId={(params) =>
-                `${params.data.cashier_number}-${params.data.store_number}`
-              }
             />
           </div>
         </div>

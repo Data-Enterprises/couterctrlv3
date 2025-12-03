@@ -65,8 +65,6 @@ const Transaction = ({ trans }: TransactionProps) => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          console.log("Email sent successfully");
-          console.log(j);
           toast.success("Transaction emailed successfully");
         }
       })
@@ -77,19 +75,16 @@ const Transaction = ({ trans }: TransactionProps) => {
 
   return (
     <div className="border border-blue-500 p-2 rounded-lg relative">
-      {/* <Print
-        className="absolute right-2 top-2 hover:stroke-blue-500 transition-all duration-200"
-        size={25}
-        onClick={handleClick}
-      /> */}
       <div className="absolute right-2 top-2 flex gap-2">
         <button
+          data-testid="cashier-trans-modal-email-btn"
           className="btn-themeGreen px-4 py-0.5"
           onClick={handleEmailClick}
         >
           Email
         </button>
         <button
+          data-testid="cashier-trans-modal-export-btn"
           className="btn-themeBlue px-4 py-0.5"
           onClick={handleExportClick}
         >

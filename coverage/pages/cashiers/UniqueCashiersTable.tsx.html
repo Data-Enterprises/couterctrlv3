@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">43.75% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>7/16</span>
+                <span class='fraction'>14/14</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">16.66% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/4</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">43.75% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>7/16</span>
+                <span class='fraction'>14/14</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -124,12 +124,7 @@
 <a name='L59'></a><a href='#L59'>59</a>
 <a name='L60'></a><a href='#L60'>60</a>
 <a name='L61'></a><a href='#L61'>61</a>
-<a name='L62'></a><a href='#L62'>62</a>
-<a name='L63'></a><a href='#L63'>63</a>
-<a name='L64'></a><a href='#L64'>64</a>
-<a name='L65'></a><a href='#L65'>65</a>
-<a name='L66'></a><a href='#L66'>66</a>
-<a name='L67'></a><a href='#L67'>67</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L62'></a><a href='#L62'>62</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -145,30 +140,27 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">22x</span>
-<span class="cline-any cline-yes">22x</span>
-<span class="cline-any cline-yes">56x</span>
+<span class="cline-any cline-yes">42x</span>
+<span class="cline-any cline-yes">42x</span>
+<span class="cline-any cline-yes">107x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">22x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">42x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">22x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">42x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -181,8 +173,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -216,27 +206,25 @@ const UniqueCashiersTable = () =&gt; {
     (state) =&gt; state.cashier
   );
 &nbsp;
-  const onRowClicked = <span class="fstat-no" title="function not covered" >(e</span>: RowClickedEvent) =&gt; {
-    const cashier_number = <span class="cstat-no" title="statement not covered" >e.data.cashier_number;</span>
-    const store_number = <span class="cstat-no" title="statement not covered" >e.data.store_number;</span>
+  const onRowClicked = (e: RowClickedEvent) =&gt; {
+    const cashier_number = e.data.cashier_number;
+    const store_number = e.data.store_number;
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    console.log(e.node.id);</span>
-&nbsp;
-<span class="cstat-no" title="statement not covered" >    if (</span>
+    if (
       cashier_number === selectedCashier.cashier_number &amp;&amp;
       store_number === selectedCashier.store_number
     ) {
-<span class="cstat-no" title="statement not covered" >      dispatch(setCashierSaleIds([]));</span>
-<span class="cstat-no" title="statement not covered" >      dispatch(setSelectedCashier({ cashier_number: 0, store_number: "" }));</span>
-<span class="cstat-no" title="statement not covered" >      return;</span>
+      dispatch(setCashierSaleIds([]));
+      dispatch(setSelectedCashier({ cashier_number: 0, store_number: "" }));
+      return;
     }
-<span class="cstat-no" title="statement not covered" >    dispatch(setSelectedCashier({ cashier_number, store_number }));</span>
+    dispatch(setSelectedCashier({ cashier_number, store_number }));
   };
 &nbsp;
   return (
     &lt;&gt;
       {cashiers.length ? (
-<span class="branch-0 cbranch-no" title="branch not covered" >        &lt;div className="bg-custom-white p-2 rounded-lg shadow-lg h-[100%]"&gt;</span>
+        &lt;div data-testid="unique-cashiers-table" className="bg-custom-white p-2 rounded-lg shadow-lg h-[100%]"&gt;
           &lt;div className="h-full"&gt;
             &lt;AgGridReact
               rowData={cashiers}
@@ -247,9 +235,6 @@ const UniqueCashiersTable = () =&gt; {
               paginationPageSizeSelector={false}
               onRowClicked={onRowClicked}
               rowSelection="single"
-              getRowId={<span class="fstat-no" title="function not covered" >(p</span>arams) =&gt;
-<span class="cstat-no" title="statement not covered" >                `${params.data.cashier_number}-${params.data.store_number}`</span>
-              }
             /&gt;
           &lt;/div&gt;
         &lt;/div&gt;
@@ -268,7 +253,7 @@ export default UniqueCashiersTable;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-02T23:34:42.048Z
+                at 2025-12-03T16:23:07.362Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

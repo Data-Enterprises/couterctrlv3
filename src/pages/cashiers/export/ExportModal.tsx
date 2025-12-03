@@ -46,6 +46,7 @@ const ExportModal = <T extends Record<string, any>>({
       <div>Export Modal Content</div>
       <label htmlFor="filename">File Name</label>
       <input
+        data-testid="cashier-export-modal-filename-input"
         id="filename"
         type="text"
         className="basic-input focus:border w-full mb-4 bg-custom-white"
@@ -53,10 +54,18 @@ const ExportModal = <T extends Record<string, any>>({
         onChange={(e) => setFileName(e.target.value)}
       />
       <div className="flex gap-4">
-        <button className="btn-themeBlue w-full" onClick={handleExport}>
+        <button
+          data-testid="cashier-export-modal-export"
+          className="btn-themeBlue w-full"
+          onClick={handleExport}
+        >
           Export
         </button>
-        <button className="btn-themeOrange w-full" onClick={handleClose}>
+        <button
+          data-testid="cashier-export-modal-cancel"
+          className="btn-themeOrange w-full"
+          onClick={handleClose}
+        >
           Cancel
         </button>
       </div>
