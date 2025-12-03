@@ -19,6 +19,7 @@ import {
   mockTransListResp,
   mockSingleTransResp,
 } from "./cashiers";
+import { setAvailablePriceTypes } from "../../features/cashierSlice";
 
 const user = userEvent.setup();
 const initialStore = setupStore();
@@ -272,19 +273,156 @@ describe("Cashiers Page", () => {
       "cashier-table-filter-sale"
     );
     expect(saleDateFilter).toBeInTheDocument();
+    await user.click(saleDateFilter);
+
+    const modal = await screen.findByTestId("cashier-table-filter-modal");
+    expect(modal).toBeInTheDocument();
+
+    const filterInput = await screen.findByTestId(
+      "cashier-table-filter-text-input"
+    );
+
+    const filterBtn = await screen.findByTestId(
+      "cashier-table-filter-modal-submit-btn"
+    );
+
+    await user.type(filterInput, "12/1/2025");
+    await user.click(filterBtn);
+
+    // The modal should close after applying the filter
+    expect(modal).not.toBeInTheDocument();
   });
 
-  /**
-   *     const upcFilter = await screen.findByTestId("cashier-table-filter-upc");
+  it("Should handle the Cashier Table UPC Filter", async () => {
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
+    const upcFilter = await screen.findByTestId("cashier-table-filter-upc");
+    expect(upcFilter).toBeInTheDocument();
+    await user.click(upcFilter);
+
+    const modal = await screen.findByTestId("cashier-table-filter-modal");
+    expect(modal).toBeInTheDocument();
+
+    const filterInput = await screen.findByTestId(
+      "cashier-table-filter-text-input"
+    );
+
+    const filterBtn = await screen.findByTestId(
+      "cashier-table-filter-modal-submit-btn"
+    );
+
+    await user.type(filterInput, "4470000210");
+    await user.click(filterBtn);
+
+    // The modal should close after applying the filter
+    expect(modal).not.toBeInTheDocument();
+  });
+
+  it("Should handle the Cashier Table Description Filter", async () => {
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
     const descFilter = await screen.findByTestId(
       "cashier-table-filter-description"
     );
+    expect(descFilter).toBeInTheDocument();
+    await user.click(descFilter);
+
+    const modal = await screen.findByTestId("cashier-table-filter-modal");
+    expect(modal).toBeInTheDocument();
+
+    const filterInput = await screen.findByTestId(
+      "cashier-table-filter-text-input"
+    );
+
+    const filterBtn = await screen.findByTestId(
+      "cashier-table-filter-modal-submit-btn"
+    );
+
+    await user.type(filterInput, "cash");
+    await user.click(filterBtn);
+
+    // The modal should close after applying the filter
+    expect(modal).not.toBeInTheDocument();
+  });
+
+  it("Should handle the Cashier Table Total Sales Filter", async () => {
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
     const totalFilter = await screen.findByTestId("cashier-table-filter-total");
+    expect(totalFilter).toBeInTheDocument();
+    await user.click(totalFilter);
+
+    const modal = await screen.findByTestId("cashier-table-filter-modal");
+    expect(modal).toBeInTheDocument();
+
+    const filterBtn = await screen.findByTestId(
+      "cashier-table-filter-modal-submit-btn"
+    );
+
+    const ltCheckbox = await screen.findByTestId(
+      "cashier-table-filter-ts-lt-checkbox"
+    );
+    const gtCheckbox = await screen.findByTestId(
+      "cashier-table-filter-ts-gt-checkbox"
+    );
+    const filterInput = await screen.findByTestId(
+      "cashier-table-filter-total-sales-input"
+    );
+    await user.click(gtCheckbox);
+    await user.click(ltCheckbox);
+    await user.type(filterInput, "1");
+    filterInput.setAttribute("value", "1");
+
+    await user.click(filterBtn);
+
+    // The modal should close after applying the filter
+    expect(modal).not.toBeInTheDocument();
+  });
+
+  it("Should handle the Cashier Table Price Type Filter", async () => {
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
     const priceFilter = await screen.findByTestId("cashier-table-filter-price");
+    expect(priceFilter).toBeInTheDocument();
+    await user.click(priceFilter);
+
+    const modal = await screen.findByTestId("cashier-table-filter-modal");
+    expect(modal).toBeInTheDocument();
+
+    // Just for this test
+    initialStore.dispatch(setAvailablePriceTypes(["REG", "TPR"]));
+
+    const tprCheckbox = await screen.findByTestId(
+      "cashier-table-filter-price-type-TPR"
+    );
+
+    // Click to add TPR to the selected price types
+    await user.click(tprCheckbox);
+
+    // Click to remove TPR from the selected price types
+    await user.click(tprCheckbox);
+
+    // Add TPR back in
+    await user.click(tprCheckbox);
+
+    const filterBtn = await screen.findByTestId(
+      "cashier-table-filter-modal-submit-btn"
+    );
+    await user.click(filterBtn);
+
+    // The modal should close after applying the filter
+    expect(modal).not.toBeInTheDocument();
+  });
+
+  it("Should refresh all the Cashier Table Filters when clicking Refresh", async () => {
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
     const refreshFilter = await screen.findByTestId(
       "cashier-table-filter-refresh"
     );
-   */
+    expect(refreshFilter).toBeInTheDocument();
+    await user.click(refreshFilter);
+  });
 
   // Failing cases that need to be tested
   // ////////////////////////////////////

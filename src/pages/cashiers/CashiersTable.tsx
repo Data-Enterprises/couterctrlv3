@@ -6,7 +6,6 @@ import { getCashierTransactions } from "../../api/cashiers";
 import {
   setAvailablePriceTypes,
   setCashierSaleIds,
-  // setCashierTransDrillDown,
   setTransactionDrillDown,
   setTransModalOpen,
 } from "../../features/cashierSlice";

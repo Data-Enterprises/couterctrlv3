@@ -106,8 +106,6 @@ const FiltersModal = () => {
         dispatch(setCashierTableThreshComp(threshComp));
         dispatch(setTotalSalesFilter(threshold));
         break;
-      default:
-        break;
     }
 
     handleClose();
@@ -119,15 +117,26 @@ const FiltersModal = () => {
       onClose={handleClose}
       modalClassName="bg-custom-white w-1/5"
     >
-      <div className="font-medium text-center text-lg">
+      <div
+        data-testid="cashier-table-filter-modal"
+        className="font-medium text-center text-lg"
+      >
         Set {filterType} Filter
       </div>
       {renderFilter()}
       <div className="flex gap-4">
-        <button className="btn-themeGreen w-full" onClick={handleSubmit}>
+        <button
+          data-testid="cashier-table-filter-modal-submit-btn"
+          className="btn-themeGreen w-full"
+          onClick={handleSubmit}
+        >
           Filter
         </button>
-        <button className="btn-themeOrange w-full" onClick={handleClose}>
+        <button
+          data-testid="cashier-table-filter-modal-cancel-btn"
+          className="btn-themeOrange w-full"
+          onClick={handleClose}
+        >
           Cancel
         </button>
       </div>
