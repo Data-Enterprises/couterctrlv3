@@ -135,7 +135,7 @@ const UserInfo = () => {
           **All fields are required
         </div>
         <button
-          data-testid="clear-user-info-button"
+          data-testid="clear-user-info-btn"
           className="btn-themeBlue absolute right-0 top-0 py-[2px]"
           onClick={handleReset}
         >
@@ -185,7 +185,7 @@ const UserInfo = () => {
           </div>
           <div className="w-1/2">
             <button
-              data-testid="update-user-button"
+              data-testid="team-update-user-button"
               className={`btn-themeBlue py-[5px] w-full ${isCreatingOrUpdating(
                 "update"
               )}`}

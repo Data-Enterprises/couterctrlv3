@@ -163,7 +163,7 @@ const BaseGroups = () => {
             ? baseGroups.map((group, i) => (
                 <div
                   key={i}
-                  data-te-ripple-init
+                  data-testid={`base-group-panel-${group.id}`}
                   className="flex justify-between bg-custom-white p-4 rounded-lg shadow-md hover:shadow-inner 
                      transition-all duration-200 cursor-pointer ripple-button"
                   onClick={(e) => handlePanelClick(e, group)}
@@ -182,24 +182,28 @@ const BaseGroups = () => {
         </div>
         <div className="grid grid-cols-4 gap-4 absolute w-full pr-8 bottom-4">
           <button
+            data-testid="team-assign-stores-btn"
             className={`btn-themeBlue px-0 ${isInteractive()}`}
             onClick={openAssignStoreModal}
           >
             Assign Stores
           </button>
           <button
+            data-testid="team-reset-security-btn"
             className={`btn-themeGreen px-0 ${isInteractive()}`}
             onClick={resetSecurity}
           >
             Reset Security
           </button>
           <button
+            data-testid="team-reset-pw-btn"
             className={`btn-themeGreen px-0 ${isInteractive()}`}
             onClick={resetPassword}
           >
             Reset Password
           </button>
           <button
+            data-testid="team-delete-user-btn"
             className={`btn-themeOrange px-0 ${isInteractive()}`}
             onClick={openDeleteUserModal}
           >

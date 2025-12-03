@@ -82,9 +82,10 @@ const UserGrid = () => {
   };
 
   return (
-    <div className="w-full no-scrollbar">
+    <div data-testid="user-grid-container" className="w-full no-scrollbar">
       <div className="mb-2 flex gap-2">
         <input
+          data-testid="user-grid-search"
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
