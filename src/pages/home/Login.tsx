@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { login } from "../../api/login";
@@ -29,11 +29,7 @@ const Login = () => {
   const state = useAppSelector((state) => state.user);
   const context = useAppSelector((state) => state.app);
   const dispatch = useAppDispatch();
-  // const navigate = useNavigate();
   const toast = useToast();
-  const [impersonate, setImpersonate] = useState(false);
-  // const [rememberme, setrememberme] = useState(false);
-  // const [useImpersonation, setUseImpersonation] = useState(false);
 
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -55,23 +51,11 @@ const Login = () => {
   ) => {
     e.preventDefault();
     handleLogin();
-    if (state.username === "otkim" && state.password === "!@#6Mikto6!@#") {
-      setImpersonate(true);
-      return;
-    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleSubmit(e);
-    }
-  };
-
-  const handleImpersonate = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked) {
-      dispatch(setUsername(""));
-      dispatch(setPassword(""));
-      // setUseImpersonation(true);
     }
   };
 
@@ -170,7 +154,7 @@ const Login = () => {
                   </div>
 
                   <div
-                    data-testid="forgot-password"
+                    data-testid="login-forgot-password"
                     className="text-sm/6"
                     onClick={() => {
                       dispatch(setForgotPassword(true));
@@ -184,25 +168,6 @@ const Login = () => {
                     </a>
                   </div>
                 </div>
-
-                {impersonate ? (
-                  <div className="row justify-content-center">
-                    <div className="bg-bkg">
-                      <input
-                        type="checkbox"
-                        style={{ opacity: "1", visibility: "visible" }}
-                        className="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                        // value={rememberme as unknown as string}
-                        value={false as unknown as string}
-                        onChange={handleImpersonate}
-                        id="check1"
-                      />
-                      <label className="" htmlFor="check1">
-                        Impersonate User
-                      </label>
-                    </div>
-                  </div>
-                ) : null}
 
                 <div>
                   <button

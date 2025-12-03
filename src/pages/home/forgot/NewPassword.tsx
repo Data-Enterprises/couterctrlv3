@@ -16,6 +16,11 @@ const NewPassword = ({ onClose }: NewPasswordProps) => {
   const forgot = useAppSelector((state) => state.forgotPassword);
 
   const submitNewPassword = () => {
+    if (forgot.newPassword.length === 0 ) {
+      toast.warn("Password cannot be empty");
+      return;
+    }
+    
     resetForgotPassword(context.url, forgot.username, forgot.newPassword)
       .then((resp) => {
         const j = resp.data;
