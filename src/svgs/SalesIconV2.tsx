@@ -2,6 +2,7 @@ import type { IconProps } from ".";
 const SalesIconV2 = ({ className, onClick }: IconProps) => {
   return (
     <svg
+      data-testid="sales-icon-v2"
       xmlns="http://www.w3.org/2000/svg"
       className={`${className} cursor-pointer`}
       version="1.1"

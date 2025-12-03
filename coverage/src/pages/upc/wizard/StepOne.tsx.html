@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">74.07% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/27</span>
+                <span class='fraction'>20/27</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">28.57% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/14</span>
+                <span class='fraction'>4/14</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">62.5% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>5/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">70.83% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/24</span>
+                <span class='fraction'>17/24</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -164,6 +164,22 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -172,34 +188,18 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -247,21 +247,21 @@ interface UpcStepOneProps {
   setFile: (file: File | null) =&gt; void;
 }
 &nbsp;
-const fileExtensions = <span class="cstat-no" title="statement not covered" >[".csv"];</span>
+const fileExtensions = [".csv"];
 &nbsp;
-const StepOne = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span> className, file, setFile }: UpcStepOneProps) =&gt; {</span>
-  const <span class="cstat-no" title="statement not covered" >toast = useToast();</span>
-  const <span class="cstat-no" title="statement not covered" >dispatch = useDispatch();</span>
-  const { dataLoaded, selectedMode <span class="cstat-no" title="statement not covered" >} = useAppSelector(<span class="fstat-no" title="function not covered" >(s</span>tate) =&gt; <span class="cstat-no" title="statement not covered" >state.upc)</span>;</span>
+const StepOne = ({ className, file, setFile }: UpcStepOneProps) =&gt; {
+  const toast = useToast();
+  const dispatch = useDispatch();
+  const { dataLoaded, selectedMode } = useAppSelector((state) =&gt; state.upc);
 &nbsp;
   // using this to allow the same file to be selected again
-  const <span class="cstat-no" title="statement not covered" >inputRef = useRef&lt;HTMLInputElement | null&gt;(null);</span>
+  const inputRef = useRef&lt;HTMLInputElement | null&gt;(null);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
-<span class="cstat-no" title="statement not covered" >    if (!dataLoaded) <span class="cstat-no" title="statement not covered" >handleReset();</span></span>
+  useEffect(() =&gt; {
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (!dataLoaded) handleReset();
   }, [dataLoaded]);
 &nbsp;
-  const handleFileChange = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(e</span>vent: React.ChangeEvent&lt;HTMLInputElement&gt;) =&gt; {</span>
+  const handleFileChange = <span class="fstat-no" title="function not covered" >(e</span>vent: React.ChangeEvent&lt;HTMLInputElement&gt;) =&gt; {
 <span class="cstat-no" title="statement not covered" >    if (</span>
       !fileExtensions.some(<span class="fstat-no" title="function not covered" >(e</span>xt) =&gt; <span class="cstat-no" title="statement not covered" >event.target.files![0].name.endsWith(ext))</span>
     ) {
@@ -272,17 +272,17 @@ const StepOne = <span class="cstat-no" title="statement not covered" ><span clas
     }
   };
 &nbsp;
-  const handleReset = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
-<span class="cstat-no" title="statement not covered" >    dispatch(setFileName(""));</span>
-<span class="cstat-no" title="statement not covered" >    dispatch(setSelectedMode(0));</span>
-<span class="cstat-no" title="statement not covered" >    setFile(null);</span>
-<span class="cstat-no" title="statement not covered" >    if (inputRef.current) {</span>
-<span class="cstat-no" title="statement not covered" >      inputRef.current.value = "";</span>
+  const handleReset = () =&gt; {
+    dispatch(setFileName(""));
+    dispatch(setSelectedMode(0));
+    setFile(null);
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (inputRef.current) {
+      inputRef.current.value = "";
     }
   };
 &nbsp;
-  const isReady = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >f</span>ile !== null &amp;&amp; selectedMode !== 0;</span></span>
-<span class="cstat-no" title="statement not covered" >  return (</span>
+  const isReady = () =&gt; file !== null &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >selectedMode !== 0;</span>
+  return (
     &lt;div className={`flex flex-col items-center py-2 gap-2 ${className}`}&gt;
       &lt;ModelSelect /&gt;
 &nbsp;
@@ -291,7 +291,7 @@ const StepOne = <span class="cstat-no" title="statement not covered" ><span clas
       &lt;/div&gt;
       &lt;div className="flex flex-col gap-2 items-center w-3/4"&gt;
         &lt;label className="btn-themeBlue w-full text-center"&gt;
-          &lt;div className="h-6"&gt;{file !== null ? file.name : "Select File"}&lt;/div&gt;
+          &lt;div className="h-6"&gt;{file !== null ? <span class="branch-0 cbranch-no" title="branch not covered" >file.name : "</span>Select File"}&lt;/div&gt;
           &lt;input
             type="file"
             className="hidden"
@@ -319,7 +319,7 @@ export default StepOne;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-03T23:05:16.888Z
+                at 2025-12-03T23:39:25.055Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

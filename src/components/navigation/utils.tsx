@@ -1,5 +1,4 @@
 // Types
-import type Radiation from "../../svgs/Radiation";
 import type StoresIcon from "../../svgs/StoresIcon";
 
 // Icons
@@ -16,7 +15,7 @@ import UpcListIcon from "../../svgs/UpcListIcon";
 export type Navigation = {
   name: string;
   href: string;
-  icon: typeof UsersIcon | typeof Radiation | typeof StoresIcon | any;
+  icon: typeof UsersIcon | typeof StoresIcon | any;
   current?: boolean;
   children: Navigation[];
   childOpen: boolean;

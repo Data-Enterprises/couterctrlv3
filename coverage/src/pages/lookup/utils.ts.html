@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -85,43 +85,43 @@
 <a name='L20'></a><a href='#L20'>20</a>
 <a name='L21'></a><a href='#L21'>21</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { useState, useRef, useEffect } from "react";
 &nbsp;
-export const useHeight = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
-  const [height, setHeight<span class="cstat-no" title="statement not covered" >] = useState&lt;number&gt;(400);</span>
-  const <span class="cstat-no" title="statement not covered" >topRef = useRef&lt;HTMLDivElement&gt;(null);</span>
-  const <span class="cstat-no" title="statement not covered" >bottomRef = useRef&lt;HTMLButtonElement&gt;(null);</span>
+export const useHeight = () =&gt; {
+  const [height, setHeight] = useState&lt;number&gt;(400);
+  const topRef = useRef&lt;HTMLDivElement&gt;(null);
+  const bottomRef = useRef&lt;HTMLButtonElement&gt;(null);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
-    const calculateHeight = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
-      const vh = <span class="cstat-no" title="statement not covered" >window.innerHeight;</span>
+  useEffect(() =&gt; {
+    const calculateHeight = () =&gt; {
+      const vh = window.innerHeight;
       // navbar + padding + header + buttons + margin + clear button
-      const offset = <span class="cstat-no" title="statement not covered" >56 + 40 + 32 + 48 + 16 + 48 + 55;</span>
-      const availableHeight = <span class="cstat-no" title="statement not covered" >vh - offset;</span>
-<span class="cstat-no" title="statement not covered" >      setHeight(availableHeight);</span>
+      const offset = 56 + 40 + 32 + 48 + 16 + 48 + 55;
+      const availableHeight = vh - offset;
+      setHeight(availableHeight);
     };
-<span class="cstat-no" title="statement not covered" >    calculateHeight();</span>
-<span class="cstat-no" title="statement not covered" >    window.addEventListener("resize", calculateHeight);</span>
+    calculateHeight();
+    window.addEventListener("resize", calculateHeight);
   }, []);
-<span class="cstat-no" title="statement not covered" >  return { height, topRef, bottomRef };</span>
+  return { height, topRef, bottomRef };
 };
 &nbsp;</pre></td></tr></table></pre>
 
@@ -130,7 +130,7 @@ export const useHeight = <span class="cstat-no" title="statement not covered" ><
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-03T23:05:16.888Z
+                at 2025-12-03T23:39:25.055Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

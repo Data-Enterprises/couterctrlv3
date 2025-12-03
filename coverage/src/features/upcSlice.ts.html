@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">4% </span>
+                <span class="strong">8% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>3/75</span>
+                <span class='fraction'>6/75</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">8.1% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/37</span>
+                <span class='fraction'>3/37</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">4.1% </span>
+                <span class="strong">8.21% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>3/73</span>
+                <span class='fraction'>6/73</span>
             </div>
         
             
@@ -391,7 +391,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">19x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -427,7 +427,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">19x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -435,7 +435,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -445,7 +445,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -457,7 +457,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -619,7 +619,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-yes">19x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {
@@ -713,8 +713,8 @@ export const upcSlice = createSlice({
     setIndex: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;number&gt;) =&gt; {
 <span class="cstat-no" title="statement not covered" >      state.index = action.payload;</span>
     },
-    setRadioId: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;number&gt;) =&gt; {
-<span class="cstat-no" title="statement not covered" >      state.radioId = action.payload;</span>
+    setRadioId: (state, action: PayloadAction&lt;number&gt;) =&gt; {
+      state.radioId = action.payload;
     },
     setSelectedStores: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;Store[]&gt;) =&gt; {
 <span class="cstat-no" title="statement not covered" >      state.selectedStores = action.payload;</span>
@@ -723,8 +723,8 @@ export const upcSlice = createSlice({
     setTrendPeriods: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;string&gt;) =&gt; {
 <span class="cstat-no" title="statement not covered" >      state.trendPeriods = action.payload;</span>
     },
-    setFileName: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;string&gt;) =&gt; {
-<span class="cstat-no" title="statement not covered" >      state.fileName = action.payload;</span>
+    setFileName: (state, action: PayloadAction&lt;string&gt;) =&gt; {
+      state.fileName = action.payload;
     },
     setUpcSearch: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;string&gt;) =&gt; {
 <span class="cstat-no" title="statement not covered" >      state.upcSearch = action.payload;</span>
@@ -735,8 +735,8 @@ export const upcSlice = createSlice({
     setDataLoaded: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;boolean&gt;) =&gt; {
 <span class="cstat-no" title="statement not covered" >      state.dataLoaded = action.payload;</span>
     },
-    setSelectedMode: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;number&gt;) =&gt; {
-<span class="cstat-no" title="statement not covered" >      state.selectedMode = action.payload;</span>
+    setSelectedMode: (state, action: PayloadAction&lt;number&gt;) =&gt; {
+      state.selectedMode = action.payload;
     },
     setIsLoading: <span class="fstat-no" title="function not covered" >(s</span>tate, action: PayloadAction&lt;boolean&gt;) =&gt; {
 <span class="cstat-no" title="statement not covered" >      state.isLoading = action.payload;</span>
@@ -907,7 +907,7 @@ export default upcSlice.reducer;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-03T23:05:16.888Z
+                at 2025-12-03T23:39:25.055Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
