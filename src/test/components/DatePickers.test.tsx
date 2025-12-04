@@ -1,24 +1,24 @@
-import DatePickers from "../../components/datePickers/DatePickers";
+import { describe, it, expect, vi } from "vitest";
 import { renderWithProviders } from "../utils";
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect } from "vitest";
+import DatePickers from "../../components/datePickers/DatePickers";
+import { setupStore } from "../../store";
+
+const startStore = setupStore();
+const endStore = setupStore();
+const user = userEvent.setup();
+
+const mockedToastWarn = vi.fn();
+vi.mock("../../components/toasts/hooks/useToast", () => ({
+  useToast: () => ({
+    warn: mockedToastWarn,
+  }),
+}));
 
 describe("DatePickers Component", () => {
-  const user = userEvent.setup();
-
-  it("should render component with the start and end date pickers", () => {
-    renderWithProviders(<DatePickers />);
-    const datePickers = screen.getByTestId("date-pickers");
-    const startDatePicker = screen.getByTestId("start-date-picker");
-    const endDatePicker = screen.getByTestId("end-date-picker");
-    expect(datePickers).toBeInTheDocument();
-    expect(startDatePicker).toBeInTheDocument();
-    expect(endDatePicker).toBeInTheDocument();
-  });
-
   it("should display the calendar when clicking on the start date picker", async () => {
-    renderWithProviders(<DatePickers />);
+    renderWithProviders(<DatePickers />, { store: startStore });
     const startDatePicker = screen.getByTestId("start-date-picker");
     expect(startDatePicker).toBeInTheDocument();
 
@@ -30,10 +30,28 @@ describe("DatePickers Component", () => {
     // The headless ui component renders the menu items in a portal, so we need to wait for it
     const calendar = await screen.findByTestId("calendar-container");
     expect(calendar).toBeInTheDocument();
+
+    // Select invalid start date (after today)
+    const dayToClick = await screen.findByTestId("start-calendar-day-9");
+    await user.click(dayToClick);
+
+    // Then select a valid start date
+    const prevMonthBtn = await screen.findByTestId("prev-month-button");
+    expect(prevMonthBtn).toBeInTheDocument();
+    await user.click(prevMonthBtn);
+
+    expect(dayToClick).toBeInTheDocument();
+    await user.click(dayToClick);
+
+    await user.click(startDateMenuButton);
+
+    const nextMonthBtn = await screen.findByTestId("next-month-button");
+    expect(nextMonthBtn).toBeInTheDocument();
+    await user.click(nextMonthBtn);
   });
 
   it("should display the calendar when clicking on the end date picker", async () => {
-    renderWithProviders(<DatePickers />);
+    renderWithProviders(<DatePickers />, { store: endStore });
     const endDatePicker = screen.getByTestId("end-date-picker");
     expect(endDatePicker).toBeInTheDocument();
 
@@ -45,5 +63,35 @@ describe("DatePickers Component", () => {
     // The headless ui component renders the menu items in a portal, so we need to wait for it
     const calendar = await screen.findByTestId("end-calendar-container");
     expect(calendar).toBeInTheDocument();
+
+    const prevMonthBtn = await screen.findByTestId("prev-month-button");
+    await user.click(prevMonthBtn);
+    await user.click(prevMonthBtn);
+
+    const dayToClick = await screen.findByTestId("end-calendar-day-11");
+    await user.click(dayToClick);
+
+    await waitFor(() => {
+      expect(mockedToastWarn).toHaveBeenCalledWith(
+        "End date cannot be before the start date"
+      );
+    });
+
+    const nextMonthBtn = await screen.findByTestId("next-month-button");
+    expect(nextMonthBtn).toBeInTheDocument();
+    await user.click(nextMonthBtn);
+    await user.click(nextMonthBtn);
+    await user.click(dayToClick);
+  });
+
+  it("should handle Search button click", async () => {
+    const handleQuery = vi.fn();
+    renderWithProviders(<DatePickers handleQuery={handleQuery} />, {
+      store: setupStore(),
+    });
+    const searchBtn = screen.getByTestId("date-picker-search-btn");
+    expect(searchBtn).toBeInTheDocument();
+    await user.click(searchBtn);
+    expect(handleQuery).toHaveBeenCalled();
   });
 });
