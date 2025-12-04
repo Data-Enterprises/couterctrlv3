@@ -1,0 +1,141 @@
+import StorePicker from "../../../components/storePicker/StorePicker";
+import { screen, waitFor } from "@testing-library/react";
+import { renderWithProviders } from "../../utils";
+import { describe, expect, it, vi, type Mock } from "vitest";
+import { setupStore } from "../../../store";
+import userEvent from "@testing-library/user-event";
+import { setUserPrefs } from "../../../api/user";
+import { fakeStores } from ".";
+
+const testStore = setupStore();
+const user = userEvent.setup();
+vi.mock("../../../api/user");
+
+describe("StorePicker Component", () => {
+  it("should render StorePicker component with all children", () => {
+    renderWithProviders(<StorePicker />, { store: testStore });
+
+    const storePicker = screen.getByTestId("store-picker");
+    expect(storePicker).toBeInTheDocument();
+
+    const state = testStore.getState().search.type;
+    if (state === "Stores" || state === "Store") {
+      const searchStore = screen.getByTestId("search-store");
+      expect(searchStore).toBeInTheDocument();
+    } else if (state === "Group") {
+      const selectGroup = screen.getByTestId("select-group");
+      expect(selectGroup).toBeInTheDocument();
+    }
+  });
+
+  it("should render with the single store only prop", async () => {
+    (setUserPrefs as Mock).mockResolvedValue({ data: { error: 0 } });
+    renderWithProviders(<StorePicker singleStoreOnly={true} />, {
+      store: testStore,
+    });
+
+    const storePicker = screen.getByTestId("store-picker");
+    expect(storePicker).toBeInTheDocument();
+
+    const singleStoreSelection = await screen.findByTestId(
+      "searchtype-single-store-option"
+    );
+    await user.click(singleStoreSelection);
+  });
+
+  it("should handle the selection of different search types", async () => {
+    (setUserPrefs as Mock).mockResolvedValue({ data: { error: 0 } });
+    renderWithProviders(<StorePicker />, { store: testStore });
+
+    const storePicker = screen.getByTestId("store-picker");
+    expect(storePicker).toBeInTheDocument();
+
+    // Open the options
+    const trigger = await screen.findByTestId("type-trigger-ref");
+    await user.click(trigger);
+
+    // Select the Group option
+    const groupOption = await screen.findByTestId("st-option-2");
+    await user.click(groupOption);
+    await waitFor(() => {
+      const state = testStore.getState().search.type;
+      expect(state).toBe("Group");
+    });
+
+    // Open the options again
+    await user.click(trigger);
+
+    // click outisde of the options to close it
+    await user.click(document.body);
+
+    await waitFor(() => {
+      const list = screen.queryByTestId("type-options-list");
+      expect(list).not.toBeInTheDocument();
+    });
+  });
+
+  it("should grab Group as search type if it was the last search type upon rendering", async () => {
+    (setUserPrefs as Mock).mockResolvedValue({ data: { error: 0 } });
+    renderWithProviders(<StorePicker />, { store: testStore });
+
+    await waitFor(() => {
+      const state = testStore.getState().search.type;
+      expect(state).toBe("Group");
+    });
+
+    const trigger = await screen.findByTestId("type-trigger-ref");
+    await user.click(trigger);
+
+    const storeOption = await screen.findByTestId("st-option-3");
+
+    await user.click(storeOption);
+    await waitFor(() => {
+      const state = testStore.getState().search.type;
+      expect(state).toBe("Store");
+    });
+  });
+
+  it("should grab Store as search type if it was the last search type upon rendering", async () => {
+    (setUserPrefs as Mock).mockResolvedValue({ data: { error: 0 } });
+    renderWithProviders(<StorePicker />, { store: testStore });
+
+    await waitFor(() => {
+      const state = testStore.getState().search.type;
+      expect(state).toBe("Store");
+    });
+
+    await waitFor(() => {
+      testStore.dispatch({ type: "search/setType", payload: "" });
+      const state = testStore.getState().search.type;
+      expect(state).toBe("");
+    });
+  });
+
+  it("should set the default query as Single Store if no last search type is found", async () => {
+    (setUserPrefs as Mock).mockResolvedValue({ data: { error: 0 } });
+    renderWithProviders(<StorePicker />, { store: testStore });
+    await waitFor(() => {
+      // expect the text Single Store to be in the document
+      const singleStoreText = screen.getByText("Single Store");
+      expect(singleStoreText).toBeInTheDocument();
+    });
+  });
+
+  it("should handle SearchStore selections", async () => {
+    (setUserPrefs as Mock).mockResolvedValue({ data: { error: 0 } });
+    renderWithProviders(<StorePicker />, { store: testStore });
+    testStore.dispatch({
+      type: "user/setAssignedStores",
+      payload: fakeStores,
+    });
+
+    const trigger = await screen.findByTestId("type-trigger-ref");
+    await user.click(trigger);
+
+    const storeOption = await screen.findByTestId("st-option-3");
+    storeOption.click
+
+    const state = testStore.getState();
+    console.log(state.user);
+  });
+});

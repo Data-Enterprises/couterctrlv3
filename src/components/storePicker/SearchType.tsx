@@ -7,9 +7,6 @@ import { setUserPrefs } from "../../api/user";
 
 interface Props {
   singleStoreOnly?: boolean;
-  onOutsideClick?: () => void;
-  useSubComp?: boolean;
-  inMarketing?: boolean;
 }
 
 interface iOption {
@@ -24,11 +21,7 @@ const options: iOption[] = [
   { id: 3, name: "Single Store", type: "Store" },
 ];
 
-const SearchType = ({
-  singleStoreOnly = false,
-  onOutsideClick,
-  inMarketing = false,
-}: Props) => {
+const SearchType = ({ singleStoreOnly = false }: Props) => {
   const user = useAppSelector((state) => state.user);
   const context = useAppSelector((state) => state.app);
   const type = useAppSelector((state) => state.search.type);
@@ -48,7 +41,6 @@ const SearchType = ({
     ) {
       if (listRef.current) {
         listRef.current.setAttribute("data-display", "closed");
-        if (onOutsideClick) onOutsideClick();
       }
     }
   };
@@ -163,6 +155,7 @@ const SearchType = ({
           >
             {singleStoreOnly ? (
               <div
+                data-testid="searchtype-single-store-option"
                 onClick={() =>
                   handleSelect({ id: 3, name: "Single Store", type: "Store" })
                 }
@@ -179,11 +172,12 @@ const SearchType = ({
               <>
                 {options.map((option) => {
                   // Skip the "Stores" option if inMarketing is true, Stores will show up in the other contexts
-                  if (inMarketing && option.id === 1) {
-                    return null;
-                  }
+                  // if (inMarketing && option.id === 1) {
+                  //   return null;
+                  // }
                   return (
                     <div
+                      data-testid={`st-option-${option.id}`}
                       onClick={() => handleSelect(option)}
                       key={`st-option-${option.id}`}
                       className="px-2 py-2 hover:bg-blue-200 transition-all duration-500 cursor-pointer"
