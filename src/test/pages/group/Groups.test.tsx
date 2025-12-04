@@ -179,14 +179,6 @@ describe("Groups Page", () => {
 
   // Select Group COMPONENT TESTS
   // ////////////////////////////
-  // single-select-trigger-icon-1 => select group (group names)
-  // single-select-option-1-0 => first option in select group dropdown
-  // single-select-option-1-1 => second option in select group dropdown
-  // single-select-trigger-icon-2 => filter options (All Stores, Active, Inactive)
-  // single-select-option-2-0 => first option in filter options dropdown All Stores
-  // single-select-option-2-1 => second option in filter options dropdown Active
-  // single-select-option-2-2 => third option in filter options dropdown Inactive
-
   it("should handle selecting a group with failure and success api calls", async () => {
     // (getGroups as Mock).mockResolvedValue(getGroupsSuccessResp);
     (getStoresAssignedToUserGroup as Mock).mockRejectedValue(JsonErrorResp);
