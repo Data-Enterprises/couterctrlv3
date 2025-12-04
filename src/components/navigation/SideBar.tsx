@@ -32,7 +32,12 @@ const SideBar = () => {
         userid: user.userid,
         last_route: nav.lastRoute,
       };
-      setUserPrefs(context.url, context.token, prefs).catch(
+      setUserPrefs(context.url, context.token, prefs).then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          return;
+        }
+      }).catch(
         (err: JsonError) => {
           toast.error("Error setting user prefs:" + err.message);
         }
@@ -88,12 +93,6 @@ const SideBar = () => {
     }
   };
 
-  // const iconStyle = context.isDesktop
-  //   ? "h-7 w-7"
-  //   : !nav.isNavOpen
-  //   ? "opacity-0 h-7 w-7 transition-all duration-200"
-  //   : "opacity-100 h-7 w-7 transition-all duration-200";
-
   return (
     <div
       ref={ref}
@@ -116,6 +115,7 @@ const SideBar = () => {
       <div>
         {navItems.map((item: Navigation) => (
           <NavLink
+            data-testid={`nav-${item.href}`}
             to={item.href}
             key={item.name}
             draggable={false}
@@ -150,6 +150,7 @@ const SideBar = () => {
       {/* Settings and Sign Out */}
       <div className="select-none cursor-pointer">
         <div
+          data-testid="nav-settings"
           className={`${context.isDesktop ? "" : "hidden"} flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200`}
           onClick={() => {
             navigate("settings");
