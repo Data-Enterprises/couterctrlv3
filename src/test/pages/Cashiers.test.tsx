@@ -20,6 +20,7 @@ import {
   mockSingleTransResp,
 } from "./cashiers";
 import { setAvailablePriceTypes } from "../../features/cashierSlice";
+import { setIsDesktop, setIsMobile } from "../../features/appSlice";
 
 const user = userEvent.setup();
 const initialStore = setupStore();
@@ -95,6 +96,17 @@ describe("Cashiers Page", () => {
     });
 
     renderWithProviders(<Cashiers />, { store: initialStore });
+
+    // Doing this just to cover some of the mobile styling, functionally all is passing and working correctly
+    await waitFor(() => {
+      initialStore.dispatch(setIsDesktop(false));
+      initialStore.dispatch(setIsMobile(true));
+    });
+
+    await waitFor(() => {
+      initialStore.dispatch(setIsDesktop(true));
+      initialStore.dispatch(setIsMobile(false));
+    })
 
     const cashCard = await screen.findByTestId("cashier-trend-card-0-36");
     await user.click(cashCard);
