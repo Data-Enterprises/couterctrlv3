@@ -390,7 +390,9 @@ describe("Cashiers Page", () => {
     expect(modal).toBeInTheDocument();
 
     // Just for this test
-    initialStore.dispatch(setAvailablePriceTypes(["REG", "TPR"]));
+    await waitFor(() => {
+      initialStore.dispatch(setAvailablePriceTypes(["REG", "TPR"]));
+    });
 
     const tprCheckbox = await screen.findByTestId(
       "cashier-table-filter-price-type-TPR"

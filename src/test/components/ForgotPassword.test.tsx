@@ -181,9 +181,6 @@ describe("ForgotPassword Component", () => {
     });
     renderWithProviders(<ForgotPassword />, { store });
 
-    const state = store.getState().forgotPassword;
-    console.log(state);
-
     // New password is still typed in and in redux, so just test the api success
     const changePWBtn = await screen.findByTestId("forgot-change-pw-btn");
     expect(changePWBtn).toBeInTheDocument();

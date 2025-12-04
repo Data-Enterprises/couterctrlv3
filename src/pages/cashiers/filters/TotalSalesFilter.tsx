@@ -10,7 +10,6 @@ const TotalSalesFilter = ({
   threshold,
   threshComp,
 }: TotalSalesFilterProps) => {
-  console.log(threshComp, "Thresh Comp in TotalSalesFilter");
   return (
     <div>
       <div className="flex justify-center gap-4 mt-1">

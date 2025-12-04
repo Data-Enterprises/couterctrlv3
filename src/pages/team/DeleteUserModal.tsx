@@ -38,12 +38,12 @@ const DeleteUserModal = () => {
           Deleting User - {userInfo.username}
         </h2>
         <p className="">Are you sure you want to remove</p>
-        <p className="flex gap-1 justify-center">
+        <div className="flex gap-1 justify-center">
           <div className="font-semibold">
             {userInfo.first_name} {userInfo.last_name}
           </div>
           <div>from the team?</div>
-        </p>
+        </div>
         <div className="grid grid-cols-2 gap-4 mt-4">
           <button
             data-testid="delete-user-modal-cancel"

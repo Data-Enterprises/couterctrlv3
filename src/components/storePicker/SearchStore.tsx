@@ -6,11 +6,7 @@ import { setLastStore, setSelectedStore } from "../../features/searchSlice";
 import { setUserPrefs } from "../../api/user";
 import { useStorePickerContext } from ".";
 
-interface Props {
-  onOutsideClick?: () => void;
-}
-
-const SelectStore = ({ onOutsideClick }: Props) => {
+const SelectStore = () => {
   const dispatch = useAppDispatch();
   const context = useStorePickerContext();
   const componentRef = useRef<HTMLDivElement>(null);
@@ -119,7 +115,6 @@ const SelectStore = ({ onOutsideClick }: Props) => {
     // Close the dropdown
     if (listRef.current) {
       listRef.current.setAttribute("data-display", "closed");
-      if (onOutsideClick) onOutsideClick();
     }
   };
 

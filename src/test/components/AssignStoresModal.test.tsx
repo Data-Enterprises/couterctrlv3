@@ -35,8 +35,11 @@ describe("AssignStoresModal Component", () => {
 
   it("Should fetch data when modal is opened", async () => {
     const store = setupStore(); // Fresh store
-    store.dispatch({ type: "users/setAssignModalOpen", payload: true });
-    store.dispatch({ type: "users/setSelectedUserId", payload: 123 }); // Set ID to avoid undefined
+
+    await waitFor(() => {
+      store.dispatch({ type: "users/setAssignModalOpen", payload: true });
+      store.dispatch({ type: "users/setSelectedUserId", payload: 123 }); // Set ID to avoid undefined
+    });
 
     (getUserStores as Mock).mockResolvedValue({
       data: {
@@ -51,13 +54,16 @@ describe("AssignStoresModal Component", () => {
     });
     renderWithProviders(<AssignStoresModal />, { store });
 
-    store.dispatch({ type: "users/setAssignModalOpen", payload: false });
+    await waitFor(() => {
+      store.dispatch({ type: "users/setAssignModalOpen", payload: false });
+    });
   });
 
   it("handles API failure gracefully", async () => {
     const store = setupStore(); // Fresh store
-    store.dispatch({ type: "users/setAssignModalOpen", payload: true });
-    // store.dispatch({ type: "users/setSelectedUserId", payload: 123 }); // Set ID
+    await waitFor(() => {
+      store.dispatch({ type: "users/setAssignModalOpen", payload: true });
+    });
 
     (getUserStores as Mock).mockRejectedValue(new Error("Network Error"));
     renderWithProviders(<AssignStoresModal />, { store });
@@ -66,14 +72,18 @@ describe("AssignStoresModal Component", () => {
       expect(mockedToastError).toHaveBeenCalledTimes(1);
     });
 
-    store.dispatch({ type: "users/setAssignModalOpen", payload: false });
+    await waitFor(() => {
+      store.dispatch({ type: "users/setAssignModalOpen", payload: false });
+    });
   });
 
   it("render role's label if role is assigned", async () => {
     const store = setupStore(); // Fresh store
     // role = 9 matches your defaultInfo
-    store.dispatch({ type: "users/setRole", payload: defaultInfo.role });
-    store.dispatch({ type: "users/setAssignModalOpen", payload: true });
+    await waitFor(() => {
+      store.dispatch({ type: "users/setRole", payload: defaultInfo.role });
+      store.dispatch({ type: "users/setAssignModalOpen", payload: true });
+    });
 
     // Make getUserStores safe (returns a promise) but irrelevant for this branch
     (getUserStores as Mock).mockResolvedValue({
@@ -87,8 +97,6 @@ describe("AssignStoresModal Component", () => {
     await waitFor(() => {
       const state = store.getState().users;
       expect(state.userInfo.role).toBe(9);
-      // expect(state.userInfo.role).toBe(defaultInfo.role);
-      // expect(screen.getByText(/Role:/i)).toBeInTheDocument();
     });
   });
 });

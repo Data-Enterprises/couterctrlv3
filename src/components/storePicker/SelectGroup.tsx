@@ -6,11 +6,7 @@ import { useStorePickerContext } from ".";
 import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
 import type { Group } from "../../features/groupSlice";
 
-interface Props {
-  onOutsideClick?: () => void;
-}
-
-const SelectGroup = ({ onOutsideClick }: Props) => {
+const SelectGroup = () => {
   const context = useStorePickerContext();
   const app = useAppSelector((state) => state.app);
   const dispatch = useAppDispatch();
@@ -49,7 +45,6 @@ const SelectGroup = ({ onOutsideClick }: Props) => {
     ) {
       if (listRef.current) {
         listRef.current.setAttribute("data-display", "closed");
-        if (onOutsideClick) onOutsideClick();
       }
     }
   };
@@ -68,7 +63,6 @@ const SelectGroup = ({ onOutsideClick }: Props) => {
     // Close the dropdown
     if (listRef.current) {
       listRef.current.setAttribute("data-display", "closed");
-      if (onOutsideClick) onOutsideClick();
     }
   };
 
@@ -86,9 +80,7 @@ const SelectGroup = ({ onOutsideClick }: Props) => {
   const inputStyle =
     "basic-input focus:border bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer w-full";
 
-  const width = app.isDesktop
-    ? "relative w-full w-full"
-    : "relative w-full";
+  const width = app.isDesktop ? "relative w-full w-full" : "relative w-full";
   return (
     <div data-testid="select-group" ref={componentRef} className={styling}>
       <div className="flex flex-col">
@@ -101,7 +93,7 @@ const SelectGroup = ({ onOutsideClick }: Props) => {
         </label>
         <div className={`relative ${width}`}>
           <div
-            data-testid="trigger-ref"
+            data-testid="selectgroup-trigger-ref"
             ref={triggerRef}
             onClick={handleTriggerClick}
           >
@@ -133,7 +125,7 @@ const SelectGroup = ({ onOutsideClick }: Props) => {
           >
             {/* This needs to be filtered data by query search */}
             {filtered.map((group, idx) => (
-              <div key={`group-${idx}`} onClick={() => handleSelect(group)}>
+              <div data-testid={`selectgroup-${group.id}`} key={`group-${idx}`} onClick={() => handleSelect(group)}>
                 <div className="p-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer text-sm">
                   {group.group_name}
                 </div>

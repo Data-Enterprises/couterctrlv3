@@ -5,11 +5,15 @@ import { describe, expect, it, vi, type Mock } from "vitest";
 import { setupStore } from "../../../store";
 import userEvent from "@testing-library/user-event";
 import { setUserPrefs } from "../../../api/user";
-import { fakeStores } from ".";
+import { fakeStores, fakeGroups } from ".";
+import { setAssignedStores } from "../../../features/userSlice";
+import { setGroups } from "../../../features/groupSlice";
 
 const testStore = setupStore();
 const user = userEvent.setup();
 vi.mock("../../../api/user");
+testStore.dispatch(setAssignedStores(fakeStores));
+testStore.dispatch(setGroups(fakeGroups));
 
 describe("StorePicker Component", () => {
   it("should render StorePicker component with all children", () => {
@@ -124,18 +128,53 @@ describe("StorePicker Component", () => {
   it("should handle SearchStore selections", async () => {
     (setUserPrefs as Mock).mockResolvedValue({ data: { error: 0 } });
     renderWithProviders(<StorePicker />, { store: testStore });
-    testStore.dispatch({
-      type: "user/setAssignedStores",
-      payload: fakeStores,
-    });
 
     const trigger = await screen.findByTestId("type-trigger-ref");
     await user.click(trigger);
 
     const storeOption = await screen.findByTestId("st-option-3");
-    storeOption.click
+    await user.click(storeOption);
 
-    const state = testStore.getState();
-    console.log(state.user);
+    const input = await screen.findByTestId("search-store-input");
+    await user.click(input);
+    const storeToSelect = await screen.findByTestId("searchstore-2");
+    await user.click(storeToSelect);
+
+    await waitFor(() => {
+      const state = testStore.getState();
+      expect(state.search.lastStore).toBe(2);
+    });
+
+    // clear and then type in the input
+    await user.clear(input);
+    await user.type(input, "Store Two");
+  });
+
+  it("should handle SelectGroup selections", async () => {
+    (setUserPrefs as Mock).mockResolvedValue({ data: { error: 0 } });
+    renderWithProviders(<StorePicker />, { store: testStore });
+
+    // Select Group as search type
+    const trigger = await screen.findByTestId("type-trigger-ref");
+    await user.click(trigger);
+
+    const groupOption = await screen.findByTestId("st-option-2");
+    await user.click(groupOption);
+
+    // Click on one of the groups
+    const groupTrigger = await screen.findByTestId("selectgroup-trigger-ref");
+    await user.click(groupTrigger);
+
+    const groupToSelect = await screen.findByTestId("selectgroup-3");
+    await user.click(groupToSelect);
+
+    const groupInput = await screen.findByTestId("search-group-input");
+    // focus
+    await user.click(groupInput);
+
+    await waitFor(() => {
+      const state = testStore.getState().search;
+      expect(state.lastGroup).toBe(3);
+    });
   });
 });
