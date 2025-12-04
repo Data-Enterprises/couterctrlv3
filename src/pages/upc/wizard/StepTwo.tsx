@@ -143,6 +143,7 @@ const UpcStepTwo = ({ className = "", getData }: StepTwoProps) => {
       </div>
       <Tooltips />
       <Buttons
+        slide={2}
         isReady={isReady}
         handleNext={handleNext}
         handleBack={() => dispatch(setIndex(0))}

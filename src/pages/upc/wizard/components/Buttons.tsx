@@ -3,6 +3,7 @@ interface ButtonsProps {
   handleNext: () => void;
   handleBack: () => void;
   btnText?: string;
+  slide: number;
 }
 
 const Buttons = ({
@@ -10,6 +11,7 @@ const Buttons = ({
   handleNext,
   handleBack,
   btnText = "Back",
+  slide,
 }: ButtonsProps) => {
   return (
     <div className="flex gap-4 justify-center w-3/4">
@@ -17,6 +19,7 @@ const Buttons = ({
         {btnText}
       </div>
       <div
+        data-testid={`upc-wizard-next-btn-${slide}`}
         className={`${
           isReady()
             ? "btn-themeGreen"
