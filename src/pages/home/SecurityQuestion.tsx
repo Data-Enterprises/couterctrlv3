@@ -23,17 +23,21 @@ const SecurityQuestion = () => {
   const [questionId, setQuestionId] = useState<number>(0);
 
   useEffect(() => {
-    if (!context.token) return;
-    getSecurityQuestions(context.url, context.token)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          setSecurityQuestions(j.questions);
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error("Error getting security questions: " + err.message);
-      });
+    if (user.securityQuestionId === 0) {
+      getSecurityQuestions(context.url, context.token)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            setSecurityQuestions(j.questions);
+            toast.info(
+              "Please set your security question and answer to secure your account."
+            );
+          }
+        })
+        .catch((err: JsonError) => {
+          toast.error("Error getting security questions: " + err.message);
+        });
+    }
   }, []);
 
   const handleAnswerChange = (text: string) => {
@@ -45,6 +49,18 @@ const SecurityQuestion = () => {
   };
 
   const submitAnswer = () => {
+    if (!questionId && !answer.trim()) {
+      toast.warn("Please select a security question and provide an answer.");
+      return;
+    }
+    if (questionId === 0) {
+      toast.warn("Please select a security question.");
+      return;
+    }
+    if (!answer.trim()) {
+      toast.warn("Please provide an answer to the selected security question.");
+      return;
+    }
     setSecurityQuestionAnswer(
       context.url,
       context.token,
@@ -57,10 +73,6 @@ const SecurityQuestion = () => {
         if (j.error === 0) {
           dispatch(setSecurityQuestionId(questionId));
           toast.success("Security question and answer set successfully.");
-        } else {
-          toast.error(
-            "Error setting security question and answer: " + j.message
-          );
         }
       })
       .catch((err: JsonError) => {
@@ -102,7 +114,11 @@ const SecurityQuestion = () => {
           isSimple={true}
         />
         <div className="mt-4 flex">
-          <button className="btn-themeBlue w-full" onClick={submitAnswer}>
+          <button
+            data-testid="submit-security-answer"
+            className="btn-themeBlue w-full"
+            onClick={submitAnswer}
+          >
             Submit
           </button>
         </div>

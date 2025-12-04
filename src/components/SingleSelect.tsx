@@ -177,6 +177,7 @@ const SingleSelect = <T,>({
           </div>
 
           <div
+            data-testid={`single-select-list-${id}`}
             ref={listRef}
             data-display="closed"
             className={`absolute no-scrollbar w-full hover:cursor-pointer text-content rounded-lg bg-custom-white 

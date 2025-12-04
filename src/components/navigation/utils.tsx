@@ -1,9 +1,6 @@
-// Types
-import type StoresIcon from "../../svgs/StoresIcon";
-
 // Icons
 import {
-  // HomeIcon,
+  HomeIcon,
   UsersIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/16/solid";
@@ -15,7 +12,7 @@ import UpcListIcon from "../../svgs/UpcListIcon";
 export type Navigation = {
   name: string;
   href: string;
-  icon: typeof UsersIcon | typeof StoresIcon | any;
+  icon: typeof UsersIcon | any;
   current?: boolean;
   children: Navigation[];
   childOpen: boolean;
@@ -24,15 +21,15 @@ export type Navigation = {
 };
 
 export const navigation: Navigation[] = [
-  // {
-  //   name: "Home",
-  //   href: "/",
-  //   icon: HomeIcon,
-  //   mobile: true,
-  //   children: [],
-  //   childOpen: false,
-  //   userTypes: ["*"],
-  // },
+  {
+    name: "Home",
+    href: "/",
+    icon: HomeIcon,
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userTypes: ["*"],
+  },
   {
     name: "Sales",
     href: "sales",
