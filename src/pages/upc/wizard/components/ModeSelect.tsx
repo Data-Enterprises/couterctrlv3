@@ -13,15 +13,11 @@ const ModelSelect = () => {
   const dispatch = useAppDispatch();
   const { selectedMode } = useAppSelector((state) => state.upc);
 
-  // Duration is commented out until I get the api calls rolling
   const handleModeSelect = (mode: number) => {
     if (selectedMode !== mode) {
-      // if (mode === 2) dispatch(setDuration(1000));
-      // if (mode === 3) dispatch(setDuration(5000));
       dispatch(setSelectedMode(mode));
     } else {
       dispatch(setSelectedMode(0));
-      // dispatch(setDuration(2000));
     }
   };
 

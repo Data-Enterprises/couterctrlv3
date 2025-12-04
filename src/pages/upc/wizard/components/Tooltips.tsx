@@ -18,6 +18,7 @@ const Tooltips = () => {
           className="text-xs text-content/70 w-full flex items-center gap-1 relative ml-3"
         >
           <InformationCircleIcon
+            data-testid={`tooltip-icon-${i}`}
             height={22}
             width={22}
             onMouseEnter={() => handleTooltip(i, "show")}

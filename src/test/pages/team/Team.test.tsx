@@ -208,6 +208,65 @@ describe("Team Page", () => {
     await user.click(clearBtn);
   });
 
+  it("should handle user input for the TextInputs", async () => {
+    renderWithProviders(<Team />, { store });
+
+    const username = await screen.findByTestId("text-input-username");
+    const email = await screen.findByTestId("text-input-email");
+    const firstName = await screen.findByTestId("text-input-first_name");
+    const lastName = await screen.findByTestId("text-input-last_name");
+    const createBtn = await screen.findByTestId("create-user-button");
+
+    // Validation check for username
+    await user.click(createBtn);
+    await user.type(username, "test1");
+    await user.click(createBtn);
+    await user.type(username, "test7");
+
+    // email
+    await user.type(email, "test7@example.com");
+    await user.click(createBtn);
+
+    // first name
+    await user.type(firstName, "Test");
+    await user.click(createBtn);
+
+    // last name
+    await user.type(lastName, "User");
+    await user.click(createBtn);
+  });
+
+  it("should handle validation for role, company, and user level", async () => {
+    renderWithProviders(<Team />, { store });
+
+    const userLvlIcon = await screen.findByTestId(
+      "single-select-trigger-icon-4"
+    );
+    const companyIcon = await screen.findByTestId(
+      "single-select-trigger-icon-5"
+    );
+    const userLvlOption = await screen.findByTestId("single-select-option-4-1"); // value is 2
+    const companyOption = await screen.findByTestId("single-select-option-5-2"); // value is 12
+    const roleIcon = await screen.findByTestId("single-select-trigger-icon-8");
+    const roleOption = await screen.findByTestId("single-select-option-8-4"); // value is 9
+    const createBtn = await screen.findByTestId("create-user-button");
+
+    // user role
+    await user.click(roleIcon);
+    await user.click(roleOption);
+    await user.click(createBtn);
+
+    // user level
+    await user.click(userLvlIcon);
+    await user.click(userLvlOption);
+    await user.click(createBtn);
+
+    // company
+    await user.click(companyIcon);
+    await user.click(companyOption);
+    await user.click(createBtn);
+  });
+
   // Testing user creation
   it("should handle user input for creating a new user", async () => {
     // Again, these are needed because creating a new user also triggers these API calls
@@ -221,20 +280,6 @@ describe("Team Page", () => {
 
     renderWithProviders(<Team />, { store });
 
-    const username = await screen.findByTestId("text-input-username");
-    const email = await screen.findByTestId("text-input-email");
-    const firstName = await screen.findByTestId("text-input-first_name");
-    const lastName = await screen.findByTestId("text-input-last_name");
-    const userLvlIcon = await screen.findByTestId(
-      "single-select-trigger-icon-4"
-    );
-    const companyIcon = await screen.findByTestId(
-      "single-select-trigger-icon-5"
-    );
-    const userLvlOption = await screen.findByTestId("single-select-option-4-1"); // value is 2
-    const companyOption = await screen.findByTestId("single-select-option-5-2"); // value is 12
-    const roleIcon = await screen.findByTestId("single-select-trigger-icon-8");
-    const roleOption = await screen.findByTestId("single-select-option-8-4"); // value is 9
     const pwInput = await screen.findByTestId("text-input-password");
     const confirmPwInput = await screen.findByTestId(
       "text-input-confirm_password"
@@ -251,39 +296,6 @@ describe("Team Page", () => {
     });
 
     const createBtn = await screen.findByTestId("create-user-button");
-
-    // Validation check for username
-    await user.click(createBtn);
-    await user.type(username, "test1");
-    await user.click(createBtn);
-    await user.type(username, "test7");
-
-    // user role
-    await user.click(roleIcon);
-    await user.click(roleOption);
-    await user.click(createBtn);
-
-    // user level
-    await user.click(userLvlIcon);
-    await user.click(userLvlOption);
-    await user.click(createBtn);
-
-    // company
-    await user.click(companyIcon);
-    await user.click(companyOption);
-    await user.click(createBtn);
-
-    // email
-    await user.type(email, "test7@example.com");
-    await user.click(createBtn);
-
-    // first name
-    await user.type(firstName, "Test");
-    await user.click(createBtn);
-
-    // last name
-    await user.type(lastName, "User");
-    await user.click(createBtn);
 
     // pw
     const eyeIcon = await screen.findAllByTestId("eye-icon");

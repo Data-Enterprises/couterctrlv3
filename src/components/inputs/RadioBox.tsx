@@ -12,8 +12,9 @@ const RadioBox = ({ value, onChange, id, label }: Props) => {
     <div
       className="flex items-center gap-2 cursor-pointer"
       data-testid={`radio-${id}`}
+      onClick={() => onChange(id)}
     >
-      <CheckboxIcon onClick={() => onChange(id)} active={value} />
+      <CheckboxIcon active={value} />
       <label>{label}</label>
     </div>
   );
