@@ -42,8 +42,6 @@ const SelectGroup = ({ getData }: SelectGroupProps) => {
         return group.storesWithGroupStatus.filter((s) => s.active === 1).length;
       case "inactive":
         return group.storesWithGroupStatus.filter((s) => s.active === 0).length;
-      default:
-        return group.storesWithGroupStatus.length;
     }
   };
 

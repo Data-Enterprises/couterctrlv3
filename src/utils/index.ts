@@ -21,42 +21,14 @@ export const formatGoliathDate = (date: string) => {
   return `${year}-${addZero(month)}-${addZero(day)}`;
 };
 
-const isValid = (val: string | number | undefined | null) => {
-  if (typeof val === "undefined" || val === null) {
-    return false;
-  } else {
-    if (typeof val === "string" && val.length === 0) {
-      return false;
-    }
-
-    if (typeof val === "object") {
-      if (Object.keys(val).length === 0) {
-        return false;
-      }
-    }
-    return true;
-  }
-};
-
-const formatCurrency = (
-  value: string,
-  locale: string = "en-US",
-  currency: string = "USD"
-): string => {
-  if (!isValid(value)) return "";
-  const numberValue = parseFloat(value);
-  if (isNaN(numberValue)) {
-    throw new Error("Invalid number");
-  }
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: currency,
-  }).format(numberValue);
-};
-
 export const formatCurrency2 = (x: number) => {
-  const result = x.toString();
-  return x < 0 ? `${formatCurrency(result)}` : formatCurrency(result);
+  const format = (num: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(num);
+  };
+  return x < 0 ? `${format(x)}` : format(x);
 };
 
 export const reformatDate = (date: string) => {

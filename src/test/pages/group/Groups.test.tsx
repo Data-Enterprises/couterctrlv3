@@ -9,6 +9,8 @@ import {
   getStoresAssignedToUserGroup,
   createGroup,
   deleteGroup,
+  addStoreToGroup,
+  removeStoreFromGroup,
 } from "../../../api/groups";
 import { setIsDesktop, setToken } from "../../../features/appSlice";
 
@@ -18,6 +20,7 @@ import {
   getGroupsSuccessResp,
   JsonErrorResp,
   updatedGroupsAfterDeleteResp,
+  getStoresWithGroupStatusResp,
 } from "./index";
 import { setRefreshGroups } from "../../../features/groupSlice";
 
@@ -145,8 +148,9 @@ describe("Groups Page", () => {
     await user.click(newConfirm);
 
     await waitFor(() => {
-      const state = store.getState();
-      console.log(state.group);
+      expect(mockedToastSuccess).toHaveBeenCalledWith(
+        "Group deleted successfully"
+      );
     });
   });
 
@@ -175,5 +179,196 @@ describe("Groups Page", () => {
 
   // Select Group COMPONENT TESTS
   // ////////////////////////////
-  
+  // single-select-trigger-icon-1 => select group (group names)
+  // single-select-option-1-0 => first option in select group dropdown
+  // single-select-option-1-1 => second option in select group dropdown
+  // single-select-trigger-icon-2 => filter options (All Stores, Active, Inactive)
+  // single-select-option-2-0 => first option in filter options dropdown All Stores
+  // single-select-option-2-1 => second option in filter options dropdown Active
+  // single-select-option-2-2 => third option in filter options dropdown Inactive
+
+  it("should handle selecting a group with failure and success api calls", async () => {
+    // (getGroups as Mock).mockResolvedValue(getGroupsSuccessResp);
+    (getStoresAssignedToUserGroup as Mock).mockRejectedValue(JsonErrorResp);
+    renderWithProviders(<Groups />, { store });
+
+    const selectGroupIcon = await screen.findByTestId(
+      "single-select-trigger-icon-1"
+    );
+    expect(selectGroupIcon).toBeInTheDocument();
+    await user.click(selectGroupIcon);
+
+    // Select the first group and handle error then success
+    const groupToSelect = await screen.findByTestId("single-select-option-1-0");
+    expect(groupToSelect).toBeInTheDocument();
+    await user.click(groupToSelect);
+
+    await waitFor(() => {
+      expect(mockedToastError).toHaveBeenCalledWith("API request failed");
+    });
+
+    // Now handle the successful fetching of stores with group status
+    (getStoresAssignedToUserGroup as Mock).mockResolvedValue(
+      getStoresWithGroupStatusResp
+    );
+
+    await user.click(selectGroupIcon);
+    await user.click(groupToSelect);
+
+    await waitFor(() => {
+      const state = store.getState();
+      expect(state.group.storesWithGroupStatus.length).toBeGreaterThan(0);
+    });
+  });
+
+  it("should handle selecting filter options", async () => {
+    renderWithProviders(<Groups />, { store });
+    const filterOptionsIcon = await screen.findByTestId(
+      "single-select-trigger-icon-2"
+    );
+    expect(filterOptionsIcon).toBeInTheDocument();
+    await user.click(filterOptionsIcon);
+
+    // Selecting Inactive option
+    const inactiveOption = await screen.findByTestId(
+      "single-select-option-2-2"
+    );
+    expect(inactiveOption).toBeInTheDocument();
+    await user.click(inactiveOption);
+
+    await waitFor(() => {
+      const state = store.getState();
+      expect(state.group.filterOption).toBe("inactive");
+    });
+
+    // Selecting Active options
+    const activeOption = await screen.findByTestId("single-select-option-2-1");
+    expect(activeOption).toBeInTheDocument();
+    await user.click(activeOption);
+
+    await waitFor(() => {
+      const state = store.getState();
+      expect(state.group.filterOption).toBe("active");
+    });
+
+    // Selecting All option
+    const allOption = await screen.findByTestId("single-select-option-2-0");
+    expect(allOption).toBeInTheDocument();
+    await user.click(allOption);
+    await waitFor(() => {
+      const state = store.getState();
+      expect(state.group.filterOption).toBe("all");
+    });
+  });
+
+  // GROUP LIST COMPONENT TESTS
+  // ////////////////////////////
+  it("should handle columns by window resize", async () => {
+    renderWithProviders(<Groups />, { store });
+    const groupListCards = await screen.findByTestId("group-list-cards");
+    expect(groupListCards).toBeInTheDocument();
+    // Default is desktop size
+    expect(groupListCards).toHaveClass("grid-cols-3");
+
+    // Resize to mobile
+    await waitFor(() => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 500,
+      });
+      window.dispatchEvent(new Event("resize"));
+      expect(window.innerWidth).toBe(500);
+    });
+
+    // Reset back to desktop
+    await waitFor(() => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1536,
+      });
+      window.dispatchEvent(new Event("resize"));
+      expect(window.innerWidth).toBe(1536);
+    });
+  });
+
+  it("should handle the filtering of stores based on search input and group filter option", async () => {
+    renderWithProviders(<Groups />, { store });
+    const searchInput = await screen.findByTestId("store-search-input");
+    expect(searchInput).toBeInTheDocument();
+
+    // handle input change
+    await user.type(searchInput, "Store 12");
+    expect(searchInput).toHaveValue("Store 12");
+    const groupListCards = await screen.findByTestId("group-list-cards");
+
+    // There should be only one store card showing
+    await waitFor(() => {
+      const children = groupListCards.children;
+      expect(children.length).toBe(1);
+    });
+
+    // Clearing the input should put back all the store cards
+    await user.clear(searchInput);
+    expect(searchInput).toHaveValue("");
+    await waitFor(() => {
+      const children = groupListCards.children;
+      expect(children.length).toBeGreaterThan(1);
+    });
+  });
+
+  it("should handle adding store to group", async () => {
+    // test the failure first
+    (addStoreToGroup as Mock).mockRejectedValue(JsonErrorResp);
+    renderWithProviders(<Groups />, { store });
+
+    const groupListCards = await screen.findByTestId("group-list-cards");
+    expect(groupListCards).toBeInTheDocument();
+
+    const firstStoreCard = await screen.findByTestId("grouplist-store-card-2");
+    const secondChild = firstStoreCard.children[1];
+    expect(secondChild.innerHTML).toContain("Inactive");
+    await user.click(firstStoreCard);
+
+    await waitFor(() => {
+      expect(mockedToastError).toHaveBeenCalledWith("API request failed");
+    });
+
+    // Now test the success
+    (addStoreToGroup as Mock).mockResolvedValue(defaultSuccessResp);
+    await user.click(firstStoreCard);
+
+    await waitFor(() => {
+      expect(mockedToastSuccess).toHaveBeenCalledWith(
+        "Store added to group successfully"
+      );
+    });
+  });
+
+  it("should handle removing store from group", async () => {
+    // test the failure first
+    (removeStoreFromGroup as Mock).mockRejectedValue(JsonErrorResp);
+    renderWithProviders(<Groups />, { store });
+
+    const groupListCards = await screen.findByTestId("group-list-cards");
+    expect(groupListCards).toBeInTheDocument();
+
+    const storeToRemove = await screen.findByTestId("grouplist-store-card-1");
+    const firstChild = storeToRemove.children[1];
+    expect(firstChild.innerHTML).toContain("Active");
+    await user.click(storeToRemove);
+    await waitFor(() => {
+      expect(mockedToastError).toHaveBeenCalledWith("API request failed");
+    });
+
+    // Now test the success
+    (removeStoreFromGroup as Mock).mockResolvedValue(defaultSuccessResp);
+    await user.click(storeToRemove);
+    await waitFor(() => {
+      expect(mockedToastSuccess).toHaveBeenCalledWith(
+        "Store removed from group successfully"
+      );
+    });
+  });
 });
