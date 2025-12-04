@@ -15,7 +15,7 @@ const Buttons = ({
 }: ButtonsProps) => {
   return (
     <div className="flex gap-4 justify-center w-3/4">
-      <div className={`btn-themeBlue w-1/2 text-center`} onClick={handleBack}>
+      <div data-testid={`upc-wizard-back-btn-${slide}`} className={`btn-themeBlue w-1/2 text-center`} onClick={handleBack}>
         {btnText}
       </div>
       <div

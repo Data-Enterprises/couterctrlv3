@@ -94,6 +94,11 @@ describe("SecurityQuestion Component", () => {
 
     // select 3rd question => favorite food
     const questionInput = await screen.findByTestId("single-select-input");
+
+    // This covers query change for singleSelect
+    await user.type(questionInput, "test");
+    await user.clear(questionInput);
+    
     const question = await screen.findByTestId("single-select-option-0-2");
     const answerInput = await screen.findByTestId("text-input-Answer");
 

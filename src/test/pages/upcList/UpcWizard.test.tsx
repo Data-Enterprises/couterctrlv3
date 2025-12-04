@@ -1,19 +1,39 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, type Mock } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import UpcList from "../../../pages/upc/wizard/UpcList";
-import { renderWithProviders } from "../../utils";
 import { setupStore } from "../../../store";
+import { renderWithProviders } from "../../utils";
+import userEvent from "@testing-library/user-event";
+
+// Dispatchers
 import { setAssignedStores } from "../../../features/userSlice";
-import { stores } from ".";
+import { setGroups } from "../../../features/groupSlice";
+
+// API calls to be mocked
+import { getStoresAssignedToUserGroup } from "../../../api/groups";
+
+// Responses
+import {
+  stores,
+  groups,
+  getGroupStoresResp,
+  JsonErrorResp,
+} from ".";
+
+// Components being tested
+import UpcList from "../../../pages/upc/wizard/UpcList";
+
+vi.mock("../../../api/groups");
 
 const store = setupStore();
 store.dispatch(setAssignedStores(stores));
+store.dispatch(setGroups(groups));
 const user = userEvent.setup();
 const mockedToastWarn = vi.fn();
+const mockedToastError = vi.fn();
 vi.mock("../../../components/toasts/hooks/useToast", () => ({
   useToast: () => ({
     warn: mockedToastWarn,
+    error: mockedToastError,
   }),
 }));
 
@@ -89,22 +109,17 @@ describe("SalesComp Module in UpcList", () => {
     renderWithProviders(<UpcList />, { store });
 
     const tooltipOne = await screen.findByTestId("tooltip-icon-0");
-    const tooltipTwo = await screen.findByTestId("tooltip-icon-1");
-    const tooltipThree = await screen.findByTestId("tooltip-icon-2");
-    const tooltipFour = await screen.findByTestId("tooltip-icon-3");
     expect(tooltipOne).toBeInTheDocument();
-    expect(tooltipTwo).toBeInTheDocument();
-    expect(tooltipThree).toBeInTheDocument();
-    expect(tooltipFour).toBeInTheDocument();
 
     await user.hover(tooltipOne);
-    await user.hover(tooltipTwo);
-    await user.hover(tooltipThree);
-    await user.hover(tooltipFour);
+    await user.unhover(tooltipOne);
 
     const storeGroupSelectIcon = await screen.findByTestId(
       "single-select-trigger-icon-1"
     );
+
+    const trendInput = await screen.findByTestId("text-input-trend");
+    await user.type(trendInput, "0");
 
     const storeOption = await screen.findByTestId("single-select-option-1-0");
     const groupOption = await screen.findByTestId("single-select-option-1-1");
@@ -119,6 +134,14 @@ describe("SalesComp Module in UpcList", () => {
       expect(state.radioId).toBe(1);
     });
 
+    const storeToClick = await screen.findByTestId("single-select-option-2-1");
+    await user.click(storeToClick);
+    await user.click(storeToClick); // Click twice to add and then remove
+    await waitFor(() => {
+      const state = store.getState().upc;
+      expect(state.selectedStores.length).toBe(0);
+    });
+
     // Click on Group
     await user.click(storeGroupSelectIcon);
     await user.click(groupOption);
@@ -127,9 +150,32 @@ describe("SalesComp Module in UpcList", () => {
       expect(state.radioId).toBe(2);
     });
 
+    // handle error
+    (getStoresAssignedToUserGroup as Mock).mockRejectedValue(JsonErrorResp);
+    const groupToClick = await screen.findByTestId("single-select-option-2-1");
+    await user.click(groupToClick);
+
     await waitFor(() => {
-      const state = store.getState();
-      console.log(state.user.assignedStores);
+      expect(mockedToastError).toHaveBeenCalledWith("API request failed");
     });
+
+    // now handle success
+    (getStoresAssignedToUserGroup as Mock).mockResolvedValue(
+      getGroupStoresResp
+    );
+    await user.click(groupToClick);
+    await waitFor(() => {
+      const state = store.getState().upc;
+      expect(state.selectedStores.length).toBeGreaterThan(0);
+    });
+
+    const backBtn2 = await screen.findByTestId("upc-wizard-back-btn-2");;
+    await user.click(backBtn2);
+
+    const btn1 = await screen.findByTestId("upc-wizard-next-btn-1");
+    await user.click(btn1);
+
+    const btn2 = await screen.findByTestId("upc-wizard-next-btn-2");
+    await user.click(btn2);
   });
 });
