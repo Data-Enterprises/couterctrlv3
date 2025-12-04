@@ -222,6 +222,7 @@ describe("Team Page", () => {
     await user.type(username, "test1");
     await user.click(createBtn);
     await user.type(username, "test7");
+    await user.click(createBtn);
 
     // email
     await user.type(email, "test7@example.com");
