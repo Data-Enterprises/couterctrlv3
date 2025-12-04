@@ -18,7 +18,6 @@ const CreateGroup = () => {
   };
 
   const handleCreate = () => {
-    if (!context.token || !context.url) return;
     if (!context.createInput) {
       toast.warn("Please enter a group name");
       return;
@@ -59,25 +58,27 @@ const CreateGroup = () => {
 
   // Once all the checks have passed and the user actually want to delete the group
   const handleDelete = () => {
-    if (!context.token || !context.url) return;
     const id = groupId();
-    if (!id) return;
-
-    deleteGroup(context.url, context.token, id)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error == "0") {
-          dispatch(setCreateInput(""));
-          setIsModalOpen(false);
-          dispatch(setRefreshGroups(true));
-          toast.success("Group deleted successfully");
-        }
-      })
-      .catch((err: JsonError) => toast.error(err.message));
+    if (id) {
+      deleteGroup(context.url, context.token, id)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error == "0") {
+            dispatch(setCreateInput(""));
+            setIsModalOpen(false);
+            dispatch(setRefreshGroups(true));
+            toast.success("Group deleted successfully");
+          }
+        })
+        .catch((err: JsonError) => toast.error(err.message));
+    }
   };
 
   return (
-    <div className="md:flex md:gap-2 mb-2 md:mb-4 md:items-end" data-testid="create-group">
+    <div
+      className="md:flex md:gap-2 mb-2 md:mb-4 md:items-end"
+      data-testid="create-group"
+    >
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <div className="text-center">
           Are you sure you want to delete this group?
@@ -87,6 +88,7 @@ const CreateGroup = () => {
         </div>
         <div className="w-full flex gap-4 mt-4">
           <button
+            data-testid="modal-cancel-btn"
             className="btn-themeOrange w-full"
             onClick={() => setIsModalOpen(false)}
           >
@@ -122,7 +124,11 @@ const CreateGroup = () => {
         >
           Delete
         </button>
-        <button className="btn-themeBlue w-1/2" onClick={handleCreate}>
+        <button
+          data-testid="group-create-btn"
+          className="btn-themeBlue w-1/2"
+          onClick={handleCreate}
+        >
           Create
         </button>
       </div>

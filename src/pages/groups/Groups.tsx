@@ -36,8 +36,6 @@ const Groups = () => {
           );
           dispatch(setGroups(groups));
           dispatch(setRefreshGroups(false));
-        } else {
-          toast.warn(j.msg);
         }
       })
       .catch((err: JsonError) => {
