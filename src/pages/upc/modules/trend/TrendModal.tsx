@@ -31,9 +31,8 @@ const TrendModal = () => {
   };
 
   const textColor = (num1: number, num2: number) => {
-    if (num1 > num2) return "text-emerald-500 font-medium";
-    if (num1 < num2) return "text-orange-500 font-medium";
-    return "text-content font-medium";
+    if (num1 > num2) return "text-emerald-500";
+    if (num1 < num2) return "text-orange-500";
   };
 
   const calcPercentChange = (before: number, after: number) => {
@@ -112,7 +111,7 @@ const TrendModal = () => {
               <div className="flex gap-1">
                 <div>Before:</div>
                 <div
-                  className={`${textColor(
+                  className={`font-medium text-content ${textColor(
                     trend.total_before,
                     trend.total_after
                   )}`}
@@ -123,7 +122,7 @@ const TrendModal = () => {
               <div className="flex gap-1">
                 <div>After:</div>
                 <div
-                  className={`${textColor(
+                  className={`font-medium text-content ${textColor(
                     trend.total_after,
                     trend.total_before
                   )}`}
@@ -139,7 +138,7 @@ const TrendModal = () => {
               <div className="flex gap-1">
                 <div>Before:</div>
                 <div
-                  className={`${textColor(
+                  className={`font-medium text-content ${textColor(
                     trend.mean_before,
                     trend.mean_after
                   )}`}
@@ -150,7 +149,7 @@ const TrendModal = () => {
               <div className="flex gap-1">
                 <div>After:</div>
                 <div
-                  className={`${textColor(
+                  className={`font-medium text-content ${textColor(
                     trend.mean_after,
                     trend.mean_before
                   )}`}
@@ -166,7 +165,7 @@ const TrendModal = () => {
               <div className="flex gap-1">
                 <div>Before:</div>
                 <div
-                  className={`${textColor(
+                  className={`font-medium text-content ${textColor(
                     trend.volatility_before,
                     trend.volatility_after
                   )}`}
@@ -177,7 +176,7 @@ const TrendModal = () => {
               <div className="flex gap-1">
                 <div>After:</div>
                 <div
-                  className={`${textColor(
+                  className={`font-medium text-content ${textColor(
                     trend.volatility_after,
                     trend.volatility_before
                   )}`}
@@ -237,7 +236,7 @@ const TrendModal = () => {
               </div>
             </div>
           </div>
-          <button className="btn-themeOrange mt-1" onClick={onClose}>
+          <button data-testid="trend-modal-close-btn" className="btn-themeOrange mt-1" onClick={onClose}>
             Close
           </button>
         </div>

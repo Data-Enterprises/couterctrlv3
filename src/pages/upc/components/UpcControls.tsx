@@ -112,6 +112,7 @@ const UpcControls = () => {
               Totals
             </button>
             <button
+              data-testid="trend-mean-btn"
               className={`btn-themeBlue py-1 w-full ${
                 state.trendMode === "Mean" ? "btn-themeGreen" : ""
               }`}
@@ -120,6 +121,7 @@ const UpcControls = () => {
               Mean
             </button>
             <button
+              data-testid="trend-volatility-btn"
               className={`btn-themeBlue py-1 w-full ${
                 state.trendMode === "Volatility" ? "btn-themeGreen" : ""
               }`}
@@ -179,6 +181,7 @@ const UpcControls = () => {
       </div>
 
       <div
+        data-testid="upc-controls-list"
         className="bg-custom-white rounded-b-lg overflow-y-scroll no-scrollbar"
         style={{ minHeight: height, maxHeight: height }}
       >

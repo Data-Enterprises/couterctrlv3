@@ -22,8 +22,9 @@ const TopBottomTrends = ({ type }: TopBottomTrendsProps) => {
     <>
       <div className="font-semibold text-center text-lg">{type} Five</div>
       <div className="h-full grid grid-cols-5 gap-2">
-        {trends.map((item: UpcTrend) => (
+        {trends.map((item: UpcTrend, i) => (
           <div
+            data-testid={`${type.toLowerCase()}-trend-${i}`}
             key={item.product_code}
             className="h-[70px] bg-custom-white rounded-lg shadow-md overflow-hidden relative cursor-pointer hover:shadow-lg"
             onClick={() => handleClick(item.product_code)}
