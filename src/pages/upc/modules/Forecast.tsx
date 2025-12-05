@@ -23,18 +23,8 @@ const Forecast = () => {
   const modal = useAppSelector((state) => state.upcModal);
 
   const handleExport = () => {
-    if (
-      !modal.fileName &&
-      !modal.radioOption.dates &&
-      !modal.radioOption.metrics
-    ) {
-      toast.warn("Please enter a file name and select at least one option");
-      return;
-    } else if (modal.fileName === "") {
+    if (modal.fileName === "") {
       toast.warn("Please enter a file name");
-      return;
-    } else if (!modal.radioOption.dates && !modal.radioOption.metrics) {
-      toast.warn("Please select at least one option");
       return;
     }
 

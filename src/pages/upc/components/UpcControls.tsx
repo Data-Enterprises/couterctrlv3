@@ -104,6 +104,7 @@ const UpcControls = () => {
         {state.selectedMode === 4 ? (
           <div data-testid="trend-options" className="border-y-2 py-1 border-content/40 flex flex-col gap-1">
             <button
+              data-testid="trend-totals-btn"
               className={`btn-themeBlue py-1 w-full ${
                 state.trendMode === "Totals" ? "btn-themeGreen" : ""
               }`}

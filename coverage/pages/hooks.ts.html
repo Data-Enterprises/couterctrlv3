@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">34.21% </span>
+                <span class="strong">7.89% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>13/38</span>
+                <span class='fraction'>3/38</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">8.33% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/12</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">36.36% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>4/11</span>
+                <span class='fraction'>0/11</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">37.14% </span>
+                <span class="strong">8.57% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>13/35</span>
+                <span class='fraction'>3/35</span>
             </div>
         
             
@@ -133,7 +133,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -156,7 +156,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -177,24 +177,24 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">29x</span>
-<span class="cline-any cline-yes">29x</span>
-<span class="cline-any cline-yes">9x</span>
-<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">9x</span>
-<span class="cline-any cline-yes">9x</span>
-<span class="cline-any cline-yes">9x</span>
-<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { useRef, useState, useEffect } from "react";
 import { useAppSelector } from "../hooks";
 import { formatGoliathDate } from "../utils";
@@ -243,24 +243,24 @@ export const useHeight = <span class="fstat-no" title="function not covered" >()
 <span class="cstat-no" title="statement not covered" >  return { topRef, bottomRef, height };</span>
 };
 &nbsp;
-export const useRowHeight = () =&gt; {
-  const [rows, setRows] = useState&lt;string&gt;("grid-rows-[20%_80%]");
-  useEffect(() =&gt; {
-    const handleRows = () =&gt; {
-      <span class="missing-if-branch" title="if path not taken" >I</span>if (window.innerWidth &gt; 1536) {
+export const useRowHeight = <span class="fstat-no" title="function not covered" >() =&gt; {</span>
+  const [rows, setRows<span class="cstat-no" title="statement not covered" >] = useState&lt;string&gt;("grid-rows-[20%_80%]");</span>
+<span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
+    const handleRows = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
+<span class="cstat-no" title="statement not covered" >      if (window.innerWidth &gt; 1536) {</span>
 <span class="cstat-no" title="statement not covered" >        setRows("grid-rows-[18%_82%]");</span>
       } else {
-        setRows("grid-rows-[20%_80%]");
+<span class="cstat-no" title="statement not covered" >        setRows("grid-rows-[20%_80%]");</span>
       }
     };
 &nbsp;
-    handleRows();
-    window.addEventListener("resize", handleRows);
-    return () =&gt; {
-      window.removeEventListener("resize", handleRows);
+<span class="cstat-no" title="statement not covered" >    handleRows();</span>
+<span class="cstat-no" title="statement not covered" >    window.addEventListener("resize", handleRows);</span>
+<span class="cstat-no" title="statement not covered" >    return <span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
+<span class="cstat-no" title="statement not covered" >      window.removeEventListener("resize", handleRows);</span>
     };
   }, []);
-  return { rows };
+<span class="cstat-no" title="statement not covered" >  return { rows };</span>
 };</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -268,7 +268,7 @@ export const useRowHeight = () =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-05T21:53:25.055Z
+                at 2025-12-05T23:47:02.600Z
             </div>
         <script src="../prettify.js"></script>
         <script>

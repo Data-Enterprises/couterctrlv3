@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>10/10</span>
+                <span class='fraction'>5/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">33.33% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>6/6</span>
+                <span class='fraction'>2/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">33.33% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>6/6</span>
+                <span class='fraction'>2/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">55.55% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>9/9</span>
+                <span class='fraction'>5/9</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -114,27 +114,27 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">110x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">110x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">110x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">440x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">21x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">21x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">21x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">84x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -164,9 +164,9 @@ import { InformationCircleIcon } from "@heroicons/react/24/solid";
 const Tooltips = () =&gt; {
   const [showTooltip, setShowTooltip] = useState&lt;Tooltip&gt;(defaultTooltips);
 &nbsp;
-  const handleTooltip = (index: number, type: "show" | "hide") =&gt; {
-    const bool = type === "show" ? true : false;
-    setShowTooltip((prev) =&gt; ({ ...prev, [index]: bool }));
+  const handleTooltip = <span class="fstat-no" title="function not covered" >(i</span>ndex: number, type: "show" | "hide") =&gt; {
+    const bool = <span class="cstat-no" title="statement not covered" >type === "show" ? true : false;</span>
+<span class="cstat-no" title="statement not covered" >    setShowTooltip(<span class="fstat-no" title="function not covered" >(p</span>rev) =&gt; (<span class="cstat-no" title="statement not covered" >{ ...prev, [index]: bool }))</span>;</span>
   };
 &nbsp;
   return (
@@ -180,18 +180,18 @@ const Tooltips = () =&gt; {
             data-testid={`tooltip-icon-${i}`}
             height={22}
             width={22}
-            onMouseEnter={() =&gt; handleTooltip(i, "show")}
-            onMouseLeave={() =&gt; handleTooltip(i, "hide")}
+            onMouseEnter={<span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >h</span>andleTooltip(i, "show")}</span>
+            onMouseLeave={<span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >h</span>andleTooltip(i, "hide")}</span>
             className="text-content/30 cursor-pointer hover:fill-blue-500"
           /&gt;
           &lt;div className="underline font-medium text-content/80"&gt;
             {inst.label}
           &lt;/div&gt;
           &lt;div
-            style={{ zIndex: showTooltip[i as keyof Tooltip] ? 1000 : -1 }}
+            style={{ zIndex: showTooltip[i as keyof Tooltip] ? <span class="branch-0 cbranch-no" title="branch not covered" >1000 : -</span>1 }}
             className={`${
               showTooltip[i as keyof Tooltip]
-                ? "opacity-100"
+                ? <span class="branch-0 cbranch-no" title="branch not covered" >"opacity-100"</span>
                 : "opacity-0 pointer-events-none"
             } transition-all duration-200 text-xs text-content absolute max-w-[250px] left-0.5 bottom-6 border rounded bg-blue-100 border-content/50 p-1`}
           &gt;
@@ -211,7 +211,7 @@ export default Tooltips;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-05T21:53:25.055Z
+                at 2025-12-05T23:47:02.600Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

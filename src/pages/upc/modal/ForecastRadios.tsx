@@ -14,6 +14,7 @@ const ForecastRadios = () => {
         value={state.radioOption.dates}
         className="cursor-pointer"
         onChange={() => dispatch(setRadioOption("dates"))}
+        idExtension="forecast-dates"
       />
       <CheckBox
         id={1}
@@ -21,6 +22,7 @@ const ForecastRadios = () => {
         value={state.radioOption.metrics}
         className="cursor-pointer"
         onChange={() => dispatch(setRadioOption("metrics"))}
+        idExtension="forecast-metrics"
       />
     </div>
   );

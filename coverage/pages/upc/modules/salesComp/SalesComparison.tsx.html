@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">46.66% </span>
+                <span class="strong">6.66% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>7/15</span>
+                <span class='fraction'>1/15</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">2.17% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>2/92</span>
+                <span class='fraction'>0/92</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.33% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/3</span>
+                <span class='fraction'>0/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">46.66% </span>
+                <span class="strong">6.66% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>7/15</span>
+                <span class='fraction'>1/15</span>
             </div>
         
             
@@ -307,28 +307,28 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">24x</span>
-<span class="cline-any cline-yes">24x</span>
-<span class="cline-any cline-yes">24x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">24x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">24x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -542,12 +542,12 @@ import {
   ArrowDownCircleIcon,
 } from "@heroicons/react/24/outline";
 &nbsp;
-const SalesComparison = () =&gt; {
-  const dispatch = useAppDispatch();
-  const { selectedCompOne, selectedCompTwo } = useUpcContext();
-  const isReady = selectedCompOne &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >selectedCompTwo;</span>
+const SalesComparison = <span class="fstat-no" title="function not covered" >() =&gt; {</span>
+  const <span class="cstat-no" title="statement not covered" >dispatch = useAppDispatch();</span>
+  const { selectedCompOne, selectedCompTwo <span class="cstat-no" title="statement not covered" >} = useUpcContext();</span>
+  const isReady = <span class="cstat-no" title="statement not covered" >selectedCompOne &amp;&amp; selectedCompTwo;</span>
 &nbsp;
-  const renderIcon = <span class="fstat-no" title="function not covered" >(n</span>um1: number, num2: number) =&gt; {
+  const renderIcon = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(n</span>um1: number, num2: number) =&gt; {</span>
     const one = <span class="cstat-no" title="statement not covered" >num1 === null ? 0 : num1;</span>
     const two = <span class="cstat-no" title="statement not covered" >num2 === null ? 0 : num2;</span>
 <span class="cstat-no" title="statement not covered" >    if (one &gt; two) {</span>
@@ -559,11 +559,11 @@ const SalesComparison = () =&gt; {
     }
   };
 &nbsp;
-  const handleClear = <span class="fstat-no" title="function not covered" >() =&gt; {</span>
+  const handleClear = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
 <span class="cstat-no" title="statement not covered" >    dispatch(clearSelectedComps());</span>
   };
 &nbsp;
-  return (
+<span class="cstat-no" title="statement not covered" >  return (</span>
     &lt;div className="bg-custom-white rounded-lg shadow-lg mr-4 relative"&gt;
       {!isReady ? (
         &lt;div className="flex flex-col justify-center items-center h-full w-full text-content/70"&gt;
@@ -571,7 +571,7 @@ const SalesComparison = () =&gt; {
           &lt;div&gt;To view the sales comparison&lt;/div&gt;
         &lt;/div&gt;
       ) : (
-<span class="branch-1 cbranch-no" title="branch not covered" >        &lt;&gt;</span>
+        &lt;&gt;
             &lt;div className="bg-blue-500 text-custom-white font-medium rounded-t-lg pl-4 py-1"&gt;
               Comparison
             &lt;/div&gt;
@@ -775,7 +775,7 @@ export default SalesComparison;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-05T21:53:25.055Z
+                at 2025-12-05T23:47:02.600Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

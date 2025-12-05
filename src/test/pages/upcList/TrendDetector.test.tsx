@@ -267,14 +267,9 @@ describe("TrendDetector Module in UpcList", () => {
     await user.click(upc2);
 
     // mean, volatility buttons
+    const totalsBtn = await screen.findByTestId("trend-totals-btn");
     const meanBtn = await screen.findByTestId("trend-mean-btn");
     const volatilityBtn = await screen.findByTestId("trend-volatility-btn");
-
-    // By default Trend mode it Totals
-    await waitFor(() => {
-      const state = store.getState().upc;
-      expect(state.trendMode).toBe("Totals");
-    });
 
     // select Mean
     await user.click(meanBtn);
@@ -288,6 +283,12 @@ describe("TrendDetector Module in UpcList", () => {
     await waitFor(() => {
       const state = store.getState().upc;
       expect(state.trendMode).toBe("Volatility");
+    });
+
+    await user.click(totalsBtn);
+    await waitFor(() => {
+      const state = store.getState().upc;
+      expect(state.trendMode).toBe("Totals");
     });
   });
 

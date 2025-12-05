@@ -10,7 +10,7 @@ import type { Handlers, UpcPriceOpt } from "../../../interfaces";
 
 // Components
 import MetricsCarousel from "./forecast/MetricsCarousel";
-import MetricsContainer from "../components/MetricsCarousel";
+import MetricsContainer from "../components/MetricsContainer";
 import UpcControls from "../components/UpcControls";
 import PriceOptBar from "../charts/PriceOptBar";
 import PriceOptGrid from "../charts/PriceOptGrid";

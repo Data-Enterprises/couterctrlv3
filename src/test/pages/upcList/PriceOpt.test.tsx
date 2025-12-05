@@ -149,13 +149,10 @@ describe("PriceOpt Module in UpcList", () => {
     expect(stepOne).toBeInTheDocument();
   });
 
-  // In this case, we're just trying to render SalesComp
+  // In this case, we're just trying to render PriceOpt module after fetching data successfully
   it("should render selected module correctly", async () => {
     renderWithProviders(<UpcList />, { store });
-
-    // Go through the steps of the UpcWizard to reach SalesComp module
     const upcFileInput = await screen.findByTestId("upc-file-input");
-
     const csvFile = new File(["upc1\nupc2\nupc3"], "upc_list.csv", {
       type: "text/csv",
     });

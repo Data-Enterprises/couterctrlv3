@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">4.76% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>21/21</span>
+                <span class='fraction'>1/21</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>12/12</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>6/6</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">5.26% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>19/19</span>
+                <span class='fraction'>1/19</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -168,42 +168,42 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">94x</span>
-<span class="cline-any cline-yes">94x</span>
-<span class="cline-any cline-yes">184x</span>
-<span class="cline-any cline-yes">184x</span>
-<span class="cline-any cline-yes">94x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">94x</span>
-<span class="cline-any cline-yes">16x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">12x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">120x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">94x</span>
-<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">94x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -256,42 +256,42 @@ import TrendGroupBar from "../charts/TrendGroupBar";
 import TrendModal from "./trend/TrendModal";
 import UpcModal from "../modal/UpcModal";
 &nbsp;
-const TrendDetector = () =&gt; {
-  const dispatch = useAppDispatch();
-  const toast = useToast();
-  const state = useAppSelector((state) =&gt; state.upc);
-  const modal = useAppSelector((state) =&gt; state.upcModal);
-  const [selectedTrends, setSelectedTrends] = useState&lt;UpcTrend[]&gt;([]);
+const TrendDetector = <span class="fstat-no" title="function not covered" >() =&gt; {</span>
+  const <span class="cstat-no" title="statement not covered" >dispatch = useAppDispatch();</span>
+  const <span class="cstat-no" title="statement not covered" >toast = useToast();</span>
+  const <span class="cstat-no" title="statement not covered" >state = useAppSelector(<span class="fstat-no" title="function not covered" >(s</span>tate) =&gt; <span class="cstat-no" title="statement not covered" >state.upc)</span>;</span>
+  const <span class="cstat-no" title="statement not covered" >modal = useAppSelector(<span class="fstat-no" title="function not covered" >(s</span>tate) =&gt; <span class="cstat-no" title="statement not covered" >state.upcModal)</span>;</span>
+  const [selectedTrends, setSelectedTrends<span class="cstat-no" title="statement not covered" >] = useState&lt;UpcTrend[]&gt;([]);</span>
 &nbsp;
-  useEffect(() =&gt; {
-    if (state.selectedUpcs.length === 0) {
-      setSelectedTrends([]);
+<span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
+<span class="cstat-no" title="statement not covered" >    if (state.selectedUpcs.length === 0) {</span>
+<span class="cstat-no" title="statement not covered" >      setSelectedTrends([]);</span>
     } else {
-      setSelectedTrends(
-        state.upcTrends.filter((item) =&gt;
-          state.selectedUpcs.includes(item.product_code)
+<span class="cstat-no" title="statement not covered" >      setSelectedTrends(</span>
+        state.upcTrends.filter(<span class="fstat-no" title="function not covered" >(i</span>tem) =&gt;
+<span class="cstat-no" title="statement not covered" >          state.selectedUpcs.includes(item.product_code)</span>
         )
       );
     }
   }, [state.upcTrends, state.selectedUpcs]);
 &nbsp;
-  const handleExport = () =&gt; {
-    if (!modal.fileName) {
-      toast.warn("Please enter a file name...");
-      return;
+  const handleExport = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
+<span class="cstat-no" title="statement not covered" >    if (!modal.fileName) {</span>
+<span class="cstat-no" title="statement not covered" >      toast.warn("Please enter a file name...");</span>
+<span class="cstat-no" title="statement not covered" >      return;</span>
     }
 &nbsp;
-    const data: UpcTrend[] = modal.trendOption.all
+    const data: UpcTrend[] = <span class="cstat-no" title="statement not covered" >modal.trendOption.all</span>
       ? state.upcTrends
       : modal.trendOption.top
       ? state.topFiveTrends
       : state.bottomFiveTrends;
 &nbsp;
-    exportData(data, trendHeaders, modal.fileName);
-    dispatch(reset());
+<span class="cstat-no" title="statement not covered" >    exportData(data, trendHeaders, modal.fileName);</span>
+<span class="cstat-no" title="statement not covered" >    dispatch(reset());</span>
   };
 &nbsp;
-  return (
+<span class="cstat-no" title="statement not covered" >  return (</span>
     &lt;div data-testid="upc-trend" className="h-full w-full grid grid-cols-[12%_88%] gap-4"&gt;
       &lt;TrendModal /&gt;
       &lt;UpcModal handleExport={handleExport} /&gt;
@@ -334,7 +334,7 @@ export default TrendDetector;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-05T21:53:25.055Z
+                at 2025-12-05T23:47:02.600Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
