@@ -59,15 +59,6 @@ const SingleSelect = <T,>({
   useEffect(() => {
     if (!data || data.length === 0) return;
     setFilteredData(data);
-    positionDiv();
-
-    if (data) {
-      const existing = data.find((d) => d[valueKey] == value);
-
-      if (existing) {
-        setQuery(existing[displayKey] as string);
-      }
-    }
 
     document.addEventListener("mousedown", handleClickOutside);
     if (componentRef.current) {
@@ -125,19 +116,6 @@ const SingleSelect = <T,>({
     setFilteredData(filtered);
     if (listRef.current) {
       listRef.current.setAttribute("data-display", "open");
-    }
-  };
-
-  const positionDiv = () => {
-    if (!triggerRef.current || !listRef.current) return;
-    const box = triggerRef.current.getBoundingClientRect();
-    const availableSpace = window.innerHeight - box.bottom;
-    const listBox = listRef.current.getBoundingClientRect();
-
-    if (availableSpace < 350) {
-      listRef.current.style.top = `-${listBox.height + 10}px`;
-      listRef.current.style.borderTopLeftRadius = "10px";
-      listRef.current.style.borderTopRightRadius = "10px";
     }
   };
 
