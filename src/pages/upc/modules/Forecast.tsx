@@ -67,7 +67,7 @@ const Forecast = () => {
   };
 
   return (
-    <div className="h-full w-full grid grid-cols-[13%_87%] gap-4">
+    <div data-testid="upc-forecast" className="h-full w-full grid grid-cols-[13%_87%] gap-4">
       <CtxMenu
         className="hover:bg-panel_active/70"
         options={options}

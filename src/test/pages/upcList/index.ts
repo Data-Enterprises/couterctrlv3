@@ -741,3 +741,531 @@ export const priceOptResp = {
       "{\"('3077204515', 'CHARM ESSENTIAL STRNG MR 6 RL')\":4,\"('3077204537', 'CHARM ESSENTIAL SFT MR 6 RL')\":4}",
   },
 };
+
+export const forecastResp = {
+  data: {
+    error: 0,
+    success: true,
+    elapsed: "0.5494177739999486",
+    startdate: "2025-11-01T00:00:00",
+    end_date: "2025-11-05T00:00:00",
+    total_stores: 1,
+    upc_count: 10,
+    qty_results: {
+      "1200000017": {
+        metrics: {
+          description: "PEPSI 24 PK",
+          qty: 21,
+          avg_daily_qty: 4.2,
+          max_day_qty: 17,
+          days_active: 3,
+        },
+        history: [
+          {
+            date: "11/01/2025",
+            value: 0,
+          },
+          {
+            date: "11/02/2025",
+            value: 2,
+          },
+          {
+            date: "11/03/2025",
+            value: 0,
+          },
+          {
+            date: "11/04/2025",
+            value: 2,
+          },
+          {
+            date: "11/05/2025",
+            value: 17,
+          },
+        ],
+        history_dimension: 5,
+        forecast: [
+          {
+            date: "11/06/2025",
+            value: 4,
+          },
+          {
+            date: "11/07/2025",
+            value: 4,
+          },
+          {
+            date: "11/08/2025",
+            value: 4,
+          },
+          {
+            date: "11/09/2025",
+            value: 4,
+          },
+          {
+            date: "11/10/2025",
+            value: 4,
+          },
+          {
+            date: "11/11/2025",
+            value: 4,
+          },
+          {
+            date: "11/12/2025",
+            value: 4,
+          },
+        ],
+        forecast_dimension: 7,
+        forecast_method: "araxia_linear_seasonality",
+      },
+      "1200000088": {
+        metrics: {
+          description: "MOUNTAIN DEW 24 PK",
+          qty: 9,
+          avg_daily_qty: 1.8,
+          max_day_qty: 5,
+          days_active: 3,
+        },
+        history: [
+          {
+            date: "11/01/2025",
+            value: 2,
+          },
+          {
+            date: "11/02/2025",
+            value: 0,
+          },
+          {
+            date: "11/03/2025",
+            value: 2,
+          },
+          {
+            date: "11/04/2025",
+            value: 0,
+          },
+          {
+            date: "11/05/2025",
+            value: 5,
+          },
+        ],
+        history_dimension: 5,
+        forecast: [
+          {
+            date: "11/06/2025",
+            value: 1,
+          },
+          {
+            date: "11/07/2025",
+            value: 1,
+          },
+          {
+            date: "11/08/2025",
+            value: 1,
+          },
+          {
+            date: "11/09/2025",
+            value: 1,
+          },
+          {
+            date: "11/10/2025",
+            value: 1,
+          },
+          {
+            date: "11/11/2025",
+            value: 1,
+          },
+          {
+            date: "11/12/2025",
+            value: 1,
+          },
+        ],
+        forecast_dimension: 7,
+        forecast_method: "araxia_linear_seasonality",
+      },
+      "1200000170": {
+        metrics: {
+          description: "DIET MOUNTAIN DEW 24 PK",
+          qty: 7,
+          avg_daily_qty: 1.4,
+          max_day_qty: 4,
+          days_active: 3,
+        },
+        history: [
+          {
+            date: "11/01/2025",
+            value: 4,
+          },
+          {
+            date: "11/02/2025",
+            value: 0,
+          },
+          {
+            date: "11/03/2025",
+            value: 0,
+          },
+          {
+            date: "11/04/2025",
+            value: 1,
+          },
+          {
+            date: "11/05/2025",
+            value: 2,
+          },
+        ],
+        history_dimension: 5,
+        forecast: [
+          {
+            date: "11/06/2025",
+            value: 1,
+          },
+          {
+            date: "11/07/2025",
+            value: 1,
+          },
+          {
+            date: "11/08/2025",
+            value: 1,
+          },
+          {
+            date: "11/09/2025",
+            value: 1,
+          },
+          {
+            date: "11/10/2025",
+            value: 1,
+          },
+          {
+            date: "11/11/2025",
+            value: 1,
+          },
+          {
+            date: "11/12/2025",
+            value: 1,
+          },
+        ],
+        forecast_dimension: 7,
+        forecast_method: "araxia_linear_seasonality",
+      },
+      "1200002449": {
+        metrics: {
+          description: "DIET PEPSI MAX 12 OZ 24 PK",
+          qty: 2,
+          avg_daily_qty: 0.4,
+          max_day_qty: 1,
+          days_active: 2,
+        },
+        history: [
+          {
+            date: "11/01/2025",
+            value: 0,
+          },
+          {
+            date: "11/02/2025",
+            value: 0,
+          },
+          {
+            date: "11/03/2025",
+            value: 0,
+          },
+          {
+            date: "11/04/2025",
+            value: 1,
+          },
+          {
+            date: "11/05/2025",
+            value: 1,
+          },
+        ],
+        history_dimension: 5,
+        forecast: [
+          {
+            date: "11/06/2025",
+            value: 0,
+          },
+          {
+            date: "11/07/2025",
+            value: 0,
+          },
+          {
+            date: "11/08/2025",
+            value: 0,
+          },
+          {
+            date: "11/09/2025",
+            value: 0,
+          },
+          {
+            date: "11/10/2025",
+            value: 0,
+          },
+          {
+            date: "11/11/2025",
+            value: 0,
+          },
+          {
+            date: "11/12/2025",
+            value: 0,
+          },
+        ],
+        forecast_dimension: 7,
+        forecast_method: "araxia_linear_seasonality",
+      },
+    },
+    sales_results: {
+      "1200000017": {
+        metrics: {
+          description: "PEPSI 24 PK",
+          total_sales: 242.79000000000002,
+          avg_daily_qty: 48.55800000000001,
+          max_day_qty: 186,
+          days_active: 3,
+        },
+        history: [
+          {
+            date: "11/01/2025",
+            value: 0,
+          },
+          {
+            date: "11/02/2025",
+            value: 27,
+          },
+          {
+            date: "11/03/2025",
+            value: 0,
+          },
+          {
+            date: "11/04/2025",
+            value: 27,
+          },
+          {
+            date: "11/05/2025",
+            value: 186,
+          },
+        ],
+        history_dimension: 5,
+        forecast: [
+          {
+            date: "11/06/2025",
+            value: 48,
+          },
+          {
+            date: "11/07/2025",
+            value: 48,
+          },
+          {
+            date: "11/08/2025",
+            value: 48,
+          },
+          {
+            date: "11/09/2025",
+            value: 48,
+          },
+          {
+            date: "11/10/2025",
+            value: 48,
+          },
+          {
+            date: "11/11/2025",
+            value: 48,
+          },
+          {
+            date: "11/12/2025",
+            value: 48,
+          },
+        ],
+        forecast_dimension: 7,
+        forecast_method: "araxia_linear_seasonality",
+      },
+      "1200000088": {
+        metrics: {
+          description: "MOUNTAIN DEW 24 PK",
+          total_sales: 110.91,
+          avg_daily_qty: 22.182,
+          max_day_qty: 54,
+          days_active: 3,
+        },
+        history: [
+          {
+            date: "11/01/2025",
+            value: 27,
+          },
+          {
+            date: "11/02/2025",
+            value: 0,
+          },
+          {
+            date: "11/03/2025",
+            value: 27,
+          },
+          {
+            date: "11/04/2025",
+            value: 0,
+          },
+          {
+            date: "11/05/2025",
+            value: 54,
+          },
+        ],
+        history_dimension: 5,
+        forecast: [
+          {
+            date: "11/06/2025",
+            value: 22,
+          },
+          {
+            date: "11/07/2025",
+            value: 22,
+          },
+          {
+            date: "11/08/2025",
+            value: 22,
+          },
+          {
+            date: "11/09/2025",
+            value: 22,
+          },
+          {
+            date: "11/10/2025",
+            value: 22,
+          },
+          {
+            date: "11/11/2025",
+            value: 22,
+          },
+          {
+            date: "11/12/2025",
+            value: 22,
+          },
+        ],
+        forecast_dimension: 7,
+        forecast_method: "araxia_linear_seasonality",
+      },
+      "1200000170": {
+        metrics: {
+          description: "DIET MOUNTAIN DEW 24 PK",
+          total_sales: 91.93,
+          avg_daily_qty: 18.386000000000003,
+          max_day_qty: 55,
+          days_active: 3,
+        },
+        history: [
+          {
+            date: "11/01/2025",
+            value: 55,
+          },
+          {
+            date: "11/02/2025",
+            value: 0,
+          },
+          {
+            date: "11/03/2025",
+            value: 0,
+          },
+          {
+            date: "11/04/2025",
+            value: 13,
+          },
+          {
+            date: "11/05/2025",
+            value: 21,
+          },
+        ],
+        history_dimension: 5,
+        forecast: [
+          {
+            date: "11/06/2025",
+            value: 18,
+          },
+          {
+            date: "11/07/2025",
+            value: 18,
+          },
+          {
+            date: "11/08/2025",
+            value: 18,
+          },
+          {
+            date: "11/09/2025",
+            value: 18,
+          },
+          {
+            date: "11/10/2025",
+            value: 18,
+          },
+          {
+            date: "11/11/2025",
+            value: 18,
+          },
+          {
+            date: "11/12/2025",
+            value: 18,
+          },
+        ],
+        forecast_dimension: 7,
+        forecast_method: "araxia_linear_seasonality",
+      },
+      "1200002449": {
+        metrics: {
+          description: "DIET PEPSI MAX 12 OZ 24 PK",
+          total_sales: 24.98,
+          avg_daily_qty: 4.996,
+          max_day_qty: 13,
+          days_active: 2,
+        },
+        history: [
+          {
+            date: "11/01/2025",
+            value: 0,
+          },
+          {
+            date: "11/02/2025",
+            value: 0,
+          },
+          {
+            date: "11/03/2025",
+            value: 0,
+          },
+          {
+            date: "11/04/2025",
+            value: 13,
+          },
+          {
+            date: "11/05/2025",
+            value: 10,
+          },
+        ],
+        history_dimension: 5,
+        forecast: [
+          {
+            date: "11/06/2025",
+            value: 4,
+          },
+          {
+            date: "11/07/2025",
+            value: 4,
+          },
+          {
+            date: "11/08/2025",
+            value: 4,
+          },
+          {
+            date: "11/09/2025",
+            value: 4,
+          },
+          {
+            date: "11/10/2025",
+            value: 4,
+          },
+          {
+            date: "11/11/2025",
+            value: 4,
+          },
+          {
+            date: "11/12/2025",
+            value: 4,
+          },
+        ],
+        forecast_dimension: 7,
+        forecast_method: "araxia_linear_seasonality",
+      },
+    },
+  },
+};

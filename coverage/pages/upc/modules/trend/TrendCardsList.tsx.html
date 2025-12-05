@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">5.26% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/19</span>
+                <span class='fraction'>19/19</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/4</span>
+                <span class='fraction'>2/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/7</span>
+                <span class='fraction'>7/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">5.88% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/17</span>
+                <span class='fraction'>17/17</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -114,36 +114,36 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">84x</span>
+<span class="cline-any cline-yes">163x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">84x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-yes">120x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">84x</span>
+<span class="cline-any cline-yes">84x</span>
+<span class="cline-any cline-yes">84x</span>
+<span class="cline-any cline-yes">75x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">84x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">84x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">84x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">75x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">145x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -159,36 +159,36 @@ import type { UpcTrend } from "../../../../interfaces";
 import TrendCard from "./TrendCard";
 import MetricsCarousel from "../forecast/MetricsCarousel";
 &nbsp;
-const TrendCardsList = <span class="fstat-no" title="function not covered" >() =&gt; {</span>
-  const [trends, setTrends<span class="cstat-no" title="statement not covered" >] = useState&lt;UpcTrend[]&gt;([]);</span>
-  const <span class="cstat-no" title="statement not covered" >state = useAppSelector(<span class="fstat-no" title="function not covered" >(s</span>tate) =&gt; <span class="cstat-no" title="statement not covered" >state.upc)</span>;</span>
+const TrendCardsList = () =&gt; {
+  const [trends, setTrends] = useState&lt;UpcTrend[]&gt;([]);
+  const state = useAppSelector((state) =&gt; state.upc);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
-<span class="cstat-no" title="statement not covered" >    if (state.selectedUpcs.length) {</span>
-      const filteredTrends = <span class="cstat-no" title="statement not covered" >state.upcTrends.filter(<span class="fstat-no" title="function not covered" >(t</span>rend) =&gt;</span>
-<span class="cstat-no" title="statement not covered" >        state.selectedUpcs.includes(trend.product_code)</span>
+  useEffect(() =&gt; {
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (state.selectedUpcs.length) {
+      const filteredTrends = state.upcTrends.filter((trend) =&gt;
+        state.selectedUpcs.includes(trend.product_code)
       );
-<span class="cstat-no" title="statement not covered" >      setTrends(filteredTrends);</span>
+      setTrends(filteredTrends);
     }
   }, [state.selectedUpcs]);
 &nbsp;
-  const chunkTrends = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(a</span>rr: UpcTrend[], chunkSize: number) =&gt; {</span>
-    const chunks: UpcTrend[][] = <span class="cstat-no" title="statement not covered" >[];</span>
-<span class="cstat-no" title="statement not covered" >    for (let i = <span class="cstat-no" title="statement not covered" >0; i</span> &lt; arr.length; i += chunkSize) {</span>
-<span class="cstat-no" title="statement not covered" >      chunks.push(arr.slice(i, i + chunkSize));</span>
+  const chunkTrends = (arr: UpcTrend[], chunkSize: number) =&gt; {
+    const chunks: UpcTrend[][] = [];
+    for (let i = 0; i &lt; arr.length; i += chunkSize) {
+      chunks.push(arr.slice(i, i + chunkSize));
     }
-<span class="cstat-no" title="statement not covered" >    return chunks;</span>
+    return chunks;
   };
 &nbsp;
-  const trendChunks = <span class="cstat-no" title="statement not covered" >chunkTrends(trends, 5);</span>
+  const trendChunks = chunkTrends(trends, 5);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return (</span>
+  return (
     &lt;div&gt;
       &lt;MetricsCarousel className="h-full"&gt;
-        {trendChunks.map(<span class="fstat-no" title="function not covered" >(c</span>hunk, idx) =&gt; (
-<span class="cstat-no" title="statement not covered" >          &lt;div key={idx} className="grid grid-cols-5 gap-1"&gt;</span>
-            {chunk.map(<span class="fstat-no" title="function not covered" >(t</span>rend, i) =&gt; (
-<span class="cstat-no" title="statement not covered" >              &lt;TrendCard id={i} key={trend.product_code || i} trend={trend} /&gt;</span>
+        {trendChunks.map((chunk, idx) =&gt; (
+          &lt;div key={idx} className="grid grid-cols-5 gap-1"&gt;
+            {chunk.map((trend, i) =&gt; (
+              &lt;TrendCard id={i} key={trend.product_code || <span class="branch-1 cbranch-no" title="branch not covered" >i} t</span>rend={trend} /&gt;
             ))}
           &lt;/div&gt;
         ))}
@@ -205,7 +205,7 @@ export default TrendCardsList;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-05T21:16:46.116Z
+                at 2025-12-05T21:22:37.133Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

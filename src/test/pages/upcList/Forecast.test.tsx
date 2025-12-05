@@ -8,14 +8,13 @@ import userEvent from "@testing-library/user-event";
 import { setAssignedStores } from "../../../features/userSlice";
 
 // API calls to be mocked
-import { getPriceOpt } from "../../../api/upc";
+import { getForecasting } from "../../../api/upc";
 
 // Responses
-import { stores, priceOptResp, JsonErrorResp } from ".";
+import { stores, forecastResp, JsonErrorResp } from ".";
 
 // Components being tested
 import UpcList from "../../../pages/upc/wizard/UpcList";
-// import type { JSX } from "react";
 
 vi.mock("../../../api/upc");
 const store = setupStore();
@@ -30,66 +29,6 @@ vi.mock("../../../components/toasts/hooks/useToast", () => ({
     error: mockedToastError,
   }),
 }));
-
-// Need to mock ResponsiveBar from @nivo/bar and pass in the props we want to test
-// let colors: (datum: any) => string;
-// let borderColor: (datum: any) => string;
-// let tooltip: (datum: any) => JSX.Element;
-// vi.mock("@nivo/bar", () => ({
-//   ResponsiveBar: vi.fn(({ colors: c, borderColor: b, tooltip: t }) => {
-//     colors = c;
-//     borderColor = b;
-//     tooltip = t;
-
-//     // both colors datums => needed to test colors function in ResponsiveBar
-//     const mockColorsDatum = {
-//       id: "Before",
-//       data: {
-//         color1: "#f97316",
-//         color2: "#3b82f6",
-//       },
-//     };
-
-//     const mockColorsAfterDatum = {
-//       id: "After",
-//       data: {
-//         color1: "#f97316",
-//         color2: "#3b82f6",
-//       },
-//     };
-
-//     // borderColor datum => needed to test borderColor function in ResponsiveBar
-//     // ResponsiveBar passes a more complex structure for borderColor, so we mimic that here
-//     const mockBorderDatum = {
-//       id: "Before",
-//       data: {
-//         id: "Before",
-//         data: {
-//           color1: "#f97316",
-//           color2: "#3b82f6",
-//         },
-//       },
-//     };
-
-//     colors(mockColorsDatum);
-//     colors(mockColorsAfterDatum);
-
-//     borderColor(mockBorderDatum);
-//     borderColor({
-//       ...mockBorderDatum,
-//       id: "After",
-//       data: { ...mockBorderDatum.data, id: "After" },
-//     });
-//     tooltip({
-//       data: {
-//         desc: "Test Product",
-//         tooltip: "Before: 100. After: 150",
-//       },
-//     });
-
-//     return <div data-testid="responsive-bar" />;
-//   }),
-// }));
 
 describe("PriceOpt Module in UpcList", () => {
   it("should handle API failure when fetching Price Optimization data", async () => {
@@ -107,11 +46,11 @@ describe("PriceOpt Module in UpcList", () => {
     expect(input.files?.[0]).toBe(csvFile);
 
     // Selecting TrendDetector module
-    const priceOptMode = await screen.findByTestId("radio-3");
-    await user.click(priceOptMode);
+    const forecastMode = await screen.findByTestId("radio-2");
+    await user.click(forecastMode);
     await waitFor(() => {
       const state = store.getState().upc;
-      expect(state.selectedMode).toBe(3);
+      expect(state.selectedMode).toBe(2);
     });
 
     const nextBtn = await screen.findByTestId("upc-wizard-next-btn-1");
@@ -139,7 +78,7 @@ describe("PriceOpt Module in UpcList", () => {
     await user.click(storeToClick);
 
     // handle error
-    (getPriceOpt as Mock).mockRejectedValueOnce(JsonErrorResp);
+    (getForecasting as Mock).mockRejectedValueOnce(JsonErrorResp);
 
     // Fetch the data
     const btn2 = await screen.findByTestId("upc-wizard-next-btn-2");
@@ -197,7 +136,7 @@ describe("PriceOpt Module in UpcList", () => {
     await user.click(storeToClick);
 
     // handle success
-    (getPriceOpt as Mock).mockResolvedValue(priceOptResp);
+    (getForecasting as Mock).mockResolvedValue(forecastResp);
 
     // Fetch the data
     const btn2 = await screen.findByTestId("upc-wizard-next-btn-2");

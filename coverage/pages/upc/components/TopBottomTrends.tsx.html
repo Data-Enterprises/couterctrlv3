@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">9.09% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/11</span>
+                <span class='fraction'>11/11</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>5/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">10% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/10</span>
+                <span class='fraction'>10/10</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -126,26 +126,26 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">188x</span>
+<span class="cline-any cline-yes">368x</span>
+<span class="cline-any cline-yes">188x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">188x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">188x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">940x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -179,26 +179,26 @@ interface TopBottomTrendsProps {
   type: "Top" | "Bottom";
 }
 &nbsp;
-const TopBottomTrends = <span class="fstat-no" title="function not covered" >({</span> type }: TopBottomTrendsProps) =&gt; {
-  const <span class="cstat-no" title="statement not covered" >dispatch = useDispatch();</span>
-  const <span class="cstat-no" title="statement not covered" >state = useAppSelector(<span class="fstat-no" title="function not covered" >(s</span>tate) =&gt; <span class="cstat-no" title="statement not covered" >state.upc)</span>;</span>
-  const trends = <span class="cstat-no" title="statement not covered" >type === "Top" ? state.topFiveTrends : state.bottomFiveTrends;</span>
+const TopBottomTrends = ({ type }: TopBottomTrendsProps) =&gt; {
+  const dispatch = useDispatch();
+  const state = useAppSelector((state) =&gt; state.upc);
+  const trends = type === "Top" ? state.topFiveTrends : state.bottomFiveTrends;
 &nbsp;
-  const handleClick = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(u</span>pc: string) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    dispatch(setUpc(upc));</span>
-<span class="cstat-no" title="statement not covered" >    dispatch(setOpenModal(true));</span>
+  const handleClick = (upc: string) =&gt; {
+    dispatch(setUpc(upc));
+    dispatch(setOpenModal(true));
   };
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return (</span>
+  return (
     &lt;&gt;
       &lt;div className="font-semibold text-center text-lg"&gt;{type} Five&lt;/div&gt;
       &lt;div className="h-full grid grid-cols-5 gap-2"&gt;
-        {trends.map(<span class="fstat-no" title="function not covered" >(i</span>tem: UpcTrend, i) =&gt; (
-<span class="cstat-no" title="statement not covered" >          &lt;div</span>
+        {trends.map((item: UpcTrend, i) =&gt; (
+          &lt;div
             data-testid={`${type.toLowerCase()}-trend-${i}`}
             key={item.product_code}
             className="h-[70px] bg-custom-white rounded-lg shadow-md overflow-hidden relative cursor-pointer hover:shadow-lg"
-            onClick={<span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >h</span>andleClick(item.product_code)}</span>
+            onClick={() =&gt; handleClick(item.product_code)}
           &gt;
             &lt;div className="absolute w-full"&gt;
               &lt;div className="text-sm text-center"&gt;{item.product_code}&lt;/div&gt;
@@ -229,7 +229,7 @@ export default TopBottomTrends;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-05T21:16:46.116Z
+                at 2025-12-05T21:22:37.133Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
