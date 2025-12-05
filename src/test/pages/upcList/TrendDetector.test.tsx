@@ -92,7 +92,7 @@ vi.mock("@nivo/bar", () => ({
 }));
 
 describe("TrendDetector Module in UpcList", () => {
-  it("should handle API failure when fetching Sales Comp data", async () => {
+  it("should handle API failure when fetching Trend Detection data", async () => {
     renderWithProviders(<UpcList />, { store });
 
     // Go through the steps of the UpcWizard to reach SalesComp module

@@ -653,3 +653,91 @@ export const trendDetectResp = {
     ],
   },
 };
+
+export const priceOptResp = {
+  data: {
+    error: 0,
+    success: true,
+    elapsed: "2.759613936739963",
+    best_prices_by_upc_length: 2,
+    best_prices_by_upc: [
+      {
+        product_code: "1200000017",
+        product_description: "PEPSI 24 PK",
+        price: 14.99,
+        total_qty: 1155,
+        total_revenue: 17313.45,
+        total_weight: 0,
+      },
+      {
+        product_code: "1200000088",
+        product_description: "MOUNTAIN DEW 24 PK",
+        price: 14.99,
+        total_qty: 883,
+        total_revenue: 13236.17,
+        total_weight: 0,
+      },
+    ],
+    best_prices_length: 7,
+    best_prices: [
+      {
+        product_code: "1200000017",
+        product_description: "CPN: PEPSI 24 PK",
+        price: 14.99,
+        total_qty: 0,
+        total_revenue: 0,
+        total_weight: 0,
+      },
+      {
+        product_code: "1200000017",
+        product_description: "PEPSI 24 PK",
+        price: 12.99,
+        total_qty: 291,
+        total_revenue: 3780.09,
+        total_weight: 0,
+      },
+      {
+        product_code: "1200000017",
+        product_description: "PEPSI 24 PK",
+        price: 14.99,
+        total_qty: 1155,
+        total_revenue: 17313.45,
+        total_weight: 0,
+      },
+      {
+        product_code: "1200000088",
+        product_description: "CPN: MOUNTAIN DEW 24 PK",
+        price: 0,
+        total_qty: 0,
+        total_revenue: 0,
+        total_weight: 0,
+      },
+      {
+        product_code: "1200000088",
+        product_description: "CPN: MOUNTAIN DEW 24 PK",
+        price: 14.99,
+        total_qty: 0,
+        total_revenue: 0,
+        total_weight: 0,
+      },
+      {
+        product_code: "1200000088",
+        product_description: "MOUNTAIN DEW 24 PK",
+        price: 12.99,
+        total_qty: 273,
+        total_revenue: 3546.27,
+        total_weight: 0,
+      },
+      {
+        product_code: "1200000088",
+        product_description: "MOUNTAIN DEW 24 PK",
+        price: 14.99,
+        total_qty: 883,
+        total_revenue: 13236.17,
+        total_weight: 0,
+      },
+    ],
+    most_unique_prices:
+      "{\"('3077204515', 'CHARM ESSENTIAL STRNG MR 6 RL')\":4,\"('3077204537', 'CHARM ESSENTIAL SFT MR 6 RL')\":4}",
+  },
+};

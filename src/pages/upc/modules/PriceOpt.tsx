@@ -114,7 +114,7 @@ const PriceOpt = () => {
   };
 
   return (
-    <div className="h-full w-full grid grid-cols-[15%_85%] gap-4">
+    <div data-testid="upc-price" className="h-full w-full grid grid-cols-[15%_85%] gap-4">
       <UpcControls />
       <CtxMenu
         className="hover:bg-panel_active/70"
