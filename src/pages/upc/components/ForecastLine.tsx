@@ -89,11 +89,11 @@ const ForecastLine = ({ data, title, search, title2 = "" }: LineProps) => {
         ref={ref}
         className={`${
           !loaded ? "opacity-0" : "opacity-100"
-        } h-full flex relative`}
+        } h-[97%] flex relative`}
       >
         <ResponsiveLine
           data={lineData}
-          margin={{ top: 30, right: 30, bottom: 100, left: 60 }}
+          margin={{ top: 30, right: 30, bottom: 80, left: 60 }}
           colors={(line) => line.color} // This grabs the color from the data
           layers={[
             "markers",
@@ -214,7 +214,7 @@ const ForecastLine = ({ data, title, search, title2 = "" }: LineProps) => {
           )}
         />
         <div
-          className="overflow-y-auto translate-x-4 text-xs absolute bottom-10 flex gap-2"
+          className="overflow-y-auto translate-x-4 text-xs absolute bottom-6 flex gap-2"
           style={{
             maxHeight: ref.current
               ? ref.current.getBoundingClientRect().height - 40

@@ -15,17 +15,12 @@ import {
 } from "../exportHeaders";
 import { exportData } from "../exportHeaders/utils";
 import { reset } from "../../../features/upcModalSlice";
-import CtxMenu from "../../../components/CtxMenu";
-import { setMenuPosition } from "../../../features/ctxMenuSlice";
-import type { Handlers } from "../../../interfaces";
-import { options } from "../utils";
 
 const Forecast = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const upcState = useAppSelector((state) => state.upc);
   const modal = useAppSelector((state) => state.upcModal);
-  const ctx = useAppSelector((state) => state.ctxMenu);
 
   const handleExport = () => {
     if (
@@ -56,23 +51,8 @@ const Forecast = () => {
     dispatch(reset());
   };
 
-  const handleCopy = async (text: string) => {
-    await navigator.clipboard.writeText(text);
-    dispatch(setMenuPosition(null));
-  };
-
-  const handlers: Handlers = {
-    copyUpc: () => handleCopy(ctx.clipboardText.upc),
-    copyDesc: () => handleCopy(ctx.clipboardText.desc),
-  };
-
   return (
     <div data-testid="upc-forecast" className="h-full w-full grid grid-cols-[13%_87%] gap-4">
-      <CtxMenu
-        className="hover:bg-panel_active/70"
-        options={options}
-        handlers={handlers}
-      />
       <UpcModal handleExport={handleExport} />
       <UpcControls />
       <div className="grid grid-rows-[17%_83%] gap-2 mr-4 mb-2">

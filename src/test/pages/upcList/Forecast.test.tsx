@@ -104,11 +104,11 @@ describe("PriceOpt Module in UpcList", () => {
     expect(input.files?.[0]).toBe(csvFile);
 
     // Selecting SalesComp module
-    const priceOptMode = await screen.findByTestId("radio-3");
-    await user.click(priceOptMode);
+    const forecastMode = await screen.findByTestId("radio-2");
+    await user.click(forecastMode);
     await waitFor(() => {
       const state = store.getState().upc;
-      expect(state.selectedMode).toBe(3);
+      expect(state.selectedMode).toBe(2);
     });
 
     const nextBtn = await screen.findByTestId("upc-wizard-next-btn-1");
@@ -142,6 +142,19 @@ describe("PriceOpt Module in UpcList", () => {
     const btn2 = await screen.findByTestId("upc-wizard-next-btn-2");
     await user.click(btn2);
 
-    expect(await screen.findByTestId("upc-price")).toBeInTheDocument();
+    expect(await screen.findByTestId("upc-forecast")).toBeInTheDocument();
+  });
+
+  it("should populate forecast line componenet when selecing a upc", async () => {
+    renderWithProviders(<UpcList />, { store });
+
+    const upcOne = await screen.findByTestId("check-0");
+    await user.click(upcOne);
+    await user.click(upcOne);
+
+    await waitFor(() => {
+      const state = store.getState().upc;
+      console.log(state.selectedUpcs);
+    });
   });
 });
