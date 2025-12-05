@@ -23,7 +23,6 @@ import {
 import UpcList from "../../../pages/upc/wizard/UpcList";
 
 vi.mock("../../../api/groups");
-
 const store = setupStore();
 store.dispatch(setAssignedStores(stores));
 store.dispatch(setGroups(groups));

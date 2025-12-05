@@ -52,7 +52,7 @@ const StepOne = ({ className, file, setFile }: UpcStepOneProps) => {
 
   const isReady = () => file !== null && selectedMode !== 0;
   return (
-    <div className={`flex flex-col items-center py-2 gap-2 ${className}`}>
+    <div data-testid="upc-step-one" className={`flex flex-col items-center py-2 gap-2 ${className}`}>
       <ModelSelect />
 
       <div className="w-full text-center text-sm text-content/70 mt-2">

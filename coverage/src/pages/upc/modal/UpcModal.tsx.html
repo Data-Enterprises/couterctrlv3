@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">11.11% </span>
+                <span class="strong">77.77% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/9</span>
-            </div>
-        
-            
-            <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
-                <span class="quiet">Branches</span>
-                <span class='fraction'>0/6</span>
-            </div>
-        
-            
-            <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
-                <span class="quiet">Functions</span>
-                <span class='fraction'>0/4</span>
+                <span class='fraction'>7/9</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">16.66% </span>
-                <span class="quiet">Lines</span>
+                <span class="quiet">Branches</span>
                 <span class='fraction'>1/6</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">50% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>2/4</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -138,13 +138,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-yes">51x</span>
+<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-yes">24x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">24x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -200,13 +200,13 @@ interface ForecastModalProps {
   handleExport: () =&gt; void;
 }
 &nbsp;
-const UpcModal = <span class="fstat-no" title="function not covered" >({</span> handleExport }: ForecastModalProps) =&gt; {
-  const <span class="cstat-no" title="statement not covered" >dispatch = useAppDispatch();</span>
-  const <span class="cstat-no" title="statement not covered" >state = useAppSelector(<span class="fstat-no" title="function not covered" >(s</span>tate) =&gt; <span class="cstat-no" title="statement not covered" >state.upcModal)</span>;</span>
-  const onClose = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >d</span>ispatch(reset());</span></span>
-  const handleFileName = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(e</span>: string) =&gt; <span class="cstat-no" title="statement not covered" >dispatch(setFileName(e));</span></span>
+const UpcModal = ({ handleExport }: ForecastModalProps) =&gt; {
+  const dispatch = useAppDispatch();
+  const state = useAppSelector((state) =&gt; state.upcModal);
+  const onClose = <span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >d</span>ispatch(reset());</span>
+  const handleFileName = <span class="fstat-no" title="function not covered" >(e</span>: string) =&gt; <span class="cstat-no" title="statement not covered" >dispatch(setFileName(e));</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return (</span>
+  return (
     &lt;Modal
       isOpen={state.openModal}
       onClose={onClose}
@@ -219,7 +219,7 @@ const UpcModal = <span class="fstat-no" title="function not covered" >({</span> 
         &lt;/div&gt;
         {state.type === "forecast" ? (
           &lt;ForecastRadios /&gt;
-        ) : state.type === "priceOpt" ? (
+        ) : <span class="branch-1 cbranch-no" title="branch not covered" >state.type === "priceOpt" ? (</span>
           &lt;PriceOptSelects /&gt;
         ) : state.type === "trend" ? (
           &lt;TrendRadios /&gt;
@@ -256,7 +256,7 @@ export default UpcModal;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-04T23:26:50.612Z
+                at 2025-12-05T16:09:49.129Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>
