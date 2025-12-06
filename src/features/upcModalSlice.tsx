@@ -5,7 +5,6 @@ interface UpcModalState {
   fileName: string;
   type: "forecast" | "priceOpt" | "comp" | "trend";
   radioOption: { dates: boolean; metrics: boolean };
-  compOption: { both: boolean; ty: boolean; ly: boolean };
   trendOption: { all: boolean; top: boolean; bottom: boolean };
   priceOptOption: { list: string; data: string };
 }
@@ -15,7 +14,6 @@ const emptyState: UpcModalState = {
   fileName: "",
   type: "forecast",
   radioOption: { dates: true, metrics: false },
-  compOption: { both: true, ty: false, ly: false },
   trendOption: { all: true, top: false, bottom: false },
   priceOptOption: { list: "", data: "" },
 };
@@ -37,15 +35,6 @@ export const upcModalSlice = createSlice({
         action.payload === "dates"
           ? { dates: true, metrics: false }
           : { dates: false, metrics: true };
-    },
-    setCompOption: (state, action: PayloadAction<string>) => {
-      if (action.payload === "ty") {
-        state.compOption = { both: false, ty: true, ly: false };
-      } else if (action.payload === "ly") {
-        state.compOption = { both: false, ty: false, ly: true };
-      } else {
-        state.compOption = { both: true, ty: false, ly: false };
-      }
     },
     setTrendOption: (state, action: PayloadAction<string>) => {
       if (action.payload === "all") {
@@ -79,7 +68,6 @@ export const {
   setOpenModal,
   setFileName,
   setRadioOption,
-  setCompOption,
   setTrendOption,
   setPriceOptOption,
   setModalType,

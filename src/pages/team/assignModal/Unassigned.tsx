@@ -12,12 +12,8 @@ const Unassigned = ({ getData }: UnassignedProps) => {
   const context = useAppSelector((state) => state.app);
   const users = useAppSelector((state) => state.users);
 
-  const hasLength = (type: "assigned" | "unassigned") => {
-    if (type === "assigned") {
-      return users.selectedUserStores.assigned.length > 0;
-    } else {
-      return users.selectedUserStores.unassigned.length > 0;
-    }
+  const hasLength = () => {
+    return users.selectedUserStores.unassigned.length > 0;
   };
 
   const handleAssignStore = (storeId: number) => {
@@ -47,10 +43,11 @@ const Unassigned = ({ getData }: UnassignedProps) => {
         className="basic-input focus:border bg-custom-white"
       />
       <div className="max-h-[400px] overflow-y-auto no-scrollbar space-y-2 mt-4 shadow-lg">
-        {hasLength("unassigned")
+        {hasLength()
           ? users.selectedUserStores.unassigned.map((store) => (
               <div
                 key={store.storeid}
+                data-testid={`unassigned-store-${store.storeid}`}
                 className="bg-custom-white rounded-lg shadow p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200"
                 onClick={() => handleAssignStore(store.storeid)}
               >

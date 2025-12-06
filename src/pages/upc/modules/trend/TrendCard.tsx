@@ -6,9 +6,10 @@ import {
 
 interface TrendCardProps {
   trend: UpcTrend;
+  id: number;
 }
 
-const TrendCard = ({ trend }: TrendCardProps) => {
+const TrendCard = ({ trend, id }: TrendCardProps) => {
   const textColor = (num1: number, num2: number) => {
     if (num1 > num2) return "text-emerald-500 font-medium";
     if (num1 < num2) return "text-orange-500 font-medium";
@@ -25,9 +26,11 @@ const TrendCard = ({ trend }: TrendCardProps) => {
   };
 
   return (
-    <div className="flex flex-col text-xs relative bg-custom-white px-2 py-1 rounded-lg shadow-lg">
+    <div
+      data-testid={`selected-trend-card-${id}`}
+      className="flex flex-col text-xs relative bg-custom-white px-2 py-1 rounded-lg shadow-lg"
+    >
       <div className="flex gap-1 absolute -top-1 right-0 items-center">
-        {/* <div className="font-medium">Direction</div> */}
         <div className="pt-1">
           {trend.trend === "up" ? (
             <ArrowUpCircleIcon

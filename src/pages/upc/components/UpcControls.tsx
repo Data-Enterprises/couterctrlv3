@@ -11,7 +11,7 @@ import { useScrollHeight } from ".";
 import CheckBox from "../../../components/inputs/CheckBox";
 import RadioBox from "../../../components/inputs/RadioBox";
 import { setModalType, setOpenModal } from "../../../features/upcModalSlice";
-import { options } from "../utils";
+// import { options } from "../utils";
 import {
   setClipboardText,
   setMenuPosition,
@@ -56,7 +56,7 @@ const UpcControls = () => {
     option: UpcItem
   ) => {
     e.preventDefault();
-    if (options.length > 2) options.pop();
+    // if (options.length > 2) options.pop();
 
     dispatch(
       setClipboardText({
@@ -81,7 +81,7 @@ const UpcControls = () => {
   }, [filterText, upcItems]);
 
   return (
-    <div className="grid bg-custom-white rounded-lg shadow-lg text-sm select-none">
+    <div data-testid="upc-controls" className="grid bg-custom-white rounded-lg shadow-lg text-sm select-none">
       <div
         ref={topRef}
         className="flex flex-col gap-2 rounded-t-lg px-2 pt-3 pb-2"
@@ -90,10 +90,11 @@ const UpcControls = () => {
           {startDate} - {selectedMode === 4 ? `${trendPeriods} Days` : endDate}
         </div>
         <div className="flex flex-col gap-2">
-          <button className="py-1 btn-themeBlue" onClick={handleClearClick}>
+          <button data-testid="upc-controls-reset-btn" className="py-1 btn-themeBlue" onClick={handleClearClick}>
             Reset
           </button>
           <button
+            data-testid="upc-controls-export-btn"
             className="py-1 btn-themeGreen"
             onClick={handleExportBtnClick}
           >
@@ -101,8 +102,9 @@ const UpcControls = () => {
           </button>
         </div>
         {state.selectedMode === 4 ? (
-          <div className="border-y-2 py-1 border-content/40 flex flex-col gap-1">
+          <div data-testid="trend-options" className="border-y-2 py-1 border-content/40 flex flex-col gap-1">
             <button
+              data-testid="trend-totals-btn"
               className={`btn-themeBlue py-1 w-full ${
                 state.trendMode === "Totals" ? "btn-themeGreen" : ""
               }`}
@@ -111,6 +113,7 @@ const UpcControls = () => {
               Totals
             </button>
             <button
+              data-testid="trend-mean-btn"
               className={`btn-themeBlue py-1 w-full ${
                 state.trendMode === "Mean" ? "btn-themeGreen" : ""
               }`}
@@ -119,6 +122,7 @@ const UpcControls = () => {
               Mean
             </button>
             <button
+              data-testid="trend-volatility-btn"
               className={`btn-themeBlue py-1 w-full ${
                 state.trendMode === "Volatility" ? "btn-themeGreen" : ""
               }`}
@@ -150,12 +154,14 @@ const UpcControls = () => {
         </div>
         <div className="flex flex-col gap-2">
           <button
+            data-testid="upc-deselect-all-btn"
             className="py-1 btn-themeOrange"
             onClick={() => dispatch(resetSelectedUpcs())}
           >
             Deselect All
           </button>
           <button
+            data-testid="upc-toggle-display-btn"
             className="py-1 btn-themeBlue"
             onClick={() =>
               setUpcDisplay(upcDisplay === "code" ? "desc" : "code")
@@ -166,6 +172,7 @@ const UpcControls = () => {
         </div>
         <div>
           <input
+            data-testid="upc-filter-input"
             type="text"
             className="basic-input focus:border bg-custom-white py-1 w-full"
             value={filterText}
@@ -175,6 +182,7 @@ const UpcControls = () => {
       </div>
 
       <div
+        data-testid="upc-controls-list"
         className="bg-custom-white rounded-b-lg overflow-y-scroll no-scrollbar"
         style={{ minHeight: height, maxHeight: height }}
       >
@@ -201,6 +209,7 @@ const UpcControls = () => {
             return (
               <div
                 key={i}
+                data-testid={`selected-upc-${i}`}
                 className={`even:bg-blue-200 px-2 py-1 text-xs font-medium hover:bg-blue-100 transition-all duration-200 cursor-pointer`}
                 onClick={() => dispatch(setSelectedUpcs(item.product_code))}
               >

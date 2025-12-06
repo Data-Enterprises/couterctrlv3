@@ -18,6 +18,7 @@ const PriceTypeFilter = ({
               <label htmlFor={type}>{type}</label>
               <input
                 name={type}
+                data-testid={`cashier-table-filter-price-type-${type}`}
                 type="checkbox"
                 className="rounded focus:ring-0 focus:outline-none"
                 checked={priceTypes.includes(type)}

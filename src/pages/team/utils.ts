@@ -4,7 +4,9 @@ import zxcvbn from "zxcvbn";
 
 export const useTeamErrorCheck = () => {
   const toast = useToast();
-  const { userInfo, users, selectedUserId } = useAppSelector((state) => state.users);
+  const { userInfo, users, selectedUserId } = useAppSelector(
+    (state) => state.users
+  );
 
   const validateCreateUserInfo = (): boolean => {
     const passwordStrength = zxcvbn(userInfo.password).score;
@@ -15,31 +17,40 @@ export const useTeamErrorCheck = () => {
     if (findUsername && selectedUserId === 0) {
       toast.warn("Username already exists");
       return false;
-    } else if (userInfo.password !== userInfo.confirm_password) {
-      toast.warn("Passwords do not match");
-      return false;
-    } else if (!userInfo.username) {
+    }
+    if (!userInfo.username) {
       toast.warn("Please enter a username");
       return false;
-    } else if (userInfo.role === 0) {
-      toast.warn("Please select a role");
-      return false;
-    } else if (userInfo.user_level === 0) {
-      toast.warn("Please select a user level");
-      return false;
-    } else if (userInfo.company === 0) {
-      toast.warn("Please select a company");
-      return false;
-    } else if (!userInfo.email) {
+    }
+    if (!userInfo.email) {
       toast.warn("Please enter an email address");
       return false;
-    } else if (!userInfo.first_name) {
+    }
+    if (!userInfo.first_name) {
       toast.warn("Please enter a first name");
       return false;
-    } else if (!userInfo.last_name) {
+    }
+    if (!userInfo.last_name) {
       toast.warn("Please enter a last name");
       return false;
-    } else if (passwordStrength < 2) {
+    }
+    if (userInfo.password !== userInfo.confirm_password) {
+      toast.warn("Passwords do not match");
+      return false;
+    }
+    if (userInfo.role === 0) {
+      toast.warn("Please select a role");
+      return false;
+    }
+    if (userInfo.user_level === 0) {
+      toast.warn("Please select a user level");
+      return false;
+    }
+    if (userInfo.company === 0) {
+      toast.warn("Please select a company");
+      return false;
+    }
+    if (passwordStrength < 2) {
       toast.warn("Please enter at least a moderately safe password");
       return false;
     }

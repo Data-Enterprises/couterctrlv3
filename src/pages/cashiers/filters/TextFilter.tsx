@@ -20,6 +20,7 @@ const TextFilter = ({ text, setText, type }: TextFilterProps) => {
       )}
       <input
         type="text"
+        data-testid="cashier-table-filter-text-input"
         className="basic-input focus:border my-4 bg-custom-white"
         value={text}
         onChange={(e) => setText(e.currentTarget.value)}

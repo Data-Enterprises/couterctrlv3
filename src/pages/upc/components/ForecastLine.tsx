@@ -29,8 +29,6 @@ const ForecastLine = ({ data, title, search, title2 = "" }: LineProps) => {
       setLegendData(
         state.upcList.filter((item) => state.selectedUpcs.includes(item.label))
       );
-    } else {
-      setLegendData(state.upcList);
     }
   }, [state.upcList, state.selectedUpcs]);
 
@@ -89,11 +87,11 @@ const ForecastLine = ({ data, title, search, title2 = "" }: LineProps) => {
         ref={ref}
         className={`${
           !loaded ? "opacity-0" : "opacity-100"
-        } h-full flex relative`}
+        } h-[97%] flex relative`}
       >
         <ResponsiveLine
           data={lineData}
-          margin={{ top: 30, right: 30, bottom: 100, left: 60 }}
+          margin={{ top: 30, right: 30, bottom: 80, left: 60 }}
           colors={(line) => line.color} // This grabs the color from the data
           layers={[
             "markers",
@@ -158,63 +156,66 @@ const ForecastLine = ({ data, title, search, title2 = "" }: LineProps) => {
               },
             },
           }}
-          tooltip={({ point }) => (
-            <div
-              style={{
-                borderRadius: "0.75rem",
-                border: "1px solid #e5e7eb",
-                backgroundColor: "#ffffff",
-                padding: "1rem",
-                boxShadow:
-                  "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "1rem",
-                }}
-              >
-                <div
-                  style={{
-                    width: "0.25rem",
-                    borderRadius: "0.25rem",
-                    alignSelf: "stretch",
-                    backgroundColor: "#843dff",
-                  }}
-                ></div>
-                <div style={{ flex: 1 }}>
-                  <strong
-                    style={{
-                      display: "block",
-                      fontWeight: 500,
-                      fontSize: "1rem",
-                      lineHeight: "1rem",
-                      color: "#9d99a8",
-                    }}
-                  >
-                    {point.seriesId}
-                  </strong>
-                  <span
-                    style={{
-                      fontSize: "1.125rem",
-                      lineHeight: "1.875rem",
-                      color: "#1e1c24",
-                    }}
-                  >
-                    {point.data.xFormatted}:{" "}
-                    <span style={{ fontWeight: 600 }}>
-                      {point.data.yFormatted}
-                    </span>
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
+          // tooltip={({ point }) => {
+          //   // console.log(point);
+          //   return (
+          //     <div
+          //       style={{
+          //         borderRadius: "0.75rem",
+          //         border: "1px solid #e5e7eb",
+          //         backgroundColor: "#ffffff",
+          //         padding: "1rem",
+          //         boxShadow:
+          //           "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+          //       }}
+          //     >
+          //       <div
+          //         style={{
+          //           display: "flex",
+          //           alignItems: "center",
+          //           gap: "1rem",
+          //         }}
+          //       >
+          //         <div
+          //           style={{
+          //             width: "0.25rem",
+          //             borderRadius: "0.25rem",
+          //             alignSelf: "stretch",
+          //             backgroundColor: "#843dff",
+          //           }}
+          //         ></div>
+          //         <div style={{ flex: 1 }}>
+          //           <strong
+          //             style={{
+          //               display: "block",
+          //               fontWeight: 500,
+          //               fontSize: "1rem",
+          //               lineHeight: "1rem",
+          //               color: "#9d99a8",
+          //             }}
+          //           >
+          //             {point?.seriesId || "Unknown series"}
+          //           </strong>
+          //           <span
+          //             style={{
+          //               fontSize: "1.125rem",
+          //               lineHeight: "1.875rem",
+          //               color: "#1e1c24",
+          //             }}
+          //           >
+          //             {point.data.xFormatted || ""}:
+          //             <span style={{ fontWeight: 600 }}>
+          //               {point.data.yFormatted || ""}
+          //             </span>
+          //           </span>
+          //         </div>
+          //       </div>
+          //     </div>
+          //   );
+          // }}
         />
         <div
-          className="overflow-y-auto translate-x-4 text-xs absolute bottom-10 flex gap-2"
+          className="overflow-y-auto translate-x-4 text-xs absolute bottom-6 flex gap-2"
           style={{
             maxHeight: ref.current
               ? ref.current.getBoundingClientRect().height - 40
@@ -223,6 +224,7 @@ const ForecastLine = ({ data, title, search, title2 = "" }: LineProps) => {
         >
           {legendData.map((item, i) => (
             <div
+              data-testid={`forecast-legend-item-${i}`}
               onClick={() => dispatch(setSelectedLegendForecast(item))}
               key={item.label}
               className={`flex items-center cursor-pointer hover:bg-panel_active/50 transition-all duration-200 py-[2px] px-1.5 rounded-md ${

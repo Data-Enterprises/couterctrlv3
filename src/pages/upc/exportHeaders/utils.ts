@@ -19,15 +19,10 @@ const save = (uri: string, filename: string) => {
 };
 
 export const csv = (headers: string, data: string, filename: string) => {
-  try {
-    const output = headers + "\r\n" + data;
-
-    const uriContent =
-      "data:application/octec-stream," + encodeURIComponent(output);
-    save(uriContent, filename);
-  } catch (e: unknown) {
-    return e instanceof Error ? e.message : String(e);
-  }
+  const output = headers + "\r\n" + data;
+  const uriContent =
+    "data:application/octec-stream," + encodeURIComponent(output);
+  save(uriContent, filename);
 };
 
 export const handleUpcCsv = <T extends Record<string, any>>(

@@ -1,20 +1,45 @@
-import { describe, it, expect, vi, type Mocked } from "vitest";
+import { describe, it, expect, vi, type Mock } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import Login from "../../pages/home/Login";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../utils";
-import { store } from "../../store";
-import axios from "axios";
+import { setupStore } from "../../store";
 import SideBar from "../../components/navigation/SideBar";
+import { login } from "../../api/login";
 
 // Mock axios module and the userEvent setup
-vi.mock("axios");
-const mockedAxios = axios as Mocked<typeof axios>;
+// vi.mock("axios");
+// const mockedAxios = axios as Mocked<typeof axios>;
 const user = userEvent.setup();
+const store = setupStore();
+const mockedToastError = vi.fn();
+vi.mock("../../components/toasts/hooks/useToast", () => {
+  return {
+    useToast: () => ({
+      error: mockedToastError,
+    }),
+  };
+});
+
+vi.mock("../../api/login");
+
+const loginResp = {
+  error: 0,
+  success: true,
+  access_token: "token",
+  token_type: "bearer",
+  user_level: 9,
+  first_name: "John",
+  last_name: "Doe",
+  company: 0,
+  password_change_needed: 0,
+  security_question_id: 1,
+  role: 9,
+};
 
 describe("Login Page", () => {
   it("should render", () => {
-    renderWithProviders(<Login />);
+    renderWithProviders(<Login />, { store });
     const login = screen.getByTestId("login-page");
     expect(login).toBeInTheDocument();
   });
@@ -45,36 +70,40 @@ describe("Login Page", () => {
     expect(state.user.password).toEqual("anotherpassword");
   });
 
+  it("should handle Enter key press and API failure upon login", async () => {
+    (login as Mock).mockRejectedValue(new Error("Invalid credentials"));
+
+    renderWithProviders(<Login />, { store });
+
+    // type in username and password
+    const usernameInput = screen.getByTestId("username") as HTMLInputElement;
+    const passwordInput = screen.getByTestId("password") as HTMLInputElement;
+    await user.type(usernameInput, "wronguser");
+    await user.type(passwordInput, "wrongpassword");
+
+    // press Enter key
+    await user.keyboard("{Enter}");
+    expect(mockedToastError).toHaveBeenCalledWith(
+      "Login failed: Invalid credentials"
+    );
+  });
+
   it("should call the login api and update the token in redux state", async () => {
-    mockedAxios.post.mockResolvedValue({
-      data: { error: 0, token: "mocked_token_123" },
+    (login as Mock).mockResolvedValue({
+      data: loginResp,
     });
 
-    renderWithProviders(<Login />);
+    renderWithProviders(<Login />, { store });
 
     const usernameInput = screen.getByTestId("username") as HTMLInputElement;
     const passwordInput = screen.getByTestId("password") as HTMLInputElement;
 
     const signInButton = screen.getByTestId("sign-in");
-    // Just simulating the click event and updating redux state
-    signInButton.onclick = () =>
-      axios
-        .post("/auth/login", {
-          username: usernameInput.value,
-          password: passwordInput.value,
-        })
-        .then((resp) => {
-          const j = resp.data;
-          if (j.error == 0) {
-            // This way I can just set the temporary store state directly
-            store.dispatch({ type: "app/setToken", payload: j.token });
-          }
-        });
     await user.click(signInButton);
 
     const state = store.getState();
     await waitFor(() => {
-      expect(state.app.token).toEqual("mocked_token_123");
+      expect(state.app.token).toEqual("token");
     });
 
     await user.clear(usernameInput);

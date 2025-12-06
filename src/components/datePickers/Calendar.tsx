@@ -108,6 +108,7 @@ const Calendar = ({
           </div>
           <div className="buttons flex gap-2 px-2">
             <i
+              data-testid="prev-month-button"
               className="bg-[#10b981] rounded-full text-white cursor-pointer"
               onClick={prevMonth}
             >
@@ -118,6 +119,7 @@ const Calendar = ({
               />
             </i>
             <i
+              data-testid="next-month-button"
               className="bg-[#10b981] rounded-full text-white cursor-pointer"
               onClick={nextMonth}
             >
@@ -145,6 +147,7 @@ const Calendar = ({
         ))}
         {[...Array(daysInMonth).keys()].map((day, id) => (
           <span
+            data-testid={`${dateFlag}-calendar-day-${id}`}
             onClick={() => handleSelect(day)}
             key={`day-${id}`}
             className={`day hover:bg-blue-200 transition-all duration-200 ${isSelectedDate(day)}`}

@@ -7,6 +7,7 @@ interface Props {
   id: number;
   stroke?: string;
   className?: string;
+  idExtension?: string;
 }
 
 const CheckBox = ({
@@ -16,16 +17,20 @@ const CheckBox = ({
   id,
   stroke = "green",
   className = "",
+  idExtension = "",
 }: Props) => {
   const handleClick = () => {
     if (onChange) onChange(!value);
   };
+
+  const testId = idExtension ? `check-${id}-${idExtension}` : `check-${id}`;
   return (
     <div
-      data-testid={`check-${id}`}
+      data-testid={testId}
       className={`flex items-center gap-2 ${className}`}
+      onClick={handleClick}
     >
-      <CheckboxIcon onClick={handleClick} active={value} stroke={stroke} />
+      <CheckboxIcon active={value} stroke={stroke} />
       <span className="truncate overflow-hidden whitespace-nowrap">
         {label}
       </span>

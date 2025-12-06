@@ -17,7 +17,7 @@ export type FilterOption = "all" | "active" | "inactive";
 
 export interface GroupState {
   groups: Group[];
-  selectedGroup: Group | null;
+  selectedGroup: Group;
   refreshGroups: boolean;
   createInput: string;
   filterOption: FilterOption;
@@ -29,7 +29,7 @@ export const initialState: GroupState = {
   refreshGroups: false,
   createInput: "",
   filterOption: "all",
-  selectedGroup: null,
+  selectedGroup: { id: 0, userid: 0, group_name: "" },
   storesWithGroupStatus: [],
 };
 
@@ -40,7 +40,7 @@ const groupSlice = createSlice({
     setGroups(state, action: PayloadAction<Group[]>) {
       state.groups = action.payload;
     },
-    setSelectedGroup(state, action: PayloadAction<Group | null>) {
+    setSelectedGroup(state, action: PayloadAction<Group>) {
       state.selectedGroup = action.payload;
     },
     setRefreshGroups(state, action: PayloadAction<boolean>) {

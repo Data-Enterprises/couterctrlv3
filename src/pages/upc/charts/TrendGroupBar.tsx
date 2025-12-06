@@ -1,9 +1,7 @@
-import { type ComputedDatum, ResponsiveBar } from "@nivo/bar";
+import { ResponsiveBar } from "@nivo/bar";
 import { useState, useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppSelector } from "../../../hooks";
 import type { UpcTrend } from "../../../interfaces";
-import { setUpc } from "../../../features/trendModalSlice";
-// import { setOpenModal, setUpc } from "../../../features/trendModalSlice";
 
 interface GroupBarProps {
   data: UpcTrend[];
@@ -11,7 +9,6 @@ interface GroupBarProps {
 }
 
 const GroupBar = ({ data, type }: GroupBarProps) => {
-  const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.upc);
   const [formattedData, setFormattedData] = useState<any[]>([]);
 
@@ -48,15 +45,6 @@ const GroupBar = ({ data, type }: GroupBarProps) => {
             tooltip: item.tooltip,
             desc: item.product_description,
           };
-        return {
-          upc: item.product_code,
-          Before: item.total_before,
-          After: item.total_after,
-          color1: "#f97316",
-          color2: "#3b82f6",
-          tooltip: item.tooltip,
-          desc: item.product_description,
-        };
       })
     );
   }, [state.upcTrends, state.trendMode, data]);
@@ -68,16 +56,15 @@ const GroupBar = ({ data, type }: GroupBarProps) => {
     return `rgba(${r},${g},${b},${alpha})`;
   };
 
-  const handleBarClick = (e: ComputedDatum<any>) => {
-    dispatch(setUpc(e.data.upc as string));
-  };
-
   return (
     <div className="bg-custom-white rounded-lg shadow-lg relative">
       <div className="bg-blue-500 text-custom-white rounded-t-lg py-0.5 pl-4">
         {type} {state.trendMode}
       </div>
-      <div className="w-full h-[92%] rounded-b-lg">
+      <div
+        data-testid="trend-group-bar"
+        className="w-full h-[92%] rounded-b-lg"
+      >
         <ResponsiveBar
           data={formattedData}
           keys={["Before", "After"]}
@@ -96,8 +83,7 @@ const GroupBar = ({ data, type }: GroupBarProps) => {
           indexBy="upc"
           groupMode="grouped"
           margin={{ top: 20, right: 85, bottom: 30, left: 40 }}
-          tooltipLabel={(d) => `${d.id} - ${d.value}`}
-          onClick={handleBarClick}
+          key={1}
           tooltip={(e) => (
             <div className="bg-custom-white p-2 rounded-lg shadow-lg border border-content/70 w-[243px]">
               <div className="font-medium text-xs mb-1">{e.data.desc}</div>

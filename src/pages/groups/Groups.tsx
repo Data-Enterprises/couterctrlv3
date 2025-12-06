@@ -36,8 +36,6 @@ const Groups = () => {
           );
           dispatch(setGroups(groups));
           dispatch(setRefreshGroups(false));
-        } else {
-          toast.warn(j.msg);
         }
       })
       .catch((err: JsonError) => {
@@ -46,14 +44,7 @@ const Groups = () => {
   };
 
   const getGroupStores = (id: number) => {
-    const groupId = id || group.selectedGroup?.id;
-    if (!groupId) return;
-    getStoresAssignedToUserGroup(
-      context.url,
-      context.token,
-      user.userid,
-      groupId
-    )
+    getStoresAssignedToUserGroup(context.url, context.token, user.userid, id)
       .then((resp) => {
         const j = resp.data;
         if (j.error == "0") {
@@ -71,10 +62,7 @@ const Groups = () => {
     : "w-full h-[calc(100vh-3rem)] p-2 flex flex-col gap-2";
 
   return (
-    <div
-      className={containerStyle}
-      data-testid="groups-page"
-    >
+    <div className={containerStyle} data-testid="groups-page">
       <div>
         <CreateGroup />
         <SelectGroup getData={getGroupStores} />

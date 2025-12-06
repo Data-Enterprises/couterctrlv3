@@ -6,11 +6,7 @@ import { setLastStore, setSelectedStore } from "../../features/searchSlice";
 import { setUserPrefs } from "../../api/user";
 import { useStorePickerContext } from ".";
 
-interface Props {
-  onOutsideClick?: () => void;
-}
-
-const SelectStore = ({ onOutsideClick }: Props) => {
+const SelectStore = () => {
   const dispatch = useAppDispatch();
   const context = useStorePickerContext();
   const componentRef = useRef<HTMLDivElement>(null);
@@ -82,7 +78,7 @@ const SelectStore = ({ onOutsideClick }: Props) => {
     ) {
       if (listRef.current) {
         listRef.current.setAttribute("data-display", "closed");
-        if (onOutsideClick) onOutsideClick();
+        // if (onOutsideClick) onOutsideClick();
       }
     }
   };
@@ -119,7 +115,6 @@ const SelectStore = ({ onOutsideClick }: Props) => {
     // Close the dropdown
     if (listRef.current) {
       listRef.current.setAttribute("data-display", "closed");
-      if (onOutsideClick) onOutsideClick();
     }
   };
 
@@ -167,7 +162,7 @@ const SelectStore = ({ onOutsideClick }: Props) => {
           >
             {/* This needs to be filtered data by query search */}
             {filteredStores.map((store, idx) => (
-              <div key={`store-${idx}`} onClick={() => handleSelect(store)}>
+              <div data-testid={`searchstore-${store.storeid}`} key={`store-${idx}`} onClick={() => handleSelect(store)}>
                 <div className="p-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer text-sm">
                   {store.store_name}
                 </div>

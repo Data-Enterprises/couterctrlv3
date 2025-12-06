@@ -66,6 +66,7 @@ const QtyMetrics = ({ mode, metric }: QtyMetricsProps) => {
             metric={metric.value}
             label={metric.label}
             type={metric.type as MetricKey}
+            mode={mode}
           />
         ))}
       </div>

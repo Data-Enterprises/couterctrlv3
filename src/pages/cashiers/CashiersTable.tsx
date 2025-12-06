@@ -6,7 +6,6 @@ import { getCashierTransactions } from "../../api/cashiers";
 import {
   setAvailablePriceTypes,
   setCashierSaleIds,
-  // setCashierTransDrillDown,
   setTransactionDrillDown,
   setTransModalOpen,
 } from "../../features/cashierSlice";
@@ -178,17 +177,15 @@ const CashiersTable = () => {
 
     dispatch(setTransactionDrillDown(chunked));
     dispatch(setTransModalOpen(true));
-
-    // Using this to true the numbers and make usre we got everything accounted for with the chunking
-    // console.log(chunked);
-    // console.log(chunked.reduce((acc, cur) => acc + cur.length, 0));
-    // console.log(filtered.length);
   };
 
   return (
     <>
       {filtered.length ? (
-        <div className="bg-custom-white p-2 rounded-lg shadow-lg h-full relative">
+        <div
+          data-testid="cashiers-table"
+          className="bg-custom-white p-2 rounded-lg shadow-lg h-full relative"
+        >
           <ExportModal
             isOpen={modalOpen}
             onClose={() => setModalOpen(false)}
@@ -207,10 +204,15 @@ const CashiersTable = () => {
             />
           </div>
           <div className="absolute bottom-4 left-6">
-            <button className="btn-themeGreen py-1" onClick={handleShowAll}>
+            <button
+              data-testid="cashiers-table-showall-btn"
+              className="btn-themeGreen py-1"
+              onClick={handleShowAll}
+            >
               Show All
             </button>
             <button
+              data-testid="cashiers-table-export-btn"
               className="btn-themeGreen py-1 ml-4"
               onClick={() => setModalOpen(true)}
             >

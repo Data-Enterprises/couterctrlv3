@@ -15,31 +15,16 @@ import {
 } from "../exportHeaders";
 import { exportData } from "../exportHeaders/utils";
 import { reset } from "../../../features/upcModalSlice";
-import CtxMenu from "../../../components/CtxMenu";
-import { setMenuPosition } from "../../../features/ctxMenuSlice";
-import type { Handlers } from "../../../interfaces";
-import { options } from "../utils";
 
 const Forecast = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const upcState = useAppSelector((state) => state.upc);
   const modal = useAppSelector((state) => state.upcModal);
-  const ctx = useAppSelector((state) => state.ctxMenu);
 
   const handleExport = () => {
-    if (
-      !modal.fileName &&
-      !modal.radioOption.dates &&
-      !modal.radioOption.metrics
-    ) {
-      toast.warn("Please enter a file name and select at least one option");
-      return;
-    } else if (modal.fileName === "") {
+    if (modal.fileName === "") {
       toast.warn("Please enter a file name");
-      return;
-    } else if (!modal.radioOption.dates && !modal.radioOption.metrics) {
-      toast.warn("Please select at least one option");
       return;
     }
 
@@ -56,23 +41,8 @@ const Forecast = () => {
     dispatch(reset());
   };
 
-  const handleCopy = async (text: string) => {
-    await navigator.clipboard.writeText(text);
-    dispatch(setMenuPosition(null));
-  };
-
-  const handlers: Handlers = {
-    copyUpc: () => handleCopy(ctx.clipboardText.upc),
-    copyDesc: () => handleCopy(ctx.clipboardText.desc),
-  };
-
   return (
-    <div className="h-full w-full grid grid-cols-[13%_87%] gap-4">
-      <CtxMenu
-        className="hover:bg-panel_active/70"
-        options={options}
-        handlers={handlers}
-      />
+    <div data-testid="upc-forecast" className="h-full w-full grid grid-cols-[13%_87%] gap-4">
       <UpcModal handleExport={handleExport} />
       <UpcControls />
       <div className="grid grid-rows-[17%_83%] gap-2 mr-4 mb-2">

@@ -13,7 +13,7 @@ const TrendCardCarousel = () => {
           {cashier.chunkedSales.map((_, i) => (
             <div key={i} className="grid grid-cols-3 gap-3">
               {cashier.chunkedSales[i].map((s, idx) => (
-                <CashierTrendCard key={idx} s={s} />
+                <CashierTrendCard key={idx} s={s} idx={idx} />
               ))}
             </div>
           ))}
@@ -22,7 +22,7 @@ const TrendCardCarousel = () => {
         <div>
           {cashier.cashierDetails.map((s, idx) => (
             <div key={idx} className="mb-4">
-              <CashierTrendCard key={idx} s={s} />
+              <CashierTrendCard key={idx} s={s} idx={idx} />
             </div>
           ))}
         </div>

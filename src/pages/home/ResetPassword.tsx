@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { setResetPassword } from "../../features/userSlice";
 import { resetPassword } from "../../api/security";
@@ -14,6 +14,11 @@ const ResetPassword = () => {
   const context = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
   const [newPassword, setNewPassword] = useState<string>("");
+  const [closeModal, setCloseModal] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (closeModal) handleClose();
+  }, [closeModal]);
 
   const handleChange = (e: string) => {
     setNewPassword(e);
@@ -22,7 +27,7 @@ const ResetPassword = () => {
   const handleSubmit = () => {
     resetPassword(context.url, context.token, user.username, newPassword)
       .then(() => {
-        dispatch(setResetPassword(0));
+        setCloseModal(true);
         toast.success("Password successfully reset");
       })
       .catch((err: JsonError) => {
@@ -35,8 +40,14 @@ const ResetPassword = () => {
     return null;
   }
 
+  const handleClose = () => {
+    if (closeModal) {
+      dispatch(setResetPassword(0));
+    }
+  };
+
   return (
-    <Modal isOpen={user.resetPassword === 1} onClose={() => {}}>
+    <Modal isOpen={user.resetPassword === 1} onClose={handleClose}>
       <div className="text-center font-medium text-orange-500 underline">
         Password Reset Detected
       </div>
@@ -49,7 +60,11 @@ const ResetPassword = () => {
         isSimple={true}
         type="password"
       />
-      <button className="btn-themeBlue w-full mt-4" onClick={handleSubmit}>
+      <button
+        data-testId="reset-pw-btn"
+        className="btn-themeBlue w-full mt-4"
+        onClick={handleSubmit}
+      >
         Change Password
       </button>
     </Modal>

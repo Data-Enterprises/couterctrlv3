@@ -43,6 +43,7 @@ const MetricsCarousel = ({ children, className = "" }: CarouselProps) => {
       >
         <button
           aria-label="Previous"
+          data-testid="metrics-carousel-prev-btn"
           onClick={prev}
           className="absolute -left-9 top-1/2 -translate-y-1/2 z-10 bg-panel_active/70 hover:bg-panel_active transition-all duration-300 rounded-full p-1 shadow"
         >
@@ -50,6 +51,7 @@ const MetricsCarousel = ({ children, className = "" }: CarouselProps) => {
         </button>
         <button
           aria-label="Next"
+          data-testid="metrics-carousel-next-btn"
           onClick={next}
           className="absolute -right-9 top-1/2 -translate-y-1/2 z-10 bg-panel_active/70 hover:bg-panel_active transition-all duration-300 rounded-full p-1 shadow"
         >
@@ -58,6 +60,7 @@ const MetricsCarousel = ({ children, className = "" }: CarouselProps) => {
         {Array.from({ length: totalSlides }).map((_, i) => (
           <button
             key={i}
+            data-testid={`metrics-carousel-circle-btn-${i}`}
             onClick={() => goTo(i)}
             className={`w-2 h-2 rounded-full ${
               i === index ? "bg-blue-500" : "bg-panel_active"

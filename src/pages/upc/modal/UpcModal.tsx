@@ -44,7 +44,7 @@ const UpcModal = ({ handleExport }: ForecastModalProps) => {
           type="text"
         />
         <div className="flex justify-center gap-3 mt-4">
-          <button className="btn-themeGreen w-1/2" onClick={handleExport}>
+          <button data-testid="upc-export-modal-submit-btn" className="btn-themeGreen w-1/2" onClick={handleExport}>
             Submit
           </button>
           <button className="btn-themeOrange w-1/2" onClick={onClose}>

@@ -33,7 +33,7 @@ const TrendCardsList = () => {
         {trendChunks.map((chunk, idx) => (
           <div key={idx} className="grid grid-cols-5 gap-1">
             {chunk.map((trend, i) => (
-              <TrendCard key={trend.product_code || i} trend={trend} />
+              <TrendCard id={i} key={trend.product_code || i} trend={trend} />
             ))}
           </div>
         ))}

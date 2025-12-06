@@ -52,7 +52,7 @@ const StepOne = ({ className, file, setFile }: UpcStepOneProps) => {
 
   const isReady = () => file !== null && selectedMode !== 0;
   return (
-    <div className={`flex flex-col items-center py-2 gap-2 ${className}`}>
+    <div data-testid="upc-step-one" className={`flex flex-col items-center py-2 gap-2 ${className}`}>
       <ModelSelect />
 
       <div className="w-full text-center text-sm text-content/70 mt-2">
@@ -62,6 +62,7 @@ const StepOne = ({ className, file, setFile }: UpcStepOneProps) => {
         <label className="btn-themeBlue w-full text-center">
           <div className="h-6">{file !== null ? file.name : "Select File"}</div>
           <input
+            data-testid="upc-file-input"
             type="file"
             className="hidden"
             ref={inputRef}
@@ -75,6 +76,7 @@ const StepOne = ({ className, file, setFile }: UpcStepOneProps) => {
         handleNext={() => dispatch(setIndex(1))}
         handleBack={handleReset}
         btnText="Reset"
+        slide={1}
       />
     </div>
   );

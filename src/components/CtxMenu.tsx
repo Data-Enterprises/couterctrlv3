@@ -1,9 +1,8 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import { useAppSelector } from "../hooks";
 import { useDispatch } from "react-redux";
 import { setMenuPosition } from "../features/ctxMenuSlice";
 import type { Option, Handlers } from "../interfaces";
-import { ChevronRightIcon } from "@heroicons/react/24/solid";
 
 interface CopyTextProps {
   className?: string;
@@ -21,7 +20,6 @@ const CtxMenu = ({ className = "", options, handlers }: CopyTextProps) => {
   const dispatch = useDispatch();
   const menuRef = useRef<HTMLDivElement | null>(null);
   const context = useAppSelector((state) => state.ctxMenu);
-  const [showChildren, setShowChildren] = useState<boolean>(false);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -34,7 +32,6 @@ const CtxMenu = ({ className = "", options, handlers }: CopyTextProps) => {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      setShowChildren(false);
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [context.menuPosition, dispatch]);
@@ -45,16 +42,13 @@ const CtxMenu = ({ className = "", options, handlers }: CopyTextProps) => {
     } else if (i === arr.length - 1) {
       return "rounded-b-md";
     }
-    return "border-b border-b-content/40";
+    // return "border-b border-b-content/40";
   };
 
   const handleClick = (fn: Handlers, key: keyof Handlers, value: string) => {
-    setShowChildren(!showChildren);
     if (fn[key]) {
       fn[key](value);
     }
-    // if (fn[key] && value) {
-    // }
   };
 
   return (
@@ -62,6 +56,7 @@ const CtxMenu = ({ className = "", options, handlers }: CopyTextProps) => {
       {context.menuPosition ? (
         <div
           ref={menuRef}
+          data-testid="ctx-menu"
           className={`fixed bg-bkg border border-content/30 rounded-md shadow-lg text-content cursor-pointer select-none w-[150px]`}
           style={{
             top: context.menuPosition.y,
@@ -78,6 +73,7 @@ const CtxMenu = ({ className = "", options, handlers }: CopyTextProps) => {
               )} text-[14px] transition-all duration-300`}
             >
               <div
+                data-testid={`ctx-menu-option-${index}`}
                 className={`flex w-full px-3 py-0.5 justify-between items-center`}
                 onClick={() =>
                   handleClick(
@@ -88,18 +84,6 @@ const CtxMenu = ({ className = "", options, handlers }: CopyTextProps) => {
                 }
               >
                 {option.label}
-                {option.children && (
-                  <ChevronRightIcon
-                    height={15}
-                    width={15}
-                    style={{
-                      transform: showChildren
-                        ? "rotate(90deg)"
-                        : "rotate(0deg)",
-                      transition: "transform 0.1s ease",
-                    }}
-                  />
-                )}
               </div>
             </div>
           ))}

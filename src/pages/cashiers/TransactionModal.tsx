@@ -19,7 +19,7 @@ const TransactionModal = () => {
           <LoadingIndicator message="Fetching transaction..." />
         </div>
       ) : (
-        <div className="space-y-4">
+        <div data-testid="trans-modal" className="space-y-4">
           {cashier.transactionDrillDown.map((transaction, i) => (
             <Transaction key={i} trans={transaction} />
           ))}

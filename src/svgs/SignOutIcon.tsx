@@ -1,20 +1,12 @@
 import type { IconProps } from ".";
 
-const SignOutIcon = ({ className, onClick }: IconProps) => {
+const SignOutIcon = ({ className }: IconProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      // height={`${size}px`}
-      // width={`${size}px`}
       className={`${className} cursor-pointer`}
       version="1.1"
       viewBox="0 0 512 512"
-      onClick={() => {
-        if (onClick) {
-          // @ts-expect error dont need it
-          onClick();
-        }
-      }}
       fill="none"
       stroke="currentColor"
       strokeWidth="30"

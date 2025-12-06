@@ -3,6 +3,7 @@ import type { IconProps } from ".";
 const UpcListIcon = ({ size, className, onClick }: IconProps) => {
   return (
     <svg
+      data-testid="upc-list-icon"
       xmlns="http://www.w3.org/2000/svg"
       height={`${size}px`}
       width={`${size}px`}

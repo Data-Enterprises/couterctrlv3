@@ -17,10 +17,7 @@ const App = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Resetting the route to home on app load/browser refresh => prevents stuck routes when refreshing the browser
-    if (window.location.pathname !== "/") {
-      navigate("/");
-    }
+    navigate("/");
   }, []);
 
   const containerStyle = context.isDesktop
@@ -28,7 +25,7 @@ const App = () => {
     : "";
 
   return (
-    <div className="main-app h-dvh w-dvw bg-bkg text-content no-scrollbar">
+    <div data-testid="main-app" className="main-app h-dvh w-dvw bg-bkg text-content no-scrollbar">
       <UserDataLoader />
       {context.loggedIn ? (
         <div className="h-screen w-screen">

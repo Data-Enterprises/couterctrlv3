@@ -37,7 +37,7 @@ const UniqueCashiersTable = () => {
   return (
     <>
       {cashiers.length ? (
-        <div className="bg-custom-white p-2 rounded-lg shadow-lg h-[100%]">
+        <div data-testid="unique-cashiers-table" className="bg-custom-white p-2 rounded-lg shadow-lg h-[100%]">
           <div className="h-full">
             <AgGridReact
               rowData={cashiers}

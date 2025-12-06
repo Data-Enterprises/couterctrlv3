@@ -41,7 +41,7 @@ const UpcStepTwo = ({ className = "", getData }: StepTwoProps) => {
     }
   }, [upc.radioId]);
 
-  const handleRadioChange = (id: string | number) => {
+  const handleSelectChange = (id: string | number) => {
     dispatch(setRadioId(id as number));
     if (id === 1) {
       setFilteredData(user.assignedStores);
@@ -104,8 +104,9 @@ const UpcStepTwo = ({ className = "", getData }: StepTwoProps) => {
           label="Store or Group"
           displayKey="label"
           valueKey="id"
-          onSelect={handleRadioChange}
+          onSelect={handleSelectChange}
           defaultQuery="Stores"
+          id={1}
         />
         {upc.radioId === 1 ? (
           <SingleSelect
@@ -117,6 +118,7 @@ const UpcStepTwo = ({ className = "", getData }: StepTwoProps) => {
             keepOpen={true}
             resetQuery={true}
             innerClass="border-2 focus:border-blue-500 border-content/20"
+            id={2}
           />
         ) : (
           <SingleSelect
@@ -127,10 +129,11 @@ const UpcStepTwo = ({ className = "", getData }: StepTwoProps) => {
             onSelect={handleSelectClick}
             resetQuery={true}
             innerClass="border-2 focus:border-blue-500 border-content/20"
+            id={2}
           />
         )}
         <TextInput
-          name="number"
+          name="trend"
           query={upc.trendPeriods.toString()}
           title="Trend Periods"
           isSimple={true}
@@ -143,6 +146,7 @@ const UpcStepTwo = ({ className = "", getData }: StepTwoProps) => {
       </div>
       <Tooltips />
       <Buttons
+        slide={2}
         isReady={isReady}
         handleNext={handleNext}
         handleBack={() => dispatch(setIndex(0))}

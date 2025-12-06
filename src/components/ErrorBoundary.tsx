@@ -39,6 +39,7 @@ class ErrorBoundary extends Component<Props, State> {
           <h2>Error</h2>
           <p>{this.state.error?.message}</p>
           <button
+            data-testid="error-boundary-reset-button"
             onClick={() => {
               window.location.reload();
             }}

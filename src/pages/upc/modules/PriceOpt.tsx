@@ -6,11 +6,11 @@ import {
   setSelectedOptItem,
 } from "../../../features/upcSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import type { Handlers, UpcPriceOpt } from "../../../interfaces";
+import type { UpcPriceOpt } from "../../../interfaces";
 
 // Components
 import MetricsCarousel from "./forecast/MetricsCarousel";
-import MetricsContainer from "../components/MetricsCarousel";
+import MetricsContainer from "../components/MetricsContainer";
 import UpcControls from "../components/UpcControls";
 import PriceOptBar from "../charts/PriceOptBar";
 import PriceOptGrid from "../charts/PriceOptGrid";
@@ -18,16 +18,16 @@ import { exportData } from "../exportHeaders/utils";
 import { reset } from "../../../features/upcModalSlice";
 import { priceOptHeaders } from "../exportHeaders";
 import UpcModal from "../modal/UpcModal";
-import CtxMenu from "../../../components/CtxMenu";
-import { setMenuPosition } from "../../../features/ctxMenuSlice";
-import { options } from "../utils";
+// import CtxMenu from "../../../components/CtxMenu";
+// import { setMenuPosition } from "../../../features/ctxMenuSlice";
+// import { options } from "../utils";
 
 const PriceOpt = () => {
   const toast = useToast();
   const dispatch = useDispatch();
   const upcState = useAppSelector((state) => state.upc);
   const modal = useAppSelector((state) => state.upcModal);
-  const ctx = useAppSelector((state) => state.ctxMenu);
+  // const ctx = useAppSelector((state) => state.ctxMenu);
   const [filteredItems, setFilteredItems] = useState<UpcPriceOpt[]>(
     upcState.optBestPricesByUpc
   );
@@ -91,36 +91,36 @@ const PriceOpt = () => {
     }
   };
 
-  const handleDrillDown = (item: UpcPriceOpt) => {
-    dispatch(setSelectedOptItem(item));
-    dispatch(setOptDisplayMode("singleRow"));
-  };
+  // const handleDrillDown = (item: UpcPriceOpt) => {
+  //   dispatch(setSelectedOptItem(item));
+  //   dispatch(setOptDisplayMode("singleRow"));
+  // };
 
-  const handleCopy = async (text: string) => {
-    await navigator.clipboard.writeText(text);
-    dispatch(setMenuPosition(null));
-  };
+  // const handleCopy = async (text: string) => {
+  //   await navigator.clipboard.writeText(text);
+  //   dispatch(setMenuPosition(null));
+  // };
 
-  const handlers: Handlers = {
-    copyUpc: () => handleCopy(ctx.clipboardText.upc),
-    copyDesc: () => handleCopy(ctx.clipboardText.desc),
-    selectUpc: () => {
-      const item: UpcPriceOpt = upcState.optBestPrices.find(
-        (u) => u.product_code === ctx.clipboardText.upc
-      )!;
-      handleDrillDown(item);
-      dispatch(setMenuPosition(null));
-    },
-  };
+  // const handlers: Handlers = {
+  //   copyUpc: () => handleCopy(ctx.clipboardText.upc),
+  //   copyDesc: () => handleCopy(ctx.clipboardText.desc),
+  //   selectUpc: () => {
+  //     const item: UpcPriceOpt = upcState.optBestPrices.find(
+  //       (u) => u.product_code === ctx.clipboardText.upc
+  //     )!;
+  //     handleDrillDown(item);
+  //     dispatch(setMenuPosition(null));
+  //   },
+  // };
 
   return (
-    <div className="h-full w-full grid grid-cols-[15%_85%] gap-4">
+    <div data-testid="upc-price" className="h-full w-full grid grid-cols-[15%_85%] gap-4">
       <UpcControls />
-      <CtxMenu
+      {/* <CtxMenu
         className="hover:bg-panel_active/70"
         options={options}
         handlers={handlers}
-      />
+      /> */}
       <UpcModal handleExport={handleExport} />
       <div className="h-full grid grid-rows-[14%_86%] mr-4">
         <MetricsCarousel className="w-full h-[95%]">

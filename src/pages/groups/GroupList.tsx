@@ -7,8 +7,11 @@ import {
 import { useGridCols } from "./hooks";
 import { addStoreToGroup, removeStoreFromGroup } from "../../api/groups";
 import { handleRipple } from "../../utils";
+import type { JsonError } from "../../interfaces";
+import { useToast } from "../../components/toasts/hooks/useToast";
 
 const GroupList = () => {
+  const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
@@ -42,8 +45,10 @@ const GroupList = () => {
     }
   }, [searchText, group.storesWithGroupStatus, group.filterOption]);
 
-  const handleCardClick = (e: React.MouseEvent<HTMLDivElement>, store: StoreWithGroupStatus) => {
-    if (!group.selectedGroup) return;
+  const handleCardClick = (
+    e: React.MouseEvent<HTMLDivElement>,
+    store: StoreWithGroupStatus
+  ) => {
     handleRipple(e);
 
     if (store.active === 1) {
@@ -53,12 +58,15 @@ const GroupList = () => {
         user.userid,
         group.selectedGroup.id,
         store.storeid
-      ).then((resp) => {
-        const j = resp.data;
-        if (j.error == "0") {
-          dispatch(updateStoresWithStatus(store.storeid));
-        }
-      });
+      )
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error == "0") {
+            dispatch(updateStoresWithStatus(store.storeid));
+            toast.success("Store removed from group successfully");
+          }
+        })
+        .catch((err: JsonError) => toast.error(err.message));
     } else {
       addStoreToGroup(
         context.url,
@@ -66,12 +74,15 @@ const GroupList = () => {
         user.userid,
         group.selectedGroup.id,
         store.storeid
-      ).then((resp) => {
-        const j = resp.data;
-        if (j.error == "0") {
-          dispatch(updateStoresWithStatus(store.storeid));
-        }
-      });
+      )
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error == "0") {
+            dispatch(updateStoresWithStatus(store.storeid));
+            toast.success("Store added to group successfully");
+          }
+        })
+        .catch((err: JsonError) => toast.error(err.message));
     }
   };
 
@@ -83,6 +94,7 @@ const GroupList = () => {
             Search for stores
           </div>
           <input
+            data-testid="store-search-input"
             type="text"
             value={searchText}
             placeholder="Search stores..."
@@ -92,11 +104,13 @@ const GroupList = () => {
         </div>
       </div>
       <div
+        data-testid="group-list-cards"
         className={`grid ${cols} text-sm gap-x-4 gap-y-2 max-h-[51vh] md:max-h-[80vh] overflow-y-scroll no-scrollbar rounded-lg pb-4 select-none`}
       >
         {filteredStores.map((store) => (
           <div
             key={store.storeid}
+            data-testid={`grouplist-store-card-${store.storeid}`}
             className="flex justify-between items-center bg-custom-white rounded-lg 
               shadow-md py-4 px-3 hover:shadow-inner transition-all duration-200 cursor-pointer ripple-button"
             onClick={(e) => handleCardClick(e, store)}

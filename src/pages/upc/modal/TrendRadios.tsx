@@ -14,6 +14,7 @@ const TrendRadios = () => {
         value={trendOption.all}
         className="cursor-pointer"
         onChange={() => dispatch(setTrendOption("all"))}
+        idExtension="trend-all"
       />
       <CheckBox
         id={1}
@@ -21,6 +22,7 @@ const TrendRadios = () => {
         value={trendOption.top}
         className="cursor-pointer"
         onChange={() => dispatch(setTrendOption("top"))}
+        idExtension="trend-top"
       />
       <CheckBox
         id={2}
@@ -28,6 +30,7 @@ const TrendRadios = () => {
         value={trendOption.bottom}
         className="cursor-pointer"
         onChange={() => dispatch(setTrendOption("bottom"))}
+        idExtension="trend-bottom"
       />
     </div>
   );
