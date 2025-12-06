@@ -110,7 +110,7 @@ export const {
   setLastName,
   // setSecurity,
   setRole,
-  // setEmail,
+  setEmail,
   setSecurityQuestionId,
   setAssignedStores,
   setUnassignedStores,
