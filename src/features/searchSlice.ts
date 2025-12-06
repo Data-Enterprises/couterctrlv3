@@ -11,8 +11,6 @@ export interface SearchState {
   endDate: string;
   lastStore: number;
   lastGroup: number;
-  lastStoreName: string;
-  defaultSalesStore: number;
   selectedStore: Store;
   selectedGroup: Group;
 }
@@ -23,8 +21,6 @@ export const initialState: SearchState = {
   endDate: formatDate(new Date().toString()),
   lastStore: 0,
   lastGroup: 0,
-  lastStoreName: "",
-  defaultSalesStore: 0,
   selectedStore: { storeid: 0, store_name: "", store_number: "" },
   selectedGroup: { id: 0, group_name: "", userid: 0 },
 };
@@ -48,17 +44,11 @@ const searchSlice = createSlice({
     setLastGroup: (state, action: PayloadAction<number>) => {
       state.lastGroup = action.payload;
     },
-    setLastStoreName: (state, action: PayloadAction<string>) => {
-      state.lastStoreName = action.payload;
-    },
     setSelectedStore: (state, action: PayloadAction<Store>) => {
       state.selectedStore = action.payload;
     },
     setSelectedGroup: (state, action: PayloadAction<Group>) => {
       state.selectedGroup = action.payload;
-    },
-    setDefaultSalesStore: (state, action: PayloadAction<number>) => {
-      state.defaultSalesStore = action.payload;
     },
   },
 });
@@ -69,10 +59,8 @@ export const {
   setStartDate,
   setEndDate,
   setLastStore,
-  setLastStoreName,
   setSelectedStore,
   setSelectedGroup,
-  setDefaultSalesStore,
 } = searchSlice.actions;
 
 export default searchSlice.reducer;

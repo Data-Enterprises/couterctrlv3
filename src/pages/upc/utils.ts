@@ -184,5 +184,5 @@ export type Option = {
 export const options: Option[] = [
   { label: "Copy UPC", key: "copyUpc" },
   { label: "Copy Description", key: "copyDesc" },
-  { label: "Show Prices", key: "selectUpc" },
+  // { label: "Show Prices", key: "selectUpc" },
 ];

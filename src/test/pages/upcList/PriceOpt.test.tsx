@@ -199,7 +199,15 @@ describe("PriceOpt Module in UpcList", () => {
     // Fetch the data
     const btn2 = await screen.findByTestId("upc-wizard-next-btn-2");
     await user.click(btn2);
-
     expect(await screen.findByTestId("upc-price")).toBeInTheDocument();
+  });
+
+  it("should handle populating the bar charts when selecting upcs", async () => {
+    renderWithProviders(<UpcList />, { store });
+
+    const upc1 = await screen.findByTestId("check-0");
+    const upc2 = await screen.findByTestId("check-1");
+    await user.click(upc1);
+    await user.click(upc2);
   });
 });

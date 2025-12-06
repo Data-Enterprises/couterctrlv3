@@ -25,7 +25,7 @@ export interface UserState {
   lastName: string;
   resetPassword: number;
   company: number;
-  security: number;
+  // security: number;
   role: number | string;
   securityQuestionId: number;
   assignedStores: Store[];
@@ -42,7 +42,7 @@ export const initialState: UserState = {
   resetPassword: 0,
   email: "",
   company: 0,
-  security: 0,
+  // security: 0,
   role: userRole.ALL,
   securityQuestionId: 0,
   assignedStores: [],
@@ -77,9 +77,9 @@ export const userSlice = createSlice({
     setLastName: (state, action: PayloadAction<string>) => {
       state.lastName = action.payload;
     },
-    setSecurity: (state, action: PayloadAction<number>) => {
-      state.security = action.payload;
-    },
+    // setSecurity: (state, action: PayloadAction<number>) => {
+    //   state.security = action.payload;
+    // },
     setRole: (state, action: PayloadAction<number>) => {
       state.role = action.payload;
     },
@@ -88,9 +88,6 @@ export const userSlice = createSlice({
     },
     setSecurityQuestionId: (state, action: PayloadAction<number>) => {
       state.securityQuestionId = action.payload;
-    },
-    setUsePrefs: (state, action: PayloadAction<number>) => {
-      state.userid = action.payload;
     },
     setAssignedStores: (state, action: PayloadAction<Store[]>) => {
       state.assignedStores = action.payload;
@@ -111,9 +108,9 @@ export const {
   setUserId,
   setFirstName,
   setLastName,
-  setSecurity,
+  // setSecurity,
   setRole,
-  setEmail,
+  // setEmail,
   setSecurityQuestionId,
   setAssignedStores,
   setUnassignedStores,

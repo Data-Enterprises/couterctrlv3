@@ -11,7 +11,7 @@ import { useScrollHeight } from ".";
 import CheckBox from "../../../components/inputs/CheckBox";
 import RadioBox from "../../../components/inputs/RadioBox";
 import { setModalType, setOpenModal } from "../../../features/upcModalSlice";
-import { options } from "../utils";
+// import { options } from "../utils";
 import {
   setClipboardText,
   setMenuPosition,
@@ -56,7 +56,7 @@ const UpcControls = () => {
     option: UpcItem
   ) => {
     e.preventDefault();
-    if (options.length > 2) options.pop();
+    // if (options.length > 2) options.pop();
 
     dispatch(
       setClipboardText({

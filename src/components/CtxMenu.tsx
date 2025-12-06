@@ -42,7 +42,7 @@ const CtxMenu = ({ className = "", options, handlers }: CopyTextProps) => {
     } else if (i === arr.length - 1) {
       return "rounded-b-md";
     }
-    return "border-b border-b-content/40";
+    // return "border-b border-b-content/40";
   };
 
   const handleClick = (fn: Handlers, key: keyof Handlers, value: string) => {
