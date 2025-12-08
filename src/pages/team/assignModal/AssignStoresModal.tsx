@@ -81,6 +81,7 @@ const AssignStoresModal = () => {
     >
       <div className={`${qs.validUser ? "flex space-x-4 mb-2" : "hidden"}`}>
         <button
+          data-testid="assign-stores-ctrl-btn"
           className={`${
             mode === "ctrl" ? "btn-themeGreen" : "btn-themeBlue"
           } w-1/2`}
@@ -89,6 +90,7 @@ const AssignStoresModal = () => {
           CounterCtrl Stores
         </button>
         <button
+          data-testid="assign-stores-qs-btn"
           className={`${
             mode === "qs" ? "btn-themeGreen" : "btn-themeBlue"
           } w-1/2`}
