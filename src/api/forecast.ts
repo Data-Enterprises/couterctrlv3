@@ -63,3 +63,28 @@ export const getBucketList = async (url: string, token: string) => {
   });
   return json;
 };
+
+export const getFromExistingS3File = async (
+  url: string,
+  token: string,
+  storeids: string,
+  startdate: string,
+  enddate: string,
+  filename: string
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "marketing/forecasting_from_existing_s3_file",
+    params: {
+      storeids,
+      startdate,
+      enddate,
+      filename,
+    },
+  });
+  return json;
+};

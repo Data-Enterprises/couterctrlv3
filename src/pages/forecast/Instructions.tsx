@@ -10,7 +10,7 @@ const instructions: string[] = [
 
 const Instructions = () => {
   return (
-    <div className="grid grid-cols-2 gap-2 p-4 text-sm">
+    <div className="grid grid-cols-2 gap-2 mt-8 text-sm">
       <div>
         <ol>
           {instructions.map((inst, index) => (

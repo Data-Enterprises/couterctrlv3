@@ -17,6 +17,7 @@ import type {
 } from "../../interfaces";
 import type { Group } from "../../features/groupSlice";
 import {
+  reQuery,
   setItems,
   setQty,
   setRadioId,
@@ -27,6 +28,8 @@ import { useForecastContext } from "./hooks";
 import SelectedStoreList from "../upc/wizard/SelectedStoreList";
 import ForecastControls from "./ForecastControls";
 import FileGrid from "./FileGrid";
+import OutlierGrid from "./OutlierGrid";
+import PriceHistoryGrid from "./PriceHistoryGrid";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -54,6 +57,7 @@ const Forecasting = () => {
 
   const handleSearch = () => {
     if (file) {
+      dispatch(reQuery());
       getForecasting(
         context.url,
         context.token,
@@ -164,41 +168,52 @@ const Forecasting = () => {
       <div className="grid grid-cols-[23%_12%_65%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
         <div className="gap-4 flex flex-col justify-between">
           <div className="bg-custom-white rounded-lg shadow-lg p-4">
-            <div className="mb-2">
-              <SingleSelect
-                data={options}
-                label="Store or Group"
-                displayKey="label"
-                valueKey="id"
-                onSelect={handleSelectChange}
-                defaultQuery="Stores"
-                id={1}
+            <div className="">
+              <div className="flex gap-2">
+                <SingleSelect
+                  data={options}
+                  label="Store or Group"
+                  displayKey="label"
+                  valueKey="id"
+                  onSelect={handleSelectChange}
+                  defaultQuery="Stores"
+                  id={1}
+                  className="w-1/2"
+                />
+                {context.radioId === 1 ? (
+                  <SingleSelect
+                    label="Stores"
+                    data={filteredData as Store[]}
+                    displayKey={"store_name" as keyof Store}
+                    valueKey={"storeid" as keyof Store}
+                    onSelect={handleSelectClick}
+                    keepOpen={true}
+                    resetQuery={true}
+                    id={2}
+                    className="w-1/2"
+                  />
+                ) : (
+                  <SingleSelect
+                    label="Groups"
+                    data={filteredData as Group[]}
+                    valueKey={"id" as keyof Group}
+                    displayKey={"group_name" as keyof Group}
+                    onSelect={handleSelectClick}
+                    resetQuery={true}
+                    id={2}
+                    className="w-1/2"
+                  />
+                )}
+              </div>
+              <DatePickers showBtn={false} />
+              <SelectedStoreList
+                selectedStores={context.selectedStores}
+                radioId={context.radioId}
+                className=""
+                height="py-1 min-h-40 max-h-40"
               />
-              {context.radioId === 1 ? (
-                <SingleSelect
-                  label="Stores"
-                  data={filteredData as Store[]}
-                  displayKey={"store_name" as keyof Store}
-                  valueKey={"storeid" as keyof Store}
-                  onSelect={handleSelectClick}
-                  keepOpen={true}
-                  resetQuery={true}
-                  id={2}
-                />
-              ) : (
-                <SingleSelect
-                  label="Groups"
-                  data={filteredData as Group[]}
-                  valueKey={"id" as keyof Group}
-                  displayKey={"group_name" as keyof Group}
-                  onSelect={handleSelectClick}
-                  resetQuery={true}
-                  id={2}
-                />
-              )}
-            <DatePickers showBtn={false} />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-4">
               <FileInput
                 file={file}
                 fileExt={[".csv"]}
@@ -209,21 +224,15 @@ const Forecasting = () => {
                 Search
               </button>
             </div>
+            <Instructions />
           </div>
           <FileGrid />
-          <div className="bg-custom-white rounded-lg shadow-lg p-2">
-            <Instructions />
-            <SelectedStoreList
-              selectedStores={context.selectedStores}
-              radioId={context.radioId}
-              className=""
-              gridCols="grid-cols-2"
-              height="py-1 min-h-40 max-h-40"
-            />
-          </div>
         </div>
         <ForecastControls />
-        <div className="mr-4">{/* Right side content can go here */}</div>
+        <div className="grid grid-rows-3 gap-4 mr-8">
+            <OutlierGrid />
+            <PriceHistoryGrid />
+        </div>
       </div>
     </div>
   );

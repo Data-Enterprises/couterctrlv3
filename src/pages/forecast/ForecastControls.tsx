@@ -6,7 +6,7 @@ import RadioBox from "../../components/inputs/RadioBox";
 import { setClipboardText, setMenuPosition } from "../../features/ctxMenuSlice";
 import type { ForecastItem } from "../../interfaces";
 import CheckBox from "../../components/inputs/CheckBox";
-import { resetSelectedUpcs, setSelectedUpcs } from "../../features/forecastSlice";
+import { reset, resetSelectedUpcs, setSelectedUpcs } from "../../features/forecastSlice";
 
 const ForecastControls = () => {
   const [filtered, setFiltered] = useState<ForecastItem[]>([]);
@@ -23,7 +23,8 @@ const ForecastControls = () => {
   console.log(height)
 
   const handleClearClick = () => {
-    // dispatch(clearUpcData());
+    dispatch(reset());
+
   };
 
   const handleDisplay = (value: "all" | "selected" | "stores") => {
@@ -148,7 +149,7 @@ const ForecastControls = () => {
       <div
         data-testid="upc-controls-list"
         className="bg-custom-white rounded-b-lg overflow-y-scroll no-scrollbar"
-        style={{ minHeight: height, maxHeight: height }}
+        style={{ height: height || 500 }}
       >
         {showDisplay === "all" &&
           filtered.map((item, i) => (

@@ -4,6 +4,7 @@ import type {
   ForecastQtyData,
   ForecastSalesData,
   ForecastItem,
+  ForecastPriceHistory,
 } from "../interfaces";
 
 interface ForecastState {
@@ -15,6 +16,7 @@ interface ForecastState {
   items: ForecastItem[];
   selectedUpcs: string[];
   files: string[];
+  priceHistory: ForecastPriceHistory[];
 }
 
 const initialState: ForecastState = {
@@ -26,6 +28,7 @@ const initialState: ForecastState = {
   items: [],
   selectedUpcs: [],
   files: [],
+  priceHistory: [],
 };
 export const forecastSlice = createSlice({
   name: "forecast",
@@ -61,11 +64,33 @@ export const forecastSlice = createSlice({
         state.selectedUpcs.push(upc);
       }
     },
+    setPriceHistory: (state, action: PayloadAction<ForecastPriceHistory[]>) => {
+      state.priceHistory = action.payload;
+    },
     resetSelectedUpcs: (state) => {
       state.selectedUpcs = [];
+      state.priceHistory = [];
     },
     setFiles: (state, action: PayloadAction<string[]>) => {
       state.files = action.payload;
+    },
+    reQuery: (state) => {
+      state.items = [];
+      state.qty = [];
+      state.sales = [];
+      state.priceHistory = [];
+      state.selectedUpcs = [];
+      state.priceHistory = [];
+    },
+    reset: (state) => {
+      state.items = [];
+      state.qty = [];
+      state.sales = [];
+      state.selectedStores = [];
+      state.storeids = "";
+      state.radioId = 0;
+      state.selectedUpcs = [];
+      state.priceHistory = [];
     },
     resetForecast: () => initialState,
   },
@@ -79,7 +104,10 @@ export const {
   setItems,
   setSelectedUpcs,
   resetSelectedUpcs,
+  setPriceHistory,
   setFiles,
+  reQuery,
+  reset,
   resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;

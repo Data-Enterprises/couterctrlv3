@@ -480,10 +480,22 @@ export interface ForecastSalesData<T> {
     outliers: { date: string; qty: number }[];
     prices: T;
     total_sales: number;
-  }
+  };
 }
 
 export interface ForecastItem {
   upc: string;
   description: string;
+}
+
+export interface ForecastPriceHistory {
+  storeid: number;
+  price_type: string;
+  unit_price: number;
+  total_qty: number;
+  product_code: string;
+  product_description: string;
+  store_number: string;
+  store_name: string;
+  lift: number;
 }

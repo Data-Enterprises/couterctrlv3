@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { getBucketList } from "../../api/forecast";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { setFiles } from "../../features/forecastSlice";
+import { setFiles, setItems, setQty, setSales } from "../../features/forecastSlice";
 import { useAppDispatch } from "../../hooks";
 import { useForecastContext } from "./hooks";
+import { getFromExistingS3File } from "../../api/forecast";
 
 import { AgGridReact } from "ag-grid-react";
 import { theme } from ".";
@@ -12,7 +13,9 @@ import {
   ModuleRegistry,
   type ColDef,
   type ColGroupDef,
+  type RowClickedEvent,
 } from "ag-grid-community";
+import type { ForecastQtyData, ForecastSalesData } from "../../interfaces";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 type TableData = {
@@ -61,17 +64,78 @@ const FileGrid = () => {
       });
   }, []);
 
+  const onRowClicked = (event: RowClickedEvent<TableData>) => {
+    if (event.data) {
+      const fileName = event.data.name;
+      getFromExistingS3File(
+        context.url,
+        context.token,
+        context.storeids,
+        context.startDate,
+        context.endDate,
+        fileName
+      )
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            const qtyOutput: ForecastQtyData<any>[] = Object.entries(
+              j.qty_output
+            ).map(([k, v]) => {
+              const upc = k as string;
+              const data = v as any;
+              return {
+                upc,
+                history: data.history,
+                history_dimension: data.history_dimension,
+                forecast: data.forecast,
+                forecast_dimension: data.forecast_dimension,
+                forecast_method: data.forecast_method,
+                metrics: data.metrics,
+              };
+            });
+
+            const salesOutput: ForecastSalesData<any>[] = Object.entries(
+              j.sales_output
+            ).map(([k, v]) => {
+              const upc = k as string;
+              const data = v as any;
+              return {
+                upc,
+                history: data.history,
+                history_dimension: data.history_dimension,
+                forecast: data.forecast,
+                forecast_dimension: data.forecast_dimension,
+                forecast_method: data.forecast_method,
+                metrics: data.metrics,
+              };
+            });
+
+            const upcItems = qtyOutput.map((item) => ({
+              upc: item.upc,
+              description: item.metrics.description,
+            }));
+
+            dispatch(setQty(qtyOutput));
+            dispatch(setSales(salesOutput));
+            dispatch(setItems(upcItems));
+          }
+        })
+        .catch((err) => {
+          toast.error(err.message);
+        });
+    }
+  };
+
   return (
     <div className="bg-custom-white rounded-lg shadow-lg h-1/3">
-      {/* <div className="h-full"> */}
-        <AgGridReact
-          rowData={tableData}
-          columnDefs={colDefs}
-          theme={theme}
-          pagination={true}
-          paginationAutoPageSize={true}
-        />
-      {/* </div> */}
+      <AgGridReact
+        rowData={tableData}
+        columnDefs={colDefs}
+        theme={theme}
+        pagination={true}
+        paginationAutoPageSize={true}
+        onRowClicked={onRowClicked}
+      />
     </div>
   );
 };

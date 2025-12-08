@@ -17,10 +17,12 @@ const SelectedStoreList = ({
 }: SelectedStoreListProps) => {
   return (
     <div className={`${className} w-full`}>
-      <div className={`${height} overflow-y-auto no-scrollbar bg-panel_active/15 px-2 rounded-lg shadow w-full`}>
-        <h3 className="text-sm text-content/70">
-          Selected {radioId === 1 ? "Stores" : "Group"}
-        </h3>
+      <h3 className="text-sm text-content/70 font-medium">
+        Selected {radioId === 1 ? "Stores" : "Group"}
+      </h3>
+      <div
+        className={`${height} overflow-y-auto no-scrollbar bg-panel_active/15 px-2 rounded-lg shadow w-full`}
+      >
         <ul className={`grid ${gridCols}`}>
           {selectedStores.map((store) => (
             <li key={store.storeid} className="w-full text-sm">
