@@ -1,6 +1,130 @@
+import { useState } from "react";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+import type { JsonError, Store } from "../../../interfaces";
+import {
+  addQuicksightStoreForUser,
+  assignAllPermissionsForUser,
+} from "../../../api/quicksight";
+import { setQsUserStores } from "../../../features/qsSlice";
 
 const QsUnassigned = () => {
-  return <div>QsUnassigned</div>;
+  const toast = useToast();
+  const dispatch = useAppDispatch();
+  const context = useAppSelector((state) => state.app);
+  const qs = useAppSelector((state) => state.quicksight);
+  const [isAssigningAll, setIsAssigningAll] = useState<boolean>(false);
+
+  const hasLength = () => {
+    return qs.qsUserUnassignedStores.length > 0;
+  };
+
+  const handleAssignStore = (storeId: number) => {
+    const id = storeId.toString();
+    addQuicksightStoreForUser(
+      context.url,
+      context.token,
+      qs.selectedQsUserEmail,
+      id
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          toast.success("Store assigned successfully");
+          const store = qs.qsUserUnassignedStores.find(
+            (s: Store) => s.storeid === storeId
+          );
+
+          const stores = [...qs.qsUserAssignedStores, store!].sort(
+            (a, b) => a.storeid - b.storeid
+          );
+          const unassignedStores = [...qs.qsUserUnassignedStores].filter(
+            (s) => s.storeid !== storeId
+          );
+          dispatch(
+            setQsUserStores({
+              assigned_stores: stores,
+              unassigned_stores: unassignedStores,
+            })
+          );
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error(err.message);
+      });
+  };
+
+  const toggleDisplay = () => {
+    setIsAssigningAll(!isAssigningAll);
+  };
+
+  const handleAssignAllStores = () => {
+    assignAllPermissionsForUser(
+      context.url,
+      context.token,
+      qs.selectedQsUserEmail
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          toast.success("All stores assigned successfully");
+          const allStores = [
+            ...qs.qsUserAssignedStores,
+            ...qs.qsUserUnassignedStores,
+          ].sort((a, b) => a.storeid - b.storeid);
+          dispatch(
+            setQsUserStores({
+              assigned_stores: allStores,
+              unassigned_stores: [],
+            })
+          );
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error(err.message);
+      })
+      .finally(() => setIsAssigningAll(false));
+  };
+
+  return (
+    <div>
+      <div className="font-medium text-sm pl-0.5 flex justify-between">
+        <div>Unassigned - {qs.qsUserUnassignedStores.length}</div>
+        <div
+          className="hover:underline hover:text-orange-500 cursor-pointer transition-color duration-200"
+          onClick={toggleDisplay}
+        >
+          Assign All
+        </div>
+      </div>
+      <div className="min-h-[400px] max-h-[400px] overflow-y-auto no-scrollbar space-y-2 mt-2">
+        {hasLength() && !isAssigningAll ? (
+          qs.qsUserUnassignedStores.map((store) => (
+            <div
+              key={store.storeid}
+              data-testid={`unassigned-qs-store-${store.storeid}`}
+              className="bg-custom-white rounded-lg shadow p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200"
+              onClick={() => handleAssignStore(store.storeid)}
+            >
+              {store.store_name} = ({store.storeid})
+            </div>
+          ))
+        ) : isAssigningAll ? (
+          <div className="min-h-[400px] max-h-[400px] flex flex-col justify-center gap-2">
+            <div className="text-sm text-center font-medium">
+              Are you sure you want to assign all?
+            </div>
+            <button className="btn-themeGreen" onClick={handleAssignAllStores}>
+              Confirm
+            </button>
+            <button className="btn-themeOrange" onClick={toggleDisplay}>
+              Cancel
+            </button>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
 };
 
 export default QsUnassigned;
