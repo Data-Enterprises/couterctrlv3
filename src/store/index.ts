@@ -15,6 +15,7 @@ import itemLookupReducer from "../features/itemLookupSlice";
 import trendModalReducer from "../features/trendModalSlice";
 import upcModalReducer from "../features/upcModalSlice";
 import ctxMenuReducer from "../features/ctxMenuSlice";
+import quickSightReducer from "../features/qsSlice";
 
 export const setupStore = () =>
   configureStore({
@@ -34,6 +35,7 @@ export const setupStore = () =>
       trendModal: trendModalReducer,
       upcModal: upcModalReducer,
       ctxMenu: ctxMenuReducer,
+      quicksight: quickSightReducer,
     },
   });
 

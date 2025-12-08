@@ -24,7 +24,7 @@ const Forecast = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)]">
+    <div data-testid="forecast-page" className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)]">
       <div className="grid grid-cols-[20%_80%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
         <div className="space-y-4">
           <div className="bg-custom-white rounded-lg shadow-lg p-4">

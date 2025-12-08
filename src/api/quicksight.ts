@@ -2,18 +2,18 @@ import axios from "axios";
 
 export const getEmbedUrl = async (
   url: string,
-  email: string,
-  api_key: string
+  token: string,
+  email: string
 ) => {
   const json = await axios({
     method: "GET",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
     url: url + "quicksight/embed_url",
     params: {
       email,
-      api_key,
     },
   });
   return json;

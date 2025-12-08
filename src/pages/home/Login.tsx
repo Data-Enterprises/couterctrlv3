@@ -22,6 +22,7 @@ import {
   setCompany,
   setResetPassword,
   setSecurityQuestionId,
+  setEmail,
 } from "../../features/userSlice";
 import ForgotPassword from "./forgot/ForgotPassword";
 
@@ -67,6 +68,7 @@ const Login = () => {
           dispatch(setToken(j.access_token));
           dispatch(setFirstName(j.first_name));
           dispatch(setLastName(j.last_name));
+          dispatch(setEmail(j.email));
           dispatch(setRole(j.role));
           dispatch(setUserLevel(j.user_level));
           dispatch(setCompany(j.company));

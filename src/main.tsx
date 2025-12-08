@@ -18,6 +18,7 @@ import Settings from "./pages/settings/Settings.tsx";
 import UpcList from "./pages/upc/wizard/UpcList.tsx";
 import ItemLookup from "./pages/lookup/ItemLookup.tsx";
 import Forecast from "./pages/forecast/Forecast.tsx";
+import Dashboard from "./pages/quicksight/Dashboard.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -36,6 +37,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="upc-upload" element={<UpcList />} />
                 <Route path="item-lookup" element={<ItemLookup />} />
                 <Route path="forecast" element={<Forecast />} />
+                <Route path="dashboard" element={<Dashboard />} />
               </Route>
             </Routes>
           </ToastProvider>

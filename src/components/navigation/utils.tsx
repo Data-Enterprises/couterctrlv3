@@ -9,6 +9,7 @@ import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
 import GroupsIcon from "../../svgs/GroupsIcon";
 import UpcListIcon from "../../svgs/UpcListIcon";
+import DashboardIconV2 from "../../svgs/DashbordIconV2";
 
 export type Navigation = {
   name: string;
@@ -94,4 +95,13 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userTypes: ["*"],
   },
+  {
+    name: "Dashboard",
+    href: "dashboard",
+    icon: DashboardIconV2,
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userTypes: ["*"],
+  }
 ];
