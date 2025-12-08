@@ -17,8 +17,10 @@ import {
 import { getAllUsers, getUserStores } from "../../../api/user";
 import {
   addQuicksightStoreForUser,
+  assignAllPermissionsForUser,
   getQuicksightStoresForUser,
   getQuicksightUsers,
+  removeAllPermissionsForUser,
   removeQuicksightStoreForUser,
 } from "../../../api/quicksight";
 import { setTempPassword } from "../../../api/security";
@@ -699,8 +701,96 @@ describe("Team Page", () => {
   });
 
   // it should handle adding/removing all quicksight stores api failure
+  it("", async () => {
+    (getUserStores as Mock).mockResolvedValue({
+      data: userStoresResp,
+    });
+    (getQuicksightStoresForUser as Mock).mockResolvedValue({
+      data: userStoresResp,
+    });
+
+    renderWithProviders(<Team />, { store });
+
+    (assignAllPermissionsForUser as Mock).mockRejectedValueOnce(
+      new Error("Assign all failed")
+    );
+    const assignStoresBtn = await screen.findByTestId("team-assign-stores-btn");
+    await user.click(assignStoresBtn);
+
+    const qsBtn = await screen.findByTestId("assign-stores-qs-btn");
+    await user.click(qsBtn);
+
+    const assignAll = await screen.findByTestId("assign-all-qs-btn");
+    await user.click(assignAll);
+
+    const assignConfirm = await screen.findByTestId(
+      "confirm-assign-all-qs-btn"
+    );
+    await user.click(assignConfirm);
+    await waitFor(() => {
+      expect(mockedToastError).toHaveBeenCalled();
+    });
+
+    const unassignAll = await screen.findByTestId("unassign-all-qs-btn");
+    (removeAllPermissionsForUser as Mock).mockRejectedValueOnce(
+      new Error("Unassign all failed")
+    );
+    await user.click(unassignAll);
+    const unassignConfirm = await screen.findByTestId(
+      "confirm-unassign-all-qs-btn"
+    );
+    await user.click(unassignConfirm);
+    await waitFor(() => {
+      expect(mockedToastError).toHaveBeenCalled();
+    });
+  });
 
   // it should handle adding/removing all quicksight stores success
+  it("it should handle adding/removing all quicksight stores success", async () => {
+    (getUserStores as Mock).mockResolvedValue({
+      data: userStoresResp,
+    });
+    (getQuicksightStoresForUser as Mock).mockResolvedValue({
+      data: userStoresResp,
+    });
+
+    renderWithProviders(<Team />, { store });
+
+    (assignAllPermissionsForUser as Mock).mockResolvedValueOnce({
+      data: defaultResp,
+    });
+
+    const assignStoresBtn = await screen.findByTestId("team-assign-stores-btn");
+    await user.click(assignStoresBtn);
+
+    const qsBtn = await screen.findByTestId("assign-stores-qs-btn");
+    await user.click(qsBtn);
+
+    const assignAll = await screen.findByTestId("assign-all-qs-btn");
+    await user.click(assignAll);
+
+    const assignConfirm = await screen.findByTestId(
+      "confirm-assign-all-qs-btn"
+    );
+    await user.click(assignConfirm);
+
+    await waitFor(() => {
+      expect(mockedToastSuccess).toHaveBeenCalled();
+    });
+
+    const unassignAll = await screen.findByTestId("unassign-all-qs-btn");
+    (removeAllPermissionsForUser as Mock).mockResolvedValueOnce({
+      data: defaultResp
+    });
+    await user.click(unassignAll);
+    const unassignConfirm = await screen.findByTestId(
+      "confirm-unassign-all-qs-btn"
+    );
+    await user.click(unassignConfirm);
+    await waitFor(() => {
+      expect(mockedToastSuccess).toHaveBeenCalled();
+    });
+  });
 
   // Handling the deletion of a user
   it("should handle opening/closing the Delete User Modal and deleting a user", async () => {

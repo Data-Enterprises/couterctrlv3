@@ -91,6 +91,7 @@ const QsUnassigned = () => {
       <div className="font-medium text-sm pl-0.5 flex justify-between">
         <div>Unassigned - {qs.qsUserUnassignedStores.length}</div>
         <div
+          data-testid="assign-all-qs-btn"
           className="hover:underline hover:text-orange-500 cursor-pointer transition-color duration-200"
           onClick={toggleDisplay}
         >
@@ -114,7 +115,7 @@ const QsUnassigned = () => {
             <div className="text-sm text-center font-medium">
               Are you sure you want to assign all?
             </div>
-            <button className="btn-themeGreen" onClick={handleAssignAllStores}>
+            <button data-testid="confirm-assign-all-qs-btn" className="btn-themeGreen" onClick={handleAssignAllStores}>
               Confirm
             </button>
             <button className="btn-themeOrange" onClick={toggleDisplay}>

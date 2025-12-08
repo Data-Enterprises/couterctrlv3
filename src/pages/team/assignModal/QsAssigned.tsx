@@ -31,7 +31,6 @@ const QsAssigned = () => {
         const j = resp.data;
         if (j.error === 0) {
           toast.success("Store assigned successfully");
-          // getQsStores();
           const store = qs.qsUserAssignedStores.find(
             (s) => s.storeid === storeId
           );
@@ -91,6 +90,7 @@ const QsAssigned = () => {
       <div className="font-medium text-sm pl-0.5 flex justify-between">
         <div>Assigned - {qs.qsUserAssignedStores.length}</div>
         <div
+          data-testid="unassign-all-qs-btn"
           className="hover:underline hover:text-emerald-500 cursor-pointer transition-color duration-200"
           onClick={toggleDisplay}
         >
@@ -115,6 +115,7 @@ const QsAssigned = () => {
               Are you sure you want to unassign all?
             </div>
             <button
+              data-testid="confirm-unassign-all-qs-btn"
               className="btn-themeGreen"
               onClick={handleUnassignAllStores}
             >
