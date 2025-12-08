@@ -61,6 +61,6 @@
     "vitest": "^4.0.7"
   },
   "vitest": {
-    "maxWorkers": 3
+    "maxWorkers": 5
   }
 }

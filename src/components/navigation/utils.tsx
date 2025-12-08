@@ -3,6 +3,7 @@ import {
   HomeIcon,
   UsersIcon,
   MagnifyingGlassIcon,
+  ArrowTrendingUpIcon
 } from "@heroicons/react/16/solid";
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
@@ -80,6 +81,15 @@ export const navigation: Navigation[] = [
     href: "item-lookup",
     icon: MagnifyingGlassIcon,
     mobile: true,
+    children: [],
+    childOpen: false,
+    userTypes: ["*"],
+  },
+  {
+    name: "Forecast",
+    href: "forecast",
+    icon: ArrowTrendingUpIcon,
+    mobile: false,
     children: [],
     childOpen: false,
     userTypes: ["*"],
