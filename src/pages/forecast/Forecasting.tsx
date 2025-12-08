@@ -1,3 +1,5 @@
+import { getForecasting } from "../../api/forecast";
+
 // Components
 import { useRef, useState } from "react";
 import DatePickers from "../../components/datePickers/DatePickers";
@@ -7,7 +9,7 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 
 const fileExtensions = [".csv"];
 
-const Forecast = () => {
+const Forecasting = () => {
   const toast = useToast();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -55,4 +57,4 @@ const Forecast = () => {
   );
 };
 
-export default Forecast;
+export default Forecasting;

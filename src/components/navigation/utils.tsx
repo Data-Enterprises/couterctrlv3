@@ -87,8 +87,8 @@ export const navigation: Navigation[] = [
     userTypes: ["*"],
   },
   {
-    name: "Forecast",
-    href: "forecast",
+    name: "Forecasting",
+    href: "forecasting",
     icon: ArrowTrendingUpIcon,
     mobile: false,
     children: [],

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "../../utils";
 import userEvent from "@testing-library/user-event";
-import Forecast from "../../../pages/forecast/Forecast";
+import Forecast from "../../../pages/forecast/Forecasting";
 import { screen, waitFor } from "@testing-library/react";
 
 const user = userEvent.setup();
