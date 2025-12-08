@@ -9,7 +9,6 @@ const fileExtensions = [".csv"];
 
 const Forecast = () => {
   const toast = useToast();
-  // using this to allow the same file to be selected again
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [file, setFile] = useState<File | null>(null);
 
