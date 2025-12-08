@@ -1,17 +1,8 @@
-const upcs: string[] = [
-  "7239277080",
-  "88855900112",
-  "88855900104",
-  "..."
-  // "88855900103",
-  // "88855900105",
-  // "88855900108",
-  // "88855900106",
-];
+const upcs: string[] = ["7239277080", "88855900112", "88855900104", "..."];
 
 const instructions: string[] = [
   "Select date range",
-  "Select store or group",
+  "Then stores/group",
   "Upload a .csv file",
   "One header: upc",
   "One upc per line",
@@ -19,7 +10,7 @@ const instructions: string[] = [
 
 const Instructions = () => {
   return (
-    <div className="grid grid-cols-2 gap-2 p-4 bg-custom-white rounded-lg shadow-lg text-sm">
+    <div className="grid grid-cols-2 gap-2 p-4 text-sm">
       <div>
         <ol>
           {instructions.map((inst, index) => (

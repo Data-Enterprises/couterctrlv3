@@ -13,7 +13,7 @@ export const getForecasting = async (
   const json = await axios({
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "multipart/form-data",
       Authorization: `Bearer ${token}`,
     },
     url: url + "marketing/forecasting",

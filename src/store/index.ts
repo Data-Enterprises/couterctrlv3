@@ -16,6 +16,7 @@ import trendModalReducer from "../features/trendModalSlice";
 import upcModalReducer from "../features/upcModalSlice";
 import ctxMenuReducer from "../features/ctxMenuSlice";
 import quickSightReducer from "../features/qsSlice";
+import forecastReducer from "../features/forecastSlice";
 
 export const setupStore = () =>
   configureStore({
@@ -36,6 +37,7 @@ export const setupStore = () =>
       upcModal: upcModalReducer,
       ctxMenu: ctxMenuReducer,
       quicksight: quickSightReducer,
+      forecast: forecastReducer,
     },
   });
 
