@@ -1,0 +1,241 @@
+import { useEffect, useState } from "react";
+import { useAppDispatch } from "../../hooks";
+import { getForecasting } from "../../api/forecast";
+
+// Components
+import DatePickers from "../../components/datePickers/DatePickers";
+import Instructions from "./Instructions";
+import { useToast } from "../../components/toasts/hooks/useToast";
+import FileInput from "./FileInput";
+import SingleSelect from "../../components/SingleSelect";
+import { getStoresAssignedToUserGroup } from "../../api/groups";
+import type {
+  ForecastQtyData,
+  JsonError,
+  Store,
+  ForecastSalesData,
+} from "../../interfaces";
+import type { Group } from "../../features/groupSlice";
+import {
+  reQuery,
+  setItems,
+  setQty,
+  setRadioId,
+  setSales,
+  setSelectedStores,
+} from "../../features/forecastSlice";
+import { useForecastContext } from "./hooks";
+import SelectedStoreList from "../upc/wizard/SelectedStoreList";
+import ForecastControls from "./ForecastControls";
+import FileGrid from "./FileGrid";
+import OutlierGrid from "./OutlierGrid";
+import PriceHistoryGrid from "./PriceHistoryGrid";
+
+const options = [
+  { label: "Stores", id: 1 },
+  { label: "Group", id: 2 },
+];
+
+const Forecasting = () => {
+  const [file, setFile] = useState<File | null>(null);
+  const [filteredData, setFilteredData] = useState<Store[] | Group[]>([]);
+  const toast = useToast();
+  const dispatch = useAppDispatch();
+  const context = useForecastContext();
+
+  useEffect(() => {
+    // On mount, if radioId is 0, set to 1 (Stores)
+    if (context.radioId === 0) {
+      dispatch(setRadioId(1));
+      setFilteredData(context.assignedStores);
+    } else if (context.radioId === 1) {
+      setFilteredData(context.assignedStores);
+    } else if (context.radioId === 2) {
+      setFilteredData(context.groups);
+    }
+  }, [context.radioId]);
+
+  const handleSearch = () => {
+    if (file) {
+      dispatch(reQuery());
+      getForecasting(
+        context.url,
+        context.token,
+        context.storeids,
+        context.startDate,
+        context.endDate,
+        file
+      )
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            // To set the list of items for the controls
+            const qtyOutput: ForecastQtyData<any>[] = Object.entries(
+              j.qty_output
+            ).map(([k, v]) => {
+              const upc = k as string;
+              const data = v as any;
+              return {
+                upc,
+                history: data.history,
+                history_dimension: data.history_dimension,
+                forecast: data.forecast,
+                forecast_dimension: data.forecast_dimension,
+                forecast_method: data.forecast_method,
+                metrics: data.metrics,
+              };
+            });
+
+            const salesOutput: ForecastSalesData<any>[] = Object.entries(
+              j.sales_output
+            ).map(([k, v]) => {
+              const upc = k as string;
+              const data = v as any;
+              return {
+                upc,
+                history: data.history,
+                history_dimension: data.history_dimension,
+                forecast: data.forecast,
+                forecast_dimension: data.forecast_dimension,
+                forecast_method: data.forecast_method,
+                metrics: data.metrics,
+              };
+            });
+
+            const upcItems = qtyOutput.map((item) => ({
+              upc: item.upc,
+              description: item.metrics.description,
+            }));
+
+            dispatch(setQty(qtyOutput));
+            dispatch(setSales(salesOutput));
+            dispatch(setItems(upcItems));
+          }
+        })
+        .catch((err: JsonError) => toast.error(err.message));
+    }
+  };
+
+  const handleSelectChange = (id: string | number) => {
+    dispatch(setSelectedStores([])); // Clear selected stores on new selection
+    dispatch(setRadioId(id as number));
+    if (id === 1) {
+      setFilteredData(context.assignedStores);
+    } else if (id === 2) {
+      setFilteredData(context.groups);
+    }
+  };
+
+  const handleSelectClick = (id: string | number) => {
+    // Store
+    if (context.radioId === 1) {
+      const store = filteredData.find(
+        (item): item is Store => "storeid" in item && item.storeid === id
+      );
+      const existingStore = context.selectedStores.find(
+        (s) => s.storeid === id
+      );
+      if (existingStore) {
+        const copy = [...context.selectedStores].filter(
+          (s) => s.storeid !== id
+        );
+        dispatch(setSelectedStores(copy));
+      } else if (store) {
+        dispatch(setSelectedStores([...context.selectedStores, store]));
+      }
+    } else if (context.radioId === 2) {
+      // Group
+      getStoresAssignedToUserGroup(
+        context.url,
+        context.token,
+        context.userid,
+        Number(id)
+      )
+        .then((resp) => {
+          const j = resp.data;
+          const filtered = [...j.stores].filter((store) => store.active === 1);
+          dispatch(setSelectedStores(filtered));
+        })
+        .catch((err: JsonError) => toast.error(err.message));
+    }
+  };
+
+  return (
+    <div
+      data-testid="forecast-page"
+      className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)]"
+    >
+      <div className="grid grid-cols-[23%_12%_65%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
+        <div className="gap-4 flex flex-col justify-between">
+          <div className="bg-custom-white rounded-lg shadow-lg p-4">
+            <div className="">
+              <div className="flex gap-2">
+                <SingleSelect
+                  data={options}
+                  label="Store or Group"
+                  displayKey="label"
+                  valueKey="id"
+                  onSelect={handleSelectChange}
+                  defaultQuery="Stores"
+                  id={1}
+                  className="w-1/2"
+                />
+                {context.radioId === 1 ? (
+                  <SingleSelect
+                    label="Stores"
+                    data={filteredData as Store[]}
+                    displayKey={"store_name" as keyof Store}
+                    valueKey={"storeid" as keyof Store}
+                    onSelect={handleSelectClick}
+                    keepOpen={true}
+                    resetQuery={true}
+                    id={2}
+                    className="w-1/2"
+                  />
+                ) : (
+                  <SingleSelect
+                    label="Groups"
+                    data={filteredData as Group[]}
+                    valueKey={"id" as keyof Group}
+                    displayKey={"group_name" as keyof Group}
+                    onSelect={handleSelectClick}
+                    resetQuery={true}
+                    id={2}
+                    className="w-1/2"
+                  />
+                )}
+              </div>
+              <DatePickers showBtn={false} />
+              <SelectedStoreList
+                selectedStores={context.selectedStores}
+                radioId={context.radioId}
+                className=""
+                height="py-1 min-h-40 max-h-40"
+              />
+            </div>
+            <div className="flex gap-2 mt-4">
+              <FileInput
+                file={file}
+                fileExt={[".csv"]}
+                setFile={setFile}
+                className="w-1/2"
+              />
+              <button className="btn-themeBlue w-1/2" onClick={handleSearch}>
+                Search
+              </button>
+            </div>
+            <Instructions />
+          </div>
+          <FileGrid />
+        </div>
+        <ForecastControls />
+        <div className="grid grid-rows-3 gap-4 mr-8">
+            <OutlierGrid />
+            <PriceHistoryGrid />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Forecasting;

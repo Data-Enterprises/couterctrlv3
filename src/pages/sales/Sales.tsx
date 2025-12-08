@@ -10,7 +10,6 @@ import {
   resetSalesSlice,
   setPanelsLoading,
   setSalesPanelSearchText,
-  setSalesPanelDateText,
   setSelectedSalesPanel,
 } from "../../features/salesSlice";
 import { useHeight } from "./utils/hooks";
@@ -86,15 +85,8 @@ const Sales = () => {
       .finally(() => dispatch(setPanelsLoading(false)));
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    type: "store" | "date"
-  ) => {
-    if (type === "date") {
-      dispatch(setSalesPanelDateText(e.target.value));
-    } else {
-      dispatch(setSalesPanelSearchText(e.target.value));
-    }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(setSalesPanelSearchText(e.target.value));
   };
 
   const pageContainer = context.isDesktop
@@ -122,7 +114,7 @@ const Sales = () => {
                   <input
                     className="basic-input focus:border bg-custom-white"
                     value={sales.salesPanelSearchText}
-                    onChange={(e) => handleChange(e, "store")}
+                    onChange={(e) => handleChange(e)}
                   />
                 </div>
               </div>

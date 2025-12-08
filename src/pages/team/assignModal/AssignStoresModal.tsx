@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
@@ -6,17 +6,34 @@ import {
   setSelectedUserStores,
 } from "../../../features/usersSlice";
 import { getUserStores } from "../../../api/user";
+import { getQuicksightStoresForUser } from "../../../api/quicksight";
 import type { JsonError } from "../../../interfaces";
+
+// Modal and Modes
 import Modal from "../../../components/Modal";
-import { roles } from "..";
-import Assigned from "./Assigned";
-import Unassigned from "./Unassigned";
+import CounterCtrlStores from "./CounterCtrlStores";
+import QuickSightStores from "./QuicksightStores";
+import { setQsUserStores } from "../../../features/qsSlice";
 
 const AssignStoresModal = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const users = useAppSelector((state) => state.users);
+  const qs = useAppSelector((state) => state.quicksight);
+  const [mode, setMode] = useState<"ctrl" | "qs">("ctrl");
+
+  useEffect(() => {
+    setMode("ctrl");
+    if (users.assignModalOpen) {
+      getData();
+    }
+
+    if (qs.validUser && users.assignModalOpen) {
+      // Get quicksight stores
+      getQsStores();
+    }
+  }, [users.assignModalOpen]);
 
   const getData = () => {
     getUserStores(context.url, context.token, users.selectedUserId)
@@ -35,19 +52,25 @@ const AssignStoresModal = () => {
       });
   };
 
-  useEffect(() => {
-    if (users.assignModalOpen) {
-      getData();
-    }
-  }, [users.assignModalOpen]);
-
-  const renderUserRole = () => {
-    const role = roles.find((level) => level.value == users.userInfo.role);
-    if (role) {
-      return `${role.label} User`;
-    } else {
-      return "Role Unassigned";
-    }
+  const getQsStores = () => {
+    getQuicksightStoresForUser(
+      context.url,
+      context.token,
+      qs.selectedQsUserEmail
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          const stores = {
+            assigned_stores: j.assigned_stores,
+            unassigned_stores: j.unassigned_stores,
+          };
+          dispatch(setQsUserStores(stores));
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error(err.message);
+      });
   };
 
   return (
@@ -56,17 +79,28 @@ const AssignStoresModal = () => {
       onClose={() => dispatch(setAssignModalOpen(false))}
       modalClassName="bg-bkg w-[600px]"
     >
-      <div className="font-medium grid grid-cols-3 mb-4">
-        <div className="w-full ">
-          {users.userInfo.first_name} {users.userInfo.last_name || ""}
-        </div>
-        <div className="w-full text-center">{users.userInfo.username}</div>
-        <div className="w-full text-right">{renderUserRole()}</div>
+      <div className={`${qs.validUser ? "flex space-x-4 mb-2" : "hidden"}`}>
+        <button
+          data-testid="assign-stores-ctrl-btn"
+          className={`${
+            mode === "ctrl" ? "btn-themeGreen" : "btn-themeBlue"
+          } w-1/2`}
+          onClick={() => setMode("ctrl")}
+        >
+          CounterCtrl Stores
+        </button>
+        <button
+          data-testid="assign-stores-qs-btn"
+          className={`${
+            mode === "qs" ? "btn-themeGreen" : "btn-themeBlue"
+          } w-1/2`}
+          onClick={() => setMode("qs")}
+        >
+          QuickSight Stores
+        </button>
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <Unassigned getData={getData} />
-        <Assigned getData={getData} />
-      </div>
+      {mode === "ctrl" && <CounterCtrlStores getData={getData} />}
+      {mode === "qs" && <QuickSightStores />}
     </Modal>
   );
 };

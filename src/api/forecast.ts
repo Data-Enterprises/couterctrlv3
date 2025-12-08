@@ -1,0 +1,90 @@
+import axios from "axios";
+
+export const getForecasting = async (
+  url: string,
+  token: string,
+  storeids: string,
+  startdate: string,
+  enddate: string,
+  file: File
+) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "marketing/forecasting",
+    params: {
+      storeids,
+      startdate,
+      enddate,
+    },
+    data: formData,
+  });
+  return json;
+};
+
+export const getPriceHistory = async (
+  url: string,
+  token: string,
+  storeids: string,
+  enddate: string,
+  single_upc: string,
+  forecast: number = 0
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "marketing/price_history",
+    params: {
+      storeids,
+      enddate,
+      single_upc,
+      forecast,
+    },
+  });
+  return json;
+};
+
+export const getBucketList = async (url: string, token: string) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "marketing/s3_file_list",
+  });
+  return json;
+};
+
+export const getFromExistingS3File = async (
+  url: string,
+  token: string,
+  storeids: string,
+  startdate: string,
+  enddate: string,
+  filename: string
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "marketing/forecasting_from_existing_s3_file",
+    params: {
+      storeids,
+      startdate,
+      enddate,
+      filename,
+    },
+  });
+  return json;
+};

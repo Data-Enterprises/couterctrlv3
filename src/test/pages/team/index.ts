@@ -25,6 +25,12 @@ export const baseGroupResp = {
   ],
 };
 
+export const qsUserResp = {
+  error: 0,
+  success: true,
+  users: ["test@example.com", "test3@example.com"],
+};
+
 export const allUsersResp = {
   error: 0,
   success: true,
@@ -59,7 +65,7 @@ export const allUsersResp = {
       join_date: null,
       first_name: "two",
       last_name: "fake",
-      email: "test@example.com",
+      email: "test2@example.com",
       company: 1,
       active: 1,
       template: 1,
@@ -79,7 +85,7 @@ export const allUsersResp = {
       join_date: null,
       first_name: "three",
       last_name: "example",
-      email: "test@example.com",
+      email: "test3@example.com",
       company: 1,
       active: 1,
       template: 1,
@@ -99,7 +105,7 @@ export const allUsersResp = {
       join_date: null,
       first_name: "four",
       last_name: "notreal",
-      email: "test@example.com",
+      email: "test4@example.com",
       company: 1,
       active: 1,
       template: 1,
@@ -119,7 +125,7 @@ export const allUsersResp = {
       join_date: null,
       first_name: "five",
       last_name: "who",
-      email: "test@example.com",
+      email: "test5@example.com",
       company: 1,
       active: 1,
       template: 1,
@@ -139,7 +145,7 @@ export const allUsersResp = {
       join_date: null,
       first_name: "six",
       last_name: "Jenkins",
-      email: "test@example.com",
+      email: "test6@example.com",
       company: 1,
       active: 1,
       template: 1,

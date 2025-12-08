@@ -18,16 +18,12 @@ import { exportData } from "../exportHeaders/utils";
 import { reset } from "../../../features/upcModalSlice";
 import { priceOptHeaders } from "../exportHeaders";
 import UpcModal from "../modal/UpcModal";
-// import CtxMenu from "../../../components/CtxMenu";
-// import { setMenuPosition } from "../../../features/ctxMenuSlice";
-// import { options } from "../utils";
 
 const PriceOpt = () => {
   const toast = useToast();
   const dispatch = useDispatch();
   const upcState = useAppSelector((state) => state.upc);
   const modal = useAppSelector((state) => state.upcModal);
-  // const ctx = useAppSelector((state) => state.ctxMenu);
   const [filteredItems, setFilteredItems] = useState<UpcPriceOpt[]>(
     upcState.optBestPricesByUpc
   );

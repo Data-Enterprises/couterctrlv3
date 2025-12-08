@@ -19,6 +19,7 @@ import {
   ModuleRegistry,
   type RowClickedEvent,
 } from "ag-grid-community";
+import { setSelectedQsUserEmail, setValidUser } from "../../features/qsSlice";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const UserGrid = () => {
@@ -26,6 +27,7 @@ const UserGrid = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const { users, refresh } = useAppSelector((state) => state.users);
+  const qs = useAppSelector((state) => state.quicksight);
   const [text, setText] = useState<string>("");
   const [filtered, setFiltered] = useState<User[]>([]);
 
@@ -65,6 +67,13 @@ const UserGrid = () => {
   const handleRowClick = (e: RowClickedEvent) => {
     setText("");
     dispatch(setSelectedUserInfo(e.data));
+    if (qs.qsUsers.includes(e.data.email)) {
+      dispatch(setSelectedQsUserEmail(e.data.email));
+      dispatch(setValidUser(true));
+    } else {
+      dispatch(setSelectedQsUserEmail(""));
+      dispatch(setValidUser(false));
+    }
     dispatch(setSelectedUserId(e.data.id));
     getBaseGroupsAssignedToUser(context.url, context.token, e.data.id)
       .then((resp) => {

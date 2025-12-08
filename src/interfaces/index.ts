@@ -439,9 +439,63 @@ export type Option = {
   value?: string;
 };
 
-
 // Context Menu Interfaces
 export type ClipboardText = {
   upc: string;
   desc: string;
 };
+
+// Forecast Interfaces
+export interface ForecastQtyData<T> {
+  upc: string;
+  history: { date: string; value: number }[];
+  history_dimension: number;
+  forecast: number;
+  forecast_dimension: number;
+  forecast_method: string;
+  metrics: {
+    description: string;
+    qty: number;
+    avg_daily_qty: number;
+    max_day_qty: number;
+    days_active: number;
+    outliers: { date: string; qty: number }[];
+    prices: T;
+  };
+}
+
+export interface ForecastSalesData<T> {
+  upc: string;
+  history: { date: string; value: number }[];
+  history_dimension: number;
+  forecast: number;
+  forecast_dimension: number;
+  forecast_method: string;
+  metrics: {
+    description: string;
+    sales: number;
+    avg_daily_sales: number;
+    max_day_sales: number;
+    days_active: number;
+    outliers: { date: string; qty: number }[];
+    prices: T;
+    total_sales: number;
+  };
+}
+
+export interface ForecastItem {
+  upc: string;
+  description: string;
+}
+
+export interface ForecastPriceHistory {
+  storeid: number;
+  price_type: string;
+  unit_price: number;
+  total_qty: number;
+  product_code: string;
+  product_description: string;
+  store_number: string;
+  store_name: string;
+  lift: number;
+}

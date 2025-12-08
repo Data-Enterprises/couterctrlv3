@@ -140,7 +140,10 @@ const UpcStepTwo = ({ className = "", getData }: StepTwoProps) => {
           setText={(x) => dispatch(setTrendPeriods(x))}
         />
       </div>
-      <SelectedStoreList />
+      <SelectedStoreList
+        selectedStores={upc.selectedStores}
+        radioId={upc.radioId}
+      />
       <div className="text-sm text-center text-content/70 mt-1">
         Please make sure your date range is valid before continuing.
       </div>

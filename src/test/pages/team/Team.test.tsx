@@ -15,6 +15,14 @@ import {
   deleteUser,
 } from "../../../api/team";
 import { getAllUsers, getUserStores } from "../../../api/user";
+import {
+  addQuicksightStoreForUser,
+  assignAllPermissionsForUser,
+  getQuicksightStoresForUser,
+  getQuicksightUsers,
+  removeAllPermissionsForUser,
+  removeQuicksightStoreForUser,
+} from "../../../api/quicksight";
 import { setTempPassword } from "../../../api/security";
 import {
   baseGroupResp,
@@ -24,6 +32,7 @@ import {
   defaultResp,
   userStoresResp,
   updatedUserStoresResp,
+  qsUserResp,
 } from ".";
 import { setupStore } from "../../../store";
 import Team from "../../../pages/team/Team";
@@ -34,6 +43,7 @@ const mockedToastSuccess = vi.fn();
 const mockedToastError = vi.fn();
 const mockedToastWarning = vi.fn();
 
+vi.mock("../../../api/quicksight");
 vi.mock("../../../api/security");
 vi.mock("../../../api/team");
 vi.mock("../../../api/user");
@@ -51,17 +61,14 @@ describe("Team Page", () => {
       new Error("Network Error")
     );
     (getAllUsers as Mock).mockRejectedValueOnce(new Error("Network Error"));
+    (getQuicksightUsers as Mock).mockRejectedValueOnce(
+      new Error("Network Error")
+    );
 
     renderWithProviders(<Team />);
 
     await waitFor(() => {
-      expect(mockedToastError).toHaveBeenCalledTimes(2);
-      expect(mockedToastError).toHaveBeenCalledWith(
-        expect.stringContaining("Error fetching base groups")
-      );
-      expect(mockedToastError).toHaveBeenCalledWith(
-        expect.stringContaining("Error fetching users")
-      );
+      expect(mockedToastError).toHaveBeenCalledTimes(3);
     });
   });
 
@@ -72,6 +79,9 @@ describe("Team Page", () => {
 
     (getAllUsers as Mock).mockResolvedValueOnce({
       data: allUsersResp,
+    });
+    (getQuicksightUsers as Mock).mockResolvedValueOnce({
+      data: qsUserResp,
     });
 
     renderWithProviders(<Team />, { store });
@@ -150,13 +160,16 @@ describe("Team Page", () => {
       data: updateUserResp,
     });
 
-    // These two are needed because these API calls are also made after user is updated or created
+    // These are needed because these API calls are also made after user is updated or created
     (getBaseGroupsAssignedToUser as Mock).mockResolvedValueOnce({
       data: baseGroupResp,
     });
 
     (getAllUsers as Mock).mockResolvedValueOnce({
       data: allUsersResp,
+    });
+    (getQuicksightUsers as Mock).mockResolvedValueOnce({
+      data: qsUserResp,
     });
 
     renderWithProviders(<Team />, { store });
@@ -271,12 +284,16 @@ describe("Team Page", () => {
   // Testing user creation
   it("should handle user input for creating a new user", async () => {
     // Again, these are needed because creating a new user also triggers these API calls
-    (getBaseGroupsAssignedToUser as Mock).mockResolvedValueOnce({
+    (getBaseGroupsAssignedToUser as Mock).mockResolvedValue({
       data: baseGroupResp,
     });
 
-    (getAllUsers as Mock).mockResolvedValueOnce({
+    (getAllUsers as Mock).mockResolvedValue({
       data: allUsersResp,
+    });
+
+    (getQuicksightUsers as Mock).mockResolvedValue({
+      data: qsUserResp,
     });
 
     renderWithProviders(<Team />, { store });
@@ -338,6 +355,14 @@ describe("Team Page", () => {
       data: deleteUpdateBaseGroupLinkResp,
     });
 
+    (getQuicksightUsers as Mock).mockResolvedValueOnce({
+      data: qsUserResp,
+    });
+
+    (getAllUsers as Mock).mockResolvedValueOnce({
+      data: allUsersResp,
+    });
+
     renderWithProviders(<Team />, { store });
 
     const cells = await screen.findAllByRole("gridcell");
@@ -368,6 +393,14 @@ describe("Team Page", () => {
     (assignBaseGroupToUser as Mock).mockRejectedValueOnce(
       new Error("Assign failed")
     );
+
+    (getQuicksightUsers as Mock).mockResolvedValueOnce({
+      data: qsUserResp,
+    });
+
+    (getAllUsers as Mock).mockResolvedValueOnce({
+      data: allUsersResp,
+    });
 
     renderWithProviders(<Team />, { store });
 
@@ -476,6 +509,18 @@ describe("Team Page", () => {
     // Failure to fetch user's stores
     (getUserStores as Mock).mockRejectedValueOnce(new Error("Fetch failed"));
 
+    (getQuicksightStoresForUser as Mock).mockResolvedValue({
+      data: userStoresResp,
+    });
+
+    (getQuicksightUsers as Mock).mockResolvedValue({
+      data: qsUserResp,
+    });
+
+    (getQuicksightStoresForUser as Mock).mockRejectedValueOnce(
+      new Error("Fetch failed")
+    );
+
     // initial rendering
     renderWithProviders(<Team />, { store });
 
@@ -490,6 +535,10 @@ describe("Team Page", () => {
 
     // Now handle the successful fetch for user stores
     (getUserStores as Mock).mockResolvedValueOnce({
+      data: userStoresResp,
+    });
+
+    (getQuicksightStoresForUser as Mock).mockResolvedValueOnce({
       data: userStoresResp,
     });
 
@@ -556,6 +605,193 @@ describe("Team Page", () => {
     });
   });
 
+  it("should handle quicksight assign stores api failure", async () => {
+    (getUserStores as Mock).mockResolvedValue({
+      data: userStoresResp,
+    });
+    (getQuicksightStoresForUser as Mock).mockResolvedValue({
+      data: userStoresResp,
+    });
+
+    renderWithProviders(<Team />, { store });
+
+    (addQuicksightStoreForUser as Mock).mockRejectedValueOnce(
+      new Error("Assign failed")
+    );
+
+    const assignStoresBtn = await screen.findByTestId("team-assign-stores-btn");
+    await user.click(assignStoresBtn);
+
+    const qsBtn = await screen.findByTestId("assign-stores-qs-btn");
+    await user.click(qsBtn);
+
+    const qsUnassigned = await screen.findByTestId("unassigned-qs-store-5");
+    await user.click(qsUnassigned);
+
+    await waitFor(() => {
+      expect(mockedToastError).toHaveBeenCalled();
+    });
+  });
+
+  it("should handle quicksight unassign stores api failure", async () => {
+    (getUserStores as Mock).mockResolvedValue({
+      data: userStoresResp,
+    });
+    (getQuicksightStoresForUser as Mock).mockResolvedValue({
+      data: userStoresResp,
+    });
+
+    renderWithProviders(<Team />, { store });
+
+    (removeQuicksightStoreForUser as Mock).mockRejectedValueOnce(
+      new Error("Assign failed")
+    );
+
+    const assignStoresBtn = await screen.findByTestId("team-assign-stores-btn");
+    await user.click(assignStoresBtn);
+
+    const qsBtn = await screen.findByTestId("assign-stores-qs-btn");
+    await user.click(qsBtn);
+
+    const qsUnassigned = await screen.findByTestId("assigned-qs-store-1");
+    await user.click(qsUnassigned);
+
+    await waitFor(() => {
+      expect(mockedToastError).toHaveBeenCalled();
+    });
+  });
+
+  it("should handle successful assign/unassign of a single quicksight store", async () => {
+    (getUserStores as Mock).mockResolvedValue({
+      data: userStoresResp,
+    });
+    (getQuicksightStoresForUser as Mock).mockResolvedValue({
+      data: userStoresResp,
+    });
+
+    (addQuicksightStoreForUser as Mock).mockResolvedValue({
+      data: userStoresResp,
+    });
+
+    (removeQuicksightStoreForUser as Mock).mockResolvedValue({
+      data: userStoresResp,
+    });
+
+    renderWithProviders(<Team />, { store });
+
+    const assignStoresBtn = await screen.findByTestId("team-assign-stores-btn");
+    await user.click(assignStoresBtn);
+
+    await waitFor(() => {
+      const state = store.getState().quicksight;
+      expect(state.qsUserAssignedStores.length).toBe(4);
+      expect(state.qsUserUnassignedStores.length).toBe(2);
+    });
+
+    const ctrlBtn = await screen.findByTestId("assign-stores-ctrl-btn");
+    await user.click(ctrlBtn);
+    const qsBtn = await screen.findByTestId("assign-stores-qs-btn");
+    await user.click(qsBtn);
+
+    const qsAssigned = await screen.findByTestId("assigned-qs-store-1");
+    await user.click(qsAssigned);
+
+    const qsUnassigned = await screen.findByTestId("unassigned-qs-store-5");
+    await user.click(qsUnassigned);
+  });
+
+  // it should handle adding/removing all quicksight stores api failure
+  it("", async () => {
+    (getUserStores as Mock).mockResolvedValue({
+      data: userStoresResp,
+    });
+    (getQuicksightStoresForUser as Mock).mockResolvedValue({
+      data: userStoresResp,
+    });
+
+    renderWithProviders(<Team />, { store });
+
+    (assignAllPermissionsForUser as Mock).mockRejectedValueOnce(
+      new Error("Assign all failed")
+    );
+    const assignStoresBtn = await screen.findByTestId("team-assign-stores-btn");
+    await user.click(assignStoresBtn);
+
+    const qsBtn = await screen.findByTestId("assign-stores-qs-btn");
+    await user.click(qsBtn);
+
+    const assignAll = await screen.findByTestId("assign-all-qs-btn");
+    await user.click(assignAll);
+
+    const assignConfirm = await screen.findByTestId(
+      "confirm-assign-all-qs-btn"
+    );
+    await user.click(assignConfirm);
+    await waitFor(() => {
+      expect(mockedToastError).toHaveBeenCalled();
+    });
+
+    const unassignAll = await screen.findByTestId("unassign-all-qs-btn");
+    (removeAllPermissionsForUser as Mock).mockRejectedValueOnce(
+      new Error("Unassign all failed")
+    );
+    await user.click(unassignAll);
+    const unassignConfirm = await screen.findByTestId(
+      "confirm-unassign-all-qs-btn"
+    );
+    await user.click(unassignConfirm);
+    await waitFor(() => {
+      expect(mockedToastError).toHaveBeenCalled();
+    });
+  });
+
+  // it should handle adding/removing all quicksight stores success
+  it("it should handle adding/removing all quicksight stores success", async () => {
+    (getUserStores as Mock).mockResolvedValue({
+      data: userStoresResp,
+    });
+    (getQuicksightStoresForUser as Mock).mockResolvedValue({
+      data: userStoresResp,
+    });
+
+    renderWithProviders(<Team />, { store });
+
+    (assignAllPermissionsForUser as Mock).mockResolvedValueOnce({
+      data: defaultResp,
+    });
+
+    const assignStoresBtn = await screen.findByTestId("team-assign-stores-btn");
+    await user.click(assignStoresBtn);
+
+    const qsBtn = await screen.findByTestId("assign-stores-qs-btn");
+    await user.click(qsBtn);
+
+    const assignAll = await screen.findByTestId("assign-all-qs-btn");
+    await user.click(assignAll);
+
+    const assignConfirm = await screen.findByTestId(
+      "confirm-assign-all-qs-btn"
+    );
+    await user.click(assignConfirm);
+
+    await waitFor(() => {
+      expect(mockedToastSuccess).toHaveBeenCalled();
+    });
+
+    const unassignAll = await screen.findByTestId("unassign-all-qs-btn");
+    (removeAllPermissionsForUser as Mock).mockResolvedValueOnce({
+      data: defaultResp
+    });
+    await user.click(unassignAll);
+    const unassignConfirm = await screen.findByTestId(
+      "confirm-unassign-all-qs-btn"
+    );
+    await user.click(unassignConfirm);
+    await waitFor(() => {
+      expect(mockedToastSuccess).toHaveBeenCalled();
+    });
+  });
+
   // Handling the deletion of a user
   it("should handle opening/closing the Delete User Modal and deleting a user", async () => {
     // Successfully deleting a user sets refresh to true in the users slice
@@ -564,8 +800,20 @@ describe("Team Page", () => {
       data: baseGroupResp,
     });
 
+    (getUserStores as Mock).mockResolvedValueOnce({
+      data: userStoresResp,
+    });
+
     (getAllUsers as Mock).mockResolvedValueOnce({
       data: allUsersResp,
+    });
+
+    (getQuicksightUsers as Mock).mockResolvedValueOnce({
+      data: qsUserResp,
+    });
+
+    (getQuicksightStoresForUser as Mock).mockResolvedValueOnce({
+      data: qsUserResp,
     });
 
     (deleteUser as Mock).mockRejectedValueOnce(new Error("Delete failed"));

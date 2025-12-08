@@ -3,11 +3,13 @@ import {
   HomeIcon,
   UsersIcon,
   MagnifyingGlassIcon,
+  ArrowTrendingUpIcon
 } from "@heroicons/react/16/solid";
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
 import GroupsIcon from "../../svgs/GroupsIcon";
 import UpcListIcon from "../../svgs/UpcListIcon";
+import DashboardIconV2 from "../../svgs/DashbordIconV2";
 
 export type Navigation = {
   name: string;
@@ -84,4 +86,22 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userTypes: ["*"],
   },
+  {
+    name: "Forecasting",
+    href: "forecasting",
+    icon: ArrowTrendingUpIcon,
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userTypes: ["*"],
+  },
+  {
+    name: "Quicksight",
+    href: "quicksight",
+    icon: DashboardIconV2,
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userTypes: ["*"],
+  }
 ];

@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.33% </span>
+                <span class="strong">29.62% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>39/117</span>
+                <span class='fraction'>32/108</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">22.22% </span>
+                <span class="strong">19.51% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>10/45</span>
+                <span class='fraction'>8/41</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">35.48% </span>
+                <span class="strong">29.62% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>11/31</span>
+                <span class='fraction'>8/27</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">31.25% </span>
+                <span class="strong">27.88% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>35/112</span>
+                <span class='fraction'>29/104</span>
             </div>
         
             
@@ -361,26 +361,7 @@
 <a name='L296'></a><a href='#L296'>296</a>
 <a name='L297'></a><a href='#L297'>297</a>
 <a name='L298'></a><a href='#L298'>298</a>
-<a name='L299'></a><a href='#L299'>299</a>
-<a name='L300'></a><a href='#L300'>300</a>
-<a name='L301'></a><a href='#L301'>301</a>
-<a name='L302'></a><a href='#L302'>302</a>
-<a name='L303'></a><a href='#L303'>303</a>
-<a name='L304'></a><a href='#L304'>304</a>
-<a name='L305'></a><a href='#L305'>305</a>
-<a name='L306'></a><a href='#L306'>306</a>
-<a name='L307'></a><a href='#L307'>307</a>
-<a name='L308'></a><a href='#L308'>308</a>
-<a name='L309'></a><a href='#L309'>309</a>
-<a name='L310'></a><a href='#L310'>310</a>
-<a name='L311'></a><a href='#L311'>311</a>
-<a name='L312'></a><a href='#L312'>312</a>
-<a name='L313'></a><a href='#L313'>313</a>
-<a name='L314'></a><a href='#L314'>314</a>
-<a name='L315'></a><a href='#L315'>315</a>
-<a name='L316'></a><a href='#L316'>316</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L299'></a><a href='#L299'>299</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -433,21 +414,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -724,8 +690,6 @@ import TopStoreLookup from "./TopStoreLookup";
 import BottomStoreLookup from "./BottomStoreLookup";
 import ItemLookupHeader from "./ItemLookupHeader";
 import HistoryItemCard from "./HistoryItemCard";
-import { getAllUsers } from "../../api/user";
-import { setEmail } from "../../features/userSlice";
 &nbsp;
 const ItemLookup = () =&gt; {
   const toast = useToast();
@@ -733,7 +697,7 @@ const ItemLookup = () =&gt; {
   const { url, token } = useAppSelector((state) =&gt; state.app);
   const { upcCode, itemsLoaded, selectedStore, itemLookupHistory, storeList } =
     useAppSelector((state) =&gt; state.item);
-  const { email, userid } = useAppSelector((state) =&gt; state.user);
+  const { email } = useAppSelector((state) =&gt; state.user);
 &nbsp;
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -748,21 +712,6 @@ const ItemLookup = () =&gt; {
 &nbsp;
   // handle scroll height for history list
   const { height, topRef, bottomRef } = useHeight();
-&nbsp;
-  useEffect(() =&gt; {
-    // Right now just getting the user's email since logging in does not return it
-    getAllUsers(url, token)
-      .then((resp) =&gt; {
-        const j = resp.data;
-        <span class="missing-if-branch" title="else path not taken" >E</span>if (j.error === 0) {
-          const user = j.users.find((u: any) =&gt; u.id === userid);
-          <span class="missing-if-branch" title="if path not taken" >I</span>if (user) {
-<span class="cstat-no" title="statement not covered" >            dispatch(setEmail(user.email));</span>
-          }
-        }
-      })
-      .catch(<span class="fstat-no" title="function not covered" >(e</span>rr) =&gt; <span class="cstat-no" title="statement not covered" >toast.error(err.message))</span>;
-  }, []);
 &nbsp;
   useEffect(() =&gt; {
     // Get the store list on mount or clear
@@ -1015,7 +964,7 @@ export default ItemLookup;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-06T00:13:25.746Z
+                at 2025-12-08T18:49:27.730Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

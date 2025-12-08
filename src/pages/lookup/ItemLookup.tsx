@@ -29,8 +29,6 @@ import TopStoreLookup from "./TopStoreLookup";
 import BottomStoreLookup from "./BottomStoreLookup";
 import ItemLookupHeader from "./ItemLookupHeader";
 import HistoryItemCard from "./HistoryItemCard";
-import { getAllUsers } from "../../api/user";
-import { setEmail } from "../../features/userSlice";
 
 const ItemLookup = () => {
   const toast = useToast();
@@ -38,7 +36,7 @@ const ItemLookup = () => {
   const { url, token } = useAppSelector((state) => state.app);
   const { upcCode, itemsLoaded, selectedStore, itemLookupHistory, storeList } =
     useAppSelector((state) => state.item);
-  const { email, userid } = useAppSelector((state) => state.user);
+  const { email } = useAppSelector((state) => state.user);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -53,21 +51,6 @@ const ItemLookup = () => {
 
   // handle scroll height for history list
   const { height, topRef, bottomRef } = useHeight();
-
-  useEffect(() => {
-    // Right now just getting the user's email since logging in does not return it
-    getAllUsers(url, token)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          const user = j.users.find((u: any) => u.id === userid);
-          if (user) {
-            dispatch(setEmail(user.email));
-          }
-        }
-      })
-      .catch((err) => toast.error(err.message));
-  }, []);
 
   useEffect(() => {
     // Get the store list on mount or clear

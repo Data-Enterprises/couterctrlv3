@@ -22,6 +22,7 @@ import {
   setCompany,
   setResetPassword,
   setSecurityQuestionId,
+  setEmail,
 } from "../../features/userSlice";
 import ForgotPassword from "./forgot/ForgotPassword";
 
@@ -67,6 +68,7 @@ const Login = () => {
           dispatch(setToken(j.access_token));
           dispatch(setFirstName(j.first_name));
           dispatch(setLastName(j.last_name));
+          dispatch(setEmail(j.email));
           dispatch(setRole(j.role));
           dispatch(setUserLevel(j.user_level));
           dispatch(setCompany(j.company));
@@ -185,7 +187,7 @@ const Login = () => {
         </div>
         {/* Change this before pushing for publishing */}
         <div className="absolute bottom-1 left-0 text-sm pl-2">
-          Last Updated on 12/5/2025 @ 6:16PM CST
+          Last Updated on 12/8/2025 @ 5:37PM CST
         </div>
       </div>
       <div className="relative hidden w-0 flex-1 lg:block">

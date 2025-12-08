@@ -42,7 +42,7 @@ const Unassigned = ({ getData }: UnassignedProps) => {
         type="text"
         className="basic-input focus:border bg-custom-white"
       />
-      <div className="max-h-[400px] overflow-y-auto no-scrollbar space-y-2 mt-4 shadow-lg">
+      <div className="min-h-[400px] max-h-[400px] overflow-y-auto no-scrollbar space-y-2 mt-4">
         {hasLength()
           ? users.selectedUserStores.unassigned.map((store) => (
               <div
