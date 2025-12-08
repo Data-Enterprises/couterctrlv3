@@ -96,8 +96,8 @@ export const navigation: Navigation[] = [
     userTypes: ["*"],
   },
   {
-    name: "Dashboard",
-    href: "dashboard",
+    name: "Quicksight",
+    href: "quicksight",
     icon: DashboardIconV2,
     mobile: false,
     children: [],

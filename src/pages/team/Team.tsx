@@ -2,8 +2,10 @@ import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
+import { getQuicksightUsers } from "../../api/quicksight";
 import { getBaseGroupsAssignedToUser } from "../../api/team";
 import { setBaseGroups, setRefresh } from "../../features/usersSlice";
+import { setQsUsers } from "../../features/qsSlice";
 import type { JsonError } from "../../interfaces";
 
 import UserInfo from "./UserInfo";
@@ -20,6 +22,16 @@ const Team = () => {
 
   useEffect(() => {
     if (refresh) {
+      getQuicksightUsers(context.url, context.token)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            dispatch(setQsUsers(j.users))
+          }
+        })
+        .catch((err: JsonError) => {
+          toast.error("Error fetching QuickSight users " + err.message);
+        });
       getUsers();
       dispatch(setRefresh(false));
     }

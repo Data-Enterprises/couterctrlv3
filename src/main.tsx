@@ -37,7 +37,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="upc-upload" element={<UpcList />} />
                 <Route path="item-lookup" element={<ItemLookup />} />
                 <Route path="forecast" element={<Forecast />} />
-                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="quicksight" element={<Dashboard />} />
               </Route>
             </Routes>
           </ToastProvider>
