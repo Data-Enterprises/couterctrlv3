@@ -9,11 +9,23 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 import FileInput from "./FileInput";
 import SingleSelect from "../../components/SingleSelect";
 import { getStoresAssignedToUserGroup } from "../../api/groups";
-import type { JsonError, Store, UpcForecast } from "../../interfaces";
+import type {
+  ForecastQtyData,
+  JsonError,
+  Store,
+  ForecastSalesData,
+} from "../../interfaces";
 import type { Group } from "../../features/groupSlice";
-import { setRadioId, setSelectedStores } from "../../features/forecastSlice";
+import {
+  setItems,
+  setQty,
+  setRadioId,
+  setSales,
+  setSelectedStores,
+} from "../../features/forecastSlice";
 import { useForecastContext } from "./hooks";
 import SelectedStoreList from "../upc/wizard/SelectedStoreList";
+import ForecastControls from "./ForecastControls";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -53,11 +65,46 @@ const Forecasting = () => {
           const j = resp.data;
           if (j.error === 0) {
             // To set the list of items for the controls
-            const upcItems = Object.keys(j.qty_output).map((k) => ({
-              product_code: k,
-              description: j.qty_output[k as string].metrics.description,
+            const qtyOutput: ForecastQtyData<any>[] = Object.entries(
+              j.qty_output
+            ).map(([k, v]) => {
+              const upc = k as string;
+              const data = v as any;
+              return {
+                upc,
+                history: data.history,
+                history_dimension: data.history_dimension,
+                forecast: data.forecast,
+                forecast_dimension: data.forecast_dimension,
+                forecast_method: data.forecast_method,
+                metrics: data.metrics,
+              };
+            });
+
+            const salesOutput: ForecastSalesData<any>[] = Object.entries(
+              j.sales_output
+            ).map(([k, v]) => {
+              const upc = k as string;
+              const data = v as any;
+              return {
+                upc,
+                history: data.history,
+                history_dimension: data.history_dimension,
+                forecast: data.forecast,
+                forecast_dimension: data.forecast_dimension,
+                forecast_method: data.forecast_method,
+                metrics: data.metrics,
+              };
+            });
+
+            const upcItems = qtyOutput.map((item) => ({
+              upc: item.upc,
+              description: item.metrics.description,
             }));
-            console.log("UPC Items:", upcItems);
+
+            dispatch(setQty(qtyOutput));
+            dispatch(setSales(salesOutput));
+            dispatch(setItems(upcItems));
           }
         })
         .catch((err: JsonError) => toast.error(err.message));
@@ -113,7 +160,7 @@ const Forecasting = () => {
       data-testid="forecast-page"
       className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)]"
     >
-      <div className="grid grid-cols-[20%_80%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
+      <div className="grid grid-cols-[20%_12%_68%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
         <div className="space-y-4">
           <div className="bg-custom-white rounded-lg shadow-lg p-4">
             <div className="mb-2">
@@ -173,7 +220,8 @@ const Forecasting = () => {
             />
           </div>
         </div>
-        <div className="bg-custom-white rounded-lg shadow-lg mr-4">widgets</div>
+        <ForecastControls />
+        <div className="mr-4">{/* Right side content can go here */}</div>
       </div>
     </div>
   );

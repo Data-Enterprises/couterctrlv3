@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
-import { useScrollHeight } from "../upc/components";
-import CheckBox from "../../components/inputs/CheckBox";
+import { useScrollHeight } from ".";
 import RadioBox from "../../components/inputs/RadioBox";
 
-import {
-  setClipboardText,
-  setMenuPosition,
-} from "../../features/ctxMenuSlice";
+import { setClipboardText, setMenuPosition } from "../../features/ctxMenuSlice";
+import type { ForecastItem } from "../../interfaces";
+import CheckBox from "../../components/inputs/CheckBox";
+import { resetSelectedUpcs, setSelectedUpcs } from "../../features/forecastSlice";
 
 const ForecastControls = () => {
-  // const [filtered, setFiltered] = useState<UpcItem[]>([]);
+  const [filtered, setFiltered] = useState<ForecastItem[]>([]);
   const [filterText, setFilterText] = useState<string>("");
   const [upcDisplay, setUpcDisplay] = useState<"code" | "desc">("code");
   const [showDisplay, setShowDisplay] = useState<"all" | "selected" | "stores">(
@@ -18,7 +17,10 @@ const ForecastControls = () => {
   );
   const dispatch = useAppDispatch();
   const { height, topRef } = useScrollHeight();
-  const state = useAppSelector((state) => state.upc);
+  const state = useAppSelector((state) => state.forecast);
+  const search = useAppSelector((state) => state.search);
+
+  console.log(height)
 
   const handleClearClick = () => {
     // dispatch(clearUpcData());
@@ -49,31 +51,41 @@ const ForecastControls = () => {
     dispatch(setMenuPosition({ x: e.pageX + 5, y: e.pageY }));
   };
 
-  // useEffect(() => {
-  //   if (filterText === "") {
-  //     setFiltered(upcItems);
-  //   } else {
-  //     const filtered = upcItems.filter(
-  //       (item) =>
-  //         item.description.toLowerCase().includes(filterText.toLowerCase()) ||
-  //         item.product_code.toLowerCase().includes(filterText.toLowerCase())
-  //     );
-  //     setFiltered(filtered);
-  //   }
-  // }, [filterText, upcItems]);
+  useEffect(() => {
+    if (filterText === "") {
+      setFiltered(state.items);
+    } else {
+      const filtered = state.items.filter(
+        (item) =>
+          item.description.toLowerCase().includes(filterText.toLowerCase()) ||
+          item.upc.toLowerCase().includes(filterText.toLowerCase())
+      );
+      setFiltered(filtered);
+    }
+  }, [filterText, state.items]);
+
+  const handleDeselectAll = () => {
+    dispatch(resetSelectedUpcs());
+  };
 
   return (
-    <div data-testid="forecast-controls" className="grid bg-custom-white rounded-lg shadow-lg text-sm select-none">
+    <div
+      data-testid="forecast-controls"
+      className={`${state.items.length === 0 ? "hidden" : "animate-windowIn"} bg-custom-white rounded-lg shadow-lg text-sm select-none`}
+    >
       <div
         ref={topRef}
         className="flex flex-col gap-2 rounded-t-lg px-2 pt-3 pb-2"
       >
         <div className="font-medium text-center rounded-t-lg">
-          Dates
-          {/* {startDate} - {selectedMode === 4 ? `${trendPeriods} Days` : endDate} */}
+          {search.startDate} - {search.endDate}
         </div>
         <div className="flex flex-col gap-2">
-          <button data-testid="upc-controls-reset-btn" className="py-1 btn-themeBlue" onClick={handleClearClick}>
+          <button
+            data-testid="upc-controls-reset-btn"
+            className="py-1 btn-themeBlue"
+            onClick={handleClearClick}
+          >
             Reset
           </button>
           <button
@@ -87,28 +99,28 @@ const ForecastControls = () => {
         <div className="flex flex-col gap-2">
           <RadioBox
             value={showDisplay === "all"}
-            label={`Show All - ${0}`}
+            label={`Show All - ${state.items.length}`}
             onChange={() => handleDisplay("all")}
             id={1}
           />
           <RadioBox
             value={showDisplay === "selected"}
-            label={`Show Selected - ${0}`}
+            label={`Show Selected - ${state.selectedUpcs.length}`}
             onChange={() => handleDisplay("selected")}
             id={2}
           />
           <RadioBox
             value={showDisplay === "stores"}
-            label={`Show Stores - ${0}`}
+            label={`Show Stores - ${state.selectedStores.length}`}
             onChange={() => handleDisplay("stores")}
             id={3}
           />
         </div>
         <div className="flex flex-col gap-2">
           <button
-            data-testid="upc-deselect-all-btn"
+            data-testid="forecast-upc-deselect-all-btn"
             className="py-1 btn-themeOrange"
-            onClick={() => {}}
+            onClick={handleDeselectAll}
           >
             Deselect All
           </button>
@@ -124,7 +136,7 @@ const ForecastControls = () => {
         </div>
         <div>
           <input
-            data-testid="upc-filter-input"
+            data-testid="forecast-upc-filter-input"
             type="text"
             className="basic-input focus:border bg-custom-white py-1 w-full"
             value={filterText}
@@ -138,45 +150,41 @@ const ForecastControls = () => {
         className="bg-custom-white rounded-b-lg overflow-y-scroll no-scrollbar"
         style={{ minHeight: height, maxHeight: height }}
       >
-        {/* {showDisplay === "all" &&
+        {showDisplay === "all" &&
           filtered.map((item, i) => (
             <div
               key={i}
               className={`even:bg-blue-200 px-2 py-1 text-xs font-medium hover:bg-blue-100 transition-all duration-200 cursor-pointer`}
-              onClick={() => dispatch(setSelectedUpcs(item.product_code))}
+              onClick={() => dispatch(setSelectedUpcs(item.upc))}
               onContextMenu={(e) => handleRightClick(e, item)}
             >
               <CheckBox
                 id={i}
-                label={
-                  upcDisplay === "code" ? item.product_code : item.description
-                }
-                value={selectedUpcs.includes(item.product_code)}
+                label={upcDisplay === "code" ? item.upc : item.description}
+                value={state.selectedUpcs.includes(item.upc)}
               />
             </div>
           ))}
         {showDisplay === "selected" &&
-          upcItems.map((item, i) => {
-            if (!selectedUpcs.includes(item.product_code)) return null;
+          state.items.map((item, i) => {
+            if (!state.selectedUpcs.includes(item.upc)) return null;
             return (
               <div
                 key={i}
                 data-testid={`selected-upc-${i}`}
                 className={`even:bg-blue-200 px-2 py-1 text-xs font-medium hover:bg-blue-100 transition-all duration-200 cursor-pointer`}
-                onClick={() => dispatch(setSelectedUpcs(item.product_code))}
+                onClick={() => dispatch(setSelectedUpcs(item.upc))}
               >
                 <CheckBox
                   id={i}
-                  label={
-                    upcDisplay === "code" ? item.product_code : item.description
-                  }
-                  value={selectedUpcs.includes(item.product_code)}
+                  label={upcDisplay === "code" ? item.upc : item.description}
+                  value={state.selectedUpcs.includes(item.upc)}
                 />
               </div>
             );
           })}
         {showDisplay === "stores" &&
-          selectedStores.map((store, i) => {
+          state.selectedStores.map((store, i) => {
             return (
               <div
                 key={i}
@@ -185,7 +193,7 @@ const ForecastControls = () => {
                 {store.store_number} - {store.store_name}
               </div>
             );
-          })} */}
+          })}
       </div>
     </div>
   );
