@@ -26,6 +26,7 @@ import {
 import { useForecastContext } from "./hooks";
 import SelectedStoreList from "../upc/wizard/SelectedStoreList";
 import ForecastControls from "./ForecastControls";
+import FileGrid from "./FileGrid";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -160,8 +161,8 @@ const Forecasting = () => {
       data-testid="forecast-page"
       className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)]"
     >
-      <div className="grid grid-cols-[20%_12%_68%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
-        <div className="space-y-4">
+      <div className="grid grid-cols-[23%_12%_65%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
+        <div className="gap-4 flex flex-col justify-between">
           <div className="bg-custom-white rounded-lg shadow-lg p-4">
             <div className="mb-2">
               <SingleSelect
@@ -195,8 +196,8 @@ const Forecasting = () => {
                   id={2}
                 />
               )}
-            </div>
             <DatePickers showBtn={false} />
+            </div>
             <div className="flex gap-2">
               <FileInput
                 file={file}
@@ -209,6 +210,7 @@ const Forecasting = () => {
               </button>
             </div>
           </div>
+          <FileGrid />
           <div className="bg-custom-white rounded-lg shadow-lg p-2">
             <Instructions />
             <SelectedStoreList

@@ -51,3 +51,15 @@ export const getPriceHistory = async (
   });
   return json;
 };
+
+export const getBucketList = async (url: string, token: string) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "marketing/s3_file_list",
+  });
+  return json;
+};

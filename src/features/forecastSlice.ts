@@ -14,6 +14,7 @@ interface ForecastState {
   qty: ForecastQtyData<any>[];
   items: ForecastItem[];
   selectedUpcs: string[];
+  files: string[];
 }
 
 const initialState: ForecastState = {
@@ -24,6 +25,7 @@ const initialState: ForecastState = {
   qty: [],
   items: [],
   selectedUpcs: [],
+  files: [],
 };
 export const forecastSlice = createSlice({
   name: "forecast",
@@ -62,6 +64,9 @@ export const forecastSlice = createSlice({
     resetSelectedUpcs: (state) => {
       state.selectedUpcs = [];
     },
+    setFiles: (state, action: PayloadAction<string[]>) => {
+      state.files = action.payload;
+    },
     resetForecast: () => initialState,
   },
 });
@@ -74,6 +79,7 @@ export const {
   setItems,
   setSelectedUpcs,
   resetSelectedUpcs,
+  setFiles,
   resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;
