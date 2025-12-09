@@ -85,7 +85,7 @@ const Grid = ({ rowData, handleCellClick }: GridProps) => {
       state.selectedUpcs.includes(item.product_code)
     );
     setRows(filtered);
-  }, [rowData, state.upcSearch, state.descSearch, state.selectedUpcs]);
+  }, [rowData, state.selectedUpcs]);
 
   useEffect(() => {
     if (state.selectedOptItem.product_code) {
