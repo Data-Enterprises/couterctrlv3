@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
 import { getBucketList } from "../../api/forecast";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { setFiles, setItems, setQty, setSales } from "../../features/forecastSlice";
+import {
+  reQuery,
+  setFiles,
+  setIsLoading,
+  setItems,
+  setQty,
+  setSales,
+} from "../../features/forecastSlice";
 import { useAppDispatch } from "../../hooks";
 import { useForecastContext } from "./hooks";
 import { getFromExistingS3File } from "../../api/forecast";
@@ -66,6 +73,8 @@ const FileGrid = () => {
 
   const onRowClicked = (event: RowClickedEvent<TableData>) => {
     if (event.data) {
+      dispatch(setIsLoading(true));
+      dispatch(reQuery());
       const fileName = event.data.name;
       getFromExistingS3File(
         context.url,
@@ -122,7 +131,8 @@ const FileGrid = () => {
         })
         .catch((err) => {
           toast.error(err.message);
-        });
+        })
+        .finally(() => dispatch(setIsLoading(false)));
     }
   };
 

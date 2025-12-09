@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks";
 import { useScrollHeight } from ".";
 import RadioBox from "../../components/inputs/RadioBox";
 
-import { setClipboardText, setMenuPosition } from "../../features/ctxMenuSlice";
+// import { setClipboardText, setMenuPosition } from "../../features/ctxMenuSlice";
 import type { ForecastItem } from "../../interfaces";
 import CheckBox from "../../components/inputs/CheckBox";
 import { reset, resetSelectedUpcs, setSelectedUpcs } from "../../features/forecastSlice";
@@ -36,21 +36,21 @@ const ForecastControls = () => {
     // dispatch(setOpenModal(true));
   };
 
-  const handleRightClick = (
-    e: React.MouseEvent<HTMLDivElement>,
-    option: any
-  ) => {
-    e.preventDefault();
-    // if (options.length > 2) options.pop();
+  // const handleRightClick = (
+  //   e: React.MouseEvent<HTMLDivElement>,
+  //   option: any
+  // ) => {
+  //   e.preventDefault();
+  //   // if (options.length > 2) options.pop();
 
-    dispatch(
-      setClipboardText({
-        upc: option.product_code,
-        desc: option.description,
-      })
-    );
-    dispatch(setMenuPosition({ x: e.pageX + 5, y: e.pageY }));
-  };
+  //   dispatch(
+  //     setClipboardText({
+  //       upc: option.product_code,
+  //       desc: option.description,
+  //     })
+  //   );
+  //   dispatch(setMenuPosition({ x: e.pageX + 5, y: e.pageY }));
+  // };
 
   useEffect(() => {
     if (filterText === "") {
@@ -83,14 +83,14 @@ const ForecastControls = () => {
         </div>
         <div className="flex flex-col gap-2">
           <button
-            data-testid="upc-controls-reset-btn"
+            data-testid="forecast-controls-reset-btn"
             className="py-1 btn-themeBlue"
             onClick={handleClearClick}
           >
             Reset
           </button>
           <button
-            data-testid="upc-controls-export-btn"
+            data-testid="forecast-controls-export-btn"
             className="py-1 btn-themeGreen"
             onClick={handleExportBtnClick}
           >
@@ -119,14 +119,14 @@ const ForecastControls = () => {
         </div>
         <div className="flex flex-col gap-2">
           <button
-            data-testid="forecast-upc-deselect-all-btn"
+            data-testid="forecast-deselect-all-btn"
             className="py-1 btn-themeOrange"
             onClick={handleDeselectAll}
           >
             Deselect All
           </button>
           <button
-            data-testid="upc-toggle-display-btn"
+            data-testid="forecast-toggle-display-btn"
             className="py-1 btn-themeBlue"
             onClick={() =>
               setUpcDisplay(upcDisplay === "code" ? "desc" : "code")
@@ -137,7 +137,7 @@ const ForecastControls = () => {
         </div>
         <div>
           <input
-            data-testid="forecast-upc-filter-input"
+            data-testid="forecast-controls-filter-input"
             type="text"
             className="basic-input focus:border bg-custom-white py-1 w-full"
             value={filterText}
@@ -157,7 +157,7 @@ const ForecastControls = () => {
               key={i}
               className={`even:bg-blue-200 px-2 py-1 text-xs font-medium hover:bg-blue-100 transition-all duration-200 cursor-pointer`}
               onClick={() => dispatch(setSelectedUpcs(item.upc))}
-              onContextMenu={(e) => handleRightClick(e, item)}
+              // onContextMenu={(e) => handleRightClick(e, item)}
             >
               <CheckBox
                 id={i}

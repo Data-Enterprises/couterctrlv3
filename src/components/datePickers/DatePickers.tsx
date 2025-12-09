@@ -7,6 +7,7 @@ interface Props {
   handleQuery?: () => void;
   btnPadding?: string;
   showBtn?: boolean;
+  singleDate?: boolean;
 }
 
 const DatePickers = ({ handleQuery, btnPadding = "", showBtn = true }: Props) => {

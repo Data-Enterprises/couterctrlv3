@@ -18,6 +18,7 @@ import type {
 import type { Group } from "../../features/groupSlice";
 import {
   reQuery,
+  setIsLoading,
   setItems,
   setQty,
   setRadioId,
@@ -30,6 +31,7 @@ import ForecastControls from "./ForecastControls";
 import FileGrid from "./FileGrid";
 import OutlierGrid from "./OutlierGrid";
 import PriceHistoryGrid from "./PriceHistoryGrid";
+import LoadingIndicator from "../../components/loading/LoadingIndicator";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -37,11 +39,11 @@ const options = [
 ];
 
 const Forecasting = () => {
-  const [file, setFile] = useState<File | null>(null);
-  const [filteredData, setFilteredData] = useState<Store[] | Group[]>([]);
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useForecastContext();
+  const [file, setFile] = useState<File | null>(null);
+  const [filteredData, setFilteredData] = useState<Store[] | Group[]>([]);
 
   useEffect(() => {
     // On mount, if radioId is 0, set to 1 (Stores)
@@ -57,6 +59,7 @@ const Forecasting = () => {
 
   const handleSearch = () => {
     if (file) {
+      dispatch(setIsLoading(true));
       dispatch(reQuery());
       getForecasting(
         context.url,
@@ -112,7 +115,8 @@ const Forecasting = () => {
             dispatch(setItems(upcItems));
           }
         })
-        .catch((err: JsonError) => toast.error(err.message));
+        .catch((err: JsonError) => toast.error(err.message))
+        .finally(() => dispatch(setIsLoading(false)));
     }
   };
 
@@ -167,6 +171,7 @@ const Forecasting = () => {
     >
       <div className="grid grid-cols-[23%_12%_65%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
         <div className="gap-4 flex flex-col justify-between">
+          <Instructions />
           <div className="bg-custom-white rounded-lg shadow-lg p-4">
             <div className="">
               <div className="flex gap-2">
@@ -220,18 +225,25 @@ const Forecasting = () => {
                 setFile={setFile}
                 className="w-1/2"
               />
-              <button className="btn-themeBlue w-1/2" onClick={handleSearch}>
+              <button
+                data-testid="forecast-search-btn"
+                className="btn-themeBlue w-1/2"
+                onClick={handleSearch}
+              >
                 Search
               </button>
             </div>
-            <Instructions />
+            {/* <Instructions /> */}
           </div>
           <FileGrid />
         </div>
-        <ForecastControls />
+        <div className="relative h-full">
+          <ForecastControls />
+          {context.isLoading && <LoadingIndicator />}
+        </div>
         <div className="grid grid-rows-3 gap-4 mr-8">
-            <OutlierGrid />
-            <PriceHistoryGrid />
+          <OutlierGrid />
+          <PriceHistoryGrid />
         </div>
       </div>
     </div>
