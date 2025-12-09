@@ -8,9 +8,10 @@ export const useScrollHeight = () => {
   const [height, setHeight] = useState<number>(0);
 
   const calcHeight = () => {
-    if (!topRef.current) return;
-    const position = topRef.current.getBoundingClientRect().bottom;
-    setHeight(window.innerHeight - position - 16);
+    if (topRef.current) {
+      const position = topRef.current.getBoundingClientRect().bottom;
+      setHeight(window.innerHeight - position - 16);
+    }
   };
 
   useEffect(() => {

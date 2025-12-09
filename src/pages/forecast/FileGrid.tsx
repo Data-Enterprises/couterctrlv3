@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import { getBucketList } from "../../api/forecast";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { setFiles, setItems, setQty, setSales } from "../../features/forecastSlice";
+import {
+  setFiles,
+  setItems,
+  setQty,
+  setSales,
+} from "../../features/forecastSlice";
 import { useAppDispatch } from "../../hooks";
 import { useForecastContext } from "./hooks";
 import { getFromExistingS3File } from "../../api/forecast";

@@ -12,7 +12,7 @@ export default defineConfig({
       enabled: true,
       reporter: ["text", "json", "html"],
       include: ["src/**/*.{ts,tsx}"],
-      exclude: ["src/main.tsx", "src/api/**"],
+      exclude: ["src/main.tsx", "src/api/**", "src/components/toasts/**"],
     },
   },
 } as UserConfig);

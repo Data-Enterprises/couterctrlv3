@@ -220,7 +220,7 @@ const Forecasting = () => {
                 setFile={setFile}
                 className="w-1/2"
               />
-              <button className="btn-themeBlue w-1/2" onClick={handleSearch}>
+              <button data-testid="forecast-search-btn" className="btn-themeBlue w-1/2" onClick={handleSearch}>
                 Search
               </button>
             </div>
