@@ -6,12 +6,10 @@ import { theme, compCols } from "../../components";
 import {
   AllCommunityModule,
   ModuleRegistry,
-  type CellContextMenuEvent,
   type RowClickedEvent,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { setSelectedSalesComps } from "../../../../features/upcSlice";
-import { setClipboardText, setMenuPosition } from "../../../../features/ctxMenuSlice";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const SalesCompGrid = () => {
@@ -27,25 +25,12 @@ const SalesCompGrid = () => {
   }, [salesComp, selectedUpcs]);
 
   const handleRowClick = (event: RowClickedEvent<UpcSalesComp>) => {
-    // Handle row click if needed
     dispatch(setSelectedSalesComps(event.data as UpcSalesComp));
-  };
-
-  const handleRightClick = (e: CellContextMenuEvent<UpcSalesComp>) => {
-    const mouseEvent = e.event as MouseEvent;
-    if (!e.data) return;
-    dispatch(
-      setClipboardText({ upc: e.data.product_code, desc: e.data.description })
-    );
-    dispatch(setMenuPosition({ x: mouseEvent.pageX + 5, y: mouseEvent.pageY }));
   };
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg">
-      <div
-        className="ag-theme-alpine h-full w-full"
-        onContextMenuCapture={(e) => e.preventDefault()}
-      >
+      <div className="ag-theme-alpine h-full w-full">
         {upcs.length > 0 ? (
           <AgGridReact
             rowData={upcs}
@@ -56,7 +41,6 @@ const SalesCompGrid = () => {
             pagination={true}
             paginationAutoPageSize={true}
             onRowClicked={handleRowClick}
-            onCellContextMenu={handleRightClick}
           />
         ) : (
           <div className="text-content/70 flex flex-col justify-center items-center h-full">

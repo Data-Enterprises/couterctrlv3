@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">46.66% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>7/15</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">2.17% </span>
+                <span class="strong">72.72% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>2/92</span>
+                <span class='fraction'>64/88</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.33% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/3</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">46.66% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>7/15</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -297,8 +297,7 @@
 <a name='L232'></a><a href='#L232'>232</a>
 <a name='L233'></a><a href='#L233'>233</a>
 <a name='L234'></a><a href='#L234'>234</a>
-<a name='L235'></a><a href='#L235'>235</a>
-<a name='L236'></a><a href='#L236'>236</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L235'></a><a href='#L235'>235</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -307,28 +306,27 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">67x</span>
+<span class="cline-any cline-yes">67x</span>
+<span class="cline-any cline-yes">67x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">67x</span>
+<span class="cline-any cline-yes">42x</span>
+<span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-yes">24x</span>
-<span class="cline-any cline-yes">24x</span>
-<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">24x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">24x</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">67x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-yes">67x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -545,22 +543,20 @@ import {
 const SalesComparison = () =&gt; {
   const dispatch = useAppDispatch();
   const { selectedCompOne, selectedCompTwo } = useUpcContext();
-  const isReady = selectedCompOne &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >selectedCompTwo;</span>
+  const isReady = selectedCompOne &amp;&amp; selectedCompTwo;
 &nbsp;
-  const renderIcon = <span class="fstat-no" title="function not covered" >(n</span>um1: number, num2: number) =&gt; {
-    const one = <span class="cstat-no" title="statement not covered" >num1 === null ? 0 : num1;</span>
-    const two = <span class="cstat-no" title="statement not covered" >num2 === null ? 0 : num2;</span>
-<span class="cstat-no" title="statement not covered" >    if (one &gt; two) {</span>
-<span class="cstat-no" title="statement not covered" >      return &lt;ArrowUpCircleIcon className="h-6 w-6 text-emerald-500" /&gt;;</span>
-<span class="cstat-no" title="statement not covered" >    } else if (one &lt; two) {</span>
-<span class="cstat-no" title="statement not covered" >      return &lt;ArrowDownCircleIcon className="h-6 w-6 text-orange-500" /&gt;;</span>
+  const renderIcon = (num1: number, num2: number) =&gt; {
+    if (num1 &gt; num2) {
+      return &lt;ArrowUpCircleIcon className="h-6 w-6 text-emerald-500" /&gt;;
+    } else if (num1 &lt; num2) {
+      return &lt;ArrowDownCircleIcon className="h-6 w-6 text-orange-500" /&gt;;
     } else {
-<span class="cstat-no" title="statement not covered" >      return &lt;div className="w-5"&gt;&lt;/div&gt;;</span>
+      return &lt;div className="w-5"&gt;&lt;/div&gt;;
     }
   };
 &nbsp;
-  const handleClear = <span class="fstat-no" title="function not covered" >() =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    dispatch(clearSelectedComps());</span>
+  const handleClear = () =&gt; {
+    dispatch(clearSelectedComps());
   };
 &nbsp;
   return (
@@ -571,7 +567,7 @@ const SalesComparison = () =&gt; {
           &lt;div&gt;To view the sales comparison&lt;/div&gt;
         &lt;/div&gt;
       ) : (
-<span class="branch-1 cbranch-no" title="branch not covered" >        &lt;&gt;</span>
+        &lt;&gt;
             &lt;div className="bg-blue-500 text-custom-white font-medium rounded-t-lg pl-4 py-1"&gt;
               Comparison
             &lt;/div&gt;
@@ -608,16 +604,16 @@ const SalesComparison = () =&gt; {
                     {formatCurrency2(selectedCompOne.Tuesday || 0)}
                     {renderIcon(
                       selectedCompOne.Tuesday || 0,
-                      selectedCompTwo.Tuesday || 0
+                      selectedCompTwo.Tuesday || <span class="branch-1 cbranch-no" title="branch not covered" >0</span>
                     )}
                   &lt;/div&gt;
                 &lt;/div&gt;
                 &lt;div className="flex justify-between"&gt;
                   &lt;div className="font-medium"&gt;Wednesday:&lt;/div&gt;
                   &lt;div className="flex gap-1 items-center"&gt;
-                    {formatCurrency2(selectedCompOne.Wednesday || 0)}
+                    {formatCurrency2(selectedCompOne.Wednesday || <span class="branch-1 cbranch-no" title="branch not covered" >0)</span>}
                     {renderIcon(
-                      selectedCompOne.Wednesday || 0,
+                      selectedCompOne.Wednesday || <span class="branch-1 cbranch-no" title="branch not covered" >0,</span>
                       selectedCompTwo.Wednesday || 0
                     )}
                   &lt;/div&gt;
@@ -628,7 +624,7 @@ const SalesComparison = () =&gt; {
                     {formatCurrency2(selectedCompOne.Thursday || 0)}
                     {renderIcon(
                       selectedCompOne.Thursday || 0,
-                      selectedCompTwo.Thursday || 0
+                      selectedCompTwo.Thursday || <span class="branch-1 cbranch-no" title="branch not covered" >0</span>
                     )}
                   &lt;/div&gt;
                 &lt;/div&gt;
@@ -638,27 +634,27 @@ const SalesComparison = () =&gt; {
                     {formatCurrency2(selectedCompOne.Friday || 0)}
                     {renderIcon(
                       selectedCompOne.Friday || 0,
-                      selectedCompTwo.Friday || 0
+                      selectedCompTwo.Friday || <span class="branch-1 cbranch-no" title="branch not covered" >0</span>
                     )}
                   &lt;/div&gt;
                 &lt;/div&gt;
                 &lt;div className="flex justify-between"&gt;
                   &lt;div className="font-medium"&gt;Saturday:&lt;/div&gt;
                   &lt;div className="flex gap-1 items-center"&gt;
-                    {formatCurrency2(selectedCompOne.Saturday || 0)}
+                    {formatCurrency2(selectedCompOne.Saturday || <span class="branch-1 cbranch-no" title="branch not covered" >0)</span>}
                     {renderIcon(
-                      selectedCompOne.Saturday || 0,
-                      selectedCompTwo.Saturday || 0
+                      selectedCompOne.Saturday || <span class="branch-1 cbranch-no" title="branch not covered" >0,</span>
+                      selectedCompTwo.Saturday || <span class="branch-1 cbranch-no" title="branch not covered" >0</span>
                     )}
                   &lt;/div&gt;
                 &lt;/div&gt;
                 &lt;div className="flex justify-between"&gt;
                   &lt;div className="font-medium"&gt;Sunday:&lt;/div&gt;
                   &lt;div className="flex gap-1 items-center"&gt;
-                    {formatCurrency2(selectedCompOne.Sunday || 0)}
+                    {formatCurrency2(selectedCompOne.Sunday || <span class="branch-1 cbranch-no" title="branch not covered" >0)</span>}
                     {renderIcon(
-                      selectedCompOne.Sunday || 0,
-                      selectedCompTwo.Sunday || 0
+                      selectedCompOne.Sunday || <span class="branch-1 cbranch-no" title="branch not covered" >0,</span>
+                      selectedCompTwo.Sunday || <span class="branch-1 cbranch-no" title="branch not covered" >0</span>
                     )}
                   &lt;/div&gt;
                 &lt;/div&gt;
@@ -693,9 +689,9 @@ const SalesComparison = () =&gt; {
                 &lt;div className="flex justify-between"&gt;
                   &lt;div className="font-medium"&gt;Tuesday:&lt;/div&gt;
                   &lt;div className="flex gap-1 items-center"&gt;
-                    {formatCurrency2(selectedCompTwo.Tuesday || 0)}
+                    {formatCurrency2(selectedCompTwo.Tuesday || <span class="branch-1 cbranch-no" title="branch not covered" >0)</span>}
                     {renderIcon(
-                      selectedCompTwo.Tuesday || 0,
+                      selectedCompTwo.Tuesday || <span class="branch-1 cbranch-no" title="branch not covered" >0,</span>
                       selectedCompOne.Tuesday || 0
                     )}
                   &lt;/div&gt;
@@ -706,16 +702,16 @@ const SalesComparison = () =&gt; {
                     {formatCurrency2(selectedCompTwo.Wednesday || 0)}
                     {renderIcon(
                       selectedCompTwo.Wednesday || 0,
-                      selectedCompOne.Wednesday || 0
+                      selectedCompOne.Wednesday || <span class="branch-1 cbranch-no" title="branch not covered" >0</span>
                     )}
                   &lt;/div&gt;
                 &lt;/div&gt;
                 &lt;div className="flex justify-between"&gt;
                   &lt;div className="font-medium"&gt;Thursday:&lt;/div&gt;
                   &lt;div className="flex gap-1 items-center"&gt;
-                    {formatCurrency2(selectedCompTwo.Thursday || 0)}
+                    {formatCurrency2(selectedCompTwo.Thursday || <span class="branch-1 cbranch-no" title="branch not covered" >0)</span>}
                     {renderIcon(
-                      selectedCompTwo.Thursday || 0,
+                      selectedCompTwo.Thursday || <span class="branch-1 cbranch-no" title="branch not covered" >0,</span>
                       selectedCompOne.Thursday || 0
                     )}
                   &lt;/div&gt;
@@ -723,9 +719,9 @@ const SalesComparison = () =&gt; {
                 &lt;div className="flex justify-between"&gt;
                   &lt;div className="font-medium"&gt;Friday:&lt;/div&gt;
                   &lt;div className="flex gap-1 items-center"&gt;
-                    {formatCurrency2(selectedCompTwo.Friday || 0)}
+                    {formatCurrency2(selectedCompTwo.Friday || <span class="branch-1 cbranch-no" title="branch not covered" >0)</span>}
                     {renderIcon(
-                      selectedCompTwo.Friday || 0,
+                      selectedCompTwo.Friday || <span class="branch-1 cbranch-no" title="branch not covered" >0,</span>
                       selectedCompOne.Friday || 0
                     )}
                   &lt;/div&gt;
@@ -733,20 +729,20 @@ const SalesComparison = () =&gt; {
                 &lt;div className="flex justify-between"&gt;
                   &lt;div className="font-medium"&gt;Saturday:&lt;/div&gt;
                   &lt;div className="flex gap-1 items-center"&gt;
-                    {formatCurrency2(selectedCompTwo.Saturday || 0)}
+                    {formatCurrency2(selectedCompTwo.Saturday || <span class="branch-1 cbranch-no" title="branch not covered" >0)</span>}
                     {renderIcon(
-                      selectedCompTwo.Saturday || 0,
-                      selectedCompOne.Saturday || 0
+                      selectedCompTwo.Saturday || <span class="branch-1 cbranch-no" title="branch not covered" >0,</span>
+                      selectedCompOne.Saturday || <span class="branch-1 cbranch-no" title="branch not covered" >0</span>
                     )}
                   &lt;/div&gt;
                 &lt;/div&gt;
                 &lt;div className="flex justify-between"&gt;
                   &lt;div className="font-medium"&gt;Sunday:&lt;/div&gt;
                   &lt;div className="flex gap-1 items-center"&gt;
-                    {formatCurrency2(selectedCompTwo.Sunday || 0)}
+                    {formatCurrency2(selectedCompTwo.Sunday || <span class="branch-1 cbranch-no" title="branch not covered" >0)</span>}
                     {renderIcon(
-                      selectedCompTwo.Sunday || 0,
-                      selectedCompOne.Sunday || 0
+                      selectedCompTwo.Sunday || <span class="branch-1 cbranch-no" title="branch not covered" >0,</span>
+                      selectedCompOne.Sunday || <span class="branch-1 cbranch-no" title="branch not covered" >0</span>
                     )}
                   &lt;/div&gt;
                 &lt;/div&gt;
@@ -754,6 +750,7 @@ const SalesComparison = () =&gt; {
             &lt;/div&gt;
             &lt;div className="absolute bottom-3 left-4 w-full pr-8"&gt;
               &lt;div
+                data-testid="sales-comp-clear-btn"
                 className="btn-themeBlue w-full text-center"
                 onClick={handleClear}
               &gt;
@@ -775,7 +772,7 @@ export default SalesComparison;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-09T19:34:44.091Z
+                at 2025-12-09T23:01:45.137Z
             </div>
         <script src="../../../../../prettify.js"></script>
         <script>

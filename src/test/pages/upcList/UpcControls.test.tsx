@@ -32,7 +32,7 @@ vi.mock("../../../components/toasts/hooks/useToast", () => ({
   }),
 }));
 
-describe("SalesComp Module in UpcList", () => {
+describe("Upc Controls Component", () => {
   it("should handle API failure when fetching Sales Comp data", async () => {
     renderWithProviders(<UpcList />, { store });
 

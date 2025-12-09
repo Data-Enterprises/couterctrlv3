@@ -2,7 +2,6 @@ import {
   themeQuartz,
   AllCommunityModule,
   ModuleRegistry,
-  type CellContextMenuEvent,
   type CellClickedEvent,
   type RowClickedEvent,
 } from "ag-grid-community";
@@ -16,8 +15,6 @@ import { setOptDisplayMode } from "../../../features/upcSlice";
 import type { UpcPriceOpt } from "../../../interfaces";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import "./grid.css";
-import { options } from "../utils";
-import { setClipboardText, setMenuPosition } from "../../../features/ctxMenuSlice";
 
 interface GridProps {
   rowData: UpcPriceOpt[];
@@ -91,7 +88,7 @@ const Grid = ({ rowData, handleCellClick }: GridProps) => {
   }, [rowData, state.upcSearch, state.descSearch, state.selectedUpcs]);
 
   useEffect(() => {
-    if (state.selectedOptItem) {
+    if (state.selectedOptItem.product_code) {
       const grid = document.querySelector(".ag-center-cols-container");
       if (!grid) return;
       const children = Array.from(grid.childNodes) as HTMLElement[];
@@ -124,42 +121,30 @@ const Grid = ({ rowData, handleCellClick }: GridProps) => {
     rowBorder: "1px solid white",
   });
 
-  const handleRightClick = (e: CellContextMenuEvent<UpcRow>) => {
-    if (!e.event || !e.data) return;
-    e.event.preventDefault();
-    const mouseEvent = e.event as MouseEvent;
-    if (options.length < 3)
-      options.push({ label: "Show Prices", key: "selectUpc" });
-    dispatch(
-      setClipboardText({
-        upc: e.data.product_code,
-        desc: e.data.product_description,
-      })
-    );
-    dispatch(setMenuPosition({ x: mouseEvent.pageX + 5, y: mouseEvent.pageY }));
-  };
-
   const handleClick = (e: CellClickedEvent<UpcRow>) => {
     e.event?.preventDefault();
     if (handleCellClick) handleCellClick(e.data as UpcPriceOpt);
   };
 
   const handleRowSelection = (e: RowClickedEvent<UpcRow>) => {
-    const target = e.event?.target as HTMLElement;
-    const rows = Array.from(
-      target.parentNode?.parentNode?.parentNode?.parentNode?.childNodes ?? []
-    ) as HTMLElement[];
+    // Direct path to CENTER columns container (data rows live here)
+    const grid = document.querySelector(
+      ".ag-center-cols-container"
+    ) as HTMLElement;
+
+    const rows = Array.from(grid.querySelectorAll(".ag-row")) as HTMLElement[];
     rows.forEach((r) => {
-      // match the event's row index with the current row's index then toggle the selected row's background
-      const rowIdx = r.getAttribute("row-index");
-      if (
-        rowIdx &&
-        parseInt(rowIdx) === e.rowIndex &&
-        !r.classList.contains("bg-blue-500")
-      ) {
-        r.classList.add("bg-blue-500", "text-white");
-      } else {
-        r.classList.remove("bg-blue-500", "text-white");
+      if (r instanceof Element) {
+        const rowIdx = r.getAttribute("row-index");
+        if (
+          rowIdx &&
+          parseInt(rowIdx) === e.rowIndex &&
+          !r.classList.contains("bg-blue-500")
+        ) {
+          r.classList.add("bg-blue-500", "text-white");
+        } else {
+          r.classList.remove("bg-blue-500", "text-white");
+        }
       }
     });
   };
@@ -168,16 +153,17 @@ const Grid = ({ rowData, handleCellClick }: GridProps) => {
     dispatch(setOptDisplayMode("multiRow"));
     const grid = document.querySelector(".ag-center-cols-container");
     // This gets called on mount and when selected Upcs changes, so grid can be null
-    if (!grid) return;
-    // This will run when Show All Selected button is clicked, meaning the grid is populated
-    const children = Array.from(grid.childNodes) as HTMLElement[];
-    children.forEach((r) => r.classList.remove("bg-blue-500", "text-white"));
+    if (grid) {
+      // This will run when Show All Selected button is clicked, meaning the grid is populated
+      const children = Array.from(grid.childNodes) as HTMLElement[];
+      children.forEach((r) => r.classList.remove("bg-blue-500", "text-white"));
+    }
   };
 
   return (
     <div
       className="h-[100%] shadow-lg rounded-lg"
-      onContextMenuCapture={(e) => e.preventDefault()}
+      // onContextMenuCapture={(e) => e.preventDefault()}
     >
       {state.selectedUpcs.length ? (
         <div className="h-full relative">
@@ -195,7 +181,7 @@ const Grid = ({ rowData, handleCellClick }: GridProps) => {
               checkboxes: false,
             }}
             theme={theme}
-            onCellContextMenu={handleRightClick}
+            // onCellContextMenu={handleRightClick}
             onCellClicked={handleClick}
             onRowClicked={handleRowSelection}
           />

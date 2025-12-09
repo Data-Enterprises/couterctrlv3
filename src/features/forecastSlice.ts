@@ -114,7 +114,7 @@ export const forecastSlice = createSlice({
       state.selectedUpcs = [];
       state.priceHistory = [];
     },
-    resetForecast: () => initialState,
+    // resetForecast: () => initialState,
   },
 });
 
@@ -132,6 +132,6 @@ export const {
   reQuery,
   setCurrentLift,
   reset,
-  resetForecast,
+  // resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;

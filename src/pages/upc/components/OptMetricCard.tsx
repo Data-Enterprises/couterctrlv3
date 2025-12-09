@@ -11,8 +11,9 @@ interface OptMetricCardProps {
   label: string;
   type: "Price" | "Qty" | "Rev";
   info: string;
+  id: number;
 }
-const OptMetricCard = ({ metric, label, type, info }: OptMetricCardProps) => {
+const OptMetricCard = ({ metric, label, type, info, id }: OptMetricCardProps) => {
   const [showTooltip, setShowTooltip] = useState<boolean>(false);
 
   const icons = {
@@ -73,6 +74,7 @@ const OptMetricCard = ({ metric, label, type, info }: OptMetricCardProps) => {
           : `$${formatBigNumber(metric)}`}
       </div>
       <InformationCircleIcon
+        data-testid={`opt-metric-info-icon-${id}-${type}`}
         height={22}
         width={22}
         onMouseEnter={() => setShowTooltip(true)}

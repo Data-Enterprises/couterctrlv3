@@ -6,7 +6,6 @@ interface AppState {
   key: string;
   loggedIn: boolean;
   token: string;
-  isLoading: boolean;
   autoReload: boolean;
   showForgotPassword: boolean;
   scope: number;
@@ -20,7 +19,6 @@ export const initialState: AppState = {
   key: "7801882436271592", // for the url api if needed (above)
   loggedIn: false,
   token: "",
-  isLoading: false,
   autoReload: true,
   showForgotPassword: false,
   scope: 0,
@@ -40,15 +38,8 @@ export const appSlice = createSlice({
     setLoggedIn: (state, action: PayloadAction<boolean>) => {
       state.loggedIn = action.payload;
     },
-    setIsLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload;
-    },
     setForgotPassword: (state, action: PayloadAction<boolean>) => {
       state.showForgotPassword = action.payload;
-    },
-    logout: (state) => {
-      state.loggedIn = false;
-      state.token = "";
     },
     setIsMobile: (state, action: PayloadAction<boolean>) => {
       state.isMobile = action.payload;
@@ -66,8 +57,6 @@ export const appSlice = createSlice({
 export const {
   setToken,
   setLoggedIn,
-  logout,
-  setIsLoading,
   setForgotPassword,
   setIsMobile,
   setIsTablet,

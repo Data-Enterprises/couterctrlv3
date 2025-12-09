@@ -39,8 +39,6 @@ interface UpcState {
   optBestPricesByUpc: UpcPriceOpt[];
   optDisplayMode: "singleRow" | "multiRow";
   selectedOptItem: UpcPriceOpt;
-  upcSearch: string;
-  descSearch: string;
   upcTrends: UpcTrend[];
   topFiveTrends: UpcTrend[];
   bottomFiveTrends: UpcTrend[];
@@ -55,8 +53,6 @@ const initialState: UpcState = {
   selectedStores: [],
   storeids: "", // needed for backend API calls
   trendPeriods: "120",
-  upcSearch: "",
-  descSearch: "",
   dataLoaded: false,
   isLoading: false,
   upcCount: 0,
@@ -102,12 +98,6 @@ export const upcSlice = createSlice({
     },
     setFileName: (state, action: PayloadAction<string>) => {
       state.fileName = action.payload;
-    },
-    setUpcSearch: (state, action: PayloadAction<string>) => {
-      state.upcSearch = action.payload;
-    },
-    setDescSearch: (state, action: PayloadAction<string>) => {
-      state.descSearch = action.payload;
     },
     setDataLoaded: (state, action: PayloadAction<boolean>) => {
       state.dataLoaded = action.payload;
@@ -246,8 +236,6 @@ export const {
   setSelectedStores,
   setTrendPeriods,
   setFileName,
-  setUpcSearch,
-  setDescSearch,
   setSelectedMode,
   setDataLoaded,
   setIsLoading,
