@@ -1,8 +1,12 @@
 import { renderWithProviders } from "../utils";
-import { describe, it, expect} from 'vitest';
+import { describe, it } from "vitest";
 import App from "../../App";
 import { setupStore } from "../../store";
-import { setIsDesktop, setIsMobile, setLoggedIn } from "../../features/appSlice";
+import {
+  setIsDesktop,
+  setIsMobile,
+  setLoggedIn,
+} from "../../features/appSlice";
 
 const store = setupStore();
 store.dispatch(setIsMobile(true));
