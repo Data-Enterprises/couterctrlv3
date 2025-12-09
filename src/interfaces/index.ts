@@ -498,4 +498,5 @@ export interface ForecastPriceHistory {
   store_number: string;
   store_name: string;
   lift: number;
+  regular_retail_price: number;
 }

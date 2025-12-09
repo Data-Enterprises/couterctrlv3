@@ -1,7 +1,9 @@
 import { useAppSelector } from "../../hooks";
 
 export const useForecastContext = () => {
-  const { storeids, radioId, selectedStores } = useAppSelector((state) => state.forecast);
+  const { storeids, radioId, selectedStores, isLoading } = useAppSelector(
+    (state) => state.forecast
+  );
   const { url, token } = useAppSelector((state) => state.app);
   const { userid, assignedStores } = useAppSelector((state) => state.user);
   const { startDate, endDate } = useAppSelector((state) => state.search);
@@ -18,5 +20,6 @@ export const useForecastContext = () => {
     startDate,
     endDate,
     groups,
+    isLoading,
   };
 };

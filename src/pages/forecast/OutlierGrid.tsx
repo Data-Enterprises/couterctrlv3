@@ -18,47 +18,13 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 interface TableData {
   outliers: number;
   upc: string;
+  desc: string;
   forecastQty: number;
   daysActive: number;
   forecast: number;
+  // Test is future forecast
+  test: number;
 }
-const colDefs: (ColDef<TableData> | ColGroupDef<TableData>)[] = [
-  {
-    headerName: "Outliers",
-    field: "outliers",
-    flex: 1,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus underline font-medium",
-  },
-  {
-    headerName: "UPC",
-    field: "upc",
-    flex: 1,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
-  },
-  {
-    headerName: "Forecast Qty",
-    field: "forecastQty",
-    flex: 1,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus text-right",
-  },
-  {
-    headerName: "Days Active",
-    field: "daysActive",
-    flex: 0.9,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus text-right",
-  },
-  {
-    headerName: "Forecast",
-    field: "forecast",
-    flex: 0.8,
-    cellClass: "no-outline-on-focus text-right",
-  },
-  
-];
 
 const OutlierGrid = () => {
   const toast = useToast();
@@ -68,23 +34,112 @@ const OutlierGrid = () => {
   const search = useAppSelector((state) => state.search);
   const [tableData, setTableData] = useState<TableData[]>([]);
 
+  const colDefs: (ColDef<TableData> | ColGroupDef<TableData>)[] = [
+    {
+      headerName: "Outliers",
+      field: "outliers",
+      flex: 0.7,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus underline font-medium",
+    },
+    {
+      headerName: "UPC",
+      field: "upc",
+      flex: 0.7,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Description",
+      field: "desc",
+      flex: 1.5,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Qty Sold",
+      field: "forecastQty",
+      flex: 0.8,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus text-right",
+    },
+    {
+      headerName: "Days Active",
+      field: "daysActive",
+      flex: 0.9,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus text-right",
+    },
+    {
+      headerName: `Forecast Qty (x7)`,
+      // headerName: `Forecast Qty (x${state.qty[0].forecast_dimension || 0})`,
+      field: "forecast",
+      flex: 1.2,
+      cellClass: "no-outline-on-focus text-right",
+      headerStyle: { borderRight: "1px solid white" },
+    },
+    {
+      // Future forecasted qty
+      headerName: "Future Forecast",
+      field: "test",
+      flex: 1.0,
+      cellClass: "no-outline-on-focus text-right",
+      valueFormatter: (params) => {
+        if (!state.selectedHistory.lift) {
+          return "";
+        }
+        return params.value.toFixed(2);
+      },
+    },
+  ];
+
   useEffect(() => {
     if (state.selectedUpcs.length > 0) {
       const upcs = state.selectedUpcs;
+      const tempLift = state.selectedHistory.lift
+        ? state.selectedHistory.lift
+        : 0;
       const data = state.qty
         .filter((item) => upcs.includes(item.upc))
-        .map((item) => ({
-          outliers: item.metrics.outliers.length,
-          upc: item.upc,
-          forecastQty: item.metrics.qty,
-          daysActive: item.metrics.days_active,
-          forecast: item.forecast,
-        }));
+        .map((item) => {
+          // Setting lift value
+          let test = 0;
+          if (item.upc === state.selectedHistory.upc) {
+            test = item.forecast * tempLift;
+          }
+
+          const liftReduced = state.priceHistory.reduce((acc, cur) => {
+            if (cur.unit_price === state.selectedHistory.activePrice) {
+              return acc + cur.lift;
+            }
+            return acc;
+          }, 0);
+
+          const qtyReduced = state.priceHistory.reduce((acc, cur) => {
+            if (cur.unit_price === state.selectedHistory.activePrice) {
+              return (acc += 1);
+            }
+            return acc;
+          }, 0);
+
+          const avgLift = liftReduced / qtyReduced;
+          test = item.forecast * avgLift;
+
+          return {
+            outliers: item.metrics.outliers.length,
+            upc: item.upc,
+            desc: item.metrics.description,
+            forecastQty: item.metrics.qty,
+            daysActive: item.metrics.days_active,
+            forecast: item.forecast,
+            test: Math.floor(test),
+          };
+        });
       setTableData(data);
     } else {
       setTableData([]);
     }
-  }, [state.selectedUpcs]);
+  }, [state.selectedUpcs, state.selectedHistory]);
 
   const onRowClicked = (e: RowClickedEvent<TableData>) => {
     if (e.data) {
@@ -115,7 +170,7 @@ const OutlierGrid = () => {
         tableData.length > 0 ? "animate-windowIn h-[100%] flex gap-4" : "hidden"
       }`}
     >
-      <div className="h-[100%] w-1/2 shadow-lg">
+      <div className="h-[100%] w-full shadow-lg">
         <AgGridReact
           rowData={tableData}
           columnDefs={colDefs}
@@ -125,15 +180,7 @@ const OutlierGrid = () => {
           onRowClicked={onRowClicked}
         />
       </div>
-      <div className="h-[100%] w-1/2 opacity-0 shadow-lg">
-        {/* <AgGridReact
-          rowData={tableData}
-          columnDefs={colDefs}
-          theme={theme}
-          pagination={true}
-          paginationAutoPageSize={true}
-        /> */}
-      </div>
+      {/* <div className="h-[100%] w-1/2 opacity-0 shadow-lg"></div> */}
     </div>
   );
 };
