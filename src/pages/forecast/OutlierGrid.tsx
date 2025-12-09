@@ -57,6 +57,7 @@ const colDefs: (ColDef<TableData> | ColGroupDef<TableData>)[] = [
     flex: 0.8,
     cellClass: "no-outline-on-focus text-right",
   },
+  
 ];
 
 const OutlierGrid = () => {

@@ -53,7 +53,7 @@ const file = new File(
 
 describe("Forecast Page", () => {
   it("should handle API failure for fetching bucket list on mount", async () => {
-    (getBucketList as Mock).mockResolvedValueOnce(defaultErrorResp);
+    (getBucketList as Mock).mockRejectedValueOnce(defaultErrorResp);
     renderWithProviders(<Forecast />, { store });
   });
 
