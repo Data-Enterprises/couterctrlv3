@@ -28,7 +28,6 @@ const SalesCompGrid = () => {
 
   const handleRowClick = (event: RowClickedEvent<UpcSalesComp>) => {
     // Handle row click if needed
-    console.log("Row clicked:", event.data);
     dispatch(setSelectedSalesComps(event.data as UpcSalesComp));
   };
 

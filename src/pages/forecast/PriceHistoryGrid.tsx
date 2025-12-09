@@ -111,7 +111,10 @@ const PriceHistoryGrid = () => {
         tableData.length > 0 ? "animate-windowIn h-[100%] flex gap-4" : "hidden"
       }`}
     >
-      <div className="h-[100%] w-3/4 shadow-lg">
+      <div
+        data-testid="price-history-grid"
+        className="h-[100%] w-3/4 shadow-lg"
+      >
         <AgGridReact
           rowData={tableData}
           columnDefs={colDefs}

@@ -9,7 +9,7 @@ import {
   getForecasting,
   getPriceHistory,
   getBucketList,
-  getFromExistingS3File
+  getFromExistingS3File,
 } from "../../../api/forecast";
 
 import {
@@ -311,6 +311,21 @@ describe("Forecast Page", () => {
     // Store 1 should still be selected at this point => Find the cell and click it
     const cells = await screen.findAllByRole("gridcell");
     const cellToClick = cells.find((cell) => cell.textContent === "1200000017");
+    if (cellToClick) {
+      await user.click(cellToClick);
+    }
+  });
+
+  // Careful when using multiple AgGrids in a single page test - make sure to target the correct one
+  // if using more than one, finding by role will return cells from not the new grid
+  it("should handle row selection in Price History Grid", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    (getPriceHistory as Mock).mockResolvedValue(priceHistoryResp);
+    renderWithProviders(<Forecast />, { store });
+
+    // Store 1 should still be selected at this point => Find the cell and click it
+    const cells = await screen.findAllByRole("gridcell");
+    const cellToClick = cells.find((cell) => cell.textContent === "SALE");
     if (cellToClick) {
       await user.click(cellToClick);
     }

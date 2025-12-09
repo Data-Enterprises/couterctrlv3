@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { AgGridReact } from "ag-grid-react";
-import { themeTwo } from ".";
+import { theme } from ".";
 import {
   AllCommunityModule,
   ModuleRegistry,
@@ -100,13 +100,10 @@ const OutlierGrid = () => {
         .map((item) => {
           const liftReduced = state.priceHistory.reduce((acc, cur) => {
             if (cur.unit_price === state.selectedHistory.activePrice) {
-              console.log("Adding lift:", cur);
               return acc + cur.lift;
             }
             return acc;
           }, 0);
-
-          console.log(liftReduced);
 
           const qtyReduced = state.priceHistory.reduce((acc, cur) => {
             if (cur.unit_price === state.selectedHistory.activePrice) {
@@ -171,7 +168,7 @@ const OutlierGrid = () => {
         <AgGridReact
           rowData={tableData}
           columnDefs={colDefs}
-          theme={themeTwo}
+          theme={theme}
           pagination={true}
           paginationAutoPageSize={true}
           onRowClicked={onRowClicked}
