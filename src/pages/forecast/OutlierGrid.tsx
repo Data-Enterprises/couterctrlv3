@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { AgGridReact } from "ag-grid-react";
-import { theme } from ".";
+import { themeTwo } from ".";
 import {
   AllCommunityModule,
   ModuleRegistry,
@@ -22,8 +22,7 @@ interface TableData {
   forecastQty: number;
   daysActive: number;
   forecast: number;
-  // Test is future forecast
-  test: number;
+  futureForecast: number;
 }
 
 const OutlierGrid = () => {
@@ -45,14 +44,14 @@ const OutlierGrid = () => {
     {
       headerName: "UPC",
       field: "upc",
-      flex: 0.7,
+      flex: 0.9,
       headerStyle: { borderRight: "1px solid white" },
       cellClass: "no-outline-on-focus",
     },
     {
       headerName: "Description",
       field: "desc",
-      flex: 1.5,
+      flex: 1,
       headerStyle: { borderRight: "1px solid white" },
       cellClass: "no-outline-on-focus",
     },
@@ -81,7 +80,7 @@ const OutlierGrid = () => {
     {
       // Future forecasted qty
       headerName: "Future Forecast",
-      field: "test",
+      field: "futureForecast",
       flex: 1.0,
       cellClass: "no-outline-on-focus text-right",
       valueFormatter: (params) => {
@@ -96,24 +95,18 @@ const OutlierGrid = () => {
   useEffect(() => {
     if (state.selectedUpcs.length > 0) {
       const upcs = state.selectedUpcs;
-      const tempLift = state.selectedHistory.lift
-        ? state.selectedHistory.lift
-        : 0;
       const data = state.qty
         .filter((item) => upcs.includes(item.upc))
         .map((item) => {
-          // Setting lift value
-          let test = 0;
-          if (item.upc === state.selectedHistory.upc) {
-            test = item.forecast * tempLift;
-          }
-
           const liftReduced = state.priceHistory.reduce((acc, cur) => {
             if (cur.unit_price === state.selectedHistory.activePrice) {
+              console.log("Adding lift:", cur);
               return acc + cur.lift;
             }
             return acc;
           }, 0);
+
+          console.log(liftReduced);
 
           const qtyReduced = state.priceHistory.reduce((acc, cur) => {
             if (cur.unit_price === state.selectedHistory.activePrice) {
@@ -122,8 +115,12 @@ const OutlierGrid = () => {
             return acc;
           }, 0);
 
+          // Setting the average lift based on price history entries => if there is just one, then it acts as the default anyway
           const avgLift = liftReduced / qtyReduced;
-          test = item.forecast * avgLift;
+          const futureCast =
+            item.upc === state.selectedHistory.upc
+              ? item.forecast * avgLift
+              : 0;
 
           return {
             outliers: item.metrics.outliers.length,
@@ -132,7 +129,7 @@ const OutlierGrid = () => {
             forecastQty: item.metrics.qty,
             daysActive: item.metrics.days_active,
             forecast: item.forecast,
-            test: Math.floor(test),
+            futureForecast: Math.floor(futureCast),
           };
         });
       setTableData(data);
@@ -170,17 +167,18 @@ const OutlierGrid = () => {
         tableData.length > 0 ? "animate-windowIn h-[100%] flex gap-4" : "hidden"
       }`}
     >
-      <div className="h-[100%] w-full shadow-lg">
+      <div className="h-[100%] w-3/4 shadow-lg">
         <AgGridReact
           rowData={tableData}
           columnDefs={colDefs}
-          theme={theme}
+          theme={themeTwo}
           pagination={true}
           paginationAutoPageSize={true}
           onRowClicked={onRowClicked}
+          rowSelection="single"
         />
       </div>
-      {/* <div className="h-[100%] w-1/2 opacity-0 shadow-lg"></div> */}
+      <div className="h-[100%] w-1/4 opacity-0 shadow-lg"></div>
     </div>
   );
 };

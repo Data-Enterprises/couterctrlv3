@@ -119,6 +119,7 @@ const PriceHistoryGrid = () => {
           pagination={true}
           paginationAutoPageSize={true}
           onRowClicked={onRowClicked}
+          rowSelection="single"
         />
       </div>
       <div className="h-[100%] w-1/4 opacity-0 shadow-lg"></div>
