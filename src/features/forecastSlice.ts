@@ -7,7 +7,7 @@ import type {
   ForecastPriceHistory,
 } from "../interfaces";
 
-interface SelectedHistory {
+export interface SelectedHistory {
   upc: string;
   desc: string;
   type: string;
@@ -46,6 +46,7 @@ interface ForecastState {
   historyData: HistoryData[];
   lastUpdatedHistory: HistoryData[];
   exportModalOpen: boolean;
+  currentUpcToUpdate: string;
 }
 
 const initialState: ForecastState = {
@@ -65,6 +66,7 @@ const initialState: ForecastState = {
   historyData: [],
   lastUpdatedHistory: [],
   exportModalOpen: false,
+  currentUpcToUpdate: "",
 };
 export const forecastSlice = createSlice({
   name: "forecast",
@@ -118,7 +120,7 @@ export const forecastSlice = createSlice({
     setFiles: (state, action: PayloadAction<string[]>) => {
       state.files = action.payload;
     },
-    setCurrentLift: (state, action: PayloadAction<SelectedHistory>) => {
+    setSelectedHistory: (state, action: PayloadAction<SelectedHistory>) => {
       state.selectedHistory = action.payload;
     },
     setFcstTotal: (state, action: PayloadAction<number>) => {
@@ -133,17 +135,18 @@ export const forecastSlice = createSlice({
     setLastUpdatedHistory: (state, action: PayloadAction<HistoryData>) => {
       const updated = action.payload;
       const exists = state.lastUpdatedHistory.find(
-        (item) => item.upc === updated.upc
+        (item) => item.upc === updated.upc && item.desc === updated.desc
       );
       if (exists) {
         state.lastUpdatedHistory = state.lastUpdatedHistory.map((item) =>
-          item.upc === updated.upc ? updated : item
+          item.upc === updated.upc && item.desc === updated.desc ? updated : item
         );
       } else {
         state.lastUpdatedHistory.push(updated);
       }
     },
     reQuery: (state) => {
+      state.currentUpcToUpdate = "";
       state.lastUpdatedHistory = [];
       state.historyData = [];
       state.adFcst = 0;
@@ -157,6 +160,7 @@ export const forecastSlice = createSlice({
       state.priceHistory = [];
     },
     reset: (state) => {
+      state.currentUpcToUpdate = "";
       state.lastUpdatedHistory = [];
       state.historyData = [];
       state.adFcst = 0;
@@ -173,6 +177,9 @@ export const forecastSlice = createSlice({
     },
     setExportModalOpen: (state, action: PayloadAction<boolean>) => {
       state.exportModalOpen = action.payload;
+    },
+    setCurrentUpcToUpdate: (state, action: PayloadAction<string>) => {
+      state.currentUpcToUpdate = action.payload;
     },
     // resetForecast: () => initialState,
   },
@@ -191,13 +198,14 @@ export const {
   setPriceHistory,
   setFiles,
   reQuery,
-  setCurrentLift,
+  setSelectedHistory,
   setFcstTotal,
   setAdFcst,
   setHistoryData,
   setLastUpdatedHistory,
   reset,
   setExportModalOpen,
+  setCurrentUpcToUpdate,
   // resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;

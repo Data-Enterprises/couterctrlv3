@@ -83,7 +83,7 @@ const OutlierGrid = () => {
       headerStyle: { borderRight: "1px solid white" },
 
       valueFormatter: (params) => {
-        if (!state.selectedHistory.lift) {
+        if (!state.selectedHistory.lift || isNaN(params.value)) {
           return "";
         }
         return params.value.toFixed(0);
@@ -93,30 +93,22 @@ const OutlierGrid = () => {
         if (isNaN(newValue) || newValue === params.data.futureForecast)
           return false;
 
-        // Create updated row with spread (immutable update)
+        // This stops me from having to rely on the actual adFcst and fcstTotal redux variables
+        const futureForecast = Math.floor(newValue);
+        const forecastPrice = params.data.forecastPrice || 0;
+        const futureForecastTotal = futureForecast * forecastPrice;
+
         const updatedRow = {
           ...params.data,
-          futureForecast: Math.floor(newValue),
+          futureForecast,
+          futureForecastTotal,
         };
 
-        // Setting the stage to track the lastUpdated version of this row
-        const newFutureFcstTotal =
-          params.data.forecastPrice * Math.floor(newValue);
-        const lastUpdated = {
-          ...params.data,
-          futureForecast: Math.floor(newValue),
-          futureForecastTotal: newFutureFcstTotal,
-        };
-        dispatch(setLastUpdatedHistory(lastUpdated));
-
-        // Update tableData state
+        dispatch(setLastUpdatedHistory(updatedRow));
         setTableData((prev) =>
           prev.map((row) => (row.upc === updatedRow.upc ? updatedRow : row))
         );
-
-        // Trigger Redux if needed
-        dispatch(setAdFcst(newValue));
-        return true; // Tells grid to refresh cell
+        return true;
       },
       editable: true,
     },
@@ -127,46 +119,44 @@ const OutlierGrid = () => {
       cellClass: "no-outline-on-focus text-right border border-content",
       headerStyle: { borderRight: "1px solid white" },
       valueFormatter: (params) => {
-        // if (!state.selectedHistory.activePrice) {
-        //   return "";
-        // }
+        if (!state.selectedHistory.activePrice) {
+          return "";
+        }
         return params.value.toFixed(2);
       },
       editable: true,
       valueSetter: (params) => {
         const newValue = Number(params.newValue);
-        if (isNaN(newValue) || newValue === params.data.forecastPrice) {
+        if (isNaN(newValue) || newValue === params.data.forecastPrice)
           return false;
-        }
 
-        const updatedRow = { ...params.data, forecastPrice: newValue };
+        // This stops me from having to rely on the actual adFcst and fcstTotal redux variables
+        const forecastPrice = newValue;
+        const futureForecast = params.data.futureForecast || 0; // Use current row's forecast
+        const futureForecastTotal = futureForecast * forecastPrice;
 
-        // Setting the stage to track the lastUpdated version of this row
-        const newFutureFcstTotal = params.data.futureForecast * newValue;
-        const lastUpdated = {
+        const updatedRow = {
           ...params.data,
-          forecastPrice: newValue,
-          futureForecastTotal: newFutureFcstTotal,
+          forecastPrice,
+          futureForecastTotal,
         };
-        dispatch(setLastUpdatedHistory(lastUpdated));
 
+        dispatch(setLastUpdatedHistory(updatedRow));
         setTableData((prev) =>
           prev.map((row) => (row.upc === updatedRow.upc ? updatedRow : row))
         );
-        dispatch(setFcstTotal(newValue));
         return true;
       },
     },
     {
-      // Calculated field
       headerName: "Fcst Total",
       field: "futureForecastTotal",
       flex: 1.0,
       cellClass: "no-outline-on-focus text-right",
       valueFormatter: (params) => {
-        // if (!state.selectedHistory.activePrice) {
-        //   return "";
-        // }
+        if (!state.selectedHistory.lift || isNaN(params.value)) {
+          return "";
+        }
         return params.value.toFixed(2);
       },
     },
@@ -179,11 +169,12 @@ const OutlierGrid = () => {
         .filter((item) => upcs.includes(item.upc))
         .map((item) => {
           const lastUpdated = state.lastUpdatedHistory.find(
-            (lastUpdated) => lastUpdated.upc === item.upc
+            (lastUpdated) =>
+              lastUpdated.upc === item.upc &&
+              lastUpdated.desc === item.metrics.description
           );
-          console.log(lastUpdated, state.adFcst, state.fcstTotal);
           // if this item was recently updated, get the last updated
-          if (lastUpdated && lastUpdated.upc !== state.selectedHistory.upc) {
+          if (lastUpdated) {
             return lastUpdated;
           }
 
@@ -204,39 +195,18 @@ const OutlierGrid = () => {
 
           // Setting the average lift based on price history entries => if there is just one, then it acts as the default anyway
           const avgLift = liftReduced / qtyReduced;
-          let futureCast =
+          const futureCast =
             item.upc === state.selectedHistory.upc
               ? item.forecast * avgLift
               : 0;
-
-          let forecastPrice =
+          const forecastPrice =
             item.upc === state.selectedHistory.upc
               ? state.selectedHistory.activePrice
               : 0;
-
-          let total =
+          const total =
             item.upc === state.selectedHistory.upc
               ? futureCast * forecastPrice
               : 0;
-
-          // modified values
-          if (state.adFcst > 0 && state.fcstTotal > 0) {
-            if (item.upc === state.selectedHistory.upc) {
-              total = state.adFcst * state.fcstTotal;
-              futureCast = state.adFcst;
-              forecastPrice = state.fcstTotal;
-            }
-          } else if (state.adFcst > 0) {
-            total = state.adFcst * forecastPrice;
-            if (item.upc === state.selectedHistory.upc) {
-              futureCast = state.adFcst;
-            }
-          } else if (state.fcstTotal > 0) {
-            if (item.upc === state.selectedHistory.upc) {
-              forecastPrice = state.fcstTotal;
-            }
-            total = state.fcstTotal * futureCast;
-          }
 
           const result = {
             outliers: item.metrics.outliers.length,
@@ -249,6 +219,7 @@ const OutlierGrid = () => {
             forecastPrice: forecastPrice,
             futureForecastTotal: total,
           };
+
           dispatch(setHistoryData([...state.historyData, result]));
 
           if (
@@ -267,19 +238,23 @@ const OutlierGrid = () => {
   }, [
     state.selectedUpcs,
     state.selectedHistory,
-    state.fcstTotal,
-    state.adFcst,
+    // state.fcstTotal,
+    // state.adFcst,
   ]);
 
   const onRowClicked = (e: RowClickedEvent<HistoryData>) => {
     if (e.data) {
-      
       const upc = e.data.upc;
       const forecast = e.data.forecast;
-      
+
       // Dont fetch the data and get a re-render if price history already matches the item we're clicking on
-      const found = state.priceHistory.find((item) => item.product_code === upc);
-      if (found) return;
+      const found = state.priceHistory.find(
+        (item) => item.product_code === upc
+      );
+
+      if (found) {
+        return;
+      }
 
       getPriceHistory(
         context.url,
@@ -313,7 +288,6 @@ const OutlierGrid = () => {
           pagination={true}
           paginationAutoPageSize={true}
           onRowClicked={onRowClicked}
-          // rowSelection="single"
         />
       </div>
       <div className="h-[100%] w-1/4 opacity-0 shadow-lg"></div>
