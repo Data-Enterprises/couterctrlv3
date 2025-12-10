@@ -1,4 +1,4 @@
-import logo from "../../assets/forecast_example.png";
+import logo from "../../assets/instructions.png";
 
 const instructions: string[] = [
   "Select date range",

@@ -78,26 +78,42 @@ const OutlierGrid = () => {
       headerName: "Ad Fcst",
       field: "futureForecast",
       flex: 1.0,
-      cellClass: "no-outline-on-focus text-right",
+      cellClass: "no-outline-on-focus text-right border border-content",
       headerStyle: { borderRight: "1px solid white" },
+
       valueFormatter: (params) => {
-        // if (!state.selectedHistory.lift) {
-        //   return "";
-        // }
+        if (!state.selectedHistory.lift) {
+          return "";
+        }
         return params.value.toFixed(0);
       },
-      editable: true,
-      onCellValueChanged: (event) => {
-        if (event.colDef.headerName === "Ad Fcst") {
-          // dispatch(setAdFcst(Number(event.newValue)));
-        }
+      valueSetter: (params) => {
+        const newValue = Number(params.newValue);
+        if (isNaN(newValue) || newValue === params.data.futureForecast)
+          return false;
+
+        // Create updated row with spread (immutable update)
+        const updatedRow = {
+          ...params.data,
+          futureForecast: Math.floor(newValue),
+        };
+
+        // Update tableData state
+        setTableData((prev) =>
+          prev.map((row) => (row.upc === updatedRow.upc ? updatedRow : row))
+        );
+
+        // Trigger Redux if needed
+        dispatch(setAdFcst(newValue));
+        return true; // Tells grid to refresh cell
       },
+      editable: true,
     },
     {
       headerName: "Fcst Price",
       field: "forecastPrice",
       flex: 1.0,
-      cellClass: "no-outline-on-focus text-right",
+      cellClass: "no-outline-on-focus text-right border border-content",
       headerStyle: { borderRight: "1px solid white" },
       valueFormatter: (params) => {
         // if (!state.selectedHistory.activePrice) {
@@ -106,10 +122,18 @@ const OutlierGrid = () => {
         return params.value.toFixed(2);
       },
       editable: true,
-      onCellValueChanged: (event) => {
-        if (event.colDef.headerName === "Fcst Price") {
-          dispatch(setFcstTotal(Number(event.newValue)));
+      valueSetter: (params) => {
+        const newValue = Number(params.newValue);
+        if (isNaN(newValue) || newValue === params.data.forecastPrice) {
+          return false;
         }
+
+        const updatedRow = { ...params.data, forecastPrice: newValue };
+        setTableData((prev) =>
+          prev.map((row) => (row.upc === updatedRow.upc ? updatedRow : row))
+        );
+        dispatch(setFcstTotal(newValue));
+        return true;
       },
     },
     {
@@ -184,7 +208,7 @@ const OutlierGrid = () => {
           }
 
           // debugger;
-          return {
+          const result = {
             outliers: item.metrics.outliers.length,
             upc: item.upc,
             desc: item.metrics.description,
@@ -195,6 +219,8 @@ const OutlierGrid = () => {
             forecastPrice: forecastPrice,
             futureForecastTotal: total,
           };
+          dispatch(setHistoryData([...state.historyData, result]));
+          return result;
         });
       setTableData(data);
     } else {
@@ -207,11 +233,11 @@ const OutlierGrid = () => {
     state.adFcst,
   ]);
 
-  useEffect(() => {
-    if (tableData.length) {
-      dispatch(setHistoryData(tableData));
-    }
-  }, [tableData]);
+  // useEffect(() => {
+  //   if (tableData.length) {
+  //     dispatch(setHistoryData(tableData));
+  //   }
+  // }, [tableData]);
 
   const onRowClicked = (e: RowClickedEvent<HistoryData>) => {
     // debugger;
@@ -251,7 +277,7 @@ const OutlierGrid = () => {
           pagination={true}
           paginationAutoPageSize={true}
           onRowClicked={onRowClicked}
-          rowSelection="single"
+          // rowSelection="single"
         />
       </div>
       <div className="h-[100%] w-1/4 opacity-0 shadow-lg"></div>

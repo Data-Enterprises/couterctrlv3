@@ -6,7 +6,53 @@ import RadioBox from "../../components/inputs/RadioBox";
 // import { setClipboardText, setMenuPosition } from "../../features/ctxMenuSlice";
 import type { ForecastItem } from "../../interfaces";
 import CheckBox from "../../components/inputs/CheckBox";
-import { reset, resetSelectedUpcs, setSelectedUpcs } from "../../features/forecastSlice";
+import {
+  reset,
+  resetSelectedUpcs,
+  setSelectedUpcs,
+  type HistoryData,
+} from "../../features/forecastSlice";
+import { exportData } from "../../utils/export";
+import type { ColDef, ColGroupDef } from "ag-grid-community";
+
+const headers: (ColDef<HistoryData> | ColGroupDef<HistoryData>)[] = [
+  {
+    headerName: "Outliers",
+    field: "outliers",
+  },
+  {
+    headerName: "UPC",
+    field: "upc",
+  },
+  {
+    headerName: "Description",
+    field: "desc",
+  },
+  {
+    headerName: "Qty Sold",
+    field: "forecastQty",
+  },
+  {
+    headerName: "Days Active",
+    field: "daysActive",
+  },
+  {
+    headerName: `Fcst Qty (x7)`,
+    field: "forecast",
+  },
+  {
+    headerName: "Ad Fcst",
+    field: "futureForecast",
+  },
+  {
+    headerName: "Fcst Price",
+    field: "forecastPrice",
+  },
+  {
+    headerName: "Fcst Total",
+    field: "futureForecastTotal",
+  },
+];
 
 const ForecastControls = () => {
   const [filtered, setFiltered] = useState<ForecastItem[]>([]);
@@ -22,7 +68,6 @@ const ForecastControls = () => {
 
   const handleClearClick = () => {
     dispatch(reset());
-
   };
 
   const handleDisplay = (value: "all" | "selected" | "stores") => {
@@ -30,6 +75,7 @@ const ForecastControls = () => {
   };
 
   const handleExportBtnClick = () => {
+    exportData(state.historyData, headers, 'test_history.csv');
     // dispatch(setModalType(state.selectedMode));
     // dispatch(setOpenModal(true));
   };
@@ -70,7 +116,9 @@ const ForecastControls = () => {
   return (
     <div
       data-testid="forecast-controls"
-      className={`${state.items.length === 0 ? "hidden" : "animate-windowIn"} bg-custom-white rounded-lg shadow-lg text-sm select-none`}
+      className={`${
+        state.items.length === 0 ? "hidden" : "animate-windowIn"
+      } bg-custom-white rounded-lg shadow-lg text-sm select-none`}
     >
       <div
         ref={topRef}
