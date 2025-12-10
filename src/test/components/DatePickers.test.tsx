@@ -7,6 +7,7 @@ import { setupStore } from "../../store";
 
 const startStore = setupStore();
 const endStore = setupStore();
+const warnStore = setupStore();
 const user = userEvent.setup();
 
 const mockedToastWarn = vi.fn();
@@ -20,7 +21,9 @@ describe("DatePickers Component", () => {
   it("should display the calendar when clicking on the start date picker", async () => {
     renderWithProviders(<DatePickers />, { store: startStore });
     const startDatePicker = screen.getByTestId("start-date-picker");
-    expect(startDatePicker).toBeInTheDocument();
+    await waitFor(() => {
+      expect(startDatePicker).toBeInTheDocument();
+    });
 
     // Find the menu button and click it
     const startDateMenuButton = screen.getByTestId("start-date-menu-button");
@@ -32,16 +35,20 @@ describe("DatePickers Component", () => {
     expect(calendar).toBeInTheDocument();
 
     // Select invalid start date (after today)
-    const dayToClick = await screen.findByTestId("start-calendar-day-9");
+    const dayToClick = await screen.findByTestId("start-calendar-day-0");
     await user.click(dayToClick);
+
+    await user.click(startDateMenuButton);
 
     // Then select a valid start date
     const prevMonthBtn = await screen.findByTestId("prev-month-button");
     expect(prevMonthBtn).toBeInTheDocument();
     await user.click(prevMonthBtn);
 
-    expect(dayToClick).toBeInTheDocument();
-    await user.click(dayToClick);
+    const newDayToClick = await screen.findByTestId("start-calendar-day-1");
+
+    expect(newDayToClick).toBeInTheDocument();
+    await user.click(newDayToClick);
 
     await user.click(startDateMenuButton);
 
@@ -93,5 +100,74 @@ describe("DatePickers Component", () => {
     expect(searchBtn).toBeInTheDocument();
     await user.click(searchBtn);
     expect(handleQuery).toHaveBeenCalled();
+  });
+
+  it("should throw a warning when selecting an invalid start date", async () => {
+    renderWithProviders(<DatePickers />, { store: warnStore });
+
+    const startDateMenuButton = screen.getByTestId("start-date-menu-button");
+    await user.click(startDateMenuButton);
+
+    // Go to prev month and select the first day of the month
+    const startDatePrevMonth = await screen.findByTestId("prev-month-button");
+    await user.click(startDatePrevMonth);
+
+    const validStartDate = await screen.findByTestId("start-calendar-day-1");
+    await user.click(validStartDate);
+
+    // Set this after the start date
+    const endDateMenuButton = screen.getByTestId("end-date-menu-button");
+    await user.click(endDateMenuButton);
+    const endDatePrevMonth = await screen.findByTestId("prev-month-button")
+    await user.click(endDatePrevMonth);
+
+    const validEndDate = await screen.findByTestId("end-calendar-day-4");
+    await user.click(validEndDate);
+
+    await waitFor(() => {
+      const state = warnStore.getState().search;
+      console.log(state)
+    });
+
+    // then select a start date that is after the end date
+    await user.click(startDateMenuButton);
+    await user.click(startDatePrevMonth);
+    
+    const invalidStartDate = await screen.findByTestId("start-calendar-day-5");
+    await user.click(invalidStartDate);
+
+    await waitFor(() => {
+      expect(mockedToastWarn).toHaveBeenCalledWith(
+        "Start date cannot be after the end date"
+      );
+    });
+  });
+
+  it("should handle displaying previous year", async () => {
+    renderWithProviders(<DatePickers />, { store: setupStore() });
+    const startDatePicker = screen.getByTestId("start-date-picker");
+    expect(startDatePicker).toBeInTheDocument();
+
+    const startDateMenuButton = screen.getByTestId("start-date-menu-button");
+    await user.click(startDateMenuButton);
+    const prevMonth = await screen.findByTestId("prev-month-button");
+
+    for (let i = 0; i < 12; i++) {
+      await user.click(prevMonth);
+    }
+  });
+
+  it("should handle displaying next year", async () => {
+    renderWithProviders(<DatePickers />, { store: setupStore() });
+    const startDatePicker = screen.getByTestId("start-date-picker");
+    expect(startDatePicker).toBeInTheDocument();
+
+    const startDateMenuButton = screen.getByTestId("start-date-menu-button");
+    await user.click(startDateMenuButton);
+    const nextMonth = await screen.findByTestId("next-month-button");
+
+    for (let i = 0; i < 12; i++) {
+      await user.click(nextMonth);
+    }
   });
 });

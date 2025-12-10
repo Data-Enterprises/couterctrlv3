@@ -56,7 +56,6 @@ const UpcControls = () => {
     option: UpcItem
   ) => {
     e.preventDefault();
-    // if (options.length > 2) options.pop();
 
     dispatch(
       setClipboardText({
