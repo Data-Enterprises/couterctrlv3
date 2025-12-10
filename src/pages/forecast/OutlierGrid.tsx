@@ -13,8 +13,6 @@ import {
 import { getPriceHistory } from "../../api/forecast";
 import type { JsonError } from "../../interfaces";
 import {
-  setAdFcst,
-  setFcstTotal,
   setHistoryData,
   setLastUpdatedHistory,
   setPriceHistory,
