@@ -65,7 +65,6 @@ const Forecasting = () => {
         context.url,
         context.token,
         context.storeids,
-        context.startDate,
         context.endDate,
         file
       )
@@ -210,7 +209,7 @@ const Forecasting = () => {
                   />
                 )}
               </div>
-              <DatePickers showBtn={false} />
+              <DatePickers showBtn={false} singleDate={true} />
               <SelectedStoreList
                 selectedStores={context.selectedStores}
                 radioId={context.radioId}

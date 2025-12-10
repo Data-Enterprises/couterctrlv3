@@ -4,7 +4,6 @@ export const getForecasting = async (
   url: string,
   token: string,
   storeids: string,
-  startdate: string,
   enddate: string,
   file: File
 ) => {
@@ -19,7 +18,6 @@ export const getForecasting = async (
     url: url + "marketing/forecasting",
     params: {
       storeids,
-      startdate,
       enddate,
     },
     data: formData,
@@ -68,7 +66,6 @@ export const getFromExistingS3File = async (
   url: string,
   token: string,
   storeids: string,
-  startdate: string,
   enddate: string,
   filename: string
 ) => {
@@ -81,7 +78,6 @@ export const getFromExistingS3File = async (
     url: url + "marketing/forecasting_from_existing_s3_file",
     params: {
       storeids,
-      startdate,
       enddate,
       filename,
     },
