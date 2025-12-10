@@ -20,8 +20,6 @@ const ForecastControls = () => {
   const state = useAppSelector((state) => state.forecast);
   const search = useAppSelector((state) => state.search);
 
-  console.log(height)
-
   const handleClearClick = () => {
     dispatch(reset());
 

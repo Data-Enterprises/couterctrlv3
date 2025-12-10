@@ -29,7 +29,7 @@ const PriceOpt = () => {
   );
 
   useEffect(() => {
-    if (!upcState.selectedUpcs) {
+    if (!upcState.selectedUpcs.length) {
       setFilteredItems(upcState.optBestPricesByUpc);
     } else {
       const filtered = upcState.optBestPricesByUpc.filter((item) =>
@@ -87,36 +87,9 @@ const PriceOpt = () => {
     }
   };
 
-  // const handleDrillDown = (item: UpcPriceOpt) => {
-  //   dispatch(setSelectedOptItem(item));
-  //   dispatch(setOptDisplayMode("singleRow"));
-  // };
-
-  // const handleCopy = async (text: string) => {
-  //   await navigator.clipboard.writeText(text);
-  //   dispatch(setMenuPosition(null));
-  // };
-
-  // const handlers: Handlers = {
-  //   copyUpc: () => handleCopy(ctx.clipboardText.upc),
-  //   copyDesc: () => handleCopy(ctx.clipboardText.desc),
-  //   selectUpc: () => {
-  //     const item: UpcPriceOpt = upcState.optBestPrices.find(
-  //       (u) => u.product_code === ctx.clipboardText.upc
-  //     )!;
-  //     handleDrillDown(item);
-  //     dispatch(setMenuPosition(null));
-  //   },
-  // };
-
   return (
     <div data-testid="upc-price" className="h-full w-full grid grid-cols-[15%_85%] gap-4">
       <UpcControls />
-      {/* <CtxMenu
-        className="hover:bg-panel_active/70"
-        options={options}
-        handlers={handlers}
-      /> */}
       <UpcModal handleExport={handleExport} />
       <div className="h-full grid grid-rows-[14%_86%] mr-4">
         <MetricsCarousel className="w-full h-[95%]">

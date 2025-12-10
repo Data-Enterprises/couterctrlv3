@@ -1,6 +1,4 @@
 import type {
-  UpcData,
-  // UpcForecast,
   ForecastExport,
   ForecastMetrics,
   UpcForecast,
@@ -43,29 +41,6 @@ export const formatForecastExport = (forecastData: any) => {
   return { data: dataExport, metrics: metricExport };
 };
 
-export const aggregateData = (x: UpcData[]) => {
-  const result: UpcData[] = [];
-  x.forEach((item: UpcData) => {
-    const found = result.find(
-      (r) =>
-        r.sale_date === item.sale_date &&
-        r.product_code === item.product_code &&
-        r.store_number === item.store_number
-    );
-    if (found) {
-      found.qty += item.qty;
-      found.weight += item.weight;
-      found.sales += Number(item.sales.toFixed(2));
-    } else {
-      result.push({ ...item, sales: Number(item.sales.toFixed(2)) });
-    }
-  });
-
-  return result.sort(
-    (a, b) => new Date(a.sale_date).getTime() - new Date(b.sale_date).getTime()
-  );
-};
-
 export interface LineData {
   id: string;
   data: { x: string; y: number }[];
@@ -77,27 +52,6 @@ export const modeData = [
   { label: "Sales", value: "sales" },
   { label: "Quantity", value: "quantity" },
 ];
-
-const days = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
-export const sameWeekDayThisYear = (ly: string) => {
-  const lyDte = new Date(ly);
-  const year = lyDte.getFullYear();
-
-  const isLeapYr = (y: number) =>
-    (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
-  const crossesLeapYr = isLeapYr(year) && lyDte < new Date(`${year}-02-29`);
-
-  const daysToAdd = crossesLeapYr ? 365 : 364;
-  const result = new Date(lyDte);
-  result.setDate(result.getDate() + daysToAdd);
-
-  const testing = {
-    date: result.toISOString().split("T")[0].split("-").splice(1, 2).join("/"),
-    dow: days[result.getDay()],
-  };
-
-  return testing;
-};
 
 export const instructions = [
   {
@@ -136,7 +90,7 @@ export const convertData = (
   data: { date: string; value: number }[],
   idx: number,
   type = "history",
-  results: any,
+  results: any
 ): Forecast => {
   const newData = {
     id: `${id} - ${type}`,
@@ -154,19 +108,21 @@ export const convertData = (
     const historyEntry = Object.entries(results)
       .map(([k, v]) => [k, structuredClone(v as UpcForecast).history])
       .find(([k]) => k === id);
-    if (!historyEntry) return newData;
-    const historyDates = historyEntry[1] as {
-      date: string;
-      value: number;
-    }[];
-    const lastHistoryDate = historyDates[historyDates.length - 1] as {
-      date: string;
-      value: number;
-    };
-    newData.data.unshift({
-      x: lastHistoryDate.date.split("/").splice(0, 2).join("/"),
-      y: lastHistoryDate.value,
-    });
+
+    if (historyEntry) {
+      const historyDates = historyEntry[1] as {
+        date: string;
+        value: number;
+      }[];
+      const lastHistoryDate = historyDates[historyDates.length - 1] as {
+        date: string;
+        value: number;
+      };
+      newData.data.unshift({
+        x: lastHistoryDate.date.split("/").splice(0, 2).join("/"),
+        y: lastHistoryDate.value,
+      });
+    }
   }
   return newData;
 };

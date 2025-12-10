@@ -233,7 +233,6 @@ const Forecasting = () => {
                 Search
               </button>
             </div>
-            {/* <Instructions /> */}
           </div>
           <FileGrid />
         </div>

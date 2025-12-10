@@ -8,9 +8,10 @@ export const useScrollHeight = () => {
   const [height, setHeight] = useState<number>(0);
 
   const calcHeight = () => {
-    if (!topRef.current) return;
-    const position = topRef.current.getBoundingClientRect().height;
-    setHeight(window.innerHeight - position - 80); // 32 for page padding + 48 for the titlebar height
+    if (topRef.current) {
+      const position = topRef.current.getBoundingClientRect().height;
+      setHeight(window.innerHeight - position - 80); // 32 for page padding + 48 for the titlebar height
+    }
   };
 
   useEffect(() => {
@@ -72,8 +73,7 @@ export const compCols: (ColDef<UpcSalesComp> | ColGroupDef<UpcSalesComp>)[] = [
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus text-right",
     valueFormatter: (params) => {
-      if (!params.value) return formatCurrency2(0);
-      return formatCurrency2(params.value);
+      return formatCurrency2(params.value || 0);
     },
   },
   {
@@ -84,8 +84,7 @@ export const compCols: (ColDef<UpcSalesComp> | ColGroupDef<UpcSalesComp>)[] = [
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus text-right",
     valueFormatter: (params) => {
-      if (!params.value) return formatCurrency2(0);
-      return formatCurrency2(params.value);
+      return formatCurrency2(params.value || 0);
     },
   },
   {
@@ -96,8 +95,7 @@ export const compCols: (ColDef<UpcSalesComp> | ColGroupDef<UpcSalesComp>)[] = [
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus text-right",
     valueFormatter: (params) => {
-      if (!params.value) return formatCurrency2(0);
-      return formatCurrency2(params.value);
+      return formatCurrency2(params.value || 0);
     },
   },
   {
@@ -108,8 +106,7 @@ export const compCols: (ColDef<UpcSalesComp> | ColGroupDef<UpcSalesComp>)[] = [
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus text-right",
     valueFormatter: (params) => {
-      if (!params.value) return formatCurrency2(0);
-      return formatCurrency2(params.value);
+      return formatCurrency2(params.value || 0);
     },
   },
   {
@@ -120,8 +117,7 @@ export const compCols: (ColDef<UpcSalesComp> | ColGroupDef<UpcSalesComp>)[] = [
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus text-right",
     valueFormatter: (params) => {
-      if (!params.value) return formatCurrency2(0);
-      return formatCurrency2(params.value);
+      return formatCurrency2(params.value || 0);
     },
   },
   {
@@ -132,8 +128,7 @@ export const compCols: (ColDef<UpcSalesComp> | ColGroupDef<UpcSalesComp>)[] = [
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus text-right",
     valueFormatter: (params) => {
-      if (!params.value) return formatCurrency2(0);
-      return formatCurrency2(params.value);
+      return formatCurrency2(params.value || 0);
     },
   },
   {
@@ -143,8 +138,7 @@ export const compCols: (ColDef<UpcSalesComp> | ColGroupDef<UpcSalesComp>)[] = [
     resizable: false,
     cellClass: "no-outline-on-focus text-right",
     valueFormatter: (params) => {
-      if (!params.value) return formatCurrency2(0);
-      return formatCurrency2(params.value);
+      return formatCurrency2(params.value || 0);
     },
   },
 ];
@@ -263,7 +257,6 @@ export const getForecast = (items: Forecast[], item: UpcInfo) => {
       ?.data.reduce((acc, cur) => (acc += cur.y), 0) ?? 0
   );
 };
-
 
 // Price Optimization Utils
 export const listSelect = [

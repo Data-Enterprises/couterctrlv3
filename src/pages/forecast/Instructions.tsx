@@ -1,4 +1,3 @@
-const upcs: string[] = ["7239277080", "88855900112", "88855900104", "..."];
 import logo from "../../assets/forecast_example.png";
 
 const instructions: string[] = [
@@ -25,23 +24,10 @@ const Instructions = () => {
             ))}
           </ol>
         </div>
-        <img className="h-44 mt-4" src={logo} alt="Mikto" />
-        {/* <table>
-          <thead>
-            <tr>
-              <th className="text-left border border-content pl-2">upc</th>
-            </tr>
-          </thead>
-          <tbody>
-            {upcs.map((u, i) => (
-              <tr key={i}>
-                <td className="text-right border border-content pl-4 pr-1 py-0.5">
-                  {u}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table> */}
+        <div>
+          <div className="mt-1.5 font-medium underline">Example:</div>
+          <img className="h-40" src={logo} alt="Mikto" />
+        </div>
       </div>
     </div>
   );

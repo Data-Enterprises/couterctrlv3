@@ -73,6 +73,7 @@ const MetricsContainer = <T,>({
           label={m.label}
           type={type}
           info={priceOptTooltipInfo[type][i]}
+          id={i}
         />
       ))}
     </div>

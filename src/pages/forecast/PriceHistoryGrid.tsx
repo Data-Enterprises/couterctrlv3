@@ -39,7 +39,7 @@ const colDefs: (ColDef<TableData> | ColGroupDef<TableData>)[] = [
     cellClass: "no-outline-on-focus",
   },
   {
-    headerName: "Type",
+    headerName: "Ad Type",
     field: "type",
     flex: 0.6,
     headerStyle: { borderRight: "1px solid white" },
@@ -100,9 +100,10 @@ const PriceHistoryGrid = () => {
   }, [state.priceHistory]);
 
   const onRowClicked = (event: RowClickedEvent<TableData>) => {
+    // debugger;
     if (event.data) {
       dispatch(setCurrentLift(event.data));
-    } 
+    }
   };
 
   return (
@@ -111,7 +112,10 @@ const PriceHistoryGrid = () => {
         tableData.length > 0 ? "animate-windowIn h-[100%] flex gap-4" : "hidden"
       }`}
     >
-      <div className="h-[100%] w-3/4 shadow-lg">
+      <div
+        data-testid="price-history-grid"
+        className="h-[100%] w-3/4 shadow-lg"
+      >
         <AgGridReact
           rowData={tableData}
           columnDefs={colDefs}
@@ -119,6 +123,7 @@ const PriceHistoryGrid = () => {
           pagination={true}
           paginationAutoPageSize={true}
           onRowClicked={onRowClicked}
+          rowSelection="single"
         />
       </div>
       <div className="h-[100%] w-1/4 opacity-0 shadow-lg"></div>

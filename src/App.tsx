@@ -32,6 +32,7 @@ const App = () => {
           <TitleBar />
           <SideBar />
           <div
+            data-testid="outlet-container"
             className={`${containerStyle} bg-bkg ${
               nav.isNavOpen
                 ? "opacity-20 pointer-events-none"

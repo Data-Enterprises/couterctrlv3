@@ -13,11 +13,9 @@ const SalesComparison = () => {
   const isReady = selectedCompOne && selectedCompTwo;
 
   const renderIcon = (num1: number, num2: number) => {
-    const one = num1 === null ? 0 : num1;
-    const two = num2 === null ? 0 : num2;
-    if (one > two) {
+    if (num1 > num2) {
       return <ArrowUpCircleIcon className="h-6 w-6 text-emerald-500" />;
-    } else if (one < two) {
+    } else if (num1 < num2) {
       return <ArrowDownCircleIcon className="h-6 w-6 text-orange-500" />;
     } else {
       return <div className="w-5"></div>;
@@ -219,6 +217,7 @@ const SalesComparison = () => {
             </div>
             <div className="absolute bottom-3 left-4 w-full pr-8">
               <div
+                data-testid="sales-comp-clear-btn"
                 className="btn-themeBlue w-full text-center"
                 onClick={handleClear}
               >

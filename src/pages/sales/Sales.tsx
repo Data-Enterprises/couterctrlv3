@@ -112,6 +112,7 @@ const Sales = () => {
                     Search Store
                   </label>
                   <input
+                    data-testid="sales-panel-filter-input"
                     className="basic-input focus:border bg-custom-white"
                     value={sales.salesPanelSearchText}
                     onChange={(e) => handleChange(e)}
@@ -120,11 +121,7 @@ const Sales = () => {
               </div>
               <div
                 className="md:overflow-scroll md:no-scrollbar md:rounded-lg"
-                style={
-                  context.isDesktop
-                    ? { height: height, maxHeight: height }
-                    : { height: "auto", maxHeight: "none" }
-                }
+                style={{ height: height, maxHeight: height }}
               >
                 <SalesPanels />
               </div>

@@ -26,6 +26,7 @@ const PriceOptSelects = () => {
         onSelect={(x) =>
           dispatch(setPriceOptOption({ option: "data", value: x as string }))
         }
+        id={1}
       />
     </div>
   );

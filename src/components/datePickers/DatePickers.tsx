@@ -1,6 +1,5 @@
 import StartDatePicker from "./StartDatePicker";
 import EndDatePicker from "./EndDatePicker";
-import { useCustomEvent } from "../../hooks/useCustomEvent";
 import { useAppSelector } from "../../hooks";
 
 interface Props {
@@ -11,15 +10,12 @@ interface Props {
 }
 
 const DatePickers = ({ handleQuery, btnPadding = "", showBtn = true }: Props) => {
-  const { emit } = useCustomEvent("slicer-event");
   const context = useAppSelector((state) => state.app);
 
   const handleClick = () => {
     if (handleQuery) {
       handleQuery();
     }
-
-    emit({ message: "", eventType: "slicer", value: "update" });
   };
 
   const pickerStyle = context.isDesktop ?  "flex gap-2 mb-2" : "mb-2";

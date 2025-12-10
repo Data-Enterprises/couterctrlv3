@@ -417,16 +417,8 @@ export type UpcTrend = {
 };
 
 export type Handlers = {
-  reset?: () => Promise<void> | void;
-  copy?: () => Promise<void> | void;
-  exportVisual?: () => Promise<void> | void;
-  clearDate?: () => Promise<void> | void;
-  mode?: (mode: string) => Promise<void> | void;
-  exportAll?: () => Promise<void> | void;
-  test?: () => Promise<void> | void;
   copyUpc?: () => Promise<void> | void;
   copyDesc?: () => Promise<void> | void;
-  selectUpc?: () => Promise<void> | void;
 };
 
 export type ContextEvent = React.MouseEvent<

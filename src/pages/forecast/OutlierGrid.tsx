@@ -12,19 +12,14 @@ import {
 } from "ag-grid-community";
 import { getPriceHistory } from "../../api/forecast";
 import type { JsonError } from "../../interfaces";
-import { setPriceHistory } from "../../features/forecastSlice";
+import {
+  setAdFcst,
+  setFcstTotal,
+  setHistoryData,
+  setPriceHistory,
+} from "../../features/forecastSlice";
 ModuleRegistry.registerModules([AllCommunityModule]);
-
-interface TableData {
-  outliers: number;
-  upc: string;
-  desc: string;
-  forecastQty: number;
-  daysActive: number;
-  forecast: number;
-  // Test is future forecast
-  test: number;
-}
+import type { HistoryData } from "../../features/forecastSlice";
 
 const OutlierGrid = () => {
   const toast = useToast();
@@ -32,9 +27,9 @@ const OutlierGrid = () => {
   const context = useAppSelector((state) => state.app);
   const state = useAppSelector((state) => state.forecast);
   const search = useAppSelector((state) => state.search);
-  const [tableData, setTableData] = useState<TableData[]>([]);
+  const [tableData, setTableData] = useState<HistoryData[]>([]);
 
-  const colDefs: (ColDef<TableData> | ColGroupDef<TableData>)[] = [
+  const colDefs: (ColDef<HistoryData> | ColGroupDef<HistoryData>)[] = [
     {
       headerName: "Outliers",
       field: "outliers",
@@ -45,21 +40,21 @@ const OutlierGrid = () => {
     {
       headerName: "UPC",
       field: "upc",
-      flex: 0.7,
+      flex: 0.9,
       headerStyle: { borderRight: "1px solid white" },
       cellClass: "no-outline-on-focus",
     },
     {
       headerName: "Description",
       field: "desc",
-      flex: 1.5,
+      flex: 1,
       headerStyle: { borderRight: "1px solid white" },
       cellClass: "no-outline-on-focus",
     },
     {
       headerName: "Qty Sold",
       field: "forecastQty",
-      flex: 0.8,
+      flex: 0.7,
       headerStyle: { borderRight: "1px solid white" },
       cellClass: "no-outline-on-focus text-right",
     },
@@ -71,7 +66,7 @@ const OutlierGrid = () => {
       cellClass: "no-outline-on-focus text-right",
     },
     {
-      headerName: `Forecast Qty (x7)`,
+      headerName: `Fcst Qty (x7)`,
       // headerName: `Forecast Qty (x${state.qty[0].forecast_dimension || 0})`,
       field: "forecast",
       flex: 1.2,
@@ -80,14 +75,53 @@ const OutlierGrid = () => {
     },
     {
       // Future forecasted qty
-      headerName: "Future Forecast",
-      field: "test",
+      headerName: "Ad Fcst",
+      field: "futureForecast",
+      flex: 1.0,
+      cellClass: "no-outline-on-focus text-right",
+      headerStyle: { borderRight: "1px solid white" },
+      valueFormatter: (params) => {
+        // if (!state.selectedHistory.lift) {
+        //   return "";
+        // }
+        return params.value.toFixed(0);
+      },
+      editable: true,
+      onCellValueChanged: (event) => {
+        if (event.colDef.headerName === "Ad Fcst") {
+          // dispatch(setAdFcst(Number(event.newValue)));
+        }
+      },
+    },
+    {
+      headerName: "Fcst Price",
+      field: "forecastPrice",
+      flex: 1.0,
+      cellClass: "no-outline-on-focus text-right",
+      headerStyle: { borderRight: "1px solid white" },
+      valueFormatter: (params) => {
+        // if (!state.selectedHistory.activePrice) {
+        //   return "";
+        // }
+        return params.value.toFixed(2);
+      },
+      editable: true,
+      onCellValueChanged: (event) => {
+        if (event.colDef.headerName === "Fcst Price") {
+          dispatch(setFcstTotal(Number(event.newValue)));
+        }
+      },
+    },
+    {
+      // Calculated field
+      headerName: "Fcst Total",
+      field: "futureForecastTotal",
       flex: 1.0,
       cellClass: "no-outline-on-focus text-right",
       valueFormatter: (params) => {
-        if (!state.selectedHistory.lift) {
-          return "";
-        }
+        // if (!state.selectedHistory.activePrice) {
+        //   return "";
+        // }
         return params.value.toFixed(2);
       },
     },
@@ -96,18 +130,9 @@ const OutlierGrid = () => {
   useEffect(() => {
     if (state.selectedUpcs.length > 0) {
       const upcs = state.selectedUpcs;
-      const tempLift = state.selectedHistory.lift
-        ? state.selectedHistory.lift
-        : 0;
       const data = state.qty
         .filter((item) => upcs.includes(item.upc))
         .map((item) => {
-          // Setting lift value
-          let test = 0;
-          if (item.upc === state.selectedHistory.upc) {
-            test = item.forecast * tempLift;
-          }
-
           const liftReduced = state.priceHistory.reduce((acc, cur) => {
             if (cur.unit_price === state.selectedHistory.activePrice) {
               return acc + cur.lift;
@@ -122,9 +147,43 @@ const OutlierGrid = () => {
             return acc;
           }, 0);
 
+          // Setting the average lift based on price history entries => if there is just one, then it acts as the default anyway
           const avgLift = liftReduced / qtyReduced;
-          test = item.forecast * avgLift;
+          let futureCast =
+            item.upc === state.selectedHistory.upc
+              ? item.forecast * avgLift
+              : 0;
 
+          let forecastPrice =
+            item.upc === state.selectedHistory.upc
+              ? state.selectedHistory.activePrice
+              : 0;
+
+          let total =
+            item.upc === state.selectedHistory.upc
+              ? futureCast * forecastPrice
+              : 0;
+
+          // modified values
+          if (state.adFcst > 0 && state.fcstTotal > 0) {
+            if (item.upc === state.selectedHistory.upc) {
+              total = state.adFcst * state.fcstTotal;
+              futureCast = state.adFcst;
+              forecastPrice = state.fcstTotal;
+            }
+          } else if (state.adFcst > 0) {
+            total = state.adFcst * forecastPrice;
+            if (item.upc === state.selectedHistory.upc) {
+              futureCast = state.adFcst;
+            }
+          } else if (state.fcstTotal > 0) {
+            if (item.upc === state.selectedHistory.upc) {
+              forecastPrice = state.fcstTotal;
+            }
+            total = state.fcstTotal * futureCast;
+          }
+
+          // debugger;
           return {
             outliers: item.metrics.outliers.length,
             upc: item.upc,
@@ -132,16 +191,30 @@ const OutlierGrid = () => {
             forecastQty: item.metrics.qty,
             daysActive: item.metrics.days_active,
             forecast: item.forecast,
-            test: Math.floor(test),
+            futureForecast: Math.floor(futureCast),
+            forecastPrice: forecastPrice,
+            futureForecastTotal: total,
           };
         });
       setTableData(data);
     } else {
       setTableData([]);
     }
-  }, [state.selectedUpcs, state.selectedHistory]);
+  }, [
+    state.selectedUpcs,
+    state.selectedHistory,
+    state.fcstTotal,
+    state.adFcst,
+  ]);
 
-  const onRowClicked = (e: RowClickedEvent<TableData>) => {
+  useEffect(() => {
+    if (tableData.length) {
+      dispatch(setHistoryData(tableData));
+    }
+  }, [tableData]);
+
+  const onRowClicked = (e: RowClickedEvent<HistoryData>) => {
+    // debugger;
     if (e.data) {
       const upc = e.data.upc;
       const forecast = e.data.forecast;
@@ -170,7 +243,7 @@ const OutlierGrid = () => {
         tableData.length > 0 ? "animate-windowIn h-[100%] flex gap-4" : "hidden"
       }`}
     >
-      <div className="h-[100%] w-full shadow-lg">
+      <div className="h-[100%] w-3/4 shadow-lg">
         <AgGridReact
           rowData={tableData}
           columnDefs={colDefs}
@@ -178,9 +251,10 @@ const OutlierGrid = () => {
           pagination={true}
           paginationAutoPageSize={true}
           onRowClicked={onRowClicked}
+          rowSelection="single"
         />
       </div>
-      {/* <div className="h-[100%] w-1/2 opacity-0 shadow-lg"></div> */}
+      <div className="h-[100%] w-1/4 opacity-0 shadow-lg"></div>
     </div>
   );
 };

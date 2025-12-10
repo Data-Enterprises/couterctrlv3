@@ -31,14 +31,6 @@ export const formatCurrency2 = (x: number) => {
   return x < 0 ? `${format(x)}` : format(x);
 };
 
-export const reformatDate = (date: string) => {
-  const dte = new Date(date);
-  const month = dte.getMonth() + 1;
-  const day = dte.getDate();
-  const year = dte.getFullYear();
-  return `${month}/${day}/${year}`;
-};
-
 export const formatBigNumber = (
   value: number,
   decimals: number = 2,

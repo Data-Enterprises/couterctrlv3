@@ -39,4 +39,19 @@ export const theme = themeQuartz.withParams({
   dataFontSize: 13,
   selectCellBorder: "transparent",
   rowBorder: "1px solid white",
+  selectedRowBackgroundColor: "#93c5fd",
+});
+
+export const themeTwo = themeQuartz.withParams({
+  headerHeight: 30,
+  rowHeight: 26.5,
+  headerBackgroundColor: "#3b82f6",
+  headerTextColor: "#ffffff",
+  oddRowBackgroundColor: "#bfdbfe",
+  rowHoverColor: "#93c5fd",
+  headerFontWeight: "bold",
+  dataFontSize: 13,
+  selectCellBorder: "transparent",
+  rowBorder: "1px solid white",
+  selectedRowBackgroundColor: "#93c5fd",
 });

@@ -14,6 +14,10 @@ import { resetSalesSlice } from "../../features/salesSlice";
 import type { JsonError } from "../../interfaces";
 import { Cog6ToothIcon } from "@heroicons/react/16/solid";
 import SignOutIcon from "../../svgs/SignOutIcon";
+import { resetStoreSlice } from "../../features/storeSlice";
+import { resetGroupState } from "../../features/groupSlice";
+import { resetUsersSlice } from "../../features/usersSlice";
+import { resetUpcState } from "../../features/upcSlice";
 
 const SideBar = () => {
   const toast = useToast();
@@ -32,16 +36,16 @@ const SideBar = () => {
         userid: user.userid,
         last_route: nav.lastRoute,
       };
-      setUserPrefs(context.url, context.token, prefs).then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          return;
-        }
-      }).catch(
-        (err: JsonError) => {
+      setUserPrefs(context.url, context.token, prefs)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            return;
+          }
+        })
+        .catch((err: JsonError) => {
           toast.error("Error setting user prefs:" + err.message);
-        }
-      );
+        });
     }
   }, [nav.lastRoute]);
 
@@ -72,11 +76,18 @@ const SideBar = () => {
   };
 
   const handleSignOut = () => {
+    navigate("/");
+    // Then handle state resets
     dispatch(handleSigningOut());
+    dispatch(resetGroupState());
+    dispatch(resetUserSlice());
+    dispatch(resetUsersSlice());
+    dispatch(resetSalesSlice());
+    dispatch(resetStoreSlice());
     dispatch(resetUserSlice());
     dispatch(resetNav());
     dispatch(resetSalesSlice());
-    navigate("/");
+    dispatch(resetUpcState());
   };
 
   const slidingStyle =
@@ -151,7 +162,9 @@ const SideBar = () => {
       <div className="select-none cursor-pointer">
         <div
           data-testid="nav-settings"
-          className={`${context.isDesktop ? "" : "hidden"} flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200`}
+          className={`${
+            context.isDesktop ? "" : "hidden"
+          } flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200`}
           onClick={() => {
             navigate("settings");
           }}
