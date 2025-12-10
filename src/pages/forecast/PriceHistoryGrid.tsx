@@ -12,7 +12,7 @@ import {
 } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
 import { formatCurrency2 } from "../../utils";
-import { setCurrentLift } from "../../features/forecastSlice";
+import { setAdFcst, setCurrentLift, setFcstTotal } from "../../features/forecastSlice";
 
 interface TableData {
   upc: string;
@@ -100,8 +100,9 @@ const PriceHistoryGrid = () => {
   }, [state.priceHistory]);
 
   const onRowClicked = (event: RowClickedEvent<TableData>) => {
-    // debugger;
     if (event.data) {
+      dispatch(setAdFcst(0));
+      dispatch(setFcstTotal(0));
       dispatch(setCurrentLift(event.data));
     }
   };

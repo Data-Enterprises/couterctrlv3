@@ -32,6 +32,7 @@ import FileGrid from "./FileGrid";
 import OutlierGrid from "./OutlierGrid";
 import PriceHistoryGrid from "./PriceHistoryGrid";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
+import ForecastModal from "./ForecastModal";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -168,6 +169,7 @@ const Forecasting = () => {
       data-testid="forecast-page"
       className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)]"
     >
+      <ForecastModal />
       <div className="grid grid-cols-[23%_12%_65%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
         <div className="gap-4 flex flex-col justify-between">
           <Instructions />

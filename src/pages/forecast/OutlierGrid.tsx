@@ -16,6 +16,7 @@ import {
   setAdFcst,
   setFcstTotal,
   setHistoryData,
+  setLastUpdatedHistory,
   setPriceHistory,
 } from "../../features/forecastSlice";
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -98,6 +99,16 @@ const OutlierGrid = () => {
           futureForecast: Math.floor(newValue),
         };
 
+        // Setting the stage to track the lastUpdated version of this row
+        const newFutureFcstTotal =
+          params.data.forecastPrice * Math.floor(newValue);
+        const lastUpdated = {
+          ...params.data,
+          futureForecast: Math.floor(newValue),
+          futureForecastTotal: newFutureFcstTotal,
+        };
+        dispatch(setLastUpdatedHistory(lastUpdated));
+
         // Update tableData state
         setTableData((prev) =>
           prev.map((row) => (row.upc === updatedRow.upc ? updatedRow : row))
@@ -129,6 +140,16 @@ const OutlierGrid = () => {
         }
 
         const updatedRow = { ...params.data, forecastPrice: newValue };
+
+        // Setting the stage to track the lastUpdated version of this row
+        const newFutureFcstTotal = params.data.futureForecast * newValue;
+        const lastUpdated = {
+          ...params.data,
+          forecastPrice: newValue,
+          futureForecastTotal: newFutureFcstTotal,
+        };
+        dispatch(setLastUpdatedHistory(lastUpdated));
+
         setTableData((prev) =>
           prev.map((row) => (row.upc === updatedRow.upc ? updatedRow : row))
         );
@@ -157,6 +178,16 @@ const OutlierGrid = () => {
       const data = state.qty
         .filter((item) => upcs.includes(item.upc))
         .map((item) => {
+          const lastUpdated = state.lastUpdatedHistory.find(
+            (lastUpdated) => lastUpdated.upc === item.upc
+          );
+          console.log(lastUpdated, state.adFcst, state.fcstTotal);
+          // if this item was recently updated, get the last updated
+          if (lastUpdated && lastUpdated.upc !== state.selectedHistory.upc) {
+            return lastUpdated;
+          }
+
+          // If it is new to the table or hasn't been updated, then go through the original logic
           const liftReduced = state.priceHistory.reduce((acc, cur) => {
             if (cur.unit_price === state.selectedHistory.activePrice) {
               return acc + cur.lift;
@@ -207,7 +238,6 @@ const OutlierGrid = () => {
             total = state.fcstTotal * futureCast;
           }
 
-          // debugger;
           const result = {
             outliers: item.metrics.outliers.length,
             upc: item.upc,
@@ -220,6 +250,14 @@ const OutlierGrid = () => {
             futureForecastTotal: total,
           };
           dispatch(setHistoryData([...state.historyData, result]));
+
+          if (
+            result.futureForecast > 0 &&
+            result.forecastPrice > 0 &&
+            result.futureForecastTotal > 0
+          ) {
+            dispatch(setLastUpdatedHistory(result));
+          }
           return result;
         });
       setTableData(data);
@@ -233,17 +271,15 @@ const OutlierGrid = () => {
     state.adFcst,
   ]);
 
-  // useEffect(() => {
-  //   if (tableData.length) {
-  //     dispatch(setHistoryData(tableData));
-  //   }
-  // }, [tableData]);
-
   const onRowClicked = (e: RowClickedEvent<HistoryData>) => {
-    // debugger;
     if (e.data) {
+      
       const upc = e.data.upc;
       const forecast = e.data.forecast;
+      
+      // Dont fetch the data and get a re-render if price history already matches the item we're clicking on
+      const found = state.priceHistory.find((item) => item.product_code === upc);
+      if (found) return;
 
       getPriceHistory(
         context.url,

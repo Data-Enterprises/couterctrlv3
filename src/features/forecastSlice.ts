@@ -44,6 +44,8 @@ interface ForecastState {
   fcstTotal: number;
   adFcst: number;
   historyData: HistoryData[];
+  lastUpdatedHistory: HistoryData[];
+  exportModalOpen: boolean;
 }
 
 const initialState: ForecastState = {
@@ -61,6 +63,8 @@ const initialState: ForecastState = {
   fcstTotal: 0,
   adFcst: 0,
   historyData: [],
+  lastUpdatedHistory: [],
+  exportModalOpen: false,
 };
 export const forecastSlice = createSlice({
   name: "forecast",
@@ -90,6 +94,9 @@ export const forecastSlice = createSlice({
     },
     setItems: (state, action: PayloadAction<ForecastItem[]>) => {
       state.items = action.payload;
+    },
+    setAllUpcs: (state, action: PayloadAction<string[]>) => {
+      state.selectedUpcs = action.payload;
     },
     setSelectedUpcs: (state, action: PayloadAction<string>) => {
       const upc = action.payload;
@@ -123,7 +130,21 @@ export const forecastSlice = createSlice({
     setHistoryData: (state, action: PayloadAction<HistoryData[]>) => {
       state.historyData = action.payload;
     },
+    setLastUpdatedHistory: (state, action: PayloadAction<HistoryData>) => {
+      const updated = action.payload;
+      const exists = state.lastUpdatedHistory.find(
+        (item) => item.upc === updated.upc
+      );
+      if (exists) {
+        state.lastUpdatedHistory = state.lastUpdatedHistory.map((item) =>
+          item.upc === updated.upc ? updated : item
+        );
+      } else {
+        state.lastUpdatedHistory.push(updated);
+      }
+    },
     reQuery: (state) => {
+      state.lastUpdatedHistory = [];
       state.historyData = [];
       state.adFcst = 0;
       state.fcstTotal = 0;
@@ -136,6 +157,7 @@ export const forecastSlice = createSlice({
       state.priceHistory = [];
     },
     reset: (state) => {
+      state.lastUpdatedHistory = [];
       state.historyData = [];
       state.adFcst = 0;
       state.fcstTotal = 0;
@@ -149,6 +171,9 @@ export const forecastSlice = createSlice({
       state.selectedUpcs = [];
       state.priceHistory = [];
     },
+    setExportModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.exportModalOpen = action.payload;
+    },
     // resetForecast: () => initialState,
   },
 });
@@ -160,6 +185,7 @@ export const {
   setSales,
   setQty,
   setItems,
+  setAllUpcs,
   setSelectedUpcs,
   resetSelectedUpcs,
   setPriceHistory,
@@ -169,7 +195,9 @@ export const {
   setFcstTotal,
   setAdFcst,
   setHistoryData,
+  setLastUpdatedHistory,
   reset,
+  setExportModalOpen,
   // resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;
