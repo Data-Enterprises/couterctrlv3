@@ -2,57 +2,15 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import { useScrollHeight } from ".";
 import RadioBox from "../../components/inputs/RadioBox";
-
-// import { setClipboardText, setMenuPosition } from "../../features/ctxMenuSlice";
 import type { ForecastItem } from "../../interfaces";
 import CheckBox from "../../components/inputs/CheckBox";
 import {
   reset,
   resetSelectedUpcs,
+  setAllUpcs,
+  setExportModalOpen,
   setSelectedUpcs,
-  type HistoryData,
 } from "../../features/forecastSlice";
-import { exportData } from "../../utils/export";
-import type { ColDef, ColGroupDef } from "ag-grid-community";
-
-const headers: (ColDef<HistoryData> | ColGroupDef<HistoryData>)[] = [
-  {
-    headerName: "Outliers",
-    field: "outliers",
-  },
-  {
-    headerName: "UPC",
-    field: "upc",
-  },
-  {
-    headerName: "Description",
-    field: "desc",
-  },
-  {
-    headerName: "Qty Sold",
-    field: "forecastQty",
-  },
-  {
-    headerName: "Days Active",
-    field: "daysActive",
-  },
-  {
-    headerName: `Fcst Qty (x7)`,
-    field: "forecast",
-  },
-  {
-    headerName: "Ad Fcst",
-    field: "futureForecast",
-  },
-  {
-    headerName: "Fcst Price",
-    field: "forecastPrice",
-  },
-  {
-    headerName: "Fcst Total",
-    field: "futureForecastTotal",
-  },
-];
 
 const ForecastControls = () => {
   const [filtered, setFiltered] = useState<ForecastItem[]>([]);
@@ -75,26 +33,9 @@ const ForecastControls = () => {
   };
 
   const handleExportBtnClick = () => {
-    exportData(state.historyData, headers, 'test_history.csv');
-    // dispatch(setModalType(state.selectedMode));
-    // dispatch(setOpenModal(true));
+    // exportData(state.historyData, headers, 'test_history.csv');
+    dispatch(setExportModalOpen(true));
   };
-
-  // const handleRightClick = (
-  //   e: React.MouseEvent<HTMLDivElement>,
-  //   option: any
-  // ) => {
-  //   e.preventDefault();
-  //   // if (options.length > 2) options.pop();
-
-  //   dispatch(
-  //     setClipboardText({
-  //       upc: option.product_code,
-  //       desc: option.description,
-  //     })
-  //   );
-  //   dispatch(setMenuPosition({ x: e.pageX + 5, y: e.pageY }));
-  // };
 
   useEffect(() => {
     if (filterText === "") {
@@ -111,6 +52,11 @@ const ForecastControls = () => {
 
   const handleDeselectAll = () => {
     dispatch(resetSelectedUpcs());
+  };
+
+  const handleSelectAll = () => {
+    const allUpcs = state.qty.map((item) => item.upc);
+    dispatch(setAllUpcs(allUpcs));
   };
 
   return (
@@ -164,6 +110,13 @@ const ForecastControls = () => {
           />
         </div>
         <div className="flex flex-col gap-2">
+          <button
+            data-testid="forecast-select-all-btn"
+            className="py-1 btn-themeGreen"
+            onClick={handleSelectAll}
+          >
+            Select All
+          </button>
           <button
             data-testid="forecast-deselect-all-btn"
             className="py-1 btn-themeOrange"

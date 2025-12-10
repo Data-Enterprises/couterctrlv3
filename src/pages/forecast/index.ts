@@ -1,6 +1,7 @@
-import { themeQuartz } from "ag-grid-community";
+import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
 import { useRef, useState, useEffect } from "react";
 import { useAppSelector } from "../../hooks";
+import type { HistoryData } from "../../features/forecastSlice";
 
 export const useScrollHeight = () => {
   const state = useAppSelector((state) => state.forecast);
@@ -56,3 +57,42 @@ export const themeTwo = themeQuartz.withParams({
   rowBorder: "1px solid white",
   // selectedRowBackgroundColor: "#93c5fd",
 });
+
+export const exportHeaders: (ColDef<HistoryData> | ColGroupDef<HistoryData>)[] = [
+  {
+    headerName: "Outliers",
+    field: "outliers",
+  },
+  {
+    headerName: "UPC",
+    field: "upc",
+  },
+  {
+    headerName: "Description",
+    field: "desc",
+  },
+  {
+    headerName: "Qty Sold",
+    field: "forecastQty",
+  },
+  {
+    headerName: "Days Active",
+    field: "daysActive",
+  },
+  {
+    headerName: `Fcst Qty (x7)`,
+    field: "forecast",
+  },
+  {
+    headerName: "Ad Fcst",
+    field: "futureForecast",
+  },
+  {
+    headerName: "Fcst Price",
+    field: "forecastPrice",
+  },
+  {
+    headerName: "Fcst Total",
+    field: "futureForecastTotal",
+  },
+];

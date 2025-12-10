@@ -11,11 +11,7 @@ interface Props {
   dateFlag?: string;
 }
 
-const Calendar = ({
-  handleCancel,
-  handleDate,
-  dateFlag,
-}: Props) => {
+const Calendar = ({ handleCancel, handleDate, dateFlag }: Props) => {
   const daysOfWeek = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
   const monthsOfYear = [
     "Jan",
@@ -72,6 +68,8 @@ const Calendar = ({
         return;
       }
       handleDate!(dte);
+    } else if (dateFlag === "single") {
+      handleDate!(dte);
     }
     handleCancel();
   };
@@ -86,6 +84,11 @@ const Calendar = ({
     } else if (
       dateFlag === "end" &&
       formatDate(d.toString()) === searchState.endDate
+    ) {
+      return "end-date";
+    } else if (
+      dateFlag === "single" &&
+      formatDate(d.toString()) === searchState.singleDate
     ) {
       return "end-date";
     } else {
@@ -150,7 +153,9 @@ const Calendar = ({
             data-testid={`${dateFlag}-calendar-day-${id}`}
             onClick={() => handleSelect(day)}
             key={`day-${id}`}
-            className={`day hover:bg-blue-200 transition-all duration-200 ${isSelectedDate(day)}`}
+            className={`day hover:bg-blue-200 transition-all duration-200 ${isSelectedDate(
+              day
+            )}`}
           >
             {day + 1}
           </span>

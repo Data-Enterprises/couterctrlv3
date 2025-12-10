@@ -3,7 +3,6 @@ import { useAppDispatch } from "../../hooks";
 import { getForecasting } from "../../api/forecast";
 
 // Components
-import DatePickers from "../../components/datePickers/DatePickers";
 import Instructions from "./Instructions";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import FileInput from "./FileInput";
@@ -32,6 +31,8 @@ import FileGrid from "./FileGrid";
 import OutlierGrid from "./OutlierGrid";
 import PriceHistoryGrid from "./PriceHistoryGrid";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
+import ForecastModal from "./ForecastModal";
+import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -65,7 +66,7 @@ const Forecasting = () => {
         context.url,
         context.token,
         context.storeids,
-        context.endDate,
+        context.singleDate,
         file
       )
         .then((resp) => {
@@ -168,6 +169,7 @@ const Forecasting = () => {
       data-testid="forecast-page"
       className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)]"
     >
+      <ForecastModal />
       <div className="grid grid-cols-[23%_12%_65%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
         <div className="gap-4 flex flex-col justify-between">
           <Instructions />
@@ -209,7 +211,7 @@ const Forecasting = () => {
                   />
                 )}
               </div>
-              <DatePickers showBtn={false} singleDate={true} />
+              <SingleDatePicker />
               <SelectedStoreList
                 selectedStores={context.selectedStores}
                 radioId={context.radioId}

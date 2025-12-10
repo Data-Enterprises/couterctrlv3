@@ -7,7 +7,7 @@ import type {
   ForecastPriceHistory,
 } from "../interfaces";
 
-interface SelectedHistory {
+export interface SelectedHistory {
   upc: string;
   desc: string;
   type: string;
@@ -44,6 +44,9 @@ interface ForecastState {
   fcstTotal: number;
   adFcst: number;
   historyData: HistoryData[];
+  lastUpdatedHistory: HistoryData[];
+  exportModalOpen: boolean;
+  currentUpcToUpdate: string;
 }
 
 const initialState: ForecastState = {
@@ -61,6 +64,9 @@ const initialState: ForecastState = {
   fcstTotal: 0,
   adFcst: 0,
   historyData: [],
+  lastUpdatedHistory: [],
+  exportModalOpen: false,
+  currentUpcToUpdate: "",
 };
 export const forecastSlice = createSlice({
   name: "forecast",
@@ -91,6 +97,9 @@ export const forecastSlice = createSlice({
     setItems: (state, action: PayloadAction<ForecastItem[]>) => {
       state.items = action.payload;
     },
+    setAllUpcs: (state, action: PayloadAction<string[]>) => {
+      state.selectedUpcs = action.payload;
+    },
     setSelectedUpcs: (state, action: PayloadAction<string>) => {
       const upc = action.payload;
       if (state.selectedUpcs.includes(upc)) {
@@ -111,7 +120,7 @@ export const forecastSlice = createSlice({
     setFiles: (state, action: PayloadAction<string[]>) => {
       state.files = action.payload;
     },
-    setCurrentLift: (state, action: PayloadAction<SelectedHistory>) => {
+    setSelectedHistory: (state, action: PayloadAction<SelectedHistory>) => {
       state.selectedHistory = action.payload;
     },
     setFcstTotal: (state, action: PayloadAction<number>) => {
@@ -123,7 +132,22 @@ export const forecastSlice = createSlice({
     setHistoryData: (state, action: PayloadAction<HistoryData[]>) => {
       state.historyData = action.payload;
     },
+    setLastUpdatedHistory: (state, action: PayloadAction<HistoryData>) => {
+      const updated = action.payload;
+      const exists = state.lastUpdatedHistory.find(
+        (item) => item.upc === updated.upc && item.desc === updated.desc
+      );
+      if (exists) {
+        state.lastUpdatedHistory = state.lastUpdatedHistory.map((item) =>
+          item.upc === updated.upc && item.desc === updated.desc ? updated : item
+        );
+      } else {
+        state.lastUpdatedHistory.push(updated);
+      }
+    },
     reQuery: (state) => {
+      state.currentUpcToUpdate = "";
+      state.lastUpdatedHistory = [];
       state.historyData = [];
       state.adFcst = 0;
       state.fcstTotal = 0;
@@ -136,6 +160,8 @@ export const forecastSlice = createSlice({
       state.priceHistory = [];
     },
     reset: (state) => {
+      state.currentUpcToUpdate = "";
+      state.lastUpdatedHistory = [];
       state.historyData = [];
       state.adFcst = 0;
       state.fcstTotal = 0;
@@ -149,6 +175,12 @@ export const forecastSlice = createSlice({
       state.selectedUpcs = [];
       state.priceHistory = [];
     },
+    setExportModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.exportModalOpen = action.payload;
+    },
+    setCurrentUpcToUpdate: (state, action: PayloadAction<string>) => {
+      state.currentUpcToUpdate = action.payload;
+    },
     // resetForecast: () => initialState,
   },
 });
@@ -160,16 +192,20 @@ export const {
   setSales,
   setQty,
   setItems,
+  setAllUpcs,
   setSelectedUpcs,
   resetSelectedUpcs,
   setPriceHistory,
   setFiles,
   reQuery,
-  setCurrentLift,
+  setSelectedHistory,
   setFcstTotal,
   setAdFcst,
   setHistoryData,
+  setLastUpdatedHistory,
   reset,
+  setExportModalOpen,
+  setCurrentUpcToUpdate,
   // resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;

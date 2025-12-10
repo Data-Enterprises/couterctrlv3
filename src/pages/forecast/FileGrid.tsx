@@ -80,7 +80,7 @@ const FileGrid = () => {
         context.url,
         context.token,
         context.storeids,
-        context.endDate,
+        context.singleDate,
         fileName
       )
         .then((resp) => {
