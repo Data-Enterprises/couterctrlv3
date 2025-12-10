@@ -17,6 +17,18 @@ interface SelectedHistory {
   lift: number;
 }
 
+export interface HistoryData {
+  outliers: number;
+  upc: string;
+  desc: string;
+  forecastQty: number;
+  daysActive: number;
+  forecast: number;
+  futureForecast: number;
+  forecastPrice: number;
+  futureForecastTotal: number;
+}
+
 interface ForecastState {
   isLoading: boolean;
   selectedStores: Store[];
@@ -29,6 +41,9 @@ interface ForecastState {
   files: string[];
   priceHistory: ForecastPriceHistory[];
   selectedHistory: SelectedHistory;
+  fcstTotal: number;
+  adFcst: number;
+  historyData: HistoryData[];
 }
 
 const initialState: ForecastState = {
@@ -43,6 +58,9 @@ const initialState: ForecastState = {
   files: [],
   priceHistory: [],
   selectedHistory: {} as SelectedHistory,
+  fcstTotal: 0,
+  adFcst: 0,
+  historyData: [],
 };
 export const forecastSlice = createSlice({
   name: "forecast",
@@ -85,6 +103,8 @@ export const forecastSlice = createSlice({
       state.priceHistory = action.payload;
     },
     resetSelectedUpcs: (state) => {
+      state.adFcst = 0;
+      state.fcstTotal = 0;
       state.selectedUpcs = [];
       state.priceHistory = [];
     },
@@ -94,7 +114,19 @@ export const forecastSlice = createSlice({
     setCurrentLift: (state, action: PayloadAction<SelectedHistory>) => {
       state.selectedHistory = action.payload;
     },
+    setFcstTotal: (state, action: PayloadAction<number>) => {
+      state.fcstTotal = action.payload;
+    },
+    setAdFcst: (state, action: PayloadAction<number>) => {
+      state.adFcst = action.payload;
+    },
+    setHistoryData: (state, action: PayloadAction<HistoryData[]>) => {
+      state.historyData = action.payload;
+    },
     reQuery: (state) => {
+      state.historyData = [];
+      state.adFcst = 0;
+      state.fcstTotal = 0;
       state.selectedHistory = {} as SelectedHistory;
       state.items = [];
       state.qty = [];
@@ -104,6 +136,9 @@ export const forecastSlice = createSlice({
       state.priceHistory = [];
     },
     reset: (state) => {
+      state.historyData = [];
+      state.adFcst = 0;
+      state.fcstTotal = 0;
       state.items = [];
       state.qty = [];
       state.sales = [];
@@ -131,6 +166,9 @@ export const {
   setFiles,
   reQuery,
   setCurrentLift,
+  setFcstTotal,
+  setAdFcst,
+  setHistoryData,
   reset,
   // resetForecast,
 } = forecastSlice.actions;

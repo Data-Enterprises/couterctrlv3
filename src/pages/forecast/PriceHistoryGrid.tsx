@@ -39,7 +39,7 @@ const colDefs: (ColDef<TableData> | ColGroupDef<TableData>)[] = [
     cellClass: "no-outline-on-focus",
   },
   {
-    headerName: "Type",
+    headerName: "Ad Type",
     field: "type",
     flex: 0.6,
     headerStyle: { borderRight: "1px solid white" },
@@ -100,9 +100,10 @@ const PriceHistoryGrid = () => {
   }, [state.priceHistory]);
 
   const onRowClicked = (event: RowClickedEvent<TableData>) => {
+    // debugger;
     if (event.data) {
       dispatch(setCurrentLift(event.data));
-    } 
+    }
   };
 
   return (
