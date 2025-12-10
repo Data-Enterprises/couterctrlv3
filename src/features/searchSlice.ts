@@ -9,6 +9,7 @@ export interface SearchState {
   type: SEARCH_TYPE;
   startDate: string;
   endDate: string;
+  singleDate: string;
   lastStore: number;
   lastGroup: number;
   selectedStore: Store;
@@ -19,6 +20,7 @@ export const initialState: SearchState = {
   type: "Stores",
   startDate: formatDate(addDays(new Date(), -1).toString()),
   endDate: formatDate(new Date().toString()),
+  singleDate: formatDate(new Date().toString()),
   lastStore: 0,
   lastGroup: 0,
   selectedStore: { storeid: 0, store_name: "", store_number: "" },
@@ -37,6 +39,9 @@ const searchSlice = createSlice({
     },
     setEndDate: (state, action: PayloadAction<string>) => {
       state.endDate = action.payload;
+    },
+    setSingleDate: (state, action: PayloadAction<string>) => {
+      state.singleDate = action.payload;
     },
     setLastStore: (state, action: PayloadAction<number>) => {
       state.lastStore = action.payload;
@@ -58,6 +63,7 @@ export const {
   setLastGroup,
   setStartDate,
   setEndDate,
+  setSingleDate,
   setLastStore,
   setSelectedStore,
   setSelectedGroup,

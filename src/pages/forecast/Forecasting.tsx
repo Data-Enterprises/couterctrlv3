@@ -3,7 +3,6 @@ import { useAppDispatch } from "../../hooks";
 import { getForecasting } from "../../api/forecast";
 
 // Components
-import DatePickers from "../../components/datePickers/DatePickers";
 import Instructions from "./Instructions";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import FileInput from "./FileInput";
@@ -33,6 +32,7 @@ import OutlierGrid from "./OutlierGrid";
 import PriceHistoryGrid from "./PriceHistoryGrid";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import ForecastModal from "./ForecastModal";
+import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -66,7 +66,7 @@ const Forecasting = () => {
         context.url,
         context.token,
         context.storeids,
-        context.endDate,
+        context.singleDate,
         file
       )
         .then((resp) => {
@@ -211,7 +211,7 @@ const Forecasting = () => {
                   />
                 )}
               </div>
-              <DatePickers showBtn={false} singleDate={true} />
+              <SingleDatePicker />
               <SelectedStoreList
                 selectedStores={context.selectedStores}
                 radioId={context.radioId}
