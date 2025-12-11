@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, type Mock } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
-import { renderWithProviders } from "../utils";
-import Cashiers from "../../pages/cashiers/Cashiers";
+import { renderWithProviders } from "../../utils";
+import Cashiers from "../../../pages/cashiers/Cashiers";
 import {
   getSaleTypes,
   getCashierTable,
@@ -9,9 +9,9 @@ import {
   getTransactionList,
   getCashierTransactions,
   emailTransaction,
-} from "../../api/cashiers";
+} from "../../../api/cashiers";
 import userEvent from "@testing-library/user-event";
-import { setupStore } from "../../store";
+import { setupStore } from "../../../store";
 import {
   saleTypes,
   mockSaleTrendResp,
@@ -20,17 +20,17 @@ import {
   mockSingleTransResp,
   mockCashierCancelledTableResp,
   mockSaleTrendCancelResp,
-} from "./cashiers";
-import { setAvailablePriceTypes } from "../../features/cashierSlice";
-import { setIsDesktop, setIsMobile } from "../../features/appSlice";
+} from ".";
+import { setAvailablePriceTypes } from "../../../features/cashierSlice";
+import { setIsDesktop, setIsMobile } from "../../../features/appSlice";
 
 const user = userEvent.setup();
 const initialStore = setupStore();
 
-vi.mock("../../api/cashiers");
+vi.mock("../../../api/cashiers");
 const mockedToastError = vi.fn();
 const mockedToastWarn = vi.fn();
-vi.mock("../../components/toasts/hooks/useToast", () => ({
+vi.mock("../../../components/toasts/hooks/useToast", () => ({
   useToast: () => ({
     error: mockedToastError,
     warn: mockedToastWarn,
