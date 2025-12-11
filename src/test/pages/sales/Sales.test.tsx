@@ -59,6 +59,36 @@ vi.mock("../../../components/toasts/hooks/useToast", () => ({
   }),
 }));
 
+vi.mock("@nivo/bar", () => ({
+  ResponsiveBar: vi.fn((props) => {
+    // Cover axisLeft.format - called with string values
+    if (props.axisLeft?.format) {
+      props.axisLeft.format("1 - $5.99"); // singleRow case
+      props.axisLeft.format("UPC123"); // multiRow case
+    }
+
+    if (props.tooltip) {
+      props.tooltip({ data: { label: "Test Label", color: "black" } });
+    }
+
+    if (props.axisBottom?.format) {
+      props.axisBottom.format("1 - $5.99");
+    }
+
+    // Previous coverage
+    if (props.colors)
+      props.colors({ id: "test", value: 100, data: { fill: "red" } });
+    if (props.borderColor)
+      props.borderColor({
+        id: "test",
+        value: 100,
+        data: { data: { color: "red" } },
+      });
+
+    return <div data-testid="responsive-bar" />;
+  }),
+}));
+
 describe("Sales Page", () => {
   it("should handle API failure on mount", async () => {
     (getSalesPanels as Mock).mockRejectedValue(defaultError);
