@@ -32,7 +32,7 @@ import OutlierGrid from "./OutlierGrid";
 import PriceHistoryGrid from "./PriceHistoryGrid";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import ForecastModal from "./ForecastModal";
-import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
+import DatePickers from "../../components/datePickers/DatePickers";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -66,7 +66,8 @@ const Forecasting = () => {
         context.url,
         context.token,
         context.storeids,
-        context.singleDate,
+        context.startDate,
+        context.endDate,
         file
       )
         .then((resp) => {
@@ -211,7 +212,7 @@ const Forecasting = () => {
                   />
                 )}
               </div>
-              <SingleDatePicker />
+              <DatePickers showBtn={false} />
               <SelectedStoreList
                 selectedStores={context.selectedStores}
                 radioId={context.radioId}
