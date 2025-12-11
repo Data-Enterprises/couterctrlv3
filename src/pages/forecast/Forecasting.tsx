@@ -171,7 +171,7 @@ const Forecasting = () => {
       className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)]"
     >
       <ForecastModal />
-      <div className="grid grid-cols-[23%_12%_65%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
+      <div className="grid grid-cols-[22%_12%_66%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
         <div className="gap-4 flex flex-col justify-between">
           <Instructions />
           <div className="bg-custom-white rounded-lg shadow-lg p-4">

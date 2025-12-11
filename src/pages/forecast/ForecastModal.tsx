@@ -53,7 +53,7 @@ const ForecastModal = () => {
       onClose={handleClose}
       modalClassName="bg-custom-white w-1/4"
     >
-      <div className="flex justify-center gap-8 select-none">
+      <div className={`${state.lastUpdatedHistory.length ? "flex justify-center gap-8 select-none" : "hidden"}`}>
         <CheckBox
           value={option.all === 1}
           label="Full History"
