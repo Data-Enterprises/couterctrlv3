@@ -51,18 +51,21 @@ const ItemLookupHeader = () => {
       </div>
       <div className={`${selectedStore ? "hidden" : "grid grid-cols-3 gap-2"}`}>
         <button
+          data-testid="lookup-header-sales"
           className={`${mode === "Sales" ? "btn-themeGreen" : "btn-themeBlue"} px-4`}
           onClick={() => dispatch(setMode("Sales"))}
         >
           Sales
         </button>
         <button
+          data-testid="lookup-header-qty"
           className={`${mode === "Qty" ? "btn-themeGreen" : "btn-themeBlue"} px-4`}
           onClick={() => dispatch(setMode("Qty"))}
         >
           Qty
         </button>
         <button
+          data-testid="lookup-header-price"
           className={`${mode === "Price" ? "btn-themeGreen" : "btn-themeBlue"} px-4`}
           onClick={() => dispatch(setMode("Price"))}
         >

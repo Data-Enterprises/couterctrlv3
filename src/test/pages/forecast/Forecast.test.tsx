@@ -20,6 +20,7 @@ import {
   groupStoresResp,
   groups,
   stores,
+  priceHistoryResp2,
 } from ".";
 import { setGroups } from "../../../features/groupSlice";
 import { setAssignedStores } from "../../../features/userSlice";
@@ -380,12 +381,95 @@ describe("Forecast Page", () => {
     expect(targetCell).toBeInTheDocument();
 
     await user.dblClick(targetCell!);
-   
+
     // "ag-898-input" => the Fcst Total price
     const input = document.querySelector("#ag-898-input") as HTMLInputElement;
 
     await user.type(input, "6.99");
     await user.keyboard("{Enter}");
+  });
+
+  it("should handle new data in the Price History grid", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    (getPriceHistory as Mock).mockResolvedValue(priceHistoryResp2);
+    renderWithProviders(<Forecast />, { store });
+
+    const cells = await screen.findAllByRole("gridcell");
+    const cellToClick = cells[13];
+    if (cellToClick) {
+      await user.click(cellToClick);
+    }
+  });
+
+  it("should handle persisting updated rows in Outlier grid when selecting a new history row", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    (getPriceHistory as Mock).mockResolvedValue(priceHistoryResp2);
+    renderWithProviders(<Forecast />, { store });
+
+    const cells = await screen.findAllByRole("gridcell");
+    const cellToClick = cells.find((cell) => cell.textContent === "SALE");
+    if (cellToClick) {
+      await user.click(cellToClick);
+    }
+
+    // The first two rows at this point should have been updated
+    // Therefore lastUpdated history should have two entries
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.lastUpdatedHistory.length).toBe(2);
+    });
+  });
+
+  it("should throw warning in Export modal if file name is empty", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    (getPriceHistory as Mock).mockResolvedValue(priceHistoryResp2);
+    renderWithProviders(<Forecast />, { store });
+
+    const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
+    await user.click(exportBtn);
+
+    const submit = await screen.findByTestId("fcst-export-submit");
+    await user.click(submit);
+
+    await waitFor(() => {
+      expect(mockToastWarn).toHaveBeenCalledWith("Please enter a file name");
+    });
+  });
+
+  it("should handle the export of last udpated data", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    (getPriceHistory as Mock).mockResolvedValue(priceHistoryResp2);
+    renderWithProviders(<Forecast />, { store });
+
+    const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
+    await user.click(exportBtn);
+
+    const input = await screen.findByTestId("fcst-export-filename");
+    await user.type(input, "testfile");
+
+    const updatedData = await screen.findByTestId("check-2-updated-history");
+    await user.click(updatedData);
+
+    const submit = await screen.findByTestId("fcst-export-submit");
+    await user.click(submit);
+  });
+
+  it("should handle the export of all data", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    (getPriceHistory as Mock).mockResolvedValue(priceHistoryResp2);
+    renderWithProviders(<Forecast />, { store });
+
+    const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
+    await user.click(exportBtn);
+
+    const input = await screen.findByTestId("fcst-export-filename");
+    await user.type(input, "testfile");
+
+    const allData = await screen.findByTestId("check-1-all-history");
+    await user.click(allData);
+
+    const submit = await screen.findByTestId("fcst-export-submit");
+    await user.click(submit);
   });
 
   it("should handle clearing all data and resetting the page", async () => {
@@ -446,14 +530,21 @@ describe("Forecast Page", () => {
     }
   });
 
-  ////////////////////////////////////
-  // handle the exporting of data here
-  ////////////////////////////////////
-  it("should open the export modal and handle closing it", async () => {
+  it("should handle select all upcs in ForecastControls", async () => {
     (getBucketList as Mock).mockResolvedValue(fileListResp);
+    (getFromExistingS3File as Mock).mockResolvedValue(forecastResp);
     renderWithProviders(<Forecast />, { store });
 
-    const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
-    await user.click(exportBtn);
+    const selectAll = await screen.findByTestId("forecast-select-all-btn");
+    await user.click(selectAll);
+
+    // toggle description => code => testing that onClick fully
+    const toggle = await screen.findByTestId("forecast-toggle-display-btn");
+    await user.click(toggle);
+    await user.click(toggle);
+
+    // reset the data
+    const reset = await screen.findByTestId("forecast-controls-reset-btn");
+    await user.click(reset);
   });
 });

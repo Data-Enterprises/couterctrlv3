@@ -19,6 +19,7 @@ import {
   setHistoryMetrics,
   setItemLookupHistory,
   setStoreList,
+  setPause
 } from "../../features/itemLookupSlice";
 import "./scanner.css";
 import { useHeight } from "./utils";
@@ -34,13 +35,12 @@ const ItemLookup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
-  const { upcCode, itemsLoaded, selectedStore, itemLookupHistory, storeList } =
+  const { pause, upcCode, itemsLoaded, selectedStore, itemLookupHistory, storeList } =
     useAppSelector((state) => state.item);
   const { email } = useAppSelector((state) => state.user);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [pause, setPause] = useState<boolean>(true);
   const [deviceId, setDeviceId] = useState<string>("");
   const ref = useRef<HTMLDivElement>(null);
 
@@ -54,7 +54,7 @@ const ItemLookup = () => {
 
   useEffect(() => {
     // Get the store list on mount or clear
-    if (storeList.length || !email) return;
+    if (storeList.length) return;
     getStoreList(url, token, email)
       .then((resp) => {
         const j = resp.data;
@@ -67,7 +67,7 @@ const ItemLookup = () => {
     return () => {
       dispatch(setUpcCode(""));
     };
-  }, [storeList, email]);
+  }, [storeList]);
 
   useEffect(() => {
     if (devices) {
@@ -115,7 +115,7 @@ const ItemLookup = () => {
           setError(`We're sorry, that item was not found in your inventory`);
           dispatch(setItemsLoaded(false));
           dispatch(resetLookupSlice());
-          setPause(true);
+          dispatch(setPause(true));
         }
       })
       .catch((err) => toast.error(err.message))
@@ -170,61 +170,66 @@ const ItemLookup = () => {
   const clear = () => {
     dispatch(resetLookupSlice());
     setError("");
-    setPause(true);
+    dispatch(setPause(true));
   };
 
   const scanItem = () => {
-    if (!ref.current) return;
-
-    if (upcCode.length) {
-      return selectedStore > 0 ? getSingleStoreData(upcCode) : getData(upcCode);
-    }
-
-    if (ref.current.style.display === "block") {
-      ref.current.style.display = "none";
-      stopScanner();
-      return;
-    }
-
-    ref.current.style.display = "block";
-
-    Quagga.init(
-      {
-        inputStream: {
-          type: "LiveStream",
-          target: ref.current!,
-          constraints: {
-            width: { min: 640, ideal: 1280, max: 1920 },
-            height: { min: 480, ideal: 720, max: 1080 },
-            facingMode: { exact: "environment" },
-            deviceId: deviceId,
-          },
-        },
-        decoder: {
-          readers: ["upc_reader", "upc_e_reader", "ean_reader", "ean_8_reader"],
-        },
-        locate: true,
-      },
-      (err) => {
-        if (!err) {
-          Quagga.start();
-          setPause(false);
-        } else {
-          console.error(err);
-        }
+    if (ref.current) {
+      if (upcCode.length) {
+        return selectedStore > 0
+          ? getSingleStoreData(upcCode)
+          : getData(upcCode);
       }
-    );
 
-    Quagga.onDetected((result) => {
-      Quagga.stop();
-      Quagga.offDetected();
+      if (ref.current.style.display === "block") {
+        ref.current.style.display = "none";
+        stopScanner();
+        return;
+      }
 
-      ref.current!.style.display = "none";
-      const code = result.codeResult.code;
-      dispatch(setUpcCode(code!));
-      selectedStore > 0 ? getSingleStoreData(code!) : getData(code!);
-      setPause(true);
-    });
+      ref.current.style.display = "block";
+
+      Quagga.init(
+        {
+          inputStream: {
+            type: "LiveStream",
+            target: ref.current!,
+            constraints: {
+              width: { min: 640, ideal: 1280, max: 1920 },
+              height: { min: 480, ideal: 720, max: 1080 },
+              facingMode: { exact: "environment" },
+              deviceId: deviceId,
+            },
+          },
+          decoder: {
+            readers: [
+              "upc_reader",
+              "upc_e_reader",
+              "ean_reader",
+              "ean_8_reader",
+            ],
+          },
+          locate: true,
+        },
+        (err) => {
+          if (!err) {
+            Quagga.start();
+            dispatch(setPause(false));
+          }
+        }
+      );
+
+      Quagga.onDetected((result) => {
+        Quagga.stop();
+        Quagga.offDetected();
+
+        ref.current!.style.display = "none";
+        const code = result.codeResult.code;
+        dispatch(setUpcCode(code!));
+        selectedStore > 0 ? getSingleStoreData(code!) : getData(code!);
+        dispatch(setPause(true));
+      });
+    }
   };
 
   const stopScanner = () => {
@@ -236,7 +241,7 @@ const ItemLookup = () => {
     setError("");
     Quagga.stop();
     Quagga.offDetected();
-    setPause(false);
+    dispatch(setPause(false));
   };
 
   return (
@@ -281,6 +286,7 @@ const ItemLookup = () => {
           )}
           <button
             ref={bottomRef}
+            data-testid="lookup-clear"
             className="btn-themeBlue w-full mt-3 text-[15px]"
             onClick={clear}
           >

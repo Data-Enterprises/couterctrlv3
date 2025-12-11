@@ -135,6 +135,65 @@ export const priceHistoryResp = {
     ],
   },
 };
+export const priceHistoryResp2 = {
+  data: {
+    error: 0,
+    success: true,
+    end_date: "2025-11-05T00:00:00",
+    total_stores: 1,
+    upc_count: 1,
+    result: [
+      {
+        storeid: 111,
+        price_type: "REG",
+        unit_price: 14.99,
+        regular_retail_price: 14.99,
+        total_qty: 15,
+        product_code: "1200000088",
+        product_description: "MOUNTAIN DEW 24 PK",
+        store_number: "1",
+        store_name: "IGA 1",
+        lift: 2.75,
+      },
+      {
+        storeid: 111,
+        price_type: "SALE",
+        unit_price: 10.99,
+        regular_retail_price: 14.99,
+        total_qty: 69,
+        product_code: "1200000088",
+        product_description: "MOUNTAIN DEW 24 PK",
+        store_number: "1",
+        store_name: "IGA 1",
+        lift: 16.25,
+      },
+      {
+        storeid: 111,
+        price_type: "TPR",
+        unit_price: 10.99,
+        regular_retail_price: 14.99,
+        total_qty: 37,
+        product_code: "1200000088",
+        product_description: "MOUNTAIN DEW 24 PK",
+        store_number: "1",
+        store_name: "IGA 1",
+        lift: 8.25,
+      },
+      {
+        storeid: 111,
+        price_type: "TPR",
+        unit_price: 13.99,
+        regular_retail_price: 14.99,
+        total_qty: 43,
+        product_code: "1200000088",
+        product_description: "MOUNTAIN DEW 24 PK",
+        store_number: "1",
+        store_name: "IGA 1",
+        lift: 9.75,
+      },
+    ],
+  },
+};
 
 export const forecastResp = {
   data: {

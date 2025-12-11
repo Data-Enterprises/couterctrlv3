@@ -52,10 +52,10 @@ interface ItemLookupState {
   avgPrice: number;
   itemsLoaded: boolean;
   storeList: StoreList[];
-  selectedStores: number[];
   selectedStore: number;
   itemLookupHistory: ItemLookupHistory[];
   daysSold: number;
+  pause: boolean;
 }
 
 const initialState: ItemLookupState = {
@@ -75,10 +75,10 @@ const initialState: ItemLookupState = {
   avgPrice: 0,
   itemsLoaded: false,
   storeList: [],
-  selectedStores: [],
   selectedStore: 0,
   itemLookupHistory: [],
   daysSold: 0,
+  pause: true,
 };
 
 interface ItemsPayload {
@@ -141,16 +141,6 @@ const itemLookupSlice = createSlice({
     setStoreList: (state, action: PayloadAction<StoreList[]>) => {
       state.storeList = action.payload;
     },
-    setSelectedStores: (state, action: PayloadAction<number>) => {
-      const found = state.selectedStores.find((s) => s === action.payload);
-      if (found) {
-        state.selectedStores = state.selectedStores.filter(
-          (s) => s !== action.payload
-        );
-      } else {
-        state.selectedStores.push(action.payload);
-      }
-    },
     setSelectedStore: (state, action: PayloadAction<number>) => {
       if (state.selectedStore === action.payload) {
         state.selectedStore = 0;
@@ -170,6 +160,9 @@ const itemLookupSlice = createSlice({
       state.avgPrice = action.payload.avgPrice;
       state.daysSold = action.payload.daysSold;
     },
+    setPause: (state, action: PayloadAction<boolean>) => {
+      state.pause = action.payload;
+    },
     resetLookupSlice: (state) => {
       state.upcCode = "";
       state.mode = "Sales";
@@ -188,10 +181,8 @@ const itemLookupSlice = createSlice({
       state.itemsLoaded = false;
       state.itemLookupHistory = [];
       state.daysSold = 0;
-    },
-    resetSelection: (state) => {
-      state.selectedStores = [];
       state.selectedStore = 0;
+      state.pause = true;
     },
   },
 });
@@ -206,11 +197,10 @@ export const {
   setDescription,
   setMetrics,
   setStoreList,
-  setSelectedStores,
   setSelectedStore,
   setItemLookupHistory,
   setHistoryMetrics,
-  resetSelection,
+  setPause,
 } = itemLookupSlice.actions;
 
 export default itemLookupSlice.reducer;

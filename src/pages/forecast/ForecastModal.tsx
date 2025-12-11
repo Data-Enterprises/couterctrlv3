@@ -85,10 +85,10 @@ const ForecastModal = () => {
         />
       </div>
       <div className="flex gap-2 mt-2">
-        <button className="btn-themeGreen w-1/2" onClick={handleExport}>
+        <button data-testid="fcst-export-submit" className="btn-themeGreen w-1/2" onClick={handleExport}>
           Submit
         </button>
-        <button className="btn-themeOrange w-1/2" onClick={handleClose}>
+        <button data-testid="fcst-export-cancel" className="btn-themeOrange w-1/2" onClick={handleClose}>
           Cancel
         </button>
       </div>
