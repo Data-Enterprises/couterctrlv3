@@ -5,6 +5,7 @@ import { setupStore } from "../../../store";
 import {
   defaultError,
   groups,
+  groupTopTen,
   hourly,
   singleStoreSalesPanel,
   storedepts,
@@ -12,6 +13,7 @@ import {
   topten,
   userStores,
   weekly,
+  weeklyTwo,
 } from ".";
 import Sales from "../../../pages/sales/Sales";
 
@@ -39,10 +41,12 @@ import {
   setUnassignedStores,
 } from "../../../features/userSlice";
 import { setGroups } from "../../../features/groupSlice";
+import { data } from "react-router";
 
 const user = userEvent.setup();
 vi.mock("../../../api/sales");
 
+// Setting up the store with values that should already be in redux
 const store = setupStore();
 store.dispatch(setToken("fake-token"));
 store.dispatch(setLastGroup(1));
@@ -52,6 +56,7 @@ store.dispatch(setAssignedStores(userStores.assigned_stores));
 store.dispatch(setUnassignedStores(userStores.unassigned_stores));
 store.dispatch(setGroups(groups));
 
+// Always mock toast if using API
 const mockToastError = vi.fn();
 vi.mock("../../../components/toasts/hooks/useToast", () => ({
   useToast: () => ({
@@ -59,12 +64,12 @@ vi.mock("../../../components/toasts/hooks/useToast", () => ({
   }),
 }));
 
+// All uncovered attributes of the nivo/bar need to be mocked based
+// on what the chart is expecting
 vi.mock("@nivo/bar", () => ({
   ResponsiveBar: vi.fn((props) => {
-    // Cover axisLeft.format - called with string values
     if (props.axisLeft?.format) {
-      props.axisLeft.format("1 - $5.99"); // singleRow case
-      props.axisLeft.format("UPC123"); // multiRow case
+      props.axisLeft.format("1 - $5.99");
     }
 
     if (props.tooltip) {
@@ -75,7 +80,6 @@ vi.mock("@nivo/bar", () => ({
       props.axisBottom.format("1 - $5.99");
     }
 
-    // Previous coverage
     if (props.colors)
       props.colors({ id: "test", value: 100, data: { fill: "red" } });
     if (props.borderColor)
@@ -89,6 +93,36 @@ vi.mock("@nivo/bar", () => ({
   }),
 }));
 
+vi.mock("@nivo/line", () => ({
+  ResponsiveLine: vi.fn((props) => {
+    if (props.axisLeft?.format) {
+      props.axisLeft.format(1);
+    }
+
+    if (props.tooltip) {
+      props.tooltip({ point: { data: { x: '12/9/2025', y: 1.99 } } });
+    }
+    return <div data-testid="responsive-line" />;
+  }),
+}));
+
+const renderSuccess = (group: boolean = false) => {
+  const resp = group ? groupTopTen : topten;
+  (getSalesPanels as Mock).mockResolvedValue(singleStoreSalesPanel);
+  (getHourlyStoreDepts as Mock).mockResolvedValue(storedepts);
+  (getWeekly as Mock).mockResolvedValue(weekly);
+  (getHourly as Mock).mockResolvedValue(hourly);
+  (getTopTen as Mock).mockResolvedValue(resp);
+  (getSubs as Mock).mockResolvedValue(sub_sales);
+  renderWithProviders(<Sales />, { store });
+};
+
+/**
+ * NOTES:
+ *
+ * hour 9 in the hourly response is duplicated to cover the if(existing) logic in Hourly.tsx
+ */
+
 describe("Sales Page", () => {
   it("should handle API failure on mount", async () => {
     (getSalesPanels as Mock).mockRejectedValue(defaultError);
@@ -101,23 +135,15 @@ describe("Sales Page", () => {
   });
 
   it("should handle API success on mount", async () => {
-    (getSalesPanels as Mock).mockResolvedValue(singleStoreSalesPanel);
-    (getHourlyStoreDepts as Mock).mockResolvedValue(storedepts);
-    (getWeekly as Mock).mockResolvedValue(weekly);
-    (getHourly as Mock).mockResolvedValue(hourly);
-    (getTopTen as Mock).mockResolvedValue(topten);
-    (getSubs as Mock).mockResolvedValue(sub_sales);
-    renderWithProviders(<Sales />, { store });
+    await waitFor(() => {
+      renderSuccess();
+    });
   });
 
   it("should filter sales panels based on search input", async () => {
-    (getSalesPanels as Mock).mockResolvedValue(singleStoreSalesPanel);
-    (getHourlyStoreDepts as Mock).mockResolvedValue(storedepts);
-    (getWeekly as Mock).mockResolvedValue(weekly);
-    (getHourly as Mock).mockResolvedValue(hourly);
-    (getTopTen as Mock).mockResolvedValue(topten);
-    (getSubs as Mock).mockResolvedValue(sub_sales);
-    renderWithProviders(<Sales />, { store });
+    await waitFor(() => {
+      renderSuccess();
+    });
 
     const input = await screen.findByTestId("sales-panel-filter-input");
     await user.type(input, "Store 1");
@@ -131,13 +157,9 @@ describe("Sales Page", () => {
   });
 
   it("should handle mobile styling for main Sales page", async () => {
-    (getSalesPanels as Mock).mockResolvedValue(singleStoreSalesPanel);
-    (getHourlyStoreDepts as Mock).mockResolvedValue(storedepts);
-    (getWeekly as Mock).mockResolvedValue(weekly);
-    (getHourly as Mock).mockResolvedValue(hourly);
-    (getTopTen as Mock).mockResolvedValue(topten);
-    (getSubs as Mock).mockResolvedValue(sub_sales);
-    renderWithProviders(<Sales />, { store });
+    await waitFor(() => {
+      renderSuccess();
+    });
 
     await waitFor(() => {
       store.dispatch(setIsDesktop(false));
@@ -145,13 +167,9 @@ describe("Sales Page", () => {
     });
   });
   it("should handle desktop styling for main Sales page", async () => {
-    (getSalesPanels as Mock).mockResolvedValue(singleStoreSalesPanel);
-    (getHourlyStoreDepts as Mock).mockResolvedValue(storedepts);
-    (getWeekly as Mock).mockResolvedValue(weekly);
-    (getHourly as Mock).mockResolvedValue(hourly);
-    (getTopTen as Mock).mockResolvedValue(topten);
-    (getSubs as Mock).mockResolvedValue(sub_sales);
-    renderWithProviders(<Sales />, { store });
+    await waitFor(() => {
+      renderSuccess();
+    });
 
     await waitFor(() => {
       store.dispatch(setIsDesktop(true));
@@ -163,12 +181,54 @@ describe("Sales Page", () => {
     await waitFor(() => {
       store.dispatch(setType("Group"));
     });
-    (getSalesPanels as Mock).mockResolvedValue(singleStoreSalesPanel);
-    (getHourlyStoreDepts as Mock).mockResolvedValue(storedepts);
-    (getWeekly as Mock).mockResolvedValue(weekly);
-    (getHourly as Mock).mockResolvedValue(hourly);
-    (getTopTen as Mock).mockResolvedValue(topten);
-    (getSubs as Mock).mockResolvedValue(sub_sales);
-    renderWithProviders(<Sales />, { store });
+    await waitFor(() => {
+      renderSuccess();
+    });
+  });
+
+  // Hourly tests => nivo/bar is tested, just need to select a new hour
+  it("should handle the hour selection in Hourly.tsx", async () => {
+    await waitFor(() => {
+      renderSuccess();
+    });
+
+    const hourTrigger = await screen.findByTestId(
+      "single-select-trigger-icon-0"
+    );
+    await user.click(hourTrigger);
+    const hour8 = await screen.findByTestId("single-select-option-0-1");
+    await user.click(hour8);
+  });
+
+  // top ten items
+  it("", async () => {
+    await waitFor(() => {
+      renderSuccess(true);
+    });
+
+    // // select a sales panel
+    const panel = await screen.findByTestId("sales-panel-0");
+    await user.click(panel);
+
+    await waitFor(() => {
+      store.dispatch(setType("Store"));
+    });
+  });
+
+  // weekly net sales
+  it("should handle weekly sales based on group vs sales panel selection", async () => {
+    await waitFor(() => {
+      renderSuccess(true);
+    });
+
+    (getWeekly as Mock).mockResolvedValue(weeklyTwo);
+
+    const panel = await screen.findByTestId("sales-panel-0");
+    await user.click(panel);
+
+    await waitFor(() => {
+      const state = store.getState().sales;
+      console.log(state.selectedSalesPanel, store.getState().search.type);
+    });
   });
 });

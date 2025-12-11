@@ -19,9 +19,10 @@ interface SalesPanelProps {
     e: React.MouseEvent<HTMLDivElement>,
     panel: WeeklySale
   ) => void;
+  id: number;
 }
 
-const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
+const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
@@ -97,6 +98,7 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
       transition-all duration-200 select-none ripple-button md:min-h-[185px] relative`}
     >
       <div
+        data-testid={`sales-panel-${id}`}
         className={`font-bold text-center`}
         onClick={(e) => handlePanelClick(e, panel)}
       >

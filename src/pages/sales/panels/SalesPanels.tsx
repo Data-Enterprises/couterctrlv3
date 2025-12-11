@@ -165,6 +165,7 @@ const SalesPanels = () => {
         filtered.map((panel, idx) => (
           <SalesPanel
             key={idx}
+            id={idx}
             panel={panel}
             handlePanelClick={handlePanelClick}
           />
