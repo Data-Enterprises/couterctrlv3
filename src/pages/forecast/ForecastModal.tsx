@@ -53,7 +53,7 @@ const ForecastModal = () => {
       onClose={handleClose}
       modalClassName="bg-custom-white w-1/4"
     >
-      <div className="flex justify-center gap-8 select-none">
+      <div className={`${state.lastUpdatedHistory.length ? "flex justify-center gap-8 select-none" : "hidden"}`}>
         <CheckBox
           value={option.all === 1}
           label="Full History"
@@ -85,10 +85,10 @@ const ForecastModal = () => {
         />
       </div>
       <div className="flex gap-2 mt-2">
-        <button className="btn-themeGreen w-1/2" onClick={handleExport}>
+        <button data-testid="fcst-export-submit" className="btn-themeGreen w-1/2" onClick={handleExport}>
           Submit
         </button>
-        <button className="btn-themeOrange w-1/2" onClick={handleClose}>
+        <button data-testid="fcst-export-cancel" className="btn-themeOrange w-1/2" onClick={handleClose}>
           Cancel
         </button>
       </div>

@@ -19,9 +19,10 @@ interface SalesPanelProps {
     e: React.MouseEvent<HTMLDivElement>,
     panel: WeeklySale
   ) => void;
+  id: number;
 }
 
-const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
+const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
@@ -97,12 +98,14 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
       transition-all duration-200 select-none ripple-button md:min-h-[185px] relative`}
     >
       <div
+        data-testid={`sales-panel-${id}`}
         className={`font-bold text-center`}
         onClick={(e) => handlePanelClick(e, panel)}
       >
         <div className="">{panel.store_name}</div>
       </div>
       <div
+        data-testid={`sales-panel-0-${id}`}
         className={`flex justify-between items-center px-2`}
         onClick={(e) => handlePanelClick(e, panel)}
       >
@@ -121,6 +124,7 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
         </div>
       </div>
       <div
+        data-testid={`sales-panel-1-${id}`}
         className="w-full flex flex-col items-center"
         onClick={(e) => handlePanelClick(e, panel)}
       >
@@ -135,6 +139,7 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
         }`}
       >
         <button
+          data-testid={`sales-panel-2-${id}`}
           className={`btn-themeGreen py-1.5 px-7 text-nowrap w-full ${
             selectedSalesPanel.storeid === 0
               ? "opacity-50 pointer-events-none"
@@ -145,6 +150,7 @@ const SalesPanel = ({ panel, handlePanelClick }: SalesPanelProps) => {
           Compare Subs
         </button>
         <button
+          data-testid={`sales-panel-cat-${id}`}
           className={`btn-themeBlue py-1.5 w-full`}
           onClick={() => handleCatClick(panel)}
         >

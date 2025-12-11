@@ -125,6 +125,7 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
             const cashier = acc.find(
               (item) => item.cashier_number === current.cashier_number
             );
+
             if (!cashier) {
               acc.push({
                 cashier_name: current.cashier_name,

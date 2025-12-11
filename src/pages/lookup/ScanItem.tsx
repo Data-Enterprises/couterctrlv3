@@ -44,7 +44,7 @@ const ScanItem = ({ scanItem }: ScanItemProps) => {
 
   const handleSelect = (id: number) => {
     dispatch(setSelectedStore(id));
-    setIsOpen(false);
+    handleClose();
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,6 +57,7 @@ const ScanItem = ({ scanItem }: ScanItemProps) => {
         <div className="-mt-2 mb-2">
           <label className="text-xs font-medium">Search stores:</label>
           <input
+            data-testid="lookup-store-input"
             id="store-search"
             type="text"
             className="basic-input"
@@ -69,6 +70,7 @@ const ScanItem = ({ scanItem }: ScanItemProps) => {
             filteredStores.map((store, i) => (
               <div
                 key={i}
+                data-testid={`lookup-store-option-${store.storeid}`}
                 className={`transition-all duration-200 px-2 py-1 ${
                   selectedStore === store.storeid
                     ? "bg-blue-500 text-custom-white"
@@ -88,16 +90,22 @@ const ScanItem = ({ scanItem }: ScanItemProps) => {
       <div className="flex gap-2 items-center">
         <input
           type="text"
+          data-testid="scan-item-input"
           value={upcCode}
           onChange={(e) => dispatch(setUpcCode(e.target.value))}
           className="basic-input bg-custom-white"
         />
-        <button onClick={handleScan} className="btn-themeBlue px-4">
+        <button
+          data-testid="scan-button"
+          onClick={handleScan}
+          className="btn-themeBlue px-4"
+        >
           Scan
         </button>
       </div>
       {!itemsLoaded && (
         <button
+          data-testid="lookup-select-store"
           className="btn-themeBlue mt-2 w-full"
           onClick={() => setIsOpen(true)}
         >
@@ -106,6 +114,7 @@ const ScanItem = ({ scanItem }: ScanItemProps) => {
       )}
       {selectedStore && !itemsLoaded ? (
         <button
+          data-testid="scan-item-clear-store"
           className="btn-themeOrange mt-2 w-full"
           onClick={() => dispatch(setSelectedStore(0))}
         >

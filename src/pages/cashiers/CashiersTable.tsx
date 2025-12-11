@@ -30,9 +30,9 @@ const CashiersTable = () => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    if (cashier.transList.length === 0) {
-      setFiltered([]);
-    }
+    // if (cashier.transList.length === 0) {
+    //   setFiltered([]);
+    // }
     // Applying all filters to the transaction list
     const selectedCashier = cashier.selectedCashier.cashier_number;
     const saleDate = cashier.saleDateFilter;

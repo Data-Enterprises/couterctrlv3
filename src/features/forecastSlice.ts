@@ -46,7 +46,6 @@ interface ForecastState {
   historyData: HistoryData[];
   lastUpdatedHistory: HistoryData[];
   exportModalOpen: boolean;
-  currentUpcToUpdate: string;
 }
 
 const initialState: ForecastState = {
@@ -66,7 +65,6 @@ const initialState: ForecastState = {
   historyData: [],
   lastUpdatedHistory: [],
   exportModalOpen: false,
-  currentUpcToUpdate: "",
 };
 export const forecastSlice = createSlice({
   name: "forecast",
@@ -146,7 +144,6 @@ export const forecastSlice = createSlice({
       }
     },
     reQuery: (state) => {
-      state.currentUpcToUpdate = "";
       state.lastUpdatedHistory = [];
       state.historyData = [];
       state.adFcst = 0;
@@ -160,7 +157,6 @@ export const forecastSlice = createSlice({
       state.priceHistory = [];
     },
     reset: (state) => {
-      state.currentUpcToUpdate = "";
       state.lastUpdatedHistory = [];
       state.historyData = [];
       state.adFcst = 0;
@@ -177,9 +173,6 @@ export const forecastSlice = createSlice({
     },
     setExportModalOpen: (state, action: PayloadAction<boolean>) => {
       state.exportModalOpen = action.payload;
-    },
-    setCurrentUpcToUpdate: (state, action: PayloadAction<string>) => {
-      state.currentUpcToUpdate = action.payload;
     },
     // resetForecast: () => initialState,
   },
@@ -205,7 +198,6 @@ export const {
   setLastUpdatedHistory,
   reset,
   setExportModalOpen,
-  setCurrentUpcToUpdate,
   // resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;

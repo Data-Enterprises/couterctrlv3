@@ -116,10 +116,6 @@ const DepartmentSales = () => {
           enableCellTextSelection={true}
           theme={theme}
           className="no-scrollbar"
-          // This is just testing to see if I can make an api call while listening to pagination changes
-          // onPaginationChanged={(params) => {
-          //   console.log(params.api.paginationGetCurrentPage());
-          // }}
         />
       </div>
     </div>

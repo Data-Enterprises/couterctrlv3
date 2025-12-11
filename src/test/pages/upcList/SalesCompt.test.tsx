@@ -233,6 +233,23 @@ describe("SalesComp Module in UpcList", () => {
       const state = store.getState().upc;
       expect(state.selectedCompOne).toBeNull();
       expect(state.selectedCompTwo).toBeNull();
-    })
+    });
+  });
+
+  it("should set grid-rows-[18%_82%] on large screens", async () => {
+    renderWithProviders(<UpcList />, { store });
+
+    // to similuate the resizing of the browser
+    Object.defineProperty(window, "innerWidth", {
+      writable: true,
+      configurable: true,
+      value: 1600,
+    });
+
+    window.dispatchEvent(new Event("resize"));
+    await waitFor(() => {
+      const grid = screen.getByTestId("sales-comp-main-grid");
+      expect(grid).toHaveClass("grid-rows-[18%_82%]");
+    });
   });
 });

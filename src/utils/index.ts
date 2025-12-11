@@ -4,7 +4,6 @@ export const formatDate = (date: string) => {
   const day = dte.getDate();
   const year = dte.getFullYear();
   return month + "/" + day + "/" + year;
-  // return `${year}-${addZero(month)}-${addZero(day)}`; // just for now
 };
 
 export const addDays = (date: string | Date, number: number) => {
@@ -115,9 +114,4 @@ export const handleRipple = (e: React.MouseEvent<HTMLDivElement>) => {
 
   // Then append the new ripple to the parent element
   parent.appendChild(circle);
-
-  // Automatically remove the ripple after the animation
-  circle.addEventListener("animationend", () => {
-    circle.remove();
-  });
 };

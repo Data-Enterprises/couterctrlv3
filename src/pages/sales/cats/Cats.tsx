@@ -8,9 +8,7 @@ const Cats = () => {
 
   return (
     <div
-      className={`w-full h-full bg-custom-white rounded-lg shadow-lg  ${
-        sales.windowVisible.cats ? "" : "hidden"
-      }`}
+      className={`w-full h-[95%] bg-custom-white rounded-lg`}
       ref={topRef}
     >
       <div

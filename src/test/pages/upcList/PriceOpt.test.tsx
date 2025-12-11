@@ -178,7 +178,6 @@ describe("PriceOpt Module in UpcList", () => {
     renderWithProviders(<UpcList />, { store });
 
     const cells = await screen.findAllByRole("gridcell");
-    cells.forEach((cell) => console.log(cell.textContent));
     const cellToClick = cells.find((c) => c.textContent === "PEPSI 24 PK");
     if (cellToClick) {
       await user.click(cellToClick);
@@ -187,9 +186,7 @@ describe("PriceOpt Module in UpcList", () => {
 
   it("should handle grid row unselection", async () => {
     renderWithProviders(<UpcList />, { store });
-
     const cells = await screen.findAllByRole("gridcell");
-    cells.forEach((cell) => console.log(cell.textContent));
     const cellToClick = cells.find((c) => c.textContent === "PEPSI 24 PK");
     if (cellToClick) {
       await user.click(cellToClick);
@@ -198,9 +195,7 @@ describe("PriceOpt Module in UpcList", () => {
 
   it("should handle context menu clicking", async () => {
     renderWithProviders(<UpcList />, { store });
-
     const cells = await screen.findAllByRole("gridcell");
-    cells.forEach((cell) => console.log(cell.textContent));
     const cellToClick = cells.find((c) => c.textContent === "PEPSI 24 PK");
 
     if (cellToClick) {

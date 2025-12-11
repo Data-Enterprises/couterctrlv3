@@ -37,7 +37,7 @@ const TotalSalesFilter = ({
       <input
         data-testid="cashier-table-filter-total-sales-input"
         className="basic-input focus:border my-4 bg-custom-white"
-        type="number"
+        type="text"
         value={threshold}
         onChange={(e) => setThreshold(Number(e.currentTarget.value))}
       />

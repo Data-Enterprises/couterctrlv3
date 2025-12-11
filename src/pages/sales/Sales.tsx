@@ -1,5 +1,5 @@
 // HOOKS
-import { useEffect } from "react";
+import { useEffect, useState, type JSX } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { formatGoliathDate } from "../../utils";
 import { useToast } from "../../components/toasts/hooks/useToast";
@@ -24,6 +24,7 @@ import SalesPanels from "./panels/SalesPanels";
 import Hourly from "./components/Hourly";
 import Subs from "./subs/Subs";
 import Carousel from "../../components/Carousel";
+import Cats from "./cats/Cats";
 
 const Sales = () => {
   const toast = useToast();
@@ -31,7 +32,17 @@ const Sales = () => {
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
   const sales = useAppSelector((state) => state.sales);
+  const [children, setChildren] = useState<JSX.Element[]>([
+    <Hourly />,
+    <TopTenItems />,
+  ]);
   const { gridRef, height } = useHeight();
+
+  useEffect(() => {
+    if (sales.catSales.length > 0) {
+      setChildren((prev) => [...prev, <Cats />]);
+    }
+  }, [sales.catSales]);
 
   useEffect(() => {
     // On mount
@@ -135,8 +146,7 @@ const Sales = () => {
             <div className="h-full shadow-lg">
               {context.isDesktop ? (
                 <Carousel className="bg-custom-white h-[100%]">
-                  <Hourly />
-                  <TopTenItems />
+                  {children.map((child) => child)}
                 </Carousel>
               ) : (
                 <TopTenItems />
