@@ -9,6 +9,7 @@ import {
 } from "../../features/appSlice";
 import { waitFor, screen } from "@testing-library/react";
 import { setIsNavOpen } from "../../features/navSlice";
+import { formatGoliathDate } from "../../utils";
 
 const store = setupStore();
 store.dispatch(setIsMobile(true));
@@ -46,5 +47,11 @@ describe("App Component", () => {
     });
 
     expect(container).toHaveClass("bg-content/5");
+  });
+
+  it("should handle formatGolaithDate with a date before October", async () => {
+    const date = '9/1/2025';
+    const formattedDate = formatGoliathDate(date);
+    expect(formattedDate).toBe('2025-09-01');
   });
 });

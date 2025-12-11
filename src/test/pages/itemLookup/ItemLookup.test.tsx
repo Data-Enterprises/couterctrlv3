@@ -454,4 +454,24 @@ describe("Item Lookup page", () => {
     await user.click(scan);
     await user.click(scan);
   });
+
+  it("should handle unselecting a selected store", async () => {
+    mockedUseMediaDevices.mockReturnValue({
+      devices: [
+        { deviceId: "front-1", label: "Front Camera" },
+        { deviceId: "back-1", label: "Back Camera" },
+      ],
+    });
+    renderWithProviders(<ItemLookup />, { store });
+    const lookupSelectStore = await screen.findByTestId("lookup-select-store");
+    await user.click(lookupSelectStore);
+
+    const storeOption = await screen.findByTestId("lookup-store-option-1");
+    await user.click(storeOption);
+
+    await user.click(lookupSelectStore);
+
+    const newStoreOption = await screen.findByTestId("lookup-store-option-1");
+    await user.click(newStoreOption);
+  });
 });

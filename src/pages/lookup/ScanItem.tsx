@@ -70,6 +70,7 @@ const ScanItem = ({ scanItem }: ScanItemProps) => {
             filteredStores.map((store, i) => (
               <div
                 key={i}
+                data-testid={`lookup-store-option-${store.storeid}`}
                 className={`transition-all duration-200 px-2 py-1 ${
                   selectedStore === store.storeid
                     ? "bg-blue-500 text-custom-white"

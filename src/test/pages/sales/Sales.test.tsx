@@ -47,7 +47,7 @@ const store = setupStore();
 store.dispatch(setToken("fake-token"));
 store.dispatch(setLastGroup(1));
 store.dispatch(setLastStore(1));
-store.dispatch(setType("Group"));
+store.dispatch(setType("Store"));
 store.dispatch(setAssignedStores(userStores.assigned_stores));
 store.dispatch(setUnassignedStores(userStores.unassigned_stores));
 store.dispatch(setGroups(groups));
@@ -130,6 +130,9 @@ describe("Sales Page", () => {
   });
 
   it("should handle the toggling of searchValue in main Sales page for API calls", async () => {
+    await waitFor(() => {
+      store.dispatch(setType("Group"));
+    });
     (getSalesPanels as Mock).mockResolvedValue(singleStoreSalesPanel);
     (getHourlyStoreDepts as Mock).mockResolvedValue(storedepts);
     (getWeekly as Mock).mockResolvedValue(weekly);

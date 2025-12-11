@@ -51,7 +51,7 @@ const SalesComp = () => {
       />
       <UpcModal handleExport={handleExport} />
       <UpcControls />
-      <div className={`w-full h-full grid ${rows} gap-4`}>
+      <div data-testid="sales-comp-main-grid" className={`w-full h-full grid ${rows} gap-4`}>
         <SalesCompHeader />
         <div className="grid grid-cols-[80%_19%] gap-4 mb-4">
           <SalesCompGrid />
