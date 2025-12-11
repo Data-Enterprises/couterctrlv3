@@ -105,6 +105,7 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
         <div className="">{panel.store_name}</div>
       </div>
       <div
+        data-testid={`sales-panel-0-${id}`}
         className={`flex justify-between items-center px-2`}
         onClick={(e) => handlePanelClick(e, panel)}
       >
@@ -123,6 +124,7 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
         </div>
       </div>
       <div
+        data-testid={`sales-panel-1-${id}`}
         className="w-full flex flex-col items-center"
         onClick={(e) => handlePanelClick(e, panel)}
       >
@@ -137,6 +139,7 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
         }`}
       >
         <button
+          data-testid={`sales-panel-2-${id}`}
           className={`btn-themeGreen py-1.5 px-7 text-nowrap w-full ${
             selectedSalesPanel.storeid === 0
               ? "opacity-50 pointer-events-none"
@@ -147,6 +150,7 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
           Compare Subs
         </button>
         <button
+          data-testid={`sales-panel-cat-${id}`}
           className={`btn-themeBlue py-1.5 w-full`}
           onClick={() => handleCatClick(panel)}
         >

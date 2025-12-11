@@ -14,6 +14,8 @@ import {
   userStores,
   weekly,
   weeklyTwo,
+  cat_sales,
+  sub_sales2,
 } from ".";
 import Sales from "../../../pages/sales/Sales";
 
@@ -24,6 +26,8 @@ import {
   getWeekly, // weekly
   getHourly, // hourly
   getSubs, // sub_sales
+  getCats,
+  // getCompareSubs, // cat_sales
 } from "../../../api/sales";
 import {
   setIsDesktop,
@@ -41,7 +45,6 @@ import {
   setUnassignedStores,
 } from "../../../features/userSlice";
 import { setGroups } from "../../../features/groupSlice";
-import { data } from "react-router";
 
 const user = userEvent.setup();
 vi.mock("../../../api/sales");
@@ -100,7 +103,7 @@ vi.mock("@nivo/line", () => ({
     }
 
     if (props.tooltip) {
-      props.tooltip({ point: { data: { x: '12/9/2025', y: 1.99 } } });
+      props.tooltip({ point: { data: { x: "12/9/2025", y: 1.99 } } });
     }
     return <div data-testid="responsive-line" />;
   }),
@@ -134,9 +137,39 @@ describe("Sales Page", () => {
     });
   });
 
-  it("should handle API success on mount", async () => {
+  it("should handle api failure for fetching all data after sales panels are fetched", async () => {
+    (getSalesPanels as Mock).mockResolvedValue(singleStoreSalesPanel);
+    (getHourlyStoreDepts as Mock).mockResolvedValue(storedepts);
+    (getWeekly as Mock).mockRejectedValueOnce(defaultError);
+    (getHourly as Mock).mockRejectedValueOnce(defaultError);
+    (getTopTen as Mock).mockRejectedValueOnce(defaultError);
+    (getSubs as Mock).mockRejectedValueOnce(defaultError);
+
+    renderWithProviders(<Sales />, { store });
+    await waitFor(() => {
+      expect(mockToastError).toHaveBeenCalledTimes(4);
+    });
+  });
+
+  it("should handle setting/unsetting selected sales panel", async () => {
     await waitFor(() => {
       renderSuccess();
+    });
+
+    const panel = await screen.findByTestId("sales-panel-0-0");
+    await user.click(panel);
+
+    await waitFor(() => {
+      const state = store.getState().sales;
+      expect(state.selectedSalesPanel.storeid).toBe(2);
+    });
+
+    const samePanel = await screen.findByTestId("sales-panel-1-0");
+    await user.click(samePanel);
+
+    await waitFor(() => {
+      const state = store.getState().sales;
+      expect(state.selectedSalesPanel.storeid).toBe(0);
     });
   });
 
@@ -201,7 +234,7 @@ describe("Sales Page", () => {
   });
 
   // top ten items
-  it("", async () => {
+  it("should set the top ten items based on clicking a sales panel", async () => {
     await waitFor(() => {
       renderSuccess(true);
     });
@@ -223,12 +256,80 @@ describe("Sales Page", () => {
 
     (getWeekly as Mock).mockResolvedValue(weeklyTwo);
 
+    // Set the weekly net sales based on the clicked panel
     const panel = await screen.findByTestId("sales-panel-0");
+    await user.click(panel);
+  });
+
+  it("should handle api failure for getting compare subs", async () => {
+    await waitFor(() => {
+      renderSuccess(true);
+    });
+
+    const panel = await screen.findByTestId("sales-panel-0");
+    await user.click(panel);
+
+    // clicking on compare subs to set the compare panel
+    (getSubs as Mock).mockRejectedValueOnce(defaultError);
+    const comparePanel = await screen.findByTestId("sales-panel-2-1");
+    await user.click(comparePanel);
+
+    
+  });
+  it("should compare sub sales when two panels are selected", async () => {
+    await waitFor(() => {
+      renderSuccess(true);
+    });
+
+    const panel = await screen.findByTestId("sales-panel-0");
+    await user.click(panel);
+
+    // clicking on compare subs to set the compare panel
+    (getSubs as Mock).mockResolvedValue(sub_sales2);
+    const comparePanel = await screen.findByTestId("sales-panel-2-1");
+    await user.click(comparePanel);
+
+    await waitFor(() => {
+      const state = store.getState().sales;
+      expect(state.compareSalesPanel.store_name).toBe("Store 2");
+    });
+
+
+    await user.click(comparePanel);
+    await waitFor(() => {
+      const state = store.getState().sales;
+      expect(state.compareSalesPanel.store_name).toBe("");
+    });
+  });
+
+  it("should cats api failure when Cats button is clicked", async () => {
+    (getCats as Mock).mockRejectedValueOnce(defaultError);
+    await waitFor(() => {
+      renderSuccess(true);
+    });
+
+    const panel = await screen.findByTestId("sales-panel-cat-0");
+    await user.click(panel);
+
+    await waitFor(() => {
+      expect(mockToastError).toHaveBeenCalledWith(
+        "Error fetching cats data: An error occurred"
+      );
+    });
+  });
+
+  it("should fetch categories data when Cats button is clicked", async () => {
+    (getCats as Mock).mockResolvedValue(cat_sales);
+    await waitFor(() => {
+      renderSuccess(true);
+    });
+
+    const panel = await screen.findByTestId("sales-panel-cat-0");
     await user.click(panel);
 
     await waitFor(() => {
       const state = store.getState().sales;
-      console.log(state.selectedSalesPanel, store.getState().search.type);
+      console.log(state.catSales)
     });
   });
 });

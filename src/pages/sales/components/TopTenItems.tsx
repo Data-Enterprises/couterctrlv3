@@ -30,7 +30,6 @@ const TopTenItems = () => {
         .filter((item) => item.storeid === sales.selectedSalesPanel.storeid)
         .sort((a: TopTenItem, b: TopTenItem) => b.total_sales - a.total_sales);
 
-      console.log(panelItems, sales.topTenItems);
       newTopTen = formatTopTenData(panelItems);
 
       // Selecting a panel then sets up the title to the store name
