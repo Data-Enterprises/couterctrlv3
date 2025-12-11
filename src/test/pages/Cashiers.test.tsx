@@ -18,8 +18,16 @@ import {
   mockCashierTableResp,
   mockTransListResp,
   mockSingleTransResp,
+  mockCashierCancelledTableResp,
+  mockSaleTrendCancelResp,
 } from "./cashiers";
-import { setAvailablePriceTypes } from "../../features/cashierSlice";
+import {
+  setAvailablePriceTypes,
+  setCashierTransactions,
+  setTotalSalesFilter,
+  setTransList,
+  setUpcFilter,
+} from "../../features/cashierSlice";
 import { setIsDesktop, setIsMobile } from "../../features/appSlice";
 
 const user = userEvent.setup();
@@ -91,6 +99,30 @@ describe("Cashiers Page", () => {
   // Testing the clicking of a cashier trend card to fetch unique cashiers and transaction list
   // //////////////////////////////////////////////////////////////////////////////////////////
   it("should fetch unique cashiers and transaction list when clicking on a cashier trend card", async () => {
+    (getTransactionList as Mock).mockRejectedValueOnce(new Error("API Error"));
+
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
+    // Doing this just to cover some of the mobile styling, functionally all is passing and working correctly
+    await waitFor(() => {
+      initialStore.dispatch(setIsDesktop(false));
+      initialStore.dispatch(setIsMobile(true));
+    });
+
+    await waitFor(() => {
+      initialStore.dispatch(setIsDesktop(true));
+      initialStore.dispatch(setIsMobile(false));
+    });
+
+    const cashCard = await screen.findByTestId("cashier-trend-card-0-36");
+    await user.click(cashCard);
+
+    await waitFor(() => {
+      expect(mockedToastError).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("should fetch unique cashiers and transaction list when clicking on a cashier trend card", async () => {
     (getTransactionList as Mock).mockResolvedValueOnce({
       data: mockTransListResp,
     });
@@ -106,7 +138,7 @@ describe("Cashiers Page", () => {
     await waitFor(() => {
       initialStore.dispatch(setIsDesktop(true));
       initialStore.dispatch(setIsMobile(false));
-    })
+    });
 
     const cashCard = await screen.findByTestId("cashier-trend-card-0-36");
     await user.click(cashCard);
@@ -382,9 +414,7 @@ describe("Cashiers Page", () => {
     );
     await user.click(gtCheckbox);
     await user.click(ltCheckbox);
-    await user.type(filterInput, "1");
-    filterInput.setAttribute("value", "1");
-
+    await user.type(filterInput, "5");
     await user.click(filterBtn);
 
     // The modal should close after applying the filter
@@ -457,6 +487,121 @@ describe("Cashiers Page", () => {
     });
   });
 
-  // Test the Cancelled stuff here to cover the Transaction Modal agg function
-  // /////////////////////////////////////////////////////////////////////////
+  it("should handle Cancelled data", async () => {
+    (getCashierTable as Mock).mockResolvedValueOnce({
+      data: mockCashierCancelledTableResp,
+    });
+    (getCashierDetails as Mock).mockResolvedValueOnce(mockSaleTrendCancelResp);
+    (getTransactionList as Mock).mockResolvedValueOnce({
+      data: mockTransListResp,
+    });
+
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
+    const cancelPanel = await screen.findByTestId("sale-type-panel-Cancelled");
+    await user.click(cancelPanel);
+
+    const trendCard = await screen.findByTestId("cashier-trend-card-0-2");
+    await user.click(trendCard);
+
+    const showAll = await screen.findByTestId("cashiers-table-showall-btn");
+    await user.click(showAll);
+
+    await waitFor(() => {
+      const state = initialStore.getState().cashier;
+      expect(state.selectedSaleType).toBe("Cancelled");
+    });
+  });
+
+  it("should handle the less than threshold filter", async () => {
+    (getCashierTable as Mock).mockResolvedValueOnce({
+      data: mockCashierCancelledTableResp,
+    });
+    (getCashierDetails as Mock).mockResolvedValueOnce(mockSaleTrendCancelResp);
+    (getTransactionList as Mock).mockResolvedValueOnce({
+      data: mockTransListResp,
+    });
+
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
+    const cancelPanel = await screen.findByTestId("sale-type-panel-Cancelled");
+    await user.click(cancelPanel);
+
+    const trendCard = await screen.findByTestId("cashier-trend-card-0-2");
+    await user.click(trendCard);
+
+    const totalFilter = await screen.findByTestId("cashier-table-filter-total");
+    expect(totalFilter).toBeInTheDocument();
+    await user.click(totalFilter);
+
+    const modal = await screen.findByTestId("cashier-table-filter-modal");
+    expect(modal).toBeInTheDocument();
+
+    const filterBtn = await screen.findByTestId(
+      "cashier-table-filter-modal-submit-btn"
+    );
+
+    const ltCheckbox = await screen.findByTestId(
+      "cashier-table-filter-ts-lt-checkbox"
+    );
+
+    const filterInput = await screen.findByTestId(
+      "cashier-table-filter-total-sales-input"
+    );
+
+    await user.click(ltCheckbox);
+    await user.type(filterInput, "5");
+    await user.click(filterBtn);
+
+    await waitFor(() => {
+      const state = initialStore.getState().cashier;
+      expect(state.totalSalesFilter).toBe(5);
+      expect(state.cashierTableThreshComp.lt).toBe(true);
+    });
+  });
+
+  it("should handle the greater than threshold filter", async () => {
+    (getCashierTable as Mock).mockResolvedValueOnce({
+      data: mockCashierCancelledTableResp,
+    });
+    (getCashierDetails as Mock).mockResolvedValueOnce(mockSaleTrendCancelResp);
+    (getTransactionList as Mock).mockResolvedValueOnce({
+      data: mockTransListResp,
+    });
+
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
+    const cancelPanel = await screen.findByTestId("sale-type-panel-Cancelled");
+    await user.click(cancelPanel);
+
+    const trendCard = await screen.findByTestId("cashier-trend-card-0-2");
+    await user.click(trendCard);
+
+    const totalFilter = await screen.findByTestId("cashier-table-filter-total");
+    expect(totalFilter).toBeInTheDocument();
+    await user.click(totalFilter);
+
+    const modal = await screen.findByTestId("cashier-table-filter-modal");
+    expect(modal).toBeInTheDocument();
+
+    const filterBtn = await screen.findByTestId(
+      "cashier-table-filter-modal-submit-btn"
+    );
+
+    const gtCheckbox = await screen.findByTestId(
+      "cashier-table-filter-ts-gt-checkbox"
+    );
+    const filterInput = await screen.findByTestId(
+      "cashier-table-filter-total-sales-input"
+    );
+    await user.click(gtCheckbox);
+    await user.type(filterInput, "5");
+    await user.click(filterBtn);
+
+    await waitFor(() => {
+      const state = initialStore.getState().cashier;
+      expect(state.totalSalesFilter).toBe(5);
+      expect(state.cashierTableThreshComp.gt).toBe(true);
+    });
+  });
 });

@@ -120,11 +120,14 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
           storeNumber
         );
 
+        console.log(filtered)
+
         const uniqueCashiers = [...filtered].reduce(
           (acc: UniqueCashier[], current) => {
             const cashier = acc.find(
               (item) => item.cashier_number === current.cashier_number
             );
+            console.log(cashier, current);
             if (!cashier) {
               acc.push({
                 cashier_name: current.cashier_name,
