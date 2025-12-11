@@ -172,7 +172,7 @@ const OutlierGrid = () => {
               lastUpdated.desc === item.metrics.description
           );
           // if this item was recently updated, get the last updated
-          if (lastUpdated) {
+          if (lastUpdated && lastUpdated.upc !== state.selectedHistory.upc) {
             return lastUpdated;
           }
 
