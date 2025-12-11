@@ -273,8 +273,6 @@ describe("Sales Page", () => {
     (getSubs as Mock).mockRejectedValueOnce(defaultError);
     const comparePanel = await screen.findByTestId("sales-panel-2-1");
     await user.click(comparePanel);
-
-    
   });
   it("should compare sub sales when two panels are selected", async () => {
     await waitFor(() => {
@@ -293,7 +291,6 @@ describe("Sales Page", () => {
       const state = store.getState().sales;
       expect(state.compareSalesPanel.store_name).toBe("Store 2");
     });
-
 
     await user.click(comparePanel);
     await waitFor(() => {
@@ -329,7 +326,7 @@ describe("Sales Page", () => {
 
     await waitFor(() => {
       const state = store.getState().sales;
-      console.log(state.catSales)
+      expect(state.catSales.length).toEqual(cat_sales.data.subs.length);
     });
   });
 });

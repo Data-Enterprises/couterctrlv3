@@ -21,13 +21,7 @@ import {
   mockCashierCancelledTableResp,
   mockSaleTrendCancelResp,
 } from "./cashiers";
-import {
-  setAvailablePriceTypes,
-  setCashierTransactions,
-  setTotalSalesFilter,
-  setTransList,
-  setUpcFilter,
-} from "../../features/cashierSlice";
+import { setAvailablePriceTypes } from "../../features/cashierSlice";
 import { setIsDesktop, setIsMobile } from "../../features/appSlice";
 
 const user = userEvent.setup();

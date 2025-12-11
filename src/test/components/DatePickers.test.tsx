@@ -124,11 +124,6 @@ describe("DatePickers Component", () => {
     const validEndDate = await screen.findByTestId("end-calendar-day-4");
     await user.click(validEndDate);
 
-    await waitFor(() => {
-      const state = warnStore.getState().search;
-      console.log(state)
-    });
-
     // then select a start date that is after the end date
     await user.click(startDateMenuButton);
     await user.click(startDatePrevMonth);
