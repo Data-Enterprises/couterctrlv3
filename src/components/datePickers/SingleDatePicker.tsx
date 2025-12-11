@@ -36,13 +36,13 @@ const SingleDatePicker = () => {
   const calendarStyle = "w-[98%] md:w-[100%]";
 
   return (
-    <Menu data-testid="end-date-picker" as="div" className={styling}>
+    <Menu data-testid="single-date-picker" as="div" className={styling}>
       <div className={menuStyle}>
         <label className="md:block flex justify-start md:justify-center pl-1 md:pl-0.5 text-sm/6 font-medium">
           Date
         </label>{" "}
         <MenuButton
-          data-testid="end-date-menu-button"
+          data-testid="single-date-menu-button"
           ref={menuRef}
           className="inline-flex w-full bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 justify-between gap-x-1.5 rounded-md px-3 py-3 text-sm font-semibold  shadow-sm ring-1 ring-inset ring-gray-300 "
         >
