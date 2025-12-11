@@ -187,8 +187,21 @@ describe("Forecast Page", () => {
   it("should handle API success for fetching main forecasting data", async () => {
     (getBucketList as Mock).mockResolvedValue(fileListResp);
     (getForecasting as Mock).mockResolvedValue(forecastResp);
-    // (getPriceHistory as Mock).mockResolvedValueOnce(priceHistoryResp);
     renderWithProviders(<Forecast />, { store });
+
+    // Select Date from single date picker
+    const datePicker = await screen.findByTestId("single-date-picker");
+    expect(datePicker).toBeInTheDocument();
+
+    const menuBtn = await screen.findByTestId("single-date-menu-button");
+    await user.click(menuBtn);
+
+    const calendar = await screen.findByTestId("calendar");
+    expect(calendar).toBeInTheDocument();
+
+    // Select a date from the calendar
+    const dayToClick = await screen.findByTestId("single-calendar-day-7");
+    await user.click(dayToClick);
 
     // Upload File
     const input = screen.getByTestId("upc-file-input") as HTMLInputElement;
@@ -287,9 +300,11 @@ describe("Forecast Page", () => {
     (getPriceHistory as Mock).mockRejectedValueOnce(defaultErrorResp);
     renderWithProviders(<Forecast />, { store });
 
-    // select store 1
-    const store1 = await screen.findByTestId("check-0");
-    await user.click(store1);
+    // select upcs 1 and 2
+    const upc1 = await screen.findByTestId("check-0");
+    const upc2 = await screen.findByTestId("check-1");
+    await user.click(upc1);
+    await user.click(upc2);
 
     // Find the cell and click it
     const cells = await screen.findAllByRole("gridcell");
@@ -329,6 +344,48 @@ describe("Forecast Page", () => {
     if (cellToClick) {
       await user.click(cellToClick);
     }
+  });
+
+  it("should handle updating Ad Fcst in the Outlier grid", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    (getPriceHistory as Mock).mockResolvedValue(priceHistoryResp);
+    renderWithProviders(<Forecast />, { store });
+
+    // Wait for grid to render and find target cell (Ad Fcst or Fcst Price column)
+    const cells = await screen.findAllByRole("gridcell");
+    const targetCell = cells.find(
+      (cell) => cell.textContent?.includes("49") // or target specific column text
+    );
+
+    expect(targetCell).toBeInTheDocument();
+
+    await user.dblClick(targetCell!);
+    // id="ag-839-input" => the Ad Fcst
+    const editorInput = document.querySelector(
+      "#ag-839-input"
+    ) as HTMLInputElement;
+
+    await user.type(editorInput, "50");
+    await user.keyboard("{Enter}");
+  });
+
+  it("should handle updating Fcst Total in Outliers grid", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    (getPriceHistory as Mock).mockResolvedValue(priceHistoryResp);
+    renderWithProviders(<Forecast />, { store });
+
+    // Wait for grid to render and find target cell (Ad Fcst or Fcst Price column)
+    const cells = await screen.findAllByRole("gridcell");
+    const targetCell = cells[9];
+    expect(targetCell).toBeInTheDocument();
+
+    await user.dblClick(targetCell!);
+   
+    // "ag-898-input" => the Fcst Total price
+    const input = document.querySelector("#ag-898-input") as HTMLInputElement;
+
+    await user.type(input, "6.99");
+    await user.keyboard("{Enter}");
   });
 
   it("should handle clearing all data and resetting the page", async () => {

@@ -6,10 +6,9 @@ interface Props {
   handleQuery?: () => void;
   btnPadding?: string;
   showBtn?: boolean;
-  singleDate?: boolean;
 }
 
-const DatePickers = ({ handleQuery, btnPadding = "", showBtn = true, singleDate = false }: Props) => {
+const DatePickers = ({ handleQuery, btnPadding = "", showBtn = true }: Props) => {
   const context = useAppSelector((state) => state.app);
 
   const handleClick = () => {
@@ -23,7 +22,7 @@ const DatePickers = ({ handleQuery, btnPadding = "", showBtn = true, singleDate 
   return (
     <div data-testid="date-pickers" className="w-full select-none">
       <div className={pickerStyle}>
-        {!singleDate && <StartDatePicker />}
+        <StartDatePicker />
         <EndDatePicker />
       </div>
       <div

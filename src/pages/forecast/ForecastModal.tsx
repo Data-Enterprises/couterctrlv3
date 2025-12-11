@@ -51,7 +51,7 @@ const ForecastModal = () => {
     <Modal
       isOpen={state.exportModalOpen}
       onClose={handleClose}
-      modalClassName="bg-custom-white w-1/5"
+      modalClassName="bg-custom-white w-1/4"
     >
       <div className="flex justify-center gap-8 select-none">
         <CheckBox

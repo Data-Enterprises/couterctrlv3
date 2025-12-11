@@ -6,7 +6,7 @@ export const useForecastContext = () => {
   );
   const { url, token } = useAppSelector((state) => state.app);
   const { userid, assignedStores } = useAppSelector((state) => state.user);
-  const { singleDate } = useAppSelector((state) => state.search);
+  const { startDate, endDate } = useAppSelector((state) => state.search);
   const { groups } = useAppSelector((state) => state.group);
 
   return {
@@ -19,6 +19,7 @@ export const useForecastContext = () => {
     selectedStores,
     groups,
     isLoading,
-    singleDate
+    startDate,
+    endDate,
   };
 };

@@ -88,25 +88,25 @@ const OutlierGrid = () => {
       },
       valueSetter: (params) => {
         const newValue = Number(params.newValue);
-        if (isNaN(newValue) || newValue === params.data.futureForecast)
-          return false;
+        if (!isNaN(newValue)) {
+          // This stops me from having to rely on the actual adFcst and fcstTotal redux variables
+          const futureForecast = Math.floor(newValue);
+          const forecastPrice = params.data.forecastPrice || 0;
+          const futureForecastTotal = futureForecast * forecastPrice;
 
-        // This stops me from having to rely on the actual adFcst and fcstTotal redux variables
-        const futureForecast = Math.floor(newValue);
-        const forecastPrice = params.data.forecastPrice || 0;
-        const futureForecastTotal = futureForecast * forecastPrice;
+          const updatedRow = {
+            ...params.data,
+            futureForecast,
+            futureForecastTotal,
+          };
 
-        const updatedRow = {
-          ...params.data,
-          futureForecast,
-          futureForecastTotal,
-        };
-
-        dispatch(setLastUpdatedHistory(updatedRow));
-        setTableData((prev) =>
-          prev.map((row) => (row.upc === updatedRow.upc ? updatedRow : row))
-        );
-        return true;
+          dispatch(setLastUpdatedHistory(updatedRow));
+          setTableData((prev) =>
+            prev.map((row) => (row.upc === updatedRow.upc ? updatedRow : row))
+          );
+          // return true;
+        }
+        return !isNaN(params.newValue);
       },
       editable: true,
     },
@@ -125,25 +125,25 @@ const OutlierGrid = () => {
       editable: true,
       valueSetter: (params) => {
         const newValue = Number(params.newValue);
-        if (isNaN(newValue) || newValue === params.data.forecastPrice)
-          return false;
 
-        // This stops me from having to rely on the actual adFcst and fcstTotal redux variables
-        const forecastPrice = newValue;
-        const futureForecast = params.data.futureForecast || 0; // Use current row's forecast
-        const futureForecastTotal = futureForecast * forecastPrice;
+        if (!isNaN(newValue)) {
+          // This stops me from having to rely on the actual adFcst and fcstTotal redux variables
+          const forecastPrice = newValue;
+          const futureForecast = params.data.futureForecast || 0; // Use current row's forecast
+          const futureForecastTotal = futureForecast * forecastPrice;
 
-        const updatedRow = {
-          ...params.data,
-          forecastPrice,
-          futureForecastTotal,
-        };
+          const updatedRow = {
+            ...params.data,
+            forecastPrice,
+            futureForecastTotal,
+          };
 
-        dispatch(setLastUpdatedHistory(updatedRow));
-        setTableData((prev) =>
-          prev.map((row) => (row.upc === updatedRow.upc ? updatedRow : row))
-        );
-        return true;
+          dispatch(setLastUpdatedHistory(updatedRow));
+          setTableData((prev) =>
+            prev.map((row) => (row.upc === updatedRow.upc ? updatedRow : row))
+          );
+        }
+        return !isNaN(params.newValue);
       },
     },
     {
@@ -172,7 +172,7 @@ const OutlierGrid = () => {
               lastUpdated.desc === item.metrics.description
           );
           // if this item was recently updated, get the last updated
-          if (lastUpdated) {
+          if (lastUpdated && lastUpdated.upc !== state.selectedHistory.upc) {
             return lastUpdated;
           }
 
