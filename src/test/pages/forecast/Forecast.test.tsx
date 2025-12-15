@@ -190,20 +190,6 @@ describe("Forecast Page", () => {
     (getForecasting as Mock).mockResolvedValue(forecastResp);
     renderWithProviders(<Forecast />, { store });
 
-    // // Select Date from single date picker
-    // const datePicker = await screen.findByTestId("single-date-picker");
-    // expect(datePicker).toBeInTheDocument();
-
-    // const menuBtn = await screen.findByTestId("single-date-menu-button");
-    // await user.click(menuBtn);
-
-    // const calendar = await screen.findByTestId("calendar");
-    // expect(calendar).toBeInTheDocument();
-
-    // // Select a date from the calendar
-    // const dayToClick = await screen.findByTestId("single-calendar-day-7");
-    // await user.click(dayToClick);
-
     // Upload File
     const input = screen.getByTestId("upc-file-input") as HTMLInputElement;
     await user.upload(input, file);
