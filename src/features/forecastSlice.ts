@@ -46,6 +46,7 @@ interface ForecastState {
   historyData: HistoryData[];
   lastUpdatedHistory: HistoryData[];
   exportModalOpen: boolean;
+  selectedUpc: string;
 }
 
 const initialState: ForecastState = {
@@ -65,6 +66,7 @@ const initialState: ForecastState = {
   historyData: [],
   lastUpdatedHistory: [],
   exportModalOpen: false,
+  selectedUpc: "",
 };
 export const forecastSlice = createSlice({
   name: "forecast",
@@ -143,7 +145,11 @@ export const forecastSlice = createSlice({
         state.lastUpdatedHistory.push(updated);
       }
     },
+    setSelectedUpc: (state, action: PayloadAction<string>) => {
+      state.selectedUpc = action.payload;
+    },
     reQuery: (state) => {
+      state.selectedUpc = "";
       state.lastUpdatedHistory = [];
       state.historyData = [];
       state.adFcst = 0;
@@ -157,6 +163,7 @@ export const forecastSlice = createSlice({
       state.priceHistory = [];
     },
     reset: (state) => {
+      state.selectedUpc = "";
       state.lastUpdatedHistory = [];
       state.historyData = [];
       state.adFcst = 0;
@@ -196,6 +203,7 @@ export const {
   setAdFcst,
   setHistoryData,
   setLastUpdatedHistory,
+  setSelectedUpc,
   reset,
   setExportModalOpen,
   // resetForecast,

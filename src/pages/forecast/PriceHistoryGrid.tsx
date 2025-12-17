@@ -119,7 +119,7 @@ const PriceHistoryGrid = () => {
     >
       <div
         data-testid="price-history-grid"
-        className="h-[100%] w-3/4 shadow-lg"
+        className="h-[100%] w-full shadow-lg"
       >
         <AgGridReact
           rowData={tableData}
@@ -131,7 +131,7 @@ const PriceHistoryGrid = () => {
           rowSelection="single"
         />
       </div>
-      <div className="h-[100%] w-1/4 opacity-0 shadow-lg"></div>
+      {/* <div className="h-[100%] w-1/4 opacity-0 shadow-lg"></div> */}
     </div>
   );
 };

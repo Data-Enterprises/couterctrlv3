@@ -16,6 +16,7 @@ import {
   setHistoryData,
   setLastUpdatedHistory,
   setPriceHistory,
+  setSelectedUpc,
 } from "../../features/forecastSlice";
 ModuleRegistry.registerModules([AllCommunityModule]);
 import type { HistoryData } from "../../features/forecastSlice";
@@ -250,6 +251,9 @@ const OutlierGrid = () => {
         (item) => item.product_code === upc
       );
 
+      // testing this here
+      dispatch(setSelectedUpc(upc));
+
       if (found) {
         return;
       }
@@ -278,7 +282,7 @@ const OutlierGrid = () => {
         tableData.length > 0 ? "animate-windowIn h-[100%] flex gap-4" : "hidden"
       }`}
     >
-      <div className="h-[100%] w-3/4 shadow-lg">
+      <div className="h-[100%] w-full shadow-lg">
         <AgGridReact
           rowData={tableData}
           columnDefs={colDefs}
@@ -288,7 +292,7 @@ const OutlierGrid = () => {
           onRowClicked={onRowClicked}
         />
       </div>
-      <div className="h-[100%] w-1/4 opacity-0 shadow-lg"></div>
+      {/* <div className="h-[100%] w-1/4 opacity-0 shadow-lg"></div> */}
     </div>
   );
 };

@@ -33,6 +33,8 @@ import PriceHistoryGrid from "./PriceHistoryGrid";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import ForecastModal from "./ForecastModal";
 import DatePickers from "../../components/datePickers/DatePickers";
+import LinearDemand from "./LinearDemand";
+import ProfitOptimization from "./ProfitOptimization";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -171,7 +173,7 @@ const Forecasting = () => {
       className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)]"
     >
       <ForecastModal />
-      <div className="grid grid-cols-[22%_12%_66%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
+      <div className="grid grid-cols-[20%_12%_45%_23%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
         <div className="gap-4 flex flex-col justify-between">
           <Instructions />
           <div className="bg-custom-white rounded-lg shadow-lg p-4">
@@ -242,9 +244,16 @@ const Forecasting = () => {
           <ForecastControls />
           {context.isLoading && <LoadingIndicator />}
         </div>
-        <div className="grid grid-rows-3 gap-4 mr-8">
+        <div className="grid grid-rows-3 gap-4">
           <OutlierGrid />
           <PriceHistoryGrid />
+          {/* <div className="grid grid-cols-3">
+            <LinearDemand />
+          </div> */}
+        </div>
+        <div className="grid grid-rows-3 gap-4 mr-12">
+          <LinearDemand />
+          <ProfitOptimization />
         </div>
       </div>
     </div>
