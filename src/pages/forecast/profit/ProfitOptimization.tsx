@@ -4,10 +4,10 @@ import {
   predictCtrlQty,
   estimateCtrlRevenue,
   estimateCtrlProfit,
-} from "./utils";
-import { formatCurrency2 } from "../../utils";
-import type { ForecastQtyData } from "../../interfaces";
-import { useAppSelector } from "../../hooks";
+} from "../utils";
+import { formatCurrency2 } from "../../../utils";
+import type { ForecastQtyData } from "../../../interfaces";
+import { useAppSelector } from "../../../hooks";
 
 interface Result {
   price: number;
@@ -56,7 +56,7 @@ const CounterCtrlProfit = () => {
         // Using the +-50% rule of historical prices to set candidate price range
         const candidatePrices = [];
         const minPrice = 0.5 * Math.min(...prices);
-        const maxPrice = 1.5 * Math.max(...prices); 
+        const maxPrice = 1.5 * Math.max(...prices);
         for (let p = minPrice; p <= maxPrice; p += 0.25) {
           candidatePrices.push(p);
         }
@@ -94,7 +94,7 @@ const CounterCtrlProfit = () => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if(e.key === "Enter") {
+    if (e.key === "Enter") {
       handleCalc();
     }
   };

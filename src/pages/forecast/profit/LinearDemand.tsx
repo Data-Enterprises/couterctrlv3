@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { useAppSelector } from "../../hooks";
+import { useAppSelector } from "../../../hooks";
 import {
   predictCtrlQty,
   estimateCtrlRevenue,
   estimateCtrlProfit,
   fitLinearDemand,
-} from "./utils";
-import { formatCurrency2 } from "../../utils";
-import type { ForecastQtyData } from "../../interfaces";
+} from "../utils";
+import { formatCurrency2 } from "../../../utils";
+import type { ForecastQtyData } from "../../../interfaces";
 
 const LinearDemand = () => {
   const state = useAppSelector((state) => state.forecast);

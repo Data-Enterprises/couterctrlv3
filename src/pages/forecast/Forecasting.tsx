@@ -3,9 +3,9 @@ import { useAppDispatch } from "../../hooks";
 import { getForecasting } from "../../api/forecast";
 
 // Components
-import Instructions from "./Instructions";
+import Instructions from "./controls/Instructions";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import FileInput from "./FileInput";
+import FileInput from "./controls/FileInput";
 import SingleSelect from "../../components/SingleSelect";
 import { getStoresAssignedToUserGroup } from "../../api/groups";
 import type {
@@ -26,15 +26,15 @@ import {
 } from "../../features/forecastSlice";
 import { useForecastContext } from "./hooks";
 import SelectedStoreList from "../upc/wizard/SelectedStoreList";
-import ForecastControls from "./ForecastControls";
-import FileGrid from "./FileGrid";
-import OutlierGrid from "./OutlierGrid";
-import PriceHistoryGrid from "./PriceHistoryGrid";
+import ForecastControls from "./controls/ForecastControls";
+import FileGrid from "./grids/FileGrid";
+import OutlierGrid from "./grids/OutlierGrid";
+import PriceHistoryGrid from "./grids/PriceHistoryGrid";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import ForecastModal from "./ForecastModal";
+import ForecastModal from "./controls/ForecastModal";
 import DatePickers from "../../components/datePickers/DatePickers";
-import LinearDemand from "./LinearDemand";
-import ProfitOptimization from "./ProfitOptimization";
+import LinearDemand from "./profit/LinearDemand";
+import ProfitOptimization from "./profit/ProfitOptimization";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -247,9 +247,6 @@ const Forecasting = () => {
         <div className="grid grid-rows-3 gap-4">
           <OutlierGrid />
           <PriceHistoryGrid />
-          {/* <div className="grid grid-cols-3">
-            <LinearDemand />
-          </div> */}
         </div>
         <div className="grid grid-rows-3 gap-4 mr-12">
           <LinearDemand />

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import { useToast } from "../../components/toasts/hooks/useToast";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
 import { AgGridReact } from "ag-grid-react";
-import { theme } from ".";
+import { theme } from "..";
 import {
   AllCommunityModule,
   ModuleRegistry,
@@ -10,16 +10,16 @@ import {
   type ColDef,
   type ColGroupDef,
 } from "ag-grid-community";
-import { getPriceHistory } from "../../api/forecast";
-import type { JsonError } from "../../interfaces";
+import { getPriceHistory } from "../../../api/forecast";
+import type { JsonError } from "../../../interfaces";
 import {
   setHistoryData,
   setLastUpdatedHistory,
   setPriceHistory,
   setSelectedUpc,
-} from "../../features/forecastSlice";
+} from "../../../features/forecastSlice";
 ModuleRegistry.registerModules([AllCommunityModule]);
-import type { HistoryData } from "../../features/forecastSlice";
+import type { HistoryData } from "../../../features/forecastSlice";
 
 const OutlierGrid = () => {
   const toast = useToast();

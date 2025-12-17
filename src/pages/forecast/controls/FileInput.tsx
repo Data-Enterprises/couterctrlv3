@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { useToast } from "../../components/toasts/hooks/useToast";
+import { useToast } from "../../../components/toasts/hooks/useToast";
 
 interface FileInputProps {
   file: File | null;
@@ -8,7 +8,12 @@ interface FileInputProps {
   className?: string;
 }
 
-const FileInput = ({ file, fileExt, setFile, className = "w-full" }: FileInputProps) => {
+const FileInput = ({
+  file,
+  fileExt,
+  setFile,
+  className = "w-full",
+}: FileInputProps) => {
   const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
