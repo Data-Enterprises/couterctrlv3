@@ -22,6 +22,7 @@ interface PriceSimState {
   exportModalOpen: boolean;
   rowData: SimGridRow[];
   updatedRowHistory: SimGridRow[];
+  lastUpdatedRows: SimGridRow[];
 }
 
 const initialState: PriceSimState = {
@@ -38,6 +39,7 @@ const initialState: PriceSimState = {
   exportModalOpen: false,
   rowData: [],
   updatedRowHistory: [],
+  lastUpdatedRows: [],
 };
 
 export const priceSimSlice = createSlice({
@@ -114,6 +116,18 @@ export const priceSimSlice = createSlice({
 
         // Update the updatedRowHistory
         state.updatedRowHistory = [...state.updatedRowHistory, row];
+
+        // Update the last modified rows array
+        const found = state.lastUpdatedRows.find((r) => r.upc === upc);
+        if (found) {
+          found.fcstPrice = newPrice;
+          found.fcstQty = fcstQty;
+          found.fcstDollars = row.fcstDollars;
+          found.markdownDollars = newMarkdown;
+          found.lift = row.lift;
+        } else {
+          state.lastUpdatedRows.push(row);
+        }
       }
     },
     reQuery: (state) => {
@@ -125,6 +139,7 @@ export const priceSimSlice = createSlice({
       state.priceHistory = [];
       state.exportModalOpen = false;
       state.updatedRowHistory = [];
+      state.lastUpdatedRows = [];
     },
     reset: (state) => {
       state.isLoading = false;
@@ -138,6 +153,7 @@ export const priceSimSlice = createSlice({
       state.priceHistory = [];
       state.exportModalOpen = false;
       state.updatedRowHistory = [];
+      state.lastUpdatedRows = [];
     },
   },
 });

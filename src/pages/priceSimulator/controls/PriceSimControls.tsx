@@ -59,8 +59,6 @@ const PriceSimControls = () => {
     dispatch(setAllUpcs(allUpcs));
   };
 
-  console.log(topRef, height)
-
   return (
     <div
       data-testid="forecast-controls"

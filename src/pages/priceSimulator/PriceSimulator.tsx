@@ -4,6 +4,7 @@ import PriceSimControls from "./controls/PriceSimControls";
 import PriceSimStorePicker from "./controls/PriceSimStorePicker";
 import FilesGrid from "./controls/FilesGrid";
 import PriceSimGrid from "./grid/PriceSimGrid";
+import PriceSimCarousel from "./grid/PriceSimCarousel";
 
 const PriceSimulator = () => {
   return (
@@ -21,12 +22,7 @@ const PriceSimulator = () => {
       </div>
 
       <div className="grid grid-rows-[25%_75%] mb-4 gap-4 w-full">
-        {/* Carousel placeholder */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-custom-white rounded-lg shadow-lg">One</div>
-          <div className="bg-custom-white rounded-lg shadow-lg">Two</div>
-          <div className="bg-custom-white rounded-lg shadow-lg">Three</div>
-        </div>
+        <PriceSimCarousel />
         
         <PriceSimGrid />
       </div>

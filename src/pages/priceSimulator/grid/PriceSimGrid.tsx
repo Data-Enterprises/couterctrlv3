@@ -183,7 +183,7 @@ const PriceSimGrid = () => {
     },
   ];
 
-  if (state.selectedUpcs.length === 0) return null;
+  if (state.rowData.length === 0) return null;
 
   return (
     <div className="h-full shadow-lg rounded-lg">
