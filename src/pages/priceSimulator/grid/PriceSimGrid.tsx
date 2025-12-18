@@ -15,6 +15,8 @@ import { setNewRowPriceValue, setRowData } from "../../../features/priceSimSlice
 import { formatCurrency2 } from "../../../utils";
 import { getHistoryFromList } from "../../../api/priceSim";
 import { useToast } from "../../../components/toasts/hooks/useToast";
+import CalcModal from "../calc/CalcModal";
+import CalcNowCheckbox from "./CheckBoxCell";
 
 const PriceSimGrid = () => {
   const toast = useToast();
@@ -123,10 +125,11 @@ const PriceSimGrid = () => {
     {
       field: "calcNow",
       headerName: "Calc Now",
-      flex: 1,
+      flex: 0.9,
       headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus text-right",
-      // Render a checkbox here
+      cellClass: "no-outline-on-focus flex justify-center items-center",
+      cellRenderer: CalcNowCheckbox, // Use the custom component
+      cellRendererSelector: undefined, // Ensure it always uses your renderer
     },
     {
       field: "fcstQty",
@@ -187,6 +190,7 @@ const PriceSimGrid = () => {
 
   return (
     <div className="h-full shadow-lg rounded-lg">
+      <CalcModal />
       <AgGridReact
         rowData={state.rowData}
         columnDefs={colDefs}

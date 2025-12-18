@@ -33,7 +33,6 @@ const PriceSimControls = () => {
   };
 
   const handleExportBtnClick = () => {
-    // exportData(state.historyData, headers, 'test_history.csv');
     dispatch(setExportModalOpen(true));
   };
 
@@ -136,7 +135,7 @@ const PriceSimControls = () => {
         </div>
         <div>
           <input
-            data-testid="forecast-controls-filter-input"
+            data-testid="priceSim-controls-filter-input"
             type="text"
             className="basic-input focus:border bg-custom-white py-1 w-full"
             value={filterText}

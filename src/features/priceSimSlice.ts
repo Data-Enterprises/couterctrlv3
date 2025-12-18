@@ -23,6 +23,8 @@ interface PriceSimState {
   rowData: SimGridRow[];
   updatedRowHistory: SimGridRow[];
   lastUpdatedRows: SimGridRow[];
+  selectedRow: SimGridRow | null;
+  globalFcstPrice: string;
 }
 
 const initialState: PriceSimState = {
@@ -40,6 +42,8 @@ const initialState: PriceSimState = {
   rowData: [],
   updatedRowHistory: [],
   lastUpdatedRows: [],
+  selectedRow: null,
+  globalFcstPrice: "",
 };
 
 export const priceSimSlice = createSlice({
@@ -92,6 +96,7 @@ export const priceSimSlice = createSlice({
       state.selectedUpcs = [];
       state.priceHistory = [];
       state.rowData = [];
+      state.selectedRow = null;
     },
     setNewRowPriceValue: (
       state,
@@ -130,6 +135,26 @@ export const priceSimSlice = createSlice({
         }
       }
     },
+    setCalcNow: (
+      state,
+      action: PayloadAction<{ upc: string; calcNow: 0 | 1 }>
+    ) => {
+      const { upc } = action.payload;
+
+      state.rowData = state.rowData.map((row) => {
+        if (row.upc === upc) {
+          // Setting the selected row as well
+          state.selectedRow =
+            state.selectedRow && state.selectedRow.upc === upc ? null : row;
+          return { ...row, calcNow: action.payload.calcNow };
+        } else {
+          return { ...row, calcNow: 0 };
+        }
+      });
+    },
+    setGlobalFcstPrice: (state, action: PayloadAction<string>) => {
+      state.globalFcstPrice = action.payload;
+    },
     reQuery: (state) => {
       state.isLoading = false;
       state.qty = [];
@@ -140,6 +165,9 @@ export const priceSimSlice = createSlice({
       state.exportModalOpen = false;
       state.updatedRowHistory = [];
       state.lastUpdatedRows = [];
+      state.selectedRow = null;
+      state.rowData = [];
+      state.globalFcstPrice = "";
     },
     reset: (state) => {
       state.isLoading = false;
@@ -154,6 +182,9 @@ export const priceSimSlice = createSlice({
       state.exportModalOpen = false;
       state.updatedRowHistory = [];
       state.lastUpdatedRows = [];
+      state.selectedRow = null;
+      state.rowData = [];
+      state.globalFcstPrice = "";
     },
   },
 });
@@ -173,6 +204,8 @@ export const {
   resetSelectedUpcs,
   setRowData,
   setNewRowPriceValue,
+  setCalcNow,
+  setGlobalFcstPrice,
   reset,
   reQuery,
 } = priceSimSlice.actions;

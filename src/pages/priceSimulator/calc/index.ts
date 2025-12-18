@@ -115,3 +115,25 @@ export const calcFcstQty = (
   // console.log(predictQty(newPrice, params, pricesWithQty), 'predicted qty in calcFcstQty');
   return predictQty(newPrice, params, pricesWithQty);
 };
+
+
+export const predictRevenue = (
+  price: number,
+  params: { slope: number; intercept: number },
+  pricesWithQty: number[][]
+) => {
+  const qty = predictQty(price, params, pricesWithQty);
+  return price * qty;
+};
+
+export const predictProfit = (
+  price: number,
+  params: { slope: number; intercept: number },
+  unitCost: number,
+  pricesWithQty: number[][]
+) => {
+  const qty = predictQty(price, params, pricesWithQty);
+  const revenue = price * qty;
+  const cost = unitCost * qty;
+  return revenue - cost;
+};
