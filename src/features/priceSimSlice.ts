@@ -21,6 +21,7 @@ interface PriceSimState {
   priceHistory: any[];
   exportModalOpen: boolean;
   rowData: SimGridRow[];
+  updatedRowHistory: SimGridRow[];
 }
 
 const initialState: PriceSimState = {
@@ -36,6 +37,7 @@ const initialState: PriceSimState = {
   priceHistory: [],
   exportModalOpen: false,
   rowData: [],
+  updatedRowHistory: [],
 };
 
 export const priceSimSlice = createSlice({
@@ -100,7 +102,7 @@ export const priceSimSlice = createSlice({
       // only change => fcstPrice, fcstQty, fcstDollars, markdownDollars, lift
       if (row) {
         row.fcstPrice = newPrice; // fcstPrice
-        
+
         const prices = row.prices;
         const fcstQty = calcFcstQty(prices, newPrice);
         row.fcstQty = fcstQty;
@@ -109,6 +111,9 @@ export const priceSimSlice = createSlice({
         const newMarkdown = (row.regRetail - newPrice) * fcstQty;
         row.markdownDollars = newMarkdown;
         row.lift = row.regQty > 0 ? (fcstQty - row.regQty) / row.regQty : 0;
+
+        // Update the updatedRowHistory
+        state.updatedRowHistory = [...state.updatedRowHistory, row];
       }
     },
     reQuery: (state) => {
@@ -119,6 +124,7 @@ export const priceSimSlice = createSlice({
       state.selectedUpcs = [];
       state.priceHistory = [];
       state.exportModalOpen = false;
+      state.updatedRowHistory = [];
     },
     reset: (state) => {
       state.isLoading = false;
@@ -131,6 +137,7 @@ export const priceSimSlice = createSlice({
       state.selectedUpcs = [];
       state.priceHistory = [];
       state.exportModalOpen = false;
+      state.updatedRowHistory = [];
     },
   },
 });

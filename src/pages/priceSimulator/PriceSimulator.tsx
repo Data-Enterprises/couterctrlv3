@@ -20,8 +20,13 @@ const PriceSimulator = () => {
         <PriceSimControls />
       </div>
 
-      <div className="grid grid-rows-[25%_75%] w-full">
-        <div></div>
+      <div className="grid grid-rows-[25%_75%] mb-4 gap-4 w-full">
+        {/* Carousel placeholder */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-custom-white rounded-lg shadow-lg">One</div>
+          <div className="bg-custom-white rounded-lg shadow-lg">Two</div>
+          <div className="bg-custom-white rounded-lg shadow-lg">Three</div>
+        </div>
         
         <PriceSimGrid />
       </div>
