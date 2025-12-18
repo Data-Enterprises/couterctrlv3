@@ -8,12 +8,12 @@ import {
   setItems,
   setQty,
   setSales,
-} from "../../../features/forecastSlice";
+} from "../../../features/priceSimSlice";
 import { useAppDispatch } from "../../../hooks";
 import { getFromExistingS3File } from "../../../api/forecast";
 
 import { AgGridReact } from "ag-grid-react";
-import { theme } from "..";
+import { theme } from "../../forecast";
 import {
   AllCommunityModule,
   ModuleRegistry,
@@ -21,8 +21,8 @@ import {
   type ColGroupDef,
   type RowClickedEvent,
 } from "ag-grid-community";
-import type { ForecastQtyData, ForecastSalesData } from "../../../interfaces";
-import { useForecastContext } from "../hooks";
+import { formatQtyOutput, formatSalesOutput } from ".";
+import { usePriceSimContext } from "../../priceSimulator/utils";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 type TableData = {
@@ -30,10 +30,10 @@ type TableData = {
   name: string;
 };
 
-const FileGrid = () => {
+const FilesGrid = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const context = useForecastContext();
+  const context = usePriceSimContext();
   const [tableData, setTableData] = useState<TableData[]>([]);
 
   const colDefs: (ColDef<TableData> | ColGroupDef<TableData>)[] = [
@@ -87,37 +87,8 @@ const FileGrid = () => {
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
-            const qtyOutput: ForecastQtyData<any>[] = Object.entries(
-              j.qty_output
-            ).map(([k, v]) => {
-              const upc = k as string;
-              const data = v as any;
-              return {
-                upc,
-                history: data.history,
-                history_dimension: data.history_dimension,
-                forecast: data.forecast,
-                forecast_dimension: data.forecast_dimension,
-                forecast_method: data.forecast_method,
-                metrics: data.metrics,
-              };
-            });
-
-            const salesOutput: ForecastSalesData<any>[] = Object.entries(
-              j.sales_output
-            ).map(([k, v]) => {
-              const upc = k as string;
-              const data = v as any;
-              return {
-                upc,
-                history: data.history,
-                history_dimension: data.history_dimension,
-                forecast: data.forecast,
-                forecast_dimension: data.forecast_dimension,
-                forecast_method: data.forecast_method,
-                metrics: data.metrics,
-              };
-            });
+            const qtyOutput = formatQtyOutput(j);
+            const salesOutput = formatSalesOutput(j);
 
             const upcItems = qtyOutput.map((item) => ({
               upc: item.upc,
@@ -150,4 +121,4 @@ const FileGrid = () => {
   );
 };
 
-export default FileGrid;
+export default FilesGrid;

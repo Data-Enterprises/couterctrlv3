@@ -1,10 +1,19 @@
 // Components
-import FileGrid from "../forecast/grids/FileGrid";
 import Instructions from "../forecast/controls/Instructions";
 import PriceSimControls from "./controls/PriceSimControls";
 import PriceSimStorePicker from "./controls/PriceSimStorePicker";
+import { useEffect } from "react";
+import FilesGrid from "./controls/FilesGrid";
+
+// import { sampleData, calcFcstQty } from "./calc";
+import PriceSimGrid from "./grid/PriceSimGrid";
 
 const PriceSimulator = () => {
+  useEffect(() => {
+    console.log("Price Simulator Mounted");
+    // calcFcstQty(sampleData[0].prices, 10.99);
+  }, []);
+
   return (
     <div
       data-testid="price-simulator-page"
@@ -13,16 +22,15 @@ const PriceSimulator = () => {
       <div className="grid grid-rows-[24%_45%_27%] col-span-2 gap-4 w-1/6">
         <Instructions />
         <PriceSimStorePicker />
-        <FileGrid />
+        <FilesGrid />
       </div>
-      {/* col 2 of 10 */}
       <div className="ml-10">
         <PriceSimControls />
       </div>
 
-      {/* The magic happens here */}
-      {/* Grid layout */}
-      <div>Other calcs/comps</div>
+      <div className="grid grid-cols-2 gap-4 w-full">
+        <PriceSimGrid />
+      </div>
     </div>
   );
 };

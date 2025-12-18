@@ -4,6 +4,7 @@ import type {
   UpcCodeDesc,
   PriceSimQtyData,
   PriceSimSalesData,
+  SimGridRow,
 } from "../interfaces";
 
 interface PriceSimState {
@@ -18,7 +19,47 @@ interface PriceSimState {
   files: string[];
   priceHistory: any[];
   exportModalOpen: boolean;
+  rowData: SimGridRow[];
 }
+
+export const sampleData = [
+  {
+    upc: "123456789",
+    description: "Sample Product 1",
+    regular_retail_price: 14.99,
+    currentPrice: 12.99,
+    prices: [
+      [12.99, 12],
+      [11.99, 25],
+      [10.99, 43],
+      [9.99, 89],
+    ],
+  },
+  {
+    upc: "234567891",
+    description: "Sample Product 2",
+    regular_retail_price: 13.99,
+    currentPrice: 11.99,
+    prices: [
+      [12.99, 10],
+      [11.99, 25],
+      [10.99, 43],
+      [9.99, 89],
+    ],
+  },
+  {
+    upc: "345678901",
+    description: "Sample Product 3",
+    regular_retail_price: 12.99,
+    currentPrice: 10.99,
+    prices: [
+      [12.99, 9],
+      [11.99, 25],
+      [10.99, 43],
+      [9.99, 89],
+    ],
+  },
+];
 
 const initialState: PriceSimState = {
   isLoading: false,
@@ -32,6 +73,7 @@ const initialState: PriceSimState = {
   files: [],
   priceHistory: [],
   exportModalOpen: false,
+  rowData: sampleData,
 };
 
 export const priceSimSlice = createSlice({
@@ -77,9 +119,19 @@ export const priceSimSlice = createSlice({
     setAllUpcs: (state, action: PayloadAction<string[]>) => {
       state.selectedUpcs = action.payload;
     },
+    setRowData: (state, action: PayloadAction<SimGridRow[]>) => {
+      state.rowData = action.payload;
+    },
     resetSelectedUpcs: (state) => {
       state.selectedUpcs = [];
       state.priceHistory = [];
+    },
+    setNewRowPriceValue: (state, action: PayloadAction<{ upc: string; newPrice: number }>) => {
+      const { upc, newPrice } = action.payload;
+      const row = state.rowData.find((r) => r.upc === upc);
+      if (row) {
+        row.currentPrice = newPrice;
+      }
     },
     reQuery: (state) => {
       state.isLoading = false;
@@ -118,6 +170,8 @@ export const {
   setExportModalOpen,
   setAllUpcs,
   resetSelectedUpcs,
+  setRowData,
+  setNewRowPriceValue,
   reset,
   reQuery,
 } = priceSimSlice.actions;

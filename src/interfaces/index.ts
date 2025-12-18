@@ -535,3 +535,13 @@ export interface PriceSimSalesData<T> {
     total_sales: number;
   };
 }
+
+
+// price simulator interfaces
+export interface SimGridRow {
+  upc: string;
+  description: string;
+  regular_retail_price: number;
+  currentPrice: number; 
+  prices: number[][]; 
+}

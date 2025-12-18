@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 
@@ -37,6 +37,18 @@ const PriceSimStorePicker = () => {
   const context = usePriceSimContext();
   const [file, setFile] = useState<File | null>(null);
   const [filteredData, setFilteredData] = useState<Store[] | Group[]>([]);
+
+  useEffect(() => {
+    // On mount, if radioId is 0, set to 1 (Stores)
+    if (context.radioId === 0) {
+      dispatch(setRadioId(1));
+      setFilteredData(context.assignedStores);
+    } else if (context.radioId === 1) {
+      setFilteredData(context.assignedStores);
+    } else if (context.radioId === 2) {
+      setFilteredData(context.groups);
+    }
+  }, [context.radioId]);
 
   const handleSelectChange = (id: string | number) => {
     dispatch(setSelectedStores([])); // Clear selected stores on new selection
@@ -98,8 +110,8 @@ const PriceSimStorePicker = () => {
           const j = resp.data;
           if (j.error === 0) {
             // To set the list of items for the controls
-            const qtyOutput = formatQtyOutput(j.qty_output);
-            const salesOutput = formatSalesOutput(j.sales_output);
+            const qtyOutput = formatQtyOutput(j);
+            const salesOutput = formatSalesOutput(j);
 
             const upcItems = qtyOutput.map((item) => ({
               upc: item.upc,
