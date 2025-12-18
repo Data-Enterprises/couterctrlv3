@@ -6,6 +6,7 @@ import type {
   PriceSimSalesData,
   SimGridRow,
 } from "../interfaces";
+import { calcFcstQty } from "../pages/priceSimulator/calc";
 
 interface PriceSimState {
   isLoading: boolean;
@@ -22,45 +23,6 @@ interface PriceSimState {
   rowData: SimGridRow[];
 }
 
-export const sampleData = [
-  {
-    upc: "123456789",
-    description: "Sample Product 1",
-    regular_retail_price: 14.99,
-    currentPrice: 12.99,
-    prices: [
-      [12.99, 12],
-      [11.99, 25],
-      [10.99, 43],
-      [9.99, 89],
-    ],
-  },
-  {
-    upc: "234567891",
-    description: "Sample Product 2",
-    regular_retail_price: 13.99,
-    currentPrice: 11.99,
-    prices: [
-      [12.99, 10],
-      [11.99, 25],
-      [10.99, 43],
-      [9.99, 89],
-    ],
-  },
-  {
-    upc: "345678901",
-    description: "Sample Product 3",
-    regular_retail_price: 12.99,
-    currentPrice: 10.99,
-    prices: [
-      [12.99, 9],
-      [11.99, 25],
-      [10.99, 43],
-      [9.99, 89],
-    ],
-  },
-];
-
 const initialState: PriceSimState = {
   isLoading: false,
   qty: [],
@@ -73,7 +35,7 @@ const initialState: PriceSimState = {
   files: [],
   priceHistory: [],
   exportModalOpen: false,
-  rowData: sampleData,
+  rowData: [],
 };
 
 export const priceSimSlice = createSlice({
@@ -125,12 +87,28 @@ export const priceSimSlice = createSlice({
     resetSelectedUpcs: (state) => {
       state.selectedUpcs = [];
       state.priceHistory = [];
+      state.rowData = [];
     },
-    setNewRowPriceValue: (state, action: PayloadAction<{ upc: string; newPrice: number }>) => {
+    setNewRowPriceValue: (
+      state,
+      action: PayloadAction<{ upc: string; newPrice: number }>
+    ) => {
+      // newPrice is the newly changed fcstPrice
       const { upc, newPrice } = action.payload;
       const row = state.rowData.find((r) => r.upc === upc);
+
+      // only change => fcstPrice, fcstQty, fcstDollars, markdownDollars, lift
       if (row) {
-        row.currentPrice = newPrice;
+        row.fcstPrice = newPrice; // fcstPrice
+        
+        const prices = row.prices;
+        const fcstQty = calcFcstQty(prices, newPrice);
+        row.fcstQty = fcstQty;
+        row.fcstDollars = newPrice * fcstQty;
+
+        const newMarkdown = (row.regRetail - newPrice) * fcstQty;
+        row.markdownDollars = newMarkdown;
+        row.lift = row.regQty > 0 ? (fcstQty - row.regQty) / row.regQty : 0;
       }
     },
     reQuery: (state) => {

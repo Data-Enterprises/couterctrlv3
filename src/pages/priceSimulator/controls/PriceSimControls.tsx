@@ -10,7 +10,7 @@ import {
   setExportModalOpen,
   setSelectedUpcs,
 } from "../../../features/priceSimSlice";
-import { useScrollHeight } from "../../forecast";
+import { useScrollHeight } from "../utils";
 
 const PriceSimControls = () => {
   const [filtered, setFiltered] = useState<ForecastItem[]>([]);
@@ -58,6 +58,8 @@ const PriceSimControls = () => {
     const allUpcs = state.qty.map((item) => item.upc);
     dispatch(setAllUpcs(allUpcs));
   };
+
+  console.log(topRef, height)
 
   return (
     <div
@@ -148,7 +150,7 @@ const PriceSimControls = () => {
       <div
         data-testid="upc-controls-list"
         className="bg-custom-white rounded-b-lg overflow-y-scroll no-scrollbar"
-        style={{ height: height || 500 }}
+        style={{ height: height }}
       >
         {showDisplay === "all" &&
           filtered.map((item, i) => (

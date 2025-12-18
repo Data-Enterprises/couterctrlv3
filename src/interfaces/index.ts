@@ -541,7 +541,25 @@ export interface PriceSimSalesData<T> {
 export interface SimGridRow {
   upc: string;
   description: string;
+  fcstPrice: number; 
+  calcNow: 0 | 1;
+  fcstQty: number;
+  fcstDollars: number;
+  regRetail: number;
+  regQty: number;
+  regDollars: number;
+  markdownDollars: number;
+  lift: number;
+  prices: number[][]; // not seen in grid but used for calculations
+}
+
+export interface PriceSimHistory<T> {
+  upc: string;
+  description: string;
+  qty: number;
+  avg_daily_qty: number;
+  max_day_qty: number;
+  days_active: number;
   regular_retail_price: number;
-  currentPrice: number; 
-  prices: number[][]; 
+  prices: T;
 }

@@ -2,18 +2,10 @@
 import Instructions from "../forecast/controls/Instructions";
 import PriceSimControls from "./controls/PriceSimControls";
 import PriceSimStorePicker from "./controls/PriceSimStorePicker";
-import { useEffect } from "react";
 import FilesGrid from "./controls/FilesGrid";
-
-// import { sampleData, calcFcstQty } from "./calc";
 import PriceSimGrid from "./grid/PriceSimGrid";
 
 const PriceSimulator = () => {
-  useEffect(() => {
-    console.log("Price Simulator Mounted");
-    // calcFcstQty(sampleData[0].prices, 10.99);
-  }, []);
-
   return (
     <div
       data-testid="price-simulator-page"
@@ -28,7 +20,9 @@ const PriceSimulator = () => {
         <PriceSimControls />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 w-full">
+      <div className="grid grid-rows-[25%_75%] w-full">
+        <div></div>
+        
         <PriceSimGrid />
       </div>
     </div>

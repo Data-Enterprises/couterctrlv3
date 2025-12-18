@@ -11,6 +11,7 @@ export const useScrollHeight = () => {
   const calcHeight = () => {
     if (topRef.current) {
       const position = topRef.current.getBoundingClientRect().bottom;
+      console.log("Position:", position);
       setHeight(window.innerHeight - position - 16);
     }
   };

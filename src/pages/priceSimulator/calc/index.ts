@@ -110,8 +110,8 @@ export const calcFcstQty = (
   newPrice: number,
 ) => {
   const params = fitLinearDemand(pricesWithQty);
-  console.log(params, 'params in calcFcstQty');
-  console.log(pricesWithQty, 'pricesWithQty in calcFcstQty');
-  console.log(predictQty(newPrice, params, pricesWithQty), 'predicted qty in calcFcstQty');
+  // console.log(params, 'params in calcFcstQty');
+  // console.log(pricesWithQty, 'pricesWithQty in calcFcstQty');
+  // console.log(predictQty(newPrice, params, pricesWithQty), 'predicted qty in calcFcstQty');
   return predictQty(newPrice, params, pricesWithQty);
 };
