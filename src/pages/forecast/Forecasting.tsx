@@ -174,7 +174,7 @@ const Forecasting = () => {
     >
       <ForecastModal />
       <div className="grid grid-cols-[20%_12%_45%_23%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
-        <div className="gap-4 flex flex-col justify-between">
+        <div className="gap-4 grid grid-rows-[22%_42%_22%]">
           <Instructions />
           <div className="bg-custom-white rounded-lg shadow-lg p-4">
             <div className="">

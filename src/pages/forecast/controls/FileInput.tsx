@@ -26,7 +26,7 @@ const FileInput = ({
 
   return (
     <div className={`flex gap-2 ${className}`}>
-      <label className="btn-themeBlue w-full text-center">
+      <label className="btn-themeBlue w-full text-center py-1">
         <div className="h-6">{file !== null ? file.name : "Select File"}</div>
         <input
           data-testid="upc-file-input"

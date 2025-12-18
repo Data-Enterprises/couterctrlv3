@@ -137,7 +137,7 @@ const FileGrid = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg h-1/3">
+    <div className="bg-custom-white rounded-lg shadow-lg">
       <AgGridReact
         rowData={tableData}
         columnDefs={colDefs}
