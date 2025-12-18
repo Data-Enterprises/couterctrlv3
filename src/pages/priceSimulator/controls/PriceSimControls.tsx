@@ -9,7 +9,7 @@ import {
   setAllUpcs,
   setExportModalOpen,
   setSelectedUpcs,
-} from "../../../features/forecastSlice";
+} from "../../../features/priceSimSlice";
 import { useScrollHeight } from "../../forecast";
 
 const PriceSimControls = () => {
@@ -21,7 +21,7 @@ const PriceSimControls = () => {
   );
   const dispatch = useAppDispatch();
   const { height, topRef } = useScrollHeight();
-  const state = useAppSelector((state) => state.forecast);
+  const state = useAppSelector((state) => state.priceSim);
   const search = useAppSelector((state) => state.search);
 
   const handleClearClick = () => {

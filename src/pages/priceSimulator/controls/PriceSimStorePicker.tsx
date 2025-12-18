@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useAppDispatch } from "../../../hooks";
-import { useForecastContext } from "../../forecast/hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 
 // slice
@@ -12,7 +11,7 @@ import {
   setSelectedStores,
   setRadioId,
   setIsLoading,
-} from "../../../features/forecastSlice";
+} from "../../../features/priceSimSlice";
 
 // types and utils
 import type { JsonError, Store } from "../../../interfaces";
@@ -25,6 +24,7 @@ import DatePickers from "../../../components/datePickers/DatePickers";
 import SingleSelect from "../../../components/SingleSelect";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
 import { getForecasting } from "../../../api/forecast";
+import { usePriceSimContext } from "../utils";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -34,7 +34,7 @@ const options = [
 const PriceSimStorePicker = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const context = useForecastContext();
+  const context = usePriceSimContext();
   const [file, setFile] = useState<File | null>(null);
   const [filteredData, setFilteredData] = useState<Store[] | Group[]>([]);
 

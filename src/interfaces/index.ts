@@ -492,3 +492,46 @@ export interface ForecastPriceHistory {
   lift: number;
   regular_retail_price: number;
 }
+
+export interface UpcCodeDesc {
+  upc: string;
+  description: string;
+}
+
+
+export interface PriceSimQtyData<T> {
+  upc: string;
+  history: { date: string; value: number }[];
+  history_dimension: number;
+  forecast: number;
+  forecast_dimension: number;
+  forecast_method: string;
+  metrics: {
+    description: string;
+    qty: number;
+    avg_daily_qty: number;
+    max_day_qty: number;
+    days_active: number;
+    outliers: { date: string; qty: number }[];
+    prices: T;
+  };
+}
+
+export interface PriceSimSalesData<T> {
+  upc: string;
+  history: { date: string; value: number }[];
+  history_dimension: number;
+  forecast: number;
+  forecast_dimension: number;
+  forecast_method: string;
+  metrics: {
+    description: string;
+    sales: number;
+    avg_daily_sales: number;
+    max_day_sales: number;
+    days_active: number;
+    outliers: { date: string; qty: number }[];
+    prices: T;
+    total_sales: number;
+  };
+}

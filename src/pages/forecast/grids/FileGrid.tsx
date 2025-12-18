@@ -8,9 +8,8 @@ import {
   setItems,
   setQty,
   setSales,
-} from "../../../features/forecastSlice";
+} from "../../../features/priceSimSlice";
 import { useAppDispatch } from "../../../hooks";
-import { useForecastContext } from "../hooks";
 import { getFromExistingS3File } from "../../../api/forecast";
 
 import { AgGridReact } from "ag-grid-react";
@@ -23,6 +22,7 @@ import {
   type RowClickedEvent,
 } from "ag-grid-community";
 import type { ForecastQtyData, ForecastSalesData } from "../../../interfaces";
+import { usePriceSimContext } from "../../priceSimulator/utils";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 type TableData = {
@@ -33,7 +33,7 @@ type TableData = {
 const FileGrid = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const context = useForecastContext();
+  const context = usePriceSimContext();
   const [tableData, setTableData] = useState<TableData[]>([]);
 
   const colDefs: (ColDef<TableData> | ColGroupDef<TableData>)[] = [
