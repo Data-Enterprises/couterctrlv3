@@ -8,6 +8,7 @@ import PriceSimCarousel from "./grid/PriceSimCarousel";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useState } from "react";
 import { setGlobalFcstPrice, setGlobalRows } from "../../features/priceSimSlice";
+import PriceSimExportModal from "./export/PriceSimExportModal";
 
 const PriceSimulator = () => {
   const dispatch = useAppDispatch();
@@ -39,6 +40,7 @@ const PriceSimulator = () => {
       data-testid="price-simulator-page"
       className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 gap-4 flex overflow-hidden"
     >
+      <PriceSimExportModal />
       <div className="grid grid-rows-[24%_45%_27%] col-span-2 gap-4 w-1/6">
         <Instructions />
         <PriceSimStorePicker />

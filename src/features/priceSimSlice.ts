@@ -10,6 +10,7 @@ import { calcFcstQty } from "../pages/priceSimulator/calc";
 
 interface PriceSimState {
   isLoading: boolean;
+  fetchingUpcs: boolean;
   qty: PriceSimQtyData<any>[];
   sales: PriceSimSalesData<any>[];
   selectedStores: Store[];
@@ -30,6 +31,7 @@ interface PriceSimState {
 
 const initialState: PriceSimState = {
   isLoading: false,
+  fetchingUpcs: false,
   qty: [],
   sales: [],
   selectedStores: [],
@@ -55,6 +57,9 @@ export const priceSimSlice = createSlice({
     setIsLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
     },
+    setFetchingUpcs: (state, action: PayloadAction<boolean>) => {
+      state.fetchingUpcs = action.payload;
+    },
     setQty: (state, action: PayloadAction<PriceSimQtyData<any>[]>) => {
       state.qty = action.payload;
     },
@@ -75,6 +80,7 @@ export const priceSimSlice = createSlice({
       const upc = action.payload;
       if (state.selectedUpcs.includes(upc)) {
         state.selectedUpcs = state.selectedUpcs.filter((item) => item !== upc);
+        state.rowData = state.rowData.filter((row) => row.upc !== upc);
       } else {
         state.selectedUpcs.push(upc);
       }
@@ -198,6 +204,7 @@ export const priceSimSlice = createSlice({
 
 export const {
   setIsLoading,
+  setFetchingUpcs,
   setQty,
   setSales,
   setSelectedStores,
