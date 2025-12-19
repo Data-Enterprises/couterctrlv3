@@ -5,10 +5,35 @@ import PriceSimStorePicker from "./controls/PriceSimStorePicker";
 import FilesGrid from "./controls/FilesGrid";
 import PriceSimGrid from "./grid/PriceSimGrid";
 import PriceSimCarousel from "./grid/PriceSimCarousel";
-import { useAppSelector } from "../../hooks";
+import { useAppSelector, useAppDispatch } from "../../hooks";
+import { useState } from "react";
+import { setGlobalFcstPrice, setGlobalRows } from "../../features/priceSimSlice";
 
 const PriceSimulator = () => {
+  const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.priceSim);
+  const [globalFcstText, setGlobalFcstText] = useState<string>("");
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isNaN(parseFloat(e.target.value)) || e.target.value === "") {
+      setGlobalFcstText(e.target.value);
+    }
+  };
+  const handleGlobalFcstPriceClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (e.currentTarget.innerText === "Clear") {
+      setGlobalFcstText("");
+      dispatch(setGlobalFcstPrice(""));
+      dispatch(setGlobalRows([]));
+      return;
+    }
+    dispatch(setGlobalFcstPrice(globalFcstText));
+  };
+
+  const handleEnterDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      dispatch(setGlobalFcstPrice(globalFcstText));
+    }
+  };
   return (
     <div
       data-testid="price-simulator-page"
@@ -26,7 +51,9 @@ const PriceSimulator = () => {
       <div className="grid grid-rows-[25%_75%] mb-4 gap-4 w-full relative">
         <PriceSimCarousel />
         <div
-          className={`${state.rowData.length === 0 && "hidden"} absolute left-0 top-[170px] flex items-end gap-2`}
+          className={`${
+            state.rowData.length === 0 && "hidden"
+          } absolute left-0 top-[165px] flex items-end gap-2`}
         >
           <div>
             <label className="text-xs font-medium pl-0.5">
@@ -34,11 +61,19 @@ const PriceSimulator = () => {
             </label>
             <input
               type="text"
-              className="basic-input py-1 bg-custom-white w-32"
+              className="basic-input border-2 py-1 bg-custom-white w-32"
+              value={globalFcstText}
+              onChange={handleTextChange}
+              onKeyDown={handleEnterDown}
             />
           </div>
           <div>
-            <button className="btn-themeBlue py-1 px-4">Set</button>
+            <button
+              className="btn-themeBlue py-1 px-4"
+              onClick={handleGlobalFcstPriceClick}
+            >
+              {state.globalRows.length ? "Clear" : "Set"}
+            </button>
           </div>
         </div>
         <PriceSimGrid />

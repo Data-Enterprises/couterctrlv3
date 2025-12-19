@@ -59,10 +59,20 @@ export const predictQty = (
   params: { slope: number; intercept: number },
   pricesWithQty: number[][]
 ) => {
+
+  // If found => return price
+  const found = pricesWithQty.find((pq) => pq[0] === price);
+  if (found) {
+    return found[1];    
+  }
+
+  // otherwise calculate
   // Find the two closest data points
   const prices = pricesWithQty.map((pq) => pq[0]);
   prices.push(price);
   prices.sort((a, b) => a - b);
+
+
 
   const idx = prices.indexOf(price);
   let result: number = 0;

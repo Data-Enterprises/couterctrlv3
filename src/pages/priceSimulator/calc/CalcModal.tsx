@@ -65,7 +65,7 @@ const CalcModal = () => {
   };
 
   return (
-    <Modal isOpen={open} onClose={handleClose} modalClassName="bg-bkg p-2 w-[22%]">
+    <Modal isOpen={open} onClose={handleClose} modalClassName="bg-bkg p-2 w-[22%] -translate-x-[136%]">
       {selectedRow && isReady ? (
         <div className="bg-custom-white rounded-lg shadow-lg">
           <div className="font-medium px-4 bg-blue-500 text-custom-white rounded-t-lg py-1 flex justify-between">
@@ -96,6 +96,15 @@ const CalcModal = () => {
               </div>
             </div>
             <div>
+              <div className="font-medium underline text-sm">Prices/Qty</div>
+              {selectedRow.prices.map((p, i) => {
+                return (
+                  <div key={i} className="text-sm grid grid-cols-2">
+                    <div>Price: {formatCurrency2(p[0])}</div>
+                    <div>Qty: {p[1]}</div>
+                  </div>
+                );
+              })}
               <div className="border-2 p-3 mt-5 border-emerald-500 rounded-lg bg-emerald-100 text-sm">
                 <div className="font-medium underline">Predicted Metrics</div>
                 <div className="text-sm">

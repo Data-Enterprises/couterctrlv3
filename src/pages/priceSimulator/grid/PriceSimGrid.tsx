@@ -9,9 +9,17 @@ import {
   type ColGroupDef,
 } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
-import type { JsonError, PriceSimHistory, SimGridRow } from "../../../interfaces";
+import type {
+  JsonError,
+  PriceSimHistory,
+  SimGridRow,
+} from "../../../interfaces";
 import { calcFcstQty } from "../calc";
-import { setNewRowPriceValue, setRowData } from "../../../features/priceSimSlice";
+import {
+  setGlobalRows,
+  setNewRowPriceValue,
+  setRowData,
+} from "../../../features/priceSimSlice";
 import { formatCurrency2 } from "../../../utils";
 import { getHistoryFromList } from "../../../api/priceSim";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -41,48 +49,54 @@ const PriceSimGrid = () => {
             const results = j.results.filter((item: PriceSimHistory<any>) => {
               // Return the opposite of found to filter out existing
               const found = state.rowData.find((row) => row.upc === item.upc);
+              // console.log(Object.keys(item.prices).length);
+              // const isValid = Object.keys(item.prices).length > 1;
+              // return !found && isValid;
               return !found;
             });
 
-            console.log(state.selectedUpcs, results);
+            // console.log(state.selectedUpcs, results);
 
             // Those new rows left over, then calculate
-            const rowData: SimGridRow[] = results.map((item: PriceSimHistory<any>) => {
-              const prices = (
-                Object.entries(item.prices) as [string, number][]
-              ).map(([price, qty]) => [parseFloat(price), qty]);
-              const fcstPrice = prices[0][0];
-              const regQty =
-                item.prices[item.regular_retail_price.toString()] || 0;
-              
+            const rowData: SimGridRow[] = results.map(
+              (item: PriceSimHistory<any>) => {
+                const prices = (
+                  Object.entries(item.prices) as [string, number][]
+                ).map(([price, qty]) => [parseFloat(price), qty]);
+                const fcstPrice = prices[0][0];
+                const regQty =
+                  item.prices[item.regular_retail_price.toString()] || 0;
+
                 // reg dollars = reg retail * reg qty
-              const regDollars = item.regular_retail_price * regQty;
+                const regDollars = item.regular_retail_price * regQty;
 
-              // need the forecast qty at the current price to calc fcst dollars
-              const fcstQty = calcFcstQty(prices, fcstPrice);
-              const fcstDollars = fcstPrice * fcstQty;
+                // need the forecast qty at the current price to calc fcst dollars
+                const fcstQty = calcFcstQty(prices, fcstPrice);
+                const fcstDollars = fcstPrice * fcstQty;
 
-              // Markdown Dollars =   (Regular retail - Fcast Price) * forecast qty
-              const markdownDollars = (item.regular_retail_price - fcstPrice) * fcstQty;
+                // Markdown Dollars =   (Regular retail - Fcast Price) * forecast qty
+                const markdownDollars =
+                  (item.regular_retail_price - fcstPrice) * fcstQty;
 
-              // lift = (fcst qty - reg qty) / reg qty
-              const lift = regQty > 0 ? (fcstQty - regQty) / regQty : 0;
+                // lift = (fcst qty - reg qty) / reg qty
+                const lift = regQty > 0 ? (fcstQty - regQty) / regQty : 0;
 
-              return {
-                upc: item.upc,
-                description: item.description,
-                fcstPrice: fcstPrice,
-                calcNow: 0,
-                fcstQty: fcstQty,
-                fcstDollars: fcstDollars,
-                regRetail: item.regular_retail_price,
-                regQty: regQty,
-                regDollars: regDollars,
-                markdownDollars: markdownDollars,
-                lift: lift,
-                prices: prices,
-              };
-            })
+                return {
+                  upc: item.upc,
+                  description: item.description,
+                  fcstPrice: fcstPrice,
+                  calcNow: 0,
+                  fcstQty: fcstQty,
+                  fcstDollars: fcstDollars,
+                  regRetail: item.regular_retail_price,
+                  regQty: regQty,
+                  regDollars: regDollars,
+                  markdownDollars: markdownDollars,
+                  lift: lift,
+                  prices: prices,
+                };
+              }
+            );
             dispatch(setRowData([...state.rowData, ...rowData]));
           }
         })
@@ -90,7 +104,41 @@ const PriceSimGrid = () => {
     }
   }, [state.selectedUpcs]);
 
+  useEffect(() => {
+    if (state.globalFcstPrice !== "") {
+      const newPrice = parseFloat(state.globalFcstPrice);
+      if (!isNaN(newPrice)) {
+        const updatedRows = state.rowData.map((row) => {
+          // Recalculate forecast qty based on new price
+          const fcstQty = calcFcstQty(row.prices, newPrice);
+          const fcstDollars = newPrice * fcstQty;
+          const markdownDollars = (row.regRetail - newPrice) * fcstQty;
+          const lift = row.regQty > 0 ? (fcstQty - row.regQty) / row.regQty : 0;
+          return {
+            ...row,
+            fcstPrice: newPrice,
+            fcstQty: fcstQty,
+            fcstDollars: fcstDollars,
+            markdownDollars: markdownDollars,
+            lift: lift,
+          };
+        });
+
+        dispatch(setGlobalRows(updatedRows));
+      }
+    }
+  }, [state.globalFcstPrice]);
+
   const colDefs: (ColDef<SimGridRow> | ColGroupDef<SimGridRow>)[] = [
+    {
+      field: "calcNow",
+      headerName: "Calc Now",
+      flex: 0.9,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus flex justify-center items-center",
+      cellRenderer: CalcNowCheckbox, // Use the custom component
+      cellRendererSelector: undefined, // Ensure it always uses your renderer
+    },
     {
       field: "upc",
       headerName: "UPC",
@@ -122,15 +170,15 @@ const PriceSimGrid = () => {
         return !isNaN(newPrice);
       },
     },
-    {
-      field: "calcNow",
-      headerName: "Calc Now",
-      flex: 0.9,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus flex justify-center items-center",
-      cellRenderer: CalcNowCheckbox, // Use the custom component
-      cellRendererSelector: undefined, // Ensure it always uses your renderer
-    },
+    // {
+    //   field: "calcNow",
+    //   headerName: "Calc Now",
+    //   flex: 0.9,
+    //   headerStyle: { borderRight: "1px solid white" },
+    //   cellClass: "no-outline-on-focus flex justify-center items-center",
+    //   cellRenderer: CalcNowCheckbox, // Use the custom component
+    //   cellRendererSelector: undefined, // Ensure it always uses your renderer
+    // },
     {
       field: "fcstQty",
       headerName: "Fcast Qty",
@@ -192,7 +240,7 @@ const PriceSimGrid = () => {
     <div className="h-full shadow-lg rounded-lg">
       <CalcModal />
       <AgGridReact
-        rowData={state.rowData}
+        rowData={state.globalRows.length ? state.globalRows : state.rowData}
         columnDefs={colDefs}
         theme={theme}
         paginationAutoPageSize={true}

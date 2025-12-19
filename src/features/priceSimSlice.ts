@@ -23,6 +23,7 @@ interface PriceSimState {
   rowData: SimGridRow[];
   updatedRowHistory: SimGridRow[];
   lastUpdatedRows: SimGridRow[];
+  globalRows: SimGridRow[];
   selectedRow: SimGridRow | null;
   globalFcstPrice: string;
 }
@@ -44,6 +45,7 @@ const initialState: PriceSimState = {
   lastUpdatedRows: [],
   selectedRow: null,
   globalFcstPrice: "",
+  globalRows: [],
 };
 
 export const priceSimSlice = createSlice({
@@ -91,6 +93,9 @@ export const priceSimSlice = createSlice({
     },
     setRowData: (state, action: PayloadAction<SimGridRow[]>) => {
       state.rowData = action.payload;
+    },
+    setGlobalRows: (state, action: PayloadAction<SimGridRow[]>) => {
+      state.globalRows = action.payload;
     },
     resetSelectedUpcs: (state) => {
       state.selectedUpcs = [];
@@ -168,6 +173,7 @@ export const priceSimSlice = createSlice({
       state.selectedRow = null;
       state.rowData = [];
       state.globalFcstPrice = "";
+      state.globalRows = [];
     },
     reset: (state) => {
       state.isLoading = false;
@@ -185,6 +191,7 @@ export const priceSimSlice = createSlice({
       state.selectedRow = null;
       state.rowData = [];
       state.globalFcstPrice = "";
+      state.globalRows = [];
     },
   },
 });
@@ -206,6 +213,7 @@ export const {
   setNewRowPriceValue,
   setCalcNow,
   setGlobalFcstPrice,
+  setGlobalRows,
   reset,
   reQuery,
 } = priceSimSlice.actions;
