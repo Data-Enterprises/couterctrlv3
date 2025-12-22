@@ -54,7 +54,7 @@ const PriceSimControls = () => {
   };
 
   const handleSelectAll = () => {
-    const allUpcs = state.qty.map((item) => item.upc);
+    const allUpcs = state.priceSimResults.map((item) => item.upc);
     dispatch(setAllUpcs(allUpcs));
   };
 

@@ -38,6 +38,7 @@ import {
   setUpcs,
   setUpcText,
 } from "../../features/upcUploadSlice";
+// import Instructions from "./controls/Instructions";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -48,6 +49,7 @@ const Forecasting = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useForecastContext();
+  // const state = useAppSelector((state) => state.forecast);
   const [file, setFile] = useState<File | null>(null);
   const [filteredData, setFilteredData] = useState<Store[] | Group[]>([]);
   const { upcs, upcText } = useAppSelector((state) => state.upcs);
@@ -202,7 +204,7 @@ const Forecasting = () => {
   return (
     <div
       data-testid="forecast-page"
-      className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)]"
+      className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] relative"
     >
       <ForecastModal />
       <div className="grid grid-cols-[20%_12%_45%_23%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
@@ -321,6 +323,11 @@ const Forecasting = () => {
           <OutlierGrid />
           <PriceHistoryGrid />
         </div>
+        {/* {state.items.length === 0 ? (
+          <div className="w-1/2 flex justify-center absolute translate-x-[60%] translate-y-full">
+            <Instructions />
+          </div>
+        ) : null} */}
         {/* <div className="grid grid-rows-3 gap-4 mr-12">
           <LinearDemand />
           <ProfitOptimization />

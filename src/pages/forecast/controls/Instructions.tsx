@@ -10,8 +10,8 @@ const instructions: string[] = [
 
 const Instructions = () => {
   return (
-    <div className=" bg-custom-white px-4 pb-4 rounded-lg shadow-lg">
-      <div className="grid grid-cols-2 gap-2 text-sm">
+    <div className=" bg-custom-white px-4 pb-4 rounded-lg shadow-lg w-[40%]">
+      <div className="flex justify-between gap-2 text-sm">
         <div>
           <div className="font-medium text-sm py-2 underline">
             Instructions:

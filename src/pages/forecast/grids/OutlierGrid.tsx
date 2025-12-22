@@ -86,8 +86,6 @@ const OutlierGrid = () => {
       valueSetter: (params) => {
         const upc = params.data.upc;
         const newPrice = parseFloat(params.newValue);
-        console.log("newPrice", newPrice);
-        console.log("isNaN", isNaN(newPrice));
         if (!isNaN(newPrice)) {
           dispatch(setNewRowPriceValue({ upc, newPrice }));
         }
@@ -135,12 +133,10 @@ const OutlierGrid = () => {
   };
 
   const renderRows = () => {
-    if (state.selectedUpcs.length > 0) {
-      const filtered = state.rowData.filter((row) =>
-        state.selectedUpcs.includes(row.upc)
-      );
-      return filtered;
-    }
+    const filtered = state.rowData.filter((row) =>
+      state.selectedUpcs.includes(row.upc)
+    );
+    return filtered;
   };
 
   return (

@@ -55,7 +55,7 @@ const ForecastControls = () => {
   };
 
   const handleSelectAll = () => {
-    const allUpcs = state.qty.map((item) => item.upc);
+    const allUpcs = state.forecastResults.map((item) => item.upc);
     dispatch(setAllUpcs(allUpcs));
   };
 

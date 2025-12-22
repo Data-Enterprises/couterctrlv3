@@ -8,6 +8,7 @@ interface FileInputProps {
   fileExt: string[];
   setFile: (file: File | null) => void;
   className?: string;
+  labelClassName?: string;
 }
 
 const FileInput = ({
@@ -15,6 +16,7 @@ const FileInput = ({
   fileExt,
   setFile,
   className = "w-full",
+  labelClassName = "",
 }: FileInputProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
@@ -55,7 +57,7 @@ const FileInput = ({
 
   return (
     <div className={`flex gap-2 ${className}`}>
-      <label className="btn-themeBlue w-full text-center">
+      <label className={`btn-themeBlue w-full text-center ${labelClassName}`}>
         <div className="h-6">{file !== null ? file.name : "Select File"}</div>
         <input
           data-testid="upc-file-input"
