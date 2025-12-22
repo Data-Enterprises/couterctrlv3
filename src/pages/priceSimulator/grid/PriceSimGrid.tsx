@@ -104,7 +104,6 @@ const PriceSimGrid = () => {
                   row.prices as [string, number][]
                 ).map(([p, q]) => [parseFloat(p), q]) as number[][];
 
-                console.log(prices);
                 const fcstPrice = prices[0][0] as number;
                 const regQty =
                   row.prices[row.regular_retail_price.toString()] || 0;

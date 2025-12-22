@@ -4,28 +4,28 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 
 // slice
 import {
-  reQuery,
-  setQty,
-  setSales,
-  setItems,
+  // reQuery,
+  // setQty,
+  // setSales,
+  // setItems,
   setSelectedStores,
   setRadioId,
-  setIsLoading,
+  // setIsLoading,
 } from "../../../features/priceSimSlice";
 
 // types and utils
-import type { JsonError, PriceHistoryFromListResp, Store } from "../../../interfaces";
+import type { JsonError, Store } from "../../../interfaces";
 import type { Group } from "../../../features/groupSlice";
-import { formatQtyOutput, formatSalesOutput } from ".";
+// import { formatQtyOutput, formatSalesOutput } from ".";
 
-import FileInput from "../../forecast/controls/FileInput";
+// import FileInput from "../../forecast/controls/FileInput";
 import SelectedStoreList from "../../upc/wizard/SelectedStoreList";
 import DatePickers from "../../../components/datePickers/DatePickers";
 import SingleSelect from "../../../components/SingleSelect";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
-import { getForecasting } from "../../../api/forecast";
+// import { getForecasting } from "../../../api/forecast";
 import { usePriceSimContext } from "../utils";
-import { getHistoryFromList } from "../../../api/priceSim";
+// import { getHistoryFromList } from "../../../api/priceSim";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -36,7 +36,7 @@ const PriceSimStorePicker = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = usePriceSimContext();
-  const [file, setFile] = useState<File | null>(null);
+  // const [file, setFile] = useState<File | null>(null);
   const [filteredData, setFilteredData] = useState<Store[] | Group[]>([]);
 
   useEffect(() => {
@@ -95,57 +95,57 @@ const PriceSimStorePicker = () => {
     }
   };
 
-  const handleSearch = () => {
-    if (file) {
-      dispatch(setIsLoading(true));
-      dispatch(reQuery());
-      getForecasting(
-        context.url,
-        context.token,
-        context.storeids,
-        context.startDate,
-        context.endDate,
-        file
-      )
-        .then((resp) => {
-          const j = resp.data;
-          if (j.error === 0) {
-            // To set the list of items for the controls
-            const qtyOutput = formatQtyOutput(j);
-            const salesOutput = formatSalesOutput(j);
+  // const handleSearch = () => {
+  //   if (file) {
+  //     dispatch(setIsLoading(true));
+  //     dispatch(reQuery());
+  //     getForecasting(
+  //       context.url,
+  //       context.token,
+  //       context.storeids,
+  //       context.startDate,
+  //       context.endDate,
+  //       file
+  //     )
+  //       .then((resp) => {
+  //         const j = resp.data;
+  //         if (j.error === 0) {
+  //           // To set the list of items for the controls
+  //           const qtyOutput = formatQtyOutput(j);
+  //           const salesOutput = formatSalesOutput(j);
 
-            const upcItems = qtyOutput.map((item) => ({
-              upc: item.upc,
-              description: item.metrics.description,
-            }));
+  //           const upcItems = qtyOutput.map((item) => ({
+  //             upc: item.upc,
+  //             description: item.metrics.description,
+  //           }));
 
-            dispatch(setQty(qtyOutput));
-            dispatch(setSales(salesOutput));
-            dispatch(setItems(upcItems));
-          }
-        })
-        .catch((err: JsonError) => toast.error(err.message))
-        .finally(() => dispatch(setIsLoading(false)));
+  //           dispatch(setQty(qtyOutput));
+  //           dispatch(setSales(salesOutput));
+  //           dispatch(setItems(upcItems));
+  //         }
+  //       })
+  //       .catch((err: JsonError) => toast.error(err.message))
+  //       .finally(() => dispatch(setIsLoading(false)));
 
-      // getHistoryFromList(
-      //   context.url,
-      //   context.token,
-      //   context.storeids,
-      //   context.endDate,
-      //   file
-      // )
-      //   .then((resp) => {
-      //     const j: PriceHistoryFromListResp = resp.data;
-      //     if (j.error === 0) {
-      //       // Handle the history data as needed
-      //       // For example, you might want to store it in the state
-      //       console.log("Price history data:", j);
-      //     }
-      //   })
-      //   .catch((err: JsonError) => toast.error(err.message))
-      //   .finally(() => dispatch(setIsLoading(false)));
-    }
-  };
+  //     // getHistoryFromList(
+  //     //   context.url,
+  //     //   context.token,
+  //     //   context.storeids,
+  //     //   context.endDate,
+  //     //   file
+  //     // )
+  //     //   .then((resp) => {
+  //     //     const j: PriceHistoryFromListResp = resp.data;
+  //     //     if (j.error === 0) {
+  //     //       // Handle the history data as needed
+  //     //       // For example, you might want to store it in the state
+  //     //       console.log("Price history data:", j);
+  //     //     }
+  //     //   })
+  //     //   .catch((err: JsonError) => toast.error(err.message))
+  //     //   .finally(() => dispatch(setIsLoading(false)));
+  //   }
+  // };
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg p-4">
@@ -194,7 +194,7 @@ const PriceSimStorePicker = () => {
           height="py-1 min-h-32 max-h-32"
         />
       </div>
-      <div className="flex gap-2 mt-4">
+      {/* <div className="flex gap-2 mt-4">
         <FileInput
           file={file}
           fileExt={[".csv"]}
@@ -208,7 +208,7 @@ const PriceSimStorePicker = () => {
         >
           Search
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };

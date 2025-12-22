@@ -177,6 +177,10 @@ const Forecasting = () => {
   };
 
   const handleAddUpc = (upc: string) => {
+    if (upc === "") {
+      dispatch(setUpcs([]));
+      return;
+    }
     const newUpcs = upc.split(",").map((u) => u.trim());
     dispatch(setUpcs(newUpcs));
   };
@@ -251,25 +255,36 @@ const Forecasting = () => {
             </div>
           </div>
           <div className="bg-custom-white rounded-lg shadow-lg px-3">
-            <div className="bg-blue-500 text-custom-white -mx-3 py-0.5 px-4 rounded-t-lg font-medium">
-              UPCs <span className="text-sm">(comma separated)</span>
+            <div className="bg-blue-500 text-custom-white -mx-3 py-0.5 px-4 rounded-t-lg font-medium flex justify-between">
+              <div>
+                UPCs <span className="text-sm">(comma separated)</span>
+              </div>
+              <div className={`${upcs.length === 0 && "hidden"}`}>
+                {upcs.length}
+              </div>
             </div>
-            <div className="grid grid-cols-[75%_25%] py-2 gap-2 mr-2">
-              <input
-                type="text"
-                className="basic-input focus:border bg-custom-white py-1"
-                value={upcText}
-                onChange={handleTextChange}
-                onKeyDown={handleEnterDown}
-              />
+            <input
+              type="text"
+              className="basic-input focus:border bg-custom-white py-1 mt-2"
+              value={upcText}
+              onChange={handleTextChange}
+              onKeyDown={handleEnterDown}
+            />
+            <div className="flex py-2 gap-2">
               <button
-                className="btn-themeBlue py-1 border px-0"
+                className="btn-themeBlue py-1 border px-0 w-1/2"
                 onClick={() => handleAddUpc(upcText)}
               >
                 Add
               </button>
+              <button
+                className="btn-themeBlue py-1 border px-0 w-1/2"
+                onClick={() => handleAddUpc("")}
+              >
+                Clear
+              </button>
             </div>
-            <div className="bg-bkg shadow rounded-lg grid grid-cols-3 text-xs min-h-40 max-h-40 overflow-y-scroll no-scrollbar mb-2">
+            <div className="bg-bkg shadow rounded-lg grid grid-cols-3 text-xs min-h-28 max-h-28 overflow-y-scroll no-scrollbar mb-2">
               {upcs.map((u, i) => (
                 <div
                   key={i}

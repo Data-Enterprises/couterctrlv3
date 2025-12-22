@@ -5,6 +5,7 @@ import type {
   PriceSimQtyData,
   PriceSimSalesData,
   SimGridRow,
+  PriceHistoryResult,
 } from "../interfaces";
 import { calcFcstQty } from "../pages/priceSimulator/calc";
 
@@ -27,6 +28,7 @@ interface PriceSimState {
   globalRows: SimGridRow[];
   selectedRow: SimGridRow | null;
   globalFcstPrice: string;
+  priceSimResults: PriceHistoryResult[];
 }
 
 const initialState: PriceSimState = {
@@ -48,6 +50,7 @@ const initialState: PriceSimState = {
   selectedRow: null,
   globalFcstPrice: "",
   globalRows: [],
+  priceSimResults: [],
 };
 
 export const priceSimSlice = createSlice({
@@ -109,6 +112,12 @@ export const priceSimSlice = createSlice({
       state.rowData = [];
       state.selectedRow = null;
     },
+    setPriceSimResults: (
+      state,
+      action: PayloadAction<PriceHistoryResult[]>
+    ) => {
+      state.priceSimResults = action.payload; // using this for value change references
+    },
     setNewRowPriceValue: (
       state,
       action: PayloadAction<{ upc: string; newPrice: number }>
@@ -167,7 +176,6 @@ export const priceSimSlice = createSlice({
       state.globalFcstPrice = action.payload;
     },
     reQuery: (state) => {
-      state.isLoading = false;
       state.qty = [];
       state.sales = [];
       state.items = [];
@@ -182,7 +190,6 @@ export const priceSimSlice = createSlice({
       state.globalRows = [];
     },
     reset: (state) => {
-      state.isLoading = false;
       state.qty = [];
       state.sales = [];
       state.selectedStores = [];
@@ -221,6 +228,7 @@ export const {
   setCalcNow,
   setGlobalFcstPrice,
   setGlobalRows,
+  setPriceSimResults,
   reset,
   reQuery,
 } = priceSimSlice.actions;

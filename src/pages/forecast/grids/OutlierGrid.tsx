@@ -17,7 +17,6 @@ import {
 ModuleRegistry.registerModules([AllCommunityModule]);
 import type { ForecastOutlierRow } from "../../../features/forecastSlice";
 import { formatCurrency2 } from "../../../utils";
-import { useEffect } from "react";
 import { getPriceHistory } from "../../../api/forecast";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useForecastContext } from "../hooks";
@@ -27,19 +26,6 @@ const OutlierGrid = () => {
   const context = useForecastContext();
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.forecast);
-
-  // useEffect(() => {
-  //   const uniqueUpcs = state.selectedUpcs
-  //     .filter((upc) => {
-  //       const found = state.rowData.find((row) => row.upc === upc);
-  //       return !found;
-  //     })
-  //     .join(",");
-
-  //   if (uniqueUpcs === "") return;
-
-  //   // Set the row Data here
-  // }, [state.selectedUpcs]);
 
   const colDefs: (
     | ColDef<ForecastOutlierRow>
@@ -175,7 +161,6 @@ const OutlierGrid = () => {
           onRowClicked={onRowClicked}
         />
       </div>
-      {/* <div className="h-[100%] w-1/4 opacity-0 shadow-lg"></div> */}
     </div>
   );
 };

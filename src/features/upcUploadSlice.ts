@@ -15,7 +15,12 @@ export const upcUploadSlice = createSlice({
   initialState,
   reducers: {
     setUpcs: (state, action: PayloadAction<string[]>) => {
-      if (action.payload.length === 0) state.upcs = [];
+
+      if (action.payload.length === 0) {
+        state.upcs = [];
+        state.upcText = "";
+        return;
+      }
 
       // const filtered = action.payload.filter((upc) =>)
       const reduced = action.payload.reduce((acc: string[], curr: string) => {
