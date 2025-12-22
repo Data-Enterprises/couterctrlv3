@@ -5,6 +5,7 @@ import type {
   ForecastSalesData,
   ForecastItem,
   ForecastPriceHistory,
+  PriceHistoryResult,
 } from "../interfaces";
 import { calcFcstQty } from "../pages/forecast/utils";
 import { forecastUnits } from "../pages/priceSimulator/calc";
@@ -32,16 +33,13 @@ export interface HistoryData {
 }
 
 export type ForecastOutlierRow = {
-  outliers: number;
   upc: string;
   description: string;
   qtySold: number;
   daysActive: number;
-  forecast: number;
   adFcst: number;
   fcstPrice: number;
   fcstTotal: number;
-  lift: number;
 };
 
 interface ForecastState {
@@ -62,6 +60,7 @@ interface ForecastState {
   lastUpdatedHistory: HistoryData[];
   exportModalOpen: boolean;
   selectedUpc: string;
+  forecastResults: PriceHistoryResult[];
   rowData: ForecastOutlierRow[];
 }
 
@@ -83,6 +82,7 @@ const initialState: ForecastState = {
   lastUpdatedHistory: [],
   exportModalOpen: false,
   selectedUpc: "",
+  forecastResults: [],
   rowData: [],
 };
 export const forecastSlice = createSlice({
@@ -152,6 +152,9 @@ export const forecastSlice = createSlice({
     setRowData: (state, action: PayloadAction<ForecastOutlierRow[]>) => {
       state.rowData = action.payload;
     },
+    setForecastResults: (state, action: PayloadAction<PriceHistoryResult[]>) => {
+      state.forecastResults = action.payload; // using this for value change references
+    },
     setNewRowPriceValue: (
       state,
       action: PayloadAction<{ upc: string; newPrice: number }>
@@ -159,16 +162,12 @@ export const forecastSlice = createSlice({
       // newPrice is the newly changed fcstPrice
       const { upc, newPrice } = action.payload;
       const row = state.rowData.find((r) => r.upc === upc);
-      const prices = state.qty.find((item) => item.upc === upc)?.metrics.prices;
 
-      const upcPrices = Object.entries(prices).map(([p, q]) => [
-        parseFloat(p),
-        q as number,
-      ]) as number[][];
+      const prices = state.forecastResults.find((item) => item.upc === upc);
+      const upcPrices = prices!.price_history.map((ph) => [parseFloat(ph.price), ph.qty]);
 
       // only change => fcstPrice, fcstQty, fcstDollars, markdownDollars, lift
       if (row) {
-        // const prices = row.prices;
         const fcstQty = calcFcstQty(upcPrices, newPrice); //90 days
         const units = forecastUnits(
           newPrice,
@@ -182,8 +181,6 @@ export const forecastSlice = createSlice({
         row.adFcst = units; // next 7 days
         row.fcstPrice = newPrice;
         row.fcstTotal = newPrice * units;
-        row.lift =
-          row.forecast > 0 ? (units - row.forecast) / row.forecast : 0;
       }
     },
     setNewRowQtyValue: (
@@ -197,8 +194,6 @@ export const forecastSlice = createSlice({
       if (row) {
         row.adFcst = newQty;
         row.fcstTotal = row.fcstPrice * newQty;
-        row.lift =
-          row.forecast > 0 ? (newQty - row.forecast) / row.forecast : 0;
       }
     },
     setLastUpdatedHistory: (state, action: PayloadAction<HistoryData>) => {
@@ -277,6 +272,7 @@ export const {
   setSelectedUpc,
   reset,
   setExportModalOpen,
+  setForecastResults,
   setRowData,
   setNewRowPriceValue,
   setNewRowQtyValue,

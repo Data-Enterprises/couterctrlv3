@@ -14,7 +14,7 @@ import {
 } from "../../../features/priceSimSlice";
 
 // types and utils
-import type { JsonError, Store } from "../../../interfaces";
+import type { JsonError, PriceHistoryFromListResp, Store } from "../../../interfaces";
 import type { Group } from "../../../features/groupSlice";
 import { formatQtyOutput, formatSalesOutput } from ".";
 
@@ -25,6 +25,7 @@ import SingleSelect from "../../../components/SingleSelect";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
 import { getForecasting } from "../../../api/forecast";
 import { usePriceSimContext } from "../utils";
+import { getHistoryFromList } from "../../../api/priceSim";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -125,6 +126,24 @@ const PriceSimStorePicker = () => {
         })
         .catch((err: JsonError) => toast.error(err.message))
         .finally(() => dispatch(setIsLoading(false)));
+
+      // getHistoryFromList(
+      //   context.url,
+      //   context.token,
+      //   context.storeids,
+      //   context.endDate,
+      //   file
+      // )
+      //   .then((resp) => {
+      //     const j: PriceHistoryFromListResp = resp.data;
+      //     if (j.error === 0) {
+      //       // Handle the history data as needed
+      //       // For example, you might want to store it in the state
+      //       console.log("Price history data:", j);
+      //     }
+      //   })
+      //   .catch((err: JsonError) => toast.error(err.message))
+      //   .finally(() => dispatch(setIsLoading(false)));
     }
   };
 
