@@ -8,14 +8,10 @@ interface FileInputProps {
   className?: string;
 }
 
-const FileInput = ({
-  file,
-  fileExt,
-  setFile,
-  className = "w-full",
-}: FileInputProps) => {
+const FileInput = ({ file, fileExt, setFile, className = "w-full" }: FileInputProps) => {
   const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
+  
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!fileExt.some((ext) => event.target.files![0].name.endsWith(ext))) {
       toast.warn("Please select a valid CSV file");
@@ -26,7 +22,7 @@ const FileInput = ({
 
   return (
     <div className={`flex gap-2 ${className}`}>
-      <label className="btn-themeBlue w-full text-center py-1">
+      <label className="btn-themeBlue w-full text-center">
         <div className="h-6">{file !== null ? file.name : "Select File"}</div>
         <input
           data-testid="upc-file-input"

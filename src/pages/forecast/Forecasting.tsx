@@ -23,6 +23,7 @@ import {
   setRadioId,
   setSales,
   setSelectedStores,
+  setRowData,
 } from "../../features/forecastSlice";
 import { useForecastContext } from "./hooks";
 import SelectedStoreList from "../upc/wizard/SelectedStoreList";
@@ -33,8 +34,13 @@ import PriceHistoryGrid from "./grids/PriceHistoryGrid";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import ForecastModal from "./controls/ForecastModal";
 import DatePickers from "../../components/datePickers/DatePickers";
-import LinearDemand from "./profit/LinearDemand";
-import ProfitOptimization from "./profit/ProfitOptimization";
+import {
+  fitLinearDemand,
+  getQtyOutput,
+  getSalesOutput,
+  predictQty,
+} from "./utils";
+import { forecastUnits } from "../priceSimulator/calc";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -76,43 +82,45 @@ const Forecasting = () => {
           const j = resp.data;
           if (j.error === 0) {
             // To set the list of items for the controls
-            const qtyOutput: ForecastQtyData<any>[] = Object.entries(
-              j.qty_output
-            ).map(([k, v]) => {
-              const upc = k as string;
-              const data = v as any;
-              return {
-                upc,
-                history: data.history,
-                history_dimension: data.history_dimension,
-                forecast: data.forecast,
-                forecast_dimension: data.forecast_dimension,
-                forecast_method: data.forecast_method,
-                metrics: data.metrics,
-              };
-            });
-
-            const salesOutput: ForecastSalesData<any>[] = Object.entries(
-              j.sales_output
-            ).map(([k, v]) => {
-              const upc = k as string;
-              const data = v as any;
-              return {
-                upc,
-                history: data.history,
-                history_dimension: data.history_dimension,
-                forecast: data.forecast,
-                forecast_dimension: data.forecast_dimension,
-                forecast_method: data.forecast_method,
-                metrics: data.metrics,
-              };
-            });
+            const qtyOutput: ForecastQtyData<any>[] = getQtyOutput(j);
+            const salesOutput: ForecastSalesData<any>[] = getSalesOutput(j);
 
             const upcItems = qtyOutput.map((item) => ({
               upc: item.upc,
               description: item.metrics.description,
             }));
 
+            const rowData = qtyOutput.map((item) => {
+              const prices = Object.entries(item.metrics.prices).map(
+                ([p, q]) => [parseFloat(p), q as number]
+              ) as number[][];
+              const linear = fitLinearDemand(prices);
+              const predictedQty = predictQty(prices[0][0], linear, prices);
+              const units = forecastUnits(
+                prices[0][0], // 9.99
+                predictedQty, // 120
+                item.metrics.days_active, //50
+                90,
+                7,
+                prices
+              );
+              const lift = (predictedQty - item.forecast) / item.forecast;
+
+              return {
+                outliers: item.metrics.outliers.length,
+                upc: item.upc,
+                description: item.metrics.description,
+                qtySold: item.metrics.qty,
+                daysActive: item.metrics.days_active,
+                forecast: item.forecast,
+                adFcst: units,
+                fcstPrice: prices[0][0],
+                fcstTotal: prices[0][0] * units,
+                lift: lift,
+              };
+            });
+
+            dispatch(setRowData(rowData));
             dispatch(setQty(qtyOutput));
             dispatch(setSales(salesOutput));
             dispatch(setItems(upcItems));
@@ -174,7 +182,7 @@ const Forecasting = () => {
     >
       <ForecastModal />
       <div className="grid grid-cols-[20%_12%_45%_23%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
-        <div className="gap-4 grid grid-rows-[22%_42%_22%]">
+        <div className="gap-4 grid grid-rows-[22%_48%_26%]">
           <Instructions />
           <div className="bg-custom-white rounded-lg shadow-lg p-4">
             <div className="">
@@ -248,10 +256,10 @@ const Forecasting = () => {
           <OutlierGrid />
           <PriceHistoryGrid />
         </div>
-        <div className="grid grid-rows-3 gap-4 mr-12">
+        {/* <div className="grid grid-rows-3 gap-4 mr-12">
           <LinearDemand />
           <ProfitOptimization />
-        </div>
+        </div> */}
       </div>
     </div>
   );

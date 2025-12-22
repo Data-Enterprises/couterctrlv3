@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-// import { useToast } from "../../components/toasts/hooks/useToast";
 import { AgGridReact } from "ag-grid-react";
 import { theme } from "..";
 import {
@@ -131,7 +130,6 @@ const PriceHistoryGrid = () => {
           rowSelection="single"
         />
       </div>
-      {/* <div className="h-[100%] w-1/4 opacity-0 shadow-lg"></div> */}
     </div>
   );
 };

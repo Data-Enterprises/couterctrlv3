@@ -1,39 +1,3 @@
-export const sampleData = [
-  {
-    upc: "123456789",
-    description: "Sample Product 1",
-    regular_retail_price: 14.99,
-    prices: [
-      [12.99, 12],
-      [11.99, 25],
-      [10.99, 43],
-      [9.99, 89],
-    ],
-  },
-  {
-    upc: "234567891",
-    description: "Sample Product 2",
-    regular_retail_price: 13.99,
-    prices: [
-      [12.99, 10],
-      [11.99, 25],
-      [10.99, 43],
-      [9.99, 89],
-    ],
-  },
-  {
-    upc: "345678901",
-    description: "Sample Product 3",
-    regular_retail_price: 12.99,
-    prices: [
-      [12.99, 9],
-      [11.99, 25],
-      [10.99, 43],
-      [9.99, 89],
-    ],
-  },
-];
-
 export const fitLinearDemand = (pricesWithQty: number[][]) => {
   // Grab the prices and qtys into separate arrays
   const prices = pricesWithQty.map((pq) => pq[0]);
@@ -59,11 +23,10 @@ export const predictQty = (
   params: { slope: number; intercept: number },
   pricesWithQty: number[][]
 ) => {
-
   // If found => return price
   const found = pricesWithQty.find((pq) => pq[0] === price);
   if (found) {
-    return found[1];    
+    return found[1];
   }
 
   // otherwise calculate
@@ -71,8 +34,6 @@ export const predictQty = (
   const prices = pricesWithQty.map((pq) => pq[0]);
   prices.push(price);
   prices.sort((a, b) => a - b);
-
-
 
   const idx = prices.indexOf(price);
   let result: number = 0;
@@ -115,17 +76,13 @@ export const predictQty = (
   }
 };
 
-export const calcFcstQty = (
-  pricesWithQty: number[][],
-  newPrice: number,
-) => {
+export const calcFcstQty = (pricesWithQty: number[][], newPrice: number) => {
   const params = fitLinearDemand(pricesWithQty);
   // console.log(params, 'params in calcFcstQty');
   // console.log(pricesWithQty, 'pricesWithQty in calcFcstQty');
   // console.log(predictQty(newPrice, params, pricesWithQty), 'predicted qty in calcFcstQty');
   return predictQty(newPrice, params, pricesWithQty);
 };
-
 
 export const predictRevenue = (
   price: number,
@@ -146,4 +103,42 @@ export const predictProfit = (
   const revenue = price * qty;
   const cost = unitCost * qty;
   return revenue - cost;
+};
+
+/**
+ * units at price (qty) number = 0
+ * selling days (days active) number
+ * total days (90 days)
+ * forecast window (7 days)
+ */
+export const forecastUnits = (
+  price: number, // 9.99
+  units: number, //120
+  sellingDays: number, // 50
+  totalDays: number = 90,
+  forecastWindow: number = 7,
+  pricesWithQty: number[][]
+) => {
+
+  // units at price || calcFcstQty
+  let unitsAtPrice = units; //120
+
+  // if price point doesn't have historical data, estimate using linear demand
+  if (unitsAtPrice === 0) {
+    const params = fitLinearDemand(pricesWithQty); // intercept and slope
+    unitsAtPrice = predictQty(price, params, pricesWithQty);
+  }
+
+  // per selling day => 120 / 50 = 2.4
+  const unitsPerSellingDay = unitsAtPrice / sellingDays;
+  
+  // day rate => 50 / 90 = 0.556
+  const dayRate = sellingDays / totalDays;
+
+  // expected days => 0.556 * 7 = 3.892
+  const expectedDays = dayRate * forecastWindow;
+
+  // expeected forecast => 2.4 * 3.892 = 9.34 => 9
+  const expectedForecast = unitsPerSellingDay * expectedDays;
+  return Math.floor(expectedForecast);
 };

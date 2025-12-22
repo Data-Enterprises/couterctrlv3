@@ -41,7 +41,6 @@ const PriceSimGrid = () => {
           return !found;
         })
         .join(",");
-      console.log(upcs);
 
       if (upcs === "") return;
 
