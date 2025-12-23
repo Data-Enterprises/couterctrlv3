@@ -12,6 +12,7 @@ import type { JsonError } from "../../../interfaces";
 import {
   loadSimRowData,
   reloadRowData,
+  resetSimulations,
   setGlobalFcstPrice,
   setNewRowAdDaysValue,
   setNewRowPriceValue,
@@ -292,6 +293,12 @@ const OutlierGrid = () => {
             onClick={() => dispatch(reloadRowData())}
           >
             Reload
+          </button>
+          <button
+            className={`btn-themeOrange py-0.5`}
+            onClick={() => dispatch(resetSimulations())}
+          >
+            Reset
           </button>
         </div>
       </div>

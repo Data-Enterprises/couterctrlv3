@@ -287,6 +287,15 @@ export const forecastSlice = createSlice({
       state.rowData = [];
       state.selectedSim = "";
       state.selectedUpcs = [];
+      state.globalFcstPrice = "";
+    },
+    resetSimulations: (state) => {
+      state.simOneRowData = [];
+      state.simTwoRowData = [];
+      state.simThreeRowData = [];
+      state.simFourRowData = [];
+      state.simBtns = { sim1: 0, sim2: 0, sim3: 0, sim4: 0 };
+      state.globalFcstPrice = "";
     },
     setForecastResults: (
       state,
@@ -567,6 +576,7 @@ export const {
   resetRows,
   setGlobalFcstPrice,
   updateGlobalFcstRows,
+  resetSimulations,
   // resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;
