@@ -334,12 +334,17 @@ export const forecastSlice = createSlice({
           newAdDays // from user input => the sale date range
         );
 
+        const regRetail = state.forecastResults.find(
+          (item) => item.upc === upc
+        )!.regular_retail_price;
+
         // The directly updated cell
         row.adDays = newAdDays;
 
         // The two updated cells by calculation
         row.adFcst = units;
         row.fcstTotal = row.fcstPrice * units;
+        row.markdownDollars = (regRetail - row.fcstPrice) * units;
 
         const sim = state.selectedSim;
         if (sim === "sim1") {
@@ -386,12 +391,15 @@ export const forecastSlice = createSlice({
           row.adDays // from user input => the sale date range
         );
 
+        const regRetail = state.forecastResults.find((item) => item.upc === upc)!.regular_retail_price;
+
         // The directly updated cell
         row.fcstPrice = newPrice;
 
         // The two updated cells by calculation
         row.adFcst = units; // units over ad days
         row.fcstTotal = newPrice * units; // forecasted dollars
+        row.markdownDollars = (regRetail - newPrice) * units;
 
         const sim = state.selectedSim;
         if (sim === "sim1") {
@@ -430,6 +438,7 @@ export const forecastSlice = createSlice({
       const price = parseFloat(state.globalFcstPrice);
 
       const globalRows = state.rowData.map((row) => {
+        const upc = row.upc;
         const prices = state.forecastResults.find(
           (item) => item.upc === row.upc
         );
@@ -452,12 +461,16 @@ export const forecastSlice = createSlice({
           upcPrices, // all prices with qty recorded for the item
           row.adDays // from user input => the sale date range
         );
+        const regRetail = state.forecastResults.find(
+          (item) => item.upc === upc
+        )!.regular_retail_price;
 
         return {
           ...row,
           fcstPrice: price,
           adFcst: units,
           fcstTotal: price * units,
+          markdownDollars: (regRetail - price) * units,
         };
       });
 

@@ -71,7 +71,7 @@ const OutlierGrid = () => {
       valueFormatter: (params) => `${params.value}/90`,
     },
     {
-      headerName: "Days at Price",
+      headerName: "At Price",
       field: "daysAtPrice",
       flex: 0.8,
       cellClass: "no-outline-on-focus text-right",

@@ -19,7 +19,6 @@ import UpcList from "./pages/upc/wizard/UpcList.tsx";
 import ItemLookup from "./pages/lookup/ItemLookup.tsx";
 import Forecasting from "./pages/forecast/Forecasting.tsx";
 import Dashboard from "./pages/quicksight/Dashboard.tsx";
-import PriceSimulator from "./pages/priceSimulator/PriceSimulator.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -39,7 +38,6 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="item-lookup" element={<ItemLookup />} />
                 <Route path="forecasting" element={<Forecasting />} />
                 <Route path="quicksight" element={<Dashboard />} />
-                <Route path="price-simulator" element={<PriceSimulator />} />
               </Route>
             </Routes>
           </ToastProvider>
