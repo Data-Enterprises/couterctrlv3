@@ -1,6 +1,5 @@
 {
   "name": "counterctrlv3",
-  "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
@@ -8,9 +7,12 @@
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:ui": "vitest --ui",
-    "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "clean": "rimraf dist",
+    "build": "npm run clean && tsc -b && vite build",
+    "deploy": "npm run build && aws s3 sync dist s3://www.counterctrlcloud.com --delete --cache-control \"public, max-age=31536000, immutable\" && aws s3 cp dist/index.html s3://www.counterctrlcloud.com/index.html --cache-control \"no-cache, no-store, must-revalidate\" && aws cloudfront create-invalidation --distribution-id EGRZX5CPCZSSN --paths=\"/*\"",
+    "publish": "npm run deploy"
   },
   "dependencies": {
     "@ericblade/quagga2": "^1.8.4",
@@ -54,6 +56,7 @@
     "jsdom": "^27.1.0",
     "ndarray-pixels": "^5.0.1",
     "postcss": "^8.5.6",
+    "rimraf": "^6.1.2",
     "tailwindcss": "^3.4.18",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.45.0",
