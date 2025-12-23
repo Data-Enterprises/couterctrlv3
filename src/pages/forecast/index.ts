@@ -1,7 +1,7 @@
 import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
 import { useRef, useState, useEffect } from "react";
 import { useAppSelector } from "../../hooks";
-import type { HistoryData } from "../../features/forecastSlice";
+import type { ForecastOutlierRow } from "../../features/forecastSlice";
 
 export const useScrollHeight = () => {
   const state = useAppSelector((state) => state.forecast);
@@ -11,6 +11,7 @@ export const useScrollHeight = () => {
   const calcHeight = () => {
     if (topRef.current) {
       const position = topRef.current.getBoundingClientRect().bottom;
+      console.log("Position:", position);
       setHeight(window.innerHeight - position - 16);
     }
   };
@@ -58,41 +59,19 @@ export const themeTwo = themeQuartz.withParams({
   // selectedRowBackgroundColor: "#93c5fd",
 });
 
-export const exportHeaders: (ColDef<HistoryData> | ColGroupDef<HistoryData>)[] = [
-  {
-    headerName: "Outliers",
-    field: "outliers",
-  },
-  {
-    headerName: "UPC",
-    field: "upc",
-  },
-  {
-    headerName: "Description",
-    field: "desc",
-  },
-  {
-    headerName: "Qty Sold",
-    field: "forecastQty",
-  },
-  {
-    headerName: "Days Active",
-    field: "daysActive",
-  },
-  {
-    headerName: `Fcst Qty (x7)`,
-    field: "forecast",
-  },
-  {
-    headerName: "Ad Fcst",
-    field: "futureForecast",
-  },
-  {
-    headerName: "Fcst Price",
-    field: "forecastPrice",
-  },
-  {
-    headerName: "Fcst Total",
-    field: "futureForecastTotal",
-  },
+export const exportHeaders: (
+  | ColDef<ForecastOutlierRow>
+  | ColGroupDef<ForecastOutlierRow>
+)[] = [
+  { headerName: "UPC", field: "upc" },
+  { headerName: "Description", field: "description" },
+  { headerName: "Qty Sold", field: "qtySold" },
+  { headerName: "Days Active", field: "daysActive" },
+  { headerName: "Days at Price", field: "daysAtPrice" },
+  { headerName: "Forecast", field: "forecastWindow" },
+  { headerName: "Ad Days", field: "adDays" },
+  { headerName: "Forecast Price", field: "fcstPrice" },
+  { headerName: "Ad Forecast", field: "adFcst" },
+  { headerName: "Forecast Total", field: "fcstTotal" },
+  { headerName: "Markdown Dollars", field: "markdownDollars" },
 ];

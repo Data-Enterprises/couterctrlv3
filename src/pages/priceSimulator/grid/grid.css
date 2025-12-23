@@ -1,0 +1,19 @@
+.ag-tooltip {
+  background-color: white !important; /* bg-gray-800 */
+  color: black !important;
+  border: 1px solid #4b5563 !important; /* border-gray-600 */
+  border-radius: 8px !important;
+  padding: 12px !important;
+  font-size: 13px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+  max-width: 300px !important;
+  white-space: pre-line !important; /* preserves \n line breaks */
+  margin-right: 10px !important;
+  right: 0 !important;
+}
+
+.ag-tooltip::before {
+  border-bottom-color: #1f2937 !important; /* match background */
+  right: 0 !important;
+  width: 150px !important;
+}

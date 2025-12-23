@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getBucketList } from "../../api/forecast";
-import { useToast } from "../../components/toasts/hooks/useToast";
+import { getBucketList } from "../../../api/forecast";
+import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   reQuery,
   setFiles,
@@ -8,13 +8,12 @@ import {
   setItems,
   setQty,
   setSales,
-} from "../../features/forecastSlice";
-import { useAppDispatch } from "../../hooks";
-import { useForecastContext } from "./hooks";
-import { getFromExistingS3File } from "../../api/forecast";
+} from "../../../features/forecastSlice";
+import { useAppDispatch } from "../../../hooks";
+import { getFromExistingS3File } from "../../../api/forecast";
 
 import { AgGridReact } from "ag-grid-react";
-import { theme } from ".";
+import { theme } from "..";
 import {
   AllCommunityModule,
   ModuleRegistry,
@@ -22,7 +21,8 @@ import {
   type ColGroupDef,
   type RowClickedEvent,
 } from "ag-grid-community";
-import type { ForecastQtyData, ForecastSalesData } from "../../interfaces";
+import type { ForecastQtyData, ForecastSalesData } from "../../../interfaces";
+import { useForecastContext } from "../hooks";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 type TableData = {
@@ -137,7 +137,7 @@ const FileGrid = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg h-1/3">
+    <div className="bg-custom-white rounded-lg shadow-lg">
       <AgGridReact
         rowData={tableData}
         columnDefs={colDefs}

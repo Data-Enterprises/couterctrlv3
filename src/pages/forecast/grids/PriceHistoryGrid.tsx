@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-// import { useToast } from "../../components/toasts/hooks/useToast";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { AgGridReact } from "ag-grid-react";
-import { theme } from ".";
+import { theme } from "..";
 import {
   AllCommunityModule,
   ModuleRegistry,
@@ -11,12 +10,12 @@ import {
   type ColGroupDef,
 } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
-import { formatCurrency2 } from "../../utils";
+import { formatCurrency2 } from "../../../utils";
 import {
   setAdFcst,
   setSelectedHistory,
   setFcstTotal,
-} from "../../features/forecastSlice";
+} from "../../../features/forecastSlice";
 
 interface TableData {
   upc: string;
@@ -114,12 +113,15 @@ const PriceHistoryGrid = () => {
   return (
     <div
       className={`${
-        tableData.length > 0 ? "animate-windowIn h-[100%] flex gap-4" : "hidden"
+        tableData.length > 0
+          ? "animate-windowIn p-2 bg-custom-white rounded-lg shadow-lg"
+          : "hidden"
       }`}
     >
+      <div className="font-medium underline">Past 90 Day Period</div>
       <div
         data-testid="price-history-grid"
-        className="h-[100%] w-3/4 shadow-lg"
+        className="h-[90%] rounded-lg shadow"
       >
         <AgGridReact
           rowData={tableData}
@@ -131,7 +133,6 @@ const PriceHistoryGrid = () => {
           rowSelection="single"
         />
       </div>
-      <div className="h-[100%] w-1/4 opacity-0 shadow-lg"></div>
     </div>
   );
 };

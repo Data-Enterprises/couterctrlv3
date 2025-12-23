@@ -12,6 +12,7 @@ interface AppState {
   isMobile: boolean;
   isTablet: boolean;
   isDesktop: boolean;
+  upcs: string[];
 }
 
 export const initialState: AppState = {
@@ -26,6 +27,7 @@ export const initialState: AppState = {
   isMobile: false,
   isTablet: false,
   isDesktop: true,
+  upcs: [],
 };
 
 export const appSlice = createSlice({
@@ -50,6 +52,9 @@ export const appSlice = createSlice({
     setIsDesktop: (state, action: PayloadAction<boolean>) => {
       state.isDesktop = action.payload;
     },
+    setUpcs: (state, action: PayloadAction<string[]>) => {
+      state.upcs = action.payload;
+    },
     handleSigningOut: () => initialState,
   },
 });
@@ -61,6 +66,7 @@ export const {
   setIsMobile,
   setIsTablet,
   setIsDesktop,
+  setUpcs,
   handleSigningOut,
 } = appSlice.actions;
 

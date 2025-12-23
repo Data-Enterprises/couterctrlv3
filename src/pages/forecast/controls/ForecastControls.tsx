@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../hooks";
-import { useScrollHeight } from ".";
-import RadioBox from "../../components/inputs/RadioBox";
-import type { ForecastItem } from "../../interfaces";
-import CheckBox from "../../components/inputs/CheckBox";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useScrollHeight } from "..";
+import RadioBox from "../../../components/inputs/RadioBox";
+import type { ForecastItem } from "../../../interfaces";
+import CheckBox from "../../../components/inputs/CheckBox";
 import {
   reset,
-  resetSelectedUpcs,
-  setAllUpcs,
   setExportModalOpen,
   setSelectedUpcs,
-} from "../../features/forecastSlice";
+  setRowData,
+  setAllRows,
+  resetRows,
+} from "../../../features/forecastSlice";
 
 const ForecastControls = () => {
   const [filtered, setFiltered] = useState<ForecastItem[]>([]);
@@ -33,7 +34,6 @@ const ForecastControls = () => {
   };
 
   const handleExportBtnClick = () => {
-    // exportData(state.historyData, headers, 'test_history.csv');
     dispatch(setExportModalOpen(true));
   };
 
@@ -51,12 +51,17 @@ const ForecastControls = () => {
   }, [filterText, state.items]);
 
   const handleDeselectAll = () => {
-    dispatch(resetSelectedUpcs());
+    dispatch(resetRows());
   };
 
   const handleSelectAll = () => {
-    const allUpcs = state.qty.map((item) => item.upc);
-    dispatch(setAllUpcs(allUpcs));
+    dispatch(setAllRows());
+  };
+
+  const handleUpcSelect = (upc: string) => {
+    const row = state.initialRowData.find((r) => r.upc === upc);
+    dispatch(setSelectedUpcs(upc));
+    dispatch(setRowData(row!));
   };
 
   return (
@@ -64,7 +69,7 @@ const ForecastControls = () => {
       data-testid="forecast-controls"
       className={`${
         state.items.length === 0 ? "hidden" : "animate-windowIn"
-      } bg-custom-white rounded-lg shadow-lg text-sm select-none`}
+      } bg-custom-white rounded-lg shadow-lg text-sm select-none w-48`}
     >
       <div
         ref={topRef}
@@ -155,7 +160,7 @@ const ForecastControls = () => {
             <div
               key={i}
               className={`even:bg-blue-200 px-2 py-1 text-xs font-medium hover:bg-blue-100 transition-all duration-200 cursor-pointer`}
-              onClick={() => dispatch(setSelectedUpcs(item.upc))}
+              onClick={() => handleUpcSelect(item.upc)}
               // onContextMenu={(e) => handleRightClick(e, item)}
             >
               <CheckBox

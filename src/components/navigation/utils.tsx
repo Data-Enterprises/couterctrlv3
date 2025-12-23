@@ -3,7 +3,7 @@ import {
   HomeIcon,
   UsersIcon,
   MagnifyingGlassIcon,
-  ArrowTrendingUpIcon
+  ArrowTrendingUpIcon,
 } from "@heroicons/react/16/solid";
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
@@ -103,5 +103,5 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userTypes: ["*"],
-  }
+  },
 ];

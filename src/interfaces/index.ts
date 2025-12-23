@@ -492,3 +492,99 @@ export interface ForecastPriceHistory {
   lift: number;
   regular_retail_price: number;
 }
+
+export interface UpcCodeDesc {
+  upc: string;
+  description: string;
+}
+
+export interface PriceSimQtyData<T> {
+  upc: string;
+  history: { date: string; value: number }[];
+  history_dimension: number;
+  forecast: number;
+  forecast_dimension: number;
+  forecast_method: string;
+  metrics: {
+    description: string;
+    qty: number;
+    avg_daily_qty: number;
+    max_day_qty: number;
+    days_active: number;
+    outliers: { date: string; qty: number }[];
+    prices: T;
+  };
+}
+
+export interface PriceSimSalesData<T> {
+  upc: string;
+  history: { date: string; value: number }[];
+  history_dimension: number;
+  forecast: number;
+  forecast_dimension: number;
+  forecast_method: string;
+  metrics: {
+    description: string;
+    sales: number;
+    avg_daily_sales: number;
+    max_day_sales: number;
+    days_active: number;
+    outliers: { date: string; qty: number }[];
+    prices: T;
+    total_sales: number;
+  };
+}
+
+// price simulator interfaces
+export interface SimGridRow {
+  upc: string;
+  description: string;
+  fcstPrice: number;
+  calcNow: 0 | 1;
+  fcstQty: number;
+  fcstDollars: number;
+  regRetail: number;
+  regQty: number;
+  regDollars: number;
+  markdownDollars: number;
+  lift: number;
+  prices: number[][]; // not seen in grid but used for calculations
+}
+
+export interface PriceSimHistory<T> {
+  upc: string;
+  description: string;
+  qty: number;
+  avg_daily_qty: number;
+  max_day_qty: number;
+  days_active: number;
+  regular_retail_price: number;
+  prices: T;
+}
+
+export interface PriceHistory {
+  price: string;
+  qty: number;
+  sale_dates: string[];
+  days_active: number;
+}
+
+export interface PriceHistoryResult {
+  upc: string;
+  description: string;
+  qty: number;
+  regular_retail_price: number;
+  avg_daily_qty: number;
+  max_day_qty: number;
+  days_active: number;
+  price_history: PriceHistory[];
+}
+
+export interface PriceHistoryFromListResp {
+  error: number;
+  success: boolean;
+  end_date: string;
+  total_stores: number;
+  upc_count: number;
+  results: PriceHistoryResult[];
+}
