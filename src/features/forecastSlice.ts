@@ -39,6 +39,7 @@ export type ForecastOutlierRow = {
   daysActive: number;
   adFcst: number;
   fcstPrice: number;
+  calcNow: 0 | 1;
   fcstTotal: number;
   forecastWindow: number;
   daysAtPrice: number;
@@ -81,6 +82,7 @@ interface ForecastState {
   simBtns: SimBtns;
   selectedSim: "sim1" | "sim2" | "sim3" | "sim4" | "";
   globalFcstPrice: string;
+  selectedRow?: ForecastOutlierRow | null;
 }
 
 const initialState: ForecastState = {
@@ -391,7 +393,9 @@ export const forecastSlice = createSlice({
           row.adDays // from user input => the sale date range
         );
 
-        const regRetail = state.forecastResults.find((item) => item.upc === upc)!.regular_retail_price;
+        const regRetail = state.forecastResults.find(
+          (item) => item.upc === upc
+        )!.regular_retail_price;
 
         // The directly updated cell
         row.fcstPrice = newPrice;
@@ -550,6 +554,22 @@ export const forecastSlice = createSlice({
     ) => {
       state.selectedSim = action.payload;
     },
+    setCalcNow: (
+      state,
+      action: PayloadAction<{ upc: string; calcNow: 0 | 1 }>
+    ) => {
+      const { upc } = action.payload;
+
+      state.rowData = state.rowData.map((row) => {
+        if (row.upc === upc) {
+          state.selectedRow =
+            state.selectedRow && state.selectedRow.upc === upc ? null : row;
+          return { ...row, calcNow: action.payload.calcNow };
+        } else {
+          return { ...row, calcNow: 0 };
+        }
+      });
+    },
     // resetForecast: () => initialState,
   },
 });
@@ -590,6 +610,7 @@ export const {
   setGlobalFcstPrice,
   updateGlobalFcstRows,
   resetSimulations,
+  setCalcNow,
   // resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;

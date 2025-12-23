@@ -1,5 +1,3 @@
-import type { ForecastQtyData, ForecastSalesData } from "../../../interfaces";
-
 export const fitLinearDemand = (pricesWithQty: number[][]) => {
   // Grab the prices and qtys into separate arrays
   const prices = pricesWithQty.map((pq) => pq[0]);
@@ -81,61 +79,4 @@ export const predictQty = (
 export const calcFcstQty = (pricesWithQty: number[][], newPrice: number) => {
   const params = fitLinearDemand(pricesWithQty);
   return predictQty(newPrice, params, pricesWithQty);
-};
-
-export const predictRevenue = (
-  price: number,
-  params: { slope: number; intercept: number },
-  pricesWithQty: number[][]
-) => {
-  const qty = predictQty(price, params, pricesWithQty);
-  return price * qty;
-};
-
-export const predictProfit = (
-  price: number,
-  params: { slope: number; intercept: number },
-  unitCost: number,
-  pricesWithQty: number[][]
-) => {
-  const qty = predictQty(price, params, pricesWithQty);
-  const revenue = price * qty;
-  const cost = unitCost * qty;
-  return revenue - cost;
-};
-
-export const getQtyOutput = (data: any): ForecastQtyData<any>[] => {
-  return Object.entries(data.qty_output).map(([k, v]) => {
-    const upc = k as string;
-    const data = v as any;
-    return {
-      upc,
-      history: data.history,
-      history_dimension: data.history_dimension,
-      forecast: data.forecast,
-      forecast_dimension: data.forecast_dimension,
-      forecast_method: data.forecast_method,
-      metrics: data.metrics,
-    };
-  });
-};
-
-export const getSalesOutput = (data: any): ForecastSalesData<any>[] => {
-  return Object.entries(data.sales_output).map(([k, v]) => {
-    const upc = k as string;
-    const data = v as any;
-    return {
-      upc,
-      history: data.history,
-      history_dimension: data.history_dimension,
-      forecast: data.forecast,
-      forecast_dimension: data.forecast_dimension,
-      forecast_method: data.forecast_method,
-      metrics: data.metrics,
-    };
-  });
-};
-
-export const getLift = (avgQty: number, predictedQty: number) => {
-  return (predictedQty - avgQty) / avgQty;
 };

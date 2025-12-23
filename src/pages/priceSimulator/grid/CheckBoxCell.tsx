@@ -1,6 +1,6 @@
 import type { ICellRendererParams } from "ag-grid-community";
 import { useAppDispatch } from "../../../hooks";
-import { setCalcNow } from "../../../features/priceSimSlice";
+import { setCalcNow } from "../../../features/forecastSlice";
 
 const CalcNowCheckbox = ({ value, data }: ICellRendererParams) => {
   const dispatch = useAppDispatch();
@@ -11,8 +11,6 @@ const CalcNowCheckbox = ({ value, data }: ICellRendererParams) => {
     e.preventDefault();
     const upc = data.upc;
     const calcNow = data.calcNow === 1 ? 0 : 1;
-    console.log("Checkbox changed:", upc, calcNow);
-    // dispatch action to update the state in the grid
     dispatch(setCalcNow({ upc, calcNow }));
   };
 

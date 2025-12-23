@@ -30,6 +30,8 @@ import { formatCurrency2 } from "../../../utils";
 import { getPriceHistory } from "../../../api/forecast";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useForecastContext } from "../hooks";
+import CalcNowCheckbox from "../../priceSimulator/grid/CheckBoxCell";
+import CalcModal from "../CalcModal";
 
 const OutlierGrid = () => {
   const toast = useToast();
@@ -41,6 +43,15 @@ const OutlierGrid = () => {
     | ColDef<ForecastOutlierRow>
     | ColGroupDef<ForecastOutlierRow>
   )[] = [
+    {
+      headerName: "Calc Now",
+      field: "calcNow",
+      flex: 0.8,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus flex justify-center items-center",
+      cellRenderer: CalcNowCheckbox, // Use the custom component
+      cellRendererSelector: undefined, // Ensure it always uses your renderer
+    },
     {
       headerName: "UPC",
       field: "upc",
@@ -237,6 +248,7 @@ const OutlierGrid = () => {
           : "hidden"
       }`}
     >
+      <CalcModal />
       <div className="absolute -translate-y-[70px] right-2 flex items-end justify-between w-full gap-2">
         <div className="pl-4 flex items-end gap-2">
           <div>

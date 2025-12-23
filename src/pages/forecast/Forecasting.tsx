@@ -134,6 +134,7 @@ const Forecasting = () => {
               qtySold: prices[0][1],
               daysActive: item.days_active, // active total
               daysAtPrice: daysAtPrice, // active days at price
+              calcNow: 0 as 0 | 1,
               adFcst: units,
               fcstPrice: price,
               fcstTotal: price * units,
