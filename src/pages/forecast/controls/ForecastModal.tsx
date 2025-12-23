@@ -1,5 +1,8 @@
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { setExportModalOpen } from "../../../features/forecastSlice";
+import {
+  setExportModalOpen,
+  type ForecastOutlierRow,
+} from "../../../features/forecastSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { exportHeaders } from "..";
 import { exportData } from "../../../utils/export";
@@ -8,8 +11,11 @@ import Modal from "../../../components/Modal";
 import CheckBox from "../../../components/inputs/CheckBox";
 
 interface ExportOption {
-  all: number;
-  updated: number;
+  initial: number;
+  sim1: number;
+  sim2: number;
+  sim3: number;
+  sim4: number;
 }
 
 const ForecastModal = () => {
@@ -18,9 +24,13 @@ const ForecastModal = () => {
   const state = useAppSelector((state) => state.forecast);
 
   const [option, setOption] = useState<ExportOption>({
-    all: 1,
-    updated: 0,
+    initial: 1,
+    sim1: 0,
+    sim2: 0,
+    sim3: 0,
+    sim4: 0,
   });
+
   const [title, setTitle] = useState<string>("");
   const handleClose = () => {
     dispatch(setExportModalOpen(false));
@@ -32,19 +42,42 @@ const ForecastModal = () => {
       return;
     }
 
-    const data =
-      option.all === 1 ? state.historyData : state.lastUpdatedHistory;
+    let data: ForecastOutlierRow[] = [];
+    if (option.initial === 1) data = state.initialRowData;
+    if (option.sim1 === 1) data = state.simOneRowData;
+    if (option.sim2 === 1) data = state.simTwoRowData;
+    if (option.sim3 === 1) data = state.simThreeRowData;
+    if (option.sim4 === 1) data = state.simFourRowData;
 
     exportData(data, exportHeaders, `${title}.csv`);
     handleClose();
   };
 
-  const handleChange = (selection: number) => {
-    const test = {
-      all: selection === 1 ? 1 : 0,
-      updated: selection === 1 ? 0 : 1,
-    };
+  const handleChange = (selection: string) => {
+    const test: ExportOption = {} as ExportOption;
+    for (const key in option) {
+      if (key === selection) {
+        // Toggle the selected option
+        test[key as keyof ExportOption] = 1
+      } else {
+        test[key as keyof ExportOption] = 0
+      }
+    }
     setOption(test);
+  };
+
+  const sims = Object.entries(state.simBtns).filter(([_, val]) => val === 1);
+  const label = (option: string) => {
+    switch (option) {
+      case "sim1":
+        return "Sim 1";
+      case "sim2":
+        return "Sim 2";
+      case "sim3":
+        return "Sim 3";
+      case "sim4":
+        return "Sim 4";
+    }
   };
 
   return (
@@ -53,23 +86,29 @@ const ForecastModal = () => {
       onClose={handleClose}
       modalClassName="bg-custom-white w-1/4"
     >
-      <div className={`${state.lastUpdatedHistory.length ? "flex justify-center gap-8 select-none" : "hidden"}`}>
-        <CheckBox
-          value={option.all === 1}
-          label="Full History"
-          id={1}
-          idExtension="all-history"
-          onChange={() => handleChange(1)}
-          className="cursor-pointer"
-        />
-        <CheckBox
-          value={option.updated === 1}
-          label="Updated History"
-          id={2}
-          idExtension="updated-history"
-          onChange={() => handleChange(2)}
-          className="cursor-pointer"
-        />
+      <div className="flex justify-center gap-4 select-none mb-2">
+        {sims.length && (
+          <CheckBox
+            value={option.initial === 1}
+            label="Initial"
+            id={1}
+            idExtension="all-history"
+            onChange={() => handleChange("initial")}
+            className="cursor-pointer"
+          />
+        )}
+        {sims.length &&
+          sims.map(([sim, _]) => (
+            <CheckBox
+              key={sim}
+              value={option[sim as keyof ExportOption] === 1}
+              label={label(sim)}
+              id={2}
+              idExtension={`${sim}-updated-history`}
+              onChange={() => handleChange(sim)}
+              className="cursor-pointer"
+            />
+          ))}
       </div>
       <div>
         <label className="font-medium text-sm pl-0.5" htmlFor="filename">
@@ -85,10 +124,18 @@ const ForecastModal = () => {
         />
       </div>
       <div className="flex gap-2 mt-2">
-        <button data-testid="fcst-export-submit" className="btn-themeGreen w-1/2" onClick={handleExport}>
+        <button
+          data-testid="fcst-export-submit"
+          className="btn-themeGreen w-1/2"
+          onClick={handleExport}
+        >
           Submit
         </button>
-        <button data-testid="fcst-export-cancel" className="btn-themeOrange w-1/2" onClick={handleClose}>
+        <button
+          data-testid="fcst-export-cancel"
+          className="btn-themeOrange w-1/2"
+          onClick={handleClose}
+        >
           Cancel
         </button>
       </div>

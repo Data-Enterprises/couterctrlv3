@@ -153,11 +153,19 @@ export const forecastSlice = createSlice({
     setPriceHistory: (state, action: PayloadAction<ForecastPriceHistory[]>) => {
       state.priceHistory = action.payload;
     },
-    resetSelectedUpcs: (state) => {
-      state.adFcst = 0;
-      state.fcstTotal = 0;
+    resetRows: (state) => {
       state.selectedUpcs = [];
-      state.priceHistory = [];
+      state.rowData = [];
+      const sim = state.selectedSim;
+      if (sim === "sim1") {
+        state.simOneRowData = state.rowData;
+      } else if (sim === "sim2") {
+        state.simTwoRowData = state.rowData;
+      } else if (sim === "sim3") {
+        state.simThreeRowData = state.rowData;
+      } else if (sim === "sim4") {
+        state.simFourRowData = state.rowData;
+      }
     },
     setFiles: (state, action: PayloadAction<string[]>) => {
       state.files = action.payload;
@@ -180,11 +188,46 @@ export const forecastSlice = createSlice({
     setRowData: (state, action: PayloadAction<ForecastOutlierRow>) => {
       const upc = action.payload.upc;
       const row = state.rowData.find((r) => r.upc === upc);
+      const sim = state.selectedSim;
 
       if (row) {
         state.rowData = state.rowData.filter((r) => r.upc !== upc);
       } else {
         state.rowData.push(action.payload);
+      }
+
+      if (sim === "sim1") {
+        state.simOneRowData = state.rowData;
+      } else if (sim === "sim2") {
+        state.simTwoRowData = state.rowData;
+      } else if (sim === "sim3") {
+        state.simThreeRowData = state.rowData;
+      } else if (sim === "sim4") {
+        state.simFourRowData = state.rowData;
+      }
+    },
+    setAllRows: (state) => {
+      const initialRows = state.initialRowData;
+      const currentRows = state.rowData;
+      initialRows.forEach((initRow) => {
+        const exists = currentRows.find((r) => r.upc === initRow.upc);
+        if (!exists) {
+          state.rowData.push(initRow);
+        }
+      });
+
+      const upcs = state.rowData.map((row) => row.upc);
+      state.selectedUpcs = upcs;
+
+      const sim = state.selectedSim;
+      if (sim === "sim1") {
+        state.simOneRowData = state.rowData;
+      } else if (sim === "sim2") {
+        state.simTwoRowData = state.rowData;
+      } else if (sim === "sim3") {
+        state.simThreeRowData = state.rowData;
+      } else if (sim === "sim4") {
+        state.simFourRowData = state.rowData;
       }
     },
     setSimRowData: (
@@ -224,8 +267,24 @@ export const forecastSlice = createSlice({
       state.rowData = state.rowData = rows()!;
       state.selectedUpcs = upcs;
     },
+    updateSimRowData: (state, action: PayloadAction<ForecastOutlierRow[]>) => {
+      const sim = state.selectedSim;
+      const rows = action.payload;
+      if (sim === "sim1") {
+        state.simOneRowData = action.payload;
+      } else if (sim === "sim2") {
+        state.simTwoRowData = action.payload;
+      } else if (sim === "sim3") {
+        state.simThreeRowData = action.payload;
+      } else if (sim === "sim4") {
+        state.simFourRowData = action.payload;
+      }
+      state.selectedUpcs = rows.map((row) => row.upc);
+    },
     reloadRowData: (state) => {
-      state.rowData = state.initialRowData;
+      state.rowData = [];
+      state.selectedSim = "";
+      state.selectedUpcs = [];
     },
     setForecastResults: (
       state,
@@ -270,6 +329,17 @@ export const forecastSlice = createSlice({
         // The two updated cells by calculation
         row.adFcst = units;
         row.fcstTotal = row.fcstPrice * units;
+
+        const sim = state.selectedSim;
+        if (sim === "sim1") {
+          state.simOneRowData = state.rowData;
+        } else if (sim === "sim2") {
+          state.simTwoRowData = state.rowData;
+        } else if (sim === "sim3") {
+          state.simThreeRowData = state.rowData;
+        } else if (sim === "sim4") {
+          state.simFourRowData = state.rowData;
+        }
       }
     },
     setNewRowPriceValue: (
@@ -311,6 +381,17 @@ export const forecastSlice = createSlice({
         // The two updated cells by calculation
         row.adFcst = units; // units over ad days
         row.fcstTotal = newPrice * units; // forecasted dollars
+
+        const sim = state.selectedSim;
+        if (sim === "sim1") {
+          state.simOneRowData = state.rowData;
+        } else if (sim === "sim2") {
+          state.simTwoRowData = state.rowData;
+        } else if (sim === "sim3") {
+          state.simThreeRowData = state.rowData;
+        } else if (sim === "sim4") {
+          state.simFourRowData = state.rowData;
+        }
       }
     },
     setLastUpdatedHistory: (state, action: PayloadAction<HistoryData>) => {
@@ -344,6 +425,14 @@ export const forecastSlice = createSlice({
       state.priceHistory = [];
       state.selectedUpcs = [];
       state.priceHistory = [];
+      state.simOneRowData = [];
+      state.simTwoRowData = [];
+      state.simThreeRowData = [];
+      state.simFourRowData = [];
+      state.rowData = [];
+      state.initialRowData = [];
+      state.simBtns = { sim1: 0, sim2: 0, sim3: 0, sim4: 0 };
+      state.selectedSim = "";
     },
     reset: (state) => {
       state.selectedUpc = "";
@@ -360,6 +449,14 @@ export const forecastSlice = createSlice({
       state.selectedHistory = {} as SelectedHistory;
       state.selectedUpcs = [];
       state.priceHistory = [];
+      state.simOneRowData = [];
+      state.simTwoRowData = [];
+      state.simThreeRowData = [];
+      state.simFourRowData = [];
+      state.rowData = [];
+      state.initialRowData = [];
+      state.simBtns = { sim1: 0, sim2: 0, sim3: 0, sim4: 0 };
+      state.selectedSim = "";
     },
     setExportModalOpen: (state, action: PayloadAction<boolean>) => {
       state.exportModalOpen = action.payload;
@@ -390,7 +487,6 @@ export const {
   setItems,
   setAllUpcs,
   setSelectedUpcs,
-  resetSelectedUpcs,
   setPriceHistory,
   setFiles,
   reQuery,
@@ -412,6 +508,9 @@ export const {
   loadSimRowData,
   reloadRowData,
   setRowData,
+  updateSimRowData,
+  setAllRows,
+  resetRows,
   // resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;

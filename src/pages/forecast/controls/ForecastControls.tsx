@@ -6,11 +6,11 @@ import type { ForecastItem } from "../../../interfaces";
 import CheckBox from "../../../components/inputs/CheckBox";
 import {
   reset,
-  resetSelectedUpcs,
-  setAllUpcs,
   setExportModalOpen,
   setSelectedUpcs,
   setRowData,
+  setAllRows,
+  resetRows,
 } from "../../../features/forecastSlice";
 
 const ForecastControls = () => {
@@ -34,7 +34,6 @@ const ForecastControls = () => {
   };
 
   const handleExportBtnClick = () => {
-    // exportData(state.historyData, headers, 'test_history.csv');
     dispatch(setExportModalOpen(true));
   };
 
@@ -52,19 +51,17 @@ const ForecastControls = () => {
   }, [filterText, state.items]);
 
   const handleDeselectAll = () => {
-    dispatch(resetSelectedUpcs());
+    dispatch(resetRows());
   };
 
   const handleSelectAll = () => {
-    const allUpcs = state.forecastResults.map((item) => item.upc);
-    dispatch(setAllUpcs(allUpcs));
+    dispatch(setAllRows());
   };
 
   const handleUpcSelect = (upc: string) => {
     const row = state.initialRowData.find((r) => r.upc === upc);
     dispatch(setSelectedUpcs(upc));
     dispatch(setRowData(row!));
-    
   };
 
   return (

@@ -11,9 +11,11 @@ import {
 import type { JsonError } from "../../../interfaces";
 import {
   loadSimRowData,
+  reloadRowData,
   setNewRowAdDaysValue,
   setNewRowPriceValue,
   setPriceHistory,
+  setSelectedSim,
   setSimRowData,
 } from "../../../features/forecastSlice";
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -182,9 +184,10 @@ const OutlierGrid = () => {
 
   const renderTitle = () => {
     const sim = state.selectedSim;
-    if (sim && state.simBtns[sim] === 1) {
-      return `Next 7 Day Forecast - ${sim.toUpperCase()}`;
-    }
+    if (sim === "sim1") return "Simulation 1";
+    if (sim === "sim2") return "Simulation 2";
+    if (sim === "sim3") return "Simulation 3";
+    if (sim === "sim4") return "Simulation 4";
     return "Next 7 Day Forecast";
   };
 
@@ -208,23 +211,25 @@ const OutlierGrid = () => {
       // save to sim4
       simToSave = "sim4";
     }
+
+    // When saving, we set the selected sim to the one we just saved to
+    // now we can update the sim row data until we reload
+    // or select another existing simulator
+    dispatch(setSelectedSim(simToSave as keyof SimBtns));
     dispatch(
       setSimRowData({ sim: simToSave as keyof SimBtns, rows: state.rowData })
     );
   };
 
-  // const updateSimulation = () => {
-  //   const sim = state.selectedSim;
-  // };
-
   const loadSimulationRows = (sim: string) => {
+    dispatch(setSelectedSim(sim as keyof SimBtns));
     dispatch(loadSimRowData(sim as keyof SimBtns));
   };
 
   return (
     <div
       className={`${
-        state.selectedUpcs.length > 0
+        state.initialRowData.length > 0
           ? "animate-windowIn p-2 bg-custom-white rounded-lg shadow-lg relative"
           : "hidden"
       }`}
@@ -254,14 +259,19 @@ const OutlierGrid = () => {
         >
           Sim 4
         </button>
-        <button className={`btn-themeBlue py-0.5`}>Reload</button>
+        <button
+          className={`btn-themeBlue py-0.5`}
+          onClick={() => dispatch(reloadRowData())}
+        >
+          Reload
+        </button>
       </div>
-      <div className="flex gap-2">
+      <div className="flex justify-between">
         <div className="text-lg font-medium underline px-1">
           {renderTitle()}
         </div>
         <button className="btn-themeGreen py-0 mb-1" onClick={saveSimulation}>
-          Save Sim
+          Save New Sim
         </button>
       </div>
       <div className="h-[95%] shadow rounded-lg">

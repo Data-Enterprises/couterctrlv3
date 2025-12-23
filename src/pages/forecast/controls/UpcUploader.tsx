@@ -13,11 +13,11 @@ import {
   setForecastResults,
   setIsLoading,
   setItems,
-  setRowData,
+  // setRowData,
 } from "../../../features/forecastSlice";
 import { getHistoryFromList } from "../../../api/priceSim";
 import type { JsonError, PriceHistoryFromListResp } from "../../../interfaces";
-import { formatRowData } from ".";
+// import { formatRowData } from ".";
 import FileInput from "../controls/FileInput";
 
 const UpcUploader = () => {
@@ -62,7 +62,7 @@ const UpcUploader = () => {
           dispatch(setForecastResults(j.results));
 
           // set the row data
-          const rowData = formatRowData(j.results);
+          // const rowData = formatRowData(j.results);
           // dispatch(setRowData(rowData));
         }
       })
