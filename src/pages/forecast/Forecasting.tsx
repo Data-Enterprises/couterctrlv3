@@ -26,7 +26,6 @@ import SelectedStoreList from "../upc/wizard/SelectedStoreList";
 import ForecastControls from "./controls/ForecastControls";
 import FileGrid from "./grids/FileGrid";
 import OutlierGrid from "./grids/OutlierGrid";
-import PriceHistoryGrid from "./grids/PriceHistoryGrid";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import ForecastModal from "./controls/ForecastModal";
 import DatePickers from "../../components/datePickers/DatePickers";
@@ -38,6 +37,7 @@ import {
   setUpcs,
   setUpcText,
 } from "../../features/upcUploadSlice";
+import ForecastCarousel from "./grids/ForecastCarousel";
 // import Instructions from "./controls/Instructions";
 
 const options = [
@@ -105,26 +105,35 @@ const Forecasting = () => {
               parseFloat(p.price),
               p.qty,
             ]);
+
             const linear = fitLinearDemand(prices);
             const predictedQty = predictQty(prices[0][0], linear, prices);
+            const price = prices[0][0];
+            const daysAtPrice = item.price_history.find((p) => parseFloat(p.price) === price)!.days_active;
 
             const units = forecastUnits(
-              prices[0][0], // 9.99
-              predictedQty, // 120
-              item.days_active, //50
-              90,
-              7,
-              prices
+              price, // 9.99
+              item.qty, // overall units sold in period
+              predictedQty, // 120 => from last 90 days
+              item.days_active, // total selling days
+              90, // on 90 day period
+              daysAtPrice, // days at price => based on the price history => 3
+              7, // forecastwindow
+              prices // price history to get qty at price
+              // adDays === undefined
             );
 
             return {
               upc: item.upc,
               description: item.description,
               qtySold: prices[0][1],
-              daysActive: item.days_active,
+              daysActive: item.days_active, // active total
+              daysAtPrice: daysAtPrice, // active days at price
               adFcst: units,
-              fcstPrice: prices[0][0],
-              fcstTotal: prices[0][0] * units,
+              fcstPrice: price,
+              fcstTotal: price * units,
+              forecastWindow: 7,
+              adDays: 0, // this show as "" for 0 until user input
             };
           });
           dispatch(setRowData(rowData));
@@ -207,8 +216,8 @@ const Forecasting = () => {
       className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] relative"
     >
       <ForecastModal />
-      <div className="grid grid-cols-[20%_12%_45%_23%] gap-4 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
-        <div className="gap-4 grid grid-rows-[37%_35%_24%]">
+      <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 gap-4 flex overflow-hidden">
+        <div className="grid grid-rows-[37%_35%_24%] col-span-2 gap-4 w-1/6">
           <div className="bg-custom-white rounded-lg shadow-lg p-4">
             <div className="">
               <div className="flex gap-2">
@@ -315,23 +324,15 @@ const Forecasting = () => {
           </div>
           <FileGrid />
         </div>
-        <div className="relative h-full">
+        <div className="relative ml-10">
           <ForecastControls />
           {context.isLoading && <LoadingIndicator />}
         </div>
-        <div className="grid grid-rows-3 gap-4">
+
+        <div className="grid grid-rows-[25%_75%] mb-4 gap-4 w-full relative">
+          <ForecastCarousel />
           <OutlierGrid />
-          <PriceHistoryGrid />
         </div>
-        {/* {state.items.length === 0 ? (
-          <div className="w-1/2 flex justify-center absolute translate-x-[60%] translate-y-full">
-            <Instructions />
-          </div>
-        ) : null} */}
-        {/* <div className="grid grid-rows-3 gap-4 mr-12">
-          <LinearDemand />
-          <ProfitOptimization />
-        </div> */}
       </div>
     </div>
   );

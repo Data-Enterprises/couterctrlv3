@@ -230,8 +230,7 @@ const PriceSimulator = () => {
       </div>
       <div className="ml-10 relative">
         <PriceSimControls />
-        {context.isLoading && <LoadingIndicator className="ml-20" />}
-        {/* <LoadingIndicator className="ml-20" /> */}
+        {context.isLoading && <LoadingIndicator className="ml-24" />}
       </div>
 
       <div className="grid grid-rows-[25%_75%] mb-4 gap-4 w-full relative">

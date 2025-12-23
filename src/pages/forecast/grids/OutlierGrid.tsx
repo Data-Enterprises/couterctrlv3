@@ -10,8 +10,8 @@ import {
 } from "ag-grid-community";
 import type { JsonError } from "../../../interfaces";
 import {
+  setNewRowAdDaysValue,
   setNewRowPriceValue,
-  setNewRowQtyValue,
   setPriceHistory,
 } from "../../../features/forecastSlice";
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -34,14 +34,14 @@ const OutlierGrid = () => {
     {
       headerName: "UPC",
       field: "upc",
-      flex: 0.9,
+      flex: 0.8,
       headerStyle: { borderRight: "1px solid white" },
       cellClass: "no-outline-on-focus",
     },
     {
       headerName: "Description",
       field: "description",
-      flex: 1,
+      flex: 1.7,
       headerStyle: { borderRight: "1px solid white" },
       cellClass: "no-outline-on-focus",
     },
@@ -55,31 +55,47 @@ const OutlierGrid = () => {
     {
       headerName: "Days Active",
       field: "daysActive",
-      flex: 0.9,
+      flex: 0.8,
       headerStyle: { borderRight: "1px solid white" },
       cellClass: "no-outline-on-focus text-right",
     },
     {
+      headerName: "Days at Price",
+      field: "daysAtPrice",
+      flex: 0.8,
+      cellClass: "no-outline-on-focus text-right",
+      headerStyle: { borderRight: "1px solid white" },
+    },
+    {
+      headerName: "Forecast",
+      field: "forecastWindow",
+      flex: 0.7,
+      cellClass: "no-outline-on-focus text-right",
+      headerStyle: { borderRight: "1px solid white" },
+    },
+    {
       // Future forecasted qty
-      headerName: "Ad Fcst",
-      field: "adFcst",
-      flex: 1.0,
+      headerName: "Ad Days",
+      field: "adDays",
+      flex: 0.6,
       cellClass: "no-outline-on-focus text-right border border-content",
       headerStyle: { borderRight: "1px solid white" },
+      valueFormatter: (params) => (params.value === 0 ? "" : params.value),
       editable: true,
       valueSetter: (params) => {
         const upc = params.data.upc;
-        const newQty = parseInt(params.newValue);
-        if (!isNaN(newQty)) {
-          dispatch(setNewRowQtyValue({ upc, newQty }));
+        const newAdDays = parseInt(params.newValue);
+        if (!isNaN(newAdDays)) {
+          dispatch(setNewRowAdDaysValue({ upc, newAdDays }));
         }
-        return !isNaN(newQty);
+
+        return !isNaN(newAdDays);
       },
     },
     {
       headerName: "Fcst Price",
       field: "fcstPrice",
-      flex: 1.0,
+      flex: 0.7,
       cellClass: "no-outline-on-focus text-right border border-content",
       headerStyle: { borderRight: "1px solid white" },
       editable: true,
@@ -93,9 +109,17 @@ const OutlierGrid = () => {
       },
     },
     {
+      // Future forecasted qty
+      headerName: "Ad Fcst",
+      field: "adFcst",
+      flex: 0.6,
+      cellClass: "no-outline-on-focus text-right",
+      headerStyle: { borderRight: "1px solid white" },
+    },
+    {
       headerName: "Fcst Total",
       field: "fcstTotal",
-      flex: 1.0,
+      flex: 0.7,
       cellClass: "no-outline-on-focus text-right",
       valueFormatter: (params) => formatCurrency2(params.value),
     },
@@ -143,18 +167,19 @@ const OutlierGrid = () => {
     <div
       className={`${
         state.selectedUpcs.length > 0
-          ? "animate-windowIn h-[100%] flex gap-4"
+          ? "animate-windowIn p-2 bg-custom-white rounded-lg shadow-lg"
           : "hidden"
       }`}
     >
-      <div className="h-[100%] w-full shadow-lg">
+      <div className="font-medium underline px-1">Next 7 Day Forecast</div>
+      <div className="h-[95%] mt-1 shadow rounded-lg">
         <AgGridReact
           rowData={renderRows()}
           columnDefs={colDefs}
           theme={theme}
           pagination={true}
-          paginationAutoPageSize={true}
           onRowClicked={onRowClicked}
+          paginationAutoPageSize={true}
         />
       </div>
     </div>

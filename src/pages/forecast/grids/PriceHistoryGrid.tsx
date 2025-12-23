@@ -113,12 +113,15 @@ const PriceHistoryGrid = () => {
   return (
     <div
       className={`${
-        tableData.length > 0 ? "animate-windowIn h-[100%] flex gap-4" : "hidden"
+        tableData.length > 0
+          ? "animate-windowIn p-2 bg-custom-white rounded-lg shadow-lg"
+          : "hidden"
       }`}
     >
+      <div className="font-medium underline">Past 90 Day Period</div>
       <div
         data-testid="price-history-grid"
-        className="h-[100%] w-full shadow-lg"
+        className="h-[90%] rounded-lg shadow"
       >
         <AgGridReact
           rowData={tableData}

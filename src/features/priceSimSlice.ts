@@ -109,7 +109,6 @@ export const priceSimSlice = createSlice({
     resetSelectedUpcs: (state) => {
       state.selectedUpcs = [];
       state.priceHistory = [];
-      state.rowData = [];
       state.selectedRow = null;
     },
     setPriceSimResults: (

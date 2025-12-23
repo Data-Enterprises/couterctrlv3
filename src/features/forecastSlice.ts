@@ -40,6 +40,9 @@ export type ForecastOutlierRow = {
   adFcst: number;
   fcstPrice: number;
   fcstTotal: number;
+  forecastWindow: number;
+  daysAtPrice: number;
+  adDays: number;
 };
 
 interface ForecastState {
@@ -155,6 +158,44 @@ export const forecastSlice = createSlice({
     setForecastResults: (state, action: PayloadAction<PriceHistoryResult[]>) => {
       state.forecastResults = action.payload; // using this for value change references
     },
+    setNewRowAdDaysValue: (state, action: PayloadAction<{ upc: string; newAdDays: number }>) => {
+      const { upc, newAdDays } = action.payload;
+      const row = state.rowData.find((r) => r.upc === upc);
+
+      
+      const prices = state.forecastResults.find((item) => item.upc === upc);
+      const upcPrices = prices!.price_history.map((ph) => [
+        parseFloat(ph.price),
+        ph.qty,
+      ]);
+
+      if (row) {
+        // Finding the qty over last 90 days at the current fcstPrice
+        // or just predicting if data point doesn't exist
+        const fcstQty = calcFcstQty(upcPrices, row.fcstPrice); //90 days
+        const overallUnits = upcPrices.reduce((acc, curr) => acc + curr[1], 0);
+
+        const units = forecastUnits(
+          row.fcstPrice,
+          overallUnits,
+          fcstQty,
+          row.daysActive, // total selling days
+          90, // total days
+          row.daysAtPrice, // days at price
+          row.forecastWindow, // forecast window => 7 now but can be configurable
+          upcPrices, // all prices with qty recorded for the item
+          newAdDays, // from user input => the sale date range
+        );
+
+        // The directly updated cell
+        row.adDays = newAdDays;
+
+        // The two updated cells by calculation
+        row.adFcst = units;
+        row.fcstTotal = row.fcstPrice * units;
+      }
+
+    },
     setNewRowPriceValue: (
       state,
       action: PayloadAction<{ upc: string; newPrice: number }>
@@ -168,19 +209,29 @@ export const forecastSlice = createSlice({
 
       // only change => fcstPrice, fcstQty, fcstDollars, markdownDollars, lift
       if (row) {
-        const fcstQty = calcFcstQty(upcPrices, newPrice); //90 days
+        // Finding the qty over last 90 days at the current fcstPrice
+        // or just predicting if data point doesn't exist
+        const fcstQty = calcFcstQty(upcPrices, newPrice);
+        const overallUnits = upcPrices.reduce((acc, curr) => acc + curr[1], 0);
+
         const units = forecastUnits(
           newPrice,
+          overallUnits,
           fcstQty,
-          row.daysActive,
-          90,
-          7,
-          upcPrices
+          row.daysActive, // total selling days
+          90, // total days (90)
+          row.daysAtPrice, // days at price
+          row.forecastWindow, // forecast window => 7 now but can be configurable
+          upcPrices, // all prices with qty recorded for the item
+          row.adDays // from user input => the sale date range
         );
 
-        row.adFcst = units; // next 7 days
+        // The directly updated cell
         row.fcstPrice = newPrice;
-        row.fcstTotal = newPrice * units;
+
+        // The two updated cells by calculation
+        row.adFcst = units; // units over ad days
+        row.fcstTotal = newPrice * units; // forecasted dollars
       }
     },
     setNewRowQtyValue: (
@@ -276,6 +327,7 @@ export const {
   setRowData,
   setNewRowPriceValue,
   setNewRowQtyValue,
+  setNewRowAdDaysValue,
   // resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;
