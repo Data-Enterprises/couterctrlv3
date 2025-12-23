@@ -234,19 +234,6 @@ export const forecastSlice = createSlice({
         row.fcstTotal = newPrice * units; // forecasted dollars
       }
     },
-    setNewRowQtyValue: (
-      state,
-      action: PayloadAction<{ upc: string; newQty: number }>
-    ) => {
-      const { upc, newQty } = action.payload;
-      const row = state.rowData.find((r) => r.upc === upc);
-
-      //only change adFcast, fcstTotal, lift
-      if (row) {
-        row.adFcst = newQty;
-        row.fcstTotal = row.fcstPrice * newQty;
-      }
-    },
     setLastUpdatedHistory: (state, action: PayloadAction<HistoryData>) => {
       const updated = action.payload;
       const exists = state.lastUpdatedHistory.find(
@@ -326,7 +313,6 @@ export const {
   setForecastResults,
   setRowData,
   setNewRowPriceValue,
-  setNewRowQtyValue,
   setNewRowAdDaysValue,
   // resetForecast,
 } = forecastSlice.actions;

@@ -37,7 +37,7 @@ import {
   setUpcs,
   setUpcText,
 } from "../../features/upcUploadSlice";
-import ForecastCarousel from "./grids/ForecastCarousel";
+import ForecastCarousel from "./carousel/ForecastCarousel";
 // import Instructions from "./controls/Instructions";
 
 const options = [

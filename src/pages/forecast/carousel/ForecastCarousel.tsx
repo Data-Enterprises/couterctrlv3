@@ -12,10 +12,10 @@ const ForecastCarousel = () => {
   return (
     <Carousel className="min-h-[230px]">
       <div className="grid grid-cols-4 gap-4">
-        <span className={tempClass}>Price Simulation Overview 1</span>
-        <span className={tempClass}>Price Simulation Overview 2</span>
-        <span className={tempClass}>Price Simulation Overview 3</span>
-        <span className={tempClass}>Price Simulation Overview 4</span>
+        <span className={tempClass}>Forecasting Overview 1</span>
+        <span className={tempClass}>Forecasting Overview 2</span>
+        <span className={tempClass}>Forecasting Overview 3</span>
+        <span className={tempClass}>Forecasting Overview 4</span>
       </div>
     </Carousel>
   );
