@@ -12,11 +12,13 @@ import type { JsonError } from "../../../interfaces";
 import {
   loadSimRowData,
   reloadRowData,
+  setGlobalFcstPrice,
   setNewRowAdDaysValue,
   setNewRowPriceValue,
   setPriceHistory,
   setSelectedSim,
   setSimRowData,
+  updateGlobalFcstRows,
 } from "../../../features/forecastSlice";
 ModuleRegistry.registerModules([AllCommunityModule]);
 import type {
@@ -234,37 +236,64 @@ const OutlierGrid = () => {
           : "hidden"
       }`}
     >
-      <div className="absolute -translate-y-11 right-2 flex gap-2">
-        <button
-          className={`btn-themeBlue py-0.5 ${simBtnClassName("sim1")}`}
-          onClick={() => loadSimulationRows("sim1")}
-        >
-          Sim 1
-        </button>
-        <button
-          className={`btn-themeBlue py-0.5 ${simBtnClassName("sim2")}`}
-          onClick={() => loadSimulationRows("sim2")}
-        >
-          Sim 2
-        </button>
-        <button
-          className={`btn-themeBlue py-0.5 ${simBtnClassName("sim3")}`}
-          onClick={() => loadSimulationRows("sim3")}
-        >
-          Sim 3
-        </button>
-        <button
-          className={`btn-themeBlue py-0.5 ${simBtnClassName("sim4")}`}
-          onClick={() => loadSimulationRows("sim4")}
-        >
-          Sim 4
-        </button>
-        <button
-          className={`btn-themeBlue py-0.5`}
-          onClick={() => dispatch(reloadRowData())}
-        >
-          Reload
-        </button>
+      <div className="absolute -translate-y-[70px] right-2 flex items-end justify-between w-full gap-2">
+        <div className="pl-4 flex items-end gap-2">
+          <div>
+            <label
+              htmlFor="global-price"
+              className="pl-0.5 text-xs font-medium"
+            >
+              Global Price
+            </label>
+            <input
+              id="global-price"
+              type="text"
+              className="basic-input focus:border py-1 bg-custom-white w-20"
+              value={state.globalFcstPrice === "0" ? "" : state.globalFcstPrice}
+              onChange={(e) => {
+                dispatch(setGlobalFcstPrice(e.currentTarget.value));
+              }}
+            />
+          </div>
+          <button
+            className="btn-themeBlue py-1"
+            onClick={() => dispatch(updateGlobalFcstRows())}
+          >
+            Set
+          </button>
+        </div>
+        <div className="flex gap-2">
+          <button
+            className={`btn-themeBlue py-0.5 ${simBtnClassName("sim1")}`}
+            onClick={() => loadSimulationRows("sim1")}
+          >
+            Sim 1
+          </button>
+          <button
+            className={`btn-themeBlue py-0.5 ${simBtnClassName("sim2")}`}
+            onClick={() => loadSimulationRows("sim2")}
+          >
+            Sim 2
+          </button>
+          <button
+            className={`btn-themeBlue py-0.5 ${simBtnClassName("sim3")}`}
+            onClick={() => loadSimulationRows("sim3")}
+          >
+            Sim 3
+          </button>
+          <button
+            className={`btn-themeBlue py-0.5 ${simBtnClassName("sim4")}`}
+            onClick={() => loadSimulationRows("sim4")}
+          >
+            Sim 4
+          </button>
+          <button
+            className={`btn-themeBlue py-0.5`}
+            onClick={() => dispatch(reloadRowData())}
+          >
+            Reload
+          </button>
+        </div>
       </div>
       <div className="flex justify-between">
         <div className="text-lg font-medium underline px-1">

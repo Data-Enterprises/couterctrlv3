@@ -80,6 +80,7 @@ interface ForecastState {
   rowData: ForecastOutlierRow[];
   simBtns: SimBtns;
   selectedSim: "sim1" | "sim2" | "sim3" | "sim4" | "";
+  globalFcstPrice: string;
 }
 
 const initialState: ForecastState = {
@@ -109,6 +110,7 @@ const initialState: ForecastState = {
   rowData: [],
   simBtns: { sim1: 0, sim2: 0, sim3: 0, sim4: 0 },
   selectedSim: "",
+  globalFcstPrice: "",
 };
 export const forecastSlice = createSlice({
   name: "forecast",
@@ -412,6 +414,56 @@ export const forecastSlice = createSlice({
     setSelectedUpc: (state, action: PayloadAction<string>) => {
       state.selectedUpc = action.payload;
     },
+    setGlobalFcstPrice: (state, action: PayloadAction<string>) => {
+      state.globalFcstPrice = action.payload;
+    },
+    updateGlobalFcstRows: (state) => {
+      const price = parseFloat(state.globalFcstPrice);
+
+      const globalRows = state.rowData.map((row) => {
+        const prices = state.forecastResults.find(
+          (item) => item.upc === row.upc
+        );
+        const upcPrices = prices!.price_history.map((ph) => [
+          parseFloat(ph.price),
+          ph.qty,
+        ]);
+
+        const fcstQty = calcFcstQty(upcPrices, price);
+        const overallUnits = upcPrices.reduce((acc, curr) => acc + curr[1], 0);
+
+        const units = forecastUnits(
+          price,
+          overallUnits,
+          fcstQty,
+          row.daysActive, // total selling days
+          90, // total days
+          row.daysAtPrice, // days at price
+          row.forecastWindow, // forecast window => 7 now but can be configurable
+          upcPrices, // all prices with qty recorded for the item
+          row.adDays // from user input => the sale date range
+        );
+
+        return {
+          ...row,
+          fcstPrice: price,
+          adFcst: units,
+          fcstTotal: price * units,
+        };
+      });
+
+      const sim = state.selectedSim;
+      if (sim === "sim1") {
+        state.simOneRowData = globalRows;
+      } else if (sim === "sim2") {
+        state.simTwoRowData = globalRows;
+      } else if (sim === "sim3") {
+        state.simThreeRowData = globalRows;
+      } else if (sim === "sim4") {
+        state.simFourRowData = globalRows;
+      }
+      state.rowData = globalRows;
+    },
     reQuery: (state) => {
       state.selectedUpc = "";
       state.lastUpdatedHistory = [];
@@ -433,6 +485,7 @@ export const forecastSlice = createSlice({
       state.initialRowData = [];
       state.simBtns = { sim1: 0, sim2: 0, sim3: 0, sim4: 0 };
       state.selectedSim = "";
+      state.globalFcstPrice = "";
     },
     reset: (state) => {
       state.selectedUpc = "";
@@ -457,6 +510,7 @@ export const forecastSlice = createSlice({
       state.initialRowData = [];
       state.simBtns = { sim1: 0, sim2: 0, sim3: 0, sim4: 0 };
       state.selectedSim = "";
+      state.globalFcstPrice = "";
     },
     setExportModalOpen: (state, action: PayloadAction<boolean>) => {
       state.exportModalOpen = action.payload;
@@ -511,6 +565,8 @@ export const {
   updateSimRowData,
   setAllRows,
   resetRows,
+  setGlobalFcstPrice,
+  updateGlobalFcstRows,
   // resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;
