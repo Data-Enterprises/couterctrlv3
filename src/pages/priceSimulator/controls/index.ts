@@ -1,34 +1,36 @@
-import type { ForecastQtyData, ForecastSalesData } from "../../../interfaces";
+import { calcFcstQty } from "../../priceSimulator/calc";
+import type { PriceHistoryResult } from "../../../interfaces";
 
+export const formatRowData = (data: PriceHistoryResult[]) => {
+  return data.map((item) => {
+    const prices = item.price_history.map((p) => [parseFloat(p.price), p.qty]);
 
-export const formatQtyOutput = (data: any): ForecastQtyData<any>[] => {
-  return Object.entries(data.qty_output).map(([k, v]) => {
-    const upc = k as string;
-    const data = v as any;
+    const fcstPrice = prices[0][0];
+    const fcstQty = calcFcstQty(prices, fcstPrice);
+    const fcstDollars = fcstPrice * fcstQty;
+
+    const regQty =
+      item.price_history.find(
+        (p) => p.price === item.regular_retail_price.toString()
+      )?.qty || 0;
+
+    const regDollars = item.regular_retail_price * regQty;
+    const markdownDollars = (item.regular_retail_price - fcstPrice) * fcstQty;
+    const lift = regQty > 0 ? (fcstQty - regQty) / regQty : 0;
+
     return {
-      upc,
-      history: data.history,
-      history_dimension: data.history_dimension,
-      forecast: data.forecast,
-      forecast_dimension: data.forecast_dimension,
-      forecast_method: data.forecast_method,
-      metrics: data.metrics,
-    };
-  });
-};
-
-export const formatSalesOutput = (data: any): ForecastSalesData<any>[] => {
-  return Object.entries(data.sales_output).map(([k, v]) => {
-    const upc = k as string;
-    const data = v as any;
-    return {
-      upc,
-      history: data.history,
-      history_dimension: data.history_dimension,
-      forecast: data.forecast,
-      forecast_dimension: data.forecast_dimension,
-      forecast_method: data.forecast_method,
-      metrics: data.metrics,
+      upc: item.upc,
+      description: item.description,
+      fcstPrice: fcstPrice,
+      calcNow: 0 as 0 | 1,
+      fcstQty: fcstQty,
+      fcstDollars: fcstDollars,
+      regRetail: item.regular_retail_price,
+      regQty: regQty,
+      regDollars: regDollars,
+      markdownDollars: markdownDollars,
+      lift: lift,
+      prices: prices,
     };
   });
 };

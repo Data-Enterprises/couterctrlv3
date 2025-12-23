@@ -18,7 +18,7 @@ import {
   setItems,
   setRadioId,
   setSelectedStores,
-  setRowData,
+  setInitialRowData,
   setForecastResults,
 } from "../../features/forecastSlice";
 import { useForecastContext } from "./hooks";
@@ -104,12 +104,14 @@ const Forecasting = () => {
             const prices = item.price_history.map((p) => [
               parseFloat(p.price),
               p.qty,
-            ]);
+            ]).sort((a, b) => b[1] - a[1]); 
 
             const linear = fitLinearDemand(prices);
             const predictedQty = predictQty(prices[0][0], linear, prices);
             const price = prices[0][0];
-            const daysAtPrice = item.price_history.find((p) => parseFloat(p.price) === price)!.days_active;
+            const daysAtPrice = item.price_history.find(
+              (p) => parseFloat(p.price) === price
+            )!.days_active;
 
             const units = forecastUnits(
               price, // 9.99
@@ -123,6 +125,9 @@ const Forecasting = () => {
               // adDays === undefined
             );
 
+            // (reg retail - fcst prcie) * fcst qty = markdown dollars
+            const markdownDollars = (item.regular_retail_price - price) * units;
+
             return {
               upc: item.upc,
               description: item.description,
@@ -134,9 +139,10 @@ const Forecasting = () => {
               fcstTotal: price * units,
               forecastWindow: 7,
               adDays: 0, // this show as "" for 0 until user input
+              markdownDollars: markdownDollars,
             };
           });
-          dispatch(setRowData(rowData));
+          dispatch(setInitialRowData(rowData));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
@@ -219,51 +225,49 @@ const Forecasting = () => {
       <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 gap-4 flex overflow-hidden">
         <div className="grid grid-rows-[37%_35%_24%] col-span-2 gap-4 w-1/6">
           <div className="bg-custom-white rounded-lg shadow-lg p-4">
-            {/* <div className=""> */}
-              <div className="flex gap-2">
+            <div className="flex gap-2">
+              <SingleSelect
+                data={options}
+                label="Store or Group"
+                displayKey="label"
+                valueKey="id"
+                onSelect={handleSelectChange}
+                defaultQuery="Stores"
+                id={1}
+                className="w-1/2"
+              />
+              {context.radioId === 1 ? (
                 <SingleSelect
-                  data={options}
-                  label="Store or Group"
-                  displayKey="label"
-                  valueKey="id"
-                  onSelect={handleSelectChange}
-                  defaultQuery="Stores"
-                  id={1}
+                  label="Stores"
+                  data={filteredData as Store[]}
+                  displayKey={"store_name" as keyof Store}
+                  valueKey={"storeid" as keyof Store}
+                  onSelect={handleSelectClick}
+                  keepOpen={true}
+                  resetQuery={true}
+                  id={2}
                   className="w-1/2"
                 />
-                {context.radioId === 1 ? (
-                  <SingleSelect
-                    label="Stores"
-                    data={filteredData as Store[]}
-                    displayKey={"store_name" as keyof Store}
-                    valueKey={"storeid" as keyof Store}
-                    onSelect={handleSelectClick}
-                    keepOpen={true}
-                    resetQuery={true}
-                    id={2}
-                    className="w-1/2"
-                  />
-                ) : (
-                  <SingleSelect
-                    label="Groups"
-                    data={filteredData as Group[]}
-                    valueKey={"id" as keyof Group}
-                    displayKey={"group_name" as keyof Group}
-                    onSelect={handleSelectClick}
-                    resetQuery={true}
-                    id={2}
-                    className="w-1/2"
-                  />
-                )}
-              </div>
-              <DatePickers showBtn={false} />
-              <SelectedStoreList
-                selectedStores={context.selectedStores}
-                radioId={context.radioId}
-                className=""
-                height="py-1 min-h-32 max-h-32"
-              />
-            {/* </div> */}
+              ) : (
+                <SingleSelect
+                  label="Groups"
+                  data={filteredData as Group[]}
+                  valueKey={"id" as keyof Group}
+                  displayKey={"group_name" as keyof Group}
+                  onSelect={handleSelectClick}
+                  resetQuery={true}
+                  id={2}
+                  className="w-1/2"
+                />
+              )}
+            </div>
+            <DatePickers showBtn={false} />
+            <SelectedStoreList
+              selectedStores={context.selectedStores}
+              radioId={context.radioId}
+              className=""
+              height="py-1 min-h-32 max-h-32"
+            />
           </div>
           <div className="bg-custom-white rounded-lg shadow-lg px-3">
             <div className="bg-blue-500 text-custom-white -mx-3 py-0.5 px-4 rounded-t-lg font-medium flex justify-between">
@@ -326,7 +330,7 @@ const Forecasting = () => {
         </div>
         <div className="relative ml-10">
           <ForecastControls />
-          {context.isLoading && <LoadingIndicator />}
+          {context.isLoading && <LoadingIndicator className="ml-24" />}
         </div>
 
         <div className="grid grid-rows-[25%_75%] mb-4 gap-4 w-full relative">

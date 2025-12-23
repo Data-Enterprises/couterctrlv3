@@ -7,22 +7,22 @@ import {
   setUpcs,
 } from "../../../features/upcUploadSlice";
 
-import { useForecastContext } from "../../../pages/forecast/hooks";
 import {
   reQuery,
-  setForecastResults,
+  setPriceSimResults,
   setIsLoading,
   setItems,
   setRowData,
-} from "../../../features/forecastSlice";
+} from "../../../features/priceSimSlice";
 import { getHistoryFromList } from "../../../api/priceSim";
 import type { JsonError, PriceHistoryFromListResp } from "../../../interfaces";
 import { formatRowData } from ".";
-import FileInput from "../controls/FileInput";
+import FileInput from "../../forecast/controls/FileInput";
+import { usePriceSimContext } from "../utils";
 
 const UpcUploader = () => {
   const toast = useToast();
-  const context = useForecastContext();
+  const context = usePriceSimContext();
   const dispatch = useAppDispatch();
   const { upcs, upcText } = useAppSelector((state) => state.upcs);
   const [file, setFile] = useState<File | null>(null);
@@ -59,11 +59,11 @@ const UpcUploader = () => {
           dispatch(setItems(upcItems));
 
           // set the raw data => needed to grab the prices and figure out the forecast values
-          dispatch(setForecastResults(j.results));
+          dispatch(setPriceSimResults(j.results));
 
           // set the row data
           const rowData = formatRowData(j.results);
-          // dispatch(setRowData(rowData));
+          dispatch(setRowData(rowData));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))

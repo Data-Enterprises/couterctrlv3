@@ -43,7 +43,15 @@ export type ForecastOutlierRow = {
   forecastWindow: number;
   daysAtPrice: number;
   adDays: number;
+  markdownDollars: number;
 };
+
+export interface SimBtns {
+  sim1: 0 | 1;
+  sim2: 0 | 1;
+  sim3: 0 | 1;
+  sim4: 0 | 1;
+}
 
 interface ForecastState {
   isLoading: boolean;
@@ -64,7 +72,14 @@ interface ForecastState {
   exportModalOpen: boolean;
   selectedUpc: string;
   forecastResults: PriceHistoryResult[];
+  initialRowData: ForecastOutlierRow[];
+  simOneRowData: ForecastOutlierRow[];
+  simTwoRowData: ForecastOutlierRow[];
+  simThreeRowData: ForecastOutlierRow[];
+  simFourRowData: ForecastOutlierRow[];
   rowData: ForecastOutlierRow[];
+  simBtns: SimBtns;
+  selectedSim: "sim1" | "sim2" | "sim3" | "sim4" | "";
 }
 
 const initialState: ForecastState = {
@@ -86,7 +101,14 @@ const initialState: ForecastState = {
   exportModalOpen: false,
   selectedUpc: "",
   forecastResults: [],
+  initialRowData: [],
+  simOneRowData: [],
+  simTwoRowData: [],
+  simThreeRowData: [],
+  simFourRowData: [],
   rowData: [],
+  simBtns: { sim1: 0, sim2: 0, sim3: 0, sim4: 0 },
+  selectedSim: "",
 };
 export const forecastSlice = createSlice({
   name: "forecast",
@@ -152,17 +174,72 @@ export const forecastSlice = createSlice({
     setHistoryData: (state, action: PayloadAction<HistoryData[]>) => {
       state.historyData = action.payload;
     },
-    setRowData: (state, action: PayloadAction<ForecastOutlierRow[]>) => {
-      state.rowData = action.payload;
+    setInitialRowData: (state, action: PayloadAction<ForecastOutlierRow[]>) => {
+      state.initialRowData = action.payload;
     },
-    setForecastResults: (state, action: PayloadAction<PriceHistoryResult[]>) => {
+    setRowData: (state, action: PayloadAction<ForecastOutlierRow>) => {
+      const upc = action.payload.upc;
+      const row = state.rowData.find((r) => r.upc === upc);
+
+      if (row) {
+        state.rowData = state.rowData.filter((r) => r.upc !== upc);
+      } else {
+        state.rowData.push(action.payload);
+      }
+    },
+    setSimRowData: (
+      state,
+      action: PayloadAction<{ sim: keyof SimBtns; rows: ForecastOutlierRow[] }>
+    ) => {
+      const { sim, rows } = action.payload;
+      if (sim === "sim1") {
+        state.simBtns.sim1 = 1;
+        state.simOneRowData = rows;
+      } else if (sim === "sim2") {
+        state.simBtns.sim2 = 1;
+        state.simTwoRowData = rows;
+      } else if (sim === "sim3") {
+        state.simBtns.sim3 = 1;
+        state.simThreeRowData = rows;
+      } else if (sim === "sim4") {
+        state.simBtns.sim4 = 1;
+        state.simFourRowData = rows;
+      }
+    },
+    loadSimRowData: (state, action: PayloadAction<keyof SimBtns>) => {
+      const sim = action.payload;
+      const rows = () => {
+        if (sim === "sim1") {
+          return state.simOneRowData;
+        } else if (sim === "sim2") {
+          return state.simTwoRowData;
+        } else if (sim === "sim3") {
+          return state.simThreeRowData;
+        } else if (sim === "sim4") {
+          return state.simFourRowData;
+        }
+      };
+
+      const upcs = rows()!.map((row) => row.upc);
+      state.rowData = state.rowData = rows()!;
+      state.selectedUpcs = upcs;
+    },
+    reloadRowData: (state) => {
+      state.rowData = state.initialRowData;
+    },
+    setForecastResults: (
+      state,
+      action: PayloadAction<PriceHistoryResult[]>
+    ) => {
       state.forecastResults = action.payload; // using this for value change references
     },
-    setNewRowAdDaysValue: (state, action: PayloadAction<{ upc: string; newAdDays: number }>) => {
+    setNewRowAdDaysValue: (
+      state,
+      action: PayloadAction<{ upc: string; newAdDays: number }>
+    ) => {
       const { upc, newAdDays } = action.payload;
       const row = state.rowData.find((r) => r.upc === upc);
 
-      
       const prices = state.forecastResults.find((item) => item.upc === upc);
       const upcPrices = prices!.price_history.map((ph) => [
         parseFloat(ph.price),
@@ -184,7 +261,7 @@ export const forecastSlice = createSlice({
           row.daysAtPrice, // days at price
           row.forecastWindow, // forecast window => 7 now but can be configurable
           upcPrices, // all prices with qty recorded for the item
-          newAdDays, // from user input => the sale date range
+          newAdDays // from user input => the sale date range
         );
 
         // The directly updated cell
@@ -194,7 +271,6 @@ export const forecastSlice = createSlice({
         row.adFcst = units;
         row.fcstTotal = row.fcstPrice * units;
       }
-
     },
     setNewRowPriceValue: (
       state,
@@ -205,7 +281,10 @@ export const forecastSlice = createSlice({
       const row = state.rowData.find((r) => r.upc === upc);
 
       const prices = state.forecastResults.find((item) => item.upc === upc);
-      const upcPrices = prices!.price_history.map((ph) => [parseFloat(ph.price), ph.qty]);
+      const upcPrices = prices!.price_history.map((ph) => [
+        parseFloat(ph.price),
+        ph.qty,
+      ]);
 
       // only change => fcstPrice, fcstQty, fcstDollars, markdownDollars, lift
       if (row) {
@@ -285,6 +364,19 @@ export const forecastSlice = createSlice({
     setExportModalOpen: (state, action: PayloadAction<boolean>) => {
       state.exportModalOpen = action.payload;
     },
+    setSimBtns: (
+      state,
+      action: PayloadAction<{ sim: keyof SimBtns; value: 0 | 1 }>
+    ) => {
+      const { sim, value } = action.payload;
+      state.simBtns[sim] = value;
+    },
+    setSelectedSim: (
+      state,
+      action: PayloadAction<"sim1" | "sim2" | "sim3" | "sim4" | "">
+    ) => {
+      state.selectedSim = action.payload;
+    },
     // resetForecast: () => initialState,
   },
 });
@@ -311,9 +403,15 @@ export const {
   reset,
   setExportModalOpen,
   setForecastResults,
-  setRowData,
+  setInitialRowData,
   setNewRowPriceValue,
   setNewRowAdDaysValue,
+  setSelectedSim,
+  setSimBtns,
+  setSimRowData,
+  loadSimRowData,
+  reloadRowData,
+  setRowData,
   // resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;

@@ -21,7 +21,7 @@ import {
   type ColGroupDef,
   type RowClickedEvent,
 } from "ag-grid-community";
-import { formatQtyOutput, formatSalesOutput } from ".";
+// import { formatQtyOutput, formatSalesOutput } from ".";
 import { usePriceSimContext } from "../../priceSimulator/utils";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -73,37 +73,37 @@ const FilesGrid = () => {
 
   const onRowClicked = (event: RowClickedEvent<TableData>) => {
     if (event.data) {
-      dispatch(setIsLoading(true));
-      dispatch(reQuery());
-      const fileName = event.data.name;
-      getFromExistingS3File(
-        context.url,
-        context.token,
-        context.storeids,
-        context.startDate,
-        context.endDate,
-        fileName
-      )
-        .then((resp) => {
-          const j = resp.data;
-          if (j.error === 0) {
-            const qtyOutput = formatQtyOutput(j);
-            const salesOutput = formatSalesOutput(j);
+      // dispatch(setIsLoading(true));
+      // dispatch(reQuery());
+      // const fileName = event.data.name;
+      // getFromExistingS3File(
+      //   context.url,
+      //   context.token,
+      //   context.storeids,
+      //   context.startDate,
+      //   context.endDate,
+      //   fileName
+      // )
+      //   .then((resp) => {
+      //     const j = resp.data;
+      //     if (j.error === 0) {
+      //       const qtyOutput = formatQtyOutput(j);
+      //       const salesOutput = formatSalesOutput(j);
 
-            const upcItems = qtyOutput.map((item) => ({
-              upc: item.upc,
-              description: item.metrics.description,
-            }));
+      //       const upcItems = qtyOutput.map((item) => ({
+      //         upc: item.upc,
+      //         description: item.metrics.description,
+      //       }));
 
-            dispatch(setQty(qtyOutput));
-            dispatch(setSales(salesOutput));
-            dispatch(setItems(upcItems));
-          }
-        })
-        .catch((err) => {
-          toast.error(err.message);
-        })
-        .finally(() => dispatch(setIsLoading(false)));
+      //       dispatch(setQty(qtyOutput));
+      //       dispatch(setSales(salesOutput));
+      //       dispatch(setItems(upcItems));
+      //     }
+      //   })
+      //   .catch((err) => {
+      //     toast.error(err.message);
+      //   })
+      //   .finally(() => dispatch(setIsLoading(false)));
     }
   };
 

@@ -10,12 +10,17 @@ import {
 } from "ag-grid-community";
 import type { JsonError } from "../../../interfaces";
 import {
+  loadSimRowData,
   setNewRowAdDaysValue,
   setNewRowPriceValue,
   setPriceHistory,
+  setSimRowData,
 } from "../../../features/forecastSlice";
 ModuleRegistry.registerModules([AllCommunityModule]);
-import type { ForecastOutlierRow } from "../../../features/forecastSlice";
+import type {
+  ForecastOutlierRow,
+  SimBtns,
+} from "../../../features/forecastSlice";
 import { formatCurrency2 } from "../../../utils";
 import { getPriceHistory } from "../../../api/forecast";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -58,6 +63,7 @@ const OutlierGrid = () => {
       flex: 0.8,
       headerStyle: { borderRight: "1px solid white" },
       cellClass: "no-outline-on-focus text-right",
+      valueFormatter: (params) => `${params.value}/90`,
     },
     {
       headerName: "Days at Price",
@@ -65,6 +71,7 @@ const OutlierGrid = () => {
       flex: 0.8,
       cellClass: "no-outline-on-focus text-right",
       headerStyle: { borderRight: "1px solid white" },
+      valueFormatter: (params) => `${params.value}/${params.data!.daysActive}`,
     },
     {
       headerName: "Forecast",
@@ -98,6 +105,7 @@ const OutlierGrid = () => {
       flex: 0.7,
       cellClass: "no-outline-on-focus text-right border border-content",
       headerStyle: { borderRight: "1px solid white" },
+      valueFormatter: (params) => formatCurrency2(params.value),
       editable: true,
       valueSetter: (params) => {
         const upc = params.data.upc;
@@ -119,6 +127,14 @@ const OutlierGrid = () => {
     {
       headerName: "Fcst Total",
       field: "fcstTotal",
+      flex: 0.7,
+      cellClass: "no-outline-on-focus text-right",
+      valueFormatter: (params) => formatCurrency2(params.value),
+      headerStyle: { borderRight: "1px solid white" },
+    },
+    {
+      headerName: "Markdown $",
+      field: "markdownDollars",
       flex: 0.7,
       cellClass: "no-outline-on-focus text-right",
       valueFormatter: (params) => formatCurrency2(params.value),
@@ -156,25 +172,101 @@ const OutlierGrid = () => {
     }
   };
 
-  const renderRows = () => {
-    const filtered = state.rowData.filter((row) =>
-      state.selectedUpcs.includes(row.upc)
+  const simBtnClassName = (sim: keyof SimBtns) => {
+    if (state.simBtns[sim] === 0) {
+      return "opacity-50 cursor-not-allowed pointer-events-none";
+    }
+
+    return "";
+  };
+
+  const renderTitle = () => {
+    const sim = state.selectedSim;
+    if (sim && state.simBtns[sim] === 1) {
+      return `Next 7 Day Forecast - ${sim.toUpperCase()}`;
+    }
+    return "Next 7 Day Forecast";
+  };
+
+  const saveSimulation = () => {
+    const sim1 = state.simBtns.sim1;
+    const sim2 = state.simBtns.sim2;
+    const sim3 = state.simBtns.sim3;
+    const sim4 = state.simBtns.sim4;
+    let simToSave = "";
+    // if no sims have been saved, save to sim1
+    if (sim1 === 0) {
+      // save to sim1
+      simToSave = "sim1";
+    } else if (sim2 === 0) {
+      // save to sim2
+      simToSave = "sim2";
+    } else if (sim3 === 0) {
+      // save to sim3
+      simToSave = "sim3";
+    } else if (sim4 === 0) {
+      // save to sim4
+      simToSave = "sim4";
+    }
+    dispatch(
+      setSimRowData({ sim: simToSave as keyof SimBtns, rows: state.rowData })
     );
-    return filtered;
+  };
+
+  // const updateSimulation = () => {
+  //   const sim = state.selectedSim;
+  // };
+
+  const loadSimulationRows = (sim: string) => {
+    dispatch(loadSimRowData(sim as keyof SimBtns));
   };
 
   return (
     <div
       className={`${
         state.selectedUpcs.length > 0
-          ? "animate-windowIn p-2 bg-custom-white rounded-lg shadow-lg"
+          ? "animate-windowIn p-2 bg-custom-white rounded-lg shadow-lg relative"
           : "hidden"
       }`}
     >
-      <div className="font-medium underline px-1">Next 7 Day Forecast</div>
-      <div className="h-[95%] mt-1 shadow rounded-lg">
+      <div className="absolute -translate-y-11 right-2 flex gap-2">
+        <button
+          className={`btn-themeBlue py-0.5 ${simBtnClassName("sim1")}`}
+          onClick={() => loadSimulationRows("sim1")}
+        >
+          Sim 1
+        </button>
+        <button
+          className={`btn-themeBlue py-0.5 ${simBtnClassName("sim2")}`}
+          onClick={() => loadSimulationRows("sim2")}
+        >
+          Sim 2
+        </button>
+        <button
+          className={`btn-themeBlue py-0.5 ${simBtnClassName("sim3")}`}
+          onClick={() => loadSimulationRows("sim3")}
+        >
+          Sim 3
+        </button>
+        <button
+          className={`btn-themeBlue py-0.5 ${simBtnClassName("sim4")}`}
+          onClick={() => loadSimulationRows("sim4")}
+        >
+          Sim 4
+        </button>
+        <button className={`btn-themeBlue py-0.5`}>Reload</button>
+      </div>
+      <div className="flex gap-2">
+        <div className="text-lg font-medium underline px-1">
+          {renderTitle()}
+        </div>
+        <button className="btn-themeGreen py-0 mb-1" onClick={saveSimulation}>
+          Save Sim
+        </button>
+      </div>
+      <div className="h-[95%] shadow rounded-lg">
         <AgGridReact
-          rowData={renderRows()}
+          rowData={state.rowData}
           columnDefs={colDefs}
           theme={theme}
           pagination={true}

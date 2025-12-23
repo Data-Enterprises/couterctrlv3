@@ -10,6 +10,7 @@ import {
   setAllUpcs,
   setExportModalOpen,
   setSelectedUpcs,
+  setRowData,
 } from "../../../features/forecastSlice";
 
 const ForecastControls = () => {
@@ -57,6 +58,13 @@ const ForecastControls = () => {
   const handleSelectAll = () => {
     const allUpcs = state.forecastResults.map((item) => item.upc);
     dispatch(setAllUpcs(allUpcs));
+  };
+
+  const handleUpcSelect = (upc: string) => {
+    const row = state.initialRowData.find((r) => r.upc === upc);
+    dispatch(setSelectedUpcs(upc));
+    dispatch(setRowData(row!));
+    
   };
 
   return (
@@ -155,7 +163,7 @@ const ForecastControls = () => {
             <div
               key={i}
               className={`even:bg-blue-200 px-2 py-1 text-xs font-medium hover:bg-blue-100 transition-all duration-200 cursor-pointer`}
-              onClick={() => dispatch(setSelectedUpcs(item.upc))}
+              onClick={() => handleUpcSelect(item.upc)}
               // onContextMenu={(e) => handleRightClick(e, item)}
             >
               <CheckBox

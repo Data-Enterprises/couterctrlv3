@@ -147,24 +147,25 @@ export const forecastUnits = (
   // and return that times the units per selling day since we already have
   // the average units per selling day at that price point
   if (adDays && adDays >= expectedDays) {
-    return Math.ceil(adDays * unitsPerSellingDay);
+    return Math.round(adDays * unitsPerSellingDay);
   }
 
   // Ad Days defined but less than expected days
   // if Ad Days is less than expected days, we calculate the remaining days
   // we won't be on sale and use the overall average daily mvmt for those days
   if (adDays && adDays < expectedDays) {
-    // (295 - 120) / 50 = 3.5 units per day for remaining days
-    const remainingAvgUnits = (overallUnits - unitsAtPrice) / sellingDays;
+    // (295 - 120) / (50 - 3) = 3.723 units per day for remaining days
+    const remainingAvgUnits = (overallUnits - unitsAtPrice) / (sellingDays - sellingDaysAtPrice);
+
     // then we need to find the difference between expected days and ad days
     // 3.89 - 2 = 1.89 days
     const diff = expectedDays - adDays;
     // then we can fill in the gaps for those days with the overall average daily mvmt
-    return Math.ceil(adDays * unitsPerSellingDay + diff * remainingAvgUnits);
+    return Math.round((adDays * unitsPerSellingDay) + (diff * remainingAvgUnits));
   }
 
   // Default case => no Ad Days
   // Finally we can return the expected days times the units per selling day
   // if no ad days are defined
-  return Math.ceil(expectedDays * unitsPerSellingDay);
+  return Math.round(expectedDays * unitsPerSellingDay);
 };
