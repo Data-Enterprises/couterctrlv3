@@ -219,7 +219,7 @@ const Forecasting = () => {
       <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 gap-4 flex overflow-hidden">
         <div className="grid grid-rows-[37%_35%_24%] col-span-2 gap-4 w-1/6">
           <div className="bg-custom-white rounded-lg shadow-lg p-4">
-            <div className="">
+            {/* <div className=""> */}
               <div className="flex gap-2">
                 <SingleSelect
                   data={options}
@@ -263,7 +263,7 @@ const Forecasting = () => {
                 className=""
                 height="py-1 min-h-32 max-h-32"
               />
-            </div>
+            {/* </div> */}
           </div>
           <div className="bg-custom-white rounded-lg shadow-lg px-3">
             <div className="bg-blue-500 text-custom-white -mx-3 py-0.5 px-4 rounded-t-lg font-medium flex justify-between">

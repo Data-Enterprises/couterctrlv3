@@ -83,7 +83,7 @@ const PriceSimGrid = () => {
       valueFormatter: (params) => formatCurrency2(params.value),
       editable: true,
       headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus text-right",
+      cellClass: "no-outline-on-focus text-right border border-content",
       valueSetter: (params) => {
         const upc = params.data.upc;
         const newPrice = parseFloat(params.newValue);
@@ -161,15 +161,24 @@ const PriceSimGrid = () => {
   };
 
   return (
-    <div className="h-full shadow-lg rounded-lg">
+    <div
+      className={`${
+        state.selectedUpcs.length > 0
+          ? "animate-windowIn p-2 bg-custom-white rounded-lg shadow-lg"
+          : "hidden"
+      }`}
+    >
       <CalcModal />
-      <AgGridReact
-        rowData={renderRows()}
-        columnDefs={colDefs}
-        theme={theme}
-        pagination={true}
-        paginationAutoPageSize={true}
-      />
+      <div className="font-medium underline px-1">Next 70 Day Forecast</div>
+      <div className="h-[95%] mt-1 shadow rounded-lg">
+        <AgGridReact
+          rowData={renderRows()}
+          columnDefs={colDefs}
+          theme={theme}
+          pagination={true}
+          paginationAutoPageSize={true}
+        />
+      </div>
     </div>
   );
 };
