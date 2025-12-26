@@ -5,7 +5,11 @@ import Forecast from "../../../pages/forecast/Forecasting";
 import { screen, waitFor } from "@testing-library/react";
 import { setupStore } from "../../../store";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
-import { getBucketList, getFromExistingS3File } from "../../../api/forecast";
+import {
+  getBucketList,
+  getFromExistingS3File,
+  getPriceHistory,
+} from "../../../api/forecast";
 
 import {
   defaultErrorResp,
@@ -301,15 +305,11 @@ describe("Forecast Page", () => {
     await user.click(searchBtn);
 
     await waitFor(() => {
-      expect(mockToastWarn).toHaveBeenCalledWith(
-        "Please add at least one UPC"
-      );
+      expect(mockToastWarn).toHaveBeenCalledWith("Please add at least one UPC");
     });
 
     await user.upload(
-      (await screen.findByTestId(
-        "upc-file-input"
-      )) as HTMLInputElement,
+      (await screen.findByTestId("upc-file-input")) as HTMLInputElement,
       file
     );
 
@@ -333,7 +333,7 @@ describe("Forecast Page", () => {
     const storeOption = await screen.findByTestId("single-select-option-2-0");
     await user.click(storeOption);
 
-    const searchBtn = await screen.findByTestId("forecast-search-btn");;
+    const searchBtn = await screen.findByTestId("forecast-search-btn");
     await user.click(searchBtn);
 
     await waitFor(() => {
@@ -344,11 +344,9 @@ describe("Forecast Page", () => {
   // => success third
   it("should handle API success on data fetch", async () => {
     (getBucketList as Mock).mockResolvedValue(fileListResp);
-    (getHistoryFromList as Mock).mockResolvedValue(
-      priceHistoryFromListResp
-    );
+    (getHistoryFromList as Mock).mockResolvedValue(priceHistoryFromListResp);
     renderWithProviders(<Forecast />, { store });
-    const searchBtn = await screen.findByTestId("forecast-search-btn");;
+    const searchBtn = await screen.findByTestId("forecast-search-btn");
     await user.click(searchBtn);
 
     await waitFor(() => {
@@ -358,12 +356,155 @@ describe("Forecast Page", () => {
   });
 
   // Then we handle the Forecast Controls interactions => Select all, Deselect all, Toggle Display, Filter Input
+  it("should handle display toggles for forecast controls", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    renderWithProviders(<Forecast />, { store });
 
-  // Then we handle Outlier grid interactions
+    const allRadio = await screen.findByTestId("radio-1");
+    const selectedRadio = await screen.findByTestId("radio-2");
+    const storesRadio = await screen.findByTestId("radio-3");
 
-  // then we handle simulations interactions
+    // Click selected
+    await user.click(selectedRadio);
+    await user.click(storesRadio);
+    await user.click(allRadio);
 
-  // Then we handle the calc modal
+    const labelDisplay = await screen.findByTestId(
+      "forecast-toggle-display-btn"
+    );
+    // show desc
+    await user.click(labelDisplay);
 
-  // Then we handle the export modal
+    // show upc
+    await user.click(labelDisplay);
+  });
+
+  it("should handle upc selection in ForecastControls component", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    renderWithProviders(<Forecast />, { store });
+
+    const upcOne = await screen.findByTestId("check-0");
+    const upcTwo = await screen.findByTestId("check-1");
+
+    // select both
+    await user.click(upcOne);
+    await user.click(upcTwo);
+
+    const selectedRadio = await screen.findByTestId("radio-2");
+    await user.click(selectedRadio);
+
+    const selectedUpcTwo = await screen.findByTestId("check-1");
+    await user.click(selectedUpcTwo);
+
+    // toggle the display
+    const labelDisplay = await screen.findByTestId(
+      "forecast-toggle-display-btn"
+    );
+    await user.click(labelDisplay);
+  });
+
+  it("should handle filtering in ForecastControls component", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    renderWithProviders(<Forecast />, { store });
+
+    const filterInput = await screen.findByTestId(
+      "forecast-controls-filter-input"
+    );
+    await user.type(filterInput, "12000000");
+    await user.clear(filterInput);
+  });
+
+  it("should handle Select All and Deselect All in ForecastControls component", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    renderWithProviders(<Forecast />, { store });
+    // "forecast-select-all-btn"
+    // "forecast-select-all-btn"
+    const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
+    const deselectAllBtn = await screen.findByTestId(
+      "forecast-deselect-all-btn"
+    );
+
+    await user.click(selectAllBtn);
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.selectedUpcs.length).toBe(state.items.length);
+    });
+
+    await user.click(deselectAllBtn);
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.selectedUpcs.length).toBe(0);
+    });
+  });
+
+  // Then we handle Outlier grid interactions => creating/updating simulations and modifying rows
+  it("should handle creating a new simulation", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    renderWithProviders(<Forecast />, { store });
+
+    const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
+    await user.click(selectAllBtn);
+
+    const saveSimBtn = await screen.findByTestId("save-new-sim-btn");
+    await user.click(saveSimBtn);
+  });
+
+  it("should allow the user to modify the Ad Days cell", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    renderWithProviders(<Forecast />, { store });
+
+    const rows = await screen.findAllByRole("row");
+    // rows.forEach((row, i) => console.log(`Row ${i}: `, row.textContent));
+
+    const rowOneAdDays = rows[3].children[7];
+    await user.dblClick(rowOneAdDays);
+
+    // cells 7 and 8 => Ad Days and Ad Price
+    const agInputs = document.querySelectorAll(".ag-input-field-input");
+    // console.log("AG Inputs: ", Array.from(agInputs));
+    const agInput = agInputs[0];
+
+    await user.type(agInput, "4");
+    await user.keyboard("{Enter}");
+
+    // Expect here
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.rowData[0].adDays).toBe(4);
+    });
+  });
+
+  it("should allow the user to modify the Ad Days cell", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    renderWithProviders(<Forecast />, { store });
+
+    const rows = await screen.findAllByRole("row");
+    rows.forEach((row, i) => console.log(`Row ${i}: `, row.textContent));
+
+    // cells 7 and 8 => Ad Days and Ad Price
+    const rowTwoFcstPrice = rows[5].children[8];
+    await user.dblClick(rowTwoFcstPrice);
+
+    const agInputs = document.querySelectorAll(".ag-input-field-input");
+    const agInput = agInputs[0];
+    // console.log(agInput.getAttribute("id")); // #ag-901-input
+    // console.log("AG Inputs: ", Array.from(agInputs));
+
+    await user.clear(agInput);
+    await user.type(agInput, "8.99");
+    await user.keyboard("{Enter}");
+
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.rowData[2].fcstPrice).toBe(8.99);
+    });
+  });
+
+  // need to create 4 sims => toggle between them => reload
+
+  // Then we handle the calc modal => handle typing and calculating
+
+  // Then we handle the export modal => data for all 5 possible scenarios
+ 
+  // Then finally we handle resetting logic => sims and whole page (Reset button in ForecastControls)
 });

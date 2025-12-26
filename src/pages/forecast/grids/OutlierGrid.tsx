@@ -6,9 +6,9 @@ import {
   ModuleRegistry,
   type ColDef,
   type ColGroupDef,
-  type RowClickedEvent,
+  // type RowClickedEvent,
 } from "ag-grid-community";
-import type { JsonError } from "../../../interfaces";
+// import type { JsonError } from "../../../interfaces";
 import {
   loadSimRowData,
   reloadRowData,
@@ -16,7 +16,7 @@ import {
   setGlobalFcstPrice,
   setNewRowAdDaysValue,
   setNewRowPriceValue,
-  setPriceHistory,
+  // setPriceHistory,
   setSelectedSim,
   setSimRowData,
   updateGlobalFcstRows,
@@ -27,15 +27,15 @@ import type {
   SimBtns,
 } from "../../../features/forecastSlice";
 import { formatCurrency2 } from "../../../utils";
-import { getPriceHistory } from "../../../api/forecast";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { useForecastContext } from "../hooks";
+// import { getPriceHistory } from "../../../api/forecast";
+// import { useToast } from "../../../components/toasts/hooks/useToast";
+// import { useForecastContext } from "../hooks";
 import CalcNowCheckbox from "../../priceSimulator/grid/CheckBoxCell";
 import CalcModal from "../CalcModal";
 
 const OutlierGrid = () => {
-  const toast = useToast();
-  const context = useForecastContext();
+  // const toast = useToast();
+  // const context = useForecastContext();
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.forecast);
 
@@ -157,36 +157,36 @@ const OutlierGrid = () => {
     },
   ];
 
-  const onRowClicked = (e: RowClickedEvent<ForecastOutlierRow>) => {
-    if (e.data) {
-      const upc = e.data.upc;
+  // const onRowClicked = (e: RowClickedEvent<ForecastOutlierRow>) => {
+  //   if (e.data) {
+  //     const upc = e.data.upc;
 
-      // Dont fetch the data and get a re-render if price history already matches the item we're clicking on
-      const found = state.priceHistory.find(
-        (item) => item.product_code === upc
-      );
+  //     // Dont fetch the data and get a re-render if price history already matches the item we're clicking on
+  //     const found = state.priceHistory.find(
+  //       (item) => item.product_code === upc
+  //     );
 
-      if (found) {
-        return;
-      }
+  //     if (found) {
+  //       return;
+  //     }
 
-      getPriceHistory(
-        context.url,
-        context.token,
-        state.storeids,
-        context.endDate,
-        upc,
-        e.data.adFcst
-      )
-        .then((resp) => {
-          const j = resp.data;
-          if (j.error === 0) {
-            dispatch(setPriceHistory(j.result));
-          }
-        })
-        .catch((err: JsonError) => toast.error(err.message));
-    }
-  };
+  //     // getPriceHistory(
+  //     //   context.url,
+  //     //   context.token,
+  //     //   state.storeids,
+  //     //   context.endDate,
+  //     //   upc,
+  //     //   e.data.adFcst
+  //     // )
+  //     //   .then((resp) => {
+  //     //     const j = resp.data;
+  //     //     if (j.error === 0) {
+  //     //       dispatch(setPriceHistory(j.result));
+  //     //     }
+  //     //   })
+  //     //   .catch((err: JsonError) => toast.error(err.message));
+  //   }
+  // };
 
   const simBtnClassName = (sim: keyof SimBtns) => {
     if (state.simBtns[sim] === 0) {
@@ -318,7 +318,7 @@ const OutlierGrid = () => {
         <div className="text-lg font-medium underline px-1">
           {renderTitle()}
         </div>
-        <button className="btn-themeGreen py-0 mb-1" onClick={saveSimulation}>
+        <button data-testid="save-new-sim-btn" className="btn-themeGreen py-0 mb-1" onClick={saveSimulation}>
           Save New Sim
         </button>
       </div>
@@ -328,7 +328,7 @@ const OutlierGrid = () => {
           columnDefs={colDefs}
           theme={theme}
           pagination={true}
-          onRowClicked={onRowClicked}
+          // onRowClicked={onRowClicked}
           paginationAutoPageSize={true}
         />
       </div>
