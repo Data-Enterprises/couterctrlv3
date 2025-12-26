@@ -130,9 +130,9 @@ const SingleSelect = <T,>({
           {label}
         </label>
         <div className="relative">
-          <div data-testid="single-select-trigger" ref={triggerRef}>
+          <div data-testid={`single-select-trigger-${id}`} ref={triggerRef}>
             <input
-              data-testid="single-select-input"
+              data-testid={`single-select-input-${id}`}
               ref={inputRef}
               value={query}
               onChange={handleQueryChange}

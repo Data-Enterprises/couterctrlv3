@@ -1,8 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {
   Store,
-  ForecastQtyData,
-  ForecastSalesData,
   ForecastItem,
   ForecastPriceHistory,
   PriceHistoryResult,
@@ -59,8 +57,6 @@ interface ForecastState {
   selectedStores: Store[];
   storeids: string;
   radioId: number;
-  sales: ForecastSalesData<any>[];
-  qty: ForecastQtyData<any>[];
   items: ForecastItem[];
   selectedUpcs: string[];
   files: string[];
@@ -90,8 +86,6 @@ const initialState: ForecastState = {
   selectedStores: [],
   storeids: "", // needed for backend API calls
   radioId: 0,
-  sales: [],
-  qty: [],
   items: [],
   selectedUpcs: [],
   files: [],
@@ -127,18 +121,6 @@ export const forecastSlice = createSlice({
     },
     setRadioId: (state, action: PayloadAction<number>) => {
       state.radioId = action.payload;
-    },
-    setSales: (
-      state,
-      action: PayloadAction<ForecastSalesData<ForecastSalesData<any>>[]>
-    ) => {
-      state.sales = action.payload;
-    },
-    setQty: (
-      state,
-      action: PayloadAction<ForecastQtyData<ForecastQtyData<any>>[]>
-    ) => {
-      state.qty = action.payload;
     },
     setItems: (state, action: PayloadAction<ForecastItem[]>) => {
       state.items = action.payload;
@@ -498,8 +480,6 @@ export const forecastSlice = createSlice({
       state.fcstTotal = 0;
       state.selectedHistory = {} as SelectedHistory;
       state.items = [];
-      state.qty = [];
-      state.sales = [];
       state.priceHistory = [];
       state.selectedUpcs = [];
       state.priceHistory = [];
@@ -520,8 +500,6 @@ export const forecastSlice = createSlice({
       state.adFcst = 0;
       state.fcstTotal = 0;
       state.items = [];
-      state.qty = [];
-      state.sales = [];
       state.selectedStores = [];
       state.storeids = "";
       state.radioId = 0;
@@ -578,8 +556,6 @@ export const {
   setIsLoading,
   setSelectedStores,
   setRadioId,
-  setSales,
-  setQty,
   setItems,
   setAllUpcs,
   setSelectedUpcs,

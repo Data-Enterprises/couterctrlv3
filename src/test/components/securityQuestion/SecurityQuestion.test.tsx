@@ -93,7 +93,7 @@ describe("SecurityQuestion Component", () => {
     renderWithProviders(<SecurityQuestion />, { store });
 
     // select 3rd question => favorite food
-    const questionInput = await screen.findByTestId("single-select-input");
+    const questionInput = await screen.findByTestId("single-select-input-0");
 
     // This covers query change for singleSelect
     await user.type(questionInput, "test");
@@ -112,7 +112,7 @@ describe("SecurityQuestion Component", () => {
     (getSecurityQuestions as Mock).mockResolvedValueOnce(questionsSuccessResp);
     renderWithProviders(<SecurityQuestion />, { store });
 
-    const questionInput = await screen.findByTestId("single-select-input");
+    const questionInput = await screen.findByTestId("single-select-input-0");
     const question = await screen.findByTestId("single-select-option-0-2");
     const answerInput = await screen.findByTestId("text-input-Answer");
     const submitButton = await screen.findByTestId("submit-security-answer");

@@ -237,6 +237,7 @@ const Forecasting = () => {
             </div>
             <input
               type="text"
+              data-testid="forecast-upc-input"
               className="basic-input focus:border bg-custom-white py-1 mt-2"
               value={upcText}
               onChange={handleTextChange}
@@ -244,12 +245,14 @@ const Forecasting = () => {
             />
             <div className="flex py-2 gap-2">
               <button
+                data-testid="forecast-add-upc-btn"
                 className="btn-themeBlue py-1 border px-0 w-1/2"
                 onClick={() => handleAddUpc(upcText)}
               >
                 Add
               </button>
               <button
+                data-testid="forecast-clear-upc-btn"
                 className="btn-themeBlue py-1 border px-0 w-1/2"
                 onClick={() => handleAddUpc("")}
               >
@@ -260,6 +263,7 @@ const Forecasting = () => {
               {upcs.map((u, i) => (
                 <div
                   key={i}
+                  data-testid={`forecast-upc-item-${u}-${i}`}
                   className="px-2 py-0.5 font-medium hover:text-blue-500  transition-all duration-200 cursor-pointer"
                   onClick={() => handleRemoveUpc(u)}
                 >
