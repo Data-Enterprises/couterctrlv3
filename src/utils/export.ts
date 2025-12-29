@@ -2,12 +2,10 @@ import type { ColDef } from "ag-grid-community";
 
 const save = (uri: string, filename: string) => {
   const link = document.createElement("a");
-  if (typeof link.download == "string") {
-    document.body.appendChild(link);
-    link.download = filename;
-    link.href = uri;
-    link.click();
-  }
+  document.body.appendChild(link);
+  link.download = filename;
+  link.href = uri;
+  link.click();
 };
 
 export const csv = (headers: string, data: string, filename: string) => {
@@ -28,14 +26,12 @@ export const handleCsv = <T extends Record<string, any>>(
     .map((h) => h.headerName)
     .join(",");
 
-  data.map((record) => {
+  data.forEach((record) => {
     let line = "";
     headers.forEach((header) => {
-      if (header.field) {
-        const val = record[header.field as keyof T];
-        const strVal = val !== null && val !== undefined ? String(val) : "";
-        line += `"${strVal.replace(/"/g, '""')}",`;
-      }
+      const val = record[header.field as keyof T];
+      const strVal = val !== null && val !== undefined ? String(val) : "";
+      line += `"${strVal.replace(/"/g, '""')}",`;
     });
     body += line.substring(0, line.length - 1) + "\r\n";
   });

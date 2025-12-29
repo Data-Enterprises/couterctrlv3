@@ -36,12 +36,10 @@ export const handleUpcCsv = <T extends Record<string, any>>(
     .map((h) => h.alias)
     .join(",");
 
-  data.map((record) => {
+  data.forEach((record) => {
     let line = "";
-    headers.map((header) => {
-      if (header.visible) {
-        line += `"${record[header.column]}",`;
-      }
+    headers.forEach((header) => {
+      line += `"${record[header.column]}",`;
     });
     body += line.substring(0, line.length - 1) + "\r\n";
   });

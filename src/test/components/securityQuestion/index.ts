@@ -3,6 +3,12 @@ export const defaultSuccessResp = {
   data: { error: 0, success: true, msg: "Success" },
 };
 
+export const questionsWarnResp = {
+  data: {
+    error: 1
+  }
+}
+
 export const questionsSuccessResp = {
   data: {
     error: 0,

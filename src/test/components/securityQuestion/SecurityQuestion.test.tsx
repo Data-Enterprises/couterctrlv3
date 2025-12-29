@@ -7,7 +7,12 @@ import {
   getSecurityQuestions,
   setSecurityQuestionAnswer,
 } from "../../../api/security";
-import { defaultSuccessResp, JsonErrorResp, questionsSuccessResp } from ".";
+import {
+  defaultSuccessResp,
+  JsonErrorResp,
+  questionsSuccessResp,
+  questionsWarnResp,
+} from ".";
 import { setSecurityQuestionId } from "../../../features/userSlice";
 import userEvent from "@testing-library/user-event";
 
@@ -57,6 +62,22 @@ describe("SecurityQuestion Component", () => {
     });
   });
 
+  it("should throw warning if no security questions are available", async () => {
+    // handle success
+    (getSecurityQuestions as Mock).mockResolvedValueOnce(questionsWarnResp);
+    renderWithProviders(<SecurityQuestion />, { store });
+
+    // check that modal is rendered
+    const modal = await screen.findByTestId("modal");
+    expect(modal).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(mockedToastWarning).toHaveBeenCalledWith(
+        "No security questions available at this time."
+      );
+    });
+  });
+
   it("should render and fetch security questions successfully", async () => {
     // handle success
     (getSecurityQuestions as Mock).mockResolvedValueOnce(questionsSuccessResp);
@@ -98,7 +119,7 @@ describe("SecurityQuestion Component", () => {
     // This covers query change for singleSelect
     await user.type(questionInput, "test");
     await user.clear(questionInput);
-    
+
     const question = await screen.findByTestId("single-select-option-0-2");
     const answerInput = await screen.findByTestId("text-input-Answer");
 
@@ -162,6 +183,28 @@ describe("SecurityQuestion Component", () => {
     await waitFor(() => {
       expect(mockedToastError).toHaveBeenCalledWith(
         "Error setting security question and answer: API request failed"
+      );
+    });
+  });
+
+  it("should throw warning if api call to submit question and answer fails", async () => {
+    (getSecurityQuestions as Mock).mockResolvedValueOnce(questionsSuccessResp);
+    (setSecurityQuestionAnswer as Mock).mockResolvedValueOnce(
+      questionsWarnResp
+    );
+    renderWithProviders(<SecurityQuestion />, { store });
+
+    const question = await screen.findByTestId("single-select-option-0-2");
+    const answerInput = await screen.findByTestId("text-input-Answer");
+    const submitButton = await screen.findByTestId("submit-security-answer");
+
+    await user.click(question);
+    await user.type(answerInput, "success");
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(mockedToastWarning).toHaveBeenCalledWith(
+        "Failed to set security question and answer."
       );
     });
   });
