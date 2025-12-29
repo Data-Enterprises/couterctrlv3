@@ -143,6 +143,7 @@ const CalcModal = () => {
                 </label>
                 <input
                   className="basic-input focus:border bg-custom-white"
+                  data-testid="calc-modal-price-input"
                   value={priceText}
                   onChange={(e) => handleTextChange(e.target.value)}
                   onKeyDown={onKeyDown}
@@ -152,6 +153,7 @@ const CalcModal = () => {
                 </label>
                 <input
                   className="basic-input focus:border bg-custom-white"
+                  data-testid="calc-modal-cost-input"
                   value={costText}
                   onChange={(e) => handleCostChange(e.target.value)}
                   onKeyDown={onKeyDown}
@@ -161,10 +163,12 @@ const CalcModal = () => {
                 <button
                   className="btn-themeBlue w-full py-1.5"
                   onClick={calcNewMetrics}
+                  data-testid="calc-modal-calculate-button"
                 >
                   Calculate
                 </button>
                 <button
+                  data-testid="calc-modal-close-button"
                   className="btn-themeOrange w-full py-1.5"
                   onClick={handleClose}
                 >
@@ -186,17 +190,17 @@ const CalcModal = () => {
                 <div className="font-medium underline">Predicted Metrics</div>
                 <div className="text-sm">
                   <span>Qty:</span>
-                  <span className="font-medium pl-1">{showQty()}</span>
+                  <span data-testid="calc-modal-qty" className="font-medium pl-1">{showQty()}</span>
                 </div>
                 <div className="text-sm">
                   <span>Revenue:</span>
-                  <span className="font-medium pl-1">
+                  <span data-testid="calc-modal-revenue" className="font-medium pl-1">
                     {formatCurrency2(showRevenue())}
                   </span>
                 </div>
                 <div className="text-sm">
                   <span>Profit:</span>
-                  <span className="font-medium pl-1">
+                  <span data-testid="calc-modal-profit" className="font-medium pl-1">
                     {formatCurrency2(showProfit())}
                   </span>
                 </div>

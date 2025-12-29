@@ -448,6 +448,19 @@ export const priceHistoryFromListResp = {
             ],
             days_active: 84,
           },
+          {
+            price: "3.50",
+            qty: 185,
+            sale_dates: [
+              "09/11/2025",
+              "09/12/2025",
+              "09/13/2025",
+              "09/14/2025",
+              "09/15/2025",
+              "09/16/2025",
+            ],
+            days_active: 6,
+          },
         ],
       },
       {

@@ -82,24 +82,25 @@ export const calcFcstQty = (pricesWithQty: number[][], newPrice: number) => {
 };
 
 export const forecastUnits = (
-  price: number, // 9.99
+  _price: number, // 9.99
   overallUnits: number, // 295
   units: number, // 120
   sellingDays: number, // total selling days
   totalDays: number = 90,
   sellingDaysAtPrice: number, // days at price
   forecastWindow: number = 7,
-  pricesWithQty: number[][],
+  _pricesWithQty: number[][],
   adDays?: number
 ) => {
   // units at price || calcFcstQty
-  let unitsAtPrice = units;
+  // let unitsAtPrice = units;
+  const unitsAtPrice = units;
 
   // if price point doesn't have historical data, estimate using linear demand
-  if (unitsAtPrice === 0) {
-    const params = fitLinearDemand(pricesWithQty); // intercept and slope
-    unitsAtPrice = predictQty(price, params, pricesWithQty);
-  }
+  // if (unitsAtPrice === 0) {
+  //   const params = fitLinearDemand(pricesWithQty); // intercept and slope
+  //   unitsAtPrice = predictQty(price, params, pricesWithQty);
+  // }
 
   // out of the 3 days this item was active at 9.99 and sold 120 overall
   // => 120 / 3 = 40 units per day at that price

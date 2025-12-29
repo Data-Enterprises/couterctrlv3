@@ -157,37 +157,6 @@ const OutlierGrid = () => {
     },
   ];
 
-  // const onRowClicked = (e: RowClickedEvent<ForecastOutlierRow>) => {
-  //   if (e.data) {
-  //     const upc = e.data.upc;
-
-  //     // Dont fetch the data and get a re-render if price history already matches the item we're clicking on
-  //     const found = state.priceHistory.find(
-  //       (item) => item.product_code === upc
-  //     );
-
-  //     if (found) {
-  //       return;
-  //     }
-
-  //     // getPriceHistory(
-  //     //   context.url,
-  //     //   context.token,
-  //     //   state.storeids,
-  //     //   context.endDate,
-  //     //   upc,
-  //     //   e.data.adFcst
-  //     // )
-  //     //   .then((resp) => {
-  //     //     const j = resp.data;
-  //     //     if (j.error === 0) {
-  //     //       dispatch(setPriceHistory(j.result));
-  //     //     }
-  //     //   })
-  //     //   .catch((err: JsonError) => toast.error(err.message));
-  //   }
-  // };
-
   const simBtnClassName = (sim: keyof SimBtns) => {
     if (state.simBtns[sim] === 0) {
       return "opacity-50 cursor-not-allowed pointer-events-none";
@@ -260,6 +229,7 @@ const OutlierGrid = () => {
             </label>
             <input
               id="global-price"
+              data-testid="global-price-input"
               type="text"
               className="basic-input focus:border py-1 bg-custom-white w-20"
               value={state.globalFcstPrice === "0" ? "" : state.globalFcstPrice}
@@ -269,6 +239,7 @@ const OutlierGrid = () => {
             />
           </div>
           <button
+            data-testid="set-global-price-btn"
             className="btn-themeBlue py-1"
             onClick={() => dispatch(updateGlobalFcstRows())}
           >
@@ -277,36 +248,42 @@ const OutlierGrid = () => {
         </div>
         <div className="flex gap-2">
           <button
+            data-testid="sim1-btn"
             className={`btn-themeBlue py-0.5 ${simBtnClassName("sim1")}`}
             onClick={() => loadSimulationRows("sim1")}
           >
             Sim 1
           </button>
           <button
+            data-testid="sim2-btn"
             className={`btn-themeBlue py-0.5 ${simBtnClassName("sim2")}`}
             onClick={() => loadSimulationRows("sim2")}
           >
             Sim 2
           </button>
           <button
+            data-testid="sim3-btn"
             className={`btn-themeBlue py-0.5 ${simBtnClassName("sim3")}`}
             onClick={() => loadSimulationRows("sim3")}
           >
             Sim 3
           </button>
           <button
+            data-testid="sim4-btn"
             className={`btn-themeBlue py-0.5 ${simBtnClassName("sim4")}`}
             onClick={() => loadSimulationRows("sim4")}
           >
             Sim 4
           </button>
           <button
+            data-testid="reload-sim-btn"
             className={`btn-themeBlue py-0.5`}
             onClick={() => dispatch(reloadRowData())}
           >
             Reload
           </button>
           <button
+            data-testid="reset-sim-btn"
             className={`btn-themeOrange py-0.5`}
             onClick={() => dispatch(resetSimulations())}
           >
@@ -318,7 +295,11 @@ const OutlierGrid = () => {
         <div className="text-lg font-medium underline px-1">
           {renderTitle()}
         </div>
-        <button data-testid="save-new-sim-btn" className="btn-themeGreen py-0 mb-1" onClick={saveSimulation}>
+        <button
+          data-testid="save-new-sim-btn"
+          className="btn-themeGreen py-0 mb-1"
+          onClick={saveSimulation}
+        >
           Save New Sim
         </button>
       </div>

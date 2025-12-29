@@ -19,6 +19,8 @@ export default defineConfig({
         "src/pages/upc/components/chartUtils.tsx",
         "src/pages/priceSimulator/**",
         "src/features/priceSimSlice.ts",
+        "src/pages/forecast/controls/UpcUploader.tsx",
+        "src/pages/forecast/grids/PriceHistoryGrid.tsx",
       ],
     },
   },

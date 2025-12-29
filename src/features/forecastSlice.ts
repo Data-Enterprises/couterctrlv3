@@ -1,12 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type {
-  Store,
-  ForecastItem,
-  ForecastPriceHistory,
-  PriceHistoryResult,
-} from "../interfaces";
-import { calcFcstQty } from "../pages/forecast/utils";
-import { forecastUnits } from "../pages/priceSimulator/calc";
+import type { Store, ForecastItem, PriceHistoryResult } from "../interfaces";
+import { calcFcstQty, forecastUnits } from "../pages/forecast/utils";
 
 export interface SelectedHistory {
   upc: string;
@@ -60,11 +54,6 @@ interface ForecastState {
   items: ForecastItem[];
   selectedUpcs: string[];
   files: string[];
-  priceHistory: ForecastPriceHistory[];
-  selectedHistory: SelectedHistory;
-  fcstTotal: number;
-  adFcst: number;
-  historyData: HistoryData[];
   lastUpdatedHistory: HistoryData[];
   exportModalOpen: boolean;
   selectedUpc: string;
@@ -89,11 +78,6 @@ const initialState: ForecastState = {
   items: [],
   selectedUpcs: [],
   files: [],
-  priceHistory: [],
-  selectedHistory: {} as SelectedHistory,
-  fcstTotal: 0,
-  adFcst: 0,
-  historyData: [],
   lastUpdatedHistory: [],
   exportModalOpen: false,
   selectedUpc: "",
@@ -125,9 +109,6 @@ export const forecastSlice = createSlice({
     setItems: (state, action: PayloadAction<ForecastItem[]>) => {
       state.items = action.payload;
     },
-    setAllUpcs: (state, action: PayloadAction<string[]>) => {
-      state.selectedUpcs = action.payload;
-    },
     setSelectedUpcs: (state, action: PayloadAction<string>) => {
       const upc = action.payload;
       if (state.selectedUpcs.includes(upc)) {
@@ -135,9 +116,6 @@ export const forecastSlice = createSlice({
       } else {
         state.selectedUpcs.push(upc);
       }
-    },
-    setPriceHistory: (state, action: PayloadAction<ForecastPriceHistory[]>) => {
-      state.priceHistory = action.payload;
     },
     resetRows: (state) => {
       state.selectedUpcs = [];
@@ -155,18 +133,6 @@ export const forecastSlice = createSlice({
     },
     setFiles: (state, action: PayloadAction<string[]>) => {
       state.files = action.payload;
-    },
-    setSelectedHistory: (state, action: PayloadAction<SelectedHistory>) => {
-      state.selectedHistory = action.payload;
-    },
-    setFcstTotal: (state, action: PayloadAction<number>) => {
-      state.fcstTotal = action.payload;
-    },
-    setAdFcst: (state, action: PayloadAction<number>) => {
-      state.adFcst = action.payload;
-    },
-    setHistoryData: (state, action: PayloadAction<HistoryData[]>) => {
-      state.historyData = action.payload;
     },
     setInitialRowData: (state, action: PayloadAction<ForecastOutlierRow[]>) => {
       state.initialRowData = action.payload;
@@ -252,20 +218,6 @@ export const forecastSlice = createSlice({
       const upcs = rows()!.map((row) => row.upc);
       state.rowData = state.rowData = rows()!;
       state.selectedUpcs = upcs;
-    },
-    updateSimRowData: (state, action: PayloadAction<ForecastOutlierRow[]>) => {
-      const sim = state.selectedSim;
-      const rows = action.payload;
-      if (sim === "sim1") {
-        state.simOneRowData = action.payload;
-      } else if (sim === "sim2") {
-        state.simTwoRowData = action.payload;
-      } else if (sim === "sim3") {
-        state.simThreeRowData = action.payload;
-      } else if (sim === "sim4") {
-        state.simFourRowData = action.payload;
-      }
-      state.selectedUpcs = rows.map((row) => row.upc);
     },
     reloadRowData: (state) => {
       state.rowData = [];
@@ -399,24 +351,6 @@ export const forecastSlice = createSlice({
         }
       }
     },
-    setLastUpdatedHistory: (state, action: PayloadAction<HistoryData>) => {
-      const updated = action.payload;
-      const exists = state.lastUpdatedHistory.find(
-        (item) => item.upc === updated.upc && item.desc === updated.desc
-      );
-      if (exists) {
-        state.lastUpdatedHistory = state.lastUpdatedHistory.map((item) =>
-          item.upc === updated.upc && item.desc === updated.desc
-            ? updated
-            : item
-        );
-      } else {
-        state.lastUpdatedHistory.push(updated);
-      }
-    },
-    setSelectedUpc: (state, action: PayloadAction<string>) => {
-      state.selectedUpc = action.payload;
-    },
     setGlobalFcstPrice: (state, action: PayloadAction<string>) => {
       state.globalFcstPrice = action.payload;
     },
@@ -475,14 +409,11 @@ export const forecastSlice = createSlice({
     reQuery: (state) => {
       state.selectedUpc = "";
       state.lastUpdatedHistory = [];
-      state.historyData = [];
-      state.adFcst = 0;
-      state.fcstTotal = 0;
-      state.selectedHistory = {} as SelectedHistory;
+      // state.historyData = [];
+      // state.selectedHistory = {} as SelectedHistory;
       state.items = [];
-      state.priceHistory = [];
+      // state.priceHistory = [];
       state.selectedUpcs = [];
-      state.priceHistory = [];
       state.simOneRowData = [];
       state.simTwoRowData = [];
       state.simThreeRowData = [];
@@ -496,16 +427,11 @@ export const forecastSlice = createSlice({
     reset: (state) => {
       state.selectedUpc = "";
       state.lastUpdatedHistory = [];
-      state.historyData = [];
-      state.adFcst = 0;
-      state.fcstTotal = 0;
       state.items = [];
       state.selectedStores = [];
       state.storeids = "";
       state.radioId = 0;
-      state.selectedHistory = {} as SelectedHistory;
       state.selectedUpcs = [];
-      state.priceHistory = [];
       state.simOneRowData = [];
       state.simTwoRowData = [];
       state.simThreeRowData = [];
@@ -518,13 +444,6 @@ export const forecastSlice = createSlice({
     },
     setExportModalOpen: (state, action: PayloadAction<boolean>) => {
       state.exportModalOpen = action.payload;
-    },
-    setSimBtns: (
-      state,
-      action: PayloadAction<{ sim: keyof SimBtns; value: 0 | 1 }>
-    ) => {
-      const { sim, value } = action.payload;
-      state.simBtns[sim] = value;
     },
     setSelectedSim: (
       state,
@@ -557,17 +476,9 @@ export const {
   setSelectedStores,
   setRadioId,
   setItems,
-  setAllUpcs,
   setSelectedUpcs,
-  setPriceHistory,
   setFiles,
   reQuery,
-  setSelectedHistory,
-  setFcstTotal,
-  setAdFcst,
-  setHistoryData,
-  setLastUpdatedHistory,
-  setSelectedUpc,
   reset,
   setExportModalOpen,
   setForecastResults,
@@ -575,12 +486,10 @@ export const {
   setNewRowPriceValue,
   setNewRowAdDaysValue,
   setSelectedSim,
-  setSimBtns,
   setSimRowData,
   loadSimRowData,
   reloadRowData,
   setRowData,
-  updateSimRowData,
   setAllRows,
   resetRows,
   setGlobalFcstPrice,
