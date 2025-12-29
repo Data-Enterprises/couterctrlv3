@@ -8,6 +8,7 @@ import { setUserPrefs } from "../../../api/user";
 import { fakeStores, fakeGroups } from ".";
 import { setAssignedStores } from "../../../features/userSlice";
 import { setGroups } from "../../../features/groupSlice";
+import { setIsDesktop } from "../../../features/appSlice";
 
 const testStore = setupStore();
 const user = userEvent.setup();
@@ -164,6 +165,15 @@ describe("StorePicker Component", () => {
     // Click on one of the groups
     const groupTrigger = await screen.findByTestId("selectgroup-trigger-ref");
     await user.click(groupTrigger);
+    await user.click(groupTrigger);
+
+    await waitFor(() => {
+      testStore.dispatch(setIsDesktop(false));
+    });
+
+    await waitFor(() => {
+      testStore.dispatch(setIsDesktop(true));
+    });
 
     const groupToSelect = await screen.findByTestId("selectgroup-3");
     await user.click(groupToSelect);
