@@ -31,22 +31,13 @@ const SideBar = () => {
 
   // make api call to set the user prefs when navigating to a new page
   useEffect(() => {
-    if (nav.lastRoute) {
-      const prefs = {
-        userid: user.userid,
-        last_route: nav.lastRoute,
-      };
-      setUserPrefs(context.url, context.token, prefs)
-        .then((resp) => {
-          const j = resp.data;
-          if (j.error === 0) {
-            return;
-          }
-        })
-        .catch((err: JsonError) => {
-          toast.error("Error setting user prefs:" + err.message);
-        });
-    }
+    const prefs = {
+      userid: user.userid,
+      last_route: nav.lastRoute,
+    };
+    setUserPrefs(context.url, context.token, prefs).catch((err: JsonError) => {
+      toast.error("Error setting user prefs:" + err.message);
+    });
   }, [nav.lastRoute]);
 
   useEffect(() => {
@@ -62,17 +53,13 @@ const SideBar = () => {
   };
 
   const handleNavClick = (item: Navigation) => {
-    if (item.children.length && item.href === "#") {
-      // Toggle the item's children => not implemented yet
-    } else {
-      // Otherwise, set last route for user prefs
-      dispatch(setLastRoute(item.href));
-    }
-
-    // Otherwise, navigation is handled by NavLink and we then toggle nav off if it is open
-    if (nav.isNavOpen) {
-      dispatch(setIsNavOpen(false));
-    }
+    // if (item.children.length && item.href === "#") {
+    //   // Toggle the item's children => not implemented yet
+    // } else {
+    //   // Otherwise, set last route for user prefs
+    // }
+    dispatch(setLastRoute(item.href));
+    dispatch(setIsNavOpen(false));
   };
 
   const handleSignOut = () => {

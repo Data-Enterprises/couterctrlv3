@@ -10,12 +10,10 @@ export const filename_date = () => {
 
 const save = (uri: string, filename: string) => {
   const link = document.createElement("a");
-  if (typeof link.download == "string") {
-    document.body.appendChild(link);
-    link.download = filename;
-    link.href = uri;
-    link.click();
-  }
+  document.body.appendChild(link);
+  link.download = filename;
+  link.href = uri;
+  link.click();
 };
 
 export const csv = (headers: string, data: string, filename: string) => {
