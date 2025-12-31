@@ -5,7 +5,7 @@ import Forecast from "../../../pages/forecast/Forecasting";
 import { screen, waitFor } from "@testing-library/react";
 import { setupStore } from "../../../store";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
-import { getBucketList, getFromExistingS3File } from "../../../api/forecast";
+import { getBucketList } from "../../../api/forecast";
 
 import {
   defaultErrorResp,
@@ -66,24 +66,52 @@ describe("Forecast Page", () => {
   });
 
   // This test needs to handle API failure when selecting a row from the FileGrid
-  // it("should handle API failure when selecting a file from the FileGrid component", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   (getFromExistingS3File as Mock).mockRejectedValueOnce(defaultErrorResp);
-  //   renderWithProviders(<Forecast />, { store });
-  // });
+  it("should throw an error toast when fetching file names fails", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    (getHistoryFromList as Mock).mockRejectedValueOnce(defaultErrorResp);
+    renderWithProviders(<Forecast />, { store });
+
+    const rows = await screen.findAllByRole("row");
+    const rowToClick = rows[1];
+    await user.click(rowToClick);
+
+    await waitFor(() => {
+      expect(mockToastError).toHaveBeenCalledWith(defaultErrorResp.message);
+    });
+  });
+
+  it("should do nothing if error !== 0 when fetching file names", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    (getHistoryFromList as Mock).mockResolvedValue({
+      data: { error: 1, results: [] },
+    });
+    renderWithProviders(<Forecast />, { store });
+
+    const rows = await screen.findAllByRole("row");
+    const rowToClick = rows[1];
+    await user.click(rowToClick);
+
+    await waitFor(() => {
+      expect(mockToastError).not.toHaveBeenCalled();
+      expect(store.getState().forecast.items.length).toBe(0);
+    });
+  });
 
   // This needs to be updated when the file grid endpoint is updated to match that of the price history endpoint
   it("should handle the selecting of a file from the FileGrid component", async () => {
     (getBucketList as Mock).mockResolvedValue(fileListResp);
-    (getFromExistingS3File as Mock).mockResolvedValue(priceHistoryFromListResp);
+    (getHistoryFromList as Mock).mockResolvedValue(priceHistoryFromListResp);
     renderWithProviders(<Forecast />, { store });
 
-    // Finding the rows in the AgGrid table
-    // The first row of each AGGrid is the header row, so we need to select the second row
     const rows = await screen.findAllByRole("row");
-    await user.click(rows[1]);
+    const rowToClick = rows[1];
+    await user.click(rowToClick);
 
-    // Expect the data to come back => use the slice as a checker
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      const respItems = priceHistoryFromListResp.data.results;
+      expect(state.items.length).toBe(respItems.length);
+    });
   });
 
   it("should allow the user to select Stores in store picker", async () => {
@@ -499,7 +527,7 @@ describe("Forecast Page", () => {
       expect(state.rowData[0].adDays).toBe(4);
     });
   });
-  
+
   it("should handle ad days less than expected days in forecastUnits", async () => {
     (getBucketList as Mock).mockResolvedValue(fileListResp);
     renderWithProviders(<Forecast />, { store });

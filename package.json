@@ -6,7 +6,7 @@
     "dev": "vite",
     "test": "vitest",
     "test:watch": "vitest --watch",
-    "test:ui": "vitest --ui",
+    "test:ui": "vitest --ui --api 9527",
     "lint": "eslint .",
     "preview": "vite preview",
     "clean": "rimraf dist",
