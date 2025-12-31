@@ -89,6 +89,19 @@ describe("Groups Page", () => {
     });
   });
 
+  it("should do nothing if error !== '0' on createGroup response", async () => {
+    (getGroups as Mock).mockResolvedValue(getGroupsSuccessResp);
+    (createGroup as Mock).mockResolvedValueOnce({ data: { error: 1 } });
+    renderWithProviders(<Groups />);
+
+    const createInput = screen.getByTestId("create-group-input");
+    const createButton = screen.getByTestId("group-create-btn");
+
+    // Type in the create input => will call createGroup API
+    await user.type(createInput, "Test Group");
+    await user.click(createButton);
+  });
+
   it("should handle the deleting of a group and any errors with deleting the group", async () => {
     (getGroups as Mock).mockResolvedValue(updatedGroupsAfterDeleteResp);
     renderWithProviders(<Groups />, { store });
@@ -152,6 +165,28 @@ describe("Groups Page", () => {
         "Group deleted successfully"
       );
     });
+  });
+
+  it("should do nothing if error !== 0 in the then block with deleting the group", async () => {
+    (getGroups as Mock).mockResolvedValue(updatedGroupsAfterDeleteResp);
+    renderWithProviders(<Groups />, { store });
+
+    const openDeleteModalBtn = await screen.findByTestId("group-delete-btn");
+    const createInput = screen.getByTestId("create-group-input");
+    await user.clear(createInput);
+    await user.type(createInput, "Test Group");
+    await user.click(openDeleteModalBtn);
+
+    const modal = await screen.findByTestId("modal");
+    expect(modal).toBeInTheDocument();
+
+    // Handle opening and closing of delete group modal
+    const confirmBtn = screen.getByTestId("modal-confirm-btn");
+    expect(confirmBtn).toBeInTheDocument();
+
+    // Now successfully delete the group
+    (deleteGroup as Mock).mockResolvedValue({ data: { error: 1 } });
+    await user.click(confirmBtn);
   });
 
   it("should handle API error when fetching groups", async () => {

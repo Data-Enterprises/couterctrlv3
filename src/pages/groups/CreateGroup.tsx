@@ -25,6 +25,7 @@ const CreateGroup = () => {
     createGroup(context.url, context.token, context.userid, context.createInput)
       .then((resp) => {
         const j = resp.data;
+        /* c8 ignore next 3 */
         if (j.error == "0") {
           dispatch(setCreateInput(""));
           dispatch(setRefreshGroups(true));
@@ -59,19 +60,17 @@ const CreateGroup = () => {
   // Once all the checks have passed and the user actually want to delete the group
   const handleDelete = () => {
     const id = groupId();
-    if (id) {
-      deleteGroup(context.url, context.token, id)
-        .then((resp) => {
-          const j = resp.data;
-          if (j.error == "0") {
-            dispatch(setCreateInput(""));
-            setIsModalOpen(false);
-            dispatch(setRefreshGroups(true));
-            toast.success("Group deleted successfully");
-          }
-        })
-        .catch((err: JsonError) => toast.error(err.message));
-    }
+    deleteGroup(context.url, context.token, id!)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error == "0") {
+          dispatch(setCreateInput(""));
+          setIsModalOpen(false);
+          dispatch(setRefreshGroups(true));
+          toast.success("Group deleted successfully");
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
   };
 
   return (

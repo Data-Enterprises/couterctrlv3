@@ -47,6 +47,7 @@ import {
 import { setGroups } from "../../../features/groupSlice";
 import { act } from "react";
 import { useHeight } from "../../../pages/sales/utils/hooks";
+import { useHeight as useHeight2} from '../../../pages/hooks'
 
 const user = userEvent.setup();
 vi.mock("../../../api/sales");
@@ -173,6 +174,29 @@ describe("Sales Page", () => {
     const { result } = renderHook(() => useHeight());
     expect(result.current.height).toBe(0);
   });
+
+    it("should not update height when gridRef is null and maintain useHeight custom hook", async () => {
+      await waitFor(() => {
+        Object.defineProperty(window, "innerWidth", {
+          writable: true,
+          configurable: true,
+          value: 500,
+        });
+        window.dispatchEvent(new Event("resize"));
+      });
+
+      await waitFor(() => {
+        Object.defineProperty(window, "innerWidth", {
+          writable: true,
+          configurable: true,
+          value: 1800,
+        });
+        window.dispatchEvent(new Event("resize"));
+      });
+
+      const { result } = renderHook(() => useHeight2());
+      expect(result.current.height).toBe(385);
+    });
 
   it("should handle api failure for fetching all data after sales panels are fetched", async () => {
     (getSalesPanels as Mock).mockResolvedValue(singleStoreSalesPanel);

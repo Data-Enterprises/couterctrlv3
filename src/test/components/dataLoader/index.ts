@@ -1,5 +1,12 @@
 export const JsonErrorResp = new Error("API request failed");
 
+export const userPrefsFalseResp = {
+  data: {
+    error: 1,
+    success: false,
+  }
+}
+
 export const userPrefsResp = {
   data: {
     error: 0,

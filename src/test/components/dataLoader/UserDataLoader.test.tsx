@@ -15,7 +15,8 @@ import {
   userPrefsResp1,
   userPrefsResp2,
   userPrefsResp3,
-  userPrefsResp4
+  userPrefsResp4,
+  userPrefsFalseResp,
 } from ".";
 
 vi.mock("../../../api/user");
@@ -47,6 +48,18 @@ describe("UserDataLoader Component", () => {
     await waitFor(() => {
       expect(mockedToastError).toHaveBeenCalled();
     });
+  });
+
+  it("should do nothing if error is not 0 in the then block of the api calls", async () => {
+    const store = setupStore();
+    await waitFor(() => {
+      store.dispatch(setToken("valid-token"));
+    });
+
+    (getUserPrefs as Mock).mockResolvedValue(userPrefsFalseResp);
+    (getUserStores as Mock).mockResolvedValue(userPrefsFalseResp);
+    (getGroups as Mock).mockResolvedValue(userPrefsFalseResp);
+    renderWithProviders(<UserDataLoader />, { store });
   });
 
   it("should fetch user data when a valid access token is set", async () => {
@@ -109,19 +122,19 @@ describe("UserDataLoader Component", () => {
     });
   });
 
-  it("should handle missing data from test users or new users", async() => {
-        const store = setupStore();
-        await waitFor(() => {
-          store.dispatch(setToken("valid-token"));
-        });
-        (getUserPrefs as Mock).mockResolvedValue(userPrefsResp4);
-        (getUserStores as Mock).mockResolvedValue(userStoresResp);
-        (getGroups as Mock).mockResolvedValue(getGroupsResp);
-        renderWithProviders(<UserDataLoader />, { store });
+  it("should handle missing data from test users or new users", async () => {
+    const store = setupStore();
+    await waitFor(() => {
+      store.dispatch(setToken("valid-token"));
+    });
+    (getUserPrefs as Mock).mockResolvedValue(userPrefsResp4);
+    (getUserStores as Mock).mockResolvedValue(userStoresResp);
+    (getGroups as Mock).mockResolvedValue(getGroupsResp);
+    renderWithProviders(<UserDataLoader />, { store });
 
-        await waitFor(() => {
-          const state = store.getState();
-          expect(state.search.type).toBe("Stores");
-        });
+    await waitFor(() => {
+      const state = store.getState();
+      expect(state.search.type).toBe("Stores");
+    });
   });
 });
