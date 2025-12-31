@@ -41,9 +41,7 @@ const ResetPassword = () => {
   }
 
   const handleClose = () => {
-    if (closeModal) {
-      dispatch(setResetPassword(0));
-    }
+    dispatch(setResetPassword(0));
   };
 
   return (

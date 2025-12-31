@@ -29,8 +29,6 @@ import OutlierGrid from "./grids/OutlierGrid";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import ForecastModal from "./controls/ForecastModal";
 import DatePickers from "../../components/datePickers/DatePickers";
-import { fitLinearDemand, predictQty } from "./utils";
-import { forecastUnits } from "../priceSimulator/calc";
 import { getHistoryFromList } from "../../api/priceSim";
 import {
   removeSingleUpc,
@@ -38,7 +36,7 @@ import {
   setUpcText,
 } from "../../features/upcUploadSlice";
 import ForecastCarousel from "./carousel/ForecastCarousel";
-// import Instructions from "./controls/Instructions";
+import { formatRowData } from ".";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -100,49 +98,7 @@ const Forecasting = () => {
           dispatch(setForecastResults(j.results));
 
           // set the row data
-          const rowData = j.results.map((item) => {
-            const prices = item.price_history.map((p) => [
-              parseFloat(p.price),
-              p.qty,
-            ]).sort((a, b) => b[1] - a[1]); 
-
-            const linear = fitLinearDemand(prices);
-            const predictedQty = predictQty(prices[0][0], linear, prices);
-            const price = prices[0][0];
-            const daysAtPrice = item.price_history.find(
-              (p) => parseFloat(p.price) === price
-            )!.days_active;
-
-            const units = forecastUnits(
-              price, // 9.99
-              item.qty, // overall units sold in period
-              predictedQty, // 120 => from last 90 days
-              item.days_active, // total selling days
-              90, // on 90 day period
-              daysAtPrice, // days at price => based on the price history => 3
-              7, // forecastwindow
-              prices // price history to get qty at price
-              // adDays === undefined
-            );
-
-            // (reg retail - fcst prcie) * fcst qty = markdown dollars
-            const markdownDollars = (item.regular_retail_price - price) * units;
-
-            return {
-              upc: item.upc,
-              description: item.description,
-              qtySold: prices[0][1],
-              daysActive: item.days_active, // active total
-              daysAtPrice: daysAtPrice, // active days at price
-              calcNow: 0 as 0 | 1,
-              adFcst: units,
-              fcstPrice: price,
-              fcstTotal: price * units,
-              forecastWindow: 7,
-              adDays: 0, // this show as "" for 0 until user input
-              markdownDollars: markdownDollars,
-            };
-          });
+          const rowData = formatRowData(j.results);
           dispatch(setInitialRowData(rowData));
         }
       })
@@ -281,6 +237,7 @@ const Forecasting = () => {
             </div>
             <input
               type="text"
+              data-testid="forecast-upc-input"
               className="basic-input focus:border bg-custom-white py-1 mt-2"
               value={upcText}
               onChange={handleTextChange}
@@ -288,12 +245,14 @@ const Forecasting = () => {
             />
             <div className="flex py-2 gap-2">
               <button
+                data-testid="forecast-add-upc-btn"
                 className="btn-themeBlue py-1 border px-0 w-1/2"
                 onClick={() => handleAddUpc(upcText)}
               >
                 Add
               </button>
               <button
+                data-testid="forecast-clear-upc-btn"
                 className="btn-themeBlue py-1 border px-0 w-1/2"
                 onClick={() => handleAddUpc("")}
               >
@@ -304,6 +263,7 @@ const Forecasting = () => {
               {upcs.map((u, i) => (
                 <div
                   key={i}
+                  data-testid={`forecast-upc-item-${u}-${i}`}
                   className="px-2 py-0.5 font-medium hover:text-blue-500  transition-all duration-200 cursor-pointer"
                   onClick={() => handleRemoveUpc(u)}
                 >

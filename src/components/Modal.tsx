@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 
 interface ModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   className?: string;
   children: React.ReactNode;
   modalClassName?: string;
@@ -22,6 +22,7 @@ const Modal = ({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
+        onClose &&
         modalRef.current &&
         !modalRef.current.contains(event.target as Node) &&
         allowClickOutside

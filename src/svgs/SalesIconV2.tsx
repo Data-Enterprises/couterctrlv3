@@ -1,5 +1,5 @@
 import type { IconProps } from ".";
-const SalesIconV2 = ({ className, onClick }: IconProps) => {
+const SalesIconV2 = ({ className }: IconProps) => {
   return (
     <svg
       data-testid="sales-icon-v2"
@@ -7,11 +7,6 @@ const SalesIconV2 = ({ className, onClick }: IconProps) => {
       className={`${className} cursor-pointer`}
       version="1.1"
       viewBox="0 0 512 512"
-      onClick={() => {
-        if (onClick) {
-          onClick();
-        }
-      }}
       fill="none"
       stroke="currentColor"
       strokeWidth="20"

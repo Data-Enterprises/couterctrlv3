@@ -12,12 +12,22 @@ const successEmbedResponse = {
   },
 };
 
+const warnEmbedResponse = {
+  data: {
+    error: 2,
+    msg: "Warning",
+    success: false,
+  },
+};
+
 vi.mock("../../../api/quicksight");
 const mockToastError = vi.fn();
+const mockToastWarn = vi.fn();
 vi.mock("../../../components/toasts/hooks/useToast", () => {
   return {
     useToast: () => ({
       error: mockToastError,
+      warn: mockToastWarn,
     }),
   };
 });
@@ -28,6 +38,15 @@ describe("Dashboard Page", () => {
     renderWithProviders(<Dashboard />);
     const page = await screen.findByTestId("dashboard-page");
     expect(page).toBeInTheDocument();
+  });
+
+  it("should handle api warning when fetching embed url", async () => {
+    (getEmbedUrl as Mock).mockResolvedValue(warnEmbedResponse);
+    renderWithProviders(<Dashboard />);
+
+    await waitFor(() => {
+      expect(mockToastWarn).toHaveBeenCalledWith("Failed to load dashboard");
+    });
   });
 
   it("should handle api failure when fetching embed url", async () => {

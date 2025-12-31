@@ -36,9 +36,7 @@ export const formatBigNumber = (
   locale: string = "en-US"
 ): string => {
   const options: Intl.NumberFormatOptions = {};
-  if (decimals !== undefined) {
-    options.minimumFractionDigits = decimals;
-  }
+  options.minimumFractionDigits = decimals;
   return new Intl.NumberFormat(locale, options).format(value);
 };
 

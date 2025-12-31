@@ -25,6 +25,8 @@ const Dashboard = () => {
         const j = resp.data;
         if (j.error == 0) {
           dispatch(setEmbedUrl(j.embed_url));
+        } else {
+          toast.warn("Failed to load dashboard")
         }
       })
       .catch((err: JsonError) => toast.error(err.message));

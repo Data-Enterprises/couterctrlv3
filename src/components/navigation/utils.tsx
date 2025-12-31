@@ -104,4 +104,14 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userTypes: ["*"],
   },
+  // This fake link is just to show that user types can be restricted
+  {
+    name: "fake link",
+    href: "fake-link",
+    icon: HomeIcon,
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userTypes: ["9999"]
+  }
 ];

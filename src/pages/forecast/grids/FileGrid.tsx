@@ -4,16 +4,15 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   reQuery,
   setFiles,
+  setForecastResults,
+  setInitialRowData,
   setIsLoading,
   setItems,
-  setQty,
-  setSales,
 } from "../../../features/forecastSlice";
 import { useAppDispatch } from "../../../hooks";
-import { getFromExistingS3File } from "../../../api/forecast";
 
 import { AgGridReact } from "ag-grid-react";
-import { theme } from "..";
+import { formatRowData, theme } from "..";
 import {
   AllCommunityModule,
   ModuleRegistry,
@@ -21,8 +20,10 @@ import {
   type ColGroupDef,
   type RowClickedEvent,
 } from "ag-grid-community";
-import type { ForecastQtyData, ForecastSalesData } from "../../../interfaces";
+// import type { ForecastQtyData, ForecastSalesData } from "../../../interfaces";
 import { useForecastContext } from "../hooks";
+import type { JsonError, PriceHistoryFromListResp } from "../../../interfaces";
+import { getHistoryFromList } from "../../../api/priceSim";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 type TableData = {
@@ -47,7 +48,7 @@ const FileGrid = () => {
     { headerName: "Name", field: "name", flex: 1.3 },
   ];
 
-  useEffect(() => {
+  const getFileNames = () => {
     getBucketList(context.url, context.token)
       .then((resp) => {
         // Handle the response here
@@ -69,70 +70,49 @@ const FileGrid = () => {
       .catch((err) => {
         toast.error(err.message);
       });
+  };
+
+  useEffect(() => {
+    getFileNames();
   }, []);
 
   const onRowClicked = (event: RowClickedEvent<TableData>) => {
     if (event.data) {
       dispatch(setIsLoading(true));
       dispatch(reQuery());
-      const fileName = event.data.name;
-      getFromExistingS3File(
+
+      // Insert the fixed price_history_from_list call here => after it can take in a file name
+      getHistoryFromList(
         context.url,
         context.token,
         context.storeids,
-        context.startDate,
         context.endDate,
-        fileName
+        "",
+        event.data.name
       )
         .then((resp) => {
-          const j = resp.data;
+          const j: PriceHistoryFromListResp = resp.data;
           if (j.error === 0) {
-            const qtyOutput: ForecastQtyData<any>[] = Object.entries(
-              j.qty_output
-            ).map(([k, v]) => {
-              const upc = k as string;
-              const data = v as any;
-              return {
-                upc,
-                history: data.history,
-                history_dimension: data.history_dimension,
-                forecast: data.forecast,
-                forecast_dimension: data.forecast_dimension,
-                forecast_method: data.forecast_method,
-                metrics: data.metrics,
-              };
-            });
-
-            const salesOutput: ForecastSalesData<any>[] = Object.entries(
-              j.sales_output
-            ).map(([k, v]) => {
-              const upc = k as string;
-              const data = v as any;
-              return {
-                upc,
-                history: data.history,
-                history_dimension: data.history_dimension,
-                forecast: data.forecast,
-                forecast_dimension: data.forecast_dimension,
-                forecast_method: data.forecast_method,
-                metrics: data.metrics,
-              };
-            });
-
-            const upcItems = qtyOutput.map((item) => ({
+            // Set the upc items for the controls
+            const upcItems = j.results.map((item) => ({
               upc: item.upc,
-              description: item.metrics.description,
+              description: item.description,
             }));
-
-            dispatch(setQty(qtyOutput));
-            dispatch(setSales(salesOutput));
             dispatch(setItems(upcItems));
+
+            // set the raw data => needed to grab the prices and figure out the forecast values
+            dispatch(setForecastResults(j.results));
+
+            // set the row data
+            const rowData = formatRowData(j.results);
+            dispatch(setInitialRowData(rowData));
           }
         })
-        .catch((err) => {
-          toast.error(err.message);
-        })
-        .finally(() => dispatch(setIsLoading(false)));
+        .catch((err: JsonError) => toast.error(err.message))
+        .finally(() => {
+          dispatch(setIsLoading(false));
+          getFileNames();
+        });
     }
   };
 

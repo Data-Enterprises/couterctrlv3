@@ -98,12 +98,12 @@ const ForecastModal = () => {
           />
         )}
         {sims.length &&
-          sims.map(([sim, _]) => (
+          sims.map(([sim, _], i) => (
             <CheckBox
               key={sim}
               value={option[sim as keyof ExportOption] === 1}
               label={label(sim)}
-              id={2}
+              id={i + 2}
               idExtension={`${sim}-updated-history`}
               onChange={() => handleChange(sim)}
               className="cursor-pointer"

@@ -12,6 +12,7 @@ import {
   setAllRows,
   resetRows,
 } from "../../../features/forecastSlice";
+import { clearUpcs } from "../../../features/upcUploadSlice";
 
 const ForecastControls = () => {
   const [filtered, setFiltered] = useState<ForecastItem[]>([]);
@@ -25,8 +26,9 @@ const ForecastControls = () => {
   const state = useAppSelector((state) => state.forecast);
   const search = useAppSelector((state) => state.search);
 
-  const handleClearClick = () => {
+  const handleResetClick = () => {
     dispatch(reset());
+    dispatch(clearUpcs());
   };
 
   const handleDisplay = (value: "all" | "selected" | "stores") => {
@@ -82,7 +84,7 @@ const ForecastControls = () => {
           <button
             data-testid="forecast-controls-reset-btn"
             className="py-1 btn-themeBlue"
-            onClick={handleClearClick}
+            onClick={handleResetClick}
           >
             Reset
           </button>

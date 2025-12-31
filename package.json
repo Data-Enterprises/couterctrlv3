@@ -6,13 +6,14 @@
     "dev": "vite",
     "test": "vitest",
     "test:watch": "vitest --watch",
-    "test:ui": "vitest --ui",
+    "test:ui": "vitest --ui --api 9527",
     "lint": "eslint .",
     "preview": "vite preview",
     "clean": "rimraf dist",
     "build": "npm run clean && tsc -b && vite build",
     "deploy": "npm run build && aws s3 sync dist s3://www.counterctrlcloud.com --delete --cache-control \"public, max-age=31536000, immutable\" && aws s3 cp dist/index.html s3://www.counterctrlcloud.com/index.html --cache-control \"no-cache, no-store, must-revalidate\" && aws cloudfront create-invalidation --distribution-id EGRZX5CPCZSSN --paths=\"/*\"",
-    "publish": "npm run deploy"
+    "publish": "npm run deploy",
+    "build:test": "vite build"
   },
   "dependencies": {
     "@ericblade/quagga2": "^1.8.4",

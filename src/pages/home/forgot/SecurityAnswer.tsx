@@ -18,6 +18,8 @@ const SecurityAnswer = () => {
         if (j.error === 0) {
           toast.success(j.msg);
           dispatch(setIndex());
+        } else {
+          toast.warn("Error processing request");
         }
       })
       .catch((err: JsonError) => toast.error(err.message));

@@ -30,7 +30,15 @@ export const upcUploadSlice = createSlice({
         return acc;
       }, []);
 
-      state.upcs = reduced;
+      const allUpcs = [...state.upcs, ...reduced];
+      const finalReduced = allUpcs.reduce((acc: string[], curr: string) => {
+        if (!acc.includes(curr)) {
+          acc.push(curr);
+        }
+        return acc;
+      }, []);
+
+      state.upcs = finalReduced;
       state.upcText = "";
     },
     setUpcText: (state, action: PayloadAction<string>) => {

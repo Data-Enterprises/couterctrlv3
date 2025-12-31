@@ -32,6 +32,8 @@ const SecurityQuestion = () => {
             toast.info(
               "Please set your security question and answer to secure your account."
             );
+          } else {
+            toast.warn("No security questions available at this time.");
           }
         })
         .catch((err: JsonError) => {
@@ -73,6 +75,8 @@ const SecurityQuestion = () => {
         if (j.error === 0) {
           dispatch(setSecurityQuestionId(questionId));
           toast.success("Security question and answer set successfully.");
+        } else {
+          toast.warn("Failed to set security question and answer.");
         }
       })
       .catch((err: JsonError) => {
@@ -89,7 +93,7 @@ const SecurityQuestion = () => {
 
   // Else we show the modal to set security question and answer
   return (
-    <Modal isOpen={user.securityQuestionId === 0} onClose={() => {}}>
+    <Modal isOpen={user.securityQuestionId === 0}>
       <div className="text-center font-medium">
         Welcome to CounterCtrl {user.firstName} {user.lastName}!
       </div>

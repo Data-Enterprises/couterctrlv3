@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+// import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { AgGridReact } from "ag-grid-react";
 import { theme } from "..";
 import {
@@ -11,11 +11,9 @@ import {
 } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
 import { formatCurrency2 } from "../../../utils";
-import {
-  setAdFcst,
-  setSelectedHistory,
-  setFcstTotal,
-} from "../../../features/forecastSlice";
+// import {
+//   setSelectedHistory,
+// } from "../../../features/forecastSlice";
 
 interface TableData {
   upc: string;
@@ -81,32 +79,31 @@ const colDefs: (ColDef<TableData> | ColGroupDef<TableData>)[] = [
 ];
 
 const PriceHistoryGrid = () => {
-  const dispatch = useAppDispatch();
-  const state = useAppSelector((state) => state.forecast);
+  // const dispatch = useAppDispatch();
+  // const state = useAppSelector((state) => state.forecast);
   const [tableData, setTableData] = useState<TableData[]>([]);
 
   useEffect(() => {
-    if (state.selectedUpcs.length > 0) {
-      const data = state.priceHistory.map((item) => ({
-        upc: item.product_code,
-        desc: item.product_description,
-        type: item.price_type,
-        activePrice: item.unit_price,
-        retailPrice: item.regular_retail_price,
-        qty: item.total_qty,
-        lift: item.lift,
-      }));
-      setTableData(data);
-    } else {
-      setTableData([]);
-    }
-  }, [state.priceHistory]);
+    // if (state.selectedUpcs.length > 0) {
+    //   const data = state.priceHistory.map((item) => ({
+    //     upc: item.product_code,
+    //     desc: item.product_description,
+    //     type: item.price_type,
+    //     activePrice: item.unit_price,
+    //     retailPrice: item.regular_retail_price,
+    //     qty: item.total_qty,
+    //     lift: item.lift,
+    //   }));
+    //   setTableData(data);
+    // } else {
+    //   setTableData([]);
+    // }
+    setTableData([]);
+  }, []); // state.priceHistory goes here
 
   const onRowClicked = (event: RowClickedEvent<TableData>) => {
     if (event.data) {
-      dispatch(setAdFcst(0));
-      dispatch(setFcstTotal(0));
-      dispatch(setSelectedHistory(event.data));
+      // dispatch(setSelectedHistory(event.data));
     }
   };
 

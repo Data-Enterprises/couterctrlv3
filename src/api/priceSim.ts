@@ -5,7 +5,8 @@ export const getHistoryFromList = async (
   token: string,
   storeids: string,
   enddate: string,
-  upc_list: string
+  upc_list: string,
+  filename: string = "",
 ) => {
   const json = await axios({
     method: "POST",
@@ -18,6 +19,7 @@ export const getHistoryFromList = async (
       storeids,
       enddate,
       upc_list,
+      filename,
     },
   });
 

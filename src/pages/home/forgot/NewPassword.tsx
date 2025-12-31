@@ -27,6 +27,8 @@ const NewPassword = ({ onClose }: NewPasswordProps) => {
         if (j.error === 0) {
           toast.success(j.msg);
           onClose();
+        } else {
+          toast.warn("Error processing request");
         }
       })
       .catch((err: JsonError) => toast.error(err.message));

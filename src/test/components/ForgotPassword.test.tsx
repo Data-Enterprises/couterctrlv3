@@ -60,6 +60,29 @@ describe("ForgotPassword Component", () => {
     });
   });
 
+  it("should throw warning if there is some random error in Step One", async () => {
+    (forgotPWEmailVerify as Mock).mockResolvedValueOnce({
+      data: {
+        error: 1,
+      },
+    });
+    renderWithProviders(<ForgotPassword />, { store });
+
+    const userNameInput = await screen.findByTestId(
+      "text-input-forgot-username"
+    );
+    const emailInput = await screen.findByTestId("text-input-forgot-email");
+    const verifyBtn = await screen.findByTestId("verify-email-button-forgot");
+
+    await user.type(userNameInput, "testuser");
+    await user.type(emailInput, "testuser@example.com");
+    await user.click(verifyBtn);
+
+    await waitFor(() => {
+      expect(mockToastWarn).toHaveBeenCalledWith("Error processing request");
+    });
+  });
+
   it("should handle Step One: Email Verification API Success", async () => {
     (forgotPWEmailVerify as Mock).mockResolvedValueOnce({
       data: {
@@ -112,6 +135,31 @@ describe("ForgotPassword Component", () => {
       expect(mockToastError).toHaveBeenCalledWith("Incorrect answer");
       const state = store.getState().forgotPassword;
       expect(state.index).toBe(1); // should remain on the same step
+    });
+  });
+
+  it("should handle Step Two: Security Question Warning", async () => {
+    (validateSecurityAnswer as Mock).mockResolvedValueOnce({
+      data: {
+        error: 1,
+      },
+    });
+    renderWithProviders(<ForgotPassword />, { store });
+
+    const answerInput = await screen.findByTestId(
+      "text-input-forgot-question-answer"
+    );
+    const submitBtn = await screen.findByTestId(
+      "submit-security-answer-button-forgot"
+    );
+
+    // clear answerInput
+    await user.clear(answerInput);
+    await user.type(answerInput, "correct answer");
+    await user.click(submitBtn);
+
+    await waitFor(() => {
+      expect(mockToastWarn).toHaveBeenCalledWith("Error processing request");
     });
   });
 
@@ -169,6 +217,24 @@ describe("ForgotPassword Component", () => {
 
     await waitFor(() => {
       expect(mockToastError).toHaveBeenCalledWith("Failed to reset password");
+    });
+  });
+
+  it("should handle Step Three: Reset Password Warning", async () => {
+    (resetForgotPassword as Mock).mockResolvedValueOnce({
+      data: {
+        error: 1,
+      },
+    });
+    renderWithProviders(<ForgotPassword />, { store });
+
+    // New password is still typed in and in redux, so just test the api success
+    const changePWBtn = await screen.findByTestId("forgot-change-pw-btn");
+    expect(changePWBtn).toBeInTheDocument();
+    await user.click(changePWBtn);
+
+    await waitFor(() => {
+      expect(mockToastWarn).toHaveBeenCalledWith("Error processing request");
     });
   });
 

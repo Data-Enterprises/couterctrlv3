@@ -10,12 +10,10 @@ export const filename_date = () => {
 
 const save = (uri: string, filename: string) => {
   const link = document.createElement("a");
-  if (typeof link.download == "string") {
-    document.body.appendChild(link);
-    link.download = filename;
-    link.href = uri;
-    link.click();
-  }
+  document.body.appendChild(link);
+  link.download = filename;
+  link.href = uri;
+  link.click();
 };
 
 export const csv = (headers: string, data: string, filename: string) => {
@@ -36,12 +34,10 @@ export const handleUpcCsv = <T extends Record<string, any>>(
     .map((h) => h.alias)
     .join(",");
 
-  data.map((record) => {
+  data.forEach((record) => {
     let line = "";
-    headers.map((header) => {
-      if (header.visible) {
-        line += `"${record[header.column]}",`;
-      }
+    headers.forEach((header) => {
+      line += `"${record[header.column]}",`;
     });
     body += line.substring(0, line.length - 1) + "\r\n";
   });
