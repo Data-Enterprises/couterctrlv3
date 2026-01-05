@@ -49,7 +49,6 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
   };
 
   const renderIcon = (total: number, trend: number) => {
-    console.log(total, trend)
     // if both are negative
     if (total < 0 && trend < 0) {
       if (total < trend) {
@@ -82,7 +81,6 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
     const trends = cashier.cashierTrends;
     const exists = trends.find((t) => t.storeid === row.storeid);
     if (!exists) return null;
-    console.log(row, key, key2, exists[key2])
 
     // Otherwise return the icon
     return renderIcon(row[key] as number, exists[key2] as number);

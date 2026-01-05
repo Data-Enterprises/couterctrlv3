@@ -12,13 +12,21 @@ export const colDefs: (
   | ColGroupDef<TransactionListItem>
 )[] = [
   {
+    headerName: "Trans ID",
+    field: "sale_id",
+    flex: 0.5,
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    valueFormatter: (params) => params.value.split("-")[1],
+    cellClass: "no-outline-on-focus underline font-medium cursor-pointer",
+  },
+  {
     headerName: "Sale ID",
     field: "sale_id",
     flex: 1,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
-    cellClass:
-      "no-outline-on-focus underline font-medium cursor-pointer",
+    cellClass: "no-outline-on-focus",
   },
   {
     headerName: "Type",
@@ -80,7 +88,7 @@ export const colDefs: (
   {
     headerName: "Description",
     field: "product_description",
-    flex: 1.5,
+    flex: 1.4,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",

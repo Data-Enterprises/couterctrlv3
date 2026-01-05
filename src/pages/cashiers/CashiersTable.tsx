@@ -125,8 +125,8 @@ const CashiersTable = () => {
   ]);
 
   const onCellClicked = (e: CellClickedEvent) => {
-    const col = e.column.getColId();
-    if (col === "sale_id") {
+    const def = e.column.getColDef();
+    if (def.headerName === "Trans ID") {
       const saleId = e.value;
       const saleDate = e.data.sale_date.split("T")[0];
       const storeid = e.data.storeid;
