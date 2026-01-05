@@ -66,6 +66,25 @@ const ForecastControls = () => {
     dispatch(setRowData(row!));
   };
 
+  const upcStyle = (upc: string) => {
+    const found = state.singlePriceResults.find((item) => item.upc === upc);
+    if (found) {
+      // style one
+      return "bg-orange-300 px-2 py-1";
+    } else {
+      return "even:bg-blue-200 px-2 py-1 text-xs font-medium hover:bg-blue-100 transition-all duration-200 cursor-pointer";
+    }
+  };
+
+  const isSinglePriced = (upc: string) => {
+    const found = state.singlePriceResults.find((item) => item.upc === upc);
+    if (found) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   return (
     <div
       data-testid="forecast-controls"
@@ -161,15 +180,23 @@ const ForecastControls = () => {
           filtered.map((item, i) => (
             <div
               key={i}
-              className={`even:bg-blue-200 px-2 py-1 text-xs font-medium hover:bg-blue-100 transition-all duration-200 cursor-pointer`}
+              className={`${upcStyle(item.upc)}`}
               onClick={() => handleUpcSelect(item.upc)}
               // onContextMenu={(e) => handleRightClick(e, item)}
             >
-              <CheckBox
-                id={i}
-                label={upcDisplay === "code" ? item.upc : item.description}
-                value={state.selectedUpcs.includes(item.upc)}
-              />
+              {!isSinglePriced(item.upc) ? (
+                <CheckBox
+                  id={i}
+                  label={upcDisplay === "code" ? item.upc : item.description}
+                  value={state.selectedUpcs.includes(item.upc)}
+                />
+              ) : (
+                <div className="">
+                  <div className="line-through truncate overflow-hidden whitespace-nowrap">
+                    {upcDisplay === "code" ? item.upc : item.description}
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         {showDisplay === "selected" &&
@@ -179,7 +206,7 @@ const ForecastControls = () => {
               <div
                 key={i}
                 data-testid={`selected-upc-${i}`}
-                className={`even:bg-blue-200 px-2 py-1 text-xs font-medium hover:bg-blue-100 transition-all duration-200 cursor-pointer`}
+                className={`${upcStyle(item.upc)}`}
                 onClick={() => dispatch(setSelectedUpcs(item.upc))}
               >
                 <CheckBox

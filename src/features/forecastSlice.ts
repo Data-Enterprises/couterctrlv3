@@ -1,6 +1,40 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { Store, ForecastItem, PriceHistoryResult } from "../interfaces";
+import type {
+  Store,
+  ForecastItem,
+  PriceHistoryResult,
+  PriceHistory,
+} from "../interfaces";
 import { calcFcstQty, forecastUnits } from "../pages/forecast/utils";
+
+const estimateDaysActive = (history: PriceHistory[], price: number) => {
+  // price history and newPrice
+  const hollowPoint: PriceHistory = {
+    days_active: 0,
+    price: price.toString(),
+    qty: 0,
+    sale_dates: [],
+  };
+  const copy = [...history, hollowPoint].sort(
+    (a, b) => parseFloat(a.price) - parseFloat(b.price)
+  );
+  const idx = copy.findIndex((ph) => parseFloat(ph.price) === price);
+
+  // below
+  if (idx === 0) {
+    return copy[1].days_active;
+    // above
+  } else if (idx === copy.length - 1) {
+    return copy[copy.length - 2].days_active;
+  } else {
+    // middle
+    const p1 = copy[idx - 1].days_active;
+    const p2 = copy[idx + 1].days_active;
+
+    const newP = (p1 + p2) / 2;
+    return Math.round(newP);
+  }
+};
 
 export interface SelectedHistory {
   upc: string;
@@ -58,6 +92,7 @@ interface ForecastState {
   exportModalOpen: boolean;
   selectedUpc: string;
   forecastResults: PriceHistoryResult[];
+  singlePriceResults: PriceHistoryResult[];
   initialRowData: ForecastOutlierRow[];
   simOneRowData: ForecastOutlierRow[];
   simTwoRowData: ForecastOutlierRow[];
@@ -73,6 +108,7 @@ interface ForecastState {
 const initialState: ForecastState = {
   isLoading: false,
   selectedStores: [],
+  singlePriceResults: [],
   storeids: "", // needed for backend API calls
   radioId: 0,
   items: [],
@@ -163,7 +199,8 @@ export const forecastSlice = createSlice({
       const currentRows = state.rowData;
       initialRows.forEach((initRow) => {
         const exists = currentRows.find((r) => r.upc === initRow.upc);
-        if (!exists) {
+        const isSinglePriced = state.singlePriceResults.find((item) => item.upc === initRow.upc);
+        if (!exists && !isSinglePriced) {
           state.rowData.push(initRow);
         }
       });
@@ -238,6 +275,12 @@ export const forecastSlice = createSlice({
       action: PayloadAction<PriceHistoryResult[]>
     ) => {
       state.forecastResults = action.payload; // using this for value change references
+    },
+    setSingleForecastResults: (
+      state,
+      action: PayloadAction<PriceHistoryResult[]>
+    ) => {
+      state.singlePriceResults = action.payload;
     },
     setNewRowAdDaysValue: (
       state,
@@ -315,13 +358,21 @@ export const forecastSlice = createSlice({
         const fcstQty = calcFcstQty(upcPrices, newPrice);
         const overallUnits = upcPrices.reduce((acc, curr) => acc + curr[1], 0);
 
+        const priceHistory = state.forecastResults.find(
+          (item) => item.upc === row.upc
+        )?.price_history;
+
+        const daysActive =
+          priceHistory!.find((ph) => parseFloat(ph.price) === newPrice)
+            ?.days_active || estimateDaysActive(priceHistory!, newPrice);
+
         const units = forecastUnits(
           newPrice,
           overallUnits,
           fcstQty,
           row.daysActive, // total selling days
           90, // total days (90)
-          row.daysAtPrice, // days at price
+          daysActive, // days at price
           row.forecastWindow, // forecast window => 7 now but can be configurable
           upcPrices, // all prices with qty recorded for the item
           row.adDays // from user input => the sale date range
@@ -338,6 +389,7 @@ export const forecastSlice = createSlice({
         row.adFcst = units; // units over ad days
         row.fcstTotal = newPrice * units; // forecasted dollars
         row.markdownDollars = (regRetail - newPrice) * units;
+        row.daysAtPrice = daysActive; // days at the new price point based on history
 
         const sim = state.selectedSim;
         if (sim === "sim1") {
@@ -367,6 +419,14 @@ export const forecastSlice = createSlice({
           ph.qty,
         ]);
 
+        const priceHistory = state.forecastResults.find(
+          (item) => item.upc === upc
+        )?.price_history;
+
+        const daysActive =
+          priceHistory!.find((ph) => parseFloat(ph.price) === price)
+            ?.days_active || estimateDaysActive(priceHistory!, price);
+
         const fcstQty = calcFcstQty(upcPrices, price);
         const overallUnits = upcPrices.reduce((acc, curr) => acc + curr[1], 0);
 
@@ -376,7 +436,7 @@ export const forecastSlice = createSlice({
           fcstQty,
           row.daysActive, // total selling days
           90, // total days
-          row.daysAtPrice, // days at price
+          daysActive, // days at price
           row.forecastWindow, // forecast window => 7 now but can be configurable
           upcPrices, // all prices with qty recorded for the item
           row.adDays // from user input => the sale date range
@@ -391,6 +451,7 @@ export const forecastSlice = createSlice({
           adFcst: units,
           fcstTotal: price * units,
           markdownDollars: (regRetail - price) * units,
+          daysAtPrice: daysActive,
         };
       });
 
@@ -423,6 +484,8 @@ export const forecastSlice = createSlice({
       state.simBtns = { sim1: 0, sim2: 0, sim3: 0, sim4: 0 };
       state.selectedSim = "";
       state.globalFcstPrice = "";
+      state.singlePriceResults = [];
+      state.forecastResults = [];
     },
     reset: (state) => {
       state.selectedUpc = "";
@@ -441,6 +504,8 @@ export const forecastSlice = createSlice({
       state.simBtns = { sim1: 0, sim2: 0, sim3: 0, sim4: 0 };
       state.selectedSim = "";
       state.globalFcstPrice = "";
+      state.singlePriceResults = [];
+      state.forecastResults = [];
     },
     setExportModalOpen: (state, action: PayloadAction<boolean>) => {
       state.exportModalOpen = action.payload;
@@ -496,6 +561,7 @@ export const {
   updateGlobalFcstRows,
   resetSimulations,
   setCalcNow,
+  setSingleForecastResults,
   // resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;
