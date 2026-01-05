@@ -7,7 +7,7 @@ import {
 } from "../../../features/usersSlice";
 import { getUserStores } from "../../../api/user";
 import { getQuicksightStoresForUser } from "../../../api/quicksight";
-import type { JsonError } from "../../../interfaces";
+import type { JsonError, Store } from "../../../interfaces";
 
 // Modal and Modes
 import Modal from "../../../components/Modal";
@@ -35,14 +35,18 @@ const AssignStoresModal = () => {
     }
   }, [users.assignModalOpen]);
 
+  const filterNulls = (arr: Store[]) => {
+    return arr.filter((store) => store.store_name !== null);
+  };
+
   const getData = () => {
     getUserStores(context.url, context.token, users.selectedUserId)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
           const stores = {
-            assigned: j.assigned_stores,
-            unassigned: j.unassigned_stores,
+            assigned: filterNulls(j.assigned_stores),
+            unassigned: filterNulls(j.unassigned_stores),
           };
           dispatch(setSelectedUserStores(stores));
         }
@@ -62,8 +66,8 @@ const AssignStoresModal = () => {
         const j = resp.data;
         if (j.error === 0) {
           const stores = {
-            assigned_stores: j.assigned_stores,
-            unassigned_stores: j.unassigned_stores,
+            assigned_stores: filterNulls(j.assigned_stores),
+            unassigned_stores: filterNulls(j.unassigned_stores),
           };
           dispatch(setQsUserStores(stores));
         }

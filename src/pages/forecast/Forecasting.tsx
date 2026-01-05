@@ -21,7 +21,7 @@ import {
   setInitialRowData,
   setForecastResults,
 } from "../../features/forecastSlice";
-import { useForecastContext } from "./hooks";
+import { useForecastContext, useResizeContext } from "./hooks";
 import SelectedStoreList from "../upc/wizard/SelectedStoreList";
 import ForecastControls from "./controls/ForecastControls";
 import FileGrid from "./grids/FileGrid";
@@ -47,7 +47,7 @@ const Forecasting = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useForecastContext();
-  // const state = useAppSelector((state) => state.forecast);
+  const { height } = useResizeContext("");
   const [file, setFile] = useState<File | null>(null);
   const [filteredData, setFilteredData] = useState<Store[] | Group[]>([]);
   const { upcs, upcText } = useAppSelector((state) => state.upcs);
@@ -223,7 +223,6 @@ const Forecasting = () => {
               selectedStores={context.selectedStores}
               radioId={context.radioId}
               className=""
-              height="py-1 min-h-32 max-h-32"
             />
           </div>
           <div className="bg-custom-white rounded-lg shadow-lg px-3">
@@ -259,7 +258,7 @@ const Forecasting = () => {
                 Clear
               </button>
             </div>
-            <div className="bg-bkg shadow rounded-lg grid grid-cols-3 text-xs min-h-28 max-h-28 overflow-y-scroll no-scrollbar mb-2">
+            <div className={`bg-bkg shadow rounded-lg grid grid-cols-3 text-xs ${height} overflow-y-scroll no-scrollbar mb-2`}>
               {upcs.map((u, i) => (
                 <div
                   key={i}
@@ -271,7 +270,7 @@ const Forecasting = () => {
                 </div>
               ))}
             </div>
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-2 mt-1">
               <FileInput
                 file={file}
                 fileExt={[".csv"]}

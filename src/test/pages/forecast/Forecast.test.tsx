@@ -63,6 +63,16 @@ describe("Forecast Page", () => {
   it("sshould handle API success for fetching bucket list on mount", async () => {
     (getBucketList as Mock).mockResolvedValue(fileListResp);
     renderWithProviders(<Forecast />, { store });
+
+    // resize the browser
+    await waitFor(() => {
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1600,
+      });
+    });
+    window.dispatchEvent(new Event("resize"));
   });
 
   // This test needs to handle API failure when selecting a row from the FileGrid

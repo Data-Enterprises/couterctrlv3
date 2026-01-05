@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   removeQuicksightStoreForUser,
   removeAllPermissionsForUser,
 } from "../../../api/quicksight";
-import type { JsonError } from "../../../interfaces";
+import type { JsonError, Store } from "../../../interfaces";
 import { setQsUserStores } from "../../../features/qsSlice";
 
 const QsAssigned = () => {
@@ -14,10 +14,23 @@ const QsAssigned = () => {
   const context = useAppSelector((state) => state.app);
   const qs = useAppSelector((state) => state.quicksight);
   const [isUnassigningAll, setIsUnassigningAll] = useState<boolean>(false);
+  const [stores, setStores] = useState<Store[]>([]);
+  const [filterText, setFilterText] = useState<string>("");
 
   const hasLength = () => {
-    return qs.qsUserAssignedStores.length > 0;
+    return stores.length > 0;
   };
+
+  useEffect(() => {
+    if (filterText.trim() === "") {
+      setStores(qs.qsUserAssignedStores);
+    } else {
+      const filtered = qs.qsUserAssignedStores.filter((store) =>
+        store.store_name.toLowerCase().includes(filterText.toLowerCase())
+      );
+      setStores(filtered);
+    }
+  }, [filterText]);
 
   const handleUnassignStore = (storeId: number) => {
     const id = storeId.toString();
@@ -30,7 +43,7 @@ const QsAssigned = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          toast.success("Store assigned successfully");
+          toast.success("Store removed successfully");
           const store = qs.qsUserAssignedStores.find(
             (s) => s.storeid === storeId
           );
@@ -66,7 +79,7 @@ const QsAssigned = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          toast.success("All stores unassigned successfully");
+          toast.success("All stores removed successfully");
           const allStores = [
             ...qs.qsUserAssignedStores,
             ...qs.qsUserUnassignedStores,
@@ -85,6 +98,11 @@ const QsAssigned = () => {
       .finally(() => setIsUnassigningAll(false));
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFilterText(value);
+  };
+
   return (
     <div className="select-none">
       <div className="font-medium text-sm pl-0.5 flex justify-between">
@@ -97,9 +115,17 @@ const QsAssigned = () => {
           Unassign All
         </div>
       </div>
+      <input
+        data-testid="qs-assigned-filter"
+        type="text"
+        name="assigned-user-stores"
+        className="basic-input focus:border bg-custom-white"
+        value={filterText}
+        onChange={handleChange}
+      />
       <div className="min-h-[400px] max-h-[400px] overflow-y-auto no-scrollbar space-y-2 mt-2">
         {hasLength() && !isUnassigningAll ? (
-          qs.qsUserAssignedStores.map((store) => (
+          stores.map((store) => (
             <div
               key={store.storeid}
               data-testid={`assigned-qs-store-${store.storeid}`}

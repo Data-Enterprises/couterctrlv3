@@ -1,7 +1,8 @@
 import { useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { unassignUserFromStore } from "../../../api/team";
-import type { JsonError } from "../../../interfaces";
+import type { JsonError, Store } from "../../../interfaces";
+import { useEffect, useState } from "react";
 
 interface AssignedProps {
   getData: () => void;
@@ -11,10 +12,27 @@ const Assigned = ({ getData }: AssignedProps) => {
   const toast = useToast();
   const context = useAppSelector((state) => state.app);
   const users = useAppSelector((state) => state.users);
+  const [stores, setStores] = useState<Store[]>([]);
+  const [filterText, setFilterText] = useState<string>("");
 
   const hasLength = () => {
-    return users.selectedUserStores.assigned.length > 0;
+    return stores.length > 0;
   };
+
+  useEffect(() => {
+    setStores(users.selectedUserStores.assigned);
+  }, [users.selectedUserStores.assigned]);
+
+  useEffect(() => {
+    if (filterText.trim() === "") {
+      setStores(users.selectedUserStores.assigned);
+    } else {
+      const filtered = users.selectedUserStores.assigned.filter((store) =>
+        store.store_name.toLowerCase().includes(filterText.toLowerCase())
+      );
+      setStores(filtered);
+    }
+  }, [filterText]);
 
   const handleUnassignStore = (storeId: number) => {
     unassignUserFromStore(
@@ -34,19 +52,27 @@ const Assigned = ({ getData }: AssignedProps) => {
       });
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFilterText(value);
+  };
+
   return (
     <div>
       <label htmlFor="assigned-user-stores" className="font-medium text-sm">
         Assigned - {users.selectedUserStores.assigned.length}
       </label>
       <input
+        data-testid="ctrl-assigned-filter"
         type="text"
         name="assigned-user-stores"
         className="basic-input focus:border bg-custom-white"
+        value={filterText}
+        onChange={handleChange}
       />
       <div className="min-h-[400px] max-h-[400px] overflow-y-auto no-scrollbar space-y-2 mt-4">
         {hasLength()
-          ? users.selectedUserStores.assigned.map((store) => (
+          ? stores.map((store) => (
               <div
                 key={store.storeid}
                 data-testid={`assigned-store-${store.storeid}`}

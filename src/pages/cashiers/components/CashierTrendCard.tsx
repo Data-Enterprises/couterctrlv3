@@ -149,8 +149,9 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
         dispatch(setTransList([]));
         dispatch(setFetchingCashierTransactions(true));
 
+        console.log("Fetching transactions for sale IDs:", cashier.selectedSaleType);
         // call the api
-        getTransactionList(context.url, context.token, saleIds, 1)
+        getTransactionList(context.url, context.token, saleIds, 1, cashier.selectedSaleType)
           .then((resp) => {
             const j = resp.data;
             if (j.error === 0) {
