@@ -126,7 +126,7 @@ export const getTransactionList = async (
       Authorization: `Bearer ${token}`,
     },
     url: url + "cashiers/transaction_list",
-    params: {
+    data: {
       transaction_ids,
       sale_type,
       page,
