@@ -1,11 +1,11 @@
 import type { Store } from "../../../interfaces";
+import { useResizeContext } from "../../forecast/hooks";
 
 interface SelectedStoreListProps {
   selectedStores: Store[];
   radioId: number;
   className?: string;
   gridCols?: string;
-  height?: string;
 }
 
 const SelectedStoreList = ({
@@ -13,15 +13,15 @@ const SelectedStoreList = ({
   radioId,
   className = "px-4",
   gridCols = "grid-cols-3",
-  height = "min-h-20 max-h-20",
 }: SelectedStoreListProps) => {
+  const { height } = useResizeContext("large");
   return (
     <div className={`${className} w-full`}>
       <h3 className="text-sm text-content/70 font-medium">
         Selected {radioId === 1 ? "Stores" : "Group"}
       </h3>
       <div
-        className={`${height} overflow-y-auto no-scrollbar bg-panel_active/15 px-1 rounded-lg shadow w-full`}
+        className={`${height} py-1 overflow-y-auto no-scrollbar bg-panel_active/15 px-1 rounded-lg shadow w-full`}
       >
         <ul className={`grid ${gridCols} gap-1`}>
           {selectedStores.map((store) => (

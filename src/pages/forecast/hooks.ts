@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useAppSelector } from "../../hooks";
 
 export const useForecastContext = () => {
@@ -21,5 +22,30 @@ export const useForecastContext = () => {
     isLoading,
     startDate,
     endDate,
+  };
+};
+
+export const useResizeContext = (alt: string) => {
+  const [height, setHeight] = useState<string>("min-h-28 max-h-28");
+
+  useEffect(() => {
+    const calcHeight = () => {
+      if (window.innerWidth < 1537) {
+        setHeight("min-h-[86px] max-h-[86px]");
+      } else {
+        const newHeight = alt === "large" ? "min-h-32 max-h-32" : "min-h-28 max-h-28 mb-3";
+        setHeight(newHeight);
+      }
+    };
+
+    window.addEventListener("resize", calcHeight);
+    calcHeight();
+    return () => {
+      window.removeEventListener("resize", calcHeight);
+    };
+  }, []);
+
+  return {
+    height,
   };
 };
