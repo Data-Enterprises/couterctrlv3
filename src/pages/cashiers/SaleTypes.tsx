@@ -51,32 +51,33 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
           dispatch(setCashierTransactions(j.transactions));
         }
       })
-      .catch((err: JsonError) =>
-        toast.error("Error fetching cashier table: " + err.message)
-      );
-
-    getCashierDetails(
-      params.url,
-      params.token,
-      params.start,
-      params.end,
-      params.useGroups,
-      params.searchValue,
-      params.singleStore,
-      [saleType]
-    )
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          // The chunked sales and trends are being set in the dispatches
-          dispatch(setCashierDetails(j.sales));
-          dispatch(setCashierTrends(j.trend));
-        }
+      .then(() => {
+        getCashierDetails(
+          params.url,
+          params.token,
+          params.start,
+          params.end,
+          params.useGroups,
+          params.searchValue,
+          params.singleStore,
+          [saleType]
+        )
+          .then((resp) => {
+            const j = resp.data;
+            if (j.error === 0) {
+              // The chunked sales and trends are being set in the dispatches
+              dispatch(setCashierDetails(j.sales));
+              dispatch(setCashierTrends(j.trend));
+            }
+          })
+          .catch((err: JsonError) =>
+            toast.error("Error fetching cashier details: " + err.message)
+          )
       })
       .catch((err: JsonError) =>
-        toast.error("Error fetching cashier details: " + err.message)
+        toast.error("Error fetching cashier table: " + err.message)
       )
-      .finally(() => setLoading(false));
+      .finally(() => setLoading(true));
   };
 
   return (
