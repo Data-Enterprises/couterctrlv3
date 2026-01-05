@@ -49,6 +49,7 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
   };
 
   const renderIcon = (total: number, trend: number) => {
+    console.log(total, trend)
     // if both are negative
     if (total < 0 && trend < 0) {
       if (total < trend) {
@@ -81,6 +82,7 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
     const trends = cashier.cashierTrends;
     const exists = trends.find((t) => t.storeid === row.storeid);
     if (!exists) return null;
+    console.log(row, key, key2, exists[key2])
 
     // Otherwise return the icon
     return renderIcon(row[key] as number, exists[key2] as number);
@@ -149,7 +151,6 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
         dispatch(setTransList([]));
         dispatch(setFetchingCashierTransactions(true));
 
-        console.log("Fetching transactions for sale IDs:", cashier.selectedSaleType);
         // call the api
         getTransactionList(context.url, context.token, saleIds, 1, cashier.selectedSaleType)
           .then((resp) => {
@@ -224,7 +225,7 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
           <div>{defaultTrend(s).total_items}</div>
           <div>{formatCurrency2(defaultTrend(s).amount)}</div>
           <div>{formatCurrency2(defaultTrend(s).average_dollars)}</div>
-          <div>{defaultTrend(s).avg_item_qty.toFixed(2)}</div>
+          <div>{defaultTrend(s).average_qty.toFixed(2)}</div>
           <div>{defaultTrend(s).cashier_count}</div>
         </div>
       </div>
