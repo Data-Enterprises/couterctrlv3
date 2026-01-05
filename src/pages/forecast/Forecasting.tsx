@@ -223,6 +223,7 @@ const Forecasting = () => {
               selectedStores={context.selectedStores}
               radioId={context.radioId}
               className=""
+              context="large"
             />
           </div>
           <div className="bg-custom-white rounded-lg shadow-lg px-3">
