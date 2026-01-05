@@ -96,7 +96,7 @@ const UpcStepTwo = ({ className = "", getData }: StepTwoProps) => {
   };
 
   return (
-    <div className={`flex flex-col items-center p-4 gap-2 ${className}`}>
+    <div className={`flex flex-col items-center p-4 gap-1 ${className}`}>
       <DatePickers showBtn={false} />
       <div className={`w-full grid grid-cols-3 gap-2 -mt-2 mb-1`}>
         <SingleSelect
@@ -144,7 +144,7 @@ const UpcStepTwo = ({ className = "", getData }: StepTwoProps) => {
         selectedStores={upc.selectedStores}
         radioId={upc.radioId}
       />
-      <div className="text-sm text-center text-content/70 mt-1">
+      <div className="text-sm text-center text-content/70">
         Please make sure your date range is valid before continuing.
       </div>
       <Tooltips />

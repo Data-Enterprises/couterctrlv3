@@ -20,6 +20,7 @@ import {
   setSelectedStores,
   setInitialRowData,
   setForecastResults,
+  setSingleForecastResults,
 } from "../../features/forecastSlice";
 import { useForecastContext, useResizeContext } from "./hooks";
 import SelectedStoreList from "../upc/wizard/SelectedStoreList";
@@ -97,9 +98,17 @@ const Forecasting = () => {
           // set the raw data => needed to grab the prices and figure out the forecast values
           dispatch(setForecastResults(j.results));
 
+          const singlePrices = j.results.filter(
+            (item) => item.price_history.length === 1
+          );
+          const multiPrices = j.results.filter(
+            (item) => item.price_history.length > 1
+          );
+
           // set the row data
-          const rowData = formatRowData(j.results);
+          const rowData = formatRowData(multiPrices);
           dispatch(setInitialRowData(rowData));
+          dispatch(setSingleForecastResults(singlePrices));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
@@ -223,6 +232,7 @@ const Forecasting = () => {
               selectedStores={context.selectedStores}
               radioId={context.radioId}
               className=""
+              context="large"
             />
           </div>
           <div className="bg-custom-white rounded-lg shadow-lg px-3">
@@ -258,7 +268,9 @@ const Forecasting = () => {
                 Clear
               </button>
             </div>
-            <div className={`bg-bkg shadow rounded-lg grid grid-cols-3 text-xs ${height} overflow-y-scroll no-scrollbar mb-2`}>
+            <div
+              className={`bg-bkg shadow rounded-lg grid grid-cols-3 text-xs ${height} overflow-y-scroll no-scrollbar mb-2`}
+            >
               {upcs.map((u, i) => (
                 <div
                   key={i}

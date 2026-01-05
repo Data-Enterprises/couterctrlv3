@@ -27,18 +27,33 @@ const StepOne = ({ className, file, setFile }: UpcStepOneProps) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    if (!dataLoaded) handleReset();
+    switch (dataLoaded) {
+      case false:
+        handleReset();
+        break;
+    }
   }, [dataLoaded]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (
-      !fileExtensions.some((ext) => event.target.files![0].name.endsWith(ext))
-    ) {
-      toast.warn("Please select a valid CSV file");
-    } else if (event.target.files && event.target.files[0]) {
-      setFile(event.target.files[0]);
-      dispatch(setFileName(event.target.files[0].name));
+    const bool = !fileExtensions.some((ext) => event.target.files![0].name.endsWith(ext));
+    switch (bool) {
+      case false:
+         setFile(event.target.files![0]);
+         dispatch(setFileName(event.target.files![0].name));
+        break;
+      case true: 
+        toast.warn("Please select a valid CSV file");
+        break;
     }
+    // }
+    // if (
+    //   !fileExtensions.some((ext) => event.target.files![0].name.endsWith(ext))
+    // ) {
+    //   toast.warn("Please select a valid CSV file");
+    // } else if (event.target.files && event.target.files[0]) {
+    //   setFile(event.target.files[0]);
+    //   dispatch(setFileName(event.target.files[0].name));
+    // }
   };
 
   const handleReset = () => {

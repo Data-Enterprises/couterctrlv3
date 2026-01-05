@@ -43,7 +43,6 @@ const ExportModal = <T extends Record<string, any>>({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div>Export Modal Content</div>
       <label htmlFor="filename">File Name</label>
       <input
         data-testid="cashier-export-modal-filename-input"

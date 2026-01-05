@@ -71,6 +71,18 @@ describe("Cashiers Page", () => {
     await user.click(saleTypePanel);
   });
 
+  it("should throw an error when fetching cashier details", async () => {
+    (getCashierTable as Mock).mockResolvedValueOnce({
+      data: mockCashierTableResp,
+    });
+    (getCashierDetails as Mock).mockRejectedValueOnce(new Error("API Error"));
+
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
+    const saleTypePanel = await screen.findByTestId("sale-type-panel-Refunded");
+    await user.click(saleTypePanel);
+  });
+
   // Testing the clicking of a sale type to fetch cashier sales and trends
   // /////////////////////////////////////////////////////////////////////
   it("selecting a sale type should make a call to get cashier sales and trends", async () => {
@@ -176,9 +188,7 @@ describe("Cashiers Page", () => {
 
     // Grabbing the first cell with a sale_id to click on
     const cells = await screen.findAllByRole("gridcell");
-    const cellToClick = cells.find(
-      (cell) => cell.textContent === "36-869567-4-12-1-2025"
-    );
+    const cellToClick = cells.find((cell) => cell.textContent === "869567");
     expect(cellToClick).toBeDefined();
     await user.click(cellToClick!);
 
@@ -210,9 +220,7 @@ describe("Cashiers Page", () => {
 
     // Grabbing the first cell with a sale_id to click on
     const cells = await screen.findAllByRole("gridcell");
-    const cellToClick = cells.find(
-      (cell) => cell.textContent === "36-869567-4-12-1-2025"
-    );
+    const cellToClick = cells.find((cell) => cell.textContent === "869567");
     expect(cellToClick).toBeDefined();
     await user.click(cellToClick!);
 

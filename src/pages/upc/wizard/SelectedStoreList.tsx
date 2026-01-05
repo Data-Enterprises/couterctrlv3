@@ -6,15 +6,17 @@ interface SelectedStoreListProps {
   radioId: number;
   className?: string;
   gridCols?: string;
+  context?: string;
 }
 
 const SelectedStoreList = ({
   selectedStores,
   radioId,
-  className = "px-4",
+  className = "",
   gridCols = "grid-cols-3",
+  context = ""
 }: SelectedStoreListProps) => {
-  const { height } = useResizeContext("large");
+  const { height } = useResizeContext(context);
   return (
     <div className={`${className} w-full`}>
       <h3 className="text-sm text-content/70 font-medium">
