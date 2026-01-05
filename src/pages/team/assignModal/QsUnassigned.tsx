@@ -117,6 +117,7 @@ const QsUnassigned = () => {
         </div>
       </div>
       <input
+        data-testid="qs-unassigned-filter"
         type="text"
         name="assigned-user-stores"
         className="basic-input focus:border bg-custom-white"

@@ -13,10 +13,12 @@ import { login } from "../../api/login";
 const user = userEvent.setup();
 const store = setupStore();
 const mockedToastError = vi.fn();
+const mockedToastWarn = vi.fn();
 vi.mock("../../components/toasts/hooks/useToast", () => {
   return {
     useToast: () => ({
       error: mockedToastError,
+      warn: mockedToastWarn,
     }),
   };
 });
@@ -86,6 +88,19 @@ describe("Login Page", () => {
     expect(mockedToastError).toHaveBeenCalledWith(
       "Login failed: Invalid credentials"
     );
+  });
+
+  it("should display a warning toast on invalid credentials", async () => {
+    (login as Mock).mockResolvedValueOnce({ data: { error: 1 } });
+
+    renderWithProviders(<Login />, { store });
+
+    const signInButton = screen.getByTestId("sign-in");
+    await user.click(signInButton);
+
+    await waitFor(() => {
+      expect(mockedToastWarn).toHaveBeenCalledWith("Invalid credentials, make sure your password and username are correct");
+    });
   });
 
   it("should call the login api and update the token in redux state", async () => {

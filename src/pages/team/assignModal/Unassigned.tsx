@@ -61,6 +61,7 @@ const Unassigned = ({ getData }: UnassignedProps) => {
         Unassigned - {users.selectedUserStores.unassigned.length}
       </label>
       <input
+        data-testid="ctrl-unassigned-filter"
         name="unassigned-user-stores"
         type="text"
         className="basic-input focus:border bg-custom-white"

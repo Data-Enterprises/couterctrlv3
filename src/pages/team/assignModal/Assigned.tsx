@@ -63,6 +63,7 @@ const Assigned = ({ getData }: AssignedProps) => {
         Assigned - {users.selectedUserStores.assigned.length}
       </label>
       <input
+        data-testid="ctrl-assigned-filter"
         type="text"
         name="assigned-user-stores"
         className="basic-input focus:border bg-custom-white"

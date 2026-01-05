@@ -116,6 +116,7 @@ const QsAssigned = () => {
         </div>
       </div>
       <input
+        data-testid="qs-assigned-filter"
         type="text"
         name="assigned-user-stores"
         className="basic-input focus:border bg-custom-white"

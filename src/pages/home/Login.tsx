@@ -74,6 +74,8 @@ const Login = () => {
           dispatch(setCompany(j.company));
           dispatch(setResetPassword(j.password_change_needed));
           dispatch(setSecurityQuestionId(j.security_question_id));
+        } else {
+          toast.warn("Invalid credentials, make sure your password and username are correct");
         }
       })
       .catch((err: JsonError) => {
