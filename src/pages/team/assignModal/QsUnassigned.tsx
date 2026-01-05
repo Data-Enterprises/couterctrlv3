@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type { JsonError, Store } from "../../../interfaces";
@@ -14,10 +14,23 @@ const QsUnassigned = () => {
   const context = useAppSelector((state) => state.app);
   const qs = useAppSelector((state) => state.quicksight);
   const [isAssigningAll, setIsAssigningAll] = useState<boolean>(false);
+  const [stores, setStores] = useState<Store[]>([]);
+  const [filterText, setFilterText] = useState<string>("");
 
   const hasLength = () => {
-    return qs.qsUserUnassignedStores.length > 0;
+    return stores.length > 0;
   };
+
+  useEffect(() => {
+    if (filterText.trim() === "") {
+      setStores(qs.qsUserUnassignedStores);
+    } else {
+      const filtered = qs.qsUserUnassignedStores.filter((store) =>
+        store.store_name.toLowerCase().includes(filterText.toLowerCase())
+      );
+      setStores(filtered);
+    }
+  }, [filterText]);
 
   const handleAssignStore = (storeId: number) => {
     const id = storeId.toString();
@@ -86,6 +99,11 @@ const QsUnassigned = () => {
       .finally(() => setIsAssigningAll(false));
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFilterText(value);
+  };
+
   return (
     <div>
       <div className="font-medium text-sm pl-0.5 flex justify-between">
@@ -98,9 +116,16 @@ const QsUnassigned = () => {
           Assign All
         </div>
       </div>
+      <input
+        type="text"
+        name="assigned-user-stores"
+        className="basic-input focus:border bg-custom-white"
+        value={filterText}
+        onChange={handleChange}
+      />
       <div className="min-h-[400px] max-h-[400px] overflow-y-auto no-scrollbar space-y-2 mt-2">
         {hasLength() && !isAssigningAll ? (
-          qs.qsUserUnassignedStores.map((store) => (
+          stores.map((store) => (
             <div
               key={store.storeid}
               data-testid={`unassigned-qs-store-${store.storeid}`}
@@ -115,7 +140,11 @@ const QsUnassigned = () => {
             <div className="text-sm text-center font-medium">
               Are you sure you want to assign all?
             </div>
-            <button data-testid="confirm-assign-all-qs-btn" className="btn-themeGreen" onClick={handleAssignAllStores}>
+            <button
+              data-testid="confirm-assign-all-qs-btn"
+              className="btn-themeGreen"
+              onClick={handleAssignAllStores}
+            >
               Confirm
             </button>
             <button className="btn-themeOrange" onClick={toggleDisplay}>
