@@ -24,7 +24,7 @@ const FiltersModal = () => {
     (state) => state.cashier
   );
   const [text, setText] = useState<string>("");
-  const [threshold, setThreshold] = useState<number>(0);
+  const [threshold, setThreshold] = useState<string>("");
   const [priceTypes, setPriceTypes] = useState<string[]>([]);
   const [threshComp, setThreshComp] = useState<{ gt: boolean; lt: boolean }>({
     gt: false,
@@ -34,7 +34,7 @@ const FiltersModal = () => {
   const handleClose = () => {
     dispatch(setFilterModalOpen(false));
     setText("");
-    setThreshold(0);
+    setThreshold("");
     dispatch(setFilterType(""));
     setPriceTypes([]);
   };
@@ -51,8 +51,10 @@ const FiltersModal = () => {
     }
   };
 
-  const setTotalSales = (value: number) => {
-    setThreshold(value);
+  const setTotalSales = (value: string) => {
+    if (!isNaN(parseFloat(value))) {
+      setThreshold(value);
+    }
   };
 
   const handlePriceTypeSelection = (type: string) => {
@@ -104,7 +106,7 @@ const FiltersModal = () => {
         break;
       case "Total Sales":
         dispatch(setCashierTableThreshComp(threshComp));
-        dispatch(setTotalSalesFilter(threshold));
+        dispatch(setTotalSalesFilter(parseFloat(threshold)));
         break;
     }
 
