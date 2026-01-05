@@ -1,7 +1,7 @@
 interface TotalSalesFilterProps {
-  threshold: number;
+  threshold: string;
   handleSelection: (value: string) => void;
-  setThreshold: (value: number) => void;
+  setThreshold: (value: string) => void;
   threshComp: { gt: boolean; lt: boolean };
 }
 const TotalSalesFilter = ({
@@ -39,7 +39,7 @@ const TotalSalesFilter = ({
         className="basic-input focus:border my-4 bg-custom-white"
         type="text"
         value={threshold}
-        onChange={(e) => setThreshold(Number(e.currentTarget.value))}
+        onChange={(e) => setThreshold(e.currentTarget.value)}
       />
     </div>
   );
