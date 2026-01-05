@@ -5,7 +5,6 @@ import { getUserStores } from "../../api/user";
 import AssignStoresModal from "../../pages/team/assignModal/AssignStoresModal";
 import { waitFor, screen } from "@testing-library/react";
 import type { UserData } from "../../features/usersSlice";
-import { getQuicksightStoresForUser } from "../../api/quicksight";
 import userEvent from "@testing-library/user-event";
 
 const user = userEvent.setup();
