@@ -59,10 +59,11 @@ const FileGrid = () => {
             .map((file) => {
               const split = file.split("_");
               const date = `${split[1]}/${split[2]}/${split[3]}`;
+              const display = file.split("_").slice(4).join("_");
 
               return {
                 date: date,
-                name: file,
+                name: display,
               };
             })
             .sort((a, b) => {
@@ -87,6 +88,9 @@ const FileGrid = () => {
       dispatch(setIsLoading(true));
       dispatch(reQuery());
 
+      const fileDate = event.data.date.replace(/\//g, "_");
+      const fileName = `${context.userid}_${fileDate}_${event.data.name}`;
+
       // Insert the fixed price_history_from_list call here => after it can take in a file name
       getHistoryFromList(
         context.url,
@@ -94,7 +98,7 @@ const FileGrid = () => {
         context.storeids,
         context.endDate,
         "",
-        event.data.name
+        fileName
       )
         .then((resp) => {
           const j: PriceHistoryFromListResp = resp.data;
