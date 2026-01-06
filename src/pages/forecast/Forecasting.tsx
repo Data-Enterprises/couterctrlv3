@@ -282,16 +282,16 @@ const Forecasting = () => {
                 </div>
               ))}
             </div>
-            <div className="flex gap-2 mt-1">
+            <div className="grid grid-cols-2 gap-2 mt-1">
               <FileInput
                 file={file}
                 fileExt={[".csv"]}
                 setFile={setFile}
-                className="w-1/2 py-0"
+                className="w-full py-0"
               />
               <button
                 data-testid="forecast-search-btn"
-                className="btn-themeBlue w-1/2 py-1"
+                className="btn-themeBlue py-1"
                 onClick={handleSearch}
               >
                 Search

@@ -8,6 +8,7 @@ import {
   setInitialRowData,
   setIsLoading,
   setItems,
+  setSingleForecastResults,
 } from "../../../features/forecastSlice";
 import { useAppDispatch } from "../../../hooks";
 
@@ -51,23 +52,24 @@ const FileGrid = () => {
   const getFileNames = () => {
     getBucketList(context.url, context.token)
       .then((resp) => {
-        // Handle the response here
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setFiles(j.files));
-          const data = [...j.files].map((file) => {
-            const split = file.split("_");
-            const date = `${split[1]}/${split[2]}/${split[3]}`;
+          const data = [...j.files]
+            .map((file) => {
+              const split = file.split("_");
+              const date = `${split[1]}/${split[2]}/${split[3]}`;
 
-            return {
-              date: date,
-              name: file,
-            };
-          }).sort((a, b) => {
-            const dateA = new Date(a.date);
-            const dateB = new Date(b.date);
-            return dateB.getTime() - dateA.getTime();
-          });
+              return {
+                date: date,
+                name: file,
+              };
+            })
+            .sort((a, b) => {
+              const dateA = new Date(a.date);
+              const dateB = new Date(b.date);
+              return dateB.getTime() - dateA.getTime();
+            });
           setTableData(data);
         }
       })
@@ -107,16 +109,21 @@ const FileGrid = () => {
             // set the raw data => needed to grab the prices and figure out the forecast values
             dispatch(setForecastResults(j.results));
 
+            const singlePrices = j.results.filter(
+              (item) => item.price_history.length === 1
+            );
+            const multiPrices = j.results.filter(
+              (item) => item.price_history.length > 1
+            );
+
             // set the row data
-            const rowData = formatRowData(j.results);
+            const rowData = formatRowData(multiPrices);
             dispatch(setInitialRowData(rowData));
+            dispatch(setSingleForecastResults(singlePrices));
           }
         })
         .catch((err: JsonError) => toast.error(err.message))
-        .finally(() => {
-          dispatch(setIsLoading(false));
-          getFileNames();
-        });
+        .finally(() => dispatch(setIsLoading(false)));
     }
   };
 
