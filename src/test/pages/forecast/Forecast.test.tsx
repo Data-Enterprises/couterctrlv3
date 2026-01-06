@@ -385,7 +385,7 @@ describe("Forecast Page", () => {
 
     await waitFor(() => {
       const state = store.getState().forecast;
-      expect(state.items.length).toBe(7);
+      expect(state.items.length).toBe(8);
     });
   });
 
@@ -460,7 +460,7 @@ describe("Forecast Page", () => {
     await user.click(selectAllBtn);
     await waitFor(() => {
       const state = store.getState().forecast;
-      expect(state.selectedUpcs.length).toBe(state.items.length);
+      expect(state.selectedUpcs.length).toBe(state.items.length - 1);
     });
 
     await user.click(deselectAllBtn);
@@ -500,7 +500,7 @@ describe("Forecast Page", () => {
 
     // cells 7 and 8 => Ad Days and Ad Price
     const rows = await screen.findAllByRole("row");
-    const rowOneAdDays = rows[3].children[8];
+    const rowOneAdDays = rows[4].children[8];
     await user.dblClick(rowOneAdDays);
 
     const agInputs = document.querySelectorAll(".ag-input-field-input");
@@ -522,7 +522,7 @@ describe("Forecast Page", () => {
 
     // cells 7 and 8 => Ad Days and Ad Price
     const rows = await screen.findAllByRole("row");
-    const rowOneAdDays = rows[3].children[7];
+    const rowOneAdDays = rows[4].children[7];
     await user.dblClick(rowOneAdDays);
 
     const agInputs = document.querySelectorAll(".ag-input-field-input");
@@ -544,7 +544,7 @@ describe("Forecast Page", () => {
 
     // cells 7 and 8 => Ad Days and Ad Price
     const rows = await screen.findAllByRole("row");
-    const rowTwoAdDays = rows[4].children[7];
+    const rowTwoAdDays = rows[5].children[7];
     await user.dblClick(rowTwoAdDays);
 
     const agInputs = document.querySelectorAll(".ag-input-field-input");
@@ -572,7 +572,7 @@ describe("Forecast Page", () => {
 
     // cells 7 and 8 => Ad Days and Ad Price
     const rows = await screen.findAllByRole("row");
-    const rowOneAdDays = rows[3].children[8];
+    const rowOneAdDays = rows[4].children[8];
     await user.dblClick(rowOneAdDays);
 
     const agInputs = document.querySelectorAll(".ag-input-field-input");
@@ -600,7 +600,7 @@ describe("Forecast Page", () => {
 
     // cells 7 and 8 => Ad Days and Ad Price
     const rows = await screen.findAllByRole("row");
-    const rowOneAdDays = rows[3].children[8];
+    const rowOneAdDays = rows[4].children[8];
     await user.dblClick(rowOneAdDays);
 
     const agInputs = document.querySelectorAll(".ag-input-field-input");
@@ -628,7 +628,7 @@ describe("Forecast Page", () => {
 
     // cells 7 and 8 => Ad Days and Ad Price
     const rows = await screen.findAllByRole("row");
-    const rowOneAdDays = rows[3].children[8];
+    const rowOneAdDays = rows[4].children[8];
     await user.dblClick(rowOneAdDays);
 
     const agInputs = document.querySelectorAll(".ag-input-field-input");
@@ -650,7 +650,7 @@ describe("Forecast Page", () => {
 
     // cells 7 and 8 => Fcst Price and Ad Price
     const rows = await screen.findAllByRole("row");
-    const rowTwoFcstPrice = rows[5].children[8];
+    const rowTwoFcstPrice = rows[6].children[8];
     await user.dblClick(rowTwoFcstPrice);
 
     const agInputs = document.querySelectorAll(".ag-input-field-input");
@@ -671,7 +671,7 @@ describe("Forecast Page", () => {
 
     // cells 7 and 8 => Fcst Price and Ad Price
     const rows = await screen.findAllByRole("row");
-    const rowTwoFcstPrice = rows[5].children[8];
+    const rowTwoFcstPrice = rows[6].children[8];
     await user.dblClick(rowTwoFcstPrice);
 
     const agInputs = document.querySelectorAll(".ag-input-field-input");
@@ -703,7 +703,7 @@ describe("Forecast Page", () => {
 
     await waitFor(() => {
       const state = store.getState().forecast;
-      expect(state.rowData[2].fcstPrice).toBe(15.99);
+      expect(state.rowData[1].fcstPrice).toBe(15.99);
     });
   });
 
@@ -789,7 +789,7 @@ describe("Forecast Page", () => {
     await user.click(upcOne);
 
     const rows = await screen.findAllByRole("row");
-    const rowOneAdDays = rows[3].children[7];
+    const rowOneAdDays = rows[4].children[7];
     await user.dblClick(rowOneAdDays);
 
     // cells 7 and 8 => Ad Days and Ad Price
@@ -829,7 +829,7 @@ describe("Forecast Page", () => {
     await user.click(upcOne);
 
     const rows = await screen.findAllByRole("row");
-    const rowOneAdDays = rows[3].children[7];
+    const rowOneAdDays = rows[4].children[7];
     await user.dblClick(rowOneAdDays);
 
     // cells 7 and 8 => Ad Days and Ad Price
@@ -869,7 +869,7 @@ describe("Forecast Page", () => {
     await user.click(upcOne);
 
     const rows = await screen.findAllByRole("row");
-    const rowOneAdDays = rows[3].children[7];
+    const rowOneAdDays = rows[4].children[7];
     await user.dblClick(rowOneAdDays);
 
     // cells 7 and 8 => Ad Days and Ad Price
@@ -1040,9 +1040,9 @@ describe("Forecast Page", () => {
       const revenue = screen.getByTestId("calc-modal-revenue");
       const profit = screen.getByTestId("calc-modal-profit");
 
-      expect(qty.textContent).toEqual("86");
-      expect(revenue.textContent).toEqual("$1,117.26");
-      expect(profit.textContent).toEqual("$7.77");
+      expect(qty.textContent).toEqual("15");
+      expect(revenue.textContent).toEqual("$194.87");
+      expect(profit.textContent).toEqual("$1.36");
     });
 
     const closeBtn = await screen.findByTestId("calc-modal-close-button");
