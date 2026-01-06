@@ -29,11 +29,11 @@ export interface ItemLookupHistory {
   total_sales: number;
 }
 
-export interface StoreList {
-  storeid: number;
-  store_number: string;
-  store_name: string;
-}
+// export interface StoreList {
+//   storeid: number;
+//   store_number: string;
+//   store_name: string;
+// }
 
 interface ItemLookupState {
   upcCode: string;
@@ -51,7 +51,7 @@ interface ItemLookupState {
   totalQty: number;
   avgPrice: number;
   itemsLoaded: boolean;
-  storeList: StoreList[];
+  // storeList: StoreList[];
   selectedStore: number;
   itemLookupHistory: ItemLookupHistory[];
   daysSold: number;
@@ -74,7 +74,7 @@ const initialState: ItemLookupState = {
   totalQty: 0,
   avgPrice: 0,
   itemsLoaded: false,
-  storeList: [],
+  // storeList: [],
   selectedStore: 0,
   itemLookupHistory: [],
   daysSold: 0,
@@ -138,9 +138,9 @@ const itemLookupSlice = createSlice({
       state.totalQty = action.payload.totalQty;
       state.avgPrice = action.payload.avgPrice;
     },
-    setStoreList: (state, action: PayloadAction<StoreList[]>) => {
-      state.storeList = action.payload;
-    },
+    // setStoreList: (state, action: PayloadAction<StoreList[]>) => {
+    //   state.storeList = action.payload;
+    // },
     setSelectedStore: (state, action: PayloadAction<number>) => {
       if (state.selectedStore === action.payload) {
         state.selectedStore = 0;
@@ -196,7 +196,7 @@ export const {
   setProductCode,
   setDescription,
   setMetrics,
-  setStoreList,
+  // setStoreList,
   setSelectedStore,
   setItemLookupHistory,
   setHistoryMetrics,
