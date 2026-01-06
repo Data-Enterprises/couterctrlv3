@@ -63,6 +63,10 @@ const FileGrid = () => {
               date: date,
               name: file,
             };
+          }).sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            return dateB.getTime() - dateA.getTime();
           });
           setTableData(data);
         }
@@ -74,7 +78,7 @@ const FileGrid = () => {
 
   useEffect(() => {
     getFileNames();
-  }, []);
+  }, [context.forecastResults]);
 
   const onRowClicked = (event: RowClickedEvent<TableData>) => {
     if (event.data) {

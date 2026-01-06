@@ -9,6 +9,7 @@ export const useForecastContext = () => {
   const { userid, assignedStores } = useAppSelector((state) => state.user);
   const { startDate, endDate } = useAppSelector((state) => state.search);
   const { groups } = useAppSelector((state) => state.group);
+  const { forecastResults } = useAppSelector((state) => state.forecast);
 
   return {
     storeids,
@@ -22,6 +23,7 @@ export const useForecastContext = () => {
     isLoading,
     startDate,
     endDate,
+    forecastResults,
   };
 };
 
