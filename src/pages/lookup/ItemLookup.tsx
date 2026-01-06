@@ -5,7 +5,6 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 import {
   getItemLookup,
   getItemLookupSingleStore,
-  getStoreList,
 } from "../../api/itemLookup";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import {
@@ -18,7 +17,6 @@ import {
   setMetrics,
   setHistoryMetrics,
   setItemLookupHistory,
-  setStoreList,
   setPause
 } from "../../features/itemLookupSlice";
 import "./scanner.css";
@@ -35,9 +33,9 @@ const ItemLookup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
-  const { pause, upcCode, itemsLoaded, selectedStore, itemLookupHistory, storeList } =
+  const { pause, upcCode, itemsLoaded, selectedStore, itemLookupHistory } =
     useAppSelector((state) => state.item);
-  const { email } = useAppSelector((state) => state.user);
+  const { assignedStores } = useAppSelector((state) => state.user);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -48,26 +46,14 @@ const ItemLookup = () => {
     video: { facingMode: "environment", width: 1280, height: 720 },
   };
   const { devices } = useMediaDevices({ constraints });
-
-  // handle scroll height for history list
   const { height, topRef, bottomRef } = useHeight();
 
-  useEffect(() => {
-    // Get the store list on mount or clear
-    if (storeList.length) return;
-    getStoreList(url, token, email)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error == 0) {
-          dispatch(setStoreList(j.stores));
-        }
-      })
-      .catch((err) => toast.error(err.message));
 
+  useEffect(() => {
     return () => {
       dispatch(setUpcCode(""));
     };
-  }, [storeList]);
+  }, []);
 
   useEffect(() => {
     if (devices) {
@@ -261,7 +247,7 @@ const ItemLookup = () => {
       />
       <ScanItem scanItem={scanItem} />
       <div ref={topRef} className="text-center font-bold underline">
-        {storeList.find((s) => s.storeid === selectedStore)?.store_name}
+      {assignedStores.find((s) => s.storeid === selectedStore)?.store_name}
       </div>
       {itemsLoaded ? (
         <>
@@ -273,7 +259,6 @@ const ItemLookup = () => {
             </>
           ) : (
             <>
-              {/* layout for each history object */}
               <div
                 className="space-y-2 overflow-y-auto"
                 style={{ maxHeight: `${height}px` }}

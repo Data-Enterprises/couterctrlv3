@@ -1,13 +1,9 @@
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../../hooks";
-import {
-  setUpcCode,
-  setSelectedStore,
-} from "../../features/itemLookupSlice";
+import { setUpcCode, setSelectedStore } from "../../features/itemLookupSlice";
 import Modal from "../../components/Modal";
-import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import { type StoreList } from "../../features/itemLookupSlice";
+import type { Store } from "../../interfaces";
 
 interface ScanItemProps {
   scanItem: () => void;
@@ -16,23 +12,25 @@ interface ScanItemProps {
 const ScanItem = ({ scanItem }: ScanItemProps) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
-  const [filteredStores, setFilteredStores] = useState<StoreList[]>([]);
-  const { upcCode, storeList, selectedStore, itemsLoaded } =
-    useAppSelector((state) => state.item);
+  const [filteredStores, setFilteredStores] = useState<Store[]>([]);
+  const { upcCode, selectedStore, itemsLoaded } = useAppSelector(
+    (state) => state.item
+  );
   const dispatch = useDispatch();
+  const { assignedStores } = useAppSelector((state) => state.user);
 
   useEffect(() => {
     // Filter stores based on search text
     if (searchText.length) {
-      const copy = storeList.filter((store) =>
+      const copy = assignedStores.filter((store) =>
         store.store_name.toLowerCase().includes(searchText.toLowerCase())
       );
       setFilteredStores(copy);
     } else {
       // set the default if no search text
-      setFilteredStores([...storeList]);
+      setFilteredStores([...assignedStores]);
     }
-  }, [searchText, storeList]);
+  }, [searchText]);
 
   const handleScan = () => {
     scanItem();
@@ -65,25 +63,22 @@ const ScanItem = ({ scanItem }: ScanItemProps) => {
             value={searchText}
           />
         </div>
-        <div className="h-96 max-h-96 overflow-y-auto rounded-lg">
-          {storeList.length ? (
-            filteredStores.map((store, i) => (
-              <div
-                key={i}
-                data-testid={`lookup-store-option-${store.storeid}`}
-                className={`transition-all duration-200 px-2 py-1 ${
-                  selectedStore === store.storeid
-                    ? "bg-blue-500 text-custom-white"
-                    : "even:bg-blue-200 "
-                }`}
-                onClick={() => handleSelect(store.storeid)}
-              >
-                {store.store_name}
-              </div>
-            ))
-          ) : (
-            <LoadingIndicator message="Loading stores..." />
-          )}
+        <div className="h-96 max-h-96 overflow-y-auto rounded-lg no-scrollbar">
+          {filteredStores.map((store, i) => (
+            <div
+              key={i}
+              data-testid={`lookup-store-option-${store.storeid}`}
+              className={`transition-all duration-200 px-2 py-1 cursor-pointer 
+                hover:bg-blue-500 hover:text-custom-white ${
+                selectedStore === store.storeid
+                  ? "bg-blue-500 text-custom-white"
+                  : "even:bg-blue-200 "
+              }`}
+              onClick={() => handleSelect(store.storeid)}
+            >
+              {store.store_name}
+            </div>
+          ))}
         </div>
       </Modal>
       <div className="text-sm font-medium">Scan item:</div>
