@@ -65,7 +65,6 @@ const UserGrid = () => {
   };
 
   const handleRowClick = (e: RowClickedEvent) => {
-    setText("");
     dispatch(setSelectedUserInfo(e.data));
     if (qs.qsUsers.includes(e.data.email)) {
       dispatch(setSelectedQsUserEmail(e.data.email));

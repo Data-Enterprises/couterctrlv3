@@ -187,4 +187,29 @@ describe("StorePicker Component", () => {
       expect(state.lastGroup).toBe(3);
     });
   });
+
+  it("should handle SelectGroup query filtering", async () => {
+    (setUserPrefs as Mock).mockResolvedValue({ data: { error: 0 } });
+    renderWithProviders(<StorePicker />, { store: testStore });
+
+    // Select Group as search type
+    const trigger = await screen.findByTestId("type-trigger-ref");
+    await user.click(trigger);
+
+    const groupOption = await screen.findByTestId("st-option-2");
+    await user.click(groupOption);
+
+    // Click on one of the groups
+    const groupTrigger = await screen.findByTestId("selectgroup-trigger-ref");
+    await user.click(groupTrigger);
+
+    const groupInput = await screen.findByTestId("search-group-input");
+    // focus
+    await user.click(groupInput);
+    await user.clear(groupInput);
+    await user.type(groupInput, "Group T");
+
+    const listRefChildren = await screen.findByTestId("list-ref");
+    expect(listRefChildren.children.length).toBe(2);
+  });
 });

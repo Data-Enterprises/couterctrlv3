@@ -30,6 +30,19 @@ const SelectGroup = () => {
   }, [context.selectedGroup]);
 
   useEffect(() => {
+    listRef.current!.setAttribute("data-display", "open");
+
+    if (!context.selectedGroup || (!query.length && context.selectedGroup)) {
+      setFiltered(context.groups);
+    } else if (context.selectedGroup && query.length > 0) {
+      const filteredGroups = context.groups.filter((group) =>
+        group.group_name.toLowerCase().includes(query.toLowerCase())
+      );
+      setFiltered(filteredGroups);
+    }
+  }, [query]);
+
+  useEffect(() => {
     if (componentRef.current) {
       document.addEventListener("mousedown", handleClickOutside);
     }
@@ -76,6 +89,10 @@ const SelectGroup = () => {
     }
   };
 
+  const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+  };
+
   const styling = "w-full md:px-0";
   const inputStyle =
     "basic-input focus:border bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer w-full";
@@ -101,11 +118,11 @@ const SelectGroup = () => {
               data-testid="search-group-input"
               value={query}
               onFocus={(e) => e.target.select()}
+              onChange={handleQueryChange}
               autoComplete="off"
               type="text"
               name="group-search"
               className={`${inputStyle} select-none`}
-              readOnly
             />
             <div className="absolute top-2 right-2 cursor-pointer">
               <ChevronUpDownIcon className="fill-content" />
@@ -125,7 +142,11 @@ const SelectGroup = () => {
           >
             {/* This needs to be filtered data by query search */}
             {filtered.map((group, idx) => (
-              <div data-testid={`selectgroup-${group.id}`} key={`group-${idx}`} onClick={() => handleSelect(group)}>
+              <div
+                data-testid={`selectgroup-${group.id}`}
+                key={`group-${idx}`}
+                onClick={() => handleSelect(group)}
+              >
                 <div className="p-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer text-sm">
                   {group.group_name}
                 </div>
