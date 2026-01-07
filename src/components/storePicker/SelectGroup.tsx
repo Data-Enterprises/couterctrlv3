@@ -30,8 +30,6 @@ const SelectGroup = () => {
   }, [context.selectedGroup]);
 
   useEffect(() => {
-    listRef.current!.setAttribute("data-display", "open");
-
     if (!context.selectedGroup || (!query.length && context.selectedGroup)) {
       setFiltered(context.groups);
     } else if (context.selectedGroup && query.length > 0) {
@@ -81,6 +79,7 @@ const SelectGroup = () => {
 
   const handleTriggerClick = () => {
     if (listRef.current) {
+      setQuery("");
       const currentStatus = listRef.current.getAttribute("data-display");
       listRef.current.setAttribute(
         "data-display",
@@ -117,7 +116,6 @@ const SelectGroup = () => {
             <input
               data-testid="search-group-input"
               value={query}
-              onFocus={(e) => e.target.select()}
               onChange={handleQueryChange}
               autoComplete="off"
               type="text"
