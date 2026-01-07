@@ -23,10 +23,10 @@ const SelectStore = () => {
         : "flex flex-col opacity-50 pointer-events-none"
     );
     if (context.type === "Stores") {
-      listRef.current?.classList.add("hidden")
+      listRef.current?.classList.add("hidden");
       setQuery("");
     } else {
-      listRef.current?.classList.remove("hidden")
+      listRef.current?.classList.remove("hidden");
       setQuery(context.selectedStore?.store_name || "");
     }
   }, [context.type]);
@@ -57,10 +57,6 @@ const SelectStore = () => {
 
   // Filter the stores based on the query
   useEffect(() => {
-    // if typing, open the dropdown
-    listRef.current!.setAttribute("data-display", "open");
-
-    // Then filter
     if (!context.selectedStore || (!query.length && context.selectedStore)) {
       setFilteredStores(context.assignedStores);
     } else if (context.selectedStore && query.length > 0) {
@@ -78,13 +74,13 @@ const SelectStore = () => {
     ) {
       if (listRef.current) {
         listRef.current.setAttribute("data-display", "closed");
-        // if (onOutsideClick) onOutsideClick();
       }
     }
   };
 
   const handleTriggerClick = () => {
     if (listRef.current) {
+      setQuery("");
       const currentStatus = listRef.current.getAttribute("data-display");
       listRef.current.setAttribute(
         "data-display",
@@ -137,7 +133,6 @@ const SelectStore = () => {
             <input
               data-testid="search-store-input"
               value={query}
-              onFocus={(e) => e.target.select()}
               onChange={handleQueryChange}
               autoComplete="off"
               type="text"
@@ -162,7 +157,11 @@ const SelectStore = () => {
           >
             {/* This needs to be filtered data by query search */}
             {filteredStores.map((store, idx) => (
-              <div data-testid={`searchstore-${store.storeid}`} key={`store-${idx}`} onClick={() => handleSelect(store)}>
+              <div
+                data-testid={`searchstore-${store.storeid}`}
+                key={`store-${idx}`}
+                onClick={() => handleSelect(store)}
+              >
                 <div className="p-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer text-sm">
                   {store.store_name}
                 </div>

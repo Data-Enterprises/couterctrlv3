@@ -385,9 +385,14 @@ export const forecastSlice = createSlice({
         // The directly updated cell
         row.fcstPrice = newPrice;
 
+        
         // The two updated cells by calculation
         row.adFcst = units; // units over ad days
         row.fcstTotal = newPrice * units; // forecasted dollars
+        
+        const existingPrice = prices!.price_history.find((ph) => parseFloat(ph.price) === newPrice);
+        row.qtySold = existingPrice ? existingPrice.qty : 0; // qty sold at that price point historically
+
         row.markdownDollars = (regRetail - newPrice) * units;
         row.daysAtPrice = daysActive; // days at the new price point based on history
 
@@ -445,10 +450,15 @@ export const forecastSlice = createSlice({
           (item) => item.upc === upc
         )!.regular_retail_price;
 
+        const existingPrice = prices!.price_history.find(
+          (ph) => parseFloat(ph.price) === price
+        );
+
         return {
           ...row,
           fcstPrice: price,
           adFcst: units,
+          qtySold: existingPrice ? existingPrice.qty : 0, // qty sold at that price point historically
           fcstTotal: price * units,
           markdownDollars: (regRetail - price) * units,
           daysAtPrice: daysActive,
