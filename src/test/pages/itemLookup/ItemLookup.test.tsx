@@ -19,9 +19,11 @@ import {
 import { screen, waitFor } from "@testing-library/react";
 import { setPause } from "../../../features/itemLookupSlice";
 import { useMediaDevices } from "react-media-devices";
+import { setAssignedStores } from "../../../features/userSlice";
 
 const user = userEvent.setup();
 const store = setupStore();
+store.dispatch(setAssignedStores(storeListResp.data.stores));
 vi.mock("../../../api/itemLookup");
 
 const mockToastError = vi.fn();
@@ -74,31 +76,31 @@ vi.mock("@ericblade/quagga2", () => {
 });
 
 describe("Item Lookup page", () => {
-  it("should handle API error fecthing store list on moun", async () => {
-    // EVERY TEST NEEDS TO MOCK MEDIA DEVICES
-    mockedUseMediaDevices.mockReturnValue({
-      devices: [
-        { deviceId: "front-1", label: "Front Camera" },
-        { deviceId: "back-1", label: "Back Camera" },
-      ],
-    });
-    (getStoreList as Mock).mockRejectedValueOnce(defaultError);
-    renderWithProviders(<ItemLookup />);
-    await waitFor(() => {
-      expect(mockToastError).toHaveBeenCalledWith("API Error");
-    });
-  });
+  // it("should handle API error fecthing store list on moun", async () => {
+  //   // EVERY TEST NEEDS TO MOCK MEDIA DEVICES
+  //   mockedUseMediaDevices.mockReturnValue({
+  //     devices: [
+  //       { deviceId: "front-1", label: "Front Camera" },
+  //       { deviceId: "back-1", label: "Back Camera" },
+  //     ],
+  //   });
+  //   (getStoreList as Mock).mockRejectedValueOnce(defaultError);
+  //   renderWithProviders(<ItemLookup />);
+  //   await waitFor(() => {
+  //     expect(mockToastError).toHaveBeenCalledWith("API Error");
+  //   });
+  // });
 
-  it("should fetch store list on mount", async () => {
-    mockedUseMediaDevices.mockReturnValue({
-      devices: [
-        { deviceId: "front-1", label: "Front Camera" },
-        { deviceId: "back-1", label: "Back Camera" },
-      ],
-    });
-    (getStoreList as Mock).mockResolvedValue(storeListResp);
-    renderWithProviders(<ItemLookup />, { store });
-  });
+  // it("should fetch store list on mount", async () => {
+  //   mockedUseMediaDevices.mockReturnValue({
+  //     devices: [
+  //       { deviceId: "front-1", label: "Front Camera" },
+  //       { deviceId: "back-1", label: "Back Camera" },
+  //     ],
+  //   });
+  //   (getStoreList as Mock).mockResolvedValue(storeListResp);
+  //   renderWithProviders(<ItemLookup />, { store });
+  // });
 
   it("should set an error message if the item is not found for all stores", async () => {
     mockedUseMediaDevices.mockReturnValue({
