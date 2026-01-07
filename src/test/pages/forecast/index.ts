@@ -72,7 +72,8 @@ export const fileListResp = {
   data: {
     error: 0,
     success: true,
-    files: ["1_12_08_2025_UPC_List.csv"],
+    // files: ["1_12_08_2025_UPC_List.csv"],
+    files: ["1_12_08_2025_UPC_List.csv", "1_12_01_2025_UPC_List2.csv"],
   },
 };
 
@@ -676,6 +677,23 @@ export const priceHistoryFromListResp = {
               "12/09/2025",
             ],
             days_active: 56,
+          },
+        ],
+      },
+      {
+        upc: "7800008153",
+        description: "Test Product",
+        qty: 287,
+        regular_retail_price: 9.99,
+        avg_daily_qty: 3.188888888888889,
+        max_day_qty: 22,
+        days_active: 72,
+        price_history: [
+          {
+            price: "-2.01",
+            qty: 1,
+            sale_dates: ["10/13/2025"],
+            days_active: 1,
           },
         ],
       },

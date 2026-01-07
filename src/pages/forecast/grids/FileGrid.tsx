@@ -71,6 +71,7 @@ const FileGrid = () => {
               const dateB = new Date(b.date);
               return dateB.getTime() - dateA.getTime();
             });
+            
           setTableData(data);
         }
       })
