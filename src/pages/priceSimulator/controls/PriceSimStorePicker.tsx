@@ -191,7 +191,6 @@ const PriceSimStorePicker = () => {
           selectedStores={context.selectedStores}
           radioId={context.radioId}
           className=""
-          height="py-1 min-h-32 max-h-32"
         />
       </div>
       {/* <div className="flex gap-2 mt-4">

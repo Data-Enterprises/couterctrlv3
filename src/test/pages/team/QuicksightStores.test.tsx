@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { renderWithProviders } from "../../utils";
 import { setupStore } from "../../../store";
 import QuickSightStores from "../../../pages/team/assignModal/QuicksightStores";
-import { screen, waitFor } from "@testing-library/react";
+import { waitFor } from "@testing-library/react";
 
 describe("QuicksightStores Component", () => {
   it("should render without a last name", async () => {
