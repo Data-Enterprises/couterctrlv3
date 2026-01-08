@@ -7,6 +7,7 @@ import {
   type ColDef,
   type ColGroupDef,
   // type RowClickedEvent,
+  TooltipModule,
 } from "ag-grid-community";
 // import type { JsonError } from "../../../interfaces";
 import {
@@ -21,7 +22,7 @@ import {
   setSimRowData,
   updateGlobalFcstRows,
 } from "../../../features/forecastSlice";
-ModuleRegistry.registerModules([AllCommunityModule]);
+ModuleRegistry.registerModules([AllCommunityModule, TooltipModule]);
 import type {
   ForecastOutlierRow,
   SimBtns,
@@ -58,6 +59,7 @@ const OutlierGrid = () => {
       flex: 0.8,
       headerStyle: { borderRight: "1px solid white" },
       cellClass: "no-outline-on-focus",
+      headerTooltip: "UPC",
     },
     {
       headerName: "Description",
@@ -65,6 +67,7 @@ const OutlierGrid = () => {
       flex: 1.7,
       headerStyle: { borderRight: "1px solid white" },
       cellClass: "no-outline-on-focus",
+      headerTooltip: "Description",
     },
     {
       headerName: "Qty Sold",
@@ -72,6 +75,7 @@ const OutlierGrid = () => {
       flex: 0.7,
       headerStyle: { borderRight: "1px solid white" },
       cellClass: "no-outline-on-focus text-right",
+      headerTooltip: "Quantity Sold",
     },
     {
       headerName: "Days Active",
@@ -80,6 +84,7 @@ const OutlierGrid = () => {
       headerStyle: { borderRight: "1px solid white" },
       cellClass: "no-outline-on-focus text-right",
       valueFormatter: (params) => `${params.value}/90`,
+      headerTooltip: "Days Active",
     },
     {
       headerName: "At Price",
@@ -88,6 +93,7 @@ const OutlierGrid = () => {
       cellClass: "no-outline-on-focus text-right",
       headerStyle: { borderRight: "1px solid white" },
       valueFormatter: (params) => `${params.value}/${params.data!.daysActive}`,
+      headerTooltip: "At Price",
     },
     {
       headerName: "Forecast",
@@ -95,6 +101,7 @@ const OutlierGrid = () => {
       flex: 0.7,
       cellClass: "no-outline-on-focus text-right",
       headerStyle: { borderRight: "1px solid white" },
+      headerTooltip: "Forecast",
     },
     {
       // Future forecasted qty
@@ -103,6 +110,7 @@ const OutlierGrid = () => {
       flex: 0.6,
       cellClass: "no-outline-on-focus text-right border border-content",
       headerStyle: { borderRight: "1px solid white" },
+      headerTooltip: "Ad Days",
       valueFormatter: (params) => (params.value === 0 ? "" : params.value),
       editable: true,
       valueSetter: (params) => {
@@ -121,6 +129,7 @@ const OutlierGrid = () => {
       flex: 0.7,
       cellClass: "no-outline-on-focus text-right border border-content",
       headerStyle: { borderRight: "1px solid white" },
+      headerTooltip: "Forecast Price",
       valueFormatter: (params) => formatCurrency2(params.value),
       editable: true,
       valueSetter: (params) => {
@@ -139,6 +148,7 @@ const OutlierGrid = () => {
       flex: 0.6,
       cellClass: "no-outline-on-focus text-right",
       headerStyle: { borderRight: "1px solid white" },
+      headerTooltip: "Ad Forecast",
     },
     {
       headerName: "Fcst Total",
@@ -147,6 +157,7 @@ const OutlierGrid = () => {
       cellClass: "no-outline-on-focus text-right",
       valueFormatter: (params) => formatCurrency2(params.value),
       headerStyle: { borderRight: "1px solid white" },
+      headerTooltip: "Forecast Total",
     },
     {
       headerName: "Markdown $",
@@ -154,6 +165,7 @@ const OutlierGrid = () => {
       flex: 0.7,
       cellClass: "no-outline-on-focus text-right",
       valueFormatter: (params) => formatCurrency2(params.value),
+      headerTooltip: "Markdown Dollars",
     },
   ];
 

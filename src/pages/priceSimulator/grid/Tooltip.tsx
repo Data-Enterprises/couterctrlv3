@@ -1,5 +1,5 @@
 import { useState } from "react";
-import QuestionIcon from "../../../svgs/QuestionIcon";
+// import QuestionIcon from "../../../svgs/QuestionIcon";
 
 const InfoIcon = ({ tooltip }: { tooltip: string }) => {
   const [visible, setVisible] = useState(false);
@@ -10,7 +10,7 @@ const InfoIcon = ({ tooltip }: { tooltip: string }) => {
         onMouseEnter={() => setVisible(true)}
         onMouseLeave={() => setVisible(false)}
       >
-        <QuestionIcon height={16} width={16} />
+        {/* <QuestionIcon height={16} width={16} /> */}
       </div>
       {visible && (
         <div
