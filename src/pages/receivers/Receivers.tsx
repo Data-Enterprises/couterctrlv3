@@ -2,12 +2,17 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { getReceiversList } from "../../api/receivers";
 import type { JsonError, ReceiverListResponse } from "../../interfaces";
-import { setReceiversList, setStoreId } from "../../features/receiversSlice";
+import {
+  setIsFetchingList,
+  setReceiversList,
+  setStoreId,
+} from "../../features/receiversSlice";
 
 import DatePickers from "../../components/datePickers/DatePickers";
 import SingleSelect from "../../components/SingleSelect";
 import RecevierListFilters from "./ReceiverListFilters";
 import ReceiversListGrid from "./ReceiversListGrid";
+import ReceiverDetailsGrid from "./ReceiverDetailsGrid";
 
 const Receivers = () => {
   const toast = useToast();
@@ -22,6 +27,7 @@ const Receivers = () => {
       toast.error("Please select a store");
       return;
     }
+    dispatch(setIsFetchingList(true));
     getReceiversList(url, token, state.storeid, startDate, endDate)
       .then((resp) => {
         const j: ReceiverListResponse = resp.data;
@@ -29,7 +35,8 @@ const Receivers = () => {
           dispatch(setReceiversList(j.recievers));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => dispatch(setIsFetchingList(false)));
   };
 
   const setSelectedStore = (storeid: string | number) => {
@@ -37,10 +44,10 @@ const Receivers = () => {
   };
 
   return (
-    <div className="w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4">
+    <div className="w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
       <div className="w-full h-full grid grid-cols-[20%_80%] gap-4">
-        <div className="select-none space-y-4">
-          <div className="bg-custom-white rounded-lg p-4 mb-4 shadow-lg">
+        <div className="select-none grid grid-rows-[26%_35%_35%] gap-4">
+          <div className="bg-custom-white rounded-lg p-4 shadow-lg">
             <SingleSelect
               label={"Select Store"}
               data={assignedStores}
@@ -53,8 +60,9 @@ const Receivers = () => {
           </div>
           <RecevierListFilters />
         </div>
-        <div className="space-y-4">
+        <div className="h-full grid grid-rows-[26%_68%] gap-4">
           <ReceiversListGrid />
+          <ReceiverDetailsGrid />
         </div>
       </div>
     </div>

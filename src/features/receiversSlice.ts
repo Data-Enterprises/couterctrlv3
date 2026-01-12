@@ -10,6 +10,8 @@ interface ReceiversState {
   invoiceIdFilter: string;
   filterListGrid: boolean;
   totals: ReceiverDetailsTotals[];
+  isFetchingList: boolean;
+  isFetchingDetails: boolean;
 }
 
 export const initialState: ReceiversState = {
@@ -21,6 +23,8 @@ export const initialState: ReceiversState = {
   invoiceIdFilter: "",
   filterListGrid: false,
   totals: [],
+  isFetchingList: false,
+  isFetchingDetails: false,
 };
 
 export const receiversSlice = createSlice({
@@ -60,6 +64,12 @@ export const receiversSlice = createSlice({
         state.invoiceIdFilter = "";
       }
     },
+    setIsFetchingList: (state, action: PayloadAction<boolean>) => {
+      state.isFetchingList = action.payload;
+    },
+    setIsFetchingDetails: (state, action: PayloadAction<boolean>) => {
+      state.isFetchingDetails = action.payload;
+    },
     reQuery: (state) => {
       state.list = [];
       state.details = [];
@@ -81,6 +91,8 @@ export const {
   setVendorNameFilter,
   setInvoiceIdFilter,
   setListGridFilters,
+  setIsFetchingList,
+  setIsFetchingDetails,
   reQuery,
   setTotals,
   resetReceiverState,

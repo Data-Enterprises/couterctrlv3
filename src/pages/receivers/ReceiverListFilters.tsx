@@ -30,7 +30,7 @@ const RecevierListFilters = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg">
+    <div className={`${state.list.length === 0 && "hidden"} bg-custom-white rounded-lg shadow-lg`}>
       <div className="bg-blue-500 text-custom-white font-medium rounded-t-lg px-4 py-1">
         Filter By
       </div>
