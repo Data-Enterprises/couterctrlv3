@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { ReceiverListItem, ReceiverDetailsItem } from "../interfaces";
+import type { ReceiverListItem, ReceiverDetailsItem, ReceiverDetailsTotals } from "../interfaces";
 
 interface ReceiversState {
   storeid: number;
@@ -9,6 +9,7 @@ interface ReceiversState {
   vendorNameFilter: string;
   invoiceIdFilter: string;
   filterListGrid: boolean;
+  totals: ReceiverDetailsTotals[];
 }
 
 export const initialState: ReceiversState = {
@@ -19,6 +20,7 @@ export const initialState: ReceiversState = {
   vendorNameFilter: "",
   invoiceIdFilter: "",
   filterListGrid: false,
+  totals: [],
 };
 
 export const receiversSlice = createSlice({
@@ -46,6 +48,9 @@ export const receiversSlice = createSlice({
     setInvoiceIdFilter: (state, action: PayloadAction<string>) => {
       state.invoiceIdFilter = action.payload;
     },
+    setTotals: (state, action: PayloadAction<ReceiverDetailsTotals[]>) => {
+      state.totals = action.payload;
+    },
     setListGridFilters: (state, action: PayloadAction<boolean>) => {
       state.filterListGrid = action.payload;
 
@@ -62,6 +67,7 @@ export const receiversSlice = createSlice({
       state.vendorNameFilter = "";
       state.invoiceIdFilter = "";
       state.filterListGrid = false;
+      state.totals = [];
     },
     resetReceiverState: () => initialState,
   },
@@ -76,6 +82,7 @@ export const {
   setInvoiceIdFilter,
   setListGridFilters,
   reQuery,
+  setTotals,
   resetReceiverState,
 } = receiversSlice.actions;
 export default receiversSlice.reducer;

@@ -16,10 +16,7 @@ export const theme = themeQuartz.withParams({
   selectedRowBackgroundColor: "#93c5fd",
 });
 
-export const cols: (
-  | ColDef<ReceiverListItem>
-  | ColGroupDef<ReceiverListItem>
-)[] = [
+export const cols: (ColDef<ReceiverListItem> | ColGroupDef<ReceiverListItem>)[] = [
   {
     headerName: "Date",
     field: "invoice_date",
@@ -42,6 +39,14 @@ export const cols: (
   {
     headerName: "Trans",
     field: "invoiceid",
+    resizable: false,
+    flex: 0.5,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus",
+  },
+  {
+    headerName: "Vendor ID",
+    field: "vendorid",
     resizable: false,
     flex: 0.5,
     headerStyle: { borderRight: "1px solid white" },

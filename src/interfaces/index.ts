@@ -649,5 +649,5 @@ export interface ReceiverDetailsResponse {
   success: boolean;
   record_count: number;
   records: ReceiverDetailsItem[];
-  totals: ReceiverDetailsTotals;
+  totals: ReceiverDetailsTotals[];
 }

@@ -13,7 +13,7 @@ const Input = ({ value, setValue, label, type = "text" }: InputProps) => {
         type={type}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className="basic-input focus:border w-full bg-custom-white"
+        className="basic-input focus:border w-full bg-custom-white py-1.5"
       />
     </div>
   );

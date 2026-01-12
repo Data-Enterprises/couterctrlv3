@@ -1,12 +1,22 @@
 import { useState, useEffect } from "react";
-import { useAppSelector } from "../../hooks";
-import type { ReceiverListItem } from "../../interfaces";
+import { useAppSelector, useAppDispatch } from "../../hooks";
+import { useToast } from "../../components/toasts/hooks/useToast";
+import type {
+  JsonError,
+  ReceiverDetailsResponse,
+  ReceiverListItem,
+} from "../../interfaces";
 import { AgGridReact } from "ag-grid-react";
 import { cols, theme } from ".";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
+import { getReceiverDetails } from "../../api/receivers";
+import { setReceiverDetails, setTotals } from "../../features/receiversSlice";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const ReceiversListGrid = () => {
+  const toast = useToast();
+  const dispatch = useAppDispatch();
+  const { url, token } = useAppSelector((state) => state.app);
   const state = useAppSelector((state) => state.receivers);
   const [filtered, setFiltered] = useState<ReceiverListItem[]>([]);
 
@@ -31,16 +41,36 @@ const ReceiversListGrid = () => {
     }
   }, [state.filterListGrid, state.list]);
 
+  const getSelectedDetails = (invoiceid: number, transDate: string) => {
+    getReceiverDetails(url, token, state.storeid, invoiceid, transDate)
+      .then((resp) => {
+        const j: ReceiverDetailsResponse = resp.data;
+        if (j.error == 0) {
+          dispatch(setReceiverDetails(j.records));
+          dispatch(setTotals(j.totals));
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+  };
+
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg h-full w-3/4 p-2">
+    <div className="bg-custom-white rounded-lg shadow-lg h-[23.6vh] w-1/2 p-2">
       <div className="text-sm font-medium pl-0.5">Select Receiver</div>
-      <div className="h-[87%]">
+      <div className="h-[90%]">
         <AgGridReact
           rowData={filtered}
           columnDefs={cols}
           theme={theme}
           pagination={true}
           paginationAutoPageSize={true}
+          onRowClicked={(params) => {
+            if (params.data) {
+              getSelectedDetails(
+                params.data.invoiceid,
+                params.data.invoice_date
+              );
+            }
+          }}
         />
       </div>
     </div>

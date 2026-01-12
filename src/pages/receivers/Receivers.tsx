@@ -53,7 +53,7 @@ const Receivers = () => {
           </div>
           <RecevierListFilters />
         </div>
-        <div className="grid grid-rows-[25%_75%] gap-4">
+        <div className="space-y-4">
           <ReceiversListGrid />
         </div>
       </div>
