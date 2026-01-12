@@ -1,10 +1,15 @@
-import { useAppSelector } from "../../hooks";
+import { useAppSelector, useAppDispatch } from "../../hooks";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { formatBigNumber, formatCurrency2 } from "../../utils";
 import { useEffect, useRef, useState } from "react";
+import { setIsExportModalOpen } from "../../features/receiversSlice";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
+import ExportModal from "./ExportModal";
+import { detailCols } from ".";
+
 const ReceiverDetailsGrid = () => {
+  const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.receivers);
   const topRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -12,14 +17,17 @@ const ReceiverDetailsGrid = () => {
 
   useEffect(() => {
     const calculateHeight = () => {
-      const topHeight = topRef.current?.getBoundingClientRect().bottom || 0;
-      const bottomHeight = bottomRef.current?.getBoundingClientRect().top || 0;
-      const availableHeight =
-        window.innerHeight - topHeight - bottomHeight;
+      const top = topRef.current?.getBoundingClientRect().bottom || 0;
+      const bottom = bottomRef.current?.getBoundingClientRect().top || 0;
+      const availableHeight = bottom - top;
       setHeight(availableHeight);
     };
     calculateHeight();
   }, [topRef, bottomRef, state.details]);
+
+  const openExportModal = () => {
+    dispatch(setIsExportModalOpen(true));
+  };
 
   return (
     <div
@@ -27,6 +35,12 @@ const ReceiverDetailsGrid = () => {
         state.list.length === 0 && "hidden"
       } bg-custom-white rounded-lg shadow-lg w-[99%] overflow-hidden`}
     >
+      <ExportModal
+        isOpen={state.isExpotModalOpen}
+        onClose={() => dispatch(setIsExportModalOpen(false))}
+        data={state.details}
+        columns={detailCols}
+      />
       <div className="relative w-full h-full">
         {state.details.length ? (
           <div>
@@ -73,7 +87,7 @@ const ReceiverDetailsGrid = () => {
             </div>
             <div
               ref={bottomRef}
-              className="absolute bottom-0 w-full h-12 bg-custom-white"
+              className="absolute bottom-0 w-full h-12 bg-custom-white flex"
             >
               {state.totals.map((item, i) => (
                 <div
@@ -108,6 +122,14 @@ const ReceiverDetailsGrid = () => {
                   <div className="border-content border-t-2 pl-2 mt-3 pt-1"></div>
                 </div>
               ))}
+              <div className="absolute bottom-1.5 ml-2 bg-custom-white">
+                <button
+                  className="btn-themeBlue py-1"
+                  onClick={openExportModal}
+                >
+                  Export
+                </button>
+              </div>
             </div>
           </div>
         ) : (

@@ -12,6 +12,7 @@ interface ReceiversState {
   totals: ReceiverDetailsTotals[];
   isFetchingList: boolean;
   isFetchingDetails: boolean;
+  isExpotModalOpen: boolean;
 }
 
 export const initialState: ReceiversState = {
@@ -25,6 +26,7 @@ export const initialState: ReceiversState = {
   totals: [],
   isFetchingList: false,
   isFetchingDetails: false,
+  isExpotModalOpen: false,
 };
 
 export const receiversSlice = createSlice({
@@ -70,6 +72,9 @@ export const receiversSlice = createSlice({
     setIsFetchingDetails: (state, action: PayloadAction<boolean>) => {
       state.isFetchingDetails = action.payload;
     },
+    setIsExportModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.isExpotModalOpen = action.payload;
+    },
     reQuery: (state) => {
       state.list = [];
       state.details = [];
@@ -93,6 +98,7 @@ export const {
   setListGridFilters,
   setIsFetchingList,
   setIsFetchingDetails,
+  setIsExportModalOpen,
   reQuery,
   setTotals,
   resetReceiverState,
