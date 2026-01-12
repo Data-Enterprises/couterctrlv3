@@ -8,6 +8,7 @@ interface ReceiversState {
   vendorIdFilter: string;
   vendorNameFilter: string;
   invoiceIdFilter: string;
+  filterListGrid: boolean;
 }
 
 export const initialState: ReceiversState = {
@@ -17,6 +18,7 @@ export const initialState: ReceiversState = {
   vendorIdFilter: "",
   vendorNameFilter: "",
   invoiceIdFilter: "",
+  filterListGrid: false,
 };
 
 export const receiversSlice = createSlice({
@@ -44,10 +46,14 @@ export const receiversSlice = createSlice({
     setInvoiceIdFilter: (state, action: PayloadAction<string>) => {
       state.invoiceIdFilter = action.payload;
     },
+    setListGridFilters: (state, action: PayloadAction<boolean>) => {
+      state.filterListGrid = action.payload;
+    },
     clearFilters: (state) => {
       state.vendorIdFilter = "";
       state.vendorNameFilter = "";
       state.invoiceIdFilter = "";
+      state.filterListGrid = false;
     },
     reQuery: (state) => {
       state.list = [];
@@ -55,6 +61,7 @@ export const receiversSlice = createSlice({
       state.vendorIdFilter = "";
       state.vendorNameFilter = "";
       state.invoiceIdFilter = "";
+      state.filterListGrid = false;
     },
     resetReceiverState: () => initialState,
   },
@@ -67,6 +74,7 @@ export const {
   setVendorIdFilter,
   setVendorNameFilter,
   setInvoiceIdFilter,
+  setListGridFilters,
   clearFilters,
   reQuery,
   resetReceiverState,
