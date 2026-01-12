@@ -5,18 +5,18 @@ interface ReceiversState {
   storeid: number;
   list: ReceiverListItem[];
   details: ReceiverDetailsItem[];
-  vendorIdFilter: number;
+  vendorIdFilter: string;
   vendorNameFilter: string;
-  invoiceIdFilter: number;
+  invoiceIdFilter: string;
 }
 
 export const initialState: ReceiversState = {
   storeid: 0,
   list: [],
   details: [],
-  vendorIdFilter: 0,
+  vendorIdFilter: "",
   vendorNameFilter: "",
-  invoiceIdFilter: 0,
+  invoiceIdFilter: "",
 };
 
 export const receiversSlice = createSlice({
@@ -35,26 +35,26 @@ export const receiversSlice = createSlice({
     ) => {
       state.details = action.payload;
     },
-    setVendorIdFilter: (state, action: PayloadAction<number>) => {
+    setVendorIdFilter: (state, action: PayloadAction<string>) => {
       state.vendorIdFilter = action.payload;
     },
     setVendorNameFilter: (state, action: PayloadAction<string>) => {
       state.vendorNameFilter = action.payload;
     },
-    setInvoiceIdFilter: (state, action: PayloadAction<number>) => {
+    setInvoiceIdFilter: (state, action: PayloadAction<string>) => {
       state.invoiceIdFilter = action.payload;
     },
     clearFilters: (state) => {
-      state.vendorIdFilter = 0;
+      state.vendorIdFilter = "";
       state.vendorNameFilter = "";
-      state.invoiceIdFilter = 0;
+      state.invoiceIdFilter = "";
     },
     reQuery: (state) => {
       state.list = [];
       state.details = [];
-      state.vendorIdFilter = 0;
+      state.vendorIdFilter = "";
       state.vendorNameFilter = "";
-      state.invoiceIdFilter = 0;
+      state.invoiceIdFilter = "";
     },
     resetReceiverState: () => initialState,
   },
