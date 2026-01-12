@@ -588,3 +588,66 @@ export interface PriceHistoryFromListResp {
   upc_count: number;
   results: PriceHistoryResult[];
 }
+
+////////////////////
+///RECEIVERS PAGE///
+////////////////////
+
+export interface ReceiverListItem {
+  invoiceid: number;
+  invoice_date: string;
+  store_number: string;
+  vendor_name: string;
+  vendorid: string;
+  reference_number: string;
+  items: number;
+  cashier_number: number;
+  cashier_name: string; // Operator
+}
+
+export interface ReceiverListResponse {
+  error: number;
+  success: boolean;
+  record_count: number;
+  recievers: ReceiverListItem[];
+}
+
+export interface ReceiverDetailsItem {
+  storeid: number;
+  line_number: number;
+  product_code: string;
+  product_description: string;
+  qty: number;
+  total_dollars: number;
+  weight: number | null;
+  units: number;
+  cases: number;
+  ext_retail: number;
+  retail: number;
+  free: number;
+  return: number;
+  ucost: number;
+  ext_cost: number;
+  gm: number;
+  cashier_number: number;
+  cashier_name: string;
+}
+
+export interface ReceiverDetailsTotals {
+  cases: number;
+  units: number;
+  ucost: number;
+  ext_cost: number;
+  retail: number;
+  ext_retail: number;
+  cashier_name: string;
+  cashier_number: number;
+}
+
+export interface ReceiverDetailsResponse {
+  error: number;
+  success: boolean;
+  record_count: number;
+  records: ReceiverDetailsItem[];
+  totals: ReceiverDetailsTotals;
+}
