@@ -30,6 +30,7 @@ const Receivers = () => {
       return;
     }
     dispatch(reQuery());
+    dispatch(setIsFetchingList(true));
     getReceiversList(url, token, state.storeid, startDate, endDate)
       .then((resp) => {
         const j: ReceiverListResponse = resp.data;

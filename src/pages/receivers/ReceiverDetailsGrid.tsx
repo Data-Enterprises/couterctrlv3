@@ -32,11 +32,11 @@ const ReceiverDetailsGrid = () => {
   return (
     <div
       className={`${
-        state.list.length === 0 && "hidden"
+        state.details.length === 0 && !state.isFetchingDetails ? "hidden" : ""
       } bg-custom-white rounded-lg shadow-lg w-[99%] overflow-hidden`}
     >
       <ExportModal
-        isOpen={state.isExpotModalOpen}
+        isOpen={state.isExportModalOpen}
         onClose={() => dispatch(setIsExportModalOpen(false))}
         data={state.details}
         columns={detailCols}

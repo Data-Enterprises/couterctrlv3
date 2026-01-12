@@ -10,8 +10,9 @@ import { AgGridReact } from "ag-grid-react";
 import { cols, theme } from ".";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { getReceiverDetails } from "../../api/receivers";
-import { setReceiverDetails, setTotals } from "../../features/receiversSlice";
+import { setIsFetchingDetails, setReceiverDetails, setTotals } from "../../features/receiversSlice";
 import { formatDate } from "../../utils";
+import LoadingIndicator from "../../components/loading/LoadingIndicator";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const ReceiversListGrid = () => {
@@ -19,28 +20,9 @@ const ReceiversListGrid = () => {
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
   const state = useAppSelector((state) => state.receivers);
-  // const [filtered, setFiltered] = useState<ReceiverListItem[]>([]);
-
-  // useEffect(() => {
-  //   if (state.filterListGrid) {
-  //     const filteredData = state.list.filter((item) => {
-  //       const idMatch = state.vendorIdFilter.toLowerCase();
-  //       const nameMatch = state.vendorNameFilter.toLowerCase();
-  //       const invoiceMatch = state.invoiceIdFilter;
-
-  //       return (
-  //         item.vendorid.toString().toLowerCase().includes(idMatch) &&
-  //         item.vendor_name.toLowerCase().includes(nameMatch.toLowerCase()) &&
-  //         item.reference_number.includes(invoiceMatch)
-  //       );
-  //     });
-  //     setFiltered(filteredData);
-  //   } else {
-  //     setFiltered(state.list);
-  //   }
-  // }, [state.filterListGrid, state.list]);
 
   const getSelectedDetails = (invoiceid: number, transDate: string) => {
+    dispatch(setIsFetchingDetails(true));
     getReceiverDetails(url, token, state.storeid, invoiceid, transDate)
       .then((resp) => {
         const j: ReceiverDetailsResponse = resp.data;
@@ -49,13 +31,14 @@ const ReceiversListGrid = () => {
           dispatch(setTotals(j.totals));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => dispatch(setIsFetchingDetails(false)));
   };
 
   return (
     <div
       className={` ${
-        state.listGridData.length === 0 && "hidden"
+        state.listGridData.length === 0 && !state.isFetchingList ? "hidden" : ""
       } bg-custom-white rounded-lg shadow-lg w-1/2 p-2`}
     >
       <div className="text-sm font-medium pl-0.5">Select Receiver</div>
@@ -75,6 +58,10 @@ const ReceiversListGrid = () => {
             }}
             rowSelection="single"
           />
+        ) : state.isFetchingList ? (
+          <div className="relative w-full h-full">
+            <LoadingIndicator />
+          </div>
         ) : null}
       </div>
     </div>
