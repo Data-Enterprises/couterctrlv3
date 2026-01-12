@@ -3,7 +3,9 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 import { getReceiversList } from "../../api/receivers";
 import type { JsonError, ReceiverListResponse } from "../../interfaces";
 import {
+  reQuery,
   setIsFetchingList,
+  setListGridData,
   setReceiversList,
   setStoreId,
 } from "../../features/receiversSlice";
@@ -27,12 +29,13 @@ const Receivers = () => {
       toast.error("Please select a store");
       return;
     }
-    dispatch(setIsFetchingList(true));
+    dispatch(reQuery());
     getReceiversList(url, token, state.storeid, startDate, endDate)
       .then((resp) => {
         const j: ReceiverListResponse = resp.data;
         if (j.error == 0) {
           dispatch(setReceiversList(j.recievers));
+          dispatch(setListGridData(j.recievers));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))

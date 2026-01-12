@@ -1,9 +1,14 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { ReceiverListItem, ReceiverDetailsItem, ReceiverDetailsTotals } from "../interfaces";
+import type {
+  ReceiverListItem,
+  ReceiverDetailsItem,
+  ReceiverDetailsTotals,
+} from "../interfaces";
 
 interface ReceiversState {
   storeid: number;
   list: ReceiverListItem[];
+  listGridData: ReceiverListItem[];
   details: ReceiverDetailsItem[];
   vendorIdFilter: string;
   vendorNameFilter: string;
@@ -27,6 +32,7 @@ export const initialState: ReceiversState = {
   isFetchingList: false,
   isFetchingDetails: false,
   isExpotModalOpen: false,
+  listGridData: [],
 };
 
 export const receiversSlice = createSlice({
@@ -64,7 +70,25 @@ export const receiversSlice = createSlice({
         state.vendorIdFilter = "";
         state.vendorNameFilter = "";
         state.invoiceIdFilter = "";
+        state.listGridData = state.list;
       }
+    },
+    applyFilters: (state) => {
+      const filteredData = state.list.filter((item) => {
+        const idMatch = state.vendorIdFilter.toLowerCase();
+        const nameMatch = state.vendorNameFilter.toLowerCase();
+        const invoiceMatch = state.invoiceIdFilter;
+
+        return (
+          item.vendorid.toString().toLowerCase().includes(idMatch) &&
+          item.vendor_name.toLowerCase().includes(nameMatch.toLowerCase()) &&
+          item.reference_number.includes(invoiceMatch)
+        );
+      });
+      state.listGridData = filteredData;
+    },
+    setListGridData: (state, action: PayloadAction<ReceiverListItem[]>) => {
+      state.listGridData = action.payload;
     },
     setIsFetchingList: (state, action: PayloadAction<boolean>) => {
       state.isFetchingList = action.payload;
@@ -101,6 +125,8 @@ export const {
   setIsExportModalOpen,
   reQuery,
   setTotals,
+  setListGridData,
   resetReceiverState,
+  applyFilters,
 } = receiversSlice.actions;
 export default receiversSlice.reducer;

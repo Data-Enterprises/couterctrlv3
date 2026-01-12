@@ -4,6 +4,7 @@ import {
   setVendorNameFilter,
   setInvoiceIdFilter,
   setListGridFilters,
+  applyFilters,
 } from "../../features/receiversSlice";
 import Input from "../../components/inputs/Input";
 
@@ -29,8 +30,16 @@ const RecevierListFilters = () => {
     dispatch(setListGridFilters(toggle));
   };
 
+  const applyTableFilters = () => {
+    dispatch(applyFilters());
+  };
+
   return (
-    <div className={`${state.list.length === 0 && "hidden"} bg-custom-white rounded-lg shadow-lg`}>
+    <div
+      className={`${
+        state.list.length === 0 && "hidden"
+      } bg-custom-white rounded-lg shadow-lg`}
+    >
       <div className="bg-blue-500 text-custom-white font-medium rounded-t-lg px-4 py-1">
         Filter By
       </div>
@@ -53,7 +62,7 @@ const RecevierListFilters = () => {
         <div className="flex gap-2 mt-2">
           <button
             className="btn-themeBlue w-1/2"
-            onClick={() => toggleFilters(true)}
+            onClick={() => applyTableFilters()}
           >
             Filter
           </button>
