@@ -7,6 +7,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 import ExportModal from "./ExportModal";
 import { detailCols } from ".";
+import LoadingIndicator from "../../components/loading/LoadingIndicator";
 
 const ReceiverDetailsGrid = () => {
   const dispatch = useAppDispatch();
@@ -23,7 +24,7 @@ const ReceiverDetailsGrid = () => {
       setHeight(availableHeight);
     };
     calculateHeight();
-  }, [topRef, bottomRef, state.details]);
+  }, [topRef, bottomRef, state.details, state.isFetchingDetails]);
 
   const openExportModal = () => {
     dispatch(setIsExportModalOpen(true));
@@ -42,7 +43,7 @@ const ReceiverDetailsGrid = () => {
         columns={detailCols}
       />
       <div className="relative w-full h-full">
-        {state.details.length ? (
+        {state.details.length > 0 && !state.isFetchingDetails ? (
           <div>
             <div
               ref={topRef}
@@ -132,11 +133,11 @@ const ReceiverDetailsGrid = () => {
               </div>
             </div>
           </div>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-content/70">
-            Select a receiver to see details
+        ) : state.isFetchingDetails ? (
+          <div className="relative w-full h-full">
+            <LoadingIndicator />
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

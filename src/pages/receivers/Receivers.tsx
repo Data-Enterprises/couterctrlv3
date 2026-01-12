@@ -4,6 +4,7 @@ import { getReceiversList } from "../../api/receivers";
 import type { JsonError, ReceiverListResponse } from "../../interfaces";
 import {
   reQuery,
+  resetReceiverState,
   setIsFetchingList,
   setListGridData,
   setReceiversList,
@@ -50,7 +51,7 @@ const Receivers = () => {
   return (
     <div className="w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
       <div className="w-full h-full grid grid-cols-[20%_80%] gap-4">
-        <div className="select-none grid grid-rows-[26%_35%_35%] gap-4">
+        <div className="select-none grid grid-rows-[32%_35%_29%] gap-4">
           <div className="bg-custom-white rounded-lg p-4 shadow-lg">
             <SingleSelect
               label={"Select Store"}
@@ -61,6 +62,14 @@ const Receivers = () => {
               onSelect={setSelectedStore}
             />
             <DatePickers handleQuery={getReceivers} />
+            <button
+              className={`${
+                state.list.length === 0 && "opacity-50 pointer-events-none"
+              } btn-themeOrange w-full mt-2`}
+              onClick={() => dispatch(resetReceiverState())}
+            >
+              Refresh
+            </button>
           </div>
           <RecevierListFilters />
         </div>
