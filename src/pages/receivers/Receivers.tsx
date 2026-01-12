@@ -7,6 +7,7 @@ import { setReceiversList, setStoreId } from "../../features/receiversSlice";
 import DatePickers from "../../components/datePickers/DatePickers";
 import SingleSelect from "../../components/SingleSelect";
 import RecevierListFilters from "./ReceiverListFilters";
+import ReceiversListGrid from "./ReceiversListGrid";
 
 const Receivers = () => {
   const toast = useToast();
@@ -52,7 +53,9 @@ const Receivers = () => {
           </div>
           <RecevierListFilters />
         </div>
-        <div>Grid/Document</div>
+        <div className="grid grid-rows-[25%_75%] gap-4">
+          <ReceiversListGrid />
+        </div>
       </div>
     </div>
   );

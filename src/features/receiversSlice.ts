@@ -48,12 +48,12 @@ export const receiversSlice = createSlice({
     },
     setListGridFilters: (state, action: PayloadAction<boolean>) => {
       state.filterListGrid = action.payload;
-    },
-    clearFilters: (state) => {
-      state.vendorIdFilter = "";
-      state.vendorNameFilter = "";
-      state.invoiceIdFilter = "";
-      state.filterListGrid = false;
+
+      if (!action.payload) {
+        state.vendorIdFilter = "";
+        state.vendorNameFilter = "";
+        state.invoiceIdFilter = "";
+      }
     },
     reQuery: (state) => {
       state.list = [];
@@ -75,7 +75,6 @@ export const {
   setVendorNameFilter,
   setInvoiceIdFilter,
   setListGridFilters,
-  clearFilters,
   reQuery,
   resetReceiverState,
 } = receiversSlice.actions;

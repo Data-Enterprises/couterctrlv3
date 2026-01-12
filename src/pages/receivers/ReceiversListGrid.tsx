@@ -2,13 +2,8 @@ import { useState, useEffect } from "react";
 import { useAppSelector } from "../../hooks";
 import type { ReceiverListItem } from "../../interfaces";
 import { AgGridReact } from "ag-grid-react";
-import { theme } from ".";
-import {
-  AllCommunityModule,
-  ModuleRegistry,
-  type ColDef,
-  type ColGroupDef,
-} from "ag-grid-community";
+import { cols, theme } from ".";
+import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const ReceiversListGrid = () => {
@@ -16,14 +11,16 @@ const ReceiversListGrid = () => {
   const [filtered, setFiltered] = useState<ReceiverListItem[]>([]);
 
   useEffect(() => {
+    if (state.list.length === 0) return;
+
     if (state.filterListGrid) {
       const filteredData = state.list.filter((item) => {
-        const idMatch = state.vendorIdFilter;
-        const nameMatch = state.vendorNameFilter;
+        const idMatch = state.vendorIdFilter.toLowerCase();
+        const nameMatch = state.vendorNameFilter.toLowerCase();
         const invoiceMatch = state.invoiceIdFilter;
 
         return (
-          item.vendorid.toString().includes(idMatch) &&
+          item.vendorid.toString().toLowerCase().includes(idMatch) &&
           item.vendor_name.toLowerCase().includes(nameMatch.toLowerCase()) &&
           item.reference_number.toString().includes(invoiceMatch)
         );
@@ -32,65 +29,20 @@ const ReceiversListGrid = () => {
     } else {
       setFiltered(state.list);
     }
-  }, [state.filterListGrid]);
-
-  const cols: (ColDef<ReceiverListItem> | ColGroupDef<ReceiverListItem>)[] = [
-    {
-      headerName: "Date",
-      field: "invoice_date",
-      resizable: false,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
-    },
-    {
-      headerName: "Date",
-      field: "invoice_date",
-      resizable: false,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
-    },
-    {
-      headerName: "Store",
-      field: "store_number",
-      resizable: false,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
-      valueFormatter: () => `${state.storeid}`,
-    },
-    {
-      headerName: "Trans",
-      field: "invoiceid",
-      resizable: false,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
-    },
-    {
-      headerName: "Name",
-      field: "vendor_name",
-      resizable: false,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
-    },
-    {
-      headerName: "Invoice #",
-      field: "reference_number",
-      resizable: false,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
-    },
-    {
-      headerName: "Items",
-      field: "items",
-      resizable: false,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
-    },
-  ];
+  }, [state.filterListGrid, state.list]);
 
   return (
-    <div>
-      <div>Select Receiver</div>
-      <AgGridReact rowData={filtered} columnDefs={cols} theme={theme} />
+    <div className="bg-custom-white rounded-lg shadow-lg h-full w-3/4 p-2">
+      <div className="text-sm font-medium pl-0.5">Select Receiver</div>
+      <div className="h-[87%]">
+        <AgGridReact
+          rowData={filtered}
+          columnDefs={cols}
+          theme={theme}
+          pagination={true}
+          paginationAutoPageSize={true}
+        />
+      </div>
     </div>
   );
 };

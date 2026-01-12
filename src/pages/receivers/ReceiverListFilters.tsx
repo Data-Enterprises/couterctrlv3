@@ -3,7 +3,7 @@ import {
   setVendorIdFilter,
   setVendorNameFilter,
   setInvoiceIdFilter,
-  clearFilters,
+  setListGridFilters,
 } from "../../features/receiversSlice";
 import Input from "../../components/inputs/Input";
 
@@ -12,9 +12,7 @@ const RecevierListFilters = () => {
   const state = useAppSelector((state) => state.receivers);
 
   const handleVendorIdFilter = (value: string) => {
-    if (!isNaN(Number(value))) {
-      dispatch(setVendorIdFilter(value));
-    }
+    dispatch(setVendorIdFilter(value));
   };
 
   const handleVendorNameFilter = (value: string) => {
@@ -27,8 +25,8 @@ const RecevierListFilters = () => {
     }
   };
 
-  const resetFilters = () => {
-    dispatch(clearFilters());
+  const toggleFilters = (toggle: boolean) => {
+    dispatch(setListGridFilters(toggle));
   };
 
   return (
@@ -53,8 +51,16 @@ const RecevierListFilters = () => {
           value={String(state.invoiceIdFilter)}
         />
         <div className="flex gap-2 mt-2">
-          <button className="btn-themeBlue w-1/2">Filter</button>
-          <button className="btn-themeOrange w-1/2" onClick={resetFilters}>
+          <button
+            className="btn-themeBlue w-1/2"
+            onClick={() => toggleFilters(true)}
+          >
+            Filter
+          </button>
+          <button
+            className="btn-themeOrange w-1/2"
+            onClick={() => toggleFilters(false)}
+          >
             Reset
           </button>
         </div>
