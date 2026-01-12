@@ -12,7 +12,6 @@ import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { getReceiverDetails } from "../../api/receivers";
 import { setReceiverDetails, setTotals } from "../../features/receiversSlice";
 import { formatDate } from "../../utils";
-import LoadingIndicator from "../../components/loading/LoadingIndicator";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const ReceiversListGrid = () => {
@@ -58,7 +57,7 @@ const ReceiversListGrid = () => {
   return (
     <div
       className={` ${
-        (filtered.length === 0 && "hidden")
+        filtered.length === 0 && "hidden"
       } bg-custom-white rounded-lg shadow-lg w-1/2 p-2`}
     >
       <div className="text-sm font-medium pl-0.5">Select Receiver</div>
