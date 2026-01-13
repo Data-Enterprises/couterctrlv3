@@ -8,6 +8,7 @@ import {
   setFilterType,
 } from "../../../features/couponSlice";
 import TextFilter from "./TextFilter";
+import AmountFilter from "./AmountFilter";
 
 const FiltersModal = () => {
   const dispatch = useAppDispatch();
@@ -22,6 +23,10 @@ const FiltersModal = () => {
   };
 
   const setFilterValue = () => {
+    if (!text) {
+      // toast warning here about empty value
+      return;
+    }
     dispatch(setFilter({ type: state.filterType, value: text }));
     dispatch(applyFilters());
     handleClose();
@@ -36,16 +41,7 @@ const FiltersModal = () => {
     ) {
       return <TextFilter text={text} setText={setText} />;
     } else if (state.filterType === "CpnAmount") {
-      return (
-        <div className="mb-2">
-          <input
-            type="number"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            className="basic-input focus:border bg-custom-white"
-          />
-        </div>
-      );
+      return <AmountFilter text={text} setText={setText} />;
     }
   };
 

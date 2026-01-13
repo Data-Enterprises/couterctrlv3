@@ -20,6 +20,8 @@ interface CouponState {
   isFetching: boolean;
   filterModalOpen: boolean;
   filterType: FilterType;
+  amtLessThan: boolean;
+  amtGreaterThan: boolean;
 }
 
 const initialState: CouponState = {
@@ -33,6 +35,8 @@ const initialState: CouponState = {
   isFetching: false,
   filterModalOpen: false,
   filterType: "",
+  amtLessThan: false,
+  amtGreaterThan: false,
 };
 
 const couponSlice = createSlice({
@@ -120,6 +124,10 @@ const couponSlice = createSlice({
     setIsFetching: (state, action: PayloadAction<boolean>) => {
       state.isFetching = action.payload;
     },
+    setThresh: (state, action: PayloadAction<"less" | "greater" | "equal">) => {
+      state.amtLessThan = action.payload === "less";
+      state.amtGreaterThan = action.payload === "greater";
+    },
     resetCoupons: (state) => {
       state.coupons = [];
       state.gridCoupons = [];
@@ -141,5 +149,6 @@ export const {
   setIsFetching,
   setFilterModalOpen,
   setFilterType,
+  setThresh,
 } = couponSlice.actions;
 export default couponSlice.reducer;
