@@ -92,7 +92,7 @@ export const cols: (
     headerName: "Items",
     field: "items",
     resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
+    // headerStyle: { borderRight: "1px solid white" },
     flex: 0.4,
     cellClass: "no-outline-on-focus",
   },

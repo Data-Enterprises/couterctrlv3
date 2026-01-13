@@ -73,7 +73,7 @@ const Receivers = () => {
           </div>
           <RecevierListFilters />
         </div>
-        <div className="h-full grid grid-rows-[26%_72%] gap-4">
+        <div className="h-full grid grid-rows-[40%_58%] gap-4">
           <ReceiversListGrid />
           <ReceiverDetailsGrid />
         </div>

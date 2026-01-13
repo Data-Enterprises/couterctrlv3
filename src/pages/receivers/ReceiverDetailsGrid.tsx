@@ -34,7 +34,7 @@ const ReceiverDetailsGrid = () => {
     <div
       className={`${
         state.details.length === 0 && !state.isFetchingDetails ? "hidden" : ""
-      } bg-custom-white rounded-lg shadow-lg w-[99%] overflow-hidden`}
+      } bg-custom-white rounded-lg shadow-lg w-[99%] overflow-hidden pr-4`}
     >
       <ExportModal
         isOpen={state.isExportModalOpen}
@@ -42,7 +42,7 @@ const ReceiverDetailsGrid = () => {
         data={state.details}
         columns={detailCols}
       />
-      <div className="relative w-full h-full">
+      <div className="relative w-full h-full p-4">
         {state.details.length > 0 && !state.isFetchingDetails ? (
           <div>
             <div
@@ -88,7 +88,7 @@ const ReceiverDetailsGrid = () => {
             </div>
             <div
               ref={bottomRef}
-              className="absolute bottom-0 w-full h-12 bg-custom-white flex"
+              className="absolute bottom-0 w-full h-12 bg-custom-white flex pr-3"
             >
               {state.totals.map((item, i) => (
                 <div
