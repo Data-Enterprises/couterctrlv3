@@ -20,6 +20,7 @@ import ItemLookup from "./pages/lookup/ItemLookup.tsx";
 import Forecasting from "./pages/forecast/Forecasting.tsx";
 import Dashboard from "./pages/quicksight/Dashboard.tsx";
 import Receivers from "./pages/receivers/Receivers.tsx";
+import Coupons from "./pages/coupons/Coupons.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -40,6 +41,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="forecasting" element={<Forecasting />} />
                 <Route path="quicksight" element={<Dashboard />} />
                 <Route path="receivers" element={<Receivers />} />
+                <Route path="coupons" element={<Coupons />} />
               </Route>
             </Routes>
           </ToastProvider>
