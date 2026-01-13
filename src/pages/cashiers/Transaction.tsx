@@ -132,8 +132,8 @@ const Transaction = ({ trans }: TransactionProps) => {
             >
               <div>{item.product_code}</div>
               <div>{item.product_description}</div>
-              <div>0</div>
-              <div>{item.net_sales}</div>
+              <div>{item.qty}</div>
+              <div>{formatCurrency2(item.net_sales)}</div>
               <div>{renderStamps(item)}</div>
               <div>{item.sale_type}</div>
             </div>

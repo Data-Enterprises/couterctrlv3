@@ -58,7 +58,7 @@ export const getCashierDetails = async (
   return json;
 };
 
-export const getCashierTransactions = async (
+export const getCashierTransaction = async (
   url: string,
   token: string,
   transactionDate: string,

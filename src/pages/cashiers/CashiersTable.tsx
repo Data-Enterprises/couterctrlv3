@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { colDefs, theme, reducePriceTypes, reduceSaleIds } from ".";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { getCashierTransactions } from "../../api/cashiers";
+import { getCashierTransaction } from "../../api/cashiers";
 import {
   setAvailablePriceTypes,
   setCashierSaleIds,
@@ -132,7 +132,7 @@ const CashiersTable = () => {
       const storeid = e.data.storeid;
       dispatch(setTransactionDrillDown([]));
       dispatch(setTransModalOpen(true));
-      getCashierTransactions(
+      getCashierTransaction(
         context.url,
         context.token,
         saleDate,

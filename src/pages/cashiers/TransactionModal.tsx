@@ -14,7 +14,14 @@ const TransactionModal = () => {
       modalClassName="bg-custom-white w-1/3 relative no-scrollbar max-h-[80vh] overflow-y-auto p-2 rounded-lg shadow-lg"
       onClose={() => dispatch(setTransModalOpen(false))}
     >
-      {cashier.transactionDrillDown.length === 0 ? (
+      {cashier.noRowsReturned && (
+        <div className="w-full h-full flex items-center justify-center">
+          <p className="text-center text-gray-500 mt-4">
+            No transactions found.
+          </p>
+        </div>
+      )}
+      {cashier.transactionDrillDown.length === 0 && !cashier.noRowsReturned ? (
         <div className="h-[320px]">
           <LoadingIndicator message="Fetching transaction..." />
         </div>

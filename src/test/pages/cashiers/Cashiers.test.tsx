@@ -7,7 +7,7 @@ import {
   getCashierTable,
   getCashierDetails,
   getTransactionList,
-  getCashierTransactions,
+  getCashierTransaction,
   emailTransaction,
 } from "../../../api/cashiers";
 import userEvent from "@testing-library/user-event";
@@ -180,7 +180,7 @@ describe("Cashiers Page", () => {
   // Testing the API failure when trying to open the Transaction Modal
   // /////////////////////////////////////////////////////////////////
   it("should handle API failure when trying to open the Transaction Modal", async () => {
-    (getCashierTransactions as Mock).mockRejectedValueOnce(
+    (getCashierTransaction as Mock).mockRejectedValueOnce(
       new Error("API Error")
     );
 
@@ -212,7 +212,7 @@ describe("Cashiers Page", () => {
   // Testing the the opening and closing of the Transaction Modal from the Cashiers Table
   // ///////////////////////////////////////////////////////////////////////////////////
   it("should open transaction modal and handle its behavior", async () => {
-    (getCashierTransactions as Mock).mockResolvedValueOnce({
+    (getCashierTransaction as Mock).mockResolvedValueOnce({
       data: mockSingleTransResp,
     });
 

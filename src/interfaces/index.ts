@@ -290,6 +290,7 @@ export interface TransactionListItem {
   fsa: number;
   wic: number;
   scalable: number;
+  qty: number;
 }
 
 //////////////////////////////////////////////////////////////
