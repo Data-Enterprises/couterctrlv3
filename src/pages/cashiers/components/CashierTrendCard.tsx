@@ -79,7 +79,7 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
     key2: keyof CashierTrend
   ) => {
     const trends = cashier.cashierTrends;
-    const exists = trends.find((t) => t.storeid === row.storeid);
+    const exists = trends.find((t) => t.storeid === row.storeid && t.sale_type === row.sale_type);
     if (!exists) return null;
 
     // Otherwise return the icon
@@ -90,7 +90,7 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
 
   const defaultTrend = (row: CashierDetails) => {
     const trends = cashier.cashierTrends;
-    const exists = trends.find((t) => t.storeid === row.storeid);
+    const exists = trends.find((t) => t.storeid === row.storeid && t.sale_type === row.sale_type);
     if (!exists) {
       return {
         transaction_count: 0,
@@ -111,13 +111,14 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
     return exists;
   };
 
-  const showTrans = (option: string, storeNumber: string) => {
+  const showTrans = (option: string, storeNumber: string, cardSaleType: string) => {
     if (context.isDesktop) {
       if (option === "sale_id") {
         const filtered = filterData(
           cashier.cashierTransactions,
           cashier.selectedSaleType,
-          storeNumber
+          storeNumber,
+          cardSaleType
         );
 
         const uniqueCashiers = [...filtered].reduce(
@@ -186,7 +187,7 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
           <div
             data-testid={`cashier-trend-card-${idx}-${s.storeid}`}
             className={`${titleStyle} ${clickStyle}`}
-            onClick={() => showTrans("sale_id", s.store_number)}
+            onClick={() => showTrans("sale_id", s.store_number, s.sale_type)}
           >
             Transactions
             {findTrend(s, "transaction_count", "transaction_count")}

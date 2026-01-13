@@ -12,6 +12,8 @@ import {
 import type { JsonError } from "../../interfaces";
 import { activePanelStyle } from ".";
 import { useApiContext } from "../hooks";
+import { useState } from "react";
+import DescModal from "./components/DescModal";
 
 interface SaleTypesProps {
   setLoading: (loading: boolean) => void;
@@ -22,8 +24,75 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
   const params = useApiContext();
   const dispatch = useAppDispatch();
   const cashier = useAppSelector((state) => state.cashier);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+
+  const submitDescription = (description: string) => {
+    // Doing this to reset when looking for a different sale type
+    const panels = cashier.saleTypes;
+    dispatch(resetCashierState());
+    dispatch(setSaleTypes(panels));
+
+    // Setting this to handle selected css styling and show the loading indicator
+    dispatch(setSelectedSaleType("Description"));
+    setLoading(true);
+
+    getCashierTable(
+      params.url,
+      params.token,
+      params.start,
+      params.end,
+      params.useGroups,
+      params.searchValue,
+      params.singleStore,
+      ["description"],
+      1,
+      description
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(setCashierTransactions(j.transactions));
+        }
+      })
+      .then(() => {
+        getCashierDetails(
+          params.url,
+          params.token,
+          params.start,
+          params.end,
+          params.useGroups,
+          params.searchValue,
+          params.singleStore,
+          ["description"],
+          description
+        )
+          .then((resp) => {
+            const j = resp.data;
+            if (j.error === 0) {
+              // The chunked sales and trends are being set in the dispatches
+              dispatch(setCashierDetails(j.sales));
+              dispatch(setCashierTrends(j.trend));
+            }
+          })
+          .catch((err: JsonError) =>
+            toast.error("Error fetching cashier details: " + err.message)
+          );
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error fetching cashier table: " + err.message)
+      )
+      .finally(() => {
+        setLoading(true);
+        setIsOpen(false);
+      });
+  };
 
   const handlePanelClick = (saleType: string) => {
+    if (saleType === "Description") {
+      // open a modal for the user to type into
+      setIsOpen(true);
+      return;
+    }
     // Doing this to reset when looking for a different sale type
     const panels = cashier.saleTypes;
     dispatch(resetCashierState());
@@ -60,7 +129,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
           params.useGroups,
           params.searchValue,
           params.singleStore,
-          [saleType]
+          [saleType],
         )
           .then((resp) => {
             const j = resp.data;
@@ -72,7 +141,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
           })
           .catch((err: JsonError) =>
             toast.error("Error fetching cashier details: " + err.message)
-          )
+          );
       })
       .catch((err: JsonError) =>
         toast.error("Error fetching cashier table: " + err.message)
@@ -86,6 +155,11 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
         !cashier.saleTypes.length && "hidden"
       }`}
     >
+      <DescModal
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        handleSubmit={submitDescription}
+      />
       <div className="rounded-t-lg text-center py-0.5 bg-blue-500 text-custom-white font-medium">
         Select Exception
       </div>
