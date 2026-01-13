@@ -10,7 +10,7 @@ export const getCoupons = async (
   searchValue: number
 ) => {
   const json = await axios({
-    method: "GET",
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
