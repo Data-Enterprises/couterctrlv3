@@ -60,7 +60,6 @@ const Receivers = () => {
               data={assignedStores}
               displayKey={"store_name"}
               valueKey={"storeid"}
-              className="mb-2"
               onSelect={setSelectedStore}
             />
             <DatePickers handleQuery={getReceivers} />
