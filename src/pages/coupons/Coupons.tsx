@@ -14,6 +14,7 @@ import CouponsGrid from "./CouponsGrid";
 import CouponGridFilters from "./CouponGridFilters";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import TransactionModal from "../cashiers/TransactionModal";
+import FiltersModal from "./filters/FiltersModal";
 
 const Coupons = () => {
   const toast = useToast();
@@ -54,6 +55,7 @@ const Coupons = () => {
   return (
     <div className="w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
       <TransactionModal />
+      <FiltersModal />
       <div className="grid grid-cols-[20%_auto] p-4 gap-4 w-full h-full">
         <div>
           <div className="bg-custom-white p-4 rounded-lg shadow-lg">

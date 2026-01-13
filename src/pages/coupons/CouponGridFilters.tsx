@@ -1,31 +1,75 @@
 import { useAppDispatch, useAppSelector } from "../../hooks";
-import { setFilter, applyFilters, resetFilters } from "../../features/couponSlice";
-import Input from "../../components/inputs/Input";
+import {
+  // setFilter,
+  // applyFilters,
+  resetFilters,
+  setFilterModalOpen,
+  setFilterType,
+  type FilterType,
+} from "../../features/couponSlice";
+// import Input from "../../components/inputs/Input";
+// import { formatCurrency2 } from "../../utils";
+
+const filterOptions: (FilterType | "Refresh")[] = [
+  "Store",
+  "CpnAmount",
+  "UPC",
+  "Desc",
+  "CustomerID",
+  "Refresh",
+];
+
 const CouponGridFilters = () => {
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.coupons);
 
-    const setStoreFilter = (value: string) => {
-      dispatch(setFilter({ type: "Store", value }));
-    };
+  const activePanelStyle = (option: string) => {
+    const storeNum = state.storeNum;
+    const cpnAmount = state.cpnAmount;
+    const productCode = state.productCode;
+    const productDescription = state.productDescription;
+    const customerId = state.customerId;
 
-    const setCpnAmtFilter = (value: string) => {
-      if (!isNaN(Number(value))) {
-        dispatch(setFilter({ type: "CpnAmount", value: Number(value) }));
-      }
-    };
+    // Declaring the active style and applying it to the matching conditions
+    const style = "bg-orange-500 text-white font-semibold shadow-inner";
+    let result = false;
+    if (option === "Store" && storeNum) result = true;
+    if (option === "UPC" && productCode) result = true;
+    if (option === "Desc" && productDescription) result = true;
+    if (option === "CpnAmount" && cpnAmount) result = true;
+    if (option === "CustomerID" && customerId) result = true;
+    return result ? style : "";
+  };
 
-    const setUpcFilter = (value: string) => {
-      dispatch(setFilter({ type: "UPC", value }));
-    };
+  const renderFilterText = (type: FilterType) => {
+    if (type === "Store") {
+      return state.storeNum ? `${state.storeNum}` : "Store Number";
+    } else if (type === "UPC") {
+      return state.productCode ? `${state.productCode}` : "UPC";
+    } else if (type === "Desc") {
+      return state.productDescription
+        ? `${state.productDescription}`
+        : "Description";
+    } else if (type === "CpnAmount") {
+      return state.cpnAmount ? `${state.cpnAmount}` : "Coupon Amount";
+    } else if (type === "CustomerID") {
+      return state.customerId ? `${state.customerId}` : "Customer ID";
+    } else {
+      return type;
+    }
+  };
 
-    const setDescFilter = (value: string) => {
-      dispatch(setFilter({ type: "Desc", value }));
-    };
+  const setFilterModal = (option: FilterType | "Refresh") => {
+    if (option === "Refresh") {
+      dispatch(resetFilters());
+    } else {
+      dispatch(setFilterModalOpen(true));
+      dispatch(setFilterType(option));
+    }
+  };
 
-    const setCustomerIdFilter = (value: string) => {
-      dispatch(setFilter({ type: "CustomerID", value }));
-    };
+  const panelStyle =
+    "py-1.5 rounded-lg text-center shadow-md shadow-content/20 hover:bg-orange-200 cursor-pointer transition-all duration-200";
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg mt-4">
@@ -33,40 +77,19 @@ const CouponGridFilters = () => {
         Filter By
       </div>
       <div className="px-4 py-2">
-        <Input label="Store" value={state.storeNum} setValue={setStoreFilter} />
-        <Input
-          label="Cpn Amount"
-          value={state.cpnAmount ? state.cpnAmount.toString() : ""}
-          setValue={setCpnAmtFilter}
-        />
-        <Input
-          label="Product Code"
-          value={state.productCode}
-          setValue={setUpcFilter}
-        />
-        <Input
-          label="Product Description"
-          value={state.productDescription}
-          setValue={setDescFilter}
-        />
-        <Input
-          label="Customer ID"
-          value={state.customerId}
-          setValue={setCustomerIdFilter}
-        />
-        <div className="flex gap-2 w-full mt-2">
-          <button
-            className="btn-themeBlue w-1/2"
-            onClick={() => dispatch(applyFilters())}
-          >
-            Filter
-          </button>
-          <button
-            className="btn-themeOrange w-1/2"
-            onClick={() => dispatch(resetFilters())}
-          >
-            Reset
-          </button>
+        <div className="grid grid-row-6 py-2 gap-2">
+          {filterOptions.map((option, i) => (
+            <div
+              key={i}
+              data-testid={`cashier-table-filter-${option
+                .split(" ")[0]
+                .toLowerCase()}`}
+              className={`${panelStyle} ${activePanelStyle(option)}`}
+              onClick={() => setFilterModal(option)}
+            >
+              {renderFilterText(option as FilterType)}
+            </div>
+          ))}
         </div>
       </div>
     </div>

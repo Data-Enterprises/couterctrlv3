@@ -1,6 +1,14 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { CouponItem } from "../interfaces";
 
+export type FilterType =
+  | "Store"
+  | "CpnAmount"
+  | "UPC"
+  | "Desc"
+  | "CustomerID"
+  | "";
+
 interface CouponState {
   coupons: CouponItem[];
   gridCoupons: CouponItem[];
@@ -10,9 +18,9 @@ interface CouponState {
   productDescription: string;
   customerId: string;
   isFetching: boolean;
+  filterModalOpen: boolean;
+  filterType: FilterType;
 }
-
-type FilterType = "Store" | "CpnAmount" | "UPC" | "Desc" | "CustomerID";
 
 const initialState: CouponState = {
   coupons: [],
@@ -23,6 +31,8 @@ const initialState: CouponState = {
   productDescription: "",
   customerId: "",
   isFetching: false,
+  filterModalOpen: false,
+  filterType: "",
 };
 
 const couponSlice = createSlice({
@@ -71,9 +81,10 @@ const couponSlice = createSlice({
         const matchesCpnAmount = cpnAmount
           ? coupon.coupon_amount === cpnAmount
           : true;
-        const matchesProductCode = productCode
-          ? coupon.product_code.includes(productCode)
-          : true;
+        const matchesProductCode =
+          coupon.product_code && productCode
+            ? coupon.product_code.includes(productCode)
+            : true;
         const matchesProductDescription = productDescription
           ? coupon.product_description
               .toLowerCase()
@@ -100,6 +111,12 @@ const couponSlice = createSlice({
 
       state.gridCoupons = state.coupons;
     },
+    setFilterModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.filterModalOpen = action.payload;
+    },
+    setFilterType: (state, action: PayloadAction<FilterType>) => {
+      state.filterType = action.payload;
+    },
     setIsFetching: (state, action: PayloadAction<boolean>) => {
       state.isFetching = action.payload;
     },
@@ -122,5 +139,7 @@ export const {
   applyFilters,
   resetFilters,
   setIsFetching,
+  setFilterModalOpen,
+  setFilterType,
 } = couponSlice.actions;
 export default couponSlice.reducer;
