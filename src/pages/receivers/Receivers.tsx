@@ -16,6 +16,7 @@ import SingleSelect from "../../components/SingleSelect";
 import RecevierListFilters from "./ReceiverListFilters";
 import ReceiversListGrid from "./ReceiversListGrid";
 import ReceiverDetailsGrid from "./ReceiverDetailsGrid";
+import FiltersModal from "./filters/FiltersModal";
 
 const Receivers = () => {
   const toast = useToast();
@@ -50,8 +51,9 @@ const Receivers = () => {
 
   return (
     <div className="w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
+      <FiltersModal />
       <div className="w-full h-full grid grid-cols-[20%_80%] gap-4">
-        <div className="select-none grid grid-rows-[32%_35%_29%] gap-4">
+        <div className="select-none space-y-4">
           <div className="bg-custom-white rounded-lg p-4 shadow-lg">
             <SingleSelect
               label={"Select Store"}

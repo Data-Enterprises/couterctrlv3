@@ -1,14 +1,10 @@
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import {
-  // setFilter,
-  // applyFilters,
   resetFilters,
   setFilterModalOpen,
   setFilterType,
   type FilterType,
 } from "../../features/couponSlice";
-// import Input from "../../components/inputs/Input";
-// import { formatCurrency2 } from "../../utils";
 
 const filterOptions: (FilterType | "Refresh")[] = [
   "Store",

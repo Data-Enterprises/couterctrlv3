@@ -1,38 +1,61 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import {
-  setVendorIdFilter,
-  setVendorNameFilter,
-  setInvoiceIdFilter,
-  setListGridFilters,
-  applyFilters,
+  resetFilters,
+  setFilterModalOpen,
+  setFilterType,
+  type FilterType,
 } from "../../features/receiversSlice";
-import Input from "../../components/inputs/Input";
+
+const filterOptions: (FilterType | "Refresh")[] = [
+  "VendorID",
+  "VendorName",
+  "InvoiceID",
+  "Refresh",
+];
 
 const RecevierListFilters = () => {
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.receivers);
 
-  const handleVendorIdFilter = (value: string) => {
-    dispatch(setVendorIdFilter(value));
-  };
-
-  const handleVendorNameFilter = (value: string) => {
-    dispatch(setVendorNameFilter(value));
-  };
-
-  const handleInvoiceIdFilter = (value: string) => {
-    if (!isNaN(Number(value))) {
-      dispatch(setInvoiceIdFilter(value));
+  const renderFilterText = (type: FilterType) => {
+    if (type === "InvoiceID") {
+      return state.invoiceIdFilter ? `${state.invoiceIdFilter}` : "Invoice ID";
+    } else if (type === "VendorID") {
+      return state.vendorIdFilter ? `${state.vendorIdFilter}` : "Vendor ID";
+    } else if (type === "VendorName") {
+      return state.vendorNameFilter
+        ? `${state.vendorNameFilter}`
+        : "Description";
+    } else {
+      return type;
     }
   };
 
-  const toggleFilters = (toggle: boolean) => {
-    dispatch(setListGridFilters(toggle));
+  const setFilterModal = (option: FilterType | "Refresh") => {
+    if (option === "Refresh") {
+      dispatch(resetFilters());
+    } else {
+      dispatch(setFilterModalOpen(true));
+      dispatch(setFilterType(option));
+    }
   };
 
-  const applyTableFilters = () => {
-    dispatch(applyFilters());
+  const activePanelStyle = (option: string) => {
+    const vendorId = state.vendorIdFilter;
+    const vendorName = state.vendorNameFilter;
+    const invoiceId = state.invoiceIdFilter;
+
+    // Declaring the active style and applying it to the matching conditions
+    const style = "bg-orange-500 text-white font-semibold shadow-inner";
+    let result = false;
+    if (option === "VendorID" && vendorId) result = true;
+    if (option === "VendorName" && vendorName) result = true;
+    if (option === "InvoiceID" && invoiceId) result = true;
+    return result ? style : "";
   };
+
+  const panelStyle =
+    "py-1.5 rounded-lg text-center shadow-md shadow-content/20 hover:bg-orange-200 cursor-pointer transition-all duration-200";
 
   return (
     <div
@@ -43,36 +66,19 @@ const RecevierListFilters = () => {
       <div className="bg-blue-500 text-custom-white font-medium rounded-t-lg px-4 py-1">
         Filter By
       </div>
-      <div className="bg-custom-white p-4 rounded-b-lg">
-        <Input
-          label="Vendor Id"
-          setValue={handleVendorIdFilter}
-          value={String(state.vendorIdFilter)}
-        />
-        <Input
-          label="Vendor Name"
-          setValue={handleVendorNameFilter}
-          value={state.vendorNameFilter}
-        />
-        <Input
-          label="Invoice #"
-          setValue={handleInvoiceIdFilter}
-          value={String(state.invoiceIdFilter)}
-        />
-        <div className="flex gap-2 mt-2">
-          <button
-            className="btn-themeBlue w-1/2"
-            onClick={() => applyTableFilters()}
+      <div className="bg-custom-white p-4 rounded-b-lg space-y-2">
+        {filterOptions.map((option, i) => (
+          <div
+            key={i}
+            data-testid={`cashier-table-filter-${option
+              .split(" ")[0]
+              .toLowerCase()}`}
+            className={`${panelStyle} ${activePanelStyle(option)}`}
+            onClick={() => setFilterModal(option)}
           >
-            Filter
-          </button>
-          <button
-            className="btn-themeOrange w-1/2"
-            onClick={() => toggleFilters(false)}
-          >
-            Reset
-          </button>
-        </div>
+            {renderFilterText(option as FilterType)}
+          </div>
+        ))}
       </div>
     </div>
   );

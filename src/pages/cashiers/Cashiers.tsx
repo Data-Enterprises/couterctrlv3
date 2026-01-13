@@ -89,7 +89,7 @@ const Cashiers = () => {
           </div>
         ) : (
           <div className="h-[260px] w-full">
-            {loading ? (
+            {loading && cashier.selectedSaleType ? (
               <div className="w-full h-64 relative">
                 <LoadingIndicator
                   className="text-sm"

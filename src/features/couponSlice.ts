@@ -78,13 +78,27 @@ const couponSlice = createSlice({
         productDescription,
         customerId,
       } = state;
+
+      const passesThreshold = (amount: number) => {
+        if (state.amtLessThan) {
+          // checking for less than
+          return amount < cpnAmount;
+        } else if (state.amtGreaterThan) {
+          // checking for greater than
+          return amount > cpnAmount;
+        } else {
+          // checking for equal to
+          return amount === cpnAmount;
+        }
+      };
+
       state.gridCoupons = state.coupons.filter((coupon) => {
-        const matchesStore = storeNum
-          ? coupon.store_number.includes(storeNum)
-          : true;
+        const matchesStore = storeNum ? coupon.store_number == storeNum : true;
+        
         const matchesCpnAmount = cpnAmount
-          ? coupon.coupon_amount === cpnAmount
+          ? passesThreshold(coupon.coupon_amount)
           : true;
+
         const matchesProductCode =
           coupon.product_code && productCode
             ? coupon.product_code.includes(productCode)

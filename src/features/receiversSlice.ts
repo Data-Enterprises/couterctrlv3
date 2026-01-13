@@ -5,6 +5,8 @@ import type {
   ReceiverDetailsTotals,
 } from "../interfaces";
 
+export type FilterType = "VendorID" | "VendorName" | "InvoiceID" | "";
+
 interface ReceiversState {
   storeid: number;
   list: ReceiverListItem[];
@@ -18,6 +20,8 @@ interface ReceiversState {
   isFetchingList: boolean;
   isFetchingDetails: boolean;
   isExportModalOpen: boolean;
+  filterModalOpen: boolean;
+  filterType: FilterType;
 }
 
 export const initialState: ReceiversState = {
@@ -33,6 +37,8 @@ export const initialState: ReceiversState = {
   isFetchingDetails: false,
   isExportModalOpen: false,
   listGridData: [],
+  filterModalOpen: false,
+  filterType: "",
 };
 
 export const receiversSlice = createSlice({
@@ -60,6 +66,22 @@ export const receiversSlice = createSlice({
     setInvoiceIdFilter: (state, action: PayloadAction<string>) => {
       state.invoiceIdFilter = action.payload;
     },
+    setFilter: (
+      state,
+      action: PayloadAction<{ type: FilterType; value: string }>)=> {
+        const { type, value } = action.payload;
+        switch (type) {
+          case "VendorID":
+            state.vendorIdFilter = value;
+            break;
+          case "VendorName":
+            state.vendorNameFilter = value;
+            break;
+          case "InvoiceID":
+            state.invoiceIdFilter = value;
+            break;
+        }
+      },
     setTotals: (state, action: PayloadAction<ReceiverDetailsTotals[]>) => {
       state.totals = action.payload;
     },
@@ -99,6 +121,18 @@ export const receiversSlice = createSlice({
     setIsExportModalOpen: (state, action: PayloadAction<boolean>) => {
       state.isExportModalOpen = action.payload;
     },
+    setFilterModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.filterModalOpen = action.payload;
+    },
+    setFilterType: (state, action: PayloadAction<FilterType>) => {
+      state.filterType = action.payload;
+    },
+    resetFilters: (state) => {
+      state.vendorIdFilter = "";
+      state.vendorNameFilter = "";
+      state.invoiceIdFilter = "";
+      state.listGridData = state.list;
+    },
     reQuery: (state) => {
       state.list = [];
       state.details = [];
@@ -128,5 +162,9 @@ export const {
   setListGridData,
   resetReceiverState,
   applyFilters,
+  setFilter,
+  setFilterType,
+  setFilterModalOpen,
+  resetFilters,
 } = receiversSlice.actions;
 export default receiversSlice.reducer;

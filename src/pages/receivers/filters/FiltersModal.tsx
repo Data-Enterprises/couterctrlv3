@@ -4,17 +4,16 @@ import Modal from "../../../components/Modal";
 import {
   applyFilters,
   setFilter,
-  setFilterModalOpen,
   setFilterType,
-} from "../../../features/couponSlice";
-import TextFilter from "./TextFilter";
-import AmountFilter from "./AmountFilter";
+  setFilterModalOpen,
+} from "../../../features/receiversSlice";
+import TextFilter from "../../coupons/filters/TextFilter";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 
 const FiltersModal = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const state = useAppSelector((state) => state.coupons);
+  const state = useAppSelector((state) => state.receivers);
   const [text, setText] = useState<string>("");
 
   const handleClose = () => {
@@ -25,25 +24,12 @@ const FiltersModal = () => {
 
   const setFilterValue = () => {
     if (!text) {
-      toast.warn("Filter value cannot be empty");
+      toast.warning("Filter value cannot be empty");
       return;
     }
     dispatch(setFilter({ type: state.filterType, value: text }));
     dispatch(applyFilters());
     handleClose();
-  };
-
-  const renderFilter = () => {
-    if (
-      state.filterType === "Store" ||
-      state.filterType === "UPC" ||
-      state.filterType === "Desc" ||
-      state.filterType === "CustomerID"
-    ) {
-      return <TextFilter text={text} setText={setText} />;
-    } else if (state.filterType === "CpnAmount") {
-      return <AmountFilter text={text} setText={setText} />;
-    }
   };
 
   return (
@@ -58,7 +44,7 @@ const FiltersModal = () => {
       >
         Set {state.filterType} Filter
       </div>
-      {renderFilter()}
+      <TextFilter text={text} setText={setText} />;
       <div className="flex gap-4">
         <button
           data-testid="cashier-table-filter-modal-submit-btn"
