@@ -651,3 +651,43 @@ export interface ReceiverDetailsResponse {
   records: ReceiverDetailsItem[];
   totals: ReceiverDetailsTotals[];
 }
+
+////////////////////
+// COUPONS PAGE/////
+////////////////////
+
+export interface CouponItem {
+  storeid: number;
+  sale_id: number;
+  sale_date: string;
+  store_name: string;
+  store_number: string;
+  product_code: string;
+  product_description: string;
+  is_coupon: number;
+  coupon_amount: number;
+  vendor_coupon: number;
+  store_coupon: number;
+  coupon_type: string;
+  sale_type: string;
+  line_number: number;
+  cashier_number: number;
+  cashier_name: string;
+  employee_number: number | null;
+  terminal: string;
+  qty: number;
+  total_sales: number;
+  sub_department: number;
+  sub_department_description: string;
+  category: number;
+  category_description: string;
+  customer_id: string;
+  customer_name: string;
+}
+
+export interface CouponsResponse {
+  error: number;
+  success: boolean;
+  record_count: number;
+  records: CouponItem[];
+}

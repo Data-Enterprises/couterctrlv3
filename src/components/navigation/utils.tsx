@@ -11,6 +11,7 @@ import CashierIcon from "../../svgs/CashierIcon";
 import GroupsIcon from "../../svgs/GroupsIcon";
 import UpcListIcon from "../../svgs/UpcListIcon";
 import DashboardIconV2 from "../../svgs/DashbordIconV2";
+import CouponIcon from "../../svgs/CouponIcon";
 
 export type Navigation = {
   name: string;
@@ -109,6 +110,15 @@ export const navigation: Navigation[] = [
     name: "Receivers",
     href: "receivers",
     icon: ClipboardDocumentCheckIcon,
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userTypes: ["*"],
+  },
+  {
+    name: "Coupons",
+    href: "coupons",
+    icon: CouponIcon,
     mobile: false,
     children: [],
     childOpen: false,
