@@ -2,7 +2,7 @@ import { useAppDispatch } from "../../hooks";
 import { getCoupons } from "../../api/coupons";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { useCouponContext } from ".";
-import { setIsFetching } from "../../features/couponSlice";
+import { resetCoupons, setIsFetching } from "../../features/couponSlice";
 
 // components
 import StorePicker from "../../components/storePicker/StorePicker";
@@ -61,6 +61,14 @@ const Coupons = () => {
           <div className="bg-custom-white p-4 rounded-lg shadow-lg">
             <StorePicker />
             <DatePickers handleQuery={getData} />
+            <button
+              className={`${
+                context.coupons.length === 0 && "opacity-50 pointer-events-none"
+              } btn-themeOrange w-full mt-2`}
+              onClick={() => dispatch(resetCoupons())}
+            >
+              Refresh
+            </button>
           </div>
           {showGrid && <CouponGridFilters />}
         </div>
@@ -70,7 +78,7 @@ const Coupons = () => {
           <div className="w-full h-full relative">
             <LoadingIndicator message="Loading coupons..." />
           </div>
-        ) }
+        )}
       </div>
     </div>
   );

@@ -53,8 +53,8 @@ export const navigation: Navigation[] = [
     userTypes: ["*"],
   },
   {
-    name: "Cashiers",
-    href: "cashiers",
+    name: "Loss Prevention",
+    href: "loss-prevention",
     icon: CashierIcon,
     mobile: true,
     children: [],

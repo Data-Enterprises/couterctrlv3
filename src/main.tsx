@@ -33,7 +33,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route index element={<Home />} />
                 <Route path="sales" element={<Sales />} />
                 <Route path="team" element={<Team />} />
-                <Route path="cashiers" element={<Cashiers />} />
+                <Route path="loss-prevention" element={<Cashiers />} />
                 <Route path="groups" element={<Groups />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="upc-upload" element={<UpcList />} />
