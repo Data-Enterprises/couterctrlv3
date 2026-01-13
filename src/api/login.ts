@@ -3,7 +3,8 @@ import axios from "axios";
 export const login = async (
   url: string,
   username: string,
-  password: string
+  password: string,
+  impersonate: number
 ) => {
   // endpoint is expecting username and password to be in the request body
   const json = await axios({
@@ -12,6 +13,7 @@ export const login = async (
     data: {
       username,
       password,
+      ov: impersonate,
     },
   });
   return json;
