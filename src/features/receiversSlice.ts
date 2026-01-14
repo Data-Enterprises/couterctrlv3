@@ -5,7 +5,12 @@ import type {
   ReceiverDetailsTotals,
 } from "../interfaces";
 
-export type FilterType = "VendorID" | "VendorName" | "InvoiceID" | "";
+export type FilterType =
+  | "VendorID"
+  | "VendorName"
+  | "InvoiceID"
+  | "TransactionID"
+  | "";
 
 interface ReceiversState {
   storeid: number;
@@ -15,6 +20,7 @@ interface ReceiversState {
   vendorIdFilter: string;
   vendorNameFilter: string;
   invoiceIdFilter: string;
+  transIDFilter: string;
   filterListGrid: boolean;
   totals: ReceiverDetailsTotals[];
   isFetchingList: boolean;
@@ -31,6 +37,7 @@ export const initialState: ReceiversState = {
   vendorIdFilter: "",
   vendorNameFilter: "",
   invoiceIdFilter: "",
+  transIDFilter: "",
   filterListGrid: false,
   totals: [],
   isFetchingList: false,
@@ -68,20 +75,24 @@ export const receiversSlice = createSlice({
     },
     setFilter: (
       state,
-      action: PayloadAction<{ type: FilterType; value: string }>)=> {
-        const { type, value } = action.payload;
-        switch (type) {
-          case "VendorID":
-            state.vendorIdFilter = value;
-            break;
-          case "VendorName":
-            state.vendorNameFilter = value;
-            break;
-          case "InvoiceID":
-            state.invoiceIdFilter = value;
-            break;
-        }
-      },
+      action: PayloadAction<{ type: FilterType; value: string }>
+    ) => {
+      const { type, value } = action.payload;
+      switch (type) {
+        case "VendorID":
+          state.vendorIdFilter = value;
+          break;
+        case "VendorName":
+          state.vendorNameFilter = value;
+          break;
+        case "InvoiceID":
+          state.invoiceIdFilter = value;
+          break;
+        case "TransactionID":
+          state.transIDFilter = value;
+          break;
+      }
+    },
     setTotals: (state, action: PayloadAction<ReceiverDetailsTotals[]>) => {
       state.totals = action.payload;
     },
@@ -92,6 +103,7 @@ export const receiversSlice = createSlice({
         state.vendorIdFilter = "";
         state.vendorNameFilter = "";
         state.invoiceIdFilter = "";
+        state.transIDFilter = "";
         state.listGridData = state.list;
       }
     },
@@ -100,11 +112,13 @@ export const receiversSlice = createSlice({
         const idMatch = state.vendorIdFilter.toLowerCase();
         const nameMatch = state.vendorNameFilter.toLowerCase();
         const invoiceMatch = state.invoiceIdFilter;
+        const transIDMatch = state.transIDFilter.toLowerCase();
 
         return (
           item.vendorid.toString().toLowerCase().includes(idMatch) &&
           item.vendor_name.toLowerCase().includes(nameMatch.toLowerCase()) &&
-          item.reference_number.includes(invoiceMatch)
+          item.invoiceid.toString().includes(invoiceMatch) &&
+          item.reference_number.includes(transIDMatch)
         );
       });
       state.listGridData = filteredData;
@@ -131,6 +145,7 @@ export const receiversSlice = createSlice({
       state.vendorIdFilter = "";
       state.vendorNameFilter = "";
       state.invoiceIdFilter = "";
+      state.transIDFilter = "";
       state.listGridData = state.list;
     },
     reQuery: (state) => {
@@ -139,6 +154,7 @@ export const receiversSlice = createSlice({
       state.vendorIdFilter = "";
       state.vendorNameFilter = "";
       state.invoiceIdFilter = "";
+      state.transIDFilter = "";
       state.filterListGrid = false;
       state.totals = [];
     },

@@ -9,6 +9,7 @@ import {
 const filterOptions: (FilterType | "Refresh")[] = [
   "VendorID",
   "VendorName",
+  "TransactionID",
   "InvoiceID",
   "Refresh",
 ];
@@ -25,7 +26,9 @@ const RecevierListFilters = () => {
     } else if (type === "VendorName") {
       return state.vendorNameFilter
         ? `${state.vendorNameFilter}`
-        : "Description";
+        : "Vendor Name";
+    } else if (type === "TransactionID") {
+      return state.transIDFilter ? `${state.transIDFilter}` : "Transaction ID";
     } else {
       return type;
     }
@@ -51,6 +54,7 @@ const RecevierListFilters = () => {
     if (option === "VendorID" && vendorId) result = true;
     if (option === "VendorName" && vendorName) result = true;
     if (option === "InvoiceID" && invoiceId) result = true;
+    if (option === "TransactionID" && state.transIDFilter) result = true;
     return result ? style : "";
   };
 
