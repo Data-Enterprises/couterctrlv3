@@ -7,6 +7,7 @@ const TextFilter = ({ text, setText }: TextFilterProps) => {
   return (
     <div className="mb-2">
       <input
+        data-testid="text-filter-input"
         type="text"
         value={text}
         onChange={(e) => setText(e.target.value)}

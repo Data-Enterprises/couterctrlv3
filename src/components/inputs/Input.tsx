@@ -10,6 +10,7 @@ const Input = ({ value, setValue, label, type = "text" }: InputProps) => {
     <div>
       <label className="font-medium text-xs pl-0.5">{label}</label>
       <input
+        data-testid={`input-${label.toLowerCase()}`}
         type={type}
         value={value}
         onChange={(e) => setValue(e.target.value)}

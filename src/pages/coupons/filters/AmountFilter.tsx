@@ -51,6 +51,7 @@ const AmountFilter = ({ text, setText }: AmountFilterProps) => {
         />
       </div>
       <input
+        data-testid="amount-filter-input"
         type="text"
         value={text}
         onChange={handleAmtTextChange}

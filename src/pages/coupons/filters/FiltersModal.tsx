@@ -61,7 +61,7 @@ const FiltersModal = () => {
       {renderFilter()}
       <div className="flex gap-4">
         <button
-          data-testid="cashier-table-filter-modal-submit-btn"
+          data-testid="coupon-filter-modal-submit-btn"
           className="btn-themeGreen w-full"
           onClick={setFilterValue}
         >
