@@ -81,12 +81,13 @@ const UserDataLoader = () => {
   }, [context.token]);
 
   useEffect(() => {
-    if (!context.token && !user.userid) return;
+    // c5 - changed this from "and" to "or" 1-14-2026
+    if (!context.token || !user.userid) return;
     getUserStores(context.url, context.token, user.userid)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          const all = j.all_stores_for_user.filter(
+          const all = (j.all_stores_for_user ?? []).filter(
             (s: Store) => s.store_number !== null && s.store_name !== null
           );
           const assigned = j.assigned_stores.filter(
@@ -95,7 +96,7 @@ const UserDataLoader = () => {
           const unassigned = j.unassigned_stores.filter(
             (s: Store) => s.store_number !== null && s.store_name !== null
           );
-          
+
           dispatch(setAllAvailableStores(all));
           dispatch(setAssignedStores(assigned));
           dispatch(setUnassignedStores(unassigned));
@@ -146,6 +147,7 @@ const UserDataLoader = () => {
   useEffect(() => {
     if (readyToLogin.groups && readyToLogin.stores) {
       dispatch(setLoggedIn(true));
+      setReadyToLogin({ stores: false, groups: false });
     }
   }, [readyToLogin.groups, readyToLogin.stores]);
 
