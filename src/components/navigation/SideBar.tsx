@@ -7,7 +7,7 @@ import { useToast } from "../toasts/hooks/useToast";
 import { setUserPrefs } from "../../api/user";
 
 import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
-import { handleSigningOut } from "../../features/appSlice";
+import { resetAppSlice } from "../../features/appSlice";
 import { resetUserSlice } from "../../features/userSlice";
 import { resetSalesSlice } from "../../features/salesSlice";
 
@@ -18,6 +18,7 @@ import { resetStoreSlice } from "../../features/storeSlice";
 import { resetGroupState } from "../../features/groupSlice";
 import { resetUsersSlice } from "../../features/usersSlice";
 import { resetUpcState } from "../../features/upcSlice";
+import { resetSearchSlice } from "../../features/searchSlice";
 
 const SideBar = () => {
   const toast = useToast();
@@ -65,7 +66,6 @@ const SideBar = () => {
   const handleSignOut = () => {
     navigate("/");
     // Then handle state resets
-    dispatch(handleSigningOut());
     dispatch(resetGroupState());
     dispatch(resetUserSlice());
     dispatch(resetUsersSlice());
@@ -75,6 +75,9 @@ const SideBar = () => {
     dispatch(resetNav());
     dispatch(resetSalesSlice());
     dispatch(resetUpcState());
+    dispatch(resetAppSlice());
+    dispatch(resetSearchSlice());
+
   };
 
   const slidingStyle =

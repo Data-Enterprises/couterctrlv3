@@ -26,7 +26,9 @@ const ReceiverDetailsGrid = () => {
     <div
       className={`${
         state.details.length === 0 && !state.isFetchingDetails ? "hidden" : ""
-      } bg-custom-white rounded-lg shadow-lg w-[99%] overflow-hidden pr-4`}
+      } ${
+        state.isFetchingDetails ? "bg-transparent" : "bg-custom-white shadow-lg"
+      } rounded-lg w-[99%] overflow-hidden pr-4`}
     >
       <div className="relative w-full h-full p-4">
         {state.details.length > 0 && !state.isFetchingDetails ? (

@@ -43,7 +43,9 @@ const ReceiversListGrid = () => {
     <div
       className={` ${
         state.listGridData.length === 0 && !state.isFetchingList ? "hidden" : ""
-      } bg-custom-white rounded-lg shadow-lg w-[60%] p-2`}
+      } ${
+        state.isFetchingList ? "bg-transparent" : "bg-custom-white shadow-lg"
+      } rounded-lg w-[60%] p-2`}
     >
       <div
         className={`${
@@ -52,7 +54,7 @@ const ReceiversListGrid = () => {
       >
         Select Receiver
       </div>
-      <div className="h-[90%]">
+      <div className="h-[93%]">
         {state.listGridData.length ? (
           <AgGridReact
             rowData={state.listGridData}
