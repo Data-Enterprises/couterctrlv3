@@ -55,6 +55,7 @@ const searchSlice = createSlice({
     setSelectedGroup: (state, action: PayloadAction<Group>) => {
       state.selectedGroup = action.payload;
     },
+    resetSearchSlice: () => initialState,
   },
 });
 
@@ -67,6 +68,7 @@ export const {
   setLastStore,
   setSelectedStore,
   setSelectedGroup,
+  resetSearchSlice,
 } = searchSlice.actions;
 
 export default searchSlice.reducer;
