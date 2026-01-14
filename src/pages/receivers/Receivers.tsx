@@ -50,7 +50,7 @@ const Receivers = () => {
 
   const getReceivers = () => {
     if (!state.storeid) {
-      toast.error("Please select a store");
+      toast.warn("Please select a store");
       return;
     }
     dispatch(reQuery());
@@ -106,6 +106,7 @@ const Receivers = () => {
                 Refresh
               </button>
               <button
+                data-testid="receivers-export-btn"
                 className={`${
                   state.details.length === 0 && "opacity-50 pointer-events-none"
                 } btn-themeGreen w-full mt-2`}

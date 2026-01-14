@@ -290,6 +290,7 @@ describe("Coupons Page", () => {
       );
     });
   });
+
   it("should handle clicking on a row to open the transaction modal", async () => {
     (getCashierTransaction as Mock).mockResolvedValueOnce(getTransResp);
     renderWithProviders(<Coupons />, { store });
@@ -301,5 +302,6 @@ describe("Coupons Page", () => {
       const state = store.getState().cashier;
       expect(state.transactionDrillDown.length).toBeGreaterThan(0);
     });
+    expect(await screen.findByTestId("modal")).toBeInTheDocument();
   });
 });
