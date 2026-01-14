@@ -28,14 +28,11 @@ const ReceiversListGrid = () => {
 
   // Use this for deselecting rows when details are cleared (like on refresh or new filter)
   useEffect(() => {
-    // need another check probably to handle this when the Receiver list grid is filtered
-    if (
-      gridRef.current &&
-      gridRef.current.api &&
-      state.details.length === 0 &&
-      state.listGridData.length > 0
-    ) {
-      gridRef.current.api.deselectAll();
+    return () => {
+      // Cleanup if needed when component unmounts
+      if (gridRef.current && gridRef.current.api && state.details.length === 0) {
+        gridRef.current.api.deselectAll();
+      }
     }
   }, [state.details]);
 
@@ -85,11 +82,11 @@ const ReceiversListGrid = () => {
             }}
             rowSelection="single"
           />
-        ) : state.isFetchingList ? (
+        ) : (
           <div className="relative w-full h-full">
             <LoadingIndicator />
           </div>
-        ) : null}
+        )}
       </div>
     </div>
   );

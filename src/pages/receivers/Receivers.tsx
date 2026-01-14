@@ -98,6 +98,7 @@ const Receivers = () => {
             <DatePickers handleQuery={getReceivers} />
             <div className="flex gap-2">
               <button
+                data-testid="rec-page-refresh-btn"
                 className={`${
                   state.list.length === 0 && "opacity-50 pointer-events-none"
                 } btn-themeOrange w-full mt-2`}
