@@ -77,7 +77,7 @@ const CouponGridFilters = () => {
           {filterOptions.map((option, i) => (
             <div
               key={i}
-              data-testid={`cashier-table-filter-${option
+              data-testid={`coupons-table-filter-${option
                 .split(" ")[0]
                 .toLowerCase()}`}
               className={`${panelStyle} ${activePanelStyle(option)}`}

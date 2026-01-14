@@ -25,6 +25,7 @@ const Coupons = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const getData = () => {
+    console.log('howdy there')
     dispatch(setCoupons([]));
     dispatch(setIsFetching(true));
     const useGroups = context.type === "Group" ? 1 : 0;
@@ -56,8 +57,6 @@ const Coupons = () => {
   const showGrid = context.coupons.length > 0 && !context.isFetching;
   const showLoading = context.coupons.length === 0 && context.isFetching;
 
-  console.log(showLoading)
-
   return (
     <div className="w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
       <TransactionModal />
@@ -75,6 +74,7 @@ const Coupons = () => {
             <DatePickers handleQuery={getData} />
             <div className="flex gap-2">
               <button
+                data-testid="coupons-refresh-btn"
                 className={`${
                   context.coupons.length === 0 &&
                   "opacity-50 pointer-events-none"
@@ -84,6 +84,7 @@ const Coupons = () => {
                 Refresh
               </button>
               <button
+                data-testid="coupons-export-btn"
                 className={`${
                   context.coupons.length === 0 &&
                   "opacity-50 pointer-events-none"

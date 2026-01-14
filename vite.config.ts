@@ -23,5 +23,6 @@ export default defineConfig({
         "src/pages/forecast/grids/PriceHistoryGrid.tsx",
       ],
     },
+    pool: "threads",
   },
 } as UserConfig);
