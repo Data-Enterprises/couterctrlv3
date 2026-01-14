@@ -42,6 +42,7 @@ export interface CashierState {
   fetchingCashierTransactions: boolean;
   selectedStoreId: number;
   noRowsReturned: boolean;
+  noTransMsg: boolean;
 }
 
 const initialState: CashierState = {
@@ -71,6 +72,7 @@ const initialState: CashierState = {
   transactionDrillDown: [],
   selectedStoreId: 0,
   noRowsReturned: false,
+  noTransMsg: false,
 };
 
 export const cashierSlice = createSlice({
@@ -164,6 +166,9 @@ export const cashierSlice = createSlice({
     setSelectedStoreId: (state, action: PayloadAction<number>) => {
       state.selectedStoreId = action.payload;
     },
+    toggleNoTransMsg: (state, action: PayloadAction<boolean>) => {
+      state.noTransMsg = action.payload;
+    },
     resetCashierState: () => initialState,
   },
 });
@@ -192,6 +197,7 @@ export const {
   setFetchingCashierTransactions,
   setTransactionDrillDown,
   setSelectedStoreId,
+  toggleNoTransMsg,
   resetCashierState,
 } = cashierSlice.actions;
 export default cashierSlice.reducer;

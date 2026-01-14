@@ -8,6 +8,7 @@ import {
   setCashierTransactions,
   resetCashierState,
   setSaleTypes,
+  toggleNoTransMsg,
 } from "../../features/cashierSlice";
 import type { JsonError } from "../../interfaces";
 import { activePanelStyle } from ".";
@@ -35,6 +36,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
     // Setting this to handle selected css styling and show the loading indicator
     dispatch(setSelectedSaleType("Description"));
     setLoading(true);
+    setIsOpen(false);
 
     getCashierTable(
       params.url,
@@ -70,6 +72,12 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
             const j = resp.data;
             if (j.error === 0) {
               // The chunked sales and trends are being set in the dispatches
+              if (j.sales.length === 0) {
+                // toast.error("No transactions found for this description");
+                dispatch(toggleNoTransMsg(true));
+              } else {
+                dispatch(toggleNoTransMsg(false));
+              }
               dispatch(setCashierDetails(j.sales));
               dispatch(setCashierTrends(j.trend));
             }
@@ -81,10 +89,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
       .catch((err: JsonError) =>
         toast.error("Error fetching cashier table: " + err.message)
       )
-      .finally(() => {
-        setLoading(true);
-        setIsOpen(false);
-      });
+      .finally(() => setLoading(false));
   };
 
   const handlePanelClick = (saleType: string) => {
@@ -129,12 +134,19 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
           params.useGroups,
           params.searchValue,
           params.singleStore,
-          [saleType],
+          [saleType]
         )
           .then((resp) => {
             const j = resp.data;
             if (j.error === 0) {
               // The chunked sales and trends are being set in the dispatches
+              if (j.sales.length === 0) {
+                // toast.error("No transactions found for this description");
+                dispatch(toggleNoTransMsg(true));
+              } else {
+                dispatch(toggleNoTransMsg(false));
+              }
+
               dispatch(setCashierDetails(j.sales));
               dispatch(setCashierTrends(j.trend));
             }
@@ -146,7 +158,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
       .catch((err: JsonError) =>
         toast.error("Error fetching cashier table: " + err.message)
       )
-      .finally(() => setLoading(true));
+      .finally(() => setLoading(false));
   };
 
   return (
