@@ -1,16 +1,12 @@
-import { useAppSelector, useAppDispatch } from "../../hooks";
+import { useAppSelector } from "../../hooks";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { formatBigNumber, formatCurrency2 } from "../../utils";
 import { useEffect, useRef, useState } from "react";
-import { setIsExportModalOpen } from "../../features/receiversSlice";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-import ExportModal from "./ExportModal";
-import { detailCols } from ".";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 
 const ReceiverDetailsGrid = () => {
-  const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.receivers);
   const topRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -26,22 +22,12 @@ const ReceiverDetailsGrid = () => {
     calculateHeight();
   }, [topRef, bottomRef, state.details, state.isFetchingDetails]);
 
-  const openExportModal = () => {
-    dispatch(setIsExportModalOpen(true));
-  };
-
   return (
     <div
       className={`${
         state.details.length === 0 && !state.isFetchingDetails ? "hidden" : ""
       } bg-custom-white rounded-lg shadow-lg w-[99%] overflow-hidden pr-4`}
     >
-      <ExportModal
-        isOpen={state.isExportModalOpen}
-        onClose={() => dispatch(setIsExportModalOpen(false))}
-        data={state.details}
-        columns={detailCols}
-      />
       <div className="relative w-full h-full p-4">
         {state.details.length > 0 && !state.isFetchingDetails ? (
           <div>
@@ -123,14 +109,6 @@ const ReceiverDetailsGrid = () => {
                   <div className="border-content border-t-2 pl-2 mt-3 pt-1"></div>
                 </div>
               ))}
-              <div className="absolute bottom-1.5 ml-2 bg-custom-white">
-                <button
-                  className="btn-themeBlue py-1"
-                  onClick={openExportModal}
-                >
-                  Export
-                </button>
-              </div>
             </div>
           </div>
         ) : state.isFetchingDetails ? (

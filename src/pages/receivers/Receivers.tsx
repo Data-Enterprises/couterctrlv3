@@ -5,6 +5,7 @@ import type { JsonError, ReceiverListResponse } from "../../interfaces";
 import {
   reQuery,
   resetReceiverState,
+  setIsExportModalOpen,
   setIsFetchingList,
   setListGridData,
   setReceiversList,
@@ -17,6 +18,8 @@ import RecevierListFilters from "./ReceiverListFilters";
 import ReceiversListGrid from "./ReceiversListGrid";
 import ReceiverDetailsGrid from "./ReceiverDetailsGrid";
 import FiltersModal from "./filters/FiltersModal";
+import ExportModal from "./ExportModal";
+import { detailCols } from ".";
 
 const Receivers = () => {
   const toast = useToast();
@@ -49,9 +52,19 @@ const Receivers = () => {
     dispatch(setStoreId(storeid as number));
   };
 
+  const openExportModal = () => {
+    dispatch(setIsExportModalOpen(true));
+  };
+
   return (
     <div className="w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">
       <FiltersModal />
+      <ExportModal
+        isOpen={state.isExportModalOpen}
+        onClose={() => dispatch(setIsExportModalOpen(false))}
+        data={state.details}
+        columns={detailCols}
+      />
       <div className="w-full h-full grid grid-cols-[20%_80%] gap-4">
         <div className="select-none space-y-4">
           <div className="bg-custom-white rounded-lg p-4 shadow-lg">
@@ -63,14 +76,24 @@ const Receivers = () => {
               onSelect={setSelectedStore}
             />
             <DatePickers handleQuery={getReceivers} />
-            <button
-              className={`${
-                state.list.length === 0 && "opacity-50 pointer-events-none"
-              } btn-themeOrange w-full mt-2`}
-              onClick={() => dispatch(resetReceiverState())}
-            >
-              Refresh
-            </button>
+            <div className="flex gap-2">
+              <button
+                className={`${
+                  state.list.length === 0 && "opacity-50 pointer-events-none"
+                } btn-themeOrange w-full mt-2`}
+                onClick={() => dispatch(resetReceiverState())}
+              >
+                Refresh
+              </button>
+              <button
+                className={`${
+                  state.details.length === 0 && "opacity-50 pointer-events-none"
+                } btn-themeGreen w-full mt-2`}
+                onClick={openExportModal}
+              >
+                Export
+              </button>
+            </div>
           </div>
           <RecevierListFilters />
         </div>
