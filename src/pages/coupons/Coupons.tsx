@@ -25,6 +25,7 @@ const Coupons = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const getData = () => {
+    dispatch(setCoupons([]));
     dispatch(setIsFetching(true));
     const useGroups = context.type === "Group" ? 1 : 0;
     const singleStore = context.type === "Store" ? 1 : 0;
@@ -54,6 +55,8 @@ const Coupons = () => {
 
   const showGrid = context.coupons.length > 0 && !context.isFetching;
   const showLoading = context.coupons.length === 0 && context.isFetching;
+
+  console.log(showLoading)
 
   return (
     <div className="w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">

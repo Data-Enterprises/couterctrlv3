@@ -30,8 +30,6 @@ const CouponsGrid = () => {
     const splitDate = saleDate.split("-");
     const joinedSaleId = `${storeid}-${saleId}-${term}-${parseInt(splitDate[1])}-${parseInt(splitDate[2])}-${splitDate[0]}`;
 
-    console.log(joinedSaleId.replace("=", "-"));
-
     dispatch(setTransactionDrillDown([]));
     dispatch(setTransModalOpen(true));
     getCashierTransaction(
