@@ -41,6 +41,7 @@ export const transactions: TransactionListItem[] = [
     fsa: 0,
     wic: 0,
     scalable: 0,
+    qty: 1,
   },
   {
     storeid: 2,
@@ -73,6 +74,7 @@ export const transactions: TransactionListItem[] = [
     fsa: 0,
     wic: 0,
     scalable: 1,
+    qty: 2,
   },
 ];
 
