@@ -10,8 +10,18 @@ interface DescModalProps {
 const DescModal = ({ open, onClose, handleSubmit }: DescModalProps) => {
   const [desc, setDesc] = useState<string>("");
 
+  const handleClose = () => {
+    onClose();
+    setDesc("");
+  };
+
+  const onSubmit = () => {
+    handleSubmit(desc);
+    setDesc("");
+  };
+
   return (
-    <Modal isOpen={open} onClose={onClose}>
+    <Modal isOpen={open} onClose={handleClose}>
       <div>
         <label htmlFor="desc-input" className="font-medium text-sm pl-0.5">
           What are you looking for?
@@ -24,8 +34,12 @@ const DescModal = ({ open, onClose, handleSubmit }: DescModalProps) => {
         />
       </div>
       <div className="flex mt-4 gap-2">
-        <button className="btn-themeBlue w-1/2" onClick={() => handleSubmit(desc)}>Submit</button>
-        <button className="btn-themeOrange w-1/2" onClick={onClose}>Cancel</button>
+        <button className="btn-themeBlue w-1/2" onClick={onSubmit}>
+          Submit
+        </button>
+        <button className="btn-themeOrange w-1/2" onClick={onClose}>
+          Cancel
+        </button>
       </div>
     </Modal>
   );

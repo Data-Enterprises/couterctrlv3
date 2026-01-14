@@ -1,4 +1,4 @@
-// import { useState, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type {
@@ -24,6 +24,22 @@ const ReceiversListGrid = () => {
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
   const state = useAppSelector((state) => state.receivers);
+  const gridRef = useRef<AgGridReact>(null);
+
+  // Use this for deselecting rows when details are cleared (like on refresh or new filter)
+  useEffect(() => {
+    // need another check probably to handle this when the Receiver list grid is filtered
+    if (gridRef.current && state.details.length === 0 && state.listGridData.length > 0) {
+      gridRef.current?.api.deselectAll();
+    }
+  }, [state.details]);
+
+  useEffect(() => {
+    if (gridRef.current && state.listGridData.length > 0) {
+      gridRef.current?.api.deselectAll();
+      // maybe reset the details as well here?
+    }
+  }, [state.listGridData]);
 
   const getSelectedDetails = (invoiceid: number, transDate: string) => {
     dispatch(setIsFetchingDetails(true));
@@ -42,21 +58,22 @@ const ReceiversListGrid = () => {
   return (
     <div
       className={` ${
-        state.listGridData.length === 0 && !state.isFetchingList ? "hidden" : ""
+        state.list.length === 0 && !state.isFetchingList ? "hidden" : ""
       } ${
         state.isFetchingList ? "bg-transparent" : "bg-custom-white shadow-lg"
       } rounded-lg w-[60%] p-2`}
     >
       <div
         className={`${
-          state.listGridData.length === 0 && "hidden"
+          state.isFetchingList && "hidden"
         } text-sm font-medium pl-0.5`}
       >
         Select Receiver
       </div>
       <div className="h-[93%]">
-        {state.listGridData.length ? (
+        {!state.isFetchingList ? (
           <AgGridReact
+            ref={gridRef}
             rowData={state.listGridData}
             columnDefs={cols}
             theme={theme}

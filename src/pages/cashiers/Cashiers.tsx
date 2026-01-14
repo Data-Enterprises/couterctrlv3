@@ -83,6 +83,11 @@ const Cashiers = () => {
       </div>
 
       <div className={cardContainer}>
+        {cashier.noTransMsg && (
+          <div className="w-full h-full flex items-center justify-center bg-custom-white rounded-lg shadow-lg">
+            <p className="font-medium">No transactions Found</p>
+          </div>
+        )}
         {cashier.chunkedSales.length > 0 ? (
           <div className="w-full ">
             <TrendCardCarousel />

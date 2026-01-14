@@ -3,6 +3,7 @@ import {
   resetFilters,
   setFilterModalOpen,
   setFilterType,
+  setReceiverDetails,
   type FilterType,
 } from "../../features/receiversSlice";
 
@@ -37,6 +38,7 @@ const RecevierListFilters = () => {
   const setFilterModal = (option: FilterType | "Refresh") => {
     if (option === "Refresh") {
       dispatch(resetFilters());
+      dispatch(setReceiverDetails([]));
     } else {
       dispatch(setFilterModalOpen(true));
       dispatch(setFilterType(option));

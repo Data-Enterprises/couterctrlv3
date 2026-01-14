@@ -8,6 +8,7 @@ import {
   setIsExportModalOpen,
   setIsFetchingList,
   setListGridData,
+  setReceiverDetails,
   setReceiversList,
   setStoreId,
 } from "../../features/receiversSlice";
@@ -40,6 +41,12 @@ const Receivers = () => {
       );
     }
   }, [state.totals]);
+
+  useEffect(() => {
+    if (state.listGridData.length === 0) {
+      dispatch(setReceiverDetails([]));
+    }
+  },[state.listGridData]);
 
   const getReceivers = () => {
     if (!state.storeid) {
