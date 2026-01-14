@@ -71,13 +71,13 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
           .then((resp) => {
             const j = resp.data;
             if (j.error === 0) {
-              // The chunked sales and trends are being set in the dispatches
+              // Checking to see if we need to display No Transactions Found
               if (j.sales.length === 0) {
-                // toast.error("No transactions found for this description");
                 dispatch(toggleNoTransMsg(true));
               } else {
                 dispatch(toggleNoTransMsg(false));
               }
+              // The chunked sales and trends are being set in the dispatches
               dispatch(setCashierDetails(j.sales));
               dispatch(setCashierTrends(j.trend));
             }
@@ -94,7 +94,6 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
 
   const handlePanelClick = (saleType: string) => {
     if (saleType === "Description") {
-      // open a modal for the user to type into
       setIsOpen(true);
       return;
     }
@@ -139,14 +138,14 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
           .then((resp) => {
             const j = resp.data;
             if (j.error === 0) {
-              // The chunked sales and trends are being set in the dispatches
+              // Checking to see if we need to display No Transactions Found
               if (j.sales.length === 0) {
-                // toast.error("No transactions found for this description");
                 dispatch(toggleNoTransMsg(true));
               } else {
                 dispatch(toggleNoTransMsg(false));
               }
-
+              
+              // The chunked sales and trends are being set in the dispatches
               dispatch(setCashierDetails(j.sales));
               dispatch(setCashierTrends(j.trend));
             }
