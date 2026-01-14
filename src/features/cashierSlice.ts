@@ -101,7 +101,6 @@ export const cashierSlice = createSlice({
     },
     setTransModalOpen: (state, action: PayloadAction<boolean>) => {
       state.transModalOpen = action.payload;
-      state.transactionDrillDown = [];
       state.noRowsReturned = false;
     },
     setCashiers: (state, action: PayloadAction<UniqueCashier[]>) => {
