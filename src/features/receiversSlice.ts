@@ -150,6 +150,7 @@ export const receiversSlice = createSlice({
     },
     reQuery: (state) => {
       state.list = [];
+      state.listGridData = [];
       state.details = [];
       state.vendorIdFilter = "";
       state.vendorNameFilter = "";

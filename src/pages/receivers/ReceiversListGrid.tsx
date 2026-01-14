@@ -10,7 +10,11 @@ import { AgGridReact } from "ag-grid-react";
 import { cols, theme } from ".";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { getReceiverDetails } from "../../api/receivers";
-import { setIsFetchingDetails, setReceiverDetails, setTotals } from "../../features/receiversSlice";
+import {
+  setIsFetchingDetails,
+  setReceiverDetails,
+  setTotals,
+} from "../../features/receiversSlice";
 import { formatDate } from "../../utils";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -41,7 +45,13 @@ const ReceiversListGrid = () => {
         state.listGridData.length === 0 && !state.isFetchingList ? "hidden" : ""
       } bg-custom-white rounded-lg shadow-lg w-[60%] p-2`}
     >
-      <div className="text-sm font-medium pl-0.5">Select Receiver</div>
+      <div
+        className={`${
+          state.listGridData.length === 0 && "hidden"
+        } text-sm font-medium pl-0.5`}
+      >
+        Select Receiver
+      </div>
       <div className="h-[90%]">
         {state.listGridData.length ? (
           <AgGridReact
