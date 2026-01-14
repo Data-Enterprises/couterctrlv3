@@ -153,11 +153,50 @@ describe("Receivers Page", () => {
     });
   });
 
-  it("should handle setting the Vendor ID filter", async () => {});
+  it("should handle setting the Vendor ID filter", async () => {
+    renderWithProviders(<Receivers />, { store });
 
-  it("should handle the Vendor Name filter", async () => {});
+    const venIdFilter = await screen.findByTestId(
+      "rec-list-table-filter-vendorid"
+    );
+    await user.click(venIdFilter);
 
-  it("should handle the Transaction ID filter", async () => {});
+    const submitBtn = await screen.findByTestId("rec-list-filter-modal-submit-btn");
+    const input = await screen.findByTestId("text-filter-input");
+
+    await user.click(submitBtn);
+
+    await waitFor(() => {
+      expect(mockedToastWarn).toHaveBeenCalledWith("Filter value cannot be empty");
+    });
+
+    await user.type(input, "25");
+    await user.click(submitBtn);
+
+    await waitFor(() => {
+      const state = store.getState().receivers;
+      expect(state.listGridData.length).toBe(2);
+    });
+  });
+
+  // TODO: Start here.....
+  it("should handle the Vendor Name filter", async () => {
+    renderWithProviders(<Receivers />, { store });
+
+    const venNameFilter = await screen.findByTestId(
+      "rec-list-table-filter-vendorname"
+    );
+    await user.click(venNameFilter);
+  });
+
+  it("should handle the Transaction ID filter", async () => {
+    renderWithProviders(<Receivers />, { store });
+
+    const transIdFilter = await screen.findByTestId(
+      "rec-list-table-filter-transactionid"
+    );
+    await user.click(transIdFilter);
+  });
 
   it("should handle the Invoice ID filter", async () => {});
 

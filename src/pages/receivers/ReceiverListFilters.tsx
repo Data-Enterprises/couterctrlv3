@@ -76,7 +76,7 @@ const RecevierListFilters = () => {
         {filterOptions.map((option, i) => (
           <div
             key={i}
-            data-testid={`cashier-table-filter-${option
+            data-testid={`rec-list-table-filter-${option
               .split(" ")[0]
               .toLowerCase()}`}
             className={`${panelStyle} ${activePanelStyle(option)}`}

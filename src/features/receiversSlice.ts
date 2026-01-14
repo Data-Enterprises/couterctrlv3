@@ -96,17 +96,6 @@ export const receiversSlice = createSlice({
     setTotals: (state, action: PayloadAction<ReceiverDetailsTotals[]>) => {
       state.totals = action.payload;
     },
-    setListGridFilters: (state, action: PayloadAction<boolean>) => {
-      state.filterListGrid = action.payload;
-
-      if (!action.payload) {
-        state.vendorIdFilter = "";
-        state.vendorNameFilter = "";
-        state.invoiceIdFilter = "";
-        state.transIDFilter = "";
-        state.listGridData = state.list;
-      }
-    },
     applyFilters: (state) => {
       const filteredData = state.list.filter((item) => {
         const idMatch = state.vendorIdFilter.toLowerCase();
@@ -170,7 +159,6 @@ export const {
   setVendorIdFilter,
   setVendorNameFilter,
   setInvoiceIdFilter,
-  setListGridFilters,
   setIsFetchingList,
   setIsFetchingDetails,
   setIsExportModalOpen,

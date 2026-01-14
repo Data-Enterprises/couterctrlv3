@@ -20,7 +20,7 @@ export const receiverListResp = {
         invoice_date: "2025-12-01T00:00:00",
         store_number: "1",
         vendor_name: "McKee Baking",
-        vendorid: "M0003",
+        vendorid: "M0025",
         reference_number: "648182025",
         items: 4,
         cashier_number: 8,
