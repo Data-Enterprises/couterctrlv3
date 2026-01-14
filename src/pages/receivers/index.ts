@@ -13,24 +13,7 @@ export const theme = themeQuartz.withParams({
   dataFontSize: 13,
   selectCellBorder: "transparent",
   rowBorder: "1px solid white",
-  selectedRowBackgroundColor: "#93c5fd",
-});
-
-export const detailsTheme = themeQuartz.withParams({
-  headerHeight: 27,
-  rowHeight: 26,
-  // headerBackgroundColor: "#3b82f6",
-  // headerTextColor: "#ffffff",
-  // oddRowBackgroundColor: "#dbeafe",
-  // rowHoverColor: "#93c5fd",
-  headerFontWeight: "bold",
-  dataFontSize: 13,
-  selectCellBorder: "transparent",
-  rowBorder: "1px solid white",
-  // selectedRowBackgroundColor: "#93c5fd",
-  headerBackgroundColor: "transparent",
-  borderRadius: 0,
-  borderWidth: 0,
+  selectedRowBackgroundColor: "#fed7aa",
 });
 
 export const cols: (
@@ -52,7 +35,7 @@ export const cols: (
     headerName: "Store",
     field: "store_number",
     resizable: false,
-    flex: 0.5,
+    flex: 0.4,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
   },
@@ -60,7 +43,7 @@ export const cols: (
     headerName: "Trans",
     field: "invoiceid",
     resizable: false,
-    flex: 0.5,
+    flex: 0.4,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
   },
@@ -92,10 +75,18 @@ export const cols: (
     headerName: "Items",
     field: "items",
     resizable: false,
-    // headerStyle: { borderRight: "1px solid white" },
+    headerStyle: { borderRight: "1px solid white" },
     flex: 0.4,
     cellClass: "no-outline-on-focus",
   },
+  {
+    headerName: "Operator",
+    field: "cashier_name",
+    resizable: false,
+    flex: 0.7,
+    // headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus",
+  }
 ];
 
 const defaultOptions = {

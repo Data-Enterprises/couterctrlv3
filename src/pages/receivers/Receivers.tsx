@@ -20,14 +20,26 @@ import ReceiverDetailsGrid from "./ReceiverDetailsGrid";
 import FiltersModal from "./filters/FiltersModal";
 import ExportModal from "./ExportModal";
 import { detailCols } from ".";
+import { useEffect, useState } from "react";
 
 const Receivers = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
+  const state = useAppSelector((state) => state.receivers);
   const { url, token } = useAppSelector((state) => state.app);
   const { assignedStores } = useAppSelector((state) => state.user);
-  const state = useAppSelector((state) => state.receivers);
   const { startDate, endDate } = useAppSelector((state) => state.search);
+  const [totalsLine, setTotalsLine] = useState<string>("");
+
+  useEffect(() => {
+    if (state.totals.length > 0) {
+      const { cases, units, ucost, ext_cost, retail, ext_retail } =
+        state.totals[0];
+      setTotalsLine(
+        `,,Totals,${cases},${units},${ucost},${ext_cost},${retail},${ext_retail}`
+      );
+    }
+  }, [state.totals]);
 
   const getReceivers = () => {
     if (!state.storeid) {
@@ -64,6 +76,7 @@ const Receivers = () => {
         onClose={() => dispatch(setIsExportModalOpen(false))}
         data={state.details}
         columns={detailCols}
+        totalsLine={totalsLine}
       />
       <div className="w-full h-full grid grid-cols-[20%_80%] gap-4">
         <div className="select-none space-y-4">

@@ -39,7 +39,7 @@ const ReceiversListGrid = () => {
     <div
       className={` ${
         state.listGridData.length === 0 && !state.isFetchingList ? "hidden" : ""
-      } bg-custom-white rounded-lg shadow-lg w-1/2 p-2`}
+      } bg-custom-white rounded-lg shadow-lg w-[60%] p-2`}
     >
       <div className="text-sm font-medium pl-0.5">Select Receiver</div>
       <div className="h-[90%]">

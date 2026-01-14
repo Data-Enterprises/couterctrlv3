@@ -10,6 +10,7 @@ interface ExportModalProps<T extends Record<string, any>> {
   onClose: () => void;
   data: T[];
   columns: ColDef<T>[];
+  totalsLine?: string;
 }
 
 const ExportModal = <T extends Record<string, any>>({
@@ -17,6 +18,7 @@ const ExportModal = <T extends Record<string, any>>({
   onClose,
   data,
   columns,
+  totalsLine = "",
 }: ExportModalProps<T>) => {
   const toast = useToast();
   const [fileName, setFileName] = useState<string>("");
@@ -30,7 +32,8 @@ const ExportModal = <T extends Record<string, any>>({
     exportData(
       data,
       columns,
-      `${fileName}_${formatDate(new Date().toISOString())}.csv`
+      `${fileName}_${formatDate(new Date().toISOString())}.csv`,
+      totalsLine
     );
 
     handleClose();
