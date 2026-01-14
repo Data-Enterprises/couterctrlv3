@@ -44,7 +44,7 @@ const FiltersModal = () => {
       >
         Set {state.filterType} Filter
       </div>
-      <TextFilter text={text} setText={setText} />;
+      <TextFilter text={text} setText={setText} />
       <div className="flex gap-4">
         <button
           data-testid="cashier-table-filter-modal-submit-btn"
