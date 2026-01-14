@@ -37,7 +37,8 @@ export const getCashierDetails = async (
   useGroups: number,
   searchValue: number,
   singleStore: number,
-  saleTypes: string[]
+  saleTypes: string[],
+  searchString: string = ""
 ) => {
   const json = await axios({
     method: "POST",
@@ -53,12 +54,13 @@ export const getCashierDetails = async (
       searchValue,
       singleStore,
       saleTypes,
+      searchString,
     },
   });
   return json;
 };
 
-export const getCashierTransactions = async (
+export const getCashierTransaction = async (
   url: string,
   token: string,
   transactionDate: string,
@@ -90,7 +92,8 @@ export const getCashierTable = async (
   searchValue: number,
   singleStore: number,
   saleTypes: string[],
-  page: number = 1
+  page: number = 1,
+  searchString: string = ""
 ) => {
   const json = await axios({
     method: "POST",
@@ -107,6 +110,7 @@ export const getCashierTable = async (
       singleStore,
       saleTypes,
       page,
+      searchString,
     },
   });
   return json;

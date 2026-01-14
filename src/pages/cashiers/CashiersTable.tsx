@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { colDefs, theme, reducePriceTypes, reduceSaleIds } from ".";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { getCashierTransactions } from "../../api/cashiers";
+import { getCashierTransaction } from "../../api/cashiers";
 import {
   setAvailablePriceTypes,
   setCashierSaleIds,
@@ -132,7 +132,7 @@ const CashiersTable = () => {
       const storeid = e.data.storeid;
       dispatch(setTransactionDrillDown([]));
       dispatch(setTransModalOpen(true));
-      getCashierTransactions(
+      getCashierTransaction(
         context.url,
         context.token,
         saleDate,
@@ -184,7 +184,7 @@ const CashiersTable = () => {
       {filtered.length ? (
         <div
           data-testid="cashiers-table"
-          className="bg-custom-white p-2 rounded-lg shadow-lg h-full relative"
+          className="bg-custom-white p-2 rounded-lg shadow-lg h-[93%] relative"
         >
           <ExportModal
             isOpen={modalOpen}
@@ -192,13 +192,13 @@ const CashiersTable = () => {
             data={filtered}
             columns={colDefs}
           />
-          <div className="h-full">
+          <div className="h-[91%]">
             <AgGridReact
               rowData={filtered}
               columnDefs={colDefs}
               theme={theme}
               pagination={true}
-              paginationPageSize={21}
+              paginationAutoPageSize={true}
               paginationPageSizeSelector={false}
               onCellClicked={onCellClicked}
             />

@@ -41,6 +41,7 @@ export interface CashierState {
   selectedPriceTypes: string[];
   fetchingCashierTransactions: boolean;
   selectedStoreId: number;
+  noRowsReturned: boolean;
 }
 
 const initialState: CashierState = {
@@ -69,6 +70,7 @@ const initialState: CashierState = {
   fetchingCashierTransactions: false,
   transactionDrillDown: [],
   selectedStoreId: 0,
+  noRowsReturned: false,
 };
 
 export const cashierSlice = createSlice({
@@ -97,6 +99,8 @@ export const cashierSlice = createSlice({
     },
     setTransModalOpen: (state, action: PayloadAction<boolean>) => {
       state.transModalOpen = action.payload;
+      state.transactionDrillDown = [];
+      state.noRowsReturned = false;
     },
     setCashiers: (state, action: PayloadAction<UniqueCashier[]>) => {
       state.cashiers = action.payload;
@@ -151,6 +155,11 @@ export const cashierSlice = createSlice({
       action: PayloadAction<TransactionListItem[][]>
     ) => {
       state.transactionDrillDown = action.payload;
+      if (action.payload.length === 0) {
+        state.noRowsReturned = true;
+      } else {
+        state.noRowsReturned = false;
+      }
     },
     setSelectedStoreId: (state, action: PayloadAction<number>) => {
       state.selectedStoreId = action.payload;

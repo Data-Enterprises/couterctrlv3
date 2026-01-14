@@ -26,6 +26,7 @@ const Cashiers = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const getSaleTypesData = () => {
+    // dispatch(setFetchingCashierTransactions(false));
     if (cashier.saleTypes.length > 0) {
       dispatch(resetCashierState());
     }
@@ -45,7 +46,8 @@ const Cashiers = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          dispatch(setSaleTypes(j.sale_types));
+          const saleTypes = [...j.sale_types, { sale_type: "Description" }]
+          dispatch(setSaleTypes(saleTypes));
         }
       })
       .catch((err: JsonError) =>
@@ -55,14 +57,14 @@ const Cashiers = () => {
 
   // Styles for mobile and desktop
   const pageContainer = context.isDesktop
-    ? "w-full h-[calc(100vh-3rem)] p-4 grid grid-cols-[27%_73%] gap-4"
+    ? "w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden p-4 grid grid-cols-[27%_73%] gap-4"
     : "p-4 w-full min-h-full overflow-y-auto space-y-4 max-h-screen";
   const leftContainer = context.isDesktop
     ? "grid grid-rows-[25%_0.9fr_1fr] gap-2"
     : "";
   const cols = context.isDesktop ? "grid-cols-2" : "grid-cols-1 mt-4";
   const cardContainer = context.isDesktop
-    ? "grid grid-rows-[25%_74.1%] mr-4 gap-2"
+    ? "grid grid-rows-[25%_74%] mr-4 gap-2"
     : "";
 
   return (
@@ -87,7 +89,7 @@ const Cashiers = () => {
           </div>
         ) : (
           <div className="h-[260px] w-full">
-            {loading ? (
+            {loading && cashier.selectedSaleType ? (
               <div className="w-full h-64 relative">
                 <LoadingIndicator
                   className="text-sm"

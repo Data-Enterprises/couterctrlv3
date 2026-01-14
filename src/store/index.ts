@@ -19,6 +19,8 @@ import quickSightReducer from "../features/qsSlice";
 import forecastReducer from "../features/forecastSlice";
 import priceSimReducer from "../features/priceSimSlice";
 import upcUploadReducer from "../features/upcUploadSlice";
+import receiversReducer from "../features/receiversSlice";
+import couponReducer from "../features/couponSlice";
 
 export const setupStore = () =>
   configureStore({
@@ -42,6 +44,8 @@ export const setupStore = () =>
       forecast: forecastReducer,
       priceSim: priceSimReducer,
       upcs: upcUploadReducer,
+      receivers: receiversReducer,
+      coupons: couponReducer,
     },
   });
 

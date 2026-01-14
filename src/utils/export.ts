@@ -18,7 +18,8 @@ export const csv = (headers: string, data: string, filename: string) => {
 export const handleCsv = <T extends Record<string, any>>(
   data: T[],
   filename: string,
-  headers: ColDef<T>[]
+  headers: ColDef<T>[],
+  totalsLine: string = ""
 ) => {
   let body = "";
   const headersString = headers
@@ -36,13 +37,19 @@ export const handleCsv = <T extends Record<string, any>>(
     body += line.substring(0, line.length - 1) + "\r\n";
   });
 
+  // body += ",,Totals,value1,value2,value3,value4,value5,value6,"
+  if (totalsLine.length > 0) {
+    body += totalsLine;
+  }
+
   csv(headersString, body, filename);
 };
 
 export const exportData = <T extends Record<string, any>>(
   data: T[],
   headers: ColDef<T>[],
-  fileName: string
+  fileName: string,
+  totalsLine: string = ""
 ) => {
   const regex = new RegExp("\\.csv", "gi"); // 'gi' for global and case-insensitive
   handleCsv(
@@ -51,7 +58,8 @@ export const exportData = <T extends Record<string, any>>(
       .replace(regex, "")
       .split(" ")
       .join("_")}_${filename_date()}.csv`,
-    headers
+    headers,
+    totalsLine
   );
 };
 

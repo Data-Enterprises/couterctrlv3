@@ -4,12 +4,14 @@ import {
   UsersIcon,
   MagnifyingGlassIcon,
   ArrowTrendingUpIcon,
+  ClipboardDocumentCheckIcon,
 } from "@heroicons/react/16/solid";
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
 import GroupsIcon from "../../svgs/GroupsIcon";
 import UpcListIcon from "../../svgs/UpcListIcon";
 import DashboardIconV2 from "../../svgs/DashbordIconV2";
+import CouponIcon from "../../svgs/CouponIcon";
 
 export type Navigation = {
   name: string;
@@ -51,8 +53,8 @@ export const navigation: Navigation[] = [
     userTypes: ["*"],
   },
   {
-    name: "Cashiers",
-    href: "cashiers",
+    name: "Loss Prevention",
+    href: "loss-prevention",
     icon: CashierIcon,
     mobile: true,
     children: [],
@@ -104,6 +106,24 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userTypes: ["*"],
   },
+  {
+    name: "Receivers",
+    href: "receivers",
+    icon: ClipboardDocumentCheckIcon,
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userTypes: ["*"],
+  },
+  {
+    name: "Coupons",
+    href: "coupons",
+    icon: CouponIcon,
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userTypes: ["*"],
+  },
   // This fake link is just to show that user types can be restricted
   {
     name: "fake link",
@@ -112,6 +132,6 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userTypes: ["9999"]
-  }
+    userTypes: ["9999"],
+  },
 ];

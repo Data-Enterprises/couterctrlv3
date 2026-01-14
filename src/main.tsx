@@ -19,6 +19,8 @@ import UpcList from "./pages/upc/wizard/UpcList.tsx";
 import ItemLookup from "./pages/lookup/ItemLookup.tsx";
 import Forecasting from "./pages/forecast/Forecasting.tsx";
 import Dashboard from "./pages/quicksight/Dashboard.tsx";
+import Receivers from "./pages/receivers/Receivers.tsx";
+import Coupons from "./pages/coupons/Coupons.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -31,13 +33,15 @@ createRoot(document.getElementById("root")!).render(
                 <Route index element={<Home />} />
                 <Route path="sales" element={<Sales />} />
                 <Route path="team" element={<Team />} />
-                <Route path="cashiers" element={<Cashiers />} />
+                <Route path="loss-prevention" element={<Cashiers />} />
                 <Route path="groups" element={<Groups />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="upc-upload" element={<UpcList />} />
                 <Route path="item-lookup" element={<ItemLookup />} />
                 <Route path="forecasting" element={<Forecasting />} />
                 <Route path="quicksight" element={<Dashboard />} />
+                <Route path="receivers" element={<Receivers />} />
+                <Route path="coupons" element={<Coupons />} />
               </Route>
             </Routes>
           </ToastProvider>
