@@ -8,6 +8,7 @@ import {
   setInitialRowData,
   setIsLoading,
   setItems,
+  setNoResults,
   setSingleForecastResults,
 } from "../../../features/forecastSlice";
 import { useAppDispatch } from "../../../hooks";
@@ -103,7 +104,7 @@ const FileGrid = () => {
       )
         .then((resp) => {
           const j: PriceHistoryFromListResp = resp.data;
-          if (j.error === 0) {
+          if (j.error === 0 && j.results.length > 0) {
             // Set the upc items for the controls
             const upcItems = j.results.map((item) => ({
               upc: item.upc,
@@ -125,6 +126,8 @@ const FileGrid = () => {
             const rowData = formatRowData(multiPrices);
             dispatch(setInitialRowData(rowData));
             dispatch(setSingleForecastResults(singlePrices));
+          } else {
+            dispatch(setNoResults(true));
           }
         })
         .catch((err: JsonError) => toast.error(err.message))
