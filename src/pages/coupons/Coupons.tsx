@@ -105,7 +105,7 @@ const Coupons = () => {
         </div>
         {showGrid && <CouponsGrid />}
         {noCoupons && (
-          <div className="h-full flex items-center justify-center bg-custom-white rounded-lg shadow-lg">
+          <div data-testid="no-coupons" className="h-full flex items-center justify-center bg-custom-white rounded-lg shadow-lg">
             No coupons found
           </div>
         )}
