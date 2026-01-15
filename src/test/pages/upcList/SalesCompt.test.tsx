@@ -90,6 +90,72 @@ describe("SalesComp Module in UpcList", () => {
   });
 
   // In this case, we're just trying to render SalesComp
+  it("should inform the user no data was found", async () => {
+    renderWithProviders(<UpcList />, { store });
+
+    // Go through the steps of the UpcWizard to reach SalesComp module
+    const upcFileInput = await screen.findByTestId("upc-file-input");
+
+    const csvFile = new File(["upc1\nupc2\nupc3"], "upc_list.csv", {
+      type: "text/csv",
+    });
+
+    await user.upload(upcFileInput, csvFile);
+    const input = upcFileInput as HTMLInputElement;
+    expect(input.files?.[0]).toBe(csvFile);
+
+    // Selecting SalesComp module
+    const modeOne = await screen.findByTestId("radio-1");
+    await user.click(modeOne);
+    await waitFor(() => {
+      const state = store.getState().upc;
+      expect(state.selectedMode).toBe(1);
+    });
+
+    const nextBtn = await screen.findByTestId("upc-wizard-next-btn-1");
+    await user.click(nextBtn);
+
+    await waitFor(() => {
+      const state = store.getState().upc;
+      expect(state.index).toBe(1);
+    });
+
+    const storeGroupSelectIcon = await screen.findByTestId(
+      "single-select-trigger-icon-1"
+    );
+
+    // Click on Stores
+    const storeOption = await screen.findByTestId("single-select-option-1-0");
+    await user.click(storeGroupSelectIcon);
+    await user.click(storeOption);
+    await waitFor(() => {
+      const state = store.getState().upc;
+      expect(state.radioId).toBe(1);
+    });
+
+    const storeToClick = await screen.findByTestId("single-select-option-2-1");
+    await user.click(storeToClick);
+
+    // handle success
+    (getSalesComp as Mock).mockResolvedValue({
+      data: {
+        error: 0,
+        daily: [],
+      },
+    });
+
+    // Fetch the data
+    const btn2 = await screen.findByTestId("upc-wizard-next-btn-2");
+    await user.click(btn2);
+
+    await waitFor(() => {
+      const state = store.getState().upc;
+      expect(state.salesComp).toEqual([]);
+      expect(mockedToastWarn).toHaveBeenCalledWith("No Records Found");
+    });
+  });
+
+  // In this case, we're just trying to render SalesComp
   it("should render selected module correctly", async () => {
     renderWithProviders(<UpcList />, { store });
 
