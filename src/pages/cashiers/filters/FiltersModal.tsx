@@ -10,6 +10,7 @@ import {
   setFilterType,
   setSaleDateFilter,
   setSelectedPriceTypes,
+  setTransIdFilter,
 } from "../../../features/cashierSlice";
 
 // Modal and filter components
@@ -107,6 +108,9 @@ const FiltersModal = () => {
       case "Total Sales":
         dispatch(setCashierTableThreshComp(threshComp));
         dispatch(setTotalSalesFilter(parseFloat(threshold)));
+        break;
+      case "Transaction ID":
+        dispatch(setTransIdFilter(text));
         break;
     }
 

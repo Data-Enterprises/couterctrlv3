@@ -45,9 +45,9 @@ export const colDefs: (
     cellClass: "no-outline-on-focus",
   },
   {
-    headerName: "Sale Date",
+    headerName: "Date",
     field: "sale_date",
-    flex: 0.45,
+    flex: 0.6,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
@@ -88,7 +88,7 @@ export const colDefs: (
   {
     headerName: "Description",
     field: "product_description",
-    flex: 1.4,
+    flex: 1.3,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
@@ -170,13 +170,6 @@ export const filterData = (
   cardSaleType: string,
 ) => {
   const saleType = selectedSaleType === "Description" ? cardSaleType : selectedSaleType;
-
-  const test = [...data]
-    .filter((t) => { 
-      return t.sale_type === saleType && t.store_number === storeNumber;
-    });
-
-  console.log(test, storeNumber, saleType)
 
   const filtered = [...data]
     .filter((t) => { 

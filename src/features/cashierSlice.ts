@@ -43,6 +43,7 @@ export interface CashierState {
   selectedStoreId: number;
   noRowsReturned: boolean;
   noTransMsg: boolean;
+  transIdFilter: string;
 }
 
 const initialState: CashierState = {
@@ -73,6 +74,7 @@ const initialState: CashierState = {
   selectedStoreId: 0,
   noRowsReturned: false,
   noTransMsg: false,
+  transIdFilter: "",
 };
 
 export const cashierSlice = createSlice({
@@ -126,6 +128,9 @@ export const cashierSlice = createSlice({
     },
     setDescFilter: (state, action: PayloadAction<string>) => {
       state.descFilter = action.payload;
+    },
+    setTransIdFilter: (state, action: PayloadAction<string>) => {
+      state.transIdFilter = action.payload;
     },
     setTotalSalesFilter: (state, action: PayloadAction<number>) => {
       state.totalSalesFilter = action.payload;
@@ -198,5 +203,6 @@ export const {
   setSelectedStoreId,
   toggleNoTransMsg,
   resetCashierState,
+  setTransIdFilter,
 } = cashierSlice.actions;
 export default cashierSlice.reducer;

@@ -41,6 +41,7 @@ const CashiersTable = () => {
     const priceTypes = cashier.selectedPriceTypes;
     const totalSales = cashier.totalSalesFilter;
     const threshold = cashier.cashierTableThreshComp;
+    const transId = cashier.transIdFilter.toLowerCase();
 
     if (
       !selectedCashier &&
@@ -50,7 +51,8 @@ const CashiersTable = () => {
       priceTypes.length === 0 &&
       totalSales === 0 &&
       !threshold.gt &&
-      !threshold.lt
+      !threshold.lt &&
+      !transId
     ) {
       // No filters applied, show all data
       const reducedSaleIds = reduceSaleIds(cashier.transList);
@@ -62,14 +64,14 @@ const CashiersTable = () => {
     }
 
     const currentFiltered = () => {
-      const selectedCashier = cashier.selectedCashier.cashier_number;
-      const saleDate = cashier.saleDateFilter;
-      const upc = cashier.upcFilter.toLowerCase();
-      const desc = cashier.descFilter.toLowerCase();
-      const priceTypes = cashier.selectedPriceTypes;
-      const totalSales = cashier.totalSalesFilter;
-      const threshold = cashier.cashierTableThreshComp;
-
+      // const selectedCashier = cashier.selectedCashier.cashier_number;
+      // const saleDate = cashier.saleDateFilter;
+      // const upc = cashier.upcFilter.toLowerCase();
+      // const desc = cashier.descFilter.toLowerCase();
+      // const priceTypes = cashier.selectedPriceTypes;
+      // const totalSales = cashier.totalSalesFilter;
+      // const threshold = cashier.cashierTableThreshComp;
+      // const transId = cashier.transIdFilter.toLowerCase();
       // Switch the default trues to false if we decide to see a strict comparison!!!!!!!!!
       const result = cashier.transList.filter((item) => {
         const matchCashier = selectedCashier
@@ -94,6 +96,12 @@ const CashiersTable = () => {
           }
         };
 
+        const saleSplit = item.sale_id.split("-")[1];
+        const matchesTransId =
+          saleSplit !== null
+            ? saleSplit.toLowerCase().includes(transId.toLowerCase())
+            : true;
+
         // Then return all of these filters values
         return (
           matchCashier &&
@@ -101,7 +109,8 @@ const CashiersTable = () => {
           matchesUpc &&
           matchesDesc &&
           matchesPriceType &&
-          matchesTotalSales()
+          matchesTotalSales() &&
+          matchesTransId
         );
       });
       return result;
@@ -122,6 +131,7 @@ const CashiersTable = () => {
     cashier.descFilter,
     cashier.selectedPriceTypes,
     cashier.totalSalesFilter,
+    cashier.transIdFilter,
   ]);
 
   const onCellClicked = (e: CellClickedEvent) => {
