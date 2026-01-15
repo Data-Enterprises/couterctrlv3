@@ -190,50 +190,44 @@ const CashiersTable = () => {
   };
 
   return (
-    <>
-      {filtered.length ? (
-        <div
-          data-testid="cashiers-table"
-          className="bg-custom-white p-2 rounded-lg shadow-lg h-[93%] relative"
+    <div
+      data-testid="cashiers-table"
+      className="bg-custom-white p-2 rounded-lg shadow-lg h-[93%] relative"
+    >
+      <ExportModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        data={filtered}
+        columns={colDefs}
+      />
+      <div className="h-[91%]">
+        <AgGridReact
+          rowData={filtered}
+          columnDefs={colDefs}
+          theme={theme}
+          pagination={true}
+          paginationAutoPageSize={true}
+          paginationPageSizeSelector={false}
+          onCellClicked={onCellClicked}
+        />
+      </div>
+      <div className="absolute bottom-4 left-6">
+        <button
+          data-testid="cashiers-table-showall-btn"
+          className="btn-themeGreen py-1"
+          onClick={handleShowAll}
         >
-          <ExportModal
-            isOpen={modalOpen}
-            onClose={() => setModalOpen(false)}
-            data={filtered}
-            columns={colDefs}
-          />
-          <div className="h-[91%]">
-            <AgGridReact
-              rowData={filtered}
-              columnDefs={colDefs}
-              theme={theme}
-              pagination={true}
-              paginationAutoPageSize={true}
-              paginationPageSizeSelector={false}
-              onCellClicked={onCellClicked}
-            />
-          </div>
-          <div className="absolute bottom-4 left-6">
-            <button
-              data-testid="cashiers-table-showall-btn"
-              className="btn-themeGreen py-1"
-              onClick={handleShowAll}
-            >
-              Show All
-            </button>
-            <button
-              data-testid="cashiers-table-export-btn"
-              className="btn-themeGreen py-1 ml-4"
-              onClick={() => setModalOpen(true)}
-            >
-              Export
-            </button>
-          </div>
-        </div>
-      ) : (
-        <></>
-      )}
-    </>
+          Show All
+        </button>
+        <button
+          data-testid="cashiers-table-export-btn"
+          className="btn-themeGreen py-1 ml-4"
+          onClick={() => setModalOpen(true)}
+        >
+          Export
+        </button>
+      </div>
+    </div>
   );
 };
 
