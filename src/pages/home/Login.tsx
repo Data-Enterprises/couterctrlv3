@@ -193,6 +193,7 @@ const Login = () => {
                   <div className="row justify-content-center">
                     <div className="bg-bkg">
                       <input
+                        data-testid="impersonate-checkbox"
                         type="checkbox"
                         style={{ opacity: "1", visibility: "visible" }}
                         className="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"

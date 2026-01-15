@@ -64,15 +64,6 @@ export const receiversSlice = createSlice({
     ) => {
       state.details = action.payload;
     },
-    setVendorIdFilter: (state, action: PayloadAction<string>) => {
-      state.vendorIdFilter = action.payload;
-    },
-    setVendorNameFilter: (state, action: PayloadAction<string>) => {
-      state.vendorNameFilter = action.payload;
-    },
-    setInvoiceIdFilter: (state, action: PayloadAction<string>) => {
-      state.invoiceIdFilter = action.payload;
-    },
     setFilter: (
       state,
       action: PayloadAction<{ type: FilterType; value: string }>
@@ -156,9 +147,6 @@ export const {
   setStoreId,
   setReceiversList,
   setReceiverDetails,
-  setVendorIdFilter,
-  setVendorNameFilter,
-  setInvoiceIdFilter,
   setIsFetchingList,
   setIsFetchingDetails,
   setIsExportModalOpen,

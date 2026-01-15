@@ -1,6 +1,6 @@
 import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
 import type { ReceiverDetailsItem, ReceiverListItem } from "../../interfaces";
-import { formatBigNumber, formatDate } from "../../utils";
+import { formatDate } from "../../utils";
 
 export const theme = themeQuartz.withParams({
   headerHeight: 27,
@@ -164,8 +164,8 @@ export const detailCols: (
     field: "gm",
     flex: 0.5,
     ...defaultOptions,
-    valueFormatter: (params) =>
-      parseFloat(formatBigNumber(params.value, 2)).toFixed(2) + "%",
+    // valueFormatter: (params) =>
+    //   parseFloat(formatBigNumber(params.value, 2)).toFixed(2) + "%",
   },
   {
     headerName: "Free",

@@ -161,13 +161,17 @@ describe("Receivers Page", () => {
     );
     await user.click(venIdFilter);
 
-    const submitBtn = await screen.findByTestId("rec-list-filter-modal-submit-btn");
+    const submitBtn = await screen.findByTestId(
+      "rec-list-filter-modal-submit-btn"
+    );
     const input = await screen.findByTestId("text-filter-input");
 
     await user.click(submitBtn);
 
     await waitFor(() => {
-      expect(mockedToastWarn).toHaveBeenCalledWith("Filter value cannot be empty");
+      expect(mockedToastWarn).toHaveBeenCalledWith(
+        "Filter value cannot be empty"
+      );
     });
 
     await user.type(input, "25");
@@ -179,7 +183,6 @@ describe("Receivers Page", () => {
     });
   });
 
-  // TODO: Start here.....
   it("should handle the Vendor Name filter", async () => {
     renderWithProviders(<Receivers />, { store });
 
@@ -187,18 +190,65 @@ describe("Receivers Page", () => {
       "rec-list-table-filter-vendorname"
     );
     await user.click(venNameFilter);
+
+    const submitBtn = await screen.findByTestId(
+      "rec-list-filter-modal-submit-btn"
+    );
+    const input = await screen.findByTestId("text-filter-input");
+    await user.type(input, "mckee");
+    await user.click(submitBtn);
+
+    await waitFor(() => {
+      const state = store.getState().receivers;
+      expect(state.listGridData.length).toBe(1);
+    });
   });
 
   it("should handle the Transaction ID filter", async () => {
     renderWithProviders(<Receivers />, { store });
 
+    const refreshFiltersBtn = await screen.findByTestId(
+      "rec-list-table-filter-refresh"
+    );
+    await user.click(refreshFiltersBtn);
+
     const transIdFilter = await screen.findByTestId(
       "rec-list-table-filter-transactionid"
     );
     await user.click(transIdFilter);
+
+    const submitBtn = await screen.findByTestId(
+      "rec-list-filter-modal-submit-btn"
+    );
+    const input = await screen.findByTestId("text-filter-input");
+    await user.type(input, "74");
+    await user.click(submitBtn);
+
+    await waitFor(() => {
+      const state = store.getState().receivers;
+      expect(state.listGridData.length).toBe(2);
+    });
   });
 
-  it("should handle the Invoice ID filter", async () => {});
+  it("should handle the Invoice ID filter", async () => {
+    renderWithProviders(<Receivers />, { store });
 
-  it("should handle refreshing the Receiver List grid filters", async () => {});
+    const setInvoiceIdFilter = await screen.findByTestId(
+      "rec-list-table-filter-invoiceid"
+    );
+    await user.click(setInvoiceIdFilter);
+
+    const submitBtn = await screen.findByTestId(
+      "rec-list-filter-modal-submit-btn"
+    );
+    const input = await screen.findByTestId("text-filter-input");
+    await user.type(input, "179");
+
+    await user.click(submitBtn);
+
+    await waitFor(() => {
+      const state = store.getState().receivers;
+      expect(state.listGridData.length).toBe(1);
+    });
+  });
 });
