@@ -56,6 +56,27 @@ describe("Receivers Page", () => {
     });
   });
 
+  it("should inform the user of no receivers found when fetching receiver list", async () => {
+    (getReceiversList as Mock).mockResolvedValue({
+      data: { error: 0, recievers: [] },
+    });
+    renderWithProviders(<Receivers />, { store });
+
+    const trigger = await screen.findByTestId("single-select-trigger-icon-0");
+    await user.click(trigger);
+
+    const option = await screen.findByTestId("single-select-option-0-0");
+    await user.click(option);
+
+    const searchBtn = await screen.findByTestId("date-picker-search-btn");
+    await user.click(searchBtn);
+
+    await waitFor(() => {
+      const state = store.getState().receivers;
+      expect(state.list.length).toEqual(0);
+    });
+  });
+
   it("should handle api success when fetching receiver list", async () => {
     (getReceiversList as Mock).mockResolvedValue(receiverListResp);
     renderWithProviders(<Receivers />, { store });

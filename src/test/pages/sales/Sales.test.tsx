@@ -389,5 +389,14 @@ describe("Sales Page", () => {
       const state = store.getState().sales;
       expect(state.catSales.length).toEqual(cat_sales.data.subs.length);
     });
+
+    const carouselBtn3 = await screen.findByTestId("carousel-btn-2");
+    await user.click(carouselBtn3);
+
+    await user.click(panel);
+    await waitFor(() => {
+      const state = store.getState().sales;
+      expect(state.catSales.length).toEqual(0);
+    });
   });
 });
