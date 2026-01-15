@@ -70,16 +70,13 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
         )
           .then((resp) => {
             const j = resp.data;
-            if (j.error === 0) {
-              // Checking to see if we need to display No Transactions Found
-              if (j.sales.length === 0) {
-                dispatch(toggleNoTransMsg(true));
-              } else {
-                dispatch(toggleNoTransMsg(false));
-              }
+            if (j.error === 0 && j.sales.length > 0) {
+              dispatch(toggleNoTransMsg(false));
               // The chunked sales and trends are being set in the dispatches
               dispatch(setCashierDetails(j.sales));
               dispatch(setCashierTrends(j.trend));
+            } else {
+              dispatch(toggleNoTransMsg(true));
             }
           })
           .catch((err: JsonError) =>

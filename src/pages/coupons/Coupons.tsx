@@ -3,7 +3,11 @@ import { useAppDispatch } from "../../hooks";
 import { getCoupons } from "../../api/coupons";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { useCouponContext, cols } from ".";
-import { resetCoupons, setIsFetching } from "../../features/couponSlice";
+import {
+  resetCoupons,
+  setIsFetching,
+  setNoCouponsFound,
+} from "../../features/couponSlice";
 import type { CouponsResponse, JsonError } from "../../interfaces";
 import { setCoupons } from "../../features/couponSlice";
 import { formatGoliathDate } from "../../utils";
@@ -25,7 +29,6 @@ const Coupons = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const getData = () => {
-    console.log('howdy there')
     dispatch(setCoupons([]));
     dispatch(setIsFetching(true));
     const useGroups = context.type === "Group" ? 1 : 0;
@@ -46,8 +49,10 @@ const Coupons = () => {
     )
       .then((resp) => {
         const j: CouponsResponse = resp.data;
-        if (j.error === 0) {
+        if (j.error === 0 && j.records.length > 0) {
           dispatch(setCoupons(j.records));
+        } else {
+          dispatch(setNoCouponsFound(true));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
@@ -56,6 +61,7 @@ const Coupons = () => {
 
   const showGrid = context.coupons.length > 0 && !context.isFetching;
   const showLoading = context.coupons.length === 0 && context.isFetching;
+  const noCoupons = context.noCouponsFound;
 
   return (
     <div className="w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
@@ -98,6 +104,11 @@ const Coupons = () => {
           {showGrid && <CouponGridFilters />}
         </div>
         {showGrid && <CouponsGrid />}
+        {noCoupons && (
+          <div className="h-full flex items-center justify-center bg-custom-white rounded-lg shadow-lg">
+            No coupons found
+          </div>
+        )}
 
         {showLoading && (
           <div className="w-full h-full relative">

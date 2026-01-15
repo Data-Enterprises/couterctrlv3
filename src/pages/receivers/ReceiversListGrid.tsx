@@ -30,10 +30,14 @@ const ReceiversListGrid = () => {
   useEffect(() => {
     return () => {
       // Cleanup if needed when component unmounts
-      if (gridRef.current && gridRef.current.api && state.details.length === 0) {
+      if (
+        gridRef.current &&
+        gridRef.current.api &&
+        state.details.length === 0
+      ) {
         gridRef.current.api.deselectAll();
       }
-    }
+    };
   }, [state.details]);
 
   const getSelectedDetails = (invoiceid: number, transDate: string) => {
@@ -51,44 +55,54 @@ const ReceiversListGrid = () => {
   };
 
   return (
-    <div
-      className={` ${
-        state.list.length === 0 && !state.isFetchingList ? "hidden" : ""
-      } ${
-        state.isFetchingList ? "bg-transparent" : "bg-custom-white shadow-lg"
-      } rounded-lg w-[60%] p-2`}
-    >
-      <div
-        className={`${
-          state.isFetchingList && "hidden"
-        } text-sm font-medium pl-0.5`}
-      >
-        Select Receiver
-      </div>
-      <div className="h-[93%]">
-        {!state.isFetchingList ? (
-          <AgGridReact
-            ref={gridRef}
-            rowData={state.listGridData}
-            columnDefs={cols}
-            theme={theme}
-            pagination={true}
-            paginationAutoPageSize={true}
-            onRowClicked={(params) => {
-              if (params.data) {
-                const invoiceDate = formatDate(params.data.invoice_date);
-                getSelectedDetails(params.data.invoiceid, invoiceDate);
-              }
-            }}
-            rowSelection="single"
-          />
-        ) : (
-          <div className="relative w-full h-full">
-            <LoadingIndicator />
+    <>
+      {!state.noReceivers ? (
+        <div
+          className={` ${
+            state.list.length === 0 && !state.isFetchingList ? "hidden" : ""
+          } ${
+            state.isFetchingList
+              ? "bg-transparent"
+              : "bg-custom-white shadow-lg"
+          } rounded-lg w-[60%] p-2`}
+        >
+          <div
+            className={`${
+              state.isFetchingList && "hidden"
+            } text-sm font-medium pl-0.5`}
+          >
+            Select Receiver
           </div>
-        )}
-      </div>
-    </div>
+          <div className="h-[93%]">
+            {!state.isFetchingList ? (
+              <AgGridReact
+                ref={gridRef}
+                rowData={state.listGridData}
+                columnDefs={cols}
+                theme={theme}
+                pagination={true}
+                paginationAutoPageSize={true}
+                onRowClicked={(params) => {
+                  if (params.data) {
+                    const invoiceDate = formatDate(params.data.invoice_date);
+                    getSelectedDetails(params.data.invoiceid, invoiceDate);
+                  }
+                }}
+                rowSelection="single"
+              />
+            ) : (
+              <div className="relative w-full h-full">
+                <LoadingIndicator />
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="h-full flex items-center justify-center bg-custom-white rounded-lg w-[60%] shadow-lg">
+          No receivers found
+        </div>
+      )}
+    </>
   );
 };
 

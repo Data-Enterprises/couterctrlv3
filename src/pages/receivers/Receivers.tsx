@@ -8,6 +8,7 @@ import {
   setIsExportModalOpen,
   setIsFetchingList,
   setListGridData,
+  setNoReceivers,
   setReceiverDetails,
   setReceiversList,
   setStoreId,
@@ -58,9 +59,11 @@ const Receivers = () => {
     getReceiversList(url, token, state.storeid, startDate, endDate)
       .then((resp) => {
         const j: ReceiverListResponse = resp.data;
-        if (j.error == 0) {
+        if (j.error == 0 && j.recievers.length > 0) {
           dispatch(setReceiversList(j.recievers));
           dispatch(setListGridData(j.recievers));
+        } else {
+          dispatch(setNoReceivers(true));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))

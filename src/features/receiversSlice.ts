@@ -28,6 +28,7 @@ interface ReceiversState {
   isExportModalOpen: boolean;
   filterModalOpen: boolean;
   filterType: FilterType;
+  noReceivers: boolean;
 }
 
 export const initialState: ReceiversState = {
@@ -46,6 +47,7 @@ export const initialState: ReceiversState = {
   listGridData: [],
   filterModalOpen: false,
   filterType: "",
+  noReceivers: false,
 };
 
 export const receiversSlice = createSlice({
@@ -121,6 +123,9 @@ export const receiversSlice = createSlice({
     setFilterType: (state, action: PayloadAction<FilterType>) => {
       state.filterType = action.payload;
     },
+    setNoReceivers: (state, action: PayloadAction<boolean>) => {
+      state.noReceivers = action.payload;
+    },
     resetFilters: (state) => {
       state.vendorIdFilter = "";
       state.vendorNameFilter = "";
@@ -138,6 +143,7 @@ export const receiversSlice = createSlice({
       state.transIDFilter = "";
       state.filterListGrid = false;
       state.totals = [];
+      state.noReceivers = false;
     },
     resetReceiverState: () => initialState,
   },
@@ -159,5 +165,6 @@ export const {
   setFilterType,
   setFilterModalOpen,
   resetFilters,
+  setNoReceivers,
 } = receiversSlice.actions;
 export default receiversSlice.reducer;
