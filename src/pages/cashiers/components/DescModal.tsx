@@ -27,6 +27,7 @@ const DescModal = ({ open, onClose, handleSubmit }: DescModalProps) => {
           What are you looking for?
         </label>
         <input
+          data-testid="desc-input"
           id="desc-input"
           className="basic-input focus:border bg-custom-white"
           value={desc}
@@ -34,7 +35,7 @@ const DescModal = ({ open, onClose, handleSubmit }: DescModalProps) => {
         />
       </div>
       <div className="flex mt-4 gap-2">
-        <button className="btn-themeBlue w-1/2" onClick={onSubmit}>
+        <button data-testid="desc-submit-btn" className="btn-themeBlue w-1/2" onClick={onSubmit}>
           Submit
         </button>
         <button className="btn-themeOrange w-1/2" onClick={onClose}>
