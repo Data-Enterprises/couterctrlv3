@@ -14,7 +14,7 @@ const HistoryItemCard = ({ item }: HistoryItemCardProps) => {
         </div>
       </div>
 
-      <div className="flex justify-between px-2">
+      <div className="flex justify-between px-2 lg:mt-1">
         <div className="flex gap-1">
           <div className="font-medium">Total Sales:</div>
           <div>{formatCurrency2(item.total_sales)}</div>
@@ -31,7 +31,7 @@ const HistoryItemCard = ({ item }: HistoryItemCardProps) => {
           <div>{formatCurrency2(item.extended_cost)}</div>
         </div>
       </div>
-      <div className="flex justify-between px-2">
+      <div className="flex justify-between px-2 lg:pb-1">
         <div className="flex gap-1">
           {/* put price here */}
           <div className="font-medium">Price:</div>

@@ -233,7 +233,7 @@ const ItemLookup = () => {
   return (
     <div
       id="item-lookup-body"
-      className="px-4 py-2 h-[calc(100vh-56px)] overflow-hidden"
+      className="px-4 py-2 h-[calc(100vh-56px)] overflow-hidden lg:w-1/4 lg:mx-auto"
     >
       <div className={`${isLoading ? "block z-50 " : "hidden z-0"}`}>
         <LoadingIndicator message={`Looking up item: ${upcCode}`} />
