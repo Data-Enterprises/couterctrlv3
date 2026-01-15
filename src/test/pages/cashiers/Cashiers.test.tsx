@@ -460,6 +460,27 @@ describe("Cashiers Page", () => {
     expect(modal).not.toBeInTheDocument();
   });
 
+  it("should handle the transaction id filter for the cashiers table", async () => {
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
+    const transFilter = await screen.findByTestId(
+      "cashier-table-filter-transaction"
+    );
+    expect(transFilter).toBeInTheDocument();
+    await user.click(transFilter);
+
+    const filterInput = await screen.findByTestId(
+      "cashier-table-filter-text-input"
+    );
+
+    const filterBtn = await screen.findByTestId(
+      "cashier-table-filter-modal-submit-btn"
+    );
+
+    await user.type(filterInput, "952804");
+    await user.click(filterBtn);
+  });
+
   it("Should refresh all the Cashier Table Filters when clicking Refresh", async () => {
     renderWithProviders(<Cashiers />, { store: initialStore });
 

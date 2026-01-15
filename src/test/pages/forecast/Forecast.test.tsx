@@ -375,6 +375,21 @@ describe("Forecast Page", () => {
     });
   });
 
+  it("should inform the user no results are found on data fetch", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    (getHistoryFromList as Mock).mockResolvedValue({
+      data: { error: 0, results: [] },
+    });
+    renderWithProviders(<Forecast />, { store });
+    const searchBtn = await screen.findByTestId("forecast-search-btn");
+    await user.click(searchBtn);
+
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.items.length).toBe(0);
+    });
+  });
+
   // => success third
   it("should handle API success on data fetch", async () => {
     (getBucketList as Mock).mockResolvedValue(fileListResp);

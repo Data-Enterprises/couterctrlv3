@@ -24,7 +24,7 @@ const FiltersModal = () => {
 
   const setFilterValue = () => {
     if (!text) {
-      toast.warning("Filter value cannot be empty");
+      toast.warn("Filter value cannot be empty");
       return;
     }
     dispatch(setFilter({ type: state.filterType, value: text }));
@@ -39,7 +39,7 @@ const FiltersModal = () => {
       modalClassName="bg-custom-white w-1/5"
     >
       <div
-        data-testid="cashier-table-filter-modal"
+        data-testid="rec-list-filter-modal"
         className="font-medium text-center text-lg"
       >
         Set {state.filterType} Filter
@@ -47,14 +47,14 @@ const FiltersModal = () => {
       <TextFilter text={text} setText={setText} />
       <div className="flex gap-4">
         <button
-          data-testid="cashier-table-filter-modal-submit-btn"
+          data-testid="rec-list-filter-modal-submit-btn"
           className="btn-themeGreen w-full"
           onClick={setFilterValue}
         >
           Filter
         </button>
         <button
-          data-testid="cashier-table-filter-modal-cancel-btn"
+          data-testid="rec-list-filter-modal-cancel-btn"
           className="btn-themeOrange w-full"
           onClick={handleClose}
         >

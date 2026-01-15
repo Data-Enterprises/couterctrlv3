@@ -22,6 +22,7 @@ interface CouponState {
   filterType: FilterType;
   amtLessThan: boolean;
   amtGreaterThan: boolean;
+  noCouponsFound: boolean;
 }
 
 const initialState: CouponState = {
@@ -37,6 +38,7 @@ const initialState: CouponState = {
   filterType: "",
   amtLessThan: false,
   amtGreaterThan: false,
+  noCouponsFound: false,
 };
 
 const couponSlice = createSlice({
@@ -94,7 +96,7 @@ const couponSlice = createSlice({
 
       state.gridCoupons = state.coupons.filter((coupon) => {
         const matchesStore = storeNum ? coupon.store_number == storeNum : true;
-        
+
         const matchesCpnAmount = cpnAmount
           ? passesThreshold(coupon.coupon_amount)
           : true;
@@ -137,10 +139,17 @@ const couponSlice = createSlice({
     },
     setIsFetching: (state, action: PayloadAction<boolean>) => {
       state.isFetching = action.payload;
+
+      if (action.payload === true) {
+        state.noCouponsFound = false;
+      }
     },
     setThresh: (state, action: PayloadAction<"less" | "greater" | "equal">) => {
       state.amtLessThan = action.payload === "less";
       state.amtGreaterThan = action.payload === "greater";
+    },
+    setNoCouponsFound: (state, action: PayloadAction<boolean>) => {
+      state.noCouponsFound = action.payload;
     },
     resetCoupons: (state) => {
       state.coupons = [];
@@ -150,6 +159,11 @@ const couponSlice = createSlice({
       state.productCode = "";
       state.productDescription = "";
       state.customerId = "";
+      state.isFetching = false;
+      state.filterType = "";
+      state.amtLessThan = false;
+      state.amtGreaterThan = false;
+      state.noCouponsFound = false;
     },
   },
 });
@@ -164,5 +178,6 @@ export const {
   setFilterModalOpen,
   setFilterType,
   setThresh,
+  setNoCouponsFound,
 } = couponSlice.actions;
 export default couponSlice.reducer;

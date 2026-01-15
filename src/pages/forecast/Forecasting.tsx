@@ -21,6 +21,7 @@ import {
   setInitialRowData,
   setForecastResults,
   setSingleForecastResults,
+  setNoResults,
 } from "../../features/forecastSlice";
 import { useForecastContext, useResizeContext } from "./hooks";
 import SelectedStoreList from "../upc/wizard/SelectedStoreList";
@@ -87,7 +88,7 @@ const Forecasting = () => {
     )
       .then((resp) => {
         const j: PriceHistoryFromListResp = resp.data;
-        if (j.error === 0) {
+        if (j.error === 0 && j.results.length > 0) {
           // Set the upc items for the controls
           const upcItems = j.results.map((item) => ({
             upc: item.upc,
@@ -109,6 +110,8 @@ const Forecasting = () => {
           const rowData = formatRowData(multiPrices);
           dispatch(setInitialRowData(rowData));
           dispatch(setSingleForecastResults(singlePrices));
+        } else {
+          dispatch(setNoResults(true));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))

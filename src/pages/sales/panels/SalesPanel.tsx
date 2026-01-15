@@ -26,6 +26,7 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
+  const state = useAppSelector((state) => state.sales);
   const { selectedSalesPanel, compareSalesPanel } = useAppSelector(
     (state) => state.sales
   );
@@ -57,6 +58,12 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
   };
 
   const handleCatClick = (panel: WeeklySale) => {
+    // Toggling the cats data off if the same panel is clicked again
+    if (state.catSales.length > 0 && state.catSales[0].storeid === panel.storeid) {
+      dispatch(setCatSales([]));
+      return;
+    }
+
     const pd = panel.sale_date.split("T")[0];
     const start = pd;
     const end = pd;

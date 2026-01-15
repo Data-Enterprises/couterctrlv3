@@ -103,6 +103,7 @@ interface ForecastState {
   selectedSim: "sim1" | "sim2" | "sim3" | "sim4" | "";
   globalFcstPrice: string;
   selectedRow?: ForecastOutlierRow | null;
+  noResults: boolean;
 }
 
 const initialState: ForecastState = {
@@ -127,6 +128,7 @@ const initialState: ForecastState = {
   simBtns: { sim1: 0, sim2: 0, sim3: 0, sim4: 0 },
   selectedSim: "",
   globalFcstPrice: "",
+  noResults: false,
 };
 export const forecastSlice = createSlice({
   name: "forecast",
@@ -172,6 +174,7 @@ export const forecastSlice = createSlice({
     },
     setInitialRowData: (state, action: PayloadAction<ForecastOutlierRow[]>) => {
       state.initialRowData = action.payload;
+      state.noResults = false;
     },
     setRowData: (state, action: PayloadAction<ForecastOutlierRow>) => {
       const upc = action.payload.upc;
@@ -480,10 +483,7 @@ export const forecastSlice = createSlice({
     reQuery: (state) => {
       state.selectedUpc = "";
       state.lastUpdatedHistory = [];
-      // state.historyData = [];
-      // state.selectedHistory = {} as SelectedHistory;
       state.items = [];
-      // state.priceHistory = [];
       state.selectedUpcs = [];
       state.simOneRowData = [];
       state.simTwoRowData = [];
@@ -496,6 +496,7 @@ export const forecastSlice = createSlice({
       state.globalFcstPrice = "";
       state.singlePriceResults = [];
       state.forecastResults = [];
+      state.noResults = false;
     },
     reset: (state) => {
       state.selectedUpc = "";
@@ -516,6 +517,7 @@ export const forecastSlice = createSlice({
       state.globalFcstPrice = "";
       state.singlePriceResults = [];
       state.forecastResults = [];
+      state.noResults = false;
     },
     setExportModalOpen: (state, action: PayloadAction<boolean>) => {
       state.exportModalOpen = action.payload;
@@ -541,6 +543,9 @@ export const forecastSlice = createSlice({
           return { ...row, calcNow: 0 };
         }
       });
+    },
+    setNoResults: (state, action: PayloadAction<boolean>) => {
+      state.noResults = action.payload;
     },
     // resetForecast: () => initialState,
   },
@@ -572,6 +577,7 @@ export const {
   resetSimulations,
   setCalcNow,
   setSingleForecastResults,
+  setNoResults,
   // resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;

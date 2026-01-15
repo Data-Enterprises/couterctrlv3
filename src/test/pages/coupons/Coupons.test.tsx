@@ -56,6 +56,20 @@ describe("Coupons Page", () => {
     });
   });
 
+  it("should inform the user if no records are found when fetching Coupons", async () => {
+    (getCoupons as Mock).mockResolvedValue({ data: { error: 0, records: [] } });
+    renderWithProviders(<Coupons />, { store });
+
+    const searchBtn = await screen.findByTestId("date-picker-search-btn");
+    await user.click(searchBtn);
+
+    await waitFor(() => {
+      const state = store.getState().coupons;
+      expect(state.coupons).toEqual([]);
+    });
+    expect(await screen.findByTestId("no-coupons")).toBeInTheDocument();
+  });
+
   it("should handle api success when fetching Coupons", async () => {
     (getCoupons as Mock).mockResolvedValue(getCouponsResp);
     renderWithProviders(<Coupons />, { store });
@@ -278,7 +292,9 @@ describe("Coupons Page", () => {
   // Testing the row click event
 
   it("should throw error when clicking on error if api fails", async () => {
-    (getCashierTransaction as Mock).mockRejectedValueOnce(new Error("API Error"));
+    (getCashierTransaction as Mock).mockRejectedValueOnce(
+      new Error("API Error")
+    );
     renderWithProviders(<Coupons />, { store });
 
     const rows = await screen.findAllByRole("row");

@@ -6,6 +6,7 @@ import {
   setSaleDateFilter,
   setSelectedPriceTypes,
   setTotalSalesFilter,
+  setTransIdFilter,
   setUpcFilter,
 } from "../../../features/cashierSlice";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
@@ -18,6 +19,7 @@ const filterOptions = [
   "Description",
   "Total Sales",
   "Price Type",
+  "Transaction ID",
   "Refresh",
 ];
 
@@ -36,6 +38,7 @@ const CashiersTableFilters = () => {
     const priceType = cashier.selectedPriceTypes.length > 0;
     const totalSales = cashier.totalSalesFilter;
     const threshold = cashier.cashierTableThreshComp;
+    const transId = cashier.transIdFilter;
 
     // Declaring the active style and applying it to the matching conditions
     const style = "bg-orange-500 text-white font-semibold shadow-inner";
@@ -50,13 +53,7 @@ const CashiersTableFilters = () => {
       (threshold.gt || threshold.lt)
     )
       result = true;
-    // if (
-    //   option === "Refresh" &&
-    //   (saleDate || upc || desc || priceType || totalSales)
-    // ) {
-    //   return style;
-    // }
-
+    if (option === "Transaction ID" && transId) result = true;
     return result ? style : "";
   };
 
@@ -78,10 +75,12 @@ const CashiersTableFilters = () => {
         ? "Under"
         : "";
 
-        // This might change, but if no threshold is selected, just show "Total Sales"
+      // This might change, but if no threshold is selected, just show "Total Sales"
       return thresh.length > 0
         ? `${thresh} ${formatCurrency2(cashier.totalSalesFilter)}`
         : "Total Sales";
+    } else if (type === "Transaction ID") {
+      return cashier.transIdFilter ? `${cashier.transIdFilter}` : "Transaction ID";
     } else {
       return type;
     }
@@ -96,6 +95,7 @@ const CashiersTableFilters = () => {
       dispatch(setDescFilter(""));
       dispatch(setSelectedPriceTypes([]));
       dispatch(setTotalSalesFilter(0));
+      dispatch(setTransIdFilter(""));
       return;
     }
 
@@ -117,7 +117,9 @@ const CashiersTableFilters = () => {
         {filterOptions.map((option, i) => (
           <div
             key={i}
-            data-testid={`cashier-table-filter-${option.split(" ")[0].toLowerCase()}`}
+            data-testid={`cashier-table-filter-${option
+              .split(" ")[0]
+              .toLowerCase()}`}
             className={`${panelStyle} ${activePanelStyle(option)}`}
             onClick={() => setFilterModal(option)}
           >

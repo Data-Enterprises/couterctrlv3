@@ -17,7 +17,7 @@ const TransactionModal = () => {
       {cashier.noRowsReturned && (
         <div className="w-full h-full flex items-center justify-center">
           <p className="text-center text-gray-500 mt-4">
-            No transactions found.
+            No transactions found
           </p>
         </div>
       )}

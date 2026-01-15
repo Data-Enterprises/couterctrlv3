@@ -137,4 +137,36 @@ describe("UserDataLoader Component", () => {
       expect(state.search.type).toBe("Stores");
     });
   });
+
+  it("should throw error on api failuer for fetching groups", async () => {
+    const store = setupStore();
+    await waitFor(() => {
+      store.dispatch(setToken("valid-token"));
+    });
+    (getUserPrefs as Mock).mockResolvedValue(userPrefsResp4);
+    (getUserStores as Mock).mockResolvedValue(userStoresResp);
+    (getGroups as Mock).mockRejectedValueOnce(new Error("API Error"));
+    renderWithProviders(<UserDataLoader />, { store });
+
+    await waitFor(() => {
+      expect(mockedToastError).toHaveBeenCalledWith("API Error");
+    });
+  });
+
+  it("should throw error on api failuer for fetching user stores", async () => {
+    const store = setupStore();
+    await waitFor(() => {
+      store.dispatch(setToken("valid-token"));
+    });
+    (getUserPrefs as Mock).mockResolvedValue(userPrefsResp4);
+    (getUserStores as Mock).mockRejectedValueOnce(new Error("API Error"));
+    (getGroups as Mock).mockResolvedValue(getGroupsResp);
+    renderWithProviders(<UserDataLoader />, { store });
+
+    await waitFor(() => {
+      expect(mockedToastError).toHaveBeenCalledWith(
+        "Error getting user stores: API Error"
+      );
+    });
+  });
 });

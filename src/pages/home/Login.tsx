@@ -193,6 +193,7 @@ const Login = () => {
                   <div className="row justify-content-center">
                     <div className="bg-bkg">
                       <input
+                        data-testid="impersonate-checkbox"
                         type="checkbox"
                         style={{ opacity: "1", visibility: "visible" }}
                         className="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
@@ -222,7 +223,7 @@ const Login = () => {
         </div>
         {/* Change this before pushing for publishing */}
         <div className="absolute bottom-1 left-0 text-sm pl-2">
-          Last Updated on 1/14/2026 @ 11:44 AM CST
+          Last Updated on 1/15/2026 @ 3:49 PM CST
         </div>
       </div>
       <div className="relative hidden w-0 flex-1 lg:block">

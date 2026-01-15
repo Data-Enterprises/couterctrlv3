@@ -88,19 +88,23 @@ const UpcList = () => {
     )
       .then((resp) => {
         const j = resp.data;
-        const upcCopy = [...j.daily].reduce((acc: UpcItem[], cur) => {
-          if (!acc.find((item) => item.product_code === cur.product_code)) {
-            acc.push({
-              product_code: cur.product_code,
-              description: cur.description,
-            });
-          }
-          return acc;
-        }, []);
-        dispatch(setUpcItems(upcCopy));
-        dispatch(setUpcCount(j.upc_count));
-        dispatch(setSalesComp(j.daily));
-        dispatch(setDataLoaded(true));
+        if (j.error === 0 && j.daily.length > 0) {
+          const upcCopy = [...j.daily].reduce((acc: UpcItem[], cur) => {
+            if (!acc.find((item) => item.product_code === cur.product_code)) {
+              acc.push({
+                product_code: cur.product_code,
+                description: cur.description,
+              });
+            }
+            return acc;
+          }, []);
+          dispatch(setUpcItems(upcCopy));
+          dispatch(setUpcCount(j.upc_count));
+          dispatch(setSalesComp(j.daily));
+          dispatch(setDataLoaded(true));
+        } else {
+          toast.warn("No Records Found");
+        }
       })
       .catch((err: JsonError) => toast.error(err.message))
       .finally(() => cleanUp());
@@ -117,7 +121,7 @@ const UpcList = () => {
     )
       .then((resp) => {
         const j = resp.data;
-        if (j.error === 0) {
+        if (j.error === 0 && j.qty_results !== null) {
           // Both of these need to have the naming conventions changed to match qty
           // then need to add the logic for the sales forecast as well
           const history = Object.entries(j.qty_results)
@@ -169,6 +173,8 @@ const UpcList = () => {
           dispatch(setUpcList(upcList));
           dispatch(setUpcCount(j.upc_count));
           dispatch(setDataLoaded(true));
+        } else {
+          toast.warn("No Records Found");
         }
       })
       .catch((err: JsonError) => {
@@ -188,7 +194,7 @@ const UpcList = () => {
     )
       .then((resp) => {
         const j = resp.data;
-        if (j.error === 0) {
+        if (j.error === 0 && j.best_prices_by_upc.length > 0) {
           const upcItems = [...j.best_prices_by_upc].map(
             (item: UpcPriceOpt) => ({
               product_code: item.product_code,
@@ -200,6 +206,8 @@ const UpcList = () => {
           dispatch(setOptBestPrices(j.best_prices));
           dispatch(setOptBestPricesByUpc(j.best_prices_by_upc));
           dispatch(setDataLoaded(true));
+        } else {
+          toast.warn("No Records Found");
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
@@ -218,7 +226,7 @@ const UpcList = () => {
     )
       .then((resp) => {
         const j = resp.data;
-        if (j.error === 0) {
+        if (j.error === 0 && j.trends.length > 0) {
           const upcItems = [...j.trends].map((item: UpcTrend) => ({
             product_code: item.product_code,
             description: item.product_description,
@@ -228,6 +236,8 @@ const UpcList = () => {
           dispatch(setTopFiveTrends(j.top_5));
           dispatch(setBottomFiveTrends(j.bottom_5));
           dispatch(setDataLoaded(true));
+        } else {
+          toast.warn("No Records Found");
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
