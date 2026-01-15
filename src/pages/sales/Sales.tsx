@@ -11,6 +11,7 @@ import {
   setPanelsLoading,
   setSalesPanelSearchText,
   setSelectedSalesPanel,
+  setCatSales,
 } from "../../features/salesSlice";
 import { useHeight } from "./utils/hooks";
 
@@ -40,7 +41,9 @@ const Sales = () => {
 
   useEffect(() => {
     if (sales.catSales.length > 0) {
-      setChildren((prev) => [...prev, <Cats />]);
+      setChildren([<Hourly />, <TopTenItems />, <Cats />]);
+    } else {
+      setChildren([<Hourly />, <TopTenItems />]);
     }
   }, [sales.catSales]);
 
@@ -60,6 +63,8 @@ const Sales = () => {
     dispatch(
       setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" })
     );
+
+    dispatch(setCatSales([]));
 
     // For now I'm formatting the date before the api call since the api needs it that way
     const start = formatGoliathDate(search.startDate);
