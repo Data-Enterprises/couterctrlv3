@@ -166,18 +166,21 @@ const OutlierGrid = () => {
 
   const simBtnClassName = (sim: keyof SimBtns) => {
     if (state.simBtns[sim] === 0) {
-      return "opacity-50 cursor-not-allowed pointer-events-none";
+      return "btn-themeBlue opacity-50 cursor-not-allowed pointer-events-none";
     }
 
-    return "";
+    if (state.selectedSim === sim) {
+      return "btn-themeGreen";
+    }
+
+    return "btn-themeBlue";
   };
 
   const renderTitle = () => {
     const sim = state.selectedSim;
-    if (sim === "sim1") return "Simulation 1";
-    if (sim === "sim2") return "Simulation 2";
-    if (sim === "sim3") return "Simulation 3";
-    if (sim === "sim4") return "Simulation 4";
+    if (sim) {
+      return state.simTitles[sim as keyof SimBtns];
+    }
     return "Next 7 Day Forecast";
   };
 
@@ -241,28 +244,28 @@ const OutlierGrid = () => {
         <div className="flex gap-2">
           <button
             data-testid="sim1-btn"
-            className={`btn-themeBlue py-0.5 ${simBtnClassName("sim1")}`}
+            className={`py-0.5 ${simBtnClassName("sim1")}`}
             onClick={() => loadSimulationRows("sim1")}
           >
             Sim 1
           </button>
           <button
             data-testid="sim2-btn"
-            className={`btn-themeBlue py-0.5 ${simBtnClassName("sim2")}`}
+            className={`py-0.5 ${simBtnClassName("sim2")}`}
             onClick={() => loadSimulationRows("sim2")}
           >
             Sim 2
           </button>
           <button
             data-testid="sim3-btn"
-            className={`btn-themeBlue py-0.5 ${simBtnClassName("sim3")}`}
+            className={`py-0.5 ${simBtnClassName("sim3")}`}
             onClick={() => loadSimulationRows("sim3")}
           >
             Sim 3
           </button>
           <button
             data-testid="sim4-btn"
-            className={`btn-themeBlue py-0.5 ${simBtnClassName("sim4")}`}
+            className={`py-0.5 ${simBtnClassName("sim4")}`}
             onClick={() => loadSimulationRows("sim4")}
           >
             Sim 4
