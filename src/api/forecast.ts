@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { SaveSimRow } from "../pages/forecast";
 
 export const getForecasting = async (
   url: string,
@@ -108,7 +109,7 @@ export const saveSim = async (
   startDate: string,
   endDate: string,
   storeids: string,
-  data: any
+  data: SaveSimRow[]
 ) => {
   const json = await axios({
     method: "POST",

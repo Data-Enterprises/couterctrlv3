@@ -6,10 +6,9 @@ import {
   ModuleRegistry,
   type ColDef,
   type ColGroupDef,
-  // type RowClickedEvent,
   TooltipModule,
 } from "ag-grid-community";
-// import type { JsonError } from "../../../interfaces";
+
 import {
   loadSimRowData,
   reloadRowData,
@@ -17,7 +16,6 @@ import {
   setGlobalFcstPrice,
   setNewRowAdDaysValue,
   setNewRowPriceValue,
-  // setPriceHistory,
   setSelectedSim,
   setSimRowData,
   updateGlobalFcstRows,
@@ -28,17 +26,15 @@ import type {
   SimBtns,
 } from "../../../features/forecastSlice";
 import { formatCurrency2 } from "../../../utils";
-// import { getPriceHistory } from "../../../api/forecast";
-// import { useToast } from "../../../components/toasts/hooks/useToast";
-// import { useForecastContext } from "../hooks";
 import CalcNowCheckbox from "../../priceSimulator/grid/CheckBoxCell";
 import CalcModal from "../CalcModal";
+import SaveSimModal from "../SaveSimModal";
+import { useState } from "react";
 
 const OutlierGrid = () => {
-  // const toast = useToast();
-  // const context = useForecastContext();
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.forecast);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const colDefs: (
     | ColDef<ForecastOutlierRow>
@@ -214,11 +210,23 @@ const OutlierGrid = () => {
     dispatch(
       setSimRowData({ sim: simToSave as keyof SimBtns, rows: state.rowData })
     );
+
+    // opening the modal to save to the backend
+    setIsOpen(true);
   };
 
   const loadSimulationRows = (sim: string) => {
     dispatch(setSelectedSim(sim as keyof SimBtns));
     dispatch(loadSimRowData(sim as keyof SimBtns));
+  };
+
+  const simsFull = () => {
+    for (const sim in state.simBtns) {
+      if (state.simBtns[sim as keyof SimBtns] === 0) {
+        return false;
+      }
+    }
+    return true;
   };
 
   return (
@@ -230,6 +238,7 @@ const OutlierGrid = () => {
       }`}
     >
       <CalcModal />
+      <SaveSimModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
       <div className="absolute -translate-y-[70px] right-2 flex items-end justify-between w-full gap-2">
         <div className="pl-4 flex items-end gap-2">
           <div>
@@ -309,7 +318,9 @@ const OutlierGrid = () => {
         </div>
         <button
           data-testid="save-new-sim-btn"
-          className="btn-themeGreen py-0 mb-1"
+          className={`${
+            simsFull() && "opacity-50 pointer-events-none"
+          } btn-themeGreen py-0 mb-1`}
           onClick={saveSimulation}
         >
           Save New Sim
