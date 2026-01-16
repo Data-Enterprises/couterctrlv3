@@ -4,6 +4,8 @@ import type {
   ForecastItem,
   PriceHistoryResult,
   PriceHistory,
+  SimListItem,
+  SimReplayItem,
 } from "../interfaces";
 import { calcFcstQty, forecastUnits } from "../pages/forecast/utils";
 
@@ -112,6 +114,9 @@ interface ForecastState {
   globalFcstPrice: string;
   selectedRow?: ForecastOutlierRow | null;
   noResults: boolean;
+  simList: SimListItem[];
+  simReplayPast: SimReplayItem[];
+  simReplayFuture: SimReplayItem[];
 }
 
 const initialState: ForecastState = {
@@ -143,7 +148,11 @@ const initialState: ForecastState = {
   selectedSim: "",
   globalFcstPrice: "",
   noResults: false,
+  simList: [],
+  simReplayPast: [],
+  simReplayFuture: [],
 };
+
 export const forecastSlice = createSlice({
   name: "forecast",
   initialState,
@@ -504,6 +513,10 @@ export const forecastSlice = createSlice({
       }
       state.rowData = globalRows;
     },
+    setReplayData: (state, action: PayloadAction<{ past: SimReplayItem[]; future: SimReplayItem[] }>) => {
+      state.simReplayPast = action.payload.past;
+      state.simReplayFuture = action.payload.future;
+    },
     reQuery: (state) => {
       state.selectedUpc = "";
       state.lastUpdatedHistory = [];
@@ -554,6 +567,7 @@ export const forecastSlice = createSlice({
       state.singlePriceResults = [];
       state.forecastResults = [];
       state.noResults = false;
+      
     },
     setExportModalOpen: (state, action: PayloadAction<boolean>) => {
       state.exportModalOpen = action.payload;
@@ -590,6 +604,9 @@ export const forecastSlice = createSlice({
       const { sim, title } = action.payload;
       state.simTitles[sim] = title;
     },
+    setSimList: (state, action: PayloadAction<SimListItem[]>) => {
+      state.simList = action.payload;
+    },
     // resetForecast: () => initialState,
   },
 });
@@ -622,6 +639,8 @@ export const {
   setSingleForecastResults,
   setNoResults,
   setSimTitle,
+  setSimList,
+  setReplayData,
   // resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;

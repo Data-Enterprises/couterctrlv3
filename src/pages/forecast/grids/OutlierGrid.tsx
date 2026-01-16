@@ -29,11 +29,13 @@ import CalcNowCheckbox from "../../priceSimulator/grid/CheckBoxCell";
 import CalcModal from "../CalcModal";
 import SaveSimModal from "../SaveSimModal";
 import { useState } from "react";
+import ReplayModal from "../ReplayModal";
 
 const OutlierGrid = () => {
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.forecast);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [replayModalOpen, setReplayModalOpen] = useState<boolean>(false);
 
   const colDefs: (
     | ColDef<ForecastOutlierRow>
@@ -212,12 +214,16 @@ const OutlierGrid = () => {
     >
       <CalcModal />
       <SaveSimModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      <ReplayModal
+        isOpen={replayModalOpen}
+        onClose={() => setReplayModalOpen(false)}
+      />
       <div className="absolute -translate-y-[70px] right-2 flex items-end justify-between w-full gap-2">
         <div className="pl-4 flex items-end gap-2">
           <div>
             <label
               htmlFor="global-price"
-              className="pl-0.5 text-xs font-medium"
+              className="pl-0.5 text-sm font-medium"
             >
               Global Price
             </label>
@@ -225,7 +231,7 @@ const OutlierGrid = () => {
               id="global-price"
               data-testid="global-price-input"
               type="text"
-              className="basic-input focus:border py-1 bg-custom-white w-20"
+              className="basic-input focus:border py-1 bg-custom-white w-24"
               value={state.globalFcstPrice === "0" ? "" : state.globalFcstPrice}
               onChange={(e) => {
                 dispatch(setGlobalFcstPrice(e.currentTarget.value));
@@ -234,10 +240,18 @@ const OutlierGrid = () => {
           </div>
           <button
             data-testid="set-global-price-btn"
-            className="btn-themeBlue py-1"
+            className="btn-themeBlue py-0.5"
             onClick={() => dispatch(updateGlobalFcstRows())}
           >
             Set
+          </button>
+
+          <button
+            data-testid="set-global-price-btn"
+            className="btn-themeBlue py-0.5"
+            onClick={() => setReplayModalOpen(true)}
+          >
+            Replay Sim
           </button>
         </div>
         <div className="flex gap-2">
@@ -299,7 +313,7 @@ const OutlierGrid = () => {
           Save New Sim
         </button>
       </div>
-      <div className="h-[95%] shadow rounded-lg">
+      <div className="h-[95%] shadow rounded-lg z-0">
         <AgGridReact
           rowData={state.rowData}
           columnDefs={colDefs}

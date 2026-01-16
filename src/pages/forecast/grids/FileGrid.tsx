@@ -22,7 +22,6 @@ import {
   type ColGroupDef,
   type RowClickedEvent,
 } from "ag-grid-community";
-// import type { ForecastQtyData, ForecastSalesData } from "../../../interfaces";
 import { useForecastContext } from "../hooks";
 import type { JsonError, PriceHistoryFromListResp } from "../../../interfaces";
 import { getHistoryFromList } from "../../../api/priceSim";
@@ -136,7 +135,7 @@ const FileGrid = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg">
+    <div className="bg-custom-white rounded-lg shadow-lg z-0">
       <AgGridReact
         rowData={tableData}
         columnDefs={colDefs}

@@ -7,10 +7,10 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 import Input from "../../components/inputs/Input";
 import Modal from "../../components/Modal";
 import { getSavedSims, saveSim } from "../../api/forecast";
-import type { JsonError } from "../../interfaces";
+import type { JsonError, SimListResp } from "../../interfaces";
 import type { SaveSimRow } from ".";
 import { formatGoliathDate } from "../../utils";
-import { setSelectedSim, setSimRowData, setSimTitle, type SimBtns } from "../../features/forecastSlice";
+import { setSelectedSim, setSimList, setSimRowData, setSimTitle, type SimBtns } from "../../features/forecastSlice";
 
 interface SaveSimModalProps {
   isOpen: boolean;
@@ -32,9 +32,9 @@ const SaveSimModal = ({ isOpen, onClose }: SaveSimModalProps) => {
   const fetchSims = () => {
     getSavedSims(context.url, context.token)
       .then((resp) => {
-        const j = resp.data;
+        const j: SimListResp = resp.data;
         if (j.error === 0 && j.records.length > 0) {
-          // dispatch(setItems(j.records));
+          dispatch(setSimList(j.records));
         } else {
           toast.info(
             "No saved simulations found. Save simulations for future access."
@@ -81,10 +81,11 @@ const SaveSimModal = ({ isOpen, onClose }: SaveSimModalProps) => {
         const j = resp.data;
         if (j.success) {
           toast.success("Simulation saved successfully");
-          handleClose();
+          // handleClose();
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => fetchSims());
 
     const sim1 = state.simBtns.sim1;
     const sim2 = state.simBtns.sim2;
@@ -117,6 +118,8 @@ const SaveSimModal = ({ isOpen, onClose }: SaveSimModalProps) => {
         rows: state.rowData,
       })
     );
+
+    handleClose();
   };
 
   const handleClose = () => {
