@@ -128,3 +128,22 @@ export const saveSim = async (
   });
   return json;
 };
+
+export const replaySim = async (
+  url: string,
+  token: string,
+  sim_name: string
+) => {
+  const json = await axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "marketing/replay_sim",
+    params: {
+      sim_name,
+    },
+  });
+  return json;
+};

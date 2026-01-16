@@ -692,3 +692,38 @@ export interface CouponsResponse {
   record_count: number;
   records: CouponItem[];
 }
+
+////////////////////
+//SIMULATIONS///////
+////////////////////
+export interface SimReplayItem {
+  sale_id: number;
+  line_number: number;
+  sale_date: string;
+  product_code: string;
+  product_description: string;
+  qty: number;
+  total_sales: number;
+  weight: number;
+}
+
+export interface SimReplayResp {
+  error: number;
+  success: boolean;
+  future_count: number;
+  future: SimReplayItem[];
+  past_count: number;
+  past: SimReplayItem[];
+}
+
+export interface SimListItem {
+  sim_name: string;
+  start_date: string;
+  end_date: string;
+}
+
+export interface SimListResp {
+  error: number;
+  success: boolean;
+  records: SimListItem[];
+}
