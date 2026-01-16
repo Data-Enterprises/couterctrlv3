@@ -80,6 +80,13 @@ export interface SimBtns {
   sim4: 0 | 1;
 }
 
+export interface SimTitles {
+  sim1: string;
+  sim2: string;
+  sim3: string;
+  sim4: string;
+}
+
 interface ForecastState {
   isLoading: boolean;
   selectedStores: Store[];
@@ -100,6 +107,7 @@ interface ForecastState {
   simFourRowData: ForecastOutlierRow[];
   rowData: ForecastOutlierRow[];
   simBtns: SimBtns;
+  simTitles: SimTitles;
   selectedSim: "sim1" | "sim2" | "sim3" | "sim4" | "";
   globalFcstPrice: string;
   selectedRow?: ForecastOutlierRow | null;
@@ -126,6 +134,12 @@ const initialState: ForecastState = {
   simFourRowData: [],
   rowData: [],
   simBtns: { sim1: 0, sim2: 0, sim3: 0, sim4: 0 },
+  simTitles: {
+    sim1: "Forecast Simulation 1",
+    sim2: "Forecast Simulation 2",
+    sim3: "Forecast Simulation 3",
+    sim4: "Forecast Simulation 4",
+  },
   selectedSim: "",
   globalFcstPrice: "",
   noResults: false,
@@ -202,7 +216,9 @@ export const forecastSlice = createSlice({
       const currentRows = state.rowData;
       initialRows.forEach((initRow) => {
         const exists = currentRows.find((r) => r.upc === initRow.upc);
-        const isSinglePriced = state.singlePriceResults.find((item) => item.upc === initRow.upc);
+        const isSinglePriced = state.singlePriceResults.find(
+          (item) => item.upc === initRow.upc
+        );
         if (!exists && !isSinglePriced) {
           state.rowData.push(initRow);
         }
@@ -271,6 +287,13 @@ export const forecastSlice = createSlice({
       state.simThreeRowData = [];
       state.simFourRowData = [];
       state.simBtns = { sim1: 0, sim2: 0, sim3: 0, sim4: 0 };
+      state.selectedSim = "";
+      state.simTitles = {
+        sim1: "Forecast Simulation 1",
+        sim2: "Forecast Simulation 2",
+        sim3: "Forecast Simulation 3",
+        sim4: "Forecast Simulation 4",
+      };
       state.globalFcstPrice = "";
     },
     setForecastResults: (
@@ -388,12 +411,13 @@ export const forecastSlice = createSlice({
         // The directly updated cell
         row.fcstPrice = newPrice;
 
-        
         // The two updated cells by calculation
         row.adFcst = units; // units over ad days
         row.fcstTotal = newPrice * units; // forecasted dollars
-        
-        const existingPrice = prices!.price_history.find((ph) => parseFloat(ph.price) === newPrice);
+
+        const existingPrice = prices!.price_history.find(
+          (ph) => parseFloat(ph.price) === newPrice
+        );
         row.qtySold = existingPrice ? existingPrice.qty : 0; // qty sold at that price point historically
 
         row.markdownDollars = (regRetail - newPrice) * units;
@@ -492,6 +516,12 @@ export const forecastSlice = createSlice({
       state.rowData = [];
       state.initialRowData = [];
       state.simBtns = { sim1: 0, sim2: 0, sim3: 0, sim4: 0 };
+      state.simTitles = {
+        sim1: "Forecast Simulation 1",
+        sim2: "Forecast Simulation 2",
+        sim3: "Forecast Simulation 3",
+        sim4: "Forecast Simulation 4",
+      };
       state.selectedSim = "";
       state.globalFcstPrice = "";
       state.singlePriceResults = [];
@@ -513,6 +543,12 @@ export const forecastSlice = createSlice({
       state.rowData = [];
       state.initialRowData = [];
       state.simBtns = { sim1: 0, sim2: 0, sim3: 0, sim4: 0 };
+      state.simTitles = {
+        sim1: "Forecast Simulation 1",
+        sim2: "Forecast Simulation 2",
+        sim3: "Forecast Simulation 3",
+        sim4: "Forecast Simulation 4",
+      };
       state.selectedSim = "";
       state.globalFcstPrice = "";
       state.singlePriceResults = [];
@@ -547,6 +583,13 @@ export const forecastSlice = createSlice({
     setNoResults: (state, action: PayloadAction<boolean>) => {
       state.noResults = action.payload;
     },
+    setSimTitle: (
+      state,
+      action: PayloadAction<{ sim: keyof SimBtns; title: string }>
+    ) => {
+      const { sim, title } = action.payload;
+      state.simTitles[sim] = title;
+    },
     // resetForecast: () => initialState,
   },
 });
@@ -578,6 +621,7 @@ export const {
   setCalcNow,
   setSingleForecastResults,
   setNoResults,
+  setSimTitle,
   // resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;

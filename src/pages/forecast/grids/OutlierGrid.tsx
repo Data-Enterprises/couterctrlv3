@@ -17,7 +17,6 @@ import {
   setNewRowAdDaysValue,
   setNewRowPriceValue,
   setSelectedSim,
-  setSimRowData,
   updateGlobalFcstRows,
 } from "../../../features/forecastSlice";
 ModuleRegistry.registerModules([AllCommunityModule, TooltipModule]);
@@ -183,34 +182,6 @@ const OutlierGrid = () => {
   };
 
   const saveSimulation = () => {
-    const sim1 = state.simBtns.sim1;
-    const sim2 = state.simBtns.sim2;
-    const sim3 = state.simBtns.sim3;
-    const sim4 = state.simBtns.sim4;
-    let simToSave = "";
-    // if no sims have been saved, save to sim1
-    if (sim1 === 0) {
-      // save to sim1
-      simToSave = "sim1";
-    } else if (sim2 === 0) {
-      // save to sim2
-      simToSave = "sim2";
-    } else if (sim3 === 0) {
-      // save to sim3
-      simToSave = "sim3";
-    } else if (sim4 === 0) {
-      // save to sim4
-      simToSave = "sim4";
-    }
-
-    // When saving, we set the selected sim to the one we just saved to
-    // now we can update the sim row data until we reload
-    // or select another existing simulator
-    dispatch(setSelectedSim(simToSave as keyof SimBtns));
-    dispatch(
-      setSimRowData({ sim: simToSave as keyof SimBtns, rows: state.rowData })
-    );
-
     // opening the modal to save to the backend
     setIsOpen(true);
   };

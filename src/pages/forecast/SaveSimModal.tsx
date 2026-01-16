@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForecastContext } from "./hooks";
-import { useAppSelector } from "../../hooks";
+import { useAppDispatch, useAppSelector } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
 // Components
@@ -10,6 +10,7 @@ import { getSavedSims, saveSim } from "../../api/forecast";
 import type { JsonError } from "../../interfaces";
 import type { SaveSimRow } from ".";
 import { formatGoliathDate } from "../../utils";
+import { setSelectedSim, setSimRowData, setSimTitle, type SimBtns } from "../../features/forecastSlice";
 
 interface SaveSimModalProps {
   isOpen: boolean;
@@ -19,7 +20,7 @@ interface SaveSimModalProps {
 const SaveSimModal = ({ isOpen, onClose }: SaveSimModalProps) => {
   const toast = useToast();
   const state = useAppSelector((state) => state.forecast);
-  // const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
   const context = useForecastContext();
   const [simName, setSimName] = useState<string>("");
 
@@ -84,6 +85,38 @@ const SaveSimModal = ({ isOpen, onClose }: SaveSimModalProps) => {
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
+
+    const sim1 = state.simBtns.sim1;
+    const sim2 = state.simBtns.sim2;
+    const sim3 = state.simBtns.sim3;
+    const sim4 = state.simBtns.sim4;
+    let key = "";
+    // if no sims have been saved, save to sim1
+    if (sim1 === 0) {
+      // save to sim1
+      key = "sim1";
+    } else if (sim2 === 0) {
+      // save to sim2
+      key = "sim2";
+    } else if (sim3 === 0) {
+      // save to sim3
+      key = "sim3";
+    } else if (sim4 === 0) {
+      // save to sim4
+      key = "sim4";
+    }
+
+    // When saving, we set the selected sim to the one we just saved to
+    // now we can update the sim row data until we reload
+    // or select another existing simulator
+    dispatch(setSelectedSim(key as keyof SimBtns));
+    dispatch(setSimTitle({ sim: key as keyof SimBtns, title: simName }));
+    dispatch(
+      setSimRowData({
+        sim: key as keyof SimBtns,
+        rows: state.rowData,
+      })
+    );
   };
 
   const handleClose = () => {

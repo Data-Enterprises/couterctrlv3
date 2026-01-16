@@ -8,13 +8,8 @@ import { formatCurrency2 } from "../../../utils";
 interface ForecastSimMetricsProps {
   sim: keyof SimBtns;
   rowData: ForecastOutlierRow[];
-  order: number;
 }
-const ForecastSimMetrics = ({
-  sim,
-  rowData,
-  order,
-}: ForecastSimMetricsProps) => {
+const ForecastSimMetrics = ({ sim, rowData }: ForecastSimMetricsProps) => {
   const state = useAppSelector((state) => state.forecast);
 
   const getTotals = () => {
@@ -34,7 +29,7 @@ const ForecastSimMetrics = ({
     return (
       <span className="bg-custom-white rounded-lg shadow-lg flex items-center justify-center h-40">
         <div className="font-medium py-0.5 rounded-t-lg text-center text-lg underline">
-          Forecast Simulation {order}
+          {state.simTitles[sim as keyof SimBtns]}
         </div>
       </span>
     );
@@ -43,7 +38,7 @@ const ForecastSimMetrics = ({
   return (
     <span className="bg-custom-white rounded-lg shadow-lg">
       <div className="font-medium py-0.5 rounded-t-lg text-center text-lg underline">
-        Forecast Simulation {order}
+        {state.simTitles[sim as keyof SimBtns]}
       </div>
       <div className="py-2 px-4 text-sm">
         <div className="flex gap-1">
