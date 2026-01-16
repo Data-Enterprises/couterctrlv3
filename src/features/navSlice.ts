@@ -3,11 +3,13 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 interface NavState {
   isNavOpen: boolean;
   lastRoute: string;
+  isModalOpen: boolean;
 }
 
 export const initialState: NavState = {
   isNavOpen: false,
   lastRoute: "/",
+  isModalOpen: false,
 };
 
 export const navSlice = createSlice({
@@ -20,10 +22,13 @@ export const navSlice = createSlice({
     setLastRoute: (state, action: PayloadAction<string>) => {
       state.lastRoute = action.payload;
     },
+    setIsModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.isModalOpen = action.payload;
+    },
     resetNav: () => initialState,
   },
 });
 
-export const { setIsNavOpen, setLastRoute, resetNav } =
+export const { setIsNavOpen, setLastRoute, setIsModalOpen, resetNav } =
   navSlice.actions;
 export default navSlice.reducer;

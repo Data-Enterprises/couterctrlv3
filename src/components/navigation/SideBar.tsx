@@ -77,7 +77,6 @@ const SideBar = () => {
     dispatch(resetUpcState());
     dispatch(resetAppSlice());
     dispatch(resetSearchSlice());
-
   };
 
   const slidingStyle =
@@ -94,13 +93,20 @@ const SideBar = () => {
     }
   };
 
+  const styleObj = () => {
+    if (nav.isNavOpen) {
+      return { zIndex: 1000 };
+    }
+    return {}
+  };
+
   return (
     <div
       ref={ref}
       data-testid="side-bar"
       data-open={nav.isNavOpen}
       className={`bg-bkg absolute top-12 left-0 h-[calc(100vh-3rem)] flex flex-col justify-between border-t ${slidingStyle}`}
-      style={{ zIndex: 1000 }}
+      style={styleObj()}
     >
       {/* using this to close the nav when clicking outside if it is open. User events are disabled in the Outlet when nav is open */}
       {nav.isNavOpen && (

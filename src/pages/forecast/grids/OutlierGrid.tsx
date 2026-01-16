@@ -184,8 +184,7 @@ const OutlierGrid = () => {
     return "Next 7 Day Forecast";
   };
 
-  const saveSimulation = () => {
-    // opening the modal to save to the backend
+  const openSaveSimModal = () => {
     setIsOpen(true);
   };
 
@@ -295,7 +294,7 @@ const OutlierGrid = () => {
           className={`${
             simsFull() && "opacity-50 pointer-events-none"
           } btn-themeGreen py-0 mb-1`}
-          onClick={saveSimulation}
+          onClick={openSaveSimModal}
         >
           Save New Sim
         </button>

@@ -1,4 +1,6 @@
 import { useEffect, useRef } from "react";
+import { useAppDispatch } from "../hooks";
+import { setIsModalOpen } from "../features/navSlice";
 
 interface ModalProps {
   isOpen: boolean;
@@ -18,8 +20,10 @@ const Modal = ({
   allowClickOutside = true,
 }: ModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
-
+  const dispatch = useAppDispatch();
+  
   useEffect(() => {
+    dispatch(setIsModalOpen(isOpen));
     const handleClickOutside = (event: MouseEvent) => {
       if (
         onClose &&
@@ -48,7 +52,7 @@ const Modal = ({
     <div
       data-testid="modal"
       className={`fixed ${className} inset-0 bg-black bg-opacity-50 flex items-center justify-center `}
-      style={{ zIndex: 1000 }}
+      style={{ zIndex: 5000 }}
     >
       <div
         ref={modalRef}
