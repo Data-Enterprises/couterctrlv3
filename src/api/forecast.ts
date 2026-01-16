@@ -88,3 +88,42 @@ export const getFromExistingS3File = async (
   });
   return json;
 };
+
+export const getSavedSims = async (url: string, token: string) => {
+  const json = await axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "marketing/sim-list",
+  });
+  return json;
+};
+
+export const saveSim = async (
+  url: string,
+  token: string,
+  simName: string,
+  startDate: string,
+  endDate: string,
+  storeids: string,
+  data: any
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "marketing/save_sim",
+    data: {
+      simName,
+      startDate,
+      endDate,
+      storeids,
+      data,
+    },
+  });
+  return json;
+};
