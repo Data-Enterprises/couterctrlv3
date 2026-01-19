@@ -15,6 +15,7 @@ interface UpcState {
   index: number;
   fileName: string;
   selectedMode: number;
+  selectedView: number;
   radioId: number;
   selectedStores: Store[];
   storeids: string;
@@ -50,6 +51,7 @@ const initialState: UpcState = {
   index: 0,
   fileName: "",
   selectedMode: 0,
+  selectedView: 0,
   radioId: 0,
   selectedStores: [],
   storeids: "", // needed for backend API calls
@@ -106,6 +108,9 @@ export const upcSlice = createSlice({
     },
     setSelectedMode: (state, action: PayloadAction<number>) => {
       state.selectedMode = action.payload;
+    },
+    setSelectedView: (state, action: PayloadAction<number>) => {
+      state.selectedView = action.payload;
     },
     setIsLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
@@ -207,6 +212,7 @@ export const upcSlice = createSlice({
     },
     clearUpcData: (state) => {
       state.selectedMode = 0;
+      state.selectedView = 0;
       state.upcCount = 0;
       state.radioId = 0;
       state.upcItems = [];
@@ -243,6 +249,7 @@ export const {
   setTrendPeriods,
   setFileName,
   setSelectedMode,
+  setSelectedView,
   setDataLoaded,
   setIsLoading,
   setSalesComp,

@@ -15,13 +15,19 @@ import SingleSelect from "../../../components/SingleSelect";
 import TextInput from "../../../components/TextInput";
 import DatePickers from "../../../components/datePickers/DatePickers";
 import SelectedStoreList from "../wizard/SelectedStoreList";
+import FileInput from "../../forecast/controls/FileInput";
 
 const options = [
   { label: "Stores", id: 1 },
   { label: "Group", id: 2 },
 ];
 
-const StoreDatePicker = () => {
+interface StoreDatePickerProps {
+  setFile: (file: File | null) => void;
+  getModuleData: (mode: number) => void;
+}
+
+const StoreDatePicker = ({ setFile, getModuleData }: StoreDatePickerProps) => {
   const toast = useToast();
   const context = useUpcContext();
   const dispatch = useAppDispatch();
@@ -30,7 +36,7 @@ const StoreDatePicker = () => {
   const group = useAppSelector((state) => state.group);
 
   useEffect(() => {
-        if (context.radioId === 1) {
+    if (context.radioId === 1) {
       setFilteredData(user.assignedStores);
     } else if (context.radioId === 2) {
       setFilteredData(group.groups);
@@ -134,6 +140,20 @@ const StoreDatePicker = () => {
         selectedStores={context.selectedStores}
         radioId={context.radioId}
       />
+      <div className="flex gap-2">
+        <FileInput
+          page="upc"
+          fileExt={[".csv"]}
+          setFile={setFile}
+          className="w-1/2 py-0"
+        />
+        <button
+          className="btn-themeBlue w-1/2"
+          onClick={() => getModuleData(context.selectedMode)}
+        >
+          Search
+        </button>
+      </div>
     </div>
   );
 };

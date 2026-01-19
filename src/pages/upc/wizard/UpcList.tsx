@@ -42,22 +42,18 @@ import type {
 } from "../../../interfaces";
 import { colorCodes } from "../components";
 import { convertData, formatForecastExport } from "../utils";
-import { useResizeContext } from "../../forecast/hooks";
 
 import ModeSelect from "./components/ModeSelect";
-import FileInput from "../../forecast/controls/FileInput";
 import StoreDatePicker from "../components/StoreDatePicker";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+import NoDataDisplay from "../components/NoDataDisplay";
 
 const UpcList = () => {
   const toast = useToast();
   const context = useUpcContext();
-  const { height } = useResizeContext("");
   const dispatch = useAppDispatch();
   const [file, setFile] = useState<File | null>(null);
-  // const { upcs } = useAppSelector((state) => state.upcs);
 
-  // Dismount cleanup
   useEffect(() => {
     return () => {
       dispatch(setRadioId(0));
@@ -71,16 +67,15 @@ const UpcList = () => {
     }
   }, [context.radioId]);
 
-  // Data fetching based on selected mode
-  const getData = () => {
+  const getModuleData = (mode: number) => {
     dispatch(setIsLoading(true));
-    if (context.selectedMode == 1) {
+    if (mode == 1) {
       getCompData();
-    } else if (context.selectedMode == 2) {
+    } else if (mode == 2) {
       getForecastData();
-    } else if (context.selectedMode == 3) {
+    } else if (mode == 3) {
       getPriceOptData();
-    } else if (context.selectedMode == 4) {
+    } else if (mode == 4) {
       getTrendData();
     }
   };
@@ -131,8 +126,6 @@ const UpcList = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0 && j.qty_results !== null) {
-          // Both of these need to have the naming conventions changed to match qty
-          // then need to add the logic for the sales forecast as well
           const history = Object.entries(j.qty_results)
             .map(([k, v]) => [k, structuredClone(v as UpcForecast).history])
             .map(([id, obj], idx) =>
@@ -171,9 +164,6 @@ const UpcList = () => {
           }));
 
           const qty = formatForecastExport(j.qty_results);
-          // Setting this up for later use when sales forecast is added
-          // const sales = formatForecastExport(j.sales_results);
-
           dispatch(setForecastExport(qty.data));
           dispatch(setForecastMetricExport(qty.metrics));
           dispatch(setUpcItems(upcItems));
@@ -236,15 +226,17 @@ const UpcList = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0 && j.trends.length > 0) {
-          const upcItems = [...j.trends].map((item: UpcTrend) => ({
-            product_code: item.product_code,
-            description: item.product_description,
-          })).reduce((acc: UpcItem[], cur) => {
-            if (!acc.find((item) => item.product_code === cur.product_code)) {
-              acc.push(cur);
-            }
-            return acc;
-          }, []);
+          const upcItems = [...j.trends]
+            .map((item: UpcTrend) => ({
+              product_code: item.product_code,
+              description: item.product_description,
+            }))
+            .reduce((acc: UpcItem[], cur) => {
+              if (!acc.find((item) => item.product_code === cur.product_code)) {
+                acc.push(cur);
+              }
+              return acc;
+            }, []);
           dispatch(setUpcItems(upcItems));
           dispatch(setUpcTrends(j.trends));
           dispatch(setTopFiveTrends(j.top_5));
@@ -261,15 +253,26 @@ const UpcList = () => {
   const cleanUp = () => {
     dispatch(setIsLoading(false));
     dispatch(setIndex(0));
-    // setFile(null);
   };
 
   // The returned module based on selected mode
   const module = () => {
-    if (context.selectedMode == 1 && context.salesComp.length > 0) return <SalesComp />;
-    if (context.selectedMode == 2 && context.forecast.length > 0) return <Forcast />;
-    if (context.selectedMode == 3 && context.optBestPrices.length > 0) return <PriceOpt />;
-    if (context.selectedMode == 4 && context.upcTrends.length > 0) return <TrendDetector />;
+    if (context.selectedMode == 1)
+      return context.salesComp.length > 0 ? <SalesComp /> : <NoDataDisplay />;
+    if (context.selectedMode == 2)
+      return context.forecast.length > 0 ? <Forcast /> : <NoDataDisplay />;
+    if (context.selectedMode == 3)
+      return context.optBestPrices.length > 0 ? (
+        <PriceOpt />
+      ) : (
+        <NoDataDisplay />
+      );
+    if (context.selectedMode == 4)
+      return context.upcTrends.length > 0 ? (
+        <TrendDetector />
+      ) : (
+        <NoDataDisplay />
+      );
     return null;
   };
 
@@ -280,44 +283,8 @@ const UpcList = () => {
     >
       <div className="w-full h-full grid grid-cols-[19%_81%] gap-4">
         <div className="space-y-4">
-          <StoreDatePicker />
+          <StoreDatePicker setFile={setFile} getModuleData={getModuleData} />
           <ModeSelect />
-          <div className="bg-custom-white rounded-lg shadow-lg px-4 pb-3">
-            <div className="bg-blue-500 text-custom-white -mx-4 py-0.5 px-4 rounded-t-lg font-medium flex justify-between">
-              <div>UPC list from file</div>
-              <div className={`${context.uploadedUpcs.length === 0 && "hidden"}`}>
-                {context.uploadedUpcs.length}
-              </div>
-            </div>
-            <div
-              className={`bg-bkg shadow rounded-lg grid grid-cols-3 text-xs ${height} overflow-y-scroll no-scrollbar my-2`}
-            >
-              {context.uploadedUpcs.map((u, i) => (
-                <div
-                  key={i}
-                  data-testid={`forecast-upc-item-${u}-${i}`}
-                  className="px-2 py-0.5 font-medium cursor-default"
-                >
-                  {u}
-                </div>
-              ))}
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <FileInput
-                page="upc"
-                fileExt={[".csv"]}
-                setFile={setFile}
-                className="w-full py-0"
-              />
-              <button
-                data-testid="forecast-search-btn"
-                className="btn-themeBlue py-1"
-                onClick={getData}
-              >
-                Search
-              </button>
-            </div>
-          </div>
         </div>
 
         {context.dataLoaded && !context.isLoading ? module() : null}

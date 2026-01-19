@@ -23,6 +23,7 @@ export const useUpcContext = () => {
     optBestPrices,
     upcTrends,
     uploadedUpcs,
+    selectedView,
   } = useAppSelector((state) => state.upc);
 
   return {
@@ -50,5 +51,6 @@ export const useUpcContext = () => {
     optBestPrices,
     upcTrends,
     uploadedUpcs,
+    selectedView,
   };
 };
