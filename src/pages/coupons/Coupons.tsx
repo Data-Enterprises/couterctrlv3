@@ -21,6 +21,7 @@ import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import TransactionModal from "../cashiers/TransactionModal";
 import FiltersModal from "./filters/FiltersModal";
 import ExportModal from "../../components/modals/ExportModal";
+import CouponKpis from "./kpi/CouponKpis";
 
 const Coupons = () => {
   const toast = useToast();
@@ -103,9 +104,19 @@ const Coupons = () => {
           </div>
           {showGrid && <CouponGridFilters />}
         </div>
-        {showGrid && <CouponsGrid />}
+
+        {showGrid && (
+          <div className="space-y-4">
+            <CouponKpis />
+            <CouponsGrid />
+          </div>
+        )}
+
         {noCoupons && (
-          <div data-testid="no-coupons" className="h-full flex items-center justify-center bg-custom-white rounded-lg shadow-lg">
+          <div
+            data-testid="no-coupons"
+            className="h-full flex items-center justify-center bg-custom-white rounded-lg shadow-lg"
+          >
             No coupons found
           </div>
         )}

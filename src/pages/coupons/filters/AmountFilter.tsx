@@ -23,7 +23,10 @@ const AmountFilter = ({ text, setText }: AmountFilterProps) => {
 
   const handleAmtTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (value === "" || !isNaN(Number(value))) {
+    const dots = value.split(".").length; // Checking to see if there is already a decimal in the input
+    
+    // Allowing only numbers, one decimal point, or an empty string
+    if ((value === "" || (value === '.') || !isNaN(parseFloat(value))) && dots <= 2) {
       setText(value);
     }
   };

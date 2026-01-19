@@ -12,6 +12,7 @@ const filterOptions: (FilterType | "Refresh")[] = [
   "UPC",
   "Desc",
   "CustomerID",
+  "Sub Department",
   "Refresh",
 ];
 
@@ -34,6 +35,7 @@ const CouponGridFilters = () => {
     if (option === "Desc" && productDescription) result = true;
     if (option === "CpnAmount" && cpnAmount) result = true;
     if (option === "CustomerID" && customerId) result = true;
+    if (option === "Sub Department" && state.subDept) result = true;
     return result ? style : "";
   };
 
@@ -50,6 +52,8 @@ const CouponGridFilters = () => {
       return state.cpnAmount ? `${state.cpnAmount}` : "Coupon Amount";
     } else if (type === "CustomerID") {
       return state.customerId ? `${state.customerId}` : "Customer ID";
+    } else if (type === "Sub Department") {
+      return state.subDept ? `${state.subDept}` : "Sub Department";
     } else {
       return type;
     }
