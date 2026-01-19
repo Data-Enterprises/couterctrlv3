@@ -51,7 +51,7 @@ const TrendCard = ({ trend, id }: TrendCardProps) => {
           <div className="">{trend.product_code}</div>
         </div>
         <div className="flex gap-1">
-          <div className="">{trend.product_description}</div>
+          <div className="truncate">{trend.product_description}</div>
         </div>
       </div>
 
@@ -62,7 +62,7 @@ const TrendCard = ({ trend, id }: TrendCardProps) => {
         </div>
         <div className="flex gap-1">
           <div className="font-medium">After:</div>
-          <div>{trend.tooltip.split(". ")[1].replace("After:", "")}</div>
+          <div>{trend.tooltip.split(". ")[1].replace("After:", "").replace(/nan/g, "0")}</div>
         </div>
       </div>
 

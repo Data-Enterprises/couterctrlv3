@@ -26,14 +26,15 @@ const TrendCardsList = () => {
   };
 
   const trendChunks = chunkTrends(trends, 5);
+  console.log(trendChunks);
 
   return (
     <div>
-      <MetricsCarousel className="h-full">
+      <MetricsCarousel className="h-[95%]">
         {trendChunks.map((chunk, idx) => (
           <div key={idx} className="grid grid-cols-5 gap-1">
             {chunk.map((trend, i) => (
-              <TrendCard id={i} key={trend.product_code || i} trend={trend} />
+              <TrendCard id={i} key={trend.product_code + i} trend={trend} />
             ))}
           </div>
         ))}

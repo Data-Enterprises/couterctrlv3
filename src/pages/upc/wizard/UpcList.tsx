@@ -243,7 +243,13 @@ const UpcList = () => {
           const upcItems = [...j.trends].map((item: UpcTrend) => ({
             product_code: item.product_code,
             description: item.product_description,
-          }));
+          })).reduce((acc: UpcItem[], cur) => {
+            if (!acc.find((item) => item.product_code === cur.product_code)) {
+              acc.push(cur);
+            }
+            return acc;
+          }, []);
+          console.log(upcItems);
           dispatch(setUpcItems(upcItems));
           dispatch(setUpcTrends(j.trends));
           dispatch(setTopFiveTrends(j.top_5));
