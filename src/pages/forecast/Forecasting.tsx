@@ -34,6 +34,7 @@ import DatePickers from "../../components/datePickers/DatePickers";
 import { getHistoryFromList } from "../../api/priceSim";
 import {
   removeSingleUpc,
+  // setUpcFileName,
   setUpcs,
   setUpcText,
 } from "../../features/upcUploadSlice";
@@ -53,6 +54,14 @@ const Forecasting = () => {
   const [file, setFile] = useState<File | null>(null);
   const [filteredData, setFilteredData] = useState<Store[] | Group[]>([]);
   const { upcs, upcText } = useAppSelector((state) => state.upcs);
+
+  useEffect(() => {
+    return () => {
+      // if (context.forecastResults.length === 0 || !file) {
+      //   dispatch(setUpcFileName(""));
+      // }
+    }
+  }, []);
 
   useEffect(() => {
     // On mount, if radioId is 0, set to 1 (Stores)
@@ -291,11 +300,11 @@ const Forecasting = () => {
                 page="forecast"
                 fileExt={[".csv"]}
                 setFile={setFile}
-                className="w-full py-0"
+                className="w-full"
               />
               <button
                 data-testid="forecast-search-btn"
-                className="btn-themeBlue py-1"
+                className="btn-themeBlue"
                 onClick={handleSearch}
               >
                 Search

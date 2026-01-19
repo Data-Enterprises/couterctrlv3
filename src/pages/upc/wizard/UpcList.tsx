@@ -11,6 +11,7 @@ import TrendDetector from "../modules/TrendDetector";
 import {
   setBottomFiveTrends,
   setDataLoaded,
+  setFileName,
   setForecastData,
   setForecastExport,
   setForecastHistory,
@@ -57,6 +58,14 @@ const UpcList = () => {
   useEffect(() => {
     return () => {
       dispatch(setRadioId(0));
+      if (
+        context.salesComp.length === 0 &&
+        context.forecast.length === 0 &&
+        context.optBestPrices.length === 0 &&
+        context.upcTrends.length === 0
+      ) {
+        dispatch(setFileName(""));
+      }
     };
   }, []);
 

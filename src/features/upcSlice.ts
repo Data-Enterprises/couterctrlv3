@@ -237,6 +237,7 @@ export const upcSlice = createSlice({
       state.forecastExport = [];
       state.forecastMetricExport = [];
       state.uploadedUpcs = [];
+      state.fileName = "";
     },
     resetUpcState: () => initialState,
   },
