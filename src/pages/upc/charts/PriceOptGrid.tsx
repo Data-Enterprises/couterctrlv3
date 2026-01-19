@@ -3,17 +3,14 @@ import {
   AllCommunityModule,
   ModuleRegistry,
   type CellClickedEvent,
-  type RowClickedEvent,
 } from "ag-grid-community";
-// Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 import { useState, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ColGroupDef } from "ag-grid-community";
-import { setOptDisplayMode } from "../../../features/upcSlice";
 import type { UpcPriceOpt } from "../../../interfaces";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppSelector } from "../../../hooks";
 import "./grid.css";
 
 interface GridProps {
@@ -31,16 +28,8 @@ type UpcRow = {
 };
 
 const Grid = ({ rowData, handleCellClick }: GridProps) => {
-  const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.upc);
   const [rows, setRows] = useState<UpcRow[]>(rowData);
-  const [selectMode, setSelectMode] = useState<"singleRow" | "multiRow">(
-    state.optDisplayMode
-  );
-
-  useEffect(() => {
-    setSelectMode(state.optDisplayMode);
-  }, [state.optDisplayMode]);
 
   const colDefs: (ColDef<UpcRow> | ColGroupDef<UpcRow>)[] = [
     {
@@ -87,27 +76,6 @@ const Grid = ({ rowData, handleCellClick }: GridProps) => {
     setRows(filtered);
   }, [rowData, state.selectedUpcs]);
 
-  useEffect(() => {
-    if (state.selectedOptItem.product_code) {
-      const grid = document.querySelector(".ag-center-cols-container");
-      if (!grid) return;
-      const children = Array.from(grid.childNodes) as HTMLElement[];
-      children.forEach((r) => {
-        const rowUpc = r.children[0].children[0].textContent;
-        if (
-          state.selectedOptItem &&
-          rowUpc === state.selectedOptItem.product_code
-        ) {
-          r.classList.add("bg-blue-500", "text-white");
-        } else {
-          r.classList.remove("bg-blue-500", "text-white");
-        }
-      });
-    } else {
-      toggleMultiSelect();
-    }
-  }, [state.selectedOptItem]);
-
   const theme = themeQuartz.withParams({
     headerHeight: 40,
     rowHeight: 25.5,
@@ -119,6 +87,7 @@ const Grid = ({ rowData, handleCellClick }: GridProps) => {
     dataFontSize: 13,
     selectCellBorder: "transparent",
     rowBorder: "1px solid white",
+    selectedRowBackgroundColor: "#fed7aa",
   });
 
   const handleClick = (e: CellClickedEvent<UpcRow>) => {
@@ -126,45 +95,8 @@ const Grid = ({ rowData, handleCellClick }: GridProps) => {
     if (handleCellClick) handleCellClick(e.data as UpcPriceOpt);
   };
 
-  const handleRowSelection = (e: RowClickedEvent<UpcRow>) => {
-    // Direct path to CENTER columns container (data rows live here)
-    const grid = document.querySelector(
-      ".ag-center-cols-container"
-    ) as HTMLElement;
-
-    const rows = Array.from(grid.querySelectorAll(".ag-row")) as HTMLElement[];
-    rows.forEach((r) => {
-      if (r instanceof Element) {
-        const rowIdx = r.getAttribute("row-index");
-        if (
-          rowIdx &&
-          parseInt(rowIdx) === e.rowIndex &&
-          !r.classList.contains("bg-blue-500")
-        ) {
-          r.classList.add("bg-blue-500", "text-white");
-        } else {
-          r.classList.remove("bg-blue-500", "text-white");
-        }
-      }
-    });
-  };
-
-  const toggleMultiSelect = () => {
-    dispatch(setOptDisplayMode("multiRow"));
-    const grid = document.querySelector(".ag-center-cols-container");
-    // This gets called on mount and when selected Upcs changes, so grid can be null
-    if (grid) {
-      // This will run when Show All Selected button is clicked, meaning the grid is populated
-      const children = Array.from(grid.childNodes) as HTMLElement[];
-      children.forEach((r) => r.classList.remove("bg-blue-500", "text-white"));
-    }
-  };
-
   return (
-    <div
-      className="h-[100%] shadow-lg rounded-lg"
-      // onContextMenuCapture={(e) => e.preventDefault()}
-    >
+    <div className="h-[100%] shadow-lg rounded-lg">
       {state.selectedUpcs.length ? (
         <div className="h-full relative">
           <AgGridReact
@@ -175,15 +107,9 @@ const Grid = ({ rowData, handleCellClick }: GridProps) => {
             paginationAutoPageSize={true}
             animateRows={true}
             enableCellTextSelection={true}
-            rowSelection={{
-              mode: selectMode,
-              headerCheckbox: false,
-              checkboxes: false,
-            }}
+            rowSelection={"multiple"}
             theme={theme}
-            // onCellContextMenu={handleRightClick}
             onCellClicked={handleClick}
-            onRowClicked={handleRowSelection}
           />
         </div>
       ) : (
