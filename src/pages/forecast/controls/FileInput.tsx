@@ -1,10 +1,10 @@
 import { useRef } from "react";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { setUpcs } from "../../../features/upcUploadSlice";
-import { useAppDispatch } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { setFileName } from "../../../features/upcSlice";
 
 interface FileInputProps {
-  file: File | null;
   fileExt: string[];
   setFile: (file: File | null) => void;
   className?: string;
@@ -12,7 +12,7 @@ interface FileInputProps {
 }
 
 const FileInput = ({
-  file,
+  // file,
   fileExt,
   setFile,
   className = "w-full",
@@ -21,19 +21,21 @@ const FileInput = ({
   const toast = useToast();
   const dispatch = useAppDispatch();
   const inputRef = useRef<HTMLInputElement>(null);
+  const context = useAppSelector((state) => state.upc);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!fileExt.some((ext) => event.target.files![0].name.endsWith(ext))) {
       toast.warn("Please select a valid CSV file");
     } else if (event.target.files && event.target.files[0]) {
       setFile(event.target.files[0]);
+      dispatch(setFileName(event.target.files[0].name));
 
       const file = event.target.files[0];
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         const text = e.target?.result;
         if (typeof text === "string") {
-          dispatch(setUpcs([])); // Clear existing UPCs before adding new ones
+          // dispatch(setUpcs([])); // Clear existing UPCs before adding new ones
           const data = processCSV(text);
           dispatch(setUpcs(data));
         }
@@ -58,7 +60,7 @@ const FileInput = ({
   return (
     <div className={`flex gap-2 ${className}`}>
       <label className={`btn-themeBlue w-full ${labelClassName}`}>
-        <div className="w-full text-center">{file !== null ? file.name : "Select File"}</div>
+        <div className="w-full text-center">{context.fileName ? context.fileName : "Select File"}</div>
         <input
           data-testid="upc-file-input"
           type="file"

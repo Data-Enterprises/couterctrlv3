@@ -5,7 +5,7 @@ import {
   setSelectedStores,
   setTrendPeriods,
 } from "../../../features/upcSlice";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { JsonError, Store } from "../../../interfaces";
 import type { Group } from "../../../features/groupSlice";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
@@ -29,13 +29,21 @@ const StoreDatePicker = () => {
   const user = useAppSelector((state) => state.user);
   const group = useAppSelector((state) => state.group);
 
-  const handleSelectChange = (id: string | number) => {
-    dispatch(setRadioId(id as number));
-    if (id === 1) {
+  useEffect(() => {
+        if (context.radioId === 1) {
       setFilteredData(user.assignedStores);
-    } else if (id === 2) {
+    } else if (context.radioId === 2) {
       setFilteredData(group.groups);
     }
+  }, [context.radioId]);
+
+  const handleSelectChange = (id: string | number) => {
+    dispatch(setRadioId(id as number));
+    // if (id === 1) {
+    //   setFilteredData(user.assignedStores);
+    // } else if (id === 2) {
+    //   setFilteredData(group.groups);
+    // }
   };
 
   const handleSelectClick = (id: string | number) => {
@@ -107,7 +115,7 @@ const StoreDatePicker = () => {
           />
         ) : (
           <SingleSelect
-            label="Groups"
+            label="Group"
             data={filteredData as Group[]}
             valueKey={"id" as keyof Group}
             displayKey={"group_name" as keyof Group}

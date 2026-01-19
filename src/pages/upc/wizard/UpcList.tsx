@@ -21,7 +21,6 @@ import {
   setOptBestPricesByUpc,
   setRadioId,
   setSalesComp,
-  setSelectedStores,
   setTopFiveTrends,
   setUpcCount,
   setUpcItems,
@@ -45,9 +44,8 @@ import { colorCodes } from "../components";
 import { convertData, formatForecastExport } from "../utils";
 import { useResizeContext } from "../../forecast/hooks";
 
-import ModelSelect from "./components/ModeSelect";
+import ModeSelect from "./components/ModeSelect";
 import FileInput from "../../forecast/controls/FileInput";
-import { setUpcs } from "../../../features/upcUploadSlice";
 import StoreDatePicker from "../components/StoreDatePicker";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 
@@ -62,9 +60,7 @@ const UpcList = () => {
   // Dismount cleanup
   useEffect(() => {
     return () => {
-      dispatch(setSelectedStores([]));
       dispatch(setRadioId(0));
-      dispatch(setUpcs([]));
     };
   }, []);
 
@@ -249,7 +245,6 @@ const UpcList = () => {
             }
             return acc;
           }, []);
-          console.log(upcItems);
           dispatch(setUpcItems(upcItems));
           dispatch(setUpcTrends(j.trends));
           dispatch(setTopFiveTrends(j.top_5));
@@ -271,10 +266,10 @@ const UpcList = () => {
 
   // The returned module based on selected mode
   const module = () => {
-    if (context.selectedMode == 1) return <SalesComp />;
-    if (context.selectedMode == 2) return <Forcast />;
-    if (context.selectedMode == 3) return <PriceOpt />;
-    if (context.selectedMode == 4) return <TrendDetector />;
+    if (context.selectedMode == 1 && context.salesComp.length > 0) return <SalesComp />;
+    if (context.selectedMode == 2 && context.forecast.length > 0) return <Forcast />;
+    if (context.selectedMode == 3 && context.optBestPrices.length > 0) return <PriceOpt />;
+    if (context.selectedMode == 4 && context.upcTrends.length > 0) return <TrendDetector />;
     return null;
   };
 
@@ -283,10 +278,10 @@ const UpcList = () => {
       data-testid="upc-list-page"
       className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] w-full p-4 relative"
     >
-      <div className="w-full h-full grid grid-cols-[20%_80%] gap-4">
+      <div className="w-full h-full grid grid-cols-[19%_81%] gap-4">
         <div className="space-y-4">
           <StoreDatePicker />
-          <ModelSelect />
+          <ModeSelect />
           <div className="bg-custom-white rounded-lg shadow-lg px-4 pb-3">
             <div className="bg-blue-500 text-custom-white -mx-4 py-0.5 px-4 rounded-t-lg font-medium flex justify-between">
               <div>UPC list from file</div>
@@ -309,7 +304,6 @@ const UpcList = () => {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <FileInput
-                file={file}
                 fileExt={[".csv"]}
                 setFile={setFile}
                 className="w-full py-0"

@@ -9,7 +9,7 @@ const modes = [
   { mode: 4, label: "Trend Detection" },
 ];
 
-const ModelSelect = () => {
+const ModeSelect = () => {
   const dispatch = useAppDispatch();
   const { selectedMode } = useAppSelector((state) => state.upc);
 
@@ -42,4 +42,4 @@ const ModelSelect = () => {
   );
 };
 
-export default ModelSelect;
+export default ModeSelect;

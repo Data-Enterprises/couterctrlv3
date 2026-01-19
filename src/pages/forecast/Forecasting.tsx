@@ -78,6 +78,7 @@ const Forecasting = () => {
 
     dispatch(setIsLoading(true));
     dispatch(reQuery());
+    console.log(file);
 
     getHistoryFromList(
       context.url,
@@ -287,7 +288,6 @@ const Forecasting = () => {
             </div>
             <div className="grid grid-cols-2 gap-2 mt-1">
               <FileInput
-                file={file}
                 fileExt={[".csv"]}
                 setFile={setFile}
                 className="w-full py-0"

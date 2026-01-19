@@ -72,6 +72,7 @@ const PriceSimulator = () => {
 
     dispatch(setIsLoading(true));
     dispatch(reQuery());
+    console.log(file);
 
     getHistoryFromList(
       context.url,
@@ -212,7 +213,6 @@ const PriceSimulator = () => {
           </div>
           <div className="flex gap-2 mt-3">
             <FileInput
-              file={file}
               fileExt={[".csv"]}
               setFile={setFile}
               className="w-1/2 py-0"
