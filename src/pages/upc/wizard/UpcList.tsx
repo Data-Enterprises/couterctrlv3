@@ -77,6 +77,10 @@ const UpcList = () => {
   }, [context.radioId]);
 
   const getModuleData = (mode: number) => {
+    if (mode === 0) {
+      toast.warn("Please select a mode");
+      return;
+    }
     dispatch(setIsLoading(true));
     if (mode == 1) {
       getCompData();
@@ -298,6 +302,15 @@ const UpcList = () => {
 
         {context.dataLoaded && !context.isLoading ? module() : null}
         {context.isLoading && <LoadingIndicator className="ml-28" />}
+        {context.selectedMode === 0 && (
+          <div className="w-full h-full flex justify-center items-center pt-28">
+            <div className="bg-custom-white p-4 rounded-lg shadow-lg text-center">
+              <div className="text-lg font-medium">No mode selected</div>
+              <div className="text-content/70">Please select a mode with your date range</div>
+              <div className="text-content/70">and your selected Stores or Group</div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
