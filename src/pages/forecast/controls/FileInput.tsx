@@ -62,9 +62,9 @@ const FileInput = ({
   };
 
   return (
-    <div className={`flex ${className}`}>
-      <div className={`btn-themeBlue w-full ${labelClassName} relative`}>
-        <div className="absolute w-full left-0 text-center">{context.fileName ? context.fileName : "Select File"}</div>
+    <div className={`flex gap-2 ${className}`}>
+      <label className={`btn-themeBlue w-full ${labelClassName} relative`}>
+        <div className="absolute left-0 w-full text-center">{context.fileName ? context.fileName : "Select File"}</div>
         <input
           data-testid="upc-file-input"
           type="file"
@@ -72,7 +72,7 @@ const FileInput = ({
           ref={inputRef}
           onChange={handleFileChange}
         />
-      </div>
+      </label>
     </div>
   );
 };
