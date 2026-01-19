@@ -18,6 +18,7 @@ export const useUpcContext = () => {
     selectedCompOne,
     selectedCompTwo,
     radioId,
+    isLoading,
   } = useAppSelector((state) => state.upc);
 
   return {
@@ -40,5 +41,6 @@ export const useUpcContext = () => {
     selectedCompTwo,
     radioId,
     type,
+    isLoading,
   };
 };

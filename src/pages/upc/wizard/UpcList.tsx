@@ -49,6 +49,7 @@ import ModelSelect from "./components/ModeSelect";
 import FileInput from "../../forecast/controls/FileInput";
 import { setUpcs } from "../../../features/upcUploadSlice";
 import StoreDatePicker from "../components/StoreDatePicker";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 
 const UpcList = () => {
   const toast = useToast();
@@ -259,7 +260,7 @@ const UpcList = () => {
   const cleanUp = () => {
     dispatch(setIsLoading(false));
     dispatch(setIndex(0));
-    setFile(null);
+    // setFile(null);
   };
 
   // The returned module based on selected mode
@@ -277,7 +278,7 @@ const UpcList = () => {
       className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] w-full p-4 relative"
     >
       <div className="w-full h-full grid grid-cols-[20%_80%] gap-4">
-        <div className="space-y-4 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]">
+        <div className="space-y-4">
           <StoreDatePicker />
           <ModelSelect />
           <div className="bg-custom-white rounded-lg shadow-lg px-4 pb-3">
@@ -318,7 +319,8 @@ const UpcList = () => {
           </div>
         </div>
 
-        {context.dataLoaded && module()}
+        {context.dataLoaded && !context.isLoading ? module() : null}
+        {context.isLoading && <LoadingIndicator className="ml-28" />}
       </div>
     </div>
   );

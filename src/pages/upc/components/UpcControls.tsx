@@ -80,16 +80,20 @@ const UpcControls = () => {
   }, [filterText, upcItems]);
 
   return (
-    <div data-testid="upc-controls" className="grid bg-custom-white rounded-lg shadow-lg text-sm select-none">
-      <div
-        ref={topRef}
-        className="flex flex-col gap-2 rounded-t-lg px-2 pt-3 pb-2"
-      >
+    <div
+      data-testid="upc-controls"
+      className="grid bg-custom-white rounded-lg shadow-lg text-sm select-none"
+    >
+      <div className="flex flex-col gap-2 rounded-t-lg px-2 pt-3 pb-2">
         <div className="font-medium text-center rounded-t-lg">
           {startDate} - {selectedMode === 4 ? `${trendPeriods} Days` : endDate}
         </div>
         <div className="flex flex-col gap-2">
-          <button data-testid="upc-controls-reset-btn" className="py-1 btn-themeBlue" onClick={handleClearClick}>
+          <button
+            data-testid="upc-controls-reset-btn"
+            className="py-1 btn-themeBlue"
+            onClick={handleClearClick}
+          >
             Reset
           </button>
           <button
@@ -101,7 +105,10 @@ const UpcControls = () => {
           </button>
         </div>
         {state.selectedMode === 4 ? (
-          <div data-testid="trend-options" className="border-y-2 py-1 border-content/40 flex flex-col gap-1">
+          <div
+            data-testid="trend-options"
+            className="border-y-2 py-1 border-content/40 flex flex-col gap-1"
+          >
             <button
               data-testid="trend-totals-btn"
               className={`btn-themeBlue py-1 w-full ${
@@ -169,7 +176,7 @@ const UpcControls = () => {
             {upcDisplay === "code" ? "Show Desc" : "Show UPC"}
           </button>
         </div>
-        <div>
+        <div ref={topRef}>
           <input
             data-testid="upc-filter-input"
             type="text"
