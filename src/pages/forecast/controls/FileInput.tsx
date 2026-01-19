@@ -2,21 +2,22 @@ import { useRef } from "react";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { setUpcs } from "../../../features/upcUploadSlice";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { setFileName } from "../../../features/upcSlice";
+import { setFileName, setUploadedUpcs } from "../../../features/upcSlice";
 
 interface FileInputProps {
   fileExt: string[];
   setFile: (file: File | null) => void;
   className?: string;
   labelClassName?: string;
+  page: "upc" | "forecast";
 }
 
 const FileInput = ({
-  // file,
   fileExt,
   setFile,
   className = "w-full",
   labelClassName = "",
+  page,
 }: FileInputProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
@@ -35,9 +36,12 @@ const FileInput = ({
       reader.onload = (e: ProgressEvent<FileReader>) => {
         const text = e.target?.result;
         if (typeof text === "string") {
-          // dispatch(setUpcs([])); // Clear existing UPCs before adding new ones
           const data = processCSV(text);
-          dispatch(setUpcs(data));
+          if(page === "forecast") {
+            dispatch(setUpcs(data));
+          } else{
+            dispatch(setUploadedUpcs(data));
+          }
         }
       };
       reader.readAsText(file);

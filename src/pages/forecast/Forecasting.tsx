@@ -288,6 +288,7 @@ const Forecasting = () => {
             </div>
             <div className="grid grid-cols-2 gap-2 mt-1">
               <FileInput
+                page="forecast"
                 fileExt={[".csv"]}
                 setFile={setFile}
                 className="w-full py-0"

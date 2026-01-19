@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useUpcContext } from "./hooks";
 
@@ -55,7 +55,7 @@ const UpcList = () => {
   const { height } = useResizeContext("");
   const dispatch = useAppDispatch();
   const [file, setFile] = useState<File | null>(null);
-  const { upcs } = useAppSelector((state) => state.upcs);
+  // const { upcs } = useAppSelector((state) => state.upcs);
 
   // Dismount cleanup
   useEffect(() => {
@@ -285,14 +285,14 @@ const UpcList = () => {
           <div className="bg-custom-white rounded-lg shadow-lg px-4 pb-3">
             <div className="bg-blue-500 text-custom-white -mx-4 py-0.5 px-4 rounded-t-lg font-medium flex justify-between">
               <div>UPC list from file</div>
-              <div className={`${upcs.length === 0 && "hidden"}`}>
-                {upcs.length}
+              <div className={`${context.uploadedUpcs.length === 0 && "hidden"}`}>
+                {context.uploadedUpcs.length}
               </div>
             </div>
             <div
               className={`bg-bkg shadow rounded-lg grid grid-cols-3 text-xs ${height} overflow-y-scroll no-scrollbar my-2`}
             >
-              {upcs.map((u, i) => (
+              {context.uploadedUpcs.map((u, i) => (
                 <div
                   key={i}
                   data-testid={`forecast-upc-item-${u}-${i}`}
@@ -304,6 +304,7 @@ const UpcList = () => {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <FileInput
+                page="upc"
                 fileExt={[".csv"]}
                 setFile={setFile}
                 className="w-full py-0"

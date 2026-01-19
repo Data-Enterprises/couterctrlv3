@@ -17,7 +17,7 @@ import {
   setRowData,
 } from "../../features/priceSimSlice";
 import PriceSimExportModal from "./export/PriceSimExportModal";
-import FileInput from "../forecast/controls/FileInput";
+// import FileInput from "../forecast/controls/FileInput";
 import type { JsonError, PriceHistoryFromListResp } from "../../interfaces";
 import {
   removeSingleUpc,
@@ -35,7 +35,7 @@ const PriceSimulator = () => {
   const context = usePriceSimContext();
   const state = useAppSelector((state) => state.priceSim);
   const [globalFcstText, setGlobalFcstText] = useState<string>("");
-  const [file, setFile] = useState<File | null>(null);
+  // const [file, setFile] = useState<File | null>(null);
   const { upcs, upcText } = useAppSelector((state) => state.upcs);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,7 +72,6 @@ const PriceSimulator = () => {
 
     dispatch(setIsLoading(true));
     dispatch(reQuery());
-    console.log(file);
 
     getHistoryFromList(
       context.url,
@@ -212,11 +211,11 @@ const PriceSimulator = () => {
             ))}
           </div>
           <div className="flex gap-2 mt-3">
-            <FileInput
+            {/* <FileInput
               fileExt={[".csv"]}
               setFile={setFile}
               className="w-1/2 py-0"
-            />
+            /> */}
             <button
               data-testid="forecast-search-btn"
               className="btn-themeBlue w-1/2 py-1"

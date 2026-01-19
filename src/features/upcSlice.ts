@@ -43,6 +43,7 @@ interface UpcState {
   topFiveTrends: UpcTrend[];
   bottomFiveTrends: UpcTrend[];
   trendMode: "Totals" | "Mean" | "Volatility";
+  uploadedUpcs: string[]; // Store uploaded UPCs for validation in forecast page
 }
 
 const initialState: UpcState = {
@@ -77,6 +78,7 @@ const initialState: UpcState = {
   topFiveTrends: [],
   bottomFiveTrends: [],
   trendMode: "Totals",
+  uploadedUpcs: [],
 };
 
 export const upcSlice = createSlice({
@@ -195,6 +197,9 @@ export const upcSlice = createSlice({
     ) => {
       state.trendMode = action.payload;
     },
+    setUploadedUpcs: (state, action: PayloadAction<string[]>) => {
+      state.uploadedUpcs = action.payload;
+    },
     resetSelectedUpcs: (state) => {
       state.selectedUpcs = [];
       state.selectedCompOne = null;
@@ -225,6 +230,7 @@ export const upcSlice = createSlice({
       state.trendMode = "Totals";
       state.forecastExport = [];
       state.forecastMetricExport = [];
+      state.uploadedUpcs = [];
     },
     resetUpcState: () => initialState,
   },
@@ -261,6 +267,7 @@ export const {
   setBottomFiveTrends,
   setTrendMode,
   resetSelectedUpcs,
+  setUploadedUpcs,
   clearUpcData,
   resetUpcState,
 } = upcSlice.actions;
