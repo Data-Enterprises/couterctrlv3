@@ -103,7 +103,7 @@ const SelectGroup = () => {
         <label
           htmlFor="group-search"
           data-testid="store-label"
-          className="block text-sm/6 font-medium "
+          className="block text-sm font-medium "
         >
           Group
         </label>
