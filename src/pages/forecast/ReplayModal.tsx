@@ -1,7 +1,11 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useForecastContext } from "./hooks";
 import { replaySim } from "../../api/forecast";
-import { type SimListItem, type SimReplayResp } from "../../interfaces";
+import {
+  type SimListItem,
+  type SimReplayItem,
+  type SimReplayResp,
+} from "../../interfaces";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
 import Modal from "../../components/Modal";
@@ -25,12 +29,32 @@ const ReplayModal = ({ isOpen, onClose }: ReplayModalProps) => {
     start_date: "",
     end_date: "",
   });
+  const [pastTotals, setPastTotals] = useState<{
+    sales: number;
+    qty: number;
+    weight: number;
+  }>({ sales: 0, qty: 0, weight: 0 });
+  const [futureTotals, setFutureTotals] = useState<{
+    sales: number;
+    qty: number;
+    weight: number;
+  }>({ sales: 0, qty: 0, weight: 0 });
 
   useEffect(() => {
     return () => {
       dispatch(setReplayData({ past: [], future: [] }));
     };
   }, []);
+
+  const reducedTotals = (data: SimReplayItem[]) => {
+    return data.reduce((acc, item) => {
+      return {
+        sales: acc.sales + item.total_sales,
+        qty: acc.qty + item.qty,
+        weight: acc.weight + item.weight,
+      };
+    }, { sales: 0, qty: 0, weight: 0 });
+  };
 
   const handleReplay = (simName: string | number) => {
     const replay = state.simList.find((sim) => sim.sim_name === simName);
@@ -41,6 +65,10 @@ const ReplayModal = ({ isOpen, onClose }: ReplayModalProps) => {
         const j: SimReplayResp = resp.data;
         if (j.error === 0) {
           dispatch(setReplayData({ past: j.past, future: j.future }));
+          const pastTotals = reducedTotals(j.past);
+          const futureTotals = reducedTotals(j.future);
+          setPastTotals(pastTotals);
+          setFutureTotals(futureTotals);
         }
       })
       .catch((err) =>
@@ -60,9 +88,9 @@ const ReplayModal = ({ isOpen, onClose }: ReplayModalProps) => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      modalClassName="w-1/2 bg-custom-white"
+      modalClassName="w-2/3 bg-custom-white flex gap-4"
     >
-      <div className="w-1/4">
+      <div className="w-1/4 flex flex-col gap-4">
         <SingleSelect
           label="Replay Simulation"
           data={state.simList}
@@ -70,20 +98,24 @@ const ReplayModal = ({ isOpen, onClose }: ReplayModalProps) => {
           valueKey="sim_name"
           onSelect={(val) => handleReplay(val)}
         />
-        <div>
-          <div className="flex justify-between">
-            <div>Simulation:</div>
-            <div>{selectedReplay.sim_name}</div>
+        <div className={`p-2 bg-bkg rounded-lg shadow text-[15px] grid grid-cols-2 gap-2`}>
+          <div className="flex justify-between col-span-2">
+            <div className="font-medium">Replaying:</div>
+            {selectedReplay.sim_name && <div>{selectedReplay.sim_name}</div>}
           </div>
-          <div className="flex justify-between">
-            <div>Start Date:</div>
-            <div>{formatDate(selectedReplay.start_date)}</div>
+          <div className="flex">
+            <div className="font-medium">Start:</div>
+            {selectedReplay.start_date && <div>{formatDate(selectedReplay.start_date)}</div>}
           </div>
-          <div className="flex justify-between">
-            <div>End Date:</div>
+          <div className="flex justify-end">
+            <div className="font-medium">End:</div>
             <div>{formatDate(selectedReplay.end_date)}</div>
           </div>
         </div>
+      </div>
+
+      <div>
+        <div>Howdy</div>
       </div>
     </Modal>
   );

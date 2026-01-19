@@ -43,7 +43,7 @@ const SalesComp = () => {
   };
 
   return (
-    <div data-testid="upc-sales-comp" className="h-full w-full grid grid-cols-[13%_87%] gap-4">
+    <div data-testid="upc-sales-comp" className="h-full w-full flex gap-4">
       <CtxMenu
         className="hover:bg-panel_active/70"
         options={options}

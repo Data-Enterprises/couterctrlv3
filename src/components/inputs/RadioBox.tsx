@@ -5,12 +5,13 @@ interface Props {
   label: string;
   onChange: (id: number) => void;
   id: number;
+  className?: string;
 }
 
-const RadioBox = ({ value, onChange, id, label }: Props) => {
+const RadioBox = ({ value, onChange, id, label, className }: Props) => {
   return (
     <div
-      className="flex items-center gap-2 cursor-pointer"
+      className={`flex items-center gap-2 cursor-pointer ${className}`}
       data-testid={`radio-${id}`}
       onClick={() => onChange(id)}
     >

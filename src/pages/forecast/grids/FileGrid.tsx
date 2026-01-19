@@ -46,7 +46,7 @@ const FileGrid = () => {
       headerStyle: { borderRight: "1px solid white" },
       cellClass: "no-outline-on-focus",
     },
-    { headerName: "Name", field: "name", flex: 1.3 },
+    { headerName: "Select UPC List", field: "name", flex: 1.3 },
   ];
 
   const getFileNames = () => {

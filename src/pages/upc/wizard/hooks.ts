@@ -3,7 +3,7 @@ import { useAppSelector } from "../../../hooks";
 export const useUpcContext = () => {
   const { url, token } = useAppSelector((state) => state.app);
   const { userid } = useAppSelector((state) => state.user);
-  const { startDate, endDate } = useAppSelector((state) => state.search);
+  const { startDate, endDate, type } = useAppSelector((state) => state.search);
   const {
     index,
     selectedMode,
@@ -17,6 +17,7 @@ export const useUpcContext = () => {
     selectedStores,
     selectedCompOne,
     selectedCompTwo,
+    radioId,
   } = useAppSelector((state) => state.upc);
 
   return {
@@ -37,5 +38,7 @@ export const useUpcContext = () => {
     selectedStores,
     selectedCompOne,
     selectedCompTwo,
+    radioId,
+    type,
   };
 };

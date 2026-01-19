@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
-import { useAppDispatch } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useUpcContext } from "./hooks";
-
-// wizard
-import UpcWizard from "./UpcWizard";
-import StepOne from "./StepOne";
-import StepThree from "./StepThree";
-import StepTwo from "./StepTwo";
 
 // modules
 import SalesComp from "../modules/SalesComp";
@@ -25,7 +19,9 @@ import {
   setIsLoading,
   setOptBestPrices,
   setOptBestPricesByUpc,
+  setRadioId,
   setSalesComp,
+  setSelectedStores,
   setTopFiveTrends,
   setUpcCount,
   setUpcItems,
@@ -47,20 +43,36 @@ import type {
 } from "../../../interfaces";
 import { colorCodes } from "../components";
 import { convertData, formatForecastExport } from "../utils";
+import { useResizeContext } from "../../forecast/hooks";
+
+import ModelSelect from "./components/ModeSelect";
+import FileInput from "../../forecast/controls/FileInput";
+import { setUpcs } from "../../../features/upcUploadSlice";
+import StoreDatePicker from "../components/StoreDatePicker";
 
 const UpcList = () => {
   const toast = useToast();
   const context = useUpcContext();
+  const { height } = useResizeContext("");
   const dispatch = useAppDispatch();
   const [file, setFile] = useState<File | null>(null);
-  const [styling, setStyling] = useState<string>("h-[265px] w-[400px]");
+  const { upcs } = useAppSelector((state) => state.upcs);
 
-  // To set the height and width of the wizard based on the step
+  // Dismount cleanup
   useEffect(() => {
-    if (context.index === 0) setStyling("h-[265px] w-[400px]");
-    if (context.index === 1) setStyling("h-[420px] w-[530px]");
-    if (context.index === 2) setStyling("h-[200px] w-[530px]");
-  }, [context.index]);
+    return () => {
+      dispatch(setSelectedStores([]));
+      dispatch(setRadioId(0));
+      dispatch(setUpcs([]));
+    };
+  }, []);
+
+  useEffect(() => {
+    // On mount, if radioId is 0, set to 1 (Stores)
+    if (context.radioId === 0) {
+      dispatch(setRadioId(1));
+    }
+  }, [context.radioId]);
 
   // Data fetching based on selected mode
   const getData = () => {
@@ -256,6 +268,7 @@ const UpcList = () => {
     if (context.selectedMode == 2) return <Forcast />;
     if (context.selectedMode == 3) return <PriceOpt />;
     if (context.selectedMode == 4) return <TrendDetector />;
+    return null;
   };
 
   return (
@@ -263,27 +276,50 @@ const UpcList = () => {
       data-testid="upc-list-page"
       className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] w-full p-4 relative"
     >
-      {context.dataLoaded ? (
-        module()
-      ) : (
-        <div
-          data-testid="upcwizard-container"
-          className="min-h-[calc(100vh-5rem)] flex justify-center items-center"
-        >
-          <UpcWizard
-            className={`max-w-2xl mb-16 shadow-lg ${styling}`}
-            index={context.index}
-          >
-            <StepOne
-              className={"h-[265px] w-[400px]"}
-              file={file}
-              setFile={setFile}
-            />
-            <StepTwo className={"h-[420px] w-[530px]"} getData={getData} />
-            <StepThree className="h-[200px] w-[530px]" />
-          </UpcWizard>
+      <div className="w-full h-full grid grid-cols-[20%_80%] gap-4">
+        <div className="space-y-4 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]">
+          <StoreDatePicker />
+          <ModelSelect />
+          <div className="bg-custom-white rounded-lg shadow-lg px-4 pb-3">
+            <div className="bg-blue-500 text-custom-white -mx-4 py-0.5 px-4 rounded-t-lg font-medium flex justify-between">
+              <div>UPC list from file</div>
+              <div className={`${upcs.length === 0 && "hidden"}`}>
+                {upcs.length}
+              </div>
+            </div>
+            <div
+              className={`bg-bkg shadow rounded-lg grid grid-cols-3 text-xs ${height} overflow-y-scroll no-scrollbar my-2`}
+            >
+              {upcs.map((u, i) => (
+                <div
+                  key={i}
+                  data-testid={`forecast-upc-item-${u}-${i}`}
+                  className="px-2 py-0.5 font-medium cursor-default"
+                >
+                  {u}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <FileInput
+                file={file}
+                fileExt={[".csv"]}
+                setFile={setFile}
+                className="w-full py-0"
+              />
+              <button
+                data-testid="forecast-search-btn"
+                className="btn-themeBlue py-1"
+                onClick={getData}
+              >
+                Search
+              </button>
+            </div>
+          </div>
         </div>
-      )}
+
+        {context.dataLoaded && module()}
+      </div>
     </div>
   );
 };

@@ -22,11 +22,11 @@ const ModelSelect = () => {
   };
 
   return (
-    <div className="flex flex-col justify-around items-center gap-2 mt-2">
-      <div className="w-full text-center text-sm text-content/70">
-        Select the mode you would like to view
+    <div className="bg-custom-white rounded-lg shadow-lg">
+      <div className="bg-blue-500 font-medium rounded-t-lg text-custom-white px-2 py-0.5">
+        Select Mode
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 text-sm p-4 gap-4">
         {modes.map((mode) => (
           <div key={mode.mode} onClick={() => handleModeSelect(mode.mode)}>
             <RadioBox
