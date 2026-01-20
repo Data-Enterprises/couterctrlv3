@@ -29,6 +29,10 @@ const SideBar = () => {
   const user = useAppSelector((state) => state.user);
   const nav = useAppSelector((state) => state.nav);
   const [navItems, setNavItems] = useState<Navigation[]>(navigation);
+  const [bottomNav, setBottomNav] = useState<{
+    settings: boolean;
+    signout: boolean;
+  }>({ settings: false, signout: false });
 
   // make api call to set the user prefs when navigating to a new page
   useEffect(() => {
@@ -108,6 +112,13 @@ const SideBar = () => {
     return {};
   };
 
+  const handleBottomNavHover = (
+    navItem: "settings" | "signout",
+    isHovering: boolean
+  ) => {
+    setBottomNav((prev) => ({ ...prev, [navItem]: isHovering }));
+  };
+
   return (
     <div
       ref={ref}
@@ -148,7 +159,7 @@ const SideBar = () => {
             onMouseEnter={() => handleHover(item.name, true)}
             onMouseLeave={() => handleHover(item.name, false)}
           >
-            <div className="flex w-full items-center md:pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200">
+            <div className="flex w-full items-center md:pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-100">
               <div className="flex-shrink-0 flex items-center justify-center">
                 <item.icon className={mobileIconStyle()} />
               </div>
@@ -165,10 +176,10 @@ const SideBar = () => {
             <div
               className={`${
                 item.isHovering && !nav.isNavOpen
-                  ? "absolute text-nowrap left-12 mt-2 bg-blue-500 text-custom-white font-medium min-w-32 text-center py-1 px-2 rounded-lg"
+                  ? "absolute text-nowrap shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
                   : "hidden"
               }`}
-              style={{ zIndex: 1500 }}
+              style={{ zIndex: 9999 }}
             >
               {item.name}
             </div>
@@ -182,10 +193,12 @@ const SideBar = () => {
           data-testid="nav-settings"
           className={`${
             context.isDesktop ? "" : "hidden"
-          } flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200`}
+          } flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200 relative`}
           onClick={() => {
             navigate("settings");
           }}
+          onMouseEnter={() => handleBottomNavHover("settings", true)}
+          onMouseLeave={() => handleBottomNavHover("settings", false)}
         >
           <div className="flex-shrink-0 flex items-center justify-center">
             <Cog6ToothIcon className={mobileIconStyle()} />
@@ -199,11 +212,23 @@ const SideBar = () => {
           >
             Settings
           </div>
+          <div
+            className={`${
+              bottomNav.settings && !nav.isNavOpen
+                ? "absolute text-nowrap shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
+                : "hidden"
+            }`}
+            style={{ zIndex: 9999 }}
+          >
+            Settings
+          </div>
         </div>
         <div
           data-testid="signout-btn"
-          className="flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200"
+          className="flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200 relative"
           onClick={handleSignOut}
+          onMouseEnter={() => handleBottomNavHover("signout", true)}
+          onMouseLeave={() => handleBottomNavHover("signout", false)}
         >
           <div className="flex-shrink-0 flex items-center justify-center">
             <SignOutIcon className={mobileIconStyle()} />
@@ -214,6 +239,16 @@ const SideBar = () => {
                 ? "w-full opacity-100"
                 : "w-0 opacity-0 pointer-events-none"
             } transition-all duration-200 text-nowrap`}
+          >
+            Sign Out
+          </div>
+          <div
+            className={`${
+              bottomNav.signout && !nav.isNavOpen
+                ? "absolute text-nowrap shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
+                : "hidden"
+            }`}
+            style={{ zIndex: 2500 }}
           >
             Sign Out
           </div>
