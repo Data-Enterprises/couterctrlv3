@@ -18,6 +18,7 @@ import { exportData } from "../exportHeaders/utils";
 import { reset } from "../../../features/upcModalSlice";
 import { priceOptHeaders } from "../exportHeaders";
 import UpcModal from "../modal/UpcModal";
+import UpcPrices from "../components/UpcPrices";
 
 const PriceOpt = () => {
   const toast = useToast();
@@ -114,7 +115,8 @@ const PriceOpt = () => {
             rowData={upcState.optBestPricesByUpc}
             handleCellClick={handleCellClick}
           />
-          <PriceOptBar type="Price" yKey="price" />
+          {/* <PriceOptBar type="Price" yKey="price" /> */}
+          <UpcPrices />
           <PriceOptBar type="Total Quantity" yKey="total_qty" />
           <PriceOptBar type="Total Revenue" yKey="total_revenue" />
         </div>
