@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { setUpcs } from "../../../features/upcUploadSlice";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
@@ -26,6 +26,12 @@ const FileInput = ({
   const { fileName } = useAppSelector((state) =>
     page === "upc" ? state.upc : state.upcs
   );
+
+  useEffect(() => {
+    if (inputRef.current && fileName === "") {
+      inputRef.current.value = "";
+    }
+  }, [fileName]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!fileExt.some((ext) => event.target.files![0].name.endsWith(ext))) {

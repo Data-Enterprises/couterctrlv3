@@ -54,7 +54,8 @@ const PriceOptBar = ({ type, yKey }: BarProps) => {
         (b[yKey as keyof UpcPriceOpt] as number) -
         (a[yKey as keyof UpcPriceOpt] as number)
     );
-    setMax(findMax[0][yKey as keyof UpcPriceOpt] as number);
+    const newMax = findMax.length === 0 ? 0 : findMax[0][yKey as keyof UpcPriceOpt] as number;
+    setMax(newMax);
   }, [state.optDisplayMode, state.selectedUpcs, state.selectedOptItem]);
 
   const rgbaColor = (hex: string, alpha: number) => {

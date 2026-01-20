@@ -45,11 +45,6 @@ const StoreDatePicker = ({ setFile, getModuleData }: StoreDatePickerProps) => {
 
   const handleSelectChange = (id: string | number) => {
     dispatch(setRadioId(id as number));
-    // if (id === 1) {
-    //   setFilteredData(user.assignedStores);
-    // } else if (id === 2) {
-    //   setFilteredData(group.groups);
-    // }
   };
 
   const handleSelectClick = (id: string | number) => {
