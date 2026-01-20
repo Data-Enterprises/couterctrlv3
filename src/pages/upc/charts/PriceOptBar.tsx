@@ -47,14 +47,18 @@ const PriceOptBar = ({ type, yKey }: BarProps) => {
         // .map((item) => ({ ...item }))
         .sort(
           (a, b) =>
-            (a[yKey as keyof UpcPriceOpt] as number) -
-            (b[yKey as keyof UpcPriceOpt] as number)
+            (b[yKey as keyof UpcPriceOpt] as number) -
+            (a[yKey as keyof UpcPriceOpt] as number)
         );
     }
     setChartData(data);
-    setMax(
-      Math.max(...data.map((item) => item[yKey as keyof UpcPriceOpt] as number))
+
+    const findMax = [...data].sort(
+      (a, b) =>
+        (b[yKey as keyof UpcPriceOpt] as number) -
+        (a[yKey as keyof UpcPriceOpt] as number)
     );
+    setMax(findMax[0][yKey as keyof UpcPriceOpt] as number);
   }, [state.optDisplayMode, state.selectedUpcs, state.selectedOptItem]);
 
   const rgbaColor = (hex: string, alpha: number) => {
