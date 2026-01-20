@@ -79,6 +79,14 @@ const SideBar = () => {
     dispatch(resetSearchSlice());
   };
 
+  const handleHover = (itemName: string, isHovering: boolean) => {
+    const item = navItems.find((navItem) => navItem.name === itemName);
+    if (item) {
+      item.isHovering = isHovering;
+      setNavItems([...navItems]);
+    }
+  };
+
   const slidingStyle =
     "data-[open=true]:w-[145px] md:data-[open=true]:w-[191px] data-[open=false]:w-0 md:data-[open=false]:w-12 transition-all duration-300 data-[open=true]:shadow-[0px_2px_4px_rgba(0,0,0,0.2)] data-[open=false]:shadow-[0px_3px_3px_rgba(0,0,0,0.2)]";
 
@@ -97,7 +105,7 @@ const SideBar = () => {
     if (nav.isNavOpen) {
       return { zIndex: 1000 };
     }
-    return {}
+    return {};
   };
 
   return (
@@ -132,9 +140,13 @@ const SideBar = () => {
                 item.userTypes.includes("*")
                   ? "flex"
                   : "hidden"
-              } ${isActive ? "bg-panel_active/75 text-custom-white" : ""}`
+              } ${
+                isActive ? "bg-panel_active/75 text-custom-white" : ""
+              } relative`
             }
             onClick={() => handleNavClick(item)}
+            onMouseEnter={() => handleHover(item.name, true)}
+            onMouseLeave={() => handleHover(item.name, false)}
           >
             <div className="flex w-full items-center md:pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200">
               <div className="flex-shrink-0 flex items-center justify-center">
@@ -149,6 +161,16 @@ const SideBar = () => {
               >
                 {item.name}
               </div>
+            </div>
+            <div
+              className={`${
+                item.isHovering && !nav.isNavOpen
+                  ? "absolute text-nowrap left-12 mt-2 bg-blue-500 text-custom-white font-medium min-w-32 text-center py-1 px-2 rounded-lg"
+                  : "hidden"
+              }`}
+              style={{ zIndex: 1500 }}
+            >
+              {item.name}
             </div>
           </NavLink>
         ))}
