@@ -43,7 +43,7 @@ const SalesComp = () => {
   };
 
   return (
-    <div data-testid="upc-sales-comp" className="h-full w-full grid grid-cols-[13%_87%] gap-4">
+    <div data-testid="upc-sales-comp" className="h-full w-full grid grid-cols-[14%_85%] gap-4 overflow-hidden">
       <CtxMenu
         className="hover:bg-panel_active/70"
         options={options}
@@ -53,7 +53,7 @@ const SalesComp = () => {
       <UpcControls />
       <div data-testid="sales-comp-main-grid" className={`w-full h-full grid ${rows} gap-4`}>
         <SalesCompHeader />
-        <div className="grid grid-cols-[80%_19%] gap-4 mb-4">
+        <div className="grid grid-cols-[70%_29%] gap-4 mb-4">
           <SalesCompGrid />
           <SalesComparison />
         </div>

@@ -1,31 +1,47 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { setUpcs } from "../../../features/upcUploadSlice";
-import { useAppDispatch } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { setFileName, setUploadedUpcs } from "../../../features/upcSlice";
+import { setUpcFileName } from "../../../features/upcUploadSlice";
 
 interface FileInputProps {
-  file: File | null;
   fileExt: string[];
   setFile: (file: File | null) => void;
   className?: string;
   labelClassName?: string;
+  page: "upc" | "forecast";
 }
 
 const FileInput = ({
-  file,
   fileExt,
   setFile,
   className = "w-full",
   labelClassName = "",
+  page,
 }: FileInputProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { fileName } = useAppSelector((state) =>
+    page === "upc" ? state.upc : state.upcs
+  );
+
+  useEffect(() => {
+    if (inputRef.current && fileName === "") {
+      inputRef.current.value = "";
+    }
+  }, [fileName]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!fileExt.some((ext) => event.target.files![0].name.endsWith(ext))) {
       toast.warn("Please select a valid CSV file");
     } else if (event.target.files && event.target.files[0]) {
+      if (page === "upc") {
+        dispatch(setFileName(event.target.files[0].name));
+      } else if (page === "forecast") {
+        dispatch(setUpcFileName(event.target.files[0].name));
+      }
       setFile(event.target.files[0]);
 
       const file = event.target.files[0];
@@ -33,9 +49,12 @@ const FileInput = ({
       reader.onload = (e: ProgressEvent<FileReader>) => {
         const text = e.target?.result;
         if (typeof text === "string") {
-          dispatch(setUpcs([])); // Clear existing UPCs before adding new ones
           const data = processCSV(text);
-          dispatch(setUpcs(data));
+          if (page === "forecast") {
+            dispatch(setUpcs(data));
+          } else {
+            dispatch(setUploadedUpcs(data));
+          }
         }
       };
       reader.readAsText(file);
@@ -57,8 +76,10 @@ const FileInput = ({
 
   return (
     <div className={`flex gap-2 ${className}`}>
-      <label className={`btn-themeBlue w-full ${labelClassName}`}>
-        <div className="w-full text-center">{file !== null ? file.name : "Select File"}</div>
+      <label className={`btn-themeBlue w-full ${labelClassName} relative`}>
+        <div className="absolute left-0 w-full text-center">
+          {fileName ? fileName : "Select File"}
+        </div>
         <input
           data-testid="upc-file-input"
           type="file"

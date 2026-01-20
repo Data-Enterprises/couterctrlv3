@@ -126,7 +126,7 @@ const SingleSelect = <T,>({
       className={`single-select ${className}`}
     >
       <div className="flex flex-col">
-        <label htmlFor="search" className="text-sm/6 font-medium ml-0.5">
+        <label htmlFor="search" className="text-sm font-medium ml-0.5">
           {label}
         </label>
         <div className="relative">
@@ -177,7 +177,7 @@ const SingleSelect = <T,>({
                 <div className="grid grid-cols-[14px_1fr] min-h-[27px]">
                   <div className="flex items-center"></div>
                   <div className="flex items-center">
-                    {" "}
+                    {/* {" "} */}
                     {d[displayKey] as string}
                   </div>
                 </div>

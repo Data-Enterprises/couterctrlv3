@@ -22,7 +22,6 @@ import {
   type ColGroupDef,
   type RowClickedEvent,
 } from "ag-grid-community";
-// import type { ForecastQtyData, ForecastSalesData } from "../../../interfaces";
 import { useForecastContext } from "../hooks";
 import type { JsonError, PriceHistoryFromListResp } from "../../../interfaces";
 import { getHistoryFromList } from "../../../api/priceSim";
@@ -47,7 +46,7 @@ const FileGrid = () => {
       headerStyle: { borderRight: "1px solid white" },
       cellClass: "no-outline-on-focus",
     },
-    { headerName: "Name", field: "name", flex: 1.3 },
+    { headerName: "Select UPC List", field: "name", flex: 1.3 },
   ];
 
   const getFileNames = () => {
@@ -136,7 +135,7 @@ const FileGrid = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg">
+    <div className="bg-custom-white rounded-lg shadow-lg z-0">
       <AgGridReact
         rowData={tableData}
         columnDefs={colDefs}

@@ -52,7 +52,7 @@ const CouponsGrid = () => {
   };
 
   return (
-    <div className={`bg-custom-white w-full h-full rounded-lg shadow-lg p-2`}>
+    <div className={`bg-custom-white w-full h-[90%] rounded-lg shadow-lg p-2`}>
       <AgGridReact
         rowData={context.gridCoupons}
         columnDefs={cols}

@@ -3,12 +3,6 @@ import { useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useUpcContext } from "./hooks";
 
-// wizard
-import UpcWizard from "./UpcWizard";
-import StepOne from "./StepOne";
-import StepThree from "./StepThree";
-import StepTwo from "./StepTwo";
-
 // modules
 import SalesComp from "../modules/SalesComp";
 import Forcast from "../modules/Forecast";
@@ -17,6 +11,7 @@ import TrendDetector from "../modules/TrendDetector";
 import {
   setBottomFiveTrends,
   setDataLoaded,
+  setFileName,
   setForecastData,
   setForecastExport,
   setForecastHistory,
@@ -25,6 +20,7 @@ import {
   setIsLoading,
   setOptBestPrices,
   setOptBestPricesByUpc,
+  setRadioId,
   setSalesComp,
   setTopFiveTrends,
   setUpcCount,
@@ -48,30 +44,51 @@ import type {
 import { colorCodes } from "../components";
 import { convertData, formatForecastExport } from "../utils";
 
+import ModeSelect from "./components/ModeSelect";
+import StoreDatePicker from "../components/StoreDatePicker";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+import NoDataDisplay from "../components/NoDataDisplay";
+
 const UpcList = () => {
   const toast = useToast();
   const context = useUpcContext();
   const dispatch = useAppDispatch();
   const [file, setFile] = useState<File | null>(null);
-  const [styling, setStyling] = useState<string>("h-[265px] w-[400px]");
 
-  // To set the height and width of the wizard based on the step
   useEffect(() => {
-    if (context.index === 0) setStyling("h-[265px] w-[400px]");
-    if (context.index === 1) setStyling("h-[420px] w-[530px]");
-    if (context.index === 2) setStyling("h-[200px] w-[530px]");
-  }, [context.index]);
+    return () => {
+      dispatch(setRadioId(0));
+      if (
+        context.salesComp.length === 0 &&
+        context.forecast.length === 0 &&
+        context.optBestPrices.length === 0 &&
+        context.upcTrends.length === 0
+      ) {
+        dispatch(setFileName(""));
+      }
+    };
+  }, []);
 
-  // Data fetching based on selected mode
-  const getData = () => {
+  useEffect(() => {
+    // On mount, if radioId is 0, set to 1 (Stores)
+    if (context.radioId === 0) {
+      dispatch(setRadioId(1));
+    }
+  }, [context.radioId]);
+
+  const getModuleData = (mode: number) => {
+    if (mode === 0) {
+      toast.warn("Please select a mode");
+      return;
+    }
     dispatch(setIsLoading(true));
-    if (context.selectedMode == 1) {
+    if (mode == 1) {
       getCompData();
-    } else if (context.selectedMode == 2) {
+    } else if (mode == 2) {
       getForecastData();
-    } else if (context.selectedMode == 3) {
+    } else if (mode == 3) {
       getPriceOptData();
-    } else if (context.selectedMode == 4) {
+    } else if (mode == 4) {
       getTrendData();
     }
   };
@@ -122,8 +139,6 @@ const UpcList = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0 && j.qty_results !== null) {
-          // Both of these need to have the naming conventions changed to match qty
-          // then need to add the logic for the sales forecast as well
           const history = Object.entries(j.qty_results)
             .map(([k, v]) => [k, structuredClone(v as UpcForecast).history])
             .map(([id, obj], idx) =>
@@ -162,9 +177,6 @@ const UpcList = () => {
           }));
 
           const qty = formatForecastExport(j.qty_results);
-          // Setting this up for later use when sales forecast is added
-          // const sales = formatForecastExport(j.sales_results);
-
           dispatch(setForecastExport(qty.data));
           dispatch(setForecastMetricExport(qty.metrics));
           dispatch(setUpcItems(upcItems));
@@ -227,10 +239,17 @@ const UpcList = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0 && j.trends.length > 0) {
-          const upcItems = [...j.trends].map((item: UpcTrend) => ({
-            product_code: item.product_code,
-            description: item.product_description,
-          }));
+          const upcItems = [...j.trends]
+            .map((item: UpcTrend) => ({
+              product_code: item.product_code,
+              description: item.product_description,
+            }))
+            .reduce((acc: UpcItem[], cur) => {
+              if (!acc.find((item) => item.product_code === cur.product_code)) {
+                acc.push(cur);
+              }
+              return acc;
+            }, []);
           dispatch(setUpcItems(upcItems));
           dispatch(setUpcTrends(j.trends));
           dispatch(setTopFiveTrends(j.top_5));
@@ -247,15 +266,27 @@ const UpcList = () => {
   const cleanUp = () => {
     dispatch(setIsLoading(false));
     dispatch(setIndex(0));
-    setFile(null);
   };
 
   // The returned module based on selected mode
   const module = () => {
-    if (context.selectedMode == 1) return <SalesComp />;
-    if (context.selectedMode == 2) return <Forcast />;
-    if (context.selectedMode == 3) return <PriceOpt />;
-    if (context.selectedMode == 4) return <TrendDetector />;
+    if (context.selectedMode == 1)
+      return context.salesComp.length > 0 ? <SalesComp /> : <NoDataDisplay />;
+    if (context.selectedMode == 2)
+      return context.forecast.length > 0 ? <Forcast /> : <NoDataDisplay />;
+    if (context.selectedMode == 3)
+      return context.optBestPrices.length > 0 ? (
+        <PriceOpt />
+      ) : (
+        <NoDataDisplay />
+      );
+    if (context.selectedMode == 4)
+      return context.upcTrends.length > 0 ? (
+        <TrendDetector />
+      ) : (
+        <NoDataDisplay />
+      );
+    return null;
   };
 
   return (
@@ -263,27 +294,24 @@ const UpcList = () => {
       data-testid="upc-list-page"
       className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] w-full p-4 relative"
     >
-      {context.dataLoaded ? (
-        module()
-      ) : (
-        <div
-          data-testid="upcwizard-container"
-          className="min-h-[calc(100vh-5rem)] flex justify-center items-center"
-        >
-          <UpcWizard
-            className={`max-w-2xl mb-16 shadow-lg ${styling}`}
-            index={context.index}
-          >
-            <StepOne
-              className={"h-[265px] w-[400px]"}
-              file={file}
-              setFile={setFile}
-            />
-            <StepTwo className={"h-[420px] w-[530px]"} getData={getData} />
-            <StepThree className="h-[200px] w-[530px]" />
-          </UpcWizard>
+      <div className="w-full h-full grid grid-cols-[19%_81%] gap-4">
+        <div className="space-y-4">
+          <StoreDatePicker setFile={setFile} getModuleData={getModuleData} />
+          <ModeSelect />
         </div>
-      )}
+
+        {context.dataLoaded && !context.isLoading ? module() : null}
+        {context.isLoading && <LoadingIndicator className="ml-28" />}
+        {context.selectedMode === 0 && (
+          <div className="w-full h-full flex justify-center items-center pt-28">
+            <div className="bg-custom-white p-4 rounded-lg shadow-lg text-center">
+              <div className="text-lg font-medium">No mode selected</div>
+              <div className="text-content/70">Please select a mode with your date range</div>
+              <div className="text-content/70">and your selected Stores or Group</div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

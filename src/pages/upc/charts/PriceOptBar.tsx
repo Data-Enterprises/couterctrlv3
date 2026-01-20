@@ -29,32 +29,33 @@ const PriceOptBar = ({ type, yKey }: BarProps) => {
         .filter((item) =>
           state.selectedOptItem.product_code.includes(item.product_code)
         )
-        // the product_code is what the chart is indexing by, so to avoid duplicates, I'm changing it to the price + index
-        // this way, the chart will show each price point for the selected item
-        // The chart is set to take those out in the axisLeft format prop for visualization purposes
         .map((item, i) => ({
           ...item,
           product_code: `${i + 1} - $${item.price}`,
         }))
         .sort(
           (a, b) =>
-            (a[yKey as keyof UpcPriceOpt] as number) -
-            (b[yKey as keyof UpcPriceOpt] as number)
+            (b[yKey as keyof UpcPriceOpt] as number) -
+            (a[yKey as keyof UpcPriceOpt] as number)
         );
     } else if (state.optDisplayMode === "multiRow") {
       data = state.optBestPricesByUpc
         .filter((item) => state.selectedUpcs.includes(item.product_code))
-        // .map((item) => ({ ...item }))
         .sort(
           (a, b) =>
-            (a[yKey as keyof UpcPriceOpt] as number) -
-            (b[yKey as keyof UpcPriceOpt] as number)
+            (b[yKey as keyof UpcPriceOpt] as number) -
+            (a[yKey as keyof UpcPriceOpt] as number)
         );
     }
-    setChartData(data);
-    setMax(
-      Math.max(...data.map((item) => item[yKey as keyof UpcPriceOpt] as number))
+    setChartData(data.reverse());
+
+    const findMax = [...data].sort(
+      (a, b) =>
+        (b[yKey as keyof UpcPriceOpt] as number) -
+        (a[yKey as keyof UpcPriceOpt] as number)
     );
+    const newMax = findMax.length === 0 ? 0 : findMax[0][yKey as keyof UpcPriceOpt] as number;
+    setMax(newMax);
   }, [state.optDisplayMode, state.selectedUpcs, state.selectedOptItem]);
 
   const rgbaColor = (hex: string, alpha: number) => {

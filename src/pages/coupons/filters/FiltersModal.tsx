@@ -38,7 +38,8 @@ const FiltersModal = () => {
       state.filterType === "Store" ||
       state.filterType === "UPC" ||
       state.filterType === "Desc" ||
-      state.filterType === "CustomerID"
+      state.filterType === "CustomerID" ||
+      state.filterType === "Sub Department"
     ) {
       return <TextFilter text={text} setText={setText} />;
     } else if (state.filterType === "CpnAmount") {

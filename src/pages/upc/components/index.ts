@@ -9,8 +9,8 @@ export const useScrollHeight = () => {
 
   const calcHeight = () => {
     if (topRef.current) {
-      const position = topRef.current.getBoundingClientRect().height;
-      setHeight(window.innerHeight - position - 80); // 32 for page padding + 48 for the titlebar height
+      const position = topRef.current.getBoundingClientRect().bottom;
+      setHeight(window.innerHeight - position - 24);
     }
   };
 

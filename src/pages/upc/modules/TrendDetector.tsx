@@ -51,7 +51,7 @@ const TrendDetector = () => {
   };
 
   return (
-    <div data-testid="upc-trend" className="h-full w-full grid grid-cols-[12%_88%] gap-4">
+    <div data-testid="upc-trend" className="h-full w-full grid grid-cols-[12%_87%] gap-4">
       <TrendModal />
       <UpcModal handleExport={handleExport} />
       <UpcControls />

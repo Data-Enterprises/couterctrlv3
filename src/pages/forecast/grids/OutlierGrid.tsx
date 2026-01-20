@@ -6,10 +6,9 @@ import {
   ModuleRegistry,
   type ColDef,
   type ColGroupDef,
-  // type RowClickedEvent,
   TooltipModule,
 } from "ag-grid-community";
-// import type { JsonError } from "../../../interfaces";
+
 import {
   loadSimRowData,
   reloadRowData,
@@ -17,9 +16,7 @@ import {
   setGlobalFcstPrice,
   setNewRowAdDaysValue,
   setNewRowPriceValue,
-  // setPriceHistory,
   setSelectedSim,
-  setSimRowData,
   updateGlobalFcstRows,
 } from "../../../features/forecastSlice";
 ModuleRegistry.registerModules([AllCommunityModule, TooltipModule]);
@@ -28,17 +25,17 @@ import type {
   SimBtns,
 } from "../../../features/forecastSlice";
 import { formatCurrency2 } from "../../../utils";
-// import { getPriceHistory } from "../../../api/forecast";
-// import { useToast } from "../../../components/toasts/hooks/useToast";
-// import { useForecastContext } from "../hooks";
 import CalcNowCheckbox from "../../priceSimulator/grid/CheckBoxCell";
 import CalcModal from "../CalcModal";
+import SaveSimModal from "../SaveSimModal";
+import { useState } from "react";
+import ReplayModal from "../ReplayModal";
 
 const OutlierGrid = () => {
-  // const toast = useToast();
-  // const context = useForecastContext();
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.forecast);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [replayModalOpen, setReplayModalOpen] = useState<boolean>(false);
 
   const colDefs: (
     | ColDef<ForecastOutlierRow>
@@ -171,54 +168,40 @@ const OutlierGrid = () => {
 
   const simBtnClassName = (sim: keyof SimBtns) => {
     if (state.simBtns[sim] === 0) {
-      return "opacity-50 cursor-not-allowed pointer-events-none";
+      return "btn-themeBlue opacity-50 cursor-not-allowed pointer-events-none";
     }
 
-    return "";
+    if (state.selectedSim === sim) {
+      return "btn-themeGreen";
+    }
+
+    return "btn-themeBlue";
   };
 
   const renderTitle = () => {
     const sim = state.selectedSim;
-    if (sim === "sim1") return "Simulation 1";
-    if (sim === "sim2") return "Simulation 2";
-    if (sim === "sim3") return "Simulation 3";
-    if (sim === "sim4") return "Simulation 4";
+    if (sim) {
+      return state.simTitles[sim as keyof SimBtns];
+    }
     return "Next 7 Day Forecast";
   };
 
-  const saveSimulation = () => {
-    const sim1 = state.simBtns.sim1;
-    const sim2 = state.simBtns.sim2;
-    const sim3 = state.simBtns.sim3;
-    const sim4 = state.simBtns.sim4;
-    let simToSave = "";
-    // if no sims have been saved, save to sim1
-    if (sim1 === 0) {
-      // save to sim1
-      simToSave = "sim1";
-    } else if (sim2 === 0) {
-      // save to sim2
-      simToSave = "sim2";
-    } else if (sim3 === 0) {
-      // save to sim3
-      simToSave = "sim3";
-    } else if (sim4 === 0) {
-      // save to sim4
-      simToSave = "sim4";
-    }
-
-    // When saving, we set the selected sim to the one we just saved to
-    // now we can update the sim row data until we reload
-    // or select another existing simulator
-    dispatch(setSelectedSim(simToSave as keyof SimBtns));
-    dispatch(
-      setSimRowData({ sim: simToSave as keyof SimBtns, rows: state.rowData })
-    );
+  const openSaveSimModal = () => {
+    setIsOpen(true);
   };
 
   const loadSimulationRows = (sim: string) => {
     dispatch(setSelectedSim(sim as keyof SimBtns));
     dispatch(loadSimRowData(sim as keyof SimBtns));
+  };
+
+  const simsFull = () => {
+    for (const sim in state.simBtns) {
+      if (state.simBtns[sim as keyof SimBtns] === 0) {
+        return false;
+      }
+    }
+    return true;
   };
 
   return (
@@ -230,12 +213,17 @@ const OutlierGrid = () => {
       }`}
     >
       <CalcModal />
+      <SaveSimModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      <ReplayModal
+        isOpen={replayModalOpen}
+        onClose={() => setReplayModalOpen(false)}
+      />
       <div className="absolute -translate-y-[70px] right-2 flex items-end justify-between w-full gap-2">
         <div className="pl-4 flex items-end gap-2">
           <div>
             <label
               htmlFor="global-price"
-              className="pl-0.5 text-xs font-medium"
+              className="pl-0.5 text-sm font-medium"
             >
               Global Price
             </label>
@@ -243,7 +231,7 @@ const OutlierGrid = () => {
               id="global-price"
               data-testid="global-price-input"
               type="text"
-              className="basic-input focus:border py-1 bg-custom-white w-20"
+              className="basic-input focus:border py-1 bg-custom-white w-24"
               value={state.globalFcstPrice === "0" ? "" : state.globalFcstPrice}
               onChange={(e) => {
                 dispatch(setGlobalFcstPrice(e.currentTarget.value));
@@ -252,37 +240,45 @@ const OutlierGrid = () => {
           </div>
           <button
             data-testid="set-global-price-btn"
-            className="btn-themeBlue py-1"
+            className="btn-themeBlue py-0.5"
             onClick={() => dispatch(updateGlobalFcstRows())}
           >
             Set
+          </button>
+
+          <button
+            data-testid="set-global-price-btn"
+            className="btn-themeBlue py-0.5"
+            onClick={() => setReplayModalOpen(true)}
+          >
+            Replay Sim
           </button>
         </div>
         <div className="flex gap-2">
           <button
             data-testid="sim1-btn"
-            className={`btn-themeBlue py-0.5 ${simBtnClassName("sim1")}`}
+            className={`py-0.5 ${simBtnClassName("sim1")}`}
             onClick={() => loadSimulationRows("sim1")}
           >
             Sim 1
           </button>
           <button
             data-testid="sim2-btn"
-            className={`btn-themeBlue py-0.5 ${simBtnClassName("sim2")}`}
+            className={`py-0.5 ${simBtnClassName("sim2")}`}
             onClick={() => loadSimulationRows("sim2")}
           >
             Sim 2
           </button>
           <button
             data-testid="sim3-btn"
-            className={`btn-themeBlue py-0.5 ${simBtnClassName("sim3")}`}
+            className={`py-0.5 ${simBtnClassName("sim3")}`}
             onClick={() => loadSimulationRows("sim3")}
           >
             Sim 3
           </button>
           <button
             data-testid="sim4-btn"
-            className={`btn-themeBlue py-0.5 ${simBtnClassName("sim4")}`}
+            className={`py-0.5 ${simBtnClassName("sim4")}`}
             onClick={() => loadSimulationRows("sim4")}
           >
             Sim 4
@@ -309,13 +305,15 @@ const OutlierGrid = () => {
         </div>
         <button
           data-testid="save-new-sim-btn"
-          className="btn-themeGreen py-0 mb-1"
-          onClick={saveSimulation}
+          className={`${
+            simsFull() && "opacity-50 pointer-events-none"
+          } btn-themeGreen py-0 mb-1`}
+          onClick={openSaveSimModal}
         >
           Save New Sim
         </button>
       </div>
-      <div className="h-[95%] shadow rounded-lg">
+      <div className="h-[95%] shadow rounded-lg z-0">
         <AgGridReact
           rowData={state.rowData}
           columnDefs={colDefs}

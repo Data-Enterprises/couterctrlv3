@@ -121,3 +121,17 @@ export const formatRowData = (data: PriceHistoryResult[]) => {
     };
   });
 };
+
+export type SaveSimRow = {
+  upc: string;
+  description: string;
+  qtySold: number;
+  daysActive: number;
+  daysAtPrice: number;
+  adFcst: number;
+  fcstPrice: number;
+  fcstTotal: number;
+  forecastWindow: number;
+  adDays: number;
+  markdownDollars: number;
+};

@@ -8,7 +8,7 @@ interface InputProps {
 const Input = ({ value, setValue, label, type = "text" }: InputProps) => {
   return (
     <div>
-      <label className="font-medium text-xs pl-0.5">{label}</label>
+      <label className="font-medium text-sm pl-0.5">{label}</label>
       <input
         data-testid={`input-${label.toLowerCase()}`}
         type={type}

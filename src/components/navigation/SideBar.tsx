@@ -77,7 +77,14 @@ const SideBar = () => {
     dispatch(resetUpcState());
     dispatch(resetAppSlice());
     dispatch(resetSearchSlice());
+  };
 
+  const handleHover = (itemName: string, isHovering: boolean) => {
+    const item = navItems.find((navItem) => navItem.name === itemName);
+    if (item) {
+      item.isHovering = isHovering;
+      setNavItems([...navItems]);
+    }
   };
 
   const slidingStyle =
@@ -94,13 +101,20 @@ const SideBar = () => {
     }
   };
 
+  const styleObj = () => {
+    if (nav.isNavOpen) {
+      return { zIndex: 1000 };
+    }
+    return {};
+  };
+
   return (
     <div
       ref={ref}
       data-testid="side-bar"
       data-open={nav.isNavOpen}
       className={`bg-bkg absolute top-12 left-0 h-[calc(100vh-3rem)] flex flex-col justify-between border-t ${slidingStyle}`}
-      style={{ zIndex: 1000 }}
+      style={styleObj()}
     >
       {/* using this to close the nav when clicking outside if it is open. User events are disabled in the Outlet when nav is open */}
       {nav.isNavOpen && (
@@ -126,9 +140,13 @@ const SideBar = () => {
                 item.userTypes.includes("*")
                   ? "flex"
                   : "hidden"
-              } ${isActive ? "bg-panel_active/75 text-custom-white" : ""}`
+              } ${
+                isActive ? "bg-panel_active/75 text-custom-white" : ""
+              } relative`
             }
             onClick={() => handleNavClick(item)}
+            onMouseEnter={() => handleHover(item.name, true)}
+            onMouseLeave={() => handleHover(item.name, false)}
           >
             <div className="flex w-full items-center md:pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200">
               <div className="flex-shrink-0 flex items-center justify-center">
@@ -143,6 +161,16 @@ const SideBar = () => {
               >
                 {item.name}
               </div>
+            </div>
+            <div
+              className={`${
+                item.isHovering && !nav.isNavOpen
+                  ? "absolute text-nowrap left-12 mt-2 bg-blue-500 text-custom-white font-medium min-w-32 text-center py-1 px-2 rounded-lg"
+                  : "hidden"
+              }`}
+              style={{ zIndex: 1500 }}
+            >
+              {item.name}
             </div>
           </NavLink>
         ))}

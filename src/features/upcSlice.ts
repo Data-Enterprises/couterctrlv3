@@ -15,6 +15,7 @@ interface UpcState {
   index: number;
   fileName: string;
   selectedMode: number;
+  selectedView: number;
   radioId: number;
   selectedStores: Store[];
   storeids: string;
@@ -43,12 +44,14 @@ interface UpcState {
   topFiveTrends: UpcTrend[];
   bottomFiveTrends: UpcTrend[];
   trendMode: "Totals" | "Mean" | "Volatility";
+  uploadedUpcs: string[]; // Store uploaded UPCs for validation in forecast page
 }
 
 const initialState: UpcState = {
   index: 0,
   fileName: "",
   selectedMode: 0,
+  selectedView: 0,
   radioId: 0,
   selectedStores: [],
   storeids: "", // needed for backend API calls
@@ -77,6 +80,7 @@ const initialState: UpcState = {
   topFiveTrends: [],
   bottomFiveTrends: [],
   trendMode: "Totals",
+  uploadedUpcs: [],
 };
 
 export const upcSlice = createSlice({
@@ -104,6 +108,9 @@ export const upcSlice = createSlice({
     },
     setSelectedMode: (state, action: PayloadAction<number>) => {
       state.selectedMode = action.payload;
+    },
+    setSelectedView: (state, action: PayloadAction<number>) => {
+      state.selectedView = action.payload;
     },
     setIsLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
@@ -195,6 +202,9 @@ export const upcSlice = createSlice({
     ) => {
       state.trendMode = action.payload;
     },
+    setUploadedUpcs: (state, action: PayloadAction<string[]>) => {
+      state.uploadedUpcs = action.payload;
+    },
     resetSelectedUpcs: (state) => {
       state.selectedUpcs = [];
       state.selectedCompOne = null;
@@ -202,6 +212,7 @@ export const upcSlice = createSlice({
     },
     clearUpcData: (state) => {
       state.selectedMode = 0;
+      state.selectedView = 0;
       state.upcCount = 0;
       state.radioId = 0;
       state.upcItems = [];
@@ -225,6 +236,8 @@ export const upcSlice = createSlice({
       state.trendMode = "Totals";
       state.forecastExport = [];
       state.forecastMetricExport = [];
+      state.uploadedUpcs = [];
+      state.fileName = "";
     },
     resetUpcState: () => initialState,
   },
@@ -237,6 +250,7 @@ export const {
   setTrendPeriods,
   setFileName,
   setSelectedMode,
+  setSelectedView,
   setDataLoaded,
   setIsLoading,
   setSalesComp,
@@ -261,6 +275,7 @@ export const {
   setBottomFiveTrends,
   setTrendMode,
   resetSelectedUpcs,
+  setUploadedUpcs,
   clearUpcData,
   resetUpcState,
 } = upcSlice.actions;

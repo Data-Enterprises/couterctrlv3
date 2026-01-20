@@ -7,6 +7,7 @@ export type FilterType =
   | "UPC"
   | "Desc"
   | "CustomerID"
+  | "Sub Department"
   | "";
 
 interface CouponState {
@@ -17,6 +18,7 @@ interface CouponState {
   productCode: string;
   productDescription: string;
   customerId: string;
+  subDept: string;
   isFetching: boolean;
   filterModalOpen: boolean;
   filterType: FilterType;
@@ -33,6 +35,7 @@ const initialState: CouponState = {
   productCode: "",
   productDescription: "",
   customerId: "",
+  subDept: "",
   isFetching: false,
   filterModalOpen: false,
   filterType: "",
@@ -70,6 +73,9 @@ const couponSlice = createSlice({
         case "CustomerID":
           state.customerId = value as string;
           break;
+        case "Sub Department":
+          state.subDept = value as string;
+          break;
       }
     },
     applyFilters: (state) => {
@@ -79,6 +85,7 @@ const couponSlice = createSlice({
         productCode,
         productDescription,
         customerId,
+        subDept,
       } = state;
 
       const passesThreshold = (amount: number) => {
@@ -113,12 +120,19 @@ const couponSlice = createSlice({
         const matchesCustomerId = customerId
           ? coupon.customer_id.includes(customerId)
           : true;
+
+        const matchesSubDept = subDept
+          ? coupon.sub_department_description
+              .toLowerCase()
+              .includes(subDept.toLowerCase())
+          : true;
         return (
           matchesStore &&
           matchesCpnAmount &&
           matchesProductCode &&
           matchesProductDescription &&
-          matchesCustomerId
+          matchesCustomerId &&
+          matchesSubDept
         );
       });
     },
@@ -128,6 +142,7 @@ const couponSlice = createSlice({
       state.productCode = "";
       state.productDescription = "";
       state.customerId = "";
+      state.subDept = "";
 
       state.gridCoupons = state.coupons;
     },

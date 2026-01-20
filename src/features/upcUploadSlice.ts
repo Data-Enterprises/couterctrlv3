@@ -3,11 +3,13 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 interface UpcUploadState {
   upcs: string[];
   upcText: string;
+  fileName: string;
 }
 
 const initialState: UpcUploadState = {
   upcs: [],
   upcText: "",
+  fileName: "",
 };
 
 export const upcUploadSlice = createSlice({
@@ -15,7 +17,6 @@ export const upcUploadSlice = createSlice({
   initialState,
   reducers: {
     setUpcs: (state, action: PayloadAction<string[]>) => {
-
       if (action.payload.length === 0) {
         state.upcs = [];
         state.upcText = "";
@@ -44,16 +45,20 @@ export const upcUploadSlice = createSlice({
     setUpcText: (state, action: PayloadAction<string>) => {
       state.upcText = action.payload;
     },
+    setUpcFileName: (state, action: PayloadAction<string>) => {
+      state.fileName = action.payload;
+    },
     removeSingleUpc: (state, action: PayloadAction<string>) => {
       state.upcs = state.upcs.filter((upc) => upc !== action.payload);
     },
     clearUpcs: (state) => {
       state.upcs = [];
       state.upcText = "";
+      state.fileName = "";
     },
   },
 });
 
-export const { setUpcs, setUpcText, removeSingleUpc, clearUpcs } =
+export const { setUpcs, setUpcText, setUpcFileName, removeSingleUpc, clearUpcs } =
   upcUploadSlice.actions;
 export default upcUploadSlice.reducer;

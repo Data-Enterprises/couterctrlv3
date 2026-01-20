@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { SaveSimRow } from "../pages/forecast";
 
 export const getForecasting = async (
   url: string,
@@ -84,6 +85,64 @@ export const getFromExistingS3File = async (
       startdate,
       enddate,
       filename,
+    },
+  });
+  return json;
+};
+
+export const getSavedSims = async (url: string, token: string) => {
+  const json = await axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "marketing/sim-list",
+  });
+  return json;
+};
+
+export const saveSim = async (
+  url: string,
+  token: string,
+  simName: string,
+  startDate: string,
+  endDate: string,
+  storeids: string,
+  data: SaveSimRow[]
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "marketing/save_sim",
+    data: {
+      simName,
+      startDate,
+      endDate,
+      storeids,
+      data,
+    },
+  });
+  return json;
+};
+
+export const replaySim = async (
+  url: string,
+  token: string,
+  sim_name: string
+) => {
+  const json = await axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "marketing/replay_sim",
+    params: {
+      sim_name,
     },
   });
   return json;

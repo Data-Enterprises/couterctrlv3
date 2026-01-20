@@ -88,7 +88,10 @@ const PriceOpt = () => {
   };
 
   return (
-    <div data-testid="upc-price" className="h-full w-full grid grid-cols-[15%_85%] gap-4">
+    <div
+      data-testid="upc-price"
+      className="h-full w-full grid grid-cols-[14%_85%] gap-4 overflow-hidden"
+    >
       <UpcControls />
       <UpcModal handleExport={handleExport} />
       <div className="h-full grid grid-rows-[14%_86%] mr-4">
@@ -114,7 +117,7 @@ const PriceOpt = () => {
             rowData={upcState.optBestPricesByUpc}
             handleCellClick={handleCellClick}
           />
-          <PriceOptBar type="Price" yKey="price" />
+          <PriceOptGrid rowData={upcState.optBestPrices} type="all" />
           <PriceOptBar type="Total Quantity" yKey="total_qty" />
           <PriceOptBar type="Total Revenue" yKey="total_revenue" />
         </div>

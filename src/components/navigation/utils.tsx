@@ -22,6 +22,7 @@ export type Navigation = {
   childOpen: boolean;
   mobile: boolean;
   userTypes: string[];
+  isHovering: boolean;
 };
 
 export const navigation: Navigation[] = [
@@ -33,6 +34,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userTypes: ["*"],
+    isHovering:false,
   },
   {
     name: "Sales",
@@ -42,6 +44,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userTypes: ["*"],
+    isHovering:false,
   },
   {
     name: "Team",
@@ -51,6 +54,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userTypes: ["*"],
+    isHovering:false,
   },
   {
     name: "Loss Prevention",
@@ -60,6 +64,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userTypes: ["*"],
+    isHovering:false,
   },
   {
     name: "Groups",
@@ -69,6 +74,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userTypes: ["*"],
+    isHovering:false,
   },
   {
     name: "Upc List",
@@ -78,6 +84,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userTypes: ["*"],
+    isHovering:false,
   },
   {
     name: "Item Lookup",
@@ -87,6 +94,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userTypes: ["*"],
+    isHovering:false,
   },
   {
     name: "Forecasting",
@@ -96,6 +104,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userTypes: ["*"],
+    isHovering:false,
   },
   {
     name: "Quicksight",
@@ -105,6 +114,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userTypes: ["*"],
+    isHovering:false,
   },
   {
     name: "Receivers",
@@ -114,6 +124,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userTypes: ["*"],
+    isHovering:false,
   },
   {
     name: "Coupons",
@@ -123,6 +134,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userTypes: ["*"],
+    isHovering:false,
   },
   // This fake link is just to show that user types can be restricted
   {
@@ -133,5 +145,6 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userTypes: ["9999"],
+    isHovering:false,
   },
 ];

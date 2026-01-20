@@ -29,7 +29,7 @@ const SalesComparison = () => {
   return (
     <div className="bg-custom-white rounded-lg shadow-lg mr-4 relative">
       {!isReady ? (
-        <div className="flex flex-col justify-center items-center h-full w-full text-content/70">
+        <div className="flex flex-col justify-center items-center h-full w-full text-content/70 text-sm">
           <div>Select two UPCs from the grid</div>
           <div>To view the sales comparison</div>
         </div>
