@@ -10,7 +10,7 @@ import { AgGridReact } from "ag-grid-react";
 import type { UpcPriceOpt } from "../../../interfaces";
 import { useAppSelector } from "../../../hooks";
 import "./grid.css";
-import { colDefs, theme, type UpcRow } from ".";
+import { priceColDefs, theme } from ".";
 
 interface GridProps {
   rowData: UpcPriceOpt[];
@@ -19,7 +19,7 @@ interface GridProps {
 
 const Grid = ({ rowData, handleCellClick }: GridProps) => {
   const state = useAppSelector((state) => state.upc);
-  const [rows, setRows] = useState<UpcRow[]>(rowData);
+  const [rows, setRows] = useState<UpcPriceOpt[]>(rowData);
 
   useEffect(() => {
     const filtered = rowData.filter((item) =>
@@ -28,7 +28,7 @@ const Grid = ({ rowData, handleCellClick }: GridProps) => {
     setRows(filtered);
   }, [rowData, state.selectedUpcs]);
 
-  const handleClick = (e: CellClickedEvent<UpcRow>) => {
+  const handleClick = (e: CellClickedEvent<UpcPriceOpt>) => {
     e.event?.preventDefault();
     if (handleCellClick) handleCellClick(e.data as UpcPriceOpt);
   };
@@ -39,7 +39,7 @@ const Grid = ({ rowData, handleCellClick }: GridProps) => {
         <div className="h-full relative">
           <AgGridReact
             rowData={rows}
-            columnDefs={colDefs}
+            columnDefs={priceColDefs}
             theme={theme}
             headerHeight={30}
             pagination={true}

@@ -1,15 +1,7 @@
 import { themeQuartz } from "ag-grid-community";
 import type { ColDef, ColGroupDef } from "ag-grid-community";
 import { formatCurrency2 } from "../../../utils";
-
-export type UpcRow = {
-  product_code: string;
-  product_description: string;
-  price: number;
-  total_qty: number;
-  total_revenue: number;
-  total_weight: number;
-};
+import type { UpcPriceOpt } from "../../../interfaces";
 
 export const theme = themeQuartz.withParams({
   headerHeight: 40,
@@ -25,45 +17,7 @@ export const theme = themeQuartz.withParams({
   selectedRowBackgroundColor: "#fed7aa",
 });
 
-export const colDefs: (ColDef<UpcRow> | ColGroupDef<UpcRow>)[] = [
-  {
-    headerName: "Upc",
-    field: "product_code",
-    flex: 1,
-    resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
-  },
-  {
-    headerName: "Description",
-    field: "product_description",
-    flex: 2,
-    resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
-  },
-  {
-    headerName: "Best Price",
-    field: "price",
-    flex: 1,
-    resizable: false,
-    cellStyle: { textAlign: "right" },
-    headerStyle: { borderRight: "1px solid white" },
-    valueFormatter: (params) => `$${params.value}`,
-    cellClass: "no-outline-on-focus select-none",
-  },
-  {
-    headerName: "Qty",
-    field: "total_qty",
-    flex: 0.8,
-    resizable: false,
-    cellStyle: { textAlign: "right" },
-    valueFormatter: (params) => params.value.toLocaleString(),
-    cellClass: "no-outline-on-focus select-none",
-  },
-];
-
-export const priceColDefs: (ColDef<UpcRow> | ColGroupDef<UpcRow>)[] = [
+export const priceColDefs: (ColDef<UpcPriceOpt> | ColGroupDef<UpcPriceOpt>)[] = [
   {
     headerName: "Upc",
     field: "product_code",

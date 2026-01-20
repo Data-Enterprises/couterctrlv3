@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import { useAppSelector } from "../../../hooks";
-import type { UpcRow } from "../charts";
 import { priceColDefs, theme } from "../charts";
-import { AgGridReact } from "ag-grid-react";
+import type { UpcPriceOpt } from "../../../interfaces";
 
+import { AgGridReact } from "ag-grid-react";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const UpcPrices = () => {
   const state = useAppSelector((state) => state.upc);
-  const [rows, setRows] = useState<UpcRow[]>([]);
+  const [rows, setRows] = useState<UpcPriceOpt[]>([]);
 
   useEffect(() => {
     const filtered = state.optBestPrices.filter((item) =>
