@@ -15,9 +15,10 @@ import { priceColDefs, theme } from ".";
 interface GridProps {
   rowData: UpcPriceOpt[];
   handleCellClick?: (x: UpcPriceOpt) => void;
+  type?: "all" | "best"
 }
 
-const Grid = ({ rowData, handleCellClick }: GridProps) => {
+const Grid = ({ rowData, handleCellClick, type = "best" }: GridProps) => {
   const state = useAppSelector((state) => state.upc);
   const [rows, setRows] = useState<UpcPriceOpt[]>(rowData);
 
@@ -53,7 +54,7 @@ const Grid = ({ rowData, handleCellClick }: GridProps) => {
       ) : (
         <div className="bg-custom-white h-full flex flex-col pt-16 rounded-lg items-center relative">
           <div className="bg-blue-500 w-full rounded-t-lg py-1 pl-4 text-custom-white font-medium absolute top-0">
-            Best Prices by UPC
+            {type === "best" ? "Best Prices by UPC" : "Prices by UPC"}
           </div>
           <div className="text-sm text-content/50 font-medium mt-2 text-center px-10">
             <div>

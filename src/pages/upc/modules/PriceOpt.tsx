@@ -117,7 +117,7 @@ const PriceOpt = () => {
             rowData={upcState.optBestPricesByUpc}
             handleCellClick={handleCellClick}
           />
-          <PriceOptGrid rowData={upcState.optBestPrices} />
+          <PriceOptGrid rowData={upcState.optBestPrices} type="all" />
           <PriceOptBar type="Total Quantity" yKey="total_qty" />
           <PriceOptBar type="Total Revenue" yKey="total_revenue" />
         </div>
