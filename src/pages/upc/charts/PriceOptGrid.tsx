@@ -15,7 +15,7 @@ import { priceColDefs, theme } from ".";
 interface GridProps {
   rowData: UpcPriceOpt[];
   handleCellClick?: (x: UpcPriceOpt) => void;
-  type?: "all" | "best"
+  type?: "all" | "best";
 }
 
 const Grid = ({ rowData, handleCellClick, type = "best" }: GridProps) => {
@@ -58,11 +58,14 @@ const Grid = ({ rowData, handleCellClick, type = "best" }: GridProps) => {
           </div>
           <div className="text-sm text-content/50 font-medium mt-2 text-center px-10">
             <div>
-              Select UPCs to view their optimal prices and associated quantity
+              {type === "best"
+                ? "Select UPCs to view their optimal prices and associated quantity"
+                : "Select one or more UPCs to view all prices by those UPCs"}
             </div>
             <div className="mt-2">
-              Selecting a single UPC in this grid displays its historical
-              pricing, quantity, and revenue data
+              {type === "best"
+                ? "Selecting a single UPC in this grid displays its historical pricing, quantity, and revenue data"
+                : "Selecting a single UPC shows all prices by that UPC"}
             </div>
           </div>
         </div>
