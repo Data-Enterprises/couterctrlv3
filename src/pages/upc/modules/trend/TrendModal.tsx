@@ -71,11 +71,9 @@ const TrendModal = () => {
 
           <div className="border-b border-content/20 pb-1">
             <div className="flex gap-1">
-              {/* <div className="font-medium">Upc:</div> */}
               <div className="">{trend.product_code}</div>
             </div>
             <div className="flex gap-1">
-              {/* <div className="font-medium">Description:</div> */}
               <div className="">{trend.product_description}</div>
             </div>
           </div>

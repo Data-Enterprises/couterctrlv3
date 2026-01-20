@@ -184,7 +184,6 @@ const ForecastControls = () => {
                   key={i}
                   className={`${upcStyle(item.upc)}`}
                   onClick={() => handleUpcSelect(item.upc)}
-                  // onContextMenu={(e) => handleRightClick(e, item)}
                 >
                   {!isSinglePriced(item.upc) ? (
                     <CheckBox

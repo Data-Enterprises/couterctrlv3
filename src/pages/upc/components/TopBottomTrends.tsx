@@ -1,6 +1,5 @@
 import { useAppSelector } from "../../../hooks";
 import { useDispatch } from "react-redux";
-// import { setOpenModal, setUpc } from "../../../features/trendModalSlice";
 import type { UpcTrend } from "../../../interfaces";
 import { setUpc, setOpenModal } from "../../../features/trendModalSlice";
 

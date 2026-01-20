@@ -21,10 +21,8 @@ const fileExtensions = [".csv"];
 const StepOne = ({ className, file, setFile }: UpcStepOneProps) => {
   const toast = useToast();
   const dispatch = useDispatch();
-  const { dataLoaded, selectedMode } = useAppSelector((state) => state.upc);
-
-  // using this to allow the same file to be selected again
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const { dataLoaded, selectedMode } = useAppSelector((state) => state.upc);
 
   useEffect(() => {
     switch (dataLoaded) {
@@ -45,15 +43,6 @@ const StepOne = ({ className, file, setFile }: UpcStepOneProps) => {
         toast.warn("Please select a valid CSV file");
         break;
     }
-    // }
-    // if (
-    //   !fileExtensions.some((ext) => event.target.files![0].name.endsWith(ext))
-    // ) {
-    //   toast.warn("Please select a valid CSV file");
-    // } else if (event.target.files && event.target.files[0]) {
-    //   setFile(event.target.files[0]);
-    //   dispatch(setFileName(event.target.files[0].name));
-    // }
   };
 
   const handleReset = () => {

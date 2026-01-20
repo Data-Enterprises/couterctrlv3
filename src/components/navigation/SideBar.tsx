@@ -176,7 +176,7 @@ const SideBar = () => {
             <div
               className={`${
                 item.isHovering && !nav.isNavOpen
-                  ? "absolute text-nowrap shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
+                  ? "absolute text-nowrap text-sm shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
                   : "hidden"
               }`}
               style={{ zIndex: 9999 }}
@@ -215,7 +215,7 @@ const SideBar = () => {
           <div
             className={`${
               bottomNav.settings && !nav.isNavOpen
-                ? "absolute text-nowrap shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
+                ? "absolute text-nowrap text-sm shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
                 : "hidden"
             }`}
             style={{ zIndex: 9999 }}
@@ -245,7 +245,7 @@ const SideBar = () => {
           <div
             className={`${
               bottomNav.signout && !nav.isNavOpen
-                ? "absolute text-nowrap shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
+                ? "absolute text-nowrap text-sm shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
                 : "hidden"
             }`}
             style={{ zIndex: 2500 }}
