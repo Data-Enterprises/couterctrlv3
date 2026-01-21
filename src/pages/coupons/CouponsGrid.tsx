@@ -60,7 +60,7 @@ const CouponsGrid = () => {
         pagination={true}
         paginationAutoPageSize={true}
         onRowClicked={onRowClicked}
-        rowSelection="single"
+        // rowSelection="single" // => this may need to come back in but for now we just want to open the modal on row click
       />
     </div>
   );
