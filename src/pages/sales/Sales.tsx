@@ -1,96 +1,64 @@
-// HOOKS
-import { useEffect, useState, type JSX } from "react";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import { formatGoliathDate } from "../../utils";
+// Hooks/API
 import { useToast } from "../../components/toasts/hooks/useToast";
-import type { JsonError } from "../../interfaces";
-import { getSalesPanels } from "../../api/sales";
-import {
-  setSalesPanels,
-  resetSalesSlice,
-  setPanelsLoading,
-  setSalesPanelSearchText,
-  setSelectedSalesPanel,
-  setCatSales,
-} from "../../features/salesSlice";
-import { useHeight } from "./utils/hooks";
+import { useAppSelector, useAppDispatch } from "../../hooks";
+import { getWeekly } from "../../api/sales";
 
 // Components
 import DatePickers from "../../components/datePickers/DatePickers";
 import StorePicker from "../../components/storePicker/StorePicker";
-import WeeklyNetSales from "./components/WeeklyNetSales";
-import DepartmentSales from "./components/DepartmentSales";
-import TopTenItems from "./components/TopTenItems";
+
+// Dispatchers
+import {
+  setPanelsLoading,
+  setSalesPanels,
+  setSelectedSalesPanel,
+} from "../../features/salesSlice";
+
+// utils
+import { formatGoliathDate } from "../../utils";
+import type { JsonError } from "../../interfaces";
 import SalesPanels from "./panels/SalesPanels";
-import Hourly from "./components/Hourly";
-import Subs from "./subs/Subs";
-import Carousel from "../../components/Carousel";
-import Cats from "./cats/Cats";
+import { useLeftColHeight } from "./utils/hooks";
+import KpiHeader from "./components/KpiHeader";
+import TopTen from "./charts/TopTen";
+import HourlyGrid from "./charts/HourlyGrid";
+import SubDeptGrid from "./charts/SubDeptGrid";
+import SubDeptComps from "./charts/SubDeptComps";
 
 const Sales = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const sales = useAppSelector((state) => state.sales);
-  const [children, setChildren] = useState<JSX.Element[]>([
-    <Hourly />,
-    <TopTenItems />,
-  ]);
-  const { gridRef, height } = useHeight();
-
-  useEffect(() => {
-    if (sales.catSales.length > 0) {
-      setChildren([<Hourly />, <TopTenItems />, <Cats />]);
-    } else {
-      setChildren([<Hourly />, <TopTenItems />]);
-    }
-  }, [sales.catSales]);
-
-  useEffect(() => {
-    // On mount
-    if (context.token) {
-      getData();
-    }
-
-    return () => {
-      dispatch(resetSalesSlice());
-    };
-  }, [context.token]);
+  const { height, topLeftRef, leftColRef } = useLeftColHeight();
 
   const getData = () => {
-    // Stops the line chart in WeeklyNetSales.tsx from going haywire
     dispatch(
-      setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" })
+      setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
     );
 
-    dispatch(setCatSales([]));
-
-    // For now I'm formatting the date before the api call since the api needs it that way
     const start = formatGoliathDate(search.startDate);
     const end = formatGoliathDate(search.endDate);
-
-    // If Stores is the search type, then both are 0 and we get all stores for salesTwoDates
     const useGroups = search.type === "Group" ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 
     dispatch(setPanelsLoading(true));
-    getSalesPanels(
+    getWeekly(
       context.url,
       context.token,
       start,
       end,
       useGroups,
       searchValue,
-      singleStore
+      singleStore,
     )
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
           const sorted = [...j.sales].sort(
             (a, b) =>
-              new Date(b.sale_date).getTime() - new Date(a.sale_date).getTime()
+              new Date(b.sale_date).getTime() - new Date(a.sale_date).getTime(),
           );
           dispatch(setSalesPanels(sorted));
         }
@@ -101,68 +69,43 @@ const Sales = () => {
       .finally(() => dispatch(setPanelsLoading(false)));
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(setSalesPanelSearchText(e.target.value));
-  };
-
   const pageContainer = context.isDesktop
-    ? "w-full h-[calc(100vh-3rem)] p-4 select-none"
+    ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden p-4 select-none"
     : "p-4 max-h-screen overflow-y-scroll";
   const gridContainer = context.isDesktop
-    ? " grid grid-cols-[20%_79%] gap-4 h-full"
+    ? " grid grid-cols-[20%_79%] gap-4 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]"
     : "";
 
   return (
     <div data-testid="sales-page" className={pageContainer}>
-      <div ref={gridRef} className={gridContainer}>
-        <div className="md:grid md:gap-1 md:max-h-[calc(100vh-7px)] md:grid-rows-[0.5fr_1fr_1fr] no-scrollbar">
-          <div className="bg-custom-white rounded-lg p-2 shadow-lg">
+      <div className={gridContainer}>
+        <div
+          ref={leftColRef}
+          className="md:grid h-full md:grid-rows-[25%_74%] md:gap-4"
+        >
+          <div
+            ref={topLeftRef}
+            className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1"
+          >
             <StorePicker />
             <DatePickers handleQuery={getData} />
           </div>
-          {context.isDesktop && (
-            <div className="md:row-span-2 rounded-lg">
-              <div className="mb-2 flex items-end justify-between gap-2">
-                <div className="w-full">
-                  <label className="font-medium text-sm ml-1">
-                    Search Store
-                  </label>
-                  <input
-                    data-testid="sales-panel-filter-input"
-                    className="basic-input focus:border bg-custom-white"
-                    value={sales.salesPanelSearchText}
-                    onChange={(e) => handleChange(e)}
-                  />
-                </div>
-              </div>
-              <div
-                className="md:overflow-scroll md:no-scrollbar md:rounded-lg"
-                style={{ height: height, maxHeight: height }}
-              >
-                <SalesPanels />
-              </div>
-            </div>
-          )}
+          <div
+            style={{ minHeight: height, maxHeight: height }}
+            className="overflow-y-scroll no-scrollbar rounded-lg shadow-lg"
+          >
+            <SalesPanels />
+          </div>
         </div>
-        <div className="md:grid md:grid-rows-2 md:gap-3">
-          <div className="md:grid md:grid-cols-2 md:gap-3">
-            <WeeklyNetSales />
 
-            <div className="h-full shadow-lg">
-              {context.isDesktop ? (
-                <Carousel className="bg-custom-white h-[100%]">
-                  {children.map((child) => child)}
-                </Carousel>
-              ) : (
-                <TopTenItems />
-              )}
-            </div>
+        <div className="md:grid h-full md:grid-rows-[22%_76%] md:gap-4 overflow-hidden">
+          <KpiHeader />
+          <div className="grid grid-cols-2 gap-4">
+            <HourlyGrid />
+            <TopTen />
+            <SubDeptGrid />
+            <SubDeptComps />
           </div>
-          <div className="md:grid md:grid-cols-2 md:gap-3">
-            {context.isDesktop && <DepartmentSales />}
-            <Subs />
-          </div>
-          {!context.isDesktop && <SalesPanels />}
         </div>
       </div>
     </div>
