@@ -83,11 +83,25 @@ const SideBar = () => {
     dispatch(resetSearchSlice());
   };
 
-  const handleHover = (itemName: string, isHovering: boolean) => {
+  const handleHover = (itemName: string, isHovering: boolean, idx: number) => {
     const item = navItems.find((navItem) => navItem.name === itemName);
     if (item) {
       item.isHovering = isHovering;
       setNavItems([...navItems]);
+
+      // Find the mouse position to adjust the tooltip if needed in the future
+      const mousePosition = { x: 0, y: 0 };
+      document.addEventListener(
+        "mousemove",
+        (e) => {
+          mousePosition.x = e.clientX;
+          mousePosition.y = e.clientY;
+        },
+        { once: true },
+      );
+      const tooltip = document.getElementById(`tooltip-${idx}`);
+      tooltip!.style.left = `${mousePosition.x}px`;
+      tooltip!.style.top = `${mousePosition.y}px`;
     }
   };
 
@@ -114,10 +128,25 @@ const SideBar = () => {
 
   const handleBottomNavHover = (
     navItem: "settings" | "signout",
-    isHovering: boolean
+    isHovering: boolean,
+    idx: number,
   ) => {
     setBottomNav((prev) => ({ ...prev, [navItem]: isHovering }));
-  };
+
+    // Find the mouse position to adjust the tooltip if needed in the future
+    const mousePosition = { x: 0, y: 0 };
+    document.addEventListener(
+      "mousemove",
+      (e) => {
+        mousePosition.x = e.clientX;
+        mousePosition.y = e.clientY;
+      },
+      { once: true },
+    );
+    const tooltip = document.getElementById(`tooltip-${idx}`);
+    tooltip!.style.left = `${mousePosition.x}px`;
+    tooltip!.style.top = `${mousePosition.y}px`;
+  };;
 
   return (
     <div
@@ -139,7 +168,7 @@ const SideBar = () => {
 
       {/* NavLinks => working, but will need modifications when nav children are introduced */}
       <div>
-        {navItems.map((item: Navigation) => (
+        {navItems.map((item: Navigation, idx) => (
           <NavLink
             data-testid={`nav-${item.href}`}
             to={item.href}
@@ -156,8 +185,8 @@ const SideBar = () => {
               } relative`
             }
             onClick={() => handleNavClick(item)}
-            onMouseEnter={() => handleHover(item.name, true)}
-            onMouseLeave={() => handleHover(item.name, false)}
+            onMouseEnter={() => handleHover(item.name, true, idx)}
+            onMouseLeave={() => handleHover(item.name, false, idx)}
           >
             <div className="flex w-full items-center md:pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-100">
               <div className="flex-shrink-0 flex items-center justify-center">
@@ -174,6 +203,7 @@ const SideBar = () => {
               </div>
             </div>
             <div
+              id={`tooltip-${idx}`}
               className={`${
                 item.isHovering && !nav.isNavOpen
                   ? "absolute text-nowrap text-sm shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
@@ -197,8 +227,12 @@ const SideBar = () => {
           onClick={() => {
             navigate("settings");
           }}
-          onMouseEnter={() => handleBottomNavHover("settings", true)}
-          onMouseLeave={() => handleBottomNavHover("settings", false)}
+          onMouseEnter={() =>
+            handleBottomNavHover("settings", true, navigation.length)
+          }
+          onMouseLeave={() =>
+            handleBottomNavHover("settings", false, navigation.length)
+          }
         >
           <div className="flex-shrink-0 flex items-center justify-center">
             <Cog6ToothIcon className={mobileIconStyle()} />
@@ -213,6 +247,7 @@ const SideBar = () => {
             Settings
           </div>
           <div
+            id={`tooltip-${navigation.length}`}
             className={`${
               bottomNav.settings && !nav.isNavOpen
                 ? "absolute text-nowrap text-sm shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
@@ -227,8 +262,12 @@ const SideBar = () => {
           data-testid="signout-btn"
           className="flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200 relative"
           onClick={handleSignOut}
-          onMouseEnter={() => handleBottomNavHover("signout", true)}
-          onMouseLeave={() => handleBottomNavHover("signout", false)}
+          onMouseEnter={() =>
+            handleBottomNavHover("signout", true, navigation.length + 1)
+          }
+          onMouseLeave={() =>
+            handleBottomNavHover("signout", false, navigation.length + 1)
+          }
         >
           <div className="flex-shrink-0 flex items-center justify-center">
             <SignOutIcon className={mobileIconStyle()} />
@@ -243,6 +282,7 @@ const SideBar = () => {
             Sign Out
           </div>
           <div
+            id={`tooltip-${navigation.length + 1}`}
             className={`${
               bottomNav.signout && !nav.isNavOpen
                 ? "absolute text-nowrap text-sm shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
