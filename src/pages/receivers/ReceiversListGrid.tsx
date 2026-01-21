@@ -1,11 +1,7 @@
 import { useRef, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import type {
-  JsonError,
-  ReceiverDetailsResponse,
-  // ReceiverListItem,
-} from "../../interfaces";
+import type { JsonError, ReceiverDetailsResponse } from "../../interfaces";
 import { AgGridReact } from "ag-grid-react";
 import { cols, theme } from ".";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
@@ -13,6 +9,7 @@ import { getReceiverDetails } from "../../api/receivers";
 import {
   setIsFetchingDetails,
   setReceiverDetails,
+  setSelectedInvoice,
   setTotals,
 } from "../../features/receiversSlice";
 import { formatDate } from "../../utils";
@@ -26,40 +23,34 @@ const ReceiversListGrid = () => {
   const state = useAppSelector((state) => state.receivers);
   const gridRef = useRef<AgGridReact>(null);
 
-  // Use this for deselecting rows when details are cleared (like on refresh or new filter)
+  // Deselect rows when details are cleared => From refresh or filter reset
   useEffect(() => {
+    if (gridRef.current && gridRef.current.api && state.details.length === 0) {
+      gridRef.current.api.deselectAll();
+    }
+  }, [state.details]);
+
+  const handleGridReady = () => {
     if (
       gridRef.current &&
       gridRef.current.api &&
-      !state.details.length &&
-      !state.transIDFilter &&
-      !state.invoiceIdFilter &&
-      !state.vendorIdFilter &&
-      !state.vendorNameFilter
+      state.details.length &&
+      state.selectedInvoice
     ) {
-      gridRef.current.api.deselectAll();
+      gridRef.current.api.forEachNode((node) => {
+        if (
+          node.data &&
+          node.data.invoiceid.toString() === state.selectedInvoice
+        ) {
+          node.setSelected(true);
+        }
+      });
     }
-
-    return () => {
-      // Cleanup if needed when component unmounts
-      if (
-        gridRef.current &&
-        gridRef.current.api &&
-        state.details.length === 0
-      ) {
-        gridRef.current.api.deselectAll();
-      }
-    };
-  }, [
-    state.details,
-    state.transIDFilter,
-    state.invoiceIdFilter,
-    state.vendorIdFilter,
-    state.vendorNameFilter,
-  ]);
+  };
 
   const getSelectedDetails = (invoiceid: number, transDate: string) => {
     dispatch(setIsFetchingDetails(true));
+    dispatch(setSelectedInvoice(invoiceid.toString()));
     getReceiverDetails(url, token, state.storeid, invoiceid, transDate)
       .then((resp) => {
         const j: ReceiverDetailsResponse = resp.data;
@@ -107,6 +98,7 @@ const ReceiversListGrid = () => {
                   }
                 }}
                 rowSelection="single"
+                onGridReady={handleGridReady}
               />
             ) : (
               <div className="relative w-full h-full">

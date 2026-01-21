@@ -29,6 +29,7 @@ interface ReceiversState {
   filterModalOpen: boolean;
   filterType: FilterType;
   noReceivers: boolean;
+  selectedInvoice: string;
 }
 
 export const initialState: ReceiversState = {
@@ -48,6 +49,7 @@ export const initialState: ReceiversState = {
   filterModalOpen: false,
   filterType: "",
   noReceivers: false,
+  selectedInvoice: "",
 };
 
 export const receiversSlice = createSlice({
@@ -126,12 +128,16 @@ export const receiversSlice = createSlice({
     setNoReceivers: (state, action: PayloadAction<boolean>) => {
       state.noReceivers = action.payload;
     },
+    setSelectedInvoice: (state, action: PayloadAction<string>) => {
+      state.selectedInvoice = action.payload;
+    },
     resetFilters: (state) => {
       state.vendorIdFilter = "";
       state.vendorNameFilter = "";
       state.invoiceIdFilter = "";
       state.transIDFilter = "";
       state.listGridData = state.list;
+      state.selectedInvoice = "";
     },
     reQuery: (state) => {
       state.list = [];
@@ -144,6 +150,7 @@ export const receiversSlice = createSlice({
       state.filterListGrid = false;
       state.totals = [];
       state.noReceivers = false;
+      state.selectedInvoice = "";
     },
     resetReceiverState: () => initialState,
   },
@@ -165,6 +172,7 @@ export const {
   setFilterType,
   setFilterModalOpen,
   resetFilters,
+  setSelectedInvoice,
   setNoReceivers,
 } = receiversSlice.actions;
 export default receiversSlice.reducer;

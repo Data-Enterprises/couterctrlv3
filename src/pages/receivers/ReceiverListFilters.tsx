@@ -4,6 +4,7 @@ import {
   setFilterModalOpen,
   setFilterType,
   setReceiverDetails,
+  setSelectedInvoice,
   type FilterType,
 } from "../../features/receiversSlice";
 
@@ -39,6 +40,7 @@ const RecevierListFilters = () => {
     if (option === "Refresh") {
       dispatch(resetFilters());
       dispatch(setReceiverDetails([]));
+      dispatch(setSelectedInvoice(""));
     } else {
       dispatch(setFilterModalOpen(true));
       dispatch(setFilterType(option));
