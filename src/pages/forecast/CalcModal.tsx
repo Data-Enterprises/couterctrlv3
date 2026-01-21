@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import Modal from "../../components/Modal";
-import { setCalcNow } from "../../features/forecastSlice";
+import { setCalcNow, setNewRowPriceValue } from "../../features/forecastSlice";
 import { formatCurrency2 } from "../../utils";
 import { fitLinearDemand, predictQty } from "./utils";
 import { forecastUnits } from "../priceSimulator/calc";
@@ -10,7 +10,7 @@ const CalcModal = () => {
   const [open, setOpen] = useState<boolean>(false);
   const dispatch = useAppDispatch();
   const { selectedRow, forecastResults } = useAppSelector(
-    (state) => state.forecast
+    (state) => state.forecast,
   );
   const [params, setParams] = useState<{ slope: number; intercept: number }>({
     slope: 0,
@@ -31,12 +31,12 @@ const CalcModal = () => {
       setNewCost("12.90");
       setCostText("12.90");
       const prices = forecastResults.find(
-        (r) => r.upc === selectedRow.upc
+        (r) => r.upc === selectedRow.upc,
       )?.price_history;
 
       const upcPrices = prices?.map((p) => [parseFloat(p.price), p.qty]);
       const overallUnits = forecastResults.find(
-        (r) => r.upc === selectedRow.upc
+        (r) => r.upc === selectedRow.upc,
       )?.qty;
       setOverallUnits(overallUnits!);
       setPrices(upcPrices!);
@@ -56,9 +56,18 @@ const CalcModal = () => {
     }
   };
 
-  const calcNewMetrics = () => {
+  const calcNewMetrics = (isSetting: boolean = false) => {
     setNewPrice(priceText);
     setNewCost(costText);
+
+    if (isSetting) {
+      dispatch(
+        setNewRowPriceValue({
+          upc: selectedRow!.upc,
+          newPrice: parseFloat(priceText),
+        }),
+      );
+    }
   };
 
   const handleTextChange = (e: string) => {
@@ -73,11 +82,12 @@ const CalcModal = () => {
     }
   };
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      setNewPrice(priceText);
-    }
-  };
+  // const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  //   if (e.key === "Enter") {
+  //     // setNewPrice(priceText);
+  //     calcNewMetrics();
+  //   }
+  // };
 
   const showRevenue = () => {
     const units = forecastUnits(
@@ -88,7 +98,7 @@ const CalcModal = () => {
       90,
       selectedRow!.daysAtPrice,
       7,
-      prices
+      prices,
     );
     return parseFloat(newPrice) * units;
   };
@@ -102,7 +112,7 @@ const CalcModal = () => {
       90,
       selectedRow!.daysAtPrice,
       7,
-      prices
+      prices,
     );
   };
 
@@ -115,7 +125,7 @@ const CalcModal = () => {
       90,
       selectedRow!.daysAtPrice,
       7,
-      prices
+      prices,
     );
 
     const revenue = parseFloat(newPrice) * qty;
@@ -146,7 +156,6 @@ const CalcModal = () => {
                   data-testid="calc-modal-price-input"
                   value={priceText}
                   onChange={(e) => handleTextChange(e.target.value)}
-                  onKeyDown={onKeyDown}
                 />
                 <label className="font-medium underline text-xs pl-0.5">
                   Cost:
@@ -156,17 +165,32 @@ const CalcModal = () => {
                   data-testid="calc-modal-cost-input"
                   value={costText}
                   onChange={(e) => handleCostChange(e.target.value)}
-                  onKeyDown={onKeyDown}
                 />
               </div>
               <div className="w-full mt-2 space-y-2">
                 <button
                   className="btn-themeBlue w-full py-1.5"
-                  onClick={calcNewMetrics}
+                  onClick={() => calcNewMetrics()}
                   data-testid="calc-modal-calculate-button"
                 >
                   Calculate
                 </button>
+                {/* <div className="flex gap-2">
+                  <button
+                    className="btn-themeBlue w-1/2 py-1.5 px-0"
+                    onClick={() => calcNewMetrics()}
+                    data-testid="calc-modal-calculate-button"
+                  >
+                    Calc
+                  </button>
+                  <button
+                    className="btn-themeBlue w-1/2 py-1.5 px-0"
+                    onClick={() => calcNewMetrics(true)}
+                    data-testid="calc-modal-calculate-button"
+                  >
+                    Set
+                  </button>
+                </div> */}
                 <button
                   data-testid="calc-modal-close-button"
                   className="btn-themeOrange w-full py-1.5"
@@ -190,17 +214,28 @@ const CalcModal = () => {
                 <div className="font-medium underline">Predicted Metrics</div>
                 <div className="text-sm">
                   <span>Qty:</span>
-                  <span data-testid="calc-modal-qty" className="font-medium pl-1">{showQty()}</span>
+                  <span
+                    data-testid="calc-modal-qty"
+                    className="font-medium pl-1"
+                  >
+                    {showQty()}
+                  </span>
                 </div>
                 <div className="text-sm">
                   <span>Revenue:</span>
-                  <span data-testid="calc-modal-revenue" className="font-medium pl-1">
+                  <span
+                    data-testid="calc-modal-revenue"
+                    className="font-medium pl-1"
+                  >
                     {formatCurrency2(showRevenue())}
                   </span>
                 </div>
                 <div className="text-sm">
                   <span>Profit:</span>
-                  <span data-testid="calc-modal-profit" className="font-medium pl-1">
+                  <span
+                    data-testid="calc-modal-profit"
+                    className="font-medium pl-1"
+                  >
                     {formatCurrency2(showProfit())}
                   </span>
                 </div>

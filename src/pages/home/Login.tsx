@@ -38,7 +38,7 @@ const Login = () => {
     const isMobile = /iphone|ipod|android|windows phone/g.test(userAgent);
     const isTablet =
       /(ipad|macintosh|tablet|playbook|silk)|(android(?!.*mobile))/g.test(
-        userAgent
+        userAgent,
       );
 
     dispatch(setIsMobile(isMobile));
@@ -49,7 +49,7 @@ const Login = () => {
   const handleSubmit = (
     e:
       | React.KeyboardEvent<HTMLInputElement>
-      | React.MouseEvent<HTMLButtonElement>
+      | React.MouseEvent<HTMLButtonElement>,
   ) => {
     e.preventDefault();
     if (state.username == "otkim" && state.password == "!@#6Mikto6!@#") {
@@ -82,7 +82,7 @@ const Login = () => {
           setUseImpersonation(0);
         } else {
           toast.warn(
-            "Invalid credentials, make sure your password and username are correct"
+            "Invalid credentials, make sure your password and username are correct",
           );
         }
       })
@@ -223,7 +223,7 @@ const Login = () => {
         </div>
         {/* Change this before pushing for publishing */}
         <div className="absolute bottom-1 left-0 text-sm pl-2">
-          Last Updated on 1/20/2026 @ 10:15 AM CST
+          Last Updated on 1/21/2026 @ 11:37 AM CST
         </div>
       </div>
       <div className="relative hidden w-0 flex-1 lg:block">
