@@ -28,6 +28,18 @@ const ReceiversListGrid = () => {
 
   // Use this for deselecting rows when details are cleared (like on refresh or new filter)
   useEffect(() => {
+    if (
+      gridRef.current &&
+      gridRef.current.api &&
+      !state.details.length &&
+      !state.transIDFilter &&
+      !state.invoiceIdFilter &&
+      !state.vendorIdFilter &&
+      !state.vendorNameFilter
+    ) {
+      gridRef.current.api.deselectAll();
+    }
+
     return () => {
       // Cleanup if needed when component unmounts
       if (
@@ -38,7 +50,13 @@ const ReceiversListGrid = () => {
         gridRef.current.api.deselectAll();
       }
     };
-  }, [state.details]);
+  }, [
+    state.details,
+    state.transIDFilter,
+    state.invoiceIdFilter,
+    state.vendorIdFilter,
+    state.vendorNameFilter,
+  ]);
 
   const getSelectedDetails = (invoiceid: number, transDate: string) => {
     dispatch(setIsFetchingDetails(true));
