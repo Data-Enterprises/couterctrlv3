@@ -42,7 +42,18 @@ const ReceiversListGrid = () => {
           node.data &&
           node.data.invoiceid.toString() === state.selectedInvoice
         ) {
-          node.setSelected(true);
+          node.setSelected(true); // set the row to selected
+
+          // Using setTimeout to ensure the grid finishes rendering the pages before finding the selected row
+          setTimeout(() => {
+            if (gridRef.current && gridRef.current.api) {
+              const api = gridRef.current.api;
+              const pageSize = api.paginationGetPageSize();
+              const rowIndex = node.rowIndex!;
+              const pageNumber = Math.floor(rowIndex / pageSize);
+              api.paginationGoToPage(pageNumber);
+            }
+          }, 100);
         }
       });
     }
@@ -85,6 +96,7 @@ const ReceiversListGrid = () => {
           <div className="h-[93%]">
             {!state.isFetchingList ? (
               <AgGridReact
+                data-testid="receivers-list-grid"
                 ref={gridRef}
                 rowData={state.listGridData}
                 columnDefs={cols}
