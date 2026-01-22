@@ -24,6 +24,7 @@ import TopTen from "./charts/TopTen";
 import HourlyGrid from "./charts/HourlyGrid";
 import SubDeptGrid from "./charts/SubDeptGrid";
 import SubDeptComps from "./charts/SubDeptComps";
+import { useEffect } from "react";
 
 const Sales = () => {
   const toast = useToast();
@@ -31,6 +32,13 @@ const Sales = () => {
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
   const { height, topLeftRef, leftColRef } = useLeftColHeight();
+
+  // On mount, get data if user prefs has a last store or group, meaning there is a last search type as well
+  useEffect(() => {
+    if (search.lastStore > 0 || search.lastGroup > 0) {
+      getData();
+    }
+  }, []);
 
   const getData = () => {
     dispatch(
@@ -92,7 +100,7 @@ const Sales = () => {
           </div>
           <div
             style={{ minHeight: height, maxHeight: height }}
-            className="overflow-y-scroll no-scrollbar rounded-lg shadow-lg"
+            className="overflow-y-scroll no-scrollbar"
           >
             <SalesPanels />
           </div>

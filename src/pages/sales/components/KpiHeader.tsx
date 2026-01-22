@@ -1,14 +1,11 @@
+import NivoPie from "../graphs/NivoPie";
 
 const KpiHeader = () => {
 
   return (
     <div className="grid grid-cols-5 gap-4">
-      <div className="bg-custom-white rounded-lg shadow-lg flex justify-center items-center">
-        Sales
-      </div>
-      <div className="bg-custom-white rounded-lg shadow-lg flex justify-center items-center">
-        Qty
-      </div>
+      <NivoPie valueKey="total_sales" />
+      <NivoPie valueKey="qty" />
       <div className="bg-custom-white rounded-lg shadow-lg flex justify-center items-center">
         Top Sub
       </div>

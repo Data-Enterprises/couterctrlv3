@@ -6,6 +6,13 @@ export const formatDate = (date: string) => {
   return month + "/" + day + "/" + year;
 };
 
+export const formatDateSimple = (date: string) => {
+  const dte = date.split("T")[0];
+  // yyyy-mm-dd => mm/dd/yyyy
+  const [year, month, day] = dte.split("-");
+  return month + "/" + day + "/" + year;
+};
+
 export const addDays = (date: string | Date, number: number) => {
   const newDate = new Date(date.toString());
   return new Date(newDate.setDate(newDate.getDate() + number));

@@ -170,7 +170,7 @@ const SalesPanels = () => {
             handlePanelClick={handlePanelClick}
           />
         ))}
-      {sales.salesPanels.length === 0 ? (
+      {sales.panelsLoading ? (
         <LoadingIndicator message="Loading Sales Panels..." />
       ) : null}
     </div>
