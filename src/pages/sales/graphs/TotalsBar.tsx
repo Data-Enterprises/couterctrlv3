@@ -74,11 +74,11 @@ const TotalsBar = ({ valueKey }: NivoPieProps) => {
 
   const setMarginLeft = () => {
     if (barData.some((d) => d.value > 99999)) {
-      return 75;
+      return barData.length > 6 ? 85 : 75;
     }
 
     if (valueKey === "total_sales") {
-      return 60;
+      return barData.length > 6 ? 70 : 60;
     } else {
       return 50;
     }
@@ -86,13 +86,13 @@ const TotalsBar = ({ valueKey }: NivoPieProps) => {
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg h-full w-full relative">
-      <div className="absolute top-0 right-2 font-medium underline">
-        {valueKey === "total_sales" ? "Total Sales" : "Total Quantity"}
+      <div className="absolute top-0 left-0 px-2 font-medium bg-blue-500 text-custom-white rounded-t-lg w-full">
+        {valueKey === "total_sales" ? "Sales" : "Quantity"}
       </div>
       <ResponsiveBar
         data={barData}
         key={valueKey}
-        margin={{ top: 20, right: 5, bottom: 30, left: setMarginLeft() }}
+        margin={{ top: 35, right: 5, bottom: 27, left: setMarginLeft() }}
         colors={() => rgbaColor("#3b82f6", 0.3)}
         borderWidth={2}
         borderColor={() => "#3b82f6"}
@@ -112,7 +112,6 @@ const TotalsBar = ({ valueKey }: NivoPieProps) => {
               ? `${formatCurrency2(Number(v))}`
               : formatBigNumber(Number(v), 0),
         }}
-        gridXValues={5}
         theme={{
           axis: {
             domain: {
@@ -128,7 +127,7 @@ const TotalsBar = ({ valueKey }: NivoPieProps) => {
             <strong>
               {valueKey === "total_sales"
                 ? formatCurrency2(value)
-                : formatBigNumber(value)}
+                : formatBigNumber(value, 0)}
             </strong>
           </div>
         )}

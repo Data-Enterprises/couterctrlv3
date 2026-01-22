@@ -24,6 +24,17 @@ const SalesPanels = () => {
   const search = useAppSelector((state) => state.search);
   const [filtered, setFiltered] = useState<WeeklySale[]>([]);
 
+  // on mount, fetch the data once
+  useEffect(() => {
+    handleDataFetch();
+  }, []);
+
+  // This runs after sales panels have been fetched and the user is toggling the selected sales panel
+  useEffect(() => {
+    if (sales.salesPanels.length === 0) return;
+    handleDataFetch();
+  }, [sales.selectedSalesPanel]);
+
   useEffect(() => {
     // Filter sales panels based on search text
     if (sales.salesPanelSearchText.trim() === "") {
@@ -31,14 +42,13 @@ const SalesPanels = () => {
     } else {
       const searchText = sales.salesPanelSearchText.toLowerCase();
       const filteredPanels = sales.salesPanels.filter((panel) =>
-        panel.store_name.toLowerCase().includes(searchText)
+        panel.store_name.toLowerCase().includes(searchText),
       );
       setFiltered(filteredPanels);
     }
   }, [sales.salesPanelSearchText, sales.salesPanels]);
 
-  useEffect(() => {
-    if (sales.salesPanels.length === 0) return;
+  const handleDataFetch = () => {
     const p = sales.selectedSalesPanel;
     const start = p.sale_date
       ? p.sale_date.split("T")[0]
@@ -53,7 +63,7 @@ const SalesPanels = () => {
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 
     // date logic for weekly sales
-    const weeklyStart = addDays(end, -7).toISOString().split("T")[0];
+    const weeklyStart = addDays(end, -6).toISOString().split("T")[0];
     const weeklyEnd = new Date(end).toISOString().split("T")[0];
 
     // Final logic for params based on if a store panel is selected
@@ -63,7 +73,7 @@ const SalesPanels = () => {
 
     // This is for determining the search type for Top Ten
     const searchType = p.storeid > 0 ? "Store" : search.type;
-    
+
     getWeekly(
       context.url,
       context.token,
@@ -71,7 +81,7 @@ const SalesPanels = () => {
       weeklyEnd,
       groupParam,
       searchParam,
-      singleStoreParam
+      singleStoreParam,
     )
       .then((resp) => {
         const j = resp.data;
@@ -80,7 +90,7 @@ const SalesPanels = () => {
         }
       })
       .catch((err: JsonError) =>
-        toast.error("Error fetching weekly data: " + err.message)
+        toast.error("Error fetching weekly data: " + err.message),
       );
 
     getTopTen(context.url, context.token, searchParam, searchType, start, end)
@@ -102,7 +112,7 @@ const SalesPanels = () => {
       weeklyEnd,
       groupParam,
       searchParam,
-      singleStoreParam
+      singleStoreParam,
     )
       .then((resp) => {
         const j = resp.data;
@@ -112,7 +122,7 @@ const SalesPanels = () => {
         }
       })
       .catch((err: JsonError) =>
-        toast.error("Error fetching hourly data: " + err.message)
+        toast.error("Error fetching hourly data: " + err.message),
       );
 
     getSubs(
@@ -122,7 +132,7 @@ const SalesPanels = () => {
       end,
       groupParam,
       searchParam,
-      singleStoreParam
+      singleStoreParam,
     )
       .then((resp) => {
         const j = resp.data;
@@ -132,13 +142,13 @@ const SalesPanels = () => {
         }
       })
       .catch((err: JsonError) =>
-        toast.error("Error fetching subs data: " + err.message)
+        toast.error("Error fetching subs data: " + err.message),
       );
-  }, [sales.selectedSalesPanel, sales.salesPanels]);
+  };
 
   const handlePanelClick = (
     e: React.MouseEvent<HTMLDivElement>,
-    panel: WeeklySale
+    panel: WeeklySale,
   ) => {
     handleRipple(e);
     // This date is being used to compare with the selected panel in redux
@@ -149,11 +159,11 @@ const SalesPanels = () => {
           sale_date: date,
           storeid: panel.storeid,
           store_name: panel.store_name,
-        })
+        }),
       );
     } else {
       dispatch(
-        setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" })
+        setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
       );
     }
   };

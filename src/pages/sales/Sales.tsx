@@ -36,11 +36,11 @@ const Sales = () => {
   // On mount, get data if user prefs has a last store or group, meaning there is a last search type as well
   useEffect(() => {
     if (search.lastStore > 0 || search.lastGroup > 0) {
-      getData();
+      getSalesPanels();
     }
   }, []);
 
-  const getData = () => {
+  const getSalesPanels = () => {
     dispatch(
       setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
     );
@@ -52,6 +52,7 @@ const Sales = () => {
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 
     dispatch(setPanelsLoading(true));
+    // dispatch(setDataLoading(true));
     getWeekly(
       context.url,
       context.token,
@@ -96,7 +97,7 @@ const Sales = () => {
             className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1"
           >
             <StorePicker />
-            <DatePickers handleQuery={getData} />
+            <DatePickers handleQuery={getSalesPanels} />
           </div>
           <div
             style={{ minHeight: height, maxHeight: height }}
