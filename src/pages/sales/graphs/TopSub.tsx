@@ -96,9 +96,9 @@ const TopSubDept = () => {
         )}
       </div>
       {topSub ? (
-        <div className="px-2 pt-1 pb-2 text-sm">
-          <div className="font-medium border-b">Totals</div>
-          <div className="flex justify-between py-1 text-sm">
+        <div className="p-2 text-xs">
+          <div className="font-medium border-b text-sm">Totals</div>
+          <div className="flex justify-between py-1">
             <div>
               <div className="text-sm text-content/60">Revenue</div>
               <div className="font-medium">
@@ -125,9 +125,9 @@ const TopSubDept = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-[50%_45%] text-sm gap-4 mt-3">
+          <div className="grid grid-cols-[50%_45%] gap-4 mt-3">
             <div>
-              <div className="font-medium border-b">Flags</div>
+              <div className="font-medium border-b text-sm">Flags</div>
               <div className="flex justify-between py-1">
                 <div>
                   <div className="text-sm text-content/60">Leak</div>
@@ -163,7 +163,7 @@ const TopSubDept = () => {
             </div>
 
             <div>
-              <div className="font-medium border-b">Velocity/day</div>
+              <div className="font-medium border-b text-sm">Velocity/day</div>
               <div className="flex justify-between py-1">
                 <div>
                   <div className="text-sm text-content/60">Sales</div>

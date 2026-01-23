@@ -37,7 +37,12 @@ export const rpu = (rev: number, units: number) => {
  */
 export const ppu = (rev: number, cost: number, units: number) => {
   if (!rev) return 0;
-  return rev - cost * units;
+  // profit / units
+  return (rev - cost) / units;
+};
+
+export const cpu = (cost: number, units: number) => {
+  return cost / units;
 };
 
 /**
