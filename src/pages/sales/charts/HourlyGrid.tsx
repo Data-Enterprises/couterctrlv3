@@ -5,7 +5,6 @@ import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import type { HourlySale } from "../../../interfaces";
 ModuleRegistry.registerModules([AllCommunityModule]);
 import { theme, cols } from "../graphs";
-import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 
 interface AvailableHour {
   hour: number;
@@ -44,42 +43,30 @@ const HourlyGrid = () => {
     setHour(uniqueHours[0].hour);
   }, [hourlySales, selectedSalesPanel]);
 
-  const loaded = hours.length > 0 && hour && rowData.length > 0;
-
   const handleSelect = (value: number) => {
     setHour(Number(value));
   };
 
-  if (!hourlySales.length) {
-    return (
-      <div className="bg-custom-white rounded-lg shadow-lg p-2 relative">
-        <LoadingIndicator />
-      </div>
-    );
-  }
-
   return (
-    <>
-      {loaded ? (
-        <div className="bg-custom-white rounded-lg shadow-lg px-2 pb-2 pt-1">
-          <div className="px-2 flex justify-between items-center">
-            <span className="font-medium">Hourly Sales</span>
-            {hours.map((h) => (
-              <span
-                key={h.hour}
-                className={`${h.hour === hour ? "bg-blue-500 text-custom-white" : ""} text-sm font-medium underline hover:bg-blue-200 hover:text-content rounded-full py-0.5 px-2 transition-all duration-200 cursor-pointer`}
-                onClick={() => handleSelect(h.hour)}
-              >
-                {h.hour}
-              </span>
-            ))}
-          </div>
-          <div className="h-[90%]">
-            <AgGridReact rowData={rowData} columnDefs={cols} theme={theme} />
-          </div>
-        </div>
-      ) : null}
-    </>
+    <div className="bg-custom-white rounded-lg shadow-lg px-2 pb-2 pt-1">
+      <div className="px-2 flex justify-between items-center">
+        <span className="font-medium">Hourly Sales</span>
+        {hours.map((h) => (
+          <span
+            key={h.hour}
+            className={`${h.hour === hour ? "bg-blue-500 text-custom-white" : ""} 
+                  text-sm font-medium underline hover:bg-blue-200 hover:text-content rounded-full 
+                  py-0.5 px-2 transition-all duration-200 cursor-pointer`}
+            onClick={() => handleSelect(h.hour)}
+          >
+            {h.hour}
+          </span>
+        ))}
+      </div>
+      <div className="h-[90%]">
+        <AgGridReact rowData={rowData} columnDefs={cols} theme={theme} />
+      </div>
+    </div>
   );
 };
 

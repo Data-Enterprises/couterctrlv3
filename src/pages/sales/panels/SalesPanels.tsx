@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import type { JsonError, WeeklySale } from "../../../interfaces";
 import {
+  finishQuery,
   reQuery,
   setHourlySales,
   setSelectedSalesPanel,
   setSubSales,
   setTopTenItems,
   setWeeklySales,
-  setWindowVisible,
 } from "../../../features/salesSlice";
 import { getHourly, getSubs, getTopTen, getWeekly } from "../../../api/sales";
 import { addDays, formatGoliathDate, handleRipple } from "../../../utils";
@@ -89,6 +89,7 @@ const SalesPanels = () => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setWeeklySales(j.sales));
+          dispatch(finishQuery("weekly"));
         }
       })
       .catch((err: JsonError) =>
@@ -100,6 +101,7 @@ const SalesPanels = () => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setTopTenItems(j.items));
+          dispatch(finishQuery("top ten"));
         }
       })
       .catch((err: JsonError) => {
@@ -120,7 +122,7 @@ const SalesPanels = () => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setHourlySales(j.subs));
-          dispatch(setWindowVisible({ key: "hourly", show: true }));
+          dispatch(finishQuery("hourly"));
         }
       })
       .catch((err: JsonError) =>
@@ -140,7 +142,7 @@ const SalesPanels = () => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setSubSales(j.subs));
-          dispatch(setWindowVisible({ key: "subs", show: true }));
+          dispatch(finishQuery("subs"));
         }
       })
       .catch((err: JsonError) =>

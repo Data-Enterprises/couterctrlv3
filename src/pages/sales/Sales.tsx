@@ -25,12 +25,14 @@ import HourlyGrid from "./charts/HourlyGrid";
 import SubDeptGrid from "./charts/SubDeptGrid";
 import SubDeptComps from "./charts/SubDeptComps";
 import { useEffect } from "react";
+import LoadingIndicator from "../../components/loading/LoadingIndicator";
 
 const Sales = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
+  const { queryChecker, panelsLoading, weeklySales, hourlySales, subSales, topTenItems } = useAppSelector((state) => state.sales);
   const { height, topLeftRef, leftColRef } = useLeftColHeight();
 
   // On mount, get data if user prefs has a last store or group, meaning there is a last search type as well
@@ -85,6 +87,14 @@ const Sales = () => {
     ? " grid grid-cols-[20%_79%] gap-4 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]"
     : "";
 
+  const isReady =
+    queryChecker.hourly &&
+    queryChecker.subs &&
+    queryChecker.topTen &&
+    queryChecker.weekly;
+
+  const isLoading = panelsLoading && !topTenItems.length && !hourlySales.length && !weeklySales.length && !subSales.length;
+
   return (
     <div data-testid="sales-page" className={pageContainer}>
       <div className={gridContainer}>
@@ -107,15 +117,21 @@ const Sales = () => {
           </div>
         </div>
 
-        <div className="md:grid h-full md:grid-rows-[22%_76%] md:gap-4 overflow-hidden">
-          <KpiHeader />
-          <div className="grid grid-cols-2 gap-4">
-            <HourlyGrid />
-            <TopTen />
-            <SubDeptGrid />
-            <SubDeptComps />
+        {isLoading ? (
+          <div className="relative">
+            <LoadingIndicator message="Loading sales data..." />
           </div>
-        </div>
+        ) : isReady ? (
+          <div className="md:grid h-full md:grid-rows-[22%_76%] md:gap-4 overflow-hidden">
+            <KpiHeader />
+            <div className="grid grid-cols-2 grid-rows-[45%_55%] gap-4">
+              <HourlyGrid />
+              <TopTen />
+              <SubDeptGrid />
+              <SubDeptComps />
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

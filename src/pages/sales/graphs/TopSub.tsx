@@ -10,7 +10,6 @@ import { reduceSubs, type TopSub } from ".";
 import { netSalesPct, promoLeakage, velocity } from "../../../functions";
 
 import { FlagIcon } from "@heroicons/react/20/solid";
-import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 
 const TopSubDept = () => {
   const [topSub, setTopSub] = useState<TopSub | null>(null);
@@ -85,14 +84,6 @@ const TopSubDept = () => {
       return null;
     }
   };
-
-  if (!topSub) {
-    return (
-      <div className="bg-custom-white rounded-lg shadow-lg relative">
-        <LoadingIndicator />
-      </div>
-    );
-  }
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg">

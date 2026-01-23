@@ -8,7 +8,6 @@ import {
   formatCurrency2,
   formatDateSimple,
 } from "../../../utils";
-import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 
 type PieData = {
   id: string;
@@ -61,16 +60,6 @@ const TotalsBar = ({ valueKey }: NivoPieProps) => {
       setBarData(formatPieData(copy));
     }
   }, [state.selectedSalesPanel, state.weeklySales]);
-
-  if (!barData.length) {
-    return (
-      <div className="bg-custom-white rounded-lg shadow-lg h-full w-full relative">
-        <LoadingIndicator
-          message={`Loading ${valueKey === "total_sales" ? "Sales" : "Quantity"}...`}
-        />
-      </div>
-    );
-  }
 
   const setMarginLeft = () => {
     if (barData.some((d) => d.value > 99999)) {

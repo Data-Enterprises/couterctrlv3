@@ -57,6 +57,7 @@ export const theme = themeQuartz.withParams({
   rowHoverColor: "#93c5fd",
   headerFontWeight: "bold",
   dataFontSize: 13,
+  headerFontSize: 14,
   selectCellBorder: "transparent",
   rowBorder: "1px solid white",
   selectedRowBackgroundColor: "#fed7aa",
@@ -69,6 +70,7 @@ export const cols: (ColDef<HourlySale> | ColGroupDef<HourlySale>)[] = [
     flex: 1.1,
     valueFormatter: (params) => formatDate(params.value as string),
     headerStyle: { borderRight: "1px solid white" },
+    resizable: false,
   },
   {
     field: "total_sales",
@@ -76,6 +78,7 @@ export const cols: (ColDef<HourlySale> | ColGroupDef<HourlySale>)[] = [
     flex: 1.1,
     valueFormatter: (params) => formatCurrency2(params.value as number),
     headerStyle: { borderRight: "1px solid white" },
+    resizable: false,
     cellClass: "text-right",
   },
   {
@@ -84,6 +87,7 @@ export const cols: (ColDef<HourlySale> | ColGroupDef<HourlySale>)[] = [
     flex: 1.1,
     valueFormatter: (params) => formatCurrency2(params.value as number),
     headerStyle: { borderRight: "1px solid white" },
+    resizable: false,
     cellClass: "text-right",
   },
   {
@@ -91,6 +95,7 @@ export const cols: (ColDef<HourlySale> | ColGroupDef<HourlySale>)[] = [
     headerName: "Qty",
     flex: 0.9,
     headerStyle: { borderRight: "1px solid white" },
+    resizable: false,
     cellClass: "text-right",
   },
   {
@@ -98,6 +103,7 @@ export const cols: (ColDef<HourlySale> | ColGroupDef<HourlySale>)[] = [
     headerName: "Trans #",
     flex: 1,
     headerStyle: { borderRight: "1px solid white" },
+    resizable: false,
     cellClass: "text-right",
   },
   {
@@ -105,6 +111,7 @@ export const cols: (ColDef<HourlySale> | ColGroupDef<HourlySale>)[] = [
     headerName: "Net Sales %",
     flex: 1.3,
     headerStyle: { borderRight: "1px solid white" },
+    resizable: false,
     valueFormatter: (params) => {
       const sale = params.data as HourlySale;
       return netSalesPct(sale.net_sales, sale.total_sales);
@@ -113,7 +120,7 @@ export const cols: (ColDef<HourlySale> | ColGroupDef<HourlySale>)[] = [
 
       const sale = params.data as HourlySale;
       const pct = parseFloat(netSalesPct(sale.net_sales, sale.total_sales).replace("%", ""));
-      return `text-right ${
+      return `text-right hover:bg-blue-200 cursor-pointer transition-all duration-200 ${
         pct >= 95 ? "bg-emerald-200" : pct >= 90 ? "bg-yellow-200" : "bg-orange-200"
       }`;
     },
@@ -122,6 +129,7 @@ export const cols: (ColDef<HourlySale> | ColGroupDef<HourlySale>)[] = [
     field: "net_sales",
     headerName: "Leak",
     flex: 0.9,
+    resizable: false,
     valueFormatter: (params) => {
       const sale = params.data as HourlySale;
       return promoLeakage(sale.net_sales, sale.total_sales);
@@ -129,7 +137,7 @@ export const cols: (ColDef<HourlySale> | ColGroupDef<HourlySale>)[] = [
     cellClass: (params) => {
       const sale = params.data as HourlySale;
       const leak = parseFloat(promoLeakage(sale.net_sales, sale.total_sales).replace("%", ""));
-      return `text-right ${leak < 2 ? "bg-emerald-200" : "bg-orange-200"}`;
+      return `text-right hover:bg-blue-200 cursor-pointer transition-all duration-200 ${leak < 2 ? "bg-emerald-200" : "bg-orange-200"}`;
     },
   },
 ];

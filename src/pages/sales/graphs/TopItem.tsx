@@ -3,7 +3,6 @@ import { useAppSelector } from "../../../hooks";
 import { type TopTenItem } from "../../../interfaces";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { cpu, gpm, ppu, rpu } from "../../../functions";
-import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 
 const TopItem = () => {
   const [topItem, setTopItem] = useState<TopTenItem | null>(null);
@@ -31,14 +30,6 @@ const TopItem = () => {
 
     setTopItem(item);
   }, [topTenItems, selectedSalesPanel]);
-
-  if (!topItem) {
-    return (
-      <div className="bg-custom-white rounded-lg shadow-lg">
-        <LoadingIndicator />
-      </div>
-    );
-  }
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg">
