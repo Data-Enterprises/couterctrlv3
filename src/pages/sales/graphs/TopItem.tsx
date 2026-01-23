@@ -35,7 +35,7 @@ const TopItem = () => {
     <div className="bg-custom-white rounded-lg shadow-lg">
       {topItem ? (
         <>
-          <div className="bg-blue-500 text-custom-white px-2 rounded-t-lg font-medium flex justify-between">
+          <div className="border-b border-content/30 mx-2 rounded-t-lg font-medium flex justify-between">
             Top Item
             <div className="font-semibold">{topItem.product_code}</div>
           </div>

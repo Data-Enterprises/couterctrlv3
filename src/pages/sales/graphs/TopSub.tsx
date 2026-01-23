@@ -87,7 +87,7 @@ const TopSubDept = () => {
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg">
-      <div className="bg-blue-500 text-custom-white px-2 rounded-t-lg font-medium flex justify-between">
+      <div className="mx-2 border-b border-content/30 rounded-t-lg font-medium flex justify-between">
         Top Sub Dept
         {topSub && (
           <div className="font-semibold">

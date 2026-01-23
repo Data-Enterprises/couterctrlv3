@@ -48,22 +48,24 @@ const HourlyGrid = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg px-2 pb-2 pt-1">
+    <div className="bg-custom-white rounded-lg shadow-lg pb-2 pt-1">
       <div className="px-2 flex justify-between items-center">
         <span className="font-medium">Hourly Sales</span>
-        {hours.map((h) => (
-          <span
-            key={h.hour}
-            className={`${h.hour === hour ? "bg-blue-500 text-custom-white" : ""} 
+        <div className="flex justify-end">
+          {hours.map((h) => (
+            <div
+              key={h.hour}
+              className={`${h.hour === hour ? "bg-blue-500 text-custom-white" : ""} 
                   text-sm font-medium underline hover:bg-blue-200 hover:text-content rounded-full 
                   py-0.5 px-2 transition-all duration-200 cursor-pointer`}
-            onClick={() => handleSelect(h.hour)}
-          >
-            {h.hour}
-          </span>
-        ))}
+              onClick={() => handleSelect(h.hour)}
+            >
+              {h.hour}
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="h-[90%]">
+      <div className="h-[90%] mt-1 mx-2">
         <AgGridReact rowData={rowData} columnDefs={cols} theme={theme} />
       </div>
     </div>

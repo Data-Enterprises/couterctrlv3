@@ -75,7 +75,7 @@ const TotalsBar = ({ valueKey }: NivoPieProps) => {
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg h-full w-full relative">
-      <div className="absolute top-0 left-0 px-2 font-medium bg-blue-500 text-custom-white rounded-t-lg w-full">
+      <div className="absolute top-0 left-0 font-medium border-b border-content/30 rounded-t-lg w-[96%] mx-2">
         {valueKey === "total_sales" ? "Sales" : "Quantity"}
       </div>
       <ResponsiveBar

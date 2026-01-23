@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useAppSelector } from "../../../hooks";
 import { ResponsiveBar, type BarDatum } from "@nivo/bar";
-import { formatCurrency2 } from "../../../utils";
+import { formatBigNumber, formatCurrency2 } from "../../../utils";
+import { cpu, gpm, ppu, rpu } from "../../../functions";
+import { QuestionMarkCircleIcon } from "@heroicons/react/16/solid";
 
 interface TopTenGroupItem {
   product_code: string;
@@ -11,14 +13,26 @@ interface TopTenGroupItem {
   cost: number;
 }
 
+type ShowTooltip = {
+  gpm: boolean;
+  rpu: boolean;
+  ppu: boolean;
+  cpu: boolean;
+};
+
 const TopTen = () => {
   const [topTen, setTopTen] = useState<TopTenGroupItem[]>([]);
-  const [selectedTopTenItem, setSelectedTopTenItem] = useState<TopTenGroupItem | null>(
-    null,
-  );
+  const [selectedTopTenItem, setSelectedTopTenItem] =
+    useState<TopTenGroupItem | null>(null);
   const { topTenItems, selectedSalesPanel } = useAppSelector(
     (state) => state.sales,
   );
+  const [tooltip, setTooltip] = useState<ShowTooltip>({
+    gpm: false,
+    rpu: false,
+    ppu: false,
+    cpu: false,
+  });
 
   useEffect(() => {
     if (topTenItems.length === 0) {
@@ -78,6 +92,17 @@ const TopTen = () => {
     return `rgba(${r},${g},${b},${alpha})`;
   };
 
+  const handleTooltip = (type: keyof ShowTooltip) => {
+    const newSet = {
+      gpm: false,
+      rpu: false,
+      ppu: false,
+      cpu: false,
+    };
+    newSet[type] = !tooltip[type];
+    setTooltip(newSet);
+  };
+
   return (
     <div className="bg-custom-white rounded-lg shadow-lg ">
       <div className="font-medium px-2 py-1">Top Ten Items</div>
@@ -86,7 +111,8 @@ const TopTen = () => {
           <ResponsiveBar
             data={barData}
             margin={{ top: 0, right: 0, bottom: 30, left: 90 }}
-            padding={0.15}
+            tooltip={()=> null}
+            padding={0.1}
             layout="horizontal"
             keys={["total_sales"]}
             indexBy="product_code"
@@ -111,7 +137,10 @@ const TopTen = () => {
               )
             }
             onClick={(d) => {
-              setSelectedTopTenItem(topTen.find(item => item.product_code === d.indexValue) || null);
+              setSelectedTopTenItem(
+                topTen.find((item) => item.product_code === d.indexValue) ||
+                  null,
+              );
             }}
             theme={{
               axis: {
@@ -134,12 +163,12 @@ const TopTen = () => {
           <div className="font-medium text-xs mt-1">
             {selectedTopTenItem?.product_code}
           </div>
-          <div className="font-medium text-xs">
+          <div className="font-medium text-xs mb-4">
             {selectedTopTenItem?.product_description}
           </div>
 
-          <div className="mt-1 w-full border-b font-medium">Selected Item Totals</div>
-          <div className="flex gap-4 mt-1">
+          <div className="mt-1 w-full border-b font-medium">Item Totals</div>
+          <div className="grid grid-cols-4 mt-1 mb-4">
             <div>
               <div className="font-medium">Sales:</div>
               <div className="font-medium text-xs  ">
@@ -149,7 +178,7 @@ const TopTen = () => {
             <div>
               <div className="font-medium">Qty:</div>
               <div className="font-medium text-xs  ">
-                {formatCurrency2(selectedTopTenItem?.total_sales as number)}
+                {formatBigNumber(selectedTopTenItem?.qty as number, 0)}
               </div>
             </div>
             <div>
@@ -170,6 +199,104 @@ const TopTen = () => {
           </div>
 
           {/* Calculations */}
+          <div className="mt-1 w-full border-b font-medium">Item Flags</div>
+          <div className="grid grid-cols-4 mt-1">
+            <div>
+              <div className="font-medium flex gap-1 items-center relative">
+                <div>GPM:</div>
+                <QuestionMarkCircleIcon
+                  className="inline-block w-4 h-4 text-content/30 hover:text-blue-200 cursor-default transition-all duration-200"
+                  onMouseEnter={() => handleTooltip("gpm")}
+                  onMouseLeave={() => handleTooltip("gpm")}
+                />
+                <div
+                  className={`${tooltip.gpm ? "absolute" : "hidden"} -translate-y-1/2 -top-5 -translate-x-1/4 ml-1 bg-orange-200 rounded-lg shadow shadow-content/50 p-2 text-nowrap`}
+                  style={{ zIndex: 10 }}
+                >
+                  Gross Profit Margin
+                </div>
+              </div>
+              <div className="font-medium text-xs  ">
+                {gpm(
+                  selectedTopTenItem?.total_sales as number,
+                  selectedTopTenItem?.cost as number,
+                )}
+              </div>
+            </div>
+            <div>
+              <div className="font-medium flex gap-1 items-center relative">
+                <div>RPU:</div>
+                <QuestionMarkCircleIcon
+                  className="inline-block w-4 h-4 text-content/30 hover:text-blue-200 cursor-default transition-all duration-200"
+                  onMouseEnter={() => handleTooltip("rpu")}
+                  onMouseLeave={() => handleTooltip("rpu")}
+                />
+                <div
+                  className={`${tooltip.rpu ? "absolute" : "hidden"} -translate-y-1/2 -top-5 -translate-x-1/4 ml-1 bg-orange-200 rounded-lg shadow shadow-content/50 p-2 text-nowrap`}
+                  style={{ zIndex: 10 }}
+                >
+                  Revenue Per Unit
+                </div>
+              </div>
+              <div className="font-medium text-xs  ">
+                {formatCurrency2(
+                  rpu(
+                    selectedTopTenItem?.total_sales as number,
+                    selectedTopTenItem?.qty as number,
+                  ),
+                )}
+              </div>
+            </div>
+            <div>
+              <div className="font-medium flex gap-1 items-center relative">
+                <div>PPU:</div>
+                <QuestionMarkCircleIcon
+                  className="inline-block w-4 h-4 text-content/30 hover:text-blue-200 cursor-default transition-all duration-200"
+                  onMouseEnter={() => handleTooltip("ppu")}
+                  onMouseLeave={() => handleTooltip("ppu")}
+                />
+                <div
+                  className={`${tooltip.ppu ? "absolute" : "hidden"} -translate-y-1/2 -top-5 -translate-x-1/4 ml-1 bg-orange-200 rounded-lg shadow shadow-content/50 p-2 text-nowrap`}
+                  style={{ zIndex: 10 }}
+                >
+                  Profit Per Unit
+                </div>
+              </div>
+              <div className="font-medium text-xs  ">
+                {formatCurrency2(
+                  ppu(
+                    selectedTopTenItem?.total_sales as number,
+                    selectedTopTenItem?.cost as number,
+                    selectedTopTenItem?.qty as number,
+                  ),
+                )}
+              </div>
+            </div>
+            <div>
+              <div className="font-medium flex gap-1 items-center relative">
+                <div>CPU:</div>
+                <QuestionMarkCircleIcon
+                  className="inline-block w-4 h-4 text-content/30 hover:text-blue-200 cursor-default transition-all duration-200"
+                  onMouseEnter={() => handleTooltip("cpu")}
+                  onMouseLeave={() => handleTooltip("cpu")}
+                />
+                <div
+                  className={`${tooltip.cpu ? "absolute" : "hidden"} -translate-y-1/2 -top-5 -translate-x-1/4 ml-1 bg-orange-200 rounded-lg shadow shadow-content/50 p-2 text-nowrap`}
+                  style={{ zIndex: 10 }}
+                >
+                  Cost Per Unit
+                </div>
+              </div>
+              <div className="font-medium text-xs  ">
+                {formatCurrency2(
+                  cpu(
+                    selectedTopTenItem?.cost as number,
+                    selectedTopTenItem?.qty as number,
+                  ),
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

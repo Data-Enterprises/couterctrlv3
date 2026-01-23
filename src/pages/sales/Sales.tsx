@@ -32,7 +32,8 @@ const Sales = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const { queryChecker, panelsLoading, weeklySales, hourlySales, subSales, topTenItems } = useAppSelector((state) => state.sales);
+  const { queryChecker, weeklySales, hourlySales, subSales, topTenItems } =
+    useAppSelector((state) => state.sales);
   const { height, topLeftRef, leftColRef } = useLeftColHeight();
 
   // On mount, get data if user prefs has a last store or group, meaning there is a last search type as well
@@ -84,7 +85,7 @@ const Sales = () => {
     ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden p-4 select-none"
     : "p-4 max-h-screen overflow-y-scroll";
   const gridContainer = context.isDesktop
-    ? " grid grid-cols-[20%_79%] gap-4 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]"
+    ? " grid grid-cols-[19%_80%] gap-4 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]"
     : "";
 
   const isReady =
@@ -93,7 +94,11 @@ const Sales = () => {
     queryChecker.topTen &&
     queryChecker.weekly;
 
-  const isLoading = panelsLoading && !topTenItems.length && !hourlySales.length && !weeklySales.length && !subSales.length;
+  const isLoading =
+    !topTenItems.length &&
+    !hourlySales.length &&
+    !weeklySales.length &&
+    !subSales.length;
 
   return (
     <div data-testid="sales-page" className={pageContainer}>
@@ -124,11 +129,15 @@ const Sales = () => {
         ) : isReady ? (
           <div className="md:grid h-full md:grid-rows-[22%_76%] md:gap-4 overflow-hidden">
             <KpiHeader />
-            <div className="grid grid-cols-2 grid-rows-[45%_55%] gap-4">
-              <HourlyGrid />
-              <TopTen />
-              <SubDeptGrid />
-              <SubDeptComps />
+            <div className="grid grid-cols-2  gap-4">
+              <div className="grid grid-rows-2 gap-4">
+                <HourlyGrid />
+                <SubDeptGrid />
+              </div>
+              <div className="grid grid-rows-2 gap-4">
+                <TopTen />
+                <SubDeptComps />
+              </div>
             </div>
           </div>
         ) : null}

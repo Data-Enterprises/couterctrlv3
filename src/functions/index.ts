@@ -121,8 +121,8 @@ export const atv = (rev: number, transactions: number) => {
 /**
  * @name crr
  * @description Calculates the Coupon Redemption Rate based on number of coupons and total units sold
- * @param coupons array of amount of coupons
- * @param units total units aka quantity
+ * @param coupons array of total coupons redeemed => number[]
+ * @param units total units aka quantity sold => number
  * @returns Coupon Redemption Rate => string percentage value e.g. '12.34%'
  */
 export const crr = (coupons: number[], units: number) => {
@@ -131,6 +131,18 @@ export const crr = (coupons: number[], units: number) => {
 
   const rate = (totalCoupons / units) * 100;
   return `${rate.toFixed(2)}%`;
+};
+
+/**
+ * @name couponSalePct
+ * @description Calculates the Coupon Sales Percentage based on total value of coupons and total sales
+ * @param coupons array of amount of coupons => number[]
+ * @param net net sales => number
+ * @returns Coupon Redemption Rate => string percentage value e.g. '12.34%'
+ */
+export const couponSalePct = (coupons: number[], net: number) => {
+  const couponSales = coupons.reduce((acc, val) => acc + val, 0);
+  return ((couponSales / net) * 100).toFixed(2) + "%";
 };
 
 /**
