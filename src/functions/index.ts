@@ -163,5 +163,6 @@ export const netSalesPct = (net: number, rev: number) => {
  * @returns Net Sales Percent => string
  */
 export const promoLeakage = (net: number, rev: number) => {
-  return ((rev - net) / rev) * 100;
+  const pct = ((rev - net) / rev) * 100;
+  return `${pct.toFixed(2)}%`;
 };

@@ -89,13 +89,13 @@ export const salesSlice = createSlice({
     },
     setSelectedSalesPanel: (
       state,
-      action: PayloadAction<SelectedSalesPanel>
+      action: PayloadAction<SelectedSalesPanel>,
     ) => {
       state.selectedSalesPanel = action.payload;
     },
     setCompareSalesPanel: (
       state,
-      action: PayloadAction<SelectedSalesPanel>
+      action: PayloadAction<SelectedSalesPanel>,
     ) => {
       state.compareSalesPanel = action.payload;
     },
@@ -110,13 +110,13 @@ export const salesSlice = createSlice({
     },
     setTopTenItemsMetrics: (
       state,
-      action: PayloadAction<TopTenItemsMetrics>
+      action: PayloadAction<TopTenItemsMetrics>,
     ) => {
       state.topTenItemsMetrics = action.payload;
     },
     setWindowVisible: (
       state,
-      action: PayloadAction<{ key: keyof WindowVisible; show: boolean }>
+      action: PayloadAction<{ key: keyof WindowVisible; show: boolean }>,
     ) => {
       state.windowVisible = {
         ...state.windowVisible,
@@ -141,6 +141,7 @@ export const salesSlice = createSlice({
       state.subSales = [];
       state.compareSubs = [];
       state.catSales = [];
+      state.topTenItems = [];
     },
     resetSalesSlice: () => initialState,
   },

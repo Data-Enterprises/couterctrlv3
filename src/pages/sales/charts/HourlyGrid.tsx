@@ -5,6 +5,7 @@ import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import type { HourlySale } from "../../../interfaces";
 ModuleRegistry.registerModules([AllCommunityModule]);
 import { theme, cols } from "../graphs";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 
 interface AvailableHour {
   hour: number;
@@ -49,6 +50,14 @@ const HourlyGrid = () => {
     setHour(Number(value));
   };
 
+  if (!hourlySales.length) {
+    return (
+      <div className="bg-custom-white rounded-lg shadow-lg p-2 relative">
+        <LoadingIndicator />
+      </div>
+    );
+  }
+
   return (
     <>
       {loaded ? (
@@ -58,7 +67,7 @@ const HourlyGrid = () => {
             {hours.map((h) => (
               <span
                 key={h.hour}
-                className={`${h.hour === hour ? "bg-blue-500 text-custom-white" : ""} text-sm font-medium underline hover:bg-blue-200 hover:text-content rounded-full py-1 px-2.5 transition-all duration-200 cursor-pointer`}
+                className={`${h.hour === hour ? "bg-blue-500 text-custom-white" : ""} text-sm font-medium underline hover:bg-blue-200 hover:text-content rounded-full py-0.5 px-2 transition-all duration-200 cursor-pointer`}
                 onClick={() => handleSelect(h.hour)}
               >
                 {h.hour}

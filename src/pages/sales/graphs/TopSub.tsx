@@ -10,6 +10,7 @@ import { reduceSubs, type TopSub } from ".";
 import { netSalesPct, promoLeakage, velocity } from "../../../functions";
 
 import { FlagIcon } from "@heroicons/react/20/solid";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 
 const TopSubDept = () => {
   const [topSub, setTopSub] = useState<TopSub | null>(null);
@@ -85,6 +86,14 @@ const TopSubDept = () => {
     }
   };
 
+  if (!topSub) {
+    return (
+      <div className="bg-custom-white rounded-lg shadow-lg relative">
+        <LoadingIndicator />
+      </div>
+    );
+  }
+
   return (
     <div className="bg-custom-white rounded-lg shadow-lg">
       <div className="bg-blue-500 text-custom-white px-2 rounded-t-lg font-medium flex justify-between">
@@ -133,14 +142,15 @@ const TopSubDept = () => {
                   <div className="text-sm text-content/60">Leak</div>
                   <div className="font-medium flex gap-1 items-center">
                     <div>
-                      {promoLeakage(
-                        topSub.net_sales,
-                        topSub.total_sales,
-                      ).toFixed(2)}
-                      %
+                      {promoLeakage(topSub.net_sales, topSub.total_sales)}
                     </div>
                     {renderIcon(
-                      promoLeakage(topSub.net_sales, topSub.total_sales),
+                      parseFloat(
+                        promoLeakage(
+                          topSub.net_sales,
+                          topSub.total_sales,
+                        ).replace("%", ""),
+                      ),
                       "pl",
                     )}
                   </div>

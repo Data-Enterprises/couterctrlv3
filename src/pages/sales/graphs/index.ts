@@ -124,11 +124,11 @@ export const cols: (ColDef<HourlySale> | ColGroupDef<HourlySale>)[] = [
     flex: 0.9,
     valueFormatter: (params) => {
       const sale = params.data as HourlySale;
-      return promoLeakage(sale.net_sales, sale.total_sales).toFixed(2) + "%";
+      return promoLeakage(sale.net_sales, sale.total_sales);
     },
     cellClass: (params) => {
       const sale = params.data as HourlySale;
-      const leak = promoLeakage(sale.net_sales, sale.total_sales);
+      const leak = parseFloat(promoLeakage(sale.net_sales, sale.total_sales).replace("%", ""));
       return `text-right ${leak < 2 ? "bg-emerald-200" : "bg-orange-200"}`;
     },
   },
