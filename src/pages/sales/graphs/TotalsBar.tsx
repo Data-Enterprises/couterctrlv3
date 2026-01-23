@@ -74,7 +74,7 @@ const TotalsBar = ({ valueKey }: NivoPieProps) => {
 
   const setMarginLeft = () => {
     if (barData.some((d) => d.value > 99999)) {
-      return barData.length > 6 ? 85 : 75;
+      return barData.length > 6 ? 80 : valueKey === "total_sales" ? 75 : 55;
     }
 
     if (valueKey === "total_sales") {

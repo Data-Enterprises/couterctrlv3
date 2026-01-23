@@ -1,4 +1,5 @@
-import TopSub from "../graphs/TopSub";
+import TopItem from "../graphs/TopItem";
+import TopSubDept from "../graphs/TopSub";
 import TotalsBar from "../graphs/TotalsBar";
 
 const KpiHeader = () => {
@@ -6,10 +7,8 @@ const KpiHeader = () => {
     <div className="grid grid-cols-4 gap-4">
       <TotalsBar valueKey="total_sales" />
       <TotalsBar valueKey="qty" />
-      <TopSub />
-      <div className="bg-custom-white rounded-lg shadow-lg flex justify-center items-center">
-        Top Item
-      </div>
+      <TopSubDept />
+      <TopItem />
     </div>
   );
 };

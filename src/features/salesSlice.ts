@@ -135,6 +135,13 @@ export const salesSlice = createSlice({
     setCatSales: (state, action: PayloadAction<CatSale[]>) => {
       state.catSales = action.payload;
     },
+    reQuery: (state) => {
+      state.weeklySales = [];
+      state.hourlySales = [];
+      state.subSales = [];
+      state.compareSubs = [];
+      state.catSales = [];
+    },
     resetSalesSlice: () => initialState,
   },
 });
@@ -154,6 +161,7 @@ export const {
   setSubSales,
   setCompareSubs,
   setCatSales,
+  reQuery,
   resetSalesSlice,
 } = salesSlice.actions;
 export default salesSlice.reducer;

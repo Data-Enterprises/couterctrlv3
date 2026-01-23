@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import type { JsonError, WeeklySale } from "../../../interfaces";
 import {
+  reQuery,
   setHourlySales,
   setSelectedSalesPanel,
   setSubSales,
@@ -49,6 +50,7 @@ const SalesPanels = () => {
   }, [sales.salesPanelSearchText, sales.salesPanels]);
 
   const handleDataFetch = () => {
+    dispatch(reQuery());
     const p = sales.selectedSalesPanel;
     const start = p.sale_date
       ? p.sale_date.split("T")[0]
@@ -128,8 +130,8 @@ const SalesPanels = () => {
     getSubs(
       context.url,
       context.token,
-      start,
-      end,
+      weeklyStart,
+      weeklyEnd,
       groupParam,
       searchParam,
       singleStoreParam,
