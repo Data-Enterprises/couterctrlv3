@@ -73,7 +73,7 @@ export type GroupTopTenItem = {
 
 // used for the hourly/hourly endpoint
 export type HourlySale = {
-  avg_itemPrice: number;
+  avg_item_price: number;
   avg_item_qty: number;
   basket_size_qty: number;
   basket_size_sales: number;

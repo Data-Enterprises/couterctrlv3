@@ -136,7 +136,9 @@ export const crr = (coupons: number[], units: number) => {
 /**
  * @name netSalesPct
  * @description Calculates the Net Sales Percentage based on net sales and revenue
- * @summary Shows how much revenueis leaked through discounts => > 95% is good, < 90% is bad
+ * @summary Shows how much revenueis leaked through discounts =>
+ *          > 95% is good
+ *          < 90% is bad
  *          Dropping % signals over-discounting/promotions and wil help management adjust
  *          pricing/promo strategies before profits are impacted too severely
  * @param net net sales => number
@@ -144,7 +146,6 @@ export const crr = (coupons: number[], units: number) => {
  * @returns Net Sales Percent => string
  */
 export const netSalesPct = (net: number, rev: number) => {
-  if (rev === 0) return "0%";
   const pct = (net / rev) * 100;
   return `${pct.toFixed(2)}%`;
 };
@@ -154,6 +155,9 @@ export const netSalesPct = (net: number, rev: number) => {
  * @description Calculates the Promo Leakage percentage based on net sales and revenue
  * @summary Shows how much sales are being lost to promotions/discounts
  *          Higher % means more leakage => management can use this to adjust promo strategies
+ *          <1% great: Elite control—promos drive volume without hurting margins
+ *          <2% acceptable: Room to promote while staying profitable
+ *          >2% problematic: Signals promo dependency risk, even if net sales % still looks "good" => hurts margins
  * @param net net sales => number
  * @param rev revenue aka total sales => number
  * @returns Net Sales Percent => string
