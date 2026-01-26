@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useAppSelector } from "../../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { ResponsiveBar, type BarDatum } from "@nivo/bar";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { cpu, gpm, ppu, rpu } from "../../../functions";
 import { QuestionMarkCircleIcon } from "@heroicons/react/16/solid";
+import { setSelectedItem } from "../../../features/salesSlice";
 
 interface TopTenGroupItem {
   product_code: string;
@@ -21,6 +22,7 @@ type ShowTooltip = {
 };
 
 const TopTen = () => {
+  const dispatch = useAppDispatch();
   const [topTen, setTopTen] = useState<TopTenGroupItem[]>([]);
   const [selectedTopTenItem, setSelectedTopTenItem] =
     useState<TopTenGroupItem | null>(null);
@@ -65,6 +67,7 @@ const TopTen = () => {
           total_sales: curr.total_sales,
           qty: curr.qty,
           cost: curr.cost,
+          // store_name: curr.store_name,
         });
       }
 
@@ -137,6 +140,8 @@ const TopTen = () => {
               )
             }
             onClick={(d) => {
+              const upc = d.index === 9 ? "" : (d.indexValue as string);
+              dispatch(setSelectedItem(upc));
               setSelectedTopTenItem(
                 topTen.find((item) => item.product_code === d.indexValue) ||
                   null,
@@ -159,7 +164,9 @@ const TopTen = () => {
           />
         </div>
         <div className="text-sm">
-          <div className="font-medium border-b">Item:</div>
+          <div className="flex justify-between items-center">
+            <div className="font-medium border-b">Item:</div>
+          </div>
           <div className="font-medium text-xs mt-1">
             {selectedTopTenItem?.product_code}
           </div>

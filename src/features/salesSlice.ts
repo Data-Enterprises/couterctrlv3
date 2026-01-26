@@ -39,7 +39,7 @@ type QueryChecker = {
   hourly: boolean;
   subs: boolean;
   weekly: boolean;
-}
+};
 
 interface SalesState {
   topTenItems: TopTenItem[];
@@ -57,6 +57,7 @@ interface SalesState {
   compareSubs: SubSale[];
   catSales: CatSale[];
   queryChecker: QueryChecker;
+  selectedItem: string;
 }
 
 export const defaultSelectedPanel: SelectedSalesPanel = {
@@ -86,6 +87,7 @@ const initialState: SalesState = {
     subs: false,
     weekly: false,
   },
+  selectedItem: "",
 };
 
 export const salesSlice = createSlice({
@@ -160,7 +162,11 @@ export const salesSlice = createSlice({
         state.queryChecker.weekly = true;
       }
     },
+    setSelectedItem: (state, action: PayloadAction<string>) => {
+      state.selectedItem = action.payload;
+    },
     reQuery: (state) => {
+      state.selectedItem = "";
       state.weeklySales = [];
       state.hourlySales = [];
       state.subSales = [];
@@ -194,6 +200,7 @@ export const {
   setCompareSubs,
   setCatSales,
   finishQuery,
+  setSelectedItem,
   reQuery,
   resetSalesSlice,
 } = salesSlice.actions;
