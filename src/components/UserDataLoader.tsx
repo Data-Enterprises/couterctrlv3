@@ -20,7 +20,7 @@ import {
 } from "../features/searchSlice";
 import { setAssignedStores, setUnassignedStores } from "../features/userSlice";
 import { setAllAvailableStores } from "../features/storeSlice";
-import { setLoggedIn } from "../features/appSlice";
+import { setFetchingCredentials, setLoggedIn } from "../features/appSlice";
 
 // This component is hidden and is strictly used for fetching user data on user login
 const UserDataLoader = () => {
@@ -148,6 +148,7 @@ const UserDataLoader = () => {
     if (readyToLogin.groups && readyToLogin.stores) {
       dispatch(setLoggedIn(true));
       setReadyToLogin({ stores: false, groups: false });
+      dispatch(setFetchingCredentials(false));
     }
   }, [readyToLogin.groups, readyToLogin.stores]);
 

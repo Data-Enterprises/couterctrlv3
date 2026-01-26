@@ -11,6 +11,7 @@ import {
   setIsDesktop,
   setToken,
   setForgotPassword,
+  setFetchingCredentials,
 } from "../../features/appSlice";
 import {
   setUsername,
@@ -25,8 +26,10 @@ import {
   setEmail,
 } from "../../features/userSlice";
 import ForgotPassword from "./forgot/ForgotPassword";
+import LoadingIndicator from "../../components/loading/LoadingIndicator";
 
 const Login = () => {
+  // const group = useAppSelector((state) => state.group);
   const state = useAppSelector((state) => state.user);
   const context = useAppSelector((state) => state.app);
   const dispatch = useAppDispatch();
@@ -66,6 +69,7 @@ const Login = () => {
   };
 
   const handleLogin = () => {
+    dispatch(setFetchingCredentials(true));
     login(context.url, state.username, state.password, useImpersonation ? 1 : 0)
       .then((resp) => {
         const j = resp.data;
@@ -81,6 +85,7 @@ const Login = () => {
           dispatch(setSecurityQuestionId(j.security_question_id));
           setUseImpersonation(0);
         } else {
+          dispatch(setFetchingCredentials(false));
           toast.warn(
             "Invalid credentials, make sure your password and username are correct",
           );
@@ -88,6 +93,7 @@ const Login = () => {
       })
       .catch((err: JsonError) => {
         toast.error(`Login failed: ${err.message}`);
+        dispatch(setFetchingCredentials(false));
       });
   };
 
@@ -225,6 +231,11 @@ const Login = () => {
         <div className="absolute bottom-1 left-0 text-sm pl-2">
           Last Updated on 1/21/2026 @ 11:37 AM CST
         </div>
+        {context.fetchingCredentials ? (
+          <div className="absolute bottom-20 left-48 -pr-4 lg:p-0 lg:bottom-40 lg:left-72">
+            <LoadingIndicator message="Fetching credentials..." />
+          </div>
+        ) : null}
       </div>
       <div className="relative hidden w-0 flex-1 lg:block">
         <img
