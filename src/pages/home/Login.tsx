@@ -135,7 +135,7 @@ const Login = () => {
                       autoComplete="off"
                       required
                       value={state.username}
-                      className="basic-input bg-custom-white"
+                      className="basic-input bg-custom-white focus:border"
                       onChange={(e) => dispatch(setUsername(e.target.value))}
                     />
                   </div>
@@ -156,7 +156,7 @@ const Login = () => {
                       autoComplete="off"
                       value={state.password}
                       required
-                      className="basic-input bg-custom-white"
+                      className="basic-input bg-custom-white focus:border"
                       onKeyDown={handleKeyPress}
                       onChange={(e) => dispatch(setPassword(e.target.value))}
                     />
