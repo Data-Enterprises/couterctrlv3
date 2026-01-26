@@ -65,7 +65,7 @@ const HourlyGrid = () => {
           ))}
         </div>
       </div>
-      <div className="h-[90%] mt-1 mx-2">
+      <div className="h-[92%] mx-2">
         <AgGridReact rowData={rowData} columnDefs={cols} theme={theme} />
       </div>
     </div>

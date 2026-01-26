@@ -29,11 +29,11 @@ const SubDeptGrid = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg">
+    <div className="bg-custom-white rounded-lg shadow-lg pb-2 pt-1">
       <div className="px-2 flex justify-between items-center">
         <span className="font-medium">Sub Department Sales</span>
       </div>
-      <div className="px-2 h-[90%]">
+      <div className="px-2 h-[92%]">
         <AgGridReact rowData={groupSubs()} theme={theme} columnDefs={subCols} pagination={true} paginationAutoPageSize={true} />
       </div>
     </div>

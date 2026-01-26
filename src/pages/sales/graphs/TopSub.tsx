@@ -98,7 +98,7 @@ const TopSubDept = () => {
       {topSub ? (
         <div className="p-2 text-xs">
           <div className="font-medium border-b text-sm">Totals</div>
-          <div className="flex justify-between py-1">
+          <div className="grid grid-cols-4 gap-2 py-1">
             <div>
               <div className="text-sm text-content/60">Revenue</div>
               <div className="font-medium">
@@ -128,7 +128,7 @@ const TopSubDept = () => {
           <div className="grid grid-cols-[50%_45%] gap-4 mt-3">
             <div>
               <div className="font-medium border-b text-sm">Flags</div>
-              <div className="flex justify-between py-1">
+              <div className="grid grid-cols-2 gap-2 py-1">
                 <div>
                   <div className="text-sm text-content/60">Leak</div>
                   <div className="font-medium flex gap-1 items-center">
@@ -165,7 +165,7 @@ const TopSubDept = () => {
 
             <div>
               <div className="font-medium border-b text-sm">Velocity/day</div>
-              <div className="flex justify-between py-1">
+              <div className="grid grid-cols-2 gap-2 py-1">
                 <div>
                   <div className="text-sm text-content/60">Sales</div>
                   <div className="font-medium">
@@ -177,7 +177,7 @@ const TopSubDept = () => {
                 <div>
                   <div className="text-sm text-content/60">Qty</div>
                   <div className="font-medium">
-                    {formatVelocity(topSub.qty)}
+                    {formatBigNumber(parseFloat(formatVelocity(topSub.qty)))}
                   </div>
                 </div>
               </div>
