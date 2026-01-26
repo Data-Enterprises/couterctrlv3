@@ -75,8 +75,8 @@ export const cols: (ColDef<HourlySale> | ColGroupDef<HourlySale>)[] = [
   },
   {
     field: "total_sales",
-    headerName: "Revenue",
-    flex: 1.1,
+    headerName: "Total Sales",
+    flex: 1.2,
     valueFormatter: (params) => formatCurrency2(params.value as number),
     headerStyle: { borderRight: "1px solid white" },
     resizable: false,
@@ -94,7 +94,7 @@ export const cols: (ColDef<HourlySale> | ColGroupDef<HourlySale>)[] = [
   {
     field: "qty",
     headerName: "Qty",
-    flex: 0.9,
+    flex: 0.8,
     headerStyle: { borderRight: "1px solid white" },
     resizable: false,
     cellClass: "text-right",
@@ -162,8 +162,8 @@ export const subCols: (ColDef<SubSale> | ColGroupDef<SubSale>)[] = [
 
   {
     field: "total_sales",
-    headerName: "Revenue",
-    flex: 1,
+    headerName: "Total Sales",
+    flex: 1.3,
     valueFormatter: (params) => formatCurrency2(params.value as number),
     headerStyle: { borderRight: "1px solid white" },
     resizable: false,
@@ -181,7 +181,7 @@ export const subCols: (ColDef<SubSale> | ColGroupDef<SubSale>)[] = [
   {
     field: "qty",
     headerName: "Qty",
-    flex: 1,
+    flex: 0.8,
     valueFormatter: (params) => formatBigNumber(params.value as number, 0),
     headerStyle: { borderRight: "1px solid white" },
     resizable: false,
@@ -209,7 +209,7 @@ export const subCols: (ColDef<SubSale> | ColGroupDef<SubSale>)[] = [
   {
     field: "net_sales",
     headerName: "Net Sales %",
-    flex: 1.3,
+    flex: 1.2,
     headerStyle: { borderRight: "1px solid white" },
     resizable: false,
     valueFormatter: (params) => {
