@@ -123,7 +123,7 @@ const TopTen = () => {
               rgbaColor(
                 d.data.product_code === selectedTopTenItem?.product_code
                   ? "#f97316"
-                  : "#93c5fd",
+                  : "#3b82f6",
                 0.3,
               )
             }
@@ -135,7 +135,7 @@ const TopTen = () => {
               rgbaColor(
                 d.data.indexValue === selectedTopTenItem?.product_code
                   ? "#f97316"
-                  : "#93c5fd",
+                  : "#3b82f6",
                 1,
               )
             }
