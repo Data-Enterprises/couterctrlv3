@@ -27,7 +27,7 @@ const SubDeptComps = () => {
         Click "Compare Subs" on another sales panel to see comparisons
       </div>
     );
-  } 
+  }
 
   const formatDate = (dateStr: string) => {
     const dte = dateStr.split("T")[0].split("-");
@@ -59,10 +59,10 @@ const SubDeptComps = () => {
     <div className="bg-custom-white rounded-lg shadow-lg px-2 pt-1 pb-2">
       <div className="grid grid-cols-2">
         <div className="font-medium">
-          Compare Panel: {compareSalesPanel.store_name}
+          Selected Panel: {selectedSalesPanel.store_name}
         </div>
         <div className="font-medium">
-          Selected Panel: {selectedSalesPanel.store_name}
+          Compare Panel: {compareSalesPanel.store_name}
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4 max-h-[275px] overflow-y-scroll no-scrollbar">

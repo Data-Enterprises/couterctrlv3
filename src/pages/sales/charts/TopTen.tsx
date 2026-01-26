@@ -199,7 +199,7 @@ const TopTen = () => {
           </div>
 
           {/* Calculations */}
-          <div className="mt-1 w-full border-b font-medium">Item Flags</div>
+          <div className="mt-1 w-full border-b font-medium">Item Metrics</div>
           <div className="grid grid-cols-4 mt-1">
             <div>
               <div className="flex gap-1 items-center relative">

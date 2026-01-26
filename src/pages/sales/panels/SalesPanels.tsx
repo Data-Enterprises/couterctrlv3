@@ -4,6 +4,8 @@ import type { JsonError, WeeklySale } from "../../../interfaces";
 import {
   finishQuery,
   reQuery,
+  setCompareSalesPanel,
+  setCompareSubs,
   setHourlySales,
   setSelectedSalesPanel,
   setSubSales,
@@ -170,6 +172,11 @@ const SalesPanels = () => {
         setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
       );
     }
+    // When selecting a new panel, clear out compare panel data
+    dispatch(
+      setCompareSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
+    );
+    dispatch(setCompareSubs([]));
   };
 
   const isReady = sales.salesPanels.length > 0 && !sales.panelsLoading;

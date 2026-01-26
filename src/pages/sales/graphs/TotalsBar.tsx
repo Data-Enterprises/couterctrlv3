@@ -23,6 +23,9 @@ interface NivoPieProps {
 const TotalsBar = ({ valueKey }: NivoPieProps) => {
   const [barData, setBarData] = useState<any[]>([]);
   const state = useAppSelector((state) => state.sales);
+  const search = useAppSelector((state) => state.search);
+  const user = useAppSelector((state) => state.user);
+  const groups = useAppSelector((state) => state.group);
 
   const formatPieData = (data: WeeklySale[]): PieData[] => {
     const grouped: PieData[] = data.reduce((acc: PieData[], curr) => {
@@ -73,10 +76,22 @@ const TotalsBar = ({ valueKey }: NivoPieProps) => {
     }
   };
 
+  const renderTitle = () => {
+    if (state.selectedSalesPanel.storeid) {
+      return `${state.selectedSalesPanel.store_name}`;
+    } else {
+      const storeName = user.assignedStores.filter((s) => s.storeid === search.lastStore)[0]?.store_name;
+      const groupName = groups.groups.filter((g) => g.id === search.lastGroup)[0]?.group_name;
+      return search.type === "Store" ? `${storeName}` : `${groupName}`;
+    }
+    
+  };
+
   return (
     <div className="bg-custom-white rounded-lg shadow-lg h-full w-full relative">
-      <div className="absolute top-0 left-0 font-medium border-b border-content/30 rounded-t-lg w-[96%] mx-2">
-        {valueKey === "total_sales" ? "Sales" : "Quantity"}
+      <div className="absolute top-0 left-0 font-medium border-b border-content/30 rounded-t-lg w-[96%] mx-2 flex justify-between">
+        <div>{valueKey === "total_sales" ? "Sales" : "Quantity"}</div>
+        <div>{renderTitle()}</div>
       </div>
       <ResponsiveBar
         data={barData}
