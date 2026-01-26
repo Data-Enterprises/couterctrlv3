@@ -6,7 +6,7 @@ import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import type { SubSale } from "../../../interfaces";
 
 const SubDeptGrid = () => {
-  const {subSales} = useAppSelector((state) => state.sales);
+  const { subSales } = useAppSelector((state) => state.sales);
 
   const groupSubs = () => {
     return [...subSales].reduce((acc: SubSale[], curr) => {
@@ -23,14 +23,10 @@ const SubDeptGrid = () => {
         exists.total_tax += curr.total_tax;
       } else {
         acc.push({ ...curr });
-      } 
+      }
       return acc;
     }, []);
   };
-
-  // const test = [...subSales].reduce((acc: SubSale[], curr) => {
-  // }, []);
-
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg pb-2 pt-1">
@@ -38,7 +34,13 @@ const SubDeptGrid = () => {
         <span className="font-medium">Sub Department Sales</span>
       </div>
       <div className="px-2 h-[92%]">
-        <AgGridReact rowData={groupSubs()} theme={theme} columnDefs={subCols} pagination={true} paginationAutoPageSize={true} />
+        <AgGridReact
+          rowData={groupSubs()}
+          theme={theme}
+          columnDefs={subCols}
+          pagination={true}
+          paginationAutoPageSize={true}
+        />
       </div>
     </div>
   );

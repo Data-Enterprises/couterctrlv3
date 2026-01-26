@@ -110,13 +110,13 @@ const TopSubDept = () => {
           <div className="font-medium border-b text-sm">Totals</div>
           <div className="grid grid-cols-4 gap-2 py-1">
             <div>
-              <div className="text-sm text-content/60">Total Sales</div>
+              <div className="text-sm text-content/60">Sales</div>
               <div className="font-medium">
                 {formatCurrency2(topSub.total_sales - topSub.total_tax)}
               </div>
             </div>
             <div>
-              <div className="text-sm text-content/60">Net Sales</div>
+              <div className="text-sm text-content/60">Net</div>
               <div className="font-medium">
                 {formatCurrency2(topSub.net_sales)}
               </div>
