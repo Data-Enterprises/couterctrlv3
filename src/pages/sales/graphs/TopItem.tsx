@@ -49,7 +49,7 @@ const TopItem = () => {
             {/* Totals */}
             <div className="grid grid-cols-4 gap-4 py-1">
               <div>
-                <div className="text-sm text-content/60">Revenue</div>
+                <div className="text-sm text-content/60">Sales</div>
                 <div className="font-medium">
                   {formatCurrency2(topItem.total_sales)}
                 </div>
