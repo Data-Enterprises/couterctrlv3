@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useAppSelector } from "../../../hooks";
-// import { type TopTenItem } from "../../../interfaces";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { cpu, gpm, ppu, rpu } from "../../../functions";
 
