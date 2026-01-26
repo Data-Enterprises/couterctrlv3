@@ -55,7 +55,6 @@ const Sales = () => {
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 
     dispatch(setPanelsLoading(true));
-    // dispatch(setDataLoading(true));
     getWeekly(
       context.url,
       context.token,
