@@ -1,3 +1,4 @@
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import { useAppSelector } from "../../../hooks";
 import SubCompCard from "./SubCompCard";
 
@@ -12,7 +13,13 @@ const SubDeptComps = () => {
         Select a Sales Panel
       </div>
     );
-
+    // Loading into Step 3
+  } else if (compareSubs.length === 0 && compareSalesPanel.storeid !== 0) {
+    return (
+      <div className="bg-custom-white rounded-lg shadow-lg relative">
+        <LoadingIndicator message="Loading Sub-Department Comparisons..." />
+      </div>
+    );
     // Step Two
   } else if (compareSubs.length === 0) {
     return (
@@ -20,7 +27,7 @@ const SubDeptComps = () => {
         Click "Compare Subs" on another sales panel to see comparisons
       </div>
     );
-  }
+  } 
 
   const formatDate = (dateStr: string) => {
     const dte = dateStr.split("T")[0].split("-");
