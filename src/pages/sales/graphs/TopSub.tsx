@@ -9,9 +9,15 @@ import {
 import { reduceSubs, type TopSub } from ".";
 import { netSalesPct, promoLeakage, velocity } from "../../../functions";
 
-import { FlagIcon } from "@heroicons/react/20/solid";
+import { FlagIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
+
+const tooltips = {
+  pl: false,
+  nsp: false,
+};
 
 const TopSubDept = () => {
+  const [tooltip, setTooltip] = useState<typeof tooltips>(tooltips);
   const [topSub, setTopSub] = useState<TopSub | null>(null);
   const search = useAppSelector((state) => state.search);
   const { subSales, selectedSalesPanel } = useAppSelector(
@@ -85,6 +91,10 @@ const TopSubDept = () => {
     }
   };
 
+  const handleTooltip = (key: keyof typeof tooltips) => {
+    setTooltip((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
   return (
     <div className="bg-custom-white rounded-lg shadow-lg">
       <div className="mx-2 border-b border-content/30 rounded-t-lg font-medium flex justify-between">
@@ -129,8 +139,20 @@ const TopSubDept = () => {
             <div>
               <div className="font-medium border-b text-sm">Flags</div>
               <div className="grid grid-cols-2 gap-2 py-1">
-                <div>
-                  <div className="text-sm text-content/60">Leak</div>
+                <div className="">
+                  <div className="text-sm text-content/60 flex gap-1 items-center relative">
+                    <div>Leak</div>
+                    <QuestionMarkCircleIcon
+                      className="inline h-5 w-5 text-content/30 hover:text-blue-200 transition-all duration-100 cursor-default"
+                      onMouseEnter={() => handleTooltip("pl")}
+                      onMouseLeave={() => handleTooltip("pl")}
+                    />
+                    <div
+                      className={`${tooltip.pl ? "absolute" : "hidden"} text-content bg-orange-200 text-nowrap rounded-lg p-2 left-0 -translate-y-full mt-2 shadow shadow-content/50`}
+                    >
+                      Promo Leakage
+                    </div>
+                  </div>
                   <div className="font-medium flex gap-1 items-center">
                     <div>
                       {promoLeakage(topSub.net_sales, topSub.total_sales)}
@@ -146,8 +168,20 @@ const TopSubDept = () => {
                     )}
                   </div>
                 </div>
-                <div>
-                  <div className="text-sm text-content/60">NSP</div>
+                <div className="">
+                  <div className="text-sm text-content/60 flex gap-1 items-center relative">
+                    <div>NSP</div>
+                    <QuestionMarkCircleIcon
+                      className="inline h-5 w-5 text-content/30 hover:text-blue-200 transition-all duration-100 cursor-default"
+                      onMouseEnter={() => handleTooltip("nsp")}
+                      onMouseLeave={() => handleTooltip("nsp")}
+                    />
+                    <div
+                      className={`${tooltip.nsp ? "absolute" : "hidden"} text-content bg-orange-200 text-nowrap rounded-lg p-2 left-0 -translate-y-full mt-2 shadow shadow-content/50`}
+                    >
+                      Net Sales Percentage
+                    </div>
+                  </div>
                   <div className="font-medium flex gap-1 items-center">
                     <div>
                       {netSalesPct(topSub.net_sales, topSub.total_sales)}
