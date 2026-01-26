@@ -54,9 +54,9 @@ const SalesPanels = () => {
   const handleDataFetch = () => {
     dispatch(reQuery());
     const p = sales.selectedSalesPanel;
-    const start = p.sale_date
-      ? p.sale_date.split("T")[0]
-      : formatGoliathDate(search.startDate);
+    // const start = p.sale_date
+    //   ? p.sale_date.split("T")[0]
+    //   : formatGoliathDate(search.startDate);
     const end = p.sale_date
       ? p.sale_date.split("T")[0]
       : formatGoliathDate(search.endDate);
@@ -98,7 +98,7 @@ const SalesPanels = () => {
         toast.error("Error fetching weekly data: " + err.message),
       );
 
-    getTopTen(context.url, context.token, searchParam, searchType, start, end)
+    getTopTen(context.url, context.token, searchParam, searchType, weeklyStart, weeklyEnd)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {

@@ -58,30 +58,27 @@ const TopItem = () => {
       // if not selected, then the code runs below based on if a sales panel is selected or not
     } else if (!selectedSalesPanel.storeid) {
       // not selected
-      item = [...topTenItems].sort((a, b) => b.total_sales - a.total_sales)[0];
-    } else {
-      // selected
-      const filtered = topTenItems
-        .filter((item) => item.storeid === selectedSalesPanel.storeid)
-        .reduce((acc: Testing[], curr) => {
-          const exists = acc.find((d) => d.product_code === curr.product_code);
-          if (exists) {
-            exists.total_sales += curr.total_sales;
-            exists.qty += curr.qty;
-            exists.cost += curr.cost;
-          } else {
-            acc.push({
-              product_code: curr.product_code,
-              total_sales: curr.total_sales,
-              product_description: curr.product_description,
-              qty: curr.qty,
-              cost: curr.cost,
-            });
-          }
-          return acc;
-        }, []);
-
+      const filtered = topTenItems.reduce((acc: Testing[], curr) => {
+        const exists = acc.find((d) => d.product_code === curr.product_code);
+        if (exists) {
+          exists.total_sales += curr.total_sales;
+          exists.qty += curr.qty;
+          exists.cost += curr.cost;
+        } else {
+          acc.push({
+            product_code: curr.product_code,
+            total_sales: curr.total_sales,
+            product_description: curr.product_description,
+            qty: curr.qty,
+            cost: curr.cost,
+          });
+        }
+        return acc;
+      }, []);
       item = [...filtered].sort((a, b) => b.total_sales - a.total_sales)[0];
+    } else {
+      // selected => no need to group by store since it's a single store
+      item = [...topTenItems].sort((a, b) => b.total_sales - a.total_sales)[0];
     }
     setTitle("Top Item");
     setItem(item);

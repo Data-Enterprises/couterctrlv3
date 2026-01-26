@@ -37,7 +37,7 @@ const TopTotals = () => {
     const classStr =
       "bg-custom-white rounded-lg shadow-lg pl-1 flex justify-center items-center flex-col gap-2 relative";
   return (
-    <div className="grid grid-cols-2 gap-4 text-sm">
+    <div className="grid grid-cols-2 gap-2 text-sm">
       <div className={classStr}>
         <CurrencyDollarIcon className="h-10 w-10 text-emerald-500 absolute left-1" />
         <div className="font-medium text-content/60">Total Sales $</div>

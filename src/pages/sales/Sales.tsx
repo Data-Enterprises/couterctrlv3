@@ -26,6 +26,7 @@ import SubDeptGrid from "./charts/SubDeptGrid";
 import SubDeptComps from "./charts/SubDeptComps";
 import { useEffect } from "react";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
+import { dateRange } from "../../functions";
 
 const Sales = () => {
   const toast = useToast();
@@ -44,6 +45,11 @@ const Sales = () => {
   }, []);
 
   const getSalesPanels = () => {
+    const dr = dateRange(search.startDate, search.endDate);
+    if (dr > 7) {
+      toast.warn("Date range cannot exceed 7 days for Sales data.");
+      return;
+    }
     dispatch(
       setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
     );
@@ -126,14 +132,14 @@ const Sales = () => {
             <LoadingIndicator message="Loading sales data..." />
           </div>
         ) : isReady ? (
-          <div className="md:grid h-full md:grid-rows-[22%_76%] md:gap-4 overflow-hidden">
+          <div className="md:grid h-full md:grid-rows-[20%_78%] md:gap-4 overflow-hidden">
             <KpiHeader />
-            <div className="grid grid-cols-2  gap-4">
-              <div className="grid grid-rows-2 gap-4">
+            <div className="grid grid-cols-2  gap-2">
+              <div className="grid grid-rows-2 gap-2">
                 <HourlyGrid />
                 <TopTen />
               </div>
-              <div className="grid grid-rows-2 gap-4">
+              <div className="grid grid-rows-2 gap-2">
                 <SubDeptGrid />
                 <SubDeptComps />
               </div>
