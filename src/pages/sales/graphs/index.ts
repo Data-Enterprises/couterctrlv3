@@ -1,7 +1,7 @@
 import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
-import type { HourlySale, SubSale } from "../../../interfaces";
+import type { SubSale } from "../../../interfaces";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
-import { couponSalePct, netSalesPct, promoLeakage } from "../../../functions";
+import { couponSalePct, netSalesPct } from "../../../functions";
 
 export interface TopSub {
   sub_department: number;
@@ -46,19 +46,13 @@ export const reduceSubs = (data: SubSale[]): TopSub[] => {
   }, []);
 };
 
-const formatDate = (dateStr: string): string => {
-  const split = dateStr.split("T")[0].split("-");
-  return `${split[1]}/${split[2]}/${split[0]}`;
-};
-
 export const theme = themeQuartz.withParams({
   headerHeight: 27,
   rowHeight: 26,
   headerBackgroundColor: "#3b82f6",
   headerTextColor: "#ffffff",
   oddRowBackgroundColor: "#dbeafe",
-  // rowHoverColor: "#93c5fd",
-  rowHoverColor: "",
+  rowHoverColor: "#93c5fd",
   headerFontWeight: "bold",
   dataFontSize: 13,
   headerFontSize: 14,
@@ -67,28 +61,24 @@ export const theme = themeQuartz.withParams({
   selectedRowBackgroundColor: "#fed7aa",
 });
 
-export const cols: (ColDef<HourlySale> | ColGroupDef<HourlySale>)[] = [
+export interface HourlyTotal {
+  hour:number;
+  total_sales: number;
+  qty: number;
+}
+
+export const cols: (ColDef<HourlyTotal> | ColGroupDef<HourlyTotal>)[] = [
   {
-    field: "sale_date",
-    headerName: "Date",
-    flex: 1.1,
-    valueFormatter: (params) => formatDate(params.value as string),
+    field: "hour",
+    headerName: "Hr",
+    flex: 0.8,
     headerStyle: { borderRight: "1px solid white" },
     resizable: false,
   },
   {
     field: "total_sales",
     headerName: "Total Sales",
-    flex: 1.2,
-    valueFormatter: (params) => formatCurrency2(params.value as number),
-    headerStyle: { borderRight: "1px solid white" },
-    resizable: false,
-    cellClass: "text-right",
-  },
-  {
-    field: "net_sales",
-    headerName: "Net Sales",
-    flex: 1.1,
+    flex: 1.3,
     valueFormatter: (params) => formatCurrency2(params.value as number),
     headerStyle: { borderRight: "1px solid white" },
     resizable: false,
@@ -97,63 +87,9 @@ export const cols: (ColDef<HourlySale> | ColGroupDef<HourlySale>)[] = [
   {
     field: "qty",
     headerName: "Qty",
-    flex: 0.8,
-    headerStyle: { borderRight: "1px solid white" },
-    resizable: false,
-    cellClass: "text-right",
-  },
-  {
-    field: "transactions",
-    headerName: "Trans #",
-    flex: 1,
-    headerStyle: { borderRight: "1px solid white" },
-    resizable: false,
-    cellClass: "text-right",
-  },
-  {
-    field: "net_sales",
-    headerName: "Net Sales %",
-    flex: 1.3,
-    headerStyle: { borderRight: "1px solid white" },
-    resizable: false,
-    valueFormatter: (params) => {
-      const sale = params.data as HourlySale;
-      const salesMinusTax = sale.total_sales - sale.total_tax;
-      return netSalesPct(sale.net_sales, salesMinusTax);
-    },
-    cellClass: (params) => {
-      const sale = params.data as HourlySale;
-      const salesMinusTax = sale.total_sales - sale.total_tax;
-      const pct = parseFloat(
-        netSalesPct(sale.net_sales, salesMinusTax).replace("%", ""),
-      );
-      return `text-right hover:bg-blue-200 cursor-pointer transition-all duration-200 ${
-        pct >= 95
-          ? "bg-emerald-200"
-          : pct >= 90
-            ? "bg-yellow-200"
-            : "bg-orange-200"
-      }`;
-    },
-  },
-  {
-    field: "net_sales",
-    headerName: "Leak",
     flex: 0.9,
     resizable: false,
-    valueFormatter: (params) => {
-      const sale = params.data as HourlySale;
-      const salesMinusTax = sale.total_sales - sale.total_tax;
-      return promoLeakage(sale.net_sales, salesMinusTax);
-    },
-    cellClass: (params) => {
-      const sale = params.data as HourlySale;
-      const salesMinusTax = sale.total_sales - sale.total_tax;
-      const leak = parseFloat(
-        promoLeakage(sale.net_sales, salesMinusTax).replace("%", ""),
-      );
-      return `text-right hover:bg-blue-200 cursor-pointer transition-all duration-200 ${leak < 2 ? "bg-emerald-200" : "bg-orange-200"}`;
-    },
+    cellClass: "text-right",
   },
 ];
 
@@ -169,7 +105,7 @@ export const subCols: (ColDef<SubSale> | ColGroupDef<SubSale>)[] = [
 
   {
     field: "total_sales",
-    headerName: "Total Sales",
+    headerName: "Sales",
     flex: 1.3,
     valueFormatter: (params) => {
       const data = params.data as SubSale;
