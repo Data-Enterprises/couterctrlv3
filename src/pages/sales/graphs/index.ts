@@ -182,7 +182,7 @@ export const subCols: (ColDef<SubSale> | ColGroupDef<SubSale>)[] = [
     field: "qty",
     headerName: "Qty",
     flex: 1,
-    valueFormatter: (params) => formatBigNumber(params.value as number),
+    valueFormatter: (params) => formatBigNumber(params.value as number, 0),
     headerStyle: { borderRight: "1px solid white" },
     resizable: false,
     cellClass: "text-right",

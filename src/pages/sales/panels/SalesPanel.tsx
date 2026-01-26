@@ -102,7 +102,7 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
         panel,
         selectedSalesPanel
       )} bg-custom-white rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-inner 
-      transition-all duration-200 select-none ripple-button md:min-h-[185px] relative`}
+      transition-all duration-200 select-none ripple-button md:min-h-[160px] relative text-sm`}
     >
       <div
         data-testid={`sales-panel-${id}`}
@@ -156,13 +156,13 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
         >
           Compare Subs
         </button>
-        <button
+        {/* <button
           data-testid={`sales-panel-cat-${id}`}
           className={`btn-themeBlue py-1.5 w-full`}
           onClick={() => handleCatClick(panel)}
         >
           Cats
-        </button>
+        </button> */}
       </div>
     </div>
   );
