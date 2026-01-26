@@ -28,6 +28,10 @@ const SubDeptGrid = () => {
     }, []);
   };
 
+  // const test = [...subSales].reduce((acc: SubSale[], curr) => {
+  // }, []);
+
+
   return (
     <div className="bg-custom-white rounded-lg shadow-lg pb-2 pt-1">
       <div className="px-2 flex justify-between items-center">

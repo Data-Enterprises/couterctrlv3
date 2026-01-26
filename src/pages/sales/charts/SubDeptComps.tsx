@@ -69,14 +69,14 @@ const SubDeptComps = () => {
         {/* Selected Sales Panel */}
         <div className="space-y-3">
           {filteredSubs.map((sub) => (
-            <SubCompCard key={Math.random()} sub={sub} />
+            <SubCompCard key={Math.random()} sub={sub} type="selected" />
           ))}
         </div>
 
         {/* Compare Sales Panel */}
         <div className="space-y-3">
           {filteredComps.map((sub) => (
-            <SubCompCard key={Math.random()} sub={sub} />
+            <SubCompCard key={Math.random()} sub={sub} type="compare" />
           ))}
         </div>
       </div>

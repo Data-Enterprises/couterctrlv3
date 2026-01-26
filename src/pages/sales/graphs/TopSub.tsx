@@ -155,13 +155,16 @@ const TopSubDept = () => {
                   </div>
                   <div className="font-medium flex gap-1 items-center">
                     <div>
-                      {promoLeakage(topSub.net_sales, topSub.total_sales)}
+                      {promoLeakage(
+                        topSub.net_sales,
+                        topSub.total_sales - topSub.total_tax,
+                      )}
                     </div>
                     {renderIcon(
                       parseFloat(
                         promoLeakage(
                           topSub.net_sales,
-                          topSub.total_sales,
+                          topSub.total_sales - topSub.total_tax,
                         ).replace("%", ""),
                       ),
                       "pl",
@@ -184,11 +187,17 @@ const TopSubDept = () => {
                   </div>
                   <div className="font-medium flex gap-1 items-center">
                     <div>
-                      {netSalesPct(topSub.net_sales, topSub.total_sales)}
+                      {netSalesPct(
+                        topSub.net_sales,
+                        topSub.total_sales - topSub.total_tax,
+                      )}
                     </div>
                     {renderIcon(
                       parseFloat(
-                        netSalesPct(topSub.net_sales, topSub.total_sales),
+                        netSalesPct(
+                          topSub.net_sales,
+                          topSub.total_sales - topSub.total_tax,
+                        ),
                       ),
                       "nsp",
                     )}

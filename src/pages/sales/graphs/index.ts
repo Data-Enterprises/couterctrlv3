@@ -13,6 +13,7 @@ export interface TopSub {
   elec_instore_coupons: number;
   elec_store_coupons: number;
   store_coupon: number;
+  total_tax: number;
 }
 
 export const reduceSubs = (data: SubSale[]): TopSub[] => {
@@ -26,6 +27,7 @@ export const reduceSubs = (data: SubSale[]): TopSub[] => {
       exists.elec_instore_coupons += curr.elec_instore_coupons;
       exists.elec_store_coupons += curr.elec_store_coupons;
       exists.store_coupon += curr.store_coupon;
+      exists.total_tax += curr.total_tax;
     } else {
       acc.push({
         sub_department: curr.sub_department,
@@ -37,6 +39,7 @@ export const reduceSubs = (data: SubSale[]): TopSub[] => {
         elec_instore_coupons: curr.elec_instore_coupons,
         elec_store_coupons: curr.elec_store_coupons,
         store_coupon: curr.store_coupon,
+        total_tax: curr.total_tax,
       });
     }
     return acc;
@@ -115,12 +118,14 @@ export const cols: (ColDef<HourlySale> | ColGroupDef<HourlySale>)[] = [
     resizable: false,
     valueFormatter: (params) => {
       const sale = params.data as HourlySale;
-      return netSalesPct(sale.net_sales, sale.total_sales);
+      const salesMinusTax = sale.total_sales - sale.total_tax;
+      return netSalesPct(sale.net_sales, salesMinusTax);
     },
     cellClass: (params) => {
       const sale = params.data as HourlySale;
+      const salesMinusTax = sale.total_sales - sale.total_tax;
       const pct = parseFloat(
-        netSalesPct(sale.net_sales, sale.total_sales).replace("%", ""),
+        netSalesPct(sale.net_sales, salesMinusTax).replace("%", ""),
       );
       return `text-right hover:bg-blue-200 cursor-pointer transition-all duration-200 ${
         pct >= 95
@@ -138,12 +143,14 @@ export const cols: (ColDef<HourlySale> | ColGroupDef<HourlySale>)[] = [
     resizable: false,
     valueFormatter: (params) => {
       const sale = params.data as HourlySale;
-      return promoLeakage(sale.net_sales, sale.total_sales);
+      const salesMinusTax = sale.total_sales - sale.total_tax;
+      return promoLeakage(sale.net_sales, salesMinusTax);
     },
     cellClass: (params) => {
       const sale = params.data as HourlySale;
+      const salesMinusTax = sale.total_sales - sale.total_tax;
       const leak = parseFloat(
-        promoLeakage(sale.net_sales, sale.total_sales).replace("%", ""),
+        promoLeakage(sale.net_sales, salesMinusTax).replace("%", ""),
       );
       return `text-right hover:bg-blue-200 cursor-pointer transition-all duration-200 ${leak < 2 ? "bg-emerald-200" : "bg-orange-200"}`;
     },
@@ -164,7 +171,10 @@ export const subCols: (ColDef<SubSale> | ColGroupDef<SubSale>)[] = [
     field: "total_sales",
     headerName: "Total Sales",
     flex: 1.3,
-    valueFormatter: (params) => formatCurrency2(params.value as number),
+    valueFormatter: (params) => {
+      const data = params.data as SubSale;
+      return formatCurrency2(data.total_sales - data.total_tax);
+    },
     headerStyle: { borderRight: "1px solid white" },
     resizable: false,
     cellClass: "text-right",
@@ -214,12 +224,14 @@ export const subCols: (ColDef<SubSale> | ColGroupDef<SubSale>)[] = [
     resizable: false,
     valueFormatter: (params) => {
       const sale = params.data as SubSale;
-      return netSalesPct(sale.net_sales, sale.total_sales);
+      const salesMinusTax = sale.total_sales - sale.total_tax;
+      return netSalesPct(sale.net_sales, salesMinusTax);
     },
     cellClass: (params) => {
       const sale = params.data as SubSale;
+      const salesMinusTax = sale.total_sales - sale.total_tax;
       const pct = parseFloat(
-        netSalesPct(sale.net_sales, sale.total_sales).replace("%", ""),
+        netSalesPct(sale.net_sales, salesMinusTax).replace("%", ""),
       );
       return `text-right hover:bg-blue-200 cursor-pointer transition-all duration-200 ${
         pct >= 95
@@ -228,23 +240,6 @@ export const subCols: (ColDef<SubSale> | ColGroupDef<SubSale>)[] = [
             ? "bg-yellow-200"
             : "bg-orange-200"
       }`;
-    },
-  },
-  {
-    field: "net_sales",
-    headerName: "Leak",
-    flex: 0.7,
-    resizable: false,
-    valueFormatter: (params) => {
-      const sale = params.data as SubSale;
-      return promoLeakage(sale.net_sales, sale.total_sales);
-    },
-    cellClass: (params) => {
-      const sale = params.data as SubSale;
-      const leak = parseFloat(
-        promoLeakage(sale.net_sales, sale.total_sales).replace("%", ""),
-      );
-      return `text-right hover:bg-blue-200 cursor-pointer transition-all duration-200 ${leak < 2 ? "bg-emerald-200" : "bg-orange-200"}`;
     },
   },
 ];

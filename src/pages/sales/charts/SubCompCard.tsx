@@ -1,10 +1,22 @@
 import type { SubSale } from "../../../interfaces";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
+import { useAppSelector } from "../../../hooks";
 
 interface SubCompCardProps {
   sub: SubSale;
+  type: "selected" | "compare";
 }
-const SubCompCard = ({ sub }: SubCompCardProps) => {
+const SubCompCard = ({ sub, type }: SubCompCardProps) => {
+  // const sales = useAppSelector((state) => state.sales);
+  // const renderIcon = () => {
+  //   if (type === "selected") {
+  //     //
+  //     const found = 
+  //   } else {
+  //     //
+  //   }
+  // };
+
   return (
     <div className="rounded-lg shadow-md p-1">
       <div className="text-xs font-medium border-b">
