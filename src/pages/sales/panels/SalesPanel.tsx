@@ -1,17 +1,17 @@
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { formatCurrency2, formatBigNumber } from "../../../utils";
 import type {
-  JsonError,
+  // JsonError,
   SelectedSalesPanel,
   WeeklySale,
 } from "../../../interfaces";
 import { comparePanels, getDateLayout } from "../utils";
 import {
-  setCatSales,
+  // setCatSales,
   setCompareSalesPanel,
 } from "../../../features/salesSlice";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getCats } from "../../../api/sales";
+// import { useToast } from "../../../components/toasts/hooks/useToast";
+// import { getCats } from "../../../api/sales";
 
 interface SalesPanelProps {
   panel: WeeklySale;
@@ -23,10 +23,10 @@ interface SalesPanelProps {
 }
 
 const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
-  const toast = useToast();
+  // const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const state = useAppSelector((state) => state.sales);
+  // const state = useAppSelector((state) => state.sales);
   const { selectedSalesPanel, compareSalesPanel } = useAppSelector(
     (state) => state.sales
   );
@@ -57,27 +57,27 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
     return formatted;
   };
 
-  const handleCatClick = (panel: WeeklySale) => {
-    // Toggling the cats data off if the same panel is clicked again
-    if (state.catSales.length > 0 && state.catSales[0].storeid === panel.storeid) {
-      dispatch(setCatSales([]));
-      return;
-    }
+  // const handleCatClick = (panel: WeeklySale) => {
+  //   // Toggling the cats data off if the same panel is clicked again
+  //   if (state.catSales.length > 0 && state.catSales[0].storeid === panel.storeid) {
+  //     dispatch(setCatSales([]));
+  //     return;
+  //   }
 
-    const pd = panel.sale_date.split("T")[0];
-    const start = pd;
-    const end = pd;
-    getCats(context.url, context.token, start, end, 0, panel.storeid, 1)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          dispatch(setCatSales(j.subs));
-        }
-      })
-      .catch((err: JsonError) =>
-        toast.error("Error fetching cats data: " + err.message)
-      );
-  };
+  //   const pd = panel.sale_date.split("T")[0];
+  //   const start = pd;
+  //   const end = pd;
+  //   getCats(context.url, context.token, start, end, 0, panel.storeid, 1)
+  //     .then((resp) => {
+  //       const j = resp.data;
+  //       if (j.error === 0) {
+  //         dispatch(setCatSales(j.subs));
+  //       }
+  //     })
+  //     .catch((err: JsonError) =>
+  //       toast.error("Error fetching cats data: " + err.message)
+  //     );
+  // };
 
   const handleCompareClick = (panel: WeeklySale) => {
     const date = panel.sale_date.split("T")[0];

@@ -111,7 +111,7 @@ const TopTen = () => {
           <ResponsiveBar
             data={barData}
             margin={{ top: 0, right: 0, bottom: 30, left: 90 }}
-            tooltip={()=> null}
+            tooltip={() => null}
             padding={0.1}
             layout="horizontal"
             keys={["total_sales"]}
@@ -170,25 +170,25 @@ const TopTen = () => {
           <div className="mt-1 w-full border-b font-medium">Item Totals</div>
           <div className="grid grid-cols-4 mt-1 mb-4">
             <div>
-              <div className="font-medium">Sales:</div>
+              <div className="text-content/60">Sales:</div>
               <div className="font-medium text-xs  ">
                 {formatCurrency2(selectedTopTenItem?.total_sales as number)}
               </div>
             </div>
             <div>
-              <div className="font-medium">Qty:</div>
+              <div className="text-content/60">Qty:</div>
               <div className="font-medium text-xs  ">
                 {formatBigNumber(selectedTopTenItem?.qty as number, 0)}
               </div>
             </div>
             <div>
-              <div className="font-medium">Cost:</div>
+              <div className="text-content/60">Cost:</div>
               <div className="font-medium text-xs  ">
                 {formatCurrency2(selectedTopTenItem?.cost as number)}
               </div>
             </div>
             <div>
-              <div className="font-medium">Profit:</div>
+              <div className="text-content/60">Profit:</div>
               <div className="font-medium text-xs  ">
                 {formatCurrency2(
                   ((selectedTopTenItem?.total_sales as number) -
@@ -202,8 +202,8 @@ const TopTen = () => {
           <div className="mt-1 w-full border-b font-medium">Item Flags</div>
           <div className="grid grid-cols-4 mt-1">
             <div>
-              <div className="font-medium flex gap-1 items-center relative">
-                <div>GPM:</div>
+              <div className="flex gap-1 items-center relative">
+                <div className="text-content/60">GPM:</div>
                 <QuestionMarkCircleIcon
                   className="inline-block w-4 h-4 text-content/30 hover:text-blue-200 cursor-default transition-all duration-200"
                   onMouseEnter={() => handleTooltip("gpm")}
@@ -224,8 +224,8 @@ const TopTen = () => {
               </div>
             </div>
             <div>
-              <div className="font-medium flex gap-1 items-center relative">
-                <div>RPU:</div>
+              <div className="flex gap-1 items-center relative">
+                <div className="text-content/60">RPU:</div>
                 <QuestionMarkCircleIcon
                   className="inline-block w-4 h-4 text-content/30 hover:text-blue-200 cursor-default transition-all duration-200"
                   onMouseEnter={() => handleTooltip("rpu")}
@@ -248,8 +248,8 @@ const TopTen = () => {
               </div>
             </div>
             <div>
-              <div className="font-medium flex gap-1 items-center relative">
-                <div>PPU:</div>
+              <div className="flex gap-1 items-center relative">
+                <div className="text-content/60">PPU:</div>
                 <QuestionMarkCircleIcon
                   className="inline-block w-4 h-4 text-content/30 hover:text-blue-200 cursor-default transition-all duration-200"
                   onMouseEnter={() => handleTooltip("ppu")}
@@ -273,8 +273,8 @@ const TopTen = () => {
               </div>
             </div>
             <div>
-              <div className="font-medium flex gap-1 items-center relative">
-                <div>CPU:</div>
+              <div className="flex gap-1 items-center relative">
+                <div className="text-content/60">CPU:</div>
                 <QuestionMarkCircleIcon
                   className="inline-block w-4 h-4 text-content/30 hover:text-blue-200 cursor-default transition-all duration-200"
                   onMouseEnter={() => handleTooltip("cpu")}
