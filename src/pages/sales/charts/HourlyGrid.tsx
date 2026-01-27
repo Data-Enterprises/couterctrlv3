@@ -110,9 +110,9 @@ const HourlyGrid = () => {
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg pb-2 pt-1">
-      <div className="px-2 font-medium flex justify-between">
+      <div className="px-2 font-medium grid grid-cols-3">
         <span className="font-medium">Hourly Sales</span>
-        <div className="flex gap-4 text-sm">
+        <div className="flex gap-4 text-sm justify-center">
           <div className="flex gap-1 items-center">
             <div className="rounded-full h-3 w-3 bg-orange-500"></div>
             <div>Below Avg</div>
@@ -122,7 +122,7 @@ const HourlyGrid = () => {
             <div>Above Avg</div>
           </div>
         </div>
-        <span>Hour: {hour}</span>
+        <span className="text-right">Hour: {hour}</span>
       </div>
       <div className="h-[93%] grid grid-cols-[40%_59%]">
         <div className="grid grid-cols-2 gap-2 max-h-[280px] overflow-y-scroll p-2 no-scrollbar">
