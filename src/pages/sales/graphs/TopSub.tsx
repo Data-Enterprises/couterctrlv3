@@ -20,30 +20,58 @@ const TopSubDept = () => {
   const dispatch = useAppDispatch();
   const [tooltip, setTooltip] = useState<typeof tooltips>(tooltips);
   const [topSub, setTopSub] = useState<TopSub | null>(null);
+  const [title, setTitle] = useState<string>("Top Sub Dept");
   const search = useAppSelector((state) => state.search);
-  const { subSales, selectedSalesPanel, topSubDept } = useAppSelector(
-    (state) => state.sales,
-  );
+  const { subSales, selectedSalesPanel, topSubDept, selectedSubDept } =
+    useAppSelector((state) => state.sales);
 
   useEffect(() => {
     if (subSales.length === 0) {
       setTopSub(null);
       return;
     }
+
     let sub = null;
-    if (!selectedSalesPanel.storeid) {
+    // If a selected sub dept exists, use that
+    if (selectedSubDept !== null) {
+      sub = selectedSubDept;
+      // else if no panel selected, use the reduced top sub from all stores
+    } else if (!selectedSalesPanel.storeid) {
       const reduced = reduceSubs(subSales);
       sub = [...reduced].sort((a, b) => b.total_sales - a.total_sales)[0];
+      // else use the top sub from the selected panel
     } else {
       sub = [...subSales]
         .filter((sub) => sub.storeid === selectedSalesPanel.storeid)
         .sort((a, b) => b.total_sales - a.total_sales)[0];
     }
+
+    // Set the display SubDept
     setTopSub(sub);
-    if (!topSubDept) {
-      dispatch(setTopSubDept(sub));
+
+    if (sub.sub_department === topSubDept?.sub_department) {
+      setTitle("Top Sub Dept");
+    } else {
+      setTitle("Selected Sub Dept");
     }
-  }, [subSales, selectedSalesPanel]);
+
+    // if data is loading, topSubDept is null here so we set it
+    if (!topSubDept) {
+      const newTopSub: TopSub = {
+        sub_department: sub.sub_department,
+        sub_department_description: sub.sub_department_description,
+        total_sales: sub.total_sales,
+        net_sales: sub.net_sales,
+        qty: sub.qty,
+        digital_coupons: sub.digital_coupons,
+        elec_instore_coupons: sub.elec_instore_coupons,
+        elec_store_coupons: sub.elec_store_coupons,
+        store_coupon: sub.store_coupon,
+        total_tax: sub.total_tax,
+      };
+      dispatch(setTopSubDept(newTopSub));
+    }
+  }, [subSales, selectedSalesPanel, selectedSubDept]);
 
   const reduceCpnAmt = () => {
     if (!topSub) return 0;
@@ -102,7 +130,7 @@ const TopSubDept = () => {
   return (
     <div className="bg-custom-white rounded-lg shadow-lg">
       <div className="mx-2 border-b border-content/30 rounded-t-lg font-medium flex justify-between">
-        Top Sub Dept
+        {title}
         {topSub && (
           <div className="font-semibold">
             {topSub.sub_department_description}
