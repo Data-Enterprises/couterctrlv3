@@ -54,6 +54,9 @@ interface SalesState {
   windowVisible: WindowVisible;
   hourlySales: HourlySale[];
   subSales: SubSale[];
+  subSalesWk2: SubSale[];
+  subSalesWk3: SubSale[];
+  subSalesWk4: SubSale[];
   compareSubs: SubSale[];
   catSales: CatSale[];
   queryChecker: QueryChecker;
@@ -79,6 +82,9 @@ const initialState: SalesState = {
   windowVisible: defaultWindowVisible,
   hourlySales: [],
   subSales: [],
+  subSalesWk2: [],
+  subSalesWk3: [],
+  subSalesWk4: [],
   compareSubs: [],
   catSales: [],
   queryChecker: {
@@ -165,12 +171,28 @@ export const salesSlice = createSlice({
     setSelectedItem: (state, action: PayloadAction<string>) => {
       state.selectedItem = action.payload;
     },
+    setPeriodSubSales: (
+      state,
+      action: PayloadAction<{ subs: SubSale[]; period: number }>,
+    ) => {
+      const { subs, period } = action.payload;
+      if (period === 2) {
+        state.subSalesWk2 = subs;
+      } else if (period === 3) {
+        state.subSalesWk3 = subs;
+      } else if (period === 4) {
+        state.subSalesWk4 = subs;
+      }
+    },
     reQuery: (state) => {
       state.selectedItem = "";
       state.weeklySales = [];
       state.hourlySales = [];
       state.subSales = [];
       state.compareSubs = [];
+      state.subSalesWk2 = [];
+      state.subSalesWk3 = [];
+      state.subSalesWk4 = [];
       state.catSales = [];
       state.topTenItems = [];
       state.queryChecker = {
@@ -201,6 +223,7 @@ export const {
   setCatSales,
   finishQuery,
   setSelectedItem,
+  setPeriodSubSales,
   reQuery,
   resetSalesSlice,
 } = salesSlice.actions;
