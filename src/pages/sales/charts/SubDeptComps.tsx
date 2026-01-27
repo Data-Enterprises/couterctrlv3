@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { getSubs } from "../../../api/sales";
-// import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-// import SubCompCard from "./SubCompCard";
 import { setPeriodSubSales } from "../../../features/salesSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import type { SubSale } from "../../../interfaces";
+import SubDeptPeriodCard from "./SubDeptPeriodCard";
 
 const SubDeptComps = () => {
   const toast = useToast();
@@ -89,54 +87,6 @@ const SubDeptComps = () => {
     });
   };
 
-  // // Step One
-  // if (sales.selectedSalesPanel.storeid === 0 && compareSubs.length === 0) {
-  //   return (
-  //     <div className="bg-custom-white rounded-lg shadow-lg flex justify-center items-center">
-  //       Select a Sales Panel
-  //     </div>
-  //   );
-  //   // Loading into Step 3
-  // } else if (compareSubs.length === 0 && compareSalesPanel.storeid !== 0) {
-  //   return (
-  //     <div className="bg-custom-white rounded-lg shadow-lg relative">
-  //       <LoadingIndicator message="Loading Sub-Department Comparisons..." />
-  //     </div>
-  //   );
-  //   // Step Two
-  // } else if (compareSubs.length === 0) {
-  //   return (
-  //     <div className="bg-custom-white rounded-lg shadow-lg flex justify-center items-center">
-  //       Click "Compare Subs" on another sales panel to see comparisons
-  //     </div>
-  //   );
-  // }
-
-  // const formatDate = (dateStr: string) => {
-  //   const dte = dateStr.split("T")[0].split("-");
-  //   return `${parseInt(dte[1])}/${parseInt(dte[2])}/${parseInt(dte[0])}`;
-  // };
-
-  // const filteredSubs = subSales.filter((sub) =>
-  //   compareSubs.some(
-  //     (compSub) =>
-  //       compSub.sub_department === sub.sub_department &&
-  //       formatDate(sub.sale_date) ===
-  //         formatDate(sales.selectedSalesPanel.sale_date) &&
-  //       formatDate(sub.sale_date) === formatDate(compSub.sale_date),
-  //   ),
-  // );
-
-  // const filteredComps = compareSubs.filter((compSub) =>
-  //   subSales.some(
-  //     (sub) =>
-  //       sub.sub_department === compSub.sub_department &&
-  //       formatDate(compSub.sale_date) ===
-  //         formatDate(compareSalesPanel.sale_date) &&
-  //       formatDate(compSub.sale_date) === formatDate(sub.sale_date),
-  //   ),
-  // );
-
   const formateFirstWk = () => {
     const date = new Date(sales.selectedSalesPanel.sale_date || search.endDate);
     const we = setDates(date);
@@ -146,50 +96,31 @@ const SubDeptComps = () => {
 
   // Once we have both data sets, show the comparisons (final step)
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg p-2">
+    <div className="">
       <div className="grid grid-cols-2 h-full gap-2">
-        <SubDeptPeriodCard data={sales.subSales} dateRange={formateFirstWk()} />
-        <SubDeptPeriodCard data={sales.subSalesWk2} dateRange={dateRange.wk2} />
-        <SubDeptPeriodCard data={sales.subSalesWk3} dateRange={dateRange.wk3} />
-        <SubDeptPeriodCard data={sales.subSalesWk4} dateRange={dateRange.wk4} />
+        <SubDeptPeriodCard
+          data={sales.subSales}
+          dateRange={formateFirstWk()}
+          period={1}
+        />
+        <SubDeptPeriodCard
+          data={sales.subSalesWk2}
+          dateRange={dateRange.wk2}
+          period={2}
+        />
+        <SubDeptPeriodCard
+          data={sales.subSalesWk3}
+          dateRange={dateRange.wk3}
+          period={3}
+        />
+        <SubDeptPeriodCard
+          data={sales.subSalesWk4}
+          dateRange={dateRange.wk4}
+          period={4}
+        />
       </div>
     </div>
-    // <div className="bg-custom-white rounded-lg shadow-lg px-2 pt-1 pb-2">
-    //   <div className="grid grid-cols-2">
-    //     <div className="font-medium">
-    //       Selected Panel: {sales.selectedSalesPanel.store_name}
-    //     </div>
-    //     <div className="font-medium">
-    //       Compare Panel: {compareSalesPanel.store_name}
-    //     </div>
-    //   </div>
-    //   <div className="grid grid-cols-2 gap-4 max-h-[275px] overflow-y-scroll no-scrollbar">
-    //     <div className="space-y-3">
-    //       {filteredSubs.map((sub) => (
-    //         <SubCompCard key={Math.random()} sub={sub} type="selected" />
-    //       ))}
-    //     </div>
-
-    //     <div className="space-y-3">
-    //       {filteredComps.map((sub) => (
-    //         <SubCompCard key={Math.random()} sub={sub} type="compare" />
-    //       ))}
-    //     </div>
-    //   </div>
-    // </div>
   );
 };
 
 export default SubDeptComps;
-
-interface SubDeptPeriodCardProps {
-  data: SubSale[];
-  dateRange: string;
-}
-const SubDeptPeriodCard = ({ data, dateRange }: SubDeptPeriodCardProps) => {
-  return (
-    <div className="p-1 text-sm rounded-lg shadow-md">
-      <div className="font-medium text-xs">{dateRange}</div>
-    </div>
-  );
-};
