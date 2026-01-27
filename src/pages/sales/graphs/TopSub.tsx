@@ -129,7 +129,7 @@ const TopSubDept = () => {
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg">
-      <div className="mx-2 border-b border-content/30 rounded-t-lg font-medium flex justify-between">
+      <div className="bg-blue-500 text-custom-white rounded-t-lg font-medium flex justify-between px-2 py-0.5">
         {title}
         {topSub && (
           <div className="font-semibold">
@@ -138,7 +138,7 @@ const TopSubDept = () => {
         )}
       </div>
       {topSub ? (
-        <div className="p-2 text-xs">
+        <div className="px-2 py-1 text-xs">
           <div className="font-medium border-b text-sm">Totals</div>
           <div className="grid grid-cols-4 gap-2 py-1">
             <div>

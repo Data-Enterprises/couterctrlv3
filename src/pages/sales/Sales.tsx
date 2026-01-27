@@ -140,8 +140,8 @@ const Sales = () => {
                 <TopTen />
               </div>
               <div className="grid grid-rows-2 gap-2">
-                <SubDeptGrid />
                 <SubDeptComps />
+                <SubDeptGrid />
               </div>
             </div>
           </div>

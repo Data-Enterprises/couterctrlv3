@@ -156,7 +156,6 @@ export const subCols: (ColDef<SubSale> | ColGroupDef<SubSale>)[] = [
     field: "net_sales",
     headerName: "Net Sales %",
     flex: 1.2,
-    headerStyle: { borderRight: "1px solid white" },
     resizable: false,
     valueFormatter: (params) => {
       const sale = params.data as SubSale;

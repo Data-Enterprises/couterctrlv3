@@ -36,11 +36,11 @@ const TotalsBar = ({ valueKey }: NivoPieProps) => {
         acc.push({
           id: formatDateSimple(curr.sale_date.split("T")[0]),
           label: formatDateSimple(curr.sale_date.split("T")[0]),
-          value: curr[valueKey] as number,
+          value: (curr[valueKey] as number) - curr.total_tax,
           color: "",
         });
       } else {
-        exists.value += curr[valueKey] as number;
+        exists.value += (curr[valueKey] as number) - curr.total_tax;
       }
       return acc;
     }, []);
@@ -89,14 +89,14 @@ const TotalsBar = ({ valueKey }: NivoPieProps) => {
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg h-full w-full relative">
-      <div className="absolute top-0 left-0 font-medium border-b border-content/30 rounded-t-lg w-[96%] mx-2 flex justify-between">
+      <div className="bg-blue-500 text-custom-white font-medium rounded-t-lg flex justify-between px-2 py-0.5">
         <div>{valueKey === "total_sales" ? "Sales" : "Quantity"}</div>
         <div>{renderTitle()}</div>
       </div>
       <ResponsiveBar
         data={barData}
         key={valueKey}
-        margin={{ top: 35, right: 5, bottom: 27, left: setMarginLeft() }}
+        margin={{ top: 15, right: 5, bottom: 60, left: setMarginLeft() }}
         colors={() => rgbaColor("#3b82f6", 0.3)}
         borderWidth={2}
         borderColor={() => "#3b82f6"}

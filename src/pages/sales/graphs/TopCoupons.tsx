@@ -1,27 +1,24 @@
 import { useAppSelector } from "../../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
-// import { CurrencyDollarIcon } from "@heroicons/react/20/solid";
 
-const TopTotals = () => {
+const TopCoupons = () => {
   const sales = useAppSelector((state) => state.sales);
 
   const aggFunc = () => {
     // ned to use hourlySales to get avg_basket_size, total sales, total tax and subSales for total cpn dollars
-    const totals = sales.hourlySales.reduce(
+    const totals = sales.subSales.reduce(
       (acc, val) => {
-        acc.basket_size_sales += val.basket_size_sales;
-        acc.total_tax += val.total_tax;
-        acc.total_sales += val.total_sales - val.total_tax;
-        acc.transactions += val.transactions;
+        acc.digital_coupons += val.digital_coupons;
+        acc.elec_instore_coupons += val.elec_instore_coupons;
+        acc.elect_store_coupons += val.elec_store_coupons;
+        acc.store_coupon += val.store_coupon;
         return acc;
       },
       {
-        total_sales: 0,
-        total_tax: 0,
-        total_cpn_dollars: 0,
-        basket_size_sales: 0,
-        transactions: 0,
-        avg_basket_amount: 0,
+        digital_coupons: 0,
+        elec_instore_coupons: 0,
+        elect_store_coupons: 0,
+        store_coupon: 0
       },
     );
 
@@ -30,15 +27,15 @@ const TopTotals = () => {
 
   return (
     <div className="grid grid-cols-2 gap-2 text-sm">
-      <TopTotalsKpi data={aggFunc().total_sales} title="Total Sales" />
-      <TopTotalsKpi data={aggFunc().transactions} title="Total Transactions" />
-      <TopTotalsKpi data={aggFunc().avg_basket_amount} title="Avg Basket" />
-      <TopTotalsKpi data={aggFunc().total_tax} title="Total Tax" />
+      <TopTotalsKpi data={aggFunc().store_coupon} title="Store Coupons" />
+      <TopTotalsKpi data={aggFunc().digital_coupons} title="Digital Coupons" />
+      <TopTotalsKpi data={aggFunc().elect_store_coupons} title="E. Store Coupons" />
+      <TopTotalsKpi data={aggFunc().elec_instore_coupons} title="E. In-Store Coupons" />
     </div>
   );
 };
 
-export default TopTotals;
+export default TopCoupons;
 
 interface TopTotalsKpiProps {
   data: number;

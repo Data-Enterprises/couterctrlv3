@@ -122,10 +122,10 @@ const HourlyGrid = () => {
             <div className="rounded-full h-3 w-3 bg-emerald-500"></div>
             <div>Above Avg</div>
           </div>
-          <div className="flex gap-1 items-center">
+          {/* <div className="flex gap-1 items-center">
             <div className="rounded-full h-3 w-3 bg-blue-500"></div>
             <div>Avg</div>
-          </div>
+          </div> */}
         </div>
         <span className="text-right">Hour: {hour}</span>
       </div>
