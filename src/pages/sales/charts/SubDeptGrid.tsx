@@ -1,31 +1,67 @@
-import { useAppSelector } from "../../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { AgGridReact } from "ag-grid-react";
-import { theme, subCols } from "../graphs";
+import { theme, subCols, type TopSub } from "../graphs";
 ModuleRegistry.registerModules([AllCommunityModule]);
-import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
+import {
+  AllCommunityModule,
+  ModuleRegistry,
+  type RowClickedEvent,
+} from "ag-grid-community";
 import type { SubSale } from "../../../interfaces";
+import { setSelectedSubDept } from "../../../features/salesSlice";
+import { useState, useEffect, useRef } from "react";
 
 const SubDeptGrid = () => {
-  const { subSales } = useAppSelector((state) => state.sales);
+  const gridRef = useRef<AgGridReact<SubSale>>(null);
+  const dispatch = useAppDispatch();
+  const { subSales, selectedSubDept } = useAppSelector((state) => state.sales);
+  const [groupSubs, setGroupSubs] = useState<SubSale[]>([]);
 
-  const groupSubs = () => {
-    return [...subSales].reduce((acc: SubSale[], curr) => {
-      const exists = acc.find((d) => d.sub_department === curr.sub_department);
-      if (exists) {
-        exists.total_sales += curr.total_sales;
-        exists.net_sales += curr.net_sales;
-        exists.qty += curr.qty;
-        exists.digital_coupons += curr.digital_coupons;
-        exists.elec_instore_coupons += curr.elec_instore_coupons;
-        exists.elec_store_coupons += curr.elec_store_coupons;
-        exists.store_coupon += curr.store_coupon;
-        exists.weight += curr.weight;
-        exists.total_tax += curr.total_tax;
-      } else {
-        acc.push({ ...curr });
-      }
-      return acc;
-    }, []);
+  useEffect(() => {
+    if (selectedSubDept === null) {
+      gridRef.current?.api.deselectAll();
+    }
+  }, [selectedSubDept]);
+
+  useEffect(() => {
+    const grouped = () => {
+      return [...subSales].reduce((acc: SubSale[], curr) => {
+        const exists = acc.find(
+          (d) => d.sub_department === curr.sub_department,
+        );
+        if (exists) {
+          exists.total_sales += curr.total_sales;
+          exists.net_sales += curr.net_sales;
+          exists.qty += curr.qty;
+          exists.digital_coupons += curr.digital_coupons;
+          exists.elec_instore_coupons += curr.elec_instore_coupons;
+          exists.elec_store_coupons += curr.elec_store_coupons;
+          exists.store_coupon += curr.store_coupon;
+          exists.weight += curr.weight;
+          exists.total_tax += curr.total_tax;
+        } else {
+          acc.push({ ...curr });
+        }
+        return acc;
+      }, []);
+    };
+    setGroupSubs(grouped());
+  }, [subSales]);
+
+  const handleSetSelectedSubDept = (d: RowClickedEvent<SubSale>) => {
+    const selected: TopSub = {
+      sub_department: d.data!.sub_department,
+      sub_department_description: d.data!.sub_department_description,
+      total_sales: d.data!.total_sales,
+      net_sales: d.data!.net_sales,
+      qty: d.data!.qty,
+      digital_coupons: d.data!.digital_coupons,
+      elec_instore_coupons: d.data!.elec_instore_coupons,
+      elec_store_coupons: d.data!.elec_store_coupons,
+      store_coupon: d.data!.store_coupon,
+      total_tax: d.data!.total_tax,
+    };
+    dispatch(setSelectedSubDept(selected));
   };
 
   return (
@@ -35,11 +71,24 @@ const SubDeptGrid = () => {
       </div>
       <div className="px-2 h-[92%]">
         <AgGridReact
-          rowData={groupSubs()}
+          ref={gridRef}
+          rowData={groupSubs}
           theme={theme}
           columnDefs={subCols}
           pagination={true}
           paginationAutoPageSize={true}
+          onRowClicked={(d) => {
+            if (
+              !selectedSubDept ||
+              (selectedSubDept &&
+                selectedSubDept.sub_department !== d.data!.sub_department)
+            ) {
+              handleSetSelectedSubDept(d);
+            } else {
+              dispatch(setSelectedSubDept(null));
+            }
+          }}
+          rowSelection="single"
         />
       </div>
     </div>

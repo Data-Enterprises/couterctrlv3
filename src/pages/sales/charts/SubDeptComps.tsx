@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getSubs } from "../../../api/sales";
 // import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 // import SubCompCard from "./SubCompCard";
 import { setPeriodSubSales } from "../../../features/salesSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
+import type { SubSale } from "../../../interfaces";
 
 const SubDeptComps = () => {
   const toast = useToast();
@@ -12,6 +13,12 @@ const SubDeptComps = () => {
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
   const sales = useAppSelector((state) => state.sales);
+
+  const [dateRange, setDateRange] = useState<{
+    wk2: string;
+    wk3: string;
+    wk4: string;
+  }>({ wk2: "", wk3: "", wk4: "" });
 
   const setDates = (date: Date, days: number = 0) => {
     const d = new Date(date);
@@ -24,9 +31,14 @@ const SubDeptComps = () => {
     getMonthlyTrend();
   }, [sales.selectedSalesPanel]);
 
+  const formatDate = (dateStr: string) => {
+    const dte = dateStr.split("-");
+    return `${parseInt(dte[1])}/${parseInt(dte[2])}/${parseInt(dte[0])}`;
+  };
+
   const getMonthlyTrend = () => {
     const date = new Date(sales.selectedSalesPanel.sale_date || search.endDate);
-    
+
     // if the date is 1/27/2026 then the dates below are as follows
     // Week 2 => 1/20/2026 - 1/14/2026
     const wk2End = setDates(date, 7);
@@ -42,6 +54,12 @@ const SubDeptComps = () => {
     const wk4End = setDates(date, 21);
     const wk4Start = setDates(date, 27);
     getData(wk4Start, wk4End, 4);
+
+    setDateRange({
+      wk2: `${formatDate(wk2Start)} - ${formatDate(wk2End)}`,
+      wk3: `${formatDate(wk3Start)} - ${formatDate(wk3End)}`,
+      wk4: `${formatDate(wk4Start)} - ${formatDate(wk4End)}`,
+    });
   };
 
   const getData = (ws: string, we: string, period: number) => {
@@ -119,10 +137,22 @@ const SubDeptComps = () => {
   //   ),
   // );
 
+  const formateFirstWk = () => {
+    const date = new Date(sales.selectedSalesPanel.sale_date || search.endDate);
+    const we = setDates(date);
+    const ws = setDates(date, 6);
+    return `${formatDate(ws)} - ${formatDate(we)}`;
+  };
+
   // Once we have both data sets, show the comparisons (final step)
   return (
     <div className="bg-custom-white rounded-lg shadow-lg p-2">
-
+      <div className="grid grid-cols-2 h-full gap-2">
+        <SubDeptPeriodCard data={sales.subSales} dateRange={formateFirstWk()} />
+        <SubDeptPeriodCard data={sales.subSalesWk2} dateRange={dateRange.wk2} />
+        <SubDeptPeriodCard data={sales.subSalesWk3} dateRange={dateRange.wk3} />
+        <SubDeptPeriodCard data={sales.subSalesWk4} dateRange={dateRange.wk4} />
+      </div>
     </div>
     // <div className="bg-custom-white rounded-lg shadow-lg px-2 pt-1 pb-2">
     //   <div className="grid grid-cols-2">
@@ -151,3 +181,15 @@ const SubDeptComps = () => {
 };
 
 export default SubDeptComps;
+
+interface SubDeptPeriodCardProps {
+  data: SubSale[];
+  dateRange: string;
+}
+const SubDeptPeriodCard = ({ data, dateRange }: SubDeptPeriodCardProps) => {
+  return (
+    <div className="p-1 text-sm rounded-lg shadow-md">
+      <div className="font-medium text-xs">{dateRange}</div>
+    </div>
+  );
+};

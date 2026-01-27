@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAppSelector } from "../../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import {
   addDays,
   formatBigNumber,
@@ -8,7 +8,7 @@ import {
 } from "../../../utils";
 import { reduceSubs, type TopSub } from ".";
 import { netSalesPct, promoLeakage, velocity } from "../../../functions";
-
+import { setTopSubDept } from "../../../features/salesSlice";
 import { FlagIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 
 const tooltips = {
@@ -17,10 +17,11 @@ const tooltips = {
 };
 
 const TopSubDept = () => {
+  const dispatch = useAppDispatch();
   const [tooltip, setTooltip] = useState<typeof tooltips>(tooltips);
   const [topSub, setTopSub] = useState<TopSub | null>(null);
   const search = useAppSelector((state) => state.search);
-  const { subSales, selectedSalesPanel } = useAppSelector(
+  const { subSales, selectedSalesPanel, topSubDept } = useAppSelector(
     (state) => state.sales,
   );
 
@@ -39,6 +40,9 @@ const TopSubDept = () => {
         .sort((a, b) => b.total_sales - a.total_sales)[0];
     }
     setTopSub(sub);
+    if (!topSubDept) {
+      dispatch(setTopSubDept(sub));
+    }
   }, [subSales, selectedSalesPanel]);
 
   const reduceCpnAmt = () => {

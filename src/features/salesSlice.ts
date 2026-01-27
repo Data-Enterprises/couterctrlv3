@@ -8,6 +8,7 @@ import type {
   HourlySale,
   SubSale,
 } from "../interfaces";
+import type { TopSub } from "../pages/sales/graphs";
 
 type TopTenItemsMetrics = {
   totalSales: number;
@@ -61,6 +62,8 @@ interface SalesState {
   catSales: CatSale[];
   queryChecker: QueryChecker;
   selectedItem: string;
+  topSubDept: TopSub | null;
+  selectedSubDept: TopSub | null;
 }
 
 export const defaultSelectedPanel: SelectedSalesPanel = {
@@ -94,6 +97,8 @@ const initialState: SalesState = {
     weekly: false,
   },
   selectedItem: "",
+  topSubDept: null,
+  selectedSubDept: {} as SubSale,
 };
 
 export const salesSlice = createSlice({
@@ -184,7 +189,15 @@ export const salesSlice = createSlice({
         state.subSalesWk4 = subs;
       }
     },
+    setSelectedSubDept: (state, action: PayloadAction<TopSub | null>) => {
+      state.selectedSubDept = action.payload;
+    },
+    setTopSubDept: (state, action: PayloadAction<TopSub>) => {
+      state.topSubDept = action.payload;
+    },
     reQuery: (state) => {
+      state.selectedSubDept = null;
+      state.topSubDept = null;
       state.selectedItem = "";
       state.weeklySales = [];
       state.hourlySales = [];
@@ -224,6 +237,8 @@ export const {
   finishQuery,
   setSelectedItem,
   setPeriodSubSales,
+  setSelectedSubDept,
+  setTopSubDept,
   reQuery,
   resetSalesSlice,
 } = salesSlice.actions;

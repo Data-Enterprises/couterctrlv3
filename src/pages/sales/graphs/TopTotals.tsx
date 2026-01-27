@@ -1,73 +1,75 @@
 import { useAppSelector } from "../../../hooks";
-import { formatCurrency2 } from "../../../utils";
+import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { CurrencyDollarIcon } from "@heroicons/react/20/solid";
 
 const TopTotals = () => {
-    const sales = useAppSelector((state) => state.sales);
+  const sales = useAppSelector((state) => state.sales);
 
-    const aggFunc = () => {
-      // ned to use hourlySales to get avg_basket_size, total sales, total tax and subSales for total cpn dollars
-      const totals = sales.hourlySales.reduce(
-        (acc, val) => {
-          acc.avg_basket_amount += val.basket_size_sales;
-          acc.total_tax += val.total_tax;
-          acc.total_sales += val.total_sales;
-          return acc;
-        },
-        {
-          total_sales: 0,
-          total_tax: 0,
-          total_cpn_dollars: 0,
-          avg_basket_amount: 0,
-        },
-      );
-
-      const addCpnDollars = sales.subSales.reduce((acc, val) => {
-        acc.total_cpn_dollars +=
-          val.digital_coupons +
-          val.elec_instore_coupons +
-          val.elec_store_coupons +
-          val.store_coupon;
+  const aggFunc = () => {
+    // ned to use hourlySales to get avg_basket_size, total sales, total tax and subSales for total cpn dollars
+    const totals = sales.hourlySales.reduce(
+      (acc, val) => {
+        acc.basket_size_sales += val.basket_size_sales;
+        acc.total_tax += val.total_tax;
+        acc.total_sales += val.total_sales - val.total_tax;
+        acc.transactions += val.transactions;
         return acc;
-      }, totals);
+      },
+      {
+        total_sales: 0,
+        total_tax: 0,
+        total_cpn_dollars: 0,
+        basket_size_sales: 0,
+        transactions: 0,
+        avg_basket_amount: 0,
+      },
+    );
 
-      return addCpnDollars;
-    };
+    // Summing the coupon dollar amount
+    const addCpnDollars = sales.subSales.reduce((acc, val) => {
+      acc.total_cpn_dollars +=
+        val.digital_coupons +
+        val.elec_instore_coupons +
+        val.elec_store_coupons +
+        val.store_coupon;
+      return acc;
+    }, totals);
 
-    const classStr =
-      "bg-custom-white rounded-lg shadow-lg pl-1 flex justify-center items-center flex-col gap-2 relative";
+    // Calculate avg basket amount
+    addCpnDollars.avg_basket_amount =
+      addCpnDollars.total_sales / addCpnDollars.transactions;
+
+    return addCpnDollars;
+  };
+
   return (
     <div className="grid grid-cols-2 gap-2 text-sm">
-      <div className={classStr}>
-        <CurrencyDollarIcon className="h-10 w-10 text-emerald-500 absolute left-1" />
-        <div className="font-medium text-content/60">Total Sales $</div>
-        <div className="font-medium">
-          {formatCurrency2(aggFunc().total_sales)}
-        </div>
-      </div>
-      <div className={classStr}>
-        <CurrencyDollarIcon className="h-10 w-10 text-emerald-500 absolute left-1" />
-        <div className="font-medium text-content/60">Total Tax $</div>
-        <div className="font-medium">
-          {formatCurrency2(aggFunc().total_tax)}
-        </div>
-      </div>
-      <div className={classStr}>
-        <CurrencyDollarIcon className="h-10 w-10 text-emerald-500 absolute left-1" />
-        <div className="font-medium text-content/60">Avg Basket $</div>
-        <div className="font-medium">
-          {formatCurrency2(aggFunc().avg_basket_amount)}
-        </div>
-      </div>
-      <div className={classStr}>
-        <CurrencyDollarIcon className="h-10 w-10 text-emerald-500 absolute left-1" />
-        <div className="font-medium text-content/60">Total Cpn $</div>
-        <div className="font-medium">
-          {formatCurrency2(aggFunc().total_cpn_dollars)}
-        </div>
-      </div>
+      <TopTotalsKpi data={aggFunc().total_sales} title="Total Sales" />
+      <TopTotalsKpi data={aggFunc().transactions} title="Total Transactions" />
+      {/* <TopTotalsKpi data={aggFunc().total_tax} title="Total Tax" /> */}
+      <TopTotalsKpi data={aggFunc().avg_basket_amount} title="Avg Basket" />
+      <TopTotalsKpi data={aggFunc().total_cpn_dollars} title="Total Coupons" />
+      {/* <TopTotalsKpi data={aggFunc().transactions} title="Transaction Count" /> */}
     </div>
   );
 };
 
 export default TopTotals;
+
+interface TopTotalsKpiProps {
+  data: number;
+  title: string;
+}
+const TopTotalsKpi = ({ data, title }: TopTotalsKpiProps) => {
+  return (
+    <div className="bg-custom-white rounded-lg shadow-lg pl-1 flex justify-center items-center flex-col gap-2 relative">
+      {/* <CurrencyDollarIcon className="h-10 w-10 text-emerald-500 absolute left-1" /> */}
+      <div className="font-medium text-content/60">{title}</div>
+      {title === "Total Transactions" ? (
+        <div className="font-medium">{formatBigNumber(data, 0)}</div>
+      ) : (
+        <div className="font-medium">{formatCurrency2(data)}</div>
+      )}
+    </div>
+  );
+};

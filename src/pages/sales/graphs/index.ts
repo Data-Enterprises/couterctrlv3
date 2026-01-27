@@ -64,7 +64,7 @@ export const theme = themeQuartz.withParams({
 export interface HourlyTotal {
   hour:number;
   total_sales: number;
-  qty: number;
+  trans: number;
 }
 
 export const cols: (ColDef<HourlyTotal> | ColGroupDef<HourlyTotal>)[] = [
@@ -85,8 +85,8 @@ export const cols: (ColDef<HourlyTotal> | ColGroupDef<HourlyTotal>)[] = [
     cellClass: "text-right",
   },
   {
-    field: "qty",
-    headerName: "Qty",
+    field: "trans",
+    headerName: "Transactions",
     flex: 0.9,
     resizable: false,
     cellClass: "text-right",

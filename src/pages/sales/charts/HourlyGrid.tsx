@@ -49,12 +49,12 @@ const HourlyGrid = () => {
       const exists = acc.find((d) => d.hour === curr.hour);
       if (exists) {
         exists.total_sales += curr.total_sales - curr.total_tax;
-        exists.qty += curr.qty;
+        exists.trans += curr.transactions;
       } else {
         acc.push({
           hour: curr.hour,
           total_sales: curr.total_sales - curr.total_tax,
-          qty: curr.qty,
+          trans: curr.transactions,
         });
       }
       return acc;
@@ -66,6 +66,7 @@ const HourlyGrid = () => {
   useEffect(() => {
     const hourFiltered = [...hourlySales]
       .filter((d) => d.hour === hour)
+      .sort((a, b) => a.sale_date.localeCompare(b.sale_date))
       .map((d) => ({
         hour: d.hour,
         total_sales: d.total_sales - d.total_tax,
@@ -84,7 +85,7 @@ const HourlyGrid = () => {
   const handleAvg = (panel: {
     hour: number;
     total_sales: number;
-    qty: number;
+    trans: number;
   }) => {
     const avgSales =
       rowData.reduce((acc, val) => acc + val.total_sales, 0) / rowData.length;
@@ -129,11 +130,11 @@ const HourlyGrid = () => {
         <span className="text-right">Hour: {hour}</span>
       </div>
       <div className="h-[93%] grid grid-cols-[40%_59%]">
-        <div className="grid grid-cols-2 gap-2 max-h-[280px] overflow-y-scroll p-2 no-scrollbar">
+        <div className="grid grid-cols-2 gap-2 max-h-[290px] rounded-lg overflow-y-scroll mx-2 no-scrollbar">
           {rowData.map((r) => (
             <div
               key={`hour-${r.hour}`}
-              className={`${r.hour === hour ? "bg-blue-200" : handleAvg(r)} text-sm rounded-lg shadow-content/30 shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
+              className={`${r.hour === hour ? "bg-blue-200" : handleAvg(r)} text-xs rounded-lg shadow-content/30 shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
               onClick={() => handleSelect(r)}
             >
               <div className="flex justify-between">
@@ -147,8 +148,8 @@ const HourlyGrid = () => {
                 </div>
               </div>
               <div className="flex justify-between">
-                <div className="font-medium text-content/60">Qty:</div>
-                <div className="font-medium">{formatBigNumber(r.qty, 0)}</div>
+                <div className="font-medium text-content/60">Trans:</div>
+                <div className="font-medium">{formatBigNumber(r.trans, 0)}</div>
               </div>
             </div>
           ))}
