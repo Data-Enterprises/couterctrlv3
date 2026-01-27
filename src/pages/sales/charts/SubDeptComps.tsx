@@ -16,8 +16,8 @@ const SubDeptComps = () => {
   const setDates = (date: Date, days: number = 0) => {
     const d = new Date(date);
     d.setDate(d.getDate() - days);
+    // returns yyyy-mm-dd so sub_sales endpoint can process the dates correctly
     return d.toISOString().split("T")[0];
-    // return `${parseInt(split[1])}/${parseInt(split[2])}/${parseInt(split[0])}`;
   };
 
   useEffect(() => {
@@ -25,10 +25,9 @@ const SubDeptComps = () => {
   }, [sales.selectedSalesPanel]);
 
   const getMonthlyTrend = () => {
-    // if end date is 1/27/2026 then the dates below are as follows
-    // Week 1 => 1/27/2026 - 1/21/2026 => handled in SalesPanels.tsx already
     const date = new Date(sales.selectedSalesPanel.sale_date || search.endDate);
-
+    
+    // if the date is 1/27/2026 then the dates below are as follows
     // Week 2 => 1/20/2026 - 1/14/2026
     const wk2End = setDates(date, 7);
     const wk2Start = setDates(date, 13);
