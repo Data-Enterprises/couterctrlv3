@@ -14,14 +14,34 @@ import { useState, useEffect, useRef } from "react";
 const SubDeptGrid = () => {
   const gridRef = useRef<AgGridReact<SubSale>>(null);
   const dispatch = useAppDispatch();
-  const { subSales, selectedSubDept } = useAppSelector((state) => state.sales);
+  const { subSales, selectedSubDept, topSubDept } = useAppSelector(
+    (state) => state.sales,
+  );
   const [groupSubs, setGroupSubs] = useState<SubSale[]>([]);
 
   useEffect(() => {
-    if (selectedSubDept === null) {
-      gridRef.current?.api.deselectAll();
+    // If a row is deselected or the data is refreshed, reselect the top sub dept row
+    if (selectedSubDept === null && gridRef.current && gridRef.current.api) {
+      gridRef.current.api.forEachNode((node) => {
+        if (node.data!.sub_department === topSubDept!.sub_department) {
+          const selected: TopSub = {
+            sub_department: node.data!.sub_department,
+            sub_department_description: node.data!.sub_department_description,
+            total_sales: node.data!.total_sales,
+            net_sales: node.data!.net_sales,
+            qty: node.data!.qty,
+            digital_coupons: node.data!.digital_coupons,
+            elec_instore_coupons: node.data!.elec_instore_coupons,
+            elec_store_coupons: node.data!.elec_store_coupons,
+            store_coupon: node.data!.store_coupon,
+            total_tax: node.data!.total_tax,
+          };
+          dispatch(setSelectedSubDept(selected));
+          node.setSelected(true);
+        }
+      });
     }
-  }, [selectedSubDept]);
+  }, [selectedSubDept, topSubDept, gridRef.current, gridRef.current?.api]);
 
   useEffect(() => {
     const grouped = () => {
