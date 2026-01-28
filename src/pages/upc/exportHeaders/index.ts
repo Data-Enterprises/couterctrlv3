@@ -24,6 +24,13 @@ export const tableHeaderUpc: ITableHeader[] = [
   { column: "Sunday", alias: "Sunday", visible: true, dataType: "number" },
 ];
 
+export const associateHeaders: ITableHeader[] = [
+  {column: "level", alias: "Level", visible: true, dataType: "string"},
+  {column: "upc", alias: "UPC", visible: true, dataType: "string"},
+  {column: "description", alias: "Desc", visible: true, dataType: "string"},
+  {column: "qty", alias: "Qty", visible: true, dataType: "number"}
+];
+
 export const tableHeaderForecast: ITableHeader[] = [
   {
     column: "upc",

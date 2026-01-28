@@ -2,8 +2,13 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useUpcContext } from "../wizard/hooks";
 import {
+  addSelectedUpcParam,
   clearUpcData,
+  removeSelectedUpcParam,
+  resetDeeperLvlQueryUpcs,
   resetSelectedUpcs,
+  setAllSelectedUpcParam,
+  setAllSelectedUpcs,
   setSelectedUpcs,
   setTrendMode,
 } from "../../../features/upcSlice";
@@ -23,7 +28,7 @@ const UpcControls = () => {
   const [filterText, setFilterText] = useState<string>("");
   const [upcDisplay, setUpcDisplay] = useState<"code" | "desc">("code");
   const [showDisplay, setShowDisplay] = useState<"all" | "selected" | "stores">(
-    "all"
+    "all",
   );
   const {
     startDate,
@@ -33,6 +38,8 @@ const UpcControls = () => {
     trendPeriods,
     selectedUpcs,
     selectedStores,
+    selectedAssociationUpcParam,
+    uploadedUpcs,
   } = useUpcContext();
   const dispatch = useAppDispatch();
   const { height, topRef } = useScrollHeight();
@@ -53,7 +60,7 @@ const UpcControls = () => {
 
   const handleRightClick = (
     e: React.MouseEvent<HTMLDivElement>,
-    option: UpcItem
+    option: UpcItem,
   ) => {
     e.preventDefault();
 
@@ -61,7 +68,7 @@ const UpcControls = () => {
       setClipboardText({
         upc: option.product_code,
         desc: option.description,
-      })
+      }),
     );
     dispatch(setMenuPosition({ x: e.pageX + 5, y: e.pageY }));
   };
@@ -73,11 +80,46 @@ const UpcControls = () => {
       const filtered = upcItems.filter(
         (item) =>
           item.description.toLowerCase().includes(filterText.toLowerCase()) ||
-          item.product_code.toLowerCase().includes(filterText.toLowerCase())
+          item.product_code.toLowerCase().includes(filterText.toLowerCase()),
       );
       setFiltered(filtered);
     }
   }, [filterText, upcItems]);
+
+  const handleSelectAll = () => {
+    // Upc Association select all
+    if (state.selectedMode === 5) {
+      dispatch(setAllSelectedUpcParam(uploadedUpcs));
+    }
+    dispatch(setAllSelectedUpcs(upcItems.map((item) => item.product_code)));
+  };
+
+  const handleCheckedValue = (pc: string) => {
+    if (selectedMode === 5) {
+      return selectedAssociationUpcParam.includes(pc);
+    } else {
+      return selectedUpcs.includes(pc);
+    }
+  };
+
+  const handleUnselectAll = () => {
+    if (state.selectedMode === 5) {
+      dispatch(resetDeeperLvlQueryUpcs());
+    }
+    dispatch(resetSelectedUpcs());
+  };
+
+  const handleSingleUpcSelect = (pc: string) => {
+    if (selectedMode === 5) {
+      if (selectedAssociationUpcParam.includes(pc)) {
+        dispatch(removeSelectedUpcParam(pc));
+      } else {
+        dispatch(addSelectedUpcParam(pc));
+      }
+    }
+
+    dispatch(setSelectedUpcs(pc));
+  };
 
   return (
     <div
@@ -161,8 +203,15 @@ const UpcControls = () => {
         <div className="flex flex-col gap-2">
           <button
             data-testid="upc-deselect-all-btn"
+            className="py-1 btn-themeGreen"
+            onClick={handleSelectAll}
+          >
+            Select All
+          </button>
+          <button
+            data-testid="upc-deselect-all-btn"
             className="py-1 btn-themeOrange"
-            onClick={() => dispatch(resetSelectedUpcs())}
+            onClick={handleUnselectAll}
           >
             Deselect All
           </button>
@@ -197,7 +246,7 @@ const UpcControls = () => {
             <div
               key={i}
               className={`even:bg-blue-200 px-2 py-1 text-xs font-medium hover:bg-blue-100 transition-all duration-200 cursor-pointer`}
-              onClick={() => dispatch(setSelectedUpcs(item.product_code))}
+              onClick={() => handleSingleUpcSelect(item.product_code)}
               onContextMenu={(e) => handleRightClick(e, item)}
             >
               <CheckBox
@@ -205,13 +254,13 @@ const UpcControls = () => {
                 label={
                   upcDisplay === "code" ? item.product_code : item.description
                 }
-                value={selectedUpcs.includes(item.product_code)}
+                value={handleCheckedValue(item.product_code)}
               />
             </div>
           ))}
         {showDisplay === "selected" &&
           upcItems.map((item, i) => {
-            if (!selectedUpcs.includes(item.product_code)) return null;
+            if (!handleCheckedValue(item.product_code)) return null;
             return (
               <div
                 key={i}

@@ -3,7 +3,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 interface UpcModalState {
   openModal: boolean;
   fileName: string;
-  type: "forecast" | "priceOpt" | "comp" | "trend";
+  type: "forecast" | "priceOpt" | "comp" | "trend" | "association";
   radioOption: { dates: boolean; metrics: boolean };
   trendOption: { all: boolean; top: boolean; bottom: boolean };
   priceOptOption: { list: string; data: string };
@@ -59,6 +59,7 @@ export const upcModalSlice = createSlice({
       if (action.payload === 2) state.type = "forecast";
       if (action.payload === 3) state.type = "priceOpt";
       if (action.payload === 4) state.type = "trend";
+      if (action.payload === 5) state.type = "association";
     },
     reset: () => emptyState,
   },

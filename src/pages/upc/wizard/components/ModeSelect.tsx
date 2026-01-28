@@ -7,11 +7,12 @@ const modes = [
   { mode: 2, label: "Sales Forecast" },
   { mode: 3, label: "Price Optimization" },
   { mode: 4, label: "Trend Detection" },
+  { mode: 5, label: "UPC Association"}
 ];
 
 const ModeSelect = () => {
   const dispatch = useAppDispatch();
-  const { selectedMode, salesComp, forecast, optBestPrices, upcTrends } = useAppSelector((state) => state.upc);
+  const { selectedMode, salesComp, forecast, optBestPrices, upcTrends, itemAssociations } = useAppSelector((state) => state.upc);
 
   const handleModeSelect = (mode: number) => {
     dispatch(setSelectedMode(mode));
@@ -24,6 +25,7 @@ const ModeSelect = () => {
     else if (mode === 2) active = forecast.length > 0;
     else if (mode === 3) active = optBestPrices.length > 0;
     else if (mode === 4) active = upcTrends.length > 0;
+    else if (mode === 5) active = itemAssociations.length > 0;
 
     return active ? "bg-orange-200 rounded-full" : "";
   };

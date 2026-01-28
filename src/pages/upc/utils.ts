@@ -90,7 +90,7 @@ export const convertData = (
   data: { date: string; value: number }[],
   idx: number,
   type = "history",
-  results: any
+  results: any,
 ): Forecast => {
   const newData = {
     id: `${id} - ${type}`,
@@ -142,3 +142,5 @@ export const options: Option[] = [
   { label: "Copy Description", key: "copyDesc" },
   // { label: "Show Prices", key: "selectUpc" },
 ];
+
+export const singleOption: Option[] = [{ label: "Copy UPC", key: "copyUpc" }];

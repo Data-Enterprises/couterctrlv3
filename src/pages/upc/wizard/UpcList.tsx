@@ -9,6 +9,7 @@ import Forcast from "../modules/Forecast";
 import PriceOpt from "../modules/PriceOpt";
 import TrendDetector from "../modules/TrendDetector";
 import {
+  resetDeeperLvlQueryUpcs,
   setBottomFiveTrends,
   setDataLoaded,
   setFileName,
@@ -48,6 +49,7 @@ import ModeSelect from "./components/ModeSelect";
 import StoreDatePicker from "../components/StoreDatePicker";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import NoDataDisplay from "../components/NoDataDisplay";
+import UpcAssociation from "../modules/UpcAssociation";
 
 const UpcList = () => {
   const toast = useToast();
@@ -90,6 +92,8 @@ const UpcList = () => {
       getPriceOptData();
     } else if (mode == 4) {
       getTrendData();
+    } else if (mode === 5) {
+      getAssData();
     }
   };
 
@@ -101,7 +105,7 @@ const UpcList = () => {
       context.storeids,
       context.startDate,
       context.endDate,
-      file!
+      file!,
     )
       .then((resp) => {
         const j = resp.data;
@@ -134,7 +138,7 @@ const UpcList = () => {
       context.storeids,
       context.startDate,
       context.endDate,
-      file!
+      file!,
     )
       .then((resp) => {
         const j = resp.data;
@@ -147,8 +151,8 @@ const UpcList = () => {
                 obj as { date: string; value: number }[],
                 idx,
                 "history",
-                j.qty_results
-              )
+                j.qty_results,
+              ),
             );
 
           const forecast = Object.entries(j.qty_results)
@@ -159,8 +163,8 @@ const UpcList = () => {
                 obj as { date: string; value: number }[],
                 idx,
                 "forecast",
-                j.qty_results
-              )
+                j.qty_results,
+              ),
             );
 
           // This is the new way to set the upc items and upc list from the rest of the endpoints
@@ -202,7 +206,7 @@ const UpcList = () => {
       context.storeids,
       context.startDate,
       context.endDate,
-      file!
+      file!,
     )
       .then((resp) => {
         const j = resp.data;
@@ -211,7 +215,7 @@ const UpcList = () => {
             (item: UpcPriceOpt) => ({
               product_code: item.product_code,
               description: item.product_description,
-            })
+            }),
           );
           dispatch(setUpcItems(upcItems));
           dispatch(setUpcCount(j.best_prices_by_upc.length));
@@ -234,7 +238,7 @@ const UpcList = () => {
       context.startDate,
       context.endDate,
       parseInt(context.trendPeriods),
-      file!
+      file!,
     )
       .then((resp) => {
         const j = resp.data;
@@ -263,6 +267,54 @@ const UpcList = () => {
       .finally(() => cleanUp());
   };
 
+  const getAssData = () => {
+    dispatch(resetDeeperLvlQueryUpcs());
+    const upcItems = [...context.uploadedUpcs].map((item) => ({
+      product_code: item,
+      description: `Item ${item}`,
+    }));
+    dispatch(setUpcItems(upcItems));
+    dispatch(setDataLoaded(true));
+    dispatch(setIsLoading(false));
+
+    // const ids = context.storeids.split(",").map((id) => parseInt(id));
+    // const start = formatGoliathDate(context.startDate);
+    // const end = formatGoliathDate(context.endDate);
+    // getItemAssociation(
+    //   context.url,
+    //   context.token,
+    //   start,
+    //   end,
+    //   ids,
+    //   context.uploadedUpcs,
+    //   20,
+    //   "top",
+    // )
+    //   .then((resp) => {
+    //     const j = resp.data;
+    //     if (j.error === 0 && j.items.length > 0) {
+    //       const main = [...j.items].filter((item: any) =>
+    //         context.uploadedUpcs.includes(item.product_code),
+    //       );
+    //       const association = [...j.items].filter(
+    //         (item: any) => !context.uploadedUpcs.includes(item.product_code),
+    //       );
+
+    //       // const upcItems = [...context.uploadedUpcs].map((item) => ({
+    //       //   product_code: item,
+    //       //   description: `Item ${item}`,
+    //       // }));
+    //       // dispatch(setUpcItems(upcItems));
+
+    //       dispatch(setAssociations(main));
+    //       dispatch(setAssociations(association));
+    //       dispatch(setDataLoaded(true));
+    //     }
+    //   })
+    //   .catch((err: JsonError) => toast.error(err.message))
+    //   .finally(() => cleanUp());
+  };
+
   const cleanUp = () => {
     dispatch(setIsLoading(false));
     dispatch(setIndex(0));
@@ -286,6 +338,9 @@ const UpcList = () => {
       ) : (
         <NoDataDisplay />
       );
+    if (context.selectedMode == 5) {
+      return <UpcAssociation />;
+    }
     return null;
   };
 
@@ -306,8 +361,12 @@ const UpcList = () => {
           <div className="w-full h-full flex justify-center items-center pt-28">
             <div className="bg-custom-white p-4 rounded-lg shadow-lg text-center">
               <div className="text-lg font-medium">No mode selected</div>
-              <div className="text-content/70">Please select a mode with your date range</div>
-              <div className="text-content/70">and your selected Stores or Group</div>
+              <div className="text-content/70">
+                Please select a mode with your date range
+              </div>
+              <div className="text-content/70">
+                and your selected Stores or Group
+              </div>
             </div>
           </div>
         )}

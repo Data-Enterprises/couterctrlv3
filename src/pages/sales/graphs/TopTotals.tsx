@@ -25,6 +25,7 @@ const TopTotals = () => {
       },
     );
 
+    totals.avg_basket_amount = totals.total_sales / totals.transactions;
     return totals;
   };
 

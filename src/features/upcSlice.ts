@@ -11,6 +11,12 @@ import type {
   ForecastMetrics,
 } from "../interfaces";
 
+export interface ItemAssociate {
+  product_code: string;
+  product_description: string;
+  qty: number;
+}
+
 interface UpcState {
   index: number;
   fileName: string;
@@ -45,6 +51,10 @@ interface UpcState {
   bottomFiveTrends: UpcTrend[];
   trendMode: "Totals" | "Mean" | "Volatility";
   uploadedUpcs: string[]; // Store uploaded UPCs for validation in forecast page
+  selectedAssociationUpcParam: string[]; // Store UPCs queried for deeper level associations
+  itemAssociations: ItemAssociate[][];
+  singleItemAssociations: ItemAssociate[];
+  reQueryAssociations: boolean;
 }
 
 const initialState: UpcState = {
@@ -81,6 +91,10 @@ const initialState: UpcState = {
   bottomFiveTrends: [],
   trendMode: "Totals",
   uploadedUpcs: [],
+  itemAssociations: [],
+  selectedAssociationUpcParam: [],
+  reQueryAssociations: false,
+  singleItemAssociations: [],
 };
 
 export const upcSlice = createSlice({
@@ -128,11 +142,14 @@ export const upcSlice = createSlice({
       const upc = state.selectedUpcs.find((u) => u === action.payload);
       if (upc) {
         state.selectedUpcs = state.selectedUpcs.filter(
-          (u) => u !== action.payload
+          (u) => u !== action.payload,
         );
       } else {
         state.selectedUpcs.push(action.payload);
       }
+    },
+    setAllSelectedUpcs: (state, action: PayloadAction<string[]>) => {
+      state.selectedUpcs = action.payload;
     },
     setSelectedSalesComps: (state, action: PayloadAction<UpcSalesComp>) => {
       if (!state.selectedCompOne) {
@@ -168,7 +185,7 @@ export const upcSlice = createSlice({
     },
     setForecastMetricExport: (
       state,
-      action: PayloadAction<ForecastMetrics[]>
+      action: PayloadAction<ForecastMetrics[]>,
     ) => {
       state.forecastMetricExport = action.payload;
     },
@@ -183,7 +200,7 @@ export const upcSlice = createSlice({
     },
     setOptDisplayMode: (
       state,
-      action: PayloadAction<"singleRow" | "multiRow">
+      action: PayloadAction<"singleRow" | "multiRow">,
     ) => {
       state.optDisplayMode = action.payload;
     },
@@ -198,12 +215,44 @@ export const upcSlice = createSlice({
     },
     setTrendMode: (
       state,
-      action: PayloadAction<"Totals" | "Mean" | "Volatility">
+      action: PayloadAction<"Totals" | "Mean" | "Volatility">,
     ) => {
       state.trendMode = action.payload;
     },
     setUploadedUpcs: (state, action: PayloadAction<string[]>) => {
       state.uploadedUpcs = action.payload;
+    },
+    resetDeeperLvlQueryUpcs: (state) => {
+      state.itemAssociations = [];
+      state.selectedAssociationUpcParam = [];
+    },
+    handleAssociationDeselect: (state, action: PayloadAction<number>) => {
+      state.itemAssociations = state.itemAssociations.slice(
+        0,
+        action.payload + 1,
+      );
+    },
+    setAssociations: (state, action: PayloadAction<ItemAssociate[]>) => {
+      state.itemAssociations.push(action.payload);
+    },
+    setSingleAssocitions: (state, action: PayloadAction<ItemAssociate[]>) => {
+      state.singleItemAssociations = action.payload;
+    },
+    resetAssociations: (state) => {
+      state.itemAssociations = [];
+    },
+    removeSelectedUpcParam: (state, action: PayloadAction<string>) => {
+      state.selectedAssociationUpcParam =
+        state.selectedAssociationUpcParam.filter((d) => d !== action.payload);
+    },
+    setAllSelectedUpcParam: (state, action: PayloadAction<string[]>) => {
+      state.selectedAssociationUpcParam = action.payload;
+    },
+    addSelectedUpcParam: (state, action: PayloadAction<string>) => {
+      state.selectedAssociationUpcParam.push(action.payload);
+    },
+    setReQueryAssociations: (state, action: PayloadAction<boolean>) => {
+      state.reQueryAssociations = action.payload;
     },
     resetSelectedUpcs: (state) => {
       state.selectedUpcs = [];
@@ -211,6 +260,10 @@ export const upcSlice = createSlice({
       state.selectedCompTwo = null;
     },
     clearUpcData: (state) => {
+      state.reQueryAssociations = false;
+      state.itemAssociations = [];
+      state.singleItemAssociations = [];
+      state.selectedAssociationUpcParam = [];
       state.selectedMode = 0;
       state.selectedView = 0;
       state.upcCount = 0;
@@ -275,8 +328,18 @@ export const {
   setBottomFiveTrends,
   setTrendMode,
   resetSelectedUpcs,
+  setAllSelectedUpcs,
   setUploadedUpcs,
   clearUpcData,
+  addSelectedUpcParam,
+  removeSelectedUpcParam,
+  setAssociations,
+  handleAssociationDeselect,
+  resetDeeperLvlQueryUpcs,
+  setReQueryAssociations,
+  resetAssociations,
+  setAllSelectedUpcParam,
+  setSingleAssocitions,
   resetUpcState,
 } = upcSlice.actions;
 export default upcSlice.reducer;
