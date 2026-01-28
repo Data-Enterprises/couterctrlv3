@@ -49,8 +49,6 @@ const Forecast = () => {
         <MetricsCarousel className={"-mt-2"}>
           <QtyMetrics mode="overall" metric="Quantity" />
           <QtyMetrics mode="selected" metric="Quantity" />
-          {/* Add this back in once the sales results are added into redux */}
-          {/* <QtyMetrics mode="overall" metric="Sales" /> */}
         </MetricsCarousel>
         <>
           {upcState.selectedUpcs.length === 0 ? (

@@ -22,6 +22,7 @@
     "@nivo/bar": "^0.99.0",
     "@nivo/heatmap": "^0.99.0",
     "@nivo/line": "^0.99.0",
+    "@nivo/pie": "^0.99.0",
     "@reduxjs/toolkit": "^2.10.1",
     "@tailwindcss/forms": "^0.5.9",
     "ag-grid-community": "^35.0.0",

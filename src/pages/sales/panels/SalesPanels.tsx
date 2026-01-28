@@ -2,12 +2,15 @@ import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import type { JsonError, WeeklySale } from "../../../interfaces";
 import {
+  finishQuery,
+  reQuery,
+  setCompareSalesPanel,
+  setCompareSubs,
   setHourlySales,
   setSelectedSalesPanel,
   setSubSales,
   setTopTenItems,
   setWeeklySales,
-  setWindowVisible,
 } from "../../../features/salesSlice";
 import { getHourly, getSubs, getTopTen, getWeekly } from "../../../api/sales";
 import { addDays, formatGoliathDate, handleRipple } from "../../../utils";
@@ -24,6 +27,17 @@ const SalesPanels = () => {
   const search = useAppSelector((state) => state.search);
   const [filtered, setFiltered] = useState<WeeklySale[]>([]);
 
+  // on mount, fetch the data once
+  useEffect(() => {
+    handleDataFetch();
+  }, []);
+
+  // This runs after sales panels have been fetched and the user is toggling the selected sales panel
+  useEffect(() => {
+    if (sales.salesPanels.length === 0) return;
+    handleDataFetch();
+  }, [sales.selectedSalesPanel]);
+
   useEffect(() => {
     // Filter sales panels based on search text
     if (sales.salesPanelSearchText.trim() === "") {
@@ -31,18 +45,18 @@ const SalesPanels = () => {
     } else {
       const searchText = sales.salesPanelSearchText.toLowerCase();
       const filteredPanels = sales.salesPanels.filter((panel) =>
-        panel.store_name.toLowerCase().includes(searchText)
+        panel.store_name.toLowerCase().includes(searchText),
       );
       setFiltered(filteredPanels);
     }
   }, [sales.salesPanelSearchText, sales.salesPanels]);
 
-  useEffect(() => {
-    if (sales.salesPanels.length === 0) return;
+  const handleDataFetch = () => {
+    dispatch(reQuery());
     const p = sales.selectedSalesPanel;
-    const start = p.sale_date
-      ? p.sale_date.split("T")[0]
-      : formatGoliathDate(search.startDate);
+    // const start = p.sale_date
+    //   ? p.sale_date.split("T")[0]
+    //   : formatGoliathDate(search.startDate);
     const end = p.sale_date
       ? p.sale_date.split("T")[0]
       : formatGoliathDate(search.endDate);
@@ -53,7 +67,7 @@ const SalesPanels = () => {
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 
     // date logic for weekly sales
-    const weeklyStart = addDays(end, -7).toISOString().split("T")[0];
+    const weeklyStart = addDays(end, -6).toISOString().split("T")[0];
     const weeklyEnd = new Date(end).toISOString().split("T")[0];
 
     // Final logic for params based on if a store panel is selected
@@ -63,7 +77,7 @@ const SalesPanels = () => {
 
     // This is for determining the search type for Top Ten
     const searchType = p.storeid > 0 ? "Store" : search.type;
-    
+
     getWeekly(
       context.url,
       context.token,
@@ -71,23 +85,25 @@ const SalesPanels = () => {
       weeklyEnd,
       groupParam,
       searchParam,
-      singleStoreParam
+      singleStoreParam,
     )
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setWeeklySales(j.sales));
+          dispatch(finishQuery("weekly"));
         }
       })
       .catch((err: JsonError) =>
-        toast.error("Error fetching weekly data: " + err.message)
+        toast.error("Error fetching weekly data: " + err.message),
       );
 
-    getTopTen(context.url, context.token, searchParam, searchType, start, end)
+    getTopTen(context.url, context.token, searchParam, searchType, weeklyStart, weeklyEnd)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setTopTenItems(j.items));
+          dispatch(finishQuery("top ten"));
         }
       })
       .catch((err: JsonError) => {
@@ -102,43 +118,43 @@ const SalesPanels = () => {
       weeklyEnd,
       groupParam,
       searchParam,
-      singleStoreParam
+      singleStoreParam,
     )
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setHourlySales(j.subs));
-          dispatch(setWindowVisible({ key: "hourly", show: true }));
+          dispatch(finishQuery("hourly"));
         }
       })
       .catch((err: JsonError) =>
-        toast.error("Error fetching hourly data: " + err.message)
+        toast.error("Error fetching hourly data: " + err.message),
       );
 
     getSubs(
       context.url,
       context.token,
-      start,
-      end,
+      weeklyStart,
+      weeklyEnd,
       groupParam,
       searchParam,
-      singleStoreParam
+      singleStoreParam,
     )
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setSubSales(j.subs));
-          dispatch(setWindowVisible({ key: "subs", show: true }));
+          dispatch(finishQuery("subs"));
         }
       })
       .catch((err: JsonError) =>
-        toast.error("Error fetching subs data: " + err.message)
+        toast.error("Error fetching subs data: " + err.message),
       );
-  }, [sales.selectedSalesPanel, sales.salesPanels]);
+  };
 
   const handlePanelClick = (
     e: React.MouseEvent<HTMLDivElement>,
-    panel: WeeklySale
+    panel: WeeklySale,
   ) => {
     handleRipple(e);
     // This date is being used to compare with the selected panel in redux
@@ -149,13 +165,18 @@ const SalesPanels = () => {
           sale_date: date,
           storeid: panel.storeid,
           store_name: panel.store_name,
-        })
+        }),
       );
     } else {
       dispatch(
-        setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" })
+        setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
       );
     }
+    // When selecting a new panel, clear out compare panel data
+    dispatch(
+      setCompareSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
+    );
+    dispatch(setCompareSubs([]));
   };
 
   const isReady = sales.salesPanels.length > 0 && !sales.panelsLoading;
@@ -170,7 +191,7 @@ const SalesPanels = () => {
             handlePanelClick={handlePanelClick}
           />
         ))}
-      {sales.salesPanels.length === 0 ? (
+      {sales.panelsLoading ? (
         <LoadingIndicator message="Loading Sales Panels..." />
       ) : null}
     </div>

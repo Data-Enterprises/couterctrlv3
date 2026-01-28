@@ -24,6 +24,7 @@ export const useUpcContext = () => {
     upcTrends,
     uploadedUpcs,
     selectedView,
+    selectedAssociationUpcParam,
   } = useAppSelector((state) => state.upc);
 
   return {
@@ -52,5 +53,6 @@ export const useUpcContext = () => {
     upcTrends,
     uploadedUpcs,
     selectedView,
+    selectedAssociationUpcParam,
   };
 };

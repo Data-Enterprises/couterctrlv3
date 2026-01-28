@@ -1,6 +1,4 @@
 import React from "react";
-//  { useEffect, useState } from "react";
-// import { useAppSelector } from "../../../hooks";
 
 type CarouselProps = {
   children: React.ReactNode;

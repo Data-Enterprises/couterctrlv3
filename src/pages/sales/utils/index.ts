@@ -19,6 +19,19 @@ export const barColors = [
   "#CC8844",
 ];
 
+export const colors = [
+  "#00CC55",
+  "#10b981",
+  "#0099AA",
+  "#0066FF",
+  "#3366FF",
+  "#3b82f6",
+  "#6688FF",
+  "#FFA500",
+  "#FF9900",
+  "#CC8844",
+];
+
 export const getDateLayout = (date: string) => {
   const [year, month, day] = date.split("-");
   return `${month}/${day}/${year}`;
@@ -32,8 +45,8 @@ export const formatTopTenData = (
       id: item.product_description,
       label: item.product_code,
       value: item.total_sales || 0,
-      fill: barColors[idx],
-      color: barColors[idx],
+      fill: barColors[idx % barColors.length],
+      color: barColors[idx % barColors.length],
       qty: item.qty || 0,
     }))
     .reverse();
@@ -54,6 +67,7 @@ export const calculateMetrics = (data: TopTenData[]) => {
 };
 
 export const rgbaColor = (hex: string, alpha: number) => {
+  // if (!hex) return `rgba(0,0,0,${alpha})`;
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);

@@ -26,7 +26,6 @@ const TrendCardsList = () => {
   };
 
   const trendChunks = chunkTrends(trends, 5);
-  console.log(trendChunks);
 
   return (
     <div>

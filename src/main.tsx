@@ -48,5 +48,5 @@ createRoot(document.getElementById("root")!).render(
         </BrowserRouter>
       </Provider>
     </ErrorBoundary>
-  </StrictMode>
+  </StrictMode>,
 );

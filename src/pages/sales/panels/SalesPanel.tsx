@@ -1,5 +1,5 @@
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { formatCurrency2, formatBigNumber } from "../../../utils";
+import { formatCurrency2, formatBigNumber, addDays } from "../../../utils";
 import type {
   JsonError,
   SelectedSalesPanel,
@@ -7,17 +7,18 @@ import type {
 } from "../../../interfaces";
 import { comparePanels, getDateLayout } from "../utils";
 import {
-  setCatSales,
   setCompareSalesPanel,
+  setCompareSubs,
 } from "../../../features/salesSlice";
+import { getSubs } from "../../../api/sales";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getCats } from "../../../api/sales";
+// import { getCats } from "../../../api/sales";
 
 interface SalesPanelProps {
   panel: WeeklySale;
   handlePanelClick: (
     e: React.MouseEvent<HTMLDivElement>,
-    panel: WeeklySale
+    panel: WeeklySale,
   ) => void;
   id: number;
 }
@@ -26,9 +27,9 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const state = useAppSelector((state) => state.sales);
+  // const state = useAppSelector((state) => state.sales);
   const { selectedSalesPanel, compareSalesPanel } = useAppSelector(
-    (state) => state.sales
+    (state) => state.sales,
   );
 
   const border = (panel: WeeklySale, selected: SelectedSalesPanel) => {
@@ -57,27 +58,27 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
     return formatted;
   };
 
-  const handleCatClick = (panel: WeeklySale) => {
-    // Toggling the cats data off if the same panel is clicked again
-    if (state.catSales.length > 0 && state.catSales[0].storeid === panel.storeid) {
-      dispatch(setCatSales([]));
-      return;
-    }
+  // const handleCatClick = (panel: WeeklySale) => {
+  //   // Toggling the cats data off if the same panel is clicked again
+  //   if (state.catSales.length > 0 && state.catSales[0].storeid === panel.storeid) {
+  //     dispatch(setCatSales([]));
+  //     return;
+  //   }
 
-    const pd = panel.sale_date.split("T")[0];
-    const start = pd;
-    const end = pd;
-    getCats(context.url, context.token, start, end, 0, panel.storeid, 1)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          dispatch(setCatSales(j.subs));
-        }
-      })
-      .catch((err: JsonError) =>
-        toast.error("Error fetching cats data: " + err.message)
-      );
-  };
+  //   const pd = panel.sale_date.split("T")[0];
+  //   const start = pd;
+  //   const end = pd;
+  //   getCats(context.url, context.token, start, end, 0, panel.storeid, 1)
+  //     .then((resp) => {
+  //       const j = resp.data;
+  //       if (j.error === 0) {
+  //         dispatch(setCatSales(j.subs));
+  //       }
+  //     })
+  //     .catch((err: JsonError) =>
+  //       toast.error("Error fetching cats data: " + err.message)
+  //     );
+  // };
 
   const handleCompareClick = (panel: WeeklySale) => {
     const date = panel.sale_date.split("T")[0];
@@ -87,11 +88,32 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
           sale_date: date,
           storeid: panel.storeid,
           store_name: panel.store_name,
-        })
+        }),
       );
+      const weeklyStart = addDays(date, -6).toISOString().split("T")[0];
+      const weeklyEnd = new Date(date).toISOString().split("T")[0];
+
+      getSubs(
+        context.url,
+        context.token,
+        weeklyStart,
+        weeklyEnd,
+        0,
+        panel.storeid,
+        1,
+      )
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            dispatch(setCompareSubs(j.subs));
+          }
+        })
+        .catch((err: JsonError) =>
+          toast.error("Error fetching subs data: " + err.message),
+        );
     } else {
       dispatch(
-        setCompareSalesPanel({ sale_date: "", storeid: 0, store_name: "" })
+        setCompareSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
       );
     }
   };
@@ -100,9 +122,9 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
     <div
       className={`${border(
         panel,
-        selectedSalesPanel
+        selectedSalesPanel,
       )} bg-custom-white rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-inner 
-      transition-all duration-200 select-none ripple-button md:min-h-[185px] relative`}
+      transition-all duration-200 select-none ripple-button md:min-h-[160px] relative text-sm`}
     >
       <div
         data-testid={`sales-panel-${id}`}
@@ -156,13 +178,13 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
         >
           Compare Subs
         </button>
-        <button
+        {/* <button
           data-testid={`sales-panel-cat-${id}`}
           className={`btn-themeBlue py-1.5 w-full`}
           onClick={() => handleCatClick(panel)}
         >
           Cats
-        </button>
+        </button> */}
       </div>
     </div>
   );

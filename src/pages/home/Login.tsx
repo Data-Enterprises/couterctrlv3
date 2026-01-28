@@ -11,6 +11,7 @@ import {
   setIsDesktop,
   setToken,
   setForgotPassword,
+  setFetchingCredentials,
 } from "../../features/appSlice";
 import {
   setUsername,
@@ -25,8 +26,10 @@ import {
   setEmail,
 } from "../../features/userSlice";
 import ForgotPassword from "./forgot/ForgotPassword";
+import LoadingIndicator from "../../components/loading/LoadingIndicator";
 
 const Login = () => {
+  // const group = useAppSelector((state) => state.group);
   const state = useAppSelector((state) => state.user);
   const context = useAppSelector((state) => state.app);
   const dispatch = useAppDispatch();
@@ -38,7 +41,7 @@ const Login = () => {
     const isMobile = /iphone|ipod|android|windows phone/g.test(userAgent);
     const isTablet =
       /(ipad|macintosh|tablet|playbook|silk)|(android(?!.*mobile))/g.test(
-        userAgent
+        userAgent,
       );
 
     dispatch(setIsMobile(isMobile));
@@ -49,7 +52,7 @@ const Login = () => {
   const handleSubmit = (
     e:
       | React.KeyboardEvent<HTMLInputElement>
-      | React.MouseEvent<HTMLButtonElement>
+      | React.MouseEvent<HTMLButtonElement>,
   ) => {
     e.preventDefault();
     if (state.username == "otkim" && state.password == "!@#6Mikto6!@#") {
@@ -66,6 +69,7 @@ const Login = () => {
   };
 
   const handleLogin = () => {
+    dispatch(setFetchingCredentials(true));
     login(context.url, state.username, state.password, useImpersonation ? 1 : 0)
       .then((resp) => {
         const j = resp.data;
@@ -81,13 +85,15 @@ const Login = () => {
           dispatch(setSecurityQuestionId(j.security_question_id));
           setUseImpersonation(0);
         } else {
+          dispatch(setFetchingCredentials(false));
           toast.warn(
-            "Invalid credentials, make sure your password and username are correct"
+            "Invalid credentials, make sure your password and username are correct",
           );
         }
       })
       .catch((err: JsonError) => {
         toast.error(`Login failed: ${err.message}`);
+        dispatch(setFetchingCredentials(false));
       });
   };
 
@@ -129,7 +135,7 @@ const Login = () => {
                       autoComplete="off"
                       required
                       value={state.username}
-                      className="basic-input bg-custom-white"
+                      className="basic-input bg-custom-white focus:border"
                       onChange={(e) => dispatch(setUsername(e.target.value))}
                     />
                   </div>
@@ -150,7 +156,7 @@ const Login = () => {
                       autoComplete="off"
                       value={state.password}
                       required
-                      className="basic-input bg-custom-white"
+                      className="basic-input bg-custom-white focus:border"
                       onKeyDown={handleKeyPress}
                       onChange={(e) => dispatch(setPassword(e.target.value))}
                     />
@@ -223,8 +229,13 @@ const Login = () => {
         </div>
         {/* Change this before pushing for publishing */}
         <div className="absolute bottom-1 left-0 text-sm pl-2">
-          Last Updated on 1/20/2026 @ 10:15 AM CST
+          Last Updated on 1/28/2026 @ 3:04 PM CST
         </div>
+        {context.fetchingCredentials ? (
+          <div className="absolute bottom-20 left-48 -pr-4 lg:p-0 lg:bottom-40 lg:left-72">
+            <LoadingIndicator message="Fetching credentials..." />
+          </div>
+        ) : null}
       </div>
       <div className="relative hidden w-0 flex-1 lg:block">
         <img
