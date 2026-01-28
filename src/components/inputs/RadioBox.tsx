@@ -16,7 +16,7 @@ const RadioBox = ({ value, onChange, id, label, className }: Props) => {
       onClick={() => onChange(id)}
     >
       <CheckboxIcon active={value} />
-      <label>{label}</label>
+      <label className="text-[13px] font-medium">{label}</label>
     </div>
   );
 };

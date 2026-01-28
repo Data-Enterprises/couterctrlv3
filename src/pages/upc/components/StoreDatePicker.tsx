@@ -135,7 +135,7 @@ const StoreDatePicker = ({ setFile, getModuleData }: StoreDatePickerProps) => {
         selectedStores={context.selectedStores}
         radioId={context.radioId}
       />
-      <div className="flex gap-2">
+      <div className="flex gap-2 mt-2">
         <FileInput
           page="upc"
           fileExt={[".csv"]}
