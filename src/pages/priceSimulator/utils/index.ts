@@ -3,7 +3,7 @@ import { useAppSelector } from "../../../hooks";
 
 export const usePriceSimContext = () => {
   const { storeids, radioId, selectedStores, isLoading } = useAppSelector(
-    (state) => state.priceSim
+    (state) => state.priceSim,
   );
   const { url, token } = useAppSelector((state) => state.app);
   const { userid, assignedStores } = useAppSelector((state) => state.user);
@@ -25,7 +25,7 @@ export const usePriceSimContext = () => {
   };
 };
 
-export const  = () => {
+export const useScrollHeight = () => {
   const state = useAppSelector((state) => state.priceSim);
   const topRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number>(0);
