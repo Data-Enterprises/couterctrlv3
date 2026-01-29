@@ -3,7 +3,7 @@ import { useAppSelector } from "../../../hooks";
 
 export const usePriceSimContext = () => {
   const { storeids, radioId, selectedStores, isLoading } = useAppSelector(
-    (state) => state.priceSim
+    (state) => state.priceSim,
   );
   const { url, token } = useAppSelector((state) => state.app);
   const { userid, assignedStores } = useAppSelector((state) => state.user);
