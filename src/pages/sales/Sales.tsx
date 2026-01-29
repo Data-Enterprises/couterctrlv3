@@ -176,7 +176,6 @@ const Sales = () => {
               <SubDeptComps />
               <HourlyGrid />
               <TopTen />
-              <SubDeptGrid />
             </div>
           ) : null}
         </div>
