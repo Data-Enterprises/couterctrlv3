@@ -70,7 +70,7 @@ const CtxMenu = ({ className = "", options, handlers }: CopyTextProps) => {
               className={`${className} ${topOrBottom(
                 index,
                 options
-              )} text-[14px] transition-all duration-300`}
+              )} text-[14px] hover:bg-blue-200 transition-all duration-300`}
             >
               <div
                 data-testid={`ctx-menu-option-${index}`}

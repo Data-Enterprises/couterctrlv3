@@ -55,6 +55,7 @@ interface SalesState {
   windowVisible: WindowVisible;
   hourlySales: HourlySale[];
   subSales: SubSale[];
+  subSalesWk1: SubSale[];
   subSalesWk2: SubSale[];
   subSalesWk3: SubSale[];
   subSalesWk4: SubSale[];
@@ -85,6 +86,7 @@ const initialState: SalesState = {
   windowVisible: defaultWindowVisible,
   hourlySales: [],
   subSales: [],
+  subSalesWk1: [],
   subSalesWk2: [],
   subSalesWk3: [],
   subSalesWk4: [],
@@ -181,7 +183,9 @@ export const salesSlice = createSlice({
       action: PayloadAction<{ subs: SubSale[]; period: number }>,
     ) => {
       const { subs, period } = action.payload;
-      if (period === 2) {
+      if (period === 1) {
+        state.subSalesWk1 = subs;
+      } if (period === 2) {
         state.subSalesWk2 = subs;
       } else if (period === 3) {
         state.subSalesWk3 = subs;

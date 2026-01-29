@@ -5,6 +5,7 @@ import {
   addSelectedUpcParam,
   clearUpcData,
   removeSelectedUpcParam,
+  resetAssociations,
   resetDeeperLvlQueryUpcs,
   resetSelectedUpcs,
   setAllSelectedUpcParam,
@@ -89,6 +90,7 @@ const UpcControls = () => {
   const handleSelectAll = () => {
     // Upc Association select all
     if (state.selectedMode === 5) {
+      dispatch(resetAssociations());
       dispatch(setAllSelectedUpcParam(uploadedUpcs));
     }
     dispatch(setAllSelectedUpcs(upcItems.map((item) => item.product_code)));
@@ -104,6 +106,7 @@ const UpcControls = () => {
 
   const handleUnselectAll = () => {
     if (state.selectedMode === 5) {
+      dispatch(resetAssociations());
       dispatch(resetDeeperLvlQueryUpcs());
     }
     dispatch(resetSelectedUpcs());
@@ -116,6 +119,7 @@ const UpcControls = () => {
       } else {
         dispatch(addSelectedUpcParam(pc));
       }
+      dispatch(resetAssociations());
     }
 
     dispatch(setSelectedUpcs(pc));

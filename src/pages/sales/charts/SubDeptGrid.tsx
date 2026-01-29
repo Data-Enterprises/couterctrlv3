@@ -10,11 +10,13 @@ import {
 import type { SubSale } from "../../../interfaces";
 import { setSelectedSubDept } from "../../../features/salesSlice";
 import { useState, useEffect, useRef } from "react";
+import SingleSelect from "../../../components/SingleSelect";
 
 const SubDeptGrid = () => {
+  const { isMobile } = useAppSelector((state) => state.app);
   const gridRef = useRef<AgGridReact<SubSale>>(null);
   const dispatch = useAppDispatch();
-  const { subSales, selectedSubDept, topSubDept } = useAppSelector(
+  const { subSales, selectedSubDept, topSubDept, selectedSalesPanel } = useAppSelector(
     (state) => state.sales,
   );
   const [groupSubs, setGroupSubs] = useState<SubSale[]>([]);
@@ -84,33 +86,79 @@ const SubDeptGrid = () => {
     dispatch(setSelectedSubDept(selected));
   };
 
+  const style = isMobile
+    ? "-mx-2"
+    : "bg-custom-white rounded-lg shadow-lg pb-2 pt-1";
+
+  const handleSelect = (subDept: string | number) => {
+    const d = groupSubs.find(
+      (s) => s.sub_department === Number(subDept),
+    );
+    if (!d) return;
+    const selected: TopSub = {
+      sub_department: d.sub_department,
+      sub_department_description: d.sub_department_description,
+      total_sales: d.total_sales,
+      net_sales: d.net_sales,
+      qty: d.qty,
+      digital_coupons: d.digital_coupons,
+      elec_instore_coupons: d.elec_instore_coupons,
+      elec_store_coupons: d.elec_store_coupons,
+      store_coupon: d.store_coupon,
+      total_tax: d.total_tax,
+    };
+    dispatch(setSelectedSubDept(selected));
+  };
+
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg pb-2 pt-1">
-      <div className="px-2 flex justify-between items-center">
-        <span className="font-medium">Sub Department Sales</span>
-      </div>
-      <div className="px-2 h-[92%]">
-        <AgGridReact
-          ref={gridRef}
-          rowData={groupSubs}
-          theme={theme}
-          columnDefs={subCols}
-          pagination={true}
-          paginationAutoPageSize={true}
-          onRowClicked={(d) => {
-            if (
-              !selectedSubDept ||
-              (selectedSubDept &&
-                selectedSubDept.sub_department !== d.data!.sub_department)
-            ) {
-              handleSetSelectedSubDept(d);
-            } else {
-              dispatch(setSelectedSubDept(null));
-            }
-          }}
-          rowSelection="single"
-        />
-      </div>
+    <div className={style}>
+      {!isMobile ? (
+        <div className="px-2 flex justify-between items-center">
+          <span className="font-medium">
+            {selectedSalesPanel.sale_date ? "Daily" : "Weekly"} Sub Department
+            Sales
+          </span>
+        </div>
+      ) : (
+        <div className="px-2 flex justify-between items-center">
+          <SingleSelect
+            data={groupSubs}
+            displayKey="sub_department_description"
+            valueKey="sub_department"
+            label="Sub Department Sales"
+            innerClass="py-1"
+            className="w-full"
+            defaultQuery={
+              (topSubDept?.sub_department_description as string) || ""
+            } // set default to top sub dept
+            onSelect={handleSelect}
+          />
+        </div>
+      )}
+      {!isMobile && (
+        <div className="px-2 h-[92%]">
+          <AgGridReact
+            ref={gridRef}
+            rowData={groupSubs}
+            theme={theme}
+            columnDefs={subCols}
+            pagination={true}
+            paginationAutoPageSize={true}
+            onRowClicked={(d) => {
+              if (
+                !selectedSubDept ||
+                (selectedSubDept &&
+                  selectedSubDept.sub_department !== d.data!.sub_department)
+              ) {
+                handleSetSelectedSubDept(d);
+              } else {
+                dispatch(setSelectedSubDept(null));
+              }
+            }}
+            rowSelection="single"
+          />
+        </div>
+      )}
     </div>
   );
 };

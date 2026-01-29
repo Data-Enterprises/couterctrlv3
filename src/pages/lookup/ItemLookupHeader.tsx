@@ -14,8 +14,20 @@ const ItemLookupHeader = () => {
     avgPrice,
     selectedStore,
     daysSold,
+    itemLookupHistory,
   } = useAppSelector((state) => state.item);
   const dispatch = useDispatch();
+
+  const findAverage = () => {
+    if (itemLookupHistory.length === 0) return 0;
+    const avg = itemLookupHistory.reduce((acc, item) => {
+      if (item.price === avgPrice) {
+        acc += 1;
+      }
+      return acc;
+    }, 0);
+    return avg;
+  };
 
   return (
     <div className="mb-2 no-phone-select">
@@ -35,8 +47,8 @@ const ItemLookupHeader = () => {
         </div>
         <div className="text-sm mb-2 flex justify-between">
           <div className="flex gap-1">
-            Avg Price:{" "}
-            <div className="font-medium">{formatCurrency2(avgPrice)}</div>
+            Price & Cnt:{" "}
+            <div className="font-medium">{formatCurrency2(avgPrice)} - {findAverage()}</div>
           </div>
           {!selectedStore ? (
             <div className="flex gap-1">

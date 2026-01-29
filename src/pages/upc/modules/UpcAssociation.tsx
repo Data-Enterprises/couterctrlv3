@@ -26,6 +26,7 @@ import UpcModal from "../modal/UpcModal";
 import { associateHeaders } from "../exportHeaders";
 import { exportData } from "../exportHeaders/utils";
 import { reset } from "../../../features/upcModalSlice";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 
 type AssociateExport = {
   level: string;
@@ -51,13 +52,16 @@ const UpcAssociation = () => {
   } = useAppSelector((state) => state.upc);
 
   const [upcText, setUpcText] = useState<string>("");
+  const [isFetching, setIsFetching] = useState<boolean>(false);
 
   useEffect(() => {
-    dispatch(resetAssociations());
+    // dont run this when renavigating back to this page
+
     if (selectedUpcs.length > 0) {
       const start = formatGoliathDate(search.startDate);
       const end = formatGoliathDate(search.endDate);
       const ids = upc.storeids.split(",").map((id) => Number(id));
+      setIsFetching(true);
 
       getItemAssociation(
         context.url,
@@ -98,11 +102,13 @@ const UpcAssociation = () => {
             dispatch(resetAssociations());
             dispatch(setAssociations(main));
             dispatch(setAssociations(associates));
+            setIsFetching(false);
           }
         })
         .catch((err) =>
           toast.error("Error fetching associations: " + err.message),
         );
+      // .finally(() => setIsFetching(false));
     }
   }, [selectedUpcs]);
 
@@ -115,6 +121,7 @@ const UpcAssociation = () => {
     const start = formatGoliathDate(search.startDate);
     const end = formatGoliathDate(search.endDate);
     const ids = upc.storeids.split(",").map((id) => Number(id));
+    setIsFetching(true);
     getItemAssociation(
       context.url,
       context.token,
@@ -142,7 +149,10 @@ const UpcAssociation = () => {
       .catch((err) =>
         toast.error("Error fetching deeper level associations: " + err.message),
       )
-      .finally(() => dispatch(setReQueryAssociations(false)));
+      .finally(() => {
+        dispatch(setReQueryAssociations(false));
+        setIsFetching(false);
+      });
   };
 
   const handleCardClick = (item: ItemAssociate, level: number) => {
@@ -326,7 +336,7 @@ const UpcAssociation = () => {
       </div>
       <div className="grid grid-cols-5 gap-4 mr-4">
         {itemAssociations.map((items, idx) => (
-          <div className="bg-custom-white rounded-lg">
+          <div className="rounded-lg">
             <div className="font-medium bg-blue-500 text-custom-white rounded-t-lg px-2 py-0.5 flex justify-between">
               <div>{idx === 0 ? "Main" : `Level ${idx}`}</div>
               <div>
@@ -334,11 +344,11 @@ const UpcAssociation = () => {
                 {itemAssociations[idx].length === 1 ? "Item" : "Items"}
               </div>
             </div>
-            <div className="grid gap-2 max-h-[88vh] overflow-y-auto no-scrollbar p-1 bg-custom-white">
+            <div className="grid gap-2 max-h-[87vh] rounded-lg overflow-y-auto no-scrollbar p-1 bg-custom-white">
               {items.map((item) => (
                 <div
                   key={Math.random()}
-                  className={`text-xs rounded-lg p-2 shadow-md cursor-pointer hover:bg-blue-200 duration-200 transition-all ${selectedAssociationUpcParam.find((upc) => upc === item.product_code) ? "bg-orange-200" : "bg-custom-white "}`}
+                  className={`text-xs rounded-lg p-2 shadow cursor-pointer hover:bg-blue-200 duration-200 transition-all ${selectedAssociationUpcParam.find((upc) => upc === item.product_code) ? "bg-orange-200" : "bg-custom-white "}`}
                   onClick={() => handleCardClick(item, idx)}
                   onContextMenu={(e) => handleRightClick(e, item)}
                 >
@@ -352,51 +362,58 @@ const UpcAssociation = () => {
             </div>
           </div>
         ))}
+        {isFetching && (
+          <div className="relative">
+            <LoadingIndicator message="Fetching associations..." />
+          </div>
+        )}
 
         {/* SingleUpcAssociationLookup */}
-        <div className="bg-custom-white rounded-lg">
-          <div className="font-medium bg-blue-500 text-custom-white rounded-t-lg px-2 py-0.5 flex justify-between">
-            <div>Upc Search</div>
-            <div>
-              {singleItemAssociations.length}{" "}
-              {singleItemAssociations.length === 1 ? "Item" : "Items"}
-            </div>
-          </div>
-          <div className="grid gap-2 max-h-[88vh] overflow-y-auto no-scrollbar p-1 bg-custom-white">
-            <Input label="" setValue={handleSetUpcText} value={upcText} />
-            <div className="flex gap-2">
-              <button
-                className="btn-themeBlue py-0.5 px-0 w-1/2"
-                onClick={handleSingleUpcSearch}
-              >
-                Search
-              </button>
-              <button
-                className="btn-themeOrange py-0.5 px-0 w-1/2"
-                onClick={() => {
-                  dispatch(setSingleAssocitions([]));
-                  setUpcText("");
-                }}
-              >
-                Clear
-              </button>
-            </div>
-
-            {singleItemAssociations.map((item) => (
-              <div
-                key={Math.random()}
-                className={`text-xs rounded-lg p-2 shadow-md cursor-pointer hover:bg-blue-200 duration-200 transition-all 
-                  ${showSingleAssociattion(item.product_code)}`}
-              >
-                <div className="flex justify-between mb-1">
-                  <div>{item.product_code}</div>
-                  <div>Qty: {item.qty}</div>
-                </div>
-                <div>{item.product_description}</div>
+        {itemAssociations.length ? (
+          <div className="bg-custom-white rounded-lg">
+            <div className="font-medium bg-blue-500 text-custom-white rounded-t-lg px-2 py-0.5 flex justify-between">
+              <div>Upc Search</div>
+              <div>
+                {singleItemAssociations.length}{" "}
+                {singleItemAssociations.length === 1 ? "Item" : "Items"}
               </div>
-            ))}
+            </div>
+            <div className="grid gap-2 max-h-[88vh] overflow-y-auto no-scrollbar p-1 bg-custom-white">
+              <Input label="" setValue={handleSetUpcText} value={upcText} />
+              <div className="flex gap-2">
+                <button
+                  className="btn-themeBlue py-0.5 px-0 w-1/2"
+                  onClick={handleSingleUpcSearch}
+                >
+                  Search
+                </button>
+                <button
+                  className="btn-themeOrange py-0.5 px-0 w-1/2"
+                  onClick={() => {
+                    dispatch(setSingleAssocitions([]));
+                    setUpcText("");
+                  }}
+                >
+                  Clear
+                </button>
+              </div>
+
+              {singleItemAssociations.map((item) => (
+                <div
+                  key={Math.random()}
+                  className={`text-xs rounded-lg p-2 shadow-md cursor-pointer hover:bg-blue-200 duration-200 transition-all 
+                  ${showSingleAssociattion(item.product_code)}`}
+                >
+                  <div className="flex justify-between mb-1">
+                    <div>{item.product_code}</div>
+                    <div>Qty: {item.qty}</div>
+                  </div>
+                  <div>{item.product_description}</div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </div>
   );

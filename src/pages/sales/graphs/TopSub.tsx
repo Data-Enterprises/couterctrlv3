@@ -90,7 +90,7 @@ const TopSubDept = () => {
     const p = selectedSalesPanel;
     const endDate = p.sale_date
       ? p.sale_date.split("T")[0]
-      : formatGoliathDate(search.endDate);
+      : formatGoliathDate(search.singleDate);
 
     const start = addDays(endDate, -6).toISOString().split("T")[0];
     const end = new Date(endDate).toISOString().split("T")[0];

@@ -139,9 +139,9 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
         onClick={(e) => handlePanelClick(e, panel)}
       >
         <div className="">
-          <div className="text-left">Sales</div>
+          <div className="text-left">Net Sales</div>
           <div className="font-medium">
-            {formatCurrency2(panel.total_sales)}
+            {formatCurrency2(panel.total_sales - panel.total_tax)}
           </div>
         </div>
         <div className="font-medium">

@@ -160,7 +160,7 @@ const SubDeptPeriodCard = ({
         </div>
       </div>
 
-      <div className="px-2">
+      <div className="px-2 pb-2 pt-1 md:py-0">
         <div className="font-medium mt-1">Coupons</div>
         <div className="grid grid-cols-4 gap-2">
           <div>

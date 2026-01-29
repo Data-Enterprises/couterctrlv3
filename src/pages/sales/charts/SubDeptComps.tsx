@@ -35,7 +35,11 @@ const SubDeptComps = () => {
   };
 
   const getMonthlyTrend = () => {
-    const date = new Date(sales.selectedSalesPanel.sale_date || search.endDate);
+    const date = new Date(sales.selectedSalesPanel.sale_date || search.singleDate);
+
+    const wk1End = setDates(date);
+    const wk1Start = setDates(date, 6);
+    getData(wk1Start, wk1End, 1);
 
     // if the date is 1/27/2026 then the dates below are as follows
     // Week 2 => 1/20/2026 - 1/14/2026
@@ -88,7 +92,7 @@ const SubDeptComps = () => {
   };
 
   const formateFirstWk = () => {
-    const date = new Date(sales.selectedSalesPanel.sale_date || search.endDate);
+    const date = new Date(sales.selectedSalesPanel.sale_date || search.singleDate);
     const we = setDates(date);
     const ws = setDates(date, 6);
     return `${formatDate(ws)} - ${formatDate(we)}`;
@@ -97,9 +101,9 @@ const SubDeptComps = () => {
   // Once we have both data sets, show the comparisons (final step)
   return (
     <div className="">
-      <div className="grid grid-cols-2 h-full gap-2">
+      <div className="grid md:grid-cols-2 h-full gap-2">
         <SubDeptPeriodCard
-          data={sales.subSales}
+          data={sales.subSalesWk1}
           dateRange={formateFirstWk()}
           period={1}
         />
