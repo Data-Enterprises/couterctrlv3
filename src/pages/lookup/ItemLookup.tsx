@@ -260,7 +260,7 @@ const ItemLookup = () => {
           ) : (
             <>
               <div
-                className="space-y-2 overflow-y-auto"
+                className="space-y-2 overflow-y-auto mb-3"
                 style={{ maxHeight: `${height}px` }}
               >
                 {itemLookupHistory.map((item, i) => (
@@ -272,7 +272,7 @@ const ItemLookup = () => {
           <button
             ref={bottomRef}
             data-testid="lookup-clear"
-            className="btn-themeBlue w-full mt-3 text-[15px]"
+            className="btn-themeBlue w-full text-[15px]"
             onClick={clear}
           >
             Clear Item

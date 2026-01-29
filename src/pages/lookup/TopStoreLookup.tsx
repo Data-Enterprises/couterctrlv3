@@ -19,35 +19,31 @@ const TopStoreLookup = () => {
   }, [mode, topStoreSales, topStoreQty, highestPriceStore]);
 
   return (
-    <div className="text-sm mb-4">
+    <div className="text-sm mb-4 bg-custom-white rounded-lg shadow-md pb-2">
       {/* Details */}
-      <div className="bg-custom-white shadow-md rounded-lg mb-2">
-        <div className="font-medium bg-blue-500 text-custom-white rounded-t-lg py-0.5 px-2 flex justify-between">
+      <div className="">
+        <div className="font-medium bg-blue-500 text-custom-white rounded-t-lg py-1 px-2 flex justify-between">
           <div>Highest {mode}</div>
           <div>
             {item.store_name} ({item.store_number})
           </div>
         </div>
-        <div className="pl-2 lg:py-1.5 py-0.5 flex gap-2">
-          <div className="font-medium">Category:</div>
-          <div>{item.category_description}</div>
+        <div className="px-2 py-1">
+          <div className="text-content/60">Category:</div>
+          <div className="font-medium">{item.category_description}</div>
         </div>
       </div>
       {/* cost columns */}
-      <div className="grid grid-cols-2 gap-4 mb-2">
-        <div className="bg-custom-white shadow-md rounded-lg">
-          <div className="font-medium bg-blue-500 text-custom-white rounded-t-lg py-0.5 pl-2">
-            Case cost:
-          </div>
-          <div className="pl-2 lg:py-1.5 py-1">
+      <div className="grid grid-cols-2 gap-4 mb-1 mx-2">
+        <div className="">
+          <div className="text-content/60">Case cost:</div>
+          <div className="font-medium">
             ${item.casecost ? item.casecost.toFixed(2) : "N/A"}
           </div>
         </div>
-        <div className="bg-custom-white shadow-md rounded-lg">
-          <div className="font-medium bg-blue-500 text-custom-white rounded-t-lg py-0.5 pl-2">
-            Extended cost:
-          </div>
-          <div className="pl-2 lg:py-1.5 py-1">
+        <div className="">
+          <div className="text-content/60">Extended cost:</div>
+          <div className="font-medium">
             ${item.extended_cost ? item.extended_cost.toFixed(2) : "N/A"}
           </div>
         </div>
@@ -55,23 +51,17 @@ const TopStoreLookup = () => {
 
       {/* Totals qty/sales */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-custom-white shadow-md rounded-lg">
-          <div className="font-medium bg-blue-500 text-custom-white rounded-t-lg py-0.5 pl-2">
-            Price:
-          </div>
-          <div className="pl-2 lg:py-1.5 py-1">{formatCurrency2(item.price)}</div>
+        <div className="mx-2">
+          <div className="text-content/60">Price:</div>
+          <div className="font-medium">{formatCurrency2(item.price)}</div>
         </div>
-        <div className="bg-custom-white shadow-md rounded-lg">
-          <div className="font-medium bg-blue-500 text-custom-white rounded-t-lg py-0.5 pl-2">
-            Qty:
-          </div>
-          <div className="pl-2 lg:py-1.5 py-1">{item.qty}</div>
+        <div className="mx-2">
+          <div className="text-content/60">Qty:</div>
+          <div className="font-medium">{item.qty}</div>
         </div>
-        <div className="bg-custom-white shadow-md rounded-lg">
-          <div className="font-medium bg-blue-500 text-custom-white rounded-t-lg py-0.5 pl-2">
-            Sales:
-          </div>
-          <div className="pl-2 lg:py-1.5 py-1">{formatCurrency2(item.total_sales)}</div>
+        <div className="mx-2">
+          <div className="text-content/60">Sales:</div>
+          <div className="font-medium">{formatCurrency2(item.total_sales)}</div>
         </div>
       </div>
     </div>

@@ -35,7 +35,7 @@ const SubDeptComps = () => {
   };
 
   const getMonthlyTrend = () => {
-    const date = new Date(sales.selectedSalesPanel.sale_date || search.endDate);
+    const date = new Date(sales.selectedSalesPanel.sale_date || search.singleDate);
 
     const wk1End = setDates(date);
     const wk1Start = setDates(date, 6);
@@ -92,7 +92,7 @@ const SubDeptComps = () => {
   };
 
   const formateFirstWk = () => {
-    const date = new Date(sales.selectedSalesPanel.sale_date || search.endDate);
+    const date = new Date(sales.selectedSalesPanel.sale_date || search.singleDate);
     const we = setDates(date);
     const ws = setDates(date, 6);
     return `${formatDate(ws)} - ${formatDate(we)}`;

@@ -4,8 +4,15 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import { getWeekly } from "../../api/sales";
 
 // Components
-import DatePickers from "../../components/datePickers/DatePickers";
 import StorePicker from "../../components/storePicker/StorePicker";
+import SalesPanels from "./panels/SalesPanels";
+import KpiHeader from "./components/KpiHeader";
+import TopTen from "./charts/TopTen";
+import HourlyGrid from "./charts/HourlyGrid";
+import SubDeptGrid from "./charts/SubDeptGrid";
+import SubDeptComps from "./charts/SubDeptComps";
+import LoadingIndicator from "../../components/loading/LoadingIndicator";
+import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
 
 // Dispatchers
 import {
@@ -17,15 +24,8 @@ import {
 // utils
 import { addDays, formatGoliathDate } from "../../utils";
 import type { JsonError } from "../../interfaces";
-import SalesPanels from "./panels/SalesPanels";
 import { useLeftColHeight } from "./utils/hooks";
-import KpiHeader from "./components/KpiHeader";
-import TopTen from "./charts/TopTen";
-import HourlyGrid from "./charts/HourlyGrid";
-import SubDeptGrid from "./charts/SubDeptGrid";
-import SubDeptComps from "./charts/SubDeptComps";
 import { useEffect } from "react";
-import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import { dateRange } from "../../functions";
 
 const Sales = () => {
@@ -45,7 +45,7 @@ const Sales = () => {
   }, []);
 
   const getSalesPanels = () => {
-    const dr = dateRange(search.startDate, search.endDate);
+    const dr = dateRange(search.startDate, search.singleDate);
     if (dr > 7) {
       toast.warn("Date range cannot exceed 7 days for Sales data.");
       return;
@@ -54,8 +54,8 @@ const Sales = () => {
       setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
     );
 
-    const start = addDays(search.endDate, -6).toISOString().split("T")[0];
-    const end = formatGoliathDate(search.endDate);
+    const start = addDays(search.singleDate, -6).toISOString().split("T")[0];
+    const end = formatGoliathDate(search.singleDate);
     const useGroups = search.type === "Group" ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
@@ -118,7 +118,10 @@ const Sales = () => {
               className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1"
             >
               <StorePicker />
-              <DatePickers handleQuery={getSalesPanels} />
+              <SingleDatePicker />
+              <button className="btn-themeBlue w-full" onClick={getSalesPanels}>
+                Search
+              </button>
             </div>
             <div
               style={{ minHeight: height, maxHeight: height }}
@@ -133,7 +136,7 @@ const Sales = () => {
               <LoadingIndicator message="Loading sales data..." />
             </div>
           ) : isReady ? (
-            <div className="md:grid h-full md:grid-rows-[20%_78%] md:gap-2 overflow-hidden">
+            <div className="md:grid h-full md:grid-rows-[20%_78%] md:gap-4 overflow-hidden">
               <KpiHeader />
               <div className="grid grid-cols-2 gap-2">
                 <div className="grid grid-rows-2 gap-2">
@@ -159,7 +162,10 @@ const Sales = () => {
               className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1"
             >
               <StorePicker />
-              <DatePickers handleQuery={getSalesPanels} />
+              <SingleDatePicker />
+              <button className="btn-themeBlue w-full" onClick={getSalesPanels}>
+                Search
+              </button>
             </div>
             <div className="overflow-y-scroll no-scrollbar my-2 max-h-56">
               <SalesPanels />

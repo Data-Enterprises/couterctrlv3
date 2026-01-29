@@ -70,9 +70,9 @@ const TotalsBar = ({ valueKey }: NivoPieProps) => {
     }
 
     if (valueKey === "total_sales") {
-      return barData.length > 6 ? 70 : 60;
+      return barData.length > 6 ? 75 : 68;
     } else {
-      return 50;
+      return 60;
     }
   };
 

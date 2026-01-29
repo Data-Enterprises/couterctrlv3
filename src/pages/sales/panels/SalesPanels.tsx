@@ -56,10 +56,10 @@ const SalesPanels = () => {
     const p = sales.selectedSalesPanel;
     const start = p.sale_date
       ? p.sale_date.split("T")[0]
-      : formatGoliathDate(search.startDate);
+      : formatGoliathDate(search.singleDate);
     const end = p.sale_date
       ? p.sale_date.split("T")[0]
-      : formatGoliathDate(search.endDate);
+      : formatGoliathDate(search.singleDate);
 
     // useGroups and singleStore logic
     const useGroups = search.type === "Group" ? 1 : 0;
