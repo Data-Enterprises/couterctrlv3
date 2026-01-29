@@ -15,7 +15,7 @@ import {
 } from "../../features/salesSlice";
 
 // utils
-import { formatGoliathDate } from "../../utils";
+import { addDays, formatGoliathDate } from "../../utils";
 import type { JsonError } from "../../interfaces";
 import SalesPanels from "./panels/SalesPanels";
 import { useLeftColHeight } from "./utils/hooks";
@@ -54,7 +54,7 @@ const Sales = () => {
       setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
     );
 
-    const start = formatGoliathDate(search.startDate);
+    const start = addDays(search.endDate, -6).toISOString().split("T")[0];
     const end = formatGoliathDate(search.endDate);
     const useGroups = search.type === "Group" ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
@@ -133,9 +133,9 @@ const Sales = () => {
               <LoadingIndicator message="Loading sales data..." />
             </div>
           ) : isReady ? (
-            <div className="md:grid h-full md:grid-rows-[20%_78%] md:gap-4 overflow-hidden">
+            <div className="md:grid h-full md:grid-rows-[20%_78%] md:gap-2 overflow-hidden">
               <KpiHeader />
-              <div className="grid grid-cols-2  gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <div className="grid grid-rows-2 gap-2">
                   <HourlyGrid />
                   <TopTen />

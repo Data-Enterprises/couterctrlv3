@@ -16,7 +16,7 @@ const SubDeptGrid = () => {
   const { isMobile } = useAppSelector((state) => state.app);
   const gridRef = useRef<AgGridReact<SubSale>>(null);
   const dispatch = useAppDispatch();
-  const { subSales, selectedSubDept, topSubDept } = useAppSelector(
+  const { subSales, selectedSubDept, topSubDept, selectedSalesPanel } = useAppSelector(
     (state) => state.sales,
   );
   const [groupSubs, setGroupSubs] = useState<SubSale[]>([]);
@@ -114,7 +114,10 @@ const SubDeptGrid = () => {
     <div className={style}>
       {!isMobile ? (
         <div className="px-2 flex justify-between items-center">
-          <span className="font-medium">Sub Department Sales</span>
+          <span className="font-medium">
+            {selectedSalesPanel.sale_date ? "Daily" : "Weekly"} Sub Department
+            Sales
+          </span>
         </div>
       ) : (
         <div className="px-2 flex justify-between items-center">

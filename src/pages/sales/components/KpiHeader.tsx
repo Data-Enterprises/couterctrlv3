@@ -9,7 +9,7 @@ const KpiHeader = () => {
   const { isMobile } = useAppSelector((state) => state.app);
 
   return (
-    <div className="grid md:grid-cols-4 gap-2 py-2">
+    <div className="grid md:grid-cols-4 gap-2 py-2 md:py-0">
       <TopTotals />
       <TopCoupons />
       <TotalsBar valueKey="total_sales" />

@@ -12,6 +12,7 @@ const HourlyGrid = () => {
     (state) => state.sales,
   );
   const { isMobile } = useAppSelector((state) => state.app);
+  const [barIndex, setBarIndex] = useState<string>("date");
 
   useEffect(() => {
     if (!hourlySales.length) return;
@@ -23,6 +24,7 @@ const HourlyGrid = () => {
     }, []);
 
     setHour(uniqueHours[0].hour);
+    setBarIndex(selectedSalesPanel.sale_date ? "hour" : "date");
   }, [hourlySales, selectedSalesPanel]);
 
   const formatDate = (dateStr: string): string => {
@@ -35,33 +37,52 @@ const HourlyGrid = () => {
   };
 
   useEffect(() => {
-    const totals = [...hourlySales].reduce((acc: HourlyTotal[], curr) => {
-      const exists = acc.find((d) => d.hour === curr.hour);
-      if (exists) {
-        exists.total_sales += curr.total_sales - curr.total_tax;
-        exists.trans += curr.transactions;
-      } else {
-        acc.push({
-          hour: curr.hour,
-          total_sales: curr.total_sales - curr.total_tax,
-          trans: curr.transactions,
-        });
-      }
-      return acc;
-    }, []);
+    const totals = [...hourlySales]
+      .filter((d) => {
+        if (selectedSalesPanel.sale_date) {
+          return (
+            formatDate(d.sale_date) === formatDate(selectedSalesPanel.sale_date)
+          );
+        } else {
+          return true;
+        }
+      })
+      .reduce((acc: HourlyTotal[], curr) => {
+        const exists = acc.find((d) => d.hour === curr.hour);
+        if (exists) {
+          exists.total_sales += curr.total_sales - curr.total_tax;
+          exists.trans += curr.transactions;
+        } else {
+          acc.push({
+            hour: curr.hour,
+            total_sales: curr.total_sales - curr.total_tax,
+            trans: curr.transactions,
+          });
+        }
+        return acc;
+      }, []);
 
     setRowData(totals);
   }, [hourlySales]);
 
   useEffect(() => {
     const hourFiltered = [...hourlySales]
-      .filter((d) => d.hour === hour)
+      .filter((d) => {
+        if (selectedSalesPanel.sale_date) {
+          return (
+            formatDate(d.sale_date) === formatDate(selectedSalesPanel.sale_date)
+          );
+        } else {
+          return d.hour === hour;
+        }
+      })
       .sort((a, b) => a.sale_date.localeCompare(b.sale_date))
       .map((d) => ({
         hour: d.hour,
         total_sales: d.total_sales - d.total_tax,
         date: formatDate(d.sale_date),
       }));
+
     setBarData(hourFiltered);
   }, [hour]);
 
@@ -107,10 +128,8 @@ const HourlyGrid = () => {
       : { top: 10, right: 0, bottom: 25, left: 29 };
   };
 
-  console.log(barData);
-
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg my-2 md:mb-0 md:mt-1 py-2 md:pb-2 md:pt-1">
+    <div className="bg-custom-white rounded-lg shadow-lg my-2 md:my-0 py-2">
       <div className="px-2 font-medium grid grid-cols-[25%_50%_25%]">
         <span className="font-medium text-sm md:text-[16px]">Hourly Sales</span>
         <div className="flex gap-2 md:gap-4 text-sm justify-center">
@@ -156,7 +175,7 @@ const HourlyGrid = () => {
               data={barData}
               margin={contextMargins()}
               keys={["total_sales"]}
-              indexBy="date"
+              indexBy={barIndex}
               tooltip={({ value }) => (
                 <div className="p-2 bg-white shadow-lg rounded text-sm text-nowrap">
                   <strong>{formatCurrency2(value)}</strong>

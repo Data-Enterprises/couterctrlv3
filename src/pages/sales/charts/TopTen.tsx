@@ -55,7 +55,6 @@ const TopTen = () => {
     const grouped = [...filtered].reduce((acc: TopTenGroupItem[], curr) => {
       const exists = acc.find((item) => {
         const upcMatch = item.product_code === curr.product_code;
-        // const storeMatch = p.storeid ? item.storeid === p.storeid : true;
         return upcMatch;
       });
 
@@ -70,7 +69,6 @@ const TopTen = () => {
           total_sales: curr.total_sales,
           qty: curr.qty,
           cost: curr.cost,
-          // store_name: curr.store_name,
         });
       }
 
@@ -123,7 +121,7 @@ const TopTen = () => {
   return (
     <div className="bg-custom-white rounded-lg shadow-lg ">
       <div className="font-medium px-2 py-1 flex justify-between items-center">
-        <div>Top Ten Items</div>
+        <div>{selectedSalesPanel.sale_date ? "Daily" : "Weekly"} Top Ten Items</div>
         {isMobile && (
           <SingleSelect
             data={mobileData}
