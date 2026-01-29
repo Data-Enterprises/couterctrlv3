@@ -205,7 +205,7 @@ const SideBar = () => {
             <div
               id={`tooltip-${idx}`}
               className={`${
-                item.isHovering && !nav.isNavOpen
+                item.isHovering && !nav.isNavOpen && !context.isMobile
                   ? "absolute text-nowrap text-sm shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
                   : "hidden"
               }`}
