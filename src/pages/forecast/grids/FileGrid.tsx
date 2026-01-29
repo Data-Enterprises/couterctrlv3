@@ -40,13 +40,13 @@ const FileGrid = () => {
 
   const colDefs: (ColDef<TableData> | ColGroupDef<TableData>)[] = [
     {
-      headerName: "Date",
-      field: "date",
-      flex: 0.7,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
+      headerName: "Select UPC List",
+      field: "name",
+      valueFormatter: (params) =>
+        `${params.data?.date.split("/").join("_")}_${params.data?.name}`,
+      flex: 1,
+      resizable: false,
     },
-    { headerName: "Select UPC List", field: "name", flex: 1.3 },
   ];
 
   const getFileNames = () => {
@@ -71,7 +71,7 @@ const FileGrid = () => {
               const dateB = new Date(b.date);
               return dateB.getTime() - dateA.getTime();
             });
-            
+
           setTableData(data);
         }
       })
@@ -99,7 +99,7 @@ const FileGrid = () => {
         context.storeids,
         context.endDate,
         "",
-        fileName
+        fileName,
       )
         .then((resp) => {
           const j: PriceHistoryFromListResp = resp.data;
@@ -115,10 +115,10 @@ const FileGrid = () => {
             dispatch(setForecastResults(j.results));
 
             const singlePrices = j.results.filter(
-              (item) => item.price_history.length === 1
+              (item) => item.price_history.length === 1,
             );
             const multiPrices = j.results.filter(
-              (item) => item.price_history.length > 1
+              (item) => item.price_history.length > 1,
             );
 
             // set the row data

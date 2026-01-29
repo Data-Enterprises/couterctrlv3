@@ -92,7 +92,7 @@ const ForecastControls = () => {
           data-testid="forecast-controls"
           className={`${
             state.items.length === 0 ? "hidden" : "animate-windowIn"
-          } bg-custom-white rounded-lg shadow-lg text-sm select-none w-48`}
+          } bg-custom-white rounded-lg shadow-lg text-sm select-none`}
         >
           <div
             ref={topRef}

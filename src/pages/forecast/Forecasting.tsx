@@ -198,12 +198,12 @@ const Forecasting = () => {
   return (
     <div
       data-testid="forecast-page"
-      className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] relative"
+      className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] relative w-full"
     >
       <ForecastModal />
-      <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 gap-4 flex overflow-hidden">
-        <div className="grid grid-rows-[37%_35%_24%] col-span-2 gap-4 w-1/6">
-          <div className="bg-custom-white rounded-lg shadow-lg p-4">
+      <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 gap-2 grid grid-cols-[18%_11%_70%] overflow-hidden">
+        <div className="grid grid-rows-[37%_35%_24%] gap-4">
+          <div className="bg-custom-white rounded-lg shadow-lg p-2">
             <div className="flex gap-2">
               <SingleSelect
                 data={options}
@@ -248,7 +248,7 @@ const Forecasting = () => {
               context="large"
             />
           </div>
-          <div className="bg-custom-white rounded-lg shadow-lg px-3">
+          <div className="bg-custom-white rounded-lg shadow-lg px-2">
             <div className="bg-blue-500 text-custom-white -mx-3 py-0.5 px-4 rounded-t-lg font-medium flex justify-between">
               <div>
                 UPCs <span className="text-sm">(comma separated)</span>
@@ -295,7 +295,7 @@ const Forecasting = () => {
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-2 gap-2 mt-1">
+            <div className="grid grid-cols-2 gap-2">
               <FileInput
                 page="forecast"
                 fileExt={[".csv"]}
@@ -313,12 +313,12 @@ const Forecasting = () => {
           </div>
           <FileGrid />
         </div>
-        <div className="relative ml-10">
+        <div className="relative">
           <ForecastControls />
-          {context.isLoading && <LoadingIndicator className="ml-24" />}
+          {context.isLoading && <LoadingIndicator className="ml-2" />}
         </div>
 
-        <div className="grid grid-rows-[25%_75%] mb-4 gap-4 w-full relative">
+        <div className="grid grid-rows-[24%_76%] mb-2 gap-2 relative">
           <ForecastCarousel />
           <OutlierGrid />
         </div>

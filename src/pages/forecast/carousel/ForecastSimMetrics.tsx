@@ -27,7 +27,7 @@ const ForecastSimMetrics = ({ sim, rowData }: ForecastSimMetricsProps) => {
 
   if (state.simBtns[sim] === 0) {
     return (
-      <span className="bg-custom-white rounded-lg shadow-lg flex items-center justify-center h-40">
+      <span className="bg-custom-white rounded-lg shadow-lg flex items-center justify-center min-h-[124px] max-h-[124px]">
         <div className="font-medium py-0.5 rounded-t-lg text-center text-lg underline">
           {state.simTitles[sim as keyof SimBtns]}
         </div>
@@ -36,8 +36,8 @@ const ForecastSimMetrics = ({ sim, rowData }: ForecastSimMetricsProps) => {
   }
 
   return (
-    <span className="bg-custom-white rounded-lg shadow-lg">
-      <div className="font-medium py-0.5 rounded-t-lg text-center text-lg underline">
+    <span className="bg-custom-white rounded-lg shadow-lg min-h-[124px] max-h-[124px]">
+      <div className="font-medium py-0.5 rounded-t-lg text-center underline">
         {state.simTitles[sim as keyof SimBtns]}
       </div>
       <div className="py-2 px-4 text-sm">
