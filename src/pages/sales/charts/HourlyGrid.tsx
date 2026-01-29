@@ -11,7 +11,7 @@ const HourlyGrid = () => {
   const { hourlySales, selectedSalesPanel } = useAppSelector(
     (state) => state.sales,
   );
-  // const [barColor, setBarColor] = useState<string>("");
+  const { isMobile } = useAppSelector((state) => state.app);
 
   useEffect(() => {
     if (!hourlySales.length) return;
@@ -32,16 +32,6 @@ const HourlyGrid = () => {
 
   const handleSelect = (param: HourlyTotal) => {
     setHour(Number(param.hour));
-    // const avgSales =
-    //   rowData.reduce((acc, val) => acc + val.total_sales, 0) / rowData.length;
-
-    // if (param.total_sales > avgSales) {
-    //   setBarColor("#10b981");
-    // } else if (param.total_sales < avgSales) {
-    //   setBarColor("#f97316");
-    // } else {
-    //   setBarColor("#bfdbfe");
-    // }
   };
 
   useEffect(() => {
@@ -99,38 +89,44 @@ const HourlyGrid = () => {
   };
 
   const findBarColor = (value: number) => {
-    const avgSales = barData.reduce((acc, val) => acc + val.total_sales, 0) / barData.length;
+    const avgSales =
+      barData.reduce((acc, val) => acc + val.total_sales, 0) / barData.length;
+
     if (value > avgSales) {
-      return "#10b981";
+      return isMobile ? "bg-emerald-200" : "#10b981";
     } else if (value < avgSales) {
-      return "#f97316";
+      return isMobile ? "bg-orange-200" : "#f97316";
     } else {
-      return "#bfdbfe";
+      return isMobile ? "bg-[#bfdbfe]" : "#bfdbfe";
     }
   };
 
+  const contextMargins = () => {
+    return !isMobile
+      ? { top: 10, right: 0, bottom: 25, left: 50 }
+      : { top: 10, right: 0, bottom: 25, left: 29 };
+  };
+
+  console.log(barData);
+
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg pb-2 pt-1">
-      <div className="px-2 font-medium grid grid-cols-3">
-        <span className="font-medium">Hourly Sales</span>
-        <div className="flex gap-4 text-sm justify-center">
+    <div className="bg-custom-white rounded-lg shadow-lg my-2 md:mb-0 md:mt-1 py-2 md:pb-2 md:pt-1">
+      <div className="px-2 font-medium grid grid-cols-[25%_50%_25%]">
+        <span className="font-medium text-sm md:text-[16px]">Hourly Sales</span>
+        <div className="flex gap-2 md:gap-4 text-sm justify-center">
           <div className="flex gap-1 items-center">
             <div className="rounded-full h-3 w-3 bg-orange-500"></div>
-            <div>Below Avg</div>
+            <div className="text-xs md:text-sm">Below Avg</div>
           </div>
           <div className="flex gap-1 items-center">
             <div className="rounded-full h-3 w-3 bg-emerald-500"></div>
-            <div>Above Avg</div>
+            <div className="text-xs md:text-sm">Above Avg</div>
           </div>
-          {/* <div className="flex gap-1 items-center">
-            <div className="rounded-full h-3 w-3 bg-blue-500"></div>
-            <div>Avg</div>
-          </div> */}
         </div>
-        <span className="text-right">Hour: {hour}</span>
+        <span className="text-right text-sm md:text-[16px]">Hour: {hour}</span>
       </div>
-      <div className="h-[93%] grid grid-cols-[40%_59%]">
-        <div className="grid grid-cols-2 gap-2 max-h-[290px] rounded-lg overflow-y-scroll mx-2 no-scrollbar">
+      <div className="h-[93%] grid grid-cols-2 gap-2 md:gap-0 md:grid-cols-[40%_59%] mt-1 md:mt-0">
+        <div className="grid md:grid-cols-2 gap-2 max-h-[200px] md:max-h-[290px] rounded-lg overflow-y-scroll mx-1 md:mx-2 no-scrollbar">
           {rowData.map((r) => (
             <div
               key={`hour-${r.hour}`}
@@ -155,27 +151,53 @@ const HourlyGrid = () => {
           ))}
         </div>
         <div>
-          <ResponsiveBar
-            data={barData}
-            margin={{ top: 10, right: 0, bottom: 25, left: 50 }}
-            keys={["total_sales"]}
-            indexBy="date"
-            tooltip={({ value }) => (
-              <div className="p-2 bg-white shadow-lg rounded text-sm text-nowrap">
-                <strong>{formatCurrency2(value)}</strong>
-              </div>
-            )}
-            padding={0.1}
-            enableLabel={false}
-            borderRadius={4}
-            borderWidth={2}
-            colors={(d) => rgbaColor(findBarColor(d.data.total_sales), 0.3)}
-            borderColor={(d) => rgbaColor(findBarColor(d.data.data.total_sales), 1)}
-            // colors={(d) => rgbaColor(barColor, 0.3)}
-            // borderColor={(d) => rgbaColor(barColor, 1)}
-            // colors={(d) => rgbaColor("#bfdbfe", 0.3)}
-            // borderColor={(d) => rgbaColor("#bfdbfe", 1)}
-          />
+          {!isMobile ? (
+            <ResponsiveBar
+              data={barData}
+              margin={contextMargins()}
+              keys={["total_sales"]}
+              indexBy="date"
+              tooltip={({ value }) => (
+                <div className="p-2 bg-white shadow-lg rounded text-sm text-nowrap">
+                  <strong>{formatCurrency2(value)}</strong>
+                </div>
+              )}
+              padding={0.1}
+              enableLabel={false}
+              borderRadius={4}
+              borderWidth={2}
+              colors={(d) => rgbaColor(findBarColor(d.data.total_sales), 0.3)}
+              borderColor={(d) =>
+                rgbaColor(findBarColor(d.data.data.total_sales), 1)
+              }
+            />
+          ) : (
+            <div className="grid gap-2 min-h[200px] max-h-[200px] overflow-y-scroll no-scrollbar mr-1">
+              {barData
+                .filter((h) => h.hour === hour)
+                .map((h) => (
+                  <div
+                    key={`date-${h.hour}`}
+                    className={`${findBarColor(h.total_sales)} text-xs rounded-lg shadow-content/30 shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
+                  >
+                    <div className="flex justify-between">
+                      <div className="font-medium text-content/60">Date:</div>
+                      <div className="font-medium">{h.date}</div>
+                    </div>
+                    <div className="flex justify-between">
+                      <div className="font-medium text-content/60">Hour:</div>
+                      <div className="font-medium">{h.hour}</div>
+                    </div>
+                    <div className="flex justify-between">
+                      <div className="font-medium text-content/60">Sales:</div>
+                      <div className="font-medium">
+                        {formatCurrency2(h.total_sales)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

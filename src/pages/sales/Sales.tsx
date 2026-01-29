@@ -88,7 +88,7 @@ const Sales = () => {
 
   const pageContainer = context.isDesktop
     ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden p-4 select-none"
-    : "p-4 max-h-screen overflow-y-scroll";
+    : "p-4 min-h-screen overflow-y-scroll";
   const gridContainer = context.isDesktop
     ? " grid grid-cols-[18%_81%] gap-4 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]"
     : "";
@@ -161,12 +161,9 @@ const Sales = () => {
               <StorePicker />
               <DatePickers handleQuery={getSalesPanels} />
             </div>
-            {/* <div
-              style={{ minHeight: height, maxHeight: height }}
-              className="overflow-y-scroll no-scrollbar"
-            >
+            <div className="overflow-y-scroll no-scrollbar my-2 max-h-56">
               <SalesPanels />
-            </div> */}
+            </div>
           </div>
 
           {isLoading && !isReady ? (
@@ -174,18 +171,12 @@ const Sales = () => {
               <LoadingIndicator message="Loading sales data..." />
             </div>
           ) : isReady ? (
-            <div className="md:grid h-full md:grid-rows-[20%_78%] md:gap-4 overflow-hidden">
+            <div className="overflow-hidden">
               <KpiHeader />
-              <div className="grid grid-cols-2  gap-2">
-                <div className="grid grid-rows-2 gap-2">
-                  {/* <HourlyGrid /> */}
-                  {/* <TopTen /> */}
-                </div>
-                <div className="grid grid-rows-2 gap-2">
-                  <SubDeptComps />
-                  {/* <SubDeptGrid /> */}
-                </div>
-              </div>
+              <SubDeptComps />
+              <HourlyGrid />
+              <TopTen />
+              <SubDeptGrid />
             </div>
           ) : null}
         </div>

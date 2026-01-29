@@ -96,8 +96,8 @@ const SubDeptComps = () => {
 
   // Once we have both data sets, show the comparisons (final step)
   return (
-    <div className="">
-      <div className="grid grid-cols-2 h-full gap-2">
+    <div className="md:mt-1">
+      <div className="grid md:grid-cols-2 h-full gap-2">
         <SubDeptPeriodCard
           data={sales.subSales}
           dateRange={formateFirstWk()}
