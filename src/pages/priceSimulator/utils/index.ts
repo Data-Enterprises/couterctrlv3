@@ -25,7 +25,7 @@ export const usePriceSimContext = () => {
   };
 };
 
-export const  = () => {
+export const useScrollHeight = () => {
   const state = useAppSelector((state) => state.priceSim);
   const topRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number>(0);

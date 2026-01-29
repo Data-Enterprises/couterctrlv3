@@ -16,34 +16,9 @@ const SubDeptGrid = () => {
   const { isMobile } = useAppSelector((state) => state.app);
   const gridRef = useRef<AgGridReact<SubSale>>(null);
   const dispatch = useAppDispatch();
-  const { subSales, selectedSubDept, topSubDept, selectedSalesPanel } = useAppSelector(
-    (state) => state.sales,
-  );
+  const { subSales, selectedSubDept, topSubDept, selectedSalesPanel } =
+    useAppSelector((state) => state.sales);
   const [groupSubs, setGroupSubs] = useState<SubSale[]>([]);
-
-  useEffect(() => {
-    // If a row is deselected or the data is refreshed, reselect the top sub dept row
-    if (selectedSubDept === null && gridRef.current && gridRef.current.api) {
-      gridRef.current.api.forEachNode((node) => {
-        if (node.data!.sub_department === topSubDept!.sub_department) {
-          const selected: TopSub = {
-            sub_department: node.data!.sub_department,
-            sub_department_description: node.data!.sub_department_description,
-            total_sales: node.data!.total_sales,
-            net_sales: node.data!.net_sales,
-            qty: node.data!.qty,
-            digital_coupons: node.data!.digital_coupons,
-            elec_instore_coupons: node.data!.elec_instore_coupons,
-            elec_store_coupons: node.data!.elec_store_coupons,
-            store_coupon: node.data!.store_coupon,
-            total_tax: node.data!.total_tax,
-          };
-          dispatch(setSelectedSubDept(selected));
-          node.setSelected(true);
-        }
-      });
-    }
-  }, [selectedSubDept, topSubDept, gridRef.current, gridRef.current?.api]);
 
   useEffect(() => {
     const grouped = () => {
@@ -91,9 +66,7 @@ const SubDeptGrid = () => {
     : "bg-custom-white rounded-lg shadow-lg pb-2 pt-1";
 
   const handleSelect = (subDept: string | number) => {
-    const d = groupSubs.find(
-      (s) => s.sub_department === Number(subDept),
-    );
+    const d = groupSubs.find((s) => s.sub_department === Number(subDept));
     if (!d) return;
     const selected: TopSub = {
       sub_department: d.sub_department,
@@ -156,6 +129,27 @@ const SubDeptGrid = () => {
               }
             }}
             rowSelection="single"
+            onGridReady={(event) => {
+              event.api.forEachNode((node) => {
+                if (node.data!.sub_department === topSubDept!.sub_department) {
+                  const selected: TopSub = {
+                    sub_department: node.data!.sub_department,
+                    sub_department_description:
+                      node.data!.sub_department_description,
+                    total_sales: node.data!.total_sales,
+                    net_sales: node.data!.net_sales,
+                    qty: node.data!.qty,
+                    digital_coupons: node.data!.digital_coupons,
+                    elec_instore_coupons: node.data!.elec_instore_coupons,
+                    elec_store_coupons: node.data!.elec_store_coupons,
+                    store_coupon: node.data!.store_coupon,
+                    total_tax: node.data!.total_tax,
+                  };
+                  dispatch(setSelectedSubDept(selected));
+                  node.setSelected(true);
+                }
+              });
+            }}
           />
         </div>
       )}
