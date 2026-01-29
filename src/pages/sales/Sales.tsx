@@ -26,7 +26,6 @@ import { addDays, formatGoliathDate } from "../../utils";
 import type { JsonError } from "../../interfaces";
 import { useLeftColHeight } from "./utils/hooks";
 import { useEffect } from "react";
-import { dateRange } from "../../functions";
 
 const Sales = () => {
   const toast = useToast();
@@ -45,11 +44,6 @@ const Sales = () => {
   }, []);
 
   const getSalesPanels = () => {
-    const dr = dateRange(search.startDate, search.singleDate);
-    if (dr > 7) {
-      toast.warn("Date range cannot exceed 7 days for Sales data.");
-      return;
-    }
     dispatch(
       setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
     );
