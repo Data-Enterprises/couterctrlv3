@@ -107,46 +107,89 @@ const Sales = () => {
 
   return (
     <div data-testid="sales-page" className={pageContainer}>
-      <div className={gridContainer}>
-        <div
-          ref={leftColRef}
-          className="md:grid h-full md:grid-rows-[25%_74%] md:gap-4"
-        >
+      {!context.isMobile ? (
+        <div className={gridContainer}>
           <div
-            ref={topLeftRef}
-            className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1"
+            ref={leftColRef}
+            className="md:grid h-full md:grid-rows-[25%_74%] md:gap-4"
           >
-            <StorePicker />
-            <DatePickers handleQuery={getSalesPanels} />
-          </div>
-          <div
-            style={{ minHeight: height, maxHeight: height }}
-            className="overflow-y-scroll no-scrollbar"
-          >
-            <SalesPanels />
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="relative">
-            <LoadingIndicator message="Loading sales data..." />
-          </div>
-        ) : isReady ? (
-          <div className="md:grid h-full md:grid-rows-[20%_78%] md:gap-4 overflow-hidden">
-            <KpiHeader />
-            <div className="grid grid-cols-2  gap-2">
-              <div className="grid grid-rows-2 gap-2">
-                <HourlyGrid />
-                <TopTen />
-              </div>
-              <div className="grid grid-rows-2 gap-2">
-                <SubDeptComps />
-                <SubDeptGrid />
-              </div>
+            <div
+              ref={topLeftRef}
+              className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1"
+            >
+              <StorePicker />
+              <DatePickers handleQuery={getSalesPanels} />
+            </div>
+            <div
+              style={{ minHeight: height, maxHeight: height }}
+              className="overflow-y-scroll no-scrollbar"
+            >
+              <SalesPanels />
             </div>
           </div>
-        ) : null}
-      </div>
+
+          {isLoading && !isReady ? (
+            <div className="relative">
+              <LoadingIndicator message="Loading sales data..." />
+            </div>
+          ) : isReady ? (
+            <div className="md:grid h-full md:grid-rows-[20%_78%] md:gap-4 overflow-hidden">
+              <KpiHeader />
+              <div className="grid grid-cols-2  gap-2">
+                <div className="grid grid-rows-2 gap-2">
+                  <HourlyGrid />
+                  <TopTen />
+                </div>
+                <div className="grid grid-rows-2 gap-2">
+                  <SubDeptComps />
+                  <SubDeptGrid />
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <div className={gridContainer}>
+          <div
+            ref={leftColRef}
+            className="md:grid h-full md:grid-rows-[25%_74%] md:gap-4"
+          >
+            <div
+              ref={topLeftRef}
+              className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1"
+            >
+              <StorePicker />
+              <DatePickers handleQuery={getSalesPanels} />
+            </div>
+            {/* <div
+              style={{ minHeight: height, maxHeight: height }}
+              className="overflow-y-scroll no-scrollbar"
+            >
+              <SalesPanels />
+            </div> */}
+          </div>
+
+          {isLoading && !isReady ? (
+            <div className="relative">
+              <LoadingIndicator message="Loading sales data..." />
+            </div>
+          ) : isReady ? (
+            <div className="md:grid h-full md:grid-rows-[20%_78%] md:gap-4 overflow-hidden">
+              <KpiHeader />
+              <div className="grid grid-cols-2  gap-2">
+                <div className="grid grid-rows-2 gap-2">
+                  {/* <HourlyGrid /> */}
+                  {/* <TopTen /> */}
+                </div>
+                <div className="grid grid-rows-2 gap-2">
+                  <SubDeptComps />
+                  {/* <SubDeptGrid /> */}
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      )}
     </div>
   );
 };

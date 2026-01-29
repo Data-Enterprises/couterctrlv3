@@ -43,7 +43,7 @@ interface TopTotalsKpiProps {
 }
 const TopTotalsKpi = ({ data, title }: TopTotalsKpiProps) => {
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg pl-1 flex justify-center items-center flex-col gap-2 relative">
+    <div className="bg-custom-white rounded-lg shadow-lg pl-1 flex justify-center items-center flex-col gap-2 relative py-2 md:py-0">
       <div className="font-medium text-content/60">{title}</div>
       {title === "Total Transactions" ? (
         <div className="font-medium">{formatBigNumber(data, 0)}</div>

@@ -336,7 +336,7 @@ const UpcAssociation = () => {
       </div>
       <div className="grid grid-cols-5 gap-4 mr-4">
         {itemAssociations.map((items, idx) => (
-          <div className="bg-custom-white rounded-lg">
+          <div className="rounded-lg">
             <div className="font-medium bg-blue-500 text-custom-white rounded-t-lg px-2 py-0.5 flex justify-between">
               <div>{idx === 0 ? "Main" : `Level ${idx}`}</div>
               <div>
@@ -344,11 +344,11 @@ const UpcAssociation = () => {
                 {itemAssociations[idx].length === 1 ? "Item" : "Items"}
               </div>
             </div>
-            <div className="grid gap-2 max-h-[87vh] overflow-y-auto no-scrollbar p-1 bg-custom-white">
+            <div className="grid gap-2 max-h-[87vh] rounded-lg overflow-y-auto no-scrollbar p-1 bg-custom-white">
               {items.map((item) => (
                 <div
                   key={Math.random()}
-                  className={`text-xs rounded-lg p-2 shadow-md cursor-pointer hover:bg-blue-200 duration-200 transition-all ${selectedAssociationUpcParam.find((upc) => upc === item.product_code) ? "bg-orange-200" : "bg-custom-white "}`}
+                  className={`text-xs rounded-lg p-2 shadow cursor-pointer hover:bg-blue-200 duration-200 transition-all ${selectedAssociationUpcParam.find((upc) => upc === item.product_code) ? "bg-orange-200" : "bg-custom-white "}`}
                   onClick={() => handleCardClick(item, idx)}
                   onContextMenu={(e) => handleRightClick(e, item)}
                 >
@@ -363,7 +363,7 @@ const UpcAssociation = () => {
           </div>
         ))}
         {isFetching && (
-          <div className="relative bg-custom-white rounded-lg shadow-lg">
+          <div className="relative">
             <LoadingIndicator message="Fetching associations..." />
           </div>
         )}
