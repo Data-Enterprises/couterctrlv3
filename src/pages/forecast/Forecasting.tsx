@@ -249,7 +249,7 @@ const Forecasting = () => {
             />
           </div>
           <div className="bg-custom-white rounded-lg shadow-lg px-2">
-            <div className="bg-blue-500 text-custom-white -mx-3 py-0.5 px-4 rounded-t-lg font-medium flex justify-between">
+            <div className="bg-blue-500 text-custom-white -mx-2 py-0.5 px-4 rounded-t-lg font-medium flex justify-between">
               <div>
                 UPCs <span className="text-sm">(comma separated)</span>
               </div>

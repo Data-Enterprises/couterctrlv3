@@ -140,8 +140,6 @@ const FileGrid = () => {
         rowData={tableData}
         columnDefs={colDefs}
         theme={theme}
-        pagination={true}
-        paginationAutoPageSize={true}
         onRowClicked={onRowClicked}
       />
     </div>
