@@ -17,7 +17,7 @@ export interface TopSub {
 }
 
 export const reduceSubs = (data: SubSale[]): TopSub[] => {
-  return [...data].reduce((acc: TopSub[], curr) => {
+  const result = [...data].reduce((acc: TopSub[], curr) => {
     const exists = acc.find((d) => d.sub_department === curr.sub_department);
     if (exists) {
       exists.total_sales += curr.total_sales;
@@ -44,6 +44,7 @@ export const reduceSubs = (data: SubSale[]): TopSub[] => {
     }
     return acc;
   }, []);
+  return result;
 };
 
 export const theme = themeQuartz.withParams({
@@ -66,32 +67,6 @@ export interface HourlyTotal {
   total_sales: number;
   trans: number;
 }
-
-export const cols: (ColDef<HourlyTotal> | ColGroupDef<HourlyTotal>)[] = [
-  {
-    field: "hour",
-    headerName: "Hr",
-    flex: 0.8,
-    headerStyle: { borderRight: "1px solid white" },
-    resizable: false,
-  },
-  {
-    field: "total_sales",
-    headerName: "Total Sales",
-    flex: 1.3,
-    valueFormatter: (params) => formatCurrency2(params.value as number),
-    headerStyle: { borderRight: "1px solid white" },
-    resizable: false,
-    cellClass: "text-right",
-  },
-  {
-    field: "trans",
-    headerName: "Transactions",
-    flex: 0.9,
-    resizable: false,
-    cellClass: "text-right",
-  },
-];
 
 // Dept, Dept Id, Total Sales, Net Sales, Qty, Coupon %, Net Sales %, Promo Leakage
 export const subCols: (ColDef<SubSale> | ColGroupDef<SubSale>)[] = [

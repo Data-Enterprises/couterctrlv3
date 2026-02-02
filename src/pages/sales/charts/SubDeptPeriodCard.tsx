@@ -70,8 +70,6 @@ const SubDeptPeriodCard = ({
     }, defaultSub());
   };
 
-  // console.log("Rendering SubDeptPeriodCard for period", period, "with display:", display);
-
   const renderArrowIcon = (val: number, type: "overall" | "weekly") => {
     let trendingUp = false;
     let textColor = "";

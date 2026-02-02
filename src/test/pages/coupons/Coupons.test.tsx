@@ -257,11 +257,6 @@ describe("Coupons Page", () => {
       "coupon-filter-modal-submit-btn"
     );
     await user.click(submitBtn);
-
-    await waitFor(() => {
-      const state = store.getState().coupons;
-      console.log(state);
-    });
   });
 
   it("should handle setting the equal to coupon amount filter", async () => {

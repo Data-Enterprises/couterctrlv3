@@ -12,7 +12,7 @@ const KpiHeader = () => {
     <div className="grid md:grid-cols-4 gap-2 py-2 md:py-0">
       <TopTotals />
       <TopCoupons />
-      <TotalsBar valueKey="total_sales" />
+      <TotalsBar />
       {isMobile && <SubDeptGrid />}
       <TopSubDept />
     </div>

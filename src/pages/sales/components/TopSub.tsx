@@ -74,14 +74,13 @@ const TopSubDept = () => {
   }, [subSales, selectedSalesPanel, selectedSubDept]);
 
   const reduceCpnAmt = () => {
-    if (!topSub) return 0;
     const amounts = [
       topSub?.digital_coupons,
       topSub?.elec_instore_coupons,
       topSub?.elec_store_coupons,
       topSub?.store_coupon,
     ];
-    return amounts.reduce((acc, val) => {
+    return amounts.reduce((acc: number, val) => {
       return acc + (val ? val : 0);
     }, 0);
   };
@@ -118,8 +117,6 @@ const TopSubDept = () => {
         style += "text-orange-500";
       }
       return <FlagIcon className={style} />;
-    } else {
-      return null;
     }
   };
 
@@ -175,6 +172,7 @@ const TopSubDept = () => {
                   <div className="text-sm text-content/60 flex gap-1 items-center relative">
                     <div>Leak</div>
                     <QuestionMarkCircleIcon
+                      data-testid="pl-tooltip-icon"
                       className="inline h-5 w-5 text-content/30 hover:text-blue-200 transition-all duration-100 cursor-default"
                       onMouseEnter={() => handleTooltip("pl")}
                       onMouseLeave={() => handleTooltip("pl")}
@@ -207,6 +205,7 @@ const TopSubDept = () => {
                   <div className="text-sm text-content/60 flex gap-1 items-center relative">
                     <div>NSP</div>
                     <QuestionMarkCircleIcon
+                      data-testid="nsp-tooltip-icon"
                       className="inline h-5 w-5 text-content/30 hover:text-blue-200 transition-all duration-100 cursor-default"
                       onMouseEnter={() => handleTooltip("nsp")}
                       onMouseLeave={() => handleTooltip("nsp")}

@@ -1,21 +1,12 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {
   TopTenItem,
-  DepartmentSale,
-  CatSale,
   SelectedSalesPanel,
   WeeklySale,
   HourlySale,
   SubSale,
 } from "../interfaces";
-import type { TopSub } from "../pages/sales/graphs";
-
-type TopTenItemsMetrics = {
-  totalSales: number;
-  avgSales: number;
-  totalQty: number;
-  avgQty: number;
-};
+import type { TopSub } from "../pages/sales/components";
 
 export type WindowVisible = {
   subs: boolean;
@@ -28,13 +19,6 @@ const defaultWindowVisible: WindowVisible = {
   cats: false,
 };
 
-const defaultTopTenMetrics: TopTenItemsMetrics = {
-  totalSales: 0,
-  avgSales: 0,
-  totalQty: 0,
-  avgQty: 0,
-};
-
 type QueryChecker = {
   topTen: boolean;
   hourly: boolean;
@@ -44,14 +28,11 @@ type QueryChecker = {
 
 interface SalesState {
   topTenItems: TopTenItem[];
-  departmentSales: DepartmentSale[];
   salesPanels: WeeklySale[];
   selectedSalesPanel: SelectedSalesPanel;
   compareSalesPanel: SelectedSalesPanel;
   weeklySales: WeeklySale[];
   panelsLoading: boolean;
-  salesPanelSearchText: string;
-  topTenItemsMetrics: TopTenItemsMetrics;
   windowVisible: WindowVisible;
   hourlySales: HourlySale[];
   subSales: SubSale[];
@@ -60,7 +41,6 @@ interface SalesState {
   subSalesWk3: SubSale[];
   subSalesWk4: SubSale[];
   compareSubs: SubSale[];
-  catSales: CatSale[];
   queryChecker: QueryChecker;
   selectedItem: string;
   topSubDept: TopSub | null;
@@ -75,14 +55,11 @@ export const defaultSelectedPanel: SelectedSalesPanel = {
 
 const initialState: SalesState = {
   topTenItems: [],
-  departmentSales: [],
   salesPanels: [],
   selectedSalesPanel: defaultSelectedPanel,
   compareSalesPanel: defaultSelectedPanel,
   weeklySales: [],
   panelsLoading: false,
-  salesPanelSearchText: "",
-  topTenItemsMetrics: defaultTopTenMetrics,
   windowVisible: defaultWindowVisible,
   hourlySales: [],
   subSales: [],
@@ -91,7 +68,6 @@ const initialState: SalesState = {
   subSalesWk3: [],
   subSalesWk4: [],
   compareSubs: [],
-  catSales: [],
   queryChecker: {
     topTen: false,
     hourly: false,
@@ -109,9 +85,6 @@ export const salesSlice = createSlice({
   reducers: {
     setTopTenItems: (state, action: PayloadAction<TopTenItem[]>) => {
       state.topTenItems = action.payload;
-    },
-    setDepartmentSales: (state, action: PayloadAction<DepartmentSale[]>) => {
-      state.departmentSales = action.payload;
     },
     setSalesPanels: (state, action: PayloadAction<WeeklySale[]>) => {
       state.salesPanels = action.payload;
@@ -134,24 +107,6 @@ export const salesSlice = createSlice({
     setPanelsLoading: (state, action: PayloadAction<boolean>) => {
       state.panelsLoading = action.payload;
     },
-    setSalesPanelSearchText: (state, action: PayloadAction<string>) => {
-      state.salesPanelSearchText = action.payload;
-    },
-    setTopTenItemsMetrics: (
-      state,
-      action: PayloadAction<TopTenItemsMetrics>,
-    ) => {
-      state.topTenItemsMetrics = action.payload;
-    },
-    setWindowVisible: (
-      state,
-      action: PayloadAction<{ key: keyof WindowVisible; show: boolean }>,
-    ) => {
-      state.windowVisible = {
-        ...state.windowVisible,
-        [action.payload.key]: action.payload.show,
-      };
-    },
     setHourlySales: (state, action: PayloadAction<HourlySale[]>) => {
       state.hourlySales = action.payload;
     },
@@ -160,9 +115,6 @@ export const salesSlice = createSlice({
     },
     setCompareSubs: (state, action: PayloadAction<SubSale[]>) => {
       state.compareSubs = action.payload;
-    },
-    setCatSales: (state, action: PayloadAction<CatSale[]>) => {
-      state.catSales = action.payload;
     },
     finishQuery: (state, action: PayloadAction<string>) => {
       if (action.payload === "top ten") {
@@ -185,7 +137,8 @@ export const salesSlice = createSlice({
       const { subs, period } = action.payload;
       if (period === 1) {
         state.subSalesWk1 = subs;
-      } if (period === 2) {
+      }
+      if (period === 2) {
         state.subSalesWk2 = subs;
       } else if (period === 3) {
         state.subSalesWk3 = subs;
@@ -210,7 +163,6 @@ export const salesSlice = createSlice({
       state.subSalesWk2 = [];
       state.subSalesWk3 = [];
       state.subSalesWk4 = [];
-      state.catSales = [];
       state.topTenItems = [];
       state.queryChecker = {
         topTen: false,
@@ -225,19 +177,14 @@ export const salesSlice = createSlice({
 
 export const {
   setTopTenItems,
-  setDepartmentSales,
   setSalesPanels,
   setSelectedSalesPanel,
   setCompareSalesPanel,
   setWeeklySales,
   setPanelsLoading,
-  setSalesPanelSearchText,
-  setTopTenItemsMetrics,
-  setWindowVisible,
   setHourlySales,
   setSubSales,
   setCompareSubs,
-  setCatSales,
   finishQuery,
   setSelectedItem,
   setPeriodSubSales,

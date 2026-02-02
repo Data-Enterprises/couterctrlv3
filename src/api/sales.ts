@@ -8,7 +8,7 @@ export const getTopTen = async (
   storeid: number,
   searchType: SEARCH_TYPE,
   startDate: string,
-  endDate: string
+  endDate: string,
 ) => {
   const formData = new FormData();
   formData.append("storeid", storeid.toString());
@@ -32,7 +32,7 @@ export const getHourlyStoreDepts = async (
   token: string,
   storeid: number,
   startDate: string,
-  endDate: string
+  endDate: string,
 ) => {
   const formData = new FormData();
   formData.append("storeid", storeid.toString());
@@ -57,7 +57,7 @@ export const getSalesPanels = async (
   endDate: string,
   useGroups: number,
   searchValue: number,
-  singleStore: number
+  singleStore: number,
 ) => {
   const json = await axios({
     method: "POST",
@@ -84,7 +84,7 @@ export const getWeekly = async (
   endDate: string,
   useGroups: number,
   searchValue: number,
-  singleStore: number
+  singleStore: number,
 ) => {
   const json = await axios({
     method: "POST",
@@ -111,7 +111,7 @@ export const getHourly = async (
   endDate: string,
   useGroups: number,
   searchValue: number,
-  singleStore: number
+  singleStore: number,
 ) => {
   const json = await axios({
     method: "POST",
@@ -142,7 +142,7 @@ export const getCats = async (
   consolidated: number = 0,
   displayHourly: number = 0,
   page: number = 1,
-  download: number = 0
+  download: number = 0,
 ) => {
   const json = await axios({
     method: "POST",
@@ -175,7 +175,38 @@ export const getSubs = async (
   searchValue: number,
   singleStore: number,
   consolidated: number = 0,
-  displayHourly: number = 0
+  displayHourly: number = 0,
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "subs/sub_sales",
+    data: {
+      startDate,
+      endDate,
+      useGroups,
+      searchValue,
+      singleStore,
+      consolidated,
+      displayHourly,
+    },
+  });
+  return json;
+};
+
+export const getSubsComp = async (
+  url: string,
+  token: string,
+  startDate: string,
+  endDate: string,
+  useGroups: number,
+  searchValue: number,
+  singleStore: number,
+  consolidated: number = 0,
+  displayHourly: number = 0,
 ) => {
   const json = await axios({
     method: "POST",

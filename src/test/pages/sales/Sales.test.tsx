@@ -16,7 +16,6 @@ import {
   noSubData,
   sub_sales2,
 } from ".";
-// import Sales from "../../../pages/sales/SalesOld";
 import Sales from "../../../pages/sales/Sales";
 
 import {
@@ -25,7 +24,8 @@ import {
   getSalesPanels, // singleSalesPanel
   getWeekly, // weekly
   getHourly, // hourly
-  getSubs, // sub_sales
+  getSubs,
+  getSubsComp, // sub_sales
 } from "../../../api/sales";
 import {
   setIsDesktop,
@@ -43,10 +43,7 @@ import {
   setUnassignedStores,
 } from "../../../features/userSlice";
 import { setGroups } from "../../../features/groupSlice";
-import { act } from "react";
-import { useHeight } from "../../../pages/sales/utils/hooks";
 import { useHeight as useHeight2 } from "../../../pages/hooks";
-import { ResponsiveBar } from "@nivo/bar";
 
 const user = userEvent.setup();
 vi.mock("../../../api/sales");
@@ -72,19 +69,8 @@ vi.mock("../../../components/toasts/hooks/useToast", () => ({
   }),
 }));
 
-// put this near top of the test file
-type BarClickDatum = {
-  id: string;
-  index: number;
-  data: any;
-};
-
 vi.mock("@nivo/bar", () => ({
   ResponsiveBar: vi.fn((props: any) => {
-    if (!props.data || props.data.length === 0) {
-      return <div data-testid="responsive-bar-empty" />;
-    }
-
     if (props.data.length > 0) {
       if (props.axisLeft?.format) {
         props.axisLeft.format("1 - $5.99");
@@ -121,7 +107,7 @@ vi.mock("@nivo/bar", () => ({
                     id: "total_sales",
                     index: idx,
                     data: d,
-                  } as BarClickDatum,
+                  },
                   e,
                 )
               }
@@ -132,51 +118,6 @@ vi.mock("@nivo/bar", () => ({
     }
   }),
 }));
-
-// All uncovered attributes of the nivo/bar need to be mocked based
-// on what the chart is expecting
-// vi.mock("@nivo/bar", () => ({
-//   ResponsiveBar: vi.fn((props) => {
-//     if (props.data.length > 0) {
-//       if (props.axisLeft?.format) {
-//         props.axisLeft.format("1 - $5.99");
-//       }
-
-//       if (props.tooltip) {
-//         props.tooltip({ data: { label: "Test Label", color: "black" } });
-//       }
-
-//       if (props.axisBottom?.format) {
-//         props.axisBottom.format("1 - $5.99");
-//       }
-
-//       if (props.colors)
-//         props.data.forEach((datum: any) => {
-//           props.colors({ data: datum });
-//         });
-//       if (props.borderColor) {
-//         props.data.forEach((datum: any) => {
-//           props.borderColor({ data: { data: datum } });
-//         });
-//       }
-
-//       return <div data-testid="responsive-bar"></div>;
-//     }
-//   }),
-// }));
-
-// vi.mock("@nivo/line", () => ({
-//   ResponsiveLine: vi.fn((props) => {
-//     if (props.axisLeft?.format) {
-//       props.axisLeft.format(1);
-//     }
-
-//     if (props.tooltip) {
-//       props.tooltip({ point: { data: { x: "12/9/2025", y: 1.99 } } });
-//     }
-//     return <ResponsiveBar data={props.data} />;
-//   }),
-// }));
 
 const renderSuccess = (subData: any, group: boolean = false) => {
   const resp = group ? groupTopTen : topten;
@@ -234,41 +175,6 @@ describe("Sales Page", () => {
     await waitFor(() => {
       expect(mockToastError).toHaveBeenCalled();
     });
-  });
-
-  it("should not update height when gridRef is null", () => {
-    const { result } = renderHook(() => useHeight());
-    // Initially, ref is not attached to any element
-    expect(result.current.height).toBe(0);
-
-    // Trigger resize - height should still be 0
-    act(() => {
-      window.dispatchEvent(new Event("resize"));
-    });
-    expect(result.current.height).toBe(0);
-  });
-
-  it("should not update height when gridRef is null and maintain useHeight custom hook", async () => {
-    await waitFor(() => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 500,
-      });
-      window.dispatchEvent(new Event("resize"));
-    });
-
-    await waitFor(() => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 1800,
-      });
-      window.dispatchEvent(new Event("resize"));
-    });
-
-    const { result } = renderHook(() => useHeight());
-    expect(result.current.height).toBe(0);
   });
 
   it("should not update height when gridRef is null and maintain useHeight custom hook", async () => {
@@ -357,12 +263,13 @@ describe("Sales Page", () => {
 
   it("should handle Sub Dept selection in the SubDeptGrid.tsx", async () => {
     await waitFor(() => {
-      renderSuccess(sub_sales2);
+      renderSuccess(sub_sales);
     });
 
     const subDeptRows = await screen.findAllByRole("row");
     await user.click(subDeptRows[2]);
-    await user.click(subDeptRows[2]);
+    await user.click(subDeptRows[3]);
+    await user.click(subDeptRows[3]);
   });
 
   it("should handle sub dept selection in mobile view in the SubDeptGrid.tsx", async () => {
@@ -412,6 +319,8 @@ describe("Sales Page", () => {
       await screen.findByTestId("rpu-tooltip-icon"),
       await screen.findByTestId("ppu-tooltip-icon"),
       await screen.findByTestId("cpu-tooltip-icon"),
+      await screen.findByTestId("pl-tooltip-icon"),
+      await screen.findByTestId("nsp-tooltip-icon"),
     ];
 
     for (const icon of icons) {
@@ -419,4 +328,37 @@ describe("Sales Page", () => {
       await user.unhover(icon);
     }
   });
+
+    it("should handle selecting a compare sales panel", async () => {
+      await waitFor(() => {
+        renderSuccess(sub_sales);
+      });
+
+      (getSubsComp as Mock).mockResolvedValue(sub_sales2);
+
+      const panelOne = await screen.findByTestId("sales-panel-0-0");
+      const panelTwo = await screen.findByTestId("sales-panel-2-1");
+
+      await user.click(panelOne);
+      await user.click(panelTwo);
+      await user.click(panelTwo);
+    });
+
+      it("should handle api failure when selecting a compare sales panel", async () => {
+        await waitFor(() => {
+          renderSuccess(sub_sales);
+        });
+
+        (getSubsComp as Mock).mockRejectedValue(defaultError);
+
+        const panelOne = await screen.findByTestId("sales-panel-0");
+        const panelTwo = await screen.findByTestId("sales-panel-2-1");
+
+        await user.click(panelOne);
+        await user.click(panelTwo);
+
+        await waitFor(() => {
+          expect(mockToastError).toHaveBeenCalled();
+        });
+      });
 });

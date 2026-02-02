@@ -17,10 +17,10 @@ type PieData = {
 };
 
 interface NivoPieProps {
-  valueKey: keyof WeeklySale;
+  valueKey?: keyof WeeklySale;
 }
 
-const TotalsBar = ({ valueKey }: NivoPieProps) => {
+const TotalsBar = ({ valueKey = "total_sales" }: NivoPieProps) => {
   const [barData, setBarData] = useState<any[]>([]);
   const state = useAppSelector((state) => state.sales);
   const search = useAppSelector((state) => state.search);
@@ -65,26 +65,21 @@ const TotalsBar = ({ valueKey }: NivoPieProps) => {
   }, [state.selectedSalesPanel, state.weeklySales]);
 
   const setMarginLeft = () => {
-    if (barData.some((d) => d.value > 99999)) {
-      return barData.length > 6 ? 80 : valueKey === "total_sales" ? 75 : 55;
-    }
-
-    if (valueKey === "total_sales") {
-      return barData.length > 6 ? 75 : 68;
-    } else {
-      return 60;
-    }
+    return barData.length > 6 ? 75 : 68;
   };
 
   const renderTitle = () => {
     if (state.selectedSalesPanel.storeid) {
       return `${state.selectedSalesPanel.store_name}`;
     } else {
-      const storeName = user.assignedStores.filter((s) => s.storeid === search.lastStore)[0]?.store_name;
-      const groupName = groups.groups.filter((g) => g.id === search.lastGroup)[0]?.group_name;
+      const storeName = user.assignedStores.filter(
+        (s) => s.storeid === search.lastStore,
+      )[0]?.store_name;
+      const groupName = groups.groups.filter(
+        (g) => g.id === search.lastGroup,
+      )[0]?.group_name;
       return search.type === "Store" ? `${storeName}` : `${groupName}`;
     }
-    
   };
 
   return (

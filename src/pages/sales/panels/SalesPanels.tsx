@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import type { JsonError, WeeklySale } from "../../../interfaces";
 import {
@@ -25,7 +25,6 @@ const SalesPanels = () => {
   const context = useAppSelector((state) => state.app);
   const sales = useAppSelector((state) => state.sales);
   const search = useAppSelector((state) => state.search);
-  const [filtered, setFiltered] = useState<WeeklySale[]>([]);
 
   // on mount, fetch the data once
   useEffect(() => {
@@ -37,19 +36,6 @@ const SalesPanels = () => {
     if (sales.salesPanels.length === 0) return;
     handleDataFetch();
   }, [sales.selectedSalesPanel]);
-
-  useEffect(() => {
-    // Filter sales panels based on search text
-    if (sales.salesPanelSearchText.trim() === "") {
-      setFiltered(sales.salesPanels);
-    } else {
-      const searchText = sales.salesPanelSearchText.toLowerCase();
-      const filteredPanels = sales.salesPanels.filter((panel) =>
-        panel.store_name.toLowerCase().includes(searchText),
-      );
-      setFiltered(filteredPanels);
-    }
-  }, [sales.salesPanelSearchText, sales.salesPanels]);
 
   const handleDataFetch = () => {
     dispatch(reQuery());
@@ -190,7 +176,7 @@ const SalesPanels = () => {
   return (
     <div className="min-h-[100%] max-h-[100%] relative flex flex-col gap-2">
       {isReady &&
-        filtered.map((panel, idx) => (
+        sales.salesPanels.map((panel, idx) => (
           <SalesPanel
             key={idx}
             id={idx}

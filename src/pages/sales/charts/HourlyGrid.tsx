@@ -186,7 +186,7 @@ const HourlyGrid = () => {
                 .filter((h) => h.hour === hour)
                 .map((h) => (
                   <div
-                    key={`display-date-${h.hour}`}
+                    key={`display-date-${h.hour}-${Math.random()}`}
                     style={{ backgroundColor: findBarColor(h.total_sales) }}
                     className={`${findBarColor(h.total_sales)} text-xs rounded-lg shadow-content/30 shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
                   >

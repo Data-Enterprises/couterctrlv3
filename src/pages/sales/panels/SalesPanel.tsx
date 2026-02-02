@@ -10,9 +10,8 @@ import {
   setCompareSalesPanel,
   setCompareSubs,
 } from "../../../features/salesSlice";
-import { getSubs } from "../../../api/sales";
+import { getSubsComp } from "../../../api/sales";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-// import { getCats } from "../../../api/sales";
 
 interface SalesPanelProps {
   panel: WeeklySale;
@@ -27,7 +26,6 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  // const state = useAppSelector((state) => state.sales);
   const { selectedSalesPanel, compareSalesPanel } = useAppSelector(
     (state) => state.sales,
   );
@@ -58,28 +56,6 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
     return formatted;
   };
 
-  // const handleCatClick = (panel: WeeklySale) => {
-  //   // Toggling the cats data off if the same panel is clicked again
-  //   if (state.catSales.length > 0 && state.catSales[0].storeid === panel.storeid) {
-  //     dispatch(setCatSales([]));
-  //     return;
-  //   }
-
-  //   const pd = panel.sale_date.split("T")[0];
-  //   const start = pd;
-  //   const end = pd;
-  //   getCats(context.url, context.token, start, end, 0, panel.storeid, 1)
-  //     .then((resp) => {
-  //       const j = resp.data;
-  //       if (j.error === 0) {
-  //         dispatch(setCatSales(j.subs));
-  //       }
-  //     })
-  //     .catch((err: JsonError) =>
-  //       toast.error("Error fetching cats data: " + err.message)
-  //     );
-  // };
-
   const handleCompareClick = (panel: WeeklySale) => {
     const date = panel.sale_date.split("T")[0];
     if (!comparePanels(panel, compareSalesPanel)) {
@@ -93,7 +69,7 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
       const weeklyStart = addDays(date, -6).toISOString().split("T")[0];
       const weeklyEnd = new Date(date).toISOString().split("T")[0];
 
-      getSubs(
+      getSubsComp(
         context.url,
         context.token,
         weeklyStart,
