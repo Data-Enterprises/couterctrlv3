@@ -144,6 +144,7 @@ const StoreDatePicker = ({ setFile, getModuleData }: StoreDatePickerProps) => {
         />
         <button
           className="btn-themeBlue w-1/2"
+          data-testid="upc-module-data-search-btn"
           onClick={() => getModuleData(context.selectedMode)}
         >
           Search
