@@ -74,7 +74,7 @@ describe("SalesComp Module in UpcList", () => {
     await user.click(searchBtn);
   });
 
-  it("should handle throw a warning if no records are returned", async () => {
+  it("should handle API success when fetching Sales Comp data", async () => {
     // Mock the API failure
     (getSalesComp as Mock).mockResolvedValue(salesCompResp);
 
@@ -193,5 +193,20 @@ describe("SalesComp Module in UpcList", () => {
       const grid = screen.getByTestId("sales-comp-main-grid");
       expect(grid).toHaveClass("grid-rows-[18%_82%]");
     });
+  });
+
+  it("should handle showing NoDataDisplay", async () => {
+    renderWithProviders(<UpcList />, { store });
+
+    const radios = [
+      await screen.findByTestId("radio-2"),
+      await screen.findByTestId("radio-3"),
+      await screen.findByTestId("radio-4"),
+      await screen.findByTestId("radio-1"),
+    ];
+
+    for (const radio of radios) {
+      await user.click(radio);
+    }
   });
 });

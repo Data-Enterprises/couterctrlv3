@@ -49,6 +49,7 @@ const UpcAssociation = () => {
     reQueryAssociations,
     selectedUpcs,
     singleItemAssociations,
+    selectedMode,
   } = useAppSelector((state) => state.upc);
 
   const [upcText, setUpcText] = useState<string>("");
@@ -57,7 +58,7 @@ const UpcAssociation = () => {
   useEffect(() => {
     // dont run this when renavigating back to this page
 
-    if (selectedUpcs.length > 0) {
+    if (selectedUpcs.length > 0 && selectedMode === 5) {
       const start = formatGoliathDate(search.startDate);
       const end = formatGoliathDate(search.endDate);
       const ids = upc.storeids.split(",").map((id) => Number(id));

@@ -276,43 +276,6 @@ const UpcList = () => {
     dispatch(setUpcItems(upcItems));
     dispatch(setDataLoaded(true));
     dispatch(setIsLoading(false));
-
-    // const ids = context.storeids.split(",").map((id) => parseInt(id));
-    // const start = formatGoliathDate(context.startDate);
-    // const end = formatGoliathDate(context.endDate);
-    // getItemAssociation(
-    //   context.url,
-    //   context.token,
-    //   start,
-    //   end,
-    //   ids,
-    //   context.uploadedUpcs,
-    //   20,
-    //   "top",
-    // )
-    //   .then((resp) => {
-    //     const j = resp.data;
-    //     if (j.error === 0 && j.items.length > 0) {
-    //       const main = [...j.items].filter((item: any) =>
-    //         context.uploadedUpcs.includes(item.product_code),
-    //       );
-    //       const association = [...j.items].filter(
-    //         (item: any) => !context.uploadedUpcs.includes(item.product_code),
-    //       );
-
-    //       // const upcItems = [...context.uploadedUpcs].map((item) => ({
-    //       //   product_code: item,
-    //       //   description: `Item ${item}`,
-    //       // }));
-    //       // dispatch(setUpcItems(upcItems));
-
-    //       dispatch(setAssociations(main));
-    //       dispatch(setAssociations(association));
-    //       dispatch(setDataLoaded(true));
-    //     }
-    //   })
-    //   .catch((err: JsonError) => toast.error(err.message))
-    //   .finally(() => cleanUp());
   };
 
   const cleanUp = () => {

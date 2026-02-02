@@ -16,6 +16,7 @@ const PriceOptSelects = () => {
         onSelect={(x) =>
           dispatch(setPriceOptOption({ option: "list", value: x as string }))
         }
+        id={3}
       />
       <SingleSelect
         className="bg-custom-white"
@@ -26,7 +27,7 @@ const PriceOptSelects = () => {
         onSelect={(x) =>
           dispatch(setPriceOptOption({ option: "data", value: x as string }))
         }
-        id={1}
+        id={4}
       />
     </div>
   );

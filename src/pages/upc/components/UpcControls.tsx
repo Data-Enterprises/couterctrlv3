@@ -189,24 +189,24 @@ const UpcControls = () => {
             value={showDisplay === "all"}
             label={`Show All - ${upcItems.length}`}
             onChange={() => handleDisplay("all")}
-            id={1}
+            id={10}
           />
           <RadioBox
             value={showDisplay === "selected"}
             label={`Show Selected - ${selectedUpcs.length}`}
             onChange={() => handleDisplay("selected")}
-            id={2}
+            id={20}
           />
           <RadioBox
             value={showDisplay === "stores"}
             label={`Show Stores - ${selectedStores.length}`}
             onChange={() => handleDisplay("stores")}
-            id={3}
+            id={30}
           />
         </div>
         <div className="flex flex-col gap-2">
           <button
-            data-testid="upc-deselect-all-btn"
+            data-testid="upc-select-all-btn"
             className="py-1 btn-themeGreen"
             onClick={handleSelectAll}
           >
