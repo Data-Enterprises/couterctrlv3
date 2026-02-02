@@ -11,15 +11,19 @@ import { setAssignedStores } from "../../../features/userSlice";
 import { getForecasting } from "../../../api/upc";
 
 // Responses
-import { stores, forecastResp, JsonErrorResp } from ".";
+import { stores, forecastResp, JsonErrorResp, groups } from ".";
+import { groupStoresResp } from "../forecast";
 
 // Components being tested
 import UpcList from "../../../pages/upc/UpcList";
-// import type { JSX } from "react";
+import { getStoresAssignedToUserGroup } from "../../../api/groups";
+import { setGroups } from "../../../features/groupSlice";
 
+vi.mock("../../../api/groups");
 vi.mock("../../../api/upc");
 const store = setupStore();
 store.dispatch(setAssignedStores(stores));
+store.dispatch(setGroups(groups));
 
 const user = userEvent.setup();
 const mockedToastWarn = vi.fn();
@@ -44,267 +48,197 @@ vi.mock("@nivo/line", () => ({
 }));
 
 describe("PriceOpt Module in UpcList", () => {
-  it("");
-  // it("should handle API failure when fetching Price Optimization data", async () => {
-  //   renderWithProviders(<UpcList />, { store });
+  it("should handle API failure when fetching stores for a group", async () => {
+    (getForecasting as Mock).mockRejectedValue({
+      data: JsonErrorResp,
+    });
 
-  //   // Go through the steps of the UpcWizard to reach SalesComp module
-  //   const upcFileInput = await screen.findByTestId("upc-file-input");
+    (getStoresAssignedToUserGroup as Mock).mockRejectedValue(groupStoresResp);
+    renderWithProviders(<UpcList />, { store });
 
-  //   const csvFile = new File(["upc1\nupc2\nupc3"], "upc_list.csv", {
-  //     type: "text/csv",
-  //   });
+    const groupDropdown = await screen.findByTestId(
+      "single-select-trigger-icon-1",
+    );
+    await user.click(groupDropdown);
+    const groupOption = await screen.findByTestId("single-select-option-1-1");
+    await user.click(groupOption);
 
-  //   await user.upload(upcFileInput, csvFile);
-  //   const input = upcFileInput as HTMLInputElement;
-  //   expect(input.files?.[0]).toBe(csvFile);
+    const dropdown = await screen.findByTestId("single-select-trigger-icon-2");
 
-  //   // Selecting TrendDetector module
-  //   const forecastMode = await screen.findByTestId("radio-2");
-  //   await user.click(forecastMode);
-  //   await waitFor(() => {
-  //     const state = store.getState().upc;
-  //     expect(state.selectedMode).toBe(2);
-  //   });
+    await user.click(dropdown);
+    const option = await screen.findByTestId("single-select-option-2-1");
+    await user.click(option);
 
-  //   const nextBtn = await screen.findByTestId("upc-wizard-next-btn-1");
-  //   await user.click(nextBtn);
+    await waitFor(() => {
+      expect(mockedToastError).toHaveBeenCalled();
+    });
+  });
 
-  //   await waitFor(() => {
-  //     const state = store.getState().upc;
-  //     expect(state.index).toBe(1);
-  //   });
+  it("should handle API failure when fetching forecast data", async () => {
+    // Mock the API failure
+    (getForecasting as Mock).mockRejectedValue({
+      data: JsonErrorResp,
+    });
 
-  //   const storeGroupSelectIcon = await screen.findByTestId(
-  //     "single-select-trigger-icon-1"
-  //   );
+    (getStoresAssignedToUserGroup as Mock).mockResolvedValue(groupStoresResp);
+    renderWithProviders(<UpcList />, { store });
 
-  //   // Click on Stores
-  //   const storeOption = await screen.findByTestId("single-select-option-1-0");
-  //   await user.click(storeGroupSelectIcon);
-  //   await user.click(storeOption);
-  //   await waitFor(() => {
-  //     const state = store.getState().upc;
-  //     expect(state.radioId).toBe(1);
-  //   });
+    const groupDropdown = await screen.findByTestId(
+      "single-select-trigger-icon-1",
+    );
+    await user.click(groupDropdown);
+    const groupOption = await screen.findByTestId("single-select-option-1-1");
+    await user.click(groupOption);
 
-  //   const storeToClick = await screen.findByTestId("single-select-option-2-1");
-  //   await user.click(storeToClick);
+    const dropdown = await screen.findByTestId("single-select-trigger-icon-2");
 
-  //   // handle error
-  //   (getForecasting as Mock).mockRejectedValueOnce(JsonErrorResp);
+    await user.click(dropdown);
+    const option = await screen.findByTestId("single-select-option-2-1");
+    await user.click(option);
 
-  //   // Fetch the data
-  //   const btn2 = await screen.findByTestId("upc-wizard-next-btn-2");
-  //   await user.click(btn2);
+    const forecast = await screen.findByTestId("radio-2");
+    await user.click(forecast);
 
-  //   const stepOne = await screen.findByTestId("upc-step-one");
-  //   expect(stepOne).toBeInTheDocument();
-  // });
+    const searchBtn = await screen.findByTestId("upc-module-data-search-btn");
+    await user.click(searchBtn);
 
-  // it("should inform the user when do records are found", async () => {
-  //   renderWithProviders(<UpcList />, { store });
+    await waitFor(() => {
+      expect(mockedToastError).toHaveBeenCalled();
+    });
+  });
 
-  //   // Go through the steps of the UpcWizard to reach SalesComp module
-  //   const upcFileInput = await screen.findByTestId("upc-file-input");
+  it("should handle throw a warning if no records are returned", async () => {
+    // Mock the API failure
+    (getForecasting as Mock).mockResolvedValue({
+      data: { error: 0, qty_results: null },
+    });
 
-  //   const csvFile = new File(["upc1\nupc2\nupc3"], "upc_list.csv", {
-  //     type: "text/csv",
-  //   });
+    renderWithProviders(<UpcList />, { store });
 
-  //   await user.upload(upcFileInput, csvFile);
-  //   const input = upcFileInput as HTMLInputElement;
-  //   expect(input.files?.[0]).toBe(csvFile);
+    const dropdown = await screen.findByTestId("single-select-trigger-icon-2");
 
-  //   // Selecting SalesComp module
-  //   const forecastMode = await screen.findByTestId("radio-2");
-  //   await user.click(forecastMode);
-  //   await waitFor(() => {
-  //     const state = store.getState().upc;
-  //     expect(state.selectedMode).toBe(2);
-  //   });
+    await user.click(dropdown);
+    const option = await screen.findByTestId("single-select-option-2-1");
+    await user.click(option);
 
-  //   const nextBtn = await screen.findByTestId("upc-wizard-next-btn-1");
-  //   await user.click(nextBtn);
+    const salesComp = await screen.findByTestId("radio-2");
+    await user.click(salesComp);
 
-  //   await waitFor(() => {
-  //     const state = store.getState().upc;
-  //     expect(state.index).toBe(1);
-  //   });
+    const searchBtn = await screen.findByTestId("upc-module-data-search-btn");
+    await user.click(searchBtn);
 
-  //   const storeGroupSelectIcon = await screen.findByTestId(
-  //     "single-select-trigger-icon-1"
-  //   );
+    await waitFor(() => {
+      expect(mockedToastWarn).toHaveBeenCalledWith("No Records Found");
+    });
+  });
 
-  //   // Click on Stores
-  //   const storeOption = await screen.findByTestId("single-select-option-1-0");
-  //   await user.click(storeGroupSelectIcon);
-  //   await user.click(storeOption);
-  //   await waitFor(() => {
-  //     const state = store.getState().upc;
-  //     expect(state.radioId).toBe(1);
-  //   });
+  it("should handle API success when fetching Forecast data", async () => {
+    // Mock the API failure
+    (getForecasting as Mock).mockResolvedValue(forecastResp);
 
-  //   const storeToClick = await screen.findByTestId("single-select-option-2-1");
-  //   await user.click(storeToClick);
+    renderWithProviders(<UpcList />, { store });
 
-  //   // handle success
-  //   (getForecasting as Mock).mockResolvedValue({ data: { error: 1 } });
+    const dropdown = await screen.findByTestId("single-select-trigger-icon-2");
 
-  //   // Fetch the data
-  //   const btn2 = await screen.findByTestId("upc-wizard-next-btn-2");
-  //   await user.click(btn2);
+    await user.click(dropdown);
+    const option = await screen.findByTestId("single-select-option-2-1");
+    await user.click(option);
 
-  //   await waitFor(() => {
-  //     expect(mockedToastWarn).toHaveBeenCalledWith("No Records Found");
-  //   });
-  // });
+    const salesComp = await screen.findByTestId("radio-2");
+    await user.click(salesComp);
 
-  // // In this case, we're just trying to render Forecast
-  // it("should render selected module correctly", async () => {
-  //   renderWithProviders(<UpcList />, { store });
+    const searchBtn = await screen.findByTestId("upc-module-data-search-btn");
+    await user.click(searchBtn);
+  });
 
-  //   // Go through the steps of the UpcWizard to reach SalesComp module
-  //   const upcFileInput = await screen.findByTestId("upc-file-input");
+  it("should handle info icon hover in MetricCard", async () => {
+    renderWithProviders(<UpcList />, { store });
 
-  //   const csvFile = new File(["upc1\nupc2\nupc3"], "upc_list.csv", {
-  //     type: "text/csv",
-  //   });
+    const overallQtyInfoIcon = await screen.findByTestId(
+      "info-icon-quantity-overall"
+    );
+    await user.hover(overallQtyInfoIcon);
+    await user.unhover(overallQtyInfoIcon);
+  });
 
-  //   await user.upload(upcFileInput, csvFile);
-  //   const input = upcFileInput as HTMLInputElement;
-  //   expect(input.files?.[0]).toBe(csvFile);
+  it("should populate forecast line componenet when selecing a upc", async () => {
+    renderWithProviders(<UpcList />, { store });
 
-  //   // Selecting SalesComp module
-  //   const forecastMode = await screen.findByTestId("radio-2");
-  //   await user.click(forecastMode);
-  //   await waitFor(() => {
-  //     const state = store.getState().upc;
-  //     expect(state.selectedMode).toBe(2);
-  //   });
+    const upcOne = await screen.findByTestId("check-0");
+    await user.click(upcOne);
+    // await user.click(upcOne);
 
-  //   const nextBtn = await screen.findByTestId("upc-wizard-next-btn-1");
-  //   await user.click(nextBtn);
+    const selectedItem = await screen.findByTestId("forecast-legend-item-0");
+    expect(selectedItem).toBeInTheDocument();
 
-  //   await waitFor(() => {
-  //     const state = store.getState().upc;
-  //     expect(state.index).toBe(1);
-  //   });
+    await user.click(selectedItem);
+  });
 
-  //   const storeGroupSelectIcon = await screen.findByTestId(
-  //     "single-select-trigger-icon-1"
-  //   );
+  // Test the exporting of the data in UpcModal
+  it("should throw warning for missing file name in export modal", async () => {
+    renderWithProviders(<UpcList />, { store });
+    const exportBtn = await screen.findByTestId("upc-controls-export-btn");
+    await user.click(exportBtn);
 
-  //   // Click on Stores
-  //   const storeOption = await screen.findByTestId("single-select-option-1-0");
-  //   await user.click(storeGroupSelectIcon);
-  //   await user.click(storeOption);
-  //   await waitFor(() => {
-  //     const state = store.getState().upc;
-  //     expect(state.radioId).toBe(1);
-  //   });
+    const modal = await screen.findByTestId("modal");
+    expect(modal).toBeInTheDocument();
 
-  //   const storeToClick = await screen.findByTestId("single-select-option-2-1");
-  //   await user.click(storeToClick);
+    const submit = await screen.findByTestId("upc-export-modal-submit-btn");
+    await user.click(submit);
 
-  //   // handle success
-  //   (getForecasting as Mock).mockResolvedValue(forecastResp);
+    await waitFor(() => {
+      expect(mockedToastWarn).toHaveBeenCalledWith("Please enter a file name");
+    });
+  });
 
-  //   // Fetch the data
-  //   const btn2 = await screen.findByTestId("upc-wizard-next-btn-2");
-  //   await user.click(btn2);
+  it("should handle exporting forecast dates data", async () => {
+    renderWithProviders(<UpcList />, { store });
+    const exportBtn = await screen.findByTestId("upc-controls-export-btn");
+    await user.click(exportBtn);
 
-  //   expect(await screen.findByTestId("upc-forecast")).toBeInTheDocument();
-  // });
+    const modal = await screen.findByTestId("modal");
+    expect(modal).toBeInTheDocument();
 
-  // it("should handle info icon hover in MetricCard", async () => {
-  //   renderWithProviders(<UpcList />, { store });
+    //file name
+    const fileNameInput = await screen.findByTestId("text-input-csvFileName");
+    await user.type(fileNameInput, "forecast_export");
 
-  //   const overallQtyInfoIcon = await screen.findByTestId(
-  //     "info-icon-quantity-overall"
-  //   );
-  //   await user.hover(overallQtyInfoIcon);
-  //   await user.unhover(overallQtyInfoIcon);
-  // });
+    // Testing the clicking of the radio options
+    const datesRadio = await screen.findByTestId("check-0-forecast-dates");
+    const metricsRadio = await screen.findByTestId("check-1-forecast-metrics");
 
-  // it("should populate forecast line componenet when selecing a upc", async () => {
-  //   renderWithProviders(<UpcList />, { store });
+    await user.click(metricsRadio);
+    await user.click(datesRadio);
 
-  //   const upcOne = await screen.findByTestId("check-0");
-  //   await user.click(upcOne);
-  //   // await user.click(upcOne);
+    // submit the valid export request
+    const submit = await screen.findByTestId("upc-export-modal-submit-btn");
+    await user.click(submit);
 
-  //   const selectedItem = await screen.findByTestId("forecast-legend-item-0");
-  //   expect(selectedItem).toBeInTheDocument();
+    await waitFor(() => {
+      expect(modal).not.toBeInTheDocument();
+    });
+  });
 
-  //   await user.click(selectedItem);
-  // });
+  it("should handle exporting forecast metrics data", async () => {
+    renderWithProviders(<UpcList />, { store });
+    const exportBtn = await screen.findByTestId("upc-controls-export-btn");
+    await user.click(exportBtn);
 
-  // // Test the exporting of the data in UpcModal
-  // it("should throw warning for missing file name in export modal", async () => {
-  //   renderWithProviders(<UpcList />, { store });
-  //   const exportBtn = await screen.findByTestId("upc-controls-export-btn");
-  //   await user.click(exportBtn);
+    const modal = await screen.findByTestId("modal");
+    expect(modal).toBeInTheDocument();
 
-  //   const modal = await screen.findByTestId("modal");
-  //   expect(modal).toBeInTheDocument();
+    //file name and metrics radio
+    const metricsRadio = await screen.findByTestId("check-1-forecast-metrics");
+    const fileNameInput = await screen.findByTestId("text-input-csvFileName");
+    await user.type(fileNameInput, "forecast_export");
+    await user.click(metricsRadio);
 
-  //   const submit = await screen.findByTestId("upc-export-modal-submit-btn");
-  //   await user.click(submit);
+    // submit the valid export request
+    const submit = await screen.findByTestId("upc-export-modal-submit-btn");
+    await user.click(submit);
 
-  //   await waitFor(() => {
-  //     expect(mockedToastWarn).toHaveBeenCalledWith("Please enter a file name");
-  //   });
-  // });
-
-  // it("should handle exporting forecast dates data", async () => {
-  //   renderWithProviders(<UpcList />, { store });
-  //   const exportBtn = await screen.findByTestId("upc-controls-export-btn");
-  //   await user.click(exportBtn);
-
-  //   const modal = await screen.findByTestId("modal");
-  //   expect(modal).toBeInTheDocument();
-
-  //   //file name
-  //   const fileNameInput = await screen.findByTestId("text-input-csvFileName");
-  //   await user.type(fileNameInput, "forecast_export");
-
-  //   // Testing the clicking of the radio options
-  //   const datesRadio = await screen.findByTestId("check-0-forecast-dates");
-  //   const metricsRadio = await screen.findByTestId("check-1-forecast-metrics");
-
-  //   await user.click(metricsRadio);
-  //   await user.click(datesRadio);
-
-  //   // submit the valid export request
-  //   const submit = await screen.findByTestId("upc-export-modal-submit-btn");
-  //   await user.click(submit);
-
-  //   await waitFor(() => {
-  //     expect(modal).not.toBeInTheDocument();
-  //   });
-  // });
-
-  // it("should handle exporting forecast metrics data", async () => {
-  //   renderWithProviders(<UpcList />, { store });
-  //   const exportBtn = await screen.findByTestId("upc-controls-export-btn");
-  //   await user.click(exportBtn);
-
-  //   const modal = await screen.findByTestId("modal");
-  //   expect(modal).toBeInTheDocument();
-
-  //   //file name and metrics radio
-  //   const metricsRadio = await screen.findByTestId("check-1-forecast-metrics");
-  //   const fileNameInput = await screen.findByTestId("text-input-csvFileName");
-  //   await user.type(fileNameInput, "forecast_export");
-  //   await user.click(metricsRadio);
-
-  //   // submit the valid export request
-  //   const submit = await screen.findByTestId("upc-export-modal-submit-btn");
-  //   await user.click(submit);
-
-  //   await waitFor(() => {
-  //     expect(modal).not.toBeInTheDocument();
-  //   });
-  // });
+    await waitFor(() => {
+      expect(modal).not.toBeInTheDocument();
+    });
+  });
 });
