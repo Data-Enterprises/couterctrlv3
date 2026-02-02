@@ -125,6 +125,20 @@ describe("Login Page", () => {
     await user.clear(passwordInput);
   });
 
+  it("should handle the tooltips when hovering over the icons and the SideBar is closed", async () => {
+    renderWithProviders(<SideBar />, { store });
+    const sidebar = screen.getByTestId("side-bar");
+    expect(sidebar).toBeInTheDocument();
+
+    const salesNav = await screen.findByTestId("nav-sales")
+    await user.hover(salesNav);
+    await user.unhover(salesNav);
+
+    const signout = await screen.findByTestId("signout-btn")
+    await user.hover(signout);
+    await user.unhover(signout);
+  });
+
   it("should sign out the user when clicking the Sign Out nav item", async () => {
     const user = userEvent.setup();
     renderWithProviders(<SideBar />, { store });

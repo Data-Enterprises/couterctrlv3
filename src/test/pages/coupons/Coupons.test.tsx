@@ -95,7 +95,7 @@ describe("Coupons Page", () => {
 
     await waitFor(() => {
       expect(mockedToastWarn).toHaveBeenCalledWith(
-        "Please enter a valid file name."
+        "Please enter a valid file name.",
       );
     });
 
@@ -125,18 +125,18 @@ describe("Coupons Page", () => {
   it("should handle setting the store number filter", async () => {
     renderWithProviders(<Coupons />, { store });
     const storeNumFilter = await screen.findByTestId(
-      "coupons-table-filter-store"
+      "coupons-table-filter-store",
     );
     await user.click(storeNumFilter);
 
     const submitBtn = await screen.findByTestId(
-      "coupon-filter-modal-submit-btn"
+      "coupon-filter-modal-submit-btn",
     );
     await user.click(submitBtn);
 
     await waitFor(() => {
       expect(mockedToastWarn).toHaveBeenCalledWith(
-        "Filter value cannot be empty"
+        "Filter value cannot be empty",
       );
     });
 
@@ -160,7 +160,7 @@ describe("Coupons Page", () => {
     await user.type(input, "1");
 
     const submitBtn = await screen.findByTestId(
-      "coupon-filter-modal-submit-btn"
+      "coupon-filter-modal-submit-btn",
     );
     await user.click(submitBtn);
 
@@ -179,7 +179,7 @@ describe("Coupons Page", () => {
     await user.type(input, "Meat");
 
     const submitBtn = await screen.findByTestId(
-      "coupon-filter-modal-submit-btn"
+      "coupon-filter-modal-submit-btn",
     );
     await user.click(submitBtn);
 
@@ -194,12 +194,12 @@ describe("Coupons Page", () => {
     renderWithProviders(<Coupons />, { store });
 
     const refreshBtn = await screen.findByTestId(
-      "coupons-table-filter-refresh"
+      "coupons-table-filter-refresh",
     );
     await user.click(refreshBtn);
 
     const customerIdFilter = await screen.findByTestId(
-      "coupons-table-filter-customerid"
+      "coupons-table-filter-customerid",
     );
     await user.click(customerIdFilter);
 
@@ -207,7 +207,7 @@ describe("Coupons Page", () => {
     await user.type(input, "1234");
 
     const submitBtn = await screen.findByTestId(
-      "coupon-filter-modal-submit-btn"
+      "coupon-filter-modal-submit-btn",
     );
     await user.click(submitBtn);
 
@@ -223,7 +223,7 @@ describe("Coupons Page", () => {
     renderWithProviders(<Coupons />, { store });
 
     const cpnAmountFilter = await screen.findByTestId(
-      "coupons-table-filter-cpnamount"
+      "coupons-table-filter-cpnamount",
     );
     await user.click(cpnAmountFilter);
 
@@ -234,7 +234,7 @@ describe("Coupons Page", () => {
     await user.type(input, "6.99");
 
     const submitBtn = await screen.findByTestId(
-      "coupon-filter-modal-submit-btn"
+      "coupon-filter-modal-submit-btn",
     );
     await user.click(submitBtn);
   });
@@ -243,7 +243,7 @@ describe("Coupons Page", () => {
     renderWithProviders(<Coupons />, { store });
 
     const cpnAmountFilter = await screen.findByTestId(
-      "coupons-table-filter-cpnamount"
+      "coupons-table-filter-cpnamount",
     );
     await user.click(cpnAmountFilter);
 
@@ -254,7 +254,7 @@ describe("Coupons Page", () => {
     await user.type(input, "6.99");
 
     const submitBtn = await screen.findByTestId(
-      "coupon-filter-modal-submit-btn"
+      "coupon-filter-modal-submit-btn",
     );
     await user.click(submitBtn);
   });
@@ -263,7 +263,7 @@ describe("Coupons Page", () => {
     renderWithProviders(<Coupons />, { store });
 
     const cpnAmountFilter = await screen.findByTestId(
-      "coupons-table-filter-cpnamount"
+      "coupons-table-filter-cpnamount",
     );
     await user.click(cpnAmountFilter);
 
@@ -274,12 +274,32 @@ describe("Coupons Page", () => {
     await user.type(input, "6.99");
 
     const submitBtn = await screen.findByTestId(
-      "coupon-filter-modal-submit-btn"
+      "coupon-filter-modal-submit-btn",
     );
     await user.click(submitBtn);
 
     const refreshBtn = await screen.findByTestId(
-      "coupons-table-filter-refresh"
+      "coupons-table-filter-refresh",
+    );
+    await user.click(refreshBtn);
+  });
+
+  it("should handle the Sub Dept table filter", async () => {
+    renderWithProviders(<Coupons />, { store });
+
+    const subFilter = await screen.findByTestId("coupons-table-filter-sub");
+    await user.click(subFilter);
+
+    const input = await screen.findByTestId("text-filter-input");
+    await user.type(input, "grocery");
+
+    const submitBtn = await screen.findByTestId(
+      "coupon-filter-modal-submit-btn",
+    );
+    await user.click(submitBtn);
+
+    const refreshBtn = await screen.findByTestId(
+      "coupons-table-filter-refresh",
     );
     await user.click(refreshBtn);
   });
@@ -288,7 +308,7 @@ describe("Coupons Page", () => {
 
   it("should throw error when clicking on error if api fails", async () => {
     (getCashierTransaction as Mock).mockRejectedValueOnce(
-      new Error("API Error")
+      new Error("API Error"),
     );
     renderWithProviders(<Coupons />, { store });
 
@@ -297,7 +317,7 @@ describe("Coupons Page", () => {
 
     await waitFor(() => {
       expect(mockedToastError).toHaveBeenCalledWith(
-        "Error fetching transactions: API Error"
+        "Error fetching transactions: API Error",
       );
     });
   });
