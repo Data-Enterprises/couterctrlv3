@@ -14,7 +14,7 @@ import { getPriceOpt } from "../../../api/upc";
 import { stores, priceOptResp, JsonErrorResp } from ".";
 
 // Components being tested
-import UpcList from "../../../pages/upc/wizard/UpcList";
+import UpcList from "../../../pages/upc/UpcList";
 
 vi.mock("../../../api/upc");
 const store = setupStore();
@@ -56,7 +56,7 @@ vi.mock("@nivo/bar", () => ({
 }));
 
 describe("PriceOpt Module in UpcList", () => {
-  it("")
+  it("");
   // it("should handle API failure when fetching Price Optimization data", async () => {
   //   renderWithProviders(<UpcList />, { store });
 
@@ -163,7 +163,7 @@ describe("PriceOpt Module in UpcList", () => {
   //   // Fetch the data
   //   const btn2 = await screen.findByTestId("upc-wizard-next-btn-2");
   //   await user.click(btn2);
-   
+
   //   await waitFor(() => {
   //     expect(mockedToastWarn).toHaveBeenCalledWith("No Records Found");
   //   });

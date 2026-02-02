@@ -1,7 +1,7 @@
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { getItemAssociation } from "../../../api/upc";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { formatGoliathDate } from "../../../utils";
+import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { getItemAssociation } from "../../../../api/upc";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { formatGoliathDate } from "../../../../utils";
 import {
   addSelectedUpcParam,
   removeSelectedUpcParam,
@@ -11,22 +11,22 @@ import {
   setReQueryAssociations,
   resetAssociations,
   setSingleAssocitions,
-} from "../../../features/upcSlice";
+} from "../../../../features/upcSlice";
 import { useEffect, useState } from "react";
-import UpcControls from "../components/UpcControls";
-import Input from "../../../components/inputs/Input";
-import CtxMenu from "../../../components/CtxMenu";
-import type { Handlers } from "../../../interfaces";
-import { singleOption } from "../utils";
+import UpcControls from "../../components/UpcControls";
+import Input from "../../../../components/inputs/Input";
+import CtxMenu from "../../../../components/CtxMenu";
+import type { Handlers } from "../../../../interfaces";
+import { singleOption } from "../../utils";
 import {
   setClipboardText,
   setMenuPosition,
-} from "../../../features/ctxMenuSlice";
-import UpcModal from "../modal/UpcModal";
-import { associateHeaders } from "../exportHeaders";
-import { exportData } from "../exportHeaders/utils";
-import { reset } from "../../../features/upcModalSlice";
-import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+} from "../../../../features/ctxMenuSlice";
+import UpcModal from "../../modal/UpcModal";
+import { associateHeaders } from "../../exportHeaders";
+import { exportData } from "../../exportHeaders/utils";
+import { reset } from "../../../../features/upcModalSlice";
+import LoadingIndicator from "../../../../components/loading/LoadingIndicator";
 
 type AssociateExport = {
   level: string;

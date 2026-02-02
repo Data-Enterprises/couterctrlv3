@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useUpcContext } from "../wizard/hooks";
+import { useUpcContext } from "../hooks";
 import {
   addSelectedUpcParam,
   clearUpcData,

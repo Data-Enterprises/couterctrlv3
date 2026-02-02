@@ -1,4 +1,4 @@
-import { useAppSelector } from "../../../hooks";
+import { useAppSelector } from "../../hooks";
 
 export const useUpcContext = () => {
   const { url, token } = useAppSelector((state) => state.app);

@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import type { UpcTrend } from "../../../interfaces";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { reset } from "../../../features/upcModalSlice";
-import { exportData } from "../exportHeaders/utils";
-import { trendHeaders } from "../exportHeaders";
+import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import type { UpcTrend } from "../../../../interfaces";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { reset } from "../../../../features/upcModalSlice";
+import { exportData } from "../../exportHeaders/utils";
+import { trendHeaders } from "../../exportHeaders";
 
 // Components
-import UpcControls from "../components/UpcControls";
-import MetricsCarousel from "./forecast/MetricsCarousel";
-import TopBottomTrends from "../components/TopBottomTrends";
-import TrendCardsList from "./trend/TrendCardsList";
-import TrendGroupBar from "../charts/TrendGroupBar";
-import TrendModal from "./trend/TrendModal";
-import UpcModal from "../modal/UpcModal";
+import UpcControls from "../../components/UpcControls";
+import MetricsCarousel from "../forecast/MetricsCarousel";
+import TopBottomTrends from "../../components/TopBottomTrends";
+import TrendCardsList from "../trend/TrendCardsList";
+import TrendGroupBar from "../../charts/TrendGroupBar";
+import TrendModal from "../trend/TrendModal";
+import UpcModal from "../../modal/UpcModal";
 
 const TrendDetector = () => {
   const dispatch = useAppDispatch();

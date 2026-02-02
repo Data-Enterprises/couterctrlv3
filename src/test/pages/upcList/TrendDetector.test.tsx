@@ -14,7 +14,7 @@ import { getTrendDetect } from "../../../api/upc";
 import { stores, trendDetectResp, JsonErrorResp } from ".";
 
 // Components being tested
-import UpcList from "../../../pages/upc/wizard/UpcList";
+import UpcList from "../../../pages/upc/UpcList";
 import type { JSX } from "react";
 
 vi.mock("../../../api/upc");

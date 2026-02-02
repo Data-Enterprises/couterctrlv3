@@ -24,7 +24,7 @@ import {
   setNoResults,
 } from "../../features/forecastSlice";
 import { useForecastContext, useResizeContext } from "./hooks";
-import SelectedStoreList from "../upc/wizard/SelectedStoreList";
+import SelectedStoreList from "../upc/components/SelectedStoreList";
 import ForecastControls from "./controls/ForecastControls";
 import FileGrid from "./grids/FileGrid";
 import OutlierGrid from "./grids/OutlierGrid";
@@ -60,7 +60,7 @@ const Forecasting = () => {
       // if (context.forecastResults.length === 0 || !file) {
       //   dispatch(setUpcFileName(""));
       // }
-    }
+    };
   }, []);
 
   useEffect(() => {
@@ -94,7 +94,7 @@ const Forecasting = () => {
       context.token,
       context.storeids,
       context.endDate,
-      upcs.join(",")
+      upcs.join(","),
     )
       .then((resp) => {
         const j: PriceHistoryFromListResp = resp.data;
@@ -110,10 +110,10 @@ const Forecasting = () => {
           dispatch(setForecastResults(j.results));
 
           const singlePrices = j.results.filter(
-            (item) => item.price_history.length === 1
+            (item) => item.price_history.length === 1,
           );
           const multiPrices = j.results.filter(
-            (item) => item.price_history.length > 1
+            (item) => item.price_history.length > 1,
           );
 
           // set the row data
@@ -142,14 +142,14 @@ const Forecasting = () => {
     // Store
     if (context.radioId === 1) {
       const store = filteredData.find(
-        (item): item is Store => "storeid" in item && item.storeid === id
+        (item): item is Store => "storeid" in item && item.storeid === id,
       );
       const existingStore = context.selectedStores.find(
-        (s) => s.storeid === id
+        (s) => s.storeid === id,
       );
       if (existingStore) {
         const copy = [...context.selectedStores].filter(
-          (s) => s.storeid !== id
+          (s) => s.storeid !== id,
         );
         dispatch(setSelectedStores(copy));
       } else if (store) {
@@ -161,7 +161,7 @@ const Forecasting = () => {
         context.url,
         context.token,
         context.userid,
-        Number(id)
+        Number(id),
       )
         .then((resp) => {
           const j = resp.data;

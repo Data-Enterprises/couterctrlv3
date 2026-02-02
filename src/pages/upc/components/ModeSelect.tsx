@@ -1,18 +1,25 @@
-import RadioBox from "../../../../components/inputs/RadioBox";
-import { setSelectedMode } from "../../../../features/upcSlice";
-import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import RadioBox from "../../../components/inputs/RadioBox";
+import { setSelectedMode } from "../../../features/upcSlice";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 
 const modes = [
   { mode: 1, label: "Sales Comparison" },
   { mode: 2, label: "Sales Forecast" },
   { mode: 3, label: "Price Optimization" },
   { mode: 4, label: "Trend Detection" },
-  { mode: 5, label: "UPC Association"}
+  { mode: 5, label: "UPC Association" },
 ];
 
 const ModeSelect = () => {
   const dispatch = useAppDispatch();
-  const { selectedMode, salesComp, forecast, optBestPrices, upcTrends, uploadedUpcs } = useAppSelector((state) => state.upc);
+  const {
+    selectedMode,
+    salesComp,
+    forecast,
+    optBestPrices,
+    upcTrends,
+    uploadedUpcs,
+  } = useAppSelector((state) => state.upc);
 
   const handleModeSelect = (mode: number) => {
     dispatch(setSelectedMode(mode));

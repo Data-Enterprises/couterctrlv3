@@ -1,23 +1,23 @@
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { useAppSelector } from "../../../hooks";
+import { useAppSelector } from "../../../../hooks";
 import {
   setOptDisplayMode,
   setSelectedOptItem,
-} from "../../../features/upcSlice";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import type { UpcPriceOpt } from "../../../interfaces";
+} from "../../../../features/upcSlice";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import type { UpcPriceOpt } from "../../../../interfaces";
 
 // Components
-import MetricsCarousel from "./forecast/MetricsCarousel";
-import MetricsContainer from "../components/MetricsContainer";
-import UpcControls from "../components/UpcControls";
-import PriceOptBar from "../charts/PriceOptBar";
-import PriceOptGrid from "../charts/PriceOptGrid";
-import { exportData } from "../exportHeaders/utils";
-import { reset } from "../../../features/upcModalSlice";
-import { priceOptHeaders } from "../exportHeaders";
-import UpcModal from "../modal/UpcModal";
+import MetricsCarousel from "../forecast/MetricsCarousel";
+import MetricsContainer from "../../components/MetricsContainer";
+import UpcControls from "../../components/UpcControls";
+import PriceOptBar from "../../charts/PriceOptBar";
+import PriceOptGrid from "../../charts/PriceOptGrid";
+import { exportData } from "../../exportHeaders/utils";
+import { reset } from "../../../../features/upcModalSlice";
+import { priceOptHeaders } from "../../exportHeaders";
+import UpcModal from "../../modal/UpcModal";
 
 const PriceOpt = () => {
   const toast = useToast();
@@ -25,7 +25,7 @@ const PriceOpt = () => {
   const upcState = useAppSelector((state) => state.upc);
   const modal = useAppSelector((state) => state.upcModal);
   const [filteredItems, setFilteredItems] = useState<UpcPriceOpt[]>(
-    upcState.optBestPricesByUpc
+    upcState.optBestPricesByUpc,
   );
 
   useEffect(() => {
@@ -33,7 +33,7 @@ const PriceOpt = () => {
       setFilteredItems(upcState.optBestPricesByUpc);
     } else {
       const filtered = upcState.optBestPricesByUpc.filter((item) =>
-        upcState.selectedUpcs.includes(item.product_code)
+        upcState.selectedUpcs.includes(item.product_code),
       );
       setFilteredItems(filtered);
     }

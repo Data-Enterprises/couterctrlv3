@@ -14,7 +14,7 @@ import { getForecasting } from "../../../api/upc";
 import { stores, forecastResp, JsonErrorResp } from ".";
 
 // Components being tested
-import UpcList from "../../../pages/upc/wizard/UpcList";
+import UpcList from "../../../pages/upc/UpcList";
 // import type { JSX } from "react";
 
 vi.mock("../../../api/upc");

@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { useAppDispatch } from "../../../hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
+import { useAppDispatch } from "../../hooks";
+import { useToast } from "../../components/toasts/hooks/useToast";
 import { useUpcContext } from "./hooks";
 
 // modules
-import SalesComp from "../modules/SalesComp";
-import Forcast from "../modules/Forecast";
-import PriceOpt from "../modules/PriceOpt";
-import TrendDetector from "../modules/TrendDetector";
+import SalesComp from "./modules/salesComp/SalesComp";
+import Forcast from "./modules/forecast/Forecast";
+import PriceOpt from "./modules/priceOpt/PriceOpt";
+import TrendDetector from "./modules/trend/TrendDetector";
 import {
   resetDeeperLvlQueryUpcs,
   setBottomFiveTrends,
@@ -28,28 +28,28 @@ import {
   setUpcItems,
   setUpcList,
   setUpcTrends,
-} from "../../../features/upcSlice";
+} from "../../features/upcSlice";
 import {
   getForecasting,
   getPriceOpt,
   getSalesComp,
   getTrendDetect,
-} from "../../../api/upc";
+} from "../../api/upc";
 import type {
   JsonError,
   UpcForecast,
   UpcItem,
   UpcPriceOpt,
   UpcTrend,
-} from "../../../interfaces";
-import { colorCodes } from "../components";
-import { convertData, formatForecastExport } from "../utils";
+} from "../../interfaces";
+import { colorCodes } from "./components";
+import { convertData, formatForecastExport } from "./utils";
 
 import ModeSelect from "./components/ModeSelect";
-import StoreDatePicker from "../components/StoreDatePicker";
-import LoadingIndicator from "../../../components/loading/LoadingIndicator";
-import NoDataDisplay from "../components/NoDataDisplay";
-import UpcAssociation from "../modules/UpcAssociation";
+import StoreDatePicker from "./components/StoreDatePicker";
+import LoadingIndicator from "../../components/loading/LoadingIndicator";
+import NoDataDisplay from "./components/NoDataDisplay";
+import UpcAssociation from "./modules/associate/UpcAssociation";
 
 const UpcList = () => {
   const toast = useToast();

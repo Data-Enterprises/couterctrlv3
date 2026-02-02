@@ -15,7 +15,7 @@ import { getSalesComp } from "../../../api/upc";
 import { stores, groups, salesCompResp, JsonErrorResp } from ".";
 
 // Components being tested
-import UpcList from "../../../pages/upc/wizard/UpcList";
+import UpcList from "../../../pages/upc/UpcList";
 import { setSelectedStores } from "../../../features/upcSlice";
 
 vi.mock("../../../api/upc");

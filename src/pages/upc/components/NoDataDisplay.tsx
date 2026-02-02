@@ -1,4 +1,4 @@
-import { useUpcContext } from "../wizard/hooks";
+import { useUpcContext } from "../hooks";
 
 const NoDataDisplay = () => {
   const { selectedMode } = useUpcContext();
