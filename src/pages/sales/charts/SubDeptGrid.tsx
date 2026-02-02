@@ -67,18 +67,17 @@ const SubDeptGrid = () => {
 
   const handleSelect = (subDept: string | number) => {
     const d = groupSubs.find((s) => s.sub_department === Number(subDept));
-    if (!d) return;
     const selected: TopSub = {
-      sub_department: d.sub_department,
-      sub_department_description: d.sub_department_description,
-      total_sales: d.total_sales,
-      net_sales: d.net_sales,
-      qty: d.qty,
-      digital_coupons: d.digital_coupons,
-      elec_instore_coupons: d.elec_instore_coupons,
-      elec_store_coupons: d.elec_store_coupons,
-      store_coupon: d.store_coupon,
-      total_tax: d.total_tax,
+      sub_department: d!.sub_department,
+      sub_department_description: d!.sub_department_description,
+      total_sales: d!.total_sales,
+      net_sales: d!.net_sales,
+      qty: d!.qty,
+      digital_coupons: d!.digital_coupons,
+      elec_instore_coupons: d!.elec_instore_coupons,
+      elec_store_coupons: d!.elec_store_coupons,
+      store_coupon: d!.store_coupon,
+      total_tax: d!.total_tax,
     };
     dispatch(setSelectedSubDept(selected));
   };
@@ -105,6 +104,7 @@ const SubDeptGrid = () => {
               (topSubDept?.sub_department_description as string) || ""
             } // set default to top sub dept
             onSelect={handleSelect}
+            id={1}
           />
         </div>
       )}

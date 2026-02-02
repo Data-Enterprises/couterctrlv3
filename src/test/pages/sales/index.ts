@@ -391,6 +391,8 @@ export const groupTopTen = {
   },
 };
 
+export const noSubData = { data: { error: 0, success: true, subs: [] } };
+
 export const weekly = {
   data: {
     error: 0,
@@ -2110,6 +2112,23 @@ export const sub_sales = {
     subs: [
       {
         sale_date: "2025-12-09T00:00:00",
+        storeid: 2,
+        store_name: "Store 2",
+        store_number: "2",
+        sub_department: 1,
+        sub_department_description: "Sub 1",
+        total_sales: 3890.76,
+        net_sales: 3886.76,
+        total_tax: 0,
+        qty: 1282,
+        weight: 0,
+        elec_instore_coupons: 4,
+        elec_store_coupons: 0,
+        digital_coupons: 0,
+        store_coupon: 0,
+      },
+      {
+        sale_date: "2025-12-10T00:00:00",
         storeid: 2,
         store_name: "Store 2",
         store_number: "2",

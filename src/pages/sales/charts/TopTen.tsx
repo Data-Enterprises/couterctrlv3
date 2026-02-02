@@ -40,13 +40,7 @@ const TopTen = () => {
   });
 
   useEffect(() => {
-    if (topTenItems.length === 0) {
-      setTopTen([]);
-      setSelectedTopTenItem(null);
-      return;
-    }
     const p = selectedSalesPanel;
-
     const filtered = [...topTenItems].filter((item) => {
       const storeMatch = p.storeid ? item.storeid === p.storeid : true;
       return storeMatch;
@@ -121,7 +115,9 @@ const TopTen = () => {
   return (
     <div className="bg-custom-white rounded-lg shadow-lg ">
       <div className="font-medium px-2 py-1 flex justify-between items-center">
-        <div>{selectedSalesPanel.sale_date ? "Daily" : "Weekly"} Top Ten Items</div>
+        <div>
+          {selectedSalesPanel.sale_date ? "Daily" : "Weekly"} Top Ten Items
+        </div>
         {isMobile && (
           <SingleSelect
             data={mobileData}
@@ -131,11 +127,12 @@ const TopTen = () => {
             innerClass="py-1"
             className="font-normal text-sm w-1/2 mt-1"
             onSelect={handleSelect}
+            id={2}
           />
         )}
       </div>
       <div className="md:grid md:grid-cols-[55%_42%] gap-2 h-[90%]">
-        <div>
+        <div data-testid="top-10-chart">
           {!isMobile ? (
             <ResponsiveBar
               data={barData}
@@ -239,6 +236,7 @@ const TopTen = () => {
               <div className="flex gap-1 items-center relative">
                 <div className="text-content/60">GPM:</div>
                 <QuestionMarkCircleIcon
+                  data-testid="gpm-tooltip-icon"
                   className="inline-block w-4 h-4 text-content/30 hover:text-blue-200 cursor-default transition-all duration-200"
                   onMouseEnter={() => handleTooltip("gpm")}
                   onMouseLeave={() => handleTooltip("gpm")}
@@ -261,6 +259,7 @@ const TopTen = () => {
               <div className="flex gap-1 items-center relative">
                 <div className="text-content/60">RPU:</div>
                 <QuestionMarkCircleIcon
+                  data-testid="rpu-tooltip-icon"
                   className="inline-block w-4 h-4 text-content/30 hover:text-blue-200 cursor-default transition-all duration-200"
                   onMouseEnter={() => handleTooltip("rpu")}
                   onMouseLeave={() => handleTooltip("rpu")}
@@ -285,6 +284,7 @@ const TopTen = () => {
               <div className="flex gap-1 items-center relative">
                 <div className="text-content/60">PPU:</div>
                 <QuestionMarkCircleIcon
+                  data-testid="ppu-tooltip-icon"
                   className="inline-block w-4 h-4 text-content/30 hover:text-blue-200 cursor-default transition-all duration-200"
                   onMouseEnter={() => handleTooltip("ppu")}
                   onMouseLeave={() => handleTooltip("ppu")}
@@ -310,6 +310,7 @@ const TopTen = () => {
               <div className="flex gap-1 items-center relative">
                 <div className="text-content/60">CPU:</div>
                 <QuestionMarkCircleIcon
+                  data-testid="cpu-tooltip-icon"
                   className="inline-block w-4 h-4 text-content/30 hover:text-blue-200 cursor-default transition-all duration-200"
                   onMouseEnter={() => handleTooltip("cpu")}
                   onMouseLeave={() => handleTooltip("cpu")}
