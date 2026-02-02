@@ -1,7 +1,7 @@
 import type { SubSale } from "../../../interfaces";
 import { useAppSelector } from "../../../hooks";
 import { useEffect, useState } from "react";
-import type { TopSub } from "../graphs";
+import type { TopSub } from "../components";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import {
   ArrowTrendingUpIcon,

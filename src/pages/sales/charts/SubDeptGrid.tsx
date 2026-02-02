@@ -1,6 +1,6 @@
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { AgGridReact } from "ag-grid-react";
-import { theme, subCols, type TopSub } from "../graphs";
+import { theme, subCols, type TopSub } from "../components";
 ModuleRegistry.registerModules([AllCommunityModule]);
 import {
   AllCommunityModule,

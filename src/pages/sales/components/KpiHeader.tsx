@@ -1,8 +1,8 @@
 import { useAppSelector } from "../../../hooks";
-import TopSubDept from "../graphs/TopSub";
-import TotalsBar from "../graphs/TotalsBar";
-import TopTotals from "../graphs/TopTotals";
-import TopCoupons from "../graphs/TopCoupons";
+import TopSubDept from "./TopSub";
+import TotalsBar from "./TotalsBar";
+import TopTotals from "./TopTotals";
+import TopCoupons from "./TopCoupons";
 import SubDeptGrid from "../charts/SubDeptGrid";
 
 const KpiHeader = () => {

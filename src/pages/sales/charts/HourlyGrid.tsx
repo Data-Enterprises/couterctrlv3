@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAppSelector } from "../../../hooks";
-import { type HourlyTotal } from "../graphs";
+import { type HourlyTotal } from "../components";
 import { ResponsiveBar } from "@nivo/bar";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 
