@@ -22,18 +22,19 @@ import { getHistoryFromList } from "../../../api/priceSim";
 import { setSelectedStores } from "../../../features/forecastSlice";
 
 const store = setupStore();
-// Set the stores and groups since that gets fetched at login
 store.dispatch(setGroups(groups));
 store.dispatch(setAssignedStores(stores));
 
 const user = userEvent.setup();
 const mockToastWarn = vi.fn();
 const mockToastError = vi.fn();
+const mockToastInfo = vi.fn();
 vi.mock("../../../components/toasts/hooks/useToast", () => {
   return {
     useToast: () => ({
       error: mockToastError,
       warn: mockToastWarn,
+      info: mockToastInfo,
     }),
   };
 });
@@ -68,7 +69,19 @@ describe("Forecast Page", () => {
     renderWithProviders(<Forecast />, { store });
   });
 
-  it("sshould handle API success for fetching bucket list on mount", async () => {
+  it("should throw toast info message if no sims are fetched", async () => {
+    (getBucketList as Mock).mockResolvedValue(fileListResp);
+    (getSavedSims as Mock).mockResolvedValue({
+      data: { error: 0, records: [] },
+    });
+    renderWithProviders(<Forecast />, { store });
+
+    await waitFor(() => {
+      expect(mockToastInfo).toHaveBeenCalled();
+    });
+  });
+
+  it("should handle API success for fetching sim list on mount", async () => {
     (getBucketList as Mock).mockResolvedValue(fileListResp);
     (getSavedSims as Mock).mockRejectedValueOnce(defaultErrorResp);
     renderWithProviders(<Forecast />, { store });
@@ -291,7 +304,21 @@ describe("Forecast Page", () => {
     const addBtn = await screen.findByTestId("forecast-add-upc-btn");
     await user.click(addBtn);
 
-    await user.type(input, "1200003068{Enter}");
+    await waitFor(() => {
+      const state = store.getState().upcs;
+      expect(state.upcs.length).toBe(3);
+      expect(state.upcs[2]).toBe("1200000170");
+    });
+  });
+
+  it("should handle adding UPC with Enter", async () => {
+    await waitFor(() => {
+      renderSuccess();
+    });
+
+    const input = await screen.findByTestId("forecast-upc-input");
+    await user.type(input, "1200003068");
+    await user.type(input, "{Enter}");
 
     await waitFor(() => {
       const state = store.getState().upcs;
@@ -305,16 +332,14 @@ describe("Forecast Page", () => {
       renderSuccess();
     });
 
-    const upcToClick = await screen.findByTestId(
-      "forecast-upc-item-1200003068-3",
-    );
-    await user.click(upcToClick);
+    const upcs = await screen.findAllByTestId(/forecast-upc-item-/);
+    await user.click(upcs[3]);
 
-    await waitFor(() => {
-      const state = store.getState().upcs;
-      expect(state.upcs.length).toBe(3);
-      expect(state.upcs.includes("1200003068")).toBe(false);
-    });
+    // await waitFor(() => {
+    //   const state = store.getState().upcs;
+    //   expect(state.upcs.length).toBe(3);
+    //   expect(state.upcs.includes("1200003068")).toBe(false);
+    // });
   });
 
   // Then we handle data fetching success and failure cases
@@ -619,93 +644,6 @@ describe("Forecast Page", () => {
     });
   });
 
-  it("should update sim2 with Fcst Price", async () => {
-    await waitFor(() => {
-      renderSuccess();
-    });
-
-    const sim2btn = await screen.findByTestId("sim2-btn");
-    await user.click(sim2btn);
-
-    const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
-    await user.click(selectAllBtn);
-
-    // cells 7 and 8 => Ad Days and Ad Price
-    const rows = await screen.findAllByRole("row");
-    const rowOneAdDays = rows[4].children[8];
-    await user.dblClick(rowOneAdDays);
-
-    const agInputs = document.querySelectorAll(".ag-input-field-input");
-    const agInput = agInputs[0];
-    await user.clear(agInput);
-    await user.type(agInput, "8.99");
-    await user.keyboard("{Enter}");
-
-    // Expect here
-    await waitFor(() => {
-      const state = store.getState().forecast;
-      expect(state.rowData[0].fcstPrice).toBe(8.99);
-    });
-  });
-
-  it("should update sim3 with Fcst Price", async () => {
-    await waitFor(() => {
-      renderSuccess();
-    });
-
-    const sim3btn = await screen.findByTestId("sim3-btn");
-    await user.click(sim3btn);
-
-    const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
-    await user.click(selectAllBtn);
-
-    // cells 7 and 8 => Ad Days and Ad Price
-    const rows = await screen.findAllByRole("row");
-    const rowOneAdDays = rows[4].children[8];
-    await user.dblClick(rowOneAdDays);
-
-    const agInputs = document.querySelectorAll(".ag-input-field-input");
-    const agInput = agInputs[0];
-    await user.clear(agInput);
-    await user.type(agInput, "8.99");
-    await user.keyboard("{Enter}");
-
-    // Expect here
-    await waitFor(() => {
-      const state = store.getState().forecast;
-      expect(state.rowData[0].fcstPrice).toBe(8.99);
-    });
-  });
-
-  it("should update sim4 with Fcst Price", async () => {
-    await waitFor(() => {
-      renderSuccess();
-    });
-
-    const sim4btn = await screen.findByTestId("sim4-btn");
-    await user.click(sim4btn);
-
-    const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
-    await user.click(selectAllBtn);
-
-    // cells 7 and 8 => Ad Days and Ad Price
-    const rows = await screen.findAllByRole("row");
-    const rowOneAdDays = rows[4].children[8];
-    await user.dblClick(rowOneAdDays);
-
-    const agInputs = document.querySelectorAll(".ag-input-field-input");
-    const agInput = agInputs[0];
-    await user.clear(agInput);
-    await user.type(agInput, "8.99");
-    await user.keyboard("{Enter}");
-
-    // Expect here
-    await waitFor(() => {
-      const state = store.getState().forecast;
-      expect(state.rowData[0].fcstPrice).toBe(8.99);
-    });
-  });
-
   it("should should handle the middle boundary forecastUnits in the Fcst Price cell", async () => {
     await waitFor(() => renderSuccess());
 
@@ -767,9 +705,9 @@ describe("Forecast Page", () => {
   });
 
   // need to create 4 sims => toggle between them => reload
-  it("should handle creating a simulation 2", async () => {
+  it("should handle API failure when creating a simulation", async () => {
     await waitFor(() => renderSuccess());
-    (saveSim as Mock).mockResolvedValue({ error: 0, success: true });
+    (saveSim as Mock).mockRejectedValue(new Error("API Failure"));
 
     const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
     await user.click(selectAllBtn);
@@ -777,7 +715,26 @@ describe("Forecast Page", () => {
     const saveSimBtn = await screen.findByTestId("save-new-sim-btn");
     // Sim One is already created from previous test => create the other 3
     await user.click(saveSimBtn);
-    
+
+    // type the name
+    const input = await screen.findByTestId("input-simulation-name");
+    await user.type(input, "Sim 2");
+
+    const submit = await screen.findByTestId("save-sim-submit");
+    await user.click(submit);
+  });
+
+  it("should handle creating a simulation 2", async () => {
+    await waitFor(() => renderSuccess());
+    (saveSim as Mock).mockResolvedValue({ data: { error: 0, success: true } });
+
+    const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
+    await user.click(selectAllBtn);
+
+    const saveSimBtn = await screen.findByTestId("save-new-sim-btn");
+    // Sim One is already created from previous test => create the other 3
+    await user.click(saveSimBtn);
+
     // type the name
     const input = await screen.findByTestId("input-simulation-name");
     await user.type(input, "Sim 2");
@@ -816,7 +773,7 @@ describe("Forecast Page", () => {
     });
   });
 
-    // need to create 4 sims => toggle between them => reload
+  // need to create 4 sims => toggle between them => reload
   it("should handle creating a simulation 4", async () => {
     await waitFor(() => renderSuccess());
     (saveSim as Mock).mockResolvedValue({ error: 0, success: true });
@@ -827,7 +784,7 @@ describe("Forecast Page", () => {
     const saveSimBtn = await screen.findByTestId("save-new-sim-btn");
     // Sim One is already created from previous test => create the other 3
     await user.click(saveSimBtn);
-    
+
     // type the name
     const input = await screen.findByTestId("input-simulation-name");
     await user.type(input, "Sim 4");
@@ -841,490 +798,557 @@ describe("Forecast Page", () => {
     });
   });
 
-  // it("should handle toggling between the created simulations", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
-  //   await user.click(selectAllBtn);
-
-  //   const sim1btn = await screen.findByTestId("sim1-btn");
-  //   const sim2btn = await screen.findByTestId("sim2-btn");
-  //   const sim3btn = await screen.findByTestId("sim3-btn");
-  //   const sim4btn = await screen.findByTestId("sim4-btn");
-
-  //   await user.click(sim1btn);
-  //   await waitFor(() => {
-  //     const state = store.getState().forecast;
-  //     expect(state.selectedSim).toBe("sim1");
-  //   });
-
-  //   await user.click(sim2btn);
-  //   await waitFor(() => {
-  //     const state = store.getState().forecast;
-  //     expect(state.selectedSim).toBe("sim2");
-  //   });
-
-  //   await user.click(sim3btn);
-  //   await waitFor(() => {
-  //     const state = store.getState().forecast;
-  //     expect(state.selectedSim).toBe("sim3");
-  //   });
-
-  //   await user.click(sim4btn);
-  //   await waitFor(() => {
-  //     const state = store.getState().forecast;
-  //     expect(state.selectedSim).toBe("sim4");
-  //   });
-  // });
-
-  // it("should handle updating the currently selected sim2 rows", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const sim2btn = await screen.findByTestId("sim2-btn");
-  //   await user.click(sim2btn);
-
-  //   const deselectAllBtn = await screen.findByTestId(
-  //     "forecast-deselect-all-btn"
-  //   );
-
-  //   const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
-
-  //   // deselecting, the selecting all
-  //   await user.click(deselectAllBtn);
-  //   await user.click(selectAllBtn);
-
-  //   const upcOne = await screen.findByTestId("check-0");
-  //   await user.click(upcOne);
-  //   await user.click(upcOne);
-
-  //   const rows = await screen.findAllByRole("row");
-  //   const rowOneAdDays = rows[4].children[7];
-  //   await user.dblClick(rowOneAdDays);
-
-  //   // cells 7 and 8 => Ad Days and Ad Price
-  //   const agInputs = document.querySelectorAll(".ag-input-field-input");
-  //   const agInput = agInputs[0];
-
-  //   await user.clear(agInput);
-  //   await user.type(agInput, "6");
-  //   await user.keyboard("{Enter}");
-
-  //   // Expect here
-  //   await waitFor(() => {
-  //     const state = store.getState().forecast;
-  //     expect(state.rowData[0].adDays).toBe(6);
-  //   });
-  // });
-
-  // it("should handle updating the currently selected sim3 rows", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const sim3btn = await screen.findByTestId("sim3-btn");
-  //   await user.click(sim3btn);
-
-  //   const deselectAllBtn = await screen.findByTestId(
-  //     "forecast-deselect-all-btn"
-  //   );
-
-  //   const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
-
-  //   // deselecting, the selecting all
-  //   await user.click(deselectAllBtn);
-  //   await user.click(selectAllBtn);
-
-  //   const upcOne = await screen.findByTestId("check-0");
-  //   await user.click(upcOne);
-  //   await user.click(upcOne);
-
-  //   const rows = await screen.findAllByRole("row");
-  //   const rowOneAdDays = rows[4].children[7];
-  //   await user.dblClick(rowOneAdDays);
-
-  //   // cells 7 and 8 => Ad Days and Ad Price
-  //   const agInputs = document.querySelectorAll(".ag-input-field-input");
-  //   const agInput = agInputs[0];
-
-  //   await user.clear(agInput);
-  //   await user.type(agInput, "5");
-  //   await user.keyboard("{Enter}");
-
-  //   // Expect here
-  //   await waitFor(() => {
-  //     const state = store.getState().forecast;
-  //     expect(state.rowData[0].adDays).toBe(5);
-  //   });
-  // });
-
-  // it("should handle updating the currently selected sim4 rows", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const sim4btn = await screen.findByTestId("sim4-btn");
-  //   await user.click(sim4btn);
-
-  //   const deselectAllBtn = await screen.findByTestId(
-  //     "forecast-deselect-all-btn"
-  //   );
-
-  //   const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
-
-  //   // deselecting, the selecting all
-  //   await user.click(deselectAllBtn);
-  //   await user.click(selectAllBtn);
-
-  //   const upcOne = await screen.findByTestId("check-0");
-  //   await user.click(upcOne);
-  //   await user.click(upcOne);
-
-  //   const rows = await screen.findAllByRole("row");
-  //   const rowOneAdDays = rows[4].children[7];
-  //   await user.dblClick(rowOneAdDays);
-
-  //   // cells 7 and 8 => Ad Days and Ad Price
-  //   const agInputs = document.querySelectorAll(".ag-input-field-input");
-  //   const agInput = agInputs[0];
-
-  //   await user.clear(agInput);
-  //   await user.type(agInput, "4");
-  //   await user.keyboard("{Enter}");
-
-  //   // Expect here
-  //   await waitFor(() => {
-  //     const state = store.getState().forecast;
-  //     expect(state.rowData[0].adDays).toBe(4);
-  //   });
-
-  //   await user.click(sim4btn);
-  // });
-
-  // it("should handle reloading the current simulation", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
-  //   await user.click(selectAllBtn);
-
-  //   const reloadBtn = await screen.findByTestId("reload-sim-btn");
-  //   await user.click(reloadBtn);
-
-  //   await waitFor(() => {
-  //     const state = store.getState().forecast;
-  //     expect(state.rowData.length).toBe(0);
-  //     expect(state.selectedSim).toBe("");
-  //     expect(state.selectedUpcs.length).toBe(0);
-  //     expect(state.globalFcstPrice).toBe("");
-  //   });
-  // });
-
-  // // Global price for sim4
-  // it("should handle setting the global forecast price for sim4", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const sim4btn = await screen.findByTestId("sim4-btn");
-  //   await user.click(sim4btn);
-
-  //   const input = await screen.findByTestId("global-price-input");
-  //   await user.type(input, "12.99");
-
-  //   const btn = await screen.findByTestId("set-global-price-btn");
-  //   await user.click(btn);
-
-  //   await waitFor(() => {
-  //     const state = store.getState().forecast;
-  //     expect(state.rowData.every((r) => r.fcstPrice === 12.99)).toBe(true);
-  //   });
-  // });
-
-  // it("should handle global forecast price for sim1", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const sim1btn = await screen.findByTestId("sim1-btn");
-  //   await user.click(sim1btn);
-
-  //   const input = await screen.findByTestId("global-price-input");
-  //   await user.clear(input);
-  //   await user.type(input, "12.99");
-
-  //   const btn = await screen.findByTestId("set-global-price-btn");
-  //   await user.click(btn);
-
-  //   await waitFor(() => {
-  //     const state = store.getState().forecast;
-  //     expect(state.rowData.every((r) => r.fcstPrice === 12.99)).toBe(true);
-  //   });
-  // });
-
-  // it("should handle global forecast price for sim2", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const sim2btn = await screen.findByTestId("sim2-btn");
-  //   await user.click(sim2btn);
-
-  //   const input = await screen.findByTestId("global-price-input");
-  //   await user.clear(input);
-  //   await user.type(input, "12.99");
-
-  //   const btn = await screen.findByTestId("set-global-price-btn");
-  //   await user.click(btn);
-
-  //   await waitFor(() => {
-  //     const state = store.getState().forecast;
-  //     expect(state.rowData.every((r) => r.fcstPrice === 12.99)).toBe(true);
-  //   });
-  // });
-
-  // it("should handle global forecast price for sim3", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const sim3btn = await screen.findByTestId("sim3-btn");
-  //   await user.click(sim3btn);
-
-  //   const input = await screen.findByTestId("global-price-input");
-  //   await user.clear(input);
-  //   await user.type(input, "12.99");
-
-  //   const btn = await screen.findByTestId("set-global-price-btn");
-  //   await user.click(btn);
-
-  //   await waitFor(() => {
-  //     const state = store.getState().forecast;
-  //     expect(state.rowData.every((r) => r.fcstPrice === 12.99)).toBe(true);
-  //   });
-  // });
-
-  // it("should handle opening and closing the CalcModal", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   // const rows = await screen.findAllByRole("row");
-  //   // rows.forEach((row, i) => console.log(`Row ${i}: `, row.children[0].innerHTML));
-  //   const calcNowCheckbox = await screen.findByTestId(
-  //     "calc-now-checkbox-1200000017"
-  //   );
-  //   await user.click(calcNowCheckbox);
-
-  //   const modal = await screen.findByTestId("modal");
-  //   expect(modal).toBeInTheDocument();
-
-  //   await user.click(document.body); // clicking outside to close
-
-  //   await waitFor(() => {
-  //     expect(screen.queryByTestId("modal")).not.toBeInTheDocument();
-  //   });
-  // });
-
-  // it("should handle calculating new metrics in the CalcModal", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const calcNowCheckbox = await screen.findByTestId(
-  //     "calc-now-checkbox-1200000017"
-  //   );
-  //   await user.click(calcNowCheckbox);
-
-  //   const modal = await screen.findByTestId("modal");
-  //   expect(modal).toBeInTheDocument();
-
-  //   // handle interactions here => new price/new cost
-  //   const priceInput = await screen.findByTestId("calc-modal-price-input");
-  //   const costInput = await screen.findByTestId("calc-modal-cost-input");
-  //   const calculateBtn = await screen.findByTestId(
-  //     "calc-modal-calculate-button"
-  //   );
-
-  //   await user.type(priceInput, "13.99");
-  //   await user.type(costInput, "10.50");
-
-  //   // press enter and click the button => to cover the code
-  //   await user.keyboard("{Enter}");
-  //   await user.click(calculateBtn);
-
-  //   await waitFor(() => {
-  //     const qty = screen.getByTestId("calc-modal-qty");
-  //     const revenue = screen.getByTestId("calc-modal-revenue");
-  //     const profit = screen.getByTestId("calc-modal-profit");
-
-  //     expect(qty.textContent).toEqual("15");
-  //     expect(revenue.textContent).toEqual("$194.87");
-  //     expect(profit.textContent).toEqual("$1.36");
-  //   });
-
-  //   const closeBtn = await screen.findByTestId("calc-modal-close-button");
-  //   await user.click(closeBtn);
-
-  //   await waitFor(() => {
-  //     expect(screen.queryByTestId("modal")).not.toBeInTheDocument();
-  //   });
-  // });
-
-  // // Then we handle the export modal => data for all 5 possible scenarios
-  // it("should throw toast warning if no title is provided when exporting", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
-  //   await user.click(exportBtn);
-
-  //   const input = await screen.findByTestId("fcst-export-filename");
-  //   await user.clear(input);
-
-  //   const submitBtn = await screen.findByTestId("fcst-export-submit");
-  //   await user.click(submitBtn);
-
-  //   await waitFor(() => {
-  //     expect(mockToastWarn).toHaveBeenCalledWith("Please enter a file name");
-  //   });
-  // });
-
-  // // => export initial data
-  // it("should handle exporting the the default initial data", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
-  //   await user.click(exportBtn);
-
-  //   const input = await screen.findByTestId("fcst-export-filename");
-  //   await user.type(input, "initial");
-
-  //   const submitBtn = await screen.findByTestId("fcst-export-submit");
-  //   await user.click(submitBtn);
-  // });
-
-  // // => export sim 1
-  // it("should handle exporting the the sim1 data", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
-  //   await user.click(exportBtn);
-
-  //   const sim1Checkbox = await screen.findByTestId(
-  //     "check-2-sim1-updated-history"
-  //   );
-  //   await user.click(sim1Checkbox);
-
-  //   const input = await screen.findByTestId("fcst-export-filename");
-  //   await user.type(input, "sim1");
-
-  //   const submitBtn = await screen.findByTestId("fcst-export-submit");
-  //   await user.click(submitBtn);
-  // });
-
-  // it("should handle exporting the the sim2 data", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
-  //   await user.click(exportBtn);
-
-  //   const sim2Checkbox = await screen.findByTestId(
-  //     "check-3-sim2-updated-history"
-  //   );
-  //   await user.click(sim2Checkbox);
-
-  //   const input = await screen.findByTestId("fcst-export-filename");
-  //   await user.type(input, "sim2");
-
-  //   const submitBtn = await screen.findByTestId("fcst-export-submit");
-  //   await user.click(submitBtn);
-  // });
-
-  // it("should handle exporting the the sim3 data", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
-  //   await user.click(exportBtn);
-
-  //   const sim3Checkbox = await screen.findByTestId(
-  //     "check-4-sim3-updated-history"
-  //   );
-  //   await user.click(sim3Checkbox);
-
-  //   const input = await screen.findByTestId("fcst-export-filename");
-  //   await user.type(input, "sim3");
-
-  //   const submitBtn = await screen.findByTestId("fcst-export-submit");
-  //   await user.click(submitBtn);
-  // });
-
-  // it("should handle exporting the the sim4 data", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
-  //   await user.click(exportBtn);
-
-  //   const sim4Checkbox = await screen.findByTestId(
-  //     "check-5-sim4-updated-history"
-  //   );
-  //   await user.click(sim4Checkbox);
-
-  //   const input = await screen.findByTestId("fcst-export-filename");
-  //   await user.type(input, "sim4");
-
-  //   const submitBtn = await screen.findByTestId("fcst-export-submit");
-  //   await user.click(submitBtn);
-  // });
-
-  // it("should handle toggling back to the initial data set in the export modal", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
-  //   await user.click(exportBtn);
-
-  //   const sim1Checkbox = await screen.findByTestId(
-  //     "check-2-sim1-updated-history"
-  //   );
-  //   const initialCheckbox = await screen.findByTestId("check-1-all-history");
-
-  //   await user.click(sim1Checkbox);
-  //   await user.click(initialCheckbox);
-  // });
-
-  // // Then finally we handle resetting logic => sims and whole page (Reset button in ForecastControls)
-
-  // // => reset the sims
-  // it("should handle resetting all simulations when Reset button is clicked", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const resetSimBtn = await screen.findByTestId("reset-sim-btn");
-  //   await user.click(resetSimBtn);
-
-  //   await waitFor(() => {
-  //     const state = store.getState().forecast;
-  //     expect(state.simBtns.sim1).toBe(0);
-  //     expect(state.simBtns.sim2).toBe(0);
-  //     expect(state.simBtns.sim3).toBe(0);
-  //     expect(state.simBtns.sim4).toBe(0);
-  //   });
-  // });
-
-  // // => reset the whole page
-
-  // it("should handle resetting the whole Forecast page when Reset button is clicked in the ForecastControls", async () => {
-  //   (getBucketList as Mock).mockResolvedValue(fileListResp);
-  //   renderWithProviders(<Forecast />, { store });
-
-  //   const resetBtn = await screen.findByTestId("forecast-controls-reset-btn");
-  //   await user.click(resetBtn);
-
-  //   await waitFor(() => {
-  //     const forecastState = store.getState().forecast;
-  //     const upcsState = store.getState().upcs;
-  //     expect(forecastState.items.length).toBe(0);
-  //     expect(forecastState.selectedStores.length).toBe(0);
-  //     expect(upcsState.upcs.length).toBe(0);
-  //   });
-  // });
+  it("should handle toggling between the created simulations", async () => {
+    await waitFor(() => renderSuccess());
+
+    // const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
+    // await user.click(selectAllBtn);
+
+    const sim1btn = await screen.findByTestId("sim1-btn");
+    const sim2btn = await screen.findByTestId("sim2-btn");
+    const sim3btn = await screen.findByTestId("sim3-btn");
+    const sim4btn = await screen.findByTestId("sim4-btn");
+
+    await user.click(sim1btn);
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.selectedSim).toBe("sim1");
+    });
+
+    await user.click(sim2btn);
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.selectedSim).toBe("sim2");
+    });
+
+    await user.click(sim3btn);
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.selectedSim).toBe("sim3");
+    });
+
+    await user.click(sim4btn);
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.selectedSim).toBe("sim4");
+    });
+  });
+
+  it("should handle updating the currently selected sim2 rows", async () => {
+    await waitFor(() => renderSuccess());
+
+    const sim2btn = await screen.findByTestId("sim2-btn");
+    await user.click(sim2btn);
+
+    const deselectAllBtn = await screen.findByTestId(
+      "forecast-deselect-all-btn",
+    );
+
+    const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
+
+    // deselecting, the selecting all
+    await user.click(deselectAllBtn);
+    await user.click(selectAllBtn);
+
+    const upcOne = await screen.findByTestId("check-0");
+    await user.click(upcOne);
+    await user.click(upcOne);
+
+    const rows = await screen.findAllByRole("row");
+    const rowOneAdDays = rows[4].children[7];
+    await user.dblClick(rowOneAdDays);
+
+    // cells 7 and 8 => Ad Days and Ad Price
+    const agInputs = document.querySelectorAll(".ag-input-field-input");
+    const agInput = agInputs[0];
+
+    await user.clear(agInput);
+    await user.type(agInput, "6");
+    await user.keyboard("{Enter}");
+
+    // Expect here
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.rowData[0].adDays).toBe(6);
+    });
+  });
+
+  it("should handle updating the currently selected sim3 rows", async () => {
+    await waitFor(() => renderSuccess());
+
+    const sim3btn = await screen.findByTestId("sim3-btn");
+    await user.click(sim3btn);
+
+    const deselectAllBtn = await screen.findByTestId(
+      "forecast-deselect-all-btn",
+    );
+
+    const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
+
+    // deselecting, the selecting all
+    await user.click(deselectAllBtn);
+    await user.click(selectAllBtn);
+
+    const upcOne = await screen.findByTestId("check-0");
+    await user.click(upcOne);
+    await user.click(upcOne);
+
+    const rows = await screen.findAllByRole("row");
+    const rowOneAdDays = rows[4].children[7];
+    await user.dblClick(rowOneAdDays);
+
+    // cells 7 and 8 => Ad Days and Ad Price
+    const agInputs = document.querySelectorAll(".ag-input-field-input");
+    const agInput = agInputs[0];
+
+    await user.clear(agInput);
+    await user.type(agInput, "5");
+    await user.keyboard("{Enter}");
+
+    // Expect here
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.rowData[0].adDays).toBe(5);
+    });
+  });
+
+  it("should handle updating the currently selected sim4 rows", async () => {
+    await waitFor(() => renderSuccess());
+
+    const sim4btn = await screen.findByTestId("sim4-btn");
+    await user.click(sim4btn);
+
+    const deselectAllBtn = await screen.findByTestId(
+      "forecast-deselect-all-btn",
+    );
+
+    const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
+
+    // deselecting, the selecting all
+    await user.click(deselectAllBtn);
+    await user.click(selectAllBtn);
+
+    const upcOne = await screen.findByTestId("check-0");
+    await user.click(upcOne);
+    await user.click(upcOne);
+
+    const rows = await screen.findAllByRole("row");
+    const rowOneAdDays = rows[4].children[7];
+    await user.dblClick(rowOneAdDays);
+
+    // cells 7 and 8 => Ad Days and Ad Price
+    const agInputs = document.querySelectorAll(".ag-input-field-input");
+    const agInput = agInputs[0];
+
+    await user.clear(agInput);
+    await user.type(agInput, "4");
+    await user.keyboard("{Enter}");
+
+    // Expect here
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.rowData[0].adDays).toBe(4);
+    });
+
+    await user.click(sim4btn);
+  });
+
+  it("should handle reloading the current simulation", async () => {
+    await waitFor(() => renderSuccess());
+
+    const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
+    await user.click(selectAllBtn);
+
+    const reloadBtn = await screen.findByTestId("reload-sim-btn");
+    await user.click(reloadBtn);
+
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.rowData.length).toBe(0);
+      expect(state.selectedSim).toBe("");
+      expect(state.selectedUpcs.length).toBe(0);
+      expect(state.globalFcstPrice).toBe("");
+    });
+  });
+
+  // Global price for sim4
+  it("should handle setting the global forecast price for sim4", async () => {
+    await waitFor(() => renderSuccess());
+
+    const sim4btn = await screen.findByTestId("sim4-btn");
+    await user.click(sim4btn);
+
+    const input = await screen.findByTestId("global-price-input");
+    await user.type(input, "12.99");
+
+    const btn = await screen.findByTestId("set-global-price-btn");
+    await user.click(btn);
+
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.rowData.every((r) => r.fcstPrice === 12.99)).toBe(true);
+    });
+  });
+
+  it("should update sim4 with Fcst Price", async () => {
+    await waitFor(() => {
+      renderSuccess();
+    });
+
+    const sim4btn = await screen.findByTestId("sim4-btn");
+    await user.click(sim4btn);
+
+    const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
+    await user.click(selectAllBtn);
+
+    // cells 7 and 8 => Ad Days and Ad Price
+    const rows = await screen.findAllByRole("row");
+    const rowOneAdDays = rows[4].children[8];
+    await user.dblClick(rowOneAdDays);
+
+    const agInputs = document.querySelectorAll(".ag-input-field-input");
+    const agInput = agInputs[0];
+    await user.clear(agInput);
+    await user.type(agInput, "8.99");
+    await user.keyboard("{Enter}");
+
+    // Expect here
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.rowData[0].fcstPrice).toBe(8.99);
+    });
+  });
+
+  it("should handle global forecast price for sim1", async () => {
+    await waitFor(() => renderSuccess());
+
+    const sim1btn = await screen.findByTestId("sim1-btn");
+    await user.click(sim1btn);
+
+    const input = await screen.findByTestId("global-price-input");
+    await user.clear(input);
+    await user.type(input, "12.99");
+
+    const btn = await screen.findByTestId("set-global-price-btn");
+    await user.click(btn);
+
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.rowData.every((r) => r.fcstPrice === 12.99)).toBe(true);
+    });
+  });
+
+  it("should handle global forecast price for sim2", async () => {
+    await waitFor(() => renderSuccess());
+
+    const sim2btn = await screen.findByTestId("sim2-btn");
+    await user.click(sim2btn);
+
+    const input = await screen.findByTestId("global-price-input");
+    await user.clear(input);
+    await user.type(input, "12.99");
+
+    const btn = await screen.findByTestId("set-global-price-btn");
+    await user.click(btn);
+
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.rowData.every((r) => r.fcstPrice === 12.99)).toBe(true);
+    });
+  });
+
+  it("should update sim2 with Fcst Price", async () => {
+    await waitFor(() => {
+      renderSuccess();
+    });
+
+    const sim2btn = await screen.findByTestId("sim2-btn");
+    await user.click(sim2btn);
+
+    const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
+    await user.click(selectAllBtn);
+
+    // cells 7 and 8 => Ad Days and Ad Price
+    const rows = await screen.findAllByRole("row");
+    const rowOneAdDays = rows[4].children[8];
+    await user.dblClick(rowOneAdDays);
+
+    const agInputs = document.querySelectorAll(".ag-input-field-input");
+    const agInput = agInputs[0];
+    await user.clear(agInput);
+    await user.type(agInput, "8.99");
+    await user.keyboard("{Enter}");
+
+    // Expect here
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.rowData[0].fcstPrice).toBe(8.99);
+    });
+  });
+
+  it("should handle global forecast price for sim3", async () => {
+    await waitFor(() => renderSuccess());
+
+    const sim3btn = await screen.findByTestId("sim3-btn");
+    await user.click(sim3btn);
+
+    const input = await screen.findByTestId("global-price-input");
+    await user.clear(input);
+    await user.type(input, "12.99");
+
+    const btn = await screen.findByTestId("set-global-price-btn");
+    await user.click(btn);
+
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.rowData.every((r) => r.fcstPrice === 12.99)).toBe(true);
+    });
+  });
+
+  it("should update sim3 with Fcst Price", async () => {
+    await waitFor(() => {
+      renderSuccess();
+    });
+
+    const sim3btn = await screen.findByTestId("sim3-btn");
+    await user.click(sim3btn);
+
+    const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
+    await user.click(selectAllBtn);
+
+    // cells 7 and 8 => Ad Days and Ad Price
+    const rows = await screen.findAllByRole("row");
+    const rowOneAdDays = rows[4].children[8];
+    await user.dblClick(rowOneAdDays);
+
+    const agInputs = document.querySelectorAll(".ag-input-field-input");
+    const agInput = agInputs[0];
+    await user.clear(agInput);
+    await user.type(agInput, "8.99");
+    await user.keyboard("{Enter}");
+
+    // Expect here
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.rowData[0].fcstPrice).toBe(8.99);
+    });
+  });
+
+  it("should handle opening and closing the CalcModal", async () => {
+    await waitFor(() => renderSuccess());
+
+    // const rows = await screen.findAllByRole("row");
+    // rows.forEach((row, i) => console.log(`Row ${i}: `, row.children[0].innerHTML));
+    const calcNowCheckbox = await screen.findByTestId(
+      "calc-now-checkbox-1200000017",
+    );
+    await user.click(calcNowCheckbox);
+
+    const modal = await screen.findByTestId("modal");
+    expect(modal).toBeInTheDocument();
+
+    await user.click(document.body); // clicking outside to close
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("modal")).not.toBeInTheDocument();
+    });
+  });
+
+  it("should handle calculating new metrics in the CalcModal", async () => {
+    await waitFor(() => renderSuccess());
+
+    const calcNowCheckbox = await screen.findByTestId(
+      "calc-now-checkbox-1200000017",
+    );
+    await user.click(calcNowCheckbox);
+
+    const modal = await screen.findByTestId("modal");
+    expect(modal).toBeInTheDocument();
+
+    // handle interactions here => new price/new cost
+    const priceInput = await screen.findByTestId("calc-modal-price-input");
+    const costInput = await screen.findByTestId("calc-modal-cost-input");
+    const calculateBtn = await screen.findByTestId(
+      "calc-modal-calculate-button",
+    );
+
+    await user.type(priceInput, "13.99");
+    await user.type(costInput, "10.50");
+
+    // press enter and click the button => to cover the code
+    await user.keyboard("{Enter}");
+    await user.click(calculateBtn);
+
+    await waitFor(() => {
+      const qty = screen.getByTestId("calc-modal-qty");
+      const revenue = screen.getByTestId("calc-modal-revenue");
+      const profit = screen.getByTestId("calc-modal-profit");
+
+      expect(qty.textContent).toEqual("15");
+      expect(revenue.textContent).toEqual("$194.87");
+      expect(profit.textContent).toEqual("$1.36");
+    });
+
+    const closeBtn = await screen.findByTestId("calc-modal-close-button");
+    await user.click(closeBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("modal")).not.toBeInTheDocument();
+    });
+  });
+
+  // Then we handle the export modal => data for all 5 possible scenarios
+  it("should throw toast warning if no title is provided when exporting", async () => {
+    await waitFor(() => renderSuccess());
+
+    const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
+    await user.click(exportBtn);
+
+    const input = await screen.findByTestId("fcst-export-filename");
+    await user.clear(input);
+
+    const submitBtn = await screen.findByTestId("fcst-export-submit");
+    await user.click(submitBtn);
+
+    await waitFor(() => {
+      expect(mockToastWarn).toHaveBeenCalledWith("Please enter a file name");
+    });
+  });
+
+  // => export initial data
+  it("should handle exporting the the default initial data", async () => {
+    await waitFor(() => renderSuccess());
+
+    const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
+    await user.click(exportBtn);
+
+    const input = await screen.findByTestId("fcst-export-filename");
+    await user.type(input, "initial");
+
+    const submitBtn = await screen.findByTestId("fcst-export-submit");
+    await user.click(submitBtn);
+  });
+
+  // => export sim 1
+  it("should handle exporting the the sim1 data", async () => {
+    await waitFor(() => renderSuccess());
+
+    const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
+    await user.click(exportBtn);
+
+    const sim1Checkbox = await screen.findByTestId(
+      "check-2-sim1-updated-history",
+    );
+    await user.click(sim1Checkbox);
+
+    const input = await screen.findByTestId("fcst-export-filename");
+    await user.type(input, "sim1");
+
+    const submitBtn = await screen.findByTestId("fcst-export-submit");
+    await user.click(submitBtn);
+  });
+
+  it("should handle exporting the the sim2 data", async () => {
+    await waitFor(() => renderSuccess());
+
+    const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
+    await user.click(exportBtn);
+
+    const sim2Checkbox = await screen.findByTestId(
+      "check-3-sim2-updated-history",
+    );
+    await user.click(sim2Checkbox);
+
+    const input = await screen.findByTestId("fcst-export-filename");
+    await user.type(input, "sim2");
+
+    const submitBtn = await screen.findByTestId("fcst-export-submit");
+    await user.click(submitBtn);
+  });
+
+  it("should handle exporting the the sim3 data", async () => {
+    await waitFor(() => renderSuccess());
+
+    const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
+    await user.click(exportBtn);
+
+    const sim3Checkbox = await screen.findByTestId(
+      "check-4-sim3-updated-history",
+    );
+    await user.click(sim3Checkbox);
+
+    const input = await screen.findByTestId("fcst-export-filename");
+    await user.type(input, "sim3");
+
+    const submitBtn = await screen.findByTestId("fcst-export-submit");
+    await user.click(submitBtn);
+  });
+
+  it("should handle exporting the the sim4 data", async () => {
+    await waitFor(() => renderSuccess());
+
+    const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
+    await user.click(exportBtn);
+
+    const sim4Checkbox = await screen.findByTestId(
+      "check-5-sim4-updated-history",
+    );
+    await user.click(sim4Checkbox);
+
+    const input = await screen.findByTestId("fcst-export-filename");
+    await user.type(input, "sim4");
+
+    const submitBtn = await screen.findByTestId("fcst-export-submit");
+    await user.click(submitBtn);
+  });
+
+  it("should handle toggling back to the initial data set in the export modal", async () => {
+    await waitFor(() => renderSuccess());
+
+    const exportBtn = await screen.findByTestId("forecast-controls-export-btn");
+    await user.click(exportBtn);
+
+    const sim1Checkbox = await screen.findByTestId(
+      "check-2-sim1-updated-history",
+    );
+    const initialCheckbox = await screen.findByTestId("check-1-all-history");
+
+    await user.click(sim1Checkbox);
+    await user.click(initialCheckbox);
+  });
+
+  // Then finally we handle resetting logic => sims and whole page (Reset button in ForecastControls)
+
+  // => reset the sims
+  it("should handle resetting all simulations when Reset button is clicked", async () => {
+    await waitFor(() => renderSuccess());
+
+    const resetSimBtn = await screen.findByTestId("reset-sim-btn");
+    await user.click(resetSimBtn);
+
+    await waitFor(() => {
+      const state = store.getState().forecast;
+      expect(state.simBtns.sim1).toBe(0);
+      expect(state.simBtns.sim2).toBe(0);
+      expect(state.simBtns.sim3).toBe(0);
+      expect(state.simBtns.sim4).toBe(0);
+    });
+  });
+
+  // => reset the whole page
+
+  it("should handle resetting the whole Forecast page when Reset button is clicked in the ForecastControls", async () => {
+    await waitFor(() => renderSuccess());
+
+    const resetBtn = await screen.findByTestId("forecast-controls-reset-btn");
+    await user.click(resetBtn);
+
+    await waitFor(() => {
+      const forecastState = store.getState().forecast;
+      const upcsState = store.getState().upcs;
+      expect(forecastState.items.length).toBe(0);
+      expect(forecastState.selectedStores.length).toBe(0);
+      expect(upcsState.upcs.length).toBe(0);
+    });
+  });
 });

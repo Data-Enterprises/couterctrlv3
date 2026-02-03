@@ -32,6 +32,16 @@ vi.mock("../../../components/toasts/hooks/useToast", () => ({
   }),
 }));
 
+const file = new File(
+  [
+    "upc\n1200000017\n1200000088\n1200000170\n1200003068\n2412601022\n7800008216\n3410057306",
+  ],
+  "forecast.csv",
+  {
+    type: "text/csv",
+  },
+);
+
 describe("Upc Controls Component", () => {
   it("should handle API success when fetching Sales Comp data", async () => {
     // Mock the API failure
@@ -47,6 +57,12 @@ describe("Upc Controls Component", () => {
 
     const salesComp = await screen.findByTestId("radio-1");
     await user.click(salesComp);
+
+    const fileInput = (await screen.findByTestId(
+      "upc-file-input",
+    )) as HTMLInputElement;
+
+    await user.upload(fileInput, file);
 
     const searchBtn = await screen.findByTestId("upc-module-data-search-btn");
     await user.click(searchBtn);

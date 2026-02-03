@@ -513,10 +513,10 @@ export const forecastSlice = createSlice({
       }
       state.rowData = globalRows;
     },
-    setReplayData: (state, action: PayloadAction<{ past: SimReplayItem[]; future: SimReplayItem[] }>) => {
-      state.simReplayPast = action.payload.past;
-      state.simReplayFuture = action.payload.future;
-    },
+    // setReplayData: (state, action: PayloadAction<{ past: SimReplayItem[]; future: SimReplayItem[] }>) => {
+    //   state.simReplayPast = action.payload.past;
+    //   state.simReplayFuture = action.payload.future;
+    // },
     reQuery: (state) => {
       state.selectedUpc = "";
       state.lastUpdatedHistory = [];
@@ -640,7 +640,7 @@ export const {
   setNoResults,
   setSimTitle,
   setSimList,
-  setReplayData,
+  // setReplayData,
   // resetForecast,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;

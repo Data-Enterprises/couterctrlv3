@@ -12,6 +12,9 @@ export default defineConfig({
       enabled: true,
       reporter: ["text", "json", "html"],
       include: ["src/**/*.{ts,tsx}"],
+      thresholds: {
+        branches: 0,
+      },
       exclude: [
         "src/main.tsx",
         "src/api/**",

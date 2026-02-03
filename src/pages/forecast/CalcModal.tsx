@@ -56,18 +56,16 @@ const CalcModal = () => {
     }
   };
 
-  const calcNewMetrics = (isSetting: boolean = false) => {
+  const calcNewMetrics = () => {
     setNewPrice(priceText);
     setNewCost(costText);
 
-    if (isSetting) {
-      dispatch(
-        setNewRowPriceValue({
-          upc: selectedRow!.upc,
-          newPrice: parseFloat(priceText),
-        }),
-      );
-    }
+    dispatch(
+      setNewRowPriceValue({
+        upc: selectedRow!.upc,
+        newPrice: parseFloat(priceText),
+      }),
+    );
   };
 
   const handleTextChange = (e: string) => {
@@ -81,13 +79,6 @@ const CalcModal = () => {
       setCostText(e);
     }
   };
-
-  // const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-  //   if (e.key === "Enter") {
-  //     // setNewPrice(priceText);
-  //     calcNewMetrics();
-  //   }
-  // };
 
   const showRevenue = () => {
     const units = forecastUnits(
@@ -175,22 +166,6 @@ const CalcModal = () => {
                 >
                   Calculate
                 </button>
-                {/* <div className="flex gap-2">
-                  <button
-                    className="btn-themeBlue w-1/2 py-1.5 px-0"
-                    onClick={() => calcNewMetrics()}
-                    data-testid="calc-modal-calculate-button"
-                  >
-                    Calc
-                  </button>
-                  <button
-                    className="btn-themeBlue w-1/2 py-1.5 px-0"
-                    onClick={() => calcNewMetrics(true)}
-                    data-testid="calc-modal-calculate-button"
-                  >
-                    Set
-                  </button>
-                </div> */}
                 <button
                   data-testid="calc-modal-close-button"
                   className="btn-themeOrange w-full py-1.5"

@@ -702,28 +702,30 @@ export const priceHistoryFromListResp = {
 };
 
 export const simListResp = {
-  error: 0,
-  success: true,
-  records: [
-    {
-      sim_name: "a",
-      start_date: "2026-01-28",
-      end_date: "2026-01-29",
-    },
-    {
-      sim_name: "1",
-      start_date: "2026-01-28",
-      end_date: "2026-01-29",
-    },
-    {
-      sim_name: "Replay this",
-      start_date: "2026-01-01",
-      end_date: "2026-01-16",
-    },
-    {
-      sim_name: "IGA 1 Sim Two",
-      start_date: "2026-01-15",
-      end_date: "2026-01-16",
-    },
-  ],
+  data: {
+    error: 0,
+    success: true,
+    records: [
+      {
+        sim_name: "a",
+        start_date: "2026-01-28",
+        end_date: "2026-01-29",
+      },
+      {
+        sim_name: "1",
+        start_date: "2026-01-28",
+        end_date: "2026-01-29",
+      },
+      {
+        sim_name: "Replay this",
+        start_date: "2026-01-01",
+        end_date: "2026-01-16",
+      },
+      {
+        sim_name: "IGA 1 Sim Two",
+        start_date: "2026-01-15",
+        end_date: "2026-01-16",
+      },
+    ],
+  },
 };
