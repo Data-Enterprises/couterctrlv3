@@ -304,7 +304,6 @@ const UpcList = () => {
     if (context.selectedMode == 5) {
       return <UpcAssociation />;
     }
-    return null;
   };
 
   return (

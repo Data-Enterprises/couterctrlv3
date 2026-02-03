@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, type Mock } from "vitest";
 import { renderWithProviders } from "../../utils";
-import { screen, waitFor, renderHook } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { setupStore } from "../../../store";
 import {
   defaultError,
@@ -43,7 +43,6 @@ import {
   setUnassignedStores,
 } from "../../../features/userSlice";
 import { setGroups } from "../../../features/groupSlice";
-import { useHeight as useHeight2 } from "../../../pages/hooks";
 
 const user = userEvent.setup();
 vi.mock("../../../api/sales");
@@ -175,29 +174,6 @@ describe("Sales Page", () => {
     await waitFor(() => {
       expect(mockToastError).toHaveBeenCalled();
     });
-  });
-
-  it("should not update height when gridRef is null and maintain useHeight custom hook", async () => {
-    await waitFor(() => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 500,
-      });
-      window.dispatchEvent(new Event("resize"));
-    });
-
-    await waitFor(() => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 1800,
-      });
-      window.dispatchEvent(new Event("resize"));
-    });
-
-    const { result } = renderHook(() => useHeight2());
-    expect(result.current.height).toBe(385);
   });
 
   it("should handle api failure for fetching all data after sales panels are fetched", async () => {

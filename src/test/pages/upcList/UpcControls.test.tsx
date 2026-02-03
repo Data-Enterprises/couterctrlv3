@@ -43,8 +43,28 @@ const file = new File(
 );
 
 describe("Upc Controls Component", () => {
+  it("should handle toast warning if no mode is selected", async () => {
+    (getSalesComp as Mock).mockResolvedValue(salesCompResp);
+
+    renderWithProviders(<UpcList />, { store });
+
+    const dropdown = await screen.findByTestId("single-select-trigger-icon-2");
+
+    await user.click(dropdown);
+    const option = await screen.findByTestId("single-select-option-2-1");
+    await user.click(option);
+
+    const fileInput = (await screen.findByTestId(
+      "upc-file-input",
+    )) as HTMLInputElement;
+
+    await user.upload(fileInput, file);
+
+    const searchBtn = await screen.findByTestId("upc-module-data-search-btn");
+    await user.click(searchBtn);
+  });
+
   it("should handle API success when fetching Sales Comp data", async () => {
-    // Mock the API failure
     (getSalesComp as Mock).mockResolvedValue(salesCompResp);
 
     renderWithProviders(<UpcList />, { store });

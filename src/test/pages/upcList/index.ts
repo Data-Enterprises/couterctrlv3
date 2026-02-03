@@ -1265,3 +1265,676 @@ export const forecastResp = {
     },
   },
 };
+
+// Upc Association responses
+
+export const selectAllRespOne = {
+  data: {
+    error: 0,
+    success: true,
+    record_count: 20,
+    items: [
+      {
+        product_code: "2412601022",
+        product_description: "BUNNY HAMBURGER BUNS 8 CT",
+        qty: 1476.0,
+      },
+      {
+        product_code: "2412601022",
+        product_description: "BUNNY HAMBURGER BUNS #8",
+        qty: 1476.0,
+      },
+      {
+        product_code: "7800008216",
+        product_description: "DR PEPPER 12 PK",
+        qty: 1457.0,
+      },
+      {
+        product_code: "2412600908",
+        product_description: "BUNNY HOT DOG BUNS 12 OZ 8 CT",
+        qty: 1297.0,
+      },
+      {
+        product_code: "4011",
+        product_description: "BANANA 1 LB",
+        qty: 719.0,
+      },
+      {
+        product_code: "1200000017",
+        product_description: "PEPSI 24 PK",
+        qty: 696.0,
+      },
+      {
+        product_code: "1200000088",
+        product_description: "MOUNTAIN DEW 24 PK",
+        qty: 677.0,
+      },
+      {
+        product_code: "22710000000",
+        product_description: "75% LEAN FRESH GROUND BEEF 1 LB",
+        qty: 603.0,
+      },
+      {
+        product_code: "3710004213",
+        product_description: "LIBBY REG PAK PEAS 15 OZ",
+        qty: 534.0,
+      },
+      {
+        product_code: "26002100000",
+        product_description: "Managers Special - Meat # LB 1 EA",
+        qty: 468.0,
+      },
+      {
+        product_code: "3710003613",
+        product_description: "LIBBY CRM STYL GLD CRN 14.75 OZ",
+        qty: 448.0,
+      },
+      {
+        product_code: "84023020001",
+        product_description: "AM CH MILK WHOLE GAL 128 OZ",
+        qty: 407.0,
+      },
+      {
+        product_code: "1200001879",
+        product_description: "PEPSI ZERO SUGAR 12 PK",
+        qty: 373.0,
+      },
+      {
+        product_code: "1200000170",
+        product_description: "DIET MOUNTAIN DEW 24 PK",
+        qty: 364.0,
+      },
+      {
+        product_code: "7294011346",
+        product_description: "RED GOLD TOMATO JUICE 46 OZ",
+        qty: 356.0,
+      },
+      {
+        product_code: "22710400000",
+        product_description: "80% LEAN FRESH GROUND CHUCK 1 LB",
+        qty: 336.0,
+      },
+      {
+        product_code: "4799",
+        product_description: "TOMATOES HOT HOUSE LARGE 1 LB",
+        qty: 306.0,
+      },
+      {
+        product_code: "4900002890",
+        product_description: "COKE 12 PK 144 OZ",
+        qty: 293.0,
+      },
+      {
+        product_code: "2412601027",
+        product_description: "BUNNY SOFT TWIST 16 OZ",
+        qty: 290.0,
+      },
+      {
+        product_code: "84023020002",
+        product_description: "AM CH MILK 2% GALN 128 OZ",
+        qty: 279.0,
+      },
+      {
+        product_code: "7003862195",
+        product_description: "BC SANDWICH 20 OZ",
+        qty: 266.0,
+      },
+    ],
+  },
+};
+
+export const lvlOneResp = {
+  data: {
+    error: 0,
+    success: true,
+    record_count: 20,
+    items: [
+      {
+        product_code: "4011",
+        product_description: "BANANA 1 LB",
+        qty: 13469.0,
+      },
+      {
+        product_code: "26002100000",
+        product_description: "Managers Special - Meat # LB 1 EA",
+        qty: 1491.0,
+      },
+      {
+        product_code: "2412601022",
+        product_description: "BUNNY HAMBURGER BUNS 8 CT",
+        qty: 1476.0,
+      },
+      {
+        product_code: "7800008216",
+        product_description: "DR PEPPER 12 PK",
+        qty: 1457.0,
+      },
+      {
+        product_code: "22710000000",
+        product_description: "75% LEAN FRESH GROUND BEEF 1 LB",
+        qty: 1411.0,
+      },
+      {
+        product_code: "84023020001",
+        product_description: "AM CH MILK WHOLE GAL 128 OZ",
+        qty: 1391.0,
+      },
+      {
+        product_code: "2412600908",
+        product_description: "BUNNY HOT DOG BUNS 12 OZ 8 CT",
+        qty: 1297.0,
+      },
+      {
+        product_code: "84023020002",
+        product_description: "AM CH MILK 2% GALN 128 OZ",
+        qty: 1011.0,
+      },
+      {
+        product_code: "4246",
+        product_description: "STRAWBERRIES    1 LB",
+        qty: 968.0,
+      },
+      {
+        product_code: "7294011346",
+        product_description: "RED GOLD TOMATO JUICE 46 OZ",
+        qty: 963.0,
+      },
+      {
+        product_code: "4061",
+        product_description: "LETTUCE  EA",
+        qty: 910.0,
+      },
+      {
+        product_code: "4799",
+        product_description: "TOMATOES HOT HOUSE LARGE 1 LB",
+        qty: 880.0,
+      },
+      {
+        product_code: "7003862195",
+        product_description: "BC SANDWICH 20 OZ",
+        qty: 861.0,
+      },
+      {
+        product_code: "22710400000",
+        product_description: "80% LEAN FRESH GROUND CHUCK 1 LB",
+        qty: 857.0,
+      },
+      {
+        product_code: "7003837280",
+        product_description: "BEST CHOICE LARGE EGGS 12 EA",
+        qty: 836.0,
+      },
+      {
+        product_code: "4166",
+        product_description: "ONIONS SWEET 1 LB",
+        qty: 817.0,
+      },
+      {
+        product_code: "2412601027",
+        product_description: "BUNNY SOFT TWIST 16 OZ",
+        qty: 779.0,
+      },
+      {
+        product_code: "20443300000",
+        product_description: "CHICKEN HOT 8 PC",
+        qty: 772.0,
+      },
+      {
+        product_code: "20443400000",
+        product_description: "ROTISSERIE CHICKEN HOT 1 EA",
+        qty: 747.0,
+      },
+      {
+        product_code: "4065",
+        product_description: "PEPPER GREEN 1 EA",
+        qty: 744.0,
+      },
+    ],
+  },
+};
+
+export const lvlOneMultiResp = {
+  data: {
+    error: 0,
+    success: true,
+    record_count: 20,
+    items: [
+      {
+        product_code: "4011",
+        product_description: "BANANA 1 LB",
+        qty: 13469.0,
+      },
+      {
+        product_code: "22710000000",
+        product_description: "75% LEAN FRESH GROUND BEEF 1 LB",
+        qty: 7680.0,
+      },
+      {
+        product_code: "26002100000",
+        product_description: "Managers Special - Meat # LB 1 EA",
+        qty: 1782.0,
+      },
+      {
+        product_code: "84023020001",
+        product_description: "AM CH MILK WHOLE GAL 128 OZ",
+        qty: 1711.0,
+      },
+      {
+        product_code: "7294011346",
+        product_description: "RED GOLD TOMATO JUICE 46 OZ",
+        qty: 1525.0,
+      },
+      {
+        product_code: "2412601022",
+        product_description: "BUNNY HAMBURGER BUNS 8 CT",
+        qty: 1476.0,
+      },
+      {
+        product_code: "7800008216",
+        product_description: "DR PEPPER 12 PK",
+        qty: 1457.0,
+      },
+      {
+        product_code: "2412600908",
+        product_description: "BUNNY HOT DOG BUNS 12 OZ 8 CT",
+        qty: 1297.0,
+      },
+      {
+        product_code: "84023020002",
+        product_description: "AM CH MILK 2% GALN 128 OZ",
+        qty: 1183.0,
+      },
+      {
+        product_code: "4166",
+        product_description: "ONIONS SWEET 1 LB",
+        qty: 1153.0,
+      },
+      {
+        product_code: "4799",
+        product_description: "TOMATOES HOT HOUSE LARGE 1 LB",
+        qty: 1133.0,
+      },
+      {
+        product_code: "4061",
+        product_description: "LETTUCE  EA",
+        qty: 1132.0,
+      },
+      {
+        product_code: "7003862195",
+        product_description: "BC SANDWICH 20 OZ",
+        qty: 1103.0,
+      },
+      {
+        product_code: "4246",
+        product_description: "STRAWBERRIES    1 LB",
+        qty: 1084.0,
+      },
+      {
+        product_code: "7294011807",
+        product_description: "RED GOLD CHILI BEANS 15 OZ",
+        qty: 1050.0,
+      },
+      {
+        product_code: "22710400000",
+        product_description: "80% LEAN FRESH GROUND CHUCK 1 LB",
+        qty: 1017.0,
+      },
+      {
+        product_code: "4065",
+        product_description: "PEPPER GREEN 1 EA",
+        qty: 1011.0,
+      },
+      {
+        product_code: "7003837280",
+        product_description: "BEST CHOICE LARGE EGGS 12 EA",
+        qty: 1001.0,
+      },
+      {
+        product_code: "2412601027",
+        product_description: "BUNNY SOFT TWIST 16 OZ",
+        qty: 965.0,
+      },
+      {
+        product_code: "20443300000",
+        product_description: "CHICKEN HOT 8 PC",
+        qty: 896.0,
+      },
+    ],
+  },
+};
+
+export const lvl2Resp = {
+  data: {
+    error: 0,
+    success: true,
+    record_count: 20,
+    items: [
+      {
+        product_code: "4011",
+        product_description: "BANANA 1 LB",
+        qty: 13469.0,
+      },
+      {
+        product_code: "26002100000",
+        product_description: "Managers Special - Meat # LB 1 EA",
+        qty: 8494.0,
+      },
+      {
+        product_code: "22710000000",
+        product_description: "75% LEAN FRESH GROUND BEEF 1 LB",
+        qty: 7680.0,
+      },
+      {
+        product_code: "84023020001",
+        product_description: "AM CH MILK WHOLE GAL 128 OZ",
+        qty: 2007.0,
+      },
+      {
+        product_code: "7294011346",
+        product_description: "RED GOLD TOMATO JUICE 46 OZ",
+        qty: 1780.0,
+      },
+      {
+        product_code: "2412601022",
+        product_description: "BUNNY HAMBURGER BUNS 8 CT",
+        qty: 1476.0,
+      },
+      {
+        product_code: "7800008216",
+        product_description: "DR PEPPER 12 PK",
+        qty: 1457.0,
+      },
+      {
+        product_code: "4166",
+        product_description: "ONIONS SWEET 1 LB",
+        qty: 1353.0,
+      },
+      {
+        product_code: "7003862195",
+        product_description: "BC SANDWICH 20 OZ",
+        qty: 1344.0,
+      },
+      {
+        product_code: "84023020002",
+        product_description: "AM CH MILK 2% GALN 128 OZ",
+        qty: 1333.0,
+      },
+      {
+        product_code: "7294011807",
+        product_description: "RED GOLD CHILI BEANS 15 OZ",
+        qty: 1305.0,
+      },
+      {
+        product_code: "2412600908",
+        product_description: "BUNNY HOT DOG BUNS 12 OZ 8 CT",
+        qty: 1297.0,
+      },
+      {
+        product_code: "4799",
+        product_description: "TOMATOES HOT HOUSE LARGE 1 LB",
+        qty: 1268.0,
+      },
+      {
+        product_code: "4061",
+        product_description: "LETTUCE  EA",
+        qty: 1260.0,
+      },
+      {
+        product_code: "4065",
+        product_description: "PEPPER GREEN 1 EA",
+        qty: 1216.0,
+      },
+      {
+        product_code: "4246",
+        product_description: "STRAWBERRIES    1 LB",
+        qty: 1191.0,
+      },
+      {
+        product_code: "7003837280",
+        product_description: "BEST CHOICE LARGE EGGS 12 EA",
+        qty: 1173.0,
+      },
+      {
+        product_code: "22710400000",
+        product_description: "80% LEAN FRESH GROUND CHUCK 1 LB",
+        qty: 1130.0,
+      },
+      {
+        product_code: "7003834790",
+        product_description: "BST CH CUT GREEN BEANS 14.5 OZ",
+        qty: 1123.0,
+      },
+      {
+        product_code: "20443300000",
+        product_description: "CHICKEN HOT 8 PC",
+        qty: 1083.0,
+      },
+    ],
+  },
+};
+
+export const lvl2MultiResp = {
+  data: {
+    error: 0,
+    success: true,
+    record_count: 20,
+    items: [
+      {
+        product_code: "4011",
+        product_description: "BANANA 1 LB",
+        qty: 13469.0,
+      },
+      {
+        product_code: "26002100000",
+        product_description: "Managers Special - Meat # LB 1 EA",
+        qty: 8494.0,
+      },
+      {
+        product_code: "22710000000",
+        product_description: "75% LEAN FRESH GROUND BEEF 1 LB",
+        qty: 7680.0,
+      },
+      {
+        product_code: "84023020001",
+        product_description: "AM CH MILK WHOLE GAL 128 OZ",
+        qty: 7336.0,
+      },
+      {
+        product_code: "7294011346",
+        product_description: "RED GOLD TOMATO JUICE 46 OZ",
+        qty: 1938.0,
+      },
+      {
+        product_code: "7003862195",
+        product_description: "BC SANDWICH 20 OZ",
+        qty: 1691.0,
+      },
+      {
+        product_code: "2412601022",
+        product_description: "BUNNY HAMBURGER BUNS 8 CT",
+        qty: 1476.0,
+      },
+      {
+        product_code: "4166",
+        product_description: "ONIONS SWEET 1 LB",
+        qty: 1469.0,
+      },
+      {
+        product_code: "7800008216",
+        product_description: "DR PEPPER 12 PK",
+        qty: 1457.0,
+      },
+      {
+        product_code: "7003837280",
+        product_description: "BEST CHOICE LARGE EGGS 12 EA",
+        qty: 1414.0,
+      },
+      {
+        product_code: "4061",
+        product_description: "LETTUCE  EA",
+        qty: 1412.0,
+      },
+      {
+        product_code: "84023020002",
+        product_description: "AM CH MILK 2% GALN 128 OZ",
+        qty: 1412.0,
+      },
+      {
+        product_code: "4799",
+        product_description: "TOMATOES HOT HOUSE LARGE 1 LB",
+        qty: 1398.0,
+      },
+      {
+        product_code: "7294011807",
+        product_description: "RED GOLD CHILI BEANS 15 OZ",
+        qty: 1379.0,
+      },
+      {
+        product_code: "4065",
+        product_description: "PEPPER GREEN 1 EA",
+        qty: 1369.0,
+      },
+      {
+        product_code: "7003834790",
+        product_description: "BST CH CUT GREEN BEANS 14.5 OZ",
+        qty: 1369.0,
+      },
+      {
+        product_code: "4246",
+        product_description: "STRAWBERRIES    1 LB",
+        qty: 1318.0,
+      },
+      {
+        product_code: "2412600908",
+        product_description: "BUNNY HOT DOG BUNS 12 OZ 8 CT",
+        qty: 1297.0,
+      },
+      {
+        product_code: "22710400000",
+        product_description: "80% LEAN FRESH GROUND CHUCK 1 LB",
+        qty: 1282.0,
+      },
+      {
+        product_code: "20443300000",
+        product_description: "CHICKEN HOT 8 PC",
+        qty: 1264.0,
+      },
+    ],
+  },
+};
+
+
+export const singleUpcAssociationResp = {
+  data: {
+    error: 0,
+    success: true,
+    record_count: 20,
+    items: [
+      {
+        product_code: "22710000000",
+        product_description: "75% LEAN FRESH GROUND BEEF 1 LB",
+        qty: 92.0,
+      },
+      {
+        product_code: "4470002410",
+        product_description: "OM PEPR PIZ LUNABLE 4.3 OZ",
+        qty: 10.0,
+      },
+      {
+        product_code: "4011",
+        product_description: "BANANA 1 LB",
+        qty: 9.0,
+      },
+      {
+        product_code: "7003836442",
+        product_description: "BST CH WHOLE MILK 64 OZ",
+        qty: 7.0,
+      },
+      {
+        product_code: "7003862936",
+        product_description: "AS MILK WHOLE 128 OZ",
+        qty: 7.0,
+      },
+      {
+        product_code: "4065",
+        product_description: "PEPPER GREEN 1 EA",
+        qty: 5.0,
+      },
+      {
+        product_code: "4178027176",
+        product_description: "UTZ HONEY BAR BQ CHIP 7.75 OZ",
+        qty: 5.0,
+      },
+      {
+        product_code: "4246",
+        product_description: "STRAWBERRIES 1 LB",
+        qty: 5.0,
+      },
+      {
+        product_code: "7800004142",
+        product_description: "RC COLA  PET 0.5L 6 PK",
+        qty: 5.0,
+      },
+      {
+        product_code: "2100008455",
+        product_description: "KR MC CHS FMLY 11 OZ",
+        qty: 4.0,
+      },
+      {
+        product_code: "2430004172",
+        product_description: "PECAN SPINWHEELS 8 OZ",
+        qty: 4.0,
+      },
+      {
+        product_code: "2500005838",
+        product_description: "MINUTE MAID LEMONADE 12 PK 144 OZ",
+        qty: 4.0,
+      },
+      {
+        product_code: "4166",
+        product_description: "ONIONS SWEET 1 LB",
+        qty: 4.0,
+      },
+      {
+        product_code: "4178900258",
+        product_description: "MAR RAMEN NDL RST BEEF 3 OZ",
+        qty: 4.0,
+      },
+      {
+        product_code: "4280014163",
+        product_description: "TOT ULT PZ CHEESE 10.69 OZ",
+        qty: 4.0,
+      },
+      {
+        product_code: "4664",
+        product_description: "TOMATO ON THE VINE 1 LB",
+        qty: 4.0,
+      },
+      {
+        product_code: "4664",
+        product_description: "TOMATO ON THE VINE 16 OZ",
+        qty: 4.0,
+      },
+      {
+        product_code: "4900005011",
+        product_description: "DIET COKE 2 LITER 2 LITER 2 LITER",
+        qty: 4.0,
+      },
+      {
+        product_code: "7003831307",
+        product_description: "BST CH TNA WTR CHK LT 5 OZ",
+        qty: 4.0,
+      },
+      {
+        product_code: "7003836526",
+        product_description: "AS BUTTERMILK BISCUIT 7.5 OZ",
+        qty: 4.0,
+      },
+      {
+        product_code: "7003837286",
+        product_description: "BST CH GRD A LRG 18P EGG 1.5 DOZ",
+        qty: 4.0,
+      },
+    ],
+  },
+};

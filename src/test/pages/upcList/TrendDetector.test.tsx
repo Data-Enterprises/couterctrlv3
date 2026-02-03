@@ -115,7 +115,7 @@ describe("TrendDetector Module in UpcList", () => {
   it("should handle throw a warning if no records are returned", async () => {
     // Mock the API failure
     (getTrendDetect as Mock).mockResolvedValue({
-      data: { error: 0, daily: [] },
+      data: { error: 0, trends: [] },
     });
 
     renderWithProviders(<UpcList />, { store });

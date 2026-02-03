@@ -56,9 +56,14 @@ const UpcAssociation = () => {
   const [isFetching, setIsFetching] = useState<boolean>(false);
 
   useEffect(() => {
-    // dont run this when renavigating back to this page
-
-    if (selectedUpcs.length > 0 && selectedMode === 5) {
+    // dont run this when renavigating back to this page and we already have data
+    // this will run when at least the first or all upcs are selected from UpcControls.tsx
+    // This avoids requering and resetting the already fetched data across renavigations back to Upc Upload
+    if (
+      selectedUpcs.length > 0 &&
+      selectedMode === 5 &&
+      itemAssociations.length === 0
+    ) {
       const start = formatGoliathDate(search.startDate);
       const end = formatGoliathDate(search.endDate);
       const ids = upc.storeids.split(",").map((id) => Number(id));
@@ -215,7 +220,7 @@ const UpcAssociation = () => {
         dispatch(handleAssociationDeselect(level));
         dispatch(setReQueryAssociations(true));
       }
-    } else if (level === 0 || level === 3) {
+    } else {
       return;
     }
   };
@@ -345,10 +350,14 @@ const UpcAssociation = () => {
                 {itemAssociations[idx].length === 1 ? "Item" : "Items"}
               </div>
             </div>
-            <div className="grid gap-2 max-h-[87vh] rounded-lg overflow-y-auto no-scrollbar p-1 bg-custom-white">
-              {items.map((item) => (
+            <div
+              data-testid={`ass-container-${idx}`}
+              className="grid gap-2 max-h-[87vh] rounded-lg overflow-y-auto no-scrollbar p-1 bg-custom-white"
+            >
+              {items.map((item, i) => (
                 <div
                   key={Math.random()}
+                  data-testid={`item-lvl-${idx}-${i}`}
                   className={`text-xs rounded-lg p-2 shadow cursor-pointer hover:bg-blue-200 duration-200 transition-all ${selectedAssociationUpcParam.find((upc) => upc === item.product_code) ? "bg-orange-200" : "bg-custom-white "}`}
                   onClick={() => handleCardClick(item, idx)}
                   onContextMenu={(e) => handleRightClick(e, item)}
@@ -383,6 +392,7 @@ const UpcAssociation = () => {
               <Input label="" setValue={handleSetUpcText} value={upcText} />
               <div className="flex gap-2">
                 <button
+                  data-testid="single-upc-association-search-btn"
                   className="btn-themeBlue py-0.5 px-0 w-1/2"
                   onClick={handleSingleUpcSearch}
                 >
@@ -390,6 +400,7 @@ const UpcAssociation = () => {
                 </button>
                 <button
                   className="btn-themeOrange py-0.5 px-0 w-1/2"
+                  data-testid="single-upc-association-clear-btn"
                   onClick={() => {
                     dispatch(setSingleAssocitions([]));
                     setUpcText("");
