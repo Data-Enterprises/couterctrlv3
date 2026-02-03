@@ -133,7 +133,20 @@ describe("TrendDetector Module in UpcList", () => {
     await user.click(searchBtn);
   });
 
-  it("should handle API success when fetching Sales Comp data", async () => {
+  it("should handle setting the periods in the Trend Periods input", async () => {
+    renderWithProviders(<UpcList />, { store });
+
+    const input = await screen.findByTestId("text-input-trend");
+    await user.clear(input);
+    await user.type(input, "90");
+
+    await waitFor(() => {
+      const state = store.getState().upc;
+      expect(state.trendPeriods).toBe("90");
+    });
+  });
+
+  it("should handle API success when fetching Trend Detection data", async () => {
     // Mock the API failure
     (getTrendDetect as Mock).mockResolvedValue(trendDetectResp);
 
@@ -370,6 +383,24 @@ describe("TrendDetector Module in UpcList", () => {
     await waitFor(() => {
       const state = store.getState().upcModal;
       expect(state.openModal).toBe(false);
+    });
+  });
+
+  it("should handle showing NoDataDisplay", async () => {
+    renderWithProviders(<UpcList />, { store });
+
+    const radios = [
+      await screen.findByTestId("radio-1"),
+      await screen.findByTestId("radio-4"),
+    ];
+
+    for (const radio of radios) {
+      await user.click(radio);
+    }
+
+    await waitFor(() => {
+      const state = store.getState().upc;
+      expect(state.selectedMode).toBe(4);
     });
   });
 });

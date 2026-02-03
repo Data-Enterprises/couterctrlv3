@@ -123,9 +123,6 @@ export const upcSlice = createSlice({
     setSelectedMode: (state, action: PayloadAction<number>) => {
       state.selectedMode = action.payload;
     },
-    setSelectedView: (state, action: PayloadAction<number>) => {
-      state.selectedView = action.payload;
-    },
     setIsLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
     },
@@ -303,7 +300,6 @@ export const {
   setTrendPeriods,
   setFileName,
   setSelectedMode,
-  setSelectedView,
   setDataLoaded,
   setIsLoading,
   setSalesComp,
