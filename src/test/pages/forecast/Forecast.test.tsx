@@ -539,7 +539,24 @@ describe("Forecast Page", () => {
     });
   });
 
-  // TODO: TEST THE NO SIM NAME AND SAVE SIM FAILURE CASES
+  it("should throw warning if no simluation name is input", async () => {
+    await waitFor(() => {
+      renderSuccess();
+    });
+
+    const selectAllBtn = await screen.findByTestId("forecast-select-all-btn");
+    await user.click(selectAllBtn);
+
+    const saveSimBtn = await screen.findByTestId("save-new-sim-btn");
+    await user.click(saveSimBtn);
+
+    const submit = await screen.findByTestId("save-sim-submit");
+    await user.click(submit);
+
+    await waitFor(() => {
+      expect(mockToastWarn).toHaveBeenCalled();
+    });
+  });
 
   // Then we handle Outlier grid interactions => creating/updating simulations and modifying rows
   it("should handle creating a new simulation", async () => {

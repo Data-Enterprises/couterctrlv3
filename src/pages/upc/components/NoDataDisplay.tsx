@@ -6,7 +6,7 @@ const NoDataDisplay = () => {
     if (selectedMode === 1) return "Sales Comparison";
     if (selectedMode === 2) return "Sales Forecast";
     if (selectedMode === 3) return "Price Optimization";
-    if (selectedMode === 4) return "Trend Detection";
+    return "Trend Detection";
   };
 
   return (
