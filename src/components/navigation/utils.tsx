@@ -34,7 +34,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userRoles: ["*"],
-    isHovering:false,
+    isHovering: false,
   },
   {
     name: "Sales",
@@ -44,7 +44,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userRoles: ["*"],
-    isHovering:false,
+    isHovering: false,
   },
   {
     name: "Team",
@@ -54,7 +54,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userRoles: ["*"],
-    isHovering:false,
+    isHovering: false,
   },
   {
     name: "Loss Prevention",
@@ -64,7 +64,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userRoles: ["*"],
-    isHovering:false,
+    isHovering: false,
   },
   {
     name: "Groups",
@@ -73,8 +73,8 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userRoles: ["*"],
-    isHovering:false,
+    userRoles: ["2", "3", "4", "9"],
+    isHovering: false,
   },
   {
     name: "Upc List",
@@ -84,7 +84,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userRoles: ["*"],
-    isHovering:false,
+    isHovering: false,
   },
   {
     name: "Item Lookup",
@@ -94,7 +94,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userRoles: ["*"],
-    isHovering:false,
+    isHovering: false,
   },
   {
     name: "Forecasting",
@@ -104,7 +104,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userRoles: ["*"],
-    isHovering:false,
+    isHovering: false,
   },
   {
     name: "Quicksight",
@@ -114,7 +114,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userRoles: ["*"],
-    isHovering:false,
+    isHovering: false,
   },
   {
     name: "Receivers",
@@ -124,7 +124,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userRoles: ["*"],
-    isHovering:false,
+    isHovering: false,
   },
   {
     name: "Coupons",
@@ -134,7 +134,7 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userRoles: ["*"],
-    isHovering:false,
+    isHovering: false,
   },
   // This fake link is just to show that user types can be restricted
   {
@@ -145,6 +145,6 @@ export const navigation: Navigation[] = [
     children: [],
     childOpen: false,
     userRoles: ["9999"],
-    isHovering:false,
+    isHovering: false,
   },
 ];
