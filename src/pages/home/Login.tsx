@@ -229,7 +229,7 @@ const Login = () => {
         </div>
         {/* Change this before pushing for publishing */}
         <div className="absolute bottom-1 left-0 text-sm pl-2">
-          Last Updated on 2/3/2026 @ 4:16 PM CST
+          Last Updated 2/4/2026 @ 1:21 PM CST
         </div>
         {context.fetchingCredentials ? (
           <div className="absolute bottom-20 left-48 -pr-4 lg:p-0 lg:bottom-40 lg:left-72">
