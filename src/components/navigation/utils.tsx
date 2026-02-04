@@ -21,7 +21,7 @@ export type Navigation = {
   children: Navigation[];
   childOpen: boolean;
   mobile: boolean;
-  userTypes: string[];
+  userRoles: string[];
   isHovering: boolean;
 };
 
@@ -33,7 +33,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
+    userRoles: ["*"],
     isHovering:false,
   },
   {
@@ -43,7 +43,7 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
+    userRoles: ["*"],
     isHovering:false,
   },
   {
@@ -53,7 +53,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
+    userRoles: ["*"],
     isHovering:false,
   },
   {
@@ -63,7 +63,7 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
+    userRoles: ["*"],
     isHovering:false,
   },
   {
@@ -73,7 +73,7 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
+    userRoles: ["*"],
     isHovering:false,
   },
   {
@@ -83,7 +83,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
+    userRoles: ["*"],
     isHovering:false,
   },
   {
@@ -93,7 +93,7 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
+    userRoles: ["*"],
     isHovering:false,
   },
   {
@@ -103,7 +103,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
+    userRoles: ["*"],
     isHovering:false,
   },
   {
@@ -113,7 +113,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
+    userRoles: ["*"],
     isHovering:false,
   },
   {
@@ -123,7 +123,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
+    userRoles: ["*"],
     isHovering:false,
   },
   {
@@ -133,7 +133,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
+    userRoles: ["*"],
     isHovering:false,
   },
   // This fake link is just to show that user types can be restricted
@@ -144,7 +144,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userTypes: ["9999"],
+    userRoles: ["9999"],
     isHovering:false,
   },
 ];

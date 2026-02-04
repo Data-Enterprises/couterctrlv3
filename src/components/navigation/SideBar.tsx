@@ -176,8 +176,8 @@ const SideBar = () => {
             draggable={false}
             className={({ isActive }) =>
               `${
-                item.userTypes.includes(user.role.toString()) ||
-                item.userTypes.includes("*")
+                item.userRoles.includes(user.role.toString()) ||
+                item.userRoles.includes("*")
                   ? "flex"
                   : "hidden"
               } ${
