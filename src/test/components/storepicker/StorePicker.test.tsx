@@ -6,7 +6,7 @@ import { setupStore } from "../../../store";
 import userEvent from "@testing-library/user-event";
 import { setUserPrefs } from "../../../api/user";
 import { fakeStores, fakeGroups } from ".";
-import { setAssignedStores } from "../../../features/userSlice";
+import { setAssignedStores, setRole } from "../../../features/userSlice";
 import { setGroups } from "../../../features/groupSlice";
 import { setIsDesktop } from "../../../features/appSlice";
 
@@ -35,7 +35,10 @@ describe("StorePicker Component", () => {
 
   it("should render with the single store only prop", async () => {
     (setUserPrefs as Mock).mockResolvedValue({ data: { error: 0 } });
-    renderWithProviders(<StorePicker singleStoreOnly={true} />, {
+    await waitFor(() => {
+      testStore.dispatch(setRole(1));
+    });
+    renderWithProviders(<StorePicker />, {
       store: testStore,
     });
 
@@ -43,12 +46,15 @@ describe("StorePicker Component", () => {
     expect(storePicker).toBeInTheDocument();
 
     const singleStoreSelection = await screen.findByTestId(
-      "searchtype-single-store-option"
+      "searchtype-single-store-option",
     );
     await user.click(singleStoreSelection);
   });
 
   it("should handle the selection of different search types", async () => {
+    await waitFor(() => {
+      testStore.dispatch(setRole(9));
+    });
     (setUserPrefs as Mock).mockResolvedValue({ data: { error: 0 } });
     renderWithProviders(<StorePicker />, { store: testStore });
 
