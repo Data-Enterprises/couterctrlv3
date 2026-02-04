@@ -231,6 +231,8 @@ describe("Coupons Page", () => {
     await user.click(lessThanCheck);
 
     const input = await screen.findByTestId("amount-filter-input");
+    // This should not allow non-numeric input
+    await user.type(input, "a"); // => the else statement runs when checking for a number value
     await user.type(input, "6.99");
 
     const submitBtn = await screen.findByTestId(
@@ -319,6 +321,21 @@ describe("Coupons Page", () => {
       expect(mockedToastError).toHaveBeenCalledWith(
         "Error fetching transactions: API Error",
       );
+    });
+  });
+
+  it("should do nothing if no data is returned from clicking on a row", async () => {
+    (getCashierTransaction as Mock).mockResolvedValueOnce({
+      data: { error: 1 },
+    });
+    renderWithProviders(<Coupons />, { store });
+
+    const rows = await screen.findAllByRole("row");
+    await user.click(rows[1]);
+
+    await waitFor(() => {
+      const state = store.getState().cashier;
+      expect(state.transactionDrillDown.length).toBe(0);
     });
   });
 
