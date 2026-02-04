@@ -9,12 +9,12 @@ const TrendCardsList = () => {
   const state = useAppSelector((state) => state.upc);
 
   useEffect(() => {
-    if (state.selectedUpcs.length) {
+    // if (state.selectedUpcs.length) {
       const filteredTrends = state.upcTrends.filter((trend) =>
         state.selectedUpcs.includes(trend.product_code)
       );
       setTrends(filteredTrends);
-    }
+    // }
   }, [state.selectedUpcs]);
 
   const chunkTrends = (arr: UpcTrend[], chunkSize: number) => {

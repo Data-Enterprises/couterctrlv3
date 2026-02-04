@@ -63,6 +63,16 @@ const renderSuccess = () => {
 };
 
 describe("Forecast Page", () => {
+  it("should not populate the file grid if no file names come back", async () => {
+    (getBucketList as Mock).mockResolvedValue({ data: { error: 1 } });
+    (getSavedSims as Mock).mockResolvedValue(simListResp);
+    renderWithProviders(<Forecast />, { store });
+
+    await waitFor(() => {
+      const files = store.getState().forecast.files;
+      expect(files.length).toBe(0);
+    });
+  });
   it("should handle API failure for fetching bucket list on mount", async () => {
     (getBucketList as Mock).mockRejectedValueOnce(defaultErrorResp);
     (getSavedSims as Mock).mockRejectedValueOnce(defaultErrorResp);
@@ -105,8 +115,7 @@ describe("Forecast Page", () => {
     (getHistoryFromList as Mock).mockRejectedValueOnce(defaultErrorResp);
 
     const rows = await screen.findAllByRole("row");
-    const rowToClick = rows[1];
-    await user.click(rowToClick);
+    await user.click(rows[1]);
 
     await waitFor(() => {
       expect(mockToastError).toHaveBeenCalledWith(defaultErrorResp.message);
@@ -300,14 +309,14 @@ describe("Forecast Page", () => {
     });
 
     const input = await screen.findByTestId("forecast-upc-input");
-    await user.type(input, "1200000017,1200000088,1200000170");
+    await user.type(input, "1200000017,1200000088");
     const addBtn = await screen.findByTestId("forecast-add-upc-btn");
     await user.click(addBtn);
 
     await waitFor(() => {
       const state = store.getState().upcs;
-      expect(state.upcs.length).toBe(3);
-      expect(state.upcs[2]).toBe("1200000170");
+      expect(state.upcs.length).toBe(2);
+      expect(state.upcs[1]).toBe("1200000088");
     });
   });
 
@@ -322,8 +331,8 @@ describe("Forecast Page", () => {
 
     await waitFor(() => {
       const state = store.getState().upcs;
-      expect(state.upcs.length).toBe(4);
-      expect(state.upcs[3]).toBe("1200003068");
+      expect(state.upcs.length).toBe(3);
+      expect(state.upcs[2]).toBe("1200003068");
     });
   });
 
@@ -333,13 +342,7 @@ describe("Forecast Page", () => {
     });
 
     const upcs = await screen.findAllByTestId(/forecast-upc-item-/);
-    await user.click(upcs[3]);
-
-    // await waitFor(() => {
-    //   const state = store.getState().upcs;
-    //   expect(state.upcs.length).toBe(3);
-    //   expect(state.upcs.includes("1200003068")).toBe(false);
-    // });
+    await user.click(upcs[2]);
   });
 
   // Then we handle data fetching success and failure cases

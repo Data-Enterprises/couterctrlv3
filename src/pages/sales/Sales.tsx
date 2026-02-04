@@ -81,7 +81,7 @@ const Sales = () => {
   };
 
   const pageContainer = context.isDesktop
-    ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden p-4 select-none"
+    ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none"
     : "p-4 min-h-screen overflow-y-scroll";
   const gridContainer = context.isDesktop
     ? " grid grid-cols-[18%_81%] gap-4 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]"
