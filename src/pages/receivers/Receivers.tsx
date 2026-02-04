@@ -4,7 +4,7 @@ import { getReceiversList } from "../../api/receivers";
 import type { JsonError, ReceiverListResponse } from "../../interfaces";
 import {
   reQuery,
-  resetReceiverState,
+  resetReceiverSlice,
   setIsExportModalOpen,
   setIsFetchingList,
   setListGridData,
@@ -105,7 +105,7 @@ const Receivers = () => {
                 className={`${
                   state.list.length === 0 && "opacity-50 pointer-events-none"
                 } btn-themeOrange w-full mt-2`}
-                onClick={() => dispatch(resetReceiverState())}
+                onClick={() => dispatch(resetReceiverSlice())}
               >
                 Refresh
               </button>

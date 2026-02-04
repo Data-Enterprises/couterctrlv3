@@ -152,7 +152,7 @@ export const receiversSlice = createSlice({
       state.noReceivers = false;
       state.selectedInvoice = "";
     },
-    resetReceiverState: () => initialState,
+    resetReceiverSlice: () => initialState,
   },
 });
 
@@ -166,7 +166,7 @@ export const {
   reQuery,
   setTotals,
   setListGridData,
-  resetReceiverState,
+  resetReceiverSlice,
   applyFilters,
   setFilter,
   setFilterType,

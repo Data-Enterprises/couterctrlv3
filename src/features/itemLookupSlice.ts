@@ -29,12 +29,6 @@ export interface ItemLookupHistory {
   total_sales: number;
 }
 
-// export interface StoreList {
-//   storeid: number;
-//   store_number: string;
-//   store_name: string;
-// }
-
 interface ItemLookupState {
   upcCode: string;
   mode: "Sales" | "Qty" | "Price";
@@ -163,27 +157,7 @@ const itemLookupSlice = createSlice({
     setPause: (state, action: PayloadAction<boolean>) => {
       state.pause = action.payload;
     },
-    resetLookupSlice: (state) => {
-      state.upcCode = "";
-      state.mode = "Sales";
-      state.topStoreSales = null;
-      state.lowestStoreSales = null;
-      state.topStoreQty = null;
-      state.lowestStoreQty = null;
-      state.highestPriceStore = null;
-      state.lowestPriceStore = null;
-      state.totalStores = 0;
-      state.productCode = "";
-      state.description = "";
-      state.totalSales = 0;
-      state.totalQty = 0;
-      state.avgPrice = 0;
-      state.itemsLoaded = false;
-      state.itemLookupHistory = [];
-      state.daysSold = 0;
-      state.selectedStore = 0;
-      state.pause = true;
-    },
+    resetLookupSlice: () => initialState,
   },
 });
 
@@ -196,7 +170,6 @@ export const {
   setProductCode,
   setDescription,
   setMetrics,
-  // setStoreList,
   setSelectedStore,
   setItemLookupHistory,
   setHistoryMetrics,

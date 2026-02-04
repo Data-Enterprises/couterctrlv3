@@ -180,6 +180,7 @@ const couponSlice = createSlice({
       state.amtGreaterThan = false;
       state.noCouponsFound = false;
     },
+    resetCouponsSlice: () => initialState,
   },
 });
 
@@ -194,5 +195,6 @@ export const {
   setFilterType,
   setThresh,
   setNoCouponsFound,
+  resetCouponsSlice,
 } = couponSlice.actions;
 export default couponSlice.reducer;

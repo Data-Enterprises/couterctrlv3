@@ -44,6 +44,7 @@ const quickSightSlice = createSlice({
     setValidUser: (state, action: PayloadAction<boolean>) => {
       state.validUser = action.payload;
     },
+    resetQsSlice: () => initialState,
   },
 });
 
@@ -53,5 +54,6 @@ export const {
   setQsUserStores,
   setSelectedQsUserEmail,
   setValidUser,
+  resetQsSlice,
 } = quickSightSlice.actions;
 export default quickSightSlice.reducer;

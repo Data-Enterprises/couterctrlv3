@@ -607,7 +607,7 @@ export const forecastSlice = createSlice({
     setSimList: (state, action: PayloadAction<SimListItem[]>) => {
       state.simList = action.payload;
     },
-    // resetForecast: () => initialState,
+    resetForecastSlice: () => initialState,
   },
 });
 
@@ -640,7 +640,6 @@ export const {
   setNoResults,
   setSimTitle,
   setSimList,
-  // setReplayData,
-  // resetForecast,
+  resetForecastSlice,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;
