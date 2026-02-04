@@ -232,7 +232,7 @@ const OutlierGrid = () => {
               data-testid="global-price-input"
               type="text"
               className="basic-input focus:border py-1 bg-custom-white w-24"
-              value={state.globalFcstPrice === "0" ? "" : state.globalFcstPrice}
+              value={state.globalFcstPrice === "" ? "" : state.globalFcstPrice}
               onChange={(e) => {
                 dispatch(setGlobalFcstPrice(e.currentTarget.value));
               }}

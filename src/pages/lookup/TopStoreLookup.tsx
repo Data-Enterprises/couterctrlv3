@@ -13,7 +13,8 @@ const TopStoreLookup = () => {
       setItem(topStoreSales!);
     } else if (mode === "Qty") {
       setItem(topStoreQty!);
-    } else if (mode === "Price") {
+    } else {
+      // mode === "Price"
       setItem(highestPriceStore!);
     }
   }, [mode, topStoreSales, topStoreQty, highestPriceStore]);
