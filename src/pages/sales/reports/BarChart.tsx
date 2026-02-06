@@ -21,7 +21,7 @@ interface TotalsBarProps {
   inReport?: boolean;
 }
 
-const TotalsBar = ({ valueKey = "total_sales" }: TotalsBarProps) => {
+const BarChart = ({ valueKey = "total_sales" }: TotalsBarProps) => {
   const [barData, setBarData] = useState<any[]>([]);
   const state = useAppSelector((state) => state.sales);
   const search = useAppSelector((state) => state.search);
@@ -84,8 +84,8 @@ const TotalsBar = ({ valueKey = "total_sales" }: TotalsBarProps) => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg h-[190px] md:h-full w-full relative">
-      <div className="bg-blue-500 text-custom-white font-medium rounded-t-lg flex justify-between px-2 py-0.5">
+    <div className="bg-custom-white rounded-lg border-x border-b border-content/50">
+      <div className="bg-blue-500 text-custom-white font-medium rounded-t-lg border-t border-content/50 flex justify-between px-2 py-0.5">
         <div>{valueKey === "total_sales" ? "Sales" : "Quantity"}</div>
         <div>{renderTitle()}</div>
       </div>
@@ -136,4 +136,4 @@ const TotalsBar = ({ valueKey = "total_sales" }: TotalsBarProps) => {
   );
 };
 
-export default TotalsBar;
+export default BarChart;

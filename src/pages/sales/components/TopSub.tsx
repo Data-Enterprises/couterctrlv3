@@ -16,7 +16,11 @@ const tooltips = {
   nsp: false,
 };
 
-const TopSubDept = () => {
+interface Props {
+  inReport?: boolean;
+}
+
+const TopSubDept = ({ inReport }: Props) => {
   const dispatch = useAppDispatch();
   const [tooltip, setTooltip] = useState<typeof tooltips>(tooltips);
   const [topSub, setTopSub] = useState<TopSub | null>(null);
@@ -125,7 +129,9 @@ const TopSubDept = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg">
+    <div
+      className={`${inReport ? "bg-custom-white border border-content/50" : "bg-custom-white shadow-lg"} rounded-lg`}
+    >
       <div className="bg-blue-500 text-custom-white rounded-t-lg font-medium flex justify-between px-2 py-0.5">
         {title}
         {topSub && (
@@ -171,12 +177,14 @@ const TopSubDept = () => {
                 <div className="">
                   <div className="text-sm text-content/60 flex gap-1 items-center relative">
                     <div>Leak</div>
-                    <QuestionMarkCircleIcon
-                      data-testid="pl-tooltip-icon"
-                      className="inline h-5 w-5 text-content/30 hover:text-blue-200 transition-all duration-100 cursor-default"
-                      onMouseEnter={() => handleTooltip("pl")}
-                      onMouseLeave={() => handleTooltip("pl")}
-                    />
+                    {!inReport && (
+                      <QuestionMarkCircleIcon
+                        data-testid="pl-tooltip-icon"
+                        className="inline h-5 w-5 text-content/30 hover:text-blue-200 transition-all duration-100 cursor-default"
+                        onMouseEnter={() => handleTooltip("pl")}
+                        onMouseLeave={() => handleTooltip("pl")}
+                      />
+                    )}
                     <div
                       className={`${tooltip.pl ? "absolute" : "hidden"} text-content bg-orange-200 text-nowrap rounded-lg p-2 left-0 -translate-y-full mt-2 shadow shadow-content/50`}
                     >
@@ -204,12 +212,14 @@ const TopSubDept = () => {
                 <div className="">
                   <div className="text-sm text-content/60 flex gap-1 items-center relative">
                     <div>NSP</div>
-                    <QuestionMarkCircleIcon
-                      data-testid="nsp-tooltip-icon"
-                      className="inline h-5 w-5 text-content/30 hover:text-blue-200 transition-all duration-100 cursor-default"
-                      onMouseEnter={() => handleTooltip("nsp")}
-                      onMouseLeave={() => handleTooltip("nsp")}
-                    />
+                    {!inReport && (
+                      <QuestionMarkCircleIcon
+                        data-testid="nsp-tooltip-icon"
+                        className="inline h-5 w-5 text-content/30 hover:text-blue-200 transition-all duration-100 cursor-default"
+                        onMouseEnter={() => handleTooltip("nsp")}
+                        onMouseLeave={() => handleTooltip("nsp")}
+                      />
+                    )}
                     <div
                       className={`${tooltip.nsp ? "absolute" : "hidden"} text-content bg-orange-200 text-nowrap rounded-lg p-2 left-0 -translate-y-full mt-2 shadow shadow-content/50`}
                     >

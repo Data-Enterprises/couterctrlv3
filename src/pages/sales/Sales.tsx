@@ -26,6 +26,7 @@ import { addDays, formatGoliathDate } from "../../utils";
 import type { JsonError } from "../../interfaces";
 import { useLeftColHeight } from "./utils/hooks";
 import { useEffect } from "react";
+import ReportBuilder from "./reports/ReportBuilder";
 
 const Sales = () => {
   const toast = useToast();
@@ -101,6 +102,7 @@ const Sales = () => {
 
   return (
     <div data-testid="sales-page" className={pageContainer}>
+      <ReportBuilder />
       {!context.isMobile ? (
         <div className={gridContainer}>
           <div
@@ -147,6 +149,7 @@ const Sales = () => {
         </div>
       ) : (
         <div className={gridContainer}>
+          {/* <ReportBuilder /> */}
           <div
             ref={leftColRef}
             className="md:grid h-full md:grid-rows-[25%_74%] md:gap-4"

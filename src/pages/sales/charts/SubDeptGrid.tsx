@@ -27,7 +27,7 @@ const SubDeptGrid = () => {
           (d) => d.sub_department === curr.sub_department,
         );
         if (exists) {
-          exists.total_sales += curr.total_sales;
+          exists.total_sales += curr.total_sales - curr.total_tax;
           exists.net_sales += curr.net_sales;
           exists.qty += curr.qty;
           exists.digital_coupons += curr.digital_coupons;
@@ -63,7 +63,7 @@ const SubDeptGrid = () => {
 
   const style = isMobile
     ? "-mx-2"
-    : "bg-custom-white rounded-lg shadow-lg pb-2 pt-1";
+    : "bg-custom-white rounded-lg shadow-lg pb-2 pt-1 h-full";
 
   const handleSelect = (subDept: string | number) => {
     const d = groupSubs.find((s) => s.sub_department === Number(subDept));

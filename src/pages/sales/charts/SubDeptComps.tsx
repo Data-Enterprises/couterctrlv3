@@ -5,7 +5,11 @@ import { setPeriodSubSales } from "../../../features/salesSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import SubDeptPeriodCard from "./SubDeptPeriodCard";
 
-const SubDeptComps = () => {
+interface Props {
+  inReport?: boolean;
+}
+
+const SubDeptComps = ({ inReport = false }: Props) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
@@ -35,7 +39,9 @@ const SubDeptComps = () => {
   };
 
   const getMonthlyTrend = () => {
-    const date = new Date(sales.selectedSalesPanel.sale_date || search.singleDate);
+    const date = new Date(
+      sales.selectedSalesPanel.sale_date || search.singleDate,
+    );
 
     const wk1End = setDates(date);
     const wk1Start = setDates(date, 6);
@@ -92,7 +98,9 @@ const SubDeptComps = () => {
   };
 
   const formateFirstWk = () => {
-    const date = new Date(sales.selectedSalesPanel.sale_date || search.singleDate);
+    const date = new Date(
+      sales.selectedSalesPanel.sale_date || search.singleDate,
+    );
     const we = setDates(date);
     const ws = setDates(date, 6);
     return `${formatDate(ws)} - ${formatDate(we)}`;
@@ -101,28 +109,32 @@ const SubDeptComps = () => {
   // Once we have both data sets, show the comparisons (final step)
   return (
     <div className="">
-      <div className="grid md:grid-cols-2 h-full gap-2">
+      {!inReport ? <div className="grid md:grid-cols-2 h-full gap-2">
         <SubDeptPeriodCard
+          inReport={inReport}
           data={sales.subSalesWk1}
           dateRange={formateFirstWk()}
           period={1}
         />
         <SubDeptPeriodCard
+          inReport={inReport}
           data={sales.subSalesWk2}
           dateRange={dateRange.wk2}
           period={2}
         />
         <SubDeptPeriodCard
+          inReport={inReport}
           data={sales.subSalesWk3}
           dateRange={dateRange.wk3}
           period={3}
         />
         <SubDeptPeriodCard
+          inReport={inReport}
           data={sales.subSalesWk4}
           dateRange={dateRange.wk4}
           period={4}
         />
-      </div>
+      </div> : null}
     </div>
   );
 };

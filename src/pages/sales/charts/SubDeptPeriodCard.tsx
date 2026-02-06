@@ -12,6 +12,7 @@ interface SubDeptPeriodCardProps {
   data: SubSale[];
   dateRange: string;
   period: number;
+  inReport?: boolean;
 }
 
 const defaultSub = (): TopSub => {
@@ -33,6 +34,7 @@ const SubDeptPeriodCard = ({
   data,
   dateRange,
   period,
+  inReport = false,
 }: SubDeptPeriodCardProps) => {
   const sales = useAppSelector((state) => state.sales);
   const [display, setDisplay] = useState<TopSub>(defaultSub);
@@ -113,7 +115,7 @@ const SubDeptPeriodCard = ({
   };
 
   return (
-    <div className="text-sm rounded-lg shadow-md bg-custom-white">
+    <div className={`text-sm rounded-lg ${inReport ? "border border-content/50" : "shadow-md"} bg-custom-white`}>
       <div className="font-medium flex justify-between mb-1 border-b bg-blue-500 text-custom-white rounded-t-lg px-2 py-0.5">
         <div>{dateRange}</div>
         <div>{display.sub_department_description}</div>
@@ -158,7 +160,7 @@ const SubDeptPeriodCard = ({
         </div>
       </div>
 
-      <div className="px-2 pb-2 pt-1 md:py-0">
+      <div className="px-2 pb-2 pt-1 md:pt-1">
         <div className="font-medium mt-1">Coupons</div>
         <div className="grid grid-cols-4 gap-2">
           <div>
