@@ -12,16 +12,14 @@ const Assigned = () => {
   const users = useAppSelector((state) => state.users);
   const [stores, setStores] = useState<Store[]>([]);
   const [filterText, setFilterText] = useState<string>("");
-
-  const hasLength = () => {
-    return stores.length > 0;
-  };
+  const [storesToUnassign, setStoresToUnassign] = useState<number[]>([]);
 
   useEffect(() => {
     setStores(users.selectedUserStores.assigned);
   }, [users.selectedUserStores.assigned]);
 
   useEffect(() => {
+    setStoresToUnassign([]);
     if (filterText.trim() === "") {
       setStores(users.selectedUserStores.assigned);
     } else {
@@ -32,21 +30,35 @@ const Assigned = () => {
     }
   }, [filterText, users.selectedUserStores.assigned]);
 
-  const handleUnassignStore = (storeId: number) => {
-    dispatch(setStoresUnassignedForUser(storeId));
+  const handleUnassignStore = () => {
+    dispatch(setStoresUnassignedForUser(storesToUnassign[0]));
     unassignUserFromStore(
       context.url,
       context.token,
       users.selectedUserId,
-      storeId,
+      storesToUnassign[0],
     ).catch((err: JsonError) => {
       toast.error("Error unassigning store " + err.message);
+    });
+  };
+
+  const handleStoreCardClick = (storeId: number) => {
+    setStoresToUnassign((prev) => {
+      console.log(prev, storeId);
+      if (prev.includes(storeId)) {
+        return prev.filter((s) => s !== storeId);
+      }
+      return [...prev, storeId];
     });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setFilterText(value);
+  };
+
+  const hasLength = () => {
+    return stores.length > 0;
   };
 
   return (
@@ -68,8 +80,8 @@ const Assigned = () => {
               <div
                 key={store.storeid}
                 data-testid={`assigned-store-${store.storeid}`}
-                className="bg-custom-white rounded-lg shadow p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200"
-                onClick={() => handleUnassignStore(store.storeid)}
+                className={`${storesToUnassign.includes(store.storeid) ? "bg-emerald-200" : "bg-custom-white"} rounded-lg shadow p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
+                onClick={() => handleStoreCardClick(store.storeid)}
               >
                 {store.store_name} = ({store.storeid})
               </div>
@@ -77,7 +89,12 @@ const Assigned = () => {
           : null}
       </div>
       <div className="flex justify-between gap-2 mt-2">
-        <button className="btn-themeGreen w-1/2 px-0">Unassign</button>
+        <button
+          className="btn-themeGreen w-1/2 px-0"
+          onClick={handleUnassignStore}
+        >
+          Unassign
+        </button>
         <button className="btn-themeGreen w-1/2 px-0">Unassign All</button>
       </div>
     </div>

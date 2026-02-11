@@ -16,6 +16,7 @@ const QsUnassigned = () => {
   const [isAssigningAll, setIsAssigningAll] = useState<boolean>(false);
   const [stores, setStores] = useState<Store[]>([]);
   const [filterText, setFilterText] = useState<string>("");
+  // const [storesToAssign, setStoresToAssign] = useState<Store[]>([]);
 
   const hasLength = () => {
     return stores.length > 0;
