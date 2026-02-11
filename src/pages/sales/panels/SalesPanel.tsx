@@ -6,11 +6,11 @@ import type {
   WeeklySale,
 } from "../../../interfaces";
 import { comparePanels, getDateLayout } from "../utils";
-import { setIsRptOpen } from "../../../features/reportBuilderSlice";
+// import { setIsRptOpen } from "../../../features/reportBuilderSlice";
 import {
   setCompareSalesPanel,
   setCompareSubs,
-  setSelectedSalesPanel,
+  // setSelectedSalesPanel,
 } from "../../../features/salesSlice";
 import { getSubsComp } from "../../../api/sales";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -96,17 +96,17 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
     }
   };
 
-  const handlRptClick = (panel: WeeklySale) => {
-    const date = panel.sale_date.split("T")[0];
-    dispatch(
-      setSelectedSalesPanel({
-        sale_date: date,
-        storeid: panel.storeid,
-        store_name: panel.store_name,
-      }),
-    );
-    dispatch(setIsRptOpen(true));
-  };
+  // const handlRptClick = (panel: WeeklySale) => {
+  //   const date = panel.sale_date.split("T")[0];
+  //   dispatch(
+  //     setSelectedSalesPanel({
+  //       sale_date: date,
+  //       storeid: panel.storeid,
+  //       store_name: panel.store_name,
+  //     }),
+  //   );
+  //   dispatch(setIsRptOpen(true));
+  // };
 
   return (
     <div
@@ -168,13 +168,13 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
         >
           Compare Subs
         </button>
-        <button
+        {/* <button
           data-testid={`sales-panel-cat-${id}`}
           className={`btn-themeBlue py-1.5 w-full`}
           onClick={() => handlRptClick(panel)}
         >
           Report
-        </button>
+        </button> */}
       </div>
     </div>
   );
