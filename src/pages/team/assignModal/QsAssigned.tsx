@@ -26,7 +26,7 @@ const QsAssigned = () => {
       setStores(qs.qsUserAssignedStores);
     } else {
       const filtered = qs.qsUserAssignedStores.filter((store) =>
-        store.store_name.toLowerCase().includes(filterText.toLowerCase())
+        store.store_name.toLowerCase().includes(filterText.toLowerCase()),
       );
       setStores(filtered);
     }
@@ -34,36 +34,28 @@ const QsAssigned = () => {
 
   const handleUnassignStore = (storeId: number) => {
     const id = storeId.toString();
+    const store = qs.qsUserAssignedStores.find((s) => s.storeid === storeId);
+    const stores = [...qs.qsUserUnassignedStores, store!].sort(
+      (a, b) => a.storeid - b.storeid,
+    );
+    const assignedStores = [...qs.qsUserAssignedStores].filter(
+      (s) => s.storeid !== storeId,
+    );
+    dispatch(
+      setQsUserStores({
+        assigned_stores: assignedStores,
+        unassigned_stores: stores,
+      }),
+    );
+
     removeQuicksightStoreForUser(
       context.url,
       context.token,
       qs.selectedQsUserEmail,
-      id
-    )
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          toast.success("Store removed successfully");
-          const store = qs.qsUserAssignedStores.find(
-            (s) => s.storeid === storeId
-          );
-          const stores = [...qs.qsUserUnassignedStores, store!].sort(
-            (a, b) => a.storeid - b.storeid
-          );
-          const assignedStores = [...qs.qsUserAssignedStores].filter(
-            (s) => s.storeid !== storeId
-          );
-          dispatch(
-            setQsUserStores({
-              assigned_stores: assignedStores,
-              unassigned_stores: stores,
-            })
-          );
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error(err.message);
-      });
+      id,
+    ).catch((err: JsonError) => {
+      toast.error(err.message);
+    });
   };
 
   const toggleDisplay = () => {
@@ -74,7 +66,7 @@ const QsAssigned = () => {
     removeAllPermissionsForUser(
       context.url,
       context.token,
-      qs.selectedQsUserEmail
+      qs.selectedQsUserEmail,
     )
       .then((resp) => {
         const j = resp.data;
@@ -88,7 +80,7 @@ const QsAssigned = () => {
             setQsUserStores({
               assigned_stores: [],
               unassigned_stores: allStores,
-            })
+            }),
           );
         }
       })

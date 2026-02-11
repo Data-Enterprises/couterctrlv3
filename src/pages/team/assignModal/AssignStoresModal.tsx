@@ -60,7 +60,7 @@ const AssignStoresModal = () => {
     getQuicksightStoresForUser(
       context.url,
       context.token,
-      qs.selectedQsUserEmail
+      qs.selectedQsUserEmail,
     )
       .then((resp) => {
         const j = resp.data;
@@ -103,7 +103,7 @@ const AssignStoresModal = () => {
           QuickSight Stores
         </button>
       </div>
-      {mode === "ctrl" && <CounterCtrlStores getData={getData} />}
+      {mode === "ctrl" && <CounterCtrlStores />}
       {mode === "qs" && <QuickSightStores />}
     </Modal>
   );

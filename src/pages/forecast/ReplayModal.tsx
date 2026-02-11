@@ -1,17 +1,17 @@
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import { useForecastContext } from "./hooks";
-import { replaySim } from "../../api/forecast";
+import { useAppSelector } from "../../hooks";
+// import { useForecastContext } from "./hooks";
+// import { replaySim } from "../../api/forecast";
 import {
   type SimListItem,
   //type SimReplayItem,
-  type SimReplayResp,
+  // type SimReplayResp,
 } from "../../interfaces";
-import { useToast } from "../../components/toasts/hooks/useToast";
+// import { useToast } from "../../components/toasts/hooks/useToast";
 
 import Modal from "../../components/Modal";
 import SingleSelect from "../../components/SingleSelect";
-import { setReplayData } from "../../features/forecastSlice";
-import { useEffect, useState } from "react";
+// import { setReplayData } from "../../features/forecastSlice";
+import { useState } from "react";
 // import { formatDate } from "../../utils";
 
 interface ReplayModalProps {
@@ -20,9 +20,9 @@ interface ReplayModalProps {
 }
 
 const ReplayModal = ({ isOpen, onClose }: ReplayModalProps) => {
-  const toast = useToast();
-  const dispatch = useAppDispatch();
-  const context = useForecastContext();
+  // const toast = useToast();
+  // const dispatch = useAppDispatch();
+  // const context = useForecastContext();
   const state = useAppSelector((state) => state.forecast);
   const [selectedReplay, setSelectedReplay] = useState<SimListItem>({
     sim_name: "",
@@ -40,11 +40,11 @@ const ReplayModal = ({ isOpen, onClose }: ReplayModalProps) => {
   //   weight: number;
   // }>({ sales: 0, qty: 0, weight: 0 });
 
-  useEffect(() => {
-    return () => {
-      dispatch(setReplayData({ past: [], future: [] }));
-    };
-  }, []);
+  // useEffect(() => {
+  //   return () => {
+  //     dispatch(setReplayData({ past: [], future: [] }));
+  //   };
+  // }, []);
 
   // const reducedTotals = (data: SimReplayItem[]) => {
   //   return data.reduce((acc, item) => {
@@ -60,20 +60,20 @@ const ReplayModal = ({ isOpen, onClose }: ReplayModalProps) => {
     const replay = state.simList.find((sim) => sim.sim_name === simName);
     setSelectedReplay(replay!);
 
-    replaySim(context.url, context.token, simName as string)
-      .then((resp) => {
-        const j: SimReplayResp = resp.data;
-        if (j.error === 0) {
-          dispatch(setReplayData({ past: j.past, future: j.future }));
-          // const pastTotals = reducedTotals(j.past);
-          // const futureTotals = reducedTotals(j.future);
-          // setPastTotals(pastTotals);
-          // setFutureTotals(futureTotals);
-        }
-      })
-      .catch((err) =>
-        toast.error("Error replaying simulation: " + err.message),
-      );
+    // replaySim(context.url, context.token, simName as string)
+    //   .then((resp) => {
+    //     const j: SimReplayResp = resp.data;
+    //     if (j.error === 0) {
+    //       dispatch(setReplayData({ past: j.past, future: j.future }));
+    //       // const pastTotals = reducedTotals(j.past);
+    //       // const futureTotals = reducedTotals(j.future);
+    //       // setPastTotals(pastTotals);
+    //       // setFutureTotals(futureTotals);
+    //     }
+    //   })
+    //   .catch((err) =>
+    //     toast.error("Error replaying simulation: " + err.message),
+    //   );
   };
 
   const formatDate = (dateStr: string) => {

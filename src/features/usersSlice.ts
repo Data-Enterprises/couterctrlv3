@@ -44,6 +44,7 @@ interface UsersState {
   selectedUserId: number;
   deleteModalOpen: boolean;
   assignModalOpen: boolean;
+  allStores: Store[];
   selectedUserStores: UserStores;
 }
 
@@ -55,6 +56,7 @@ const initialState: UsersState = {
   selectedUserId: 0,
   deleteModalOpen: false,
   assignModalOpen: false,
+  allStores: [],
   selectedUserStores: {
     assigned: [],
     unassigned: [],
@@ -122,9 +124,34 @@ export const usersSlice = createSlice({
     setSelectedUserStores: (state, action: PayloadAction<UserStores>) => {
       state.selectedUserStores.assigned = action.payload.assigned;
       state.selectedUserStores.unassigned = action.payload.unassigned;
+      state.allStores = [
+        ...state.selectedUserStores.assigned,
+        ...state.selectedUserStores.unassigned,
+      ];
     },
     setRole: (state, action: PayloadAction<number>) => {
       state.userInfo.role = action.payload;
+    },
+    setStoresAssignedForUser: (state, action: PayloadAction<number[]>) => {
+      const newlyAssigned = state.allStores.filter((s) =>
+        action.payload.includes(s.storeid),
+      );
+      state.selectedUserStores.assigned = [
+        ...state.selectedUserStores.assigned,
+        ...newlyAssigned,
+      ];
+      state.selectedUserStores.unassigned =
+        state.selectedUserStores.unassigned.filter(
+          (s) => !action.payload.includes(s.storeid),
+        );
+    },
+    setStoresUnassignedForUser: (state, action: PayloadAction<number>) => {
+      const found = state.allStores.find((s) => s.storeid === action.payload);
+      const assigned = state.selectedUserStores.assigned.filter(
+        (s) => s.storeid !== action.payload,
+      );
+      state.selectedUserStores.assigned = assigned;
+      state.selectedUserStores.unassigned.push(found!);
     },
     resetUsersSlice: () => initialState,
   },
@@ -142,6 +169,8 @@ export const {
   setAssignModalOpen,
   setSelectedUserStores,
   setRole,
+  setStoresAssignedForUser,
+  setStoresUnassignedForUser,
   resetUsersSlice,
 } = usersSlice.actions;
 export default usersSlice.reducer;

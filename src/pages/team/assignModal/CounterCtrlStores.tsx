@@ -2,11 +2,7 @@ import { useAppSelector } from "../../../hooks";
 import Assigned from "./Assigned";
 import Unassigned from "./Unassigned";
 
-interface CounterCtrlStoresProps {
-  getData: () => void;
-}
-
-const CounterCtrlStores = ({ getData }: CounterCtrlStoresProps) => {
+const CounterCtrlStores = () => {
   const users = useAppSelector((state) => state.users);
 
   return (
@@ -19,8 +15,8 @@ const CounterCtrlStores = ({ getData }: CounterCtrlStoresProps) => {
         <div className="w-full text-right">{users.userInfo.username}</div>
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <Unassigned getData={getData} />
-        <Assigned getData={getData} />
+        <Unassigned />
+        <Assigned />
       </div>
     </>
   );

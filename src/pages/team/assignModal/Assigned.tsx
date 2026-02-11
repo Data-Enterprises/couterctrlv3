@@ -1,15 +1,13 @@
-import { useAppSelector } from "../../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { unassignUserFromStore } from "../../../api/team";
 import type { JsonError, Store } from "../../../interfaces";
 import { useEffect, useState } from "react";
+import { setStoresUnassignedForUser } from "../../../features/usersSlice";
 
-interface AssignedProps {
-  getData: () => void;
-}
-
-const Assigned = ({ getData }: AssignedProps) => {
+const Assigned = () => {
   const toast = useToast();
+  const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const users = useAppSelector((state) => state.users);
   const [stores, setStores] = useState<Store[]>([]);
@@ -28,28 +26,22 @@ const Assigned = ({ getData }: AssignedProps) => {
       setStores(users.selectedUserStores.assigned);
     } else {
       const filtered = users.selectedUserStores.assigned.filter((store) =>
-        store.store_name.toLowerCase().includes(filterText.toLowerCase())
+        store.store_name.toLowerCase().includes(filterText.toLowerCase()),
       );
       setStores(filtered);
     }
-  }, [filterText]);
+  }, [filterText, users.selectedUserStores.assigned]);
 
   const handleUnassignStore = (storeId: number) => {
+    dispatch(setStoresUnassignedForUser(storeId));
     unassignUserFromStore(
       context.url,
       context.token,
       users.selectedUserId,
-      storeId
-    )
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          getData();
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error("Error unassigning store " + err.message);
-      });
+      storeId,
+    ).catch((err: JsonError) => {
+      toast.error("Error unassigning store " + err.message);
+    });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,9 +50,9 @@ const Assigned = ({ getData }: AssignedProps) => {
   };
 
   return (
-    <div>
+    <div className="-mt-1">
       <label htmlFor="assigned-user-stores" className="font-medium text-sm">
-        Assigned - {users.selectedUserStores.assigned.length}
+        Assigned - {stores.length}
       </label>
       <input
         data-testid="ctrl-assigned-filter"
@@ -83,6 +75,10 @@ const Assigned = ({ getData }: AssignedProps) => {
               </div>
             ))
           : null}
+      </div>
+      <div className="flex justify-between gap-2 mt-2">
+        <button className="btn-themeGreen w-1/2 px-0">Unassign</button>
+        <button className="btn-themeGreen w-1/2 px-0">Unassign All</button>
       </div>
     </div>
   );

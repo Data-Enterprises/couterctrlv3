@@ -1,53 +1,49 @@
-import { useAppSelector } from "../../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { assignUserToStore } from "../../../api/team";
 import { type Store, type JsonError } from "../../../interfaces";
 import { useEffect, useState } from "react";
+import { setStoresAssignedForUser } from "../../../features/usersSlice";
 
-interface UnassignedProps {
-  getData: () => void;
-}
-
-const Unassigned = ({ getData }: UnassignedProps) => {
+const Unassigned = () => {
   const toast = useToast();
+  const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const users = useAppSelector((state) => state.users);
   const [stores, setStores] = useState<Store[]>([]);
   const [filterText, setFilterText] = useState<string>("");
+  const [storesToAssign, setStoresToAssign] = useState<number[]>([]);
 
   useEffect(() => {
     setStores(users.selectedUserStores.unassigned);
   }, [users.selectedUserStores.unassigned]);
 
   useEffect(() => {
+    setStoresToAssign([]);
     if (filterText.trim() === "") {
       setStores(users.selectedUserStores.unassigned);
     } else {
       const filtered = users.selectedUserStores.unassigned.filter((store) =>
-        store.store_name.toLowerCase().includes(filterText.toLowerCase())
+        store.store_name.toLowerCase().includes(filterText.toLowerCase()),
       );
       setStores(filtered);
     }
-  }, [filterText]);
+  }, [filterText, users.selectedUserStores.unassigned]);
 
   const hasLength = () => {
     return stores.length > 0;
   };
 
-  const handleAssignStore = (storeId: number) => {
-    // endpoint expects an array of store ids
-    assignUserToStore(context.url, context.token, users.selectedUserId, [
-      storeId,
-    ])
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          getData();
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error("Error assigning store " + err.message);
-      });
+  const handleAssignStore = () => {
+    dispatch(setStoresAssignedForUser(storesToAssign));
+    assignUserToStore(
+      context.url,
+      context.token,
+      users.selectedUserId,
+      storesToAssign,
+    ).catch((err: JsonError) => {
+      toast.error("Error assigning store " + err.message);
+    });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,10 +51,40 @@ const Unassigned = ({ getData }: UnassignedProps) => {
     setFilterText(value);
   };
 
+  const handleStoreCardClick = (
+    // e: React.MouseEvent<HTMLDivElement>,
+    storeId: number,
+  ) => {
+    // const isMultiSelect = e.shiftKey;
+
+    setStoresToAssign((prev) => {
+      if (prev.includes(storeId)) {
+        return prev.filter((s) => s !== storeId);
+      }
+      return [...prev, storeId];
+    });
+  };
+
+  const handleAssignAll = () => {
+    const allToAdd = users.selectedUserStores.unassigned.map((s) => s.storeid);
+    dispatch(setStoresAssignedForUser(allToAdd));
+    assignUserToStore(
+      context.url,
+      context.token,
+      users.selectedUserId,
+      allToAdd,
+    ).catch((err: JsonError) => {
+      toast.error("Error assigning store " + err.message);
+    });
+  };
+
   return (
     <div>
-      <label htmlFor="unassigned-user-stores" className="font-medium text-sm">
-        Unassigned - {users.selectedUserStores.unassigned.length}
+      <label
+        htmlFor="unassigned-user-stores"
+        className="font-medium text-sm flex justify-between"
+      >
+        Unassigned - {stores.length}
       </label>
       <input
         data-testid="ctrl-unassigned-filter"
@@ -74,13 +100,24 @@ const Unassigned = ({ getData }: UnassignedProps) => {
               <div
                 key={store.storeid}
                 data-testid={`unassigned-store-${store.storeid}`}
-                className="bg-custom-white rounded-lg shadow p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200"
-                onClick={() => handleAssignStore(store.storeid)}
+                className={`${storesToAssign.includes(store.storeid) ? "bg-emerald-200" : "bg-custom-white"} rounded-lg shadow p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
+                onClick={() => handleStoreCardClick(store.storeid)}
               >
                 {store.store_name} = ({store.storeid})
               </div>
             ))
           : null}
+      </div>
+      <div className="flex justify-between gap-2 mt-2">
+        <button
+          className="btn-themeGreen w-1/2 px-0"
+          onClick={handleAssignStore}
+        >
+          Assign
+        </button>
+        <button className="btn-themeGreen w-1/2 px-0" onClick={handleAssignAll}>
+          Assign All
+        </button>
       </div>
     </div>
   );

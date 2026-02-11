@@ -26,7 +26,7 @@ const QsUnassigned = () => {
       setStores(qs.qsUserUnassignedStores);
     } else {
       const filtered = qs.qsUserUnassignedStores.filter((store) =>
-        store.store_name.toLowerCase().includes(filterText.toLowerCase())
+        store.store_name.toLowerCase().includes(filterText.toLowerCase()),
       );
       setStores(filtered);
     }
@@ -34,37 +34,31 @@ const QsUnassigned = () => {
 
   const handleAssignStore = (storeId: number) => {
     const id = storeId.toString();
+    const store = qs.qsUserUnassignedStores.find(
+      (s: Store) => s.storeid === storeId,
+    );
+
+    const stores = [...qs.qsUserAssignedStores, store!].sort(
+      (a, b) => a.storeid - b.storeid,
+    );
+    const unassignedStores = [...qs.qsUserUnassignedStores].filter(
+      (s) => s.storeid !== storeId,
+    );
+    dispatch(
+      setQsUserStores({
+        assigned_stores: stores,
+        unassigned_stores: unassignedStores,
+      }),
+    );
+
     addQuicksightStoreForUser(
       context.url,
       context.token,
       qs.selectedQsUserEmail,
-      id
-    )
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          toast.success("Store assigned successfully");
-          const store = qs.qsUserUnassignedStores.find(
-            (s: Store) => s.storeid === storeId
-          );
-
-          const stores = [...qs.qsUserAssignedStores, store!].sort(
-            (a, b) => a.storeid - b.storeid
-          );
-          const unassignedStores = [...qs.qsUserUnassignedStores].filter(
-            (s) => s.storeid !== storeId
-          );
-          dispatch(
-            setQsUserStores({
-              assigned_stores: stores,
-              unassigned_stores: unassignedStores,
-            })
-          );
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error(err.message);
-      });
+      id,
+    ).catch((err: JsonError) => {
+      toast.error(err.message);
+    });
   };
 
   const toggleDisplay = () => {
@@ -75,7 +69,7 @@ const QsUnassigned = () => {
     assignAllPermissionsForUser(
       context.url,
       context.token,
-      qs.selectedQsUserEmail
+      qs.selectedQsUserEmail,
     )
       .then((resp) => {
         const j = resp.data;
@@ -89,7 +83,7 @@ const QsUnassigned = () => {
             setQsUserStores({
               assigned_stores: allStores,
               unassigned_stores: [],
-            })
+            }),
           );
         }
       })
