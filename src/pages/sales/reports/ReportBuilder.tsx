@@ -45,7 +45,7 @@ const ReportBuilder = () => {
   };
 
   const savePDF = () => {
-    exportPdf(reportRef, state.title);
+    exportPdf(reportRef.current!, state.title);
   };
 
   const handleOptionSelect = (option: string | number) => {
@@ -69,12 +69,12 @@ const ReportBuilder = () => {
       {/* Controls */}
       <div className="space-y-2">
         <Input
-          label="Report Title"
+          label="Title"
           value={state.title}
           setValue={handleTitleChange}
         />
         <SingleSelect
-          label="Data Options"
+          label="Data"
           data={dataSets}
           displayKey="type"
           valueKey="option"

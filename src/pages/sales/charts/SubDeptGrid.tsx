@@ -27,7 +27,7 @@ const SubDeptGrid = () => {
           (d) => d.sub_department === curr.sub_department,
         );
         if (exists) {
-          exists.total_sales += curr.total_sales - curr.total_tax;
+          exists.total_sales += curr.total_sales;
           exists.net_sales += curr.net_sales;
           exists.qty += curr.qty;
           exists.digital_coupons += curr.digital_coupons;

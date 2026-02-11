@@ -52,19 +52,13 @@ export const salesPanelCols: (ColDef<WeeklySale> | ColGroupDef<WeeklySale>)[] =
     },
   ];
 
-export const exportPdf = async (
-  ref: React.RefObject<HTMLDivElement | null>,
-  fileName: string,
-) => {
-  if (!ref.current) return;
-
-  const canvas = await html2canvas(ref.current, {
+export const exportPdf = async (ref: HTMLDivElement, fileName: string) => {
+  const canvas = await html2canvas(ref, {
     scale: 2,
     useCORS: true,
     allowTaint: true,
   });
   const data = canvas.toDataURL("image/png");
-  // const pdf = new jsPDF("p", "mm", "a4");
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "px",
@@ -77,4 +71,25 @@ export const exportPdf = async (
 
   pdf.addImage(data, "PNG", 0, 0, width, height);
   pdf.save(`${fileName.replaceAll(" ", "_")}.pdf`);
+};
+
+export const getPdfBlob = async (ref: React.RefObject<HTMLDivElement>) => {
+  const canvas = await html2canvas(ref.current, {
+    scale: 2,
+    useCORS: true,
+    allowTaint: true,
+  });
+  const data = canvas.toDataURL("image/png");
+  const pdf = new jsPDF({
+    orientation: "portrait",
+    unit: "px",
+    format: "a4",
+  });
+
+  const properties = pdf.getImageProperties(data);
+  const width = pdf.internal.pageSize.getWidth();
+  const height = (properties.height * width) / properties.width;
+
+  pdf.addImage(data, "PNG", 0, 0, width, height);
+  return pdf.output("blob");
 };
