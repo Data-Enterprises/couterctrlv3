@@ -30,11 +30,11 @@ const Carousel = ({
     }
   }, [useDynamicIndex, dynamicIndex]);
 
-  useEffect(() => {
-      if (index >= totalSlides) {
-        setIndex(0);
-      }
-  }, [children]);
+  // useEffect(() => {
+  //     if (index >= totalSlides) {
+  //       setIndex(0);
+  //     }
+  // }, [children]);
 
   const hasMultipleSlides = totalSlides > 1;
 

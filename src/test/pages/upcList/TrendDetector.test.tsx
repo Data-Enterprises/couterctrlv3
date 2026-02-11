@@ -14,7 +14,7 @@ import { getTrendDetect } from "../../../api/upc";
 import { stores, trendDetectResp, JsonErrorResp } from ".";
 
 // Components being tested
-import UpcList from "../../../pages/upc/wizard/UpcList";
+import UpcList from "../../../pages/upc/UpcList";
 import type { JSX } from "react";
 
 vi.mock("../../../api/upc");
@@ -92,178 +92,77 @@ vi.mock("@nivo/bar", () => ({
 }));
 
 describe("TrendDetector Module in UpcList", () => {
-  it("should handle API failure when fetching Trend Detection data", async () => {
+  it("should handle API failure when fetching Sales Comp data", async () => {
+    (getTrendDetect as Mock).mockRejectedValue({
+      data: JsonErrorResp,
+    });
+
     renderWithProviders(<UpcList />, { store });
 
-    // Go through the steps of the UpcWizard to reach SalesComp module
-    const upcFileInput = await screen.findByTestId("upc-file-input");
+    const dropdown = await screen.findByTestId("single-select-trigger-icon-2");
 
-    const csvFile = new File(["upc1\nupc2\nupc3"], "upc_list.csv", {
-      type: "text/csv",
-    });
+    await user.click(dropdown);
+    const option = await screen.findByTestId("single-select-option-2-1");
+    await user.click(option);
 
-    await user.upload(upcFileInput, csvFile);
-    const input = upcFileInput as HTMLInputElement;
-    expect(input.files?.[0]).toBe(csvFile);
+    const salesComp = await screen.findByTestId("radio-4");
+    await user.click(salesComp);
 
-    // Selecting TrendDetector module
-    const trendMode = await screen.findByTestId("radio-4");
-    await user.click(trendMode);
-    await waitFor(() => {
-      const state = store.getState().upc;
-      expect(state.selectedMode).toBe(4);
-    });
-
-    const nextBtn = await screen.findByTestId("upc-wizard-next-btn-1");
-    await user.click(nextBtn);
-
-    await waitFor(() => {
-      const state = store.getState().upc;
-      expect(state.index).toBe(1);
-    });
-
-    const storeGroupSelectIcon = await screen.findByTestId(
-      "single-select-trigger-icon-1"
-    );
-
-    // Click on Stores
-    const storeOption = await screen.findByTestId("single-select-option-1-0");
-    await user.click(storeGroupSelectIcon);
-    await user.click(storeOption);
-    await waitFor(() => {
-      const state = store.getState().upc;
-      expect(state.radioId).toBe(1);
-    });
-
-    const storeToClick = await screen.findByTestId("single-select-option-2-1");
-    await user.click(storeToClick);
-
-    // handle error
-    (getTrendDetect as Mock).mockRejectedValueOnce(JsonErrorResp);
-
-    // Fetch the data
-    const btn2 = await screen.findByTestId("upc-wizard-next-btn-2");
-    await user.click(btn2);
-
-    const stepOne = await screen.findByTestId("upc-step-one");
-    expect(stepOne).toBeInTheDocument();
+    const searchBtn = await screen.findByTestId("upc-module-data-search-btn");
+    await user.click(searchBtn);
   });
 
-    it("should inform the user if no records were found", async () => {
-      renderWithProviders(<UpcList />, { store });
-
-      // Go through the steps of the UpcWizard to reach SalesComp module
-      const upcFileInput = await screen.findByTestId("upc-file-input");
-
-      const csvFile = new File(["upc1\nupc2\nupc3"], "upc_list.csv", {
-        type: "text/csv",
-      });
-
-      await user.upload(upcFileInput, csvFile);
-      const input = upcFileInput as HTMLInputElement;
-      expect(input.files?.[0]).toBe(csvFile);
-
-      // Selecting SalesComp module
-      const trendMode = await screen.findByTestId("radio-4");
-      await user.click(trendMode);
-      await waitFor(() => {
-        const state = store.getState().upc;
-        expect(state.selectedMode).toBe(4);
-      });
-
-      const nextBtn = await screen.findByTestId("upc-wizard-next-btn-1");
-      await user.click(nextBtn);
-
-      await waitFor(() => {
-        const state = store.getState().upc;
-        expect(state.index).toBe(1);
-      });
-
-      const storeGroupSelectIcon = await screen.findByTestId(
-        "single-select-trigger-icon-1"
-      );
-
-      // Click on Stores
-      const storeOption = await screen.findByTestId("single-select-option-1-0");
-      await user.click(storeGroupSelectIcon);
-      await user.click(storeOption);
-      await waitFor(() => {
-        const state = store.getState().upc;
-        expect(state.radioId).toBe(1);
-      });
-
-      const storeToClick = await screen.findByTestId(
-        "single-select-option-2-1"
-      );
-      await user.click(storeToClick);
-
-      // handle success
-      (getTrendDetect as Mock).mockResolvedValue({ data: { error: 0, trends: [] } });
-
-      // Fetch the data
-      const btn2 = await screen.findByTestId("upc-wizard-next-btn-2");
-      await user.click(btn2);
-
-      await waitFor(() => {
-        expect(mockedToastWarn).toHaveBeenCalledWith("No Records Found");
-      });
+  it("should handle throw a warning if no records are returned", async () => {
+    // Mock the API failure
+    (getTrendDetect as Mock).mockResolvedValue({
+      data: { error: 0, trends: [] },
     });
 
-  // In this case, we're just trying to render SalesComp
-  it("should render selected module correctly", async () => {
     renderWithProviders(<UpcList />, { store });
 
-    // Go through the steps of the UpcWizard to reach SalesComp module
-    const upcFileInput = await screen.findByTestId("upc-file-input");
+    const dropdown = await screen.findByTestId("single-select-trigger-icon-2");
 
-    const csvFile = new File(["upc1\nupc2\nupc3"], "upc_list.csv", {
-      type: "text/csv",
-    });
+    await user.click(dropdown);
+    const option = await screen.findByTestId("single-select-option-2-1");
+    await user.click(option);
 
-    await user.upload(upcFileInput, csvFile);
-    const input = upcFileInput as HTMLInputElement;
-    expect(input.files?.[0]).toBe(csvFile);
+    const salesComp = await screen.findByTestId("radio-4");
+    await user.click(salesComp);
 
-    // Selecting SalesComp module
-    const trendMode = await screen.findByTestId("radio-4");
-    await user.click(trendMode);
-    await waitFor(() => {
-      const state = store.getState().upc;
-      expect(state.selectedMode).toBe(4);
-    });
+    const searchBtn = await screen.findByTestId("upc-module-data-search-btn");
+    await user.click(searchBtn);
+  });
 
-    const nextBtn = await screen.findByTestId("upc-wizard-next-btn-1");
-    await user.click(nextBtn);
+  it("should handle setting the periods in the Trend Periods input", async () => {
+    renderWithProviders(<UpcList />, { store });
+
+    const input = await screen.findByTestId("text-input-trend");
+    await user.clear(input);
+    await user.type(input, "90");
 
     await waitFor(() => {
       const state = store.getState().upc;
-      expect(state.index).toBe(1);
+      expect(state.trendPeriods).toBe("90");
     });
+  });
 
-    const storeGroupSelectIcon = await screen.findByTestId(
-      "single-select-trigger-icon-1"
-    );
-
-    // Click on Stores
-    const storeOption = await screen.findByTestId("single-select-option-1-0");
-    await user.click(storeGroupSelectIcon);
-    await user.click(storeOption);
-    await waitFor(() => {
-      const state = store.getState().upc;
-      expect(state.radioId).toBe(1);
-    });
-
-    const storeToClick = await screen.findByTestId("single-select-option-2-1");
-    await user.click(storeToClick);
-
-    // handle success
+  it("should handle API success when fetching Trend Detection data", async () => {
+    // Mock the API failure
     (getTrendDetect as Mock).mockResolvedValue(trendDetectResp);
 
-    // Fetch the data
-    const btn2 = await screen.findByTestId("upc-wizard-next-btn-2");
-    await user.click(btn2);
+    renderWithProviders(<UpcList />, { store });
 
-    expect(await screen.findByTestId("upc-trend")).toBeInTheDocument();
+    const dropdown = await screen.findByTestId("single-select-trigger-icon-2");
+
+    await user.click(dropdown);
+    const option = await screen.findByTestId("single-select-option-2-1");
+    await user.click(option);
+
+    const salesComp = await screen.findByTestId("radio-4");
+    await user.click(salesComp);
+
+    const searchBtn = await screen.findByTestId("upc-module-data-search-btn");
+    await user.click(searchBtn);
   });
 
   it("should set selected trends when UPCs are selected", async () => {
@@ -365,7 +264,7 @@ describe("TrendDetector Module in UpcList", () => {
     const allCheckboxIcon = await screen.findByTestId("check-0-trend-all");
     const topCheckboxIcon = await screen.findByTestId("check-1-trend-top");
     const bottomCheckboxIcon = await screen.findByTestId(
-      "check-2-trend-bottom"
+      "check-2-trend-bottom",
     );
 
     await user.click(topCheckboxIcon);
@@ -398,7 +297,7 @@ describe("TrendDetector Module in UpcList", () => {
 
     await waitFor(() => {
       expect(mockedToastWarn).toHaveBeenCalledWith(
-        "Please enter a file name..."
+        "Please enter a file name...",
       );
     });
   });
@@ -473,7 +372,9 @@ describe("TrendDetector Module in UpcList", () => {
     const fileNameInput = await screen.findByTestId("text-input-csvFileName");
     await user.type(fileNameInput, "trend_data");
 
-    const bottomCheckboxIcon = await screen.findByTestId("check-2-trend-bottom");
+    const bottomCheckboxIcon = await screen.findByTestId(
+      "check-2-trend-bottom",
+    );
     await user.click(bottomCheckboxIcon);
 
     const submit = await screen.findByTestId("upc-export-modal-submit-btn");
@@ -482,6 +383,24 @@ describe("TrendDetector Module in UpcList", () => {
     await waitFor(() => {
       const state = store.getState().upcModal;
       expect(state.openModal).toBe(false);
+    });
+  });
+
+  it("should handle showing NoDataDisplay", async () => {
+    renderWithProviders(<UpcList />, { store });
+
+    const radios = [
+      await screen.findByTestId("radio-1"),
+      await screen.findByTestId("radio-4"),
+    ];
+
+    for (const radio of radios) {
+      await user.click(radio);
+    }
+
+    await waitFor(() => {
+      const state = store.getState().upc;
+      expect(state.selectedMode).toBe(4);
     });
   });
 });

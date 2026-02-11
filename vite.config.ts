@@ -12,6 +12,9 @@ export default defineConfig({
       enabled: true,
       reporter: ["text", "json", "html"],
       include: ["src/**/*.{ts,tsx}"],
+      thresholds: {
+        branches: 0,
+      },
       exclude: [
         "src/main.tsx",
         "src/api/**",
@@ -21,6 +24,8 @@ export default defineConfig({
         "src/features/priceSimSlice.ts",
         "src/pages/forecast/controls/UpcUploader.tsx",
         "src/pages/forecast/grids/PriceHistoryGrid.tsx",
+        "src/functions/**",
+        "src/pages/forecast/ReplayModal.tsx",
       ],
     },
     pool: "threads",

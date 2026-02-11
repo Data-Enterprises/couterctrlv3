@@ -108,6 +108,14 @@ describe("Receivers Page", () => {
     });
   });
 
+  it("should do nothing if error !== 0 when fetching receiver details", async () => {
+    (getReceiverDetails as Mock).mockResolvedValueOnce({ data: { error: 1 } });
+    renderWithProviders(<Receivers />, { store });
+
+    const rows = await screen.findAllByRole("row");
+    await user.click(rows[1]);
+  });
+
   it("should fetch receiver details when a receiver is selected", async () => {
     (getReceiverDetails as Mock).mockResolvedValue(detailsResp);
     renderWithProviders(<Receivers />, { store });
@@ -134,7 +142,7 @@ describe("Receivers Page", () => {
 
     await waitFor(() => {
       expect(mockedToastWarn).toHaveBeenCalledWith(
-        "Please enter a valid file name."
+        "Please enter a valid file name.",
       );
     });
 
@@ -178,12 +186,12 @@ describe("Receivers Page", () => {
     renderWithProviders(<Receivers />, { store });
 
     const venIdFilter = await screen.findByTestId(
-      "rec-list-table-filter-vendorid"
+      "rec-list-table-filter-vendorid",
     );
     await user.click(venIdFilter);
 
     const submitBtn = await screen.findByTestId(
-      "rec-list-filter-modal-submit-btn"
+      "rec-list-filter-modal-submit-btn",
     );
     const input = await screen.findByTestId("text-filter-input");
 
@@ -191,7 +199,7 @@ describe("Receivers Page", () => {
 
     await waitFor(() => {
       expect(mockedToastWarn).toHaveBeenCalledWith(
-        "Filter value cannot be empty"
+        "Filter value cannot be empty",
       );
     });
 
@@ -208,12 +216,12 @@ describe("Receivers Page", () => {
     renderWithProviders(<Receivers />, { store });
 
     const venNameFilter = await screen.findByTestId(
-      "rec-list-table-filter-vendorname"
+      "rec-list-table-filter-vendorname",
     );
     await user.click(venNameFilter);
 
     const submitBtn = await screen.findByTestId(
-      "rec-list-filter-modal-submit-btn"
+      "rec-list-filter-modal-submit-btn",
     );
     const input = await screen.findByTestId("text-filter-input");
     await user.type(input, "mckee");
@@ -229,17 +237,17 @@ describe("Receivers Page", () => {
     renderWithProviders(<Receivers />, { store });
 
     const refreshFiltersBtn = await screen.findByTestId(
-      "rec-list-table-filter-refresh"
+      "rec-list-table-filter-refresh",
     );
     await user.click(refreshFiltersBtn);
 
     const transIdFilter = await screen.findByTestId(
-      "rec-list-table-filter-transactionid"
+      "rec-list-table-filter-transactionid",
     );
     await user.click(transIdFilter);
 
     const submitBtn = await screen.findByTestId(
-      "rec-list-filter-modal-submit-btn"
+      "rec-list-filter-modal-submit-btn",
     );
     const input = await screen.findByTestId("text-filter-input");
     await user.type(input, "74");
@@ -255,12 +263,12 @@ describe("Receivers Page", () => {
     renderWithProviders(<Receivers />, { store });
 
     const setInvoiceIdFilter = await screen.findByTestId(
-      "rec-list-table-filter-invoiceid"
+      "rec-list-table-filter-invoiceid",
     );
     await user.click(setInvoiceIdFilter);
 
     const submitBtn = await screen.findByTestId(
-      "rec-list-filter-modal-submit-btn"
+      "rec-list-filter-modal-submit-btn",
     );
     const input = await screen.findByTestId("text-filter-input");
     await user.type(input, "179");

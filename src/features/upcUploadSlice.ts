@@ -56,9 +56,16 @@ export const upcUploadSlice = createSlice({
       state.upcText = "";
       state.fileName = "";
     },
+    resetUpcsSlice: () => initialState,
   },
 });
 
-export const { setUpcs, setUpcText, setUpcFileName, removeSingleUpc, clearUpcs } =
-  upcUploadSlice.actions;
+export const {
+  setUpcs,
+  setUpcText,
+  setUpcFileName,
+  removeSingleUpc,
+  clearUpcs,
+  resetUpcsSlice,
+} = upcUploadSlice.actions;
 export default upcUploadSlice.reducer;

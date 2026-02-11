@@ -21,7 +21,7 @@ export type Navigation = {
   children: Navigation[];
   childOpen: boolean;
   mobile: boolean;
-  userTypes: string[];
+  userRoles: string[];
   isHovering: boolean;
 };
 
@@ -33,8 +33,8 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
-    isHovering:false,
+    userRoles: ["*"],
+    isHovering: false,
   },
   {
     name: "Sales",
@@ -43,8 +43,8 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
-    isHovering:false,
+    userRoles: ["*"],
+    isHovering: false,
   },
   {
     name: "Team",
@@ -53,8 +53,8 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
-    isHovering:false,
+    userRoles: ["*"],
+    isHovering: false,
   },
   {
     name: "Loss Prevention",
@@ -63,8 +63,8 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
-    isHovering:false,
+    userRoles: ["*"],
+    isHovering: false,
   },
   {
     name: "Groups",
@@ -73,8 +73,8 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
-    isHovering:false,
+    userRoles: ["2", "3", "4", "9"],
+    isHovering: false,
   },
   {
     name: "Upc List",
@@ -83,8 +83,8 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
-    isHovering:false,
+    userRoles: ["*"],
+    isHovering: false,
   },
   {
     name: "Item Lookup",
@@ -93,8 +93,8 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
-    isHovering:false,
+    userRoles: ["*"],
+    isHovering: false,
   },
   {
     name: "Forecasting",
@@ -103,8 +103,8 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
-    isHovering:false,
+    userRoles: ["*"],
+    isHovering: false,
   },
   {
     name: "Quicksight",
@@ -113,8 +113,8 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
-    isHovering:false,
+    userRoles: ["*"],
+    isHovering: false,
   },
   {
     name: "Receivers",
@@ -123,8 +123,8 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
-    isHovering:false,
+    userRoles: ["*"],
+    isHovering: false,
   },
   {
     name: "Coupons",
@@ -133,8 +133,8 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userTypes: ["*"],
-    isHovering:false,
+    userRoles: ["*"],
+    isHovering: false,
   },
   // This fake link is just to show that user types can be restricted
   {
@@ -144,7 +144,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userTypes: ["9999"],
-    isHovering:false,
+    userRoles: ["9999"],
+    isHovering: false,
   },
 ];

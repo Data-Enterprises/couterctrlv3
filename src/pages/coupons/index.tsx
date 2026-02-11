@@ -4,9 +4,11 @@ import type { CouponItem } from "../../interfaces";
 import { formatCurrency2, formatDate } from "../../utils";
 
 export const useCouponContext = () => {
-  const { coupons, isFetching, gridCoupons, noCouponsFound } = useAppSelector((state) => state.coupons);
+  const { coupons, isFetching, gridCoupons, noCouponsFound } = useAppSelector(
+    (state) => state.coupons,
+  );
   const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector(
-    (state) => state.search
+    (state) => state.search,
   );
   const { url, token } = useAppSelector((state) => state.app);
 
@@ -80,8 +82,7 @@ export const cols: (ColDef<CouponItem> | ColGroupDef<CouponItem>)[] = [
     flex: 0.9,
     ...defaultOptions,
     headerStyle: { borderRight: "1px solid white" },
-    valueFormatter: (params) =>
-      params.value ? formatCurrency2(params.value) : "",
+    valueFormatter: (params) => formatCurrency2(params.value),
   },
   {
     headerName: "UPC",

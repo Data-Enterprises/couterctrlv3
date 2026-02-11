@@ -1,23 +1,4 @@
-import type {
-  TopTenItem,
-  TopTenData,
-  GroupTopTenItem,
-  WeeklySale,
-  SelectedSalesPanel,
-} from "../../../interfaces";
-
-export const barColors = [
-  "#00CC55",
-  "#10b981",
-  "#0099AA",
-  "#0066FF",
-  "#3366FF",
-  "#3b82f6",
-  "#6688FF",
-  "#FFA500",
-  "#FF9900",
-  "#CC8844",
-];
+import type { WeeklySale, SelectedSalesPanel } from "../../../interfaces";
 
 export const colors = [
   "#00CC55",
@@ -35,35 +16,6 @@ export const colors = [
 export const getDateLayout = (date: string) => {
   const [year, month, day] = date.split("-");
   return `${month}/${day}/${year}`;
-};
-
-export const formatTopTenData = (
-  data: TopTenItem[] | GroupTopTenItem[]
-): TopTenData[] => {
-  return [...data]
-    .map((item, idx) => ({
-      id: item.product_description,
-      label: item.product_code,
-      value: item.total_sales || 0,
-      fill: barColors[idx % barColors.length],
-      color: barColors[idx % barColors.length],
-      qty: item.qty || 0,
-    }))
-    .reverse();
-};
-
-export const calculateMetrics = (data: TopTenData[]) => {
-  const totalSales = data.reduce((sum, item) => sum + item.value, 0);
-  const totalQty = data.reduce((sum, item) => sum + item.qty, 0);
-  const avgSales = data.length ? totalSales / data.length : 0;
-  const avgQty = data.length ? totalQty / data.length : 0;
-
-  return {
-    totalSales,
-    avgSales,
-    totalQty,
-    avgQty,
-  };
 };
 
 export const rgbaColor = (hex: string, alpha: number) => {

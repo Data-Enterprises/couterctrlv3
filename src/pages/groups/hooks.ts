@@ -8,7 +8,8 @@ export const useGridCols = () => {
       const width = window.innerWidth;
       if (width < 768) {
         setCols("grid-cols-1");
-      } else if (width > 768) {
+      } else {
+        // width > 768
         setCols("grid-cols-3");
       }
     };

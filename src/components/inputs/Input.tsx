@@ -6,11 +6,12 @@ interface InputProps {
 }
 
 const Input = ({ value, setValue, label, type = "text" }: InputProps) => {
+  const testId = `input-${label.toLowerCase().replace(/\s+/g, "-")}`;
   return (
     <div>
       {label && <label className="font-medium text-sm pl-0.5">{label}</label>}
       <input
-        data-testid={`input-${label.toLowerCase()}`}
+        data-testid={testId}
         type={type}
         value={value}
         onChange={(e) => setValue(e.target.value)}

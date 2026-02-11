@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useUpcContext } from "../../wizard/hooks";
+import { useUpcContext } from "../../hooks";
 import WeekCard from "./WeekCard";
 import type { CardData } from ".";
 
@@ -10,7 +10,7 @@ const SalesCompHeader = () => {
   useEffect(() => {
     // Grabbing only the selected UPCs
     const selected = context.salesComp.filter((item) =>
-      context.selectedUpcs.includes(item.product_code)
+      context.selectedUpcs.includes(item.product_code),
     );
 
     // Then grouping the sales data by the week of properties of the selected upcs

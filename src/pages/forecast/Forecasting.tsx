@@ -24,7 +24,7 @@ import {
   setNoResults,
 } from "../../features/forecastSlice";
 import { useForecastContext, useResizeContext } from "./hooks";
-import SelectedStoreList from "../upc/wizard/SelectedStoreList";
+import SelectedStoreList from "../upc/components/SelectedStoreList";
 import ForecastControls from "./controls/ForecastControls";
 import FileGrid from "./grids/FileGrid";
 import OutlierGrid from "./grids/OutlierGrid";
@@ -60,7 +60,7 @@ const Forecasting = () => {
       // if (context.forecastResults.length === 0 || !file) {
       //   dispatch(setUpcFileName(""));
       // }
-    }
+    };
   }, []);
 
   useEffect(() => {
@@ -94,7 +94,7 @@ const Forecasting = () => {
       context.token,
       context.storeids,
       context.endDate,
-      upcs.join(",")
+      upcs.join(","),
     )
       .then((resp) => {
         const j: PriceHistoryFromListResp = resp.data;
@@ -110,10 +110,10 @@ const Forecasting = () => {
           dispatch(setForecastResults(j.results));
 
           const singlePrices = j.results.filter(
-            (item) => item.price_history.length === 1
+            (item) => item.price_history.length === 1,
           );
           const multiPrices = j.results.filter(
-            (item) => item.price_history.length > 1
+            (item) => item.price_history.length > 1,
           );
 
           // set the row data
@@ -142,14 +142,14 @@ const Forecasting = () => {
     // Store
     if (context.radioId === 1) {
       const store = filteredData.find(
-        (item): item is Store => "storeid" in item && item.storeid === id
+        (item): item is Store => "storeid" in item && item.storeid === id,
       );
       const existingStore = context.selectedStores.find(
-        (s) => s.storeid === id
+        (s) => s.storeid === id,
       );
       if (existingStore) {
         const copy = [...context.selectedStores].filter(
-          (s) => s.storeid !== id
+          (s) => s.storeid !== id,
         );
         dispatch(setSelectedStores(copy));
       } else if (store) {
@@ -161,7 +161,7 @@ const Forecasting = () => {
         context.url,
         context.token,
         context.userid,
-        Number(id)
+        Number(id),
       )
         .then((resp) => {
           const j = resp.data;
@@ -198,12 +198,12 @@ const Forecasting = () => {
   return (
     <div
       data-testid="forecast-page"
-      className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] relative"
+      className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] relative w-full"
     >
       <ForecastModal />
-      <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 gap-4 flex overflow-hidden">
-        <div className="grid grid-rows-[37%_35%_24%] col-span-2 gap-4 w-1/6">
-          <div className="bg-custom-white rounded-lg shadow-lg p-4">
+      <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 gap-2 grid grid-cols-[18%_11%_70%] overflow-hidden">
+        <div className="grid grid-rows-[37%_35%_24%] gap-4">
+          <div className="bg-custom-white rounded-lg shadow-lg p-2">
             <div className="flex gap-2">
               <SingleSelect
                 data={options}
@@ -248,8 +248,8 @@ const Forecasting = () => {
               context="large"
             />
           </div>
-          <div className="bg-custom-white rounded-lg shadow-lg px-3">
-            <div className="bg-blue-500 text-custom-white -mx-3 py-0.5 px-4 rounded-t-lg font-medium flex justify-between">
+          <div className="bg-custom-white rounded-lg shadow-lg px-2">
+            <div className="bg-blue-500 text-custom-white -mx-2 py-0.5 px-4 rounded-t-lg font-medium flex justify-between">
               <div>
                 UPCs <span className="text-sm">(comma separated)</span>
               </div>
@@ -295,7 +295,7 @@ const Forecasting = () => {
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-2 gap-2 mt-1">
+            <div className="grid grid-cols-2 gap-2">
               <FileInput
                 page="forecast"
                 fileExt={[".csv"]}
@@ -313,12 +313,12 @@ const Forecasting = () => {
           </div>
           <FileGrid />
         </div>
-        <div className="relative ml-10">
+        <div className="relative">
           <ForecastControls />
-          {context.isLoading && <LoadingIndicator className="ml-24" />}
+          {context.isLoading && <LoadingIndicator className="ml-2" />}
         </div>
 
-        <div className="grid grid-rows-[25%_75%] mb-4 gap-4 w-full relative">
+        <div className="grid grid-rows-[24%_76%] mb-2 gap-2 relative">
           <ForecastCarousel />
           <OutlierGrid />
         </div>

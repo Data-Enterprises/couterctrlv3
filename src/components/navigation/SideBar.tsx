@@ -3,22 +3,30 @@ import { NavLink, useNavigate } from "react-router";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { navigation, type Navigation } from "./utils";
 import { useToast } from "../toasts/hooks/useToast";
-
+import type { JsonError } from "../../interfaces";
 import { setUserPrefs } from "../../api/user";
 
+// Reducers for navigation and slice resetters for logout
 import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import { resetAppSlice } from "../../features/appSlice";
 import { resetUserSlice } from "../../features/userSlice";
 import { resetSalesSlice } from "../../features/salesSlice";
-
-import type { JsonError } from "../../interfaces";
-import { Cog6ToothIcon } from "@heroicons/react/16/solid";
-import SignOutIcon from "../../svgs/SignOutIcon";
 import { resetStoreSlice } from "../../features/storeSlice";
 import { resetGroupState } from "../../features/groupSlice";
 import { resetUsersSlice } from "../../features/usersSlice";
 import { resetUpcState } from "../../features/upcSlice";
 import { resetSearchSlice } from "../../features/searchSlice";
+import { resetForgotPasswordSlice } from "../../features/forgotPasswordSlice";
+import { resetCashierSlice } from "../../features/cashierSlice";
+import { resetLookupSlice } from "../../features/itemLookupSlice";
+import { resetQsSlice } from "../../features/qsSlice";
+import { resetForecastSlice } from "../../features/forecastSlice";
+import { resetUpcsSlice } from "../../features/upcUploadSlice";
+import { resetReceiverSlice } from "../../features/receiversSlice";
+import { resetCouponsSlice } from "../../features/couponSlice";
+
+import { Cog6ToothIcon } from "@heroicons/react/16/solid";
+import SignOutIcon from "../../svgs/SignOutIcon";
 
 const SideBar = () => {
   const toast = useToast();
@@ -81,6 +89,14 @@ const SideBar = () => {
     dispatch(resetUpcState());
     dispatch(resetAppSlice());
     dispatch(resetSearchSlice());
+    dispatch(resetForecastSlice());
+    dispatch(resetUpcsSlice());
+    dispatch(resetReceiverSlice());
+    dispatch(resetCouponsSlice());
+    dispatch(resetQsSlice());
+    dispatch(resetLookupSlice());
+    dispatch(resetCashierSlice());
+    dispatch(resetForgotPasswordSlice());
   };
 
   const handleHover = (itemName: string, isHovering: boolean, idx: number) => {
@@ -146,7 +162,7 @@ const SideBar = () => {
     const tooltip = document.getElementById(`tooltip-${idx}`);
     tooltip!.style.left = `${mousePosition.x}px`;
     tooltip!.style.top = `${mousePosition.y}px`;
-  };;
+  };
 
   return (
     <div
@@ -176,8 +192,8 @@ const SideBar = () => {
             draggable={false}
             className={({ isActive }) =>
               `${
-                item.userTypes.includes(user.role.toString()) ||
-                item.userTypes.includes("*")
+                item.userRoles.includes(user.role.toString()) ||
+                item.userRoles.includes("*")
                   ? "flex"
                   : "hidden"
               } ${

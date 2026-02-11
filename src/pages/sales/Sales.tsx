@@ -26,6 +26,7 @@ import { addDays, formatGoliathDate } from "../../utils";
 import type { JsonError } from "../../interfaces";
 import { useLeftColHeight } from "./utils/hooks";
 import { useEffect } from "react";
+import ReportBuilder from "./reports/ReportBuilder";
 
 const Sales = () => {
   const toast = useToast();
@@ -81,7 +82,7 @@ const Sales = () => {
   };
 
   const pageContainer = context.isDesktop
-    ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden p-4 select-none"
+    ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none"
     : "p-4 min-h-screen overflow-y-scroll";
   const gridContainer = context.isDesktop
     ? " grid grid-cols-[18%_81%] gap-4 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]"
@@ -101,6 +102,7 @@ const Sales = () => {
 
   return (
     <div data-testid="sales-page" className={pageContainer}>
+      <ReportBuilder />
       {!context.isMobile ? (
         <div className={gridContainer}>
           <div
@@ -147,6 +149,7 @@ const Sales = () => {
         </div>
       ) : (
         <div className={gridContainer}>
+          {/* <ReportBuilder /> */}
           <div
             ref={leftColRef}
             className="md:grid h-full md:grid-rows-[25%_74%] md:gap-4"

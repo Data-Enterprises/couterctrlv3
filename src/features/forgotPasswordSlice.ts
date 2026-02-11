@@ -45,7 +45,7 @@ export const forgotPasswordSlice = createSlice({
     setIndex(state) {
       state.index += 1;
     },
-    resetForgotPasswordState: () => initialState,
+    resetForgotPasswordSlice: () => initialState,
   },
 });
 
@@ -57,7 +57,7 @@ export const {
   setNewPassword,
   // setConfirmNewPassword,
   setIndex,
-  resetForgotPasswordState,
+  resetForgotPasswordSlice,
 } = forgotPasswordSlice.actions;
 
 export default forgotPasswordSlice.reducer;

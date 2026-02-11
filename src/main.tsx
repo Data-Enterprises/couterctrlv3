@@ -15,7 +15,7 @@ import Team from "./pages/team/Team.tsx";
 import Groups from "./pages/groups/Groups.tsx";
 import Cashiers from "./pages/cashiers/Cashiers.tsx";
 import Settings from "./pages/settings/Settings.tsx";
-import UpcList from "./pages/upc/wizard/UpcList.tsx";
+import UpcList from "./pages/upc/UpcList.tsx";
 import ItemLookup from "./pages/lookup/ItemLookup.tsx";
 import Forecasting from "./pages/forecast/Forecasting.tsx";
 import Dashboard from "./pages/quicksight/Dashboard.tsx";

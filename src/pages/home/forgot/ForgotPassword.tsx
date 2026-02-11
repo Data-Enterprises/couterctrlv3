@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { setForgotPassword } from "../../../features/appSlice";
-import { resetForgotPasswordState } from "../../../features/forgotPasswordSlice";
+import { resetForgotPasswordSlice } from "../../../features/forgotPasswordSlice";
 
 import Modal from "../../../components/Modal";
 import Carousel from "../../../components/Carousel";
@@ -27,7 +27,7 @@ const ForgotPassword = () => {
 
   const onClose = () => {
     dispatch(setForgotPassword(false));
-    dispatch(resetForgotPasswordState());
+    dispatch(resetForgotPasswordSlice());
   };
 
   return (

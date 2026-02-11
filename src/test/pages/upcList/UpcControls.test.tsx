@@ -12,10 +12,10 @@ import { setGroups } from "../../../features/groupSlice";
 import { getSalesComp } from "../../../api/upc";
 
 // Responses
-import { stores, groups, salesCompResp, JsonErrorResp } from ".";
+import { stores, groups, salesCompResp } from ".";
 
 // Components being tested
-import UpcList from "../../../pages/upc/wizard/UpcList";
+import UpcList from "../../../pages/upc/UpcList";
 import { setSelectedStores } from "../../../features/upcSlice";
 
 vi.mock("../../../api/upc");
@@ -32,124 +32,60 @@ vi.mock("../../../components/toasts/hooks/useToast", () => ({
   }),
 }));
 
+const file = new File(
+  [
+    "upc\n1200000017\n1200000088\n1200000170\n1200003068\n2412601022\n7800008216\n3410057306",
+  ],
+  "forecast.csv",
+  {
+    type: "text/csv",
+  },
+);
+
 describe("Upc Controls Component", () => {
-  it("should handle API failure when fetching Sales Comp data", async () => {
-    renderWithProviders(<UpcList />, { store });
-
-    // Go through the steps of the UpcWizard to reach SalesComp module
-    const upcFileInput = await screen.findByTestId("upc-file-input");
-
-    const csvFile = new File(["upc1\nupc2\nupc3"], "upc_list.csv", {
-      type: "text/csv",
-    });
-
-    await user.upload(upcFileInput, csvFile);
-    const input = upcFileInput as HTMLInputElement;
-    expect(input.files?.[0]).toBe(csvFile);
-
-    // Selecting SalesComp module
-    const modeOne = await screen.findByTestId("radio-1");
-    await user.click(modeOne);
-    await waitFor(() => {
-      const state = store.getState().upc;
-      expect(state.selectedMode).toBe(1);
-    });
-
-    const nextBtn = await screen.findByTestId("upc-wizard-next-btn-1");
-    await user.click(nextBtn);
-
-    await waitFor(() => {
-      const state = store.getState().upc;
-      expect(state.index).toBe(1);
-    });
-
-    const storeGroupSelectIcon = await screen.findByTestId(
-      "single-select-trigger-icon-1"
-    );
-
-    // Click on Stores
-    const storeOption = await screen.findByTestId("single-select-option-1-0");
-    await user.click(storeGroupSelectIcon);
-    await user.click(storeOption);
-    await waitFor(() => {
-      const state = store.getState().upc;
-      expect(state.radioId).toBe(1);
-    });
-
-    const storeToClick = await screen.findByTestId("single-select-option-2-1");
-    await user.click(storeToClick);
-
-    // handle error
-    (getSalesComp as Mock).mockRejectedValueOnce(JsonErrorResp);
-
-    // Fetch the data
-    const btn2 = await screen.findByTestId("upc-wizard-next-btn-2");
-    await user.click(btn2);
-
-    const stepOne = await screen.findByTestId("upc-step-one");
-    expect(stepOne).toBeInTheDocument();
-  });
-
-  // In this case, we're just trying to render SalesComp
-  it("should render selected module correctly", async () => {
-    renderWithProviders(<UpcList />, { store });
-
-    // Go through the steps of the UpcWizard to reach SalesComp module
-    const upcFileInput = await screen.findByTestId("upc-file-input");
-
-    const csvFile = new File(["upc1\nupc2\nupc3"], "upc_list.csv", {
-      type: "text/csv",
-    });
-
-    await user.upload(upcFileInput, csvFile);
-    const input = upcFileInput as HTMLInputElement;
-    expect(input.files?.[0]).toBe(csvFile);
-
-    // Selecting SalesComp module
-    const modeOne = await screen.findByTestId("radio-1");
-    await user.click(modeOne);
-    await waitFor(() => {
-      const state = store.getState().upc;
-      expect(state.selectedMode).toBe(1);
-    });
-
-    const nextBtn = await screen.findByTestId("upc-wizard-next-btn-1");
-    await user.click(nextBtn);
-
-    await waitFor(() => {
-      const state = store.getState().upc;
-      expect(state.index).toBe(1);
-    });
-
-    const storeGroupSelectIcon = await screen.findByTestId(
-      "single-select-trigger-icon-1"
-    );
-
-    // Click on Stores
-    const storeOption = await screen.findByTestId("single-select-option-1-0");
-    await user.click(storeGroupSelectIcon);
-    await user.click(storeOption);
-    await waitFor(() => {
-      const state = store.getState().upc;
-      expect(state.radioId).toBe(1);
-    });
-
-    const storeToClick = await screen.findByTestId("single-select-option-2-1");
-    await user.click(storeToClick);
-
-    // handle success
+  it("should handle toast warning if no mode is selected", async () => {
     (getSalesComp as Mock).mockResolvedValue(salesCompResp);
 
-    // Fetch the data
-    const btn2 = await screen.findByTestId("upc-wizard-next-btn-2");
-    await user.click(btn2);
+    renderWithProviders(<UpcList />, { store });
 
-    await waitFor(() => {
-      const state = store.getState().upc;
-      expect(state.salesComp).toEqual(salesCompResp.data.daily);
-    });
+    const dropdown = await screen.findByTestId("single-select-trigger-icon-2");
 
-    expect(screen.getByTestId("upc-sales-comp")).toBeInTheDocument();
+    await user.click(dropdown);
+    const option = await screen.findByTestId("single-select-option-2-1");
+    await user.click(option);
+
+    const fileInput = (await screen.findByTestId(
+      "upc-file-input",
+    )) as HTMLInputElement;
+
+    await user.upload(fileInput, file);
+
+    const searchBtn = await screen.findByTestId("upc-module-data-search-btn");
+    await user.click(searchBtn);
+  });
+
+  it("should handle API success when fetching Sales Comp data", async () => {
+    (getSalesComp as Mock).mockResolvedValue(salesCompResp);
+
+    renderWithProviders(<UpcList />, { store });
+
+    const dropdown = await screen.findByTestId("single-select-trigger-icon-2");
+
+    await user.click(dropdown);
+    const option = await screen.findByTestId("single-select-option-2-1");
+    await user.click(option);
+
+    const salesComp = await screen.findByTestId("radio-1");
+    await user.click(salesComp);
+
+    const fileInput = (await screen.findByTestId(
+      "upc-file-input",
+    )) as HTMLInputElement;
+
+    await user.upload(fileInput, file);
+
+    const searchBtn = await screen.findByTestId("upc-module-data-search-btn");
+    await user.click(searchBtn);
   });
 
   // Store's state persists so UpcControls can be tested here
@@ -213,7 +149,7 @@ describe("Upc Controls Component", () => {
     renderWithProviders(<UpcList />, { store });
 
     // Radio Buttons for displaying UPC/Description
-    const showSelected = await screen.findByTestId("radio-2");
+    const showSelected = await screen.findByTestId("radio-20");
     const displayToggle = await screen.findByTestId("upc-toggle-display-btn");
 
     const firstStore = await screen.findByTestId("check-0");
@@ -241,11 +177,11 @@ describe("Upc Controls Component", () => {
       store.dispatch(setSelectedStores(stores));
     });
 
-    const showStores = await screen.findByTestId("radio-3");
+    const showStores = await screen.findByTestId("radio-30");
     await user.click(showStores);
 
     // Then go back to Show all
-    const showAll = await screen.findByTestId("radio-1");
+    const showAll = await screen.findByTestId("radio-10");
     await user.click(showAll);
   });
 
@@ -274,11 +210,12 @@ describe("Upc Controls Component", () => {
 
   it("should handle resetting back to UpcWizard step one", async () => {
     renderWithProviders(<UpcList />, { store });
-
     const resetBtn = await screen.findByTestId("upc-controls-reset-btn");
     await user.click(resetBtn);
 
-    const stepOne = await screen.findByTestId("upc-step-one");
-    expect(stepOne).toBeInTheDocument();
+    await waitFor(() => {
+      const state = store.getState().upc;
+      expect(state.salesComp.length).toEqual(0);
+    });
   });
 });

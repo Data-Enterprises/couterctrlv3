@@ -19,7 +19,7 @@ import type { Group } from "../../../features/groupSlice";
 // import { formatQtyOutput, formatSalesOutput } from ".";
 
 // import FileInput from "../../forecast/controls/FileInput";
-import SelectedStoreList from "../../upc/wizard/SelectedStoreList";
+import SelectedStoreList from "../../upc/components/SelectedStoreList";
 import DatePickers from "../../../components/datePickers/DatePickers";
 import SingleSelect from "../../../components/SingleSelect";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
@@ -65,14 +65,14 @@ const PriceSimStorePicker = () => {
     // Store
     if (context.radioId === 1) {
       const store = filteredData.find(
-        (item): item is Store => "storeid" in item && item.storeid === id
+        (item): item is Store => "storeid" in item && item.storeid === id,
       );
       const existingStore = context.selectedStores.find(
-        (s) => s.storeid === id
+        (s) => s.storeid === id,
       );
       if (existingStore) {
         const copy = [...context.selectedStores].filter(
-          (s) => s.storeid !== id
+          (s) => s.storeid !== id,
         );
         dispatch(setSelectedStores(copy));
       } else if (store) {
@@ -84,7 +84,7 @@ const PriceSimStorePicker = () => {
         context.url,
         context.token,
         context.userid,
-        Number(id)
+        Number(id),
       )
         .then((resp) => {
           const j = resp.data;

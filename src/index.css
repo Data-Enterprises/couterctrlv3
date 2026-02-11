@@ -96,6 +96,11 @@ body {
     --color-button-purple: 184 49 234;
   }
 }
+@layer base {
+  img {
+    display: initial;
+  }
+}
 
 @layer components {
   .btn-themeBlue {

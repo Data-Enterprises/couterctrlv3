@@ -1,8 +1,8 @@
 import { useAppSelector } from "../../../hooks";
-import TopSubDept from "../graphs/TopSub";
-import TotalsBar from "../graphs/TotalsBar";
-import TopTotals from "../graphs/TopTotals";
-import TopCoupons from "../graphs/TopCoupons";
+import TopSubDept from "./TopSub";
+import TotalsBar from "./TotalsBar";
+import TopTotals from "./TopTotals";
+import TopCoupons from "./TopCoupons";
 import SubDeptGrid from "../charts/SubDeptGrid";
 
 const KpiHeader = () => {
@@ -12,7 +12,7 @@ const KpiHeader = () => {
     <div className="grid md:grid-cols-4 gap-2 py-2 md:py-0">
       <TopTotals />
       <TopCoupons />
-      <TotalsBar valueKey="total_sales" />
+      <TotalsBar />
       {isMobile && <SubDeptGrid />}
       <TopSubDept />
     </div>

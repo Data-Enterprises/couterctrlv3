@@ -104,10 +104,8 @@ const ReceiversListGrid = () => {
                 pagination={true}
                 paginationAutoPageSize={true}
                 onRowClicked={(params) => {
-                  if (params.data) {
-                    const invoiceDate = formatDate(params.data.invoice_date);
-                    getSelectedDetails(params.data.invoiceid, invoiceDate);
-                  }
+                  const invoiceDate = formatDate(params.data.invoice_date);
+                  getSelectedDetails(params.data.invoiceid, invoiceDate);
                 }}
                 rowSelection="single"
                 onGridReady={handleGridReady}

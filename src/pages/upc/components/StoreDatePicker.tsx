@@ -1,4 +1,4 @@
-import { useUpcContext } from "../wizard/hooks";
+import { useUpcContext } from "../hooks";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import {
   setRadioId,
@@ -14,7 +14,7 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import SingleSelect from "../../../components/SingleSelect";
 import TextInput from "../../../components/TextInput";
 import DatePickers from "../../../components/datePickers/DatePickers";
-import SelectedStoreList from "../wizard/SelectedStoreList";
+import SelectedStoreList from "./SelectedStoreList";
 import FileInput from "../../forecast/controls/FileInput";
 
 const options = [
@@ -52,14 +52,14 @@ const StoreDatePicker = ({ setFile, getModuleData }: StoreDatePickerProps) => {
     if (context.radioId === 1) {
       // Find the store in the filtered data and add/remove from selectedStores
       const store = filteredData.find(
-        (item): item is Store => "storeid" in item && item.storeid === id
+        (item): item is Store => "storeid" in item && item.storeid === id,
       );
       const existingStore = context.selectedStores.find(
-        (s) => s.storeid === id
+        (s) => s.storeid === id,
       );
       if (existingStore) {
         const copy = [...context.selectedStores].filter(
-          (s) => s.storeid !== id
+          (s) => s.storeid !== id,
         );
         dispatch(setSelectedStores(copy));
       } else if (store) {
@@ -71,7 +71,7 @@ const StoreDatePicker = ({ setFile, getModuleData }: StoreDatePickerProps) => {
         context.url,
         context.token,
         context.userid,
-        Number(id)
+        Number(id),
       )
         .then((resp) => {
           const j = resp.data;
@@ -144,6 +144,7 @@ const StoreDatePicker = ({ setFile, getModuleData }: StoreDatePickerProps) => {
         />
         <button
           className="btn-themeBlue w-1/2"
+          data-testid="upc-module-data-search-btn"
           onClick={() => getModuleData(context.selectedMode)}
         >
           Search

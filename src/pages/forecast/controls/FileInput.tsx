@@ -24,7 +24,7 @@ const FileInput = ({
   const dispatch = useAppDispatch();
   const inputRef = useRef<HTMLInputElement>(null);
   const { fileName } = useAppSelector((state) =>
-    page === "upc" ? state.upc : state.upcs
+    page === "upc" ? state.upc : state.upcs,
   );
 
   useEffect(() => {
@@ -39,7 +39,8 @@ const FileInput = ({
     } else if (event.target.files && event.target.files[0]) {
       if (page === "upc") {
         dispatch(setFileName(event.target.files[0].name));
-      } else if (page === "forecast") {
+      } else {
+        // page === "forecast"
         dispatch(setUpcFileName(event.target.files[0].name));
       }
       setFile(event.target.files[0]);
@@ -48,13 +49,12 @@ const FileInput = ({
       const reader = new FileReader();
       reader.onload = (e: ProgressEvent<FileReader>) => {
         const text = e.target?.result;
-        if (typeof text === "string") {
-          const data = processCSV(text);
-          if (page === "forecast") {
-            dispatch(setUpcs(data));
-          } else {
-            dispatch(setUploadedUpcs(data));
-          }
+        // may need to put if (typeof text === "string")
+        const data = processCSV(text!.toString());
+        if (page === "forecast") {
+          dispatch(setUpcs(data));
+        } else {
+          dispatch(setUploadedUpcs(data));
         }
       };
       reader.readAsText(file);

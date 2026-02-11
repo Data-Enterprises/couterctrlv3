@@ -12,22 +12,15 @@ const PriceOptBar = ({ type, yKey }: BarProps) => {
   const state = useAppSelector((state) => state.upc);
   const [chartData, setChartData] = useState<UpcPriceOpt[]>([]);
   const [max, setMax] = useState<number>(0);
-  const color =
-    yKey === "price"
-      ? "bg-[#3b82f6]"
-      : yKey === "total_qty"
-      ? "bg-[#f97316]"
-      : "bg-[#10b981]";
-
-  const barColor =
-    yKey === "price" ? "#3b82f6" : yKey === "total_qty" ? "#f97316" : "#10b981";
+  const color = yKey === "total_qty" ? "bg-[#f97316]" : "bg-[#10b981]";
+  const barColor = yKey === "total_qty" ? "#f97316" : "#10b981";
 
   useEffect(() => {
     let data: UpcPriceOpt[] = [];
     if (state.optDisplayMode === "singleRow") {
       data = state.optBestPrices
         .filter((item) =>
-          state.selectedOptItem.product_code.includes(item.product_code)
+          state.selectedOptItem.product_code.includes(item.product_code),
         )
         .map((item, i) => ({
           ...item,
@@ -36,7 +29,7 @@ const PriceOptBar = ({ type, yKey }: BarProps) => {
         .sort(
           (a, b) =>
             (b[yKey as keyof UpcPriceOpt] as number) -
-            (a[yKey as keyof UpcPriceOpt] as number)
+            (a[yKey as keyof UpcPriceOpt] as number),
         );
     } else if (state.optDisplayMode === "multiRow") {
       data = state.optBestPricesByUpc
@@ -44,7 +37,7 @@ const PriceOptBar = ({ type, yKey }: BarProps) => {
         .sort(
           (a, b) =>
             (b[yKey as keyof UpcPriceOpt] as number) -
-            (a[yKey as keyof UpcPriceOpt] as number)
+            (a[yKey as keyof UpcPriceOpt] as number),
         );
     }
     setChartData(data.reverse());
@@ -52,9 +45,12 @@ const PriceOptBar = ({ type, yKey }: BarProps) => {
     const findMax = [...data].sort(
       (a, b) =>
         (b[yKey as keyof UpcPriceOpt] as number) -
-        (a[yKey as keyof UpcPriceOpt] as number)
+        (a[yKey as keyof UpcPriceOpt] as number),
     );
-    const newMax = findMax.length === 0 ? 0 : findMax[0][yKey as keyof UpcPriceOpt] as number;
+    const newMax =
+      findMax.length === 0
+        ? 0
+        : (findMax[0][yKey as keyof UpcPriceOpt] as number);
     setMax(newMax);
   }, [state.optDisplayMode, state.selectedUpcs, state.selectedOptItem]);
 
@@ -129,7 +125,7 @@ const PriceOptBar = ({ type, yKey }: BarProps) => {
           }}
           tooltipLabel={(e) => {
             const item = chartData.find(
-              (item) => item.product_code === e.indexValue
+              (item) => item.product_code === e.indexValue,
             );
             if (!item) return "";
             const desc = item.product_description;

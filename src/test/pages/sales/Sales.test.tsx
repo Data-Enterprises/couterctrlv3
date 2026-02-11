@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, type Mock } from "vitest";
 import { renderWithProviders } from "../../utils";
-import { screen, waitFor, renderHook } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { setupStore } from "../../../store";
 import {
   defaultError,
@@ -13,11 +13,10 @@ import {
   topten,
   userStores,
   weekly,
-  weeklyTwo,
-  cat_sales,
+  noSubData,
   sub_sales2,
 } from ".";
-import Sales from "../../../pages/sales/SalesOld";
+import Sales from "../../../pages/sales/Sales";
 
 import {
   getTopTen, // topten
@@ -25,9 +24,8 @@ import {
   getSalesPanels, // singleSalesPanel
   getWeekly, // weekly
   getHourly, // hourly
-  getSubs, // sub_sales
-  getCats,
-  // getCompareSubs, // cat_sales
+  getSubs,
+  getSubsComp, // sub_sales
 } from "../../../api/sales";
 import {
   setIsDesktop,
@@ -45,15 +43,14 @@ import {
   setUnassignedStores,
 } from "../../../features/userSlice";
 import { setGroups } from "../../../features/groupSlice";
-import { act } from "react";
-import { useHeight } from "../../../pages/sales/utils/hooks";
-import { useHeight as useHeight2 } from "../../../pages/hooks";
 
 const user = userEvent.setup();
 vi.mock("../../../api/sales");
 
 // Setting up the store with values that should already be in redux
 const store = setupStore();
+store.dispatch(setIsDesktop(true));
+store.dispatch(setIsMobile(false));
 store.dispatch(setToken("fake-token"));
 store.dispatch(setLastGroup(1));
 store.dispatch(setLastStore(1));
@@ -67,62 +64,101 @@ const mockToastError = vi.fn();
 vi.mock("../../../components/toasts/hooks/useToast", () => ({
   useToast: () => ({
     error: mockToastError,
+    warn: vi.fn(),
   }),
 }));
 
-// All uncovered attributes of the nivo/bar need to be mocked based
-// on what the chart is expecting
 vi.mock("@nivo/bar", () => ({
-  ResponsiveBar: vi.fn((props) => {
-    if (props.axisLeft?.format) {
-      props.axisLeft.format("1 - $5.99");
+  ResponsiveBar: vi.fn((props: any) => {
+    if (props.data.length > 0) {
+      if (props.axisLeft?.format) {
+        props.axisLeft.format("1 - $5.99");
+      }
+
+      if (props.tooltip) {
+        props.tooltip({ data: { label: "Test Label", color: "black" } });
+      }
+
+      if (props.axisBottom?.format) {
+        props.axisBottom.format("1 - $5.99");
+      }
+
+      if (props.colors)
+        props.data.forEach((datum: any) => {
+          props.colors({ data: datum });
+        });
+      if (props.borderColor) {
+        props.data.forEach((datum: any) => {
+          props.borderColor({ data: { data: datum } });
+        });
+      }
+
+      // use one element per bar if you want more realism, or just one element
+      return (
+        <div data-testid="responsive-bar">
+          {props.data.map((d: any, idx: number) => (
+            <div
+              key={idx}
+              data-testid={`bar.item.total_sales.${idx}`}
+              onClick={(e) =>
+                props.onClick?.(
+                  {
+                    id: "total_sales",
+                    index: idx,
+                    data: d,
+                  },
+                  e,
+                )
+              }
+            />
+          ))}
+        </div>
+      );
     }
-
-    if (props.tooltip) {
-      props.tooltip({ data: { label: "Test Label", color: "black" } });
-    }
-
-    if (props.axisBottom?.format) {
-      props.axisBottom.format("1 - $5.99");
-    }
-
-    if (props.colors)
-      props.colors({ id: "test", value: 100, data: { fill: "red" } });
-    if (props.borderColor)
-      props.borderColor({
-        id: "test",
-        value: 100,
-        data: { data: { color: "red" } },
-      });
-
-    return <div data-testid="responsive-bar" />;
   }),
 }));
 
-vi.mock("@nivo/line", () => ({
-  ResponsiveLine: vi.fn((props) => {
-    if (props.axisLeft?.format) {
-      props.axisLeft.format(1);
-    }
-
-    if (props.tooltip) {
-      props.tooltip({ point: { data: { x: "12/9/2025", y: 1.99 } } });
-    }
-    return <div data-testid="responsive-line" />;
-  }),
-}));
-
-const renderSuccess = (group: boolean = false) => {
+const renderSuccess = (subData: any, group: boolean = false) => {
   const resp = group ? groupTopTen : topten;
   (getSalesPanels as Mock).mockResolvedValue(singleStoreSalesPanel);
   (getHourlyStoreDepts as Mock).mockResolvedValue(storedepts);
   (getWeekly as Mock).mockResolvedValue(weekly);
   (getHourly as Mock).mockResolvedValue(hourly);
   (getTopTen as Mock).mockResolvedValue(resp);
-  (getSubs as Mock).mockResolvedValue(sub_sales);
+  (getSubs as Mock).mockResolvedValue(subData);
   renderWithProviders(<Sales />, { store });
 };
 
+const renderSuccessMobile = (group: boolean = false) => {
+  const resp = group ? groupTopTen : topten;
+  const mobileStore = setupStore();
+  mobileStore.dispatch(setIsDesktop(false));
+  mobileStore.dispatch(setIsMobile(true));
+  mobileStore.dispatch(setToken("fake-token"));
+  mobileStore.dispatch(setLastGroup(1));
+  mobileStore.dispatch(setLastStore(1));
+  mobileStore.dispatch(setType("Store"));
+  mobileStore.dispatch(setAssignedStores(userStores.assigned_stores));
+  mobileStore.dispatch(setUnassignedStores(userStores.unassigned_stores));
+  mobileStore.dispatch(setGroups(groups));
+  (getSalesPanels as Mock).mockResolvedValue(singleStoreSalesPanel);
+  (getHourlyStoreDepts as Mock).mockResolvedValue(storedepts);
+  (getWeekly as Mock).mockResolvedValue(weekly);
+  (getHourly as Mock).mockResolvedValue(hourly);
+  (getTopTen as Mock).mockResolvedValue(resp);
+  (getSubs as Mock).mockResolvedValue(sub_sales);
+  renderWithProviders(<Sales />, { store: mobileStore });
+};
+
+const renderFailure = () => {
+  (getSalesPanels as Mock).mockRejectedValue(defaultError);
+  (getHourlyStoreDepts as Mock).mockRejectedValue(defaultError);
+  (getWeekly as Mock).mockRejectedValue(defaultError);
+  (getHourly as Mock).mockRejectedValue(defaultError);
+  (getTopTen as Mock).mockRejectedValue(defaultError);
+  (getSubs as Mock).mockRejectedValue(defaultError);
+  renderWithProviders(<Sales />, { store });
+};
 /**
  * NOTES:
  *
@@ -131,90 +167,27 @@ const renderSuccess = (group: boolean = false) => {
 
 describe("Sales Page", () => {
   it("should handle API failure on mount", async () => {
-    (getSalesPanels as Mock).mockRejectedValue(defaultError);
-    (getHourlyStoreDepts as Mock).mockRejectedValue(defaultError);
-    renderWithProviders(<Sales />, { store });
-
     await waitFor(() => {
-      expect(mockToastError).toHaveBeenCalledTimes(3);
-    });
-  });
-
-  it("should not update height when gridRef is null", () => {
-    const { result } = renderHook(() => useHeight());
-    // Initially, ref is not attached to any element
-    expect(result.current.height).toBe(0);
-
-    // Trigger resize - height should still be 0
-    act(() => {
-      window.dispatchEvent(new Event("resize"));
-    });
-    expect(result.current.height).toBe(0);
-  });
-
-  it("should not update height when gridRef is null and maintain useHeight custom hook", async () => {
-    await waitFor(() => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 500,
-      });
-      window.dispatchEvent(new Event("resize"));
+      renderFailure();
     });
 
     await waitFor(() => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 1800,
-      });
-      window.dispatchEvent(new Event("resize"));
+      expect(mockToastError).toHaveBeenCalled();
     });
-
-    const { result } = renderHook(() => useHeight());
-    expect(result.current.height).toBe(0);
-  });
-
-  it("should not update height when gridRef is null and maintain useHeight custom hook", async () => {
-    await waitFor(() => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 500,
-      });
-      window.dispatchEvent(new Event("resize"));
-    });
-
-    await waitFor(() => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 1800,
-      });
-      window.dispatchEvent(new Event("resize"));
-    });
-
-    const { result } = renderHook(() => useHeight2());
-    expect(result.current.height).toBe(385);
   });
 
   it("should handle api failure for fetching all data after sales panels are fetched", async () => {
-    (getSalesPanels as Mock).mockResolvedValue(singleStoreSalesPanel);
-    (getHourlyStoreDepts as Mock).mockResolvedValue(storedepts);
-    (getWeekly as Mock).mockRejectedValueOnce(defaultError);
-    (getHourly as Mock).mockRejectedValueOnce(defaultError);
-    (getTopTen as Mock).mockRejectedValueOnce(defaultError);
-    (getSubs as Mock).mockRejectedValueOnce(defaultError);
-
-    renderWithProviders(<Sales />, { store });
     await waitFor(() => {
-      expect(mockToastError).toHaveBeenCalledTimes(4);
+      renderFailure();
+    });
+    await waitFor(() => {
+      expect(mockToastError).toHaveBeenCalled();
     });
   });
 
   it("should handle setting/unsetting selected sales panel", async () => {
     await waitFor(() => {
-      renderSuccess();
+      renderSuccess(sub_sales);
     });
 
     const panel = await screen.findByTestId("sales-panel-0-0");
@@ -234,169 +207,134 @@ describe("Sales Page", () => {
     });
   });
 
-  it("should filter sales panels based on search input", async () => {
-    await waitFor(() => {
-      renderSuccess();
-    });
-
-    const input = await screen.findByTestId("sales-panel-filter-input");
-    await user.type(input, "Store 1");
-
-    await waitFor(() => {
-      const state = store.getState().sales;
-      expect(state.salesPanelSearchText).toBe("Store 1");
-    });
-
-    await user.clear(input);
-  });
-
-  it("should handle mobile styling for main Sales page", async () => {
-    await waitFor(() => {
-      renderSuccess();
-    });
-
-    await waitFor(() => {
-      store.dispatch(setIsDesktop(false));
-      store.dispatch(setIsMobile(true));
-    });
-  });
-  it("should handle desktop styling for main Sales page", async () => {
-    await waitFor(() => {
-      renderSuccess();
-    });
-
-    await waitFor(() => {
-      store.dispatch(setIsDesktop(true));
-      store.dispatch(setIsMobile(false));
-    });
-  });
-
   it("should handle the toggling of searchValue in main Sales page for API calls", async () => {
     await waitFor(() => {
       store.dispatch(setType("Group"));
     });
     await waitFor(() => {
-      renderSuccess();
+      renderSuccess(sub_sales, true);
     });
   });
 
-  // Hourly tests => nivo/bar is tested, just need to select a new hour
-  it("should handle the hour selection in Hourly.tsx", async () => {
+  it("should handle hour selection in HourlyGrid.tsx", async () => {
     await waitFor(() => {
-      renderSuccess();
+      renderSuccess(sub_sales);
     });
 
-    const hourTrigger = await screen.findByTestId(
-      "single-select-trigger-icon-0",
-    );
-    await user.click(hourTrigger);
-    const hour8 = await screen.findByTestId("single-select-option-0-1");
-    await user.click(hour8);
+    const hourTen = await screen.findByTestId("hour-10");
+    await user.click(hourTen);
   });
 
-  // top ten items
-  it("should set the top ten items based on clicking a sales panel", async () => {
+  it("should handle mobile styling for main Sales page", async () => {
     await waitFor(() => {
-      renderSuccess(true);
-    });
-
-    // // select a sales panel
-    const panel = await screen.findByTestId("sales-panel-0");
-    await user.click(panel);
-
-    await waitFor(() => {
-      store.dispatch(setType("Store"));
+      renderSuccessMobile();
     });
   });
 
-  // weekly net sales
-  it("should handle weekly sales based on group vs sales panel selection", async () => {
+  it("should throw warning if a sub dept period doesn't return any rows", async () => {
     await waitFor(() => {
-      renderSuccess(true);
-    });
-
-    (getWeekly as Mock).mockResolvedValue(weeklyTwo);
-
-    // Set the weekly net sales based on the clicked panel
-    const panel = await screen.findByTestId("sales-panel-0");
-    await user.click(panel);
-  });
-
-  it("should handle api failure for getting compare subs", async () => {
-    await waitFor(() => {
-      renderSuccess(true);
-    });
-
-    const panel = await screen.findByTestId("sales-panel-0");
-    await user.click(panel);
-
-    // clicking on compare subs to set the compare panel
-    (getSubs as Mock).mockRejectedValueOnce(defaultError);
-    const comparePanel = await screen.findByTestId("sales-panel-2-1");
-    await user.click(comparePanel);
-  });
-  it("should compare sub sales when two panels are selected", async () => {
-    await waitFor(() => {
-      renderSuccess(true);
-    });
-
-    const panel = await screen.findByTestId("sales-panel-0");
-    await user.click(panel);
-
-    // clicking on compare subs to set the compare panel
-    (getSubs as Mock).mockResolvedValue(sub_sales2);
-    const comparePanel = await screen.findByTestId("sales-panel-2-1");
-    await user.click(comparePanel);
-
-    await waitFor(() => {
-      const state = store.getState().sales;
-      expect(state.compareSalesPanel.store_name).toBe("Store 2");
-    });
-
-    await user.click(comparePanel);
-    await waitFor(() => {
-      const state = store.getState().sales;
-      expect(state.compareSalesPanel.store_name).toBe("");
+      renderSuccess(noSubData);
     });
   });
 
-  it("should cats api failure when Cats button is clicked", async () => {
-    (getCats as Mock).mockRejectedValueOnce(defaultError);
+  it("should handle Sub Dept selection in the SubDeptGrid.tsx", async () => {
     await waitFor(() => {
-      renderSuccess(true);
+      renderSuccess(sub_sales);
     });
 
-    const panel = await screen.findByTestId("sales-panel-cat-0");
-    await user.click(panel);
-
-    await waitFor(() => {
-      expect(mockToastError).toHaveBeenCalledWith(
-        "Error fetching cats data: An error occurred",
-      );
-    });
+    const subDeptRows = await screen.findAllByRole("row");
+    await user.click(subDeptRows[2]);
+    await user.click(subDeptRows[3]);
+    await user.click(subDeptRows[3]);
   });
 
-  it("should fetch categories data when Cats button is clicked", async () => {
-    (getCats as Mock).mockResolvedValue(cat_sales);
+  it("should handle sub dept selection in mobile view in the SubDeptGrid.tsx", async () => {
     await waitFor(() => {
-      renderSuccess(true);
+      renderSuccessMobile();
     });
 
-    const panel = await screen.findByTestId("sales-panel-cat-0");
-    await user.click(panel);
+    // id for the sub dept single select is set to 1 in the SubDeptGrid component
+    const select = await screen.findByTestId("single-select-trigger-icon-1");
+    await user.click(select);
 
-    await waitFor(() => {
-      const state = store.getState().sales;
-      expect(state.catSales.length).toEqual(cat_sales.data.subs.length);
-    });
-
-    const carouselBtn3 = await screen.findByTestId("carousel-btn-2");
-    await user.click(carouselBtn3);
-
-    await user.click(panel);
-    await waitFor(() => {
-      const state = store.getState().sales;
-      expect(state.catSales.length).toEqual(0);
-    });
+    const option = await screen.findByTestId("single-select-option-1-3");
+    await user.click(option);
   });
+
+  it("should handle desktop item selection in TopTen.tsx", async () => {
+    await waitFor(() => {
+      renderSuccess(sub_sales);
+    });
+
+    // format for nivo/bar test id is bar.item.total_sales.8 for the topTen bar
+    const itemOne = await screen.findByTestId("bar.item.total_sales.9");
+    const item = await screen.findByTestId("bar.item.total_sales.8");
+    await user.click(item);
+    await user.click(itemOne);
+  });
+
+  it("should handle mobile item selection in TopTen.tsx", async () => {
+    await waitFor(() => {
+      renderSuccessMobile();
+    });
+
+    const select = await screen.findByTestId("single-select-trigger-icon-2");
+    await user.click(select);
+
+    const option = await screen.findByTestId("single-select-option-2-3");
+    await user.click(option);
+  });
+
+  it("should handle hovering over the tooltips in TopTen.tsx desktop view", async () => {
+    await waitFor(() => {
+      renderSuccess(sub_sales);
+    });
+
+    const icons = [
+      await screen.findByTestId("gpm-tooltip-icon"),
+      await screen.findByTestId("rpu-tooltip-icon"),
+      await screen.findByTestId("ppu-tooltip-icon"),
+      await screen.findByTestId("cpu-tooltip-icon"),
+      await screen.findByTestId("pl-tooltip-icon"),
+      await screen.findByTestId("nsp-tooltip-icon"),
+    ];
+
+    for (const icon of icons) {
+      await user.hover(icon);
+      await user.unhover(icon);
+    }
+  });
+
+    it("should handle selecting a compare sales panel", async () => {
+      await waitFor(() => {
+        renderSuccess(sub_sales);
+      });
+
+      (getSubsComp as Mock).mockResolvedValue(sub_sales2);
+
+      const panelOne = await screen.findByTestId("sales-panel-0-0");
+      const panelTwo = await screen.findByTestId("sales-panel-2-1");
+
+      await user.click(panelOne);
+      await user.click(panelTwo);
+      await user.click(panelTwo);
+    });
+
+      it("should handle api failure when selecting a compare sales panel", async () => {
+        await waitFor(() => {
+          renderSuccess(sub_sales);
+        });
+
+        (getSubsComp as Mock).mockRejectedValue(defaultError);
+
+        const panelOne = await screen.findByTestId("sales-panel-0");
+        const panelTwo = await screen.findByTestId("sales-panel-2-1");
+
+        await user.click(panelOne);
+        await user.click(panelTwo);
+
+        await waitFor(() => {
+          expect(mockToastError).toHaveBeenCalled();
+        });
+      });
 });

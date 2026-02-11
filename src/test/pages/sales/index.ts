@@ -391,6 +391,8 @@ export const groupTopTen = {
   },
 };
 
+export const noSubData = { data: { error: 0, success: true, subs: [] } };
+
 export const weekly = {
   data: {
     error: 0,
@@ -2126,6 +2128,23 @@ export const sub_sales = {
         store_coupon: 0,
       },
       {
+        sale_date: "2025-12-10T00:00:00",
+        storeid: 2,
+        store_name: "Store 2",
+        store_number: "2",
+        sub_department: 1,
+        sub_department_description: "Sub 1",
+        total_sales: 3890.76,
+        net_sales: 3886.76,
+        total_tax: 0,
+        qty: 1282,
+        weight: 0,
+        elec_instore_coupons: 4,
+        elec_store_coupons: 0,
+        digital_coupons: 0,
+        store_coupon: 0,
+      },
+      {
         sale_date: "2025-12-09T00:00:00",
         storeid: 2,
         store_name: "Store 2",
@@ -2133,7 +2152,7 @@ export const sub_sales = {
         sub_department: 2,
         sub_department_description: "Sub 2",
         total_sales: 263.52,
-        net_sales: 248.58,
+        net_sales: 243.58,
         total_tax: 14.94,
         qty: 85,
         weight: 0,
@@ -2150,7 +2169,7 @@ export const sub_sales = {
         sub_department: 3,
         sub_department_description: "Sub 3",
         total_sales: 648.48,
-        net_sales: 611.78,
+        net_sales: 538.78,
         total_tax: 36.7,
         qty: 101,
         weight: 0,
@@ -2167,7 +2186,7 @@ export const sub_sales = {
         sub_department: 4,
         sub_department_description: "Sub 4",
         total_sales: 134.25,
-        net_sales: 127.67,
+        net_sales: 117.45,
         total_tax: 6.58,
         qty: 20,
         weight: 0,

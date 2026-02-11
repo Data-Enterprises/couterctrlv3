@@ -135,7 +135,7 @@ const SaveSimModal = ({ isOpen, onClose }: SaveSimModalProps) => {
     >
       <Input value={simName} setValue={setSimName} label="Simulation Name" />
       <div className="flex gap-2 mt-2">
-        <button className="btn-themeBlue w-1/2" onClick={handleSave}>
+        <button data-testid="save-sim-submit" className="btn-themeBlue w-1/2" onClick={handleSave}>
           Submit
         </button>
         <button className="btn-themeOrange w-1/2" onClick={handleClose}>

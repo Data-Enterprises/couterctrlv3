@@ -173,7 +173,7 @@ export const cashierSlice = createSlice({
     toggleNoTransMsg: (state, action: PayloadAction<boolean>) => {
       state.noTransMsg = action.payload;
     },
-    resetCashierState: () => initialState,
+    resetCashierSlice: () => initialState,
   },
 });
 
@@ -202,7 +202,7 @@ export const {
   setTransactionDrillDown,
   setSelectedStoreId,
   toggleNoTransMsg,
-  resetCashierState,
+  resetCashierSlice,
   setTransIdFilter,
 } = cashierSlice.actions;
 export default cashierSlice.reducer;

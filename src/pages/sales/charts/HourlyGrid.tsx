@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAppSelector } from "../../../hooks";
-import { type HourlyTotal } from "../graphs";
+import { type HourlyTotal } from "../components";
 import { ResponsiveBar } from "@nivo/bar";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 
@@ -15,7 +15,6 @@ const HourlyGrid = () => {
   const [barIndex, setBarIndex] = useState<string>("date");
 
   useEffect(() => {
-    if (!hourlySales.length) return;
     const uniqueHours = hourlySales.reduce((acc: { hour: number }[], curr) => {
       if (!acc.find((h) => h.hour === curr.hour)) {
         acc.push({ hour: curr.hour });
@@ -102,10 +101,8 @@ const HourlyGrid = () => {
       rowData.reduce((acc, val) => acc + val.total_sales, 0) / rowData.length;
     if (panel.total_sales > avgSales) {
       return "bg-emerald-200";
-    } else if (panel.total_sales < avgSales) {
-      return "bg-orange-200";
     } else {
-      return "";
+      return "bg-orange-200";
     }
   };
 
@@ -115,17 +112,9 @@ const HourlyGrid = () => {
 
     if (value > avgSales) {
       return isMobile ? "bg-emerald-200" : "#10b981";
-    } else if (value < avgSales) {
-      return isMobile ? "bg-orange-200" : "#f97316";
     } else {
-      return isMobile ? "bg-[#bfdbfe]" : "#bfdbfe";
+      return isMobile ? "bg-orange-200" : "#f97316";
     }
-  };
-
-  const contextMargins = () => {
-    return !isMobile
-      ? { top: 10, right: 0, bottom: 25, left: 50 }
-      : { top: 10, right: 0, bottom: 25, left: 29 };
   };
 
   return (
@@ -149,6 +138,7 @@ const HourlyGrid = () => {
           {rowData.map((r) => (
             <div
               key={`hour-${r.hour}`}
+              data-testid={`hour-${r.hour}`}
               className={`${r.hour === hour ? "bg-blue-200" : handleAvg(r)} text-xs rounded-lg shadow-content/30 shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
               onClick={() => handleSelect(r)}
             >
@@ -173,7 +163,7 @@ const HourlyGrid = () => {
           {!isMobile ? (
             <ResponsiveBar
               data={barData}
-              margin={contextMargins()}
+              margin={{ top: 10, right: 0, bottom: 25, left: 50 }}
               keys={["total_sales"]}
               indexBy={barIndex}
               tooltip={({ value }) => (
@@ -196,7 +186,8 @@ const HourlyGrid = () => {
                 .filter((h) => h.hour === hour)
                 .map((h) => (
                   <div
-                    key={`date-${h.hour}`}
+                    key={`display-date-${h.hour}-${Math.random()}`}
+                    style={{ backgroundColor: findBarColor(h.total_sales) }}
                     className={`${findBarColor(h.total_sales)} text-xs rounded-lg shadow-content/30 shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
                   >
                     <div className="flex justify-between">

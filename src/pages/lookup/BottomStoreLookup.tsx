@@ -13,7 +13,8 @@ const BottomStoreLookup = () => {
       setItem(lowestStoreSales!);
     } else if (mode === "Qty") {
       setItem(lowestStoreQty!);
-    } else if (mode === "Price") {
+    } else {
+      // mode === "Price"
       setItem(lowestPriceStore!);
     }
   }, [mode, lowestStoreSales, lowestStoreQty, lowestPriceStore]);

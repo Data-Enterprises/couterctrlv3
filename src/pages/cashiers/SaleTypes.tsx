@@ -6,7 +6,7 @@ import {
   setCashierDetails,
   setCashierTrends,
   setCashierTransactions,
-  resetCashierState,
+  resetCashierSlice,
   setSaleTypes,
   toggleNoTransMsg,
 } from "../../features/cashierSlice";
@@ -30,7 +30,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
   const submitDescription = (description: string) => {
     // Doing this to reset when looking for a different sale type
     const panels = cashier.saleTypes;
-    dispatch(resetCashierState());
+    dispatch(resetCashierSlice());
     dispatch(setSaleTypes(panels));
 
     // Setting this to handle selected css styling and show the loading indicator
@@ -96,7 +96,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
     }
     // Doing this to reset when looking for a different sale type
     const panels = cashier.saleTypes;
-    dispatch(resetCashierState());
+    dispatch(resetCashierSlice());
     dispatch(setSaleTypes(panels));
 
     // Setting this to handle selected css styling and show the loading indicator

@@ -121,6 +121,8 @@ export const itemLookupWarnResp = {
   },
 };
 
+// 1234567890123
+
 export const itemLookupSingleStoreResp = {
   data: {
     error: 0,
@@ -182,7 +184,7 @@ export const itemLookupSingleStoreResp = {
         sale_date: "2025-12-03T00:00:00",
         product_code: "1234567890123",
         product_description: "Item 1",
-        price: 14.99,
+        price: 13.99,
         total_sales: 29.98,
         qty: 2.0,
         category_description: "Category 1",
