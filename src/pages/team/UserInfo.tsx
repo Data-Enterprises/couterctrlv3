@@ -196,7 +196,7 @@ const UserInfo = () => {
             renderSelect(input.name, i)
           );
         })}
-        <div className="flex justify-between items-end gap-4">
+        <div className="flex justify-between items-end gap-4 select-none">
           <div className="w-1/2">
             <button
               data-testid="create-user-button"

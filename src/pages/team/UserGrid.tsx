@@ -101,30 +101,34 @@ const UserGrid = () => {
   return (
     <div data-testid="user-grid-container" className="w-full no-scrollbar">
       <div className="mb-2 flex items-end gap-2">
-        <input
-          data-testid="user-grid-search"
-          type="text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          className="basic-input focus:border bg-custom-white"
-          placeholder="Search Users"
-        />
+        <div className="-mt-1">
+          <label className="text-sm font-medium pl-0.5">Name</label>
+          <input
+            data-testid="user-grid-search"
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            className="basic-input focus:border bg-custom-white"
+            placeholder="Search Users"
+          />
+        </div>
         <SingleSelect
           label="Company"
           data={allCompanies}
           displayKey="name"
           valueKey="id"
+          className=""
           onSelect={handleCompanySelect}
         />
       </div>
-      <div className="h-[93.3%]">
+      <div className="h-[91.5%]">
         <AgGridReact
           className="no-scrollbar"
           rowData={filtered}
           columnDefs={colDefs}
           theme={theme}
           pagination={true}
-          paginationPageSize={23}
+          paginationAutoPageSize={true}
           paginationPageSizeSelector={false}
           onRowClicked={handleRowClick}
         />
