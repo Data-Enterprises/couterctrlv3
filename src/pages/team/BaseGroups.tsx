@@ -36,12 +36,6 @@ const BaseGroups = () => {
       }
     });
 
-    const result = () => {
-      return copy.sort((a: BaseGroup, b: BaseGroup) =>
-        a.active > b.active ? -1 : 1
-      );
-    };
-
     // remove the group
     if (group.active === 1) {
       deleteUserBaseGroupLink(
@@ -53,7 +47,7 @@ const BaseGroups = () => {
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
-            dispatch(setBaseGroups(result()));
+            dispatch(setBaseGroups(copy));
           }
         })
         .catch((err) => {
@@ -71,7 +65,7 @@ const BaseGroups = () => {
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
-            dispatch(setBaseGroups(result()));
+            dispatch(setBaseGroups(copy));
           }
         })
         .catch((err) => {

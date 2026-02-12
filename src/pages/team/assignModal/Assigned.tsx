@@ -44,12 +44,18 @@ const Assigned = () => {
 
   const handleStoreCardClick = (storeId: number) => {
     setStoresToUnassign((prev) => {
-      console.log(prev, storeId);
-      if (prev.includes(storeId)) {
-        return prev.filter((s) => s !== storeId);
-      }
-      return [...prev, storeId];
+      if (prev[0] === storeId) {
+        return [];
+      } 
+      return [storeId];
     });
+    // setStoresToUnassign((prev) => {
+    //   console.log(prev, storeId);
+    //   if (prev.includes(storeId)) {
+    //     return prev.filter((s) => s !== storeId);
+    //   }
+    //   return [...prev, storeId];
+    // });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,12 +96,12 @@ const Assigned = () => {
       </div>
       <div className="flex justify-between gap-2 mt-2">
         <button
-          className="btn-themeGreen w-1/2 px-0"
+          className="btn-themeGreen w-full px-0"
           onClick={handleUnassignStore}
         >
           Unassign
         </button>
-        <button className="btn-themeGreen w-1/2 px-0">Unassign All</button>
+        {/* <button className="btn-themeGreen w-1/2 px-0">Unassign All</button> */}
       </div>
     </div>
   );

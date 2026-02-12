@@ -3,10 +3,10 @@ import { useAppDispatch, useAppSelector } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
 import { getQuicksightUsers } from "../../api/quicksight";
-import { getBaseGroupsAssignedToUser } from "../../api/team";
-import { setBaseGroups, setRefresh } from "../../features/usersSlice";
+import { getBaseGroupsAssignedToUser, getCompanyList } from "../../api/team";
+import { setAllCompanies, setBaseGroups, setRefresh } from "../../features/usersSlice";
 import { setQsUsers } from "../../features/qsSlice";
-import type { JsonError } from "../../interfaces";
+import type { CompanyJsonResp, JsonError } from "../../interfaces";
 
 import UserInfo from "./UserInfo";
 import UserGrid from "./UserGrid";
@@ -21,12 +21,22 @@ const Team = () => {
   const { refresh } = useAppSelector((state) => state.users);
 
   useEffect(() => {
+    getCompanyList(context.url, context.token)
+      .then((resp) => {
+        const j: CompanyJsonResp = resp.data;
+
+        if (j.error === 0) {
+          dispatch(setAllCompanies(j.companies));
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+
     if (refresh) {
       getQuicksightUsers(context.url, context.token)
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
-            dispatch(setQsUsers(j.users))
+            dispatch(setQsUsers(j.users));
           }
         })
         .catch((err: JsonError) => {

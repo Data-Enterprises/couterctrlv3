@@ -727,3 +727,21 @@ export interface SimListResp {
   success: boolean;
   records: SimListItem[];
 }
+
+export interface Company {
+  id: number;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: number;
+  phone: string;
+  contact_email: string;
+}
+
+export interface CompanyJsonResp {
+  error: number;
+  success: boolean;
+  msg: string;
+  companies: Company[];
+}

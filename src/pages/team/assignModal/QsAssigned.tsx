@@ -30,7 +30,7 @@ const QsAssigned = () => {
       );
       setStores(filtered);
     }
-  }, [filterText]);
+  }, [filterText, qs.qsUserAssignedStores]);
 
   const handleUnassignStore = (storeId: number) => {
     const id = storeId.toString();

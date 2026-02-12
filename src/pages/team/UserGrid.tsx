@@ -20,15 +20,17 @@ import {
   type RowClickedEvent,
 } from "ag-grid-community";
 import { setSelectedQsUserEmail, setValidUser } from "../../features/qsSlice";
+import SingleSelect from "../../components/SingleSelect";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const UserGrid = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { users, refresh } = useAppSelector((state) => state.users);
+  const { users, refresh, allCompanies } = useAppSelector((state) => state.users);
   const qs = useAppSelector((state) => state.quicksight);
   const [text, setText] = useState<string>("");
+  const [companyFilter, setCompanyFilter] = useState<number>(0);
   const [filtered, setFiltered] = useState<User[]>([]);
 
   useEffect(() => {
@@ -39,16 +41,19 @@ const UserGrid = () => {
 
   // Filter the table by searching for the username
   useEffect(() => {
-    if (text.trim() === "") {
+    if (text.trim() === "" && !companyFilter) {
       setFiltered(users);
     } else {
+      // one or the othe or both
       const lowerText = text.toLowerCase();
-      const filteredUsers = users.filter((user) =>
-        user.username.toLowerCase().includes(lowerText)
-      );
+      const filteredUsers = users.filter((user) => {
+        const textCheck = user.username.toLowerCase().includes(lowerText);
+        const companyCheck = companyFilter > 0 ? user.company === companyFilter : true;
+        return textCheck && companyCheck;
+      });
       setFiltered(filteredUsers);
     }
-  }, [text]);
+  }, [text, companyFilter]);
 
   const getData = () => {
     getAllUsers(context.url, context.token)
@@ -79,7 +84,7 @@ const UserGrid = () => {
         const j = resp.data;
         if (j.error === 0) {
           const sorted = [...j.groups].sort((a: BaseGroup, b: BaseGroup) =>
-            a.active > b.active ? -1 : 1
+            a.active > b.active ? -1 : 1,
           );
           dispatch(setBaseGroups(sorted));
         }
@@ -89,9 +94,13 @@ const UserGrid = () => {
       });
   };
 
+  const handleCompanySelect = (companyId: string | number) => {
+    setCompanyFilter(companyId as number);
+  };
+
   return (
     <div data-testid="user-grid-container" className="w-full no-scrollbar">
-      <div className="mb-2 flex gap-2">
+      <div className="mb-2 flex items-end gap-2">
         <input
           data-testid="user-grid-search"
           type="text"
@@ -99,6 +108,13 @@ const UserGrid = () => {
           onChange={(e) => setText(e.target.value)}
           className="basic-input focus:border bg-custom-white"
           placeholder="Search Users"
+        />
+        <SingleSelect
+          label="Company"
+          data={allCompanies}
+          displayKey="name"
+          valueKey="id"
+          onSelect={handleCompanySelect}
         />
       </div>
       <div className="h-[93.3%]">

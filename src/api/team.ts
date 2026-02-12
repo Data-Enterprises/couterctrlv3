@@ -5,7 +5,7 @@ import type { UserData } from "../features/usersSlice";
 export const getBaseGroupsAssignedToUser = async (
   url: string,
   token: string,
-  userid: number
+  userid: number,
 ) => {
   const json = await axios({
     method: "GET",
@@ -26,7 +26,7 @@ export const assignBaseGroupToUser = async (
   url: string,
   token: string,
   userid: number,
-  groupid: number
+  groupid: number,
 ) => {
   const json = await axios({
     method: "POST",
@@ -48,7 +48,7 @@ export const deleteUserBaseGroupLink = async (
   url: string,
   token: string,
   userid: number,
-  groupid: number
+  groupid: number,
 ) => {
   const json = await axios({
     method: "DELETE",
@@ -68,7 +68,7 @@ export const deleteUserBaseGroupLink = async (
 export const createUser = async (
   url: string,
   token: string,
-  data: UserData
+  data: UserData,
 ) => {
   const json = await axios({
     method: "POST",
@@ -87,7 +87,7 @@ export const updateUser = async (
   token: string,
   data: UserData,
   security: number,
-  template: number
+  template: number,
 ) => {
   const json = await axios({
     method: "PUT",
@@ -109,7 +109,7 @@ export const updateUser = async (
 export const deleteUser = async (
   url: string,
   token: string,
-  username: string
+  username: string,
 ) => {
   const json = await axios({
     method: "DELETE",
@@ -130,7 +130,7 @@ export const assignUserToStore = async (
   url: string,
   token: string,
   userid: number,
-  storeids: number[]
+  storeids: number[],
 ) => {
   const json = await axios({
     method: "POST",
@@ -151,7 +151,7 @@ export const unassignUserFromStore = async (
   url: string,
   token: string,
   userid: number,
-  storeid: number
+  storeid: number,
 ) => {
   const json = await axios({
     method: "DELETE",
@@ -171,7 +171,7 @@ export const unassignUserFromStore = async (
 export const resetUserSecurityQuestion = async (
   url: string,
   token: string,
-  userid: number
+  userid: number,
 ) => {
   const json = await axios({
     method: "POST",
@@ -183,6 +183,18 @@ export const resetUserSecurityQuestion = async (
     params: {
       userid,
     },
+  });
+  return json;
+};
+
+export const getCompanyList = async (url: string, token: string) => {
+  const json = await axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "company/get_companies",
   });
   return json;
 };

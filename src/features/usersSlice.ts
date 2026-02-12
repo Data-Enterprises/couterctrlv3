@@ -1,5 +1,11 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { User, BaseGroup, Store, UnassignedStore } from "../interfaces";
+import type {
+  User,
+  BaseGroup,
+  Store,
+  UnassignedStore,
+  Company,
+} from "../interfaces";
 
 export type UserData = {
   username: string;
@@ -46,6 +52,7 @@ interface UsersState {
   assignModalOpen: boolean;
   allStores: Store[];
   selectedUserStores: UserStores;
+  allCompanies: Company[];
 }
 
 const initialState: UsersState = {
@@ -61,6 +68,7 @@ const initialState: UsersState = {
     assigned: [],
     unassigned: [],
   },
+  allCompanies: [],
 };
 
 export const usersSlice = createSlice({
@@ -153,6 +161,9 @@ export const usersSlice = createSlice({
       state.selectedUserStores.assigned = assigned;
       state.selectedUserStores.unassigned.push(found!);
     },
+    setAllCompanies: (state, action: PayloadAction<Company[]>) => {
+      state.allCompanies = action.payload;
+    },
     resetUsersSlice: () => initialState,
   },
 });
@@ -171,6 +182,7 @@ export const {
   setRole,
   setStoresAssignedForUser,
   setStoresUnassignedForUser,
+  setAllCompanies,
   resetUsersSlice,
 } = usersSlice.actions;
 export default usersSlice.reducer;
