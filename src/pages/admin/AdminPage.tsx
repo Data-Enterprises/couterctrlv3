@@ -17,7 +17,7 @@ import type {
 
 // components
 import ControlsColumn from "./ControlsColumn";
-import AdminPanels from "./AdminPanels";
+import AdminPanels from "./panels/AdminPanels";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 
 const AdminPage = () => {
