@@ -21,7 +21,8 @@ import priceSimReducer from "../features/priceSimSlice";
 import upcUploadReducer from "../features/upcUploadSlice";
 import receiversReducer from "../features/receiversSlice";
 import couponReducer from "../features/couponSlice";
-import reportBuilderReducer from '../features/reportBuilderSlice';
+import reportBuilderReducer from "../features/reportBuilderSlice";
+import adminReducer from "../features/adminSlice.ts";
 
 export const setupStore = () =>
   configureStore({
@@ -48,6 +49,7 @@ export const setupStore = () =>
       receivers: receiversReducer,
       coupons: couponReducer,
       reportBuilder: reportBuilderReducer,
+      admin: adminReducer,
     },
   });
 

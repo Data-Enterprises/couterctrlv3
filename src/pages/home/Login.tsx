@@ -222,7 +222,7 @@ const Login = () => {
                   >
                     Sign in
                   </button>
-                  {!context.fetchingCredentials ? (
+                  {context.fetchingCredentials ? (
                     <div className="absolute bottom-0 top-16 ml-44 lg:ml-48">
                       <LoadingIndicator message="Fetching credentials..." />
                     </div>
