@@ -780,3 +780,15 @@ export interface VendorJsonResp {
   msg: string;
   vendors: Vendor[];
 }
+
+export interface UsersJsonResp {
+  error: number;
+  success: boolean;
+  msg: string;
+  users: User[]
+}
+
+export type AdminOption = {
+  label: string;
+  option: number;
+};

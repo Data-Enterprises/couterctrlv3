@@ -3,9 +3,16 @@ interface InputProps {
   setValue: (value: string) => void;
   label: string;
   type?: string;
+  className?: string;
 }
 
-const Input = ({ value, setValue, label, type = "text" }: InputProps) => {
+const Input = ({
+  value,
+  setValue,
+  label,
+  className,
+  type = "text",
+}: InputProps) => {
   const testId = `input-${label.toLowerCase().replace(/\s+/g, "-")}`;
   return (
     <div>
@@ -15,7 +22,7 @@ const Input = ({ value, setValue, label, type = "text" }: InputProps) => {
         type={type}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className="basic-input focus:border w-full bg-custom-white py-1.5"
+        className={`basic-input focus:border w-full bg-custom-white py-1.5 ${className}`}
       />
     </div>
   );
