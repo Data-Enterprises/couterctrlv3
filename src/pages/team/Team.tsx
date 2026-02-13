@@ -3,8 +3,13 @@ import { useAppDispatch, useAppSelector } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
 import { getQuicksightUsers } from "../../api/quicksight";
-import { getBaseGroupsAssignedToUser, getCompanyList } from "../../api/team";
-import { setAllCompanies, setBaseGroups, setRefresh } from "../../features/usersSlice";
+import { getBaseGroupsAssignedToUser } from "../../api/team";
+import { getCompanies } from "../../api/company";
+import {
+  setAllCompanies,
+  setBaseGroups,
+  setRefresh,
+} from "../../features/usersSlice";
 import { setQsUsers } from "../../features/qsSlice";
 import type { CompanyJsonResp, JsonError } from "../../interfaces";
 
@@ -21,7 +26,7 @@ const Team = () => {
   const { refresh } = useAppSelector((state) => state.users);
 
   useEffect(() => {
-    getCompanyList(context.url, context.token)
+    getCompanies(context.url, context.token)
       .then((resp) => {
         const j: CompanyJsonResp = resp.data;
 

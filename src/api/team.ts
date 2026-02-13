@@ -186,15 +186,3 @@ export const resetUserSecurityQuestion = async (
   });
   return json;
 };
-
-export const getCompanyList = async (url: string, token: string) => {
-  const json = await axios({
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-    },
-    url: url + "company/get_companies",
-  });
-  return json;
-};
