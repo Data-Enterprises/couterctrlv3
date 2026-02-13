@@ -8,6 +8,7 @@ interface Props {
   stroke?: string;
   className?: string;
   idExtension?: string;
+  isBool?: boolean;
 }
 
 const CheckBox = ({
@@ -18,9 +19,11 @@ const CheckBox = ({
   stroke = "green",
   className = "",
   idExtension = "",
+  isBool = true,
 }: Props) => {
   const handleClick = () => {
-    if (onChange) onChange(!value);
+    if (onChange && isBool) onChange(!value);
+    if (onChange && !isBool) onChange(id);
   };
 
   const testId = idExtension ? `check-${id}-${idExtension}` : `check-${id}`;

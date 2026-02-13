@@ -21,6 +21,7 @@ interface AdminState {
   companyFilter: Company;
   refresh: boolean;
   adminOption: number;
+  selectedUser: number;
 }
 
 const initialState: AdminState = {
@@ -32,6 +33,7 @@ const initialState: AdminState = {
   companyFilter: defaultCompFilter,
   refresh: true,
   adminOption: 1,
+  selectedUser: 0,
 };
 
 const adminSlice = createSlice({
@@ -86,6 +88,9 @@ const adminSlice = createSlice({
     setAdminOption: (state, action: PayloadAction<number>) => {
       state.adminOption = action.payload;
     },
+    setSelectedUser: (state, action: PayloadAction<number>) => {
+      state.selectedUser = action.payload;
+    },
     resetAdminState: () => initialState,
   },
 });
@@ -98,6 +103,7 @@ export const {
   setCompanyFilter,
   setRefresh,
   setAdminOption,
+  setSelectedUser,
   resetAdminState,
 } = adminSlice.actions;
 export default adminSlice.reducer;

@@ -8,6 +8,7 @@ import {
   defaultCompFilter,
   setAdminOption,
   setCompanyFilter,
+  setSelectedUser,
   setUserNameFilter,
 } from "../../features/adminSlice";
 import CheckBox from "../../components/inputs/CheckBox";
@@ -16,8 +17,14 @@ import { adminOptions } from ".";
 const ControlsColumn = () => {
   const dispatch = useAppDispatch();
   const { containerRef, scrollRef, height } = useControlsScrollHeight();
-  const { companies, filteredUsers, userNameFilter, companyFilter, adminOption } =
-    useAdminContext();
+  const {
+    companies,
+    filteredUsers,
+    userNameFilter,
+    companyFilter,
+    adminOption,
+    selectedUser,
+  } = useAdminContext();
 
   const handleTextChange = (e: string) => {
     dispatch(setUserNameFilter(e));
@@ -34,6 +41,11 @@ const ControlsColumn = () => {
 
   const handleAdminSelect = (e: string | number) => {
     dispatch(setAdminOption(Number(e)));
+  };
+
+  const handleSelectedUser = (e: number | boolean) => {
+    const selected = Number(e) === selectedUser ? 0 : Number(e)
+    dispatch(setSelectedUser(selected));
   };
 
   return (
@@ -87,11 +99,15 @@ const ControlsColumn = () => {
         {filteredUsers.map((user, i) => {
           return (
             <CheckBox
-              id={i + 1}
-              value={false}
-              className="odd:bg-blue-200 py-1"
+              id={user.id}
+              key={i}
+              value={user.id === selectedUser}
+              className="odd:bg-blue-200 py-1 hover:bg-orange-200 hover:cursor-pointer transition-all duration-200"
               idExtension="user"
               label={user.username}
+              onChange={handleSelectedUser}
+              isBool={false}
+              
             />
           );
         })}

@@ -11,6 +11,7 @@ export const useAdminContext = () => {
     userNameFilter,
     companyFilter,
     adminOption,
+    selectedUser,
     refresh,
   } = useAppSelector((state) => state.admin);
 
@@ -21,6 +22,7 @@ export const useAdminContext = () => {
     companyFilter,
     filteredUsers,
     refresh,
+    selectedUser,
     token,
     url,
     userNameFilter,
