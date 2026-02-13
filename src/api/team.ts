@@ -151,7 +151,7 @@ export const unassignUserFromStore = async (
   url: string,
   token: string,
   userid: number,
-  storeid: number,
+  storeids: number[],
 ) => {
   const json = await axios({
     method: "DELETE",
@@ -159,10 +159,10 @@ export const unassignUserFromStore = async (
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    url: url + "stores/unassign_user",
-    params: {
+    url: url + "stores/unassign_store",
+    data: {
       userid,
-      storeid,
+      storeids,
     },
   });
   return json;

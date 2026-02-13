@@ -150,7 +150,7 @@ const UserInfo = () => {
           data={ul.data!}
           valueKey={"value"}
           displayKey={"label"}
-          label={"User Level"}
+          label={ul.title}
           onSelect={returnOnSelectFunction(name)}
           defaultQuery={handleDefaultQuery(name)}
           resetQuery={true}

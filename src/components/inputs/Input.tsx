@@ -10,7 +10,7 @@ const Input = ({
   value,
   setValue,
   label,
-  className,
+  className = "py-1.5",
   type = "text",
 }: InputProps) => {
   const testId = `input-${label.toLowerCase().replace(/\s+/g, "-")}`;
@@ -22,7 +22,7 @@ const Input = ({
         type={type}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className={`basic-input focus:border w-full bg-custom-white py-1.5 ${className}`}
+        className={`basic-input focus:border w-full bg-custom-white ${className}`}
       />
     </div>
   );

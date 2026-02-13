@@ -153,13 +153,13 @@ export const usersSlice = createSlice({
           (s) => !action.payload.includes(s.storeid),
         );
     },
-    setStoresUnassignedForUser: (state, action: PayloadAction<number>) => {
-      const found = state.allStores.find((s) => s.storeid === action.payload);
+    setStoresUnassignedForUser: (state, action: PayloadAction<number[]>) => {
+      const newlyUnassigned = state.allStores.filter((s) => action.payload.includes(s.storeid));
       const assigned = state.selectedUserStores.assigned.filter(
-        (s) => s.storeid !== action.payload,
+        (s) => !action.payload.includes(s.storeid),
       );
       state.selectedUserStores.assigned = assigned;
-      state.selectedUserStores.unassigned.push(found!);
+      state.selectedUserStores.unassigned = newlyUnassigned;
     },
     setAllCompanies: (state, action: PayloadAction<Company[]>) => {
       state.allCompanies = action.payload;

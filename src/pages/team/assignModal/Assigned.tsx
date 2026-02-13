@@ -31,12 +31,12 @@ const Assigned = () => {
   }, [filterText, users.selectedUserStores.assigned]);
 
   const handleUnassignStore = () => {
-    dispatch(setStoresUnassignedForUser(storesToUnassign[0]));
+    dispatch(setStoresUnassignedForUser(storesToUnassign));
     unassignUserFromStore(
       context.url,
       context.token,
       users.selectedUserId,
-      storesToUnassign[0],
+      storesToUnassign,
     ).catch((err: JsonError) => {
       toast.error("Error unassigning store " + err.message);
     });
@@ -44,19 +44,14 @@ const Assigned = () => {
 
   const handleStoreCardClick = (storeId: number) => {
     setStoresToUnassign((prev) => {
-      if (prev[0] === storeId) {
-        return [];
-      } 
-      return [storeId];
+      if (prev.includes(storeId)) {
+        return prev.filter((s) => s !== storeId);
+      }
+      return [...prev, storeId];
     });
-    // setStoresToUnassign((prev) => {
-    //   console.log(prev, storeId);
-    //   if (prev.includes(storeId)) {
-    //     return prev.filter((s) => s !== storeId);
-    //   }
-    //   return [...prev, storeId];
-    // });
   };
+
+  console.log(storesToUnassign)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;

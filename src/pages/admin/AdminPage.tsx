@@ -16,8 +16,7 @@ import type {
 } from "../../interfaces";
 
 // components
-import ControlsColumn from "./ControlsColumn";
-import AdminPanels from "./panels/AdminPanels";
+// import ControlsColumn from "./ControlsColumn";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 
 const AdminPage = () => {
@@ -57,14 +56,14 @@ const AdminPage = () => {
   }
 
   return (
-    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] w-full overflow-hidden p-4">
-      <div className="grid grid-cols-[1fr_6.5fr] gap-4">
-        <div className="grid gap-2">
-          <ControlsColumn />
-        </div>
-        <AdminPanels />
-      </div>
-    </div>
+    <div></div>
+    // <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] w-full overflow-hidden p-4">
+    //   <div className="grid grid-cols-[1fr_6.5fr] gap-4">
+    //     <div className="grid gap-2">
+    //       <ControlsColumn />
+    //     </div>
+    //   </div>
+    // </div>
   );
 };
 
