@@ -728,6 +728,10 @@ export interface SimListResp {
   records: SimListItem[];
 }
 
+//////////////////////////////
+// Company/Admin/Team types///
+//////////////////////////////
+
 export interface Company {
   id: number;
   name: string;
@@ -744,4 +748,22 @@ export interface CompanyJsonResp {
   success: boolean;
   msg: string;
   companies: Company[];
+}
+
+export interface CompanyBaseGroup {
+  id: number;
+  name: string;
+  company: number;
+}
+
+export interface Vendor {
+  vendor_id: number;
+  vendor_name: string;
+  company_name: string;
+  address: string;
+  city: string;
+  state: string;
+  phone: string;
+  zip: string;
+  contact_email: string;
 }
