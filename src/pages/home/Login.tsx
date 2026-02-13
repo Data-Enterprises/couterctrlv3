@@ -116,10 +116,10 @@ const Login = () => {
             </h2>
           </div>
 
-          <div className={`${context.isMobile ? "mt-3 mb-4" : "mt-10"}`}>
+          <div className={`${context.isMobile ? "mt-3 mb-4" : "mt-6"}`}>
             <div>
               <div
-                className={`${context.isMobile ? "space-y-3" : "space-y-6"}`}
+                className={`${context.isMobile ? "space-y-3" : "space-y-2"}`}
               >
                 <div>
                   <label
@@ -128,7 +128,7 @@ const Login = () => {
                   >
                     Username
                   </label>
-                  <div className="mt-2">
+                  <div>
                     <input
                       data-testid="username"
                       name="username"
@@ -148,7 +148,7 @@ const Login = () => {
                   >
                     Password
                   </label>
-                  <div className="mt-2">
+                  <div>
                     <input
                       data-testid="password"
                       name="password"
@@ -213,7 +213,7 @@ const Login = () => {
                   </div>
                 ) : null}
 
-                <div>
+                <div className="relative bg-red-200">
                   <button
                     data-testid="sign-in"
                     onClick={handleSubmit}
@@ -222,6 +222,11 @@ const Login = () => {
                   >
                     Sign in
                   </button>
+                  {!context.fetchingCredentials ? (
+                    <div className="absolute bottom-0 top-16 ml-44 lg:ml-48">
+                      <LoadingIndicator message="Fetching credentials..." />
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -231,11 +236,6 @@ const Login = () => {
         <div className="absolute bottom-1 left-0 text-sm pl-2">
           Last Updated 2/11/2026 @ 10:27 AM CST
         </div>
-        {context.fetchingCredentials ? (
-          <div className="absolute bottom-20 left-48 -pr-4 lg:p-0 lg:bottom-40 lg:left-72">
-            <LoadingIndicator message="Fetching credentials..." />
-          </div>
-        ) : null}
       </div>
       <div className="relative hidden w-0 flex-1 lg:block">
         <img

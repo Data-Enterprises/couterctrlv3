@@ -756,6 +756,12 @@ export interface CompanyBaseGroup {
   company: number;
 }
 
+export interface CompanyBGJsonResp {
+  error: number;
+  success: boolean;
+  groups: CompanyBaseGroup[];
+}
+
 export interface Vendor {
   vendor_id: number;
   vendor_name: string;
@@ -766,4 +772,11 @@ export interface Vendor {
   phone: string;
   zip: string;
   contact_email: string;
+}
+
+export interface VendorJsonResp {
+  error: number;
+  success: boolean;
+  msg: string;
+  vendors: Vendor[];
 }
