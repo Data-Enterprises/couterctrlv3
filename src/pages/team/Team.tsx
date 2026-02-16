@@ -18,6 +18,7 @@ import UserGrid from "./UserGrid";
 import BaseGroups from "./BaseGroups";
 import DeleteUserModal from "./DeleteUserModal";
 import AssignStoresModal from "./assignModal/AssignStoresModal";
+import AssignCompanyModal from "./assignCompModal/AssignCompanyModal";
 
 const Team = () => {
   const toast = useToast();
@@ -69,6 +70,7 @@ const Team = () => {
     <div data-testid="team-page" className={`w-full h-[calc(100vh-3rem)] p-4`}>
       <AssignStoresModal />
       <DeleteUserModal />
+      <AssignCompanyModal />
       <div className="grid grid-cols-2 gap-8 h-full">
         <div className="grid">
           <UserGrid />

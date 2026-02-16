@@ -1,12 +1,12 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { Company, CompanyBaseGroup, User } from "../interfaces";
 
-export const defaultCompFilter: Company = {
+export const defaultComp: Company = {
   id: 0,
   address: "",
   city: "",
   contact_email: "",
-  name: "All",
+  name: "",
   phone: "",
   state: "",
   zip: 0,
@@ -14,6 +14,7 @@ export const defaultCompFilter: Company = {
 
 interface AdminState {
   companies: Company[];
+  dropdownCompanies: Company[];
   users: User[];
   filteredUsers: User[];
   baseGroups: CompanyBaseGroup[];
@@ -22,18 +23,23 @@ interface AdminState {
   refresh: boolean;
   adminOption: number;
   selectedUser: number;
+  companyForm: Company;
+  deleteCompanyModalOpen: boolean;
 }
 
 const initialState: AdminState = {
   companies: [],
+  dropdownCompanies: [],
   users: [],
   filteredUsers: [],
   baseGroups: [],
   userNameFilter: "",
-  companyFilter: defaultCompFilter,
+  companyFilter: defaultComp,
   refresh: true,
   adminOption: 1,
   selectedUser: 0,
+  companyForm: defaultComp,
+  deleteCompanyModalOpen: false,
 };
 
 const adminSlice = createSlice({
@@ -41,8 +47,10 @@ const adminSlice = createSlice({
   initialState,
   reducers: {
     setCompanies: (state, action: PayloadAction<Company[]>) => {
-      const result = [defaultCompFilter, ...action.payload];
-      state.companies = result;
+      const temp = { ...defaultComp, name: "All" };
+      const result = [temp, ...action.payload];
+      state.companies = action.payload;
+      state.dropdownCompanies = result;
     },
     setUsers: (state, action: PayloadAction<User[]>) => {
       state.users = action.payload;
@@ -91,6 +99,25 @@ const adminSlice = createSlice({
     setSelectedUser: (state, action: PayloadAction<number>) => {
       state.selectedUser = action.payload;
     },
+    setSelectedCompanyForm: (state, action: PayloadAction<Company>) => {
+      state.companyForm = action.payload;
+    },
+    setCompanyForm: (
+      state,
+      action: PayloadAction<{ key: keyof Company; val: string | number }>,
+    ) => {
+      const { key, val } = action.payload;
+      state.companyForm = {
+        ...state.companyForm,
+        [key]: val,
+      };
+    },
+    resetCompanyForm: (state) => {
+      state.companyForm = defaultComp;
+    },
+    setDeleteCompanyModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.deleteCompanyModalOpen = action.payload;
+    },
     resetAdminState: () => initialState,
   },
 });
@@ -104,6 +131,10 @@ export const {
   setRefresh,
   setAdminOption,
   setSelectedUser,
+  setSelectedCompanyForm,
+  setDeleteCompanyModalOpen,
+  setCompanyForm,
+  resetCompanyForm,
   resetAdminState,
 } = adminSlice.actions;
 export default adminSlice.reducer;

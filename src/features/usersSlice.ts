@@ -5,6 +5,7 @@ import type {
   Store,
   UnassignedStore,
   Company,
+  UserCompany,
 } from "../interfaces";
 
 export type UserData = {
@@ -53,6 +54,8 @@ interface UsersState {
   allStores: Store[];
   selectedUserStores: UserStores;
   allCompanies: Company[];
+  companyModalOpen: boolean;
+  userCompanyIds: number[];
 }
 
 const initialState: UsersState = {
@@ -69,6 +72,8 @@ const initialState: UsersState = {
     unassigned: [],
   },
   allCompanies: [],
+  companyModalOpen: false,
+  userCompanyIds: [],
 };
 
 export const usersSlice = createSlice({
@@ -93,7 +98,7 @@ export const usersSlice = createSlice({
         first_name,
         last_name,
         user_level,
-        company,
+        // company,
         role,
         password,
       } = action.payload;
@@ -104,7 +109,7 @@ export const usersSlice = createSlice({
         first_name,
         last_name,
         user_level,
-        company,
+        // company,
         role: role === null ? 0 : role,
         password: password,
         confirm_password: password,
@@ -154,7 +159,9 @@ export const usersSlice = createSlice({
         );
     },
     setStoresUnassignedForUser: (state, action: PayloadAction<number[]>) => {
-      const newlyUnassigned = state.allStores.filter((s) => action.payload.includes(s.storeid));
+      const newlyUnassigned = state.allStores.filter((s) =>
+        action.payload.includes(s.storeid),
+      );
       const assigned = state.selectedUserStores.assigned.filter(
         (s) => !action.payload.includes(s.storeid),
       );
@@ -163,6 +170,17 @@ export const usersSlice = createSlice({
     },
     setAllCompanies: (state, action: PayloadAction<Company[]>) => {
       state.allCompanies = action.payload;
+    },
+    setCompanyModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.companyModalOpen = action.payload;
+    },
+    setUserCompanyIds: (state, action: PayloadAction<number[]>) => {
+      state.userCompanyIds = action.payload;
+    },
+    updateUserCompanies: (state, action: PayloadAction<UserCompany[]>) => {
+      const id = state.selectedUserId;
+      const idx = state.users.findIndex((u) => u.id === id);
+      state.users[idx].companies = action.payload;
     },
     resetUsersSlice: () => initialState,
   },
@@ -182,7 +200,10 @@ export const {
   setRole,
   setStoresAssignedForUser,
   setStoresUnassignedForUser,
+  setCompanyModalOpen,
   setAllCompanies,
+  setUserCompanyIds,
+  updateUserCompanies,
   resetUsersSlice,
 } = usersSlice.actions;
 export default usersSlice.reducer;

@@ -49,7 +49,7 @@ export const updateCompany = async (
       "Content-Type": "application/json",
       Authorization: "Bearer " + token,
     },
-    url: url + "company/create_company",
+    url: url + "company/update_company",
     data: {
       company_id: data.id,
       company_name: data.name,

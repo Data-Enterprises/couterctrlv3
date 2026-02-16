@@ -8,10 +8,13 @@ export const useAdminContext = () => {
     baseGroups,
     users,
     filteredUsers,
+    deleteCompanyModalOpen,
     userNameFilter,
     companyFilter,
     adminOption,
     selectedUser,
+    dropdownCompanies,
+    companyForm,
     refresh,
   } = useAppSelector((state) => state.admin);
 
@@ -20,6 +23,9 @@ export const useAdminContext = () => {
     baseGroups,
     companies,
     companyFilter,
+    companyForm,
+    deleteCompanyModalOpen,
+    dropdownCompanies,
     filteredUsers,
     refresh,
     selectedUser,

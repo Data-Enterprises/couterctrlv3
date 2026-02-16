@@ -161,6 +161,14 @@ export interface UnassignedStore {
   store_name: string;
 }
 
+export interface UserCompany {
+  id: number;
+  name: string;
+  userid: number;
+  company: number;
+  username: string;
+}
+
 export interface User {
   id: number;
   username: string;
@@ -171,6 +179,7 @@ export interface User {
   first_name: string;
   last_name: string;
   email: string;
+  companies: UserCompany[];
   company: number;
   active: number;
   template: number | null;

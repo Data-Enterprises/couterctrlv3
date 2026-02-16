@@ -13,7 +13,7 @@ interface PrefsParams {
 export const getUserStores = async (
   url: string,
   token: string,
-  userid: number
+  userid: number,
 ) => {
   const json = await axios({
     method: "GET",
@@ -44,7 +44,7 @@ export const getUserPrefs = async (url: string, token: string) => {
 export const setUserPrefs = async (
   url: string,
   token: string,
-  prefs: PrefsParams
+  prefs: PrefsParams,
 ) => {
   const json = await axios({
     method: "POST",
@@ -67,6 +67,27 @@ export const getAllUsers = async (url: string, token: string) => {
       Authorization: "Bearer " + token,
     },
     url: url + "users/",
+  });
+  return json;
+};
+
+export const assignUserToCompany = async (
+  url: string,
+  token: string,
+  userid: number,
+  company: number[],
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "users/assign_user_to_company",
+    data: {
+      userid,
+      company,
+    },
   });
   return json;
 };

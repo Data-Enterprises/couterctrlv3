@@ -144,7 +144,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userRoles: ["9"],
+    userRoles: ["*"],
     isHovering: false,
   },
   // This fake link is just to show that user types can be restricted

@@ -5,6 +5,7 @@ import {
   setRefresh,
   type UserData,
   resetUserInfo,
+  setCompanyModalOpen,
 } from "../../features/usersSlice";
 import { inputs, roles, userLevels } from ".";
 import TextInput from "../../components/TextInput";
@@ -127,21 +128,21 @@ const UserInfo = () => {
 
   const renderSelect = (name: string, i: number) => {
     if (name === "company") {
-      return (
-        <SingleSelect
-          key={i}
-          data={allCompanies}
-          valueKey={"id"}
-          displayKey={"name"}
-          label={"Company"}
-          onSelect={returnOnSelectFunction(name)}
-          defaultQuery={handleDefaultQuery(name)}
-          resetQuery={true}
-          className="text-sm"
-          innerClass="text-sm"
-          id={i}
-        />
-      );
+      // return (
+      //   <SingleSelect
+      //     key={i}
+      //     data={allCompanies}
+      //     valueKey={"id"}
+      //     displayKey={"name"}
+      //     label={"Company"}
+      //     onSelect={returnOnSelectFunction(name)}
+      //     defaultQuery={handleDefaultQuery(name)}
+      //     resetQuery={true}
+      //     className="text-sm"
+      //     innerClass="text-sm"
+      //     id={i}
+      //   />
+      // );
     } else {
       const ul = inputs.find((input) => input.name === name)!;
       return (
@@ -160,6 +161,10 @@ const UserInfo = () => {
         />
       );
     }
+  };
+
+  const handleCompanyModalOpen = () => {
+    dispatch(setCompanyModalOpen(true));
   };
 
   return (
@@ -196,30 +201,29 @@ const UserInfo = () => {
             renderSelect(input.name, i)
           );
         })}
-        <div className="flex justify-between items-end gap-4 select-none">
-          <div className="w-1/2">
-            <button
-              data-testid="create-user-button"
-              className={`btn-themeBlue py-[5px] w-full ${isCreatingOrUpdating(
-                "create",
-              )}`}
-              onClick={handleCreateClick}
-            >
-              Create User
-            </button>
-          </div>
-          <div className="w-1/2">
-            <button
-              data-testid="team-update-user-button"
-              className={`btn-themeBlue py-[5px] w-full ${isCreatingOrUpdating(
-                "update",
-              )}`}
-              onClick={handleUpdateClick}
-            >
-              Update User
-            </button>
-          </div>
-        </div>
+      </div>
+      <div className="flex gap-4 select-none w-full pt-4">
+        <button
+          data-testid="create-user-button"
+          className={`btn-themeBlue py-[5px] ${isCreatingOrUpdating("create")}`}
+          onClick={handleCreateClick}
+        >
+          Create User
+        </button>
+        <button
+          data-testid="team-update-user-button"
+          className={`btn-themeBlue py-[5px] ${isCreatingOrUpdating("update")}`}
+          onClick={handleUpdateClick}
+        >
+          Update User
+        </button>
+        <button
+          data-testid="team-update-user-button"
+          className={`btn-themeBlue py-[5px] ${isCreatingOrUpdating("update")}`}
+          onClick={handleCompanyModalOpen}
+        >
+          Assign Companies
+        </button>
       </div>
     </div>
   );
