@@ -18,12 +18,11 @@ const UserInfo = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { userInfo, users, selectedUserId, allCompanies } = useAppSelector(
+  const { userInfo, users, selectedUserId } = useAppSelector(
     (state) => state.users,
   );
   const [role, setRole] = useState<string>("");
   const [level, setLevel] = useState<string>("");
-  const [company, setCompany] = useState<string>("");
   const { validateCreateUserInfo } = useTeamErrorCheck();
 
   useEffect(() => {
@@ -32,9 +31,6 @@ const UserInfo = () => {
 
     const levelObj = userLevels.find((l) => l.value == userInfo.user_level);
     setLevel(levelObj ? levelObj.label : "");
-
-    const companyObj = allCompanies.find((c) => c.id == userInfo.company);
-    setCompany(companyObj ? companyObj.name : "");
   }, [userInfo]);
 
   // For the text fields
@@ -53,21 +49,14 @@ const UserInfo = () => {
     dispatch(setUserInfo({ key: "user_level", value: level }));
   };
 
-  const handleCompanySelection = (selection: string | number) => {
-    const company = Number(selection);
-    dispatch(setUserInfo({ key: "company", value: company }));
-  };
-
   const returnOnSelectFunction = (name: string) => {
     if (name === "role") return handleRoleSelection;
     if (name === "user_level") return handleLevelSelection;
-    if (name === "company") return handleCompanySelection;
   };
 
   const handleDefaultQuery = (val: string) => {
     if (val === "role") return role;
     if (val === "user_level") return level;
-    if (val === "company") return company;
   };
 
   const handleCreateClick = () => {
@@ -127,40 +116,22 @@ const UserInfo = () => {
   };
 
   const renderSelect = (name: string, i: number) => {
-    if (name === "company") {
-      // return (
-      //   <SingleSelect
-      //     key={i}
-      //     data={allCompanies}
-      //     valueKey={"id"}
-      //     displayKey={"name"}
-      //     label={"Company"}
-      //     onSelect={returnOnSelectFunction(name)}
-      //     defaultQuery={handleDefaultQuery(name)}
-      //     resetQuery={true}
-      //     className="text-sm"
-      //     innerClass="text-sm"
-      //     id={i}
-      //   />
-      // );
-    } else {
-      const ul = inputs.find((input) => input.name === name)!;
-      return (
-        <SingleSelect
-          key={i}
-          data={ul.data!}
-          valueKey={"value"}
-          displayKey={"label"}
-          label={ul.title}
-          onSelect={returnOnSelectFunction(name)}
-          defaultQuery={handleDefaultQuery(name)}
-          resetQuery={true}
-          className="text-sm"
-          innerClass="text-sm"
-          id={i}
-        />
-      );
-    }
+    const ul = inputs.find((input) => input.name === name)!;
+    return (
+      <SingleSelect
+        key={i}
+        data={ul.data!}
+        valueKey={"value"}
+        displayKey={"label"}
+        label={ul.title}
+        onSelect={returnOnSelectFunction(name)}
+        defaultQuery={handleDefaultQuery(name)}
+        resetQuery={true}
+        className="text-sm"
+        innerClass="text-sm"
+        id={i}
+      />
+    );
   };
 
   const handleCompanyModalOpen = () => {

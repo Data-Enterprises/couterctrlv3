@@ -15,7 +15,6 @@ export type UserData = {
   last_name: string;
   password: string;
   user_level: number;
-  company: number;
   confirm_password: string;
   role: number;
 };
@@ -37,7 +36,7 @@ const defaultInfo: UserData = {
   last_name: "",
   password: "",
   user_level: 0,
-  company: 0,
+  // company: 0,
   confirm_password: "",
   role: 0,
 };
@@ -85,7 +84,7 @@ export const usersSlice = createSlice({
     },
     setUserInfo: (state, action: PayloadAction<FormUpdate>) => {
       const { key, value } = action.payload;
-      if (key === "role" || key === "user_level" || key === "company") {
+      if (key === "role" || key === "user_level") {
         state.userInfo = { ...state.userInfo, [key]: value as number };
       } else {
         state.userInfo = { ...state.userInfo, [key]: value as string };

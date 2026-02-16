@@ -229,13 +229,6 @@ export const inputs = [
   { name: "first_name", title: "First Name", type: "text" },
   { name: "last_name", title: "Last Name", type: "text" },
   { name: "user_level", title: "User Level", type: "select", display: "label", value: "value", data: userLevels },
-  {
-    name: "company",
-    title: "Company",
-    type: "select",
-    display: "name",
-    value: "id",
-  },
   { name: "password", title: "Password", type: "password" },
   { name: "confirm_password", title: "Confirm Password", type: "password" },
   { name: "role", title: "Role", type: "select", data: roles },

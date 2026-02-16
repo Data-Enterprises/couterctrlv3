@@ -1,16 +1,17 @@
+import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import Modal from "../../../components/Modal";
+import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   setCompanyModalOpen,
   setUserCompanyIds,
   updateUserCompanies,
 } from "../../../features/usersSlice";
-import CheckBox from "../../../components/inputs/CheckBox";
 import { assignUserToCompany } from "../../../api/user";
 import type { JsonError } from "../../../interfaces";
-import { useToast } from "../../../components/toasts/hooks/useToast";
+
+import Modal from "../../../components/Modal";
+import CheckBox from "../../../components/inputs/CheckBox";
 import Input from "../../../components/inputs/Input";
-import { useEffect } from "react";
 
 const AssignCompanyModal = () => {
   const toast = useToast();
@@ -23,18 +24,23 @@ const AssignCompanyModal = () => {
     users,
   } = useAppSelector((state) => state.users);
   const { url, token } = useAppSelector((state) => state.app);
+  const [filterText, setFilterText] = useState<string>("");
 
   useEffect(() => {
     if (selectedUserId > 0) {
-      const companies = users
-        .filter((u) => u.id === selectedUserId)[0]
-        .companies.reduce((acc: number[], curr) => {
-          acc.push(curr.company);
-          return acc;
-        }, []);
-      dispatch(setUserCompanyIds(companies));
+      setInitialUserCompanies();
     }
   }, [selectedUserId]);
+
+  const setInitialUserCompanies = () => {
+    const companies = users
+      .filter((u) => u.id === selectedUserId)[0]
+      .companies.reduce((acc: number[], curr) => {
+        acc.push(curr.company);
+        return acc;
+      }, []);
+    dispatch(setUserCompanyIds(companies));
+  };
 
   const handleClose = () => {
     dispatch(setCompanyModalOpen(false));
@@ -66,6 +72,26 @@ const AssignCompanyModal = () => {
       });
   };
 
+  const handleTextChange = (x: string) => {
+    setFilterText(x);
+  };
+
+  const isHidden = (name: string) => {
+    if (filterText.length === 0) {
+      return false;
+    } else {
+      console.log(
+        name,
+        filterText,
+        filterText.trim().toLowerCase().includes(name.trim().toLowerCase()),
+      );
+      return !name
+        .trim()
+        .toLowerCase()
+        .includes(filterText.trim().toLowerCase());
+    }
+  };
+
   return (
     <Modal
       isOpen={companyModalOpen}
@@ -73,9 +99,13 @@ const AssignCompanyModal = () => {
       modalClassName="bg-custom-white"
     >
       <div>
-        <Input label="Search Company" value="" setValue={() => {}} />
+        <Input
+          label="Search Company"
+          value={filterText}
+          setValue={handleTextChange}
+        />
       </div>
-      <div className="grid grid-cols-3 gap-2 my-4">
+      <div className="grid grid-cols-3 gap-2 my-4 max-h-[120px] min-w-[496px] overflow-y-scroll no-scrollbar">
         {allCompanies.map((c) => (
           <CheckBox
             id={c.id}
@@ -83,6 +113,7 @@ const AssignCompanyModal = () => {
             label={c.name}
             onChange={handleCompanyIdState}
             isBool={false}
+            className={`${isHidden(c.name) && "hidden"}`}
           />
         ))}
       </div>
@@ -92,9 +123,15 @@ const AssignCompanyModal = () => {
         </button>
         <button
           className="btn-themeBlue w-1/3"
-          onClick={() => dispatch(setUserCompanyIds([]))}
+          onClick={() => setInitialUserCompanies()}
         >
           Reset
+        </button>
+        <button
+          className="btn-themeBlue w-1/3"
+          onClick={() => dispatch(setUserCompanyIds([]))}
+        >
+          Clear
         </button>
         <button className="btn-themeOrange w-1/3" onClick={handleClose}>
           Cancel
