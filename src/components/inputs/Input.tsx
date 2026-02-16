@@ -4,6 +4,7 @@ interface InputProps {
   label: string;
   type?: string;
   className?: string;
+  width?: string;
 }
 
 const Input = ({
@@ -12,10 +13,11 @@ const Input = ({
   label,
   className = "py-1.5",
   type = "text",
+  width = "w-full"
 }: InputProps) => {
   const testId = `input-${label.toLowerCase().replace(/\s+/g, "-")}`;
   return (
-    <div>
+    <div className={`${width}`}>
       {label && <label className="font-medium text-sm pl-0.5">{label}</label>}
       <input
         data-testid={testId}

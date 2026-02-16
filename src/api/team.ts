@@ -77,7 +77,10 @@ export const createUser = async (
       Authorization: `Bearer ${token}`,
     },
     url: url + "users/create_user",
-    data: data,
+    data: {
+      ...data,
+      company: 0
+    },
   });
   return json;
 };

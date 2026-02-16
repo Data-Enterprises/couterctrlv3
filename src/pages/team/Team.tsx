@@ -18,7 +18,8 @@ import UserGrid from "./UserGrid";
 import BaseGroups from "./BaseGroups";
 import DeleteUserModal from "./DeleteUserModal";
 import AssignStoresModal from "./assignModal/AssignStoresModal";
-import AssignCompanyModal from "./assignCompModal/AssignCompanyModal";
+import AssignCompanyModal from "./modals/AssignCompanyModal";
+import AssignBaseGroupModal from "./modals/AssignBaseGroupModal";
 
 const Team = () => {
   const toast = useToast();
@@ -71,11 +72,12 @@ const Team = () => {
       <AssignStoresModal />
       <DeleteUserModal />
       <AssignCompanyModal />
-      <div className="grid grid-cols-2 gap-8 h-full">
+      <AssignBaseGroupModal />
+      <div className="grid grid-cols-[52.9%_45%] gap-8 h-full">
         <div className="grid">
           <UserGrid />
         </div>
-        <div className="grid grid-rows-2">
+        <div className="grid grid-rows-[45%_55%]">
           <UserInfo />
           <BaseGroups />
         </div>

@@ -1,8 +1,10 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import {
   setAssignModalOpen,
+  setBaseGroupModalOpen,
   setBaseGroups,
   setDeleteModalOpen,
+  setSelectedCompanyId,
 } from "../../features/usersSlice";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type { FilterOption } from "../../features/groupSlice";
@@ -14,18 +16,19 @@ import {
 } from "../../api/team";
 import { handleRipple } from "../../utils";
 import { setTempPassword } from "../../api/security";
+import SingleSelect from "../../components/SingleSelect";
 
 const BaseGroups = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { selectedUserId, baseGroups, userInfo } = useAppSelector(
-    (state) => state.users
-  );
+  const { selectedUserId, baseGroups, userInfo, selectedCompanyId } =
+    useAppSelector((state) => state.users);
+  const { companies } = useAppSelector((state) => state.user);
 
   const handlePanelClick = (
     e: React.MouseEvent<HTMLDivElement>,
-    group: BaseGroup
+    group: BaseGroup,
   ) => {
     handleRipple(e);
     const copy: BaseGroup[] = [...baseGroups].map((g) => {
@@ -42,7 +45,7 @@ const BaseGroups = () => {
         context.url,
         context.token,
         selectedUserId,
-        group.id
+        group.id,
       )
         .then((resp) => {
           const j = resp.data;
@@ -60,7 +63,7 @@ const BaseGroups = () => {
         context.url,
         context.token,
         selectedUserId,
-        group.id
+        group.id,
       )
         .then((resp) => {
           const j = resp.data;
@@ -107,7 +110,7 @@ const BaseGroups = () => {
       context.url,
       context.token,
       userInfo.username,
-      userInfo.password
+      userInfo.password,
     )
       .then((resp) => {
         const j = resp.data;
@@ -133,25 +136,52 @@ const BaseGroups = () => {
       });
   };
 
+  const handleCompanySelect = (companyId: string | number) => {
+    dispatch(setSelectedCompanyId(companyId as number));
+  };
+
+  const handleBaseGroupModalOpen = () => {
+    dispatch(setBaseGroupModalOpen(true));
+  };
+
   return (
     <div className="select-none">
-      <div className="flex gap-2">
-        <div
-          className={`bg-emerald-500 text-custom-white px-2 py-0.5 rounded-t-lg text-sm ${isInteractive()} transition-all duration-500`}
-        >
-          {renderGroupAmount("active")} Active Groups
+      <div className="flex gap-2 items-end justify-between">
+        <div className="flex gap-2 items-end">
+          <SingleSelect
+            label="Company"
+            data={companies}
+            displayKey="name"
+            valueKey="company"
+            className={`${companies.length < 2 && "hidden"}`}
+            innerClass="py-1"
+            onSelect={handleCompanySelect}
+          />
+          <button
+            className={`btn-themeBlue py-1 ${!selectedCompanyId && "opacity-50 pointer-events-none"}`}
+            onClick={handleBaseGroupModalOpen}
+          >
+            Edit Groups
+          </button>
         </div>
-        <div
-          className={`bg-orange-500 text-custom-white px-2 py-0.5 rounded-t-lg text-sm ${isInteractive()} transition-all duration-500`}
-        >
-          {renderGroupAmount("inactive")} Inactive Groups
+        <div className="flex gap-2">
+          <div
+            className={`bg-emerald-500 text-custom-white px-2 py-0.5 rounded-t-lg text-sm ${isInteractive()} transition-all duration-500`}
+          >
+            {renderGroupAmount("active")} Active Groups
+          </div>
+          <div
+            className={`bg-orange-500 text-custom-white px-2 py-0.5 rounded-t-lg text-sm ${isInteractive()} transition-all duration-500`}
+          >
+            {renderGroupAmount("inactive")} Inactive Groups
+          </div>
         </div>
       </div>
-      <div className="w-full min-h-[93.4%] max-h-[93.4%] rounded-b-lg rounded-tr-lg px-4 border-2 border-content/10 relative">
+      <div className="w-full min-h-[88.5%] max-h-[88.5%] rounded-b-lg rounded-tl-lg px-4 border-2 border-content/10 relative">
         <div
           data-testid="base-groups-panels"
-          className="absolute w-full pr-8 top-4 max-h-[75%] overflow-hidden grid grid-cols-3 
-            text gap-4 overflow-y-scroll no-scrollbar rounded-lg text-sm"
+          className="absolute w-full pr-8 top-4 max-h-[77%] overflow-hidden grid grid-cols-3 
+            text gap-2 overflow-y-scroll no-scrollbar rounded-lg text-sm"
         >
           {canSelect()
             ? baseGroups.map((group, i) => (
@@ -177,28 +207,28 @@ const BaseGroups = () => {
         <div className="grid grid-cols-4 gap-4 absolute w-full pr-8 bottom-4">
           <button
             data-testid="team-assign-stores-btn"
-            className={`btn-themeBlue px-0 ${isInteractive()}`}
+            className={`btn-themeBlue px-0 py-1.5 ${isInteractive()}`}
             onClick={openAssignStoreModal}
           >
             Assign Stores
           </button>
           <button
             data-testid="team-reset-security-btn"
-            className={`btn-themeGreen px-0 ${isInteractive()}`}
+            className={`btn-themeGreen px-0 py-1.5 ${isInteractive()}`}
             onClick={resetSecurity}
           >
             Reset Security
           </button>
           <button
             data-testid="team-reset-pw-btn"
-            className={`btn-themeGreen px-0 ${isInteractive()}`}
+            className={`btn-themeGreen px-0 py-1.5 ${isInteractive()}`}
             onClick={resetPassword}
           >
             Reset Password
           </button>
           <button
             data-testid="team-delete-user-btn"
-            className={`btn-themeOrange px-0 ${isInteractive()}`}
+            className={`btn-themeOrange px-0 py-1.5 ${isInteractive()}`}
             onClick={openDeleteUserModal}
           >
             Delete User

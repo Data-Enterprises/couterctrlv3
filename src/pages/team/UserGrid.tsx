@@ -8,6 +8,8 @@ import {
   setSelectedUserInfo,
   setBaseGroups,
   setSelectedUserId,
+  // setSelectedCompanyId,
+  // setBaseGroupModalOpen,
 } from "../../features/usersSlice";
 import { getBaseGroupsAssignedToUser } from "../../api/team";
 
@@ -20,17 +22,19 @@ import {
   type RowClickedEvent,
 } from "ag-grid-community";
 import { setSelectedQsUserEmail, setValidUser } from "../../features/qsSlice";
-import SingleSelect from "../../components/SingleSelect";
+// import SingleSelect from "../../components/SingleSelect";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const UserGrid = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { users, refresh, allCompanies } = useAppSelector((state) => state.users);
+  // const { companies } = useAppSelector((state) => state.user);
+  const { users, refresh, selectedCompanyId } = useAppSelector(
+    (state) => state.users,
+  );
   const qs = useAppSelector((state) => state.quicksight);
   const [text, setText] = useState<string>("");
-  const [companyFilter, setCompanyFilter] = useState<number>(0);
   const [filtered, setFiltered] = useState<User[]>([]);
 
   useEffect(() => {
@@ -41,19 +45,21 @@ const UserGrid = () => {
 
   // Filter the table by searching for the username
   useEffect(() => {
-    if (text.trim() === "" && !companyFilter) {
+    if (text.trim() === "" && !selectedCompanyId) {
       setFiltered(users);
     } else {
       // one or the othe or both
       const lowerText = text.toLowerCase();
       const filteredUsers = users.filter((user) => {
         const textCheck = user.username.toLowerCase().includes(lowerText);
-        const companyCheck = companyFilter > 0 ? user.company === companyFilter : true;
-        return textCheck && companyCheck;
+        // const companyCheck =
+        //   selectedCompanyId > 0 ? user.company === selectedCompanyId : true;
+        // return textCheck && companyCheck;
+        return textCheck;
       });
       setFiltered(filteredUsers);
     }
-  }, [text, companyFilter]);
+  }, [text, selectedCompanyId]);
 
   const getData = () => {
     getAllUsers(context.url, context.token)
@@ -94,9 +100,13 @@ const UserGrid = () => {
       });
   };
 
-  const handleCompanySelect = (companyId: string | number) => {
-    setCompanyFilter(companyId as number);
-  };
+  // const handleCompanySelect = (companyId: string | number) => {
+  //   dispatch(setSelectedCompanyId(companyId as number));
+  // };
+
+  // const handleBaseGroupModalOpen = () => {
+  //   dispatch(setBaseGroupModalOpen(true));
+  // };
 
   return (
     <div data-testid="user-grid-container" className="w-full no-scrollbar">
@@ -112,14 +122,20 @@ const UserGrid = () => {
             placeholder="Search Users"
           />
         </div>
-        <SingleSelect
+        {/* <SingleSelect
           label="Company"
-          data={allCompanies}
+          data={companies}
           displayKey="name"
-          valueKey="id"
-          className=""
+          valueKey="company"
+          className={`${companies.length < 2 && "hidden"}`}
           onSelect={handleCompanySelect}
         />
+        <button
+          className={`btn-themeBlue ${!selectedCompanyId && "opacity-50 pointer-events-none"}`}
+          onClick={handleBaseGroupModalOpen}
+        >
+          Base Groups
+        </button> */}
       </div>
       <div className="h-[91.5%]">
         <AgGridReact

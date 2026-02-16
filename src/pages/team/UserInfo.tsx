@@ -79,15 +79,15 @@ const UserInfo = () => {
 
   const handleUpdateClick = () => {
     const found = users.find((u) => u.username === userInfo.username);
-    if (!found || found.security === null || found.template === null) return;
+    if (!found) return;
     if (!validateCreateUserInfo()) return;
     // call api to update user
     updateUser(
       context.url,
       context.token,
       userInfo,
-      found.security,
-      found.template,
+      found.security || 0,
+      found.template || 0,
     )
       .then((resp) => {
         const j = resp.data;
@@ -147,13 +147,13 @@ const UserInfo = () => {
         <div className="text-sm font-medium mt-1">
           **All fields are required
         </div>
-        <button
+        {/* <button
           data-testid="clear-user-info-btn"
           className="btn-themeBlue absolute right-0 top-0 py-[2px]"
           onClick={handleReset}
         >
           Clear
-        </button>
+        </button> */}
       </div>
       <div className="grid grid-cols-2 gap-x-8 gap-y-1">
         {inputs.map((input, i) => {
@@ -173,27 +173,34 @@ const UserInfo = () => {
           );
         })}
       </div>
-      <div className="flex gap-4 select-none w-full pt-4">
+      <div className="grid grid-cols-4 gap-4 select-none w-full pt-2">
         <button
           data-testid="create-user-button"
           className={`btn-themeBlue py-[5px] ${isCreatingOrUpdating("create")}`}
           onClick={handleCreateClick}
         >
-          Create User
+          Create
         </button>
         <button
           data-testid="team-update-user-button"
           className={`btn-themeBlue py-[5px] ${isCreatingOrUpdating("update")}`}
           onClick={handleUpdateClick}
         >
-          Update User
+          Update
         </button>
         <button
           data-testid="team-update-user-button"
           className={`btn-themeBlue py-[5px] ${isCreatingOrUpdating("update")}`}
           onClick={handleCompanyModalOpen}
         >
-          Assign Companies
+          Companies
+        </button>
+        <button
+          data-testid="clear-user-info-btn"
+          className="btn-themeBlue py-[5px]"
+          onClick={handleReset}
+        >
+          Clear
         </button>
       </div>
     </div>

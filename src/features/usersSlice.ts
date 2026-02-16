@@ -55,6 +55,8 @@ interface UsersState {
   allCompanies: Company[];
   companyModalOpen: boolean;
   userCompanyIds: number[];
+  baseGroupModalOpen: boolean;
+  selectedCompanyId: number;
 }
 
 const initialState: UsersState = {
@@ -73,6 +75,8 @@ const initialState: UsersState = {
   allCompanies: [],
   companyModalOpen: false,
   userCompanyIds: [],
+  baseGroupModalOpen: false,
+  selectedCompanyId: 0,
 };
 
 export const usersSlice = createSlice({
@@ -181,6 +185,12 @@ export const usersSlice = createSlice({
       const idx = state.users.findIndex((u) => u.id === id);
       state.users[idx].companies = action.payload;
     },
+    setBaseGroupModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.baseGroupModalOpen = action.payload;
+    },
+    setSelectedCompanyId: (state, action: PayloadAction<number>) => {
+      state.selectedCompanyId = action.payload;
+    },
     resetUsersSlice: () => initialState,
   },
 });
@@ -203,6 +213,8 @@ export const {
   setAllCompanies,
   setUserCompanyIds,
   updateUserCompanies,
+  setBaseGroupModalOpen,
+  setSelectedCompanyId,
   resetUsersSlice,
 } = usersSlice.actions;
 export default usersSlice.reducer;

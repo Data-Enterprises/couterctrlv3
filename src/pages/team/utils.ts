@@ -46,10 +46,6 @@ export const useTeamErrorCheck = () => {
       toast.warn("Please select a user level");
       return false;
     }
-    if (userInfo.company === 0) {
-      toast.warn("Please select a company");
-      return false;
-    }
     if (passwordStrength < 2) {
       toast.warn("Please enter at least a moderately safe password");
       return false;

@@ -20,10 +20,10 @@ import {
   setLastName,
   setRole,
   setUserLevel,
-  setCompany,
   setResetPassword,
   setSecurityQuestionId,
   setEmail,
+  setCompanies,
 } from "../../features/userSlice";
 import ForgotPassword from "./forgot/ForgotPassword";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
@@ -80,9 +80,9 @@ const Login = () => {
           dispatch(setEmail(j.email));
           dispatch(setRole(j.role));
           dispatch(setUserLevel(j.user_level));
-          dispatch(setCompany(j.company));
           dispatch(setResetPassword(j.password_change_needed));
           dispatch(setSecurityQuestionId(j.security_question_id));
+          dispatch(setCompanies(j.companies));
           setUseImpersonation(0);
         } else {
           dispatch(setFetchingCredentials(false));

@@ -23,6 +23,7 @@ import receiversReducer from "../features/receiversSlice";
 import couponReducer from "../features/couponSlice";
 import reportBuilderReducer from "../features/reportBuilderSlice";
 import adminReducer from "../features/adminSlice.ts";
+import baseGroupReducer from "../features/baseGroupSlice.ts";
 
 export const setupStore = () =>
   configureStore({
@@ -50,6 +51,7 @@ export const setupStore = () =>
       coupons: couponReducer,
       reportBuilder: reportBuilderReducer,
       admin: adminReducer,
+      baseGroup: baseGroupReducer,
     },
   });
 

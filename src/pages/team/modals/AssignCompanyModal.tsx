@@ -9,6 +9,7 @@ import {
 import { assignUserToCompany } from "../../../api/user";
 import type { JsonError } from "../../../interfaces";
 
+// Components
 import Modal from "../../../components/Modal";
 import CheckBox from "../../../components/inputs/CheckBox";
 import Input from "../../../components/inputs/Input";
@@ -16,13 +17,9 @@ import Input from "../../../components/inputs/Input";
 const AssignCompanyModal = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const {
-    companyModalOpen,
-    allCompanies,
-    selectedUserId,
-    userCompanyIds,
-    users,
-  } = useAppSelector((state) => state.users);
+  const { companyModalOpen, selectedUserId, userCompanyIds, users } =
+    useAppSelector((state) => state.users);
+  const { companies } = useAppSelector((state) => state.user);
   const { url, token } = useAppSelector((state) => state.app);
   const [filterText, setFilterText] = useState<string>("");
 
@@ -92,24 +89,41 @@ const AssignCompanyModal = () => {
     }
   };
 
+  const returnUser = () => {
+    const user = users.filter((u) => u.id === selectedUserId);
+    const firstName = user[0].first_name;
+    const lastName = user[0].last_name || "";
+    return `${firstName} ${lastName}`;
+  };
+
+  if (!selectedUserId) return null;
+
   return (
     <Modal
       isOpen={companyModalOpen}
       onClose={handleClose}
       modalClassName="bg-custom-white"
     >
-      <div>
+      <div className="text-sm pl-0.5 font-medium">{returnUser()}</div>
+      <div className="flex items-end justify-between">
         <Input
           label="Search Company"
           value={filterText}
           setValue={handleTextChange}
+          width="w-2/3"
         />
+        <button
+          className="btn-themeBlue py-1.5"
+          onClick={() => setFilterText("")}
+        >
+          Clear Search
+        </button>
       </div>
       <div className="grid grid-cols-3 gap-2 my-4 max-h-[120px] min-w-[496px] overflow-y-scroll no-scrollbar">
-        {allCompanies.map((c) => (
+        {companies.map((c) => (
           <CheckBox
             id={c.id}
-            value={userCompanyIds.includes(c.id)}
+            value={userCompanyIds.includes(c.company)}
             label={c.name}
             onChange={handleCompanyIdState}
             isBool={false}
@@ -118,22 +132,22 @@ const AssignCompanyModal = () => {
         ))}
       </div>
       <div className="flex gap-2">
-        <button className="btn-themeGreen w-1/3" onClick={handleSubmit}>
+        <button className="btn-themeGreen w-1/4 py-1.5" onClick={handleSubmit}>
           Submit
         </button>
         <button
-          className="btn-themeBlue w-1/3"
+          className="btn-themeBlue w-1/4 py-1.5"
           onClick={() => setInitialUserCompanies()}
         >
           Reset
         </button>
         <button
-          className="btn-themeBlue w-1/3"
+          className="btn-themeBlue w-1/4 py-1.5"
           onClick={() => dispatch(setUserCompanyIds([]))}
         >
           Clear
         </button>
-        <button className="btn-themeOrange w-1/3" onClick={handleClose}>
+        <button className="btn-themeOrange w-1/4 py-1.5" onClick={handleClose}>
           Cancel
         </button>
       </div>
