@@ -13,7 +13,7 @@ export const getBaseGroupsAssignedToUser = async (
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    url: url + "groups/base_groups_assigned_to_user",
+    url: url + "groups/base_groups_assigned_to_user_split",
     params: {
       userid,
     },
@@ -79,7 +79,7 @@ export const createUser = async (
     url: url + "users/create_user",
     data: {
       ...data,
-      company: 0
+      company: 0,
     },
   });
   return json;
@@ -186,6 +186,18 @@ export const resetUserSecurityQuestion = async (
     params: {
       userid,
     },
+  });
+  return json;
+};
+
+export const getUserLevels = async (url: string, token: string) => {
+  const json = await axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "users/user_levels",
   });
   return json;
 };

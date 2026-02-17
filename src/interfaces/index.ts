@@ -194,7 +194,16 @@ export interface User {
 export interface BaseGroup {
   id: number;
   name: string;
+  company: number;
+  company_name: string;
   active: 1 | 0;
+}
+
+export interface BaseGroupJsonResp {
+  error: number;
+  success: boolean;
+  active: BaseGroup[];
+  inactive: BaseGroup[];
 }
 
 //////////////////////////////////////////////////////////////
@@ -794,10 +803,21 @@ export interface UsersJsonResp {
   error: number;
   success: boolean;
   msg: string;
-  users: User[]
+  users: User[];
 }
 
 export type AdminOption = {
   label: string;
   option: number;
 };
+
+export interface UserLevel {
+  id: number;
+  name: string;
+}
+
+export interface UserLevelJsonResp {
+  error: number;
+  success: boolean;
+  levels: UserLevel[];
+}

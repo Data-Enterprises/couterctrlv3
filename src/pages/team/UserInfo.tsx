@@ -7,7 +7,7 @@ import {
   resetUserInfo,
   setCompanyModalOpen,
 } from "../../features/usersSlice";
-import { inputs, roles, userLevels } from ".";
+import { inputs, roles } from ".";
 import TextInput from "../../components/TextInput";
 import SingleSelect from "../../components/SingleSelect";
 import { useTeamErrorCheck } from "./utils";
@@ -18,7 +18,7 @@ const UserInfo = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { userInfo, users, selectedUserId } = useAppSelector(
+  const { userInfo, users, selectedUserId, userLevels } = useAppSelector(
     (state) => state.users,
   );
   const [role, setRole] = useState<string>("");
@@ -29,8 +29,8 @@ const UserInfo = () => {
     const roleObj = roles.find((r) => r.value == userInfo.role);
     setRole(roleObj ? roleObj.label : "");
 
-    const levelObj = userLevels.find((l) => l.value == userInfo.user_level);
-    setLevel(levelObj ? levelObj.label : "");
+    const levelObj = userLevels.find((l) => l.id == userInfo.user_level);
+    setLevel(levelObj ? levelObj.name : "");
   }, [userInfo]);
 
   // For the text fields
@@ -116,6 +116,23 @@ const UserInfo = () => {
   };
 
   const renderSelect = (name: string, i: number) => {
+    if (name === "user_level") {
+      return (
+        <SingleSelect
+          key={i}
+          data={userLevels}
+          valueKey={"id"}
+          displayKey={"name"}
+          label={"User Level"}
+          onSelect={returnOnSelectFunction(name)}
+          defaultQuery={handleDefaultQuery(name)}
+          resetQuery={true}
+          className="text-sm"
+          innerClass="text-sm"
+          id={i}
+        />
+      );
+    }
     const ul = inputs.find((input) => input.name === name)!;
     return (
       <SingleSelect

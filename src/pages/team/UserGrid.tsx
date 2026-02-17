@@ -2,14 +2,12 @@ import { useEffect, useState } from "react";
 import { getAllUsers } from "../../api/user";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import type { BaseGroup, JsonError, User } from "../../interfaces";
+import type { BaseGroupJsonResp, JsonError, User } from "../../interfaces";
 import {
   setUsers,
   setSelectedUserInfo,
-  setBaseGroups,
+  setAssignBaseGroups,
   setSelectedUserId,
-  // setSelectedCompanyId,
-  // setBaseGroupModalOpen,
 } from "../../features/usersSlice";
 import { getBaseGroupsAssignedToUser } from "../../api/team";
 
@@ -22,14 +20,12 @@ import {
   type RowClickedEvent,
 } from "ag-grid-community";
 import { setSelectedQsUserEmail, setValidUser } from "../../features/qsSlice";
-// import SingleSelect from "../../components/SingleSelect";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const UserGrid = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  // const { companies } = useAppSelector((state) => state.user);
   const { users, refresh, selectedCompanyId } = useAppSelector(
     (state) => state.users,
   );
@@ -107,6 +103,8 @@ const UserGrid = () => {
 
   const handleRowClick = (e: RowClickedEvent) => {
     dispatch(setSelectedUserInfo(e.data));
+
+    // Validating if the selected user is a registered QuickSight user
     if (qs.qsUsers.includes(e.data.email)) {
       dispatch(setSelectedQsUserEmail(e.data.email));
       dispatch(setValidUser(true));
@@ -114,29 +112,19 @@ const UserGrid = () => {
       dispatch(setSelectedQsUserEmail(""));
       dispatch(setValidUser(false));
     }
+
     dispatch(setSelectedUserId(e.data.id));
     getBaseGroupsAssignedToUser(context.url, context.token, e.data.id)
       .then((resp) => {
-        const j = resp.data;
+        const j: BaseGroupJsonResp = resp.data;
         if (j.error === 0) {
-          const sorted = [...j.groups].sort((a: BaseGroup, b: BaseGroup) =>
-            a.active > b.active ? -1 : 1,
-          );
-          dispatch(setBaseGroups(sorted));
+          dispatch(setAssignBaseGroups([...j.active, ...j.inactive]));
         }
       })
       .catch((err: JsonError) => {
         toast.error("Error fetching user's base groups " + err.message);
       });
   };
-
-  // const handleCompanySelect = (companyId: string | number) => {
-  //   dispatch(setSelectedCompanyId(companyId as number));
-  // };
-
-  // const handleBaseGroupModalOpen = () => {
-  //   dispatch(setBaseGroupModalOpen(true));
-  // };
 
   return (
     <div data-testid="user-grid-container" className="w-full no-scrollbar">
@@ -152,20 +140,6 @@ const UserGrid = () => {
             placeholder="Search Users"
           />
         </div>
-        {/* <SingleSelect
-          label="Company"
-          data={companies}
-          displayKey="name"
-          valueKey="company"
-          className={`${companies.length < 2 && "hidden"}`}
-          onSelect={handleCompanySelect}
-        />
-        <button
-          className={`btn-themeBlue ${!selectedCompanyId && "opacity-50 pointer-events-none"}`}
-          onClick={handleBaseGroupModalOpen}
-        >
-          Base Groups
-        </button> */}
       </div>
       <div className="h-[91.5%]">
         <AgGridReact

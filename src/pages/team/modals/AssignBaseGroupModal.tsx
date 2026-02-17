@@ -7,8 +7,12 @@ import {
   updateBaseGroup,
   deleteBaseGroup,
 } from "../../../api/baseGroups";
-import type { JsonError, CompanyBaseGroup } from "../../../interfaces";
-import { setBaseGroupModalOpen } from "../../../features/usersSlice";
+import type {
+  JsonError,
+  CompanyBaseGroup,
+  BaseGroupJsonResp,
+} from "../../../interfaces";
+import { setBaseGroupModalOpen, setAssignBaseGroups } from "../../../features/usersSlice";
 
 import Modal from "../../../components/Modal";
 import Input from "../../../components/inputs/Input";
@@ -19,14 +23,14 @@ import {
   setIsDeleting,
   setSelectedGroup,
 } from "../../../features/baseGroupSlice";
+import { getBaseGroupsAssignedToUser } from "../../../api/team";
 
 const AssignBaseGroupModal = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
-  const { selectedCompanyId, baseGroupModalOpen } = useAppSelector(
-    (state) => state.users,
-  );
+  const { selectedCompanyId, baseGroupModalOpen, selectedUserId } =
+    useAppSelector((state) => state.users);
   const state = useAppSelector((state) => state.baseGroup);
 
   useEffect(() => {
@@ -114,7 +118,8 @@ const AssignBaseGroupModal = () => {
             getData();
           }
         })
-        .catch((err: JsonError) => toast.error(err.message));
+        .catch((err: JsonError) => toast.error(err.message))
+        .finally(() => refetchAssignedBaseGroups());
     } else {
       updateBaseGroup(url, token, state.selectedGroup)
         .then((resp) => {
@@ -134,8 +139,22 @@ const AssignBaseGroupModal = () => {
             dispatch(setSelectedGroup({ id: 0, name: "", company: 0 }));
           }
         })
-        .catch((err: JsonError) => toast.error(err.message));
+        .catch((err: JsonError) => toast.error(err.message))
+        .finally(() => refetchAssignedBaseGroups());
     }
+  };
+
+  const refetchAssignedBaseGroups = () => {
+    getBaseGroupsAssignedToUser(url, token, selectedUserId)
+      .then((resp) => {
+        const j: BaseGroupJsonResp = resp.data;
+        if (j.error === 0) {
+          dispatch(setAssignBaseGroups([...j.active, ...j.inactive]));
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error("Error fetching user's base groups " + err.message);
+      });
   };
 
   return (

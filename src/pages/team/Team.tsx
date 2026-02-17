@@ -3,15 +3,10 @@ import { useAppDispatch, useAppSelector } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
 import { getQuicksightUsers } from "../../api/quicksight";
-import { getBaseGroupsAssignedToUser } from "../../api/team";
-// import { getCompanies } from "../../api/company";
-import {
-  // setAllCompanies,
-  setBaseGroups,
-  setRefresh,
-} from "../../features/usersSlice";
+import { getUserLevels } from "../../api/team";
+import { setRefresh, setUserLevels } from "../../features/usersSlice";
 import { setQsUsers } from "../../features/qsSlice";
-import type { JsonError } from "../../interfaces";
+import type { JsonError, UserLevelJsonResp } from "../../interfaces";
 
 import UserInfo from "./UserInfo";
 import UserGrid from "./UserGrid";
@@ -28,16 +23,6 @@ const Team = () => {
   const { refresh } = useAppSelector((state) => state.users);
 
   useEffect(() => {
-    // getCompanies(context.url, context.token)
-    //   .then((resp) => {
-    //     const j: CompanyJsonResp = resp.data;
-
-    //     if (j.error === 0) {
-    //       dispatch(setAllCompanies(j.companies));
-    //     }
-    //   })
-    //   .catch((err: JsonError) => toast.error(err.message));
-
     if (refresh) {
       getQuicksightUsers(context.url, context.token)
         .then((resp) => {
@@ -49,23 +34,17 @@ const Team = () => {
         .catch((err: JsonError) => {
           toast.error("Error fetching QuickSight users " + err.message);
         });
-      getUsers();
+      getUserLevels(context.url, context.token)
+        .then((resp) => {
+          const j: UserLevelJsonResp = resp.data;
+          if (j.error === 0) {
+            dispatch(setUserLevels(j.levels));
+          }
+        })
+        .catch((err: JsonError) => toast.error(err.message));
       dispatch(setRefresh(false));
     }
   }, [refresh]);
-
-  const getUsers = () => {
-    getBaseGroupsAssignedToUser(context.url, context.token, 0)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          dispatch(setBaseGroups(j.groups));
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error("Error fetching base groups " + err.message);
-      });
-  };
 
   return (
     <div data-testid="team-page" className={`w-full h-[calc(100vh-3rem)] p-4`}>

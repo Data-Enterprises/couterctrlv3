@@ -2,7 +2,7 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import {
   setAssignModalOpen,
   setBaseGroupModalOpen,
-  setBaseGroups,
+  setAssignBaseGroups,
   setDeleteModalOpen,
   setSelectedCompanyId,
 } from "../../features/usersSlice";
@@ -58,7 +58,7 @@ const BaseGroups = () => {
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
-            dispatch(setBaseGroups(copy));
+            dispatch(setAssignBaseGroups(copy));
           }
         })
         .catch((err) => {
@@ -76,7 +76,7 @@ const BaseGroups = () => {
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
-            dispatch(setBaseGroups(copy));
+            dispatch(setAssignBaseGroups(copy));
           }
         })
         .catch((err) => {

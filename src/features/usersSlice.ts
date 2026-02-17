@@ -6,6 +6,7 @@ import type {
   UnassignedStore,
   Company,
   UserCompany,
+  UserLevel,
 } from "../interfaces";
 
 export type UserData = {
@@ -57,6 +58,7 @@ interface UsersState {
   userCompanyIds: number[];
   baseGroupModalOpen: boolean;
   selectedCompanyId: number;
+  userLevels: UserLevel[];
 }
 
 const initialState: UsersState = {
@@ -77,6 +79,7 @@ const initialState: UsersState = {
   userCompanyIds: [],
   baseGroupModalOpen: false,
   selectedCompanyId: 0,
+  userLevels: [],
 };
 
 export const usersSlice = createSlice({
@@ -101,7 +104,6 @@ export const usersSlice = createSlice({
         first_name,
         last_name,
         user_level,
-        // company,
         role,
         password,
       } = action.payload;
@@ -112,13 +114,12 @@ export const usersSlice = createSlice({
         first_name,
         last_name,
         user_level,
-        // company,
         role: role === null ? 0 : role,
         password: password,
         confirm_password: password,
       };
     },
-    setBaseGroups: (state, action: PayloadAction<BaseGroup[]>) => {
+    setAssignBaseGroups: (state, action: PayloadAction<BaseGroup[]>) => {
       state.baseGroups = action.payload;
     },
     resetUserInfo: (state) => {
@@ -191,6 +192,9 @@ export const usersSlice = createSlice({
     setSelectedCompanyId: (state, action: PayloadAction<number>) => {
       state.selectedCompanyId = action.payload;
     },
+    setUserLevels: (state, action: PayloadAction<UserLevel[]>) => {
+      state.userLevels = action.payload;
+    },
     resetUsersSlice: () => initialState,
   },
 });
@@ -200,7 +204,6 @@ export const {
   setUserInfo,
   setSelectedUserInfo,
   resetUserInfo,
-  setBaseGroups,
   setRefresh,
   setSelectedUserId,
   setDeleteModalOpen,
@@ -215,6 +218,8 @@ export const {
   updateUserCompanies,
   setBaseGroupModalOpen,
   setSelectedCompanyId,
+  setUserLevels,
+  setAssignBaseGroups,
   resetUsersSlice,
 } = usersSlice.actions;
 export default usersSlice.reducer;
