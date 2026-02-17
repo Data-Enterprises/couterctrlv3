@@ -28,9 +28,14 @@ const UserGrid = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { users, refresh, selectedCompanyId, userLevels } = useAppSelector(
-    (state) => state.users,
-  );
+  const {
+    users,
+    refresh,
+    selectedCompanyId,
+    userLevels,
+    selectedForm,
+    selectedUserForm,
+  } = useAppSelector((state) => state.users);
   const { companies } = useAppSelector((state) => state.user);
   const qs = useAppSelector((state) => state.quicksight);
   const [text, setText] = useState<string>("");
@@ -145,6 +150,9 @@ const UserGrid = () => {
   };
 
   const handleRowClick = (e: RowClickedEvent) => {
+    if (selectedForm === 1 && selectedUserForm === "create") {
+      return;
+    }
     dispatch(setSelectedUserInfo(e.data));
 
     // Validating if the selected user is a registered QuickSight user

@@ -10,9 +10,9 @@ import { setUserInfo } from "../../../features/usersSlice";
 import { InfoIcon } from "../../../components/toasts/Icons";
 import CompanyAssign from "./CompanyAssign";
 
-const CreateUserForm = () => {
+const UserForm = () => {
   const dispatch = useAppDispatch();
-  const { userLevels, userInfo } = useAppSelector((state) => state.users);
+  const { userLevels, userInfo, selectedUserForm } = useAppSelector((state) => state.users);
   const user = useAppSelector((state) => state.user);
 
   const handleUsername = (x: string) => {
@@ -51,7 +51,9 @@ const CreateUserForm = () => {
     <div className="bg-custom-white mt-4 space-y-2">
       <div className="flex items-center gap-2 select-none">
         <InfoIcon fill="#3b82f6" width={17} height={17} />
-        <div className="text-sm font-medium text-content/70">Ensure all fields are valid and at least one company is assigned</div>
+        <div className="text-sm font-medium text-content/70">
+          Ensure all fields are valid and at least one company is assigned
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-2">
         <Input
@@ -110,9 +112,9 @@ const CreateUserForm = () => {
         />
       </div>
       <CompanyAssign />
-      <UserFormButtons formType="create" />
+      <UserFormButtons formType={selectedUserForm} />
     </div>
   );
 };
 
-export default CreateUserForm;
+export default UserForm;

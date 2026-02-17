@@ -1,5 +1,5 @@
 interface UserFormButtonsProps {
-  formType: "create" | "update";
+  formType: "create" | "update" | "";
 }
 
 const UserFormButtons = ({ formType }: UserFormButtonsProps) => {

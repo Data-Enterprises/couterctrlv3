@@ -59,6 +59,7 @@ interface UsersState {
   selectedCompanyId: number;
   userLevels: UserLevel[];
   selectedForm: number;
+  selectedUserForm: "create" | "update" | "";
 }
 
 const initialState: UsersState = {
@@ -81,6 +82,7 @@ const initialState: UsersState = {
   selectedCompanyId: 0,
   userLevels: [],
   selectedForm: 0,
+  selectedUserForm: "",
 };
 
 export const usersSlice = createSlice({
@@ -199,6 +201,12 @@ export const usersSlice = createSlice({
     setSelectedForm: (state, action: PayloadAction<number>) => {
       state.selectedForm = action.payload;
     },
+    setSelectedUserForm: (
+      state,
+      action: PayloadAction<"create" | "update" | "">,
+    ) => {
+      state.selectedUserForm = action.payload;
+    },
     resetUsersSlice: () => initialState,
   },
 });
@@ -225,6 +233,7 @@ export const {
   setUserLevels,
   setAssignBaseGroups,
   setSelectedForm,
+  setSelectedUserForm,
   resetUsersSlice,
 } = usersSlice.actions;
 export default usersSlice.reducer;

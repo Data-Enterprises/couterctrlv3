@@ -17,8 +17,8 @@ import DeleteUserModal from "./DeleteUserModal";
 import AssignStoresModal from "./assignModal/AssignStoresModal";
 import AssignCompanyModal from "./modals/AssignCompanyModal";
 import AssignBaseGroupModal from "./modals/AssignBaseGroupModal";
-import UserControls from "./components/UserControls";
-import FormHeader from "./components/FormHeader";
+import UserControls from "./forms/UserControls";
+import FormHeader from "./forms/FormHeader";
 
 const Team = () => {
   const toast = useToast();

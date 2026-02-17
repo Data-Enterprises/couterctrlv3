@@ -84,11 +84,6 @@ const CompanyAssign = () => {
     if (filterText.length === 0) {
       return false;
     } else {
-      console.log(
-        name,
-        filterText,
-        filterText.trim().toLowerCase().includes(name.trim().toLowerCase()),
-      );
       return !name
         .trim()
         .toLowerCase()
@@ -109,7 +104,7 @@ const CompanyAssign = () => {
   return (
     <div>
       <div className="text-sm pl-0.5 font-medium">{returnUser()}</div>
-      <div className="flex items-end justify-between">
+      <div className="flex items-end justify-between gap-2">
         <Input
           label="Search Company"
           value={filterText}
@@ -117,13 +112,13 @@ const CompanyAssign = () => {
           width="w-2/3"
         />
         <button
-          className="btn-themeBlue py-1.5"
+          className="btn-themeBlue w-1/3 py-1.5"
           onClick={() => setFilterText("")}
         >
           Clear Search
         </button>
       </div>
-      <div className="grid grid-cols-3 gap-2 my-4 max-h-[120px] min-w-[496px] overflow-y-scroll no-scrollbar">
+      <div className="grid grid-cols-3 gap-1 my-4 max-h-[92px] overflow-y-scroll no-scrollbar">
         {companies.map((c) => (
           <CheckBox
             id={c.company}

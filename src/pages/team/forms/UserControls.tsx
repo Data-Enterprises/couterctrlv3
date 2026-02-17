@@ -1,16 +1,18 @@
-import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { resetUserInfo } from "../../../features/usersSlice";
+import {
+  resetUserInfo,
+  setSelectedUserForm,
+} from "../../../features/usersSlice";
 
 import { WarningIcon } from "../../../components/toasts/Icons";
-import CreateUserForm from "./CreateUserForm";
-import UpdateUserForm from "./UpdateUserForm";
+import UserForm from "./UserForm";
 
 const UserControls = () => {
   const dispatch = useAppDispatch();
-  const { users, selectedUserId } = useAppSelector((state) => state.users);
+  const { users, selectedUserId, selectedUserForm } = useAppSelector(
+    (state) => state.users,
+  );
   const user = useAppSelector((state) => state.user);
-  const [mode, setMode] = useState<number>(0);
 
   const isOutranked = () => {
     const found = users.find((u) => u.id === selectedUserId);
@@ -21,8 +23,8 @@ const UserControls = () => {
     return false;
   };
 
-  const handleReset = (x: number) => {
-    setMode(x);
+  const handleReset = (x: "create" | "update" | "") => {
+    dispatch(setSelectedUserForm(x));
     dispatch(resetUserInfo());
   };
 
@@ -37,7 +39,7 @@ const UserControls = () => {
           <div>Please contact them if assistance is needed</div>
           <button
             className="btn-themeBlue py-1.5 mt-2"
-            onClick={() => handleReset(0)}
+            onClick={() => handleReset("")}
           >
             Reset
           </button>
@@ -50,31 +52,29 @@ const UserControls = () => {
     <div className="bg-custom-white p-4 rounded-lg shadow-lg">
       <div className="grid grid-cols-3 gap-4">
         <button
-          className={`${mode === 1 ? "btn-themeGreen" : mode === 0 ? "btn-themeBlue" : "btn-themeBlue opacity-70 pointer-events-none"}`}
-          onClick={() => handleReset(1)}
+          className={`${selectedUserForm === "create" ? "btn-themeGreen" : !selectedUserForm ? "btn-themeBlue" : "btn-themeBlue opacity-70 pointer-events-none"}`}
+          onClick={() => handleReset("create")}
         >
           Create User
         </button>
         <button
-          className={`${mode === 2 ? "btn-themeGreen" : mode === 0 ? "btn-themeBlue" : "btn-themeBlue opacity-70 pointer-events-none"}`}
-          onClick={() => handleReset(2)}
+          className={`${selectedUserForm === "update" ? "btn-themeGreen" : !selectedUserForm ? "btn-themeBlue" : "btn-themeBlue opacity-70 pointer-events-none"}`}
+          onClick={() => handleReset("update")}
         >
           Update User
         </button>
-        <button className="btn-themeBlue" onClick={() => handleReset(0)}>
+        <button className="btn-themeBlue" onClick={() => handleReset("")}>
           Reset
         </button>
       </div>
-      {mode === 0 && (
-        <div className="h-full flex justify-center items-start p-6">
-          <div className="bg-custom-white p-4 text-[15px] rounded-lg shadow-lg text-center font-medium">
+      {!selectedUserForm ? (
+        <div className="h-full flex justify-center items-start">
+          <div className="bg-custom-white p-4 text-[15px] text-center font-medium">
             <div>What would you like to do?</div>
             <div>Select one of the options above and follow the steps</div>
           </div>
         </div>
-      )}
-      {mode === 1 && <CreateUserForm />}
-      {mode === 2 && <UpdateUserForm />}
+      ) : <UserForm />}
     </div>
   );
 };
