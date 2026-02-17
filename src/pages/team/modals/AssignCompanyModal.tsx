@@ -2,17 +2,19 @@ import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
+  setAssignBaseGroups,
   setCompanyModalOpen,
   setUserCompanyIds,
   updateUserCompanies,
 } from "../../../features/usersSlice";
 import { assignUserToCompany } from "../../../api/user";
-import type { JsonError } from "../../../interfaces";
+import type { BaseGroupJsonResp, JsonError } from "../../../interfaces";
 
 // Components
 import Modal from "../../../components/Modal";
 import CheckBox from "../../../components/inputs/CheckBox";
 import Input from "../../../components/inputs/Input";
+import { getBaseGroupsAssignedToUser } from "../../../api/team";
 
 const AssignCompanyModal = () => {
   const toast = useToast();
@@ -45,7 +47,7 @@ const AssignCompanyModal = () => {
 
   const handleCompanyIdState = (x: boolean | number) => {
     const copy = [...userCompanyIds];
-    console.log(copy, x)
+    console.log(copy, x);
     if (copy.includes(Number(x))) {
       dispatch(setUserCompanyIds(copy.filter((id) => id !== Number(x))));
     } else {
@@ -60,6 +62,7 @@ const AssignCompanyModal = () => {
         if (j.error === 0) {
           handleClose();
           dispatch(updateUserCompanies(j.companies));
+          getAssignedBaseGroups();
         } else {
           dispatch(setUserCompanyIds([]));
         }
@@ -68,6 +71,17 @@ const AssignCompanyModal = () => {
         dispatch(setUserCompanyIds([]));
         toast.error(err.message);
       });
+  };
+
+  const getAssignedBaseGroups = () => {
+    getBaseGroupsAssignedToUser(url, token, selectedUserId)
+      .then((resp) => {
+        const j: BaseGroupJsonResp = resp.data;
+        if (j.error === 0) {
+          dispatch(setAssignBaseGroups([...j.active, ...j.inactive]));
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
   };
 
   const handleTextChange = (x: string) => {
@@ -93,12 +107,11 @@ const AssignCompanyModal = () => {
   const returnUser = () => {
     const user = users.find((u) => u.id === selectedUserId);
     if (user) {
-
-      const firstName = user.first_name|| "";
+      const firstName = user.first_name || "";
       const lastName = user.last_name || "";
       return `${firstName} ${lastName}`;
     }
-    return '';
+    return "";
   };
 
   if (!selectedUserId) return null;

@@ -21,6 +21,7 @@ const UserInfo = () => {
   const { userInfo, users, selectedUserId, userLevels } = useAppSelector(
     (state) => state.users,
   );
+  const user = useAppSelector((state) => state.user);
   
   const [role, setRole] = useState<string>("");
   const [level, setLevel] = useState<string>("");
@@ -118,10 +119,11 @@ const UserInfo = () => {
 
   const renderSelect = (name: string, i: number) => {
     if (name === "user_level") {
+      const permissions = [...userLevels].filter((ul) => ul.id <= user.userLevel);
       return (
         <SingleSelect
           key={i}
-          data={userLevels}
+          data={permissions}
           valueKey={"id"}
           displayKey={"name"}
           label={"User Level"}
