@@ -41,6 +41,8 @@ const defaultInfo: UserData = {
   role: 0,
 };
 
+export type UserFormType = "create" | "update" | "delete" | "";
+
 // State for users slice /////////////
 interface UsersState {
   users: User[];
@@ -59,7 +61,7 @@ interface UsersState {
   selectedCompanyId: number;
   userLevels: UserLevel[];
   selectedForm: number;
-  selectedUserForm: "create" | "update" | "";
+  selectedUserForm: UserFormType;
 }
 
 const initialState: UsersState = {
@@ -204,7 +206,7 @@ export const usersSlice = createSlice({
     },
     setSelectedUserForm: (
       state,
-      action: PayloadAction<"create" | "update" | "">,
+      action: PayloadAction<UserFormType>,
     ) => {
       state.selectedUserForm = action.payload;
     },

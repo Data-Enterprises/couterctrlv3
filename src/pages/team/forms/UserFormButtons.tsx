@@ -5,10 +5,11 @@ import {
   resetUserInfo,
   setAssignModalOpen,
   setRefresh,
+  type UserFormType,
 } from "../../../features/usersSlice";
 
 interface UserFormButtonsProps {
-  formType: "create" | "update" | "";
+  formType: UserFormType;
 }
 
 const UserFormButtons = ({ formType }: UserFormButtonsProps) => {

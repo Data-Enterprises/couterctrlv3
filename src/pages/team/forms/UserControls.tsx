@@ -2,10 +2,12 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 import {
   resetUserInfo,
   setSelectedUserForm,
+  type UserFormType,
 } from "../../../features/usersSlice";
 
 import { WarningIcon } from "../../../components/toasts/Icons";
 import UserForm from "./UserForm";
+import DeleteUserForm from "./DeleteUserForm";
 
 const UserControls = () => {
   const dispatch = useAppDispatch();
@@ -23,7 +25,7 @@ const UserControls = () => {
     return false;
   };
 
-  const handleReset = (x: "create" | "update" | "") => {
+  const handleReset = (x: UserFormType) => {
     dispatch(setSelectedUserForm(x));
     dispatch(resetUserInfo());
   };
@@ -50,18 +52,24 @@ const UserControls = () => {
 
   return (
     <div className="bg-custom-white p-4 rounded-lg shadow-lg">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <button
           className={`${selectedUserForm === "create" ? "btn-themeGreen" : !selectedUserForm ? "btn-themeBlue" : "btn-themeBlue opacity-70 pointer-events-none"}`}
           onClick={() => handleReset("create")}
         >
-          Create User
+          Create
         </button>
         <button
           className={`${selectedUserForm === "update" ? "btn-themeGreen" : !selectedUserForm ? "btn-themeBlue" : "btn-themeBlue opacity-70 pointer-events-none"}`}
           onClick={() => handleReset("update")}
         >
-          Update User
+          Update
+        </button>
+        <button
+          className={`${selectedUserForm === "delete" ? "btn-themeGreen" : !selectedUserForm ? "btn-themeBlue" : "btn-themeBlue opacity-70 pointer-events-none"}`}
+          onClick={() => handleReset("delete")}
+        >
+          Delete
         </button>
         <button className="btn-themeBlue" onClick={() => handleReset("")}>
           Reset
@@ -74,7 +82,11 @@ const UserControls = () => {
             <div>Select one of the options above and follow the steps</div>
           </div>
         </div>
-      ) : <UserForm />}
+      ) : selectedUserForm === "delete" ? (
+        <DeleteUserForm />
+      ) : (
+        <UserForm />
+      )}
     </div>
   );
 };

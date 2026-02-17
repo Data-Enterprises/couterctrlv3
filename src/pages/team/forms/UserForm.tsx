@@ -9,6 +9,7 @@ import PasswordInput from "../../../components/inputs/PasswordInput";
 import { setUserInfo } from "../../../features/usersSlice";
 import { InfoIcon } from "../../../components/toasts/Icons";
 import CompanyAssign from "./CompanyAssign";
+import PasswordSecurity from "./PasswordSecurity";
 
 const UserForm = () => {
   const dispatch = useAppDispatch();
@@ -137,6 +138,7 @@ const UserForm = () => {
       </div>
       <CompanyAssign />
       <UserFormButtons formType={selectedUserForm} />
+      {selectedUserForm === "update" && <PasswordSecurity />}
     </div>
   );
 };

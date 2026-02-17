@@ -1,8 +1,9 @@
 import { setSelectedForm } from "../../../features/usersSlice";
-import { useAppDispatch } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 
 const FormHeader = () => {
   const dispatch = useAppDispatch();
+  const { selectedForm } = useAppSelector((state) => state.users);
 
   const handleFormSelection = (x: number) => {
     dispatch(setSelectedForm(x));
@@ -15,23 +16,17 @@ const FormHeader = () => {
       </div>
       <div className="grid grid-cols-2 gap-4 p-4">
         <button
-          className="btn-themeBlue"
+          className={`${selectedForm === 1 ? "btn-themeGreen" : "btn-themeBlue"}`}
           onClick={() => handleFormSelection(1)}
         >
           Users
         </button>
         <button
-          className="btn-themeBlue"
+          className={`${selectedForm === 2 ? "btn-themeGreen" : "btn-themeBlue"}`}
           onClick={() => handleFormSelection(2)}
         >
           Base Groups
         </button>
-        {/* <button
-          className="btn-themeBlue"
-          onClick={() => handleFormSelection(3)}
-        >
-          Companies
-        </button> */}
       </div>
     </div>
   );
