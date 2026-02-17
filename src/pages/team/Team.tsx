@@ -12,22 +12,20 @@ import {
 import { setQsUsers } from "../../features/qsSlice";
 import type { JsonError, UserLevelJsonResp } from "../../interfaces";
 
-import UserInfo from "./UserInfo";
+// import UserInfo from "./UserInfo";
 import UserGrid from "./UserGrid";
-import BaseGroups from "./BaseGroups";
+// import BaseGroups from "./BaseGroups";
 import DeleteUserModal from "./DeleteUserModal";
 import AssignStoresModal from "./assignModal/AssignStoresModal";
 import AssignCompanyModal from "./modals/AssignCompanyModal";
 import AssignBaseGroupModal from "./modals/AssignBaseGroupModal";
+import UserControls from "./components/UserControls";
 
 const Team = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { refresh, selectedUserId, users } = useAppSelector(
-    (state) => state.users,
-  );
-  const user = useAppSelector((state) => state.user);
+  const { refresh, selectedUserId } = useAppSelector((state) => state.users);
 
   useEffect(() => {
     if (refresh) {
@@ -57,14 +55,14 @@ const Team = () => {
     dispatch(setAssignBaseGroups([]));
   }, [selectedUserId]);
 
-  const isOutranked = () => {
-    const found = users.find((u) => u.id === selectedUserId);
+  // const isOutranked = () => {
+  //   const found = users.find((u) => u.id === selectedUserId);
 
-    if (found) {
-      return found.user_level > user.userLevel;
-    }
-    return false;
-  };
+  //   if (found) {
+  //     return found.user_level > user.userLevel;
+  //   }
+  //   return false;
+  // };
 
   return (
     <div data-testid="team-page" className={`w-full h-[calc(100vh-3rem)] p-4`}>
@@ -72,16 +70,19 @@ const Team = () => {
       <DeleteUserModal />
       <AssignCompanyModal />
       <AssignBaseGroupModal />
-      <div className="grid grid-cols-[54.26%_45%] gap-3 h-full">
+      <div className="grid grid-cols-[54%_44%] gap-3 h-full">
         <div className="grid">
           <UserGrid />
         </div>
-        <div
-          className={`grid grid-rows-[41%_59%] ${isOutranked() && "pointer-events-none select-none"}`}
+        <div className="gri">
+          <UserControls />
+        </div>
+        {/* <div
+          className={`grid grid-rows-[41%_59%] ${isOutranked() && "hidden"}`}
         >
           <UserInfo />
           <BaseGroups />
-        </div>
+        </div> */}
       </div>
     </div>
   );

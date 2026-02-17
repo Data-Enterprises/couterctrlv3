@@ -66,7 +66,7 @@ const UserGrid = () => {
       field: "user_level",
       flex: 0.72,
       resizable: false,
-      headerStyle: { borderRight: "1px solid white" },
+      // headerStyle: { borderRight: "1px solid white" },
       cellClass: "no-outline-on-focus",
       valueFormatter: (params) => {
         const found = userLevels.find(
