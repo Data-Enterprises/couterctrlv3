@@ -125,10 +125,11 @@ const QsUnassigned = () => {
             <div
               key={store.storeid}
               data-testid={`unassigned-qs-store-${store.storeid}`}
-              className="bg-custom-white rounded-lg shadow p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200"
+              className="bg-custom-white rounded-lg flex justify-between items-center shadow p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200"
               onClick={() => handleAssignStore(store.storeid)}
             >
-              {store.store_name} = ({store.storeid})
+              <div>{store.company_name}</div>
+              <div>{store.store_name}</div>
             </div>
           ))
         ) : isAssigningAll ? (

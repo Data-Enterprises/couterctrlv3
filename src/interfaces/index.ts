@@ -153,12 +153,16 @@ export interface Store {
   storeid: number;
   store_number: string;
   store_name: string;
+  company: number;
+  company_name: string;
 }
 
 export interface UnassignedStore {
   storeid: number;
   store_number: string;
   store_name: string;
+  company: number;
+  company_name: string;
 }
 
 export interface UserCompany {

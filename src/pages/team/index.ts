@@ -1,5 +1,4 @@
-import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
-import type { User } from "../../interfaces";
+import { themeQuartz } from "ag-grid-community";
 
 export const userData = {
   username: "",
@@ -17,17 +16,6 @@ export type CustomSelectOption = {
   value: number | string;
   label: string;
 };
-export const userLevels: CustomSelectOption[] = [
-  { value: 1, label: "USER" },
-  { value: 2, label: "TECH" },
-  { value: 3, label: "STORE MANAGER" },
-  { value: 4, label: "HELP DESK" },
-  { value: 5, label: "HELP DESK MANAGEMENT" },
-  { value: 6, label: "POWER USER" },
-  { value: 7, label: "OWNER" },
-  { value: 8, label: "ADMIN" },
-  { value: 9, label: "PROGRAMMER" },
-];
 
 export const roles: CustomSelectOption[] = [
   { value: "1", label: "Single Store" },
@@ -35,47 +23,6 @@ export const roles: CustomSelectOption[] = [
   { value: "3", label: "Security" },
   { value: "4", label: "Accounting" },
   { value: "9", label: "Admin" },
-];
-
-export const getUserLevelDescription = (value: number) => {
-  const level = userLevels.find((lvl) => lvl.value === value);
-  return level ? level.label : "UNKNOWN";
-};
-
-export const colDefs: (ColDef<User> | ColGroupDef<User>)[] = [
-  {
-    headerName: "Name",
-    field: "username",
-    flex: 0.5,
-    resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
-  },
-  {
-    headerName: "Last Visit",
-    field: "last_visit",
-    flex: 0.5,
-    resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
-  },
-  {
-    headerName: "Email",
-    field: "email",
-    flex: 1,
-    resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
-  },
-  {
-    headerName: "Level",
-    field: "user_level",
-    flex: 0.72,
-    resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
-    valueFormatter: (params) => getUserLevelDescription(params.value as number),
-  },
 ];
 
 export const theme = themeQuartz.withParams({
@@ -105,7 +52,11 @@ export const inputs = [
   { name: "email", title: "Email", type: "text" },
   { name: "first_name", title: "First Name", type: "text" },
   { name: "last_name", title: "Last Name", type: "text" },
-  { name: "user_level", title: "User Level", type: "select", display: "label", value: "value", data: userLevels },
+  {
+    name: "user_level",
+    title: "User Level",
+    type: "select",
+  },
   { name: "password", title: "Password", type: "password" },
   { name: "confirm_password", title: "Confirm Password", type: "password" },
   { name: "role", title: "Role", type: "select", data: roles },

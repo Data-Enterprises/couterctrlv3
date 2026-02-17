@@ -13,10 +13,12 @@ import { getBaseGroupsAssignedToUser } from "../../api/team";
 
 // For the table
 import { AgGridReact } from "ag-grid-react";
-import { colDefs, theme } from ".";
+import { theme } from ".";
 import {
   AllCommunityModule,
   ModuleRegistry,
+  type ColDef,
+  type ColGroupDef,
   type RowClickedEvent,
 } from "ag-grid-community";
 import { setSelectedQsUserEmail, setValidUser } from "../../features/qsSlice";
@@ -26,13 +28,54 @@ const UserGrid = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { users, refresh, selectedCompanyId } = useAppSelector(
+  const { users, refresh, selectedCompanyId, userLevels } = useAppSelector(
     (state) => state.users,
   );
   const { companies } = useAppSelector((state) => state.user);
   const qs = useAppSelector((state) => state.quicksight);
   const [text, setText] = useState<string>("");
   const [filtered, setFiltered] = useState<User[]>([]);
+
+  const colDefs: (ColDef<User> | ColGroupDef<User>)[] = [
+    {
+      headerName: "Name",
+      field: "username",
+      flex: 0.5,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Last Visit",
+      field: "last_visit",
+      flex: 0.5,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Email",
+      field: "email",
+      flex: 1,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Level",
+      field: "user_level",
+      flex: 0.72,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+      valueFormatter: (params) => {
+        const found = userLevels.find(
+          (ul) => ul.id === params.data?.user_level,
+        );
+        return found ? found.name : "";
+      },
+    },
+  ];
 
   useEffect(() => {
     if (refresh) {

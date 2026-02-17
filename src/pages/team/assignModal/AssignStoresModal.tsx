@@ -40,6 +40,7 @@ const AssignStoresModal = () => {
   };
 
   const getData = () => {
+    dispatch(setSelectedUserStores({ assigned: [], unassigned: [] }));
     getUserStores(context.url, context.token, users.selectedUserId)
       .then((resp) => {
         const j = resp.data;

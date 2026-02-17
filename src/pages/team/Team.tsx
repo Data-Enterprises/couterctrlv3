@@ -4,7 +4,11 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 
 import { getQuicksightUsers } from "../../api/quicksight";
 import { getUserLevels } from "../../api/team";
-import { setRefresh, setUserLevels } from "../../features/usersSlice";
+import {
+  setAssignBaseGroups,
+  setRefresh,
+  setUserLevels,
+} from "../../features/usersSlice";
 import { setQsUsers } from "../../features/qsSlice";
 import type { JsonError, UserLevelJsonResp } from "../../interfaces";
 
@@ -20,7 +24,7 @@ const Team = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { refresh } = useAppSelector((state) => state.users);
+  const { refresh, selectedUserId } = useAppSelector((state) => state.users);
 
   useEffect(() => {
     if (refresh) {
@@ -45,6 +49,10 @@ const Team = () => {
       dispatch(setRefresh(false));
     }
   }, [refresh]);
+
+  useEffect(() => {
+    dispatch(setAssignBaseGroups([]));
+  }, [selectedUserId]);
 
   return (
     <div data-testid="team-page" className={`w-full h-[calc(100vh-3rem)] p-4`}>

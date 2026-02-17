@@ -101,7 +101,10 @@ const AssignBaseGroupModal = () => {
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setIsDeleting(false)));
+      .finally(() => {
+        dispatch(setIsDeleting(false));
+        refetchAssignedBaseGroups();
+      });
   };
 
   const createOrUpdateBG = () => {

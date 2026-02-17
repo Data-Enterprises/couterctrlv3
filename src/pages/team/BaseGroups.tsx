@@ -7,8 +7,8 @@ import {
   setSelectedCompanyId,
 } from "../../features/usersSlice";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import type { FilterOption } from "../../features/groupSlice";
-import type { BaseGroup, JsonError } from "../../interfaces";
+// import type { FilterOption } from "../../features/groupSlice";
+import type { BaseGroup, JsonError, UserCompany } from "../../interfaces";
 import {
   assignBaseGroupToUser,
   deleteUserBaseGroupLink,
@@ -17,6 +17,7 @@ import {
 import { handleRipple } from "../../utils";
 import { setTempPassword } from "../../api/security";
 import SingleSelect from "../../components/SingleSelect";
+import { useEffect, useState } from "react";
 
 const BaseGroups = () => {
   const toast = useToast();
@@ -25,11 +26,32 @@ const BaseGroups = () => {
   const { selectedUserId, baseGroups, userInfo, selectedCompanyId, users } =
     useAppSelector((state) => state.users);
   const { companies } = useAppSelector((state) => state.user);
+  const [filteredBaseGroups, setFilteredBaseGroups] = useState<BaseGroup[]>([]);
+
+  useEffect(() => {
+    if (!baseGroups.length) return;
+
+    if (selectedCompanyId === 0) {
+      setFilteredBaseGroups(baseGroups);
+    } else {
+      const filtered = [...baseGroups].filter(
+        (bg) => bg.company === selectedCompanyId,
+      );
+      setFilteredBaseGroups(filtered);
+    }
+  }, [selectedCompanyId, baseGroups]);
 
   const selectedUserCompanies = () => {
+    const allOption: UserCompany = {
+      id: 0,
+      company: 0,
+      name: "All",
+      userid: selectedUserId,
+      username: "",
+    };
     const found = users.find((u) => u.id === selectedUserId);
     if (found) {
-      return found.companies;
+      return [allOption, ...found.companies];
     }
     return [];
   };
@@ -89,13 +111,13 @@ const BaseGroups = () => {
     return baseGroups.length > 0 && selectedUserId > 0;
   };
 
-  const renderGroupAmount = (arg: FilterOption) => {
-    if (!canSelect()) return "";
-    if (arg === "active")
-      return baseGroups.filter((group) => group.active).length;
-    if (arg === "inactive")
-      return baseGroups.filter((group) => !group.active).length;
-  };
+  // const renderGroupAmount = (arg: FilterOption) => {
+  //   if (!canSelect()) return "";
+  //   if (arg === "active")
+  //     return filteredBaseGroups.filter((group) => group.active).length;
+  //   if (arg === "inactive")
+  //     return filteredBaseGroups.filter((group) => !group.active).length;
+  // };
 
   const isInteractive = () => {
     return canSelect() ? "" : "opacity-50 pointer-events-none";
@@ -152,9 +174,30 @@ const BaseGroups = () => {
     dispatch(setBaseGroupModalOpen(true));
   };
 
+  const toggleActiveGroups = (type: "active" | "inactive") => {
+    const flag = type === "active" ? 1 : 0;
+    const allCheck = filteredBaseGroups.every((bg) => bg.active === flag);
+
+    if (allCheck) {
+      // reset
+      setFilteredBaseGroups(baseGroups);
+    } else {
+      // filter by the type (active, or inactive)
+      const filtered = baseGroups.filter((bg) => {
+        if (selectedCompanyId) {
+          return bg.active === flag && bg.company === selectedCompanyId;
+        }
+        return bg.active === flag;
+      });
+      setFilteredBaseGroups(filtered);
+    }
+  };
+
   return (
     <div className="select-none">
-      <div className={`grid grid-cols-4 gap-4 place-items-end mb-2 ${!selectedUserId ? "opacity-50 pointer-events-none" : ""}`}>
+      <div
+        className={`grid grid-cols-4 gap-4 place-items-end mb-2 ${!selectedUserId ? "opacity-50 pointer-events-none" : ""}`}
+      >
         <SingleSelect
           label="Company"
           data={selectedUserCompanies()}
@@ -162,7 +205,8 @@ const BaseGroups = () => {
           valueKey="company"
           className={`${companies.length < 2 && "hidden"}`}
           innerClass="py-1"
-          resetQuery={true}
+          defaultQuery="All"
+          defaultValue={0}
           onSelect={handleCompanySelect}
         />
         <button
@@ -171,11 +215,19 @@ const BaseGroups = () => {
         >
           Edit Groups
         </button>
-        <button className={`btn-themeGreen py-1 px-0 w-full`}>
-          {renderGroupAmount("active")} Active
+        <button
+          className={`btn-themeGreen py-1 px-0 w-full`}
+          onClick={() => toggleActiveGroups("active")}
+        >
+          {/* {renderGroupAmount("active")} Active */}
+          Active
         </button>
-        <button className={` btn-themeOrange py-1 px-0 w-full`}>
-          {renderGroupAmount("inactive")} Inactive
+        <button
+          className={` btn-themeOrange py-1 px-0 w-full`}
+          onClick={() => toggleActiveGroups("inactive")}
+        >
+          {/* {renderGroupAmount("inactive")} Inactive */}
+          Inactive
         </button>
       </div>
       <div className="w-full min-h-[87.5%] max-h-[87.5%] rounded-lg px-4 border-2 border-content/10 relative">
@@ -185,19 +237,24 @@ const BaseGroups = () => {
             text gap-2 overflow-y-scroll no-scrollbar rounded-lg text-sm"
         >
           {canSelect()
-            ? baseGroups.map((group, i) => (
+            ? filteredBaseGroups.map((group, i) => (
                 <div
                   key={i}
                   data-testid={`base-group-panel-${group.id}`}
-                  className="flex justify-between bg-custom-white p-4 rounded-lg shadow-md hover:shadow-inner 
+                  className="flex justify-between items-center bg-custom-white rounded-lg shadow-md hover:shadow-inner 
                      transition-all duration-200 cursor-pointer ripple-button"
                   onClick={(e) => handlePanelClick(e, group)}
                 >
-                  <div>{group.name}</div>
+                  <div className="p-2">
+                    <div className="font-medium underline">
+                      {group.company_name}
+                    </div>
+                    <div>{group.name}</div>
+                  </div>
                   <div
                     className={`status ${
                       group.active ? "text-emerald-500" : "text-orange-500"
-                    } font-medium`}
+                    } font-medium p-2`}
                   >
                     {group.active ? "Active" : "Inactive"}
                   </div>

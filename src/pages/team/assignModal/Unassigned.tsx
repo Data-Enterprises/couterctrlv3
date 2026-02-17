@@ -94,16 +94,17 @@ const Unassigned = () => {
         value={filterText}
         onChange={handleChange}
       />
-      <div className="min-h-[400px] max-h-[400px] overflow-y-auto no-scrollbar space-y-2 mt-4">
+      <div className="min-h-[400px] max-h-[400px] overflow-y-auto no-scrollbar space-y-2 mt-4 font-medium">
         {hasLength()
           ? stores.map((store) => (
               <div
                 key={store.storeid}
                 data-testid={`unassigned-store-${store.storeid}`}
-                className={`${storesToAssign.includes(store.storeid) ? "bg-emerald-200" : "bg-custom-white"} rounded-lg shadow p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
+                className={`${storesToAssign.includes(store.storeid) ? "bg-emerald-200" : "bg-custom-white"} flex items-center justify-between rounded-lg shadow p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
                 onClick={() => handleStoreCardClick(store.storeid)}
               >
-                {store.store_name} = ({store.storeid})
+                <div>{store.company_name}</div>
+                <div>{store.store_name}</div>
               </div>
             ))
           : null}

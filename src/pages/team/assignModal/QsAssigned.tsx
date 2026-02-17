@@ -124,7 +124,8 @@ const QsAssigned = () => {
               className="bg-custom-white rounded-lg shadow p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200"
               onClick={() => handleUnassignStore(store.storeid)}
             >
-              {store.store_name} = ({store.storeid})
+              <div>{store.company_name}</div>
+              <div>{store.store_name}</div>
             </div>
           ))
         ) : isUnassigningAll ? (
