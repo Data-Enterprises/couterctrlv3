@@ -127,6 +127,7 @@ export const usersSlice = createSlice({
     },
     resetUserInfo: (state) => {
       state.userInfo = defaultInfo;
+      state.userCompanyIds = [];
       state.selectedUserId = 0;
     },
     setRefresh: (state, action: PayloadAction<boolean>) => {

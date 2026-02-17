@@ -12,7 +12,9 @@ import CompanyAssign from "./CompanyAssign";
 
 const UserForm = () => {
   const dispatch = useAppDispatch();
-  const { userLevels, userInfo, selectedUserForm } = useAppSelector((state) => state.users);
+  const { userLevels, userInfo, selectedUserForm } = useAppSelector(
+    (state) => state.users,
+  );
   const user = useAppSelector((state) => state.user);
 
   const handleUsername = (x: string) => {
@@ -45,6 +47,24 @@ const UserForm = () => {
 
   const handleRoleSelect = (x: string | number) => {
     dispatch(setUserInfo({ key: "role", value: Number(x) }));
+  };
+
+  const findRole = () => {
+    const role = userInfo.role;
+    const found = roles.find((r) => r.value == role);
+    if (found) {
+      return found.label;
+    }
+    return "";
+  };
+
+  const findUserLvl = () => {
+    const ul = userInfo.user_level;
+    const found = userLevels.find((x) => x.id === ul);
+    if (found) {
+      return found.name;
+    }
+    return "";
   };
 
   return (
@@ -81,6 +101,8 @@ const UserForm = () => {
           className="text-sm"
           innerClass="text-sm"
           onSelect={handleUserLvlSelect}
+          resetQuery={true}
+          defaultQuery={findUserLvl()}
         />
         <SingleSelect
           id={2}
@@ -91,6 +113,8 @@ const UserForm = () => {
           className="text-sm"
           innerClass="text-sm"
           onSelect={handleRoleSelect}
+          resetQuery={true}
+          defaultQuery={findRole()}
         />
         <PasswordInput
           label="Password"

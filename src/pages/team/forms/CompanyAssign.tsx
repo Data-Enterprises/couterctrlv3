@@ -91,19 +91,8 @@ const CompanyAssign = () => {
     }
   };
 
-  const returnUser = () => {
-    const user = users.find((u) => u.id === selectedUserId);
-    if (user) {
-      const firstName = user.first_name || "";
-      const lastName = user.last_name || "";
-      return `${firstName} ${lastName}`;
-    }
-    return "";
-  };
-
   return (
     <div>
-      <div className="text-sm pl-0.5 font-medium">{returnUser()}</div>
       <div className="flex items-end justify-between gap-2">
         <Input
           label="Search Company"
