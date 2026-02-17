@@ -57,7 +57,7 @@ export const inputs = [
     title: "User Level",
     type: "select",
   },
+  { name: "role", title: "Role", type: "select", data: roles },
   { name: "password", title: "Password", type: "password" },
   { name: "confirm_password", title: "Confirm Password", type: "password" },
-  { name: "role", title: "Role", type: "select", data: roles },
 ];

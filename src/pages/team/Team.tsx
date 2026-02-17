@@ -24,7 +24,10 @@ const Team = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { refresh, selectedUserId } = useAppSelector((state) => state.users);
+  const { refresh, selectedUserId, users } = useAppSelector(
+    (state) => state.users,
+  );
+  const user = useAppSelector((state) => state.user);
 
   useEffect(() => {
     if (refresh) {
@@ -54,6 +57,15 @@ const Team = () => {
     dispatch(setAssignBaseGroups([]));
   }, [selectedUserId]);
 
+  const isOutranked = () => {
+    const found = users.find((u) => u.id === selectedUserId);
+
+    if (found) {
+      return found.user_level > user.userLevel;
+    }
+    return false;
+  };
+
   return (
     <div data-testid="team-page" className={`w-full h-[calc(100vh-3rem)] p-4`}>
       <AssignStoresModal />
@@ -64,7 +76,9 @@ const Team = () => {
         <div className="grid">
           <UserGrid />
         </div>
-        <div className="grid grid-rows-[41%_59%]">
+        <div
+          className={`grid grid-rows-[41%_59%] ${isOutranked() && "pointer-events-none select-none"}`}
+        >
           <UserInfo />
           <BaseGroups />
         </div>

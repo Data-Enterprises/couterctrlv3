@@ -21,6 +21,7 @@ const UserInfo = () => {
   const { userInfo, users, selectedUserId, userLevels } = useAppSelector(
     (state) => state.users,
   );
+  
   const [role, setRole] = useState<string>("");
   const [level, setLevel] = useState<string>("");
   const { validateCreateUserInfo } = useTeamErrorCheck();
@@ -156,7 +157,7 @@ const UserInfo = () => {
   };
 
   return (
-    <div data-testid="user-info" className="h-full w-full ">
+    <div data-testid="user-info" className={`h-full w-full`}>
       {/* <div className="flex gap-4 items-center relative">
         <div className="text-lg font-medium underline">
           Personal Information
