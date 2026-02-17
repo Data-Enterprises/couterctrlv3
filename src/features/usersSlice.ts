@@ -37,7 +37,6 @@ const defaultInfo: UserData = {
   last_name: "",
   password: "",
   user_level: 0,
-  // company: 0,
   confirm_password: "",
   role: 0,
 };
@@ -59,6 +58,7 @@ interface UsersState {
   baseGroupModalOpen: boolean;
   selectedCompanyId: number;
   userLevels: UserLevel[];
+  selectedForm: number;
 }
 
 const initialState: UsersState = {
@@ -80,6 +80,7 @@ const initialState: UsersState = {
   baseGroupModalOpen: false,
   selectedCompanyId: 0,
   userLevels: [],
+  selectedForm: 0,
 };
 
 export const usersSlice = createSlice({
@@ -195,6 +196,9 @@ export const usersSlice = createSlice({
     setUserLevels: (state, action: PayloadAction<UserLevel[]>) => {
       state.userLevels = action.payload;
     },
+    setSelectedForm: (state, action: PayloadAction<number>) => {
+      state.selectedForm = action.payload;
+    },
     resetUsersSlice: () => initialState,
   },
 });
@@ -220,6 +224,7 @@ export const {
   setSelectedCompanyId,
   setUserLevels,
   setAssignBaseGroups,
+  setSelectedForm,
   resetUsersSlice,
 } = usersSlice.actions;
 export default usersSlice.reducer;

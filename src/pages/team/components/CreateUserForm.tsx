@@ -7,6 +7,8 @@ import SingleSelect from "../../../components/SingleSelect";
 import UserFormButtons from "./UserFormButtons";
 import PasswordInput from "../../../components/inputs/PasswordInput";
 import { setUserInfo } from "../../../features/usersSlice";
+import { InfoIcon } from "../../../components/toasts/Icons";
+import CompanyAssign from "./CompanyAssign";
 
 const CreateUserForm = () => {
   const dispatch = useAppDispatch();
@@ -46,7 +48,11 @@ const CreateUserForm = () => {
   };
 
   return (
-    <div className="bg-custom-white p-4 mt-4 rounded-lg shadow-lg space-y-4">
+    <div className="bg-custom-white mt-4 space-y-2">
+      <div className="flex items-center gap-2 select-none">
+        <InfoIcon fill="#3b82f6" width={17} height={17} />
+        <div className="text-sm font-medium text-content/70">Ensure all fields are valid and at least one company is assigned</div>
+      </div>
       <div className="grid grid-cols-2 gap-2">
         <Input
           label="Username"
@@ -95,7 +101,7 @@ const CreateUserForm = () => {
         />
         <PasswordInput
           label="Confirm Password"
-          name="password"
+          name="confirm_password"
           setText={handleConfirmPassword}
           text={userInfo.confirm_password}
           className="py-1.5"
@@ -103,7 +109,8 @@ const CreateUserForm = () => {
           rightCompare={userInfo.confirm_password}
         />
       </div>
-      <UserFormButtons />
+      <CompanyAssign />
+      <UserFormButtons formType="create" />
     </div>
   );
 };

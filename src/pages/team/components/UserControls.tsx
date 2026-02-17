@@ -47,7 +47,7 @@ const UserControls = () => {
   }
 
   return (
-    <div className="">
+    <div className="bg-custom-white p-4 rounded-lg shadow-lg">
       <div className="grid grid-cols-3 gap-4">
         <button
           className={`${mode === 1 ? "btn-themeGreen" : mode === 0 ? "btn-themeBlue" : "btn-themeBlue opacity-70 pointer-events-none"}`}

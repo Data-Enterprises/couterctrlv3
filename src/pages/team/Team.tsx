@@ -12,20 +12,21 @@ import {
 import { setQsUsers } from "../../features/qsSlice";
 import type { JsonError, UserLevelJsonResp } from "../../interfaces";
 
-// import UserInfo from "./UserInfo";
 import UserGrid from "./UserGrid";
-// import BaseGroups from "./BaseGroups";
 import DeleteUserModal from "./DeleteUserModal";
 import AssignStoresModal from "./assignModal/AssignStoresModal";
 import AssignCompanyModal from "./modals/AssignCompanyModal";
 import AssignBaseGroupModal from "./modals/AssignBaseGroupModal";
 import UserControls from "./components/UserControls";
+import FormHeader from "./components/FormHeader";
 
 const Team = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { refresh, selectedUserId } = useAppSelector((state) => state.users);
+  const { refresh, selectedUserId, selectedForm } = useAppSelector(
+    (state) => state.users,
+  );
 
   useEffect(() => {
     if (refresh) {
@@ -55,14 +56,18 @@ const Team = () => {
     dispatch(setAssignBaseGroups([]));
   }, [selectedUserId]);
 
-  // const isOutranked = () => {
-  //   const found = users.find((u) => u.id === selectedUserId);
-
-  //   if (found) {
-  //     return found.user_level > user.userLevel;
-  //   }
-  //   return false;
-  // };
+  const renderForm = () => {
+    switch (selectedForm) {
+      case 1:
+        return <UserControls />;
+      case 2:
+        return <div>Base Group Controls</div>;
+      case 3:
+        return <div>Company Controls</div>;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div data-testid="team-page" className={`w-full h-[calc(100vh-3rem)] p-4`}>
@@ -74,15 +79,10 @@ const Team = () => {
         <div className="grid">
           <UserGrid />
         </div>
-        <div className="gri">
-          <UserControls />
+        <div className="space-y-4">
+          <FormHeader />
+          {renderForm()}
         </div>
-        {/* <div
-          className={`grid grid-rows-[41%_59%] ${isOutranked() && "hidden"}`}
-        >
-          <UserInfo />
-          <BaseGroups />
-        </div> */}
       </div>
     </div>
   );
