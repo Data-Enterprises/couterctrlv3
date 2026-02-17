@@ -45,6 +45,7 @@ const AssignCompanyModal = () => {
 
   const handleCompanyIdState = (x: boolean | number) => {
     const copy = [...userCompanyIds];
+    console.log(copy, x)
     if (copy.includes(Number(x))) {
       dispatch(setUserCompanyIds(copy.filter((id) => id !== Number(x))));
     } else {
@@ -90,10 +91,14 @@ const AssignCompanyModal = () => {
   };
 
   const returnUser = () => {
-    const user = users.filter((u) => u.id === selectedUserId);
-    const firstName = user[0].first_name;
-    const lastName = user[0].last_name || "";
-    return `${firstName} ${lastName}`;
+    const user = users.find((u) => u.id === selectedUserId);
+    if (user) {
+
+      const firstName = user.first_name|| "";
+      const lastName = user.last_name || "";
+      return `${firstName} ${lastName}`;
+    }
+    return '';
   };
 
   if (!selectedUserId) return null;
@@ -122,7 +127,7 @@ const AssignCompanyModal = () => {
       <div className="grid grid-cols-3 gap-2 my-4 max-h-[120px] min-w-[496px] overflow-y-scroll no-scrollbar">
         {companies.map((c) => (
           <CheckBox
-            id={c.id}
+            id={c.company}
             value={userCompanyIds.includes(c.company)}
             label={c.name}
             onChange={handleCompanyIdState}

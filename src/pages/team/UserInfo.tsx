@@ -140,21 +140,14 @@ const UserInfo = () => {
 
   return (
     <div data-testid="user-info" className="h-full w-full ">
-      <div className="flex gap-4 items-center relative">
+      {/* <div className="flex gap-4 items-center relative">
         <div className="text-lg font-medium underline">
           Personal Information
         </div>
         <div className="text-sm font-medium mt-1">
           **All fields are required
         </div>
-        {/* <button
-          data-testid="clear-user-info-btn"
-          className="btn-themeBlue absolute right-0 top-0 py-[2px]"
-          onClick={handleReset}
-        >
-          Clear
-        </button> */}
-      </div>
+      </div> */}
       <div className="grid grid-cols-2 gap-x-8 gap-y-1">
         {inputs.map((input, i) => {
           return input.type !== "select" ? (

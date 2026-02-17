@@ -22,9 +22,17 @@ const BaseGroups = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { selectedUserId, baseGroups, userInfo, selectedCompanyId } =
+  const { selectedUserId, baseGroups, userInfo, selectedCompanyId, users } =
     useAppSelector((state) => state.users);
   const { companies } = useAppSelector((state) => state.user);
+
+  const selectedUserCompanies = () => {
+    const found = users.find((u) => u.id === selectedUserId);
+    if (found) {
+      return found.companies;
+    }
+    return [];
+  };
 
   const handlePanelClick = (
     e: React.MouseEvent<HTMLDivElement>,
@@ -146,38 +154,31 @@ const BaseGroups = () => {
 
   return (
     <div className="select-none">
-      <div className="flex gap-2 items-end justify-between">
-        <div className="flex gap-2 items-end">
-          <SingleSelect
-            label="Company"
-            data={companies}
-            displayKey="name"
-            valueKey="company"
-            className={`${companies.length < 2 && "hidden"}`}
-            innerClass="py-1"
-            onSelect={handleCompanySelect}
-          />
-          <button
-            className={`btn-themeBlue py-1 ${!selectedCompanyId && "opacity-50 pointer-events-none"}`}
-            onClick={handleBaseGroupModalOpen}
-          >
-            Edit Groups
-          </button>
-        </div>
-        <div className="flex gap-2">
-          <div
-            className={`bg-emerald-500 text-custom-white px-2 py-0.5 rounded-t-lg text-sm ${isInteractive()} transition-all duration-500`}
-          >
-            {renderGroupAmount("active")} Active Groups
-          </div>
-          <div
-            className={`bg-orange-500 text-custom-white px-2 py-0.5 rounded-t-lg text-sm ${isInteractive()} transition-all duration-500`}
-          >
-            {renderGroupAmount("inactive")} Inactive Groups
-          </div>
-        </div>
+      <div className={`grid grid-cols-4 gap-4 place-items-end mb-2 ${!selectedUserId ? "opacity-50 pointer-events-none" : ""}`}>
+        <SingleSelect
+          label="Company"
+          data={selectedUserCompanies()}
+          displayKey="name"
+          valueKey="company"
+          className={`${companies.length < 2 && "hidden"}`}
+          innerClass="py-1"
+          resetQuery={true}
+          onSelect={handleCompanySelect}
+        />
+        <button
+          className={`btn-themeBlue px-0 w-full py-1 ${!selectedCompanyId && "opacity-50 pointer-events-none"}`}
+          onClick={handleBaseGroupModalOpen}
+        >
+          Edit Groups
+        </button>
+        <button className={`btn-themeGreen py-1 px-0 w-full`}>
+          {renderGroupAmount("active")} Active
+        </button>
+        <button className={` btn-themeOrange py-1 px-0 w-full`}>
+          {renderGroupAmount("inactive")} Inactive
+        </button>
       </div>
-      <div className="w-full min-h-[88.5%] max-h-[88.5%] rounded-b-lg rounded-tl-lg px-4 border-2 border-content/10 relative">
+      <div className="w-full min-h-[87.5%] max-h-[87.5%] rounded-lg px-4 border-2 border-content/10 relative">
         <div
           data-testid="base-groups-panels"
           className="absolute w-full pr-8 top-4 max-h-[77%] overflow-hidden grid grid-cols-3 

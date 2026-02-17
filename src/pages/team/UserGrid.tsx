@@ -33,6 +33,7 @@ const UserGrid = () => {
   const { users, refresh, selectedCompanyId } = useAppSelector(
     (state) => state.users,
   );
+  const { companies } = useAppSelector((state) => state.user);
   const qs = useAppSelector((state) => state.quicksight);
   const [text, setText] = useState<string>("");
   const [filtered, setFiltered] = useState<User[]>([]);
@@ -59,15 +60,44 @@ const UserGrid = () => {
       });
       setFiltered(filteredUsers);
     }
-  }, [text, selectedCompanyId]);
+  }, [text]);
 
   const getData = () => {
     getAllUsers(context.url, context.token)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          dispatch(setUsers(j.users));
-          setFiltered(j.users);
+          const companyIds = [...companies].map((c) => c.company);
+          const filtered = [...j.users].filter((u: User) => {
+            const isDcrUser = u.companies.find(
+              (c) => c.company === 5 && c.name === "DCR",
+            );
+
+            if (isDcrUser) {
+              return false;
+            } else {
+              let valid = false;
+              u.companies.forEach((c) => {
+                if (companyIds.includes(c.company)) {
+                  valid = true;
+                  return;
+                }
+              });
+              return valid;
+            }
+          });
+
+          const isDcrUser = companies.find(
+            (c) => c.company === 5 && c.name === "DCR",
+          );
+
+          if (isDcrUser) {
+            dispatch(setUsers(j.users));
+            setFiltered(j.users);
+          } else {
+            dispatch(setUsers(filtered));
+            setFiltered(filtered);
+          }
         }
       })
       .catch((err: JsonError) => {

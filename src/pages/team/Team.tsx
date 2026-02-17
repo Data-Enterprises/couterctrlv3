@@ -4,14 +4,14 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 
 import { getQuicksightUsers } from "../../api/quicksight";
 import { getBaseGroupsAssignedToUser } from "../../api/team";
-import { getCompanies } from "../../api/company";
+// import { getCompanies } from "../../api/company";
 import {
-  setAllCompanies,
+  // setAllCompanies,
   setBaseGroups,
   setRefresh,
 } from "../../features/usersSlice";
 import { setQsUsers } from "../../features/qsSlice";
-import type { CompanyJsonResp, JsonError } from "../../interfaces";
+import type { JsonError } from "../../interfaces";
 
 import UserInfo from "./UserInfo";
 import UserGrid from "./UserGrid";
@@ -28,15 +28,15 @@ const Team = () => {
   const { refresh } = useAppSelector((state) => state.users);
 
   useEffect(() => {
-    getCompanies(context.url, context.token)
-      .then((resp) => {
-        const j: CompanyJsonResp = resp.data;
+    // getCompanies(context.url, context.token)
+    //   .then((resp) => {
+    //     const j: CompanyJsonResp = resp.data;
 
-        if (j.error === 0) {
-          dispatch(setAllCompanies(j.companies));
-        }
-      })
-      .catch((err: JsonError) => toast.error(err.message));
+    //     if (j.error === 0) {
+    //       dispatch(setAllCompanies(j.companies));
+    //     }
+    //   })
+    //   .catch((err: JsonError) => toast.error(err.message));
 
     if (refresh) {
       getQuicksightUsers(context.url, context.token)
@@ -73,11 +73,11 @@ const Team = () => {
       <DeleteUserModal />
       <AssignCompanyModal />
       <AssignBaseGroupModal />
-      <div className="grid grid-cols-[52.9%_45%] gap-8 h-full">
+      <div className="grid grid-cols-[54.26%_45%] gap-3 h-full">
         <div className="grid">
           <UserGrid />
         </div>
-        <div className="grid grid-rows-[45%_55%]">
+        <div className="grid grid-rows-[41%_59%]">
           <UserInfo />
           <BaseGroups />
         </div>
