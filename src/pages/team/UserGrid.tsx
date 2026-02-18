@@ -22,6 +22,7 @@ import {
   type RowClickedEvent,
 } from "ag-grid-community";
 import { setSelectedQsUserEmail, setValidUser } from "../../features/qsSlice";
+import Input from "../../components/inputs/Input";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const UserGrid = () => {
@@ -33,13 +34,14 @@ const UserGrid = () => {
     refresh,
     selectedCompanyId,
     userLevels,
-    selectedForm,
-    selectedUserForm,
+    // selectedForm,
+    // selectedUserForm,
   } = useAppSelector((state) => state.users);
   const { companies } = useAppSelector((state) => state.user);
   const qs = useAppSelector((state) => state.quicksight);
   const [text, setText] = useState<string>("");
   const [filtered, setFiltered] = useState<User[]>([]);
+  const [filterType, setFilterType] = useState<"name" | "email">("name");
 
   const colDefs: (ColDef<User> | ColGroupDef<User>)[] = [
     {
@@ -95,16 +97,19 @@ const UserGrid = () => {
     } else {
       // one or the othe or both
       const lowerText = text.toLowerCase();
+      const isUsername = filterType === "name";
+
       const filteredUsers = users.filter((user) => {
+        if (!isUsername && user.email !== null) {
+          return user.email.toLowerCase().includes(lowerText);
+        }
+
         const textCheck = user.username.toLowerCase().includes(lowerText);
-        // const companyCheck =
-        //   selectedCompanyId > 0 ? user.company === selectedCompanyId : true;
-        // return textCheck && companyCheck;
         return textCheck;
       });
       setFiltered(filteredUsers);
     }
-  }, [text]);
+  }, [text, filterType]);
 
   const getData = () => {
     getAllUsers(context.url, context.token)
@@ -150,9 +155,6 @@ const UserGrid = () => {
   };
 
   const handleRowClick = (e: RowClickedEvent) => {
-    if (selectedForm === 1 && selectedUserForm === "create") {
-      return;
-    }
     dispatch(setSelectedUserInfo(e.data));
 
     // Validating if the selected user is a registered QuickSight user
@@ -177,22 +179,35 @@ const UserGrid = () => {
       });
   };
 
+  const handleFilterTextChange = (x: string) => {
+    setText(x);
+  };
+
   return (
-    <div data-testid="user-grid-container" className="w-full no-scrollbar">
+    <div
+      data-testid="user-grid-container"
+      className="w-full h-[85%] no-scrollbar"
+    >
       <div className="mb-2 flex items-end gap-2">
-        <div className="-mt-1">
-          <label className="text-sm font-medium pl-0.5">Name</label>
-          <input
-            data-testid="user-grid-search"
-            type="text"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            className="basic-input focus:border bg-custom-white"
-            placeholder="Search Users"
-          />
+        <div className="w-1/2">
+          <div className="grid grid-cols-2 mb-1.5 shadow-md">
+            <button
+              className={`${filterType === "name" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200 font-medium text-center rounded-l-lg py-1.5`}
+              onClick={() => setFilterType("name")}
+            >
+              Username
+            </button>
+            <button
+              className={`${filterType === "email" ? "bg-orange-200" : "bg-custom-white"}  font-medium text-center rounded-r-lg py-1.5`}
+              onClick={() => setFilterType("email")}
+            >
+              Email
+            </button>
+          </div>
+          <Input label="" value={text} setValue={handleFilterTextChange} />
         </div>
       </div>
-      <div className="h-[91.5%]">
+      <div className="h-[85%]">
         <AgGridReact
           className="no-scrollbar"
           rowData={filtered}

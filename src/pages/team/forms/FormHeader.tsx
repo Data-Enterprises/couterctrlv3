@@ -14,19 +14,19 @@ const FormHeader = () => {
       <div className="bg-blue-500 text-custom-white font-medium px-4 rounded-t-lg py-0.5">
         Forms
       </div>
-      <div className="grid grid-cols-2 gap-4 p-4">
-        <button
-          className={`${selectedForm === 1 ? "btn-themeGreen" : "btn-themeBlue"}`}
+      <div className="grid gap-1 p-2">
+        <div
+          className={`${selectedForm === 1 ? "bg-orange-200" : ""} rounded-full hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
           onClick={() => handleFormSelection(1)}
         >
           Users
-        </button>
-        <button
-          className={`${selectedForm === 2 ? "btn-themeGreen" : "btn-themeBlue"}`}
+        </div>
+        <div
+          className={`${selectedForm === 2 ? "bg-orange-200" : ""} rounded-full hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
           onClick={() => handleFormSelection(2)}
         >
           Base Groups
-        </button>
+        </div>
       </div>
     </div>
   );

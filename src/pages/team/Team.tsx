@@ -8,25 +8,78 @@ import {
   setAssignBaseGroups,
   setRefresh,
   setUserLevels,
+  setUsers,
 } from "../../features/usersSlice";
 import { setQsUsers } from "../../features/qsSlice";
-import type { JsonError, UserLevelJsonResp } from "../../interfaces";
+import type { JsonError, User, UserLevelJsonResp } from "../../interfaces";
 
-import UserGrid from "./UserGrid";
-import DeleteUserModal from "./DeleteUserModal";
-import AssignStoresModal from "./assignModal/AssignStoresModal";
-import AssignCompanyModal from "./modals/AssignCompanyModal";
-import AssignBaseGroupModal from "./modals/AssignBaseGroupModal";
+// import UserGrid from "./UserGrid";
+// import DeleteUserModal from "./DeleteUserModal";
+// import AssignStoresModal from "./assignModal/AssignStoresModal";
+// import AssignCompanyModal from "./modals/AssignCompanyModal";
+// import AssignBaseGroupModal from "./modals/AssignBaseGroupModal";
 import UserControls from "./forms/UserControls";
 import FormHeader from "./forms/FormHeader";
+import CounterCtrlStores from "./assignModal/CounterCtrlStores";
+import ProfileCard from "./forms/ProfileCard";
+import { getAllUsers } from "../../api/user";
+// import UserGrid from "./UserGrid";
 
 const Team = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
+  const { companies } = useAppSelector((state) => state.user);
   const { refresh, selectedUserId, selectedForm } = useAppSelector(
     (state) => state.users,
   );
+
+  useEffect(() => {
+    if (refresh) {
+      getData();
+    }
+  }, [refresh]);
+
+  const getData = () => {
+    getAllUsers(context.url, context.token)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          const companyIds = [...companies].map((c) => c.company);
+          const filtered = [...j.users].filter((u: User) => {
+            const isDcrUser = u.companies.find(
+              (c) => c.company === 5 && c.name === "DCR",
+            );
+
+            if (isDcrUser) {
+              return false;
+            } else {
+              let valid = false;
+              u.companies.forEach((c) => {
+                if (companyIds.includes(c.company)) {
+                  valid = true;
+                  return;
+                }
+              });
+              return valid;
+            }
+          });
+
+          const isDcrUser = companies.find(
+            (c) => c.company === 5 && c.name === "DCR",
+          );
+
+          if (isDcrUser) {
+            dispatch(setUsers(j.users));
+          } else {
+            dispatch(setUsers(filtered));
+          }
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error("Error fetching users " + err.message);
+      });
+  };
 
   useEffect(() => {
     if (refresh) {
@@ -71,17 +124,27 @@ const Team = () => {
 
   return (
     <div data-testid="team-page" className={`w-full h-[calc(100vh-3rem)] p-4`}>
-      <AssignStoresModal />
+      {/* <AssignStoresModal />
       <DeleteUserModal />
       <AssignCompanyModal />
-      <AssignBaseGroupModal />
-      <div className="grid grid-cols-[54%_44%] gap-3 h-full">
-        <div className="grid">
-          <UserGrid />
-        </div>
-        <div className="space-y-4">
+      <AssignBaseGroupModal /> */}
+      <div className="flex gap-3 h-full">
+        <div className="">
           <FormHeader />
+          {/* <div>
+            {users.map((u) => (
+              <div>
+                <div>{u.username}</div>
+              </div>
+            ))}
+          </div> */}
+        </div>
+        <div className="w-1/2 space-y-4">
+          <ProfileCard />
           {renderForm()}
+        </div>
+        <div>
+          <CounterCtrlStores />
         </div>
       </div>
     </div>

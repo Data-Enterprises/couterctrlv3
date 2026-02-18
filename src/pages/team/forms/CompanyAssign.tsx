@@ -1,25 +1,30 @@
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-// import { useToast } from "../../../components/toasts/hooks/useToast";
+import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
+  setAssignBaseGroups,
   // setAssignBaseGroups,
   setUserCompanyIds,
+  updateUserCompanies,
 } from "../../../features/usersSlice";
 // import type { BaseGroupJsonResp, JsonError } from "../../../interfaces";
 
 // Components
 import CheckBox from "../../../components/inputs/CheckBox";
 import Input from "../../../components/inputs/Input";
-// import { getBaseGroupsAssignedToUser } from "../../../api/team";
+import UserFormButtons from "./UserFormButtons";
+import BaseGroupAssign from "./BaseGroupAssign";
+import { assignUserToCompany } from "../../../api/user";
+import { getBaseGroupsAssignedToUser } from "../../../api/team";
+import type { BaseGroupJsonResp, JsonError } from "../../../interfaces";
 
 const CompanyAssign = () => {
-  // const toast = useToast();
+  const toast = useToast();
   const dispatch = useAppDispatch();
-  const { selectedUserId, userCompanyIds, users } = useAppSelector(
-    (state) => state.users,
-  );
+  const { selectedUserId, userCompanyIds, users, selectedUserForm } =
+    useAppSelector((state) => state.users);
   const { companies } = useAppSelector((state) => state.user);
-  // const { url, token } = useAppSelector((state) => state.app);
+  const { url, token } = useAppSelector((state) => state.app);
   const [filterText, setFilterText] = useState<string>("");
 
   useEffect(() => {
@@ -47,34 +52,33 @@ const CompanyAssign = () => {
     }
   };
 
-  // const handleSubmit = () => {
-  //   assignUserToCompany(url, token, selectedUserId, userCompanyIds)
-  //     .then((resp) => {
-  //       const j = resp.data;
-  //       if (j.error === 0) {
-  //         handleClose();
-  //         dispatch(updateUserCompanies(j.companies));
-  //         getAssignedBaseGroups();
-  //       } else {
-  //         dispatch(setUserCompanyIds([]));
-  //       }
-  //     })
-  //     .catch((err: JsonError) => {
-  //       dispatch(setUserCompanyIds([]));
-  //       toast.error(err.message);
-  //     });
-  // };
+  const handleSubmit = () => {
+    assignUserToCompany(url, token, selectedUserId, userCompanyIds)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(updateUserCompanies(j.companies));
+          getAssignedBaseGroups();
+        } else {
+          dispatch(setUserCompanyIds([]));
+        }
+      })
+      .catch((err: JsonError) => {
+        dispatch(setUserCompanyIds([]));
+        toast.error(err.message);
+      });
+  };
 
-  // const getAssignedBaseGroups = () => {
-  //   getBaseGroupsAssignedToUser(url, token, selectedUserId)
-  //     .then((resp) => {
-  //       const j: BaseGroupJsonResp = resp.data;
-  //       if (j.error === 0) {
-  //         dispatch(setAssignBaseGroups([...j.active, ...j.inactive]));
-  //       }
-  //     })
-  //     .catch((err: JsonError) => toast.error(err.message));
-  // };
+  const getAssignedBaseGroups = () => {
+    getBaseGroupsAssignedToUser(url, token, selectedUserId)
+      .then((resp) => {
+        const j: BaseGroupJsonResp = resp.data;
+        if (j.error === 0) {
+          dispatch(setAssignBaseGroups([...j.active, ...j.inactive]));
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+  };
 
   const handleTextChange = (x: string) => {
     setFilterText(x);
@@ -92,7 +96,7 @@ const CompanyAssign = () => {
   };
 
   return (
-    <div>
+    <div className="px-4 pb-4">
       <div className="flex items-end justify-between gap-2">
         <Input
           label="Search Company"
@@ -107,7 +111,7 @@ const CompanyAssign = () => {
           Clear Search
         </button>
       </div>
-      <div className="grid grid-cols-3 gap-1 my-4 max-h-[92px] overflow-y-scroll no-scrollbar">
+      <div className="grid grid-cols-3 gap-1 my-2 max-h-[92px] overflow-y-scroll no-scrollbar">
         {companies.map((c) => (
           <CheckBox
             id={c.company}
@@ -119,6 +123,25 @@ const CompanyAssign = () => {
           />
         ))}
       </div>
+      <div className="grid grid-cols-3 gap-2">
+        <button className="btn-themeGreen py-1.5" onClick={handleSubmit}>
+          Assign
+        </button>
+        <button
+          className="btn-themeBlue py-1.5"
+          onClick={() => setInitialUserCompanies()}
+        >
+          Reset
+        </button>
+        <button
+          className="btn-themeBlue py-1.5"
+          onClick={() => dispatch(setUserCompanyIds([]))}
+        >
+          Clear
+        </button>
+      </div>
+      <BaseGroupAssign />
+      <UserFormButtons formType={selectedUserForm} />
     </div>
   );
 };

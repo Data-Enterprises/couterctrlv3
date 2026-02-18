@@ -1,13 +1,18 @@
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { createUser, updateUser } from "../../../api/team";
+import {
+  assignBaseGroupToUser,
+  createUser,
+  updateUser,
+} from "../../../api/team";
 import {
   resetUserInfo,
-  setAssignModalOpen,
-  setRefresh,
-  setNextFormIdx,
+  setSelectedUserId,
+  setSelectedUserStores,
   type UserFormType,
 } from "../../../features/usersSlice";
+import { assignUserToCompany, getUserStores } from "../../../api/user";
+import type { JsonError, Store } from "../../../interfaces";
 
 interface UserFormButtonsProps {
   formType: UserFormType;
@@ -17,36 +22,106 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
-  const { userInfo, users, userFormIdx } = useAppSelector(
+  const { userInfo, users, userCompanyIds, selectedUserId } = useAppSelector(
     (state) => state.users,
   );
+  const selectedBaseGroups = useAppSelector(
+    (state) => state.baseGroup.selectedBaseGroups,
+  );
+
+  const filterNulls = (arr: Store[]) => {
+    return arr.filter((store) => store.store_name !== null);
+  };
 
   const handleCreateClick = () => {
     createUser(url, token, userInfo)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          toast.success("User created successfully");
-          dispatch(resetUserInfo());
-          dispatch(setRefresh(true));
+          const userid = j.new_userid;
+          dispatch(setSelectedUserId(userid));
+          assignUserToCompany(url, token, userid, userCompanyIds)
+            .then((resp) => {
+              const j = resp.data;
+              if (j.error === 0) {
+                const groupid = [...selectedBaseGroups].map((bg) => bg.id);
+                assignBaseGroupToUser(url, token, userid, groupid)
+                  .then((resp) => {
+                    const j = resp.data;
+                    if (j.error === 0) {
+                      getUserStores(url, token, userid)
+                        .then((resp) => {
+                          const j = resp.data;
+                          if (j.error === 0) {
+                            const stores = {
+                              assigned: filterNulls(j.assigned_stores),
+                              unassigned: filterNulls(j.unassigned_stores),
+                            };
+                            dispatch(setSelectedUserStores(stores));
+                            toast.success(
+                              "User created, assign stores to the user",
+                            );
+                          }
+                        })
+                        .catch((err: JsonError) => {
+                          toast.error(
+                            "Error fetching available stores " + err.message,
+                          );
+                        });
+                    }
+                  })
+                  .catch((err: JsonError) => toast.error(err.message));
+              }
+            })
+            .catch((err: JsonError) => toast.error(err.message));
         }
       })
-      .catch((err) => {
+      .catch((err: JsonError) => {
         toast.error("Error creating user " + err.message);
       });
   };
 
   const handleUpdateClick = async () => {
-    const found = users.find((u) => u.username === userInfo.username);
+    const found = users.find((u) => u.id === selectedUserId);
     if (!found) return;
-    // const resp = await updateUser(url, token, userInfo, found.security  || 0,found.template || 0);
     updateUser(url, token, userInfo, found.security || 0, found.template || 0)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          toast.success("User updated successfully");
-          dispatch(resetUserInfo());
-          dispatch(setRefresh(true));
+          assignUserToCompany(url, token, selectedUserId, userCompanyIds)
+            .then((resp) => {
+              const j = resp.data;
+              if (j.error === 0) {
+                const groupid = [...selectedBaseGroups].map((bg) => bg.id);
+                assignBaseGroupToUser(url, token, selectedUserId, groupid)
+                  .then((resp) => {
+                    const j = resp.data;
+                    if (j.error === 0) {
+                      getUserStores(url, token, selectedUserId)
+                        .then((resp) => {
+                          const j = resp.data;
+                          if (j.error === 0) {
+                            const stores = {
+                              assigned: filterNulls(j.assigned_stores),
+                              unassigned: filterNulls(j.unassigned_stores),
+                            };
+                            dispatch(setSelectedUserStores(stores));
+                            toast.success(
+                              "User updated, you can add or remove stores for the user",
+                            );
+                          }
+                        })
+                        .catch((err: JsonError) => {
+                          toast.error(
+                            "Error fetching available stores " + err.message,
+                          );
+                        });
+                    }
+                  })
+                  .catch((err: JsonError) => toast.error(err.message));
+              }
+            })
+            .catch((err: JsonError) => toast.error(err.message));
         }
       })
       .catch((err) => {
@@ -62,34 +137,52 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
     }
   };
 
-  const handleStoresModal = () => {
-    dispatch(setAssignModalOpen(true));
-  };
-
   const handleReset = () => {
+    dispatch(setSelectedUserStores({ assigned: [], unassigned: [] }));
     dispatch(resetUserInfo());
   };
 
-  const goToNext = () => {
-    dispatch(setNextFormIdx());
+  const isFormReady = () => {
+    if (
+      userInfo.password !== userInfo.confirm_password ||
+      !userInfo.password.length ||
+      !userInfo.confirm_password.length ||
+      !userInfo.first_name.length ||
+      !userInfo.last_name.length ||
+      !userInfo.username.length ||
+      !userInfo.email.length ||
+      !userInfo.role ||
+      !userInfo.user_level
+    ) {
+      return false;
+    }
+
+    return true;
   };
 
-  if (userFormIdx === 0) {
-    return (
-      <div className="grid grid-cols-2 gap-2">
-        {/* <button className="btn-themeBlue px-0" onClick={handleCreateOrUpdate}>
-          Submit
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      <button className="btn-themeBlue px-0" onClick={handleReset}>
+        Clear Fields
+      </button>
+      {formType === "create" ? (
+        <button
+          className={`btn-themeBlue px-0 ${selectedUserId > 0 || !isFormReady() ? "opacity-50 pointer-events-none" : ""}`}
+          onClick={handleCreateOrUpdate}
+        >
+          Create
         </button>
-        <button className="btn-themeBlue px-0" onClick={handleStoresModal}>
-          Stores
-        </button> */}
-        <button className="btn-themeBlue px-0" onClick={goToNext}>Next</button>
-        <button className="btn-themeBlue px-0" onClick={handleReset}>
-          Clear Fields
+      ) : (
+        <button
+          className={`btn-themeBlue px-0`}
+          // className={`btn-themeBlue px-0 ${selectedUserId > 0 || !isFormReady() ? "opacity-50 pointer-events-none" : ""}`}
+          onClick={handleCreateOrUpdate}
+        >
+          Update
         </button>
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
 };
 
 export default UserFormButtons;

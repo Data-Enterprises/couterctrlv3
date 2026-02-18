@@ -113,6 +113,7 @@ export const usersSlice = createSlice({
         user_level,
         role,
         password,
+        companies,
       } = action.payload;
       state.userInfo = {
         ...state.userInfo,
@@ -125,6 +126,7 @@ export const usersSlice = createSlice({
         password: password,
         confirm_password: password,
       };
+      state.userCompanyIds = companies.map((c) => c.company);
     },
     setAssignBaseGroups: (state, action: PayloadAction<BaseGroup[]>) => {
       state.baseGroups = action.payload;

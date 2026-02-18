@@ -26,7 +26,7 @@ export const assignBaseGroupToUser = async (
   url: string,
   token: string,
   userid: number,
-  groupid: number,
+  groupid: number[],
 ) => {
   const json = await axios({
     method: "POST",

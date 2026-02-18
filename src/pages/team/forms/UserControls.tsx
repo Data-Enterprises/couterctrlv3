@@ -9,13 +9,12 @@ import {
 import { WarningIcon } from "../../../components/toasts/Icons";
 import UserForm from "./UserForm";
 import DeleteUserForm from "./DeleteUserForm";
-import Carousel from "../../../components/Carousel";
-import CompanyAssign from "./CompanyAssign";
 
 const UserControls = () => {
   const dispatch = useAppDispatch();
-  const { users, selectedUserId, selectedUserForm, userFormIdx } =
-    useAppSelector((state) => state.users);
+  const { users, selectedUserId, selectedUserForm } = useAppSelector(
+    (state) => state.users,
+  );
   const user = useAppSelector((state) => state.user);
 
   const isOutranked = () => {
@@ -54,32 +53,32 @@ const UserControls = () => {
   }
 
   return (
-    <div className="bg-custom-white p-4 rounded-lg shadow-lg">
-      <div className="grid grid-cols-4 gap-4">
+    <div className="bg-custom-white rounded-lg shadow-lg max-h-[65vh]">
+      <div className="grid grid-cols-4 gap-4 px-4 pt-4">
         <button
-          className={`${selectedUserForm === "create" ? "btn-themeGreen" : !selectedUserForm ? "btn-themeBlue" : "btn-themeBlue opacity-70 pointer-events-none"}`}
+          className={`${selectedUserForm === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleReset("create")}
         >
           Create
         </button>
         <button
-          className={`${selectedUserForm === "update" ? "btn-themeGreen" : !selectedUserForm ? "btn-themeBlue" : "btn-themeBlue opacity-70 pointer-events-none"}`}
+          className={`${selectedUserForm === "update" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleReset("update")}
         >
           Update
         </button>
         <button
-          className={`${selectedUserForm === "delete" ? "btn-themeGreen" : !selectedUserForm ? "btn-themeBlue" : "btn-themeBlue opacity-70 pointer-events-none"}`}
+          className={`${selectedUserForm === "delete" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleReset("delete")}
         >
           Delete
         </button>
-        <button className="btn-themeBlue" onClick={() => handleReset("")}>
-          Reset
+        <button className="btn-themeBlue px-0">
+          Reset Password
         </button>
       </div>
       {!selectedUserForm ? (
-        <div className="h-full flex justify-center items-start">
+        <div className="h-full flex justify-center items-start p-4">
           <div className="bg-custom-white p-4 text-[15px] text-center font-medium">
             <div>What would you like to do?</div>
             <div>Select one of the options above and follow the steps</div>
@@ -88,15 +87,7 @@ const UserControls = () => {
       ) : selectedUserForm === "delete" ? (
         <DeleteUserForm />
       ) : (
-        <Carousel
-          showButtons={false}
-          useDynamicIndex={true}
-          dynamicIndex={userFormIdx}
-        >
-          <UserForm />
-          <CompanyAssign />
-          <div></div>
-        </Carousel>
+        <UserForm />
       )}
     </div>
   );

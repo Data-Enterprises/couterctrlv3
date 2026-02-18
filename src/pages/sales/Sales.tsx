@@ -11,7 +11,7 @@ import TopTen from "./charts/TopTen";
 import HourlyGrid from "./charts/HourlyGrid";
 import SubDeptGrid from "./charts/SubDeptGrid";
 import SubDeptComps from "./charts/SubDeptComps";
-import LoadingIndicator from "../../components/loading/LoadingIndicator";
+// import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
 
 // Dispatchers
@@ -129,7 +129,7 @@ const Sales = () => {
 
           {isLoading && !isReady ? (
             <div className="relative">
-              <LoadingIndicator message="Loading sales data..." />
+              {/* <LoadingIndicator message="Loading sales data..." /> */}
             </div>
           ) : isReady ? (
             <div className="md:grid h-full md:grid-rows-[20%_78%] md:gap-4 overflow-hidden">
@@ -171,7 +171,7 @@ const Sales = () => {
 
           {isLoading && !isReady ? (
             <div className="relative">
-              <LoadingIndicator message="Loading sales data..." />
+              {/* <LoadingIndicator message="Loading sales data..." /> */}
             </div>
           ) : isReady ? (
             <div className="overflow-hidden">

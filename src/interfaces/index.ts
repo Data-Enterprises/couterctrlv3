@@ -825,3 +825,17 @@ export interface UserLevelJsonResp {
   success: boolean;
   levels: UserLevel[];
 }
+
+export type UserData = {
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+};
+
+export type StaticUserData = {
+  user_level: number;
+  role: number;
+  password: string;
+  confirm_password: string;
+};

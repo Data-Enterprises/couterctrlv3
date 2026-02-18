@@ -9,6 +9,7 @@ const defaultBG: CompanyBaseGroup = {
 
 interface BaseGroupState {
   baseGroups: CompanyBaseGroup[];
+  selectedBaseGroups: CompanyBaseGroup[];
   selectedGroup: CompanyBaseGroup;
   isDeleting: boolean;
   groupName: string;
@@ -17,6 +18,7 @@ interface BaseGroupState {
 
 const initialState: BaseGroupState = {
   baseGroups: [],
+  selectedBaseGroups: [],
   selectedGroup: defaultBG,
   isDeleting: false,
   groupName: "",
@@ -33,6 +35,33 @@ export const baseGroupSlice = createSlice({
     setSelectedGroup: (state, action: PayloadAction<CompanyBaseGroup>) => {
       state.selectedGroup = action.payload;
     },
+    setAllSelectedBaseGroups: (
+      state,
+      action: PayloadAction<CompanyBaseGroup[]>,
+    ) => {
+      state.selectedBaseGroups = action.payload;
+    },
+    setSelectedBaseGroups: (state, action: PayloadAction<CompanyBaseGroup>) => {
+      const id = action.payload.id;
+      const found = state.selectedBaseGroups.find((bg) => bg.id === id);
+
+      if (found) {
+        const filtered = state.selectedBaseGroups.filter((bg) => bg.id !== id);
+        state.selectedBaseGroups = filtered;
+      } else {
+        state.selectedBaseGroups.push(action.payload);
+      }
+    },
+    setFilteredOutSelectedBaseGroups: (
+      state,
+      action: PayloadAction<number>,
+    ) => {
+      const companyId = action.payload;
+      const filteredOut = state.selectedBaseGroups.filter(
+        (bg) => bg.company !== companyId,
+      );
+      state.selectedBaseGroups = filteredOut;
+    },
     setIsDeleting: (state, action: PayloadAction<boolean>) => {
       state.isDeleting = action.payload;
     },
@@ -42,16 +71,24 @@ export const baseGroupSlice = createSlice({
     setCompany: (state, action: PayloadAction<Company | null>) => {
       state.company = action.payload;
     },
+    resetSelectedBaseGroups: (state) => {
+      state.baseGroups = [];
+      state.selectedBaseGroups = [];
+    },
     resetBaseGroupSlice: () => initialState,
   },
 });
 
 export const {
+  resetSelectedBaseGroups,
   setBaseGroups,
   setSelectedGroup,
   setIsDeleting,
   setGroupName,
+  setSelectedBaseGroups,
   setCompany,
+  setFilteredOutSelectedBaseGroups,
+  setAllSelectedBaseGroups,
   resetBaseGroupSlice,
 } = baseGroupSlice.actions;
 export default baseGroupSlice.reducer;

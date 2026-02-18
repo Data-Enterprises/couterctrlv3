@@ -51,8 +51,6 @@ const Assigned = () => {
     });
   };
 
-  console.log(storesToUnassign);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setFilterText(value);
@@ -63,7 +61,7 @@ const Assigned = () => {
   };
 
   return (
-    <div className="-mt-1">
+    <div className="p-2 bg-custom-white rounded-lg shadow-lg h-[65vh]">
       <label htmlFor="assigned-user-stores" className="font-medium text-sm">
         Assigned - {stores.length}
       </label>
@@ -75,7 +73,7 @@ const Assigned = () => {
         value={filterText}
         onChange={handleChange}
       />
-      <div className="min-h-[400px] max-h-[400px] overflow-y-auto no-scrollbar space-y-2 mt-4 font-medium">
+      <div className="min-h-[385px] max-h-[385px] overflow-y-auto no-scrollbar space-y-2 mt-4 font-medium">
         {hasLength()
           ? stores.map((store) => (
               <div

@@ -79,11 +79,8 @@ const Unassigned = () => {
   };
 
   return (
-    <div>
-      <label
-        htmlFor="unassigned-user-stores"
-        className="font-medium text-sm flex justify-between"
-      >
+    <div className="p-2 bg-custom-white rounded-lg shadow-lg h-[65vh]">
+      <label htmlFor="unassigned-user-stores" className="font-medium text-sm">
         Unassigned - {stores.length}
       </label>
       <input
@@ -94,17 +91,23 @@ const Unassigned = () => {
         value={filterText}
         onChange={handleChange}
       />
-      <div className="min-h-[400px] max-h-[400px] overflow-y-auto no-scrollbar space-y-2 mt-4 font-medium">
+      <div className="min-h-[385px] max-h-[385px] overflow-y-auto no-scrollbar space-y-2 mt-4">
         {hasLength()
           ? stores.map((store) => (
               <div
                 key={store.storeid}
                 data-testid={`unassigned-store-${store.storeid}`}
-                className={`${storesToAssign.includes(store.storeid) ? "bg-emerald-200" : "bg-custom-white"} flex items-center justify-between rounded-lg shadow p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
+                className={`${storesToAssign.includes(store.storeid) ? "bg-emerald-200" : "bg-custom-white"} flex justify-between rounded-lg shadow p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
                 onClick={() => handleStoreCardClick(store.storeid)}
               >
-                <div>{store.company_name}</div>
-                <div>{store.store_name}</div>
+                <div>
+                  <div className="font-medium">Store:</div>
+                  <div>{store.store_name}</div>
+                </div>
+                <div>
+                  <div className="font-medium text-right">Company:</div>
+                  <div>{store.company_name}</div>
+                </div>
               </div>
             ))
           : null}
