@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { roles } from "..";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -7,7 +8,15 @@ import Input from "../../../components/inputs/Input";
 import SingleSelect from "../../../components/SingleSelect";
 import UserFormButtons from "./UserFormButtons";
 import PasswordInput from "../../../components/inputs/PasswordInput";
-import { setUserCompanyIds, setUserInfo } from "../../../features/usersSlice";
+import {
+  resetUserInfo,
+  setIsDeletingUser,
+  setRefresh,
+  setSelectedUserForm,
+  setUserCompanyIds,
+  setUserFilterText,
+  setUserInfo,
+} from "../../../features/usersSlice";
 import { InfoIcon } from "../../../components/toasts/Icons";
 import { getBaseGroups } from "../../../api/baseGroups";
 import {
@@ -19,6 +28,8 @@ import {
 } from "../../../features/baseGroupSlice";
 import type { JsonError } from "../../../interfaces";
 import { useEffect } from "react";
+import { deleteUser } from "../../../api/team";
+import { setTempPassword } from "../../../api/security";
 
 const UserForm = () => {
   const toast = useToast();
@@ -30,9 +41,13 @@ const UserForm = () => {
     selectedUserForm,
     userCompanyIds,
     selectedUserId,
+    isDeletingUser,
   } = useAppSelector((state) => state.users);
   const { baseGroups } = useAppSelector((state) => state.baseGroup);
   const user = useAppSelector((state) => state.user);
+
+  const [pwText, setPwText] = useState<string>("");
+  const [confirmText, setConfirmText] = useState<string>("");
 
   useEffect(() => {
     if (selectedUserId === 0) {
@@ -130,6 +145,126 @@ const UserForm = () => {
     return "";
   };
 
+  if (isDeletingUser) {
+    const handleDeleteUser = () => {
+      deleteUser(url, token, userInfo.username)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            toast.success("User Delete, list of users has been refreshed");
+            dispatch(resetUserInfo());
+            dispatch(setRefresh(true));
+            dispatch(setIsDeletingUser(false));
+            dispatch(setSelectedUserForm(""));
+          }
+        })
+        .catch((err: JsonError) => toast.error(err.message));
+    };
+
+    return (
+      <div className="flex flex-col justify-center items-center p-4 gap-4">
+        <div>Are you sure you want to delete </div>
+        <div>
+          <div className="font-medium">Username = {userInfo.username}</div>
+          <div className="font-medium">
+            Name = {userInfo.first_name} {userInfo.last_name}
+          </div>
+          <div className="font-medium">Email = {userInfo.email}</div>
+        </div>
+
+        <div className="w-1/2 flex gap-2">
+          <button className="btn-themeGreen w-1/2" onClick={handleDeleteUser}>
+            Yes
+          </button>
+          <button
+            className="btn-themeOrange w-1/2"
+            onClick={() => dispatch(setIsDeletingUser(false))}
+          >
+            No
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (selectedUserForm === "update_password") {
+    const handlePwChange = (x: string) => {
+      setPwText(x);
+    };
+
+    const handleConfrimChange = (x: string) => {
+      setConfirmText(x);
+    };
+
+    const setTempPw = () => {
+      setTempPassword(url, token, userInfo.username, pwText)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            toast.success("Temporary password set for " + userInfo.username);
+            setPwText("");
+            setConfirmText("");
+            dispatch(setUserFilterText(""));
+          }
+        })
+        .catch((err: JsonError) => toast.error(err.message));
+    };
+
+    const canSubmit = () => {
+      return (
+        pwText.length > 0 && confirmText.length > 0 && pwText === confirmText
+      );
+    };
+
+    return (
+      <div className="h-[30vh]">
+        {!selectedUserId ? (
+          <div className="h-full flex justify-center items-center">
+            <div className="font-medium">
+              No user selected. Please select one.
+            </div>
+          </div>
+        ) : (
+          <div className="h-full flex flex-col gap-4 justify-center items-center">
+            <div className="font-medium text-center">
+              Set a temporary password for {userInfo.username}
+              <div className="font-medium text-center">
+                They will be prompted to create a new password on their next
+                login
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <PasswordInput
+                label="Password"
+                name="password"
+                setText={handlePwChange}
+                text={pwText}
+                className=""
+                leftCompare=""
+                rightCompare=""
+              />
+              <PasswordInput
+                label="Confirm Password"
+                name="confirm_password"
+                setText={handleConfrimChange}
+                text={confirmText}
+                className=""
+                leftCompare=""
+                rightCompare=""
+              />
+            </div>
+            <button
+              className={`btn-themeGreen w-1/2 ${!canSubmit() && "opacity-50 pointer-events-none"}`}
+              onClick={setTempPw}
+            >
+              Submit
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="bg-custom-white rounded-b-lg px-4 pb-4 space-y-2">
       <div className="flex items-center gap-2 select-none mt-4">
@@ -139,11 +274,14 @@ const UserForm = () => {
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <div>
+        <div
+          className={`${selectedUserForm === "delete" ? "opacity-50 pointer-events-none" : ""}`}
+        >
           <Input
             label="Username"
             value={userInfo.username}
             setValue={handleUsername}
+            className={`${selectedUserForm === "update" ? "opacity-50 pointer-events-none" : ""}`}
           />
           <Input label="Email" value={userInfo.email} setValue={handleEmail} />
           <Input
@@ -157,7 +295,9 @@ const UserForm = () => {
             setValue={handleLastName}
           />
         </div>
-        <div className="">
+        <div
+          className={`${selectedUserForm === "delete" ? "opacity-50 pointer-events-none" : ""}`}
+        >
           <SingleSelect
             id={1}
             label="User Level"

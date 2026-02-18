@@ -41,7 +41,7 @@ const defaultInfo: UserData = {
   role: 0,
 };
 
-export type UserFormType = "create" | "update" | "delete" | "";
+export type UserFormType = "create" | "update" | "delete" | "update_password" | "";
 
 // State for users slice /////////////
 interface UsersState {
@@ -63,6 +63,8 @@ interface UsersState {
   selectedForm: number;
   selectedUserForm: UserFormType;
   userFormIdx: number;
+  isDeletingUser: boolean;
+  userFilterText: string;
 }
 
 const initialState: UsersState = {
@@ -87,6 +89,8 @@ const initialState: UsersState = {
   selectedForm: 0,
   selectedUserForm: "",
   userFormIdx: 0,
+  isDeletingUser: false,
+  userFilterText: "",
 };
 
 export const usersSlice = createSlice({
@@ -220,6 +224,12 @@ export const usersSlice = createSlice({
     resetUserFormIdx: (state) => {
       state.userFormIdx = 0;
     },
+    setIsDeletingUser: (state, action: PayloadAction<boolean>) => {
+      state.isDeletingUser = action.payload;
+    },
+    setUserFilterText: (state, action: PayloadAction<string>) => {
+      state.userFilterText = action.payload;
+    },
     resetUsersSlice: () => initialState,
   },
 });
@@ -250,6 +260,8 @@ export const {
   setNextFormIdx,
   setPrevFormIdx,
   resetUserFormIdx,
+  setIsDeletingUser,
+  setUserFilterText,
   resetUsersSlice,
 } = usersSlice.actions;
 export default usersSlice.reducer;

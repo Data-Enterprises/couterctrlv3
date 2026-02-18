@@ -17,6 +17,7 @@ import {
   setSelectedUserId,
   setSelectedUserInfo,
   setSelectedUserStores,
+  setUserFilterText,
 } from "../../../features/usersSlice";
 import {
   setSelectedQsUserEmail,
@@ -35,7 +36,6 @@ const ProfileCard = () => {
   const qs = useAppSelector((state) => state.quicksight);
   const { url, token } = useAppSelector((state) => state.app);
   const { companies } = useAppSelector((state) => state.user);
-  const [text, setText] = useState<string>("");
   const [filterType, setFilterType] = useState<"name" | "email">("name");
   const {
     userInfo,
@@ -45,16 +45,17 @@ const ProfileCard = () => {
     users,
     selectedCompanyId,
     selectedUserId,
+    userFilterText,
   } = useAppSelector((state) => state.users);
   const { selectedBaseGroups } = useAppSelector((state) => state.baseGroup);
   const [filtered, setFiltered] = useState<User[]>([]);
 
   useEffect(() => {
-    if (text.trim() === "" && !selectedCompanyId) {
+    if (userFilterText.trim() === "" && !selectedCompanyId) {
       setFiltered(users);
     } else {
       // one or the othe or both
-      const lowerText = text.toLowerCase();
+      const lowerText = userFilterText.toLowerCase();
       const isUsername = filterType === "name";
 
       const filteredUsers = users.filter((user) => {
@@ -67,7 +68,7 @@ const ProfileCard = () => {
       });
       setFiltered(filteredUsers);
     }
-  }, [text, filterType]);
+  }, [userFilterText, filterType]);
 
   const showCompanies = () => {
     const filtered = [...companies].filter((c) =>
@@ -105,10 +106,8 @@ const ProfileCard = () => {
     return names;
   };
 
-  const layout = selectedUserForm === "create" ? "w-full" : "w-1/2";
-
   const handleFilterTextChange = (x: string) => {
-    setText(x);
+    dispatch(setUserFilterText(x));
   };
 
   const handleUserClick = (e: User) => {
@@ -169,9 +168,9 @@ const ProfileCard = () => {
   };
 
   return (
-    <div className="w-full flex gap-4">
+    <div className="w-full">
       <div
-        className={`bg-[rgb(30,45,80)] text-custom-white rounded-lg shadow-lg p-2 text-sm flex gap-2 ${layout}`}
+        className={`bg-[rgb(30,45,80)] text-custom-white rounded-lg shadow-lg p-2 text-sm flex gap-2`}
       >
         <UserCircleIcon className="" height={140} width={140} fill="white" />
         <div>
@@ -207,8 +206,8 @@ const ProfileCard = () => {
           </div>
         </div>
       </div>
-      {selectedUserForm === "update" && (
-        <div className="w-1/2">
+      {selectedUserForm !== "create" && (
+        <div className="relative">
           <div className="grid grid-cols-2 mb-1.5 shadow-md">
             <button
               className={`${filterType === "name" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200 font-medium text-center rounded-l-lg py-1.5`}
@@ -223,12 +222,18 @@ const ProfileCard = () => {
               Email
             </button>
           </div>
-          <Input label="" value={text} setValue={handleFilterTextChange} />
+          <Input
+            label=""
+            value={userFilterText}
+            setValue={handleFilterTextChange}
+          />
           <div
-            className={`${text.length ? "" : "hidden"} bg-custom-white min-h-20 max-h-20 overflow-hidden overflow-y-scroll no-scrollbar rounded-lg shadow-lg`}
+            className={`${userFilterText.length ? "absolute" : "hidden"} bg-custom-white w-full max-h-40 overflow-hidden overflow-y-scroll no-scrollbar rounded-lg shadow-lg`}
+            style={{ zIndex: 9999 }}
           >
-            {filtered.map((u) => (
+            {filtered.map((u, i) => (
               <div
+                key={i}
                 className="px-2 py-0.5 hover:bg-blue-200 cursor-pointer transition-all duration-200"
                 onClick={() => handleUserClick(u)}
               >

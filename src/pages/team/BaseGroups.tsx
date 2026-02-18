@@ -93,7 +93,7 @@ const BaseGroups = () => {
         context.url,
         context.token,
         selectedUserId,
-        group.id,
+        [group.id],
       )
         .then((resp) => {
           const j = resp.data;

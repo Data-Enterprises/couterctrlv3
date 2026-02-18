@@ -1,6 +1,5 @@
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import {
-  resetUserFormIdx,
   resetUserInfo,
   setSelectedUserForm,
   type UserFormType,
@@ -8,7 +7,6 @@ import {
 
 import { WarningIcon } from "../../../components/toasts/Icons";
 import UserForm from "./UserForm";
-import DeleteUserForm from "./DeleteUserForm";
 
 const UserControls = () => {
   const dispatch = useAppDispatch();
@@ -27,7 +25,6 @@ const UserControls = () => {
   };
 
   const handleReset = (x: UserFormType) => {
-    dispatch(resetUserFormIdx());
     dispatch(setSelectedUserForm(x));
     dispatch(resetUserInfo());
   };
@@ -73,7 +70,10 @@ const UserControls = () => {
         >
           Delete
         </button>
-        <button className="btn-themeBlue px-0">
+        <button
+          className="btn-themeBlue px-0"
+          onClick={() => handleReset("update_password")}
+        >
           Reset Password
         </button>
       </div>
@@ -84,8 +84,6 @@ const UserControls = () => {
             <div>Select one of the options above and follow the steps</div>
           </div>
         </div>
-      ) : selectedUserForm === "delete" ? (
-        <DeleteUserForm />
       ) : (
         <UserForm />
       )}

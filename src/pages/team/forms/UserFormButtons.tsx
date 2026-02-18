@@ -7,6 +7,7 @@ import {
 } from "../../../api/team";
 import {
   resetUserInfo,
+  setIsDeletingUser,
   setRefresh,
   setSelectedUserId,
   setSelectedUserStores,
@@ -75,7 +76,7 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
               if (j.error === 0) {
                 const assignGroups = [...base.selectedBaseGroups].filter(
                   (bg) => {
-                    if (!base.baseGroups.some((b) => b.id === bg.id)) {
+                    if (base.baseGroups.some((b) => b.id === bg.id)) {
                       return bg.id;
                     }
                   },
@@ -159,11 +160,19 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
     return true;
   };
 
+  const gridLayout = formType === "delete" ? "" : "grid-cols-2";
+
+  const handleDeleteFlag = () => {
+    dispatch(setIsDeletingUser(true));
+  };
+
   return (
-    <div className="grid grid-cols-2 gap-2">
-      <button className="btn-themeBlue px-0" onClick={handleReset}>
-        Clear Fields
-      </button>
+    <div className={`grid ${gridLayout} gap-2`}>
+      {formType !== "delete" && (
+        <button className="btn-themeBlue px-0" onClick={handleReset}>
+          Clear Fields
+        </button>
+      )}
       {formType === "create" ? (
         <button
           className={`btn-themeBlue px-0 ${selectedUserId > 0 || !isFormReady() ? "opacity-50 pointer-events-none" : ""}`}
@@ -171,12 +180,19 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
         >
           Create
         </button>
-      ) : (
+      ) : formType === "update" ? (
         <button
           className={`btn-themeBlue px-0 ${selectedUserId == 0 ? "opacity-50 pointer-events-none" : ""}`}
           onClick={handleCreateOrUpdate}
         >
           Update
+        </button>
+      ) : (
+        <button
+          className={`btn-themeOrange px-0 ${selectedUserId == 0 ? "opacity-50 pointer-events-none" : ""}`}
+          onClick={handleDeleteFlag}
+        >
+          Delete
         </button>
       )}
     </div>
