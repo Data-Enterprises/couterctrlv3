@@ -51,6 +51,17 @@ const Assigned = () => {
     });
   };
 
+  const handleUnassignAll = () => {
+    const allToRemove = users.selectedUserStores.assigned.map((s) => s.storeid);
+    dispatch(setStoresUnassignedForUser(allToRemove));
+    unassignUserFromStore(
+      context.url,
+      context.token,
+      users.selectedUserId,
+      allToRemove,
+    ).catch((err: JsonError) => toast.error("Error: " + err.message));
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setFilterText(value);
@@ -73,7 +84,7 @@ const Assigned = () => {
         value={filterText}
         onChange={handleChange}
       />
-      <div className="min-h-[385px] max-h-[385px] overflow-y-auto no-scrollbar space-y-2 mt-4 font-medium">
+      <div className="min-h-[385px] max-h-[385px] overflow-y-auto no-scrollbar space-y-2 mt-4">
         {hasLength()
           ? stores.map((store) => (
               <div
@@ -82,20 +93,31 @@ const Assigned = () => {
                 className={`${storesToUnassign.includes(store.storeid) ? "bg-emerald-200" : "bg-custom-white"} flex items-center justify-between rounded-lg shadow p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
                 onClick={() => handleStoreCardClick(store.storeid)}
               >
-                <div>{store.company_name}</div>
-                <div>{store.store_name}</div>
+                <div>
+                  <div className="font-medium">Store:</div>
+                  <div>{store.store_name}</div>
+                </div>
+                <div>
+                  <div className="font-medium text-right">Company:</div>
+                  <div>{store.company_name}</div>
+                </div>
               </div>
             ))
           : null}
       </div>
       <div className="flex justify-between gap-2 mt-2">
         <button
-          className="btn-themeGreen w-full px-0"
+          className="btn-themeGreen w-1/2 px-0"
           onClick={handleUnassignStore}
         >
           Unassign
         </button>
-        {/* <button className="btn-themeGreen w-1/2 px-0">Unassign All</button> */}
+        <button
+          className="btn-themeGreen w-1/2 px-0"
+          onClick={handleUnassignAll}
+        >
+          Unassign All
+        </button>
       </div>
     </div>
   );

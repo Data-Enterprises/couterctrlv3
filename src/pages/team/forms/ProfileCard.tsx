@@ -8,6 +8,7 @@ import type {
   BaseGroupJsonResp,
   CompanyBaseGroup,
   JsonError,
+  Store,
   User,
 } from "../../../interfaces";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -15,13 +16,18 @@ import {
   setAssignBaseGroups,
   setSelectedUserId,
   setSelectedUserInfo,
+  setSelectedUserStores,
 } from "../../../features/usersSlice";
 import {
   setSelectedQsUserEmail,
   setValidUser,
 } from "../../../features/qsSlice";
 import { getBaseGroupsAssignedToUser } from "../../../api/team";
-import { setAllSelectedBaseGroups } from "../../../features/baseGroupSlice";
+import {
+  setAllSelectedBaseGroups,
+  setBaseGroups,
+} from "../../../features/baseGroupSlice";
+import { getUserStores } from "../../../api/user";
 
 const ProfileCard = () => {
   const toast = useToast();
@@ -38,6 +44,7 @@ const ProfileCard = () => {
     selectedUserForm,
     users,
     selectedCompanyId,
+    selectedUserId,
   } = useAppSelector((state) => state.users);
   const { selectedBaseGroups } = useAppSelector((state) => state.baseGroup);
   const [filtered, setFiltered] = useState<User[]>([]);
@@ -121,6 +128,7 @@ const ProfileCard = () => {
       .then((resp) => {
         const j: BaseGroupJsonResp = resp.data;
         if (j.error === 0) {
+          dispatch(setBaseGroups(j.active));
           dispatch(setAssignBaseGroups([...j.active, ...j.inactive]));
           const formatted = [...j.active].reduce(
             (acc: CompanyBaseGroup[], curr: BaseGroup) => {
@@ -138,6 +146,25 @@ const ProfileCard = () => {
       })
       .catch((err: JsonError) => {
         toast.error("Error fetching user's base groups " + err.message);
+      });
+
+    const filterNulls = (arr: Store[]) => {
+      return arr.filter((store) => store.store_name !== null);
+    };
+
+    getUserStores(url, token, selectedUserId)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          const stores = {
+            assigned: filterNulls(j.assigned_stores),
+            unassigned: filterNulls(j.unassigned_stores),
+          };
+          dispatch(setSelectedUserStores(stores));
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error("Error fetching available stores " + err.message);
       });
   };
 

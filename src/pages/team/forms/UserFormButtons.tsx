@@ -7,6 +7,7 @@ import {
 } from "../../../api/team";
 import {
   resetUserInfo,
+  setRefresh,
   setSelectedUserId,
   setSelectedUserStores,
   type UserFormType,
@@ -25,9 +26,7 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
   const { userInfo, users, userCompanyIds, selectedUserId } = useAppSelector(
     (state) => state.users,
   );
-  const selectedBaseGroups = useAppSelector(
-    (state) => state.baseGroup.selectedBaseGroups,
-  );
+  const base = useAppSelector((state) => state.baseGroup);
 
   const filterNulls = (arr: Store[]) => {
     return arr.filter((store) => store.store_name !== null);
@@ -44,30 +43,12 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
             .then((resp) => {
               const j = resp.data;
               if (j.error === 0) {
-                const groupid = [...selectedBaseGroups].map((bg) => bg.id);
+                const groupid = [...base.selectedBaseGroups].map((bg) => bg.id);
                 assignBaseGroupToUser(url, token, userid, groupid)
                   .then((resp) => {
                     const j = resp.data;
                     if (j.error === 0) {
-                      getUserStores(url, token, userid)
-                        .then((resp) => {
-                          const j = resp.data;
-                          if (j.error === 0) {
-                            const stores = {
-                              assigned: filterNulls(j.assigned_stores),
-                              unassigned: filterNulls(j.unassigned_stores),
-                            };
-                            dispatch(setSelectedUserStores(stores));
-                            toast.success(
-                              "User created, assign stores to the user",
-                            );
-                          }
-                        })
-                        .catch((err: JsonError) => {
-                          toast.error(
-                            "Error fetching available stores " + err.message,
-                          );
-                        });
+                      getStores();
                     }
                   })
                   .catch((err: JsonError) => toast.error(err.message));
@@ -92,33 +73,30 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
             .then((resp) => {
               const j = resp.data;
               if (j.error === 0) {
-                const groupid = [...selectedBaseGroups].map((bg) => bg.id);
-                assignBaseGroupToUser(url, token, selectedUserId, groupid)
-                  .then((resp) => {
-                    const j = resp.data;
-                    if (j.error === 0) {
-                      getUserStores(url, token, selectedUserId)
-                        .then((resp) => {
-                          const j = resp.data;
-                          if (j.error === 0) {
-                            const stores = {
-                              assigned: filterNulls(j.assigned_stores),
-                              unassigned: filterNulls(j.unassigned_stores),
-                            };
-                            dispatch(setSelectedUserStores(stores));
-                            toast.success(
-                              "User updated, you can add or remove stores for the user",
-                            );
-                          }
-                        })
-                        .catch((err: JsonError) => {
-                          toast.error(
-                            "Error fetching available stores " + err.message,
-                          );
-                        });
+                const assignGroups = [...base.selectedBaseGroups].filter(
+                  (bg) => {
+                    if (!base.baseGroups.some((b) => b.id === bg.id)) {
+                      return bg.id;
                     }
-                  })
-                  .catch((err: JsonError) => toast.error(err.message));
+                  },
+                );
+                if (assignGroups.length) {
+                  assignBaseGroupToUser(
+                    url,
+                    token,
+                    selectedUserId,
+                    assignGroups.map((bg) => bg.id),
+                  )
+                    .then((resp) => {
+                      const j = resp.data;
+                      if (j.error === 0) {
+                        getStores();
+                      }
+                    })
+                    .catch((err: JsonError) => toast.error(err.message));
+                } else {
+                  getStores();
+                }
               }
             })
             .catch((err: JsonError) => toast.error(err.message));
@@ -126,6 +104,27 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
       })
       .catch((err) => {
         toast.error("Error updating user " + err.message);
+      });
+  };
+
+  const getStores = () => {
+    getUserStores(url, token, selectedUserId)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          const stores = {
+            assigned: filterNulls(j.assigned_stores),
+            unassigned: filterNulls(j.unassigned_stores),
+          };
+          dispatch(setSelectedUserStores(stores));
+          dispatch(setRefresh(true));
+          toast.success(
+            "User updated, you can add or remove stores for the user",
+          );
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error("Error fetching available stores " + err.message);
       });
   };
 
@@ -174,8 +173,7 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
         </button>
       ) : (
         <button
-          className={`btn-themeBlue px-0`}
-          // className={`btn-themeBlue px-0 ${selectedUserId > 0 || !isFormReady() ? "opacity-50 pointer-events-none" : ""}`}
+          className={`btn-themeBlue px-0 ${selectedUserId == 0 ? "opacity-50 pointer-events-none" : ""}`}
           onClick={handleCreateOrUpdate}
         >
           Update
