@@ -62,6 +62,7 @@ interface UsersState {
   userLevels: UserLevel[];
   selectedForm: number;
   selectedUserForm: UserFormType;
+  userFormIdx: number;
 }
 
 const initialState: UsersState = {
@@ -85,6 +86,7 @@ const initialState: UsersState = {
   userLevels: [],
   selectedForm: 0,
   selectedUserForm: "",
+  userFormIdx: 0,
 };
 
 export const usersSlice = createSlice({
@@ -204,11 +206,17 @@ export const usersSlice = createSlice({
     setSelectedForm: (state, action: PayloadAction<number>) => {
       state.selectedForm = action.payload;
     },
-    setSelectedUserForm: (
-      state,
-      action: PayloadAction<UserFormType>,
-    ) => {
+    setSelectedUserForm: (state, action: PayloadAction<UserFormType>) => {
       state.selectedUserForm = action.payload;
+    },
+    setNextFormIdx: (state) => {
+      state.userFormIdx += 1;
+    },
+    setPrevFormIdx: (state) => {
+      state.userFormIdx -= 1;
+    },
+    resetUserFormIdx: (state) => {
+      state.userFormIdx = 0;
     },
     resetUsersSlice: () => initialState,
   },
@@ -237,6 +245,9 @@ export const {
   setAssignBaseGroups,
   setSelectedForm,
   setSelectedUserForm,
+  setNextFormIdx,
+  setPrevFormIdx,
+  resetUserFormIdx,
   resetUsersSlice,
 } = usersSlice.actions;
 export default usersSlice.reducer;

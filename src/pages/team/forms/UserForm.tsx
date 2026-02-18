@@ -8,7 +8,7 @@ import UserFormButtons from "./UserFormButtons";
 import PasswordInput from "../../../components/inputs/PasswordInput";
 import { setUserInfo } from "../../../features/usersSlice";
 import { InfoIcon } from "../../../components/toasts/Icons";
-import CompanyAssign from "./CompanyAssign";
+// import CompanyAssign from "./CompanyAssign";
 import PasswordSecurity from "./PasswordSecurity";
 
 const UserForm = () => {
@@ -136,7 +136,7 @@ const UserForm = () => {
           rightCompare={userInfo.confirm_password}
         />
       </div>
-      <CompanyAssign />
+      {/* <CompanyAssign /> */}
       <UserFormButtons formType={selectedUserForm} />
       {selectedUserForm === "update" && <PasswordSecurity />}
     </div>

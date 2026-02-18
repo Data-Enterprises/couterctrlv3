@@ -5,6 +5,7 @@ import {
   resetUserInfo,
   setAssignModalOpen,
   setRefresh,
+  setNextFormIdx,
   type UserFormType,
 } from "../../../features/usersSlice";
 
@@ -16,7 +17,9 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
-  const { userInfo, users } = useAppSelector((state) => state.users);
+  const { userInfo, users, userFormIdx } = useAppSelector(
+    (state) => state.users,
+  );
 
   const handleCreateClick = () => {
     createUser(url, token, userInfo)
@@ -67,19 +70,26 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
     dispatch(resetUserInfo());
   };
 
-  return (
-    <div className="grid grid-cols-3 gap-2">
-      <button className="btn-themeBlue px-0" onClick={handleCreateOrUpdate}>
-        Submit
-      </button>
-      <button className="btn-themeBlue px-0" onClick={handleStoresModal}>
-        Stores
-      </button>
-      <button className="btn-themeBlue px-0" onClick={handleReset}>
-        Clear Fields
-      </button>
-    </div>
-  );
+  const goToNext = () => {
+    dispatch(setNextFormIdx());
+  };
+
+  if (userFormIdx === 0) {
+    return (
+      <div className="grid grid-cols-2 gap-2">
+        {/* <button className="btn-themeBlue px-0" onClick={handleCreateOrUpdate}>
+          Submit
+        </button>
+        <button className="btn-themeBlue px-0" onClick={handleStoresModal}>
+          Stores
+        </button> */}
+        <button className="btn-themeBlue px-0" onClick={goToNext}>Next</button>
+        <button className="btn-themeBlue px-0" onClick={handleReset}>
+          Clear Fields
+        </button>
+      </div>
+    );
+  }
 };
 
 export default UserFormButtons;

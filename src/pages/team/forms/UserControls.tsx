@@ -1,5 +1,6 @@
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import {
+  resetUserFormIdx,
   resetUserInfo,
   setSelectedUserForm,
   type UserFormType,
@@ -8,12 +9,13 @@ import {
 import { WarningIcon } from "../../../components/toasts/Icons";
 import UserForm from "./UserForm";
 import DeleteUserForm from "./DeleteUserForm";
+import Carousel from "../../../components/Carousel";
+import CompanyAssign from "./CompanyAssign";
 
 const UserControls = () => {
   const dispatch = useAppDispatch();
-  const { users, selectedUserId, selectedUserForm } = useAppSelector(
-    (state) => state.users,
-  );
+  const { users, selectedUserId, selectedUserForm, userFormIdx } =
+    useAppSelector((state) => state.users);
   const user = useAppSelector((state) => state.user);
 
   const isOutranked = () => {
@@ -26,6 +28,7 @@ const UserControls = () => {
   };
 
   const handleReset = (x: UserFormType) => {
+    dispatch(resetUserFormIdx());
     dispatch(setSelectedUserForm(x));
     dispatch(resetUserInfo());
   };
@@ -85,7 +88,15 @@ const UserControls = () => {
       ) : selectedUserForm === "delete" ? (
         <DeleteUserForm />
       ) : (
-        <UserForm />
+        <Carousel
+          showButtons={false}
+          useDynamicIndex={true}
+          dynamicIndex={userFormIdx}
+        >
+          <UserForm />
+          <CompanyAssign />
+          <div></div>
+        </Carousel>
       )}
     </div>
   );
