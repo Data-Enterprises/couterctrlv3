@@ -71,7 +71,7 @@ const UserControls = () => {
           Delete
         </button>
         <button
-          className="btn-themeBlue px-0"
+          className={`${selectedUserForm === "update_password" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleReset("update_password")}
         >
           Reset Password
