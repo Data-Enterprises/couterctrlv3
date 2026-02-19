@@ -3,6 +3,7 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   assignBaseGroupToUser,
   createUser,
+  deleteUserBaseGroupLink,
   updateUser,
 } from "../../../api/team";
 import {
@@ -24,9 +25,13 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
-  const { userInfo, users, userCompanyIds, selectedUserId } = useAppSelector(
-    (state) => state.users,
-  );
+  const {
+    userInfo,
+    users,
+    userCompanyIds,
+    selectedUserId,
+    alreadyAssignedBgs,
+  } = useAppSelector((state) => state.users);
   const base = useAppSelector((state) => state.baseGroup);
 
   const filterNulls = (arr: Store[]) => {
@@ -49,7 +54,7 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
                   .then((resp) => {
                     const j = resp.data;
                     if (j.error === 0) {
-                      getStores();
+                      getStores(userid);
                     }
                   })
                   .catch((err: JsonError) => toast.error(err.message));
@@ -74,29 +79,50 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
             .then((resp) => {
               const j = resp.data;
               if (j.error === 0) {
-                const assignGroups = [...base.selectedBaseGroups].filter(
+                const groupsToAssign = [...base.selectedBaseGroups].filter(
                   (bg) => {
-                    if (base.baseGroups.some((b) => b.id === bg.id)) {
+                    if (!alreadyAssignedBgs.some((b) => b.id === bg.id)) {
                       return bg.id;
                     }
                   },
                 );
-                if (assignGroups.length) {
+                
+                const groupsToUnassign = [...alreadyAssignedBgs].filter(
+                  (bg) => {
+                    if (!base.selectedBaseGroups.some((b) => b.id === bg.id)) {
+                      return bg.id;
+                    }
+                  },
+                );
+                // console.log(
+                //   groupsToAssign,
+                //   groupsToUnassign,
+                //   base.selectedBaseGroups,
+                //   alreadyAssignedBgs
+                // );
+                // return;
+                if (groupsToAssign.length) {
                   assignBaseGroupToUser(
                     url,
                     token,
                     selectedUserId,
-                    assignGroups.map((bg) => bg.id),
+                    groupsToAssign.map((bg) => bg.id),
                   )
                     .then((resp) => {
                       const j = resp.data;
                       if (j.error === 0) {
-                        getStores();
+                        if (groupsToUnassign.length) {
+                          unassignBG(groupsToUnassign.map((bg) => bg.id));
+                        } else {
+                          getStores(selectedUserId);
+                        }
                       }
                     })
                     .catch((err: JsonError) => toast.error(err.message));
+                } else if (groupsToUnassign.length) {
+                  unassignBG(groupsToUnassign.map((bg) => bg.id));
                 } else {
-                  getStores();
+                  getStores(selectedUserId);
                 }
               }
             })
@@ -108,8 +134,18 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
       });
   };
 
-  const getStores = () => {
-    getUserStores(url, token, selectedUserId)
+  const unassignBG = (bgs: number[]) => {
+    // deleteUserBaseGroupLink(url, token, selectedUserId, bgs)
+    //  .then((resp) => {
+    //    const j = resp.data;
+    //    if (j.error === 0) {
+    //      getStores(selectedUserId);
+    //    }
+    // });
+  };
+
+  const getStores = (userid: number) => {
+    getUserStores(url, token, userid)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {

@@ -10,7 +10,7 @@ const FormHeader = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg">
+    <div className="bg-custom-white rounded-lg shadow-lg min-w-36">
       <div className="bg-blue-500 text-custom-white font-medium px-4 rounded-t-lg py-0.5">
         Forms
       </div>
@@ -26,6 +26,12 @@ const FormHeader = () => {
           onClick={() => handleFormSelection(2)}
         >
           Base Groups
+        </div>
+        <div
+          className={`${selectedForm === 3 ? "bg-orange-200" : ""} rounded-full hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
+          onClick={() => handleFormSelection(3)}
+        >
+          Stores
         </div>
       </div>
     </div>

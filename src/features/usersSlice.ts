@@ -65,6 +65,7 @@ interface UsersState {
   userFormIdx: number;
   isDeletingUser: boolean;
   userFilterText: string;
+  alreadyAssignedBgs: BaseGroup[];
 }
 
 const initialState: UsersState = {
@@ -91,6 +92,7 @@ const initialState: UsersState = {
   userFormIdx: 0,
   isDeletingUser: false,
   userFilterText: "",
+  alreadyAssignedBgs: [],
 };
 
 export const usersSlice = createSlice({
@@ -134,6 +136,8 @@ export const usersSlice = createSlice({
     },
     setAssignBaseGroups: (state, action: PayloadAction<BaseGroup[]>) => {
       state.baseGroups = action.payload;
+      const assigned = [...action.payload].filter((bg) => bg.active === 1);
+      state.alreadyAssignedBgs = assigned;
     },
     resetUserInfo: (state) => {
       state.userInfo = defaultInfo;

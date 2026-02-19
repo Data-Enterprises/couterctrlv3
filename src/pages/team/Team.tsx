@@ -13,17 +13,14 @@ import {
 import { setQsUsers } from "../../features/qsSlice";
 import type { JsonError, User, UserLevelJsonResp } from "../../interfaces";
 
-// import UserGrid from "./UserGrid";
-// import DeleteUserModal from "./DeleteUserModal";
-// import AssignStoresModal from "./assignModal/AssignStoresModal";
-// import AssignCompanyModal from "./modals/AssignCompanyModal";
-// import AssignBaseGroupModal from "./modals/AssignBaseGroupModal";
 import UserControls from "./forms/UserControls";
 import FormHeader from "./forms/FormHeader";
 import CounterCtrlStores from "./assignModal/CounterCtrlStores";
 import ProfileCard from "./forms/ProfileCard";
 import { getAllUsers } from "../../api/user";
-// import UserGrid from "./UserGrid";
+import BgHeader from "./baseGroups/BgHeader";
+import BgForm from "./baseGroups/BgForm";
+import StoresForm from "./stores/StoresForm";
 
 const Team = () => {
   const toast = useToast();
@@ -114,9 +111,20 @@ const Team = () => {
       case 1:
         return <UserControls />;
       case 2:
-        return <div>Base Group Controls</div>;
+        return <BgForm />;
+      default:
+        return null;
+    }
+  };
+
+  const renderHeader = () => {
+    switch (selectedForm) {
+      case 1:
+        return <ProfileCard />;
+      case 2:
+        return <BgHeader />;
       case 3:
-        return <div>Company Controls</div>;
+        return <StoresForm />
       default:
         return null;
     }
@@ -124,27 +132,16 @@ const Team = () => {
 
   return (
     <div data-testid="team-page" className={`w-full h-[calc(100vh-3rem)] p-4`}>
-      {/* <AssignStoresModal />
-      <DeleteUserModal />
-      <AssignCompanyModal />
-      <AssignBaseGroupModal /> */}
       <div className="flex gap-3 h-full">
         <div className="">
           <FormHeader />
-          {/* <div>
-            {users.map((u) => (
-              <div>
-                <div>{u.username}</div>
-              </div>
-            ))}
-          </div> */}
         </div>
-        <div className="w-1/2 space-y-4">
-          <ProfileCard />
+        <div className={`${selectedForm === 3 ? "w-full" : "w-1/2"} space-y-4`}>
+          {renderHeader()}
           {renderForm()}
         </div>
         <div>
-          <CounterCtrlStores />
+          {selectedForm !== 3 && <CounterCtrlStores />}
         </div>
       </div>
     </div>

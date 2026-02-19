@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
-import { getAllUsers } from "../../api/user";
+import { getAllUsers, getUserStores } from "../../api/user";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import type { BaseGroupJsonResp, JsonError, User } from "../../interfaces";
+import type { JsonError, Store, User } from "../../interfaces";
 import {
   setUsers,
   setSelectedUserInfo,
-  setAssignBaseGroups,
+  // setAssignBaseGroups,
   setSelectedUserId,
+  setSelectedUserStores,
 } from "../../features/usersSlice";
-import { getBaseGroupsAssignedToUser } from "../../api/team";
+// import { getBaseGroupsAssignedToUser } from "../../api/team";
 
 // For the table
 import { AgGridReact } from "ag-grid-react";
@@ -34,6 +35,7 @@ const UserGrid = () => {
     refresh,
     selectedCompanyId,
     userLevels,
+    selectedUserId,
     // selectedForm,
     // selectedUserForm,
   } = useAppSelector((state) => state.users);
@@ -167,15 +169,34 @@ const UserGrid = () => {
     }
 
     dispatch(setSelectedUserId(e.data.id));
-    getBaseGroupsAssignedToUser(context.url, context.token, e.data.id)
+    // getBaseGroupsAssignedToUser(context.url, context.token, e.data.id)
+    //   .then((resp) => {
+    //     const j: BaseGroupJsonResp = resp.data;
+    //     if (j.error === 0) {
+    //       dispatch(setAssignBaseGroups([...j.active, ...j.inactive]));
+    //     }
+    //   })
+    //   .catch((err: JsonError) => {
+    //     toast.error("Error fetching user's base groups " + err.message);
+    //   });
+
+    const filterNulls = (arr: Store[]) => {
+      return arr.filter((store) => store.store_name !== null);
+    };
+
+    getUserStores(context.url, context.token, selectedUserId)
       .then((resp) => {
-        const j: BaseGroupJsonResp = resp.data;
+        const j = resp.data;
         if (j.error === 0) {
-          dispatch(setAssignBaseGroups([...j.active, ...j.inactive]));
+          const stores = {
+            assigned: filterNulls(j.assigned_stores),
+            unassigned: filterNulls(j.unassigned_stores),
+          };
+          dispatch(setSelectedUserStores(stores));
         }
       })
       .catch((err: JsonError) => {
-        toast.error("Error fetching user's base groups " + err.message);
+        toast.error("Error fetching available stores " + err.message);
       });
   };
 
@@ -186,7 +207,7 @@ const UserGrid = () => {
   return (
     <div
       data-testid="user-grid-container"
-      className="w-full h-[85%] no-scrollbar"
+      className="w-full h-full no-scrollbar"
     >
       <div className="mb-2 flex items-end gap-2">
         <div className="w-1/2">
@@ -217,6 +238,7 @@ const UserGrid = () => {
           paginationAutoPageSize={true}
           paginationPageSizeSelector={false}
           onRowClicked={handleRowClick}
+          rowSelection={"single"}
         />
       </div>
     </div>
