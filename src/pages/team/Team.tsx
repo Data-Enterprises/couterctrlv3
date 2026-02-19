@@ -18,9 +18,10 @@ import FormHeader from "./forms/FormHeader";
 import CounterCtrlStores from "./assignModal/CounterCtrlStores";
 import ProfileCard from "./forms/ProfileCard";
 import { getAllUsers } from "../../api/user";
-import BgHeader from "./baseGroups/BgHeader";
-import BgForm from "./baseGroups/BgForm";
+// import BgHeader from "./baseGroups/BgHeader";
+import BgForm from "./baseGroups/CreateBaseGroup";
 import StoresForm from "./stores/StoresForm";
+import BaseGroupControls from "./baseGroups/BaseGroupControls";
 
 const Team = () => {
   const toast = useToast();
@@ -111,7 +112,7 @@ const Team = () => {
       case 1:
         return <UserControls />;
       case 2:
-        return <BgForm />;
+        return <BaseGroupControls />;
       default:
         return null;
     }
@@ -122,7 +123,8 @@ const Team = () => {
       case 1:
         return <ProfileCard />;
       case 2:
-        return <BgHeader />;
+        return null;
+        // return <BgHeader />;
       case 3:
         return <StoresForm />
       default:

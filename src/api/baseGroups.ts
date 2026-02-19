@@ -1,5 +1,4 @@
 import axios from "axios";
-import type { CompanyBaseGroup } from "../interfaces";
 
 export const getBaseGroups = async (
   url: string,
@@ -23,7 +22,8 @@ export const getBaseGroups = async (
 export const createBaseGroup = async (
   url: string,
   token: string,
-  data: CompanyBaseGroup,
+  name: string,
+  company: number,
 ) => {
   const json = await axios({
     method: "POST",
@@ -33,8 +33,8 @@ export const createBaseGroup = async (
     },
     url: url + "groups/create_base_group",
     data: {
-      name: data.name,
-      company: data.company,
+      name,
+      company,
     },
   });
   return json;
@@ -43,7 +43,9 @@ export const createBaseGroup = async (
 export const updateBaseGroup = async (
   url: string,
   token: string,
-  data: CompanyBaseGroup,
+  id: number,
+  name: string,
+  company: number,
 ) => {
   const json = await axios({
     method: "PUT",
@@ -52,7 +54,11 @@ export const updateBaseGroup = async (
       Authorization: "Bearer " + token,
     },
     url: url + "groups/update_base_group",
-    data: data,
+    data: {
+      id,
+      name,
+      company,
+    },
   });
   return json;
 };
@@ -71,6 +77,48 @@ export const deleteBaseGroup = async (
     url: url + "groups/delete_base_group",
     params: {
       id,
+    },
+  });
+  return json;
+};
+
+export const assignStoreToBaseGroup = async (
+  url: string,
+  token: string,
+  storeid: number,
+  groupid: number,
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "stores/assign_store_to_base_group_link",
+    data: {
+      storeid,
+      groupid,
+    },
+  });
+  return json;
+};
+
+export const unAssignStoreToBaseGroup = async (
+  url: string,
+  token: string,
+  storeid: number,
+  groupid: number,
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "stores/delete_store_to_base_group_link",
+    data: {
+      storeid,
+      groupid,
     },
   });
   return json;

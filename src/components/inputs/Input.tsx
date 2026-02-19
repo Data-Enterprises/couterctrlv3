@@ -13,7 +13,7 @@ const Input = ({
   label,
   className = "py-1.5",
   type = "text",
-  width = "w-full"
+  width = "w-full",
 }: InputProps) => {
   const testId = `input-${label.toLowerCase().replace(/\s+/g, "-")}`;
   return (

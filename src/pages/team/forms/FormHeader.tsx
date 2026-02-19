@@ -1,9 +1,14 @@
-import { setSelectedForm } from "../../../features/usersSlice";
+import { useEffect } from "react";
+import { setSelectedForm, setSelectedUserStores } from "../../../features/usersSlice";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 
 const FormHeader = () => {
   const dispatch = useAppDispatch();
   const { selectedForm } = useAppSelector((state) => state.users);
+
+  useEffect(() => {
+    dispatch(setSelectedUserStores({assigned: [], unassigned: []}))
+  }, [selectedForm]);
 
   const handleFormSelection = (x: number) => {
     dispatch(setSelectedForm(x));
