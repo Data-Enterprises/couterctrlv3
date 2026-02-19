@@ -206,7 +206,7 @@ const ProfileCard = () => {
           </div>
         </div>
       </div>
-      {(selectedUserForm === "update" || selectedUserForm === "delete") && (
+      {(selectedUserForm !== "create") && (
         <div className="relative">
           <div className="grid grid-cols-2 mb-1.5 shadow-md">
             <button
