@@ -16,10 +16,7 @@ import type { JsonError, User, UserLevelJsonResp } from "../../interfaces";
 import UserControls from "./forms/UserControls";
 import FormHeader from "./forms/FormHeader";
 import CounterCtrlStores from "./assignModal/CounterCtrlStores";
-import ProfileCard from "./forms/ProfileCard";
 import { getAllUsers } from "../../api/user";
-// import BgHeader from "./baseGroups/BgHeader";
-import BgForm from "./baseGroups/CreateBaseGroup";
 import StoresForm from "./stores/StoresForm";
 import BaseGroupControls from "./baseGroups/BaseGroupControls";
 
@@ -121,12 +118,12 @@ const Team = () => {
   const renderHeader = () => {
     switch (selectedForm) {
       case 1:
-        return <ProfileCard />;
+        return null;
       case 2:
         return null;
-        // return <BgHeader />;
+      // return <BgHeader />;
       case 3:
-        return <StoresForm />
+        return <StoresForm />;
       default:
         return null;
     }
@@ -142,9 +139,7 @@ const Team = () => {
           {renderHeader()}
           {renderForm()}
         </div>
-        <div>
-          {selectedForm !== 3 && <CounterCtrlStores />}
-        </div>
+        <div>{selectedForm !== 3 && <CounterCtrlStores />}</div>
       </div>
     </div>
   );

@@ -209,8 +209,8 @@ const UserGrid = () => {
       data-testid="user-grid-container"
       className="w-full h-full no-scrollbar"
     >
-      <div className="mb-2 flex items-end gap-2">
-        <div className="w-1/2">
+      <div className="mb-4 flex items-end gap-2">
+        <div className="w-full">
           <div className="grid grid-cols-2 mb-1.5 shadow-md">
             <button
               className={`${filterType === "name" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200 font-medium text-center rounded-l-lg py-1.5`}
@@ -228,7 +228,7 @@ const UserGrid = () => {
           <Input label="" value={text} setValue={handleFilterTextChange} />
         </div>
       </div>
-      <div className="h-[85%]">
+      <div className="h-[78%]">
         <AgGridReact
           className="no-scrollbar"
           rowData={filtered}

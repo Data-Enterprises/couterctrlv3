@@ -23,6 +23,7 @@ import PasswordInput from "../../../components/inputs/PasswordInput";
 import Input from "../../../components/inputs/Input";
 import DeleteUserForm from "./DeleteUserForm";
 import UpdatePasswordForm from "./UpdatePasswordForm";
+import UserInfo from "./UserInfo";
 
 const UserForm = () => {
   const toast = useToast();
@@ -138,11 +139,12 @@ const UserForm = () => {
   // if deleting a user or setting a temp password, check these components
   if (isDeletingUser) return <DeleteUserForm />;
   if (selectedUserForm === "update_password") return <UpdatePasswordForm />;
+  if (selectedUserForm === "user_info") return <UserInfo />;
 
   // Otherwise, we're either creating a new user or updating an existing one
   return (
-    <div className="bg-custom-white rounded-b-lg px-4 pb-4 space-y-2">
-      <div className="flex items-center gap-2 select-none mt-4">
+    <div className="bg-custom-white rounded-lg shadow-lg mt-4 p-4 space-y-2">
+      <div className="flex items-center gap-2 select-none">
         <InfoIcon fill="#3b82f6" width={17} height={17} />
         <div className="text-sm font-medium text-content/70">
           Ensure all fields are valid before submitting

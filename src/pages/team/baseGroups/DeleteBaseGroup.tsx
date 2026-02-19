@@ -15,7 +15,6 @@ const DeleteBaseGroup = () => {
   const [groupName, setGroupName] = useState<string>("");
   const [baseGroups, setBaseGroups] = useState<CompanyBaseGroup[]>([]);
   const [showForm, setShowForm] = useState<boolean>(false);
-  const [selectedCompanyId, setSelectedCompanyId] = useState<number>(0);
   const [selectedBgID, setSelectedBgID] = useState<number>(0);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
@@ -39,7 +38,6 @@ const DeleteBaseGroup = () => {
   };
 
   const handleSelect = (id: string | number) => {
-    setSelectedCompanyId(Number(id));
     getData(Number(id));
   };
 
@@ -67,9 +65,7 @@ const DeleteBaseGroup = () => {
   if (isDeleting) {
     return (
       <div className="p-4">
-        <div className="text-center">
-          Are you sure you want to delete
-        </div>
+        <div className="text-center">Are you sure you want to delete</div>
         <div className="text-center">
           <span className="pr-1">Base group =</span>
           <span className="font-medium">

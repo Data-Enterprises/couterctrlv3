@@ -46,7 +46,7 @@ const UpdatePasswordForm = () => {
   };
 
   return (
-    <div className="h-[30vh]">
+    <div className="h-[30vh] bg-custom-white mt-4 rounded-lg shadow-lg">
       {!selectedUserId ? (
         <div className="h-full flex justify-center items-center">
           <div className="font-medium">

@@ -7,6 +7,7 @@ import {
 
 import { WarningIcon } from "../../../components/toasts/Icons";
 import UserForm from "./UserForm";
+import ProfileCard from "./ProfileCard";
 
 const UserControls = () => {
   const dispatch = useAppDispatch();
@@ -50,8 +51,8 @@ const UserControls = () => {
   }
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg max-h-[65vh]">
-      <div className="grid grid-cols-4 gap-4 px-4 pt-4">
+    <div className="max-h-[65vh]">
+      <div className="grid grid-cols-5 gap-2 p-4 bg-custom-white rounded-lg shadow-lg mb-4">
         <button
           className={`${selectedUserForm === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleReset("create")}
@@ -76,7 +77,14 @@ const UserControls = () => {
         >
           Reset Password
         </button>
+        <button
+          className={`${selectedUserForm === "user_info" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+          onClick={() => handleReset("user_info")}
+        >
+          User Info
+        </button>
       </div>
+        <ProfileCard />
       {!selectedUserForm ? (
         <div className="h-full flex justify-center items-start p-4">
           <div className="bg-custom-white p-4 text-[15px] text-center font-medium">
