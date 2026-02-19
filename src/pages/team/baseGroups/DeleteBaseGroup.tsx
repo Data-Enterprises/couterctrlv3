@@ -89,7 +89,7 @@ const DeleteBaseGroup = () => {
   }
 
   return (
-    <div className="bg-custom-white px-4 pb-4 rounded-lg shadow-lg">
+    <div className="bg-custom-white p-4 rounded-lg shadow-lg">
       <SingleSelect
         label="Select Company"
         data={companies}

@@ -86,7 +86,7 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
                     }
                   },
                 );
-                
+
                 const groupsToUnassign = [...alreadyAssignedBgs].filter(
                   (bg) => {
                     if (!base.selectedBaseGroups.some((b) => b.id === bg.id)) {
@@ -94,13 +94,7 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
                     }
                   },
                 );
-                // console.log(
-                //   groupsToAssign,
-                //   groupsToUnassign,
-                //   base.selectedBaseGroups,
-                //   alreadyAssignedBgs
-                // );
-                // return;
+                
                 if (groupsToAssign.length) {
                   assignBaseGroupToUser(
                     url,
@@ -135,13 +129,13 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
   };
 
   const unassignBG = (bgs: number[]) => {
-    // deleteUserBaseGroupLink(url, token, selectedUserId, bgs)
-    //  .then((resp) => {
-    //    const j = resp.data;
-    //    if (j.error === 0) {
-    //      getStores(selectedUserId);
-    //    }
-    // });
+    deleteUserBaseGroupLink(url, token, selectedUserId, bgs)
+     .then((resp) => {
+       const j = resp.data;
+       if (j.error === 0) {
+         getStores(selectedUserId);
+       }
+    });
   };
 
   const getStores = (userid: number) => {

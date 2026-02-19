@@ -8,7 +8,6 @@ import type {
   BaseGroupJsonResp,
   CompanyBaseGroup,
   JsonError,
-  Store,
   User,
 } from "../../../interfaces";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -16,7 +15,6 @@ import {
   setAssignBaseGroups,
   setSelectedUserId,
   setSelectedUserInfo,
-  setSelectedUserStores,
   setUserFilterText,
 } from "../../../features/usersSlice";
 import {
@@ -28,7 +26,6 @@ import {
   setAllSelectedBaseGroups,
   setBaseGroups,
 } from "../../../features/baseGroupSlice";
-import { getUserStores } from "../../../api/user";
 
 const ProfileCard = () => {
   const toast = useToast();
@@ -43,17 +40,32 @@ const ProfileCard = () => {
     userLevels,
     selectedUserForm,
     users,
-    selectedCompanyId,
-    selectedUserId,
     userFilterText,
   } = useAppSelector((state) => state.users);
   const { selectedBaseGroups } = useAppSelector((state) => state.baseGroup);
   const [filtered, setFiltered] = useState<User[]>([]);
+  const [showList, setShowList] = useState<boolean>(false);
+  const [username, setUsername] = useState<string>("");
 
   useEffect(() => {
-    if (userFilterText.trim() === "" && !selectedCompanyId) {
+    dispatch(setUserFilterText(""));
+  }, [selectedUserForm]);
+
+  useEffect(() => {
+    if (username) {
+      setShowList(false);
+      dispatch(setUserFilterText(username));
+    }
+  }, [username]);
+
+  useEffect(() => {
+    if (username) {
+      setUsername("");
+    }
+
+    if (userFilterText.trim() === "" && !username) {
       setFiltered(users);
-    } else {
+    } else if (!username) {
       // one or the othe or both
       const lowerText = userFilterText.toLowerCase();
       const isUsername = filterType === "name";
@@ -67,6 +79,7 @@ const ProfileCard = () => {
         return textCheck;
       });
       setFiltered(filteredUsers);
+      setShowList(true);
     }
   }, [userFilterText, filterType]);
 
@@ -147,24 +160,8 @@ const ProfileCard = () => {
         toast.error("Error fetching user's base groups " + err.message);
       });
 
-    const filterNulls = (arr: Store[]) => {
-      return arr.filter((store) => store.store_name !== null);
-    };
-
-    getUserStores(url, token, selectedUserId)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          const stores = {
-            assigned: filterNulls(j.assigned_stores),
-            unassigned: filterNulls(j.unassigned_stores),
-          };
-          dispatch(setSelectedUserStores(stores));
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error("Error fetching available stores " + err.message);
-      });
+    setUsername(e.username);
+    setShowList(false);
   };
 
   return (
@@ -206,7 +203,7 @@ const ProfileCard = () => {
           </div>
         </div>
       </div>
-      {(selectedUserForm !== "create" && selectedUserForm !== "user_info") && (
+      {selectedUserForm !== "create" && selectedUserForm !== "user_info" && (
         <div className="relative mt-4">
           <div className="grid grid-cols-2 mb-1.5 shadow-md">
             <button
@@ -228,7 +225,7 @@ const ProfileCard = () => {
             setValue={handleFilterTextChange}
           />
           <div
-            className={`${userFilterText.length ? "absolute" : "hidden"} bg-custom-white w-full max-h-40 overflow-hidden overflow-y-scroll no-scrollbar rounded-lg shadow-lg`}
+            className={`${showList ? "absolute" : "hidden"} bg-custom-white w-full max-h-40 overflow-hidden overflow-y-scroll no-scrollbar rounded-lg shadow-lg`}
             style={{ zIndex: 9999 }}
           >
             {filtered.map((u, i) => (

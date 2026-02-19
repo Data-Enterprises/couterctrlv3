@@ -110,7 +110,7 @@ export const unAssignStoreToBaseGroup = async (
   groupid: number,
 ) => {
   const json = await axios({
-    method: "POST",
+    method: "DELETE",
     headers: {
       "Content-Type": "application/json",
       Authorization: "Bearer " + token,
@@ -119,6 +119,44 @@ export const unAssignStoreToBaseGroup = async (
     data: {
       storeid,
       groupid,
+    },
+  });
+  return json;
+};
+
+export const getAllStoresInBaseGroup = async (
+  url: string,
+  token: string,
+  groupid: number,
+) => {
+  const json = await axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "applicatio/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "groups/all_stores_in_base_group",
+    params: {
+      groupid,
+    },
+  });
+  return json;
+};
+
+export const getBGAssignedToUserSplit = async (
+  url: string,
+  token: string,
+  userid: number,
+) => {
+  const json = await axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "groups/base_groups_assigned_to_user_split",
+    params: {
+      userid,
     },
   });
   return json;

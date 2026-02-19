@@ -13,6 +13,7 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 // import SearchUser from "../forms/SearchUser";
 // import UserGrid from "../UserGrid";
 import StoreInfo from "./StoreInfo";
+import AssignBaseGroup from "./AssignBaseGroup";
 
 type StoreFormOption = "assign" | "info" | "bg_assign" | "";
 
@@ -104,7 +105,7 @@ const StoresForm = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="bg-custom-white p-4 w-1/2 rounded-lg shadow-lg grid grid-cols-4 gap-2">
+      <div className="bg-custom-white p-4 w-1/2 rounded-lg shadow-lg grid grid-cols-3 gap-2">
         <button
           className={`${option === "assign" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => setOption("assign")}
@@ -165,6 +166,7 @@ const StoresForm = () => {
       )}
 
       {option === "info" && <StoreInfo />}
+      {option === "bg_assign" && <AssignBaseGroup />}
     </div>
   );
 };

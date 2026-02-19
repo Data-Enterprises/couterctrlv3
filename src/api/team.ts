@@ -48,7 +48,7 @@ export const deleteUserBaseGroupLink = async (
   url: string,
   token: string,
   userid: number,
-  groupid: number,
+  groupid: number[],
 ) => {
   const json = await axios({
     method: "DELETE",

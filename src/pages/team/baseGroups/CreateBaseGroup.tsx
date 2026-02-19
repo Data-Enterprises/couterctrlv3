@@ -5,11 +5,7 @@ import type {
   CompanyBGJsonResp,
   JsonError,
 } from "../../../interfaces";
-import {
-  getBaseGroups,
-  createBaseGroup,
-  updateBaseGroup,
-} from "../../../api/baseGroups";
+import { getBaseGroups, createBaseGroup } from "../../../api/baseGroups";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 
 import SingleSelect from "../../../components/SingleSelect";
@@ -21,10 +17,8 @@ const CreateBaseGroup = () => {
   const [groupName, setGroupName] = useState<string>("");
   const [baseGroups, setBaseGroups] = useState<CompanyBaseGroup[]>([]);
   const [showForm, setShowForm] = useState<boolean>(false);
-  // const [selectedBgID, setSelectedBgID] = useState<number>(0);
   const [showWarning, setShowWarning] = useState<boolean>(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState<number>(0);
-  // const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
   const { url, token } = useAppSelector((state) => state.app);
   const { companies } = useAppSelector((state) => state.user);
@@ -78,33 +72,8 @@ const CreateBaseGroup = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
-  // const handleBgSelect = (id: number, name: string) => {
-  //   if (selectedBgID === id) {
-  //     setGroupName("");
-  //   } else {
-  //     setGroupName(name);
-  //   }
-  //   setSelectedBgID((prev) => (prev === id ? 0 : id));
-  // };
-
-  // const validateDelete = () => {
-  //   setIsDeleting(true);
-  //   setShowForm(false);
-  // };
-
-  // const cancelDelete = () => {
-  //   setIsDeleting(false);
-  //   setShowForm(true);
-  // };
-
-  // const handleDelete = () => {
-  //   updateBaseGroup(url, token, )
-  // };
-
-  // const handleUpdate = () => {};
-
   return (
-    <div className="bg-custom-white px-4 pb-4 rounded-lg shadow-lg">
+    <div className="bg-custom-white p-4 rounded-lg shadow-lg">
       <SingleSelect
         label="Select Company"
         data={companies}
@@ -130,31 +99,7 @@ const CreateBaseGroup = () => {
         </div>
       ) : null}
 
-      {/* {isDeleting ? (
-        <div>
-          <div className="text-center text-sm">
-            Are you sure you want to delete
-          </div>
-          <div className="text-center text-sm">
-            <span className="pr-1">Base group =</span>
-            <span className="font-medium">
-              {baseGroups.find((bg) => bg.id === selectedBgID)!.name}
-            </span>
-            <span>?</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2 mt-4">
-            <button className="btn-themeGreen" onClick={handleDelete}>
-              Yes
-            </button>
-            <button className="btn-themeOrange" onClick={cancelDelete}>
-              No
-            </button>
-          </div>
-        </div>
-      ) : null} */}
-
       {showForm && (
-        // Create Form
         <div className="space-y-2">
           {showWarning ? (
             <div className="font-medium text-sm text-orange-500 text-center">
