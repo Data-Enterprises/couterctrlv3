@@ -55,10 +55,10 @@ const ProfileCard = () => {
   return (
     <div className="w-full">
       <div
-        className={`bg-[rgb(30,45,80)] text-custom-white rounded-lg shadow-lg p-2 text-sm flex gap-2`}
+        className={`bg-[rgb(30,45,80)] text-custom-white rounded-lg shadow-lg p-2 text-sm flex gap-2 mb-4`}
       >
         <UserCircleIcon className="" height={140} width={140} fill="white" />
-        <div>
+        <div className="">
           <div className="flex gap-1">
             <div className="font-medium">Name:</div>
             <div>

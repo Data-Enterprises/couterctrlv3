@@ -116,7 +116,7 @@ const SearchUser = () => {
   };
 
   return (
-    <div className="relative mt-4">
+    <div className="relative">
       <div className="grid grid-cols-2 mb-1.5 shadow-md">
         <button
           className={`${filterType === "name" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200 font-medium text-center rounded-l-lg py-1.5`}

@@ -36,8 +36,6 @@ const UserGrid = () => {
     selectedCompanyId,
     userLevels,
     selectedUserId,
-    // selectedForm,
-    // selectedUserForm,
   } = useAppSelector((state) => state.users);
   const { companies } = useAppSelector((state) => state.user);
   const qs = useAppSelector((state) => state.quicksight);
@@ -169,16 +167,6 @@ const UserGrid = () => {
     }
 
     dispatch(setSelectedUserId(e.data.id));
-    // getBaseGroupsAssignedToUser(context.url, context.token, e.data.id)
-    //   .then((resp) => {
-    //     const j: BaseGroupJsonResp = resp.data;
-    //     if (j.error === 0) {
-    //       dispatch(setAssignBaseGroups([...j.active, ...j.inactive]));
-    //     }
-    //   })
-    //   .catch((err: JsonError) => {
-    //     toast.error("Error fetching user's base groups " + err.message);
-    //   });
 
     const filterNulls = (arr: Store[]) => {
       return arr.filter((store) => store.store_name !== null);

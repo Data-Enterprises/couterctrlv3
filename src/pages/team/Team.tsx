@@ -5,8 +5,10 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 import { getQuicksightUsers } from "../../api/quicksight";
 import { getUserLevels } from "../../api/team";
 import {
+  resetUserInfo,
   setAssignBaseGroups,
   setRefresh,
+  setSelectedUserId,
   setUserLevels,
   setUsers,
 } from "../../features/usersSlice";
@@ -28,6 +30,11 @@ const Team = () => {
   const { refresh, selectedUserId, selectedForm } = useAppSelector(
     (state) => state.users,
   );
+
+  useEffect(() => {
+    dispatch(setSelectedUserId(0));
+    dispatch(resetUserInfo());
+  }, [selectedForm]);
 
   useEffect(() => {
     if (refresh) {
@@ -123,7 +130,9 @@ const Team = () => {
         <div className="min-w-[178px] max-w-[178px]">
           <FormHeader />
         </div>
-        <div className={`${selectedForm !== 3 ? "w-[55%]" : "w-full"} space-y-4`}>
+        <div
+          className={`${selectedForm !== 3 ? "w-[55%]" : "w-full"} space-y-4`}
+        >
           {renderForm()}
         </div>
         {selectedForm !== 3 && (
