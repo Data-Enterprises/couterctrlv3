@@ -1,16 +1,9 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { Company, CompanyBaseGroup } from "../interfaces";
 
-const defaultBG: CompanyBaseGroup = {
-  id: 0,
-  name: "",
-  company: 0,
-};
-
 interface BaseGroupState {
   baseGroups: CompanyBaseGroup[];
   selectedBaseGroups: CompanyBaseGroup[];
-  selectedGroup: CompanyBaseGroup;
   isDeleting: boolean;
   groupName: string;
   company: Company | null;
@@ -21,7 +14,6 @@ interface BaseGroupState {
 const initialState: BaseGroupState = {
   baseGroups: [],
   selectedBaseGroups: [],
-  selectedGroup: defaultBG,
   isDeleting: false,
   groupName: "",
   company: null,
@@ -35,9 +27,6 @@ export const baseGroupSlice = createSlice({
   reducers: {
     setBaseGroups: (state, action: PayloadAction<CompanyBaseGroup[]>) => {
       state.baseGroups = action.payload;
-    },
-    setSelectedGroup: (state, action: PayloadAction<CompanyBaseGroup>) => {
-      state.selectedGroup = action.payload;
     },
     setAllSelectedBaseGroups: (
       state,
@@ -55,16 +44,6 @@ export const baseGroupSlice = createSlice({
       } else {
         state.selectedBaseGroups.push(action.payload);
       }
-    },
-    setFilteredOutSelectedBaseGroups: (
-      state,
-      action: PayloadAction<number>,
-    ) => {
-      const companyId = action.payload;
-      const filteredOut = state.selectedBaseGroups.filter(
-        (bg) => bg.company !== companyId,
-      );
-      state.selectedBaseGroups = filteredOut;
     },
     setIsDeleting: (state, action: PayloadAction<boolean>) => {
       state.isDeleting = action.payload;
@@ -92,12 +71,10 @@ export const baseGroupSlice = createSlice({
 export const {
   resetSelectedBaseGroups,
   setBaseGroups,
-  setSelectedGroup,
   setIsDeleting,
   setGroupName,
   setSelectedBaseGroups,
   setCompany,
-  setFilteredOutSelectedBaseGroups,
   setAllSelectedBaseGroups,
   setBgsToAssign,
   setBgsToUnassign,
