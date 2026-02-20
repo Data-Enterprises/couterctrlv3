@@ -1,17 +1,57 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import type { User } from "../../../interfaces";
-import { setSelectedUserInfo, setUserFilterText } from "../../../features/usersSlice";
-import Input from "../../../components/inputs/Input";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+
+import type {
+  BaseGroup,
+  BaseGroupJsonResp,
+  CompanyBaseGroup,
+  JsonError,
+  User,
+} from "../../../interfaces";
+import {
+  setAssignBaseGroups,
+  setSelectedUserId,
+  setSelectedUserInfo,
+  setUserFilterText,
+} from "../../../features/usersSlice";
+import { getBaseGroupsAssignedToUser } from "../../../api/team";
+import {
+  setAllSelectedBaseGroups,
+  setBaseGroups,
+} from "../../../features/baseGroupSlice";
 
 const SearchUser = () => {
+  const toast = useToast();
   const dispatch = useAppDispatch();
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const { url, token } = useAppSelector((state) => state.app);
   const { userFilterText, selectedCompanyId, users } = useAppSelector(
     (state) => state.users,
   );
 
   const [filterType, setFilterType] = useState<"name" | "email">("name");
   const [filtered, setFiltered] = useState<User[]>([]);
+
+  const handleClickOutside = (e: MouseEvent) => {
+    if (inputRef.current && listRef.current) {
+      if (!listRef.current.contains(e.target as Node)) {
+        if (!inputRef.current.contains(e.target as Node)) {
+          listRef.current.setAttribute("data-display", "closed");
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     if (userFilterText.trim() === "" && !selectedCompanyId) {
@@ -39,15 +79,9 @@ const SearchUser = () => {
 
   const handleUserClick = (e: User) => {
     dispatch(setSelectedUserInfo(e));
-
-    // Validating if the selected user is a registered QuickSight user
-    // if (qs.qsUsers.includes(e.email)) {
-    //   dispatch(setSelectedQsUserEmail(e.email));
-    //   dispatch(setValidUser(true));
-    // } else {
-    //   dispatch(setSelectedQsUserEmail(""));
-    //   dispatch(setValidUser(false));
-    // }
+    if (inputRef.current && listRef.current) {
+      listRef.current.setAttribute("data-display", "closed");
+    }
 
     dispatch(setSelectedUserId(e.id));
     getBaseGroupsAssignedToUser(url, token, e.id)
@@ -73,29 +107,16 @@ const SearchUser = () => {
       .catch((err: JsonError) => {
         toast.error("Error fetching user's base groups " + err.message);
       });
+  };
 
-    const filterNulls = (arr: Store[]) => {
-      return arr.filter((store) => store.store_name !== null);
-    };
-
-    getUserStores(url, token, selectedUserId)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          const stores = {
-            assigned: filterNulls(j.assigned_stores),
-            unassigned: filterNulls(j.unassigned_stores),
-          };
-          dispatch(setSelectedUserStores(stores));
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error("Error fetching available stores " + err.message);
-      });
+  const handleInputRefClick = () => {
+    if (inputRef.current && listRef.current) {
+      listRef.current.setAttribute("data-display", "open");
+    }
   };
 
   return (
-    <div className="relative">
+    <div className="relative mt-4">
       <div className="grid grid-cols-2 mb-1.5 shadow-md">
         <button
           className={`${filterType === "name" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200 font-medium text-center rounded-l-lg py-1.5`}
@@ -110,13 +131,20 @@ const SearchUser = () => {
           Email
         </button>
       </div>
-      <Input
-        label=""
-        value={userFilterText}
-        setValue={handleFilterTextChange}
-      />
+      <div className={`w-full`}>
+        <input
+          ref={inputRef}
+          data-testid="search-user-input"
+          value={userFilterText}
+          onChange={(e) => handleFilterTextChange(e.currentTarget.value)}
+          className={`basic-input focus:border w-full bg-custom-white`}
+          onClick={handleInputRefClick}
+        />
+      </div>
       <div
-        className={`${userFilterText.length ? "absolute" : "hidden"} bg-custom-white w-full max-h-40 overflow-hidden overflow-y-scroll no-scrollbar rounded-lg shadow-lg`}
+        ref={listRef}
+        data-display="closed"
+        className={`data-[display=open]:absolute data-[display=closed]:hidden bg-custom-white w-full max-h-40 overflow-hidden overflow-y-scroll no-scrollbar rounded-lg shadow-lg`}
         style={{ zIndex: 9999 }}
       >
         {filtered.map((u, i) => (

@@ -1,87 +1,20 @@
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { roles } from "..";
 import { UserCircleIcon } from "@heroicons/react/24/solid";
-import { useEffect, useState } from "react";
-import Input from "../../../components/inputs/Input";
-import type {
-  BaseGroup,
-  BaseGroupJsonResp,
-  CompanyBaseGroup,
-  JsonError,
-  User,
-} from "../../../interfaces";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import {
-  setAssignBaseGroups,
-  setSelectedUserId,
-  setSelectedUserInfo,
-  setUserFilterText,
-} from "../../../features/usersSlice";
-import {
-  setSelectedQsUserEmail,
-  setValidUser,
-} from "../../../features/qsSlice";
-import { getBaseGroupsAssignedToUser } from "../../../api/team";
-import {
-  setAllSelectedBaseGroups,
-  setBaseGroups,
-} from "../../../features/baseGroupSlice";
+import { useEffect } from "react";
+import { setUserFilterText } from "../../../features/usersSlice";
+import SearchUser from "./SearchUser";
 
 const ProfileCard = () => {
-  const toast = useToast();
   const dispatch = useAppDispatch();
-  const qs = useAppSelector((state) => state.quicksight);
-  const { url, token } = useAppSelector((state) => state.app);
   const { companies } = useAppSelector((state) => state.user);
-  const [filterType, setFilterType] = useState<"name" | "email">("name");
-  const {
-    userInfo,
-    userCompanyIds,
-    userLevels,
-    selectedUserForm,
-    users,
-    userFilterText,
-  } = useAppSelector((state) => state.users);
+  const { userInfo, userCompanyIds, userLevels, selectedUserForm } =
+    useAppSelector((state) => state.users);
   const { selectedBaseGroups } = useAppSelector((state) => state.baseGroup);
-  const [filtered, setFiltered] = useState<User[]>([]);
-  const [showList, setShowList] = useState<boolean>(false);
-  const [username, setUsername] = useState<string>("");
 
   useEffect(() => {
     dispatch(setUserFilterText(""));
   }, [selectedUserForm]);
-
-  useEffect(() => {
-    if (username) {
-      setShowList(false);
-      dispatch(setUserFilterText(username));
-    }
-  }, [username]);
-
-  useEffect(() => {
-    if (username) {
-      setUsername("");
-    }
-
-    if (userFilterText.trim() === "" && !username) {
-      setFiltered(users);
-    } else if (!username) {
-      // one or the othe or both
-      const lowerText = userFilterText.toLowerCase();
-      const isUsername = filterType === "name";
-
-      const filteredUsers = users.filter((user) => {
-        if (!isUsername && user.email !== null) {
-          return user.email.toLowerCase().includes(lowerText);
-        }
-
-        const textCheck = user.username.toLowerCase().includes(lowerText);
-        return textCheck;
-      });
-      setFiltered(filteredUsers);
-      setShowList(true);
-    }
-  }, [userFilterText, filterType]);
 
   const showCompanies = () => {
     const filtered = [...companies].filter((c) =>
@@ -117,51 +50,6 @@ const ProfileCard = () => {
     }
     const names = selectedBaseGroups.map((bg) => bg.name).join(", ");
     return names;
-  };
-
-  const handleFilterTextChange = (x: string) => {
-    dispatch(setUserFilterText(x));
-  };
-
-  const handleUserClick = (e: User) => {
-    dispatch(setSelectedUserInfo(e));
-
-    // Validating if the selected user is a registered QuickSight user
-    if (qs.qsUsers.includes(e.email)) {
-      dispatch(setSelectedQsUserEmail(e.email));
-      dispatch(setValidUser(true));
-    } else {
-      dispatch(setSelectedQsUserEmail(""));
-      dispatch(setValidUser(false));
-    }
-
-    dispatch(setSelectedUserId(e.id));
-    getBaseGroupsAssignedToUser(url, token, e.id)
-      .then((resp) => {
-        const j: BaseGroupJsonResp = resp.data;
-        if (j.error === 0) {
-          dispatch(setBaseGroups(j.active));
-          dispatch(setAssignBaseGroups([...j.active, ...j.inactive]));
-          const formatted = [...j.active].reduce(
-            (acc: CompanyBaseGroup[], curr: BaseGroup) => {
-              acc.push({
-                id: curr.id,
-                company: curr.company,
-                name: curr.name,
-              });
-              return acc;
-            },
-            [],
-          );
-          dispatch(setAllSelectedBaseGroups(formatted));
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error("Error fetching user's base groups " + err.message);
-      });
-
-    setUsername(e.username);
-    setShowList(false);
   };
 
   return (
@@ -203,43 +91,9 @@ const ProfileCard = () => {
           </div>
         </div>
       </div>
-      {selectedUserForm !== "create" && selectedUserForm !== "user_info" && (
-        <div className="relative mt-4">
-          <div className="grid grid-cols-2 mb-1.5 shadow-md">
-            <button
-              className={`${filterType === "name" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200 font-medium text-center rounded-l-lg py-1.5`}
-              onClick={() => setFilterType("name")}
-            >
-              Username
-            </button>
-            <button
-              className={`${filterType === "email" ? "bg-orange-200" : "bg-custom-white"}  font-medium text-center rounded-r-lg py-1.5`}
-              onClick={() => setFilterType("email")}
-            >
-              Email
-            </button>
-          </div>
-          <Input
-            label=""
-            value={userFilterText}
-            setValue={handleFilterTextChange}
-          />
-          <div
-            className={`${showList ? "absolute" : "hidden"} bg-custom-white w-full max-h-40 overflow-hidden overflow-y-scroll no-scrollbar rounded-lg shadow-lg`}
-            style={{ zIndex: 9999 }}
-          >
-            {filtered.map((u, i) => (
-              <div
-                key={i}
-                className="px-2 py-0.5 hover:bg-blue-200 cursor-pointer transition-all duration-200"
-                onClick={() => handleUserClick(u)}
-              >
-                {u.username}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {selectedUserForm !== "create" && selectedUserForm !== "user_info" ? (
+        <SearchUser />
+      ) : null}
     </div>
   );
 };
