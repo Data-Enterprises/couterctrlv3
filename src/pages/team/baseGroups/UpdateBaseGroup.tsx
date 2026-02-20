@@ -57,8 +57,13 @@ const UpdateBaseGroup = () => {
   };
 
   const handleBGSelect = (id: number, name: string) => {
-    setSelectedBgID(id);
-    setGroupName(name);
+    if (selectedBgID === id) {
+      setSelectedBgID(0);
+      setGroupName("");
+    } else {
+      setSelectedBgID(id);
+      setGroupName(name);
+    }
   };
 
   return (
@@ -76,11 +81,11 @@ const UpdateBaseGroup = () => {
           <div className="font-medium flex justify-between">
             <div>Select group to update</div>
           </div>
-          <div className="select-none grid grid-cols-2 bg-bkg/80 rounded-lg p-1 min-h-20 max-h-32 overflow-hidden overflow-y-scroll no-scrollbar">
+          <div className="select-none grid rounded-lg p-1 min-h-20 max-h-32 overflow-hidden overflow-y-auto">
             {baseGroups.map((bg) => (
               <div
                 key={bg.id}
-                className={`${selectedBgID === bg.id && "bg-orange-200"} rounded-full py-0.5 px-2 transition-all duration-200`}
+                className={`${selectedBgID === bg.id && "bg-orange-200"} rounded-full py-1 pl-2 border-b transition-all duration-200 cursor-pointer hover:bg-blue-200`}
                 onClick={() => handleBGSelect(bg.id, bg.name)}
               >
                 {bg.name}

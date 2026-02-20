@@ -24,6 +24,7 @@ import FormHeader from "./forms/FormHeader";
 import CounterCtrlStores from "./assignModal/CounterCtrlStores";
 import StoresForm from "./stores/StoresForm";
 import BaseGroupControls from "./baseGroups/BaseGroupControls";
+import CompanyControls from "./company/CompanyControls";
 
 const Team = () => {
   const toast = useToast();
@@ -131,6 +132,8 @@ const Team = () => {
         return <BaseGroupControls />;
       case 3:
         return <StoresForm />;
+      case 4:
+        return <CompanyControls />
       default:
         return null;
     }

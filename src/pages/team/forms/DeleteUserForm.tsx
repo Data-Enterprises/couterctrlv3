@@ -16,7 +16,7 @@ const DeleteUserForm = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          toast.success("User Delete, list of users has been refreshed");
+          toast.success("User Deleted, list of users has been refreshed");
           dispatch(resetUserInfo());
           dispatch(setRefresh(true));
           dispatch(setIsDeletingUser(false));

@@ -81,7 +81,7 @@ const Unassigned = () => {
   return (
     <div className="p-2 bg-custom-white rounded-lg shadow-lg h-[65vh]">
       <label htmlFor="unassigned-user-stores" className="font-medium text-sm">
-        Unassigned - {stores.length}
+        <span>Unassigned - {stores.length}</span>
       </label>
       <input
         data-testid="ctrl-unassigned-filter"

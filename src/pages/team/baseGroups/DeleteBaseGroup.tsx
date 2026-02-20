@@ -51,20 +51,25 @@ const DeleteBaseGroup = () => {
           setGroupName("");
           setShowForm(false);
           setIsDeleting(false);
-          toast.success("Base group updated");
+          toast.success("Base group deleted");
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
   };
 
   const handleBGSelect = (id: number, name: string) => {
-    setSelectedBgID(id);
-    setGroupName(name);
+    if (selectedBgID === id) {
+      setSelectedBgID(0);
+      setGroupName("");
+    } else {
+      setSelectedBgID(id);
+      setGroupName(name);
+    }
   };
 
   if (isDeleting) {
     return (
-      <div className="p-4">
+      <div className="p-4 bg-custom-white rounded-lg shadow-lg">
         <div className="text-center">Are you sure you want to delete</div>
         <div className="text-center">
           <span className="pr-1">Base group =</span>
@@ -101,13 +106,13 @@ const DeleteBaseGroup = () => {
       {baseGroups.length ? (
         <div className="text-sm my-4">
           <div className="font-medium flex justify-between">
-            <div>Select group to update</div>
+            <div>Select group to delete</div>
           </div>
-          <div className="select-none grid grid-cols-2 bg-bkg/80 rounded-lg p-1 min-h-20 max-h-32 overflow-hidden overflow-y-scroll no-scrollbar">
+          <div className="select-none grid rounded-lg p-1 min-h-20 max-h-32 overflow-hidden overflow-y-auto">
             {baseGroups.map((bg) => (
               <div
                 key={bg.id}
-                className={`${selectedBgID === bg.id && "bg-orange-200"} rounded-full py-0.5 px-2 transition-all duration-200`}
+                className={`${selectedBgID === bg.id && "bg-orange-200"} rounded-full py-1 pl-2 border-b transition-all duration-200 cursor-pointer hover:bg-blue-200`}
                 onClick={() => handleBGSelect(bg.id, bg.name)}
               >
                 {bg.name}

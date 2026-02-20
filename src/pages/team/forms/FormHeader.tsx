@@ -38,6 +38,12 @@ const FormHeader = () => {
         >
           Stores
         </div>
+        <div
+          className={`${selectedForm === 4 ? "bg-orange-200" : ""} rounded-full hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
+          onClick={() => handleFormSelection(4)}
+        >
+          Companies
+        </div>
       </div>
     </div>
   );

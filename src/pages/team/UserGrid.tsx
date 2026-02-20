@@ -140,7 +140,7 @@ const UserGrid = () => {
             (c) => c.company === 5 && c.name === "DCR",
           );
 
-          if (isDcrUser) {
+          if (isDcrUser) { // aka Stephn/Tommy/Mike
             dispatch(setUsers(j.users));
             setFiltered(j.users);
           } else {

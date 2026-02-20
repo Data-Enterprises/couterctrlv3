@@ -73,8 +73,11 @@ const Assigned = () => {
 
   return (
     <div className="p-2 bg-custom-white rounded-lg shadow-lg h-[65vh]">
-      <label htmlFor="assigned-user-stores" className="font-medium text-sm">
-        Assigned - {stores.length}
+      <label
+        htmlFor="assigned-user-stores"
+        className="font-medium text-sm"
+      >
+        <span>Assigned - {stores.length}</span>
       </label>
       <input
         data-testid="ctrl-assigned-filter"

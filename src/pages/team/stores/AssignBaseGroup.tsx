@@ -21,18 +21,16 @@ const AssignBaseGroup = () => {
   const [baseGroups, setBaseGroups] = useState<BaseGroup[]>([]);
   const [unassignedBGStores, setUnassignedBGStores] = useState<Store[]>([]);
   const [assignedBGStores, setAssignedBGStores] = useState<Store[]>([]);
-  const [storeToAssign, setStoreToAssign] = useState<number>(0);
-  const [storeToUnassign, setStoreToUnassign] = useState<number>(0);
+  const [storesToAssign, setStoresToAssign] = useState<number[]>([]);
+  const [storesToUnassign, setStoresToUnassign] = useState<number[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<number>(0);
   const [showCols, setShowCols] = useState<boolean>(false);
-
-
 
   const handleSelect = (id: string | number) => {
     setBaseGroups([]);
     setShowCols(false);
-    setStoreToAssign(0);
-    setStoreToUnassign(0);
+    setStoresToAssign([]);
+    setStoresToUnassign([]);
     setSelectedGroupId(0);
     setAssignedBGStores([]);
     setUnassignedBGStores([]);
@@ -53,8 +51,8 @@ const AssignBaseGroup = () => {
   };
 
   const getBgStores = (groupid: number) => {
-    setStoreToAssign(0);
-    setStoreToUnassign(0);
+    setStoresToAssign([]);
+    setStoresToUnassign([]);
     setSelectedGroupId(groupid);
     getAllStoresInBaseGroup(url, token, groupid)
       .then((resp) => {
@@ -73,14 +71,26 @@ const AssignBaseGroup = () => {
     column: "assigned" | "unassigned",
   ) => {
     if (column === "assigned") {
-      setStoreToUnassign((prev) => (prev === storeid ? 0 : storeid));
+      setStoresToUnassign((prev) => {
+        if (prev.includes(storeid)) {
+          return prev.filter((id) => id !== storeid);
+        } else {
+          return [...prev, storeid];
+        }
+      });
     } else {
-      setStoreToAssign((prev) => (prev === storeid ? 0 : storeid));
+      setStoresToAssign((prev) => {
+        if (prev.includes(storeid)) {
+          return prev.filter((id) => id !== storeid);
+        } else {
+          return [...prev, storeid];
+        }
+      });
     }
   };
 
   const handleAssignStore = () => {
-    assignStoreToBaseGroup(url, token, storeToAssign, selectedGroupId)
+    assignStoreToBaseGroup(url, token, storesToAssign, selectedGroupId)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
@@ -91,7 +101,31 @@ const AssignBaseGroup = () => {
   };
 
   const handleUnassignStore = () => {
-    unAssignStoreToBaseGroup(url, token, storeToUnassign, selectedGroupId)
+    unAssignStoreToBaseGroup(url, token, storesToUnassign, selectedGroupId)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          getBgStores(selectedGroupId);
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+  };
+
+  const handleAssignAll = () => {
+    const ids = unassignedBGStores.map((bg) => bg.storeid);
+    assignStoreToBaseGroup(url, token, ids, selectedGroupId)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          getBgStores(selectedGroupId);
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+  };
+
+  const handleUnassignAll = () => {
+    const ids = assignedBGStores.map((bg) => bg.storeid);
+    unAssignStoreToBaseGroup(url, token, ids, selectedGroupId)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
@@ -103,7 +137,7 @@ const AssignBaseGroup = () => {
 
   return (
     <div className="flex gap-4">
-      <div className="bg-custom-white rounded-lg shadow-lg p-4 max-h-[29vh] w-[50%]">
+      <div className="bg-custom-white rounded-lg shadow-lg p-4 max-h-[32vh] w-[50%]">
         <SingleSelect
           label="Select Company"
           data={companies}
@@ -116,7 +150,7 @@ const AssignBaseGroup = () => {
             <div className="font-medium flex justify-between">
               <div>Groups</div>
             </div>
-            <div className="select-none grid grid-cols-3 bg-bkg/80 rounded-lg p-1 max-h-28 overflow-hidden overflow-y-scroll no-scrollbar">
+            <div className="select-none grid rounded-lg max-h-32 overflow-hidden overflow-y-auto">
               {baseGroups.map((bg) => (
                 <div
                   key={bg.id}
@@ -142,7 +176,7 @@ const AssignBaseGroup = () => {
                 <div
                   key={store.storeid}
                   data-testid={`unassigned-store-${store.storeid}`}
-                  className={`${storeToAssign === store.storeid ? "bg-emerald-200" : "bg-custom-white"} flex items-center justify-between rounded-lg shadow-md p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
+                  className={`${storesToAssign.includes(store.storeid) ? "bg-emerald-200" : "bg-custom-white"} flex items-center justify-between rounded-lg shadow-md p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
                   onClick={() => handleStoreClick(store.storeid, "unassigned")}
                 >
                   <div>
@@ -156,12 +190,20 @@ const AssignBaseGroup = () => {
                 </div>
               ))}
             </div>
-            <button
-              className="btn-themeBlue w-full"
-              onClick={handleAssignStore}
-            >
-              Assign
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                className="btn-themeGreen w-full"
+                onClick={handleAssignStore}
+              >
+                Assign
+              </button>
+              <button
+                className="btn-themeGreen w-full"
+                onClick={handleAssignAll}
+              >
+                Assign All
+              </button>
+            </div>
           </div>
           <div className="bg-custom-white p-2 w-[49%] rounded-lg shadow-lg h-[70vh] absolute translate-x-[105%]">
             <div className="text-sm font-medium">
@@ -173,7 +215,7 @@ const AssignBaseGroup = () => {
                 <div
                   key={store.storeid}
                   data-testid={`assigned-store-${store.storeid}`}
-                  className={`${storeToUnassign === store.storeid ? "bg-emerald-200" : "bg-custom-white"} flex items-center justify-between rounded-lg shadow-md p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
+                  className={`${storesToUnassign.includes(store.storeid) ? "bg-emerald-200" : "bg-custom-white"} flex items-center justify-between rounded-lg shadow-md p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
                   onClick={() => handleStoreClick(store.storeid, "assigned")}
                 >
                   <div>
@@ -187,12 +229,20 @@ const AssignBaseGroup = () => {
                 </div>
               ))}
             </div>
-            <button
-              className="btn-themeBlue w-full"
-              onClick={handleUnassignStore}
-            >
-              Unassign
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                className="btn-themeGreen w-full"
+                onClick={handleUnassignStore}
+              >
+                Unassign
+              </button>
+              <button
+                className="btn-themeGreen w-full px-0"
+                onClick={handleUnassignAll}
+              >
+                Unassign All
+              </button>
+            </div>
           </div>
         </div>
       )}

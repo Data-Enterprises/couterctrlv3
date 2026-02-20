@@ -28,16 +28,20 @@ const SearchUser = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const { url, token } = useAppSelector((state) => state.app);
-  const { userFilterText, selectedCompanyId, users, selectedUserId } = useAppSelector(
-    (state) => state.users,
-  );
+  const { userFilterText, selectedCompanyId, users, selectedUserId, selectedUserForm } =
+    useAppSelector((state) => state.users);
+  const [username, setUsername] = useState<string>("");
 
   const [filterType, setFilterType] = useState<"name" | "email">("name");
   const [filtered, setFiltered] = useState<User[]>([]);
 
   useEffect(() => {
+    setUsername("");
+  }, [selectedUserForm]);
+
+  useEffect(() => {
     dispatch(setUserFilterText(""));
-  }, [selectedUserId])
+  }, [selectedUserId]);
 
   const handleClickOutside = (e: MouseEvent) => {
     if (inputRef.current && listRef.current) {
@@ -58,6 +62,7 @@ const SearchUser = () => {
   }, []);
 
   useEffect(() => {
+    setUsername("");
     if (userFilterText.trim() === "" && !selectedCompanyId) {
       setFiltered(users);
     } else {
@@ -82,6 +87,7 @@ const SearchUser = () => {
   };
 
   const handleUserClick = (e: User) => {
+    setUsername(e.username);
     dispatch(setSelectedUserInfo(e));
     if (inputRef.current && listRef.current) {
       listRef.current.setAttribute("data-display", "closed");
@@ -139,7 +145,7 @@ const SearchUser = () => {
         <input
           ref={inputRef}
           data-testid="search-user-input"
-          value={userFilterText}
+          value={username ? username : userFilterText}
           onChange={(e) => handleFilterTextChange(e.currentTarget.value)}
           className={`basic-input focus:border w-full bg-custom-white`}
           onClick={handleInputRefClick}

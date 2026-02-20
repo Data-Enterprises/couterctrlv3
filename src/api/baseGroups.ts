@@ -85,7 +85,7 @@ export const deleteBaseGroup = async (
 export const assignStoreToBaseGroup = async (
   url: string,
   token: string,
-  storeid: number,
+  storeids: number[],
   groupid: number,
 ) => {
   const json = await axios({
@@ -96,7 +96,7 @@ export const assignStoreToBaseGroup = async (
     },
     url: url + "stores/assign_store_to_base_group_link",
     data: {
-      storeid,
+      storeids,
       groupid,
     },
   });
@@ -106,7 +106,7 @@ export const assignStoreToBaseGroup = async (
 export const unAssignStoreToBaseGroup = async (
   url: string,
   token: string,
-  storeid: number,
+  storeids: number[],
   groupid: number,
 ) => {
   const json = await axios({
@@ -117,7 +117,7 @@ export const unAssignStoreToBaseGroup = async (
     },
     url: url + "stores/delete_store_to_base_group_link",
     data: {
-      storeid,
+      storeids,
       groupid,
     },
   });
