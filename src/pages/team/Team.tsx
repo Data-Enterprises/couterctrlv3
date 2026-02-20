@@ -8,6 +8,8 @@ import {
   resetUserInfo,
   setAssignBaseGroups,
   setRefresh,
+  setSelectedForm,
+  setSelectedUserForm,
   setSelectedUserId,
   setUserLevels,
   setUsers,
@@ -30,6 +32,15 @@ const Team = () => {
   const { refresh, selectedUserId, selectedForm } = useAppSelector(
     (state) => state.users,
   );
+
+  useEffect(() => {
+    return () => {
+      dispatch(setSelectedUserId(0));
+      dispatch(resetUserInfo());
+      dispatch(setSelectedForm(0));
+      dispatch(setSelectedUserForm(""));
+    };
+  }, []);
 
   useEffect(() => {
     dispatch(setSelectedUserId(0));

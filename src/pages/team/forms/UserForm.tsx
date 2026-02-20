@@ -244,6 +244,7 @@ const UserForm = () => {
             onSelect={handleBaseGroupSelect}
             resetQuery={true}
             defaultQuery={baseGroups.length === 0 ? "Select company first" : ""}
+            openMaxHeight="data-[display=open]:max-h-[115px]"
           />
           {selectedUserForm === "create" && (
             <PasswordInput
