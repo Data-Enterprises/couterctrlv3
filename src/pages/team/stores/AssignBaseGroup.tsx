@@ -116,11 +116,11 @@ const AssignBaseGroup = () => {
             <div className="font-medium flex justify-between">
               <div>Groups</div>
             </div>
-            <div className="select-none grid grid-cols-2 bg-bkg/80 rounded-lg p-1 min-h-28 max-h-28 overflow-hidden overflow-y-scroll no-scrollbar">
+            <div className="select-none grid grid-cols-3 bg-bkg/80 rounded-lg p-1 max-h-28 overflow-hidden overflow-y-scroll no-scrollbar">
               {baseGroups.map((bg) => (
                 <div
                   key={bg.id}
-                  className={`${selectedGroupId === bg.id && "bg-orange-200"} py-0.5 px-2 transition-all duration-200`}
+                  className={`${selectedGroupId === bg.id && "bg-orange-200"} rounded-full py-0.5 px-2 transition-all duration-200`}
                   onClick={() => getBgStores(bg.id)}
                 >
                   {bg.name}
@@ -131,8 +131,8 @@ const AssignBaseGroup = () => {
         ) : null}
       </div>
       {showCols && (
-        <div className="flex gap-4 w-[49%]">
-          <div className="bg-custom-white p-2 w-1/2 rounded-lg shadow-lg h-[70vh]">
+        <div className="flex gap-4 w-[49%] relative">
+          <div className="bg-custom-white p-2 w-[49%] rounded-lg shadow-lg h-[70vh] absolute">
             <div className="text-sm font-medium">
               Unassigned - {unassignedBGStores.length}
             </div>
@@ -163,7 +163,7 @@ const AssignBaseGroup = () => {
               Assign
             </button>
           </div>
-          <div className="bg-custom-white p-2 w-1/2 rounded-lg shadow-lg h-[70vh]">
+          <div className="bg-custom-white p-2 w-[49%] rounded-lg shadow-lg h-[70vh] absolute translate-x-[105%]">
             <div className="text-sm font-medium">
               Assigned - {assignedBGStores.length}
             </div>
