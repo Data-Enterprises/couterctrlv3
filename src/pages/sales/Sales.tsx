@@ -116,7 +116,7 @@ const Sales = () => {
         <div className={gridContainer}>
           <div
             ref={leftColRef}
-            className="md:grid h-full md:grid-rows-[25%_74%] md:gap-4"
+            className={`h-full md:grid-rows-[25%_74%] md:gap-4`}
           >
             <div
               ref={topLeftRef}
@@ -130,7 +130,7 @@ const Sales = () => {
             </div>
             <div
               style={{ minHeight: height, maxHeight: height }}
-              className="overflow-y-scroll no-scrollbar"
+              className="overflow-y-scroll no-scrollbar mt-4"
             >
               <SalesPanels />
             </div>
