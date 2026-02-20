@@ -25,30 +25,12 @@ const UserControls = () => {
     return false;
   };
 
-  const handleReset = (x: UserFormType) => {
-    dispatch(setSelectedUserForm(x));
+  const handleReset = (x: UserFormType, isResettingForm = true) => {
+    if (isResettingForm) {
+      dispatch(setSelectedUserForm(x));
+    }
     dispatch(resetUserInfo());
   };
-
-  // If user is selected from the grid but logged in user is not authorized to make changes
-  if (isOutranked()) {
-    return (
-      <div className="flex justify-center items-center">
-        <div className="bg-custom-white p-4 rounded-lg shadow-lg font-medium text-sm flex flex-col items-center">
-          <WarningIcon fill="#f97316" height={56} width={56} />
-          <div className="mb-2">We're sorry...</div>
-          <div>You are not authorized to make changes to this user</div>
-          <div>Please contact them if assistance is needed</div>
-          <button
-            className="btn-themeBlue py-1.5 mt-2"
-            onClick={() => handleReset("")}
-          >
-            Reset
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="max-h-[65vh]">
@@ -100,7 +82,24 @@ const UserControls = () => {
       ) : (
         <>
           <ProfileCard />
-          <UserForm />
+          {!isOutranked() ? (
+            <UserForm />
+          ) : (
+            <div className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg">
+              <div className="font-medium text-sm flex flex-col items-center">
+                <WarningIcon fill="#f97316" height={56} width={56} />
+                <div className="mb-2">We're sorry...</div>
+                <div>You are not authorized to make changes to this user</div>
+                <div>Please contact them if assistance is needed</div>
+                <button
+                  className="btn-themeBlue py-1.5 mt-2"
+                  onClick={() => handleReset("", false)}
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

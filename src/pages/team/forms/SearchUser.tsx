@@ -28,12 +28,16 @@ const SearchUser = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const { url, token } = useAppSelector((state) => state.app);
-  const { userFilterText, selectedCompanyId, users } = useAppSelector(
+  const { userFilterText, selectedCompanyId, users, selectedUserId } = useAppSelector(
     (state) => state.users,
   );
 
   const [filterType, setFilterType] = useState<"name" | "email">("name");
   const [filtered, setFiltered] = useState<User[]>([]);
+
+  useEffect(() => {
+    dispatch(setUserFilterText(""));
+  }, [selectedUserId])
 
   const handleClickOutside = (e: MouseEvent) => {
     if (inputRef.current && listRef.current) {

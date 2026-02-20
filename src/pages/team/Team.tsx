@@ -131,7 +131,7 @@ const Team = () => {
           <FormHeader />
         </div>
         <div
-          className={`${selectedForm !== 3 ? "w-[60%]" : "w-full"} space-y-4`}
+          className={`${selectedForm !== 3 ? "w-[63%]" : "w-full"} space-y-4`}
         >
           {renderForm()}
         </div>

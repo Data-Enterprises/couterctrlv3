@@ -26,7 +26,16 @@ const AssignBaseGroup = () => {
   const [selectedGroupId, setSelectedGroupId] = useState<number>(0);
   const [showCols, setShowCols] = useState<boolean>(false);
 
+
+
   const handleSelect = (id: string | number) => {
+    setBaseGroups([]);
+    setShowCols(false);
+    setStoreToAssign(0);
+    setStoreToUnassign(0);
+    setSelectedGroupId(0);
+    setAssignedBGStores([]);
+    setUnassignedBGStores([]);
     getData(Number(id));
   };
 
