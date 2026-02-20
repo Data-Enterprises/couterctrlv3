@@ -28,7 +28,7 @@ const Team = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
-  const { companies } = useAppSelector((state) => state.user);
+  const companies = useAppSelector((state) => state.user.companies);
   const { refresh, selectedUserId, selectedForm } = useAppSelector(
     (state) => state.users,
   );
