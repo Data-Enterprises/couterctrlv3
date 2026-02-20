@@ -2,8 +2,6 @@ import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
-import { getQuicksightUsers } from "../../api/quicksight";
-import { getUserLevels } from "../../api/team";
 import {
   resetUserInfo,
   setAssignBaseGroups,
@@ -17,10 +15,13 @@ import {
 import { setQsUsers } from "../../features/qsSlice";
 import type { JsonError, User, UserLevelJsonResp } from "../../interfaces";
 
+import { getQuicksightUsers } from "../../api/quicksight";
+import { getUserLevels } from "../../api/team";
+import { getAllUsers } from "../../api/user";
+
 import UserControls from "./forms/UserControls";
 import FormHeader from "./forms/FormHeader";
 import CounterCtrlStores from "./assignModal/CounterCtrlStores";
-import { getAllUsers } from "../../api/user";
 import StoresForm from "./stores/StoresForm";
 import BaseGroupControls from "./baseGroups/BaseGroupControls";
 
