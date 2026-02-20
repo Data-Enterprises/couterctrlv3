@@ -25,17 +25,20 @@ import {
 import { addDays, formatGoliathDate } from "../../utils";
 import type { JsonError } from "../../interfaces";
 import { useLeftColHeight } from "./utils/hooks";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ReportBuilder from "./reports/ReportBuilder";
+import LoadingIndicator from "../../components/loading/LoadingIndicator";
 
 const Sales = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
+  const { username } = useAppSelector((state) => state.user);
   const { queryChecker, weeklySales, hourlySales, subSales, topTenItems } =
     useAppSelector((state) => state.sales);
   const { height, topLeftRef, leftColRef } = useLeftColHeight();
+  const [showLoading, setShowLoading] = useState<boolean>(false);
 
   // On mount, get data if user prefs has a last store or group, meaning there is a last search type as well
   useEffect(() => {
@@ -56,6 +59,7 @@ const Sales = () => {
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 
     dispatch(setPanelsLoading(true));
+    setShowLoading(true);
     getWeekly(
       context.url,
       context.token,
@@ -78,7 +82,10 @@ const Sales = () => {
       .catch((err: JsonError) => {
         toast.error("Error getting Sales Two Dates data: " + err.message);
       })
-      .finally(() => dispatch(setPanelsLoading(false)));
+      .finally(() => {
+        dispatch(setPanelsLoading(false));
+        setShowLoading(false);
+      });
   };
 
   const pageContainer = context.isDesktop
@@ -99,6 +106,8 @@ const Sales = () => {
     !hourlySales.length &&
     !weeklySales.length &&
     !subSales.length;
+
+  const hasLastSearch = search.lastGroup === 0 && search.lastStore === 0;
 
   return (
     <div data-testid="sales-page" className={pageContainer}>
@@ -127,9 +136,24 @@ const Sales = () => {
             </div>
           </div>
 
-          {isLoading && !isReady ? (
+          {hasLastSearch ? (
+            <div className="flex justify-center items-center">
+              <div className="bg-custom-white rounded-lg shadow-lg p-4 text-center text-sm font-medium">
+                <div className="mb-1">
+                  Welcome to your first login {username}!
+                </div>
+                <div className="mb-1">
+                  Please select a store/group to show sales data
+                </div>
+                <div>Future successful logins will automatically</div>
+                <div>pull data from your last search</div>
+              </div>
+            </div>
+          ) : isLoading && !isReady ? (
             <div className="relative">
-              {/* <LoadingIndicator message="Loading sales data..." /> */}
+              {showLoading && (
+                <LoadingIndicator message="Loading sales data..." />
+              )}
             </div>
           ) : isReady ? (
             <div className="md:grid h-full md:grid-rows-[20%_78%] md:gap-4 overflow-hidden">
@@ -169,9 +193,24 @@ const Sales = () => {
             </div>
           </div>
 
-          {isLoading && !isReady ? (
+          {hasLastSearch ? (
+            <div className="flex justify-center items-center">
+              <div className="bg-custom-white rounded-lg shadow-lg p-4 text-center text-sm font-medium">
+                <div className="mb-1">
+                  Welcome to your first login {username}!
+                </div>
+                <div className="mb-1">
+                  Please select a store/group to show sales data
+                </div>
+                <div>Future successful logins will automatically</div>
+                <div>pull data from your last search</div>
+              </div>
+            </div>
+          ) : isLoading && !isReady ? (
             <div className="relative">
-              {/* <LoadingIndicator message="Loading sales data..." /> */}
+              {showLoading && (
+                <LoadingIndicator message="Loading sales data..." />
+              )}
             </div>
           ) : isReady ? (
             <div className="overflow-hidden">

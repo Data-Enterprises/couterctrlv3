@@ -63,7 +63,7 @@ const UserDataLoader = () => {
           const lastGroup = !prefs.last_group ? 0 : prefs.last_group;
           dispatch(setLastGroup(lastGroup));
           const type = !prefs.last_search_type
-            ? "Stores"
+            ? "Store"
             : getDefaultType(prefs.last_search_type);
           dispatch(setType(type));
           const lastRoute = !prefs.last_route ? "/" : prefs.last_route;
