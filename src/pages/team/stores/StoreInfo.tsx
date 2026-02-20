@@ -33,9 +33,9 @@ const StoreInfo = () => {
   }, [filtered]);
 
   return (
-    <div className="">
-      <div className="w-1/2 mb-4">
-        <div className="grid grid-cols-2 w-1/2 gap-y-1">
+    <div className="w-[50%]">
+      <div className="mb-4">
+        <div className="grid grid-cols-2 gap-y-1">
           <button
             className={`py-1.5 ${filterType === "store_name" ? "bg-orange-200" : "bg-custom-white"} rounded-l-lg transition-all duration-200`}
             onClick={() => setFilterType("store_name")}
@@ -56,14 +56,14 @@ const StoreInfo = () => {
           />
         </div>
       </div>
-      <div className="grid grid-cols-[0.8fr_0.9fr_1.5fr_0.8fr_1fr] w-1/2 bg-[rgb(30,45,80)] rounded-t-lg text-custom-white py-1 text-sm font-medium">
+      <div className="grid grid-cols-[0.8fr_0.9fr_1.5fr_0.8fr_1fr] bg-[rgb(30,45,80)] rounded-t-lg text-custom-white py-1 text-sm font-medium">
         <div className="px-2 border-r">Store ID</div>
         <div className="px-2 border-r">Store Number</div>
         <div className="px-2 border-r">Store Name</div>
         <div className="px-2 border-r">Company ID</div>
         <div className="px-2">Company Name</div>
       </div>
-      <div className="w-1/2 max-h-[60vh] overflow-hidden overflow-y-scroll no-scrollbar bg-custom-white rounded-lg shadow-lg">
+      <div className="max-h-[60vh] overflow-hidden overflow-y-scroll no-scrollbar bg-custom-white rounded-lg shadow-lg">
         {filtered.map((s) => (
           <div className="grid grid-cols-[0.8fr_0.9fr_1.5fr_0.8fr_1fr] py-1 text-sm even:bg-[#afb0b3]">
             <div className="px-2">{s.storeid}</div>

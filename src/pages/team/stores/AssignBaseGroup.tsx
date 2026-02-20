@@ -93,8 +93,8 @@ const AssignBaseGroup = () => {
   };
 
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <div className="bg-custom-white rounded-lg shadow-lg p-4 max-h-[29vh]">
+    <div className="flex gap-4">
+      <div className="bg-custom-white rounded-lg shadow-lg p-4 max-h-[29vh] w-[50%]">
         <SingleSelect
           label="Select Company"
           data={companies}
@@ -122,7 +122,7 @@ const AssignBaseGroup = () => {
         ) : null}
       </div>
       {showCols && (
-        <div className="flex gap-4">
+        <div className="flex gap-4 w-[49%]">
           <div className="bg-custom-white p-2 w-1/2 rounded-lg shadow-lg h-[70vh]">
             <div className="text-sm font-medium">
               Unassigned - {unassignedBGStores.length}

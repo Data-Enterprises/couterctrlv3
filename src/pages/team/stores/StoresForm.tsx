@@ -22,9 +22,9 @@ const StoresForm = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 ">
       {/* w-[80%] is just so we don't have it too stretched out */}
-      <div className="bg-custom-white p-4 w-[80%] rounded-lg shadow-lg grid grid-cols-3 gap-2">
+      <div className="bg-custom-white p-4  rounded-lg shadow-lg grid grid-cols-3 gap-2 w-[50%]">
         <button
           className={`${option === "assign" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => setOption("assign")}

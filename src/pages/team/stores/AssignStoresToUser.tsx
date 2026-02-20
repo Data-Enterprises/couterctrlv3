@@ -85,8 +85,8 @@ const AssignStoresToUser = () => {
   };
 
   return (
-    <div className="grid gap-4">
-      <div className="w-[80%] relative">
+    <div className="grid gap-4 w-[50%]">
+      <div className="relative">
         <div className="grid grid-cols-2 mb-1.5 shadow-md">
           <button
             className={`${filterType === "name" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200 font-medium text-center rounded-l-lg py-1.5`}
@@ -117,7 +117,7 @@ const AssignStoresToUser = () => {
           ))}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-x-4 w-[80%]">
+      <div className="grid grid-cols-2 gap-x-4">
         <Unassigned />
         <Assigned />
       </div>

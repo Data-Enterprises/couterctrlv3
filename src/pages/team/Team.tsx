@@ -123,10 +123,14 @@ const Team = () => {
         <div className="">
           <FormHeader />
         </div>
-        <div className={`w-[55%] space-y-4`}>
+        <div className={`${selectedForm !== 3 ? "w-[55%]" : "w-full"} space-y-4`}>
           {renderForm()}
         </div>
-        <div className="w-[45%]">{selectedForm !== 3 && <CounterCtrlStores />}</div>
+        {selectedForm !== 3 && (
+          <div className="w-[45%]">
+            <CounterCtrlStores />
+          </div>
+        )}
       </div>
     </div>
   );
