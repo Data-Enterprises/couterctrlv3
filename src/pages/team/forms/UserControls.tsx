@@ -52,7 +52,7 @@ const UserControls = () => {
 
   return (
     <div className="max-h-[65vh]">
-      <div className="grid grid-cols-5 gap-2 p-4 bg-custom-white rounded-lg shadow-lg mb-4">
+      <div className="grid grid-cols-6 text-[15px] gap-2 p-2 bg-custom-white rounded-lg shadow-lg mb-4">
         <button
           className={`${selectedUserForm === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleReset("create")}
@@ -76,6 +76,12 @@ const UserControls = () => {
           onClick={() => handleReset("update_password")}
         >
           Reset Password
+        </button>
+        <button
+          className={`${selectedUserForm === "reset_security" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+          onClick={() => handleReset("reset_security")}
+        >
+          Reset Security
         </button>
         <button
           className={`${selectedUserForm === "user_info" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}

@@ -25,6 +25,7 @@ import Input from "../../../components/inputs/Input";
 import DeleteUserForm from "./DeleteUserForm";
 import UpdatePasswordForm from "./UpdatePasswordForm";
 import UserInfo from "./UserInfo";
+import ResetSecurityForm from "./ResetSecurity";
 
 const UserForm = () => {
   const toast = useToast();
@@ -160,6 +161,7 @@ const UserForm = () => {
   if (isDeletingUser) return <DeleteUserForm />;
   if (selectedUserForm === "update_password") return <UpdatePasswordForm />;
   if (selectedUserForm === "user_info") return <UserInfo />;
+  if (selectedUserForm === "reset_security" ) return <ResetSecurityForm />
 
   // Otherwise, we're either creating a new user or updating an existing one
   return (

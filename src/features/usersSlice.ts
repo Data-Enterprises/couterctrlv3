@@ -41,7 +41,7 @@ const defaultInfo: UserData = {
   role: 0,
 };
 
-export type UserFormType = "create" | "update" | "delete" | "update_password" | "user_info" | "";
+export type UserFormType = "create" | "update" | "delete" | "update_password" | "user_info" | "reset_security" | "";
 
 // State for users slice /////////////
 interface UsersState {
