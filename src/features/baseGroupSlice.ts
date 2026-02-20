@@ -14,6 +14,8 @@ interface BaseGroupState {
   isDeleting: boolean;
   groupName: string;
   company: Company | null;
+  bgsToAssign: number[];
+  bgsToUnassign: number[];
 }
 
 const initialState: BaseGroupState = {
@@ -23,6 +25,8 @@ const initialState: BaseGroupState = {
   isDeleting: false,
   groupName: "",
   company: null,
+  bgsToAssign: [],
+  bgsToUnassign: [],
 };
 
 export const baseGroupSlice = createSlice({
@@ -75,6 +79,12 @@ export const baseGroupSlice = createSlice({
       state.baseGroups = [];
       state.selectedBaseGroups = [];
     },
+    setBgsToAssign: (state, action: PayloadAction<number[]>) => {
+      state.bgsToAssign = action.payload;
+    },
+    setBgsToUnassign: (state, action: PayloadAction<number[]>) => {
+      state.bgsToUnassign = action.payload;
+    },
     resetBaseGroupSlice: () => initialState,
   },
 });
@@ -89,6 +99,8 @@ export const {
   setCompany,
   setFilteredOutSelectedBaseGroups,
   setAllSelectedBaseGroups,
+  setBgsToAssign,
+  setBgsToUnassign,
   resetBaseGroupSlice,
 } = baseGroupSlice.actions;
 export default baseGroupSlice.reducer;

@@ -8,12 +8,13 @@ import { getBaseGroups } from "../../../api/baseGroups";
 import {
   resetSelectedBaseGroups,
   setBaseGroups,
+  setBgsToAssign,
+  setBgsToUnassign,
   setCompany,
-  setFilteredOutSelectedBaseGroups,
   setSelectedBaseGroups,
 } from "../../../features/baseGroupSlice";
 
-import type { JsonError } from "../../../interfaces";
+import type { CompanyBaseGroup, JsonError } from "../../../interfaces";
 
 // Components/Icons
 import { InfoIcon } from "../../../components/toasts/Icons";
@@ -36,9 +37,41 @@ const UserForm = () => {
     userCompanyIds,
     selectedUserId,
     isDeletingUser,
+    alreadyAssignedBgs,
   } = useAppSelector((state) => state.users);
-  const { baseGroups } = useAppSelector((state) => state.baseGroup);
+  const { baseGroups, selectedBaseGroups } = useAppSelector(
+    (state) => state.baseGroup,
+  );
   const user = useAppSelector((state) => state.user);
+
+  useEffect(() => {
+    const selected = [...selectedBaseGroups];
+    const newCompanyIds = selected.reduce(
+      (acc: number[], curr: CompanyBaseGroup) => {
+        if (!acc.includes(curr.company)) {
+          acc.push(curr.company);
+        }
+        return acc;
+      },
+      [],
+    );
+
+    const selectedBGIDs = selected.map((bg) => bg.id);
+    const alreadyAssignedBGIDs = alreadyAssignedBgs.map((bg) => bg.id);
+    const baseGroupsToAssign = selectedBGIDs.filter(
+      (id) => !alreadyAssignedBGIDs.includes(id),
+    );
+    const baseGroupsToUnassign = alreadyAssignedBGIDs.filter((id) => !selectedBGIDs.includes(id));
+    
+    // console.log("Selected Base Groups", selectedBGIDs);
+    // console.log("Already Assigned", alreadyAssignedBGIDs);
+    // console.log("To Assign", baseGroupsToAssign)
+    // console.log("To Unassign", baseGroupsToUnassign);
+
+    dispatch(setBgsToAssign(baseGroupsToAssign))
+    dispatch(setBgsToUnassign(baseGroupsToUnassign))
+    dispatch(setUserCompanyIds(newCompanyIds));
+  }, [selectedBaseGroups]);
 
   useEffect(() => {
     if (selectedUserId === 0) {
@@ -97,14 +130,6 @@ const UserForm = () => {
   };
 
   const handleCompanySelect = (x: string | number) => {
-    const copy = [...userCompanyIds];
-    if (copy.includes(Number(x))) {
-      dispatch(setUserCompanyIds(copy.filter((id) => id !== Number(x))));
-      dispatch(setFilteredOutSelectedBaseGroups(Number(x)));
-    } else {
-      dispatch(setUserCompanyIds([...copy, Number(x)]));
-    }
-
     getBaseGroups(url, token, Number(x))
       .then((resp) => {
         const j = resp.data;

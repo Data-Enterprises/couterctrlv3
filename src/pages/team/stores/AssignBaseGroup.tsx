@@ -95,7 +95,6 @@ const AssignBaseGroup = () => {
   return (
     <div className="grid grid-cols-2 gap-4">
       <div className="bg-custom-white rounded-lg shadow-lg p-4 max-h-[29vh]">
-        {/* <div className="font-medium text-right">{username} - UserID: {userid}</div> */}
         <SingleSelect
           label="Select Company"
           data={companies}

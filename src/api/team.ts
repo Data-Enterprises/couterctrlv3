@@ -57,7 +57,7 @@ export const deleteUserBaseGroupLink = async (
       Authorization: `Bearer ${token}`,
     },
     url: url + "groups/delete_user_base_group_link",
-    params: {
+    data: {
       userid,
       groupid,
     },
