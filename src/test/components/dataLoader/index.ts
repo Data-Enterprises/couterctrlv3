@@ -4,8 +4,8 @@ export const userPrefsFalseResp = {
   data: {
     error: 1,
     success: false,
-  }
-}
+  },
+};
 
 export const userPrefsResp = {
   data: {
@@ -106,21 +106,29 @@ export const userStoresResp = {
         storeid: 1,
         store_number: "1",
         store_name: "Store 1",
+        company: 1,
+        company_name: "Test Company 1",
       },
       {
         storeid: 2,
         store_number: "2",
         store_name: "Store 2",
+        company: 1,
+        company_name: "Test Company 1",
       },
       {
         storeid: 3,
         store_number: "3",
         store_name: "Store 3",
+        company: 2,
+        company_name: "Test Company 2",
       },
       {
         storeid: 4,
         store_number: "4",
         store_name: "Store 4",
+        company: 2,
+        company_name: "Test Company 2",
       },
     ],
     unassigned_stores: [
@@ -128,11 +136,15 @@ export const userStoresResp = {
         storeid: 5,
         store_number: "5",
         store_name: "Store 5",
+        company: 1,
+        company_name: "Test Company 1",
       },
       {
         storeid: 6,
         store_number: "6",
         store_name: "Store 6",
+        company: 2,
+        company_name: "Test Company 2",
       },
     ],
   },

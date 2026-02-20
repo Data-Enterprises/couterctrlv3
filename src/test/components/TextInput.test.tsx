@@ -16,6 +16,7 @@ const fakeUsers: User[] = [
     password: "Password123!",
     role: 1,
     active: 1,
+    companies: [],
     company: 2,
     first_name: "John",
     last_name: "Doe",
