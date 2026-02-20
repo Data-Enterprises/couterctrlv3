@@ -4,11 +4,17 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 
 import { getCompanies } from "../../../api/company";
 import {
+  resetCompanyInfo,
   setCompanies,
+  setRefreshCompanies,
   setSelectedCompanyForm,
   type CompanyFormType,
 } from "../../../features/companySlice";
 import type { CompanyJsonResp, JsonError } from "../../../interfaces";
+import CreateCompany from "./CreateCompany";
+import UpdateCompany from "./UpdateCompany";
+import DeleteCompany from "./DeleteCompany";
+import AssignCompanyToUser from "./AssignCompanyToUser";
 
 const CompanyControls = () => {
   const toast = useToast();
@@ -19,12 +25,17 @@ const CompanyControls = () => {
   );
 
   useEffect(() => {
+    dispatch(resetCompanyInfo());
+  }, [selectedForm]);
+
+  useEffect(() => {
     if (refreshCompanies) {
       getCompanies(url, token)
         .then((resp) => {
           const j: CompanyJsonResp = resp.data;
           if (j.error === 0) {
-            setCompanies(j.companies);
+            dispatch(setCompanies(j.companies));
+            dispatch(setRefreshCompanies(false));
           }
         })
         .catch((err: JsonError) => toast.error(err.message));
@@ -35,8 +46,23 @@ const CompanyControls = () => {
     dispatch(setSelectedCompanyForm(form));
   };
 
+  const renderForm = () => {
+    switch (selectedForm) {
+      case "create":
+        return <CreateCompany />;
+      case "update":
+        return <UpdateCompany />;
+      case "delete":
+        return <DeleteCompany />;
+      case "assign_to_user":
+        return <AssignCompanyToUser />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="absolute w-">
+    <div className="">
       <div className="bg-custom-white rounded-lg shadow-lg p-4 grid grid-cols-4 gap-2">
         <button
           className={`${selectedForm === "create" ? "btn-themeGreen" : "btn-themeBlue"}`}
@@ -63,6 +89,7 @@ const CompanyControls = () => {
           Assign User
         </button>
       </div>
+      <div className="mt-4">{renderForm()}</div>
     </div>
   );
 };
