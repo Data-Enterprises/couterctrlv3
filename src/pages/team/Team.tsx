@@ -27,7 +27,7 @@ import BaseGroupControls from "./baseGroups/BaseGroupControls";
 const Team = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const context = useAppSelector((state) => state.app);
+  const { url, token } = useAppSelector((state) => state.app);
   const { companies } = useAppSelector((state) => state.user);
   const { refresh, selectedUserId, selectedForm } = useAppSelector(
     (state) => state.users,
@@ -54,7 +54,7 @@ const Team = () => {
   }, [refresh]);
 
   const getData = () => {
-    getAllUsers(context.url, context.token)
+    getAllUsers(url, token)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
@@ -96,7 +96,7 @@ const Team = () => {
 
   useEffect(() => {
     if (refresh) {
-      getQuicksightUsers(context.url, context.token)
+      getQuicksightUsers(url, token)
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
@@ -106,7 +106,7 @@ const Team = () => {
         .catch((err: JsonError) => {
           toast.error("Error fetching QuickSight users " + err.message);
         });
-      getUserLevels(context.url, context.token)
+      getUserLevels(url, token)
         .then((resp) => {
           const j: UserLevelJsonResp = resp.data;
           if (j.error === 0) {
