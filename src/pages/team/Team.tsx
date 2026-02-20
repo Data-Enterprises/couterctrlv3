@@ -120,7 +120,7 @@ const Team = () => {
   return (
     <div data-testid="team-page" className={`w-full h-[calc(100vh-3rem)] p-4`}>
       <div className="flex gap-3 h-full">
-        <div className="">
+        <div className="min-w-[178px] max-w-[178px]">
           <FormHeader />
         </div>
         <div className={`${selectedForm !== 3 ? "w-[55%]" : "w-full"} space-y-4`}>

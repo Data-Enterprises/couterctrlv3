@@ -84,16 +84,18 @@ const UserControls = () => {
           User Info
         </button>
       </div>
-        <ProfileCard />
       {!selectedUserForm ? (
-        <div className="h-full flex justify-center items-start p-4">
-          <div className="bg-custom-white p-4 text-[15px] text-center font-medium">
+        <div className="h-full bg-custom-white mt-4 rounded-lg shadow-lg flex justify-center items-start p-4">
+          <div className="py-2 text-[15px] text-center font-medium">
             <div>What would you like to do?</div>
             <div>Select one of the options above and follow the steps</div>
           </div>
         </div>
       ) : (
-        <UserForm />
+        <>
+          <ProfileCard />
+          <UserForm />
+        </>
       )}
     </div>
   );

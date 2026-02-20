@@ -16,6 +16,7 @@ import {
 } from "../../../features/usersSlice";
 import { assignUserToCompany, getUserStores } from "../../../api/user";
 import type { JsonError, Store } from "../../../interfaces";
+import { setAllSelectedBaseGroups } from "../../../features/baseGroupSlice";
 
 interface UserFormButtonsProps {
   formType: UserFormType;
@@ -147,6 +148,7 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
   };
 
   const handleReset = () => {
+    dispatch(setAllSelectedBaseGroups([]))
     dispatch(setSelectedUserStores({ assigned: [], unassigned: [] }));
     dispatch(resetUserInfo());
   };
