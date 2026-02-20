@@ -62,11 +62,6 @@ const UserForm = () => {
       (id) => !alreadyAssignedBGIDs.includes(id),
     );
     const baseGroupsToUnassign = alreadyAssignedBGIDs.filter((id) => !selectedBGIDs.includes(id));
-    
-    // console.log("Selected Base Groups", selectedBGIDs);
-    // console.log("Already Assigned", alreadyAssignedBGIDs);
-    // console.log("To Assign", baseGroupsToAssign)
-    // console.log("To Unassign", baseGroupsToUnassign);
 
     dispatch(setBgsToAssign(baseGroupsToAssign))
     dispatch(setBgsToUnassign(baseGroupsToUnassign))

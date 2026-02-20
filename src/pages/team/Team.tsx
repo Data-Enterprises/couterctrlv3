@@ -110,18 +110,6 @@ const Team = () => {
         return <UserControls />;
       case 2:
         return <BaseGroupControls />;
-      default:
-        return null;
-    }
-  };
-
-  const renderHeader = () => {
-    switch (selectedForm) {
-      case 1:
-        return null;
-      case 2:
-        return null;
-      // return <BgHeader />;
       case 3:
         return <StoresForm />;
       default:
@@ -135,11 +123,10 @@ const Team = () => {
         <div className="">
           <FormHeader />
         </div>
-        <div className={`${selectedForm === 3 ? "w-full" : "w-1/2"} space-y-4`}>
-          {renderHeader()}
+        <div className={`w-[55%] space-y-4`}>
           {renderForm()}
         </div>
-        <div>{selectedForm !== 3 && <CounterCtrlStores />}</div>
+        <div className="w-[45%]">{selectedForm !== 3 && <CounterCtrlStores />}</div>
       </div>
     </div>
   );
