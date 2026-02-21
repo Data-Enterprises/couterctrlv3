@@ -63,6 +63,7 @@ const UpdateCompany = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
+          toast.success(`Company ${name} updated, refreshing company list...`);
           dispatch(setRefreshCompanies(true));
         }
       })
