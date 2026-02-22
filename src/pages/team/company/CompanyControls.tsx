@@ -8,6 +8,8 @@ import {
   setCompanies,
   setRefreshCompanies,
   setSelectedCompanyForm,
+  setUserAssignedCompanies,
+  setUserUnassignedCompanies,
   type CompanyFormType,
 } from "../../../features/companySlice";
 import type { CompanyJsonResp, JsonError } from "../../../interfaces";
@@ -15,6 +17,7 @@ import CreateCompany from "./CreateCompany";
 import UpdateCompany from "./UpdateCompany";
 import DeleteCompany from "./DeleteCompany";
 import AssignCompanyToUser from "./AssignCompanyToUser";
+import { resetUserInfo } from "../../../features/usersSlice";
 
 const CompanyControls = () => {
   const toast = useToast();
@@ -26,6 +29,9 @@ const CompanyControls = () => {
 
   useEffect(() => {
     dispatch(resetCompanyInfo());
+    dispatch(setUserAssignedCompanies([]));
+    dispatch(setUserUnassignedCompanies([]));
+    dispatch(resetUserInfo())
   }, [selectedForm]);
 
   useEffect(() => {
