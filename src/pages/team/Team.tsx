@@ -13,6 +13,7 @@ import {
   setUsers,
 } from "../../features/usersSlice";
 import { setQsUsers } from "../../features/qsSlice";
+import { setSelectedCompanyForm } from "../../features/companySlice";
 import type { JsonError, User, UserLevelJsonResp } from "../../interfaces";
 
 import { getQuicksightUsers } from "../../api/quicksight";
@@ -41,12 +42,15 @@ const Team = () => {
       dispatch(resetUserInfo());
       dispatch(setSelectedForm(0));
       dispatch(setSelectedUserForm(""));
+      dispatch(setSelectedCompanyForm(""));
     };
   }, []);
 
   useEffect(() => {
     dispatch(setSelectedUserId(0));
     dispatch(resetUserInfo());
+    dispatch(setSelectedUserForm(""));
+    dispatch(setSelectedCompanyForm(""));
   }, [selectedForm]);
 
   useEffect(() => {
@@ -133,7 +137,7 @@ const Team = () => {
       case 3:
         return <StoresForm />;
       case 4:
-        return <CompanyControls />
+        return <CompanyControls />;
       default:
         return null;
     }

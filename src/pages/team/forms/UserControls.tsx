@@ -34,7 +34,7 @@ const UserControls = () => {
 
   return (
     <div className="max-h-[65vh]">
-      <div className="grid grid-cols-6 text-[15px] gap-2 p-2 bg-custom-white rounded-lg shadow-lg mb-4">
+      <div className="grid grid-cols-6 text-[15px] gap-2 p-4 bg-custom-white rounded-lg shadow-lg mb-4">
         <button
           className={`${selectedUserForm === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleReset("create")}
@@ -57,28 +57,29 @@ const UserControls = () => {
           className={`${selectedUserForm === "update_password" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleReset("update_password")}
         >
-          Reset Password
+          Password
         </button>
         <button
           className={`${selectedUserForm === "reset_security" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleReset("reset_security")}
         >
-          Reset Security
+          Security
         </button>
         <button
           className={`${selectedUserForm === "user_info" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleReset("user_info")}
         >
-          User Info
+          Info
         </button>
       </div>
       {!selectedUserForm ? (
-        <div className="h-full bg-custom-white mt-4 rounded-lg shadow-lg flex justify-center items-start p-4">
-          <div className="py-2 text-[15px] text-center font-medium">
-            <div>What would you like to do?</div>
-            <div>Select one of the options above and follow the steps</div>
-          </div>
-        </div>
+        null
+        // <div className="h-full bg-custom-white mt-4 rounded-lg shadow-lg flex justify-center items-start p-4">
+        //   <div className="py-2 text-[15px] text-center font-medium">
+        //     <div>What would you like to do?</div>
+        //     <div>Select one of the options above and follow the steps</div>
+        //   </div>
+        // </div>
       ) : (
         <>
           <ProfileCard />

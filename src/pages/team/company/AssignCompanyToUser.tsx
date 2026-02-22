@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import type { JsonError } from "../../../interfaces";
+import type { JsonError, UserCompany } from "../../../interfaces";
 
 import {
   setUserAssignedCompanies,
@@ -23,6 +23,8 @@ const AssignCompanyToUser = () => {
     (state) => state.company,
   );
 
+  const [unassignedFilter, setUnassignedFilter] = useState<string>("");
+  const [assignedFilter, setAssignedFilter] = useState<string>("");
   const [companiesToAssign, setCompaniesToAssign] = useState<number[]>([]);
   const [companiesToUnassign, setCompaniesToUnassign] = useState<number[]>([]);
 
@@ -80,8 +82,6 @@ const AssignCompanyToUser = () => {
         ids = [];
     }
 
-    // make api call
-    // update redux => then refresh users => reset useState arrays
     assignUserToCompany(url, token, selectedUserId, ids)
       .then((resp) => {
         const j = resp.data;
@@ -94,14 +94,32 @@ const AssignCompanyToUser = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
+  const filtered = (data: UserCompany[], filter: string) => {
+    return data.filter((x) =>
+      x.name.toLowerCase().includes(filter.toLowerCase()),
+    );
+  };
+
+  const handleAssignedFilterText = (x: string) => {
+    setAssignedFilter(x);
+  };
+
+  const handleUnasignedFilterText = (x: string) => {
+    setUnassignedFilter(x);
+  };
+
   return (
     <div>
       <SearchUser />
       <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
         <div className="bg-custom-white rounded-lg shadow-lg space-y-2 p-2">
-          <Input label="Unassigned" value="" setValue={() => {}} />
+          <Input
+            label="Unassigned"
+            value={unassignedFilter}
+            setValue={handleUnasignedFilterText}
+          />
           <div className="space-y-2 h-[50vh] max-h-[50vh] overflow-hidden overflow-y-auto no-scrollbar">
-            {userUnassignedCompanies.map((c) => (
+            {filtered(userUnassignedCompanies, unassignedFilter).map((c) => (
               <div
                 key={c.id}
                 className={`${companiesToAssign.includes(c.company) && "bg-emerald-200"} px-2 py-3 rounded-lg shadow-lg flex justify-between items-center hover:bg-blue-200 cursor-pointer transition-all duration-200`}
@@ -134,9 +152,13 @@ const AssignCompanyToUser = () => {
           </div>
         </div>
         <div className="bg-custom-white rounded-lg shadow-lg space-y-2 p-2">
-          <Input label="Assigned" value="" setValue={() => {}} />
+          <Input
+            label="Assigned"
+            value={assignedFilter}
+            setValue={handleAssignedFilterText}
+          />
           <div className="space-y-2 h-[50vh] max-h-[50vh] overflow-hidden overflow-y-auto no-scrollbar">
-            {userAssignedCompanies.map((c) => (
+            {filtered(userAssignedCompanies, assignedFilter).map((c) => (
               <div
                 key={c.id}
                 className={`${companiesToUnassign.includes(c.company) && "bg-emerald-200"} px-2 py-3 rounded-lg shadow-lg flex justify-between items-center hover:bg-blue-200 cursor-pointer transition-all duration-200`}
