@@ -3,7 +3,6 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   assignBaseGroupToUser,
   createUser,
-  deleteUserBaseGroupLink,
   updateUser,
 } from "../../../api/team";
 import {
@@ -72,36 +71,37 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          assignUserToCompany(url, token, selectedUserId, userCompanyIds)
-            .then((resp) => {
-              const j = resp.data;
-              if (j.error === 0) {
-                if (base.bgsToAssign.length) {
-                  assignBaseGroupToUser(
-                    url,
-                    token,
-                    selectedUserId,
-                    base.bgsToAssign,
-                  )
-                    .then((resp) => {
-                      const j = resp.data;
-                      if (j.error === 0) {
-                        if (base.bgsToUnassign.length) {
-                          unassignBG(base.bgsToUnassign);
-                        } else {
-                          getStores(selectedUserId);
-                        }
-                      }
-                    })
-                    .catch((err: JsonError) => toast.error(err.message));
-                } else if (base.bgsToUnassign.length) {
-                  unassignBG(base.bgsToUnassign);
-                } else {
-                  getStores(selectedUserId);
-                }
-              }
-            })
-            .catch((err: JsonError) => toast.error(err.message));
+          getStores(selectedUserId);
+          // assignUserToCompany(url, token, selectedUserId, userCompanyIds)
+          //   .then((resp) => {
+          //     const j = resp.data;
+          //     if (j.error === 0) {
+          //       if (base.bgsToAssign.length) {
+          //         assignBaseGroupToUser(
+          //           url,
+          //           token,
+          //           selectedUserId,
+          //           base.bgsToAssign,
+          //         )
+          //           .then((resp) => {
+          //             const j = resp.data;
+          //             if (j.error === 0) {
+          //               if (base.bgsToUnassign.length) {
+          //                 unassignBG(base.bgsToUnassign);
+          //               } else {
+          //                 getStores(selectedUserId);
+          //               }
+          //             }
+          //           })
+          //           .catch((err: JsonError) => toast.error(err.message));
+          //       } else if (base.bgsToUnassign.length) {
+          //         unassignBG(base.bgsToUnassign);
+          //       } else {
+          //         getStores(selectedUserId);
+          //       }
+          //     }
+          //   })
+          //   .catch((err: JsonError) => toast.error(err.message));
         }
       })
       .catch((err) => {
@@ -109,14 +109,14 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
       });
   };
 
-  const unassignBG = (bgs: number[]) => {
-    deleteUserBaseGroupLink(url, token, selectedUserId, bgs).then((resp) => {
-      const j = resp.data;
-      if (j.error === 0) {
-        getStores(selectedUserId);
-      }
-    });
-  };
+  // const unassignBG = (bgs: number[]) => {
+  //   deleteUserBaseGroupLink(url, token, selectedUserId, bgs).then((resp) => {
+  //     const j = resp.data;
+  //     if (j.error === 0) {
+  //       getStores(selectedUserId);
+  //     }
+  //   });
+  // };
 
   const getStores = (userid: number) => {
     getUserStores(url, token, userid)
@@ -148,7 +148,7 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
   };
 
   const handleReset = () => {
-    dispatch(setAllSelectedBaseGroups([]))
+    dispatch(setAllSelectedBaseGroups([]));
     dispatch(setSelectedUserStores({ assigned: [], unassigned: [] }));
     dispatch(resetUserInfo());
   };

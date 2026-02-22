@@ -1,24 +1,39 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { Company, CompanyBaseGroup } from "../interfaces";
+import type {
+  BaseGroup,
+  Company,
+  CompanyBaseGroup,
+  UserCompany,
+} from "../interfaces";
 
 interface BaseGroupState {
   baseGroups: CompanyBaseGroup[];
   selectedBaseGroups: CompanyBaseGroup[];
+  activeBaseGroups: BaseGroup[];
+  inactiveBaseGroups: BaseGroup[];
   isDeleting: boolean;
   groupName: string;
   company: Company | null;
   bgsToAssign: number[];
   bgsToUnassign: number[];
+  userCompany: UserCompany | null;
+  bgIdsToAssign: number[];
+  bgIdsToUnassign: number[];
 }
 
 const initialState: BaseGroupState = {
   baseGroups: [],
   selectedBaseGroups: [],
+  activeBaseGroups: [],
+  inactiveBaseGroups: [],
   isDeleting: false,
   groupName: "",
   company: null,
   bgsToAssign: [],
   bgsToUnassign: [],
+  userCompany: null,
+  bgIdsToAssign: [],
+  bgIdsToUnassign: [],
 };
 
 export const baseGroupSlice = createSlice({
@@ -27,6 +42,18 @@ export const baseGroupSlice = createSlice({
   reducers: {
     setBaseGroups: (state, action: PayloadAction<CompanyBaseGroup[]>) => {
       state.baseGroups = action.payload;
+    },
+    setUserBaseGroups: (
+      state,
+      action: PayloadAction<{
+        active: BaseGroup[];
+        inactive: BaseGroup[];
+      }>,
+    ) => {
+      const { active, inactive } = action.payload;
+      state.baseGroups = [...active, ...inactive];
+      state.activeBaseGroups = active;
+      state.inactiveBaseGroups = inactive;
     },
     setAllSelectedBaseGroups: (
       state,
@@ -54,6 +81,9 @@ export const baseGroupSlice = createSlice({
     setCompany: (state, action: PayloadAction<Company | null>) => {
       state.company = action.payload;
     },
+    setUserCompany: (state, action: PayloadAction<UserCompany | null>) => {
+      state.userCompany = action.payload;
+    },
     resetSelectedBaseGroups: (state) => {
       state.baseGroups = [];
       state.selectedBaseGroups = [];
@@ -63,6 +93,26 @@ export const baseGroupSlice = createSlice({
     },
     setBgsToUnassign: (state, action: PayloadAction<number[]>) => {
       state.bgsToUnassign = action.payload;
+    },
+    setBgIdsToAssign: (state, action: PayloadAction<number>) => {
+      const id = action.payload;
+      if (state.bgIdsToAssign.includes(id)) {
+        state.bgIdsToAssign = state.bgIdsToAssign.filter((bg) => bg !== id);
+      } else {
+        state.bgIdsToAssign.push(id);
+      }
+    },
+    setBgIdsToUnassign: (state, action: PayloadAction<number>) => {
+      const id = action.payload;
+      if (state.bgIdsToUnassign.includes(id)) {
+        state.bgIdsToUnassign = state.bgIdsToUnassign.filter((bg) => bg !== id);
+      } else {
+        state.bgIdsToUnassign.push(id);
+      }
+    },
+    resetBgIds: (state) => {
+      state.bgIdsToAssign = [];
+      state.bgIdsToUnassign = [];
     },
     resetBaseGroupSlice: () => initialState,
   },
@@ -75,9 +125,14 @@ export const {
   setGroupName,
   setSelectedBaseGroups,
   setCompany,
+  setUserCompany,
   setAllSelectedBaseGroups,
   setBgsToAssign,
   setBgsToUnassign,
+  setUserBaseGroups,
+  setBgIdsToAssign,
+  setBgIdsToUnassign,
+  resetBgIds,
   resetBaseGroupSlice,
 } = baseGroupSlice.actions;
 export default baseGroupSlice.reducer;

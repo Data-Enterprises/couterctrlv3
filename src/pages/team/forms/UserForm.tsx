@@ -62,10 +62,12 @@ const UserForm = () => {
     const baseGroupsToAssign = selectedBGIDs.filter(
       (id) => !alreadyAssignedBGIDs.includes(id),
     );
-    const baseGroupsToUnassign = alreadyAssignedBGIDs.filter((id) => !selectedBGIDs.includes(id));
+    const baseGroupsToUnassign = alreadyAssignedBGIDs.filter(
+      (id) => !selectedBGIDs.includes(id),
+    );
 
-    dispatch(setBgsToAssign(baseGroupsToAssign))
-    dispatch(setBgsToUnassign(baseGroupsToUnassign))
+    dispatch(setBgsToAssign(baseGroupsToAssign));
+    dispatch(setBgsToUnassign(baseGroupsToUnassign));
     dispatch(setUserCompanyIds(newCompanyIds));
   }, [selectedBaseGroups]);
 
@@ -161,7 +163,7 @@ const UserForm = () => {
   if (isDeletingUser) return <DeleteUserForm />;
   if (selectedUserForm === "update_password") return <UpdatePasswordForm />;
   if (selectedUserForm === "user_info") return <UserInfo />;
-  if (selectedUserForm === "reset_security" ) return <ResetSecurityForm />
+  if (selectedUserForm === "reset_security") return <ResetSecurityForm />;
 
   // Otherwise, we're either creating a new user or updating an existing one
   return (
@@ -221,31 +223,37 @@ const UserForm = () => {
             resetQuery={true}
             defaultQuery={findRole()}
           />
-          <SingleSelect
-            id={3}
-            data={user.companies}
-            valueKey={"company"}
-            displayKey={"name"}
-            label={"Company"}
-            className="text-sm mt-1"
-            innerClass="text-sm"
-            onSelect={handleCompanySelect}
-            resetQuery={true}
-            defaultQuery={defaultCompanyQuery()}
-          />
-          <SingleSelect
-            id={4}
-            data={baseGroups}
-            valueKey={"id"}
-            displayKey={"name"}
-            label={"Base Group"}
-            className="text-sm mt-1"
-            innerClass="text-sm"
-            onSelect={handleBaseGroupSelect}
-            resetQuery={true}
-            defaultQuery={baseGroups.length === 0 ? "Select company first" : ""}
-            openMaxHeight="data-[display=open]:max-h-[100px]"
-          />
+          {selectedUserForm === "create" && (
+            <SingleSelect
+              id={3}
+              data={user.companies}
+              valueKey={"company"}
+              displayKey={"name"}
+              label={"Company"}
+              className="text-sm mt-1"
+              innerClass="text-sm"
+              onSelect={handleCompanySelect}
+              resetQuery={true}
+              defaultQuery={defaultCompanyQuery()}
+            />
+          )}
+          {selectedUserForm === "create" && (
+            <SingleSelect
+              id={4}
+              data={baseGroups}
+              valueKey={"id"}
+              displayKey={"name"}
+              label={"Base Group"}
+              className="text-sm mt-1"
+              innerClass="text-sm"
+              onSelect={handleBaseGroupSelect}
+              resetQuery={true}
+              defaultQuery={
+                baseGroups.length === 0 ? "Select company first" : ""
+              }
+              openMaxHeight="data-[display=open]:max-h-[100px]"
+            />
+          )}
           {selectedUserForm === "create" && (
             <PasswordInput
               label="Password"

@@ -1,35 +1,25 @@
 import { useEffect, useState, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
 
-import type {
-  BaseGroup,
-  BaseGroupJsonResp,
-  CompanyBaseGroup,
-  JsonError,
-  User,
-} from "../../../interfaces";
+import type { User } from "../../../interfaces";
 import {
-  setAssignBaseGroups,
   setSelectedUserId,
   setSelectedUserInfo,
   setUserFilterText,
 } from "../../../features/usersSlice";
-import { getBaseGroupsAssignedToUser } from "../../../api/team";
-import {
-  setAllSelectedBaseGroups,
-  setBaseGroups,
-} from "../../../features/baseGroupSlice";
 
 const SearchUser = () => {
-  const toast = useToast();
   const dispatch = useAppDispatch();
 
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const { url, token } = useAppSelector((state) => state.app);
-  const { userFilterText, selectedCompanyId, users, selectedUserId, selectedUserForm } =
-    useAppSelector((state) => state.users);
+  const {
+    userFilterText,
+    selectedCompanyId,
+    users,
+    selectedUserId,
+    selectedUserForm,
+  } = useAppSelector((state) => state.users);
   const [username, setUsername] = useState<string>("");
 
   const [filterType, setFilterType] = useState<"name" | "email">("name");
@@ -94,29 +84,6 @@ const SearchUser = () => {
     }
 
     dispatch(setSelectedUserId(e.id));
-    getBaseGroupsAssignedToUser(url, token, e.id)
-      .then((resp) => {
-        const j: BaseGroupJsonResp = resp.data;
-        if (j.error === 0) {
-          dispatch(setBaseGroups(j.active));
-          dispatch(setAssignBaseGroups([...j.active, ...j.inactive]));
-          const formatted = [...j.active].reduce(
-            (acc: CompanyBaseGroup[], curr: BaseGroup) => {
-              acc.push({
-                id: curr.id,
-                company: curr.company,
-                name: curr.name,
-              });
-              return acc;
-            },
-            [],
-          );
-          dispatch(setAllSelectedBaseGroups(formatted));
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error("Error fetching user's base groups " + err.message);
-      });
   };
 
   const handleInputRefClick = () => {
