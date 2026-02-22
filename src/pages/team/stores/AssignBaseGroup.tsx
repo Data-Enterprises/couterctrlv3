@@ -25,6 +25,8 @@ const AssignBaseGroup = () => {
   const [storesToUnassign, setStoresToUnassign] = useState<number[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<number>(0);
   const [showCols, setShowCols] = useState<boolean>(false);
+  const [unassignedFilter, setUnassignedFilter] = useState<string>("");
+  const [assignedFilter, setAssignedFilter] = useState<string>("");
 
   const handleSelect = (id: string | number) => {
     setBaseGroups([]);
@@ -135,6 +137,20 @@ const AssignBaseGroup = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
+  const filtered = (data: Store[], filter: string) => {
+    return data.filter((x) =>
+      x.store_name.toLowerCase().includes(filter.toLowerCase()),
+    );
+  };
+
+  const handleAssignedFilterText = (x: string) => {
+    setAssignedFilter(x);
+  };
+
+  const handleUnassignedFilterText = (x: string) => {
+    setUnassignedFilter(x);
+  };
+
   return (
     <div className="flex gap-4">
       <div className="bg-custom-white rounded-lg shadow-lg p-4 max-h-[32vh] w-[50%]">
@@ -167,12 +183,13 @@ const AssignBaseGroup = () => {
       {showCols && (
         <div className="flex gap-4 w-[49%] relative">
           <div className="bg-custom-white p-2 w-[49%] rounded-lg shadow-lg h-[70vh] absolute">
-            <div className="text-sm font-medium">
-              Unassigned - {unassignedBGStores.length}
-            </div>
-            <Input label="" value="" setValue={() => {}} />
+            <Input
+              label={`Unassigned - ${filtered(unassignedBGStores, unassignedFilter).length}`}
+              value={unassignedFilter}
+              setValue={handleUnassignedFilterText}
+            />
             <div className="space-y-2 my-2 rounded-lg min-h-[79%] max-h-[79%] overflow-hidden overflow-y-scroll no-scrollbar">
-              {unassignedBGStores.map((store) => (
+              {filtered(unassignedBGStores, unassignedFilter).map((store) => (
                 <div
                   key={store.storeid}
                   data-testid={`unassigned-store-${store.storeid}`}
@@ -206,12 +223,13 @@ const AssignBaseGroup = () => {
             </div>
           </div>
           <div className="bg-custom-white p-2 w-[49%] rounded-lg shadow-lg h-[70vh] absolute translate-x-[105%]">
-            <div className="text-sm font-medium">
-              Assigned - {assignedBGStores.length}
-            </div>
-            <Input label="" value="" setValue={() => {}} />
+            <Input
+              label={`Assigned - ${filtered(assignedBGStores, assignedFilter).length}`}
+              value={assignedFilter}
+              setValue={handleAssignedFilterText}
+            />
             <div className="space-y-2 my-2 rounded-lg min-h-[79%] max-h-[79%] overflow-hidden overflow-y-scroll no-scrollbar">
-              {assignedBGStores.map((store) => (
+              {filtered(assignedBGStores, assignedFilter).map((store) => (
                 <div
                   key={store.storeid}
                   data-testid={`assigned-store-${store.storeid}`}

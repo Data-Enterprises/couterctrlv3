@@ -104,7 +104,7 @@ const AssignCompanyToUser = () => {
     setAssignedFilter(x);
   };
 
-  const handleUnasignedFilterText = (x: string) => {
+  const handleUnassignedFilterText = (x: string) => {
     setUnassignedFilter(x);
   };
 
@@ -114,9 +114,9 @@ const AssignCompanyToUser = () => {
       <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
         <div className="bg-custom-white rounded-lg shadow-lg space-y-2 p-2">
           <Input
-            label="Unassigned"
+            label={`Unassigned - ${filtered(userUnassignedCompanies, unassignedFilter).length}`}
             value={unassignedFilter}
-            setValue={handleUnasignedFilterText}
+            setValue={handleUnassignedFilterText}
           />
           <div className="space-y-2 h-[50vh] max-h-[50vh] overflow-hidden overflow-y-auto no-scrollbar">
             {filtered(userUnassignedCompanies, unassignedFilter).map((c) => (
@@ -153,7 +153,7 @@ const AssignCompanyToUser = () => {
         </div>
         <div className="bg-custom-white rounded-lg shadow-lg space-y-2 p-2">
           <Input
-            label="Assigned"
+            label={`Assigned - ${filtered(userAssignedCompanies, assignedFilter).length}`}
             value={assignedFilter}
             setValue={handleAssignedFilterText}
           />
