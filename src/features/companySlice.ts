@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { Company } from "../interfaces";
+import type { Company, UserCompany } from "../interfaces";
 
 export type CompanyFormType =
   | "create"
@@ -14,6 +14,8 @@ interface CompanyState {
   selectedForm: CompanyFormType;
   refreshCompanies: boolean;
   companyInfo: Company;
+  userAssignedCompanies: UserCompany[];
+  userUnassignedCompanies: UserCompany[];
 }
 
 const defaultInfo = {
@@ -33,6 +35,8 @@ const initialState: CompanyState = {
   selectedForm: "",
   refreshCompanies: true,
   companyInfo: defaultInfo,
+  userAssignedCompanies: [],
+  userUnassignedCompanies: [],
 };
 
 const companySlice = createSlice({
@@ -75,6 +79,15 @@ const companySlice = createSlice({
       state.companyInfo = defaultInfo;
       state.selectedCompanyId = 0;
     },
+    setUserAssignedCompanies: (state, action: PayloadAction<UserCompany[]>) => {
+      state.userAssignedCompanies = action.payload;
+    },
+    setUserUnassignedCompanies: (
+      state,
+      action: PayloadAction<UserCompany[]>,
+    ) => {
+      state.userUnassignedCompanies = action.payload;
+    },
     resetCompanyState: () => initialState,
   },
 });
@@ -85,6 +98,8 @@ export const {
   setRefreshCompanies,
   setSelectedCompanyFormId,
   setSelectedCompanyForm,
+  setUserAssignedCompanies,
+  setUserUnassignedCompanies,
   resetCompanyInfo,
   resetCompanyState,
 } = companySlice.actions;

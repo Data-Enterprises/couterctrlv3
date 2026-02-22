@@ -64,6 +64,18 @@ const CreateCompany = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
+  const canSubmit = () => {
+    return (
+      name.length &&
+      address.length &&
+      city.length &&
+      state.length &&
+      zip &&
+      phone.length &&
+      contact_email.length
+    );
+  };
+
   return (
     <div className="bg-custom-white p-4 rounded-lg shadow-lg w-[40vw]">
       <div className="text-sm select-none">
@@ -126,7 +138,7 @@ const CreateCompany = () => {
         >
           Clear Fields
         </button>
-        <button className="btn-themeBlue mt-4" onClick={handleSubmit}>
+        <button className={`btn-themeBlue mt-4 ${!canSubmit() && "opacity-50 pointer-events-none"}`} onClick={handleSubmit}>
           Create
         </button>
       </div>
