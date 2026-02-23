@@ -34,7 +34,7 @@ const BaseGroupControls = () => {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-4 gap-4 p-4 bg-custom-white rounded-lg shadow-lg">
+      <div className="grid grid-cols-4 gap-2 p-4 bg-custom-white rounded-lg shadow-lg">
         <button
           className={`${bgOption === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => setBgOption("create")}
