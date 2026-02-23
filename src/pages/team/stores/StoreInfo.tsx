@@ -63,7 +63,7 @@ const StoreInfo = () => {
         <div className="px-2 border-r">Company ID</div>
         <div className="px-2">Company Name</div>
       </div>
-      <div className="max-h-[60vh] overflow-hidden overflow-y-scroll no-scrollbar bg-custom-white rounded-lg shadow-lg">
+      <div className="max-h-[59vh] overflow-hidden overflow-y-scroll no-scrollbar bg-custom-white rounded-lg shadow-lg">
         {filtered.map((s) => (
           <div className="grid grid-cols-[0.8fr_0.9fr_1.5fr_0.8fr_1fr] py-1 text-sm even:bg-[#afb0b3]">
             <div className="px-2">{s.storeid}</div>
