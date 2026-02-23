@@ -7,11 +7,12 @@ import {
   setUserAssignedCompanies,
   setUserUnassignedCompanies,
 } from "../../../features/companySlice";
-import { setRefresh } from "../../../features/usersSlice";
+import { resetUserInfo, setRefresh } from "../../../features/usersSlice";
 
 import { assignUserToCompany } from "../../../api/user";
 import Input from "../../../components/inputs/Input";
 import SearchUser from "../forms/SearchUser";
+import { WarningIcon } from "../../../components/toasts/Icons";
 
 const AssignCompanyToUser = () => {
   const toast = useToast();
@@ -22,6 +23,7 @@ const AssignCompanyToUser = () => {
   const { userUnassignedCompanies, userAssignedCompanies } = useAppSelector(
     (state) => state.company,
   );
+  const user = useAppSelector((state) => state.user);
 
   const [unassignedFilter, setUnassignedFilter] = useState<string>("");
   const [assignedFilter, setAssignedFilter] = useState<string>("");
@@ -107,6 +109,40 @@ const AssignCompanyToUser = () => {
   const handleUnassignedFilterText = (x: string) => {
     setUnassignedFilter(x);
   };
+
+  const isOutranked = () => {
+    const found = users.find((u) => u.id === selectedUserId);
+
+    if (found) {
+      return found.user_level > user.userLevel;
+    }
+    return false;
+  };
+
+  const handleReset = () => {
+    dispatch(resetUserInfo());
+    dispatch(setUserAssignedCompanies([]));
+    dispatch(setUserUnassignedCompanies([]));
+  };
+
+  if (isOutranked()) {
+    return (
+      <div className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg">
+        <div className="font-medium text-sm flex flex-col items-center">
+          <WarningIcon fill="#f97316" height={56} width={56} />
+          <div className="mb-2">We're sorry...</div>
+          <div>You are not authorized to make changes to this user</div>
+          <div>Please contact them if assistance is needed</div>
+          <button
+            className="btn-themeBlue py-1.5 mt-2"
+            onClick={() => handleReset()}
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

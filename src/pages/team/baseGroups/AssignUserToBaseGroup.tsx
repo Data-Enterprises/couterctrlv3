@@ -25,6 +25,8 @@ import SearchUser from "../forms/SearchUser";
 import SingleSelect from "../../../components/SingleSelect";
 import Input from "../../../components/inputs/Input";
 import { useEffect, useState } from "react";
+import { WarningIcon } from "../../../components/toasts/Icons";
+import { resetUserInfo } from "../../../features/usersSlice";
 
 const AssignUserToBG = () => {
   const toast = useToast();
@@ -34,6 +36,7 @@ const AssignUserToBG = () => {
 
   const { url, token } = useAppSelector((state) => state.app);
   const { users, selectedUserId } = useAppSelector((state) => state.users);
+  const user = useAppSelector((state) => state.user);
   const {
     activeBaseGroups,
     inactiveBaseGroups,
@@ -149,6 +152,38 @@ const AssignUserToBG = () => {
   const handleUnasignedFilterText = (x: string) => {
     setUnassignedFilter(x);
   };
+
+  const isOutranked = () => {
+    const found = users.find((u) => u.id === selectedUserId);
+
+    if (found) {
+      return found.user_level > user.userLevel;
+    }
+    return false;
+  };
+
+  const handleReset = ()=> {
+    dispatch(resetUserInfo());
+  };
+
+  if (isOutranked()) {
+    return (
+      <div className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg">
+        <div className="font-medium text-sm flex flex-col items-center">
+          <WarningIcon fill="#f97316" height={56} width={56} />
+          <div className="mb-2">We're sorry...</div>
+          <div>You are not authorized to make changes to this user</div>
+          <div>Please contact them if assistance is needed</div>
+          <button
+            className="btn-themeBlue py-1.5 mt-2"
+            onClick={() => handleReset()}
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2">
