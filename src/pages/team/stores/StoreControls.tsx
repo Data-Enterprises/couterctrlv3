@@ -5,7 +5,7 @@ import AssignStoresToUser from "./AssignStoresToUser";
 
 type StoreFormOption = "assign" | "info" | "bg_assign" | "";
 
-const StoresForm = () => {
+const StoreControls = () => {
   const [option, setOption] = useState<StoreFormOption>("");
 
   const renderForm = () => {
@@ -49,4 +49,4 @@ const StoresForm = () => {
   );
 };
 
-export default StoresForm;
+export default StoreControls;

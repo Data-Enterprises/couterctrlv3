@@ -23,7 +23,7 @@ import { getAllUsers } from "../../api/user";
 import UserControls from "./forms/UserControls";
 import FormHeader from "./forms/FormHeader";
 import CounterCtrlStores from "./assignModal/CounterCtrlStores";
-import StoresForm from "./stores/StoresForm";
+import StoreControls from "./stores/StoreControls";
 import BaseGroupControls from "./baseGroups/BaseGroupControls";
 import CompanyControls from "./company/CompanyControls";
 
@@ -135,7 +135,7 @@ const Team = () => {
       case 2:
         return <BaseGroupControls />;
       case 3:
-        return <StoresForm />;
+        return <StoreControls />;
       case 4:
         return <CompanyControls />;
       default:
