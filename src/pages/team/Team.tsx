@@ -64,7 +64,10 @@ const Team = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
+          // mapping the company ids for easier filtering
           const companyIds = [...companies].map((c) => c.company);
+
+          // creating a filtered list uf non-DCR users
           const filtered = [...j.users].filter((u: User) => {
             const isDcrUser = u.companies.find(
               (c) => c.company === 5 && c.name === "DCR",
@@ -84,13 +87,16 @@ const Team = () => {
             }
           });
 
+          // Checking if the logged in/current user is a DCR user
           const isDcrUser = companies.find(
             (c) => c.company === 5 && c.name === "DCR",
           );
 
+          // DCR users should be able to see everyone (for support puposes)
           if (isDcrUser) {
             dispatch(setUsers(j.users));
           } else {
+            // Otherwise, we show only the other users who are also assigned to the same company/companies as the logged in user
             dispatch(setUsers(filtered));
           }
         }
