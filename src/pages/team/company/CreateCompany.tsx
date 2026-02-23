@@ -64,9 +64,15 @@ const CreateCompany = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
+  const nameAlreadyExists = () => {
+    const names = companies.map((c) => c.name);
+    return names.some((n) => n.toLowerCase() === name.toLowerCase());
+  };
+
   const canSubmit = () => {
     return (
       name.length &&
+      !nameAlreadyExists() &&
       address.length &&
       city.length &&
       state.length &&
@@ -86,6 +92,10 @@ const CreateCompany = () => {
           ))}
         </div>
       </div>
+
+      {nameAlreadyExists() ? (
+        <div className="font-medium text-orange-500 text-center mt-2">Company name {name} already exists</div>
+      ) : null}
 
       <div className="grid grid-cols-2 gap-2 mt-2">
         <Input
@@ -138,7 +148,10 @@ const CreateCompany = () => {
         >
           Clear Fields
         </button>
-        <button className={`btn-themeBlue mt-4 ${!canSubmit() && "opacity-50 pointer-events-none"}`} onClick={handleSubmit}>
+        <button
+          className={`btn-themeBlue mt-4 ${!canSubmit() && "opacity-50 pointer-events-none"}`}
+          onClick={handleSubmit}
+        >
           Create
         </button>
       </div>
