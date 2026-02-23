@@ -61,7 +61,7 @@ const AssignStoresToUser = () => {
 
   if (isOutranked()) {
     return (
-      <div className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg w-[50%]">
+      <div className="flex justify-center items-center bg-custom-white p-4 rounded-lg shadow-lg w-[50%]">
         <div className="font-medium text-sm flex flex-col items-center">
           <WarningIcon fill="#f97316" height={56} width={56} />
           <div className="mb-2">We're sorry...</div>
