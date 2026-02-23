@@ -182,7 +182,7 @@ const UserForm = () => {
             label="Username"
             value={userInfo.username}
             setValue={handleUsername}
-            className={`${selectedUserForm === "update" ? "opacity-50 pointer-events-none" : ""}`}
+            className={`${selectedUserForm === "update" ? "opacity-50 pointer-events-none" : ""} py-1.5`}
           />
           <Input label="Email" value={userInfo.email} setValue={handleEmail} />
           <Input

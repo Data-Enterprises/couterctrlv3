@@ -1,10 +1,7 @@
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import {
-  assignBaseGroupToUser,
-  createUser,
-  updateUser,
-} from "../../../api/team";
+import type { JsonError, Store } from "../../../interfaces";
+
 import {
   resetUserInfo,
   setIsDeletingUser,
@@ -13,9 +10,14 @@ import {
   setSelectedUserStores,
   type UserFormType,
 } from "../../../features/usersSlice";
-import { assignUserToCompany, getUserStores } from "../../../api/user";
-import type { JsonError, Store } from "../../../interfaces";
 import { setAllSelectedBaseGroups } from "../../../features/baseGroupSlice";
+
+import {
+  assignBaseGroupToUser,
+  createUser,
+  updateUser,
+} from "../../../api/team";
+import { assignUserToCompany, getUserStores } from "../../../api/user";
 
 interface UserFormButtonsProps {
   formType: UserFormType;
@@ -72,51 +74,12 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
         const j = resp.data;
         if (j.error === 0) {
           getStores(selectedUserId);
-          // assignUserToCompany(url, token, selectedUserId, userCompanyIds)
-          //   .then((resp) => {
-          //     const j = resp.data;
-          //     if (j.error === 0) {
-          //       if (base.bgsToAssign.length) {
-          //         assignBaseGroupToUser(
-          //           url,
-          //           token,
-          //           selectedUserId,
-          //           base.bgsToAssign,
-          //         )
-          //           .then((resp) => {
-          //             const j = resp.data;
-          //             if (j.error === 0) {
-          //               if (base.bgsToUnassign.length) {
-          //                 unassignBG(base.bgsToUnassign);
-          //               } else {
-          //                 getStores(selectedUserId);
-          //               }
-          //             }
-          //           })
-          //           .catch((err: JsonError) => toast.error(err.message));
-          //       } else if (base.bgsToUnassign.length) {
-          //         unassignBG(base.bgsToUnassign);
-          //       } else {
-          //         getStores(selectedUserId);
-          //       }
-          //     }
-          //   })
-          //   .catch((err: JsonError) => toast.error(err.message));
         }
       })
       .catch((err) => {
         toast.error("Error updating user " + err.message);
       });
   };
-
-  // const unassignBG = (bgs: number[]) => {
-  //   deleteUserBaseGroupLink(url, token, selectedUserId, bgs).then((resp) => {
-  //     const j = resp.data;
-  //     if (j.error === 0) {
-  //       getStores(selectedUserId);
-  //     }
-  //   });
-  // };
 
   const getStores = (userid: number) => {
     getUserStores(url, token, userid)

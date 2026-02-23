@@ -72,15 +72,7 @@ const UserControls = () => {
           Info
         </button>
       </div>
-      {!selectedUserForm ? (
-        null
-        // <div className="h-full bg-custom-white mt-4 rounded-lg shadow-lg flex justify-center items-start p-4">
-        //   <div className="py-2 text-[15px] text-center font-medium">
-        //     <div>What would you like to do?</div>
-        //     <div>Select one of the options above and follow the steps</div>
-        //   </div>
-        // </div>
-      ) : (
+      {!selectedUserForm ? null : (
         <>
           <ProfileCard />
           {!isOutranked() ? (
