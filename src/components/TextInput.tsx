@@ -13,6 +13,7 @@ interface TextInputProps<T> {
   type?: string;
   isSimple?: boolean;
   setText?: (text: string) => void;
+  className?: string;
 }
 
 // This component is used to handle Redux form state updates for text inputs
@@ -25,6 +26,7 @@ const TextInput = <T,>({
   type = "text",
   isSimple = false,
   setText,
+  className="py-1.5"
 }: TextInputProps<T>) => {
   const [encrypted, setEncrypted] = useState(type === "password");
   const [inputType, setInputType] = useState<string>(type);
@@ -137,7 +139,7 @@ const TextInput = <T,>({
 
   return (
     <div className="relative">
-      <label htmlFor={name} className="text-[13px] font-medium ml-1 flex gap-1">
+      <label htmlFor={name} className="text-sm font-medium ml-1 flex gap-1">
         {title} <div data-testid={`text-input-${name}-message`} className={showTextColor()}>{showMsg()}</div>
       </label>
       <input
@@ -146,7 +148,7 @@ const TextInput = <T,>({
         type={inputType}
         value={query}
         onChange={handleQueryChange}
-        className="basic-input focus:border bg-custom-white"
+        className={`basic-input focus:border bg-custom-white ${className}`}
       />
       {type === "password" && <Eye onClick={handleEncryptionToggle} />}
       {name === "password" ? (

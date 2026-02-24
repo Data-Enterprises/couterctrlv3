@@ -2,66 +2,169 @@ import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
-import { getQuicksightUsers } from "../../api/quicksight";
-import { getBaseGroupsAssignedToUser } from "../../api/team";
-import { setBaseGroups, setRefresh } from "../../features/usersSlice";
+import {
+  resetUserInfo,
+  setAssignBaseGroups,
+  setRefresh,
+  setSelectedForm,
+  setSelectedUserForm,
+  setSelectedUserId,
+  setUserLevels,
+  setUsers,
+} from "../../features/usersSlice";
 import { setQsUsers } from "../../features/qsSlice";
-import type { JsonError } from "../../interfaces";
+import { setSelectedCompanyForm } from "../../features/companySlice";
+import type { JsonError, User, UserLevelJsonResp } from "../../interfaces";
 
-import UserInfo from "./UserInfo";
-import UserGrid from "./UserGrid";
-import BaseGroups from "./BaseGroups";
-import DeleteUserModal from "./DeleteUserModal";
-import AssignStoresModal from "./assignModal/AssignStoresModal";
+import { getQuicksightUsers } from "../../api/quicksight";
+import { getUserLevels } from "../../api/team";
+import { getAllUsers } from "../../api/user";
+
+import UserControls from "./forms/UserControls";
+import FormHeader from "./forms/FormHeader";
+import CounterCtrlStores from "./assignModal/CounterCtrlStores";
+import StoreControls from "./stores/StoreControls";
+import BaseGroupControls from "./baseGroups/BaseGroupControls";
+import CompanyControls from "./company/CompanyControls";
 
 const Team = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const context = useAppSelector((state) => state.app);
-  const { refresh } = useAppSelector((state) => state.users);
+  const { url, token } = useAppSelector((state) => state.app);
+  const companies = useAppSelector((state) => state.user.companies);
+  const { refresh, selectedUserId, selectedForm } = useAppSelector(
+    (state) => state.users,
+  );
+
+  useEffect(() => {
+    return () => {
+      dispatch(setSelectedUserId(0));
+      dispatch(resetUserInfo());
+      dispatch(setSelectedForm(0));
+      dispatch(setSelectedUserForm(""));
+      dispatch(setSelectedCompanyForm(""));
+    };
+  }, []);
+
+  useEffect(() => {
+    dispatch(setSelectedUserId(0));
+    dispatch(resetUserInfo());
+    dispatch(setSelectedUserForm(""));
+    dispatch(setSelectedCompanyForm(""));
+  }, [selectedForm]);
 
   useEffect(() => {
     if (refresh) {
-      getQuicksightUsers(context.url, context.token)
+      getData();
+    }
+  }, [refresh]);
+
+  const getData = () => {
+    getAllUsers(url, token)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          // mapping the company ids for easier filtering
+          const companyIds = [...companies].map((c) => c.company);
+
+          // creating a filtered list uf non-DCR users
+          const filtered = [...j.users].filter((u: User) => {
+            const isDcrUser = u.companies.find(
+              (c) => c.company === 5 && c.name === "DCR",
+            );
+
+            if (isDcrUser) {
+              return false;
+            } else {
+              let valid = false;
+              u.companies.forEach((c) => {
+                if (companyIds.includes(c.company)) {
+                  valid = true;
+                  return;
+                }
+              });
+              return valid;
+            }
+          });
+
+          // Checking if the logged in/current user is a DCR user
+          const isDcrUser = companies.find(
+            (c) => c.company === 5 && c.name === "DCR",
+          );
+
+          // DCR users should be able to see everyone (for support puposes)
+          if (isDcrUser) {
+            dispatch(setUsers(j.users));
+          } else {
+            // Otherwise, we show only the other users who are also assigned to the same company/companies as the logged in user
+            dispatch(setUsers(filtered));
+          }
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error("Error fetching users " + err.message);
+      });
+  };
+
+  useEffect(() => {
+    if (refresh) {
+      getQuicksightUsers(url, token)
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
-            dispatch(setQsUsers(j.users))
+            dispatch(setQsUsers(j.users));
           }
         })
         .catch((err: JsonError) => {
           toast.error("Error fetching QuickSight users " + err.message);
         });
-      getUsers();
+      getUserLevels(url, token)
+        .then((resp) => {
+          const j: UserLevelJsonResp = resp.data;
+          if (j.error === 0) {
+            dispatch(setUserLevels(j.levels));
+          }
+        })
+        .catch((err: JsonError) => toast.error(err.message));
       dispatch(setRefresh(false));
     }
   }, [refresh]);
 
-  const getUsers = () => {
-    getBaseGroupsAssignedToUser(context.url, context.token, 0)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          dispatch(setBaseGroups(j.groups));
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error("Error fetching base groups " + err.message);
-      });
+  useEffect(() => {
+    dispatch(setAssignBaseGroups([]));
+  }, [selectedUserId]);
+
+  const renderForm = () => {
+    switch (selectedForm) {
+      case 1:
+        return <UserControls />;
+      case 2:
+        return <BaseGroupControls />;
+      case 3:
+        return <StoreControls />;
+      case 4:
+        return <CompanyControls />;
+      default:
+        return null;
+    }
   };
 
   return (
     <div data-testid="team-page" className={`w-full h-[calc(100vh-3rem)] p-4`}>
-      <AssignStoresModal />
-      <DeleteUserModal />
-      <div className="grid grid-cols-2 gap-8 h-full">
-        <div className="grid">
-          <UserGrid />
+      <div className="flex gap-3 h-full">
+        <div className="min-w-[178px] max-w-[178px]">
+          <FormHeader />
         </div>
-        <div className="grid grid-rows-2">
-          <UserInfo />
-          <BaseGroups />
+        <div
+          className={`${selectedForm !== 3 ? "w-[63%]" : "w-full"} space-y-4`}
+        >
+          {renderForm()}
         </div>
+        {selectedForm !== 3 && (
+          <div className="w-[45%]">
+            <CounterCtrlStores />
+          </div>
+        )}
       </div>
     </div>
   );

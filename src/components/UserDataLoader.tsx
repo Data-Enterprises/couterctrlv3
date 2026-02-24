@@ -63,7 +63,7 @@ const UserDataLoader = () => {
           const lastGroup = !prefs.last_group ? 0 : prefs.last_group;
           dispatch(setLastGroup(lastGroup));
           const type = !prefs.last_search_type
-            ? "Stores"
+            ? "Store"
             : getDefaultType(prefs.last_search_type);
           dispatch(setType(type));
           const lastRoute = !prefs.last_route ? "/" : prefs.last_route;
@@ -88,13 +88,13 @@ const UserDataLoader = () => {
         const j = resp.data;
         if (j.error === 0) {
           const all = (j.all_stores_for_user ?? []).filter(
-            (s: Store) => s.store_number !== null && s.store_name !== null
+            (s: Store) => s.store_number !== null && s.store_name !== null,
           );
           const assigned = j.assigned_stores.filter(
-            (s: Store) => s.store_number !== null && s.store_name !== null
+            (s: Store) => s.store_number !== null && s.store_name !== null,
           );
           const unassigned = j.unassigned_stores.filter(
-            (s: Store) => s.store_number !== null && s.store_name !== null
+            (s: Store) => s.store_number !== null && s.store_name !== null,
           );
 
           dispatch(setAllAvailableStores(all));
@@ -104,7 +104,7 @@ const UserDataLoader = () => {
           // This is for default loading of data when user logs in
           const stores = j.assigned_stores;
           const selectedStore = stores.find(
-            (s: any) => s.storeid === search.lastStore
+            (s: any) => s.storeid === search.lastStore,
           );
           if (selectedStore) {
             dispatch(setSelectedStore(selectedStore));
@@ -122,14 +122,14 @@ const UserDataLoader = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error == "0") {
-          const groups = j.groups.filter(
-            (g: Group) => g.userid === user.userid
-          );
-          dispatch(setGroups(groups));
+          // const groups = j.groups.filter(
+          //   (g: Group) => g.userid === user.userid
+          // );
+          dispatch(setGroups(j.groups));
           // On login, if last_search_type is Group => then set that selected group in search slice
           // This is for default loading of data when user logs in
-          const selectedGroup = groups.find(
-            (g: Group) => g.id === search.lastGroup
+          const selectedGroup = j.groups.find(
+            (g: Group) => g.id === search.lastGroup,
           );
           if (selectedGroup) {
             dispatch(setSelectedGroup(selectedGroup));

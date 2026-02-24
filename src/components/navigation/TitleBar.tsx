@@ -13,7 +13,7 @@ const TitleBar = () => {
     dispatch(setIsNavOpen(!nav.isNavOpen));
   };
 
-  const width = context.isDesktop ? "w-48" : "";
+  const width = context.isDesktop ? "w-[202px]" : "";
   const welcomeWidth = context.isDesktop ? "w-[calc(100vw-12rem)]" : "w-[calc(100vw-3rem)]";
 
   return (

@@ -29,9 +29,6 @@ const SecurityQuestion = () => {
           const j = resp.data;
           if (j.error === 0) {
             setSecurityQuestions(j.questions);
-            toast.info(
-              "Please set your security question and answer to secure your account."
-            );
           } else {
             toast.warn("No security questions available at this time.");
           }

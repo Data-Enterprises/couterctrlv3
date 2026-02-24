@@ -5,7 +5,7 @@ import type { UserData } from "../features/usersSlice";
 export const getBaseGroupsAssignedToUser = async (
   url: string,
   token: string,
-  userid: number
+  userid: number,
 ) => {
   const json = await axios({
     method: "GET",
@@ -13,7 +13,7 @@ export const getBaseGroupsAssignedToUser = async (
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    url: url + "groups/base_groups_assigned_to_user",
+    url: url + "groups/base_groups_assigned_to_user_split",
     params: {
       userid,
     },
@@ -26,7 +26,7 @@ export const assignBaseGroupToUser = async (
   url: string,
   token: string,
   userid: number,
-  groupid: number
+  groupid: number[],
 ) => {
   const json = await axios({
     method: "POST",
@@ -48,7 +48,7 @@ export const deleteUserBaseGroupLink = async (
   url: string,
   token: string,
   userid: number,
-  groupid: number
+  groupid: number[],
 ) => {
   const json = await axios({
     method: "DELETE",
@@ -57,7 +57,7 @@ export const deleteUserBaseGroupLink = async (
       Authorization: `Bearer ${token}`,
     },
     url: url + "groups/delete_user_base_group_link",
-    params: {
+    data: {
       userid,
       groupid,
     },
@@ -68,7 +68,7 @@ export const deleteUserBaseGroupLink = async (
 export const createUser = async (
   url: string,
   token: string,
-  data: UserData
+  data: UserData,
 ) => {
   const json = await axios({
     method: "POST",
@@ -77,7 +77,10 @@ export const createUser = async (
       Authorization: `Bearer ${token}`,
     },
     url: url + "users/create_user",
-    data: data,
+    data: {
+      ...data,
+      company: 0,
+    },
   });
   return json;
 };
@@ -87,7 +90,7 @@ export const updateUser = async (
   token: string,
   data: UserData,
   security: number,
-  template: number
+  template: number,
 ) => {
   const json = await axios({
     method: "PUT",
@@ -109,7 +112,7 @@ export const updateUser = async (
 export const deleteUser = async (
   url: string,
   token: string,
-  username: string
+  username: string,
 ) => {
   const json = await axios({
     method: "DELETE",
@@ -130,7 +133,7 @@ export const assignUserToStore = async (
   url: string,
   token: string,
   userid: number,
-  storeids: number[]
+  storeids: number[],
 ) => {
   const json = await axios({
     method: "POST",
@@ -151,7 +154,7 @@ export const unassignUserFromStore = async (
   url: string,
   token: string,
   userid: number,
-  storeid: number
+  storeids: number[],
 ) => {
   const json = await axios({
     method: "DELETE",
@@ -159,10 +162,10 @@ export const unassignUserFromStore = async (
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    url: url + "stores/unassign_user",
-    params: {
+    url: url + "stores/unassign_store",
+    data: {
       userid,
-      storeid,
+      storeids,
     },
   });
   return json;
@@ -171,7 +174,7 @@ export const unassignUserFromStore = async (
 export const resetUserSecurityQuestion = async (
   url: string,
   token: string,
-  userid: number
+  userid: number,
 ) => {
   const json = await axios({
     method: "POST",
@@ -183,6 +186,18 @@ export const resetUserSecurityQuestion = async (
     params: {
       userid,
     },
+  });
+  return json;
+};
+
+export const getUserLevels = async (url: string, token: string) => {
+  const json = await axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "users/user_levels",
   });
   return json;
 };

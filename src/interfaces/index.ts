@@ -153,12 +153,24 @@ export interface Store {
   storeid: number;
   store_number: string;
   store_name: string;
+  company: number;
+  company_name: string;
 }
 
 export interface UnassignedStore {
   storeid: number;
   store_number: string;
   store_name: string;
+  company: number;
+  company_name: string;
+}
+
+export interface UserCompany {
+  id: number;
+  name: string;
+  userid: number;
+  company: number;
+  username: string;
 }
 
 export interface User {
@@ -171,6 +183,7 @@ export interface User {
   first_name: string;
   last_name: string;
   email: string;
+  companies: UserCompany[];
   company: number;
   active: number;
   template: number | null;
@@ -185,7 +198,16 @@ export interface User {
 export interface BaseGroup {
   id: number;
   name: string;
+  company: number;
+  company_name: string;
   active: 1 | 0;
+}
+
+export interface BaseGroupJsonResp {
+  error: number;
+  success: boolean;
+  active: BaseGroup[];
+  inactive: BaseGroup[];
 }
 
 //////////////////////////////////////////////////////////////
@@ -727,3 +749,93 @@ export interface SimListResp {
   success: boolean;
   records: SimListItem[];
 }
+
+//////////////////////////////
+// Company/Admin/Team types///
+//////////////////////////////
+
+export interface Company {
+  id: number;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: number;
+  phone: string;
+  contact_email: string;
+}
+
+export interface CompanyJsonResp {
+  error: number;
+  success: boolean;
+  msg: string;
+  companies: Company[];
+}
+
+export interface CompanyBaseGroup {
+  id: number;
+  name: string;
+  company: number;
+}
+
+export interface CompanyBGJsonResp {
+  error: number;
+  success: boolean;
+  groups: CompanyBaseGroup[];
+}
+
+export interface Vendor {
+  vendor_id: number;
+  vendor_name: string;
+  company_name: string;
+  address: string;
+  city: string;
+  state: string;
+  phone: string;
+  zip: string;
+  contact_email: string;
+}
+
+export interface VendorJsonResp {
+  error: number;
+  success: boolean;
+  msg: string;
+  vendors: Vendor[];
+}
+
+export interface UsersJsonResp {
+  error: number;
+  success: boolean;
+  msg: string;
+  users: User[];
+}
+
+export type AdminOption = {
+  label: string;
+  option: number;
+};
+
+export interface UserLevel {
+  id: number;
+  name: string;
+}
+
+export interface UserLevelJsonResp {
+  error: number;
+  success: boolean;
+  levels: UserLevel[];
+}
+
+export type UserData = {
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+};
+
+export type StaticUserData = {
+  user_level: number;
+  role: number;
+  password: string;
+  confirm_password: string;
+};

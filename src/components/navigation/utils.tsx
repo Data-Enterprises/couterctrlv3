@@ -5,6 +5,7 @@ import {
   MagnifyingGlassIcon,
   ArrowTrendingUpIcon,
   ClipboardDocumentCheckIcon,
+  KeyIcon,
 } from "@heroicons/react/16/solid";
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
@@ -21,10 +22,18 @@ export type Navigation = {
   children: Navigation[];
   childOpen: boolean;
   mobile: boolean;
-  userRoles: string[];
+  userLevels: string[];
   isHovering: boolean;
 };
 
+/**
+ * User Levels: current
+ * 1 => Basic User
+ * 2 => User
+ * 5 => Manager
+ * 7 => Owner
+ * 9 => Programmer
+ */
 export const navigation: Navigation[] = [
   {
     name: "Home",
@@ -33,7 +42,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userRoles: ["*"],
+    userLevels: ["*"],
     isHovering: false,
   },
   {
@@ -43,7 +52,7 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userRoles: ["*"],
+    userLevels: ["*"],
     isHovering: false,
   },
   {
@@ -53,7 +62,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userRoles: ["*"],
+    userLevels: ["5", "7", "9"],
     isHovering: false,
   },
   {
@@ -63,7 +72,7 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userRoles: ["*"],
+    userLevels: ["*"],
     isHovering: false,
   },
   {
@@ -73,7 +82,7 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userRoles: ["2", "3", "4", "9"],
+    userLevels: ["*"],
     isHovering: false,
   },
   {
@@ -83,7 +92,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userRoles: ["*"],
+    userLevels: ["*"],
     isHovering: false,
   },
   {
@@ -93,7 +102,7 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userRoles: ["*"],
+    userLevels: ["*"],
     isHovering: false,
   },
   {
@@ -103,7 +112,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userRoles: ["*"],
+    userLevels: ["*"],
     isHovering: false,
   },
   {
@@ -113,7 +122,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userRoles: ["*"],
+    userLevels: ["*"],
     isHovering: false,
   },
   {
@@ -123,7 +132,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userRoles: ["*"],
+    userLevels: ["*"],
     isHovering: false,
   },
   {
@@ -133,7 +142,17 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userRoles: ["*"],
+    userLevels: ["*"],
+    isHovering: false,
+  },
+  {
+    name: "Admin",
+    href: "admin",
+    icon: KeyIcon,
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userLevels: ["*"],
     isHovering: false,
   },
   // This fake link is just to show that user types can be restricted
@@ -144,7 +163,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userRoles: ["9999"],
+    userLevels: ["9999"],
     isHovering: false,
   },
 ];

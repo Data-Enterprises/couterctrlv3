@@ -41,17 +41,17 @@ const Cashiers = () => {
       formatGoliathDate(search.endDate),
       useGroups,
       searchValue,
-      singleStore
+      singleStore,
     )
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          const saleTypes = [...j.sale_types, { sale_type: "Description" }]
+          const saleTypes = [...j.sale_types, { sale_type: "Description" }];
           dispatch(setSaleTypes(saleTypes));
         }
       })
       .catch((err: JsonError) =>
-        toast.error("Error fetching sale types: " + err.message)
+        toast.error("Error fetching sale types: " + err.message),
       );
   };
 
@@ -60,11 +60,13 @@ const Cashiers = () => {
     ? "w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden p-4 grid grid-cols-[23%_77%] gap-4"
     : "p-4 w-full min-h-full overflow-y-auto space-y-4 max-h-screen";
   const leftContainer = context.isDesktop
-    ? "grid grid-rows-[25%_0.9fr_1fr] gap-2"
+    ? cashier.saleTypes.length
+      ? `grid grid-rows-[22%_0.9fr_1fr] gap-2`
+      : ""
     : "";
   const cols = context.isDesktop ? "grid-cols-2" : "grid-cols-1 mt-4";
   const cardContainer = context.isDesktop
-    ? "grid grid-rows-[25%_74%] mr-4 gap-2"
+    ? `grid grid-rows-[25%_74%] mr-4 gap-2`
     : "";
 
   return (
@@ -85,7 +87,9 @@ const Cashiers = () => {
       <div className={cardContainer}>
         {cashier.noTransMsg && (
           <div className="w-full h-full flex items-center justify-center bg-custom-white rounded-lg shadow-lg">
-            <p data-testid="no-transactions-msg" className="font-medium">No transactions Found</p>
+            <p data-testid="no-transactions-msg" className="font-medium">
+              No transactions Found
+            </p>
           </div>
         )}
         {cashier.chunkedSales.length > 0 ? (

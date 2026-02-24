@@ -17,6 +17,7 @@ interface SingleSelectProps<T> {
   listClass?: string;
   defaultValue?: string | number;
   testId?: string;
+  openMaxHeight?: string;
 }
 
 const SingleSelect = <T,>({
@@ -33,6 +34,7 @@ const SingleSelect = <T,>({
   innerClass = "",
   resetQuery = false,
   listClass = "",
+  openMaxHeight = "data-[display=open]:max-h-[180px]",
 }: SingleSelectProps<T>) => {
   const [query, setQuery] = useState(defaultQuery);
   const [filteredData, setFilteredData] = useState<T[]>([]);
@@ -85,7 +87,7 @@ const SingleSelect = <T,>({
       const currentStatus = listRef.current.getAttribute("data-display");
       listRef.current.setAttribute(
         "data-display",
-        currentStatus === "open" ? "closed" : "open"
+        currentStatus === "open" ? "closed" : "open",
       );
       setFilteredData(data);
     }
@@ -109,7 +111,7 @@ const SingleSelect = <T,>({
       (r[displayKey] as string)
         .toString()
         .toLowerCase()
-        .includes(e.target.value.toLowerCase())
+        .includes(e.target.value.toLowerCase()),
     );
 
     // if there is filtered data, then show the list as the user types
@@ -163,7 +165,7 @@ const SingleSelect = <T,>({
                 data-[display=open]:animate-appear
                 data-[display=closed]:animate-dissapear
                 data-[display=closed]:pointer-events-none
-                data-[display=open]:max-h-[250px]
+                ${openMaxHeight}
                 data-[display=closed]:h-0 ${listClass}`}
           >
             {filteredData.map((d, idx) => (

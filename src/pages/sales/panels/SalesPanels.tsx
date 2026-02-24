@@ -174,7 +174,7 @@ const SalesPanels = () => {
 
   const isReady = sales.salesPanels.length > 0 && !sales.panelsLoading;
   return (
-    <div className="min-h-[100%] max-h-[100%] relative flex flex-col gap-2">
+    <div className="min-h-[100%] max-h-[100%] relative flex flex-col justify-center gap-2">
       {isReady &&
         sales.salesPanels.map((panel, idx) => (
           <SalesPanel
@@ -185,7 +185,9 @@ const SalesPanels = () => {
           />
         ))}
       {sales.panelsLoading ? (
-        <LoadingIndicator message="Loading Sales Panels..." />
+        <div className="mt-52 relative">
+          <LoadingIndicator message="Loading Sales Panels..." />
+        </div>
       ) : null}
     </div>
   );
