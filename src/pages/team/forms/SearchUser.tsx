@@ -52,7 +52,6 @@ const SearchUser = () => {
   }, []);
 
   useEffect(() => {
-    console.log("howdy");
     setUsername("");
     if (userFilterText.trim() === "" && !selectedCompanyId) {
       setFiltered(users);
