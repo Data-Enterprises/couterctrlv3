@@ -52,7 +52,7 @@ const SearchUser = () => {
   }, []);
 
   useEffect(() => {
-    setUsername("");
+    // setUsername("");
     if (userFilterText.trim() === "" && !selectedCompanyId) {
       setFiltered(users);
     } else {
@@ -74,10 +74,14 @@ const SearchUser = () => {
 
   const handleFilterTextChange = (x: string) => {
     dispatch(setUserFilterText(x));
+    if (inputRef.current && listRef.current) {
+      listRef.current.setAttribute("data-display", "open");
+    }
   };
 
   const handleUserClick = (e: User) => {
     setUsername(e.username);
+    dispatch(setUserFilterText(e.username));
     dispatch(setSelectedUserInfo(e));
     if (inputRef.current && listRef.current) {
       listRef.current.setAttribute("data-display", "closed");
@@ -87,6 +91,9 @@ const SearchUser = () => {
   };
 
   const handleInputRefClick = () => {
+    if (username){
+      dispatch(setUserFilterText(username));
+    }
     if (inputRef.current && listRef.current) {
       listRef.current.setAttribute("data-display", "open");
     }
