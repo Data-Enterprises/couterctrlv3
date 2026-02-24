@@ -23,7 +23,13 @@ export const initialState: SearchState = {
   singleDate: formatDate(new Date().toString()),
   lastStore: 0,
   lastGroup: 0,
-  selectedStore: { storeid: 0, store_name: "", store_number: "" },
+  selectedStore: {
+    storeid: 0,
+    store_name: "",
+    store_number: "",
+    company: 0,
+    company_name: "",
+  },
   selectedGroup: { id: 0, group_name: "", userid: 0 },
 };
 

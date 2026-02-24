@@ -84,20 +84,11 @@ const CreateCompany = () => {
 
   return (
     <div className="bg-custom-white p-4 rounded-lg shadow-lg w-[40vw]">
-      <div className="text-sm select-none">
-        <div className="font-medium">Existing Companies</div>
-        <div className="grid grid-cols-4 gap-1 bg-bkg/80 rounded-lg p-2 max-h-28 overflow-hidden overflow-y-auto no-scrollbar">
-          {companies.map((c) => (
-            <div key={c.id}>{c.name}</div>
-          ))}
-        </div>
-      </div>
-
       {nameAlreadyExists() ? (
-        <div className="font-medium text-orange-500 text-center mt-2">Company name {name} already exists</div>
+        <div className="font-medium text-orange-500 text-center">Company name {name} already exists. Please use a different name.</div>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-2 mt-2">
+      <div className="grid grid-cols-2 gap-2">
         <Input
           className="py-1.5"
           label="Name"

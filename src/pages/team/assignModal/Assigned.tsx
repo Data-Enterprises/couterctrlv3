@@ -72,11 +72,8 @@ const Assigned = () => {
   };
 
   return (
-    <div className="p-2 bg-custom-white rounded-lg shadow-lg h-[65vh]">
-      <label
-        htmlFor="assigned-user-stores"
-        className="font-medium text-sm"
-      >
+    <div className="p-2 bg-custom-white rounded-lg shadow-lg">
+      <label htmlFor="assigned-user-stores" className="font-medium text-sm">
         <span>Assigned - {stores.length}</span>
       </label>
       <input
@@ -87,7 +84,7 @@ const Assigned = () => {
         value={filterText}
         onChange={handleChange}
       />
-      <div className="min-h-[385px] max-h-[385px] overflow-y-auto no-scrollbar space-y-2 mt-4">
+      <div className="h-[48vh] max-h-[48vh] overflow-y-auto no-scrollbar space-y-2 mt-4">
         {hasLength()
           ? stores.map((store) => (
               <div

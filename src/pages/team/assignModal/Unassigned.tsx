@@ -79,7 +79,7 @@ const Unassigned = () => {
   };
 
   return (
-    <div className="p-2 bg-custom-white rounded-lg shadow-lg h-[65vh]">
+    <div className="p-2 bg-custom-white rounded-lg shadow-lg">
       <label htmlFor="unassigned-user-stores" className="font-medium text-sm">
         <span>Unassigned - {stores.length}</span>
       </label>
@@ -91,7 +91,7 @@ const Unassigned = () => {
         value={filterText}
         onChange={handleChange}
       />
-      <div className="min-h-[385px] max-h-[385px] overflow-y-auto no-scrollbar space-y-2 mt-4">
+      <div className="h-[48vh] max-h-[48vh] overflow-y-auto no-scrollbar space-y-2 mt-4">
         {hasLength()
           ? stores.map((store) => (
               <div

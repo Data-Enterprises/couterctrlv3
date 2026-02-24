@@ -18,8 +18,11 @@ const AssignCompanyToUser = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
-  const { companies } = useAppSelector((state) => state.user);
-  const { selectedUserId, users } = useAppSelector((state) => state.users);
+  const { companies, userid, username } = useAppSelector((state) => state.user);
+  const companyState = useAppSelector((state) => state.company);
+  const { selectedUserId, users } = useAppSelector(
+    (state) => state.users,
+  );
   const { userUnassignedCompanies, userAssignedCompanies } = useAppSelector(
     (state) => state.company,
   );
@@ -36,10 +39,33 @@ const AssignCompanyToUser = () => {
     if (selectedUserId) {
       const assigned = users.filter((u) => u.id === selectedUserId)[0]
         .companies;
+
       const assignedIds = assigned.map((c) => c.company);
-      const unassigned = companies.filter(
-        (c) => !assignedIds.includes(c.company),
-      );
+
+      // Checking to see if the logged in user is a DCR user
+      // if so,then we want to see all companies, otherwise we show only the companies the logged in user is assigned to
+      const isDCRUser =
+        companies.filter(
+          (c) => c.company === 5 || c.name.toLowerCase() === "dcr",
+        ).length > 0;
+
+      let unassigned: UserCompany[] = [];
+
+      if (isDCRUser) {
+        const formatted = [...companyState.companies].map((c, i) => {
+          return {
+            id: i,
+            company: c.id,
+            name: c.name,
+            userid: userid,
+            username: username,
+          };
+        });
+
+        unassigned = formatted.filter((c) => !assignedIds.includes(c.company));
+      } else {
+        unassigned = companies.filter((c) => !assignedIds.includes(c.company));
+      }
 
       dispatch(setUserAssignedCompanies(assigned));
       dispatch(setUserUnassignedCompanies(unassigned));

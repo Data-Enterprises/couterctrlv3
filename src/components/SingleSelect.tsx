@@ -132,7 +132,11 @@ const SingleSelect = <T,>({
           {label}
         </label>
         <div className="relative">
-          <div data-testid={`single-select-trigger-${id}`} ref={triggerRef}>
+          <div
+            data-testid={`single-select-trigger-${id}`}
+            ref={triggerRef}
+            onClick={handleTriggerClick}
+          >
             <input
               data-testid={`single-select-input-${id}`}
               ref={inputRef}
@@ -146,7 +150,6 @@ const SingleSelect = <T,>({
             />
             <div
               data-testid={`single-select-trigger-icon-${id}`}
-              onClick={handleTriggerClick}
               className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none"
             >
               <ChevronUpDownIcon

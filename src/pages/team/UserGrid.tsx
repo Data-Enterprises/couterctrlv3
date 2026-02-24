@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { getAllUsers, getUserStores } from "../../api/user";
+import { getAllUsers } from "../../api/user";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import type { JsonError, Store, User } from "../../interfaces";
+import type { JsonError, User } from "../../interfaces";
 import {
   setUsers,
-  setSelectedUserInfo,
+  // setSelectedUserInfo,
   // setAssignBaseGroups,
-  setSelectedUserId,
-  setSelectedUserStores,
+  // setSelectedUserId,
+  // setSelectedUserStores,
 } from "../../features/usersSlice";
 // import { getBaseGroupsAssignedToUser } from "../../api/team";
 
@@ -20,9 +20,9 @@ import {
   ModuleRegistry,
   type ColDef,
   type ColGroupDef,
-  type RowClickedEvent,
+  // type RowClickedEvent,
 } from "ag-grid-community";
-import { setSelectedQsUserEmail, setValidUser } from "../../features/qsSlice";
+// import { setSelectedQsUserEmail, setValidUser } from "../../features/qsSlice";
 import Input from "../../components/inputs/Input";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -30,15 +30,10 @@ const UserGrid = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const {
-    users,
-    refresh,
-    selectedCompanyId,
-    userLevels,
-    selectedUserId,
-  } = useAppSelector((state) => state.users);
+  const { users, refresh, selectedCompanyId, userLevels } =
+    useAppSelector((state) => state.users);
   const { companies } = useAppSelector((state) => state.user);
-  const qs = useAppSelector((state) => state.quicksight);
+  // const qs = useAppSelector((state) => state.quicksight);
   const [text, setText] = useState<string>("");
   const [filtered, setFiltered] = useState<User[]>([]);
   const [filterType, setFilterType] = useState<"name" | "email">("name");
@@ -140,7 +135,8 @@ const UserGrid = () => {
             (c) => c.company === 5 && c.name === "DCR",
           );
 
-          if (isDcrUser) { // aka Stephn/Tommy/Mike
+          if (isDcrUser) {
+            // aka Stephn/Tommy/Mike
             dispatch(setUsers(j.users));
             setFiltered(j.users);
           } else {
@@ -154,39 +150,39 @@ const UserGrid = () => {
       });
   };
 
-  const handleRowClick = (e: RowClickedEvent) => {
-    dispatch(setSelectedUserInfo(e.data));
+  // const handleRowClick = (e: RowClickedEvent) => {
+  //   dispatch(setSelectedUserInfo(e.data));
 
-    // Validating if the selected user is a registered QuickSight user
-    if (qs.qsUsers.includes(e.data.email)) {
-      dispatch(setSelectedQsUserEmail(e.data.email));
-      dispatch(setValidUser(true));
-    } else {
-      dispatch(setSelectedQsUserEmail(""));
-      dispatch(setValidUser(false));
-    }
+  //   // Validating if the selected user is a registered QuickSight user
+  //   if (qs.qsUsers.includes(e.data.email)) {
+  //     dispatch(setSelectedQsUserEmail(e.data.email));
+  //     dispatch(setValidUser(true));
+  //   } else {
+  //     dispatch(setSelectedQsUserEmail(""));
+  //     dispatch(setValidUser(false));
+  //   }
 
-    dispatch(setSelectedUserId(e.data.id));
+  //   dispatch(setSelectedUserId(e.data.id));
 
-    const filterNulls = (arr: Store[]) => {
-      return arr.filter((store) => store.store_name !== null);
-    };
+  //   const filterNulls = (arr: Store[]) => {
+  //     return arr.filter((store) => store.store_name !== null);
+  //   };
 
-    getUserStores(context.url, context.token, selectedUserId)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          const stores = {
-            assigned: filterNulls(j.assigned_stores),
-            unassigned: filterNulls(j.unassigned_stores),
-          };
-          dispatch(setSelectedUserStores(stores));
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error("Error fetching available stores " + err.message);
-      });
-  };
+  //   getUserStores(context.url, context.token, selectedUserId)
+  //     .then((resp) => {
+  //       const j = resp.data;
+  //       if (j.error === 0) {
+  //         const stores = {
+  //           assigned: filterNulls(j.assigned_stores),
+  //           unassigned: filterNulls(j.unassigned_stores),
+  //         };
+  //         dispatch(setSelectedUserStores(stores));
+  //       }
+  //     })
+  //     .catch((err: JsonError) => {
+  //       toast.error("Error fetching available stores " + err.message);
+  //     });
+  // };
 
   const handleFilterTextChange = (x: string) => {
     setText(x);
@@ -225,8 +221,8 @@ const UserGrid = () => {
           pagination={true}
           paginationAutoPageSize={true}
           paginationPageSizeSelector={false}
-          onRowClicked={handleRowClick}
-          rowSelection={"single"}
+          // onRowClicked={handleRowClick}
+          // rowSelection={"single"}
         />
       </div>
     </div>
