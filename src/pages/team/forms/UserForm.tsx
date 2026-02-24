@@ -190,11 +190,24 @@ const UserForm = () => {
             value={userInfo.first_name}
             setValue={handleFirstName}
           />
-          <Input
-            label="Last Name"
-            value={userInfo.last_name}
-            setValue={handleLastName}
-          />
+          {selectedUserForm === "create" && (
+            <Input
+              label="Last Name"
+              value={userInfo.last_name}
+              setValue={handleLastName}
+            />
+          )}
+          {selectedUserForm === "create" && (
+            <PasswordInput
+              label="Password"
+              name="password"
+              setText={handlePassword}
+              text={userInfo.password}
+              className="py-1.5"
+              leftCompare={userInfo.password}
+              rightCompare={userInfo.confirm_password}
+            />
+          )}
         </div>
         <div
           className={`${selectedUserForm === "delete" ? "opacity-50 pointer-events-none" : ""}`}
@@ -251,10 +264,17 @@ const UserForm = () => {
               defaultQuery={
                 baseGroups.length === 0 ? "Select company first" : ""
               }
-              openMaxHeight="data-[display=open]:max-h-[100px]"
+              // openMaxHeight="data-[display=open]:max-h-[100px]"
             />
           )}
-          {selectedUserForm === "create" && (
+          {selectedUserForm !== "create" && (
+            <Input
+              label="Last Name"
+              value={userInfo.last_name}
+              setValue={handleLastName}
+            />
+          )}
+          {/* {selectedUserForm === "create" && (
             <PasswordInput
               label="Password"
               name="password"
@@ -264,7 +284,7 @@ const UserForm = () => {
               leftCompare={userInfo.password}
               rightCompare={userInfo.confirm_password}
             />
-          )}
+          )} */}
           {selectedUserForm === "create" && (
             <PasswordInput
               label="Confirm Password"
