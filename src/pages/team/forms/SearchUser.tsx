@@ -72,13 +72,12 @@ const SearchUser = () => {
     }
   }, [userFilterText, filterType]);
 
-  const handleFilterTextChange = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleFilterTextChange = (x: string) => {
     if (username) {
       setUsername("");
     }
 
-    const text = e.currentTarget.value;
-    dispatch(setUserFilterText(text));
+    dispatch(setUserFilterText(x));
     if (inputRef.current && listRef.current) {
       listRef.current.setAttribute("data-display", "open");
     }
@@ -131,7 +130,7 @@ const SearchUser = () => {
           ref={inputRef}
           data-testid="search-user-input"
           value={username ? username : userFilterText}
-          onChange={(e) => handleFilterTextChange(e)}
+          onChange={(e) => handleFilterTextChange(e.currentTarget.value)}
           className={`basic-input focus:border w-full bg-custom-white`}
           onClick={handleInputRefClick}
           onKeyDown={handleBackSpace}
