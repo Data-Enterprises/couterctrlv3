@@ -52,6 +52,7 @@ const SearchUser = () => {
   }, []);
 
   useEffect(() => {
+    console.log("howdy");
     setUsername("");
     if (userFilterText.trim() === "" && !selectedCompanyId) {
       setFiltered(users);
@@ -92,6 +93,12 @@ const SearchUser = () => {
     }
   };
 
+  const handleBackSpace = (e: React.KeyboardEvent) => {
+    if (e.key === "Backspace") {
+      setUsername("");
+    }
+  };
+
   return (
     <div className="relative">
       <div className="grid grid-cols-2 mb-1.5 shadow-md">
@@ -116,6 +123,7 @@ const SearchUser = () => {
           onChange={(e) => handleFilterTextChange(e.currentTarget.value)}
           className={`basic-input focus:border w-full bg-custom-white`}
           onClick={handleInputRefClick}
+          onKeyDown={handleBackSpace}
         />
       </div>
       <div
