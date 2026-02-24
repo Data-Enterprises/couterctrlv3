@@ -194,7 +194,6 @@ const AssignUserToBG = () => {
         displayKey="name"
         valueKey="company"
         onSelect={handleCompanySelect}
-        defaultQuery={companies.length === 0 ? "Select a user" : ""}
       />
 
       <div className="grid grid-cols-2 py-2 gap-4 text-sm">
