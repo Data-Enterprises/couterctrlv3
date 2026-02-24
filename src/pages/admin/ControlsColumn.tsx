@@ -5,7 +5,7 @@ import { useAdminContext, useControlsScrollHeight } from "./hooks";
 import Input from "../../components/inputs/Input";
 import SingleSelect from "../../components/SingleSelect";
 import {
-  defaultCompFilter,
+  defaultComp,
   setAdminOption,
   setCompanyFilter,
   setSelectedUser,
@@ -34,7 +34,7 @@ const ControlsColumn = () => {
     const id = Number(e);
     const company =
       id === 0
-        ? defaultCompFilter
+        ? defaultComp
         : companies.filter((comp) => comp.id === Number(id))[0];
     dispatch(setCompanyFilter(company));
   };
@@ -102,7 +102,7 @@ const ControlsColumn = () => {
               id={user.id}
               key={i}
               value={user.id === selectedUser}
-              className="odd:bg-blue-200 py-1 hover:bg-orange-200 hover:cursor-pointer transition-all duration-200"
+              className="odd:bg-blue-200 py-1 hover:bg-orange-200 hover:cursor-pointer transition-all duration"
               idExtension="user"
               label={user.username}
               onChange={handleSelectedUser}

@@ -3,21 +3,29 @@ export const stores = [
     storeid: 2,
     store_number: "2",
     store_name: "Store 2",
+    company: 1,
+    company_name: "Company 1"
   },
   {
     storeid: 3,
     store_number: "3",
     store_name: "Store 3",
+    company: 1,
+    company_name: "Company 1"
   },
   {
     storeid: 4,
     store_number: "4",
     store_name: "Store 4",
+    company: 1,
+    company_name: "Company 1"
   },
   {
     storeid: 5,
     store_number: "5",
     store_name: "Store 5",
+    company: 1,
+    company_name: "Company 1"
   },
 ];
 
