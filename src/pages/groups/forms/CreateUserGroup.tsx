@@ -1,0 +1,76 @@
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+import { setCreateInput, setRefreshGroups } from "../../../features/groupSlice";
+import Input from "../../../components/inputs/Input";
+import type { JsonError } from "../../../interfaces";
+import { createGroup } from "../../../api/groups";
+
+const CreateUserGroup = () => {
+  const toast = useToast();
+  const dispatch = useAppDispatch();
+  const { createInput, groups } = useAppSelector((state) => state.group);
+  const { url, token } = useAppSelector((state) => state.app);
+  const { userid } = useAppSelector((state) => state.user);
+
+  const groupNames = groups.map((g) => g.group_name);
+
+  const handleTextChange = (x: string) => {
+    dispatch(setCreateInput(x));
+  };
+
+  const canSubmit = () => {
+    return (
+      createInput.trim() !== "" &&
+      !groupNames.some(
+        (g) => g.toLowerCase() === createInput.trim().toLowerCase(),
+      )
+    );
+  };
+
+  const handleCreate = () => {
+    createGroup(url, token, userid, createInput)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error == "0") {
+          dispatch(setCreateInput(""));
+          dispatch(setRefreshGroups(true));
+          toast.success("Group created successfully");
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+  };
+
+  return (
+    <div className="bg-custom-white p-4 rounded-md shadow-md w-[30%]">
+      <div className="bg-custom-white text-sm">
+        <div className="font-medium">Existing Groups</div>
+        <div className="p-2 bg-bkg/80 rounded-lg grid grid-cols-2 gap-2 max-h-36 overflow-y-auto no-scrollbar">
+          {groupNames.map((g, i) => (
+            <div key={i}>{g}</div>
+          ))}
+        </div>
+      </div>
+      {groupNames.some(
+        (g) => g.toLowerCase() === createInput.trim().toLowerCase(),
+      ) ? (
+        <div className="font-medium text-orange-500 text-sm text-center my-2">
+          User Group already exists. Please use another name
+        </div>
+      ) : null}
+      <Input
+        label="Group Name"
+        value={createInput}
+        setValue={handleTextChange}
+      />
+      <button
+        data-testid="create-usergroup-btn"
+        className={`btn-themeBlue mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
+        onClick={handleCreate}
+      >
+        Submit
+      </button>
+    </div>
+  );
+};
+
+export default CreateUserGroup;
