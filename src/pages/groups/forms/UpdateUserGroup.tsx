@@ -1,4 +1,4 @@
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   setCreateInput,
@@ -9,15 +9,13 @@ import {
 import Input from "../../../components/inputs/Input";
 import type { JsonError } from "../../../interfaces";
 import { updateGroup } from "../../../api/groups";
+import { useGroupCtx } from "..";
 
 const UpdateUserGroup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const { createInput, groups, selectedGroup } = useAppSelector(
-    (state) => state.group,
-  );
-  const { url, token } = useAppSelector((state) => state.app);
-  const { userid } = useAppSelector((state) => state.user);
+  const { url, token, userid, groups, selectedGroup, createInput } =
+    useGroupCtx();
 
   const groupNames = groups.map((g) => g.group_name);
 
@@ -29,7 +27,7 @@ const UpdateUserGroup = () => {
   const handleUpdate = () => {
     updateGroup(url, token, userid, selectedGroup.id, createInput)
       .then((resp) => {
-        const j = resp.data
+        const j = resp.data;
         if (j.error == "0") {
           dispatch(setSelectedGroup({ id: 0, group_name: "", userid: 0 }));
           dispatch(setCreateInput(""));

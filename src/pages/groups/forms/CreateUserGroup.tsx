@@ -1,16 +1,17 @@
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useGroupCtx } from "..";
+import { useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { setCreateInput, setRefreshGroups } from "../../../features/groupSlice";
-import Input from "../../../components/inputs/Input";
 import type { JsonError } from "../../../interfaces";
+
+import { setCreateInput, setRefreshGroups } from "../../../features/groupSlice";
+
 import { createGroup } from "../../../api/groups";
+import Input from "../../../components/inputs/Input";
 
 const CreateUserGroup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const { createInput, groups } = useAppSelector((state) => state.group);
-  const { url, token } = useAppSelector((state) => state.app);
-  const { userid } = useAppSelector((state) => state.user);
+  const { url, token, userid, groups, createInput } = useGroupCtx();
 
   const groupNames = groups.map((g) => g.group_name);
 

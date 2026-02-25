@@ -1,24 +1,25 @@
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useState } from "react";
+import { useGroupCtx } from "..";
+import { useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
+import type { JsonError } from "../../../interfaces";
+
 import {
   setCreateInput,
   setRefreshGroups,
   setSelectedGroup,
   type Group,
 } from "../../../features/groupSlice";
-import Input from "../../../components/inputs/Input";
-import type { JsonError } from "../../../interfaces";
-import { deleteGroup } from "../../../api/groups";
-import { useState } from "react";
 
-const DelteUserGroup = () => {
+import { deleteGroup } from "../../../api/groups";
+
+import Input from "../../../components/inputs/Input";
+
+const DeleteUserGroup = () => {
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const { createInput, groups, selectedGroup } = useAppSelector(
-    (state) => state.group,
-  );
-  const { url, token } = useAppSelector((state) => state.app);
+  const { url, token, groups, selectedGroup, createInput } = useGroupCtx();
 
   const handleSelect = (g: Group) => {
     if (selectedGroup.id === g.id) {
@@ -106,4 +107,4 @@ const DelteUserGroup = () => {
   );
 };
 
-export default DelteUserGroup;
+export default DeleteUserGroup;

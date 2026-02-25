@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { useAppSelector, useAppDispatch } from "../../hooks";
+import { useAppDispatch } from "../../hooks";
 import type { JsonError } from "../../interfaces";
 
 import {
@@ -20,32 +20,29 @@ import CreateUserGroup from "./forms/CreateUserGroup";
 import UpdateUserGroup from "./forms/UpdateUserGroup";
 import DeleteUserGroup from "./forms/DeleteUserGroup";
 import UserGroupAssign from "./forms/UserGroupAssign";
+import { useGroupCtx } from ".";
 
 const Groups = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const context = useAppSelector((state) => state.app);
-  const user = useAppSelector((state) => state.user);
-  const group = useAppSelector((state) => state.group);
+  const ctx = useGroupCtx();
 
   useEffect(() => {
     dispatch(setSelectedGroup({ id: 0, group_name: "", userid: 0 }));
     dispatch(setCreateInput(""));
     dispatch(setStoresWithGroupStatus([]));
-  }, [group.selectedForm]);
+  }, [ctx.selectedForm]);
 
   useEffect(() => {
-    if (group.refreshGroups) getData();
-  }, [context.token, group.refreshGroups]);
+    if (ctx.refreshGroups) getData();
+  }, [ctx.token, ctx.refreshGroups]);
 
   const getData = () => {
-    getGroups(context.url, context.token)
+    getGroups(ctx.url, ctx.token)
       .then((resp) => {
         const j = resp.data;
         if (j.error == "0") {
-          const groups = j.groups.filter(
-            (g: Group) => g.userid === user.userid,
-          );
+          const groups = j.groups.filter((g: Group) => g.userid === ctx.userid);
           dispatch(setGroups(groups));
           dispatch(setRefreshGroups(false));
         }
@@ -59,12 +56,12 @@ const Groups = () => {
     dispatch(setSelectedForm(formType));
   };
 
-  const containerStyle = context.isDesktop
+  const containerStyle = ctx.isDesktop
     ? "h-[calc(100vh-3rem)] p-4 space-y-4"
     : "w-full h-[calc(100vh-3rem)] p-2 flex flex-col gap-2";
 
   const renderForm = () => {
-    switch (group.selectedForm) {
+    switch (ctx.selectedForm) {
       case "create":
         return <CreateUserGroup />;
       case "update":
@@ -82,25 +79,29 @@ const Groups = () => {
     <div className={containerStyle} data-testid="groups-page">
       <div className="bg-custom-white rounded-lg shadow-lg p-4 grid grid-cols-4 gap-4 w-[55%]">
         <button
-          className={`${group.selectedForm === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+          data-testid="user-group-create-form-btn"
+          className={`${ctx.selectedForm === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleFormSelect("create")}
         >
           Create
         </button>
         <button
-          className={`${group.selectedForm === "update" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+          data-testid="user-group-update-form-btn"
+          className={`${ctx.selectedForm === "update" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleFormSelect("update")}
         >
           Update
         </button>
         <button
-          className={`${group.selectedForm === "delete" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+          data-testid="user-group-delete-form-btn"
+          className={`${ctx.selectedForm === "delete" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleFormSelect("delete")}
         >
           Delete
         </button>
         <button
-          className={`${group.selectedForm === "assign" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+          data-testid="user-group-assign-form-btn"
+          className={`${ctx.selectedForm === "assign" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleFormSelect("assign")}
         >
           Assign/Unassign Stores

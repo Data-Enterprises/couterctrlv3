@@ -1,4 +1,4 @@
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   setSelectedGroup,
@@ -16,15 +16,13 @@ import {
 import SingleSelect from "../../../components/SingleSelect";
 import Input from "../../../components/inputs/Input";
 import { useState } from "react";
+import { useGroupCtx } from "..";
 
 const UserGroupAssign = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const { url, token } = useAppSelector((state) => state.app);
-  const { userid } = useAppSelector((state) => state.user);
-  const { groups, storesWithGroupStatus, selectedGroup } = useAppSelector(
-    (state) => state.group,
-  );
+  const { url, token, userid, groups, selectedGroup, storesWithGroupStatus } =
+    useGroupCtx();
 
   const [unassignedFilter, setUnassignedFilter] = useState<string>("");
   const [assignedFilter, setAssignedFilter] = useState<string>("");
