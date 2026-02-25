@@ -7,7 +7,7 @@ const StorePicker = () => {
   const state = useAppSelector((state) => state.search.type);
   const role = useAppSelector((state) => state.user.role);
   const style =
-    "flex flex-col md:grid md:grid-cols-[1fr_2fr] gap-2 md:gap-2 items-center justify-center select-none";
+    "flex flex-col md:grid md:grid-cols-[40%_60%] gap-2 md:gap-2 items-center justify-center select-none";
 
   return (
     <div data-testid="store-picker" className={style}>
