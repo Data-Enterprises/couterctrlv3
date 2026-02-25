@@ -192,7 +192,7 @@ const CashiersTable = () => {
   return (
     <div
       data-testid="cashiers-table"
-      className="bg-custom-white p-2 rounded-lg shadow-lg h-[93%] relative"
+      className="bg-custom-white p-2 rounded-lg shadow-lg h-[90%] relative"
     >
       <ExportModal
         isOpen={modalOpen}

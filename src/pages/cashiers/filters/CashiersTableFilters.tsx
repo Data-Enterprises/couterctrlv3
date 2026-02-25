@@ -113,7 +113,7 @@ const CashiersTableFilters = () => {
       <div className="rounded-t-lg text-center py-0.5 bg-blue-500 text-custom-white font-medium">
         Filter By
       </div>
-      <div className="grid grid-row-6 p-2 gap-2">
+      <div className="grid text-sm p-2 gap-2">
         {filterOptions.map((option, i) => (
           <div
             key={i}

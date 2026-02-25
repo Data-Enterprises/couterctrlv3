@@ -115,12 +115,12 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
     return exists;
   };
 
-  const showTrans = (storeNumber: string, cardSaleType: string) => {
+  const showTrans = (storeid: number, cardSaleType: string) => {
     if (context.isDesktop) {
       const filtered = filterData(
         cashier.cashierTransactions,
         cashier.selectedSaleType,
-        storeNumber,
+        storeid,
         cardSaleType,
       );
 
@@ -195,7 +195,7 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
           <div
             data-testid={`cashier-trend-card-${idx}-${s.storeid}`}
             className={`${titleStyle} ${clickStyle}`}
-            onClick={() => showTrans(s.store_number, s.sale_type)}
+            onClick={() => showTrans(s.storeid, s.sale_type)}
           >
             Transactions
             {findTrend(s, "transaction_count", "transaction_count")}
