@@ -38,7 +38,8 @@ const UserDataLoader = () => {
   const getDefaultType = (searchType: string): SEARCH_TYPE => {
     switch (searchType) {
       case "1":
-        return "Stores";
+      case "Stores":
+        return "Store";
       case "2":
         return "Group";
       case "3":
@@ -60,12 +61,16 @@ const UserDataLoader = () => {
           // In case it's a new user with no prefs yet
           const lastSearch = !prefs.last_search ? 0 : prefs.last_search;
           dispatch(setLastStore(lastSearch));
+
           const lastGroup = !prefs.last_group ? 0 : prefs.last_group;
           dispatch(setLastGroup(lastGroup));
-          const type = !prefs.last_search_type
-            ? "Store"
-            : getDefaultType(prefs.last_search_type);
+
+          const type =
+            !prefs.last_search_type || prefs.last_search_type === "Stores"
+              ? "Store"
+              : getDefaultType(prefs.last_search_type);
           dispatch(setType(type));
+
           const lastRoute = !prefs.last_route ? "/" : prefs.last_route;
           dispatch(setLastRoute(lastRoute));
 

@@ -12,23 +12,23 @@ const SelectStore = () => {
   const componentRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
-  const [display, setDisplay] = useState("flex");
+  // const [display, setDisplay] = useState("flex");
   const [query, setQuery] = useState<string>("");
   const [filteredStores, setFilteredStores] = useState<Store[]>([]);
 
   useEffect(() => {
-    setDisplay(
-      context.type === "Store"
-        ? "flex flex-col"
-        : "flex flex-col opacity-50 pointer-events-none"
-    );
-    if (context.type === "Stores") {
-      listRef.current?.classList.add("hidden");
-      setQuery("");
-    } else {
-      listRef.current?.classList.remove("hidden");
-      setQuery(context.selectedStore?.store_name || "");
-    }
+    // setDisplay(
+    //   context.type === "Store"
+    //     ? "flex flex-col"
+    //     : "flex flex-col opacity-50 pointer-events-none"
+    // );
+    // if (context.type === "Stores") {
+    //   listRef.current?.classList.add("hidden");
+    //   setQuery("");
+    // } else {
+    //   listRef.current?.classList.remove("hidden");
+    // }
+    setQuery(context.selectedStore?.store_name || "");
   }, [context.type]);
 
   useEffect(() => {
@@ -116,7 +116,7 @@ const SelectStore = () => {
 
   return (
     <div data-testid="search-store" ref={componentRef} className={styling}>
-      <div className={display}>
+      <div className={"flex flex-col"}>
         <label
           htmlFor="search"
           data-testid="store-label"

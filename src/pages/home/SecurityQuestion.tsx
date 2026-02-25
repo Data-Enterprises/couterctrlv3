@@ -106,6 +106,8 @@ const SecurityQuestion = () => {
           valueKey={"id"}
           displayKey={"question"}
           onSelect={handleQuestionSelection}
+          defaultQuery={questionId > 0 ? securityQuestions.find((q) => q.id === questionId)?.question : ""}
+          canType={false}
         />
         <TextInput
           title="Answer"
