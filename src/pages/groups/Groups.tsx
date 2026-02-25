@@ -9,6 +9,7 @@ import {
   setRefreshGroups,
   setSelectedForm,
   setSelectedGroup,
+  setStoresWithGroupStatus,
   type Group,
   type GroupFormType,
 } from "../../features/groupSlice";
@@ -30,10 +31,10 @@ const Groups = () => {
   useEffect(() => {
     dispatch(setSelectedGroup({ id: 0, group_name: "", userid: 0 }));
     dispatch(setCreateInput(""));
+    dispatch(setStoresWithGroupStatus([]));
   }, [group.selectedForm]);
 
   useEffect(() => {
-    if (!context.token) return;
     if (group.refreshGroups) getData();
   }, [context.token, group.refreshGroups]);
 
