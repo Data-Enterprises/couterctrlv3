@@ -69,30 +69,30 @@ const CompanyControls = () => {
 
   return (
     <div className="">
-      <div className="bg-custom-white rounded-lg shadow-lg p-4 grid grid-cols-4 gap-2">
+      <div className="bg-custom-white rounded-lg shadow-lg p-4 grid grid-cols-4 gap-2 w-[50vw]">
         <button
-          className={`${selectedForm === "create" ? "btn-themeGreen" : "btn-themeBlue"}`}
+          className={`${selectedForm === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleFormSelect("create")}
         >
           Create
         </button>
         <button
-          className={`${selectedForm === "update" ? "btn-themeGreen" : "btn-themeBlue"}`}
+          className={`${selectedForm === "update" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleFormSelect("update")}
         >
           Update
         </button>
         <button
-          className={`${selectedForm === "delete" ? "btn-themeGreen" : "btn-themeBlue"}`}
+          className={`${selectedForm === "delete" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleFormSelect("delete")}
         >
           Delete
         </button>
         <button
-          className={`${selectedForm === "assign_to_user" ? "btn-themeGreen" : "btn-themeBlue"}`}
+          className={`${selectedForm === "assign_to_user" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleFormSelect("assign_to_user")}
         >
-          Assign User
+          Assign/Unassign User
         </button>
       </div>
       <div className="mt-4">{renderForm()}</div>

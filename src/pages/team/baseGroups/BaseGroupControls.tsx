@@ -57,7 +57,7 @@ const BaseGroupControls = () => {
           className={`${bgOption === "assign_to_user" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => setBgOption("assign_to_user")}
         >
-          Assign User
+          Assign/Unassign User
         </button>
       </div>
       {renderForm()}

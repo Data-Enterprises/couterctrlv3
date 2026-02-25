@@ -4,6 +4,8 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type { JsonError, User } from "../../interfaces";
 import {
+  setSelectedUserId,
+  setSelectedUserInfo,
   setUsers,
   // setSelectedUserInfo,
   // setAssignBaseGroups,
@@ -20,6 +22,7 @@ import {
   ModuleRegistry,
   type ColDef,
   type ColGroupDef,
+  type RowClickedEvent,
   // type RowClickedEvent,
 } from "ag-grid-community";
 // import { setSelectedQsUserEmail, setValidUser } from "../../features/qsSlice";
@@ -150,39 +153,39 @@ const UserGrid = () => {
       });
   };
 
-  // const handleRowClick = (e: RowClickedEvent) => {
-  //   dispatch(setSelectedUserInfo(e.data));
+  const handleRowClick = (e: RowClickedEvent) => {
+    dispatch(setSelectedUserInfo(e.data));
 
-  //   // Validating if the selected user is a registered QuickSight user
-  //   if (qs.qsUsers.includes(e.data.email)) {
-  //     dispatch(setSelectedQsUserEmail(e.data.email));
-  //     dispatch(setValidUser(true));
-  //   } else {
-  //     dispatch(setSelectedQsUserEmail(""));
-  //     dispatch(setValidUser(false));
-  //   }
+    // Validating if the selected user is a registered QuickSight user
+    // if (qs.qsUsers.includes(e.data.email)) {
+    //   dispatch(setSelectedQsUserEmail(e.data.email));
+    //   dispatch(setValidUser(true));
+    // } else {
+    //   dispatch(setSelectedQsUserEmail(""));
+    //   dispatch(setValidUser(false));
+    // }
 
-  //   dispatch(setSelectedUserId(e.data.id));
+    dispatch(setSelectedUserId(e.data.id));
 
-  //   const filterNulls = (arr: Store[]) => {
-  //     return arr.filter((store) => store.store_name !== null);
-  //   };
+    // const filterNulls = (arr: Store[]) => {
+    //   return arr.filter((store) => store.store_name !== null);
+    // };
 
-  //   getUserStores(context.url, context.token, selectedUserId)
-  //     .then((resp) => {
-  //       const j = resp.data;
-  //       if (j.error === 0) {
-  //         const stores = {
-  //           assigned: filterNulls(j.assigned_stores),
-  //           unassigned: filterNulls(j.unassigned_stores),
-  //         };
-  //         dispatch(setSelectedUserStores(stores));
-  //       }
-  //     })
-  //     .catch((err: JsonError) => {
-  //       toast.error("Error fetching available stores " + err.message);
-  //     });
-  // };
+    // getUserStores(context.url, context.token, selectedUserId)
+    //   .then((resp) => {
+    //     const j = resp.data;
+    //     if (j.error === 0) {
+    //       const stores = {
+    //         assigned: filterNulls(j.assigned_stores),
+    //         unassigned: filterNulls(j.unassigned_stores),
+    //       };
+    //       dispatch(setSelectedUserStores(stores));
+    //     }
+    //   })
+    //   .catch((err: JsonError) => {
+    //     toast.error("Error fetching available stores " + err.message);
+    //   });
+  };
 
   const handleFilterTextChange = (x: string) => {
     setText(x);
@@ -221,8 +224,8 @@ const UserGrid = () => {
           pagination={true}
           paginationAutoPageSize={true}
           paginationPageSizeSelector={false}
-          // onRowClicked={handleRowClick}
-          // rowSelection={"single"}
+          onRowClicked={handleRowClick}
+          rowSelection={"single"}
         />
       </div>
     </div>
