@@ -76,7 +76,7 @@ export const navigation: Navigation[] = [
     isHovering: false,
   },
   {
-    name: "Groups",
+    name: "User Groups",
     href: "groups",
     icon: GroupsIcon,
     mobile: true,

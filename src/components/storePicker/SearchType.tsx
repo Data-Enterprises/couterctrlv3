@@ -1,4 +1,4 @@
-import { ChevronUpDownIcon } from "@heroicons/react/16/solid";
+// import { ChevronUpDownIcon } from "@heroicons/react/16/solid";
 import { useAppSelector } from "../../hooks";
 import { type SEARCH_TYPE, setType } from "../../features/searchSlice";
 import { useDispatch } from "react-redux";
@@ -16,9 +16,9 @@ interface iOption {
 }
 
 const options: iOption[] = [
-  { id: 1, name: "Stores", type: "Stores" },
+  // { id: 1, name: "Stores", type: "Stores" },
+  { id: 3, name: "Store", type: "Store" },
   { id: 2, name: "Group", type: "Group" },
-  { id: 3, name: "Single Store", type: "Store" },
 ];
 
 const SearchType = ({ singleStoreOnly = false }: Props) => {
@@ -53,7 +53,7 @@ const SearchType = ({ singleStoreOnly = false }: Props) => {
     }
     if (singleStoreOnly) {
       dispatch(setType("Store"));
-      setQuery("Single Store");
+      setQuery("Store");
     }
 
     return () => {
@@ -63,21 +63,18 @@ const SearchType = ({ singleStoreOnly = false }: Props) => {
 
   const getType = () => {
     if (singleStoreOnly) {
-      return "Single Store";
+      return "Store";
     }
 
     switch (type) {
-      case "Stores":
-        setQuery("Stores");
-        break;
       case "Group":
         setQuery("Group");
         break;
       case "Store":
-        setQuery("Single Store");
+        setQuery("Store");
         break;
       default:
-        setQuery("Single Store");
+        setQuery("Store");
         break;
     }
   };
@@ -123,7 +120,7 @@ const SearchType = ({ singleStoreOnly = false }: Props) => {
           data-testid="type-label"
           className="block text-sm font-medium "
         >
-          Selection Type
+          Type
         </label>
         <div className={width}>
           <div
@@ -139,9 +136,9 @@ const SearchType = ({ singleStoreOnly = false }: Props) => {
               name="search"
               className="basic-input bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer focus:border"
             />
-            <div className={`${type === 'Store' ? "hidden" : "absolute"} top-2 right-0 w-[24px] cursor-pointer `}>
+            {/* <div className={`${type === 'Store' ? "hidden" : "absolute"} top-2 right-0 w-[24px] cursor-pointer `}>
               <ChevronUpDownIcon className="fill-content" />
-            </div>
+            </div> */}
           </div>
           <div
             data-testid="type-list-ref"
@@ -157,7 +154,7 @@ const SearchType = ({ singleStoreOnly = false }: Props) => {
               <div
                 data-testid="searchtype-single-store-option"
                 onClick={() =>
-                  handleSelect({ id: 3, name: "Single Store", type: "Store" })
+                  handleSelect({ id: 3, name: "Store", type: "Store" })
                 }
                 className="px-2 hover:bg-scroll_hover transition-all duration-500 cursor-pointer"
               >
@@ -165,16 +162,12 @@ const SearchType = ({ singleStoreOnly = false }: Props) => {
                   data-testid="test-single-store"
                   className="block truncate font-normal group-data-[selected]:font-semibold"
                 >
-                  Single Store
+                  Store
                 </span>
               </div>
             ) : (
               <>
                 {options.map((option) => {
-                  // Skip the "Stores" option if inMarketing is true, Stores will show up in the other contexts
-                  // if (inMarketing && option.id === 1) {
-                  //   return null;
-                  // }
                   return (
                     <div
                       data-testid={`st-option-${option.id}`}

@@ -12,7 +12,7 @@ const StorePicker = () => {
   return (
     <div data-testid="store-picker" className={style}>
       <SearchType singleStoreOnly={role === 1} />
-      {state === "Stores" || state === "Store" ? (
+      {state === "Store" ? (
         <SearchStore />
       ) : (
         <SelectGroup />

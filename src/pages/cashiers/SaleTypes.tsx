@@ -171,7 +171,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
       <div className="rounded-t-lg text-center py-0.5 bg-blue-500 text-custom-white font-medium">
         Select Exception
       </div>
-      <div className="grid grid-rows-6 gap-2 p-2">
+      <div className="grid text-sm gap-2 p-2">
         {cashier.saleTypes.map((st, i) => (
           <div
             key={i}

@@ -14,6 +14,7 @@ export type StoreWithGroupStatus = {
 };
 
 export type FilterOption = "all" | "active" | "inactive";
+export type GroupFormType = "create" | "update" | "delete" | "assign" | "";
 
 export interface GroupState {
   groups: Group[];
@@ -22,7 +23,9 @@ export interface GroupState {
   createInput: string;
   filterOption: FilterOption;
   storesWithGroupStatus: StoreWithGroupStatus[];
+  selectedForm: GroupFormType;
 }
+
 
 export const initialState: GroupState = {
   groups: [],
@@ -31,6 +34,7 @@ export const initialState: GroupState = {
   filterOption: "all",
   selectedGroup: { id: 0, userid: 0, group_name: "" },
   storesWithGroupStatus: [],
+  selectedForm: "",
 };
 
 const groupSlice = createSlice({
@@ -68,6 +72,9 @@ const groupSlice = createSlice({
         )
         .sort((a, b) => b.active - a.active) as StoreWithGroupStatus[];
     },
+    setSelectedForm(state, action: PayloadAction<GroupFormType>) {
+      state.selectedForm = action.payload;
+    },
     resetGroupState: () => initialState,
   },
 });
@@ -80,6 +87,7 @@ export const {
   setFilterOption,
   setStoresWithGroupStatus,
   updateStoresWithStatus,
+  setSelectedForm,
   resetGroupState,
 } = groupSlice.actions;
 export default groupSlice.reducer;

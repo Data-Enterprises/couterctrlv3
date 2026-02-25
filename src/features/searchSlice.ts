@@ -3,7 +3,7 @@ import type { Store } from "../interfaces";
 import { formatDate, addDays } from "../utils";
 import type { Group } from "./groupSlice";
 
-export type SEARCH_TYPE = "Stores" | "Group" | "Store";
+export type SEARCH_TYPE = "Group" | "Store";
 
 export interface SearchState {
   type: SEARCH_TYPE;
@@ -17,7 +17,7 @@ export interface SearchState {
 }
 
 export const initialState: SearchState = {
-  type: "Stores",
+  type: "Store",
   startDate: formatDate(addDays(new Date(), -1).toString()),
   endDate: formatDate(new Date().toString()),
   singleDate: formatDate(new Date().toString()),

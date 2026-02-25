@@ -21,6 +21,54 @@ const SubDeptGrid = () => {
   const [groupSubs, setGroupSubs] = useState<SubSale[]>([]);
 
   useEffect(() => {
+    // This useEffect is for checking to see if the user clicks on an already selected sub dept
+    // in this case, the grid goes back to having the top sub dept selected
+    // Therefore in here, we simply show that visually in the grid by selecting the first sub dept
+    if (!selectedSubDept && gridRef.current && gridRef.current.api) {
+      gridRef.current.api.forEachNode((node, i) => {
+        if (i === 0) {
+          const selected: TopSub = {
+            sub_department: node.data!.sub_department,
+            sub_department_description: node.data!.sub_department_description,
+            total_sales: node.data!.total_sales,
+            net_sales: node.data!.net_sales,
+            qty: node.data!.qty,
+            digital_coupons: node.data!.digital_coupons,
+            elec_instore_coupons: node.data!.elec_instore_coupons,
+            elec_store_coupons: node.data!.elec_store_coupons,
+            store_coupon: node.data!.store_coupon,
+            total_tax: node.data!.total_tax,
+          };
+          dispatch(setSelectedSubDept(selected));
+          node.setSelected(true);
+        }
+        return;
+      });
+    }
+  }, [selectedSubDept, gridRef.current]);
+
+  // This useEffect does the same as above, but when the groupSubs changes
+  // This triggers the change in the grid, so this reflects in the salesSlice.ts file
+  useEffect(() => {
+    if (groupSubs.length) {
+      const topSub = groupSubs[0];
+      const selected: TopSub = {
+        sub_department: topSub.sub_department,
+        sub_department_description: topSub.sub_department_description,
+        total_sales: topSub.total_sales,
+        net_sales: topSub.net_sales,
+        qty: topSub.qty,
+        digital_coupons: topSub.digital_coupons,
+        elec_instore_coupons: topSub.elec_instore_coupons,
+        elec_store_coupons: topSub.elec_store_coupons,
+        store_coupon: topSub.store_coupon,
+        total_tax: topSub.total_tax,
+      };
+      dispatch(setSelectedSubDept(selected));
+    }
+  }, [groupSubs]);
+
+  useEffect(() => {
     const grouped = () => {
       return [...subSales].reduce((acc: SubSale[], curr) => {
         const exists = acc.find(
@@ -130,8 +178,11 @@ const SubDeptGrid = () => {
             }}
             rowSelection="single"
             onGridReady={(event) => {
-              event.api.forEachNode((node) => {
-                if (node.data!.sub_department === topSubDept!.sub_department) {
+              event.api.forEachNode((node, i) => {
+                // No checking against the selectedSubDept here
+                // because this runs only when the grid is ready,
+                // so the first sub dept in the grid is always the top sub dept
+                if (i === 0) {
                   const selected: TopSub = {
                     sub_department: node.data!.sub_department,
                     sub_department_description:
@@ -148,6 +199,7 @@ const SubDeptGrid = () => {
                   dispatch(setSelectedSubDept(selected));
                   node.setSelected(true);
                 }
+                return;
               });
             }}
           />

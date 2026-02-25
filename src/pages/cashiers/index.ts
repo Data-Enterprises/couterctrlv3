@@ -166,14 +166,23 @@ export const theme = themeQuartz.withParams({
 export const filterData = (
   data: CashierTransaction[],
   selectedSaleType: string,
-  storeNumber: string,
+  storeid: number,
   cardSaleType: string,
 ) => {
   const saleType = selectedSaleType === "Description" ? cardSaleType : selectedSaleType;
-
+  console.log(data);
   const filtered = [...data]
     .filter((t) => { 
-      return t.sale_type === saleType && t.store_number === storeNumber;
+      if (t.sale_type === saleType && t.storeid === storeid) {
+        console.log("found a match!", t);
+      }
+      if (t.sale_type === saleType) {
+        console.log('found a sale type match!', saleType, t);
+      }
+      if (t.storeid === storeid) { 
+        console.log('found a store match!', storeid, t);
+      }
+        return t.sale_type === saleType && t.storeid === storeid;
     })
     .reduce((acc: CashierTransaction[], current: CashierTransaction) => {
       const x = acc.find((item) => item.sale_id === current.sale_id);

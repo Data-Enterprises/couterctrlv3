@@ -24,12 +24,12 @@ const StoreControls = () => {
   return (
     <div className="flex flex-col gap-4 ">
       {/* w-[80%] is just so we don't have it too stretched out */}
-      <div className="bg-custom-white p-4 rounded-lg shadow-lg grid grid-cols-3 gap-2 w-[50%]">
+      <div className="bg-custom-white p-4 rounded-lg shadow-lg grid grid-cols-3 gap-2 w-[59%]">
         <button
           className={`${option === "assign" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => setOption("assign")}
         >
-          Assign/Unassign
+          Assign/Unassign Stores
         </button>
         <button
           className={`${option === "info" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
@@ -41,7 +41,7 @@ const StoreControls = () => {
           className={`${option === "bg_assign" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => setOption("bg_assign")}
         >
-          Base Group Assign
+          Assign/Unassign Base Groups
         </button>
       </div>
       {renderForm()}

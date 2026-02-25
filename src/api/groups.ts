@@ -17,7 +17,7 @@ export const createGroup = async (
   url: string,
   token: string,
   userid: number,
-  group_name: string
+  group_name: string,
 ) => {
   const json = await axios({
     method: "POST",
@@ -31,6 +31,29 @@ export const createGroup = async (
     },
   });
 
+  return json;
+};
+
+export const updateGroup = async (
+  url: string,
+  token: string,
+  userid: number,
+  id: number,
+  group_name: string,
+) => {
+  const json = await axios({
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "groups/update",
+    data: {
+      id,
+      userid,
+      group_name,
+    },
+  });
   return json;
 };
 
@@ -53,7 +76,7 @@ export const getStoresAssignedToUserGroup = async (
   url: string,
   token: string,
   userid: number,
-  groupid: number
+  groupid: number,
 ) => {
   const json = await axios({
     method: "GET",
@@ -75,7 +98,7 @@ export const addStoreToGroup = async (
   token: string,
   userid: number,
   groupid: number,
-  storeid: number
+  storeid: number,
 ) => {
   const json = await axios({
     method: "POST",
@@ -98,7 +121,7 @@ export const removeStoreFromGroup = async (
   token: string,
   userid: number,
   groupid: number,
-  storeid: number
+  storeid: number,
 ) => {
   const json = await axios({
     method: "DELETE",

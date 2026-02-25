@@ -57,16 +57,16 @@ const Cashiers = () => {
 
   // Styles for mobile and desktop
   const pageContainer = context.isDesktop
-    ? "w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden p-4 grid grid-cols-[23%_77%] gap-4"
+    ? "w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden overflow-y-auto no-scrollbar p-4 grid grid-cols-[24%_76%] gap-4"
     : "p-4 w-full min-h-full overflow-y-auto space-y-4 max-h-screen";
   const leftContainer = context.isDesktop
     ? cashier.saleTypes.length
-      ? `grid grid-rows-[22%_0.9fr_1fr] gap-2`
+      ? `flex flex-col gap-2`
       : ""
     : "";
   const cols = context.isDesktop ? "grid-cols-2" : "grid-cols-1 mt-4";
   const cardContainer = context.isDesktop
-    ? `grid grid-rows-[25%_74%] mr-4 gap-2`
+    ? `flex flex-col mr-4 gap-2`
     : "";
 
   return (
@@ -111,7 +111,7 @@ const Cashiers = () => {
         {cashier.transList.length > 0 ? (
           <CashiersTable />
         ) : (
-          <div className="relative">
+          <div className="relative h-[60vh]">
             {cashier.fetchingCashierTransactions && (
               <LoadingIndicator
                 className="text-sm"

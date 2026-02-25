@@ -18,6 +18,7 @@ interface SingleSelectProps<T> {
   defaultValue?: string | number;
   testId?: string;
   openMaxHeight?: string;
+  canType?: boolean;
 }
 
 const SingleSelect = <T,>({
@@ -35,6 +36,7 @@ const SingleSelect = <T,>({
   resetQuery = false,
   listClass = "",
   openMaxHeight = "data-[display=open]:max-h-[180px]",
+  canType = true,
 }: SingleSelectProps<T>) => {
   const [query, setQuery] = useState(defaultQuery);
   const [filteredData, setFilteredData] = useState<T[]>([]);
@@ -102,6 +104,7 @@ const SingleSelect = <T,>({
   };
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!canType) return;
     setQuery(e.target.value);
     if (e.target.value.length == 0) {
       setFilteredData(data);

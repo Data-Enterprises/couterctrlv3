@@ -170,7 +170,7 @@ const AssignBaseGroup = () => {
               {baseGroups.map((bg) => (
                 <div
                   key={bg.id}
-                  className={`${selectedGroupId === bg.id && "bg-orange-200"} rounded-full py-0.5 px-2 transition-all duration-200`}
+                  className={`${selectedGroupId === bg.id && "bg-orange-200"} hover:bg-blue-200 rounded-full border-b py-0.5 px-2 transition-all duration-200`}
                   onClick={() => getBgStores(bg.id)}
                 >
                   {bg.name}
