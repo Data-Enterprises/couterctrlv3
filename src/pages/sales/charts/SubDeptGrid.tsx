@@ -21,6 +21,25 @@ const SubDeptGrid = () => {
   const [groupSubs, setGroupSubs] = useState<SubSale[]>([]);
 
   useEffect(() => {
+    if (groupSubs.length) {
+      const topSub = groupSubs[0];
+      const selected: TopSub = {
+        sub_department: topSub.sub_department,
+        sub_department_description: topSub.sub_department_description,
+        total_sales: topSub.total_sales,
+        net_sales: topSub.net_sales,
+        qty: topSub.qty,
+        digital_coupons: topSub.digital_coupons,
+        elec_instore_coupons: topSub.elec_instore_coupons,
+        elec_store_coupons: topSub.elec_store_coupons,
+        store_coupon: topSub.store_coupon,
+        total_tax: topSub.total_tax,
+      };
+      dispatch(setSelectedSubDept(selected));
+    }
+  }, [groupSubs]);
+
+  useEffect(() => {
     const grouped = () => {
       return [...subSales].reduce((acc: SubSale[], curr) => {
         const exists = acc.find(
