@@ -28,6 +28,15 @@ const Groups = () => {
   const ctx = useGroupCtx();
 
   useEffect(() => {
+    return () => {
+      dispatch(setSelectedGroup({ id: 0, group_name: "", userid: 0 }));
+      dispatch(setCreateInput(""));
+      dispatch(setStoresWithGroupStatus([]));
+      dispatch(setSelectedForm(""));
+    };
+  }, []);
+
+  useEffect(() => {
     dispatch(setSelectedGroup({ id: 0, group_name: "", userid: 0 }));
     dispatch(setCreateInput(""));
     dispatch(setStoresWithGroupStatus([]));

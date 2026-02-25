@@ -82,7 +82,7 @@ const DeleteUserGroup = () => {
       <div className="font-medium text-sm">
         <div>Select group to update</div>
       </div>
-      <div className="select-none text-sm grid rounded-lg p-1 min-h-20 max-h-36 overflow-hidden overflow-y-auto">
+      <div className="select-none text-sm grid rounded-lg p-1 max-h-36 overflow-hidden overflow-y-auto">
         {groups.map((g) => (
           <div
             key={g.id}
