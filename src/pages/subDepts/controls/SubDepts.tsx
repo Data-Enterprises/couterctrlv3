@@ -82,7 +82,7 @@ const SubDepts = () => {
       ) : null}
       {/* If sub depts have been fetched */}
       {ctx.subDepts.length ? (
-        <div className="grid grid-cols-2 gap-2 max-h-[51.5vh] overflow-hidden overflow-y-auto no-scrollbar">
+        <div className="grid grid-cols-2 gap-2 max-h-[51.5vh] rounded-lg overflow-hidden overflow-y-auto no-scrollbar">
           {filteredSubDepts.map((sub) => (
             <div
               key={sub.id}

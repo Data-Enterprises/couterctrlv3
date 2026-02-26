@@ -1,5 +1,5 @@
 import SubMarginControls from "./controls/SubMarginControls";
-import SubMarginDisplay from "./SubMarginDisplay";
+import SubMarginDisplay from "./display/SubMarginDisplay";
 
 const SubDeptMargins = () => {
   return (

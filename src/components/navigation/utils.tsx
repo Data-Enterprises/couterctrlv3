@@ -5,7 +5,7 @@ import {
   MagnifyingGlassIcon,
   ArrowTrendingUpIcon,
   ClipboardDocumentCheckIcon,
-  ArrowTurnUpRightIcon
+  CurrencyDollarIcon
 } from "@heroicons/react/16/solid";
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
@@ -148,7 +148,7 @@ export const navigation: Navigation[] = [
   {
     name: "Sub Dept Margins",
     href: "sub-dept-margins",
-    icon: ArrowTurnUpRightIcon,
+    icon: CurrencyDollarIcon,
     mobile: false,
     children: [],
     childOpen: false,

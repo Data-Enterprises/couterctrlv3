@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { useAppDispatch } from "../../hooks";
-import { useSubMarginCtx } from "./hooks";
-import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import { setLoadingMargins } from "../../features/subMarginSlice";
+import { useAppDispatch } from "../../../hooks";
+import { useSubMarginCtx } from "../hooks";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+import { setLoadingMargins } from "../../../features/subMarginSlice";
 
 const SubMarginDisplay = () => {
   const ctx = useSubMarginCtx();
@@ -50,7 +50,12 @@ const SubMarginDisplay = () => {
     );
   }
 
-  return <div className="bg-custom-white">SubMarginDisplay</div>;
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <div className="bg-custom-white">Howdy</div>
+      <div className="bg-custom-white">Howdy</div>
+    </div>
+  );
 };
 
 export default SubMarginDisplay;
