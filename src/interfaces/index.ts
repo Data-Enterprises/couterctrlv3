@@ -898,3 +898,23 @@ export type SubMarginsJsonResp = {
   page_size: number;
   subs: SubDeptMargin[];
 };
+
+export type Mover = {
+  vendor_id: string;
+  vendor_name: string;
+  total_sales: number;
+  qty: number;
+  cogs: number;
+  gpm: number;
+};
+
+export type MarginKpi = {
+  total_sales: string;
+  qty: string;
+  total_tax: string;
+  avg_qty: string;
+  avg_total_sales: string;
+  vendors: string;
+  top_mover: Mover;
+  total_cogs: string;
+}
