@@ -3,11 +3,13 @@ import { useParams, useSubMarginCtx } from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   setLoadingMargins,
-  setMargins,
   setSelectedSubDeptId,
   setSubDeptFilterText,
+  setWeekTrendMargins,
 } from "../../../features/subMarginSlice";
 import type { JsonError, SubMarginsJsonResp } from "../../../interfaces";
+import { setDates } from "..";
+
 import { getSubMargins } from "../../../api/subMargins";
 
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
@@ -27,16 +29,13 @@ const SubDepts = () => {
     dispatch(setSubDeptFilterText(x));
   };
 
-  const handleSubDeptClick = (id: number) => {
-    dispatch(setLoadingMargins(true));
-    dispatch(setSelectedSubDeptId(id));
-    // Get the margins
+  const getData = (id: number, start: string, end: string, week: number) => {
     getSubMargins(
       ctx.url,
       ctx.token,
       id,
-      params.start,
-      params.end,
+      start,
+      end,
       params.useGroups,
       params.searchValue,
       params.singleStore,
@@ -45,11 +44,31 @@ const SubDepts = () => {
         const j: SubMarginsJsonResp = resp.data;
         if (j.error === 0) {
           // We have the margins, now we need to sort them into their respective weeks based on the date
-          dispatch(setMargins(j.subs));
+          dispatch(setWeekTrendMargins({ data: j.subs, week }));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setLoadingMargins(false)));
+      .catch((err: JsonError) => toast.error(err.message));
+  };
+
+  const handleSubDeptClick = (id: number) => {
+    dispatch(setLoadingMargins(true));
+    dispatch(setSelectedSubDeptId(id));
+
+    // Get the margins => start with week 1 margins by default
+    getData(id, params.start, params.end, 1);
+
+    // Weeks 2, 3, and 4 => need new start/end dates
+    const wk2End = setDates(new Date(params.end), 7);
+    const wk2Start = setDates(new Date(params.end), 13);
+    getData(id, wk2Start, wk2End, 2);
+
+    const wk3End = setDates(new Date(params.end), 14);
+    const wk3Start = setDates(new Date(params.end), 20);
+    getData(id, wk3Start, wk3End, 3);
+
+    const wk4End = setDates(new Date(params.end), 21);
+    const wk4Start = setDates(new Date(params.end), 27);
+    getData(id, wk4Start, wk4End, 4);
   };
 
   return (

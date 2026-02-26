@@ -3,8 +3,6 @@ import { useParams, useSubMarginCtx } from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getSubDepts } from "../../../api/subMargins";
 
-import DatePickers from "../../../components/datePickers/DatePickers";
-import StorePicker from "../../../components/storePicker/StorePicker";
 import type { JsonError, SubDept, SubSalesJsonResp } from "../../../interfaces";
 import {
   requerySubDeptMargins,
@@ -12,6 +10,8 @@ import {
   setSubDepts,
 } from "../../../features/subMarginSlice";
 
+import StorePicker from "../../../components/storePicker/StorePicker";
+import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
 import SubDepts from "./SubDepts";
 
 const SubMarginControls = () => {
@@ -72,9 +72,18 @@ const SubMarginControls = () => {
     <div className="flex flex-col gap-1">
       <div className="bg-custom-white p-2 rounded-lg shadow-lg">
         <StorePicker />
-        <DatePickers handleQuery={handleSubDeptSearch} />
+        <SingleDatePicker />
+        <button
+          className="btn-themeBlue px-0 w-full mt-2"
+          onClick={handleSubDeptSearch}
+        >
+          Search
+        </button>
         <div className="mt-2 grid grid-cols-2 gap-2">
-          <button className={`btn-themeBlue px-0 ${resetBtnActive()}`}>
+          <button
+            className={`btn-themeBlue px-0 ${resetBtnActive()}`}
+            onClick={() => dispatch(requerySubDeptMargins())}
+          >
             Reset
           </button>
           <button className={`btn-themeGreen px-0 ${exportBtnActive()}`}>

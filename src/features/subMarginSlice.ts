@@ -54,6 +54,7 @@ const subMarginSlice = createSlice({
       const { data, week } = action.payload;
       switch (week) {
         case 1:
+          state.margins = data;
           state.weekOneMargins = data;
           break;
         case 2:
