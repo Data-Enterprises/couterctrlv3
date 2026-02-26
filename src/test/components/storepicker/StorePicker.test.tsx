@@ -24,7 +24,7 @@ describe("StorePicker Component", () => {
     expect(storePicker).toBeInTheDocument();
 
     const state = testStore.getState().search.type;
-    if (state === "Stores" || state === "Store") {
+    if (state === "Store") {
       const searchStore = screen.getByTestId("search-store");
       expect(searchStore).toBeInTheDocument();
     } else if (state === "Group") {
