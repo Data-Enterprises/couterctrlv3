@@ -3,6 +3,7 @@ import { useSubMarginCtx } from "../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import type { MarginKpi, Mover } from "../../../interfaces";
 import SubDeptMarginKpi from "./MarginKpi";
+import { gpm } from "../../../functions";
 
 const KpiContainer = () => {
   const ctx = useSubMarginCtx();
@@ -45,6 +46,22 @@ const KpiContainer = () => {
     return top.sort((a, b) => b.gpm - a.gpm)[0];
   };
 
+  const getGpm = () => {
+    const total_sales = ctx.margins.reduce(
+      (acc, curr) => acc + (curr.total_sales - curr.total_tax),
+      0,
+    );
+    const total_cogs = ctx.margins.reduce(
+      (acc, curr) => acc + curr.calculated_cost * curr.qty,
+      0,
+    );
+
+    console.log("total sales", total_sales);
+    console.log("total cogs", total_cogs);
+
+    return gpm(total_sales, total_cogs);
+  };
+
   const kpiData: MarginKpi = useMemo(() => {
     return {
       total_sales: formatCurrency2(
@@ -60,17 +77,21 @@ const KpiContainer = () => {
       total_tax: formatCurrency2(
         ctx.margins.reduce((acc, curr) => acc + curr.total_tax, 0),
       ),
-      avg_qty: formatBigNumber(
-        ctx.margins.reduce((acc, curr) => acc + curr.qty, 0) /
-          (ctx.margins.length || 1),
-        2,
+      // avg_qty: formatBigNumber(
+      //   ctx.margins.reduce((acc, curr) => acc + curr.qty, 0) /
+      //     (ctx.margins.length || 1),
+      //   2,
+      // ),
+      items: formatBigNumber(
+        ctx.margins.reduce((acc: string[], curr) => {
+          if (!acc.includes(curr.product_code)) {
+            acc.push(curr.product_code);
+          }
+          return acc;
+        }, []).length,
+        0,
       ),
-      avg_total_sales: formatCurrency2(
-        ctx.margins.reduce(
-          (acc, curr) => acc + (curr.total_sales - curr.total_tax),
-          0,
-        ) / ctx.margins.length,
-      ),
+      gpm: getGpm(),
       vendors: formatBigNumber(
         ctx.margins.reduce((acc: string[], curr) => {
           if (!acc.includes(curr.vendor_name)) {
@@ -82,7 +103,10 @@ const KpiContainer = () => {
       ),
       top_mover: findTopMover(),
       total_cogs: formatCurrency2(
-        ctx.margins.reduce((acc, curr) => acc + curr.cost, 0),
+        ctx.margins.reduce(
+          (acc, curr) => acc + curr.calculated_cost * curr.qty,
+          0,
+        ),
       ),
     };
   }, [ctx.margins]);
@@ -94,8 +118,8 @@ const KpiContainer = () => {
       <SubDeptMarginKpi data={kpiData.total_tax} title="Total Tax" />
       <SubDeptMarginKpi data={kpiData.vendors} title="Vendors" />
 
-      <SubDeptMarginKpi data={kpiData.avg_total_sales} title="Avg Net Sales" />
-      <SubDeptMarginKpi data={kpiData.avg_qty} title="Avg Qty" />
+      <SubDeptMarginKpi data={kpiData.gpm} title="Margin" />
+      <SubDeptMarginKpi data={kpiData.items} title="Total Items" />
       <SubDeptMarginKpi data={kpiData.total_cogs} title="Total Cost" />
       <SubDeptMarginKpi
         data={kpiData.top_mover.vendor_name}

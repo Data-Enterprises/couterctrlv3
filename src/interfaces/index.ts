@@ -912,8 +912,8 @@ export type MarginKpi = {
   total_sales: string;
   qty: string;
   total_tax: string;
-  avg_qty: string;
-  avg_total_sales: string;
+  items: string;
+  gpm: string;
   vendors: string;
   top_mover: Mover;
   total_cogs: string;
