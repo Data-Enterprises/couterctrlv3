@@ -1,4 +1,5 @@
 import { useAppSelector } from "../../hooks";
+import { formatGoliathDate } from "../../utils";
 
 export const useSubMarginCtx = () => {
   const { url, token } = useAppSelector((state) => state.app);
@@ -14,7 +15,9 @@ export const useSubMarginCtx = () => {
     weekThreeMargins,
     weekFourMargins,
     filteredMargins,
-    subDeptFitlerText
+    subDeptFitlerText,
+    loadingMargins,
+    loadingSubDepts,
   } = useAppSelector((state) => state.subMargin);
 
   return {
@@ -22,6 +25,8 @@ export const useSubMarginCtx = () => {
     filteredMargins,
     lastGroup,
     lastStore,
+    loadingMargins,
+    loadingSubDepts,
     margins,
     selectedSubDeptId,
     startDate,
@@ -34,5 +39,17 @@ export const useSubMarginCtx = () => {
     weekTwoMargins,
     weekThreeMargins,
     weekFourMargins,
+  };
+};
+
+export const useParams = () => {
+  const ctx = useSubMarginCtx();
+  return {
+    start: formatGoliathDate(ctx.startDate),
+    end: formatGoliathDate(ctx.endDate),
+    // No matter what, useGroups and singleStore will always be the opposite of each other
+    useGroups: ctx.type === "Group" ? 1 : 0,
+    singleStore: ctx.type === "Store" ? 1 : 0,
+    searchValue: ctx.type === "Group" ? ctx.lastGroup : ctx.lastStore,
   };
 };

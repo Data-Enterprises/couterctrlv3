@@ -76,6 +76,17 @@ const subMarginSlice = createSlice({
     setLoadingMargins: (state, action: PayloadAction<boolean>) => {
       state.loadingMargins = action.payload;
     },
+    requerySubDeptMargins: (state) => {
+      state.subDepts = [];
+      state.margins = [];
+      state.weekOneMargins = [];
+      state.weekTwoMargins = [];
+      state.weekThreeMargins = [];
+      state.weekFourMargins = [];
+      state.filteredMargins = [];
+      state.selectedSubDeptId = 0;
+      state.subDeptFitlerText = "";
+    },
     resetSubMarginState: () => initialState,
   },
 });
@@ -90,5 +101,6 @@ export const {
   setSubDeptFilterText,
   setWeekTrendMargins,
   resetSubMarginState,
+  requerySubDeptMargins,
 } = subMarginSlice.actions;
 export default subMarginSlice.reducer;
