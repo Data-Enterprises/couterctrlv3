@@ -4,6 +4,7 @@ import { useSubMarginCtx } from "../hooks";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import { setLoadingMargins } from "../../../features/subMarginSlice";
 import KpiContainer from "./KpiContainer";
+import WeeklyTrends from "./WeeklyTrends";
 
 const SubMarginDisplay = () => {
   const ctx = useSubMarginCtx();
@@ -53,8 +54,9 @@ const SubMarginDisplay = () => {
 
   return (
     <div className="grid grid-cols-2 gap-4">
-      <div className="">
+      <div className="flex flex-col gap-4">
         <KpiContainer />
+        <WeeklyTrends />
       </div>
       <div className=""></div>
     </div>

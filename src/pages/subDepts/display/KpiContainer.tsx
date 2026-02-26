@@ -112,7 +112,7 @@ const KpiContainer = () => {
   }, [ctx.margins]);
 
   return (
-    <div className="grid grid-cols-4 gap-2 text-sm font-medium">
+    <div className="grid grid-cols-4 gap-2 text-sm font-medium select-none">
       <SubDeptMarginKpi data={kpiData.total_sales} title="Net Sales" />
       <SubDeptMarginKpi data={kpiData.qty} title="Total Qty" />
       <SubDeptMarginKpi data={kpiData.total_tax} title="Total Tax" />
