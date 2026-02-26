@@ -10,6 +10,9 @@ interface SubMarginState {
   weekFourMargins: SubDeptMargin[];
   filteredMargins: SubDeptMargin[];
   selectedSubDeptId: number;
+  subDeptFitlerText: string;
+  loadingSubDepts: boolean;
+  loadingMargins: boolean;
 }
 
 const initialState: SubMarginState = {
@@ -21,6 +24,9 @@ const initialState: SubMarginState = {
   weekFourMargins: [],
   filteredMargins: [],
   selectedSubDeptId: 0,
+  subDeptFitlerText: "",
+  loadingSubDepts: false,
+  loadingMargins: false,
 };
 
 const subMarginSlice = createSlice({
@@ -61,15 +67,27 @@ const subMarginSlice = createSlice({
           break;
       }
     },
+    setSubDeptFilterText: (state, action: PayloadAction<string>) => {
+      state.subDeptFitlerText = action.payload;
+    },
+    setLoadingSubDepts: (state, action: PayloadAction<boolean>) => {
+      state.loadingSubDepts = action.payload;
+    },
+    setLoadingMargins: (state, action: PayloadAction<boolean>) => {
+      state.loadingMargins = action.payload;
+    },
     resetSubMarginState: () => initialState,
   },
 });
 
 export const {
   setFilteredMargins,
+  setLoadingMargins,
+  setLoadingSubDepts,
   setMargins,
   setSelectedSubDeptId,
   setSubDepts,
+  setSubDeptFilterText,
   setWeekTrendMargins,
   resetSubMarginState,
 } = subMarginSlice.actions;
