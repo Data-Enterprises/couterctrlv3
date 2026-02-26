@@ -844,6 +844,11 @@ export type StaticUserData = {
 // Margin Maze Interfaces
 /////////////////////////
 
+export type SubDept = {
+  id: number;
+  desc: string;
+};
+
 export type SubSalesJsonResp = {
   error: number;
   success: boolean;
