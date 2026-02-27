@@ -125,21 +125,21 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
       );
 
       const uniqueCashiers = [...filtered].reduce(
-        (acc: UniqueCashier[], current) => {
+        (acc: UniqueCashier[], curr) => {
           const cashier = acc.find(
-            (item) => item.cashier_number === current.cashier_number,
+            (item) => item.cashier_number === curr.cashier_number,
           );
 
           if (!cashier) {
             acc.push({
-              cashier_name: current.cashier_name,
-              cashier_number: current.cashier_number,
-              total_sales: current.total_sales,
+              cashier_name: curr.cashier_name,
+              cashier_number: curr.cashier_number,
+              total_sales: curr.total_sales,
               transaction_count: 1,
-              store_number: current.store_number,
+              store_number: curr.store_number,
             });
           } else {
-            cashier.total_sales += current.total_sales;
+            cashier.total_sales += curr.total_sales;
             cashier.transaction_count += 1;
           }
           return acc;

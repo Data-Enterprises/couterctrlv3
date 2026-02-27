@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useSubMarginCtx } from "../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import type { MarginKpi, Mover } from "../../../interfaces";
@@ -56,75 +55,68 @@ const KpiContainer = () => {
       0,
     );
 
-    console.log("total sales", total_sales);
-    console.log("total cogs", total_cogs);
+    // console.log("total sales", total_sales);
+    // console.log("total cogs", total_cogs);
 
     return gpm(total_sales, total_cogs);
   };
 
-  const kpiData: MarginKpi = useMemo(() => {
-    return {
-      total_sales: formatCurrency2(
-        ctx.margins.reduce(
-          (acc, curr) => acc + (curr.total_sales - curr.total_tax),
-          0,
-        ),
-      ),
-      qty: formatBigNumber(
-        ctx.margins.reduce((acc, curr) => acc + curr.qty, 0),
+  const kpiData: MarginKpi = {
+    total_sales: formatCurrency2(
+      ctx.margins.reduce(
+        (acc, curr) => acc + (curr.total_sales - curr.total_tax),
         0,
       ),
-      total_tax: formatCurrency2(
-        ctx.margins.reduce((acc, curr) => acc + curr.total_tax, 0),
-      ),
-      // avg_qty: formatBigNumber(
-      //   ctx.margins.reduce((acc, curr) => acc + curr.qty, 0) /
-      //     (ctx.margins.length || 1),
-      //   2,
-      // ),
-      items: formatBigNumber(
-        ctx.margins.reduce((acc: string[], curr) => {
-          if (!acc.includes(curr.product_code)) {
-            acc.push(curr.product_code);
-          }
-          return acc;
-        }, []).length,
+    ),
+    qty: formatBigNumber(
+      ctx.margins.reduce((acc, curr) => acc + curr.qty, 0),
+      0,
+    ),
+    total_tax: formatCurrency2(
+      ctx.margins.reduce((acc, curr) => acc + curr.total_tax, 0),
+    ),
+    items: formatBigNumber(
+      ctx.margins.reduce((acc: string[], curr) => {
+        if (!acc.includes(curr.product_code)) {
+          acc.push(curr.product_code);
+        }
+        return acc;
+      }, []).length,
+      0,
+    ),
+    gpm: getGpm(),
+    vendors: formatBigNumber(
+      ctx.margins.reduce((acc: string[], curr) => {
+        if (!acc.includes(curr.vendor_name)) {
+          acc.push(curr.vendor_name);
+        }
+        return acc;
+      }, []).length,
+      0,
+    ),
+    top_mover: findTopMover(),
+    total_cogs: formatCurrency2(
+      ctx.margins.reduce(
+        (acc, curr) => acc + curr.calculated_cost * curr.qty,
         0,
       ),
-      gpm: getGpm(),
-      vendors: formatBigNumber(
-        ctx.margins.reduce((acc: string[], curr) => {
-          if (!acc.includes(curr.vendor_name)) {
-            acc.push(curr.vendor_name);
-          }
-          return acc;
-        }, []).length,
-        0,
-      ),
-      top_mover: findTopMover(),
-      total_cogs: formatCurrency2(
-        ctx.margins.reduce(
-          (acc, curr) => acc + curr.calculated_cost * curr.qty,
-          0,
-        ),
-      ),
-    };
-  }, [ctx.margins]);
+    ),
+  };
 
   return (
-    <div className="grid grid-cols-4 gap-2 text-sm font-medium select-none">
+    <div className="flex justify-between items-start w-full gap-2 text-sm font-medium select-none">
       <SubDeptMarginKpi data={kpiData.total_sales} title="Net Sales" />
-      <SubDeptMarginKpi data={kpiData.qty} title="Total Qty" />
       <SubDeptMarginKpi data={kpiData.total_tax} title="Total Tax" />
-      <SubDeptMarginKpi data={kpiData.vendors} title="Vendors" />
+      <SubDeptMarginKpi data={kpiData.qty} title="Total Qty" />
+      {/* <SubDeptMarginKpi data={kpiData.vendors} title="Vendors" /> */}
 
       <SubDeptMarginKpi data={kpiData.gpm} title="Margin" />
-      <SubDeptMarginKpi data={kpiData.items} title="Total Items" />
       <SubDeptMarginKpi data={kpiData.total_cogs} title="Total Cost" />
-      <SubDeptMarginKpi
+      <SubDeptMarginKpi data={kpiData.items} title="Total Items" />
+      {/* <SubDeptMarginKpi
         data={kpiData.top_mover.vendor_name}
         title={`Top Vendor`}
-      />
+      /> */}
     </div>
   );
 };

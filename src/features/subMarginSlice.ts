@@ -1,6 +1,8 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { SubDeptMargin, SubDept } from "../interfaces";
 
+export type MarginWeek = 1 | 2 | 3 | 4;
+
 interface SubMarginState {
   subDepts: SubDept[];
   margins: SubDeptMargin[];
@@ -13,6 +15,13 @@ interface SubMarginState {
   subDeptFitlerText: string;
   loadingSubDepts: boolean;
   loadingMargins: boolean;
+  loadedMargins: {
+    weekOne: boolean;
+    weekTwo: boolean;
+    weekThree: boolean;
+    weekFour: boolean;
+  };
+  selectedWeek: MarginWeek;
 }
 
 const initialState: SubMarginState = {
@@ -27,6 +36,13 @@ const initialState: SubMarginState = {
   subDeptFitlerText: "",
   loadingSubDepts: false,
   loadingMargins: false,
+  loadedMargins: {
+    weekOne: false,
+    weekTwo: false,
+    weekThree: false,
+    weekFour: false,
+  },
+  selectedWeek: 1,
 };
 
 const subMarginSlice = createSlice({
@@ -52,9 +68,10 @@ const subMarginSlice = createSlice({
       // This reducer will always have a number between 1 and 4 for the week
       // This will be used to display weekly sub dept margin trends
       const { data, week } = action.payload;
+      state.margins = data;
+
       switch (week) {
         case 1:
-          state.margins = data;
           state.weekOneMargins = data;
           break;
         case 2:
@@ -77,6 +94,26 @@ const subMarginSlice = createSlice({
     setLoadingMargins: (state, action: PayloadAction<boolean>) => {
       state.loadingMargins = action.payload;
     },
+    setLoadedMargins: (
+      state,
+      action: PayloadAction<{ week: number; loaded: boolean }>,
+    ) => {
+      const { week, loaded } = action.payload;
+      switch (week) {
+        case 1:
+          state.loadedMargins.weekOne = loaded;
+          break;
+        case 2:
+          state.loadedMargins.weekTwo = loaded;
+          break;
+        case 3:
+          state.loadedMargins.weekThree = loaded;
+          break;
+        case 4:
+          state.loadedMargins.weekFour = loaded;
+          break;
+      }
+    },
     requerySubDeptMargins: (state) => {
       state.subDepts = [];
       state.margins = [];
@@ -87,20 +124,49 @@ const subMarginSlice = createSlice({
       state.filteredMargins = [];
       state.selectedSubDeptId = 0;
       state.subDeptFitlerText = "";
+      state.loadedMargins = {
+        weekOne: false,
+        weekTwo: false,
+        weekThree: false,
+        weekFour: false,
+      };
+      state.selectedWeek = 1;
+    },
+    resetAllMargins: (state) => {
+      state.margins = [];
+      state.weekOneMargins = [];
+      state.weekTwoMargins = [];
+      state.weekThreeMargins = [];
+      state.weekFourMargins = [];
+      state.filteredMargins = [];
+      state.loadingMargins = true;
+      state.loadedMargins = {
+        weekOne: false,
+        weekTwo: false,
+        weekThree: false,
+        weekFour: false,
+      };
+      state.selectedWeek = 1;
+    },
+    setSelectedWeek: (state, action: PayloadAction<MarginWeek>) => {
+      state.selectedWeek = action.payload;
     },
     resetSubMarginState: () => initialState,
   },
 });
 
 export const {
+  setLoadedMargins,
   setFilteredMargins,
   setLoadingMargins,
   setLoadingSubDepts,
   setMargins,
   setSelectedSubDeptId,
+  setSelectedWeek,
   setSubDepts,
   setSubDeptFilterText,
   setWeekTrendMargins,
+  resetAllMargins,
   resetSubMarginState,
   requerySubDeptMargins,
 } = subMarginSlice.actions;
