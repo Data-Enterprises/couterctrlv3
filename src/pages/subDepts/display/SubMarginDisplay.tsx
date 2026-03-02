@@ -25,7 +25,7 @@ const SubMarginDisplay = () => {
         {!ctx.loadingMargins &&
         !ctx.margins.length ? null : ctx.loadingMargins &&
           !ctx.margins.length ? (
-          <div className="absolute bg-red-200 top-1/2 left-1/2">
+          <div className="absolute top-1/2 left-1/2">
             <LoadingIndicator
               message="Loading margins..."
               className="top-1/2 left-1/2"

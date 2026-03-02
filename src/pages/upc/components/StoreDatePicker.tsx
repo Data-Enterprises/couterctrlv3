@@ -15,19 +15,14 @@ import SingleSelect from "../../../components/SingleSelect";
 import TextInput from "../../../components/TextInput";
 import DatePickers from "../../../components/datePickers/DatePickers";
 import SelectedStoreList from "./SelectedStoreList";
-import FileInput from "../../forecast/controls/FileInput";
+// import FileInput from "../../forecast/controls/FileInput";
 
 const options = [
   { label: "Stores", id: 1 },
   { label: "Group", id: 2 },
 ];
 
-interface StoreDatePickerProps {
-  setFile: (file: File | null) => void;
-  getModuleData: (mode: number) => void;
-}
-
-const StoreDatePicker = ({ setFile, getModuleData }: StoreDatePickerProps) => {
+const StoreDatePicker = () => {
   const toast = useToast();
   const context = useUpcContext();
   const dispatch = useAppDispatch();
@@ -135,7 +130,7 @@ const StoreDatePicker = ({ setFile, getModuleData }: StoreDatePickerProps) => {
         selectedStores={context.selectedStores}
         radioId={context.radioId}
       />
-      <div className="flex gap-2 mt-2">
+      {/* <div className="flex gap-2 mt-2">
         <FileInput
           page="upc"
           fileExt={[".csv"]}
@@ -149,7 +144,7 @@ const StoreDatePicker = ({ setFile, getModuleData }: StoreDatePickerProps) => {
         >
           Search
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };

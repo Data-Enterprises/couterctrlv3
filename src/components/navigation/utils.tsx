@@ -5,7 +5,8 @@ import {
   MagnifyingGlassIcon,
   ArrowTrendingUpIcon,
   ClipboardDocumentCheckIcon,
-  CurrencyDollarIcon
+  CurrencyDollarIcon,
+  KeyIcon,
 } from "@heroicons/react/16/solid";
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
@@ -79,7 +80,7 @@ export const navigation: Navigation[] = [
     name: "User Groups",
     href: "groups",
     icon: GroupsIcon,
-    mobile: true,
+    mobile: false,
     children: [],
     childOpen: false,
     userLevels: ["*"],
@@ -122,7 +123,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: ["*"],
+    userLevels: ["9"],
     isHovering: false,
   },
   {
@@ -152,19 +153,19 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: ["*"],
+    userLevels: ["9"],
     isHovering: false,
   },
-  // {
-  //   name: "Admin",
-  //   href: "admin",
-  //   icon: KeyIcon,
-  //   mobile: false,
-  //   children: [],
-  //   childOpen: false,
-  //   userLevels: ["*"],
-  //   isHovering: false,
-  // },
+  {
+    name: "Admin",
+    href: "admin",
+    icon: KeyIcon,
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userLevels: ["9"],
+    isHovering: false,
+  },
   // This fake link is just to show that user types can be restricted
   {
     name: "fake link",
