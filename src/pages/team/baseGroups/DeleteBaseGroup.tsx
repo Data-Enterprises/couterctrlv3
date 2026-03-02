@@ -94,7 +94,7 @@ const DeleteBaseGroup = () => {
   }
 
   return (
-    <div className="bg-custom-white p-4 rounded-lg shadow-lg">
+    <div className="bg-custom-white p-4 rounded-lg shadow-lg  max-h-[70vh]">
       <SingleSelect
         label="Select Company"
         data={companies}
@@ -108,7 +108,7 @@ const DeleteBaseGroup = () => {
           <div className="font-medium flex justify-between">
             <div>Select group to delete</div>
           </div>
-          <div className="select-none grid rounded-lg p-1 min-h-20 max-h-32 overflow-hidden overflow-y-auto">
+          <div className="select-none rounded-lg p-1 max-h-[39vh] overflow-hidden overflow-y-auto">
             {baseGroups.map((bg) => (
               <div
                 key={bg.id}
