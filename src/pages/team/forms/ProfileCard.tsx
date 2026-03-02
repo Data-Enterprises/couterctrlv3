@@ -92,7 +92,7 @@ const ProfileCard = () => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full select-none">
       <div
         className={`bg-[rgb(30,45,80)] text-custom-white rounded-lg shadow-lg p-2 text-sm flex gap-2 mb-4`}
       >
