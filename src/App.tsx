@@ -22,7 +22,7 @@ const App = () => {
 
   const containerStyle = context.isDesktop
     ? "ml-12 min-w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)]"
-    : "";
+    : "h-full bg-bkg";
 
   return (
     <div data-testid="main-app" className="main-app h-dvh w-dvw bg-bkg text-content no-scrollbar">

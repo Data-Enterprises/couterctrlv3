@@ -20,7 +20,7 @@ const DeleteUserGroup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token, groups, selectedGroup, createInput } = useGroupCtx();
-  const {isDesktop} = useAppSelector((state) => state.app);
+  const { isDesktop } = useAppSelector((state) => state.app);
 
   const handleSelect = (g: Group) => {
     if (selectedGroup.id === g.id) {
@@ -59,7 +59,9 @@ const DeleteUserGroup = () => {
     };
 
     return (
-      <div className="p-4 bg-custom-white rounded-lg shadow-lg w-[30%]">
+      <div
+        className={`p-4 bg-custom-white rounded-lg shadow-lg ${isDesktop ? "w-[30%]" : "w-full"}`}
+      >
         <div className="text-center">Are you sure you want to delete</div>
         <div className="text-center">
           <span className="pr-1">Base group =</span>
@@ -85,7 +87,7 @@ const DeleteUserGroup = () => {
   return (
     <div className={containerStyle}>
       <div className="font-medium text-sm">
-        <div>Select group to update</div>
+        <div>Select group to delete</div>
       </div>
       <div className="select-none text-sm grid rounded-lg p-1 max-h-36 overflow-hidden overflow-y-auto">
         {groups.map((g) => (

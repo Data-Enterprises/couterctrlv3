@@ -90,10 +90,10 @@ const Sales = () => {
 
   const pageContainer = context.isDesktop
     ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none"
-    : "p-4 min-h-screen overflow-y-scroll";
+    : " p-4 overflow-y-scroll bg-bkg";
   const gridContainer = context.isDesktop
     ? " grid grid-cols-[18%_81%] gap-4 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]"
-    : "";
+    : "h-full";
 
   const isReady =
     queryChecker.hourly &&
