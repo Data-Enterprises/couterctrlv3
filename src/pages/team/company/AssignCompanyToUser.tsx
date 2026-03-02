@@ -191,9 +191,10 @@ const AssignCompanyToUser = () => {
                   <div className="font-medium">Company</div>
                   <div>{c.name}</div>
                 </div>
-                <div>
-                  <div className="font-medium">Id</div>
-                  <div>{c.company}</div>
+                <div className="text-orange-500 font-medium">
+                  Inactive
+                  {/* <div className="font-medium">Id</div>
+                  <div>{c.company}</div> */}
                 </div>
               </div>
             ))}
@@ -230,9 +231,10 @@ const AssignCompanyToUser = () => {
                   <div className="font-medium">Company</div>
                   <div>{c.name}</div>
                 </div>
-                <div>
-                  <div className="font-medium">Id</div>
-                  <div>{c.company}</div>
+                <div className="text-emerald-500 font-medium">
+                  Active
+                  {/* <div className="font-medium">Id</div>
+                  <div>{c.company}</div> */}
                 </div>
               </div>
             ))}

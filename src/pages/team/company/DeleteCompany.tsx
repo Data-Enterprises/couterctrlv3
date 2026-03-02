@@ -15,6 +15,7 @@ const DeleteCompany = () => {
   const dispatch = useAppDispatch();
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const { url, token } = useAppSelector((state) => state.app);
+  const user = useAppSelector((state) => state.user);
   const { companies, selectedCompanyId, companyInfo } = useAppSelector(
     (state) => state.company,
   );
@@ -66,12 +67,16 @@ const DeleteCompany = () => {
     );
   }
 
+  const filteredCompanies = [...companies].filter((c) =>
+    user.companies.some((uc) => uc.company === c.id),
+  );
+
   return (
     <div className="bg-custom-white rounded-lg shadow-lg p-4 w-[25vw]">
       <div className="text-sm">
         <div className="font-medium">Select company to delete</div>
         <div className="select-none grid rounded-lg p-1 min-h-20 max-h-32 overflow-hidden overflow-y-auto">
-          {companies.map((c) => (
+          {filteredCompanies.map((c) => (
             <div
               key={c.id}
               className={`${selectedCompanyId === c.id && "bg-orange-200"} rounded-full py-1 pl-2 border-b transition-all duration-200 cursor-pointer hover:bg-blue-200`}
