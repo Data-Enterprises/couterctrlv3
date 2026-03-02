@@ -18,7 +18,7 @@ const DeleteBaseGroup = () => {
   const [selectedBgID, setSelectedBgID] = useState<number>(0);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
-  const { url, token } = useAppSelector((state) => state.app);
+  const { url, token, isDesktop } = useAppSelector((state) => state.app);
   const { companies } = useAppSelector((state) => state.user);
 
   const getData = (company: number) => {
@@ -108,7 +108,9 @@ const DeleteBaseGroup = () => {
           <div className="font-medium flex justify-between">
             <div>Select group to delete</div>
           </div>
-          <div className="select-none rounded-lg p-1 max-h-[39vh] overflow-hidden overflow-y-auto">
+          <div
+            className={`select-none rounded-lg p-1 overflow-hidden overflow-y-auto ${isDesktop ? "max-h-[39vh]" : "max-h-[25vh]"}`}
+          >
             {baseGroups.map((bg) => (
               <div
                 key={bg.id}
