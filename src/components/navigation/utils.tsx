@@ -60,7 +60,7 @@ export const navigation: Navigation[] = [
     name: "Team",
     href: "team",
     icon: UsersIcon,
-    mobile: false,
+    mobile: true,
     children: [],
     childOpen: false,
     userLevels: ["5", "7", "9"],

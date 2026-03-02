@@ -13,7 +13,7 @@ import type { JsonError } from "../../../interfaces";
 const ProfileCard = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const { url, token } = useAppSelector((state) => state.app);
+  const { url, token, isDesktop } = useAppSelector((state) => state.app);
   const { companies } = useAppSelector((state) => state.user);
   const {
     userInfo,
@@ -26,7 +26,7 @@ const ProfileCard = () => {
   const { selectedBaseGroups } = useAppSelector((state) => state.baseGroup);
 
   // This is for selecting users in the update/delete forms and showing their info in the profile card
-  // The create form is being handled separately in create user as those companies appear in the 
+  // The create form is being handled separately in create user as those companies appear in the
   // dropdown showing only what companies the new user can be assigned to based on the creator's companies
   useEffect(() => {
     dispatch(setAllSelectedBaseGroups([]));
@@ -92,11 +92,13 @@ const ProfileCard = () => {
   };
 
   return (
-    <div className="w-full select-none">
+    <div className={`w-full select-none ${!isDesktop && "mt-4"}`}>
       <div
         className={`bg-[rgb(30,45,80)] text-custom-white rounded-lg shadow-lg p-2 text-sm flex gap-2 mb-4`}
       >
-        <UserCircleIcon className="" height={140} width={140} fill="white" />
+        {isDesktop && (
+          <UserCircleIcon className="" height={140} width={140} fill="white" />
+        )}
         <div className="">
           <div className="flex gap-1">
             <div className="font-medium">Name:</div>
