@@ -63,7 +63,7 @@ const ModeSelect = () => {
       </div>
       <div className="px-4 text-sm text-content/60 flex items-center gap-1">
         <div className="h-1.5 w-1.5 bg-content/60 rounded-full"></div>
-        <div className="pb-[2px]">activated modes will appear highlighted</div>
+        <div className="pb-[2px]">active modes will be highlighted</div>
       </div>
     </div>
   );

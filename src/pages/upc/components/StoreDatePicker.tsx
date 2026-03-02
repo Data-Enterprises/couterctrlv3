@@ -12,10 +12,9 @@ import { getStoresAssignedToUserGroup } from "../../../api/groups";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 
 import SingleSelect from "../../../components/SingleSelect";
-import TextInput from "../../../components/TextInput";
 import DatePickers from "../../../components/datePickers/DatePickers";
 import SelectedStoreList from "./SelectedStoreList";
-// import FileInput from "../../forecast/controls/FileInput";
+import Input from "../../../components/inputs/Input";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -79,23 +78,24 @@ const StoreDatePicker = () => {
 
   return (
     <div className="bg-custom-white px-4 py-2 rounded-lg shadow-lg">
-      <div className="w-full grid grid-cols-2 gap-2 mb-1">
-        <SingleSelect
-          data={options}
-          label="Store or Group"
-          displayKey="label"
-          valueKey="id"
-          onSelect={handleSelectChange}
-          defaultQuery="Stores"
-          id={1}
-        />
-        <TextInput
-          name="trend"
-          query={context.trendPeriods.toString()}
-          title="Trend Periods"
-          isSimple={true}
-          setText={(x) => dispatch(setTrendPeriods(x))}
-        />
+      <div className="w-full gap-2 mb-1">
+        <div className="flex gap-2 items-end">
+          <SingleSelect
+            data={options}
+            label="Store or Group"
+            displayKey="label"
+            valueKey="id"
+            onSelect={handleSelectChange}
+            defaultQuery="Stores"
+            id={1}
+            innerClass="py-1.5"
+          />
+          <Input
+            label="Trend Periods"
+            value={context.trendPeriods}
+            setValue={(x) => dispatch(setTrendPeriods(x))}
+          />
+        </div>
         {context.radioId === 1 ? (
           <SingleSelect
             label="Stores"
