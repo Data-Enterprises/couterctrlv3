@@ -51,11 +51,11 @@ const TrendDetector = () => {
   };
 
   return (
-    <div data-testid="upc-trend" className="h-full w-full grid grid-cols-[12%_87%] gap-4">
+    <div data-testid="upc-trend" className="h-full w-full grid grid-cols-[15%_84%] gap-4">
       <TrendModal />
       <UpcModal handleExport={handleExport} />
       <UpcControls />
-      <div className="gap-2 grid grid-rows-[62%_38%] -mt-3 relative pt-[133px] mr-4">
+      <div className="gap-2 grid grid-rows-[54%_46%] -mt-3 relative pt-[136px] mr-4">
         <div className="absolute w-full" style={{ zIndex: 0 }}>
           <MetricsCarousel className="h-[130px]">
             <TopBottomTrends type="Top" />
@@ -71,7 +71,7 @@ const TrendDetector = () => {
             </div>
           )}
         </div>
-        <div className="grid grid-cols-1 gap-2 h-full">
+        <div className="grid gap-2 h-full">
           {state.selectedUpcs.length ? (
             <TrendCardsList />
           ) : (

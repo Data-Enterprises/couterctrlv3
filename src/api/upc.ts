@@ -58,11 +58,12 @@ export const getForecasting = async (
       storeids,
       startdate,
       enddate,
+      return_history: true,
     },
   });
 
   return json;
-};;
+};
 
 export const getPriceOpt = async (
   url: string,

@@ -5,7 +5,6 @@ import { useUpcContext } from "./hooks";
 
 // modules
 import SalesComp from "./modules/salesComp/SalesComp";
-import Forcast from "./modules/forecast/Forecast";
 import PriceOpt from "./modules/priceOpt/PriceOpt";
 import TrendDetector from "./modules/trend/TrendDetector";
 import {
@@ -50,6 +49,7 @@ import StoreDatePicker from "./components/StoreDatePicker";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import UpcAssociation from "./modules/associate/UpcAssociation";
 import UpcSelector from "./components/UpcSelector";
+import Forecast from "./modules/forecast/Forecast";
 
 const UpcList = () => {
   const toast = useToast();
@@ -294,7 +294,7 @@ const UpcList = () => {
       );
     if (context.selectedMode == 2)
       return context.forecast.length > 0 ? (
-        <Forcast />
+        <Forecast />
       ) : (
         <UpcSelector setFile={setFile} getData={getModuleData} />
       );
@@ -340,7 +340,7 @@ const UpcList = () => {
               </div>
             </div>
           </div>
-        ) : context.selectedMode > 0 && !context.dataLoaded ? (
+        ) : context.selectedMode > 0 && !context.dataLoaded && !context.isLoading ? (
           <UpcSelector setFile={setFile} getData={getModuleData} />
         ) : null}
       </div>
