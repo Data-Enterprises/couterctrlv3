@@ -6,10 +6,13 @@ export const getSalesComp = async (
   storeids: string,
   startdate: string,
   enddate: string,
-  file: File,
+  // file: File,
+  upc_list: string,
 ) => {
+  // const formData = new FormData();
+  // formData.append("file", file);
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("upc_list", upc_list);
 
   const json = await axios({
     method: "POST",
@@ -35,10 +38,13 @@ export const getForecasting = async (
   storeids: string,
   startdate: string,
   enddate: string,
-  file: File,
+  // file: File,
+  upc_list: string,
 ) => {
+  // const formData = new FormData();
+  // formData.append("file", file);
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("upc_list", upc_list);
 
   const json = await axios({
     method: "POST",
@@ -56,7 +62,7 @@ export const getForecasting = async (
   });
 
   return json;
-};
+};;
 
 export const getPriceOpt = async (
   url: string,
@@ -64,10 +70,13 @@ export const getPriceOpt = async (
   storeids: string,
   startdate: string,
   enddate: string,
-  file: File,
+  // file: File,
+  upc_list: string,
 ) => {
+  // const formData = new FormData();
+  // formData.append("file", file);
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("upc_list", upc_list);
 
   const json = await axios({
     method: "POST",
@@ -94,10 +103,13 @@ export const getTrendDetect = async (
   startdate: string,
   enddate: string,
   periods: number = 120,
-  file: File,
+  // file: File,
+  upc_list: string,
 ) => {
+  // const formData = new FormData();
+  // formData.append("file", file);
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("upc_list", upc_list);
 
   const json = await axios({
     method: "POST",

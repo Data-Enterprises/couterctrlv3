@@ -1,5 +1,8 @@
-import { useAppDispatch } from "../../../hooks";
+import { useState } from "react";
+import { useGroupCtx } from "..";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
+
 import {
   setSelectedGroup,
   setStoresWithGroupStatus,
@@ -15,14 +18,13 @@ import {
 
 import SingleSelect from "../../../components/SingleSelect";
 import Input from "../../../components/inputs/Input";
-import { useState } from "react";
-import { useGroupCtx } from "..";
 
 const UserGroupAssign = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token, userid, groups, selectedGroup, storesWithGroupStatus } =
     useGroupCtx();
+  const { isDesktop } = useAppSelector((state) => state.app);
 
   const [unassignedFilter, setUnassignedFilter] = useState<string>("");
   const [assignedFilter, setAssignedFilter] = useState<string>("");
@@ -91,8 +93,12 @@ const UserGroupAssign = () => {
     }
   };
 
+  const assignContainerStyle = isDesktop
+    ? "bg-custom-white p-2 w-[49%] rounded-lg shadow-lg h-[70vh] absolute"
+    : "bg-custom-white p-2 w-[49%] rounded-lg shadow-lg h-[65vh] absolute text-xs";
+
   return (
-    <div className="w-[55%] space-y-4">
+    <div className={`${isDesktop ? "w-[55%]" : "w-full"} space-y-4`}>
       <SingleSelect
         label="Select User Group"
         data={groups}
@@ -101,7 +107,7 @@ const UserGroupAssign = () => {
         onSelect={getGroupStores}
       />
       <div className="flex gap-4 relative w-[99.5%]">
-        <div className="bg-custom-white p-2 w-[49%] rounded-lg shadow-lg h-[70vh] absolute">
+        <div className={assignContainerStyle}>
           <Input
             label={`Unassigned - ${filtered(storesWithGroupStatus, unassignedFilter, 0).length}`}
             value={unassignedFilter}
@@ -116,19 +122,23 @@ const UserGroupAssign = () => {
                   className={`bg-custom-white flex items-center justify-between rounded-lg shadow-md p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
                   onClick={() => handleStoreClick(store.storeid, "unassigned")}
                 >
-                  <div className="font-medium space-y-0.5">
+                  <div
+                    className={`font-medium space-y-0.5 ${isDesktop ? "" : "text-[12px]"} `}
+                  >
                     <div>Store {store.store_number}</div>
                     <div>
                       {store.storeid} - {store.store_name}
                     </div>
                   </div>
-                  <div
-                    className={`status ${
-                      store.active ? "text-emerald-500" : "text-orange-500"
-                    } font-medium`}
-                  >
-                    {store.active ? "Active" : "Inactive"}
-                  </div>
+                  {isDesktop ? (
+                    <div
+                      className={`${
+                        store.active ? "text-emerald-500" : "text-orange-500"
+                      } font-medium`}
+                    >
+                      {store.active ? "Active" : "Inactive"}
+                    </div>
+                  ) : null}
                 </div>
               ),
             )}
@@ -145,7 +155,7 @@ const UserGroupAssign = () => {
             </button>
           </div> */}
         </div>
-        <div className="bg-custom-white p-2 w-[49%] rounded-lg shadow-lg h-[70vh] absolute translate-x-[105%]">
+        <div className={assignContainerStyle + " translate-x-[105%]"}>
           <Input
             label={`Assigned - ${filtered(storesWithGroupStatus, assignedFilter, 1).length}`}
             value={assignedFilter}
@@ -159,19 +169,23 @@ const UserGroupAssign = () => {
                 className={`bg-custom-white flex items-center justify-between rounded-lg shadow-md p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
                 onClick={() => handleStoreClick(store.storeid, "assigned")}
               >
-                <div className="font-medium space-y-0.5">
+                <div
+                  className={`font-medium space-y-0.5 ${isDesktop ? "" : "text-[12px]"} `}
+                >
                   <div>Store {store.store_number}</div>
                   <div>
                     {store.storeid} - {store.store_name}
                   </div>
                 </div>
-                <div
-                  className={`status ${
-                    store.active ? "text-emerald-500" : "text-orange-500"
-                  } font-medium`}
-                >
-                  {store.active ? "Active" : "Inactive"}
-                </div>
+                {isDesktop ? (
+                  <div
+                    className={`${
+                      store.active ? "text-emerald-500" : "text-orange-500"
+                    } font-medium`}
+                  >
+                    {store.active ? "Active" : "Inactive"}
+                  </div>
+                ) : null}
               </div>
             ))}
           </div>

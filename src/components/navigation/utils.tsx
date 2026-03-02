@@ -80,7 +80,7 @@ export const navigation: Navigation[] = [
     name: "User Groups",
     href: "groups",
     icon: GroupsIcon,
-    mobile: false,
+    mobile: true,
     children: [],
     childOpen: false,
     userLevels: ["*"],

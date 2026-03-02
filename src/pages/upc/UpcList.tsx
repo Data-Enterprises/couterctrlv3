@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAppDispatch } from "../../hooks";
+import { useAppDispatch, useAppSelector } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { useUpcContext } from "./hooks";
 
@@ -55,7 +55,8 @@ const UpcList = () => {
   const toast = useToast();
   const context = useUpcContext();
   const dispatch = useAppDispatch();
-  const [file, setFile] = useState<File | null>(null);
+  const [_, setFile] = useState<File | null>(null);
+  const { upcs } = useAppSelector((state) => state.upcs);
 
   useEffect(() => {
     return () => {
@@ -105,7 +106,7 @@ const UpcList = () => {
       context.storeids,
       context.startDate,
       context.endDate,
-      file!,
+      upcs.join(","),
     )
       .then((resp) => {
         const j = resp.data;
@@ -138,7 +139,7 @@ const UpcList = () => {
       context.storeids,
       context.startDate,
       context.endDate,
-      file!,
+      upcs.join(","),
     )
       .then((resp) => {
         const j = resp.data;
@@ -206,7 +207,7 @@ const UpcList = () => {
       context.storeids,
       context.startDate,
       context.endDate,
-      file!,
+      upcs.join(","),
     )
       .then((resp) => {
         const j = resp.data;
@@ -238,7 +239,7 @@ const UpcList = () => {
       context.startDate,
       context.endDate,
       parseInt(context.trendPeriods),
-      file!,
+      upcs.join(","),
     )
       .then((resp) => {
         const j = resp.data;
