@@ -319,7 +319,7 @@ const UpcList = () => {
       data-testid="upc-list-page"
       className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] w-full p-4 relative"
     >
-      <div className="w-full h-full grid grid-cols-[22%_78%] gap-4">
+      <div className="w-full h-full grid grid-cols-[17%_83%] gap-4">
         <div className="space-y-4">
           <StoreDatePicker />
           <ModeSelect />

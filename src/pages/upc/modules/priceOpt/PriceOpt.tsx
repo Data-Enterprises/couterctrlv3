@@ -94,8 +94,8 @@ const PriceOpt = () => {
     >
       <UpcControls />
       <UpcModal handleExport={handleExport} />
-      <div className="h-full grid grid-rows-[14%_86%] mr-4">
-        <MetricsCarousel className="w-full h-[95%]">
+      <div className="h-full grid grid-rows-[15%_85%] mr-4">
+        <MetricsCarousel className="w-full h-[100%]">
           <MetricsContainer
             data={filteredItems}
             metricKey="price"

@@ -29,7 +29,7 @@ const SalesCompGrid = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg">
+    <div className="bg-custom-white rounded-lg shadow-lg w-[75%]">
       <div className="ag-theme-alpine h-full w-full">
         {upcs.length > 0 ? (
           <AgGridReact

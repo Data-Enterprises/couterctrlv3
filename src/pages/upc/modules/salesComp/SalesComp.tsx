@@ -59,7 +59,7 @@ const SalesComp = () => {
         className={`w-full h-full grid ${rows} gap-4`}
       >
         <SalesCompHeader />
-        <div className="grid grid-cols-[70%_29%] gap-4 mb-4">
+        <div className="flex gap-4 mb-4 text-sm">
           <SalesCompGrid />
           <SalesComparison />
         </div>

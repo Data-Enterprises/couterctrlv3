@@ -46,7 +46,7 @@ const SalesCompHeader = () => {
   }, [context.salesComp, context.selectedUpcs]);
 
   return (
-    <div className="grid grid-cols-4 gap-4 mr-4">
+    <div className="grid grid-cols-4 gap-4 mr-4 text-sm">
       {cards.length > 0 ? (
         cards.map((card, i) => (
           <WeekCard key={i} week={card.week} sales={card.sales} />
