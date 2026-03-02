@@ -269,6 +269,7 @@ const UpcList = () => {
   };
 
   const getAssData = () => {
+    console.log("Getting Associations");
     dispatch(resetDeeperLvlQueryUpcs());
     const upcItems = [...context.uploadedUpcs].map((item) => ({
       product_code: item,
@@ -311,7 +312,11 @@ const UpcList = () => {
         <UpcSelector setFile={setFile} getData={getModuleData} />
       );
     if (context.selectedMode == 5) {
-      return <UpcAssociation />;
+      return context.upcItems.length ? (
+        <UpcAssociation />
+      ) : (
+        <UpcSelector setFile={setFile} getData={getModuleData} />
+      );
     }
   };
 
@@ -340,7 +345,9 @@ const UpcList = () => {
               </div>
             </div>
           </div>
-        ) : context.selectedMode > 0 && !context.dataLoaded && !context.isLoading ? (
+        ) : context.selectedMode > 0 &&
+          !context.dataLoaded &&
+          !context.isLoading ? (
           <UpcSelector setFile={setFile} getData={getModuleData} />
         ) : null}
       </div>

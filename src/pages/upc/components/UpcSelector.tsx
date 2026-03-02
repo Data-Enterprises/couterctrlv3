@@ -1,4 +1,8 @@
-import { removeSingleUpc, setUpcs, setUpcText } from "../../../features/upcUploadSlice";
+import {
+  removeSingleUpc,
+  setUpcs,
+  setUpcText,
+} from "../../../features/upcUploadSlice";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import FileInput from "../../forecast/controls/FileInput";
 
@@ -9,7 +13,7 @@ interface UpcSelectorProps {
 
 const UpcSelector = ({ setFile, getData }: UpcSelectorProps) => {
   const dispatch = useAppDispatch();
-    const { upcs, upcText } = useAppSelector((state) => state.upcs);
+  const { upcs, upcText } = useAppSelector((state) => state.upcs);
 
   const handleAddUpc = (upc: string) => {
     if (upc === "") {
