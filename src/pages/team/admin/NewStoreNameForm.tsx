@@ -2,15 +2,22 @@ import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 
-import SingleSelect from "../../../components/SingleSelect";
-import Input from "../../../components/inputs/Input";
 import {
   setNewStoreNameText,
   setSelectedStoreInfo,
   allCompFilter,
 } from "../../../features/adminSlice";
 import type { JsonError, Store } from "../../../interfaces";
+
+import { getUserStores } from "../../../api/user";
 import { setNewStoreName } from "../../../api/admin";
+
+import SingleSelect from "../../../components/SingleSelect";
+import Input from "../../../components/inputs/Input";
+import {
+  setAssignedStores,
+  setUnassignedStores,
+} from "../../../features/userSlice";
 
 type AssignedFilter = "all" | "assigned" | "unassigned";
 
@@ -21,9 +28,8 @@ const NewStoreNameForm = () => {
     (state) => state.admin,
   );
   const { url, token } = useAppSelector((state) => state.app);
-  const { companies, assignedStores, unassignedStores } = useAppSelector(
-    (state) => state.user,
-  );
+  const { companies, assignedStores, unassignedStores, userid } =
+    useAppSelector((state) => state.user);
 
   // State for showing stores based on assigned/unassigned/all filter and company filter
   const [filteredStores, setFilteredStores] = useState<Store[]>([
@@ -90,6 +96,24 @@ const NewStoreNameForm = () => {
           toast.success("Store name updated successfully. Refreshing...");
           dispatch(setSelectedStoreInfo(null));
           dispatch(setNewStoreNameText(""));
+          getUserStores(url, token, userid)
+            .then((resp) => {
+              const j = resp.data;
+              if (j.error === 0) {
+                const assigned = j.assigned_stores.filter(
+                  (s: Store) =>
+                    s.store_number !== null && s.store_name !== null,
+                );
+                const unassigned = j.unassigned_stores.filter(
+                  (s: Store) =>
+                    s.store_number !== null && s.store_name !== null,
+                );
+
+                dispatch(setAssignedStores(assigned));
+                dispatch(setUnassignedStores(unassigned));
+              }
+            })
+            .catch((err: JsonError) => toast.error(err.message));
         }
       })
       .catch((err: JsonError) => toast.error(err.message));

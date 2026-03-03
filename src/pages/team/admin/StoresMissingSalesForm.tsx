@@ -32,6 +32,12 @@ const StoresMissingSalesForm = () => {
   const [filteredStores, setFilteredStores] = useState<MissingStore[]>([]);
 
   useEffect(() => {
+    return () => {
+      dispatch(setMissingStores([]));
+    };
+  }, []);
+
+  useEffect(() => {
     if (storesMissingSales.length) {
       const filtered = storesMissingSales.filter((s) =>
         s.store_name.toLowerCase().includes(storeNameFilter.toLowerCase()),
