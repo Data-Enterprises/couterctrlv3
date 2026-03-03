@@ -50,7 +50,7 @@ const Forecasting = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useForecastContext();
-  const { height } = useResizeContext("");
+  const { height, scrollHeight } = useResizeContext("");
   const [file, setFile] = useState<File | null>(null);
   const [filteredData, setFilteredData] = useState<Store[] | Group[]>([]);
   const { upcs, upcText } = useAppSelector((state) => state.upcs);
@@ -282,18 +282,22 @@ const Forecasting = () => {
               </button>
             </div>
             <div
-              className={`bg-bkg shadow rounded-lg grid grid-cols-3 text-xs ${height} overflow-y-scroll no-scrollbar mb-2`}
+              className={`bg-bkg shadow rounded-lg text-xs ${height} mb-2`}
             >
-              {upcs.map((u, i) => (
-                <div
-                  key={i}
-                  data-testid={`forecast-upc-item-${u}-${i}`}
-                  className="px-2 py-0.5 font-medium hover:text-blue-500  transition-all duration-200 cursor-pointer"
-                  onClick={() => handleRemoveUpc(u)}
-                >
-                  {u}
-                </div>
-              ))}
+              <div
+                className={`grid grid-cols-3 ${scrollHeight} overflow-hidden overflow-y-scroll no-scrollbar`}
+              >
+                {upcs.map((u, i) => (
+                  <div
+                    key={i}
+                    data-testid={`forecast-upc-item-${u}-${i}`}
+                    className="px-2 py-0.5 font-medium hover:text-blue-500  transition-all duration-200 cursor-pointer"
+                    onClick={() => handleRemoveUpc(u)}
+                  >
+                    {u}
+                  </div>
+                ))}
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <FileInput
