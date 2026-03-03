@@ -21,6 +21,17 @@ import {
 
 type AssignedFilter = "all" | "assigned" | "unassigned";
 
+type AssignedFilterOption = {
+  label: string;
+  value: AssignedFilter;
+};
+
+const options: AssignedFilterOption[] = [
+  { label: "All", value: "all" },
+  { label: "Assigned", value: "assigned" },
+  { label: "Unassigned", value: "unassigned" },
+];
+
 const NewStoreNameForm = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
@@ -71,8 +82,8 @@ const NewStoreNameForm = () => {
     }
   };
 
-  const handleAssignedFilterChange = (filter: AssignedFilter) => {
-    setAssignedFilter(filter);
+  const handleAssignedFilterChange = (filter: string | number) => {
+    setAssignedFilter(filter as AssignedFilter);
   };
 
   const canSubmit = () => {
@@ -120,33 +131,13 @@ const NewStoreNameForm = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg p-4 w-[50%] space-y-4">
+    <div className="bg-custom-white rounded-lg shadow-lg p-4 w-[50%] space-y-2">
       {/* filters */}
       <div className="text-[13px] font-medium text-content/60 text-center">
         ** Ensure the new store name is unique and different from the current
         name
       </div>
-      <div className="space-y-2">
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            className={`${assignedFilter === "all" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-            onClick={() => handleAssignedFilterChange("all")}
-          >
-            All
-          </button>
-          <button
-            className={`${assignedFilter === "assigned" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-            onClick={() => handleAssignedFilterChange("assigned")}
-          >
-            Assigned
-          </button>
-          <button
-            className={`${assignedFilter === "unassigned" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-            onClick={() => handleAssignedFilterChange("unassigned")}
-          >
-            Unassigned
-          </button>
-        </div>
+      <div className="grid grid-cols-2 gap-2">
         <SingleSelect
           label="Company"
           data={[allCompFilter, ...companies]}
@@ -155,14 +146,23 @@ const NewStoreNameForm = () => {
           onSelect={handleCompanySelect}
           defaultQuery="All"
         />
+        <SingleSelect
+          label="Assignment"
+          data={options}
+          displayKey="label"
+          valueKey="value"
+          onSelect={handleAssignedFilterChange}
+          defaultQuery="All"
+        />
       </div>
       {/* store list */}
       <SingleSelect
-        label="Stores"
+        label={`Stores - ${filteredStores.length}`}
         data={filteredStores}
         displayKey="store_name"
         valueKey="storeid"
         onSelect={handleStoreSelect}
+        resetQuery={true}
       />
       {/* input form */}
       <div className="space-y-2">
