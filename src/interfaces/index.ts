@@ -917,4 +917,21 @@ export type MarginKpi = {
   vendors: string;
   top_mover: Mover;
   total_cogs: string;
+};
+
+///////////////////
+// ADMIN FORM TYPES
+///////////////////
+
+export type MissingStore = {
+  storeid: number;
+  store_number: string;
+  store_name: string;
 }
+
+export type StoresMissingSalesJsonResp = {
+  error: number;
+  success: boolean;
+  missing_store_count: number;
+  missing: Store[];
+};

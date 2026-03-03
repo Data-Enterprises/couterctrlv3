@@ -27,6 +27,11 @@ import StoreControls from "./stores/StoreControls";
 import BaseGroupControls from "./baseGroups/BaseGroupControls";
 import CompanyControls from "./company/CompanyControls";
 import SingleSelect from "../../components/SingleSelect";
+import AdminControls from "./admin/AdminControls";
+import {
+  setNewStoreNameText,
+  setSelectedStoreInfo,
+} from "../../features/adminSlice";
 
 const options = [
   { label: "Users", value: 1 },
@@ -59,6 +64,8 @@ const Team = () => {
     dispatch(resetUserInfo());
     dispatch(setSelectedUserForm(""));
     dispatch(setSelectedCompanyForm(""));
+    dispatch(setSelectedStoreInfo(null));
+    dispatch(setNewStoreNameText(""));
   }, [selectedForm]);
 
   useEffect(() => {
@@ -152,6 +159,8 @@ const Team = () => {
         return <StoreControls />;
       case 4:
         return <CompanyControls />;
+      case 5:
+        return <AdminControls />;
       default:
         return null;
     }

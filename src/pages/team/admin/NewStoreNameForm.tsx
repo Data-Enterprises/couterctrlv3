@@ -1,0 +1,167 @@
+import { useState, useEffect } from "react";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+
+import SingleSelect from "../../../components/SingleSelect";
+import Input from "../../../components/inputs/Input";
+import {
+  setNewStoreNameText,
+  setSelectedStoreInfo,
+  allCompFilter,
+} from "../../../features/adminSlice";
+import type { JsonError, Store } from "../../../interfaces";
+import { setNewStoreName } from "../../../api/admin";
+
+type AssignedFilter = "all" | "assigned" | "unassigned";
+
+const NewStoreNameForm = () => {
+  const toast = useToast();
+  const dispatch = useAppDispatch();
+  const { newStoreNameText, selectedStoreInfo } = useAppSelector(
+    (state) => state.admin,
+  );
+  const { url, token } = useAppSelector((state) => state.app);
+  const { companies, assignedStores, unassignedStores } = useAppSelector(
+    (state) => state.user,
+  );
+
+  // State for showing stores based on assigned/unassigned/all filter and company filter
+  const [filteredStores, setFilteredStores] = useState<Store[]>([
+    ...assignedStores,
+    ...unassignedStores,
+  ]);
+  const [assignedFilter, setAssignedFilter] = useState<AssignedFilter>("all");
+  const [companyId, setCompanyId] = useState<number>(0);
+
+  useEffect(() => {
+    let stores: Store[] = [];
+    if (assignedFilter === "assigned") {
+      stores = assignedStores;
+    } else if (assignedFilter === "unassigned") {
+      stores = unassignedStores;
+    } else {
+      stores = [...assignedStores, ...unassignedStores];
+    }
+
+    // Then filter by company => less items to iterate through if selecting assigned/unassigned first
+    const filtered = stores.filter((s) => {
+      return companyId > 0 ? s.company === companyId : true;
+    });
+    setFilteredStores(filtered);
+  }, [assignedFilter, companyId, assignedStores, unassignedStores]);
+
+  const handleCompanySelect = (company: string | number) => {
+    setCompanyId(Number(company));
+  };
+
+  const handleNewNameTextChange = (x: string) => {
+    dispatch(setNewStoreNameText(x));
+  };
+
+  const handleStoreSelect = (store: string | number) => {
+    const storeInfo = filteredStores.find((s) => s.storeid === store);
+    if (storeInfo) {
+      dispatch(setSelectedStoreInfo(storeInfo));
+    }
+  };
+
+  const handleAssignedFilterChange = (filter: AssignedFilter) => {
+    setAssignedFilter(filter);
+  };
+
+  const canSubmit = () => {
+    if (
+      selectedStoreInfo &&
+      newStoreNameText.length > 0 &&
+      newStoreNameText.toLowerCase() !==
+        selectedStoreInfo.store_name.toLowerCase()
+    ) {
+      return "";
+    }
+
+    return "opacity-50 pointer-events-none";
+  };
+
+  const handleSubmit = () => {
+    setNewStoreName(url, token, selectedStoreInfo!.storeid, newStoreNameText)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          toast.success("Store name updated successfully. Refreshing...");
+          dispatch(setSelectedStoreInfo(null));
+          dispatch(setNewStoreNameText(""));
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+  };
+
+  return (
+    <div className="bg-custom-white rounded-lg shadow-lg p-4 w-[50%] space-y-4">
+      {/* filters */}
+      <div className="text-[13px] font-medium text-content/60 text-center">
+        ** Ensure the new store name is unique and different from the current
+        name
+      </div>
+      <div className="space-y-2">
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            className={`${assignedFilter === "all" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+            onClick={() => handleAssignedFilterChange("all")}
+          >
+            All
+          </button>
+          <button
+            className={`${assignedFilter === "assigned" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+            onClick={() => handleAssignedFilterChange("assigned")}
+          >
+            Assigned
+          </button>
+          <button
+            className={`${assignedFilter === "unassigned" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+            onClick={() => handleAssignedFilterChange("unassigned")}
+          >
+            Unassigned
+          </button>
+        </div>
+        <SingleSelect
+          label="Company"
+          data={[allCompFilter, ...companies]}
+          displayKey="name"
+          valueKey="company"
+          onSelect={handleCompanySelect}
+          defaultQuery="All"
+        />
+      </div>
+      {/* store list */}
+      <SingleSelect
+        label="Stores"
+        data={filteredStores}
+        displayKey="store_name"
+        valueKey="storeid"
+        onSelect={handleStoreSelect}
+      />
+      {/* input form */}
+      <div className="space-y-2">
+        <Input
+          label="Selected Store Name"
+          value={selectedStoreInfo ? selectedStoreInfo.store_name : ""}
+          setValue={() => {}}
+          className="opacity-50 pointer-events-none"
+        />
+        <Input
+          label="New Store Name"
+          value={newStoreNameText}
+          setValue={handleNewNameTextChange}
+        />
+        <button
+          className={`btn-themeBlue w-full ${canSubmit()}`}
+          onClick={handleSubmit}
+        >
+          Submit
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default NewStoreNameForm;
