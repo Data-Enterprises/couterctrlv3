@@ -107,9 +107,9 @@ const StoresMissingSalesForm = () => {
 
       {/* To show when stores missing sales are fetched */}
       {!isLoadingStores && storesMissingSales.length ? (
-        <div className="min-w-[47%] max-w-[47%] overflow-hidden max-h-[75vh] rounded-b-lg">
+        <div className="min-w-[47%] max-w-[47%] overflow-hidden max-h-[75vh] bg-custom-white p-2 rounded-lg shadow-lg">
           <Input
-            label="Search Store Name"
+            label={`Stores - ${filteredStores.length}`}
             value={storeNameFilter}
             setValue={handleFilterChange}
             className="mb-2"
@@ -129,20 +129,6 @@ const StoresMissingSalesForm = () => {
                 <div className="pl-2 border-r">{s.store_number}</div>
                 <div className="pl-2">{s.storeid}</div>
               </div>
-              // <div key={s.storeid} className="rounded-lg shadow-lg text-sm p-2">
-              //   <div className="flex gap-1">
-              //     <div className="font-medium">Name:</div>
-              //     <div>{s.store_name}</div>
-              //   </div>
-              //   <div className="flex gap-1">
-              //     <div className="font-medium">Number:</div>
-              //     <div>{s.store_number}</div>
-              //   </div>
-              //   <div className="flex gap-1">
-              //     <div className="font-medium">ID:</div>
-              //     <div>{s.storeid}</div>
-              //   </div>
-              // </div>
             ))}
           </div>
         </div>

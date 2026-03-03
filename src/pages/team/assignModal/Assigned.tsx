@@ -4,12 +4,14 @@ import { unassignUserFromStore } from "../../../api/team";
 import type { JsonError, Store } from "../../../interfaces";
 import { useEffect, useState } from "react";
 import { setStoresUnassignedForUser } from "../../../features/usersSlice";
+import { setRefreshStores } from "../../../features/userSlice";
 
 const Assigned = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const users = useAppSelector((state) => state.users);
+  const userid = useAppSelector((state) => state.user.userid);
   const [stores, setStores] = useState<Store[]>([]);
   const [filterText, setFilterText] = useState<string>("");
   const [storesToUnassign, setStoresToUnassign] = useState<number[]>([]);
@@ -37,7 +39,12 @@ const Assigned = () => {
       context.token,
       users.selectedUserId,
       storesToUnassign,
-    ).catch((err: JsonError) => {
+    ).then((resp) =>{
+      const j = resp.data;
+      if (j.error === 0 && users.selectedUserId === userid) {
+        dispatch(setRefreshStores(true));
+      }
+    }).catch((err: JsonError) => {
       toast.error("Error unassigning store " + err.message);
     });
   };
@@ -59,7 +66,14 @@ const Assigned = () => {
       context.token,
       users.selectedUserId,
       allToRemove,
-    ).catch((err: JsonError) => toast.error("Error: " + err.message));
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0 && users.selectedUserId === userid) {
+          dispatch(setRefreshStores(true));
+        }
+      })
+      .catch((err: JsonError) => toast.error("Error: " + err.message));
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

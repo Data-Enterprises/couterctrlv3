@@ -31,6 +31,7 @@ export interface UserState {
   securityQuestionId: number;
   assignedStores: Store[];
   unassignedStores: Store[];
+  refreshStores: boolean;
 }
 
 export const initialState: UserState = {
@@ -49,6 +50,7 @@ export const initialState: UserState = {
   securityQuestionId: 0,
   assignedStores: [],
   unassignedStores: [],
+  refreshStores: false,
 };
 
 export const userSlice = createSlice({
@@ -100,6 +102,9 @@ export const userSlice = createSlice({
     setCompanies: (state, action: PayloadAction<UserCompany[]>) => {
       state.companies = action.payload;
     },
+    setRefreshStores: (state, action: PayloadAction<boolean>) => {
+      state.refreshStores = action.payload;
+    },
     resetUserSlice: () => initialState,
   },
 });
@@ -118,6 +123,7 @@ export const {
   setEmail,
   setSecurityQuestionId,
   setAssignedStores,
+  setRefreshStores,
   setUnassignedStores,
   setCompanies,
   resetUserSlice,

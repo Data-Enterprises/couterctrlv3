@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { useAppSelector } from "./hooks";
 import { useNavigate } from "react-router";
+import { useAppDispatch } from "./hooks";
+import { useToast } from "./components/toasts/hooks/useToast";
 
 // Components
 import { Outlet } from "react-router";
@@ -10,11 +12,50 @@ import TitleBar from "./components/navigation/TitleBar";
 import UserDataLoader from "./components/UserDataLoader";
 import SecurityQuestion from "./pages/home/SecurityQuestion";
 import ResetPassword from "./pages/home/ResetPassword";
+import { getUserStores } from "./api/user";
+import type { JsonError, Store } from "./interfaces";
+import { setAllAvailableStores } from "./features/storeSlice";
+import {
+  setAssignedStores,
+  setRefreshStores,
+  setUnassignedStores,
+} from "./features/userSlice";
 
 const App = () => {
+  const toast = useToast();
+  const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const nav = useAppSelector((state) => state.nav);
+  const user = useAppSelector((state) => state.user);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user.refreshStores) {
+      getUserStores(context.url, context.token, user.userid)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            const all = (j.all_stores_for_user ?? []).filter(
+              (s: Store) => s.store_number !== null && s.store_name !== null,
+            );
+            const assigned = j.assigned_stores.filter(
+              (s: Store) => s.store_number !== null && s.store_name !== null,
+            );
+            const unassigned = j.unassigned_stores.filter(
+              (s: Store) => s.store_number !== null && s.store_name !== null,
+            );
+
+            dispatch(setAllAvailableStores(all));
+            dispatch(setAssignedStores(assigned));
+            dispatch(setUnassignedStores(unassigned));
+            dispatch(setRefreshStores(false));
+          }
+        })
+        .catch((err: JsonError) => {
+          toast.error("Error getting user stores: " + err.message);
+        });
+    }
+  }, [user.refreshStores]);
 
   useEffect(() => {
     navigate("/");
@@ -25,7 +66,10 @@ const App = () => {
     : "h-full bg-bkg";
 
   return (
-    <div data-testid="main-app" className="main-app h-dvh w-dvw bg-bkg text-content no-scrollbar">
+    <div
+      data-testid="main-app"
+      className="main-app h-dvh w-dvw bg-bkg text-content no-scrollbar"
+    >
       <UserDataLoader />
       {context.loggedIn ? (
         <div className="h-screen w-screen">

@@ -47,6 +47,7 @@ interface AdminState {
   newStoreNameText: string;
   selectedStoreInfo: Store | null;
   selectedCompanyIdFilter: number;
+  exportMissingStoresModalOpen: boolean;
 }
 
 const initialState: AdminState = {
@@ -67,6 +68,7 @@ const initialState: AdminState = {
   newStoreNameText: "",
   selectedStoreInfo: null,
   selectedCompanyIdFilter: 0,
+  exportMissingStoresModalOpen: false,
 };
 
 const adminSlice = createSlice({
@@ -157,6 +159,9 @@ const adminSlice = createSlice({
     setSelectedStoreInfo: (state, action: PayloadAction<Store | null>) => {
       state.selectedStoreInfo = action.payload;
     },
+    setExportMissingStoresModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.exportMissingStoresModalOpen = action.payload;
+    },
     resetAdminState: () => initialState,
   },
 });
@@ -177,6 +182,7 @@ export const {
   setMissingStores,
   setNewStoreNameText,
   setSelectedStoreInfo,
+  setExportMissingStoresModalOpen,
   resetCompanyForm,
   resetAdminState,
 } = adminSlice.actions;
