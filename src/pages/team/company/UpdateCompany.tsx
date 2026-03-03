@@ -17,6 +17,7 @@ const UpdateCompany = () => {
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
   const { companies, companyInfo } = useAppSelector((state) => state.company);
+  const user = useAppSelector((state) => state.user);
   const { name, address, city, state, zip, phone, contact_email } = companyInfo;
 
   const handleName = (x: string) => {
@@ -75,7 +76,7 @@ const UpdateCompany = () => {
       <div className="grid grid-cols-2 gap-2 items-end">
         <SingleSelect
           label="Companies"
-          data={companies}
+          data={companies.filter((c) => user.companies.some((uc) => uc.company === c.id))}
           displayKey="name"
           valueKey="id"
           innerClass="py-1.5"

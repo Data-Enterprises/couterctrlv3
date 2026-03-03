@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { useAppDispatch } from "../../hooks";
+import { useAppDispatch, useAppSelector } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { useUpcContext } from "./hooks";
 
 // modules
 import SalesComp from "./modules/salesComp/SalesComp";
-import Forcast from "./modules/forecast/Forecast";
 import PriceOpt from "./modules/priceOpt/PriceOpt";
 import TrendDetector from "./modules/trend/TrendDetector";
 import {
@@ -48,14 +47,16 @@ import { convertData, formatForecastExport } from "./utils";
 import ModeSelect from "./components/ModeSelect";
 import StoreDatePicker from "./components/StoreDatePicker";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import NoDataDisplay from "./components/NoDataDisplay";
 import UpcAssociation from "./modules/associate/UpcAssociation";
+import UpcSelector from "./components/UpcSelector";
+import Forecast from "./modules/forecast/Forecast";
 
 const UpcList = () => {
   const toast = useToast();
   const context = useUpcContext();
   const dispatch = useAppDispatch();
-  const [file, setFile] = useState<File | null>(null);
+  const [_, setFile] = useState<File | null>(null);
+  const { upcs } = useAppSelector((state) => state.upcs);
 
   useEffect(() => {
     return () => {
@@ -78,21 +79,21 @@ const UpcList = () => {
     }
   }, [context.radioId]);
 
-  const getModuleData = (mode: number) => {
-    if (mode === 0) {
+  const getModuleData = () => {
+    if (context.selectedMode === 0) {
       toast.warn("Please select a mode");
       return;
     }
     dispatch(setIsLoading(true));
-    if (mode == 1) {
+    if (context.selectedMode == 1) {
       getCompData();
-    } else if (mode == 2) {
+    } else if (context.selectedMode == 2) {
       getForecastData();
-    } else if (mode == 3) {
+    } else if (context.selectedMode == 3) {
       getPriceOptData();
-    } else if (mode == 4) {
+    } else if (context.selectedMode == 4) {
       getTrendData();
-    } else if (mode === 5) {
+    } else if (context.selectedMode === 5) {
       getAssData();
     }
   };
@@ -105,7 +106,7 @@ const UpcList = () => {
       context.storeids,
       context.startDate,
       context.endDate,
-      file!,
+      upcs.join(","),
     )
       .then((resp) => {
         const j = resp.data;
@@ -138,7 +139,7 @@ const UpcList = () => {
       context.storeids,
       context.startDate,
       context.endDate,
-      file!,
+      upcs.join(","),
     )
       .then((resp) => {
         const j = resp.data;
@@ -206,7 +207,7 @@ const UpcList = () => {
       context.storeids,
       context.startDate,
       context.endDate,
-      file!,
+      upcs.join(","),
     )
       .then((resp) => {
         const j = resp.data;
@@ -238,7 +239,7 @@ const UpcList = () => {
       context.startDate,
       context.endDate,
       parseInt(context.trendPeriods),
-      file!,
+      upcs.join(","),
     )
       .then((resp) => {
         const j = resp.data;
@@ -268,6 +269,7 @@ const UpcList = () => {
   };
 
   const getAssData = () => {
+    console.log("Getting Associations");
     dispatch(resetDeeperLvlQueryUpcs());
     const upcItems = [...context.uploadedUpcs].map((item) => ({
       product_code: item,
@@ -286,23 +288,35 @@ const UpcList = () => {
   // The returned module based on selected mode
   const module = () => {
     if (context.selectedMode == 1)
-      return context.salesComp.length > 0 ? <SalesComp /> : <NoDataDisplay />;
+      return context.salesComp.length > 0 ? (
+        <SalesComp />
+      ) : (
+        <UpcSelector setFile={setFile} getData={getModuleData} />
+      );
     if (context.selectedMode == 2)
-      return context.forecast.length > 0 ? <Forcast /> : <NoDataDisplay />;
+      return context.forecast.length > 0 ? (
+        <Forecast />
+      ) : (
+        <UpcSelector setFile={setFile} getData={getModuleData} />
+      );
     if (context.selectedMode == 3)
       return context.optBestPrices.length > 0 ? (
         <PriceOpt />
       ) : (
-        <NoDataDisplay />
+        <UpcSelector setFile={setFile} getData={getModuleData} />
       );
     if (context.selectedMode == 4)
       return context.upcTrends.length > 0 ? (
         <TrendDetector />
       ) : (
-        <NoDataDisplay />
+        <UpcSelector setFile={setFile} getData={getModuleData} />
       );
     if (context.selectedMode == 5) {
-      return <UpcAssociation />;
+      return context.upcItems.length ? (
+        <UpcAssociation />
+      ) : (
+        <UpcSelector setFile={setFile} getData={getModuleData} />
+      );
     }
   };
 
@@ -311,15 +325,15 @@ const UpcList = () => {
       data-testid="upc-list-page"
       className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] w-full p-4 relative"
     >
-      <div className="w-full h-full grid grid-cols-[22%_78%] gap-4">
+      <div className="w-full h-full grid grid-cols-[17%_83%] gap-4">
         <div className="space-y-4">
-          <StoreDatePicker setFile={setFile} getModuleData={getModuleData} />
+          <StoreDatePicker />
           <ModeSelect />
         </div>
 
         {context.dataLoaded && !context.isLoading ? module() : null}
         {context.isLoading && <LoadingIndicator className="ml-28" />}
-        {context.selectedMode === 0 && (
+        {context.selectedMode === 0 ? (
           <div className="w-full h-full flex justify-center items-center pt-28">
             <div className="bg-custom-white p-4 rounded-lg shadow-lg text-center">
               <div className="text-lg font-medium">No mode selected</div>
@@ -331,7 +345,11 @@ const UpcList = () => {
               </div>
             </div>
           </div>
-        )}
+        ) : context.selectedMode > 0 &&
+          !context.dataLoaded &&
+          !context.isLoading ? (
+          <UpcSelector setFile={setFile} getData={getModuleData} />
+        ) : null}
       </div>
     </div>
   );

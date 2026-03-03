@@ -153,7 +153,7 @@ const AssignBaseGroup = () => {
 
   return (
     <div className="flex gap-4">
-      <div className="bg-custom-white rounded-lg shadow-lg p-4 max-h-[32vh] w-[50%]">
+      <div className="bg-custom-white rounded-lg shadow-lg p-4 w-[50%] max-h-[70vh]">
         <SingleSelect
           label="Select Company"
           data={companies}
@@ -166,11 +166,11 @@ const AssignBaseGroup = () => {
             <div className="font-medium flex justify-between">
               <div>Groups</div>
             </div>
-            <div className="select-none grid rounded-lg max-h-32 overflow-hidden overflow-y-auto">
+            <div className="select-none rounded-lg max-h-[54vh] overflow-hidden overflow-y-auto">
               {baseGroups.map((bg) => (
                 <div
                   key={bg.id}
-                  className={`${selectedGroupId === bg.id && "bg-orange-200"} hover:bg-blue-200 rounded-full border-b py-0.5 px-2 transition-all duration-200`}
+                  className={`${selectedGroupId === bg.id && "bg-orange-200"} hover:bg-blue-200 rounded-full border-b py-1 px-2 transition-all duration-200`}
                   onClick={() => getBgStores(bg.id)}
                 >
                   {bg.name}

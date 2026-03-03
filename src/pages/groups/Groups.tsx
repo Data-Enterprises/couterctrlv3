@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { useAppDispatch } from "../../hooks";
+import { useAppDispatch, useAppSelector } from "../../hooks";
 import type { JsonError } from "../../interfaces";
 
 import {
@@ -21,11 +21,20 @@ import UpdateUserGroup from "./forms/UpdateUserGroup";
 import DeleteUserGroup from "./forms/DeleteUserGroup";
 import UserGroupAssign from "./forms/UserGroupAssign";
 import { useGroupCtx } from ".";
+import SingleSelect from "../../components/SingleSelect";
+
+const options = [
+  { label: "Create", id: "create" },
+  { label: "Update", id: "update" },
+  { label: "Delete", id: "delete" },
+  { label: "Assign/Unassign Stores", id: "assign" },
+];
 
 const Groups = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const ctx = useGroupCtx();
+  const { isDesktop } = useAppSelector((state) => state.app);
 
   useEffect(() => {
     return () => {
@@ -69,6 +78,10 @@ const Groups = () => {
     ? "h-[calc(100vh-3rem)] p-4 space-y-4"
     : "w-full h-[calc(100vh-3rem)] p-2 flex flex-col gap-2";
 
+  const optionBtnStyle = isDesktop
+    ? "bg-custom-white rounded-lg shadow-lg p-4 grid grid-cols-4 gap-4 w-[55%]"
+    : "bg-custom-white rounded-lg shadow-lg p-4 grid gap-2";
+
   const renderForm = () => {
     switch (ctx.selectedForm) {
       case "create":
@@ -84,38 +97,53 @@ const Groups = () => {
     }
   };
 
+  const handleMobileFormSelect = (id: string | number) => {
+    const val: GroupFormType = id.toString() as GroupFormType;
+    dispatch(setSelectedForm(val));
+  };
+
   return (
     <div className={containerStyle} data-testid="groups-page">
-      <div className="bg-custom-white rounded-lg shadow-lg p-4 grid grid-cols-4 gap-4 w-[55%]">
-        <button
-          data-testid="user-group-create-form-btn"
-          className={`${ctx.selectedForm === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleFormSelect("create")}
-        >
-          Create
-        </button>
-        <button
-          data-testid="user-group-update-form-btn"
-          className={`${ctx.selectedForm === "update" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleFormSelect("update")}
-        >
-          Update
-        </button>
-        <button
-          data-testid="user-group-delete-form-btn"
-          className={`${ctx.selectedForm === "delete" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleFormSelect("delete")}
-        >
-          Delete
-        </button>
-        <button
-          data-testid="user-group-assign-form-btn"
-          className={`${ctx.selectedForm === "assign" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleFormSelect("assign")}
-        >
-          Assign/Unassign Stores
-        </button>
-      </div>
+      {isDesktop ? (
+        <div className={optionBtnStyle}>
+          <button
+            data-testid="user-group-create-form-btn"
+            className={`${ctx.selectedForm === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+            onClick={() => handleFormSelect("create")}
+          >
+            Create
+          </button>
+          <button
+            data-testid="user-group-update-form-btn"
+            className={`${ctx.selectedForm === "update" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+            onClick={() => handleFormSelect("update")}
+          >
+            Update
+          </button>
+          <button
+            data-testid="user-group-delete-form-btn"
+            className={`${ctx.selectedForm === "delete" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+            onClick={() => handleFormSelect("delete")}
+          >
+            Delete
+          </button>
+          <button
+            data-testid="user-group-assign-form-btn"
+            className={`${ctx.selectedForm === "assign" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+            onClick={() => handleFormSelect("assign")}
+          >
+            Assign/Unassign Stores
+          </button>
+        </div>
+      ) : (
+        <SingleSelect
+          label="Forms"
+          data={options}
+          displayKey="label"
+          valueKey="id"
+          onSelect={handleMobileFormSelect}
+        />
+      )}
       {renderForm()}
     </div>
   );

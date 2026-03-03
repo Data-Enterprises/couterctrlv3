@@ -37,13 +37,13 @@ const StoreInfo = () => {
       <div className="mb-4">
         <div className="grid grid-cols-2 gap-y-1">
           <button
-            className={`py-1.5 ${filterType === "store_name" ? "bg-orange-200" : "bg-custom-white"} rounded-l-lg transition-all duration-200`}
+            className={`py-1.5 ${filterType === "store_name" ? "bg-orange-200" : "bg-custom-white"} rounded-l-lg transition-all duration-200 font-medium`}
             onClick={() => setFilterType("store_name")}
           >
             Store Name
           </button>
           <button
-            className={`py-1.5 ${filterType === "store_number" ? "bg-orange-200" : "bg-custom-white"} rounded-r-lg transition-all duration-200`}
+            className={`py-1.5 ${filterType === "store_number" ? "bg-orange-200" : "bg-custom-white"} rounded-r-lg transition-all duration-200 font-medium`}
             onClick={() => setFilterType("store_number")}
           >
             Store Number

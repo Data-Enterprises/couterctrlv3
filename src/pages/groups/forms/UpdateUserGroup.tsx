@@ -1,4 +1,4 @@
-import { useAppDispatch } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   setCreateInput,
@@ -16,6 +16,7 @@ const UpdateUserGroup = () => {
   const dispatch = useAppDispatch();
   const { url, token, userid, groups, selectedGroup, createInput } =
     useGroupCtx();
+    const { isDesktop } = useAppSelector((state) => state.app);
 
   const groupNames = groups.map((g) => g.group_name);
 
@@ -52,8 +53,13 @@ const UpdateUserGroup = () => {
     dispatch(setCreateInput(x));
   };
 
+  
+  const containerStyle = isDesktop
+    ? "bg-custom-white p-4 rounded-md shadow-md w-[30%]"
+    : "bg-custom-white p-4 rounded-md shadow-md w-full";
+
   return (
-    <div className="bg-custom-white p-4 rounded-md shadow-md w-[30%]">
+    <div className={containerStyle}>
       <div className="font-medium text-sm">
         <div>Select group to update</div>
       </div>

@@ -63,7 +63,7 @@ const GroupBar = ({ data, type }: GroupBarProps) => {
       </div>
       <div
         data-testid="trend-group-bar"
-        className="w-full h-[92%] rounded-b-lg"
+        className="w-full h-[91%] rounded-b-lg"
       >
         <ResponsiveBar
           data={formattedData}

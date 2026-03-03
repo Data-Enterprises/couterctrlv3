@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useGroupCtx } from "..";
-import { useAppDispatch } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type { JsonError } from "../../../interfaces";
 
@@ -20,6 +20,7 @@ const DeleteUserGroup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token, groups, selectedGroup, createInput } = useGroupCtx();
+  const { isDesktop } = useAppSelector((state) => state.app);
 
   const handleSelect = (g: Group) => {
     if (selectedGroup.id === g.id) {
@@ -58,7 +59,9 @@ const DeleteUserGroup = () => {
     };
 
     return (
-      <div className="p-4 bg-custom-white rounded-lg shadow-lg w-[30%]">
+      <div
+        className={`p-4 bg-custom-white rounded-lg shadow-lg ${isDesktop ? "w-[30%]" : "w-full"}`}
+      >
         <div className="text-center">Are you sure you want to delete</div>
         <div className="text-center">
           <span className="pr-1">Base group =</span>
@@ -77,10 +80,14 @@ const DeleteUserGroup = () => {
     );
   }
 
+  const containerStyle = isDesktop
+    ? "bg-custom-white p-4 rounded-md shadow-md w-[30%]"
+    : "bg-custom-white p-4 rounded-md shadow-md w-full";
+
   return (
-    <div className="bg-custom-white p-4 rounded-md shadow-md w-[30%]">
+    <div className={containerStyle}>
       <div className="font-medium text-sm">
-        <div>Select group to update</div>
+        <div>Select group to delete</div>
       </div>
       <div className="select-none text-sm grid rounded-lg p-1 max-h-36 overflow-hidden overflow-y-auto">
         {groups.map((g) => (

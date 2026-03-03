@@ -57,7 +57,8 @@ const CreateCompany = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          toast.success(`Company ${name} created, refreshing company list...`);
+          toast.success(`Company ${name} successfully created`);
+          dispatch(resetCompanyInfo());
           dispatch(setRefreshCompanies(true));
         }
       })

@@ -18,6 +18,7 @@ export const addDays = (date: string | Date, number: number) => {
   return new Date(newDate.setDate(newDate.getDate() + number));
 };
 
+// format to yyyy-mm-dd for goliath
 export const formatGoliathDate = (date: string) => {
   const addZero = (num: number) => (num < 10 ? "0" + num : num);
   const dte = new Date(date);

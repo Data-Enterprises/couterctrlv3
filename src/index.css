@@ -106,19 +106,19 @@ body {
   .btn-themeBlue {
     @apply text-white font-semibold py-2 px-8 rounded-lg bg-[#3b82f6] 
     hover:bg-blue-200 border-2 border-[#3b82f6] hover:text-themeText 
-    transition-all duration-300 hover:shadow-md cursor-pointer;
+    transition-all duration-300 hover:shadow-md cursor-pointer select-none;
   }
 
   .btn-themeOrange {
     @apply text-white font-semibold py-2 px-8 rounded-lg bg-[#f97316] 
     hover:bg-orange-200 border-2 border-[#f97316] hover:text-themeText 
-    transition-all duration-300 hover:shadow-md cursor-pointer;
+    transition-all duration-300 hover:shadow-md cursor-pointer select-none;
   }
 
   .btn-themeGreen {
     @apply text-white font-semibold py-2 px-8 rounded-lg bg-[#10b981] 
     hover:bg-green-200 border-2 border-[#10b981] hover:text-themeText 
-    transition-all duration-300 hover:shadow-md cursor-pointer;
+    transition-all duration-300 hover:shadow-md cursor-pointer select-none;
   }
 
   .btn {

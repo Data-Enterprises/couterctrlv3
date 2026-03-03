@@ -25,6 +25,7 @@ import reportBuilderReducer from "../features/reportBuilderSlice";
 import adminReducer from "../features/adminSlice.ts";
 import baseGroupReducer from "../features/baseGroupSlice.ts";
 import companyReducer from "../features/companySlice.ts";
+import subMarginReducer from "../features/subMarginSlice.ts";
 
 export const setupStore = () =>
   configureStore({
@@ -54,6 +55,7 @@ export const setupStore = () =>
       admin: adminReducer,
       baseGroup: baseGroupReducer,
       company: companyReducer,
+      subMargin: subMarginReducer,
     },
   });
 

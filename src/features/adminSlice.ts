@@ -1,5 +1,12 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { Company, CompanyBaseGroup, User } from "../interfaces";
+import type {
+  Company,
+  CompanyBaseGroup,
+  MissingStore,
+  Store,
+  User,
+  UserCompany,
+} from "../interfaces";
 
 export const defaultComp: Company = {
   id: 0,
@@ -11,6 +18,16 @@ export const defaultComp: Company = {
   state: "",
   zip: 0,
 };
+
+export const allCompFilter: UserCompany = {
+  company: 0,
+  id: 0,
+  name: "All",
+  userid: 0,
+  username: "",
+};
+
+export type AdminFormType = "store_name" | "store_missing_sales" | "";
 
 interface AdminState {
   companies: Company[];
@@ -25,6 +42,14 @@ interface AdminState {
   selectedUser: number;
   companyForm: Company;
   deleteCompanyModalOpen: boolean;
+  selectedAdminForm: AdminFormType;
+  storesMissingSales: MissingStore[];
+  filteredMissingStores: MissingStore[];
+  storeNameFilter: string;
+  newStoreNameText: string;
+  selectedStoreInfo: Store | null;
+  selectedCompanyIdFilter: number;
+  exportMissingStoresModalOpen: boolean;
 }
 
 const initialState: AdminState = {
@@ -40,6 +65,14 @@ const initialState: AdminState = {
   selectedUser: 0,
   companyForm: defaultComp,
   deleteCompanyModalOpen: false,
+  selectedAdminForm: "",
+  storesMissingSales: [],
+  newStoreNameText: "",
+  selectedStoreInfo: null,
+  selectedCompanyIdFilter: 0,
+  exportMissingStoresModalOpen: false,
+  filteredMissingStores: [],
+  storeNameFilter: "",
 };
 
 const adminSlice = createSlice({
@@ -118,6 +151,31 @@ const adminSlice = createSlice({
     setDeleteCompanyModalOpen: (state, action: PayloadAction<boolean>) => {
       state.deleteCompanyModalOpen = action.payload;
     },
+    setSelectedAdminForm: (state, action: PayloadAction<AdminFormType>) => {
+      state.selectedAdminForm = action.payload;
+    },
+    setMissingStores: (state, action: PayloadAction<MissingStore[]>) => {
+      state.storesMissingSales = action.payload;
+      state.filteredMissingStores = action.payload;
+    },
+    setNewStoreNameText: (state, action: PayloadAction<string>) => {
+      state.newStoreNameText = action.payload;
+    },
+    setSelectedStoreInfo: (state, action: PayloadAction<Store | null>) => {
+      state.selectedStoreInfo = action.payload;
+    },
+    setExportMissingStoresModalOpen: (
+      state,
+      action: PayloadAction<boolean>,
+    ) => {
+      state.exportMissingStoresModalOpen = action.payload;
+    },
+    setStoreNameFilter: (state, action: PayloadAction<string>) => {
+      state.storeNameFilter = action.payload;
+      state.filteredMissingStores = state.storesMissingSales.filter((s) =>
+        s.store_name.toLowerCase().includes(action.payload.toLowerCase()),
+      );
+    },
     resetAdminState: () => initialState,
   },
 });
@@ -134,6 +192,12 @@ export const {
   setSelectedCompanyForm,
   setDeleteCompanyModalOpen,
   setCompanyForm,
+  setSelectedAdminForm,
+  setMissingStores,
+  setNewStoreNameText,
+  setSelectedStoreInfo,
+  setExportMissingStoresModalOpen,
+  setStoreNameFilter,
   resetCompanyForm,
   resetAdminState,
 } = adminSlice.actions;

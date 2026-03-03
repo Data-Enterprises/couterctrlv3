@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from "../../../hooks";
 const FormHeader = () => {
   const dispatch = useAppDispatch();
   const { selectedForm } = useAppSelector((state) => state.users);
+  const user = useAppSelector((state) => state.user);
 
   useEffect(() => {
     dispatch(setSelectedUserStores({assigned: [], unassigned: []}))
@@ -15,11 +16,11 @@ const FormHeader = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg min-w-36">
+    <div className="bg-custom-white rounded-lg shadow-lg min-w-36 select-none">
       <div className="bg-blue-500 text-custom-white font-medium px-4 rounded-t-lg py-0.5">
         Forms
       </div>
-      <div className="grid gap-1 p-2">
+      <div className="flex flex-col gap-1 p-2">
         <div
           className={`${selectedForm === 1 ? "bg-orange-200" : ""} rounded-full hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
           onClick={() => handleFormSelection(1)}
@@ -43,6 +44,12 @@ const FormHeader = () => {
           onClick={() => handleFormSelection(4)}
         >
           Companies
+        </div>
+        <div
+          className={`${selectedForm === 5 ? "bg-orange-200" : ""} ${user.userLevel >= 7 ? "" : "hidden"} rounded-full hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
+          onClick={() => handleFormSelection(5)}
+        >
+          Admin
         </div>
       </div>
     </div>

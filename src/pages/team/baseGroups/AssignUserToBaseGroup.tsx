@@ -34,7 +34,7 @@ const AssignUserToBG = () => {
   const [unassignedFilter, setUnassignedFilter] = useState<string>("");
   const [assignedFilter, setAssignedFilter] = useState<string>("");
 
-  const { url, token } = useAppSelector((state) => state.app);
+  const { url, token, isDesktop } = useAppSelector((state) => state.app);
   const { users, selectedUserId } = useAppSelector((state) => state.users);
   const user = useAppSelector((state) => state.user);
   const {
@@ -162,7 +162,7 @@ const AssignUserToBG = () => {
     return false;
   };
 
-  const handleReset = ()=> {
+  const handleReset = () => {
     dispatch(resetUserInfo());
   };
 
@@ -186,7 +186,7 @@ const AssignUserToBG = () => {
   }
 
   return (
-    <div className="space-y-2">
+    <div className={`${isDesktop? "" :"max-h-[65vh] overflow-hidden overflow-y-scroll"} space-y-2`}>
       <SearchUser />
       <SingleSelect
         label="Select Company"
@@ -214,14 +214,16 @@ const AssignUserToBG = () => {
                   <div className="font-medium">Group Name</div>
                   <div>{bg.name}</div>
                 </div>
-                <div>
-                  <div className="font-medium">Company</div>
-                  <div>{bg.company_name}</div>
-                </div>
+                {isDesktop && (
+                  <div>
+                    <div className="font-medium">Company</div>
+                    <div>{bg.company_name}</div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className={`grid ${isDesktop ? "grid-cols-2" : "grid-cols-1"} gap-2`}>
             <button
               className={`btn-themeGreen ${bgIdsToAssign.length === 0 && "opacity-50 pointer-events-none"}`}
               onClick={() => handleAssignClick()}
@@ -253,14 +255,16 @@ const AssignUserToBG = () => {
                   <div className="font-medium">Group Name</div>
                   <div>{bg.name}</div>
                 </div>
-                <div>
-                  <div className="font-medium">Company</div>
-                  <div>{bg.company_name}</div>
-                </div>
+                {isDesktop && (
+                  <div>
+                    <div className="font-medium">Company</div>
+                    <div>{bg.company_name}</div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className={`grid ${isDesktop ? "grid-cols-2" : "grid-cols-1"} gap-2`}>
             <button
               className={`btn-themeGreen ${bgIdsToUnassign.length === 0 && "opacity-50 pointer-events-none"}`}
               onClick={() => handleUnassignClick()}

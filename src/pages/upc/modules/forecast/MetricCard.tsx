@@ -23,7 +23,7 @@ const icons = {
     <HashtagIcon
       height={42}
       width={42}
-      className="absolute ml-4 -translate-y-0"
+      className="absolute ml-2 -translate-y-0"
       fill="#3b82f6"
     />
   ),
@@ -31,7 +31,7 @@ const icons = {
     <ArrowsRightLeftIcon
       height={42}
       width={42}
-      className="absolute ml-4 -translate-y-0"
+      className="absolute ml-2 -translate-y-0"
       fill="#3b82f6"
     />
   ),
@@ -39,7 +39,7 @@ const icons = {
     <ArrowUpCircleIcon
       height={42}
       width={42}
-      className="absolute ml-4 -translate-y-0"
+      className="absolute ml-2 -translate-y-0"
       fill="#3b82f6"
     />
   ),
@@ -47,7 +47,7 @@ const icons = {
     <AdjustmentsHorizontalIcon
       height={42}
       width={42}
-      className="absolute ml-4 -translate-y-1"
+      className="absolute ml-2 -translate-y-1"
       fill="#f97316"
     />
   ),
@@ -55,7 +55,7 @@ const icons = {
     <HashtagIcon
       height={42}
       width={42}
-      className="absolute ml-4 -translate-y-0"
+      className="absolute ml-2 -translate-y-0"
       fill="#10b981"
     />
   ),
@@ -63,7 +63,7 @@ const icons = {
     <ArrowsRightLeftIcon
       height={42}
       width={42}
-      className="absolute ml-4 -translate-y-0"
+      className="absolute ml-2 -translate-y-0"
       fill="#10b981"
     />
   ),
@@ -71,7 +71,7 @@ const icons = {
     <ClockIcon
       height={42}
       width={42}
-      className="absolute ml-4 -translate-y-0"
+      className="absolute ml-2 -translate-y-0"
       fill="#f97316"
     />
   ),
@@ -79,7 +79,7 @@ const icons = {
     <ArrowTrendingUpIcon
       height={42}
       width={42}
-      className="absolute ml-4 -translate-y-0"
+      className="absolute ml-2 -translate-y-0"
       fill="#10b981"
     />
   ),
@@ -166,14 +166,14 @@ const MetricCard = ({ metric, label, type, mode }: MetricCardProps) => {
         />
       </div>
       <div className="text-sm pl-2">
-        <div className="font-semibold text-[18px] text-center ">{label}</div>
+        <div className="font-semibold text-[15px] text-center ">{label}</div>
       </div>
       {type !== "active" ? (
-        <div className="font-semibold text-[18px] text-center ">
+        <div className="font-semibold text-[15px] text-center ">
           {isInteger(metric)}
         </div>
       ) : (
-        <div className="font-semibold text-[18px] text-center ">
+        <div className="font-semibold text-[15px] text-center ">
           {isInteger(metric)}/{days()}
         </div>
       )}

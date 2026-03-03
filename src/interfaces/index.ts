@@ -839,3 +839,99 @@ export type StaticUserData = {
   password: string;
   confirm_password: string;
 };
+
+/////////////////////////
+// Margin Maze Interfaces
+/////////////////////////
+
+export type SubDept = {
+  id: number;
+  desc: string;
+};
+
+export type SubSalesJsonResp = {
+  error: number;
+  success: boolean;
+  store_count: number;
+  total_records: number;
+  total_pages: number;
+  page_label: string;
+  start_idx: number;
+  end_idx: number;
+  page_size: number;
+  subs: SubSale[];
+};
+
+export type SubDeptMargin = {
+  storeid: number;
+  sale_date: string;
+  store_number: string;
+  store_name: string;
+  product_code: string;
+  prodcut_description: string;
+  price_type: string;
+  vendor_id: string;
+  vendor_name: string;
+  sub_department: number;
+  sub_department_description: string;
+  sale_type: string;
+  total_sales: number;
+  net_sales: number;
+  total_tax: number;
+  qty: number;
+  weight: number;
+  cost: number;
+  case_size: number;
+  calculated_cost: number;
+  margin: number;
+};
+
+export type SubMarginsJsonResp = {
+  error: number;
+  success: boolean;
+  store_count: number;
+  total_records: number;
+  total_pages: number;
+  page_label: string;
+  start_idx: number;
+  end_idx: number;
+  page_size: number;
+  subs: SubDeptMargin[];
+};
+
+export type Mover = {
+  vendor_id: string;
+  vendor_name: string;
+  total_sales: number;
+  qty: number;
+  cogs: number;
+  gpm: number;
+};
+
+export type MarginKpi = {
+  total_sales: string;
+  qty: string;
+  total_tax: string;
+  items: string;
+  gpm: string;
+  vendors: string;
+  top_mover: Mover;
+  total_cogs: string;
+};
+
+///////////////////
+// ADMIN FORM TYPES
+///////////////////
+
+export type MissingStore = {
+  storeid: number;
+  store_number: string;
+  store_name: string;
+}
+
+export type StoresMissingSalesJsonResp = {
+  error: number;
+  success: boolean;
+  missing_store_count: number;
+  missing: Store[];
+};

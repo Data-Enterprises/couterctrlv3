@@ -45,7 +45,7 @@ const SalesComp = () => {
   return (
     <div
       data-testid="upc-sales-comp"
-      className="h-full w-full grid grid-cols-[14%_85%] gap-4 overflow-hidden"
+      className="h-full w-full grid grid-cols-[14%_83%] gap-4 overflow-hidden"
     >
       <CtxMenu
         className="hover:bg-panel_active/70"
@@ -59,7 +59,7 @@ const SalesComp = () => {
         className={`w-full h-full grid ${rows} gap-4`}
       >
         <SalesCompHeader />
-        <div className="grid grid-cols-[70%_29%] gap-4 mb-4">
+        <div className="flex gap-4 mb-4 text-sm">
           <SalesCompGrid />
           <SalesComparison />
         </div>

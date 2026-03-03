@@ -22,6 +22,7 @@ import Dashboard from "./pages/quicksight/Dashboard.tsx";
 import Receivers from "./pages/receivers/Receivers.tsx";
 import Coupons from "./pages/coupons/Coupons.tsx";
 import AdminPage from "./pages/admin/AdminPage.tsx";
+import SubDeptMargins from "./pages/subDepts/SubDeptMargins.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -44,6 +45,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="receivers" element={<Receivers />} />
                 <Route path="coupons" element={<Coupons />} />
                 <Route path="admin" element={<AdminPage />} />
+                <Route path="sub-dept-margins" element={<SubDeptMargins />} />
               </Route>
             </Routes>
           </ToastProvider>

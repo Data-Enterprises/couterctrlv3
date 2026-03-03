@@ -30,8 +30,6 @@ const QtyMetrics = ({ mode, metric }: QtyMetricsProps) => {
   >([]);
   const [title, setTitle] = useState<string>("");
 
-  // TODO: This works correctly for Qty metrics, I need to create
-  // Something similar for sales metrics as well
   useEffect(() => {
     // Grabbing the top and bottom items for overall metrics for qty
     const topItem = [...state.upcList].sort(

@@ -1,5 +1,5 @@
 import { useGroupCtx } from "..";
-import { useAppDispatch } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type { JsonError } from "../../../interfaces";
 
@@ -12,6 +12,7 @@ const CreateUserGroup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token, userid, groups, createInput } = useGroupCtx();
+  const { isDesktop } = useAppSelector((state) => state.app);
 
   const groupNames = groups.map((g) => g.group_name);
 
@@ -41,8 +42,12 @@ const CreateUserGroup = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
+  const containerStyle = isDesktop
+    ? "bg-custom-white p-4 rounded-md shadow-md w-[30%]"
+    : "bg-custom-white p-4 rounded-md shadow-md w-full";
+
   return (
-    <div className="bg-custom-white p-4 rounded-md shadow-md w-[30%]">
+    <div className={containerStyle}>
       <div className="bg-custom-white text-sm">
         <div className="font-medium">Existing Groups</div>
         <div className="p-2 bg-bkg/80 rounded-lg grid grid-cols-2 gap-2 max-h-36 overflow-y-auto no-scrollbar">

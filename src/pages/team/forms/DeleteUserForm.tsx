@@ -27,7 +27,7 @@ const DeleteUserForm = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center p-4 gap-4">
+    <div className="flex flex-col justify-center items-center p-4 gap-4 bg-custom-white rounded-lg shadow-lg mt-4">
       <div>Are you sure you want to delete </div>
       <div>
         <div className="font-medium">Username = {userInfo.username}</div>
@@ -38,11 +38,11 @@ const DeleteUserForm = () => {
       </div>
 
       <div className="w-1/2 flex gap-2">
-        <button className="btn-themeGreen w-1/2" onClick={handleDeleteUser}>
+        <button className="btn-themeGreen w-1/2 px-0" onClick={handleDeleteUser}>
           Yes
         </button>
         <button
-          className="btn-themeOrange w-1/2"
+          className="btn-themeOrange w-1/2 px-0"
           onClick={() => dispatch(setIsDeletingUser(false))}
         >
           No

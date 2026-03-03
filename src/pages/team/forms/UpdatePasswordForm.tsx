@@ -11,7 +11,7 @@ import type { JsonError } from "../../../interfaces";
 const UpdatePasswordForm = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const { url, token } = useAppSelector((state) => state.app);
+  const { url, token, isDesktop } = useAppSelector((state) => state.app);
   const { userInfo, selectedUserId } = useAppSelector((state) => state.users);
 
   const [pwText, setPwText] = useState<string>("");
@@ -46,7 +46,7 @@ const UpdatePasswordForm = () => {
   };
 
   return (
-    <div className="h-[30vh] bg-custom-white mt-4 rounded-lg shadow-lg">
+    <div className={`${isDesktop ? "h-[30vh]" : "p-2"} bg-custom-white mt-4 rounded-lg shadow-lg`}>
       {!selectedUserId ? (
         <div className="h-full flex justify-center items-center">
           <div className="font-medium">
@@ -61,13 +61,13 @@ const UpdatePasswordForm = () => {
               They will be prompted to create a new password on their next login
             </div>
           </div>
-          <div className="flex gap-4">
+          <div className={`flex ${!isDesktop ? "flex-col w-full" : ""} gap-4`}>
             <PasswordInput
               label="Password"
               name="password"
               setText={handlePwChange}
               text={pwText}
-              className=""
+              className="w-full"
               leftCompare=""
               rightCompare=""
             />
@@ -76,7 +76,7 @@ const UpdatePasswordForm = () => {
               name="confirm_password"
               setText={handleConfrimChange}
               text={confirmText}
-              className=""
+              className="w-full"
               leftCompare=""
               rightCompare=""
             />

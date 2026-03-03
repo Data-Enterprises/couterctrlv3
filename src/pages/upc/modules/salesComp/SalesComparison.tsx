@@ -27,7 +27,7 @@ const SalesComparison = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg mr-4 relative">
+    <div className="bg-custom-white rounded-lg shadow-lg relative w-[25%]">
       {!isReady ? (
         <div className="flex flex-col justify-center items-center h-full w-full text-content/70 text-sm">
           <div>Select two UPCs from the grid</div>
@@ -38,21 +38,25 @@ const SalesComparison = () => {
           <div className="bg-blue-500 text-custom-white font-medium rounded-t-lg pl-4 py-1">
             Comparison
           </div>
-          <div className="px-4 py-2 flex flex-col gap-2">
-            <div className="rounded-lg shadow-md shadow-content/30 p-2">
+          <div className="px-4 py-2 flex flex-col gap-4">
+            <div className="rounded-lg shadow-md shadow-content/30 px-2">
               <div className="flex justify-between font-medium">
                 <div>Week Starting</div>
                 <div>{formatDate(selectedCompOne.week)}</div>
               </div>
               <div className="text-sm space-y-0.5">
-                <div className="py-1.5 border-y border-content/30 my-2">
-                  <div className="flex justify-between">
+                <div className="py-1 border-y border-content/30 my-1">
+                  <div className="flex justify-between items-center">
                     <div className="font-medium">Upc:</div>
-                    <div>{selectedCompOne.product_code}</div>
+                    <div className="text-xs">
+                      {selectedCompOne.product_code}
+                    </div>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center gap-2">
                     <div className="font-medium">Desc:</div>
-                    <div>{selectedCompOne.description}</div>
+                    <div className="text-xs truncate">
+                      {selectedCompOne.description}
+                    </div>
                   </div>
                 </div>
                 <div className="flex justify-between">
@@ -127,20 +131,20 @@ const SalesComparison = () => {
                 </div>
               </div>
             </div>
-            <div className="rounded-lg shadow-md shadow-content/30 p-2">
+            <div className="rounded-lg shadow-md shadow-content/30 px-2">
               <div className="flex justify-between font-medium">
                 <div>Week Starting</div>
                 <div>{formatDate(selectedCompTwo.week)}</div>
               </div>
               <div className="text-sm space-y-0.5">
-                <div className="py-1.5 border-y border-content/30 my-2">
-                  <div className="flex justify-between">
+                <div className="py-1 border-y border-content/30 my-1">
+                  <div className="flex justify-between items-center">
                     <div className="font-medium">Upc:</div>
-                    {selectedCompTwo.product_code}
+                    <div className="text-xs">{selectedCompTwo.product_code}</div>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center gap-2">
                     <div className="font-medium">Desc:</div>
-                    {selectedCompTwo.description}
+                    <div className="text-xs truncate">{selectedCompTwo.description}</div>
                   </div>
                 </div>
                 <div className="flex justify-between">

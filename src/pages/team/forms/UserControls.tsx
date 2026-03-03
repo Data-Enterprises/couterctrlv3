@@ -8,6 +8,7 @@ import {
 import { WarningIcon } from "../../../components/toasts/Icons";
 import UserForm from "./UserForm";
 import ProfileCard from "./ProfileCard";
+import SingleSelect from "../../../components/SingleSelect";
 
 const UserControls = () => {
   const dispatch = useAppDispatch();
@@ -15,6 +16,7 @@ const UserControls = () => {
     (state) => state.users,
   );
   const user = useAppSelector((state) => state.user);
+  const isDesktop = useAppSelector((state) => state.app.isDesktop);
 
   const isOutranked = () => {
     const found = users.find((u) => u.id === selectedUserId);
@@ -32,46 +34,70 @@ const UserControls = () => {
     dispatch(resetUserInfo());
   };
 
+  const options = [
+    { label: "Create", value: "create" },
+    { label: "Update", value: "update" },
+    { label: "Delete", value: "delete" },
+    { label: "Password", value: "update_password" },
+    { label: "Security", value: "reset_security" },
+    { label: "Info", value: "user_info" },
+  ];
+
+  const handleUserFormMobileSelect = (val: string | number) => {
+    const form = String(val) as UserFormType;
+    handleReset(form);
+  };
+
   return (
     <div className="max-h-[65vh]">
-      <div className="grid grid-cols-6 text-[15px] gap-2 p-4 bg-custom-white rounded-lg shadow-lg mb-4">
-        <button
-          className={`${selectedUserForm === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleReset("create")}
-        >
-          Create
-        </button>
-        <button
-          className={`${selectedUserForm === "update" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleReset("update")}
-        >
-          Update
-        </button>
-        <button
-          className={`${selectedUserForm === "delete" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleReset("delete")}
-        >
-          Delete
-        </button>
-        <button
-          className={`${selectedUserForm === "update_password" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleReset("update_password")}
-        >
-          Password
-        </button>
-        <button
-          className={`${selectedUserForm === "reset_security" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleReset("reset_security")}
-        >
-          Security
-        </button>
-        <button
-          className={`${selectedUserForm === "user_info" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleReset("user_info")}
-        >
-          Info
-        </button>
-      </div>
+      {isDesktop ? (
+        <div className="grid grid-cols-6 text-[15px] gap-2 p-4 bg-custom-white rounded-lg shadow-lg mb-4">
+          <button
+            className={`${selectedUserForm === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+            onClick={() => handleReset("create")}
+          >
+            Create
+          </button>
+          <button
+            className={`${selectedUserForm === "update" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+            onClick={() => handleReset("update")}
+          >
+            Update
+          </button>
+          <button
+            className={`${selectedUserForm === "delete" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+            onClick={() => handleReset("delete")}
+          >
+            Delete
+          </button>
+          <button
+            className={`${selectedUserForm === "update_password" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+            onClick={() => handleReset("update_password")}
+          >
+            Password
+          </button>
+          <button
+            className={`${selectedUserForm === "reset_security" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+            onClick={() => handleReset("reset_security")}
+          >
+            Security
+          </button>
+          <button
+            className={`${selectedUserForm === "user_info" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+            onClick={() => handleReset("user_info")}
+          >
+            Info
+          </button>
+        </div>
+      ) : (
+        <SingleSelect
+          label="Users"
+          data={options}
+          displayKey="label"
+          valueKey="value"
+          onSelect={handleUserFormMobileSelect}
+        />
+      )}
       {!selectedUserForm ? null : (
         <>
           <ProfileCard />

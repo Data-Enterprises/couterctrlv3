@@ -42,7 +42,7 @@ const ModeSelect = () => {
       <div className="bg-blue-500 font-medium rounded-t-lg text-custom-white px-2 py-0.5">
         Select Mode
       </div>
-      <div className="grid grid-cols-2 text-sm p-2 gap-2">
+      <div className="flex flex-col text-sm p-2 gap-2 max-h-[40vh] overflow-hidden overflow-y-auto no-scrollbar">
         {modes.map((mode) => (
           <div
             key={mode.mode}
@@ -63,7 +63,7 @@ const ModeSelect = () => {
       </div>
       <div className="px-4 text-sm text-content/60 flex items-center gap-1">
         <div className="h-1.5 w-1.5 bg-content/60 rounded-full"></div>
-        <div className="pb-[2px]">activated modes will appear highlighted</div>
+        <div className="pb-[2px]">active modes will be highlighted</div>
       </div>
     </div>
   );
