@@ -5,11 +5,14 @@ import { formatGoliathDate } from "../../../utils";
 
 import type {
   JsonError,
-  MissingStore,
   StoresMissingSalesJsonResp,
 } from "../../../interfaces";
 import { getStoresMissingSales } from "../../../api/admin";
-import { setExportMissingStoresModalOpen, setMissingStores } from "../../../features/adminSlice";
+import {
+  setExportMissingStoresModalOpen,
+  setMissingStores,
+  setStoreNameFilter,
+} from "../../../features/adminSlice";
 
 import SingleSelect from "../../../components/SingleSelect";
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
@@ -23,28 +26,19 @@ const StoresMissingSalesForm = () => {
   const { url, token } = useAppSelector((state) => state.app);
   const { companies } = useAppSelector((state) => state.user);
   const { singleDate } = useAppSelector((state) => state.search);
-  const { storesMissingSales } = useAppSelector((state) => state.admin);
+  const { storesMissingSales, filteredMissingStores, storeNameFilter } =
+    useAppSelector((state) => state.admin);
 
   const [companyId, setCompanyId] = useState<number>(0);
   const [isLoadingStores, setIsLoadingStores] = useState<boolean>(false);
   const [showNoResults, setShowNoResults] = useState<boolean>(false);
-  const [storeNameFilter, setStoreNameFilter] = useState<string>("");
-  const [filteredStores, setFilteredStores] = useState<MissingStore[]>([]);
 
   useEffect(() => {
     return () => {
       dispatch(setMissingStores([]));
+      dispatch(setStoreNameFilter(""));
     };
   }, []);
-
-  useEffect(() => {
-    if (storesMissingSales.length) {
-      const filtered = storesMissingSales.filter((s) =>
-        s.store_name.toLowerCase().includes(storeNameFilter.toLowerCase()),
-      );
-      setFilteredStores(filtered);
-    }
-  }, [storesMissingSales, storeNameFilter]);
 
   const handleCompanySelect = (company: string | number) => {
     setCompanyId(Number(company));
@@ -53,10 +47,15 @@ const StoresMissingSalesForm = () => {
   const canSubmit =
     companyId > 0 && singleDate !== null ? "" : "opacity-50 cursor-not-allowed";
 
+  const canExport = storesMissingSales.length
+    ? ""
+    : "opacity-50 cursor-not-allowed";
+
   const handleSubmit = () => {
     if (storesMissingSales.length) {
       dispatch(setMissingStores([]));
     }
+    dispatch(setStoreNameFilter(""));
     setShowNoResults(false);
     setIsLoadingStores(true);
     getStoresMissingSales(url, token, companyId, formatGoliathDate(singleDate))
@@ -73,11 +72,15 @@ const StoresMissingSalesForm = () => {
   };
 
   const handleFilterChange = (x: string) => {
-    setStoreNameFilter(x);
+    dispatch(setStoreNameFilter(x));
   };
 
   const openExportModal = () => {
     dispatch(setExportMissingStoresModalOpen(true));
+  };
+
+  const handleRefresh = () => {
+    dispatch(setMissingStores([]));
   };
 
   return (
@@ -93,12 +96,26 @@ const StoresMissingSalesForm = () => {
             onSelect={handleCompanySelect}
           />
           <SingleDatePicker />
-          <button
-            className={`btn-themeBlue w-full ${canSubmit}`}
-            onClick={handleSubmit}
-          >
-            Submit
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              className={`btn-themeBlue ${canSubmit}`}
+              onClick={handleSubmit}
+            >
+              Submit
+            </button>
+            <button
+              className={`btn-themeGreen ${canExport}`}
+              onClick={openExportModal}
+            >
+              Export
+            </button>
+            <button
+              className="btn-themeBlue col-span-2"
+              onClick={handleRefresh}
+            >
+              Refresh
+            </button>
+          </div>
         </div>
       </div>
 
@@ -113,7 +130,7 @@ const StoresMissingSalesForm = () => {
       {!isLoadingStores && storesMissingSales.length ? (
         <div className="min-w-[47%] max-w-[47%] overflow-hidden max-h-[75vh] bg-custom-white p-2 rounded-lg shadow-lg">
           <Input
-            label={`Stores - ${filteredStores.length}`}
+            label={`Stores - ${filteredMissingStores.length}`}
             value={storeNameFilter}
             setValue={handleFilterChange}
             className="mb-2"
@@ -123,8 +140,8 @@ const StoresMissingSalesForm = () => {
             <div className="pl-2 border-r">Num</div>
             <div className="pl-2">ID</div>
           </div>
-          <div className=" max-h-[75%] overflow-hidden overflow-y-scroll no-scrollbar rounded-b-lg">
-            {filteredStores.map((s) => (
+          <div className=" max-h-[83%] overflow-hidden overflow-y-scroll no-scrollbar rounded-b-lg">
+            {filteredMissingStores.map((s) => (
               <div
                 key={s.storeid}
                 className="grid grid-cols-[60%_20%_20%] text-sm odd:bg-custom-white even:bg-[#afb0b3] py-1"
@@ -135,9 +152,6 @@ const StoresMissingSalesForm = () => {
               </div>
             ))}
           </div>
-          <button className="btn-themeGreen mt-2 w-full" onClick={openExportModal}>
-            Export
-          </button>
         </div>
       ) : showNoResults ? (
         <div className="bg-custom-white rounded-lg shadow-lg p-4 min-w-[47%] max-w-[47%] flex flex-col gap-2 items-center justify-center text-center font-medium text-sm">

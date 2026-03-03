@@ -51,7 +51,7 @@ const Team = () => {
     (state) => state.users,
   );
 
-  const { storesMissingSales } = useAppSelector((state) => state.admin);
+  const { filteredMissingStores } = useAppSelector((state) => state.admin);
 
   useEffect(() => {
     return () => {
@@ -183,7 +183,7 @@ const Team = () => {
       {isDesktop ? (
         <div className="flex gap-3 h-full">
           <ExportMissingStoresModal
-            data={storesMissingSales}
+            data={filteredMissingStores}
             columns={adminMissingSalesColumns}
           />
           <div className="min-w-[178px] max-w-[178px]">
