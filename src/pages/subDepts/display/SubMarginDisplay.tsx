@@ -4,7 +4,6 @@ import { useSubMarginCtx } from "../hooks";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import { setLoadingMargins } from "../../../features/subMarginSlice";
 import KpiContainer from "./KpiContainer";
-import WeeklyTrends from "./WeeklyTrends";
 
 const SubMarginDisplay = () => {
   const ctx = useSubMarginCtx();
@@ -20,8 +19,6 @@ const SubMarginDisplay = () => {
   return (
     <div className="relative">
       <div className="flex gap-4">
-        {ctx.selectedSubDeptId > 0 && <WeeklyTrends />}
-        
         {!ctx.loadingMargins &&
         !ctx.margins.length ? null : ctx.loadingMargins &&
           !ctx.margins.length ? (

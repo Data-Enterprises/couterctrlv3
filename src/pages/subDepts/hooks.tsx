@@ -18,18 +18,21 @@ export const useSubMarginCtx = () => {
     subDeptFitlerText,
     loadingMargins,
     loadingSubDepts,
-    loadedMargins,
     selectedWeek,
+    searchValue,
   } = useAppSelector((state) => state.subMargin);
 
+  const { assignedStores } = useAppSelector((state) => state.user);
+
   return {
-    loadedMargins,
+    assignedStores,
     filteredMargins,
     lastGroup,
     lastStore,
     loadingMargins,
     loadingSubDepts,
     margins,
+    searchValue,
     selectedSubDeptId,
     selectedWeek,
     singleDate,
@@ -49,13 +52,17 @@ export const useParams = () => {
   const ctx = useSubMarginCtx();
   const startDate = setDates(new Date(ctx.singleDate), 6);
   const endDate = setDates(new Date(ctx.singleDate));
-  
+
+  // This will revert once we can accept groups for the endpoints safely
   return {
     start: startDate,
     end: endDate,
     // No matter what, useGroups and singleStore will always be the opposite of each other
-    useGroups: ctx.type === "Group" ? 1 : 0,
-    singleStore: ctx.type === "Store" ? 1 : 0,
-    searchValue: ctx.type === "Group" ? ctx.lastGroup : ctx.lastStore,
+    // useGroups: ctx.type === "Group" ? 1 : 0,
+    useGroups: 0,
+    // singleStore: ctx.type === "Store" ? 1 : 0,
+    singleStore: 1,
+    // searchValue: ctx.type === "Group" ? ctx.lastGroup : ctx.lastStore,
+    searchValue: ctx.searchValue, // aka the selected store from the current SingleSelect in SubMarginControls.tsx
   };
 };

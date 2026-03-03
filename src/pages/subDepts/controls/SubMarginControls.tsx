@@ -7,12 +7,14 @@ import type { JsonError, SubDept, SubSalesJsonResp } from "../../../interfaces";
 import {
   requerySubDeptMargins,
   setLoadingSubDepts,
+  setSearchValue,
   setSubDepts,
 } from "../../../features/subMarginSlice";
 
-import StorePicker from "../../../components/storePicker/StorePicker";
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
 import SubDepts from "./SubDepts";
+import WeeklyTrends from "../display/WeeklyTrends";
+import SingleSelect from "../../../components/SingleSelect";
 
 const SubMarginControls = () => {
   const toast = useToast();
@@ -68,10 +70,20 @@ const SubMarginControls = () => {
     return "opacity-50 pointer-events-none";
   };
 
+  const handleStoreSelect = (id: string | number) => {
+    dispatch(setSearchValue(Number(id)));
+  };
+
   return (
     <div className="flex flex-col gap-1">
       <div className="bg-custom-white p-2 rounded-lg shadow-lg">
-        <StorePicker />
+        <SingleSelect
+          label="Store"
+          data={ctx.assignedStores}
+          displayKey="store_name"
+          valueKey="storeid"
+          onSelect={handleStoreSelect}
+        />
         <SingleDatePicker />
         <button
           className="btn-themeBlue px-0 w-full mt-2"
@@ -92,6 +104,7 @@ const SubMarginControls = () => {
         </div>
       </div>
       <SubDepts />
+      {ctx.selectedSubDeptId > 0 && <WeeklyTrends />}
     </div>
   );
 };
