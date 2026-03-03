@@ -9,7 +9,7 @@ import type {
   StoresMissingSalesJsonResp,
 } from "../../../interfaces";
 import { getStoresMissingSales } from "../../../api/admin";
-import { setMissingStores } from "../../../features/adminSlice";
+import { setExportMissingStoresModalOpen, setMissingStores } from "../../../features/adminSlice";
 
 import SingleSelect from "../../../components/SingleSelect";
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
@@ -76,6 +76,10 @@ const StoresMissingSalesForm = () => {
     setStoreNameFilter(x);
   };
 
+  const openExportModal = () => {
+    dispatch(setExportMissingStoresModalOpen(true));
+  };
+
   return (
     <div className="flex gap-4">
       <div className="min-w-[50%] max-w-[50%]">
@@ -119,7 +123,7 @@ const StoresMissingSalesForm = () => {
             <div className="pl-2 border-r">Num</div>
             <div className="pl-2">ID</div>
           </div>
-          <div className=" max-h-[100%] overflow-hidden overflow-y-scroll no-scrollbar">
+          <div className=" max-h-[75%] overflow-hidden overflow-y-scroll no-scrollbar rounded-b-lg">
             {filteredStores.map((s) => (
               <div
                 key={s.storeid}
@@ -131,6 +135,9 @@ const StoresMissingSalesForm = () => {
               </div>
             ))}
           </div>
+          <button className="btn-themeGreen mt-2 w-full" onClick={openExportModal}>
+            Export
+          </button>
         </div>
       ) : showNoResults ? (
         <div className="bg-custom-white rounded-lg shadow-lg p-4 min-w-[47%] max-w-[47%] flex flex-col gap-2 items-center justify-center text-center font-medium text-sm">

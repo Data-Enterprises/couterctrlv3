@@ -32,6 +32,8 @@ import {
   setNewStoreNameText,
   setSelectedStoreInfo,
 } from "../../features/adminSlice";
+import ExportMissingStoresModal from "./admin/ExportMissingStoresModal";
+import { adminMissingSalesColumns } from "./admin";
 
 const options = [
   { label: "Users", value: 1 },
@@ -48,6 +50,8 @@ const Team = () => {
   const { refresh, selectedUserId, selectedForm } = useAppSelector(
     (state) => state.users,
   );
+
+  const { storesMissingSales } = useAppSelector((state) => state.admin);
 
   useEffect(() => {
     return () => {
@@ -178,6 +182,10 @@ const Team = () => {
     >
       {isDesktop ? (
         <div className="flex gap-3 h-full">
+          <ExportMissingStoresModal
+            data={storesMissingSales}
+            columns={adminMissingSalesColumns}
+          />
           <div className="min-w-[178px] max-w-[178px]">
             <FormHeader />
           </div>
