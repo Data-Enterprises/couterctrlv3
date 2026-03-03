@@ -14,7 +14,7 @@ import { setMissingStores } from "../../../features/adminSlice";
 import SingleSelect from "../../../components/SingleSelect";
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
-import { WarningIcon } from "../../../components/toasts/Icons";
+import { SuccessIcon } from "../../../components/toasts/Icons";
 import Input from "../../../components/inputs/Input";
 
 const StoresMissingSalesForm = () => {
@@ -148,7 +148,7 @@ const StoresMissingSalesForm = () => {
         </div>
       ) : showNoResults ? (
         <div className="bg-custom-white rounded-lg shadow-lg p-4 min-w-[47%] max-w-[47%] flex flex-col gap-2 items-center justify-center text-center font-medium text-sm">
-          <WarningIcon fill="#f97316" height={75} width={75} />
+          <SuccessIcon fill="#10b981" height={75} width={75} />
           <div>No stores missing sales for {singleDate} found</div>
         </div>
       ) : null}
