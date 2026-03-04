@@ -26,7 +26,6 @@ const useHeight = () => {
       if (containerRef.current) {
         const containerHeight = containerRef.current.clientHeight;
 
-        console.log(containerHeight);
         if (containerHeight > 842) {
           setHeight("max-h-[31vh]");
         } else {

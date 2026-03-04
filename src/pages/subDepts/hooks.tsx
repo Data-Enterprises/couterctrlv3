@@ -20,6 +20,7 @@ export const useSubMarginCtx = () => {
     loadingSubDepts,
     selectedWeek,
     searchValue,
+    selectedWeekDay,
   } = useAppSelector((state) => state.subMargin);
 
   const { assignedStores } = useAppSelector((state) => state.user);
@@ -35,6 +36,7 @@ export const useSubMarginCtx = () => {
     searchValue,
     selectedSubDeptId,
     selectedWeek,
+    selectedWeekDay,
     singleDate,
     subDepts,
     subDeptFitlerText,

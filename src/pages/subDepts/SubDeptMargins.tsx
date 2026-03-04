@@ -16,8 +16,6 @@ const SubDeptMargins = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    // Doing it this way because I want the state to reset when the date changes
-    // but still make sure any selected store still stays selected
     const currentSearchValue = ctx.searchValue;
     dispatch(resetSubMarginState());
     dispatch(setSearchValue(currentSearchValue));

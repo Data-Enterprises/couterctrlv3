@@ -17,6 +17,7 @@ interface SubMarginState {
   loadingMargins: boolean;
   selectedWeek: MarginWeek;
   searchValue: number;
+  selectedWeekDay: string;
 }
 
 const initialState: SubMarginState = {
@@ -33,6 +34,7 @@ const initialState: SubMarginState = {
   loadingMargins: false,
   selectedWeek: 0,
   searchValue: 0,
+  selectedWeekDay: "",
 };
 
 const subMarginSlice = createSlice({
@@ -94,9 +96,13 @@ const subMarginSlice = createSlice({
       state.selectedSubDeptId = 0;
       state.subDeptFitlerText = "";
       state.selectedWeek = 0;
+      state.selectedWeekDay = "";
     },
     setSelectedWeek: (state, action: PayloadAction<MarginWeek>) => {
       state.selectedWeek = action.payload;
+    },
+    setSelectedWeekDay: (state, action: PayloadAction<string>) => {
+      state.selectedWeekDay = action.payload;
     },
     setSearchValue: (state, action: PayloadAction<number>) => {
       state.searchValue = action.payload;
@@ -116,6 +122,7 @@ export const {
   setSubDepts,
   setSubDeptFilterText,
   setWeekTrendMargins,
+  setSelectedWeekDay,
   resetSubMarginState,
   requerySubDeptMargins,
 } = subMarginSlice.actions;

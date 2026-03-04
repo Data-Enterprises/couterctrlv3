@@ -8,6 +8,8 @@ import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import KpiContainer from "./KpiContainer";
 import SalesGrid from "./widgets/SalesGrid";
 import SalesBar from "./widgets/SalesBar";
+import ItemsGrid from "./widgets/ItemsGrid";
+import ItemsGridFilters from "./widgets/ItemsGridFilters";
 
 const useHeight = () => {
   const [height, setHeight] = useState<string>("h-[89%]");
@@ -34,7 +36,8 @@ const useHeight = () => {
 };
 
 const SubMarginDisplay = () => {
-  const { margins, loadingMargins, selectedWeek } = useSubMarginCtx();
+  const { margins, loadingMargins, selectedWeek, selectedWeekDay } =
+    useSubMarginCtx();
   const height = useHeight();
 
   const dates = useMemo(() => {
@@ -106,10 +109,12 @@ const SubMarginDisplay = () => {
             <SalesGrid gridData={barData.slice().reverse()} />
           </div>
 
-          <div className="grid grid-cols-[34%_65.5%] gap-2">
-            <div className="bg-white">Top/Bottom Items</div>
-            <div className="bg-white">Items Grid</div>
-          </div>
+          {selectedWeekDay ? (
+            <div className="grid grid-cols-[20%_79.5%] gap-2">
+              <ItemsGridFilters />
+              <ItemsGrid />
+            </div>
+          ) : null}
         </div>
       ) : (
         <div className="w-full h-full flex items-center justify-center">

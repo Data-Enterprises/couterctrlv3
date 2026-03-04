@@ -868,7 +868,7 @@ export type SubDeptMargin = {
   store_number: string;
   store_name: string;
   product_code: string;
-  prodcut_description: string;
+  product_description: string;
   price_type: string;
   vendor_id: string;
   vendor_name: string;
