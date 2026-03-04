@@ -2,7 +2,6 @@ import { useSubMarginCtx, useParams } from "../hooks";
 import { useAppDispatch } from "../../../hooks";
 import {
   setLoadingMargins,
-  setMargins,
   setSelectedWeek,
   setWeekTrendMargins,
   type MarginWeek,
@@ -31,67 +30,50 @@ const WeeklyTrends = () => {
     let end = params.end;
     let start = params.start;
 
-    if (week === 1) {
-      if (!ctx.weekOneMargins.length) {
-        getData(start, end, week);
-      } else {
-        dispatch(setMargins(ctx.weekOneMargins));
-      }
+    if (week === 1 && !ctx.weekOneMargins.length) {
+      getData(start, end, week);
     }
 
-    if (week === 2) {
-      if (!ctx.weekTwoMargins.length) {
-        end = setDates(new Date(params.end), 7);
-        start = setDates(new Date(params.end), 13);
-        getData(start, end, week);
-      } else {
-        dispatch(setMargins(ctx.weekTwoMargins));
-      }
+    if (week === 2 && !ctx.weekTwoMargins.length) {
+      end = setDates(new Date(params.end), 7);
+      start = setDates(new Date(params.end), 13);
+      getData(start, end, week);
     }
 
-    if (week === 3) {
-      if (!ctx.weekThreeMargins.length) {
-        end = setDates(new Date(params.end), 14);
-        start = setDates(new Date(params.end), 20);
-        getData(start, end, week);
-      } else {
-        dispatch(setMargins(ctx.weekThreeMargins));
-      }
+    if (week === 3 && !ctx.weekThreeMargins.length) {
+      end = setDates(new Date(params.end), 14);
+      start = setDates(new Date(params.end), 20);
+      getData(start, end, week);
     }
 
-    if (week === 4) {
-      if (!ctx.weekFourMargins.length) {
-        end = setDates(new Date(params.end), 21);
-        start = setDates(new Date(params.end), 27);
-        getData(start, end, week);
-      } else {
-        dispatch(setMargins(ctx.weekFourMargins));
-      }
+    if (week === 4 && !ctx.weekFourMargins.length) {
+      end = setDates(new Date(params.end), 21);
+      start = setDates(new Date(params.end), 27);
+      getData(start, end, week);
     }
 
     if (week === 5) {
-      const wk2End = setDates(new Date(params.end), 7);
-      const wk2Start = setDates(new Date(params.end), 13);
-      const wk3End = setDates(new Date(params.end), 14);
-      const wk3Start = setDates(new Date(params.end), 20);
-      const wk4End = setDates(new Date(params.end), 21);
-      const wk4Start = setDates(new Date(params.end), 27);
-
       if (!ctx.weekOneMargins.length) {
         getData(start, end, 1);
       }
 
       if (!ctx.weekTwoMargins.length) {
+        const wk2End = setDates(new Date(params.end), 7);
+        const wk2Start = setDates(new Date(params.end), 13);
         getData(wk2Start, wk2End, 2);
-      } 
+      }
 
       if (!ctx.weekThreeMargins.length) {
+        const wk3End = setDates(new Date(params.end), 14);
+        const wk3Start = setDates(new Date(params.end), 20);
         getData(wk3Start, wk3End, 3);
-      } 
+      }
 
       if (!ctx.weekFourMargins.length) {
+        const wk4End = setDates(new Date(params.end), 21);
+        const wk4Start = setDates(new Date(params.end), 27);
         getData(wk4Start, wk4End, 4);
-      } 
+      }
     }
   };
 

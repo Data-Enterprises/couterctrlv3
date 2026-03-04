@@ -10,7 +10,7 @@ import SalesGrid from "./widgets/SalesGrid";
 import SalesBar from "./widgets/SalesBar";
 
 const SubMarginDisplay = () => {
-  const { margins, loadingMargins } = useSubMarginCtx();
+  const { margins, loadingMargins, selectedWeek } = useSubMarginCtx();
 
   const dates = useMemo(() => {
     const result = Array.from(
@@ -72,17 +72,21 @@ const SubMarginDisplay = () => {
   return (
     <div className="space-y-2">
       <KpiContainer />
-      <div className="grid grid-rows-[33%_67%] h-[89%] gap-2 overflow-hidden p-2">
-        <div className="grid grid-cols-[34%_66%] gap-2">
-          <SalesBar barData={barData} />
-          <SalesGrid gridData={barData.slice().reverse()} />
-        </div>
+      {selectedWeek < 5 ? (
+        <div className="grid grid-rows-[33%_67%] h-[89%] gap-2 overflow-hidden p-2">
+          <div className="grid grid-cols-[34%_66%] gap-2">
+            <SalesBar barData={barData} />
+            <SalesGrid gridData={barData.slice().reverse()} />
+          </div>
 
-        <div className="grid grid-cols-[34%_66%] gap-2">
-          <div className="bg-custom-white"></div>
-          <div className="bg-custom-white"></div>
+          <div className="grid grid-cols-2 gap-2">
+          </div>
         </div>
-      </div>
+      ) : (
+        <div>
+          <div>You have chosen the 4 Week Trend my guy</div>
+        </div>
+      )}
     </div>
   );
 };

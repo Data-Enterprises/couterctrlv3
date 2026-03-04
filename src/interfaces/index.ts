@@ -906,6 +906,8 @@ export type Mover = {
   qty: number;
   cogs: number;
   gpm: number;
+  tax: number;
+  weight: number;
 };
 
 export type MarginKpi = {
@@ -927,7 +929,7 @@ export type MissingStore = {
   storeid: number;
   store_number: string;
   store_name: string;
-}
+};
 
 export type StoresMissingSalesJsonResp = {
   error: number;
