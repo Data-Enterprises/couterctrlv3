@@ -10,7 +10,11 @@ import {
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import Input from "../../../components/inputs/Input";
 
-const SubDepts = () => {
+interface SubDeptsProps {
+  height: string;
+}
+
+const SubDepts = ({ height }: SubDeptsProps) => {
   const dispatch = useAppDispatch();
   const ctx = useSubMarginCtx();
 
@@ -46,7 +50,7 @@ const SubDepts = () => {
         value={ctx.subDeptFitlerText}
         setValue={handleFilterTextChange}
       />
-      <div className="grid grid-cols-2 gap-2 max-h-[31vh] rounded-lg overflow-hidden overflow-y-auto no-scrollbar">
+      <div className={`grid grid-cols-2 gap-2 ${height} rounded-lg overflow-hidden overflow-y-auto no-scrollbar`}>
         {filteredSubDepts.map((sub) => (
           <div
             key={sub.id}

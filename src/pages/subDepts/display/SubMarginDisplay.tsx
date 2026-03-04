@@ -74,7 +74,7 @@ const SubMarginDisplay = () => {
       <KpiContainer />
       {selectedWeek < 5 ? (
         <div className="grid grid-rows-[33%_67%] h-[89%] gap-2 overflow-hidden p-2">
-          <div className="grid grid-cols-[34%_66%] gap-2">
+          <div className="grid grid-cols-[34%_65.5%] gap-2">
             <SalesBar barData={barData} />
             <SalesGrid gridData={barData.slice().reverse()} />
           </div>

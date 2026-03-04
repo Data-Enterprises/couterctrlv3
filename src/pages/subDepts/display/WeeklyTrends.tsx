@@ -15,6 +15,7 @@ import type {
 } from "../../../interfaces";
 import { getSubMargins } from "../../../api/subMargins";
 import { useToast } from "../../../components/toasts/hooks/useToast";
+import { formatDate } from "./widgets";
 
 const WeeklyTrends = () => {
   const toast = useToast();
@@ -141,39 +142,65 @@ const WeeklyTrends = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
+  const showWeekRange = (week: number) => {
+    const end = setDates(new Date(ctx.singleDate), 0);
+    const start = setDates(new Date(ctx.singleDate), 6);
+    let wkStart = "",
+      wkEnd = "";
+
+    switch (week) {
+      case 1:
+        return `${formatDate(start)} - ${formatDate(end)}`;
+      case 2:
+        wkEnd = setDates(new Date(ctx.singleDate), 7);
+        wkStart = setDates(new Date(ctx.singleDate), 13);
+        return `${formatDate(wkStart)} - ${formatDate(wkEnd)}`;
+      case 3:
+        wkEnd = setDates(new Date(ctx.singleDate), 14);
+        wkStart = setDates(new Date(ctx.singleDate), 20);
+        return `${formatDate(wkStart)} - ${formatDate(wkEnd)}`;
+      case 4:
+        wkEnd = setDates(new Date(ctx.singleDate), 21);
+        wkStart = setDates(new Date(ctx.singleDate), 27);
+        return `${formatDate(wkStart)} - ${formatDate(wkEnd)}`;
+      case 5:
+        return "All Weeks";
+    }
+  };
+
   return (
     <div
-      className={`${ctx.subDepts.length > 0 ? "" : "opacity-50 pointer-events-none"} grid grid-cols-2 gap-2 text-sm font-medium select-none bg-custom-white rounded-lg shadow-lg p-2`}
+      className={`${ctx.subDepts.length > 0 ? "" : "opacity-50 pointer-events-none"} grid gap-2 text-sm font-medium select-none bg-custom-white rounded-lg shadow-lg p-2`}
     >
       <div
-        className={`${ctx.selectedWeek === 1 ? "btn-themeGreen" : "btn-themeBlue"} text-center`}
+        className={`${ctx.selectedWeek === 1 ? "btn-themeGreen" : "btn-themeBlue"} text-center py-1.5`}
         onClick={() => handleWeekClick(1)}
       >
-        Week 1
+        {showWeekRange(1)}
       </div>
       <div
-        className={`${ctx.selectedWeek === 2 ? "btn-themeGreen" : "btn-themeBlue"} text-center`}
+        className={`${ctx.selectedWeek === 2 ? "btn-themeGreen" : "btn-themeBlue"} text-center py-1.5`}
         onClick={() => handleWeekClick(2)}
       >
-        Week 2
+        {showWeekRange(2)}
       </div>
       <div
-        className={`${ctx.selectedWeek === 3 ? "btn-themeGreen" : "btn-themeBlue"} text-center`}
+        className={`${ctx.selectedWeek === 3 ? "btn-themeGreen" : "btn-themeBlue"} text-center py-1.5`}
         onClick={() => handleWeekClick(3)}
       >
-        Week 3
+        {showWeekRange(3)}
       </div>
       <div
-        className={`${ctx.selectedWeek === 4 ? "btn-themeGreen" : "btn-themeBlue"} text-center`}
+        className={`${ctx.selectedWeek === 4 ? "btn-themeGreen" : "btn-themeBlue"} text-center py-1.5`}
         onClick={() => handleWeekClick(4)}
       >
-        Week 4
+        {showWeekRange(4)}
       </div>
       <div
-        className={`${ctx.selectedWeek === 5 ? "btn-themeGreen" : "btn-themeBlue"} text-center col-span-2`}
+        className={`${ctx.selectedWeek === 5 ? "btn-themeGreen" : "btn-themeBlue"} text-center py-1.5`}
         onClick={() => handleWeekClick(5)}
       >
-        4 Week Trend
+        {showWeekRange(5)}
       </div>
     </div>
   );

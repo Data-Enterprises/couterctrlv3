@@ -61,7 +61,7 @@ const SubDeptMargins = () => {
   ]);
 
   return (
-    <div className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] grid grid-cols-[20%_80%] gap-2 p-4">
+    <div className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] grid grid-cols-[18%_82%] gap-2 p-4">
       <SubMarginControls />
       {!ctx.loadingMargins && !ctx.margins.length ? null : <SubMarginDisplay />}
     </div>

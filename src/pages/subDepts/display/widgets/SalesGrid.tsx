@@ -14,7 +14,7 @@ interface SalesGridProps {
 
 const SalesGrid = ({ gridData }: SalesGridProps) => {
   return (
-    <div className="">
+    <div className="rounded-lg shadow-lg">
       <div className="h-full">
         <AgGridReact rowData={gridData} columnDefs={cols} theme={theme} />
       </div>

@@ -1,3 +1,4 @@
+import { useRef, useEffect, useState } from "react";
 import { useAppDispatch } from "../../../hooks";
 import { useParams, useSubMarginCtx } from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -16,11 +17,42 @@ import SubDepts from "./SubDepts";
 import WeeklyTrends from "../display/WeeklyTrends";
 import SingleSelect from "../../../components/SingleSelect";
 
+const useHeight = () => {
+  const [height, setHeight] = useState<string>("max-h-[31vh]");
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleHeight = () => {
+      if (containerRef.current) {
+        const containerHeight = containerRef.current.clientHeight;
+
+        console.log(containerHeight);
+        if (containerHeight > 842) {
+          setHeight("max-h-[31vh]");
+        } else {
+          setHeight("max-h-[22vh]");
+        }
+      }
+    };
+
+    handleHeight();
+
+    window.addEventListener("resize", handleHeight);
+
+    return () => {
+      window.removeEventListener("resize", handleHeight);
+    };
+  }, []);
+
+  return { containerRef, height };
+};
+
 const SubMarginControls = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const ctx = useSubMarginCtx();
   const params = useParams();
+  const { containerRef, height } = useHeight();
 
   const handleSubDeptSearch = () => {
     dispatch(requerySubDeptMargins());
@@ -75,7 +107,7 @@ const SubMarginControls = () => {
   };
 
   return (
-    <div className="flex flex-col gap-1">
+    <div ref={containerRef} className="flex flex-col gap-1">
       <div className="bg-custom-white p-2 rounded-lg shadow-lg">
         <SingleSelect
           label="Store"
@@ -103,7 +135,7 @@ const SubMarginControls = () => {
           </button>
         </div>
       </div>
-      <SubDepts />
+      <SubDepts height={height} />
       {ctx.selectedSubDeptId > 0 && <WeeklyTrends />}
     </div>
   );
