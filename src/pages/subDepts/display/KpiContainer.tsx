@@ -104,15 +104,15 @@ const KpiContainer = () => {
   };
 
   return (
-    <div className="flex justify-between items-start w-full gap-2 text-sm font-medium select-none">
-      <SubDeptMarginKpi data={kpiData.total_sales} title="Total Sales" />
-      <SubDeptMarginKpi data={kpiData.total_tax} title="Total Tax" />
-      <SubDeptMarginKpi data={kpiData.qty} title="Total Qty" />
+    <div className="flex justify-between items-start w-full gap-2 text-sm font-medium select-none px-2">
+      <SubDeptMarginKpi data={kpiData.total_sales} title="Sales" />
+      <SubDeptMarginKpi data={kpiData.total_cogs} title="Cost" />
+      <SubDeptMarginKpi data={kpiData.gpm} title="Margin" />
+      <SubDeptMarginKpi data={kpiData.qty} title="Qty" />
+      <SubDeptMarginKpi data={kpiData.total_tax} title="Tax" />
       {/* <SubDeptMarginKpi data={kpiData.vendors} title="Vendors" /> */}
 
-      <SubDeptMarginKpi data={kpiData.gpm} title="Margin" />
-      <SubDeptMarginKpi data={kpiData.total_cogs} title="Total Cost" />
-      <SubDeptMarginKpi data={kpiData.items} title="Total Upcs" />
+      <SubDeptMarginKpi data={kpiData.items} title="Unique Items" />
       {/* <SubDeptMarginKpi
         data={kpiData.top_mover.vendor_name}
         title={`Top Vendor`}

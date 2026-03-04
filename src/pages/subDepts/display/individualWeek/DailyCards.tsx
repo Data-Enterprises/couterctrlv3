@@ -9,7 +9,7 @@ const DailyCards = () => {
   ).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
   return (
-    <div className="flex flex-col gap-2 min-h-[calc(100vh-10.5rem)] max-h-[calc(100vh-10.5rem)] overflow-y-auto no-scrollbar">
+    <div className="flex flex-col gap-2 overflow-y-auto no-scrollbar">
       {dates.map((d, i) => (
         <DailyCard key={i} date={d} />
       ))}
