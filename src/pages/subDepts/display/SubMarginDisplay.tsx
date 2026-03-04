@@ -1,36 +1,28 @@
-import { useEffect } from "react";
-import { useAppDispatch } from "../../../hooks";
 import { useSubMarginCtx } from "../hooks";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
-import { setLoadingMargins } from "../../../features/subMarginSlice";
 import KpiContainer from "./KpiContainer";
+import DailyCards from "./individualWeek/DailyCards";
 
 const SubMarginDisplay = () => {
   const ctx = useSubMarginCtx();
-  const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    if (ctx.margins.length) {
-      // We have all the data we need to display the sub dept margin trends, so we can stop loading
-      dispatch(setLoadingMargins(false));
-    }
-  }, [ctx.margins]);
+  if (ctx.loadingMargins) {
+    return (
+      <div className="absolute top-1/2 left-1/2">
+        <LoadingIndicator
+          message="Loading margins..."
+          className="top-1/2 left-1/2 ml-28"
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className="relative">
-      <div className="flex gap-4">
-        {!ctx.loadingMargins &&
-        !ctx.margins.length ? null : ctx.loadingMargins &&
-          !ctx.margins.length ? (
-          <div className="absolute top-1/2 left-1/2">
-            <LoadingIndicator
-              message="Loading margins..."
-              className="top-1/2 left-1/2"
-            />
-          </div>
-        ) : <KpiContainer />}
+    <div className="space-y-4">
+      <KpiContainer />
+      <div className="grid grid-cols-[27%_73%]">
+        <DailyCards />
       </div>
-      <div className="bg-white"></div>
     </div>
   );
 };

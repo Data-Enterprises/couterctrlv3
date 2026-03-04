@@ -76,32 +76,22 @@ const WeeklyTrends = () => {
       const wk3Start = setDates(new Date(params.end), 20);
       const wk4End = setDates(new Date(params.end), 21);
       const wk4Start = setDates(new Date(params.end), 27);
-      const margins = [];
 
       if (!ctx.weekOneMargins.length) {
         getData(start, end, 1);
-      } else {
-        margins.push(...ctx.weekOneMargins);
       }
 
       if (!ctx.weekTwoMargins.length) {
         getData(wk2Start, wk2End, 2);
-      } else {
-        margins.push(...ctx.weekTwoMargins);
-      }
+      } 
 
       if (!ctx.weekThreeMargins.length) {
         getData(wk3Start, wk3End, 3);
-      } else {
-        margins.push(...ctx.weekThreeMargins);
-      }
+      } 
 
       if (!ctx.weekFourMargins.length) {
         getData(wk4Start, wk4End, 4);
-      } else {
-        margins.push(...ctx.weekFourMargins);
-      }
-      dispatch(setMargins(margins));
+      } 
     }
   };
 

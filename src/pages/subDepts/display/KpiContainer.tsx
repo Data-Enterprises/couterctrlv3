@@ -105,14 +105,14 @@ const KpiContainer = () => {
 
   return (
     <div className="flex justify-between items-start w-full gap-2 text-sm font-medium select-none">
-      <SubDeptMarginKpi data={kpiData.total_sales} title="Net Sales" />
+      <SubDeptMarginKpi data={kpiData.total_sales} title="Total Sales" />
       <SubDeptMarginKpi data={kpiData.total_tax} title="Total Tax" />
       <SubDeptMarginKpi data={kpiData.qty} title="Total Qty" />
       {/* <SubDeptMarginKpi data={kpiData.vendors} title="Vendors" /> */}
 
       <SubDeptMarginKpi data={kpiData.gpm} title="Margin" />
       <SubDeptMarginKpi data={kpiData.total_cogs} title="Total Cost" />
-      <SubDeptMarginKpi data={kpiData.items} title="Total Items" />
+      <SubDeptMarginKpi data={kpiData.items} title="Total Upcs" />
       {/* <SubDeptMarginKpi
         data={kpiData.top_mover.vendor_name}
         title={`Top Vendor`}
