@@ -6,7 +6,7 @@ const DailyCards = () => {
 
   const dates = Array.from(
     new Set(ctx.margins.map((margin) => margin.sale_date.split("T")[0])),
-  ).reverse();
+  ).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
   return (
     <div className="flex flex-col gap-2 min-h-[calc(100vh-10.5rem)] max-h-[calc(100vh-10.5rem)] overflow-y-auto no-scrollbar">

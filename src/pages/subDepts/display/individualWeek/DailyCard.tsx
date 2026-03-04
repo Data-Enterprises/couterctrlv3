@@ -28,8 +28,8 @@ const DailyCard = ({ date }: DailyCardProps) => {
   );
 
   const formatDate = (dateStr: string) => {
-    const dateObj = new Date(dateStr);
-    return dateObj.toLocaleDateString();
+    const split = dateStr.split("-");
+    return `${Number(split[1])}/${Number(split[2])}/${split[0]}`;
   };
 
   const getGpm = () => {
