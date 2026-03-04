@@ -1,17 +1,85 @@
 import { useSubMarginCtx } from "../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../../hooks";
 import { AgGridReact } from "ag-grid-react";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
 import { theme, itemCols, type ItemRow } from ".";
 import { useState, useEffect } from "react";
+import {
+  setItemGridData,
+  type ThreshOperator,
+} from "../../../../features/subMarginSlice";
 
 const ItemsGrid = () => {
+  const dispatch = useAppDispatch();
   const { margins, selectedWeekDay } = useSubMarginCtx();
+  const sm = useAppSelector((state) => state.subMargin);
   const [gridData, setGridData] = useState<ItemRow[]>([]);
 
   useEffect(() => {
     // handle the filtering here
-  }, []);
+    if (gridData.length) {
+      const upc = sm.upcFilter;
+      const desc = sm.descFilter;
+      const sales = sm.salesFilter;
+      const qty = sm.qtyFilter;
+      const cogs = sm.cogsFilter;
+      const margin = sm.marginFilter;
+
+      const handleOperator = (
+        filter: number,
+        operator: ThreshOperator,
+        rowValue: number,
+      ) => {
+        switch (operator) {
+          case ">":
+            return rowValue > filter;
+          case "<":
+            return rowValue < filter;
+          case "=":
+            return rowValue === filter;
+          default:
+            return true; // if no operator, don't filter
+        }
+      };
+
+      const filteredData = [...sm.itemGridData].filter((item) => {
+        const upcMatch = upc ? item.product_code.includes(upc) : true;
+        const descMatch = desc
+          ? item.product_description.toLowerCase().includes(desc.toLowerCase())
+          : true;
+        const salesMatch = sales.operator
+          ? handleOperator(sales.value, sales.operator, item.total_sales)
+          : true;
+        const qtyMatch = qty.operator
+          ? handleOperator(qty.value, qty.operator, item.qty)
+          : true;
+        const cogsMatch = cogs.operator
+          ? handleOperator(cogs.value, cogs.operator, item.cogs)
+          : true;
+        const marginMatch = margin.operator
+          ? handleOperator(margin.value, margin.operator, item.margin)
+          : true;
+
+        return (
+          upcMatch &&
+          descMatch &&
+          salesMatch &&
+          qtyMatch &&
+          cogsMatch &&
+          marginMatch
+        );
+      });
+      setGridData(filteredData);
+    }
+  }, [
+    sm.upcFilter,
+    sm.descFilter,
+    sm.salesFilter,
+    sm.qtyFilter,
+    sm.cogsFilter,
+    sm.marginFilter,
+  ]);
 
   useEffect(() => {
     const dateComp = new Date(selectedWeekDay).toISOString().split("T")[0];
@@ -49,6 +117,7 @@ const ItemsGrid = () => {
       ...item,
       margin: ((item.total_sales - item.cogs) / item.total_sales) * 100,
     }));
+    dispatch(setItemGridData(newData));
     setGridData(newData);
   }, [selectedWeekDay]);
 

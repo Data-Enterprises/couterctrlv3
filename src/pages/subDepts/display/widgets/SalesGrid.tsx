@@ -1,6 +1,6 @@
 import { useSubMarginCtx } from "../../hooks";
 import { useCallback, useRef, useEffect } from "react";
-import { useAppDispatch } from "../../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { AgGridReact } from "ag-grid-react";
 import {
   AllCommunityModule,
@@ -20,6 +20,7 @@ const SalesGrid = ({ gridData }: SalesGridProps) => {
   const gridRef = useRef<AgGridReact>(null);
   const { selectedWeekDay } = useSubMarginCtx();
   const dispatch = useAppDispatch();
+  const sm = useAppSelector((state) => state.subMargin);
 
   const handleRowClick = useCallback(
     (event: RowClickedEvent) => {
@@ -29,7 +30,7 @@ const SalesGrid = ({ gridData }: SalesGridProps) => {
   );
 
   useEffect(() => {
-    if (gridRef.current && gridRef.current.api && selectedWeekDay) {
+    if (gridRef.current && gridRef.current.api) {
       gridRef.current.api.forEachNode((node) => {
         const date = new Date(selectedWeekDay).toISOString().split("T")[0];
         const nodeDate = new Date(node.data.date).toISOString().split("T")[0];
@@ -38,7 +39,7 @@ const SalesGrid = ({ gridData }: SalesGridProps) => {
         }
       });
     }
-  }, [selectedWeekDay, gridRef.current]);
+  }, [selectedWeekDay, gridRef.current, sm.itemGridData]);
 
   return (
     <div className="rounded-lg shadow-lg">

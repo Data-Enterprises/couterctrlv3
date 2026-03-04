@@ -10,6 +10,7 @@ import {
   setMargins,
   setSearchValue,
 } from "../../features/subMarginSlice";
+import ItemFilterModal from "./display/modals/ItemFilterModal";
 
 const SubDeptMargins = () => {
   const ctx = useSubMarginCtx();
@@ -60,6 +61,7 @@ const SubDeptMargins = () => {
 
   return (
     <div className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] grid grid-cols-[18%_82%] gap-2 p-4">
+      <ItemFilterModal />
       <SubMarginControls />
       {!ctx.loadingMargins && !ctx.margins.length ? null : <SubMarginDisplay />}
     </div>

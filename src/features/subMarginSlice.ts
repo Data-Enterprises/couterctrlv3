@@ -1,7 +1,28 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { SubDeptMargin, SubDept } from "../interfaces";
+import type { ItemRow } from "../pages/subDepts/display/widgets";
 
 export type MarginWeek = 0 | 1 | 2 | 3 | 4 | 5;
+export type ItemFilterType =
+  | "upc"
+  | "description"
+  | "sales"
+  | "qty"
+  | "cogs"
+  | "margin"
+  | "";
+
+export type ThreshOperator = ">" | "<" | "=" | "";
+
+export type ThresholdFilter = {
+  operator: ThreshOperator;
+  value: number;
+};
+
+const defaultThreshFilter: ThresholdFilter = {
+  operator: "",
+  value: 0,
+};
 
 interface SubMarginState {
   subDepts: SubDept[];
@@ -18,6 +39,19 @@ interface SubMarginState {
   selectedWeek: MarginWeek;
   searchValue: number;
   selectedWeekDay: string;
+
+  itemGridData: ItemRow[]; // data for the item grid
+  // filters for the item grid
+  filterModalOpen: boolean;
+  itemFilterType: ItemFilterType;
+  filterTextInput: string;
+  threshOperator: ThreshOperator;
+  upcFilter: string;
+  descFilter: string;
+  salesFilter: ThresholdFilter;
+  qtyFilter: ThresholdFilter;
+  cogsFilter: ThresholdFilter;
+  marginFilter: ThresholdFilter;
 }
 
 const initialState: SubMarginState = {
@@ -35,6 +69,17 @@ const initialState: SubMarginState = {
   selectedWeek: 0,
   searchValue: 0,
   selectedWeekDay: "",
+  filterTextInput: "",
+  upcFilter: "",
+  descFilter: "",
+  salesFilter: defaultThreshFilter,
+  qtyFilter: defaultThreshFilter,
+  cogsFilter: defaultThreshFilter,
+  marginFilter: defaultThreshFilter,
+  filterModalOpen: false,
+  itemFilterType: "",
+  threshOperator: "",
+  itemGridData: [],
 };
 
 const subMarginSlice = createSlice({
@@ -97,6 +142,14 @@ const subMarginSlice = createSlice({
       state.subDeptFitlerText = "";
       state.selectedWeek = 0;
       state.selectedWeekDay = "";
+      state.upcFilter = "";
+      state.descFilter = "";
+      state.salesFilter = defaultThreshFilter;
+      state.qtyFilter = defaultThreshFilter;
+      state.cogsFilter = defaultThreshFilter;
+      state.marginFilter = defaultThreshFilter;
+      state.itemFilterType = "";
+      state.itemGridData = [];
     },
     setSelectedWeek: (state, action: PayloadAction<MarginWeek>) => {
       state.selectedWeek = action.payload;
@@ -106,6 +159,61 @@ const subMarginSlice = createSlice({
     },
     setSearchValue: (state, action: PayloadAction<number>) => {
       state.searchValue = action.payload;
+    },
+    setItemFilterType: (state, action: PayloadAction<ItemFilterType>) => {
+      state.itemFilterType = action.payload;
+    },
+    setUpcFilter: (state, action: PayloadAction<string>) => {
+      state.upcFilter = action.payload;
+    },
+    setDescFilter: (state, action: PayloadAction<string>) => {
+      state.descFilter = action.payload;
+    },
+    setThresholdFilter: (
+      state,
+      action: PayloadAction<{
+        filter: keyof SubMarginState;
+        value: ThresholdFilter;
+      }>,
+    ) => {
+      const { filter, value } = action.payload;
+      switch (filter) {
+        case "salesFilter":
+          state.salesFilter = value;
+          break;
+        case "qtyFilter":
+          state.qtyFilter = value;
+          break;
+        case "cogsFilter":
+          state.cogsFilter = value;
+          break;
+        case "marginFilter":
+          state.marginFilter = value;
+          break;
+      }
+    },
+    resetFilters: (state) => {
+      state.upcFilter = "";
+      state.descFilter = "";
+      state.salesFilter = defaultThreshFilter;
+      state.qtyFilter = defaultThreshFilter;
+      state.cogsFilter = defaultThreshFilter;
+      state.marginFilter = defaultThreshFilter;
+      state.itemFilterType = "";
+      state.threshOperator = "";
+      state.filterTextInput = "";
+    },
+    setFilterTextInput: (state, action: PayloadAction<string>) => {
+      state.filterTextInput = action.payload;
+    },
+    setThreshOperator: (state, action: PayloadAction<ThreshOperator>) => {
+      state.threshOperator = action.payload;
+    },
+    setFilterModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.filterModalOpen = action.payload;
+    },
+    setItemGridData: (state, action: PayloadAction<ItemRow[]>) => {
+      state.itemGridData = action.payload;
     },
     resetSubMarginState: () => initialState,
   },
@@ -124,6 +232,15 @@ export const {
   setWeekTrendMargins,
   setSelectedWeekDay,
   resetSubMarginState,
+  setUpcFilter,
+  setDescFilter,
+  setThresholdFilter,
+  setFilterModalOpen,
+  setItemFilterType,
+  setFilterTextInput,
+  setThreshOperator,
+  setItemGridData,
+  resetFilters,
   requerySubDeptMargins,
 } = subMarginSlice.actions;
 export default subMarginSlice.reducer;
