@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useSubMarginCtx } from "../hooks";
 
 import { formatDate, type BarData } from "./widgets";
@@ -9,8 +9,33 @@ import KpiContainer from "./KpiContainer";
 import SalesGrid from "./widgets/SalesGrid";
 import SalesBar from "./widgets/SalesBar";
 
+const useHeight = () => {
+  const [height, setHeight] = useState<string>("h-[89%]");
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerHeight > 826) {
+        setHeight("h-[90.2%]");
+      } else {
+        setHeight("h-[88.9%]");
+      }
+    };
+
+    handleResize(); // Call it once to set the initial height
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  return height;
+};
+
 const SubMarginDisplay = () => {
   const { margins, loadingMargins, selectedWeek } = useSubMarginCtx();
+  const height = useHeight();
 
   const dates = useMemo(() => {
     const result = Array.from(
@@ -73,18 +98,22 @@ const SubMarginDisplay = () => {
     <div className="space-y-2">
       <KpiContainer />
       {selectedWeek < 5 ? (
-        <div className="grid grid-rows-[33%_67%] h-[89%] gap-2 overflow-hidden p-2">
+        <div
+          className={`grid grid-rows-[32.6%_67.4%] ${height} gap-2 overflow-hidden p-2`}
+        >
           <div className="grid grid-cols-[34%_65.5%] gap-2">
             <SalesBar barData={barData} />
             <SalesGrid gridData={barData.slice().reverse()} />
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-[34%_65.5%] gap-2">
+            <div className="bg-white">Top/Bottom Items</div>
+            <div className="bg-white">Items Grid</div>
           </div>
         </div>
       ) : (
-        <div>
-          <div>You have chosen the 4 Week Trend my guy</div>
+        <div className="w-full h-full flex items-center justify-center">
+          <div>All 4 Weeks Dashboard (under construction)</div>
         </div>
       )}
     </div>
