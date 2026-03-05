@@ -3,6 +3,8 @@ import { useSubMarginCtx } from "./hooks";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 
 import {
+  handleWeekReset,
+  resetFilters,
   setLoadingMargins,
   setMargins,
   setOpenCostExportModal,
@@ -26,6 +28,15 @@ const SubDeptMargins = () => {
   const sm = useAppSelector((state) => state.subMargin);
 
   useEffect(() => {
+    dispatch(resetFilters());
+  }, [sm.subDeptGridView]);
+
+  useEffect(() => {
+    if (sm.selectedWeek > 0) {
+      // reset the filters when the week changes
+      dispatch(resetFilters());
+      dispatch(handleWeekReset());
+    }
     if (
       ctx.selectedWeek === 5 &&
       ctx.weekOneMargins.length &&

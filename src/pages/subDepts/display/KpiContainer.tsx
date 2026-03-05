@@ -113,13 +113,7 @@ const KpiContainer = () => {
       <SubDeptMarginKpi data={kpiData.gpm} title="Margin" />
       <SubDeptMarginKpi data={kpiData.qty} title="Qty" />
       <SubDeptMarginKpi data={kpiData.total_tax} title="Tax" />
-      {/* <SubDeptMarginKpi data={kpiData.vendors} title="Vendors" /> */}
-
       <SubDeptMarginKpi data={kpiData.items} title="Unique Items" />
-      {/* <SubDeptMarginKpi
-        data={kpiData.top_mover.vendor_name}
-        title={`Top Vendor`}
-      /> */}
     </div>
   );
 };

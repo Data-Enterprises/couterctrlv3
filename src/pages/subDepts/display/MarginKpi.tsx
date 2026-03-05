@@ -60,18 +60,27 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
   };
 
   const highlightStyle = () => {
-    if (title === "Cost" && ctx.subDeptGridView === "cost") {
+    if (title === "Cost" && ctx.subDeptGridView === "cost" && ctx.selectedWeek < 5) {
       return "bg-orange-200";
     }
-    if (title === "Unique Items" && ctx.subDeptGridView === "item") {
+    if (title === "Unique Items" && ctx.subDeptGridView === "item" && ctx.selectedWeek < 5) {
       return "bg-orange-200";
     }
     return "";
   };
 
+  const hoverStyle = () => {
+    if (
+      title === "Cost" ||
+      (title === "Unique Items" && ctx.selectedWeek < 5)
+    ) {
+      return "hover:bg-blue-200 cursor-pointer transition-all duration-200";
+    }
+  };
+
   return (
     <div
-      className={`w-1/6 flex flex-col gap-1 justify-center items-center bg-custom-white px-2 py-4 rounded-lg shadow-lg ${highlightStyle()}`}
+      className={`w-1/6 flex flex-col gap-1 justify-center items-center bg-custom-white px-2 py-4 rounded-lg shadow-lg ${highlightStyle()} ${hoverStyle()}`}
       onClick={handleCostClick}
     >
       <div className="text-content/50">{title}</div>

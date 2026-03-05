@@ -265,6 +265,14 @@ const subMarginSlice = createSlice({
     setFilteredCostGridData: (state, action: PayloadAction<SubDeptCost[]>) => {
       state.filteredCostGridData = action.payload;
     },
+    handleWeekReset: (state) =>{
+      state.itemGridData = [];
+      state.filteredItemGridData = [];
+      state.subDeptCost = [];
+      state.filteredCostGridData = [];
+      state.selectedWeekDay = "";
+      state.subDeptGridView = "item";
+    },
     resetSubMarginState: () => initialState,
   },
 });
@@ -297,6 +305,7 @@ export const {
   setFilteredCostGridData,
   setSubDeptGridView,
   setOpenCostExportModal,
+  handleWeekReset,
   requerySubDeptMargins,
 } = subMarginSlice.actions;
 export default subMarginSlice.reducer;
