@@ -105,24 +105,23 @@ const SubMarginDisplay = () => {
   }
 
   const renderGrid = () => {
-    switch (subDeptGridView) {
-      case "item":
-        return (
-          <div className="grid grid-cols-[20%_79.5%] gap-2">
-            <ItemsGridFilters />
-            <ItemsGrid />
-          </div>
-        );
-      case "cost":
-        return (
-          <div className="grid grid-cols-[20%_79.5%] gap-2">
-            <CostGridFilters />
-            <SubDeptCostGrid />
-          </div>
-        );
-      default:
-        return null;
+    if (selectedWeekDay && subDeptGridView === "item") {
+      return (
+        <div className="grid grid-cols-[20%_79.5%] gap-2">
+          <ItemsGridFilters />
+          <ItemsGrid />
+        </div>
+      );
+    } else if (subDeptGridView === "cost") {
+      return (
+        <div className="grid grid-cols-[20%_79.5%] gap-2">
+          <CostGridFilters />
+          <SubDeptCostGrid />
+        </div>
+      );
     }
+
+    return null;
   };
 
   return (
@@ -137,7 +136,7 @@ const SubMarginDisplay = () => {
             <SalesGrid gridData={barData.slice().reverse()} />
           </div>
 
-          {selectedWeekDay ? renderGrid() : null}
+          {renderGrid()}
         </div>
       ) : (
         <div className="w-full h-full flex items-center justify-center">

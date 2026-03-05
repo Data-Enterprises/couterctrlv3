@@ -70,7 +70,29 @@ const ThresholdFilter = ({ label, type, handleClose }: ThresholdFilter) => {
           },
         }),
       );
-    } else {
+    } else if (type === "caseCost") {
+      // dispatch action to set case cost filter
+      dispatch(
+        setThresholdFilter({
+          filter: "caseCostFilter",
+          value: {
+            operator: subMargin.threshOperator,
+            value: Number(subMargin.filterTextInput),
+          },
+        }),
+      );
+    } else if (type === "unitCost") {
+      // dispatch action to set unit cost filter
+      dispatch(
+        setThresholdFilter({
+          filter: "unitCostFilter",
+          value: {
+            operator: subMargin.threshOperator,
+            value: Number(subMargin.filterTextInput),
+          },
+        }),
+      );
+    } else if (type === "margin") {
       // dispatch action to set margin filter
       dispatch(
         setThresholdFilter({

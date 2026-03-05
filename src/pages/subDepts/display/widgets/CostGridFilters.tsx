@@ -86,26 +86,26 @@ const CostGridFilters = () => {
           {divText("description")}
         </div>
         <div
-          className={`${divStyle} ${sm.salesFilter.operator ? "bg-orange-200" : ""}`}
-          onClick={() => handleClick("sales")}
+          className={`${divStyle} ${sm.unitCostFilter.operator ? "bg-orange-200" : ""}`}
+          onClick={() => handleClick("unitCost")}
         >
           {divText("unitCost")}
+        </div>
+        <div
+          className={`${divStyle} ${sm.caseCostFilter.operator ? "bg-orange-200" : ""}`}
+          onClick={() => handleClick("caseCost")}
+        >
+          {divText("caseCost")}
         </div>
         <div
           className={`${divStyle} ${sm.qtyFilter.operator ? "bg-orange-200" : ""}`}
           onClick={() => handleClick("qty")}
         >
-          {divText("caseCost")}
+          {divText("qty")}
         </div>
         <div
           className={`${divStyle} ${sm.cogsFilter.operator ? "bg-orange-200" : ""}`}
           onClick={() => handleClick("cogs")}
-        >
-          {divText("qty")}
-        </div>
-        <div
-          className={`${divStyle} ${sm.marginFilter.operator ? "bg-orange-200" : ""}`}
-          onClick={() => handleClick("margin")}
         >
           {divText("cogs")}
         </div>

@@ -48,6 +48,12 @@ const ItemFilterModal = () => {
       case "margin":
         thresholdLabel = "Margin";
         break;
+      case "unitCost":
+        thresholdLabel = "Unit Cost";
+        break;
+      case "caseCost":
+        thresholdLabel = "Case Cost";
+        break;
     }
 
     return (
