@@ -1,5 +1,5 @@
-import { useMemo, useState, useEffect } from "react";
-import { useSubMarginCtx } from "../hooks";
+import { useMemo } from "react";
+import { useSubMarginCtx, useHeight } from "../hooks";
 
 import { formatDate, type BarData } from "./widgets";
 import { gpm } from "../../../functions";
@@ -13,30 +13,7 @@ import ItemsGrid from "./widgets/ItemsGrid";
 import ItemsGridFilters from "./widgets/ItemsGridFilters";
 import SubDeptCostGrid from "./widgets/SubDeptCostGrid";
 import CostGridFilters from "./widgets/CostGridFilters";
-
-const useHeight = () => {
-  const [height, setHeight] = useState<string>("h-[89%]");
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerHeight > 826) {
-        setHeight("h-[90.2%]");
-      } else {
-        setHeight("h-[88.9%]");
-      }
-    };
-
-    handleResize(); // Call it once to set the initial height
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
-  return height;
-};
+import AllWeeksTrend from "./allWeeks/AllWeeksTrend";
 
 const SubMarginDisplay = () => {
   const {
@@ -74,9 +51,10 @@ const SubMarginDisplay = () => {
         (acc, margin) => acc + margin.total_tax,
         0,
       );
-      
+
       const cogs = dateMargins.reduce(
-        (acc, curr) => acc + calculateCogs(curr.calculated_cost, curr.cost_fees, curr.qty),
+        (acc, curr) =>
+          acc + calculateCogs(curr.net_cost, curr.case_size, curr.qty),
         0,
       );
 
@@ -141,9 +119,7 @@ const SubMarginDisplay = () => {
           {renderGrid()}
         </div>
       ) : (
-        <div className="w-full h-full flex items-center justify-center">
-          <div>All 4 Weeks Dashboard (under construction)</div>
-        </div>
+        <AllWeeksTrend />
       )}
     </div>
   );

@@ -891,6 +891,7 @@ export type SubDeptMargin = {
   calculated_cost: number;
   margin: number;
   cost_fees: number;
+  net_cost: number;
 };
 
 export type SubMarginsJsonResp = {
@@ -945,7 +946,6 @@ export type StoresMissingSalesJsonResp = {
   missing: Store[];
 };
 
-
 export type SubDeptCost = {
   product_code: string;
   description: string;
@@ -953,4 +953,4 @@ export type SubDeptCost = {
   cost: number;
   qty: number;
   total_cost: number;
-}
+};

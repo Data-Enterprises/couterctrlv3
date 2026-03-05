@@ -94,15 +94,6 @@ export const cols: ColDef<BarData>[] = [
 ];
 
 export const itemCols: ColDef<ItemRow>[] = [
-  // {
-  //   flex: 0.8,
-  //   field: "sub_department_description",
-  //   hide: true,
-  //   headerName: "Sub Dept",
-  //   resizable: false,
-  //   headerStyle: { borderRight: "1px solid white" },
-  //   cellClass: "no-outline-on-focus",
-  // },
   {
     flex: 1.2,
     field: "product_code",
@@ -170,7 +161,7 @@ export const itemCols: ColDef<ItemRow>[] = [
     headerName: "Cost Fees",
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
-    valueFormatter: (params) => `${params.value}%`,
+    valueFormatter: (params) => `${params.value.toFixed(2)}%`,
     cellClass: "no-outline-on-focus text-right",
   },
   {

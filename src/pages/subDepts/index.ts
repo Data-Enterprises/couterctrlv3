@@ -6,18 +6,24 @@ export const setDates = (date: Date, days: number = 0) => {
 };
 
 export const calculateCogs = (
-  calculatedCost: number,
-  costFees: number,
+  netCost: number,
+  caseSize: number,
   qty: number,
 ) => {
-  if (qty === 0) return 0;
+  if (qty === 0 || caseSize === 0 || netCost === 0) return 0;
 
-  if (costFees) {
-    const feePct = costFees / 100;
-    const feeAmount = parseFloat((calculatedCost * feePct).toString());
-    return (calculatedCost + feeAmount) * qty;
-  }
+  const unitCost = (netCost / caseSize).toString();
+  return parseFloat(unitCost) * qty;
 
-  // no cost fees
-  return calculatedCost * qty;
+  // When using calculated cost, cost fees, qty
+  // if (qty === 0) return 0;
+
+  // if (costFees) {
+  //   const feePct = costFees / 100;
+  //   const feeAmount = parseFloat((calculatedCost * feePct).toString());
+  //   return (calculatedCost + feeAmount) * qty;
+  // }
+
+  // // no cost fees
+  // return calculatedCost * qty;
 };
