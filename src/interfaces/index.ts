@@ -442,6 +442,7 @@ export type UpcTrend = {
 export type Handlers = {
   copyUpc?: () => Promise<void> | void;
   copyDesc?: () => Promise<void> | void;
+  copyAllUpcs?: () => Promise<void> | void;
 };
 
 export type ContextEvent = React.MouseEvent<
@@ -458,6 +459,11 @@ export type Option = {
 export type ClipboardText = {
   upc: string;
   desc: string;
+};
+
+export type SMClipboardText = {
+  upc: string;
+  allUpc: string;
 };
 
 // Forecast Interfaces

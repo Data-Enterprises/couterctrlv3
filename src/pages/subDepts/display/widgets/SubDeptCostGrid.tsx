@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 
 import { AgGridReact } from "ag-grid-react";
 import {
   AllCommunityModule,
   ModuleRegistry,
-  // type RowClickedEvent,
+  // type ColumnHeaderContextMenuEvent,
 } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -14,9 +14,15 @@ import {
   setFilteredCostGridData,
   type ThreshOperator,
 } from "../../../../features/subMarginSlice";
+// import type { SubDeptCost } from "../../../../interfaces";
+import {
+  setMenuPosition,
+  setSMClipboardText,
+} from "../../../../features/ctxMenuSlice";
 // import { useSubMarginCtx } from "../../hooks";
 
 const SubDeptCostGrid = () => {
+  const gridRef = useRef<AgGridReact>(null);
   const dispatch = useAppDispatch();
   const sm = useAppSelector((state) => state.subMargin);
   // const { selectedWeekDay } = useSubMarginCtx();
@@ -96,9 +102,29 @@ const SubDeptCostGrid = () => {
     }
   }, [sm.subDeptCost]);
 
+  const handleCtxMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!gridRef.current) return;
+    event.preventDefault();
+
+    const target = event.target as HTMLElement;
+    const upc = !isNaN(Number(target.innerText)) ? target.innerText : "";
+
+    dispatch(setMenuPosition({ x: event.clientX + 5, y: event.clientY }));
+    const allUpc = sm.filteredCostGridData
+      .map((item) => item.product_code)
+      .join(", ");
+    dispatch(
+      setSMClipboardText({
+        upc,
+        allUpc,
+      }),
+    );
+  };
+
   return (
-    <div>
+    <div onContextMenuCapture={handleCtxMenu}>
       <AgGridReact
+        ref={gridRef}
         rowData={sm.filteredCostGridData}
         columnDefs={costCols}
         theme={theme}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSubMarginCtx } from "../../hooks";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 
@@ -11,8 +11,13 @@ import {
   setItemGridData,
   type ThreshOperator,
 } from "../../../../features/subMarginSlice";
+import {
+  setMenuPosition,
+  setSMClipboardText,
+} from "../../../../features/ctxMenuSlice";
 
 const ItemsGrid = () => {
+  const gridRef = useRef<AgGridReact>(null);
   const dispatch = useAppDispatch();
   const { margins, selectedWeekDay } = useSubMarginCtx();
   const sm = useAppSelector((state) => state.subMargin);
@@ -125,9 +130,29 @@ const ItemsGrid = () => {
     setGridData(newData);
   }, [selectedWeekDay]);
 
+  const handleCtxMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!gridRef.current) return;
+    event.preventDefault();
+
+    const target = event.target as HTMLElement;
+    const upc = !isNaN(Number(target.innerText)) ? target.innerText : "";
+
+    dispatch(setMenuPosition({ x: event.clientX + 5, y: event.clientY }));
+    const allUpc = sm.filteredItemGridData
+      .map((item) => item.product_code)
+      .join(", ");
+    dispatch(
+      setSMClipboardText({
+        upc,
+        allUpc,
+      }),
+    );
+  };
+
   return (
-    <div>
+    <div onContextMenuCapture={handleCtxMenu}>
       <AgGridReact
+        ref={gridRef}
         rowData={gridData}
         columnDefs={itemCols}
         theme={theme}

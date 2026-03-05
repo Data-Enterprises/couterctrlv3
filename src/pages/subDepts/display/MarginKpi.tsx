@@ -16,26 +16,32 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
 
   const handleCostClick = () => {
     if (title === "Cost") {
-      const margins: SubDeptCost[] = ctx.margins.reduce((acc: SubDeptCost[], curr) => {
-        const found = acc.find((item) => item.product_code === curr.product_code);
-        if (!found) {
-          acc.push({
-            product_code: curr.product_code,
-            description: curr.product_description,
-            calculated_cost: curr.calculated_cost,
-            cost: curr.cost,
-            qty: curr.qty,
-            total_cost: curr.calculated_cost * curr.qty,
-          });
-        } else {
-          found.qty += curr.qty;
-          found.total_cost += curr.calculated_cost * curr.qty;
-
-        }
-        return acc;
-      }, []);
+      const margins: SubDeptCost[] = ctx.margins.reduce(
+        (acc: SubDeptCost[], curr) => {
+          const found = acc.find(
+            (item) => item.product_code === curr.product_code,
+          );
+          if (!found) {
+            acc.push({
+              product_code: curr.product_code,
+              description: curr.product_description,
+              calculated_cost: curr.calculated_cost,
+              cost: curr.cost,
+              qty: curr.qty,
+              total_cost: curr.calculated_cost * curr.qty,
+            });
+          } else {
+            found.qty += curr.qty;
+            found.total_cost += curr.calculated_cost * curr.qty;
+          }
+          return acc;
+        },
+        [],
+      );
       dispatch(setSubDeptCost(margins));
-      dispatch(setSubDeptGridView("cost"));
+      dispatch(
+        setSubDeptGridView(ctx.subDeptGridView === "cost" ? "item" : "cost"),
+      );
     }
     if (title === "Unique Items") {
       dispatch(setSubDeptGridView("item"));

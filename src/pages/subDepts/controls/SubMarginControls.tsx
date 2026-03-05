@@ -8,6 +8,7 @@ import type { JsonError, SubDept, SubSalesJsonResp } from "../../../interfaces";
 import {
   requerySubDeptMargins,
   setLoadingSubDepts,
+  setOpenCostExportModal,
   setOpenExportModal,
   setSearchValue,
   setSubDepts,
@@ -111,6 +112,14 @@ const SubMarginControls = () => {
     return store ? store.store_name : "";
   };
 
+  const openExport = () => {
+    if (ctx.subDeptGridView === "item") {
+      dispatch(setOpenExportModal(true));
+    } else if (ctx.subDeptGridView === "cost") {
+      dispatch(setOpenCostExportModal(true));
+    }
+  };
+
   return (
     <div ref={containerRef} className="flex flex-col gap-1">
       <div className="bg-custom-white p-2 rounded-lg shadow-lg">
@@ -138,7 +147,7 @@ const SubMarginControls = () => {
           </button>
           <button
             className={`btn-themeGreen px-0 ${exportBtnActive()}`}
-            onClick={() => dispatch(setOpenExportModal(true))}
+            onClick={openExport}
           >
             Export
           </button>

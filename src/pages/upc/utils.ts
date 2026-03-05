@@ -143,4 +143,9 @@ export const options: Option[] = [
   // { label: "Show Prices", key: "selectUpc" },
 ];
 
+export const smOptions: Option[] = [
+  { label: "Copy UPC", key: "copyUpc" },
+  { label: "Copy All UPCs", key: "copyAllUpcs" },
+];
+
 export const singleOption: Option[] = [{ label: "Copy UPC", key: "copyUpc" }];

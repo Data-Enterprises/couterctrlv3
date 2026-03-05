@@ -43,6 +43,7 @@ interface SubMarginState {
   searchValue: number;
   selectedWeekDay: string;
   openExportModal: boolean;
+  openCostExportModal: boolean;
   subDeptGridView: SubDeptGridView;
 
   itemGridData: ItemRow[]; // data for the item grid
@@ -97,6 +98,7 @@ const initialState: SubMarginState = {
   itemGridData: [],
   filteredItemGridData: [],
   openExportModal: false,
+  openCostExportModal: false,
   subDeptCost: [],
   subDeptGridView: "item",
   filteredCostGridData: [],
@@ -251,6 +253,9 @@ const subMarginSlice = createSlice({
     setOpenExportModal: (state, action: PayloadAction<boolean>) => {
       state.openExportModal = action.payload;
     },
+    setOpenCostExportModal: (state, action: PayloadAction<boolean>) => {
+      state.openCostExportModal = action.payload;
+    },
     setSubDeptCost: (state, action: PayloadAction<SubDeptCost[]>) => {
       state.subDeptCost = action.payload;
     },
@@ -291,6 +296,7 @@ export const {
   setSubDeptCost,
   setFilteredCostGridData,
   setSubDeptGridView,
+  setOpenCostExportModal,
   requerySubDeptMargins,
 } = subMarginSlice.actions;
 export default subMarginSlice.reducer;
