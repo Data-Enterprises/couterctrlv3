@@ -3,6 +3,7 @@ import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import type { MarginKpi } from "../../../interfaces";
 import SubDeptMarginKpi from "./MarginKpi";
 import { gpm } from "../../../functions";
+import { calculateCogs } from "..";
 
 const KpiContainer = () => {
   const ctx = useSubMarginCtx();
@@ -51,7 +52,8 @@ const KpiContainer = () => {
       0,
     );
     const total_cogs = ctx.margins.reduce(
-      (acc, curr) => acc + curr.calculated_cost * curr.qty,
+      (acc, curr) =>
+        acc + calculateCogs(curr.calculated_cost, curr.cost_fees, curr.qty),
       0,
     );
 
@@ -97,7 +99,8 @@ const KpiContainer = () => {
     // top_mover: findTopMover(),
     total_cogs: formatCurrency2(
       ctx.margins.reduce(
-        (acc, curr) => acc + curr.calculated_cost * curr.qty,
+        (acc, curr) =>
+          acc + calculateCogs(curr.calculated_cost, curr.cost_fees, curr.qty),
         0,
       ),
     ),

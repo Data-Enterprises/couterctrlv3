@@ -5,6 +5,8 @@ import {
   setSubDeptCost,
   setSubDeptGridView,
 } from "../../../features/subMarginSlice";
+import { calculateCogs } from "..";
+
 interface MarginKpiProps {
   data: string;
   title: string;
@@ -28,11 +30,20 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
               calculated_cost: curr.calculated_cost,
               cost: curr.cost,
               qty: curr.qty,
-              total_cost: curr.calculated_cost * curr.qty,
+              total_cost: calculateCogs(
+                curr.calculated_cost,
+                curr.cost_fees,
+                curr.qty,
+              ),
             });
           } else {
             found.qty += curr.qty;
-            found.total_cost += curr.calculated_cost * curr.qty;
+            ((found.total_cost += calculateCogs(
+              curr.calculated_cost,
+              curr.cost_fees,
+              curr.qty,
+            )),
+              (found.total_cost += curr.calculated_cost * curr.qty));
           }
           return acc;
         },

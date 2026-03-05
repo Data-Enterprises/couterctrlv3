@@ -3,6 +3,7 @@ import { useSubMarginCtx } from "../hooks";
 
 import { formatDate, type BarData } from "./widgets";
 import { gpm } from "../../../functions";
+import { calculateCogs } from "..";
 
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import KpiContainer from "./KpiContainer";
@@ -73,8 +74,9 @@ const SubMarginDisplay = () => {
         (acc, margin) => acc + margin.total_tax,
         0,
       );
+      
       const cogs = dateMargins.reduce(
-        (acc, curr) => acc + curr.calculated_cost * curr.qty,
+        (acc, curr) => acc + calculateCogs(curr.calculated_cost, curr.cost_fees, curr.qty),
         0,
       );
 
