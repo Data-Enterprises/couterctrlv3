@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { setDates } from ".";
 import { useAppSelector } from "../../hooks";
 
@@ -69,4 +70,28 @@ export const useParams = () => {
     // searchValue: ctx.type === "Group" ? ctx.lastGroup : ctx.lastStore,
     searchValue: ctx.searchValue, // aka the selected store from the current SingleSelect in SubMarginControls.tsx
   };
+};
+
+export const useHeight = () => {
+  const [height, setHeight] = useState<string>("h-[89%]");
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerHeight > 826) {
+        setHeight("h-[90.2%]");
+      } else {
+        setHeight("h-[88.9%]");
+      }
+    };
+
+    handleResize(); // Call it once to set the initial height
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  return height;
 };
