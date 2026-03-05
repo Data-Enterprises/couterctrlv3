@@ -27,7 +27,6 @@ const ExportModal = <T extends Record<string, any>>({
       return;
     }
 
-
     exportData(
       data,
       columns,
