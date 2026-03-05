@@ -106,6 +106,11 @@ const SubMarginControls = () => {
     dispatch(setSearchValue(Number(id)));
   };
 
+  const findStoreName = () => {
+    const store = ctx.assignedStores.find((s) => s.storeid === ctx.searchValue);
+    return store ? store.store_name : "";
+  };
+
   return (
     <div ref={containerRef} className="flex flex-col gap-1">
       <div className="bg-custom-white p-2 rounded-lg shadow-lg">
@@ -115,6 +120,7 @@ const SubMarginControls = () => {
           displayKey="store_name"
           valueKey="storeid"
           onSelect={handleStoreSelect}
+          defaultQuery={`${ctx.searchValue > 0 ? findStoreName() : ""}`}
         />
         <SingleDatePicker />
         <button

@@ -917,7 +917,7 @@ export type MarginKpi = {
   items: string;
   gpm: string;
   vendors: string;
-  top_mover: Mover;
+  // top_mover: Mover;
   total_cogs: string;
 };
 
@@ -937,3 +937,13 @@ export type StoresMissingSalesJsonResp = {
   missing_store_count: number;
   missing: Store[];
 };
+
+
+export type SubDeptCost = {
+  product_code: string;
+  description: string;
+  calculated_cost: number;
+  cost: number;
+  qty: number;
+  total_cost: number;
+}

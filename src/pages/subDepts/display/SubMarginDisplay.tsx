@@ -10,6 +10,8 @@ import SalesGrid from "./widgets/SalesGrid";
 import SalesBar from "./widgets/SalesBar";
 import ItemsGrid from "./widgets/ItemsGrid";
 import ItemsGridFilters from "./widgets/ItemsGridFilters";
+import SubDeptCostGrid from "./widgets/SubDeptCostGrid";
+import CostGridFilters from "./widgets/CostGridFilters";
 
 const useHeight = () => {
   const [height, setHeight] = useState<string>("h-[89%]");
@@ -36,8 +38,13 @@ const useHeight = () => {
 };
 
 const SubMarginDisplay = () => {
-  const { margins, loadingMargins, selectedWeek, selectedWeekDay } =
-    useSubMarginCtx();
+  const {
+    margins,
+    loadingMargins,
+    selectedWeek,
+    selectedWeekDay,
+    subDeptGridView,
+  } = useSubMarginCtx();
   const height = useHeight();
 
   const dates = useMemo(() => {
@@ -97,6 +104,27 @@ const SubMarginDisplay = () => {
     );
   }
 
+  const renderGrid = () => {
+    switch (subDeptGridView) {
+      case "item":
+        return (
+          <div className="grid grid-cols-[20%_79.5%] gap-2">
+            <ItemsGridFilters />
+            <ItemsGrid />
+          </div>
+        );
+      case "cost":
+        return (
+          <div className="grid grid-cols-[20%_79.5%] gap-2">
+            <CostGridFilters />
+            <SubDeptCostGrid />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="space-y-2">
       <KpiContainer />
@@ -109,12 +137,7 @@ const SubMarginDisplay = () => {
             <SalesGrid gridData={barData.slice().reverse()} />
           </div>
 
-          {selectedWeekDay ? (
-            <div className="grid grid-cols-[20%_79.5%] gap-2">
-              <ItemsGridFilters />
-              <ItemsGrid />
-            </div>
-          ) : null}
+          {selectedWeekDay ? renderGrid() : null}
         </div>
       ) : (
         <div className="w-full h-full flex items-center justify-center">

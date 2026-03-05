@@ -30,7 +30,7 @@ const SalesGrid = ({ gridData }: SalesGridProps) => {
   );
 
   useEffect(() => {
-    if (gridRef.current && gridRef.current.api) {
+    if (gridRef.current && gridRef.current.api && selectedWeekDay) {
       gridRef.current.api.forEachNode((node) => {
         const date = new Date(selectedWeekDay).toISOString().split("T")[0];
         const nodeDate = new Date(node.data.date).toISOString().split("T")[0];

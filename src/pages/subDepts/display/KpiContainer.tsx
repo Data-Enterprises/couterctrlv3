@@ -1,49 +1,49 @@
 import { useSubMarginCtx } from "../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
-import type { MarginKpi, Mover } from "../../../interfaces";
+import type { MarginKpi } from "../../../interfaces";
 import SubDeptMarginKpi from "./MarginKpi";
 import { gpm } from "../../../functions";
 
 const KpiContainer = () => {
   const ctx = useSubMarginCtx();
 
-  const findTopMover = () => {
-    const movers = [...ctx.margins].reduce((acc: Mover[], curr) => {
-      const found = acc.find((a) => a.vendor_id === curr.vendor_id);
-      if (!found) {
-        acc.push({
-          vendor_id: curr.vendor_id,
-          vendor_name: curr.vendor_name,
-          total_sales: curr.total_sales - curr.total_tax,
-          qty: curr.qty,
-          cogs: curr.calculated_cost * curr.qty,
-          gpm: 0,
-        });
-      } else {
-        found.total_sales += curr.total_sales - curr.total_tax;
-        found.qty += curr.qty;
-        found.cogs += curr.calculated_cost * curr.qty;
-      }
-      return acc;
-    }, []);
+  // const findTopMover = () => {
+  //   const movers = [...ctx.margins].reduce((acc: Mover[], curr) => {
+  //     const found = acc.find((a) => a.vendor_id === curr.vendor_id);
+  //     if (!found) {
+  //       acc.push({
+  //         vendor_id: curr.vendor_id,
+  //         vendor_name: curr.vendor_name,
+  //         total_sales: curr.total_sales - curr.total_tax,
+  //         qty: curr.qty,
+  //         cogs: curr.calculated_cost * curr.qty,
+  //         gpm: 0,
+  //       });
+  //     } else {
+  //       found.total_sales += curr.total_sales - curr.total_tax;
+  //       found.qty += curr.qty;
+  //       found.cogs += curr.calculated_cost * curr.qty;
+  //     }
+  //     return acc;
+  //   }, []);
 
-    const top = movers
-      .filter((m) => m.vendor_id !== null)
-      .map((m) => {
-        return {
-          ...m,
-          gpm:
-            m.total_sales === 0
-              ? 0
-              : ((m.total_sales - m.cogs) / m.total_sales) * 100,
-        };
-      });
-    // console.log(
-    //   "movers",
-    //   top.sort((a, b) => b.gpm - a.gpm),
-    // );
-    return top.sort((a, b) => b.gpm - a.gpm)[0];
-  };
+  //   const top = movers
+  //     .filter((m) => m.vendor_id !== null)
+  //     .map((m) => {
+  //       return {
+  //         ...m,
+  //         gpm:
+  //           m.total_sales === 0
+  //             ? 0
+  //             : ((m.total_sales - m.cogs) / m.total_sales) * 100,
+  //       };
+  //     });
+  //   // console.log(
+  //   //   "movers",
+  //   //   top.sort((a, b) => b.gpm - a.gpm),
+  //   // );
+  //   return top.sort((a, b) => b.gpm - a.gpm)[0];
+  // };
 
   const getGpm = () => {
     const total_sales = ctx.margins.reduce(
@@ -94,7 +94,7 @@ const KpiContainer = () => {
       }, []).length,
       0,
     ),
-    top_mover: findTopMover(),
+    // top_mover: findTopMover(),
     total_cogs: formatCurrency2(
       ctx.margins.reduce(
         (acc, curr) => acc + curr.calculated_cost * curr.qty,

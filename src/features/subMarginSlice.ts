@@ -1,7 +1,8 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { SubDeptMargin, SubDept } from "../interfaces";
+import type { SubDeptMargin, SubDept, SubDeptCost } from "../interfaces";
 import type { ItemRow } from "../pages/subDepts/display/widgets";
 
+export type SubDeptGridView = "item" | "cost";
 export type MarginWeek = 0 | 1 | 2 | 3 | 4 | 5;
 export type ItemFilterType =
   | "upc"
@@ -10,6 +11,8 @@ export type ItemFilterType =
   | "qty"
   | "cogs"
   | "margin"
+  | "unitCost"
+  | "caseCost"
   | "";
 
 export type ThreshOperator = ">" | "<" | "=" | "";
@@ -40,20 +43,30 @@ interface SubMarginState {
   searchValue: number;
   selectedWeekDay: string;
   openExportModal: boolean;
+  subDeptGridView: SubDeptGridView;
 
   itemGridData: ItemRow[]; // data for the item grid
   filteredItemGridData: ItemRow[];
+  subDeptCost: SubDeptCost[]; // for the cost drilldown modal
+  filteredCostGridData: SubDeptCost[];
   // filters for the item grid
   filterModalOpen: boolean;
   itemFilterType: ItemFilterType;
   filterTextInput: string;
   threshOperator: ThreshOperator;
+  // upc and desc filter for all grids at the bottom right
   upcFilter: string;
   descFilter: string;
-  salesFilter: ThresholdFilter;
   qtyFilter: ThresholdFilter;
   cogsFilter: ThresholdFilter;
+
+  // filters specific to the items grid
+  salesFilter: ThresholdFilter;
   marginFilter: ThresholdFilter;
+
+  // filters specific to the cost grid
+  unitCostFilter: ThresholdFilter;
+  caseCostFilter: ThresholdFilter;
 }
 
 const initialState: SubMarginState = {
@@ -84,6 +97,11 @@ const initialState: SubMarginState = {
   itemGridData: [],
   filteredItemGridData: [],
   openExportModal: false,
+  subDeptCost: [],
+  subDeptGridView: "item",
+  filteredCostGridData: [],
+  caseCostFilter: defaultThreshFilter,
+  unitCostFilter: defaultThreshFilter,
 };
 
 const subMarginSlice = createSlice({
@@ -194,6 +212,12 @@ const subMarginSlice = createSlice({
         case "marginFilter":
           state.marginFilter = value;
           break;
+        case "unitCostFilter":
+          state.unitCostFilter = value;
+          break;
+        case "caseCostFilter":
+          state.caseCostFilter = value;
+          break;
       }
     },
     resetFilters: (state) => {
@@ -203,6 +227,8 @@ const subMarginSlice = createSlice({
       state.qtyFilter = defaultThreshFilter;
       state.cogsFilter = defaultThreshFilter;
       state.marginFilter = defaultThreshFilter;
+      state.caseCostFilter = defaultThreshFilter;
+      state.unitCostFilter = defaultThreshFilter;
       state.itemFilterType = "";
       state.threshOperator = "";
       state.filterTextInput = "";
@@ -224,6 +250,15 @@ const subMarginSlice = createSlice({
     },
     setOpenExportModal: (state, action: PayloadAction<boolean>) => {
       state.openExportModal = action.payload;
+    },
+    setSubDeptCost: (state, action: PayloadAction<SubDeptCost[]>) => {
+      state.subDeptCost = action.payload;
+    },
+    setSubDeptGridView: (state, action: PayloadAction<SubDeptGridView>) => {
+      state.subDeptGridView = action.payload;
+    },
+    setFilteredCostGridData: (state, action: PayloadAction<SubDeptCost[]>) => {
+      state.filteredCostGridData = action.payload;
     },
     resetSubMarginState: () => initialState,
   },
@@ -253,6 +288,9 @@ export const {
   setOpenExportModal,
   setFilteredItemGridData,
   resetFilters,
+  setSubDeptCost,
+  setFilteredCostGridData,
+  setSubDeptGridView,
   requerySubDeptMargins,
 } = subMarginSlice.actions;
 export default subMarginSlice.reducer;

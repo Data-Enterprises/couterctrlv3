@@ -1,5 +1,6 @@
 import { themeQuartz, type ColDef } from "ag-grid-community";
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
+import type { SubDeptCost } from "../../../../interfaces";
 
 export interface BarData {
   sales: number;
@@ -169,6 +170,60 @@ export const itemCols: ColDef<ItemRow>[] = [
     resizable: false,
     cellClass: "no-outline-on-focus text-right",
     valueFormatter: (params) => `${params.value.toFixed(2)}%`,
+  },
+];
+
+export const costCols: ColDef<SubDeptCost>[] = [
+  {
+    flex: 1,
+    field: "product_code",
+    headerName: "Upc",
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus text-right",
+  },
+  {
+    flex: 2.3,
+    field: "description",
+    headerName: "Description",
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus",
+  },
+  {
+    flex: 0.7,
+    field: "calculated_cost",
+    headerName: "Unit Cost",
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    valueFormatter: (params) => formatCurrency2(params.value),
+    cellClass: "no-outline-on-focus text-right",
+  },
+  {
+    flex: 0.7,
+    field: "cost",
+    headerName: "Case Cost",
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    valueFormatter: (params) => formatCurrency2(params.value),
+    cellClass: "no-outline-on-focus text-right",
+  },
+  {
+    flex: 0.7,
+    field: "qty",
+    headerName: "Qty",
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    valueFormatter: (params) => formatBigNumber(params.value, 0),
+    cellClass: "no-outline-on-focus text-right",
+  },
+  {
+    flex: 0.8,
+    field: "total_cost",
+    headerName: "COGS",
+    resizable: false,
+    valueFormatter: (params) => formatCurrency2(params.value),
+    cellClass: "no-outline-on-focus text-right",
   },
 ];
 

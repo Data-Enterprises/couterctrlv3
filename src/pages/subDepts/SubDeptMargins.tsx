@@ -3,11 +3,9 @@ import { useSubMarginCtx } from "./hooks";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 
 import {
-  resetSubMarginState,
   setLoadingMargins,
   setMargins,
   setOpenExportModal,
-  setSearchValue,
 } from "../../features/subMarginSlice";
 
 import SubMarginControls from "./controls/SubMarginControls";
@@ -20,12 +18,6 @@ const SubDeptMargins = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
   const sm = useAppSelector((state) => state.subMargin);
-
-  useEffect(() => {
-    const currentSearchValue = ctx.searchValue;
-    dispatch(resetSubMarginState());
-    dispatch(setSearchValue(currentSearchValue));
-  }, [ctx.singleDate]);
 
   useEffect(() => {
     if (
