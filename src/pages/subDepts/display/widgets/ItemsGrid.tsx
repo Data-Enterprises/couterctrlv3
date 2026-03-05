@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useSubMarginCtx } from "../../hooks";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { calculateCogs } from "../..";
 
 import { AgGridReact } from "ag-grid-react";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
@@ -104,7 +105,12 @@ const ItemsGrid = () => {
           sub_department_description: margin.sub_department_description,
           product_code: margin.product_code,
           product_description: margin.product_description,
-          cogs: margin.calculated_cost * margin.qty,
+          cogs: calculateCogs(
+            margin.calculated_cost,
+            margin.cost_fees,
+            margin.qty,
+          ),
+          cost_fees: margin.cost_fees,
           total_sales: margin.total_sales - margin.total_tax,
           net_sales: margin.net_sales,
           total_tax: margin.total_tax,
@@ -112,7 +118,11 @@ const ItemsGrid = () => {
           margin: 0,
         });
       } else {
-        found.cogs += margin.calculated_cost * margin.qty;
+        found.cogs += calculateCogs(
+          margin.calculated_cost,
+          margin.cost_fees,
+          margin.qty,
+        );
         found.total_sales += margin.total_sales - margin.total_tax;
         found.net_sales += margin.net_sales;
         found.total_tax += margin.total_tax;

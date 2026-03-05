@@ -22,6 +22,7 @@ export interface ItemRow {
   total_tax: number; // good
   qty: number; //good
   margin: number;
+  cost_fees: number;
 }
 
 export const formatDate = (dateStr: string) => {
@@ -161,6 +162,15 @@ export const itemCols: ColDef<ItemRow>[] = [
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     valueFormatter: (params) => formatCurrency2(params.value),
+    cellClass: "no-outline-on-focus text-right",
+  },
+  {
+    flex: 1,
+    field: "cost_fees",
+    headerName: "Cost Fees",
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    valueFormatter: (params) => `${params.value}%`,
     cellClass: "no-outline-on-focus text-right",
   },
   {

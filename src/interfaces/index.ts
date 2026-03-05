@@ -890,6 +890,7 @@ export type SubDeptMargin = {
   case_size: number;
   calculated_cost: number;
   margin: number;
+  cost_fees: number;
 };
 
 export type SubMarginsJsonResp = {
