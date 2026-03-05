@@ -1,14 +1,12 @@
 import { useSubMarginCtx, useParams } from "../hooks";
 import { useAppDispatch } from "../../../hooks";
 import {
-  resetAllMargins,
-  setLoadedMargins,
-  setMargins,
+  setLoadingMargins,
   setSelectedWeek,
   setWeekTrendMargins,
   type MarginWeek,
 } from "../../../features/subMarginSlice";
-// import WeekCard from "./WeekCard";
+
 import { setDates } from "..";
 import type {
   JsonError,
@@ -17,6 +15,7 @@ import type {
 } from "../../../interfaces";
 import { getSubMargins } from "../../../api/subMargins";
 import { useToast } from "../../../components/toasts/hooks/useToast";
+import { formatDate } from "./widgets";
 
 const WeeklyTrends = () => {
   const toast = useToast();
@@ -25,59 +24,61 @@ const WeeklyTrends = () => {
   const dispatch = useAppDispatch();
 
   const handleWeekClick = (week: MarginWeek) => {
-    let needsFetch = true;
-    let data: SubDeptMargin[] = [];
-    if (week === 1 && ctx.weekOneMargins.length) {
-      data = ctx.weekOneMargins;
-      needsFetch = false;
-    } else if (week === 2 && ctx.weekTwoMargins.length) {
-      data = ctx.weekTwoMargins;
-      needsFetch = false;
-    } else if (week === 3 && ctx.weekThreeMargins.length) {
-      data = ctx.weekThreeMargins;
-      needsFetch = false;
-    } else if (week === 4 && ctx.weekFourMargins.length) {
-      data = ctx.weekFourMargins;
-      needsFetch = false;
-    }
-
-    if (!needsFetch) {
-      // If we already have the data for the week, we can just set it as the selected week to display
-      dispatch(setSelectedWeek(week));
-      dispatch(setMargins(data))
-      return;
-    }
-
-    dispatch(resetAllMargins());
+    dispatch(setLoadingMargins(true));
     dispatch(setSelectedWeek(week));
 
-    let end = "";
-    let start = "";
+    // Starting pointfor the dates
+    let end = params.end;
+    let start = params.start;
 
-    switch (week) {
-      case 1:
-        end = params.end;
-        start = params.start;
-        break;
-      case 2:
-        end = setDates(new Date(params.end), 7);
-        start = setDates(new Date(params.end), 13);
-        break;
-
-      case 3:
-        end = setDates(new Date(params.end), 14);
-        start = setDates(new Date(params.end), 20);
-        break;
-      case 4:
-        end = setDates(new Date(params.end), 21);
-        start = setDates(new Date(params.end), 27);
-        break;
+    if (week === 1 && !ctx.weekOneMargins.length) {
+      getData(start, end, week);
     }
-    getData(start, end, week);
+
+    if (week === 2 && !ctx.weekTwoMargins.length) {
+      end = setDates(new Date(params.end), 7);
+      start = setDates(new Date(params.end), 13);
+      getData(start, end, week);
+    }
+
+    if (week === 3 && !ctx.weekThreeMargins.length) {
+      end = setDates(new Date(params.end), 14);
+      start = setDates(new Date(params.end), 20);
+      getData(start, end, week);
+    }
+
+    if (week === 4 && !ctx.weekFourMargins.length) {
+      end = setDates(new Date(params.end), 21);
+      start = setDates(new Date(params.end), 27);
+      getData(start, end, week);
+    }
+
+    if (week === 5) {
+      if (!ctx.weekOneMargins.length) {
+        getData(start, end, 1);
+      }
+
+      if (!ctx.weekTwoMargins.length) {
+        const wk2End = setDates(new Date(params.end), 7);
+        const wk2Start = setDates(new Date(params.end), 13);
+        getData(wk2Start, wk2End, 2);
+      }
+
+      if (!ctx.weekThreeMargins.length) {
+        const wk3End = setDates(new Date(params.end), 14);
+        const wk3Start = setDates(new Date(params.end), 20);
+        getData(wk3Start, wk3End, 3);
+      }
+
+      if (!ctx.weekFourMargins.length) {
+        const wk4End = setDates(new Date(params.end), 21);
+        const wk4Start = setDates(new Date(params.end), 27);
+        getData(wk4Start, wk4End, 4);
+      }
+    }
   };
 
   const getData = (start: string, end: string, week: number) => {
-    // Initial data fetch for the designated trend week
     getSubMargins(
       ctx.url,
       ctx.token,
@@ -127,10 +128,6 @@ const WeeklyTrends = () => {
                     // If all pages have been fetched, we can set the margins for the week
                     if (pages.every((p) => p.fetched)) {
                       dispatch(setWeekTrendMargins({ data: marginData, week }));
-
-                      // Once we've appended the final page of data to the week's margin data
-                      // we mark this week as loaded in redux and wait for the others before loading the display
-                      dispatch(setLoadedMargins({ week, loaded: true }));
                     }
                   }
                 })
@@ -139,38 +136,71 @@ const WeeklyTrends = () => {
           } else {
             // If we only have one page of data total, we can just set the margins for the week
             dispatch(setWeekTrendMargins({ data: marginData, week }));
-            dispatch(setLoadedMargins({ week, loaded: true }));
           }
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
   };
 
+  const showWeekRange = (week: number) => {
+    const end = setDates(new Date(ctx.singleDate), 0);
+    const start = setDates(new Date(ctx.singleDate), 6);
+    let wkStart = "",
+      wkEnd = "";
+
+    switch (week) {
+      case 1:
+        return `${formatDate(start)} - ${formatDate(end)}`;
+      case 2:
+        wkEnd = setDates(new Date(ctx.singleDate), 7);
+        wkStart = setDates(new Date(ctx.singleDate), 13);
+        return `${formatDate(wkStart)} - ${formatDate(wkEnd)}`;
+      case 3:
+        wkEnd = setDates(new Date(ctx.singleDate), 14);
+        wkStart = setDates(new Date(ctx.singleDate), 20);
+        return `${formatDate(wkStart)} - ${formatDate(wkEnd)}`;
+      case 4:
+        wkEnd = setDates(new Date(ctx.singleDate), 21);
+        wkStart = setDates(new Date(ctx.singleDate), 27);
+        return `${formatDate(wkStart)} - ${formatDate(wkEnd)}`;
+      case 5:
+        return "All Weeks";
+    }
+  };
+
   return (
-    <div className="flex flex-col min-w-[10vw] gap-2 text-sm font-medium select-none bg-custom-white rounded-lg shadow-lg p-2">
+    <div
+      className={`${ctx.subDepts.length > 0 ? "" : "opacity-50 pointer-events-none"} grid gap-2 text-sm font-medium select-none bg-custom-white rounded-lg shadow-lg p-2`}
+    >
       <div
-        className={`${ctx.selectedWeek === 1 ? "btn-themeGreen" : "btn-themeBlue"} text-center`}
+        className={`${ctx.selectedWeek === 1 ? "btn-themeGreen" : "btn-themeBlue"} text-center py-1.5`}
         onClick={() => handleWeekClick(1)}
       >
-        Week 1
+        {showWeekRange(1)}
       </div>
       <div
-        className={`${ctx.selectedWeek === 2 ? "btn-themeGreen" : "btn-themeBlue"} text-center`}
+        className={`${ctx.selectedWeek === 2 ? "btn-themeGreen" : "btn-themeBlue"} text-center py-1.5`}
         onClick={() => handleWeekClick(2)}
       >
-        Week 2
+        {showWeekRange(2)}
       </div>
       <div
-        className={`${ctx.selectedWeek === 3 ? "btn-themeGreen" : "btn-themeBlue"} text-center`}
+        className={`${ctx.selectedWeek === 3 ? "btn-themeGreen" : "btn-themeBlue"} text-center py-1.5`}
         onClick={() => handleWeekClick(3)}
       >
-        Week 3
+        {showWeekRange(3)}
       </div>
       <div
-        className={`${ctx.selectedWeek === 4 ? "btn-themeGreen" : "btn-themeBlue"} text-center`}
+        className={`${ctx.selectedWeek === 4 ? "btn-themeGreen" : "btn-themeBlue"} text-center py-1.5`}
         onClick={() => handleWeekClick(4)}
       >
-        Week 4
+        {showWeekRange(4)}
+      </div>
+      <div
+        className={`${ctx.selectedWeek === 5 ? "btn-themeGreen" : "btn-themeBlue"} text-center py-1.5`}
+        onClick={() => handleWeekClick(5)}
+      >
+        {showWeekRange(5)}
       </div>
     </div>
   );

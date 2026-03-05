@@ -1,3 +1,4 @@
+import { useRef, useEffect, useState } from "react";
 import { useAppDispatch } from "../../../hooks";
 import { useParams, useSubMarginCtx } from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -7,18 +8,52 @@ import type { JsonError, SubDept, SubSalesJsonResp } from "../../../interfaces";
 import {
   requerySubDeptMargins,
   setLoadingSubDepts,
+  setOpenCostExportModal,
+  setOpenExportModal,
+  setSearchValue,
   setSubDepts,
 } from "../../../features/subMarginSlice";
 
-import StorePicker from "../../../components/storePicker/StorePicker";
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
 import SubDepts from "./SubDepts";
+import WeeklyTrends from "../display/WeeklyTrends";
+import SingleSelect from "../../../components/SingleSelect";
+
+const useHeight = () => {
+  const [height, setHeight] = useState<string>("max-h-[31vh]");
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleHeight = () => {
+      if (containerRef.current) {
+        const containerHeight = containerRef.current.clientHeight;
+
+        if (containerHeight > 842) {
+          setHeight("max-h-[31vh]");
+        } else {
+          setHeight("max-h-[22vh]");
+        }
+      }
+    };
+
+    handleHeight();
+
+    window.addEventListener("resize", handleHeight);
+
+    return () => {
+      window.removeEventListener("resize", handleHeight);
+    };
+  }, []);
+
+  return { containerRef, height };
+};
 
 const SubMarginControls = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const ctx = useSubMarginCtx();
   const params = useParams();
+  const { containerRef, height } = useHeight();
 
   const handleSubDeptSearch = () => {
     dispatch(requerySubDeptMargins());
@@ -68,10 +103,34 @@ const SubMarginControls = () => {
     return "opacity-50 pointer-events-none";
   };
 
+  const handleStoreSelect = (id: string | number) => {
+    dispatch(setSearchValue(Number(id)));
+  };
+
+  const findStoreName = () => {
+    const store = ctx.assignedStores.find((s) => s.storeid === ctx.searchValue);
+    return store ? store.store_name : "";
+  };
+
+  const openExport = () => {
+    if (ctx.subDeptGridView === "item") {
+      dispatch(setOpenExportModal(true));
+    } else if (ctx.subDeptGridView === "cost") {
+      dispatch(setOpenCostExportModal(true));
+    }
+  };
+
   return (
-    <div className="flex flex-col gap-1">
+    <div ref={containerRef} className="flex flex-col gap-1">
       <div className="bg-custom-white p-2 rounded-lg shadow-lg">
-        <StorePicker />
+        <SingleSelect
+          label="Store"
+          data={ctx.assignedStores}
+          displayKey="store_name"
+          valueKey="storeid"
+          onSelect={handleStoreSelect}
+          defaultQuery={`${ctx.searchValue > 0 ? findStoreName() : ""}`}
+        />
         <SingleDatePicker />
         <button
           className="btn-themeBlue px-0 w-full mt-2"
@@ -86,12 +145,16 @@ const SubMarginControls = () => {
           >
             Reset
           </button>
-          <button className={`btn-themeGreen px-0 ${exportBtnActive()}`}>
+          <button
+            className={`btn-themeGreen px-0 ${exportBtnActive()}`}
+            onClick={openExport}
+          >
             Export
           </button>
         </div>
       </div>
-      <SubDepts />
+      <SubDepts height={height} />
+      {ctx.selectedSubDeptId > 0 && <WeeklyTrends />}
     </div>
   );
 };

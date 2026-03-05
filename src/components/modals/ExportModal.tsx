@@ -30,7 +30,7 @@ const ExportModal = <T extends Record<string, any>>({
     exportData(
       data,
       columns,
-      `${fileName}_${formatDate(new Date().toISOString())}.csv`
+      `${fileName}_${formatDate(new Date().toISOString())}.csv`,
     );
 
     handleClose();
@@ -42,7 +42,11 @@ const ExportModal = <T extends Record<string, any>>({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      modalClassName="bg-custom-white w-1/4"
+    >
       <label htmlFor="filename">File Name</label>
       <input
         data-testid="export-modal-filename-input"
@@ -55,10 +59,10 @@ const ExportModal = <T extends Record<string, any>>({
       <div className="flex gap-4">
         <button
           data-testid="export-modal-export"
-          className="btn-themeBlue w-full"
+          className="btn-themeGreen w-full"
           onClick={handleExport}
         >
-          Export
+          Submit
         </button>
         <button
           data-testid="export-modal-cancel"
@@ -67,6 +71,9 @@ const ExportModal = <T extends Record<string, any>>({
         >
           Cancel
         </button>
+      </div>
+      <div className="text-content/60 text-center text-sm translate-y-2">
+        *file extension will be added automatically on submit
       </div>
     </Modal>
   );

@@ -442,6 +442,7 @@ export type UpcTrend = {
 export type Handlers = {
   copyUpc?: () => Promise<void> | void;
   copyDesc?: () => Promise<void> | void;
+  copyAllUpcs?: () => Promise<void> | void;
 };
 
 export type ContextEvent = React.MouseEvent<
@@ -458,6 +459,11 @@ export type Option = {
 export type ClipboardText = {
   upc: string;
   desc: string;
+};
+
+export type SMClipboardText = {
+  upc: string;
+  allUpc: string;
 };
 
 // Forecast Interfaces
@@ -868,7 +874,7 @@ export type SubDeptMargin = {
   store_number: string;
   store_name: string;
   product_code: string;
-  prodcut_description: string;
+  product_description: string;
   price_type: string;
   vendor_id: string;
   vendor_name: string;
@@ -906,6 +912,8 @@ export type Mover = {
   qty: number;
   cogs: number;
   gpm: number;
+  tax: number;
+  weight: number;
 };
 
 export type MarginKpi = {
@@ -915,7 +923,7 @@ export type MarginKpi = {
   items: string;
   gpm: string;
   vendors: string;
-  top_mover: Mover;
+  // top_mover: Mover;
   total_cogs: string;
 };
 
@@ -927,7 +935,7 @@ export type MissingStore = {
   storeid: number;
   store_number: string;
   store_name: string;
-}
+};
 
 export type StoresMissingSalesJsonResp = {
   error: number;
@@ -935,3 +943,13 @@ export type StoresMissingSalesJsonResp = {
   missing_store_count: number;
   missing: Store[];
 };
+
+
+export type SubDeptCost = {
+  product_code: string;
+  description: string;
+  calculated_cost: number;
+  cost: number;
+  qty: number;
+  total_cost: number;
+}
