@@ -1,11 +1,7 @@
+import { formatDate } from ".";
 import { setDates } from "../..";
 import { useSubMarginCtx, useHeight } from "../../hooks";
 import WeekOverview from "./WeekOverview";
-
-const formatDate = (date: string) => {
-  const split = date.split("-");
-  return `${split[1]}/${split[2]}/${split[0]}`;
-};
 
 const AllWeeksTrend = () => {
   const ctx = useSubMarginCtx();

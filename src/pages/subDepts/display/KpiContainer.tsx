@@ -53,7 +53,7 @@ const KpiContainer = () => {
     );
     const total_cogs = ctx.margins.reduce(
       (acc, curr) =>
-        acc + calculateCogs(curr.calculated_cost, curr.cost_fees, curr.qty),
+        acc + calculateCogs(curr.net_cost, curr.case_size, curr.qty),
       0,
     );
 
@@ -100,7 +100,7 @@ const KpiContainer = () => {
     total_cogs: formatCurrency2(
       ctx.margins.reduce(
         (acc, curr) =>
-          acc + calculateCogs(curr.calculated_cost, curr.cost_fees, curr.qty),
+          acc + calculateCogs(curr.net_cost, curr.case_size, curr.qty),
         0,
       ),
     ),

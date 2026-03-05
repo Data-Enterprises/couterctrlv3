@@ -31,19 +31,18 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
               cost: curr.cost,
               qty: curr.qty,
               total_cost: calculateCogs(
-                curr.calculated_cost,
-                curr.cost_fees,
+                curr.net_cost,
+                curr.case_size,
                 curr.qty,
               ),
             });
           } else {
             found.qty += curr.qty;
-            ((found.total_cost += calculateCogs(
-              curr.calculated_cost,
-              curr.cost_fees,
+            found.total_cost += calculateCogs(
+              curr.net_cost,
+              curr.case_size,
               curr.qty,
-            )),
-              (found.total_cost += curr.calculated_cost * curr.qty));
+            );
           }
           return acc;
         },
@@ -60,10 +59,18 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
   };
 
   const highlightStyle = () => {
-    if (title === "Cost" && ctx.subDeptGridView === "cost" && ctx.selectedWeek < 5) {
+    if (
+      title === "Cost" &&
+      ctx.subDeptGridView === "cost" &&
+      ctx.selectedWeek < 5
+    ) {
       return "bg-orange-200";
     }
-    if (title === "Unique Items" && ctx.subDeptGridView === "item" && ctx.selectedWeek < 5) {
+    if (
+      title === "Unique Items" &&
+      ctx.subDeptGridView === "item" &&
+      ctx.selectedWeek < 5
+    ) {
       return "bg-orange-200";
     }
     return "";

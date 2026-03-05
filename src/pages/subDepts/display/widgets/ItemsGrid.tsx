@@ -106,8 +106,8 @@ const ItemsGrid = () => {
           product_code: margin.product_code,
           product_description: margin.product_description,
           cogs: calculateCogs(
-            margin.calculated_cost,
-            margin.cost_fees,
+            margin.net_cost,
+            margin.case_size,
             margin.qty,
           ),
           cost_fees: margin.cost_fees,
@@ -119,8 +119,8 @@ const ItemsGrid = () => {
         });
       } else {
         found.cogs += calculateCogs(
-          margin.calculated_cost,
-          margin.cost_fees,
+          margin.net_cost,
+          margin.case_size,
           margin.qty,
         );
         found.total_sales += margin.total_sales - margin.total_tax;
