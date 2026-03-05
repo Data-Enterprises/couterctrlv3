@@ -45,7 +45,7 @@ const ItemsGridFilters = () => {
         : "COGS";
     } else if (filter === "margin") {
       return sm.marginFilter.value
-        ? `Margin ${sm.marginFilter.operator} ${formatCurrency2(sm.marginFilter.value)}`
+        ? `Margin ${sm.marginFilter.operator} ${formatBigNumber(sm.marginFilter.value, 2)}%`
         : "Margin";
     }
 

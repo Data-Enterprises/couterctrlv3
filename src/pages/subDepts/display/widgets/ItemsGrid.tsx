@@ -1,11 +1,13 @@
+import { useEffect, useState } from "react";
 import { useSubMarginCtx } from "../../hooks";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
+
 import { AgGridReact } from "ag-grid-react";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
 import { theme, itemCols, type ItemRow } from ".";
-import { useState, useEffect } from "react";
 import {
+  setFilteredItemGridData,
   setItemGridData,
   type ThreshOperator,
 } from "../../../../features/subMarginSlice";
@@ -18,7 +20,7 @@ const ItemsGrid = () => {
 
   useEffect(() => {
     // handle the filtering here
-    if (gridData.length) {
+    if (sm.itemGridData.length) {
       const upc = sm.upcFilter;
       const desc = sm.descFilter;
       const sales = sm.salesFilter;
@@ -71,6 +73,7 @@ const ItemsGrid = () => {
         );
       });
       setGridData(filteredData);
+      dispatch(setFilteredItemGridData(filteredData));
     }
   }, [
     sm.upcFilter,
@@ -118,13 +121,14 @@ const ItemsGrid = () => {
       margin: ((item.total_sales - item.cogs) / item.total_sales) * 100,
     }));
     dispatch(setItemGridData(newData));
+    dispatch(setFilteredItemGridData(newData));
     setGridData(newData);
   }, [selectedWeekDay]);
 
   return (
     <div>
       <AgGridReact
-        rowData={gridData as ItemRow[]}
+        rowData={gridData}
         columnDefs={itemCols}
         theme={theme}
         pagination={true}

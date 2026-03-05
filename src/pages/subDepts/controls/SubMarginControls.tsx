@@ -8,6 +8,7 @@ import type { JsonError, SubDept, SubSalesJsonResp } from "../../../interfaces";
 import {
   requerySubDeptMargins,
   setLoadingSubDepts,
+  setOpenExportModal,
   setSearchValue,
   setSubDepts,
 } from "../../../features/subMarginSlice";
@@ -129,7 +130,10 @@ const SubMarginControls = () => {
           >
             Reset
           </button>
-          <button className={`btn-themeGreen px-0 ${exportBtnActive()}`}>
+          <button
+            className={`btn-themeGreen px-0 ${exportBtnActive()}`}
+            onClick={() => dispatch(setOpenExportModal(true))}
+          >
             Export
           </button>
         </div>

@@ -39,8 +39,10 @@ interface SubMarginState {
   selectedWeek: MarginWeek;
   searchValue: number;
   selectedWeekDay: string;
+  openExportModal: boolean;
 
   itemGridData: ItemRow[]; // data for the item grid
+  filteredItemGridData: ItemRow[];
   // filters for the item grid
   filterModalOpen: boolean;
   itemFilterType: ItemFilterType;
@@ -80,6 +82,8 @@ const initialState: SubMarginState = {
   itemFilterType: "",
   threshOperator: "",
   itemGridData: [],
+  filteredItemGridData: [],
+  openExportModal: false,
 };
 
 const subMarginSlice = createSlice({
@@ -215,6 +219,12 @@ const subMarginSlice = createSlice({
     setItemGridData: (state, action: PayloadAction<ItemRow[]>) => {
       state.itemGridData = action.payload;
     },
+    setFilteredItemGridData: (state, action: PayloadAction<ItemRow[]>) => {
+      state.filteredItemGridData = action.payload;
+    },
+    setOpenExportModal: (state, action: PayloadAction<boolean>) => {
+      state.openExportModal = action.payload;
+    },
     resetSubMarginState: () => initialState,
   },
 });
@@ -240,6 +250,8 @@ export const {
   setFilterTextInput,
   setThreshOperator,
   setItemGridData,
+  setOpenExportModal,
+  setFilteredItemGridData,
   resetFilters,
   requerySubDeptMargins,
 } = subMarginSlice.actions;

@@ -1,20 +1,25 @@
 import { useEffect } from "react";
 import { useSubMarginCtx } from "./hooks";
-import { useAppDispatch } from "../../hooks";
+import { useAppDispatch, useAppSelector } from "../../hooks";
 
-import SubMarginControls from "./controls/SubMarginControls";
-import SubMarginDisplay from "./display/SubMarginDisplay";
 import {
   resetSubMarginState,
   setLoadingMargins,
   setMargins,
+  setOpenExportModal,
   setSearchValue,
 } from "../../features/subMarginSlice";
+
+import SubMarginControls from "./controls/SubMarginControls";
+import SubMarginDisplay from "./display/SubMarginDisplay";
 import ItemFilterModal from "./display/modals/ItemFilterModal";
+import ExportModal from "../../components/modals/ExportModal";
+import { itemCols } from "./display/widgets";
 
 const SubDeptMargins = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
+  const sm = useAppSelector((state) => state.subMargin);
 
   useEffect(() => {
     const currentSearchValue = ctx.searchValue;
@@ -59,8 +64,18 @@ const SubDeptMargins = () => {
     ctx.weekFourMargins,
   ]);
 
+  const handleClose = () => {
+    dispatch(setOpenExportModal(false));
+  };
+
   return (
     <div className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] grid grid-cols-[18%_82%] gap-2 p-4">
+      <ExportModal
+        isOpen={sm.openExportModal}
+        columns={itemCols}
+        data={sm.filteredItemGridData}
+        onClose={handleClose}
+      />
       <ItemFilterModal />
       <SubMarginControls />
       {!ctx.loadingMargins && !ctx.margins.length ? null : <SubMarginDisplay />}
