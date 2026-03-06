@@ -46,7 +46,15 @@ const WeekOverview = ({ dates, data, week }: WeekOverviewProps) => {
     0,
   );
   const cost = data.reduce(
-    (acc, curr) => acc + calculateCogs(curr.net_cost, curr.cost, curr.case_size, curr.qty, curr.weight),
+    (acc, curr) =>
+      acc +
+      calculateCogs(
+        curr.net_cost,
+        curr.cost,
+        curr.case_size,
+        curr.qty,
+        curr.weight,
+      ),
     0,
   );
   const qty = data.reduce((acc, curr) => acc + curr.qty, 0);
@@ -54,12 +62,19 @@ const WeekOverview = ({ dates, data, week }: WeekOverviewProps) => {
 
   const margin = ((sales - cost) / sales) * 100;
   const uniqueItems = new Set(data.map((item) => item.product_code)).size;
+  const weight = data.reduce((acc, curr) => acc + curr.weight, 0);
 
   const getSalesAndCogs = (data: SubDeptMargin[]) => {
     return data.reduce(
       (acc, curr) => {
         const sales = curr.total_sales - curr.total_tax;
-        const cost = calculateCogs(curr.net_cost, curr.cost, curr.case_size, curr.qty, curr.weight);
+        const cost = calculateCogs(
+          curr.net_cost,
+          curr.cost,
+          curr.case_size,
+          curr.qty,
+          curr.weight,
+        );
         acc.sales += sales;
         acc.cogs += cost;
         return acc;
@@ -176,17 +191,38 @@ const WeekOverview = ({ dates, data, week }: WeekOverviewProps) => {
     // used to calculate the margins for the previous three weeks
     const week2Cost = ctx.weekTwoMargins.reduce(
       (acc, curr) =>
-        acc + calculateCogs(curr.net_cost, curr.cost, curr.case_size, curr.qty, curr.weight),
+        acc +
+        calculateCogs(
+          curr.net_cost,
+          curr.cost,
+          curr.case_size,
+          curr.qty,
+          curr.weight,
+        ),
       0,
     );
     const week3Cost = ctx.weekThreeMargins.reduce(
       (acc, curr) =>
-        acc + calculateCogs(curr.net_cost, curr.cost, curr.case_size, curr.qty, curr.weight),
+        acc +
+        calculateCogs(
+          curr.net_cost,
+          curr.cost,
+          curr.case_size,
+          curr.qty,
+          curr.weight,
+        ),
       0,
     );
     const week4Cost = ctx.weekFourMargins.reduce(
       (acc, curr) =>
-        acc + calculateCogs(curr.net_cost, curr.cost, curr.case_size, curr.qty, curr.weight),
+        acc +
+        calculateCogs(
+          curr.net_cost,
+          curr.cost,
+          curr.case_size,
+          curr.qty,
+          curr.weight,
+        ),
       0,
     );
 
@@ -331,7 +367,7 @@ const WeekOverview = ({ dates, data, week }: WeekOverviewProps) => {
             </div>
           </div>
         </div>
-        <div className="mt-2 h-[28%] grid grid-cols-4 gap-2 font-medium">
+        <div className="mt-2 h-[28%] grid grid-cols-5 gap-2 font-medium">
           <div className="bg-bkg/70 rounded-lg shadow flex flex-col items-center justify-center">
             <div className="text-content/50">Sales</div>
             <div>{formatCurrency2(sales)}</div>
@@ -343,6 +379,10 @@ const WeekOverview = ({ dates, data, week }: WeekOverviewProps) => {
           <div className="bg-bkg/70 rounded-lg shadow flex flex-col items-center justify-center">
             <div className="text-content/50">Qty</div>
             <div>{formatBigNumber(qty, 0)}</div>
+          </div>
+          <div className="bg-bkg/70 rounded-lg shadow flex flex-col items-center justify-center">
+            <div className="text-content/50">Weight</div>
+            <div>{formatBigNumber(weight)}</div>
           </div>
           <div className="bg-bkg/70 rounded-lg shadow flex flex-col items-center justify-center">
             <div className="text-content/50">Tax</div>

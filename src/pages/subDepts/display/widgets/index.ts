@@ -95,7 +95,7 @@ export const cols: ColDef<BarData>[] = [
 
 export const itemCols: ColDef<ItemRow>[] = [
   {
-    flex: 1.2,
+    flex: 1.1,
     field: "product_code",
     headerName: "Upc",
     resizable: false,
@@ -111,7 +111,7 @@ export const itemCols: ColDef<ItemRow>[] = [
     cellClass: "no-outline-on-focus",
   },
   {
-    flex: 0.8,
+    flex: 0.9,
     field: "total_sales",
     headerName: "Sales",
     resizable: false,
@@ -120,7 +120,7 @@ export const itemCols: ColDef<ItemRow>[] = [
     cellClass: "no-outline-on-focus text-right",
   },
   {
-    flex: 0.8,
+    flex: 0.9,
     field: "net_sales",
     headerName: "Net Sales",
     resizable: false,
@@ -147,7 +147,7 @@ export const itemCols: ColDef<ItemRow>[] = [
     cellClass: "no-outline-on-focus text-right",
   },
   {
-    flex: 1,
+    flex: 0.8,
     field: "cogs",
     headerName: "COGS",
     resizable: false,
@@ -165,7 +165,7 @@ export const itemCols: ColDef<ItemRow>[] = [
     cellClass: "no-outline-on-focus text-right",
   },
   {
-    flex: 0.7,
+    flex: 0.8,
     field: "margin",
     headerName: "GPM",
     resizable: false,
