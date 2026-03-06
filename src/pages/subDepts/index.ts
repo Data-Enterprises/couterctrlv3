@@ -12,20 +12,11 @@ export const calculateCogs = (
   qty: number,
   weight: number,
 ) => {
-  if (
-    weight === 0 ||
-    cost === 0 ||
-    netCost === 0 ||
-    caseSize === 0 ||
-    qty === 0 ||
-    weight === 0 ||
-    caseSize === 0
-  ) {
-    return 0;
-  }
 
   const baseCost = netCost > 0 ? netCost : cost;
   const baseLine = weight > 0 ? weight : qty;
+
+  if (caseSize === 0) return 0;
 
   const unitCost = (baseCost / caseSize).toString();
   return parseFloat(unitCost) * baseLine;

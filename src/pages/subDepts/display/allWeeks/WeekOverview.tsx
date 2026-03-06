@@ -238,19 +238,37 @@ const WeekOverview = ({ dates, data, week }: WeekOverviewProps) => {
     return {
       salesTrend:
         thisWeekSales > avgOtherWeeksSales ? (
-          <ArrowTrendingUpIcon className="h-5 w-5 text-emerald-500" />
+          <div className="text-emerald-500 flex items-center gap-1">
+            <ArrowTrendingUpIcon className="h-5 w-5 text-emerald-500" />
+            {formatCurrency2(Math.abs(thisWeekSales - avgOtherWeeksSales))}
+          </div>
         ) : thisWeekSales < avgOtherWeeksSales ? (
-          <ArrowTrendingDownIcon className="h-5 w-5 text-orange-500" />
+          <div className="text-orange-500 flex items-center gap-1">
+            <ArrowTrendingDownIcon className="h-5 w-5 text-orange-500" />
+            {formatCurrency2(Math.abs(thisWeekSales - avgOtherWeeksSales))}
+          </div>
         ) : (
-          <ArrowRightIcon className="h-5 w-5 text-content" />
+          <div className="text-content flex items-center gap-1">
+            <ArrowRightIcon className="h-5 w-5 text-content" />
+            {formatCurrency2(Math.abs(thisWeekSales - avgOtherWeeksSales))}
+          </div>
         ),
       marginTrend:
         thisWeekMargin > avgOtherWeeksMargin ? (
-          <ArrowTrendingUpIcon className="h-5 w-5 text-emerald-500" />
+          <div className="text-emerald-500 flex items-center gap-1">
+            <ArrowTrendingUpIcon className="h-5 w-5 text-emerald-500" />
+            {Math.abs(thisWeekMargin - avgOtherWeeksMargin).toFixed(2)}%
+          </div>
         ) : thisWeekMargin < avgOtherWeeksMargin ? (
-          <ArrowTrendingDownIcon className="h-5 w-5 text-orange-500" />
+          <div className="text-orange-500 flex items-center gap-1">
+            <ArrowTrendingDownIcon className="h-5 w-5 text-orange-500" />
+            {Math.abs(thisWeekMargin - avgOtherWeeksMargin).toFixed(2)}%
+          </div>
         ) : (
-          <ArrowRightIcon className="h-5 w-5 text-content" />
+          <div className="text-content flex items-center gap-1">
+            <ArrowRightIcon className="h-5 w-5 text-content" />
+            {Math.abs(thisWeekMargin - avgOtherWeeksMargin).toFixed(2)}%
+          </div>
         ),
     };
   };
@@ -323,30 +341,33 @@ const WeekOverview = ({ dates, data, week }: WeekOverviewProps) => {
           </div>
           <div className="h-full w-[40%] grid grid-rows-2 gap-2">
             {week < 4 ? (
-              <div className="bg-bkg/70 rounded-lg shadow-md p-2 flex flex-col justify-around">
+              <div className="bg-bkg/70 rounded-lg shadow-md">
                 {week === 1 ? (
-                  <div className="text-content/50 font-medium flex justify-between items-center mb-1">
-                    <div>Overall</div>
-                    <div className="flex gap-1 items-center">
-                      Sales {overallTrends().salesTrend}
-                    </div>
-                    <div className="flex gap-1 items-center">
-                      Margin {overallTrends().salesTrend}
+                  <div className="text-content/50 font-medium grid grid-cols-2 p-2">
+                    <div>GPM Weekly {marginTrend()}</div>
+                    <div>GPM Overall {overallTrends().marginTrend}</div>
+                    <div>Sales Weekly {salesTrend()}</div>
+                    <div>Sales Overall {overallTrends().salesTrend}</div>
+                  </div>
+                ) : (
+                  <div className="">
+                    <div className="text-content/50 font-medium px-2">Weekly Trend</div>
+                    <div className="grid grid-cols-2 h-16 mt-1 text-lg items-center justify-items-center">
+                      <div className="text-content/50 font-medium text-center">
+                        <div>Margin</div>
+                        {marginTrend()}
+                      </div>
+                      <div className="text-content/50 font-medium text-center">
+                        <div>Sales</div>
+                        {salesTrend()}
+                      </div>
                     </div>
                   </div>
-                ) : null}
-                <div className="text-content/50 font-medium text-lg flex justify-between items-center">
-                  <div>Margin Trend</div>
-                  {marginTrend()}
-                </div>
-                <div className="text-content/50 font-medium text-lg flex justify-between items-center">
-                  <div> Sales Trend</div>
-                  {salesTrend()}
-                </div>
+                )}
               </div>
             ) : (
-              <div className="bg-bkg/70 rounded-lg shadow-md p-2 flex justify-center items-ceter">
-                <div className="text-content/50 font-medium text-lg flex justify-between items-center">
+              <div className="bg-bkg/70 rounded-lg shadow-md p-2 flex justify-center items-center text-lg">
+                <div className="text-content/50 font-medium">
                   Base Line Trend
                 </div>
               </div>
@@ -382,7 +403,7 @@ const WeekOverview = ({ dates, data, week }: WeekOverviewProps) => {
           </div>
           <div className="bg-bkg/70 rounded-lg shadow flex flex-col items-center justify-center">
             <div className="text-content/50">Weight</div>
-            <div>{formatBigNumber(weight)}</div>
+            <div>{formatBigNumber(weight)} lbs</div>
           </div>
           <div className="bg-bkg/70 rounded-lg shadow flex flex-col items-center justify-center">
             <div className="text-content/50">Tax</div>
