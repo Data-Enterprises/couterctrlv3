@@ -54,7 +54,7 @@ const SubMarginDisplay = () => {
 
       const cogs = dateMargins.reduce(
         (acc, curr) =>
-          acc + calculateCogs(curr.net_cost, curr.case_size, curr.qty),
+          acc + calculateCogs(curr.net_cost, curr.cost, curr.case_size, curr.qty, curr.weight),
         0,
       );
 
@@ -87,14 +87,14 @@ const SubMarginDisplay = () => {
   const renderGrid = () => {
     if (selectedWeekDay && subDeptGridView === "item") {
       return (
-        <div className="grid grid-cols-[20%_79.5%] gap-2">
+        <div className="grid grid-cols-[18%_81.5%] gap-2">
           <ItemsGridFilters />
           <ItemsGrid />
         </div>
       );
     } else if (subDeptGridView === "cost") {
       return (
-        <div className="grid grid-cols-[20%_79.5%] gap-2">
+        <div className="grid grid-cols-[18%_81.5%] gap-2">
           <CostGridFilters />
           <SubDeptCostGrid />
         </div>

@@ -32,16 +32,20 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
               qty: curr.qty,
               total_cost: calculateCogs(
                 curr.net_cost,
+                curr.cost,
                 curr.case_size,
                 curr.qty,
+                curr.weight
               ),
             });
           } else {
             found.qty += curr.qty;
             found.total_cost += calculateCogs(
               curr.net_cost,
+              curr.cost,
               curr.case_size,
               curr.qty,
+              curr.weight
             );
           }
           return acc;

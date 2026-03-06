@@ -31,10 +31,10 @@ const AllWeeksTrend = () => {
     <div
       className={`grid grid-cols-2 grid-rows-2 ${height} gap-2 overflow-hidden p-2`}
     >
-      <WeekOverview dates={dates(1)} data={ctx.weekOneMargins} />
-      <WeekOverview dates={dates(2)} data={ctx.weekTwoMargins} />
-      <WeekOverview dates={dates(3)} data={ctx.weekThreeMargins} />
-      <WeekOverview dates={dates(4)} data={ctx.weekFourMargins} />
+      <WeekOverview week={1} dates={dates(1)} data={ctx.weekOneMargins} />
+      <WeekOverview week={2} dates={dates(2)} data={ctx.weekTwoMargins} />
+      <WeekOverview week={3} dates={dates(3)} data={ctx.weekThreeMargins} />
+      <WeekOverview week={4} dates={dates(4)} data={ctx.weekFourMargins} />
     </div>
   );
 };
