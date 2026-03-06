@@ -24,8 +24,8 @@ export const calculateCogs = (
     return 0;
   }
 
-  const baseLine = netCost > 0 ? netCost : cost;
-  const baseCost = weight > 0 ? weight : qty;
+  const baseCost = netCost > 0 ? netCost : cost;
+  const baseLine = weight > 0 ? weight : qty;
 
   const unitCost = (baseCost / caseSize).toString();
   return parseFloat(unitCost) * baseLine;
