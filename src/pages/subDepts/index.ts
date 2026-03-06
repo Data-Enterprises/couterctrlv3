@@ -12,8 +12,6 @@ export const calculateCogs = (
   qty: number,
   weight: number,
 ) => {
-  if (qty === 0 || caseSize === 0 || netCost === 0) return 0;
-
   if (
     weight === 0 ||
     cost === 0 ||
@@ -23,9 +21,8 @@ export const calculateCogs = (
     weight === 0 ||
     caseSize === 0
   ) {
-    console.log("Using fallback cost calculation");
+    return 0;
   }
-  console.log({ netCost, cost, caseSize, qty, weight });
 
   const baseLine = netCost > 0 ? netCost : cost;
   const baseCost = weight > 0 ? weight : qty;
