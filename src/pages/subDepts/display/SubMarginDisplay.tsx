@@ -54,7 +54,7 @@ const SubMarginDisplay = () => {
 
       const cogs = dateMargins.reduce(
         (acc, curr) =>
-          acc + calculateCogs(curr.net_cost, curr.case_size, curr.qty),
+          acc + calculateCogs(curr.net_cost, curr.cost, curr.case_size, curr.qty, curr.weight),
         0,
       );
 

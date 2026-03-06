@@ -107,8 +107,10 @@ const ItemsGrid = () => {
           product_description: margin.product_description,
           cogs: calculateCogs(
             margin.net_cost,
+            margin.cost,
             margin.case_size,
             margin.qty,
+            margin.weight,
           ),
           cost_fees: margin.cost_fees,
           total_sales: margin.total_sales - margin.total_tax,
@@ -120,8 +122,10 @@ const ItemsGrid = () => {
       } else {
         found.cogs += calculateCogs(
           margin.net_cost,
+          margin.cost,
           margin.case_size,
           margin.qty,
+          margin.weight,
         );
         found.total_sales += margin.total_sales - margin.total_tax;
         found.net_sales += margin.net_sales;
@@ -148,7 +152,7 @@ const ItemsGrid = () => {
     const upc = !isNaN(Number(target.innerText)) ? target.innerText : "";
 
     dispatch(setMenuPosition({ x: event.clientX + 5, y: event.clientY }));
-    
+
     const allUpc = sm.filteredItemGridData
       .map((item) => item.product_code)
       .join(", ");

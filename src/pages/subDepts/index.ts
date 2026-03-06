@@ -7,13 +7,31 @@ export const setDates = (date: Date, days: number = 0) => {
 
 export const calculateCogs = (
   netCost: number,
+  cost: number,
   caseSize: number,
   qty: number,
+  weight: number,
 ) => {
   if (qty === 0 || caseSize === 0 || netCost === 0) return 0;
 
-  const unitCost = (netCost / caseSize).toString();
-  return parseFloat(unitCost) * qty;
+  if (
+    weight === 0 ||
+    cost === 0 ||
+    netCost === 0 ||
+    caseSize === 0 ||
+    qty === 0 ||
+    weight === 0 ||
+    caseSize === 0
+  ) {
+    console.log("Using fallback cost calculation");
+  }
+  console.log({ netCost, cost, caseSize, qty, weight });
+
+  const baseLine = netCost > 0 ? netCost : cost;
+  const baseCost = weight > 0 ? weight : qty;
+
+  const unitCost = (baseCost / caseSize).toString();
+  return parseFloat(unitCost) * baseLine;
 
   // When using calculated cost, cost fees, qty
   // if (qty === 0) return 0;

@@ -17,6 +17,14 @@ const Transaction = ({ trans }: TransactionProps) => {
   };
 
   const formatTime = (start: string, end: string) => {
+    if (start[0] !== "0" && start.length === 5) {
+      start = "0" + start;
+    }
+
+    if (end[0] !== "0" && end.length === 5) {
+      end = "0" + end;
+    }
+
     const str1 =
       start.slice(0, 2) + ":" + start.slice(2, 4) + ":" + start.slice(4);
     const str2 = end.slice(0, 2) + ":" + end.slice(2, 4) + ":" + end.slice(4);
@@ -38,7 +46,7 @@ const Transaction = ({ trans }: TransactionProps) => {
   const handleExportClick = () => {
     const cashierName = trans[0].cashier_name;
     const name = `${cashierName}_${trans[0].sale_id.split("-")[1]}_${formatDate(
-      trans[0].sale_date
+      trans[0].sale_date,
     )}.csv`;
     exportData<TransactionListItem>(
       trans,
@@ -50,7 +58,7 @@ const Transaction = ({ trans }: TransactionProps) => {
         { headerName: "Net Sales", field: "net_sales" },
         { headerName: "Sale Type", field: "sale_type" },
       ],
-      name
+      name,
     );
   };
 
@@ -69,7 +77,7 @@ const Transaction = ({ trans }: TransactionProps) => {
         }
       })
       .catch((err: JsonError) =>
-        toast.error("Error emailing transaction: " + err.message)
+        toast.error("Error emailing transaction: " + err.message),
       );
   };
 
