@@ -351,7 +351,7 @@ const WeekOverview = ({ dates, data, week }: WeekOverviewProps) => {
                   </div>
                 ) : (
                   <div className="">
-                    <div className="text-content/50 font-medium px-2">Weekly Trend</div>
+                    <div className="text-content/50 font-medium px-2 bg-blue-200 rounded-t-lg py-0.5">Weekly Trend</div>
                     <div className="grid grid-cols-2 h-16 mt-1 text-lg items-center justify-items-center">
                       <div className="text-content/50 font-medium text-center">
                         <div>Margin</div>
