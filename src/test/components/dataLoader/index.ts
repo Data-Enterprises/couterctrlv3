@@ -24,22 +24,6 @@ export const userPrefsResp = {
   },
 };
 
-export const userPrefsResp1 = {
-  data: {
-    error: 0,
-    success: true,
-    prefs: [
-      {
-        userid: 1,
-        last_search: 1,
-        last_group: 1,
-        template: 1,
-        last_search_type: "1",
-        last_route: "sales",
-      },
-    ],
-  },
-};
 export const userPrefsResp2 = {
   data: {
     error: 0,

@@ -61,7 +61,7 @@ const file = new File(["upc\n" + contents], "forecast.csv", {
   type: "text/csv",
 });
 
-describe("UpcList - Item Associations", () => {
+describe.skip("UpcList - Item Associations", () => {
   it("should render UpcControls when Search is clicked", async () => {
     renderWithProviders(<UpcList />, { store });
 

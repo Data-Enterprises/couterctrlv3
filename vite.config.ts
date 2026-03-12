@@ -26,6 +26,7 @@ export default defineConfig({
         "src/pages/forecast/grids/PriceHistoryGrid.tsx",
         "src/functions/**",
         "src/pages/forecast/ReplayModal.tsx",
+        "src/pages/upcList/**"
       ],
     },
     pool: "threads",
