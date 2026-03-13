@@ -23,7 +23,7 @@ import {
   updatedGroupsAfterDeleteResp,
   getStoresWithGroupStatusResp,
 } from "./index";
-import { setGroups, setRefreshGroups } from "../../../features/groupSlice";
+import { setGroups } from "../../../features/groupSlice";
 import { getGroupsResp } from "../../components/dataLoader";
 
 vi.mock("../../../api/groups");
