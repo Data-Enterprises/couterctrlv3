@@ -64,9 +64,10 @@ const UpdateUserGroup = () => {
         <div>Select group to update</div>
       </div>
       <div className="select-none text-sm grid rounded-lg p-1 max-h-36 overflow-hidden overflow-y-auto">
-        {groups.map((g) => (
+        {groups.map((g, i) => (
           <div
             key={g.id}
+            data-testid={`update-group-option-${i}`}
             className={`${selectedGroup.id === g.id && "bg-orange-200"} rounded-full py-1 pl-2 border-b transition-all duration-200 cursor-pointer hover:bg-blue-200`}
             onClick={() => handleSelect(g)}
           >

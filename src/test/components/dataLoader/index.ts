@@ -83,6 +83,8 @@ export const userStoresResp = {
         storeid: 1,
         store_number: "1",
         store_name: "Store 1",
+        company: 1,
+        company_name: "Test Company 1",
       },
     ],
     assigned_stores: [

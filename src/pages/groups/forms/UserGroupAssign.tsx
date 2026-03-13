@@ -71,24 +71,14 @@ const UserGroupAssign = () => {
     type: "assigned" | "unassigned",
   ) => {
     if (type === "assigned") {
-      removeStoreFromGroup(url, token, userid, selectedGroup.id, storeid)
-        // .then((resp) => {
-        //   const j = resp.data;
-        //   if (j.error == "0") {
-        //     toast.success("Store removed from group successfully");
-        //   }
-        // })
-        .catch((err: JsonError) => toast.error(err.message));
+      removeStoreFromGroup(url, token, userid, selectedGroup.id, storeid).catch(
+        (err: JsonError) => toast.error(err.message),
+      );
       dispatch(updateStoresWithStatus(storeid));
     } else {
-      addStoreToGroup(url, token, userid, selectedGroup.id, storeid)
-        // .then((resp) => {
-        //   const j = resp.data;
-        //   if (j.error == "0") {
-        //     toast.success("Store added to group successfully");
-        //   }
-        // })
-        .catch((err: JsonError) => toast.error(err.message));
+      addStoreToGroup(url, token, userid, selectedGroup.id, storeid).catch(
+        (err: JsonError) => toast.error(err.message),
+      );
       dispatch(updateStoresWithStatus(storeid));
     }
   };
@@ -100,6 +90,7 @@ const UserGroupAssign = () => {
   return (
     <div className={`${isDesktop ? "w-[55%]" : "w-full"} space-y-4`}>
       <SingleSelect
+        id={1}
         label="Select User Group"
         data={groups}
         displayKey="group_name"
@@ -131,12 +122,8 @@ const UserGroupAssign = () => {
                     </div>
                   </div>
                   {isDesktop ? (
-                    <div
-                      className={`${
-                        store.active ? "text-emerald-500" : "text-orange-500"
-                      } font-medium`}
-                    >
-                      {store.active ? "Active" : "Inactive"}
+                    <div className={`text-orange-500 font-medium`}>
+                      Inactive
                     </div>
                   ) : null}
                 </div>
@@ -178,13 +165,7 @@ const UserGroupAssign = () => {
                   </div>
                 </div>
                 {isDesktop ? (
-                  <div
-                    className={`${
-                      store.active ? "text-emerald-500" : "text-orange-500"
-                    } font-medium`}
-                  >
-                    {store.active ? "Active" : "Inactive"}
-                  </div>
+                  <div className={`text-emerald-500 font-medium`}>Active</div>
                 ) : null}
               </div>
             ))}
