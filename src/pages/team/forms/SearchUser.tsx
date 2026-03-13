@@ -90,7 +90,7 @@ const SearchUser = () => {
     // This is to ensure that the input displays the username
     // But also if the user highlights the text or just starts typing
     // Then handleFilterTextChange will be triggered and the filter will work as expected
-    // while not resetting the text to an empty string or the username 
+    // while not resetting the text to an empty string or the username
     dispatch(setUserFilterText(e.username));
     dispatch(setSelectedUserInfo(e));
 
@@ -120,12 +120,14 @@ const SearchUser = () => {
     <div className="relative">
       <div className="grid grid-cols-2 mb-1.5 shadow-md rounded-lg">
         <button
+          data0-testid="username-filter-btn"
           className={`${filterType === "name" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200 font-medium text-center rounded-l-lg py-1.5`}
           onClick={() => setFilterType("name")}
         >
           Username
         </button>
         <button
+          data-testid="email-filter-btn"
           className={`${filterType === "email" ? "bg-orange-200" : "bg-custom-white"}  font-medium text-center rounded-r-lg py-1.5`}
           onClick={() => setFilterType("email")}
         >
@@ -152,6 +154,7 @@ const SearchUser = () => {
         {filtered.map((u, i) => (
           <div
             key={i}
+            data-testid={`search-user-${i}`}
             className="px-2 py-0.5 hover:bg-blue-200 cursor-pointer transition-all duration-200"
             onClick={() => handleUserClick(u)}
           >

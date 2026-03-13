@@ -43,7 +43,7 @@ describe("TextInput component", () => {
         isSimple={true}
         setText={(text) => store.dispatch({ type: "noop", payload: text })}
       />,
-      { store }
+      { store },
     );
     const textInput = screen.getByTestId("text-input-username");
     expect(textInput).toBeInTheDocument();
@@ -61,7 +61,7 @@ describe("TextInput component", () => {
         name="search"
         setQuery={(text) => store.dispatch({ type: "noop", payload: text })}
       />,
-      { store }
+      { store },
     );
     const textInput = screen.getByTestId("text-input-search");
     expect(textInput).toBeInTheDocument();
@@ -80,11 +80,11 @@ describe("TextInput component", () => {
         name="password"
         setQuery={(text) => store.dispatch({ type: "noop", payload: text })}
       />,
-      { store }
+      { store },
     );
 
     const passwordInput = screen.getByTestId("text-input-password");
-    const eyeIcon = screen.getByTestId("eye-icon");
+    const eyeIcon = screen.getByTestId("eye-icon-password");
     await user.click(eyeIcon);
 
     expect(passwordInput).toHaveAttribute("type", "text");
@@ -103,7 +103,7 @@ describe("TextInput component", () => {
         name="password"
         setQuery={(text) => store.dispatch({ type: "noop", payload: text })}
       />,
-      { store }
+      { store },
     );
 
     const pwStrengthBar = screen.getByTestId("pw-strength-bar");
@@ -121,7 +121,7 @@ describe("TextInput component", () => {
         query="PassCode"
         name="password"
         setQuery={(text) => store.dispatch({ type: "noop", payload: text })}
-      />
+      />,
     );
 
     const pwStrengthBar = screen.getByTestId("pw-strength-bar");
@@ -141,7 +141,7 @@ describe("TextInput component", () => {
         query="PassCode!"
         name="password"
         setQuery={(text) => store.dispatch({ type: "noop", payload: text })}
-      />
+      />,
     );
 
     const pwStrengthBar = screen.getByTestId("pw-strength-bar");
@@ -161,7 +161,7 @@ describe("TextInput component", () => {
         query="PassCode!123"
         name="password"
         setQuery={(text) => store.dispatch({ type: "noop", payload: text })}
-      />
+      />,
     );
 
     const pwStrengthBar = screen.getByTestId("pw-strength-bar");
@@ -181,7 +181,7 @@ describe("TextInput component", () => {
         query="PassCode!123!@#"
         name="password"
         setQuery={(text) => store.dispatch({ type: "noop", payload: text })}
-      />
+      />,
     );
 
     const pwStrengthBar = screen.getByTestId("pw-strength-bar");
@@ -201,7 +201,7 @@ describe("TextInput component", () => {
         query=""
         name="password"
         setQuery={(text) => store.dispatch({ type: "noop", payload: text })}
-      />
+      />,
     );
     const pwStrengthBar = screen.getByTestId("pw-strength-bar");
     const msg = screen.getByTestId("text-input-password-message");
@@ -221,7 +221,7 @@ describe("TextInput component", () => {
         name="username"
         setQuery={(text) => store.dispatch({ type: "noop", payload: text })}
       />,
-      { store: currentStore }
+      { store: currentStore },
     );
 
     const xIcon = screen.getByTestId("x-icon");
@@ -236,7 +236,7 @@ describe("TextInput component", () => {
         query=""
         name="username"
         setQuery={(text) => store.dispatch({ type: "noop", payload: text })}
-      />
+      />,
     );
 
     const msgContainer = screen.getByTestId("text-input-username-message");
@@ -256,7 +256,7 @@ describe("TextInput component", () => {
         name="username"
         setQuery={(text) => store.dispatch({ type: "noop", payload: text })}
       />,
-      { store: currentStore }
+      { store: currentStore },
     );
     const msgContainer = screen.getByTestId("text-input-username-message");
     expect(msgContainer).toBeEmptyDOMElement();
@@ -279,7 +279,7 @@ describe("TextInput component", () => {
           name="confirm_password"
           setQuery={(text) => store.dispatch({ type: "noop", payload: text })}
         />
-      </div>
+      </div>,
     );
 
     const msg = screen.getByTestId("text-input-confirm_password-message");

@@ -53,36 +53,42 @@ const UserControls = () => {
       {isDesktop ? (
         <div className="grid grid-cols-6 text-[15px] gap-2 p-4 bg-custom-white rounded-lg shadow-lg mb-4">
           <button
+            data-testid="user-form-create"
             className={`${selectedUserForm === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
             onClick={() => handleReset("create")}
           >
             Create
           </button>
           <button
+            data-testid="user-form-update"
             className={`${selectedUserForm === "update" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
             onClick={() => handleReset("update")}
           >
             Update
           </button>
           <button
+            data-testid="user-form-delete"
             className={`${selectedUserForm === "delete" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
             onClick={() => handleReset("delete")}
           >
             Delete
           </button>
           <button
+            data-testid="user-form-update-pw"
             className={`${selectedUserForm === "update_password" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
             onClick={() => handleReset("update_password")}
           >
             Password
           </button>
           <button
+            data-testid="user-form-update-sq"
             className={`${selectedUserForm === "reset_security" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
             onClick={() => handleReset("reset_security")}
           >
             Security
           </button>
           <button
+            data-testid="user-form-info"
             className={`${selectedUserForm === "user_info" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
             onClick={() => handleReset("user_info")}
           >
@@ -104,13 +110,14 @@ const UserControls = () => {
           {!isOutranked() ? (
             <UserForm />
           ) : (
-            <div className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg">
+            <div data-testid="outranked-container" className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg">
               <div className="font-medium text-sm flex flex-col items-center">
                 <WarningIcon fill="#f97316" height={56} width={56} />
                 <div className="mb-2">We're sorry...</div>
                 <div>You are not authorized to make changes to this user</div>
                 <div>Please contact them if assistance is needed</div>
                 <button
+                  data-testid="reset-outranked-btn"
                   className="btn-themeBlue py-1.5 mt-2"
                   onClick={() => handleReset("", false)}
                 >

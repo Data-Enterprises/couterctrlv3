@@ -45,7 +45,7 @@ export const allUsersResp = {
         id: 1,
         username: "test1",
         password: "SomeR@ndomPassword123!",
-        user_level: 5,
+        user_level: 7,
         last_visit: null,
         join_date: null,
         first_name: "one",
@@ -204,7 +204,7 @@ export const deleteUpdateBaseGroupLinkResp = {
   },
 };
 
-export const defaultResp = { error: 0 };
+export const defaultResp = { data: { error: 0 } };
 export const defaultErrorResp = new Error("An error occurred");
 
 export const userStoresResp = {
@@ -388,5 +388,65 @@ export const userLvlResp = {
         name: "Programmer",
       },
     ],
+  },
+};
+
+export const getBGResp = {
+  data: {
+    error: 0,
+    success: true,
+    group_count: 6,
+    company: [
+      {
+        id: 1,
+        name: "Food Giant",
+        address: "",
+        city: "",
+        state: "",
+        zip: 0,
+        phone: "",
+        contact_email: "jdilleha@dcrpos.com",
+      },
+    ],
+    groups: [
+      {
+        id: 1,
+        name: "All Stores",
+        company: 1,
+      },
+      {
+        id: 2,
+        name: "test1",
+        company: 1,
+      },
+      {
+        id: 3,
+        name: "Zone 1",
+        company: 1,
+      },
+      {
+        id: 4,
+        name: "Zone 2",
+        company: 1,
+      },
+      {
+        id: 5,
+        name: "Zone 3",
+        company: 1,
+      },
+      {
+        id: 6,
+        name: "Zone 4",
+        company: 1,
+      },
+    ],
+  },
+};
+
+export const createUserResp = {
+  data: {
+    error: 0,
+    success: true,
+    new_userid: 50,
   },
 };

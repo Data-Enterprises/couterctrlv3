@@ -117,7 +117,7 @@ const PasswordInput = ({
         onChange={handleTextChange}
         className={`basic-input focus:border bg-custom-white ${className}`}
       />
-      <Eye onClick={handleEncryptionToggle} />
+      <Eye id={name} onClick={handleEncryptionToggle} />
       <div className="h-1 w-[97%] mx-auto rounded-full bg-content/10 mt-1 ">
         <div
           data-testid="pw-strength-bar"
