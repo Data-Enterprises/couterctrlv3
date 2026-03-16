@@ -199,7 +199,10 @@ const CashiersTable = () => {
     if (context.isDesktop) {
       const start = formatGoliathDate(search.startDate);
       const end = formatGoliathDate(search.endDate);
-      const saleType = cashier.selectedSaleType === "Description" ? "description" : cashier.selectedSaleType;
+      const saleType =
+        cashier.selectedSaleType === "Description"
+          ? "description"
+          : cashier.selectedSaleType;
       let pageToSend;
       if (direction) {
         pageToSend =
@@ -210,7 +213,7 @@ const CashiersTable = () => {
       } else {
         pageToSend = cashier.currentGridPage;
       }
- 
+
       dispatch(setPageText(pageToSend.toString()));
       dispatch(setCurrentGridPage(pageToSend));
       dispatch(setFetchingCashierTransactions(true));
@@ -234,32 +237,6 @@ const CashiersTable = () => {
             const transactions = [...j.transactions];
             dispatch(setCashierTransactions(transactions));
 
-            const uniqueCashiers = transactions.reduce(
-              (acc: UniqueCashier[], curr) => {
-                const cashier = acc.find(
-                  (item) => item.cashier_number === curr.cashier_number,
-                );
-
-                if (!cashier) {
-                  acc.push({
-                    cashier_name: curr.cashier_name,
-                    cashier_number: curr.cashier_number,
-                    total_sales: curr.total_sales,
-                    transaction_count: 1,
-                    store_number: curr.store_number,
-                  });
-                } else {
-                  cashier.total_sales += curr.total_sales;
-                  cashier.transaction_count += 1;
-                }
-                return acc;
-              },
-              [],
-            );
-
-            // Everything below is going inside the then block of the cashier_table call
-            dispatch(setCashiers(uniqueCashiers));
-
             const saleIds = Array.from(
               new Set(transactions.map((item) => item.sale_id)),
             );
@@ -278,6 +255,39 @@ const CashiersTable = () => {
               .then((resp) => {
                 const j = resp.data;
                 if (j.error === 0) {
+                  
+                  const newTrans = [...j.transactions];
+                  const uniqueCashiers = newTrans.reduce(
+                    (acc: UniqueCashier[], curr) => {
+                      const found = acc.find(
+                        (item) => item.cashier_number === curr.cashier_number,
+                      );
+
+                      if (!found) {
+                        acc.push({
+                          cashier_name: curr.cashier_name,
+                          cashier_number: curr.cashier_number,
+                          total_sales: curr.total_sales,
+                          transaction_count: 1,
+                          store_number: curr.store_number,
+                          transaction_ids: [curr.sale_id],
+                        });
+                      } else {
+                        // if found but the transaction_id is not in the array, add it and increment transaction_count by 1
+                        // else, do nothing since the unique transaction_id is already accounted for
+                        if (!found.transaction_ids.includes(curr.sale_id)) {
+                          found.transaction_ids.push(curr.sale_id);
+                          found.transaction_count += 1;
+                        }
+                        found.total_sales += curr.total_sales;
+                      }
+                      return acc;
+                    },
+                    [],
+                  );
+
+                  // Everything below is going inside the then block of the cashier_table call
+                  dispatch(setCashiers(uniqueCashiers));
                   dispatch(setTransList(j.transactions));
                 }
               })
