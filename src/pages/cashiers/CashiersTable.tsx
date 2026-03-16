@@ -349,17 +349,17 @@ const CashiersTable = () => {
           className={`w-6 h-6 border rounded-full text-custom-white bg-blue-500 hover:bg-blue-200 hover:text-content transition-all duration-200 cursor-pointer ${cashier.currentGridPage < 2 ? "opacity-50 cursor-not-allowed" : ""}`}
           onClick={() => handlePageChange("prev")}
         />
-        <div className="flex gap-2 items-center justify-center text-sm font-medium">
-          <div>Page </div>
+        <div className="flex gap-2 justify-center text-sm font-medium">
+          <div className="pt-0.5">Page </div>
           <Input
             label=""
             value={cashier.pageText}
             setValue={handlePageInput}
-            className="p-0 text-center"
+            className="p-0 text-center rounded-full"
             onKeyDown={handlePageChange}
             width="w-8"
           />
-          <div> of {cashier.gridPages}</div>
+          <div className="pt-0.5"> of {cashier.gridPages}</div>
         </div>
         <ChevronRightIcon
           data-testid="cashiers-next-page-btn"
