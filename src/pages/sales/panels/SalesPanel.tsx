@@ -1,19 +1,19 @@
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { formatCurrency2, formatBigNumber, addDays } from "../../../utils";
+import { useAppSelector } from "../../../hooks";
+import { formatCurrency2, formatBigNumber } from "../../../utils";
 import type {
-  JsonError,
+  // JsonError,
   SelectedSalesPanel,
   WeeklySale,
 } from "../../../interfaces";
-import { comparePanels, getDateLayout } from "../utils";
+import { getDateLayout } from "../utils";
 // import { setIsRptOpen } from "../../../features/reportBuilderSlice";
-import {
-  setCompareSalesPanel,
-  setCompareSubs,
-  // setSelectedSalesPanel,
-} from "../../../features/salesSlice";
-import { getSubsComp } from "../../../api/sales";
-import { useToast } from "../../../components/toasts/hooks/useToast";
+// import {
+//   setCompareSalesPanel,
+//   setCompareSubs,
+//   // setSelectedSalesPanel,
+// } from "../../../features/salesSlice";
+// import { getSubsComp } from "../../../api/sales";
+// import { useToast } from "../../../components/toasts/hooks/useToast";
 
 interface SalesPanelProps {
   panel: WeeklySale;
@@ -25,8 +25,8 @@ interface SalesPanelProps {
 }
 
 const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
-  const toast = useToast();
-  const dispatch = useAppDispatch();
+  // const toast = useToast();
+  // const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const { selectedSalesPanel, compareSalesPanel } = useAppSelector(
     (state) => state.sales,
@@ -58,43 +58,43 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
     return formatted;
   };
 
-  const handleCompareClick = (panel: WeeklySale) => {
-    const date = panel.sale_date.split("T")[0];
-    if (!comparePanels(panel, compareSalesPanel)) {
-      dispatch(
-        setCompareSalesPanel({
-          sale_date: date,
-          storeid: panel.storeid,
-          store_name: panel.store_name,
-        }),
-      );
-      const weeklyStart = addDays(date, -6).toISOString().split("T")[0];
-      const weeklyEnd = new Date(date).toISOString().split("T")[0];
+  // const handleCompareClick = (panel: WeeklySale) => {
+  //   const date = panel.sale_date.split("T")[0];
+  //   if (!comparePanels(panel, compareSalesPanel)) {
+  //     dispatch(
+  //       setCompareSalesPanel({
+  //         sale_date: date,
+  //         storeid: panel.storeid,
+  //         store_name: panel.store_name,
+  //       }),
+  //     );
+  //     const weeklyStart = addDays(date, -6).toISOString().split("T")[0];
+  //     const weeklyEnd = new Date(date).toISOString().split("T")[0];
 
-      getSubsComp(
-        context.url,
-        context.token,
-        weeklyStart,
-        weeklyEnd,
-        0,
-        panel.storeid,
-        1,
-      )
-        .then((resp) => {
-          const j = resp.data;
-          if (j.error === 0) {
-            dispatch(setCompareSubs(j.subs));
-          }
-        })
-        .catch((err: JsonError) =>
-          toast.error("Error fetching subs data: " + err.message),
-        );
-    } else {
-      dispatch(
-        setCompareSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
-      );
-    }
-  };
+  //     getSubsComp(
+  //       context.url,
+  //       context.token,
+  //       weeklyStart,
+  //       weeklyEnd,
+  //       0,
+  //       panel.storeid,
+  //       1,
+  //     )
+  //       .then((resp) => {
+  //         const j = resp.data;
+  //         if (j.error === 0) {
+  //           dispatch(setCompareSubs(j.subs));
+  //         }
+  //       })
+  //       .catch((err: JsonError) =>
+  //         toast.error("Error fetching subs data: " + err.message),
+  //       );
+  //   } else {
+  //     dispatch(
+  //       setCompareSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
+  //     );
+  //   }
+  // };
 
   // const handlRptClick = (panel: WeeklySale) => {
   //   const date = panel.sale_date.split("T")[0];
@@ -114,7 +114,7 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
         panel,
         selectedSalesPanel,
       )} bg-custom-white rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-inner 
-      transition-all duration-200 select-none ripple-button md:min-h-[160px] relative text-sm`}
+      transition-all duration-200 select-none ripple-button md:min-h-[110px] relative text-sm`}
     >
       <div
         data-testid={`sales-panel-${id}`}
@@ -153,11 +153,11 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
         </div>
       </div>
       <div
-        className={`flex justify-around mt-2 gap-4 ${
+        className={`hidden justify-around mt-2 gap-4 ${
           !context.isDesktop && "hidden"
         }`}
       >
-        <button
+        {/* <button
           data-testid={`sales-panel-2-${id}`}
           className={`btn-themeGreen py-1.5 px-7 text-nowrap w-full ${
             selectedSalesPanel.storeid === 0
@@ -167,7 +167,7 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
           onClick={() => handleCompareClick(panel)}
         >
           Compare Subs
-        </button>
+        </button> */}
         {/* <button
           data-testid={`sales-panel-cat-${id}`}
           className={`btn-themeBlue py-1.5 w-full`}

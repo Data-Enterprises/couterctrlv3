@@ -279,6 +279,7 @@ export type UniqueCashier = {
   total_sales: number;
   transaction_count: number;
   store_number: string;
+  transaction_ids: string[];
 };
 
 export interface TransactionListItem {
