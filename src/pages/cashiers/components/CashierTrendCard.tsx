@@ -6,8 +6,9 @@ import {
   setFetchingCashierTransactions,
   setSelectedSaleIds,
   setTransList,
+  setCashierTransactions,
 } from "../../../features/cashierSlice";
-import { formatCurrency2 } from "../../../utils";
+import { formatCurrency2, formatGoliathDate } from "../../../utils";
 import type {
   CashierDetails,
   CashierTrend,
@@ -19,8 +20,7 @@ import {
   ArrowUpCircleIcon,
   ArrowDownCircleIcon,
 } from "@heroicons/react/24/outline";
-import { getTransactionList } from "../../../api/cashiers";
-import { filterData } from "..";
+import { getCashierTable, getTransactionList } from "../../../api/cashiers";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 
 interface CashierTrendCardProps {
@@ -32,6 +32,7 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
+  const search = useAppSelector((state) => state.search);
   const cashier = useAppSelector((state) => state.cashier);
   const activePanelStyle = (s: number) => {
     if (s === cashier.selectedStoreId) {
@@ -117,62 +118,71 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
 
   const showTrans = (storeid: number, cardSaleType: string) => {
     if (context.isDesktop) {
-      const filtered = filterData(
-        cashier.cashierTransactions,
-        cashier.selectedSaleType,
-        storeid,
+      const start = formatGoliathDate(search.startDate);
+      const end = formatGoliathDate(search.endDate);
+      getCashierTable(context.url, context.token, start, end, 0, storeid, 1, [
         cardSaleType,
-      );
-
-      const uniqueCashiers = [...filtered].reduce(
-        (acc: UniqueCashier[], curr) => {
-          const cashier = acc.find(
-            (item) => item.cashier_number === curr.cashier_number,
-          );
-
-          if (!cashier) {
-            acc.push({
-              cashier_name: curr.cashier_name,
-              cashier_number: curr.cashier_number,
-              total_sales: curr.total_sales,
-              transaction_count: 1,
-              store_number: curr.store_number,
-            });
-          } else {
-            cashier.total_sales += curr.total_sales;
-            cashier.transaction_count += 1;
-          }
-          return acc;
-        },
-        [],
-      );
-      dispatch(setCashiers(uniqueCashiers));
-
-      const saleIds = filtered.map((item) => item.sale_id);
-      dispatch(setSelectedSaleIds(saleIds));
-      dispatch(setTransList([]));
-      dispatch(setFetchingCashierTransactions(true));
-
-      // call the api
-      getTransactionList(
-        context.url,
-        context.token,
-        saleIds,
-        1,
-        cashier.selectedSaleType,
-      )
+      ])
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
-            dispatch(setTransList(j.transactions));
+            const transactions = [...j.transactions];
+            dispatch(setCashierTransactions(transactions));
+
+            const uniqueCashiers = transactions.reduce(
+              (acc: UniqueCashier[], curr) => {
+                const cashier = acc.find(
+                  (item) => item.cashier_number === curr.cashier_number,
+                );
+
+                if (!cashier) {
+                  acc.push({
+                    cashier_name: curr.cashier_name,
+                    cashier_number: curr.cashier_number,
+                    total_sales: curr.total_sales,
+                    transaction_count: 1,
+                    store_number: curr.store_number,
+                  });
+                } else {
+                  cashier.total_sales += curr.total_sales;
+                  cashier.transaction_count += 1;
+                }
+                return acc;
+              },
+              [],
+            );
+
+            // Everything below is going inside the then block of the cashier_table call
+            dispatch(setCashiers(uniqueCashiers));
+
+            const saleIds = Array.from(new Set(transactions.map((item) => item.sale_id)));
+            dispatch(setSelectedSaleIds(saleIds));
+            dispatch(setTransList([]));
+            dispatch(setFetchingCashierTransactions(true));
+
+            // call the api
+            getTransactionList(
+              context.url,
+              context.token,
+              saleIds,
+              1,
+              cashier.selectedSaleType,
+            )
+              .then((resp) => {
+                const j = resp.data;
+                if (j.error === 0) {
+                  dispatch(setTransList(j.transactions));
+                }
+              })
+              .catch((err: JsonError) =>
+                toast.error("Error fetching transactions: " + err.message),
+              )
+              .finally(() => {
+                dispatch(setFetchingCashierTransactions(false));
+              });
           }
         })
-        .catch((err: JsonError) =>
-          toast.error("Error fetching transactions: " + err.message),
-        )
-        .finally(() => {
-          dispatch(setFetchingCashierTransactions(false));
-        });
+        .catch((err: JsonError) => toast.error(err.message));
     }
   };
 

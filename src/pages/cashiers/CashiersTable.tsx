@@ -189,6 +189,10 @@ const CashiersTable = () => {
     dispatch(setTransModalOpen(true));
   };
 
+  const handlePageChange = (direction: "prev" | "next") => {
+      // Implement pagination logic here, such as updating the current page state and fetching new data if necessary
+  };
+
   return (
     <div
       data-testid="cashiers-table"
@@ -211,7 +215,7 @@ const CashiersTable = () => {
           onCellClicked={onCellClicked}
         />
       </div>
-      <div className="absolute bottom-4 left-6">
+      <div className="absolute bottom-2.5 left-2 flex gap-2">
         <button
           data-testid="cashiers-table-showall-btn"
           className="btn-themeGreen py-1"
@@ -221,10 +225,26 @@ const CashiersTable = () => {
         </button>
         <button
           data-testid="cashiers-table-export-btn"
-          className="btn-themeGreen py-1 ml-4"
+          className="btn-themeGreen py-1"
           onClick={() => setModalOpen(true)}
         >
           Export
+        </button>
+      </div>
+      <div className="absolute bottom-2.5 right-2 flex gap-2">
+        <button
+          data-testid="cashiers-table-showall-btn"
+          className="btn-themeBlue py-1"
+          onClick={() => {}}
+        >
+          Prev Page
+        </button>
+        <button
+          data-testid="cashiers-table-export-btn"
+          className="btn-themeBlue py-1"
+          onClick={() => {}}
+        >
+          Next Page
         </button>
       </div>
     </div>

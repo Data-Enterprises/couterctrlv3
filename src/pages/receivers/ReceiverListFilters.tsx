@@ -22,7 +22,7 @@ const RecevierListFilters = () => {
 
   const renderFilterText = (type: FilterType) => {
     if (type === "InvoiceID") {
-      return state.invoiceIdFilter ? `${state.invoiceIdFilter}` : "Invoice ID";
+      return state.invoiceIdFilter ? `${state.invoiceIdFilter}` : "Invoice #";
     } else if (type === "VendorID") {
       return state.vendorIdFilter ? `${state.vendorIdFilter}` : "Vendor ID";
     } else if (type === "VendorName") {

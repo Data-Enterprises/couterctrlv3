@@ -64,13 +64,13 @@ export const receiversSlice = createSlice({
     },
     setReceiverDetails: (
       state,
-      action: PayloadAction<ReceiverDetailsItem[]>
+      action: PayloadAction<ReceiverDetailsItem[]>,
     ) => {
       state.details = action.payload;
     },
     setFilter: (
       state,
-      action: PayloadAction<{ type: FilterType; value: string }>
+      action: PayloadAction<{ type: FilterType; value: string }>,
     ) => {
       const { type, value } = action.payload;
       switch (type) {
@@ -93,17 +93,30 @@ export const receiversSlice = createSlice({
     },
     applyFilters: (state) => {
       const filteredData = state.list.filter((item) => {
-        const idMatch = state.vendorIdFilter.toLowerCase();
-        const nameMatch = state.vendorNameFilter.toLowerCase();
-        const invoiceMatch = state.invoiceIdFilter;
-        const transIDMatch = state.transIDFilter.toLowerCase();
+        // The properties needed from each individual item to apply the filters to
+        const vId = item.vendorid.toString().toLowerCase();
+        const vName = item.vendor_name.toLowerCase();
+        const invId = item.invoiceid.toString();
+        const transId = item.reference_number.toLowerCase();
 
-        return (
-          item.vendorid.toString().toLowerCase().includes(idMatch) &&
-          item.vendor_name.toLowerCase().includes(nameMatch.toLowerCase()) &&
-          item.invoiceid.toString().includes(invoiceMatch) &&
-          item.reference_number.includes(transIDMatch)
-        );
+        // Using the filters in the state to check for matches,
+        // if the filter has no value, then it's not being used, so we consider it a match by default
+        const vIdMatch = state.vendorIdFilter
+          ? vId.includes(state.vendorIdFilter.toLowerCase())
+          : true;
+
+        const vNameMatch = state.vendorNameFilter
+          ? vName.includes(state.vendorNameFilter.toLowerCase())
+          : true;
+
+        const invIdMatch = state.invoiceIdFilter
+          ? transId.includes(state.invoiceIdFilter.toLowerCase())
+          : true;
+
+        const transIdMatch = state.transIDFilter
+          ? invId.includes(state.transIDFilter.toLowerCase())
+          : true;
+        return vIdMatch && vNameMatch && invIdMatch && transIdMatch;
       });
       state.listGridData = filteredData;
     },
