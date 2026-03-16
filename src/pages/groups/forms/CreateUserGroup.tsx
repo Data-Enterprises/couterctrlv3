@@ -47,7 +47,7 @@ const CreateUserGroup = () => {
     : "bg-custom-white p-4 rounded-md shadow-md w-full";
 
   return (
-    <div className={containerStyle}>
+    <div data-testid="create-usergroup-form" className={containerStyle}>
       <div className="bg-custom-white text-sm">
         <div className="font-medium">Existing Groups</div>
         <div className="p-2 bg-bkg/80 rounded-lg grid grid-cols-2 gap-2 max-h-36 overflow-y-auto no-scrollbar">

@@ -44,6 +44,9 @@ export interface CashierState {
   noRowsReturned: boolean;
   noTransMsg: boolean;
   transIdFilter: string;
+  gridPages: number;
+  currentGridPage: number;
+  pageText: string;
 }
 
 const initialState: CashierState = {
@@ -75,6 +78,9 @@ const initialState: CashierState = {
   noRowsReturned: false,
   noTransMsg: false,
   transIdFilter: "",
+  gridPages: 0,
+  currentGridPage: 0,
+  pageText: "1",
 };
 
 export const cashierSlice = createSlice({
@@ -91,7 +97,7 @@ export const cashierSlice = createSlice({
     },
     setCashierTransactions: (
       state,
-      action: PayloadAction<CashierTransaction[]>
+      action: PayloadAction<CashierTransaction[]>,
     ) => {
       state.cashierTransactions = action.payload;
     },
@@ -137,7 +143,7 @@ export const cashierSlice = createSlice({
     },
     setCashierTableThreshComp: (
       state,
-      action: PayloadAction<{ gt: boolean; lt: boolean }>
+      action: PayloadAction<{ gt: boolean; lt: boolean }>,
     ) => {
       state.cashierTableThreshComp = action.payload;
     },
@@ -158,7 +164,7 @@ export const cashierSlice = createSlice({
     },
     setTransactionDrillDown: (
       state,
-      action: PayloadAction<TransactionListItem[][]>
+      action: PayloadAction<TransactionListItem[][]>,
     ) => {
       state.transactionDrillDown = action.payload;
       if (action.payload.length === 0) {
@@ -172,6 +178,20 @@ export const cashierSlice = createSlice({
     },
     toggleNoTransMsg: (state, action: PayloadAction<boolean>) => {
       state.noTransMsg = action.payload;
+    },
+    setGridPages: (state, action: PayloadAction<number>) => {
+      state.gridPages = action.payload;
+    },
+    setCurrentGridPage: (state, action: PayloadAction<number>) => {
+      state.currentGridPage = action.payload;
+    },
+    setPageText: (state, action: PayloadAction<string>) => {
+      state.pageText = action.payload;
+    },
+    resetGridPages: (state) => {
+      state.gridPages = 0;
+      state.currentGridPage = 0;
+      state.pageText = "1";
     },
     resetCashierSlice: () => initialState,
   },
@@ -204,5 +224,9 @@ export const {
   toggleNoTransMsg,
   resetCashierSlice,
   setTransIdFilter,
+  setGridPages,
+  resetGridPages,
+  setCurrentGridPage,
+  setPageText,
 } = cashierSlice.actions;
 export default cashierSlice.reducer;

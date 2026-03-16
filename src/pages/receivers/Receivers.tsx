@@ -88,9 +88,9 @@ const Receivers = () => {
         columns={detailCols}
         totalsLine={totalsLine}
       />
-      <div className="w-full h-full grid grid-cols-[20%_80%] gap-4">
+      <div className="w-full h-full grid grid-cols-[16%_84%] gap-4">
         <div className="select-none space-y-4">
-          <div className="bg-custom-white rounded-lg p-4 shadow-lg">
+          <div className="bg-custom-white rounded-lg p-2 shadow-lg">
             <SingleSelect
               label={"Select Store"}
               data={assignedStores}
@@ -104,7 +104,7 @@ const Receivers = () => {
                 data-testid="rec-page-refresh-btn"
                 className={`${
                   state.list.length === 0 && "opacity-50 pointer-events-none"
-                } btn-themeOrange w-full mt-2`}
+                } btn-themeOrange w-1/2 mt-2 px-0`}
                 onClick={() => dispatch(resetReceiverSlice())}
               >
                 Refresh
@@ -113,7 +113,7 @@ const Receivers = () => {
                 data-testid="receivers-export-btn"
                 className={`${
                   state.details.length === 0 && "opacity-50 pointer-events-none"
-                } btn-themeGreen w-full mt-2`}
+                } btn-themeGreen w-1/2 mt-2 px-0`}
                 onClick={openExportModal}
               >
                 Export

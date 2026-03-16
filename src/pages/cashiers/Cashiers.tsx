@@ -57,7 +57,7 @@ const Cashiers = () => {
 
   // Styles for mobile and desktop
   const pageContainer = context.isDesktop
-    ? "w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden overflow-y-auto no-scrollbar p-4 grid grid-cols-[24%_76%] gap-4"
+    ? "w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden overflow-y-auto no-scrollbar p-4 grid grid-cols-[22%_78%] gap-4"
     : "p-4 w-full min-h-full overflow-y-auto space-y-4 max-h-screen";
   const leftContainer = context.isDesktop
     ? cashier.saleTypes.length
@@ -73,7 +73,7 @@ const Cashiers = () => {
     <div data-testid="cashiers-page" className={pageContainer}>
       <TransactionModal />
       <div className={leftContainer}>
-        <div className="bg-custom-white px-4 py-2.5 rounded-lg shadow-lg space-y-1 md:space-y-0">
+        <div className="bg-custom-white px-2 py-2.5 rounded-lg shadow-lg space-y-1 md:space-y-0">
           <StorePicker />
           <DatePickers handleQuery={getSaleTypesData} />
         </div>

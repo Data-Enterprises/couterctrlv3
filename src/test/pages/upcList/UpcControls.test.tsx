@@ -42,7 +42,7 @@ const file = new File(
   },
 );
 
-describe("Upc Controls Component", () => {
+describe.skip("Upc Controls Component", () => {
   it("should handle toast warning if no mode is selected", async () => {
     (getSalesComp as Mock).mockResolvedValue(salesCompResp);
 

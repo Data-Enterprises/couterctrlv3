@@ -150,7 +150,7 @@ const TextInput = <T,>({
         onChange={handleQueryChange}
         className={`basic-input focus:border bg-custom-white ${className}`}
       />
-      {type === "password" && <Eye onClick={handleEncryptionToggle} />}
+      {type === "password" && <Eye id={name} onClick={handleEncryptionToggle} />}
       {name === "password" ? (
         <div className="h-1 w-[97%] mx-auto rounded-full bg-content/10 mt-1 ">
           <div

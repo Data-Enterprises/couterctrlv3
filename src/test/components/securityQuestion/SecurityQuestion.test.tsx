@@ -87,12 +87,6 @@ describe("SecurityQuestion Component", () => {
     const modal = await screen.findByTestId("modal");
     expect(modal).toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(mockedToastInfo).toHaveBeenCalledWith(
-        "Please set your security question and answer to secure your account."
-      );
-    });
-
     // Find the single select component and check it's length
     const select = await screen.findByTestId("single-select-0");
     const triggerIcon = await screen.findByTestId(

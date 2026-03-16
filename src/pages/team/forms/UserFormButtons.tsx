@@ -6,7 +6,6 @@ import {
   resetUserInfo,
   setIsDeletingUser,
   setRefresh,
-  setSelectedUserId,
   setSelectedUserStores,
   type UserFormType,
 } from "../../../features/usersSlice";
@@ -42,7 +41,6 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
         const j = resp.data;
         if (j.error === 0) {
           const userid = j.new_userid;
-          dispatch(setSelectedUserId(userid));
           assignUserToCompany(url, token, userid, userCompanyIds)
             .then((resp) => {
               const j = resp.data;
@@ -67,8 +65,7 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
   };
 
   const handleUpdateClick = async () => {
-    const found = users.find((u) => u.id === selectedUserId);
-    if (!found) return;
+    const found = users.filter((u) => u.id === selectedUserId)[0];
     updateUser(url, token, userInfo, found.security || 0, found.template || 0)
       .then((resp) => {
         const j = resp.data;
@@ -143,12 +140,13 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
   return (
     <div className={`grid ${gridLayout} gap-2`}>
       {formType !== "delete" && (
-        <button className="btn-themeBlue px-0" onClick={handleReset}>
+        <button data-testid="user-form-clear-fields-btn" className="btn-themeBlue px-0" onClick={handleReset}>
           Clear Fields
         </button>
       )}
       {formType === "create" ? (
         <button
+          data-testid="create-user-btn"
           className={`btn-themeBlue px-0 ${selectedUserId > 0 || !isFormReady() ? "opacity-50 pointer-events-none" : ""}`}
           onClick={handleCreateOrUpdate}
         >
@@ -156,6 +154,8 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
         </button>
       ) : formType === "update" ? (
         <button
+          data-testid="update-user-btn"
+
           className={`btn-themeBlue px-0 ${selectedUserId == 0 ? "opacity-50 pointer-events-none" : ""}`}
           onClick={handleCreateOrUpdate}
         >
@@ -163,6 +163,7 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
         </button>
       ) : (
         <button
+          data-testid="delete-user-btn"
           className={`btn-themeOrange px-0 ${selectedUserId == 0 ? "opacity-50 pointer-events-none" : ""}`}
           onClick={handleDeleteFlag}
         >

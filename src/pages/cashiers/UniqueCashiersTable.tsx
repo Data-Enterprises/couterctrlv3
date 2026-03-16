@@ -15,9 +15,8 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 const UniqueCashiersTable = () => {
   const dispatch = useAppDispatch();
-  const { cashiers, selectedCashier } = useAppSelector(
-    (state) => state.cashier
-  );
+  const { cashiers, selectedCashier, fetchingCashierTransactions } =
+    useAppSelector((state) => state.cashier);
 
   const onRowClicked = (e: RowClickedEvent) => {
     const cashier_number = e.data.cashier_number;
@@ -36,15 +35,18 @@ const UniqueCashiersTable = () => {
 
   return (
     <>
-      {cashiers.length ? (
-        <div data-testid="unique-cashiers-table" className="bg-custom-white p-2 rounded-lg shadow-lg h-[85%]">
+      {cashiers.length && !fetchingCashierTransactions ? (
+        <div
+          data-testid="unique-cashiers-table"
+          className="bg-custom-white p-2 rounded-lg shadow-lg h-[85%]"
+        >
           <div className="h-full">
             <AgGridReact
               rowData={cashiers}
               columnDefs={cashierColDefs}
               theme={theme}
-              pagination={true}
-              paginationAutoPageSize={true}
+              pagination={cashiers.length > 5}
+              paginationAutoPageSize={cashiers.length > 5}
               paginationPageSizeSelector={false}
               onRowClicked={onRowClicked}
               rowSelection="single"

@@ -1,11 +1,10 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { getCashierDetails, getCashierTable } from "../../api/cashiers";
+import { getCashierDetails } from "../../api/cashiers";
 import {
   setSelectedSaleType,
   setCashierDetails,
   setCashierTrends,
-  setCashierTransactions,
   resetCashierSlice,
   setSaleTypes,
   toggleNoTransMsg,
@@ -37,8 +36,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
     dispatch(setSelectedSaleType("Description"));
     setLoading(true);
     setIsOpen(false);
-
-    getCashierTable(
+    getCashierDetails(
       params.url,
       params.token,
       params.start,
@@ -47,44 +45,21 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
       params.searchValue,
       params.singleStore,
       ["description"],
-      1,
-      description
+      description,
     )
       .then((resp) => {
         const j = resp.data;
-        if (j.error === 0) {
-          dispatch(setCashierTransactions(j.transactions));
+        if (j.error === 0 && j.sales.length > 0) {
+          dispatch(toggleNoTransMsg(false));
+          // The chunked sales and trends are being set in the dispatches
+          dispatch(setCashierDetails(j.sales));
+          dispatch(setCashierTrends(j.trend));
+        } else {
+          dispatch(toggleNoTransMsg(true));
         }
       })
-      .then(() => {
-        getCashierDetails(
-          params.url,
-          params.token,
-          params.start,
-          params.end,
-          params.useGroups,
-          params.searchValue,
-          params.singleStore,
-          ["description"],
-          description
-        )
-          .then((resp) => {
-            const j = resp.data;
-            if (j.error === 0 && j.sales.length > 0) {
-              dispatch(toggleNoTransMsg(false));
-              // The chunked sales and trends are being set in the dispatches
-              dispatch(setCashierDetails(j.sales));
-              dispatch(setCashierTrends(j.trend));
-            } else {
-              dispatch(toggleNoTransMsg(true));
-            }
-          })
-          .catch((err: JsonError) =>
-            toast.error("Error fetching cashier details: " + err.message)
-          );
-      })
       .catch((err: JsonError) =>
-        toast.error("Error fetching cashier table: " + err.message)
+        toast.error("Error fetching cashier details: " + err.message),
       )
       .finally(() => setLoading(false));
   };
@@ -104,7 +79,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
     setLoading(true);
 
     // Using useApiContext hook to get the params
-    getCashierTable(
+    getCashierDetails(
       params.url,
       params.token,
       params.start,
@@ -113,46 +88,24 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
       params.searchValue,
       params.singleStore,
       [saleType],
-      1
     )
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          dispatch(setCashierTransactions(j.transactions));
+          // Checking to see if we need to display No Transactions Found
+          if (j.sales.length === 0) {
+            dispatch(toggleNoTransMsg(true));
+          } else {
+            dispatch(toggleNoTransMsg(false));
+          }
+
+          // The chunked sales and trends are being set in the dispatches
+          dispatch(setCashierDetails(j.sales));
+          dispatch(setCashierTrends(j.trend));
         }
       })
-      .then(() => {
-        getCashierDetails(
-          params.url,
-          params.token,
-          params.start,
-          params.end,
-          params.useGroups,
-          params.searchValue,
-          params.singleStore,
-          [saleType]
-        )
-          .then((resp) => {
-            const j = resp.data;
-            if (j.error === 0) {
-              // Checking to see if we need to display No Transactions Found
-              if (j.sales.length === 0) {
-                dispatch(toggleNoTransMsg(true));
-              } else {
-                dispatch(toggleNoTransMsg(false));
-              }
-              
-              // The chunked sales and trends are being set in the dispatches
-              dispatch(setCashierDetails(j.sales));
-              dispatch(setCashierTrends(j.trend));
-            }
-          })
-          .catch((err: JsonError) =>
-            toast.error("Error fetching cashier details: " + err.message)
-          );
-      })
       .catch((err: JsonError) =>
-        toast.error("Error fetching cashier table: " + err.message)
+        toast.error("Error fetching cashier details: " + err.message),
       )
       .finally(() => setLoading(false));
   };
@@ -178,7 +131,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
             data-testid={`sale-type-panel-${st.sale_type}`}
             className={`${activePanelStyle(
               st.sale_type,
-              cashier.selectedSaleType
+              cashier.selectedSaleType,
             )} py-1.5 rounded-lg text-center shadow-md shadow-content/20 hover:bg-emerald-200
                 cursor-pointer transition-all duration-200 ripple-button`}
             onClick={() => handlePanelClick(st.sale_type)}

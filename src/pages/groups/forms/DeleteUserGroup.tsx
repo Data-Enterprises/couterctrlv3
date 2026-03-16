@@ -69,10 +69,10 @@ const DeleteUserGroup = () => {
           <span>?</span>
         </div>
         <div className="grid grid-cols-2 gap-2 mt-4">
-          <button className="btn-themeGreen" onClick={handleDelete}>
+          <button className="btn-themeGreen" data-testid="delete-submit-btn" onClick={handleDelete}>
             Yes
           </button>
-          <button className="btn-themeOrange" onClick={cleanup}>
+          <button className="btn-themeOrange" data-testid="delete-cancel-btn" onClick={cleanup}>
             No
           </button>
         </div>
@@ -90,9 +90,10 @@ const DeleteUserGroup = () => {
         <div>Select group to delete</div>
       </div>
       <div className="select-none text-sm grid rounded-lg p-1 max-h-36 overflow-hidden overflow-y-auto">
-        {groups.map((g) => (
+        {groups.map((g, i) => (
           <div
             key={g.id}
+            data-testid={`delete-group-option-${i}`}
             className={`${selectedGroup.id === g.id && "bg-orange-200"} rounded-full py-1 pl-2 border-b transition-all duration-200 cursor-pointer hover:bg-blue-200`}
             onClick={() => handleSelect(g)}
           >
@@ -103,7 +104,7 @@ const DeleteUserGroup = () => {
       <div>
         <Input label="Group Name" value={createInput} setValue={() => {}} />
         <button
-          data-testid="create-usergroup-btn"
+          data-testid="delete-usergroup-btn"
           className={`btn-themeOrange mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
           onClick={() => setIsDeleting(true)}
         >

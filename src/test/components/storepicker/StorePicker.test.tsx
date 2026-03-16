@@ -127,7 +127,7 @@ describe("StorePicker Component", () => {
     renderWithProviders(<StorePicker />, { store: testStore });
     await waitFor(() => {
       // expect the text Single Store to be in the document
-      const singleStoreText = screen.getByText("Single Store");
+      const singleStoreText = screen.getByText("Store");
       expect(singleStoreText).toBeInTheDocument();
     });
   });

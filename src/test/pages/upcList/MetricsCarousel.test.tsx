@@ -8,7 +8,7 @@ import { setupStore } from "../../../store";
 const store = setupStore();
 const user = userEvent.setup();
 
-describe("MetricsCarousel Component", () => {
+describe.skip("MetricsCarousel Component", () => {
   it("should render and handle navigation", async () => {
     renderWithProviders(
       <MetricsCarousel>

@@ -9,8 +9,9 @@ import {
   getStoresAssignedToUserGroup,
   createGroup,
   deleteGroup,
-  addStoreToGroup,
   removeStoreFromGroup,
+  updateGroup,
+  addStoreToGroup,
 } from "../../../api/groups";
 import { setIsDesktop, setToken } from "../../../features/appSlice";
 
@@ -22,11 +23,13 @@ import {
   updatedGroupsAfterDeleteResp,
   getStoresWithGroupStatusResp,
 } from "./index";
-import { setRefreshGroups } from "../../../features/groupSlice";
+import { setGroups } from "../../../features/groupSlice";
+import { getGroupsResp } from "../../components/dataLoader";
 
 vi.mock("../../../api/groups");
 const user = userEvent.setup();
 const store = setupStore();
+store.dispatch(setGroups(getGroupsResp.data.groups));
 
 const mockedToastSuccess = vi.fn();
 const mockedToastError = vi.fn();
@@ -51,351 +54,410 @@ describe("Groups Page", () => {
     });
   });
 
-  // Create Group COMPONENT TESTS
-  // ////////////////////////////
-  it("should create a group or throw warning if group input is empty", async () => {
-    (getGroups as Mock).mockResolvedValue(getGroupsSuccessResp);
-    (createGroup as Mock).mockRejectedValue(JsonErrorResp);
-
+  // Create User Group Form
+  it("should not allow the user to create a new group with a duplicate name", async () => {
     renderWithProviders(<Groups />, { store });
 
-    const createInput = screen.getByTestId("create-group-input");
-    const createButton = screen.getByTestId("group-create-btn");
-    expect(createInput).toBeInTheDocument();
-    expect(createButton).toBeInTheDocument();
+    const createForm = await screen.findByTestId("user-group-create-form-btn");
+    await user.click(createForm);
 
-    // Throw warning if create input is empty
-    await user.click(createButton);
+    expect(screen.getByTestId("create-usergroup-form")).toBeInTheDocument();
+    const input = await screen.findByTestId("input-group-name");
+    await user.type(input, "Admins");
+
+    const submitBtn = await screen.findByTestId("create-usergroup-btn");
+    expect(submitBtn.className).toContain("opacity-50 pointer-events-none");
+  });
+
+  it("should handle api failure when creating a new group", async () => {
+    (createGroup as Mock).mockRejectedValueOnce(JsonErrorResp);
+    renderWithProviders(<Groups />, { store });
+
+    const createForm = await screen.findByTestId("user-group-create-form-btn");
+    await user.click(createForm);
+
+    const input = await screen.findByTestId("input-group-name");
+    await user.type(input, "New Group");
+
+    const submitBtn = await screen.findByTestId("create-usergroup-btn");
+    await user.click(submitBtn);
+
     await waitFor(() => {
-      expect(mockedToastWarn).toHaveBeenCalledWith("Please enter a group name");
-    });
-
-    // Type in the create input => will call createGroup API
-    await user.type(createInput, "Test Group");
-    await user.click(createButton);
-
-    // Handl Error
-    await waitFor(() => {
-      expect(mockedToastError).toHaveBeenCalledWith("API request failed");
-    });
-
-    // Now handle the success
-    (createGroup as Mock).mockResolvedValue(defaultSuccessResp);
-    await user.click(createButton);
-    await waitFor(() => {
-      expect(mockedToastSuccess).toHaveBeenCalledWith(
-        "Group created successfully"
-      );
+      expect(mockedToastError).toHaveBeenCalledWith(JsonErrorResp.message);
     });
   });
 
-  it("should do nothing if error !== '0' on createGroup response", async () => {
-    (getGroups as Mock).mockResolvedValue(getGroupsSuccessResp);
-    (createGroup as Mock).mockResolvedValueOnce({ data: { error: 1 } });
-    renderWithProviders(<Groups />);
-
-    const createInput = screen.getByTestId("create-group-input");
-    const createButton = screen.getByTestId("group-create-btn");
-
-    // Type in the create input => will call createGroup API
-    await user.type(createInput, "Test Group");
-    await user.click(createButton);
-  });
-
-  it("should handle the deleting of a group and any errors with deleting the group", async () => {
-    (getGroups as Mock).mockResolvedValue(updatedGroupsAfterDeleteResp);
+  it("should handle mobile css styling for create user group form", async () => {
+    // setting isDesktop to false to cover the mobile styling functionality
+    await waitFor(() => {
+      store.dispatch(setIsDesktop(false));
+    });
     renderWithProviders(<Groups />, { store });
 
-    const openDeleteModalBtn = await screen.findByTestId("group-delete-btn");
-    expect(openDeleteModalBtn).toBeInTheDocument();
-    await user.click(openDeleteModalBtn);
+    const singleSelect = await screen.findByTestId(
+      "single-select-trigger-icon-0",
+    );
+    await user.click(singleSelect);
 
-    // Should warn if input is empty
+    const creatOption = await screen.findByTestId("single-select-option-0-0");
+    await user.click(creatOption);
+  });
+
+  it("should handle api failure when fetching groups", async () => {
+    // resetting back to desktop to cover the functionality
     await waitFor(() => {
-      expect(mockedToastWarn).toHaveBeenCalledWith(
-        "Please enter a group name to delete"
-      );
+      store.dispatch(setIsDesktop(true));
     });
 
-    // Should warn if the user's group does not exist => typed from input
-    const createInput = screen.getByTestId("create-group-input");
-    await user.type(createInput, "Nonexistent Group");
-    await user.click(openDeleteModalBtn);
+    (getGroups as Mock).mockRejectedValueOnce(JsonErrorResp);
+    (createGroup as Mock).mockResolvedValueOnce(defaultSuccessResp);
+    renderWithProviders(<Groups />, { store });
+
+    const createForm = await screen.findByTestId("user-group-create-form-btn");
+    await user.click(createForm);
+
+    expect(screen.getByTestId("create-usergroup-form")).toBeInTheDocument();
+    const input = await screen.findByTestId("input-group-name");
+    await user.type(input, "N");
+
+    const submitBtn = await screen.findByTestId("create-usergroup-btn");
+    await user.click(submitBtn);
+  });
+
+  it("should create a new user group successfully and refresh the group data", async () => {
+    (getGroups as Mock).mockResolvedValueOnce(getGroupsSuccessResp);
+    (createGroup as Mock).mockResolvedValueOnce(defaultSuccessResp);
+
+    renderWithProviders(<Groups />, { store });
+
+    const createForm = await screen.findByTestId("user-group-create-form-btn");
+    await user.click(createForm);
+
+    expect(screen.getByTestId("create-usergroup-form")).toBeInTheDocument();
+    const input = await screen.findByTestId("input-group-name");
+    await user.type(input, "New Group");
+
+    const submitBtn = await screen.findByTestId("create-usergroup-btn");
+    await user.click(submitBtn);
+  });
+
+  // Update User Group Form
+  it("should handle mobile styling for update group form", async () => {
+    await waitFor(() => store.dispatch(setIsDesktop(false)));
+    renderWithProviders(<Groups />, { store });
+
+    const singleSelect = await screen.findByTestId(
+      "single-select-trigger-icon-0",
+    );
+    await user.click(singleSelect);
+
+    const creatOption = await screen.findByTestId("single-select-option-0-1");
+    await user.click(creatOption);
+  });
+
+  it("should not allow a user to update a group if no change is made or if the new name is a duplicate", async () => {
+    await waitFor(() => store.dispatch(setIsDesktop(true)));
+    renderWithProviders(<Groups />, { store });
+    const updateForm = await screen.findByTestId("user-group-update-form-btn");
+    await user.click(updateForm);
+
+    const option1 = await screen.findByTestId("update-group-option-0");
+    await user.click(option1);
+  });
+
+  it("should handle api failure when updating a group", async () => {
+    (updateGroup as Mock).mockRejectedValueOnce(JsonErrorResp);
+    renderWithProviders(<Groups />, { store });
+    const updateForm = await screen.findByTestId("user-group-update-form-btn");
+    await user.click(updateForm);
+    const option1 = await screen.findByTestId("update-group-option-0");
+    await user.click(option1);
+    const input = await screen.findByTestId("input-group-name");
+    await user.type(input, "Updated Group Name");
+    const submitBtn = await screen.findByTestId("create-usergroup-btn");
+    await user.click(submitBtn);
+
     await waitFor(() => {
-      expect(mockedToastWarn).toHaveBeenCalledWith("User group does not exist");
+      expect(mockedToastError).toHaveBeenCalledWith(JsonErrorResp.message);
     });
+  });
 
-    // Then get the modal to open for a valid group
-    await user.clear(createInput);
-    await user.type(createInput, "Managers");
-    await user.click(openDeleteModalBtn);
+  it("should handle successfully updating a group name", async () => {
+    (updateGroup as Mock).mockResolvedValueOnce(defaultSuccessResp);
+    (getGroups as Mock).mockResolvedValueOnce(getGroupsSuccessResp);
+    renderWithProviders(<Groups />, { store });
+    const updateForm = await screen.findByTestId("user-group-update-form-btn");
+    await user.click(updateForm);
+    const option1 = await screen.findByTestId("update-group-option-0");
+    await user.click(option1);
+    const input = await screen.findByTestId("input-group-name");
+    await user.type(input, "Updated Group Name");
+    const submitBtn = await screen.findByTestId("create-usergroup-btn");
+    await user.click(submitBtn);
+  });
 
-    const modal = await screen.findByTestId("modal");
-    expect(modal).toBeInTheDocument();
+  // Delete User Group
+  it("should handle mobile styling for delete group form", async () => {
+    await waitFor(() => store.dispatch(setIsDesktop(false)));
+    renderWithProviders(<Groups />, { store });
 
-    // Handle opening and closing of delete group modal
-    const cancelBtn = screen.getByTestId("modal-cancel-btn");
-    const confirmBtn = screen.getByTestId("modal-confirm-btn");
-    expect(cancelBtn).toBeInTheDocument();
-    expect(confirmBtn).toBeInTheDocument();
+    const singleSelect = await screen.findByTestId(
+      "single-select-trigger-icon-0",
+    );
+    await user.click(singleSelect);
 
-    // close the modal first
+    const deleteOption = await screen.findByTestId("single-select-option-0-2");
+    await user.click(deleteOption);
+  });
+
+  it("should handle toggling on and off a selected user group", async () => {
+    renderWithProviders(<Groups />, { store });
+    const singleSelect = await screen.findByTestId(
+      "single-select-trigger-icon-0",
+    );
+    await user.click(singleSelect);
+
+    const deleteOption = await screen.findByTestId("single-select-option-0-2");
+    await user.click(deleteOption);
+
+    const option1 = await screen.findByTestId("delete-group-option-0");
+    await user.click(option1);
+    await user.click(option1);
+    await user.click(option1);
+
+    const deleteBtn = await screen.findByTestId("delete-usergroup-btn");
+    await user.click(deleteBtn);
+
+    const cancelBtn = await screen.findByTestId("delete-cancel-btn");
     await user.click(cancelBtn);
-    await user.click(openDeleteModalBtn);
 
-    // clicking outside the modal to close then reopen
-    await user.click(document.body);
-    await user.click(openDeleteModalBtn);
-
-    // Now confirm deletion with error
-    (deleteGroup as Mock).mockRejectedValue(JsonErrorResp);
-    const newConfirm = await screen.findByTestId("modal-confirm-btn");
-    expect(newConfirm).toBeInTheDocument();
-    await user.click(newConfirm);
     await waitFor(() => {
-      expect(mockedToastError).toHaveBeenCalledWith("API request failed");
+      const state = store.getState().group;
+      expect(state.selectedGroup.id).toBe(0);
     });
+  });
 
-    // Now successfully delete the group
-    (deleteGroup as Mock).mockResolvedValue(defaultSuccessResp);
-    await user.click(newConfirm);
+  it("should handle api failure when deleting a user group", async () => {
+    await waitFor(() => store.dispatch(setIsDesktop(true)));
+    (deleteGroup as Mock).mockRejectedValueOnce(JsonErrorResp);
+    renderWithProviders(<Groups />, { store });
+
+    const deleteForm = await screen.findByTestId("user-group-delete-form-btn");
+    await user.click(deleteForm);
+    const option1 = await screen.findByTestId("delete-group-option-0");
+    await user.click(option1);
+    const deleteBtn = await screen.findByTestId("delete-usergroup-btn");
+    await user.click(deleteBtn);
+
+    const submitBtn = await screen.findByTestId("delete-submit-btn");
+    await user.click(submitBtn);
+
+    await waitFor(() => {
+      expect(mockedToastError).toHaveBeenCalledWith(JsonErrorResp.message);
+    });
+  });
+
+  it("should delete a user group successfully and refresh the group data", async () => {
+    (deleteGroup as Mock).mockResolvedValueOnce(defaultSuccessResp);
+    (getGroups as Mock).mockResolvedValueOnce(updatedGroupsAfterDeleteResp);
+    renderWithProviders(<Groups />, { store });
+
+    const deleteForm = await screen.findByTestId("user-group-delete-form-btn");
+    await user.click(deleteForm);
+    const option1 = await screen.findByTestId("delete-group-option-0");
+    await user.click(option1);
+    const deleteBtn = await screen.findByTestId("delete-usergroup-btn");
+    await user.click(deleteBtn);
+
+    const submitBtn = await screen.findByTestId("delete-submit-btn");
+    await user.click(submitBtn);
 
     await waitFor(() => {
       expect(mockedToastSuccess).toHaveBeenCalledWith(
-        "Group deleted successfully"
+        "Group deleted successfully",
       );
     });
   });
 
-  it("should do nothing if error !== 0 in the then block with deleting the group", async () => {
-    (getGroups as Mock).mockResolvedValue(updatedGroupsAfterDeleteResp);
-    renderWithProviders(<Groups />, { store });
-
-    const openDeleteModalBtn = await screen.findByTestId("group-delete-btn");
-    const createInput = screen.getByTestId("create-group-input");
-    await user.clear(createInput);
-    await user.type(createInput, "Test Group");
-    await user.click(openDeleteModalBtn);
-
-    const modal = await screen.findByTestId("modal");
-    expect(modal).toBeInTheDocument();
-
-    // Handle opening and closing of delete group modal
-    const confirmBtn = screen.getByTestId("modal-confirm-btn");
-    expect(confirmBtn).toBeInTheDocument();
-
-    // Now successfully delete the group
-    (deleteGroup as Mock).mockResolvedValue({ data: { error: 1 } });
-    await user.click(confirmBtn);
-  });
-
-  it("should handle API error when fetching groups", async () => {
-    const newStore = setupStore();
-    (getGroups as Mock).mockRejectedValue(JsonErrorResp);
-    newStore.dispatch(setToken("test-token"));
-    newStore.dispatch(setRefreshGroups(true));
-
-    renderWithProviders(<Groups />, { store: newStore });
-    await waitFor(() => {
-      expect(mockedToastError).toHaveBeenCalledWith("API request failed");
-    });
-  });
-
-  it("should handle mobile styling", async () => {
-    const mobileStore = setupStore();
-    mobileStore.dispatch(setIsDesktop(false));
-
-    renderWithProviders(<Groups />, { store: mobileStore });
-    const container = await screen.findByTestId("groups-page");
-    expect(container).toHaveClass(
-      "w-full h-[calc(100vh-3rem)] p-2 flex flex-col gap-2"
+  // Assign/Unassign Stores to User Group Form
+  it("should handle mobile styling for assign stores to user group form", async () => {
+    (getStoresAssignedToUserGroup as Mock).mockResolvedValueOnce(
+      getStoresWithGroupStatusResp,
     );
-  });
-
-  // Select Group COMPONENT TESTS
-  // ////////////////////////////
-  it("should handle selecting a group with failure and success api calls", async () => {
-    // (getGroups as Mock).mockResolvedValue(getGroupsSuccessResp);
-    (getStoresAssignedToUserGroup as Mock).mockRejectedValue(JsonErrorResp);
+    await waitFor(() => store.dispatch(setIsDesktop(false)));
     renderWithProviders(<Groups />, { store });
 
-    const selectGroupIcon = await screen.findByTestId(
-      "single-select-trigger-icon-1"
+    const singleSelect = await screen.findByTestId(
+      "single-select-trigger-icon-0",
     );
-    expect(selectGroupIcon).toBeInTheDocument();
-    await user.click(selectGroupIcon);
+    await user.click(singleSelect);
 
-    // Select the first group and handle error then success
-    const groupToSelect = await screen.findByTestId("single-select-option-1-0");
-    expect(groupToSelect).toBeInTheDocument();
-    await user.click(groupToSelect);
+    const storesOption = await screen.findByTestId("single-select-option-0-3");
+    await user.click(storesOption);
 
-    await waitFor(() => {
-      expect(mockedToastError).toHaveBeenCalledWith("API request failed");
-    });
-
-    // Now handle the successful fetching of stores with group status
-    (getStoresAssignedToUserGroup as Mock).mockResolvedValue(
-      getStoresWithGroupStatusResp
+    const groupSelect = await screen.findByTestId(
+      "single-select-trigger-icon-1",
     );
+    await user.click(groupSelect);
 
-    await user.click(selectGroupIcon);
-    await user.click(groupToSelect);
-
-    await waitFor(() => {
-      const state = store.getState();
-      expect(state.group.storesWithGroupStatus.length).toBeGreaterThan(0);
-    });
+    const groupOption = await screen.findByTestId("single-select-option-1-0");
+    await user.click(groupOption);
   });
 
-  it("should handle selecting filter options", async () => {
+  it("should handle api failure when fetching stores for a selected group", async () => {
+    await waitFor(() => store.dispatch(setIsDesktop(true)));
+    (getStoresAssignedToUserGroup as Mock).mockRejectedValueOnce(JsonErrorResp);
     renderWithProviders(<Groups />, { store });
-    const filterOptionsIcon = await screen.findByTestId(
-      "single-select-trigger-icon-2"
+
+    const storeAssignForm = await screen.findByTestId(
+      "user-group-assign-form-btn",
     );
-    expect(filterOptionsIcon).toBeInTheDocument();
-    await user.click(filterOptionsIcon);
+    await user.click(storeAssignForm);
 
-    // Selecting Inactive option
-    const inactiveOption = await screen.findByTestId(
-      "single-select-option-2-2"
+    const singleSelect = await screen.findByTestId(
+      "single-select-trigger-icon-1",
     );
-    expect(inactiveOption).toBeInTheDocument();
-    await user.click(inactiveOption);
+    await user.click(singleSelect);
+
+    const groupOption = await screen.findByTestId("single-select-option-1-0");
+    await user.click(groupOption);
 
     await waitFor(() => {
-      const state = store.getState();
-      expect(state.group.filterOption).toBe("inactive");
-    });
-
-    // Selecting Active options
-    const activeOption = await screen.findByTestId("single-select-option-2-1");
-    expect(activeOption).toBeInTheDocument();
-    await user.click(activeOption);
-
-    await waitFor(() => {
-      const state = store.getState();
-      expect(state.group.filterOption).toBe("active");
-    });
-
-    // Selecting All option
-    const allOption = await screen.findByTestId("single-select-option-2-0");
-    expect(allOption).toBeInTheDocument();
-    await user.click(allOption);
-    await waitFor(() => {
-      const state = store.getState();
-      expect(state.group.filterOption).toBe("all");
+      expect(mockedToastError).toHaveBeenCalledWith(JsonErrorResp.message);
     });
   });
 
-  // GROUP LIST COMPONENT TESTS
-  // ////////////////////////////
-  it("should handle columns by window resize", async () => {
+  it("should handle api failure when assigning a store to a group", async () => {
+    (addStoreToGroup as Mock).mockRejectedValueOnce(JsonErrorResp);
+    (getStoresAssignedToUserGroup as Mock).mockResolvedValueOnce(
+      getStoresWithGroupStatusResp,
+    );
     renderWithProviders(<Groups />, { store });
-    const groupListCards = await screen.findByTestId("group-list-cards");
-    expect(groupListCards).toBeInTheDocument();
-    // Default is desktop size
-    expect(groupListCards).toHaveClass("grid-cols-3");
 
-    // Resize to mobile
-    await waitFor(() => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 500,
-      });
-      window.dispatchEvent(new Event("resize"));
-      expect(window.innerWidth).toBe(500);
-    });
+    const storeAssignForm = await screen.findByTestId(
+      "user-group-assign-form-btn",
+    );
+    await user.click(storeAssignForm);
 
-    // Reset back to desktop
+    const singleSelect = await screen.findByTestId(
+      "single-select-trigger-icon-1",
+    );
+    await user.click(singleSelect);
+
+    const groupOption = await screen.findByTestId("single-select-option-1-0");
+    await user.click(groupOption);
+
+    const storeToAssign = await screen.findByTestId("unassigned-store-2");
+    await user.click(storeToAssign);
+
     await waitFor(() => {
-      Object.defineProperty(window, "innerWidth", {
-        writable: true,
-        configurable: true,
-        value: 1536,
-      });
-      window.dispatchEvent(new Event("resize"));
-      expect(window.innerWidth).toBe(1536);
+      expect(mockedToastError).toHaveBeenCalledWith(JsonErrorResp.message);
     });
   });
 
-  it("should handle the filtering of stores based on search input and group filter option", async () => {
-    renderWithProviders(<Groups />, { store });
-    const searchInput = await screen.findByTestId("store-search-input");
-    expect(searchInput).toBeInTheDocument();
-
-    // handle input change
-    await user.type(searchInput, "Store 12");
-    expect(searchInput).toHaveValue("Store 12");
-    const groupListCards = await screen.findByTestId("group-list-cards");
-
-    // There should be only one store card showing
-    await waitFor(() => {
-      const children = groupListCards.children;
-      expect(children.length).toBe(1);
-    });
-
-    // Clearing the input should put back all the store cards
-    await user.clear(searchInput);
-    expect(searchInput).toHaveValue("");
-    await waitFor(() => {
-      const children = groupListCards.children;
-      expect(children.length).toBeGreaterThan(1);
-    });
-  });
-
-  it("should handle adding store to group", async () => {
-    // test the failure first
-    (addStoreToGroup as Mock).mockRejectedValue(JsonErrorResp);
+  it("should allow a user to assign a store to the group", async () => {
+    (addStoreToGroup as Mock).mockResolvedValueOnce(defaultSuccessResp);
+    (getStoresAssignedToUserGroup as Mock).mockResolvedValueOnce(
+      getStoresWithGroupStatusResp,
+    );
     renderWithProviders(<Groups />, { store });
 
-    const groupListCards = await screen.findByTestId("group-list-cards");
-    expect(groupListCards).toBeInTheDocument();
+    const storeAssignForm = await screen.findByTestId(
+      "user-group-assign-form-btn",
+    );
+    await user.click(storeAssignForm);
 
-    const firstStoreCard = await screen.findByTestId("grouplist-store-card-2");
-    const secondChild = firstStoreCard.children[1];
-    expect(secondChild.innerHTML).toContain("Inactive");
-    await user.click(firstStoreCard);
+    const singleSelect = await screen.findByTestId(
+      "single-select-trigger-icon-1",
+    );
+    await user.click(singleSelect);
+
+    const groupOption = await screen.findByTestId("single-select-option-1-0");
+    await user.click(groupOption);
+
+    const unassignedInput = await screen.findByTestId("input-unassigned---3");
+    const assignedInput = await screen.findByTestId("input-assigned---3");
+
+    await user.type(unassignedInput, "S");
+    await user.type(assignedInput, "S");
+
+    const storeToAssign = await screen.findByTestId("unassigned-store-2");
+    await user.click(storeToAssign);
 
     await waitFor(() => {
-      expect(mockedToastError).toHaveBeenCalledWith("API request failed");
-    });
-
-    // Now test the success
-    (addStoreToGroup as Mock).mockResolvedValue(defaultSuccessResp);
-    await user.click(firstStoreCard);
-
-    await waitFor(() => {
-      expect(mockedToastSuccess).toHaveBeenCalledWith(
-        "Store added to group successfully"
+      const state = store.getState().group;
+      const activeStores = state.storesWithGroupStatus.filter(
+        (s) => s.active === 1,
       );
+      const inactiveStores = state.storesWithGroupStatus.filter(
+        (s) => s.active === 0,
+      );
+      expect(activeStores.length).toBe(4);
+      expect(inactiveStores.length).toBe(2);
     });
   });
 
-  it("should handle removing store from group", async () => {
-    // test the failure first
-    (removeStoreFromGroup as Mock).mockRejectedValue(JsonErrorResp);
+  it("should handle api failure when unassigning a store from a group", async () => {
+    (removeStoreFromGroup as Mock).mockRejectedValueOnce(JsonErrorResp);
+    (getStoresAssignedToUserGroup as Mock).mockResolvedValueOnce(
+      getStoresWithGroupStatusResp,
+    );
     renderWithProviders(<Groups />, { store });
 
-    const groupListCards = await screen.findByTestId("group-list-cards");
-    expect(groupListCards).toBeInTheDocument();
+    const storeAssignForm = await screen.findByTestId(
+      "user-group-assign-form-btn",
+    );
+    await user.click(storeAssignForm);
 
-    const storeToRemove = await screen.findByTestId("grouplist-store-card-1");
-    const firstChild = storeToRemove.children[1];
-    expect(firstChild.innerHTML).toContain("Active");
-    await user.click(storeToRemove);
+    const singleSelect = await screen.findByTestId(
+      "single-select-trigger-icon-1",
+    );
+    await user.click(singleSelect);
+
+    const groupOption = await screen.findByTestId("single-select-option-1-0");
+    await user.click(groupOption);
+
+    const storeToUnassign = await screen.findByTestId("assigned-store-1");
+    await user.click(storeToUnassign);
+
     await waitFor(() => {
-      expect(mockedToastError).toHaveBeenCalledWith("API request failed");
+      expect(mockedToastError).toHaveBeenCalledWith(JsonErrorResp.message);
     });
+  });
 
-    // Now test the success
-    (removeStoreFromGroup as Mock).mockResolvedValue(defaultSuccessResp);
-    await user.click(storeToRemove);
+  it("should allow a user to unassign a store from a group", async () => {
+    (removeStoreFromGroup as Mock).mockResolvedValueOnce(defaultSuccessResp);
+    (getStoresAssignedToUserGroup as Mock).mockResolvedValueOnce(
+      getStoresWithGroupStatusResp,
+    );
+    renderWithProviders(<Groups />, { store });
+
+    const storeAssignForm = await screen.findByTestId(
+      "user-group-assign-form-btn",
+    );
+    await user.click(storeAssignForm);
+
+    const singleSelect = await screen.findByTestId(
+      "single-select-trigger-icon-1",
+    );
+    await user.click(singleSelect);
+
+    const groupOption = await screen.findByTestId("single-select-option-1-0");
+    await user.click(groupOption);
+
+    const storeToUnassign = await screen.findByTestId("assigned-store-1");
+    await user.click(storeToUnassign);
+
     await waitFor(() => {
-      expect(mockedToastSuccess).toHaveBeenCalledWith(
-        "Store removed from group successfully"
+      const state = store.getState().group;
+      const activeStores = state.storesWithGroupStatus.filter(
+        (s) => s.active === 1,
       );
+      const inactiveStores = state.storesWithGroupStatus.filter(
+        (s) => s.active === 0,
+      );
+      expect(activeStores.length).toBe(2);
+      expect(inactiveStores.length).toBe(4);
     });
   });
 });

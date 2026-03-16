@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { useAppDispatch, useAppSelector } from "../../hooks";
+import { useAppDispatch } from "../../hooks";
 import type { JsonError } from "../../interfaces";
 
 import {
@@ -34,7 +34,6 @@ const Groups = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const ctx = useGroupCtx();
-  const { isDesktop } = useAppSelector((state) => state.app);
 
   useEffect(() => {
     return () => {
@@ -62,12 +61,12 @@ const Groups = () => {
         if (j.error == "0") {
           const groups = j.groups.filter((g: Group) => g.userid === ctx.userid);
           dispatch(setGroups(groups));
-          dispatch(setRefreshGroups(false));
         }
       })
       .catch((err: JsonError) => {
         toast.error(err.message);
-      });
+      })
+      .finally(() => dispatch(setRefreshGroups(false)));
   };
 
   const handleFormSelect = (formType: GroupFormType) => {
@@ -78,7 +77,7 @@ const Groups = () => {
     ? "h-[calc(100vh-3rem)] p-4 space-y-4"
     : "w-full h-[calc(100vh-3rem)] p-2 flex flex-col gap-2";
 
-  const optionBtnStyle = isDesktop
+  const optionBtnStyle = ctx.isDesktop
     ? "bg-custom-white rounded-lg shadow-lg p-4 grid grid-cols-4 gap-4 w-[55%]"
     : "bg-custom-white rounded-lg shadow-lg p-4 grid gap-2";
 
@@ -104,7 +103,7 @@ const Groups = () => {
 
   return (
     <div className={containerStyle} data-testid="groups-page">
-      {isDesktop ? (
+      {ctx.isDesktop ? (
         <div className={optionBtnStyle}>
           <button
             data-testid="user-group-create-form-btn"

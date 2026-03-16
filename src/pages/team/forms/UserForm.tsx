@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { roles } from "..";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -44,6 +44,24 @@ const UserForm = () => {
     (state) => state.baseGroup,
   );
   const user = useAppSelector((state) => state.user);
+  const [defaultCompanyQuery, setDefaultCompanyQuery] = useState<string>("");
+
+  useEffect(() => {
+    const companyString = () => {
+      if (selectedUserId) {
+        const filtered = [...user.companies].filter((c) =>
+          userCompanyIds.includes(c.company),
+        );
+
+        const companyNames = filtered.map((c) => c.name);
+        if (companyNames.length) {
+          return companyNames[0];
+        }
+      }
+      return "";
+    };
+    setDefaultCompanyQuery(companyString());
+  }, [selectedUserId]);
 
   useEffect(() => {
     const selected = [...selectedBaseGroups];
@@ -145,20 +163,6 @@ const UserForm = () => {
     dispatch(setSelectedBaseGroups(bg[0]));
   };
 
-  const defaultCompanyQuery = () => {
-    if (selectedUserId) {
-      const filtered = [...user.companies].filter((c) =>
-        userCompanyIds.includes(c.company),
-      );
-
-      const companyNames = filtered.map((c) => c.name);
-      if (companyNames.length) {
-        return companyNames[0];
-      }
-    }
-    return "";
-  };
-
   // if deleting a user or setting a temp password, check these components
   if (isDeletingUser) return <DeleteUserForm />;
   if (selectedUserForm === "update_password") return <UpdatePasswordForm />;
@@ -252,7 +256,7 @@ const UserForm = () => {
                 innerClass="text-sm"
                 onSelect={handleCompanySelect}
                 resetQuery={true}
-                defaultQuery={defaultCompanyQuery()}
+                defaultQuery={defaultCompanyQuery}
               />
             )}
             {selectedUserForm === "create" && (
@@ -370,7 +374,7 @@ const UserForm = () => {
                 innerClass="text-sm"
                 onSelect={handleCompanySelect}
                 resetQuery={true}
-                defaultQuery={defaultCompanyQuery()}
+                defaultQuery={defaultCompanyQuery}
               />
             )}
             {selectedUserForm === "create" && (

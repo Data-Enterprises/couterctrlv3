@@ -84,7 +84,7 @@ const ReceiversListGrid = () => {
             state.isFetchingList
               ? "bg-transparent"
               : "bg-custom-white shadow-lg"
-          } rounded-lg w-[60%] p-2`}
+          } rounded-lg w-[74%] p-2`}
         >
           <div
             className={`${
