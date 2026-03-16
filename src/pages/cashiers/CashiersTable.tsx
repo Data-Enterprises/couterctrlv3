@@ -13,7 +13,7 @@ import {
   setCashierSaleIds,
   setCashierTransactions,
   setCurrentGridPage,
-  // setFetchingCashierTransactions,
+  setPageText,
   setSelectedSaleIds,
   setTransactionDrillDown,
   setTransList,
@@ -46,7 +46,6 @@ const CashiersTable = () => {
   const cashier = useAppSelector((state) => state.cashier);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [fetchingPage, setFetchingPage] = useState<boolean>(false);
-  const [pageText, setPageText] = useState<string>("1");
 
   useEffect(() => {
     const selectedCashier = cashier.selectedCashier.cashier_number;
@@ -229,6 +228,7 @@ const CashiersTable = () => {
           if (j.error === 0) {
             const transactions = [...j.transactions];
             dispatch(setCashierTransactions(transactions));
+            dispatch(setCurrentGridPage(pageToSend));
 
             const uniqueCashiers = transactions.reduce(
               (acc: UniqueCashier[], curr) => {
@@ -261,7 +261,6 @@ const CashiersTable = () => {
             );
             dispatch(setSelectedSaleIds(saleIds));
             dispatch(setTransList([]));
-            // dispatch(setFetchingCashierTransactions(true));
 
             // call the api
             getTransactionList(
@@ -292,7 +291,7 @@ const CashiersTable = () => {
   const handlePageInput = (x: string) => {
     if (!isNaN(Number(x)) && Number(x) >= 0 && Number(x) <= cashier.gridPages) {
       dispatch(setCurrentGridPage(Number(x)));
-      setPageText(x);
+      dispatch(setPageText(x));
     }
   };
 
@@ -354,7 +353,7 @@ const CashiersTable = () => {
           <div>Page </div>
           <Input
             label=""
-            value={pageText}
+            value={cashier.pageText}
             setValue={handlePageInput}
             className="p-0 text-center"
             onKeyDown={handlePageChange}

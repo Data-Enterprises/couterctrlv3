@@ -46,6 +46,7 @@ export interface CashierState {
   transIdFilter: string;
   gridPages: number;
   currentGridPage: number;
+  pageText: string;
 }
 
 const initialState: CashierState = {
@@ -79,6 +80,7 @@ const initialState: CashierState = {
   transIdFilter: "",
   gridPages: 0,
   currentGridPage: 0,
+  pageText: "1",
 };
 
 export const cashierSlice = createSlice({
@@ -183,9 +185,13 @@ export const cashierSlice = createSlice({
     setCurrentGridPage: (state, action: PayloadAction<number>) => {
       state.currentGridPage = action.payload;
     },
+    setPageText: (state, action: PayloadAction<string>) => {
+      state.pageText = action.payload;
+    },
     resetGridPages: (state) => {
       state.gridPages = 0;
       state.currentGridPage = 0;
+      state.pageText = "1";
     },
     resetCashierSlice: () => initialState,
   },
@@ -221,5 +227,6 @@ export const {
   setGridPages,
   resetGridPages,
   setCurrentGridPage,
+  setPageText,
 } = cashierSlice.actions;
 export default cashierSlice.reducer;
