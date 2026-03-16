@@ -32,10 +32,12 @@ import {
   type CellClickedEvent,
 } from "ag-grid-community";
 import { formatDate, formatGoliathDate } from "../../utils";
+ModuleRegistry.registerModules([AllCommunityModule]);
+
 import ExportModal from "./export/ExportModal";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import Input from "../../components/inputs/Input";
-ModuleRegistry.registerModules([AllCommunityModule]);
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 
 const CashiersTable = () => {
   const toast = useToast();
@@ -340,15 +342,13 @@ const CashiersTable = () => {
         </button>
       </div>
       <div
-        className={`${cashier.gridPages > 1 ? "absolute " : "hidden"} bottom-2.5 right-2 grid grid-cols-3 gap-2 ${fetchingPage ? "pointer-events-none opacity-50" : ""}`}
+        className={`${cashier.gridPages > 1 ? "absolute " : "hidden"} bottom-2.5 right-2 flex items-center gap-2 ${fetchingPage ? "pointer-events-none opacity-50" : ""}`}
       >
-        <button
-          data-testid="cashiers-table-showall-btn"
-          className={`btn-themeBlue py-1 ${cashier.currentGridPage < 2 ? "opacity-50 cursor-not-allowed" : ""}`}
+        <ChevronLeftIcon
+          data-testid="cashiers-prev-page-btn"
+          className={`w-6 h-6 border rounded-full text-custom-white bg-blue-500 hover:bg-blue-200 hover:text-content transition-all duration-200 cursor-pointer ${cashier.currentGridPage < 2 ? "opacity-50 cursor-not-allowed" : ""}`}
           onClick={() => handlePageChange("prev")}
-        >
-          Prev Page
-        </button>
+        />
         <div className="flex gap-2 items-center justify-center text-sm font-medium">
           <div>Page </div>
           <Input
@@ -361,13 +361,11 @@ const CashiersTable = () => {
           />
           <div> of {cashier.gridPages}</div>
         </div>
-        <button
-          data-testid="cashiers-table-export-btn"
-          className={`btn-themeBlue py-1 ${cashier.currentGridPage === cashier.gridPages ? "opacity-50 cursor-not-allowed" : ""}`}
+        <ChevronRightIcon
+          data-testid="cashiers-next-page-btn"
+          className={`w-6 h-6 border rounded-full text-custom-white bg-blue-500 hover:bg-blue-200 hover:text-content transition-all duration-200 cursor-pointer ${cashier.currentGridPage === cashier.gridPages ? "opacity-50 cursor-not-allowed" : ""}`}
           onClick={() => handlePageChange("next")}
-        >
-          Next Page
-        </button>
+        />
       </div>
     </div>
   );
