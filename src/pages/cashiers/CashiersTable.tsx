@@ -2,14 +2,28 @@ import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { colDefs, theme, reducePriceTypes, reduceSaleIds } from ".";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { getCashierTransaction } from "../../api/cashiers";
+import {
+  getCashierTable,
+  getCashierTransaction,
+  getTransactionList,
+} from "../../api/cashiers";
 import {
   setAvailablePriceTypes,
+  setCashiers,
   setCashierSaleIds,
+  setCashierTransactions,
+  setCurrentGridPage,
+  // setFetchingCashierTransactions,
+  setSelectedSaleIds,
   setTransactionDrillDown,
+  setTransList,
   setTransModalOpen,
 } from "../../features/cashierSlice";
-import type { JsonError, TransactionListItem } from "../../interfaces";
+import type {
+  JsonError,
+  TransactionListItem,
+  UniqueCashier,
+} from "../../interfaces";
 
 import { AgGridReact } from "ag-grid-react";
 import {
@@ -17,8 +31,10 @@ import {
   ModuleRegistry,
   type CellClickedEvent,
 } from "ag-grid-community";
-import { formatDate } from "../../utils";
+import { formatDate, formatGoliathDate } from "../../utils";
 import ExportModal from "./export/ExportModal";
+import LoadingIndicator from "../../components/loading/LoadingIndicator";
+import Input from "../../components/inputs/Input";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const CashiersTable = () => {
@@ -26,14 +42,13 @@ const CashiersTable = () => {
   const dispatch = useAppDispatch();
   const [filtered, setFiltered] = useState<TransactionListItem[]>([]);
   const context = useAppSelector((state) => state.app);
+  const search = useAppSelector((state) => state.search);
   const cashier = useAppSelector((state) => state.cashier);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [fetchingPage, setFetchingPage] = useState<boolean>(false);
+  const [pageText, setPageText] = useState<string>("1");
 
   useEffect(() => {
-    // if (cashier.transList.length === 0) {
-    //   setFiltered([]);
-    // }
-    // Applying all filters to the transaction list
     const selectedCashier = cashier.selectedCashier.cashier_number;
     const saleDate = cashier.saleDateFilter;
     const upc = cashier.upcFilter.toLowerCase();
@@ -64,15 +79,6 @@ const CashiersTable = () => {
     }
 
     const currentFiltered = () => {
-      // const selectedCashier = cashier.selectedCashier.cashier_number;
-      // const saleDate = cashier.saleDateFilter;
-      // const upc = cashier.upcFilter.toLowerCase();
-      // const desc = cashier.descFilter.toLowerCase();
-      // const priceTypes = cashier.selectedPriceTypes;
-      // const totalSales = cashier.totalSalesFilter;
-      // const threshold = cashier.cashierTableThreshComp;
-      // const transId = cashier.transIdFilter.toLowerCase();
-      // Switch the default trues to false if we decide to see a strict comparison!!!!!!!!!
       const result = cashier.transList.filter((item) => {
         const matchCashier = selectedCashier
           ? item.cashier_number === selectedCashier
@@ -147,7 +153,7 @@ const CashiersTable = () => {
         context.token,
         saleDate,
         saleId,
-        storeid
+        storeid,
       )
         .then((resp) => {
           const j = resp.data;
@@ -189,8 +195,105 @@ const CashiersTable = () => {
     dispatch(setTransModalOpen(true));
   };
 
-  const handlePageChange = (direction: "prev" | "next") => {
-      // Implement pagination logic here, such as updating the current page state and fetching new data if necessary
+  const handlePageChange = (direction?: "prev" | "next") => {
+    if (context.isDesktop) {
+      console.log("howdy");
+      const start = formatGoliathDate(search.startDate);
+      const end = formatGoliathDate(search.endDate);
+      let pageToSend;
+      if (direction) {
+        pageToSend =
+          direction === "next"
+            ? cashier.currentGridPage + 1
+            : cashier.currentGridPage - 1;
+      } else {
+        pageToSend = cashier.currentGridPage;
+      }
+
+      dispatch(setCurrentGridPage(pageToSend));
+      setFetchingPage(true);
+
+      getCashierTable(
+        context.url,
+        context.token,
+        start,
+        end,
+        0,
+        cashier.selectedStoreId,
+        1,
+        [cashier.selectedSaleType],
+        pageToSend,
+      )
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            const transactions = [...j.transactions];
+            dispatch(setCashierTransactions(transactions));
+
+            const uniqueCashiers = transactions.reduce(
+              (acc: UniqueCashier[], curr) => {
+                const cashier = acc.find(
+                  (item) => item.cashier_number === curr.cashier_number,
+                );
+
+                if (!cashier) {
+                  acc.push({
+                    cashier_name: curr.cashier_name,
+                    cashier_number: curr.cashier_number,
+                    total_sales: curr.total_sales,
+                    transaction_count: 1,
+                    store_number: curr.store_number,
+                  });
+                } else {
+                  cashier.total_sales += curr.total_sales;
+                  cashier.transaction_count += 1;
+                }
+                return acc;
+              },
+              [],
+            );
+
+            // Everything below is going inside the then block of the cashier_table call
+            dispatch(setCashiers(uniqueCashiers));
+
+            const saleIds = Array.from(
+              new Set(transactions.map((item) => item.sale_id)),
+            );
+            dispatch(setSelectedSaleIds(saleIds));
+            dispatch(setTransList([]));
+            // dispatch(setFetchingCashierTransactions(true));
+
+            // call the api
+            getTransactionList(
+              context.url,
+              context.token,
+              saleIds,
+              1,
+              cashier.selectedSaleType,
+            )
+              .then((resp) => {
+                const j = resp.data;
+                if (j.error === 0) {
+                  dispatch(setTransList(j.transactions));
+                }
+              })
+              .catch((err: JsonError) =>
+                toast.error("Error fetching transactions: " + err.message),
+              )
+              .finally(() => {
+                setFetchingPage(false);
+              });
+          }
+        })
+        .catch((err: JsonError) => toast.error(err.message));
+    }
+  };
+
+  const handlePageInput = (x: string) => {
+    if (!isNaN(Number(x)) && Number(x) >= 0 && Number(x) <= cashier.gridPages) {
+      dispatch(setCurrentGridPage(Number(x)));
+      setPageText(x);
+    }
   };
 
   return (
@@ -205,17 +308,23 @@ const CashiersTable = () => {
         columns={colDefs}
       />
       <div className="h-[91%]">
-        <AgGridReact
-          rowData={filtered}
-          columnDefs={colDefs}
-          theme={theme}
-          pagination={true}
-          paginationAutoPageSize={true}
-          paginationPageSizeSelector={false}
-          onCellClicked={onCellClicked}
-        />
+        {!fetchingPage ? (
+          <AgGridReact
+            rowData={filtered}
+            columnDefs={colDefs}
+            theme={theme}
+            pagination={true}
+            paginationAutoPageSize={true}
+            paginationPageSizeSelector={false}
+            onCellClicked={onCellClicked}
+          />
+        ) : (
+          <LoadingIndicator />
+        )}
       </div>
-      <div className="absolute bottom-2.5 left-2 flex gap-2">
+      <div
+        className={`absolute bottom-2.5 left-2 flex gap-2 ${fetchingPage ? "pointer-events-none opacity-50" : ""}`}
+      >
         <button
           data-testid="cashiers-table-showall-btn"
           className="btn-themeGreen py-1"
@@ -231,18 +340,32 @@ const CashiersTable = () => {
           Export
         </button>
       </div>
-      <div className="absolute bottom-2.5 right-2 flex gap-2">
+      <div
+        className={`${cashier.gridPages > 1 ? "absolute " : "hidden"} bottom-2.5 right-2 grid grid-cols-3 gap-2 ${fetchingPage ? "pointer-events-none opacity-50" : ""}`}
+      >
         <button
           data-testid="cashiers-table-showall-btn"
-          className="btn-themeBlue py-1"
-          onClick={() => {}}
+          className={`btn-themeBlue py-1 ${cashier.currentGridPage < 2 ? "opacity-50 cursor-not-allowed" : ""}`}
+          onClick={() => handlePageChange("prev")}
         >
           Prev Page
         </button>
+        <div className="flex gap-2 items-center justify-center text-sm font-medium">
+          <div>Page </div>
+          <Input
+            label=""
+            value={pageText}
+            setValue={handlePageInput}
+            className="p-0 text-center"
+            onKeyDown={handlePageChange}
+            width="w-8"
+          />
+          <div> of {cashier.gridPages}</div>
+        </div>
         <button
           data-testid="cashiers-table-export-btn"
-          className="btn-themeBlue py-1"
-          onClick={() => {}}
+          className={`btn-themeBlue py-1 ${cashier.currentGridPage === cashier.gridPages ? "opacity-50 cursor-not-allowed" : ""}`}
+          onClick={() => handlePageChange("next")}
         >
           Next Page
         </button>

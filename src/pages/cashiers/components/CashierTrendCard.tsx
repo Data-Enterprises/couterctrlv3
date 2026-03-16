@@ -7,6 +7,9 @@ import {
   setSelectedSaleIds,
   setTransList,
   setCashierTransactions,
+  resetGridPages,
+  setCurrentGridPage,
+  setGridPages,
 } from "../../../features/cashierSlice";
 import { formatCurrency2, formatGoliathDate } from "../../../utils";
 import type {
@@ -118,6 +121,9 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
 
   const showTrans = (storeid: number, cardSaleType: string) => {
     if (context.isDesktop) {
+      dispatch(resetGridPages());
+      dispatch(setFetchingCashierTransactions(true));
+
       const start = formatGoliathDate(search.startDate);
       const end = formatGoliathDate(search.endDate);
       getCashierTable(context.url, context.token, start, end, 0, storeid, 1, [
@@ -128,6 +134,8 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
           if (j.error === 0) {
             const transactions = [...j.transactions];
             dispatch(setCashierTransactions(transactions));
+            dispatch(setCurrentGridPage(1));
+            dispatch(setGridPages(j.total_pages));
 
             const uniqueCashiers = transactions.reduce(
               (acc: UniqueCashier[], curr) => {
@@ -155,10 +163,12 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
             // Everything below is going inside the then block of the cashier_table call
             dispatch(setCashiers(uniqueCashiers));
 
-            const saleIds = Array.from(new Set(transactions.map((item) => item.sale_id)));
+            const saleIds = Array.from(
+              new Set(transactions.map((item) => item.sale_id)),
+            );
             dispatch(setSelectedSaleIds(saleIds));
             dispatch(setTransList([]));
-            dispatch(setFetchingCashierTransactions(true));
+            // dispatch(setFetchingCashierTransactions(true));
 
             // call the api
             getTransactionList(

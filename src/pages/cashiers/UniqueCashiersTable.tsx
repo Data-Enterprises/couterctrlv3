@@ -43,8 +43,8 @@ const UniqueCashiersTable = () => {
               rowData={cashiers}
               columnDefs={cashierColDefs}
               theme={theme}
-              pagination={true}
-              paginationAutoPageSize={true}
+              pagination={cashiers.length > 5}
+              paginationAutoPageSize={cashiers.length > 5}
               paginationPageSizeSelector={false}
               onRowClicked={onRowClicked}
               rowSelection="single"
