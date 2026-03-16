@@ -7,9 +7,9 @@ import {
   setSelectedSaleIds,
   setTransList,
   setCashierTransactions,
-  resetGridPages,
   setCurrentGridPage,
   setGridPages,
+  reQuery,
 } from "../../../features/cashierSlice";
 import { formatCurrency2, formatGoliathDate } from "../../../utils";
 import type {
@@ -119,17 +119,30 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
     return exists;
   };
 
-  const showTrans = (storeid: number, cardSaleType: string) => {
+  const showTrans = (storeid: number) => {
     if (context.isDesktop) {
-      dispatch(resetGridPages());
+      dispatch(reQuery());
       dispatch(setFetchingCashierTransactions(true));
       dispatch(setTransList([]));
+      const saleType =
+        cashier.selectedSaleType === "Description"
+          ? "description"
+          : cashier.selectedSaleType;
 
       const start = formatGoliathDate(search.startDate);
       const end = formatGoliathDate(search.endDate);
-      getCashierTable(context.url, context.token, start, end, 0, storeid, 1, [
-        cardSaleType,
-      ])
+      getCashierTable(
+        context.url,
+        context.token,
+        start,
+        end,
+        0,
+        storeid,
+        1,
+        [saleType],
+        1,
+        cashier.searchString,
+      )
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
@@ -175,7 +188,8 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
               context.token,
               saleIds,
               1,
-              cashier.selectedSaleType,
+              saleType,
+              cashier.searchString,
             )
               .then((resp) => {
                 const j = resp.data;
@@ -214,7 +228,7 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
           <div
             data-testid={`cashier-trend-card-${idx}-${s.storeid}`}
             className={`${titleStyle} ${clickStyle}`}
-            onClick={() => showTrans(s.storeid, s.sale_type)}
+            onClick={() => showTrans(s.storeid)}
           >
             Transactions
             {findTrend(s, "transaction_count", "transaction_count")}

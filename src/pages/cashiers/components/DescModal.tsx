@@ -1,5 +1,6 @@
-import { useState } from "react";
 import Modal from "../../../components/Modal";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { setSearchString } from "../../../features/cashierSlice";
 
 interface DescModalProps {
   open: boolean;
@@ -8,16 +9,15 @@ interface DescModalProps {
 }
 
 const DescModal = ({ open, onClose, handleSubmit }: DescModalProps) => {
-  const [desc, setDesc] = useState<string>("");
+  const cashier = useAppSelector((state) => state.cashier);
+  const dispatch = useAppDispatch();
 
   const handleClose = () => {
     onClose();
-    setDesc("");
   };
 
   const onSubmit = () => {
-    handleSubmit(desc);
-    setDesc("");
+    handleSubmit(cashier.searchString);
   };
 
   return (
@@ -30,12 +30,16 @@ const DescModal = ({ open, onClose, handleSubmit }: DescModalProps) => {
           data-testid="desc-input"
           id="desc-input"
           className="basic-input focus:border bg-custom-white"
-          value={desc}
-          onChange={(e) => setDesc(e.target.value)}
+          value={cashier.searchString}
+          onChange={(e) => dispatch(setSearchString(e.target.value))}
         />
       </div>
       <div className="flex mt-4 gap-2">
-        <button data-testid="desc-submit-btn" className="btn-themeBlue w-1/2" onClick={onSubmit}>
+        <button
+          data-testid="desc-submit-btn"
+          className="btn-themeBlue w-1/2"
+          onClick={onSubmit}
+        >
           Submit
         </button>
         <button className="btn-themeOrange w-1/2" onClick={onClose}>
