@@ -199,8 +199,6 @@ export const cashierSlice = createSlice({
       state.searchString = action.payload;
     },
     reQuery: (state) => {
-      state.cashierDetails = [];
-      state.cashierTrends = [];
       state.cashierTransactions = [];
       state.selectedSaleIds = [];
       state.cashierSaleIds = [];
@@ -210,9 +208,6 @@ export const cashierSlice = createSlice({
       state.noTransMsg = false;
       state.availablePriceTypes = [];
       state.cashiers = [];
-      state.cashierTrends = [];
-      // state.chunkedSales = [];
-      // state.chunkedTrends = [];
       state.selectedCashier = { cashier_number: 0, store_number: "" };
     },
     resetCashierSlice: () => initialState,
