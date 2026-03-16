@@ -121,7 +121,8 @@ export const getTransactionList = async (
   token: string,
   transaction_ids: string[],
   page: number = 1,
-  sale_type: string
+  sale_type: string,
+  search_string: string = "",
 ) => {
   const json = await axios({
     method: "POST",
@@ -134,6 +135,7 @@ export const getTransactionList = async (
       transaction_ids,
       sale_type,
       page,
+      search_string,
     },
   });
   return json;

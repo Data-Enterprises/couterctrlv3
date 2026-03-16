@@ -8,6 +8,8 @@ import {
   resetCashierSlice,
   setSaleTypes,
   toggleNoTransMsg,
+  reQuery,
+  setSearchString,
 } from "../../features/cashierSlice";
 import type { JsonError } from "../../interfaces";
 import { activePanelStyle } from ".";
@@ -31,6 +33,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
     const panels = cashier.saleTypes;
     dispatch(resetCashierSlice());
     dispatch(setSaleTypes(panels));
+    dispatch(setSearchString(description));
 
     // Setting this to handle selected css styling and show the loading indicator
     dispatch(setSelectedSaleType("Description"));
@@ -71,8 +74,10 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
     }
     // Doing this to reset when looking for a different sale type
     const panels = cashier.saleTypes;
-    dispatch(resetCashierSlice());
+    const selectedSaleType = cashier.selectedSaleType;
+    dispatch(reQuery());
     dispatch(setSaleTypes(panels));
+    dispatch(setSelectedSaleType(selectedSaleType));
 
     // Setting this to handle selected css styling and show the loading indicator
     dispatch(setSelectedSaleType(saleType));

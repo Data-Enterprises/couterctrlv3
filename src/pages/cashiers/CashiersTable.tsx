@@ -199,6 +199,7 @@ const CashiersTable = () => {
     if (context.isDesktop) {
       const start = formatGoliathDate(search.startDate);
       const end = formatGoliathDate(search.endDate);
+      const saleType = cashier.selectedSaleType === "Description" ? "description" : cashier.selectedSaleType;
       let pageToSend;
       if (direction) {
         pageToSend =
@@ -223,8 +224,9 @@ const CashiersTable = () => {
         0,
         cashier.selectedStoreId,
         1,
-        [cashier.selectedSaleType],
+        [saleType],
         pageToSend,
+        cashier.searchString,
       )
         .then((resp) => {
           const j = resp.data;
@@ -270,7 +272,8 @@ const CashiersTable = () => {
               context.token,
               saleIds,
               1,
-              cashier.selectedSaleType,
+              saleType,
+              cashier.searchString,
             )
               .then((resp) => {
                 const j = resp.data;
