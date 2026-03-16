@@ -13,6 +13,7 @@ import {
   setCashierSaleIds,
   setCashierTransactions,
   setCurrentGridPage,
+  setFetchingCashierTransactions,
   setPageText,
   setSelectedSaleIds,
   setTransactionDrillDown,
@@ -35,7 +36,6 @@ import { formatDate, formatGoliathDate } from "../../utils";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 import ExportModal from "./export/ExportModal";
-import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import Input from "../../components/inputs/Input";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 
@@ -47,7 +47,6 @@ const CashiersTable = () => {
   const search = useAppSelector((state) => state.search);
   const cashier = useAppSelector((state) => state.cashier);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
-  const [fetchingPage, setFetchingPage] = useState<boolean>(false);
 
   useEffect(() => {
     const selectedCashier = cashier.selectedCashier.cashier_number;
@@ -198,7 +197,6 @@ const CashiersTable = () => {
 
   const handlePageChange = (direction?: "prev" | "next") => {
     if (context.isDesktop) {
-      console.log("howdy");
       const start = formatGoliathDate(search.startDate);
       const end = formatGoliathDate(search.endDate);
       let pageToSend;
@@ -207,12 +205,15 @@ const CashiersTable = () => {
           direction === "next"
             ? cashier.currentGridPage + 1
             : cashier.currentGridPage - 1;
+        dispatch(setCurrentGridPage(pageToSend));
       } else {
         pageToSend = cashier.currentGridPage;
       }
-
+ 
+      dispatch(setPageText(pageToSend.toString()));
       dispatch(setCurrentGridPage(pageToSend));
-      setFetchingPage(true);
+      dispatch(setFetchingCashierTransactions(true));
+      dispatch(setTransList([]));
 
       getCashierTable(
         context.url,
@@ -230,7 +231,6 @@ const CashiersTable = () => {
           if (j.error === 0) {
             const transactions = [...j.transactions];
             dispatch(setCashierTransactions(transactions));
-            dispatch(setCurrentGridPage(pageToSend));
 
             const uniqueCashiers = transactions.reduce(
               (acc: UniqueCashier[], curr) => {
@@ -282,7 +282,7 @@ const CashiersTable = () => {
                 toast.error("Error fetching transactions: " + err.message),
               )
               .finally(() => {
-                setFetchingPage(false);
+                dispatch(setFetchingCashierTransactions(false));
               });
           }
         })
@@ -309,22 +309,18 @@ const CashiersTable = () => {
         columns={colDefs}
       />
       <div className="h-[91%]">
-        {!fetchingPage ? (
-          <AgGridReact
-            rowData={filtered}
-            columnDefs={colDefs}
-            theme={theme}
-            pagination={true}
-            paginationAutoPageSize={true}
-            paginationPageSizeSelector={false}
-            onCellClicked={onCellClicked}
-          />
-        ) : (
-          <LoadingIndicator />
-        )}
+        <AgGridReact
+          rowData={filtered}
+          columnDefs={colDefs}
+          theme={theme}
+          pagination={true}
+          paginationAutoPageSize={true}
+          paginationPageSizeSelector={false}
+          onCellClicked={onCellClicked}
+        />
       </div>
       <div
-        className={`absolute bottom-2.5 left-2 flex gap-2 ${fetchingPage ? "pointer-events-none opacity-50" : ""}`}
+        className={`absolute bottom-2.5 left-2 flex gap-2 ${cashier.fetchingCashierTransactions ? "pointer-events-none opacity-50" : ""}`}
       >
         <button
           data-testid="cashiers-table-showall-btn"
@@ -342,7 +338,7 @@ const CashiersTable = () => {
         </button>
       </div>
       <div
-        className={`${cashier.gridPages > 1 ? "absolute " : "hidden"} bottom-2.5 right-2 flex items-center gap-2 ${fetchingPage ? "pointer-events-none opacity-50" : ""}`}
+        className={`${cashier.gridPages > 1 ? "absolute " : "hidden"} bottom-2.5 right-2 flex items-center gap-2 ${cashier.fetchingCashierTransactions ? "pointer-events-none opacity-50" : ""}`}
       >
         <ChevronLeftIcon
           data-testid="cashiers-prev-page-btn"
@@ -350,7 +346,7 @@ const CashiersTable = () => {
           onClick={() => handlePageChange("prev")}
         />
         <div className="flex gap-2 justify-center text-sm font-medium">
-          <div className="pt-0.5">Page </div>
+          <div className="pt-0.5 select-none">Page </div>
           <Input
             label=""
             value={cashier.pageText}
@@ -359,7 +355,7 @@ const CashiersTable = () => {
             onKeyDown={handlePageChange}
             width="w-8"
           />
-          <div className="pt-0.5"> of {cashier.gridPages}</div>
+          <div className="pt-0.5 select-none"> of {cashier.gridPages}</div>
         </div>
         <ChevronRightIcon
           data-testid="cashiers-next-page-btn"

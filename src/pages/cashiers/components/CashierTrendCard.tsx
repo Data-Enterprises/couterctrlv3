@@ -123,6 +123,7 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
     if (context.isDesktop) {
       dispatch(resetGridPages());
       dispatch(setFetchingCashierTransactions(true));
+      dispatch(setTransList([]));
 
       const start = formatGoliathDate(search.startDate);
       const end = formatGoliathDate(search.endDate);
@@ -167,8 +168,6 @@ const CashierTrendCard = ({ s, idx }: CashierTrendCardProps) => {
               new Set(transactions.map((item) => item.sale_id)),
             );
             dispatch(setSelectedSaleIds(saleIds));
-            dispatch(setTransList([]));
-            // dispatch(setFetchingCashierTransactions(true));
 
             // call the api
             getTransactionList(
