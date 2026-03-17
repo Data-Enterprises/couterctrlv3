@@ -101,7 +101,7 @@ export const allUsersResp = {
         id: 3,
         username: "test3",
         password: "",
-        user_level: 5,
+        user_level: 0,
         last_visit: null,
         join_date: null,
         first_name: "three",
@@ -544,6 +544,30 @@ export const loggedInUserCompanies = [
     company: 5,
     userid: 1,
     name: "DCR",
+    username: "tguy",
+  },
+];
+
+export const nonDCRCompanies = [
+  {
+    id: 1,
+    company: 1,
+    userid: 1,
+    name: "Test Company 1",
+    username: "tguy",
+  },
+  {
+    id: 2,
+    company: 2,
+    userid: 1,
+    name: "Test Company 2",
+    username: "tguy",
+  },
+  {
+    id: 3,
+    company: 3,
+    userid: 1,
+    name: "Test Company 3",
     username: "tguy",
   },
 ];

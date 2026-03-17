@@ -33,8 +33,9 @@ const UserGrid = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { users, refresh, selectedCompanyId, userLevels } =
-    useAppSelector((state) => state.users);
+  const { users, refresh, selectedCompanyId, userLevels } = useAppSelector(
+    (state) => state.users,
+  );
   const { companies } = useAppSelector((state) => state.user);
   // const qs = useAppSelector((state) => state.quicksight);
   const [text, setText] = useState<string>("");
@@ -155,6 +156,7 @@ const UserGrid = () => {
 
   const handleRowClick = (e: RowClickedEvent) => {
     dispatch(setSelectedUserInfo(e.data));
+    dispatch(setSelectedUserId(e.data.id));
 
     // Validating if the selected user is a registered QuickSight user
     // if (qs.qsUsers.includes(e.data.email)) {
@@ -164,8 +166,6 @@ const UserGrid = () => {
     //   dispatch(setSelectedQsUserEmail(""));
     //   dispatch(setValidUser(false));
     // }
-
-    dispatch(setSelectedUserId(e.data.id));
 
     // const filterNulls = (arr: Store[]) => {
     //   return arr.filter((store) => store.store_name !== null);
@@ -200,12 +200,14 @@ const UserGrid = () => {
         <div className="w-full">
           <div className="grid grid-cols-2 mb-1.5 shadow-md">
             <button
+              data-testid="name-filter-btn"
               className={`${filterType === "name" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200 font-medium text-center rounded-l-lg py-1.5`}
               onClick={() => setFilterType("name")}
             >
               Username
             </button>
             <button
+              data-testid="email-filter-btn"
               className={`${filterType === "email" ? "bg-orange-200" : "bg-custom-white"}  font-medium text-center rounded-r-lg py-1.5`}
               onClick={() => setFilterType("email")}
             >

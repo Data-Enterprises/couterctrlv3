@@ -82,6 +82,7 @@ const UpdatePasswordForm = () => {
             />
           </div>
           <button
+            data-testid="update-pw-submit-btn"
             className={`btn-themeGreen w-1/2 ${!canSubmit() && "opacity-50 pointer-events-none"}`}
             onClick={setTempPw}
           >

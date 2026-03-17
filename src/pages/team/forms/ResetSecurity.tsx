@@ -40,6 +40,7 @@ const ResetSecurityForm = () => {
           </div>
           <div className="font-medium text-center">on their next login</div>
           <button
+            data-testid="reset-security-submit-btn"
             className={`btn-themeGreen w-1/2 mt-4`}
             onClick={resetSecurity}
           >
