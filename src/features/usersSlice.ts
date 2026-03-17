@@ -41,7 +41,14 @@ const defaultInfo: UserData = {
   role: 0,
 };
 
-export type UserFormType = "create" | "update" | "delete" | "update_password" | "user_info" | "reset_security" | "";
+export type UserFormType =
+  | "create"
+  | "update"
+  | "delete"
+  | "update_password"
+  | "user_info"
+  | "reset_security"
+  | "";
 
 // State for users slice /////////////
 interface UsersState {
@@ -184,11 +191,14 @@ export const usersSlice = createSlice({
       const newlyUnassigned = state.allStores.filter((s) =>
         action.payload.includes(s.storeid),
       );
-      const assigned = state.selectedUserStores.assigned.filter(
-        (s) => !action.payload.includes(s.storeid),
-      );
-      state.selectedUserStores.assigned = assigned;
-      state.selectedUserStores.unassigned = newlyUnassigned;
+      state.selectedUserStores.unassigned = [
+        ...state.selectedUserStores.unassigned,
+        ...newlyUnassigned,
+      ];
+      state.selectedUserStores.assigned =
+        state.selectedUserStores.assigned.filter(
+          (s) => !action.payload.includes(s.storeid),
+        );
     },
     setAllCompanies: (state, action: PayloadAction<Company[]>) => {
       state.allCompanies = action.payload;

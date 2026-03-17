@@ -9,6 +9,7 @@ import {
   getUserLevels,
   assignUserToStore,
   unassignUserFromStore,
+  
 } from "../../../../api/team";
 import {
   assignUserToCompany,
@@ -438,7 +439,7 @@ describe("Team Page Create User Form (DCR user)", () => {
 
     await waitFor(() => {
       const state = store.getState().users.selectedUserStores;
-      expect(state.unassigned.length).toBe(5);
+      expect(state.unassigned.length).toBe(6);
       expect(state.assigned.length).toBe(0);
     });
   });

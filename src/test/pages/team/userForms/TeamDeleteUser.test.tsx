@@ -13,11 +13,13 @@ import {
   qsUserResp,
   loggedInUserCompanies,
   userLvlResp,
+  assignedBGResp,
 } from "..";
 
 import { setupStore } from "../../../../store";
 import Team from "../../../../pages/team/Team";
 import { setCompanies, setUserLevel } from "../../../../features/userSlice";
+import { getBGAssignedToUserSplit } from "../../../../api/baseGroups";
 
 import { defaultError } from "../../sales";
 import { setUserLevels } from "../../../../features/usersSlice";
@@ -46,6 +48,7 @@ vi.mock("../../../../components/toasts/hooks/useToast", () => ({
 }));
 
 const defaultRender = () => {
+  (getBGAssignedToUserSplit as Mock).mockResolvedValue(assignedBGResp);
   (getAllUsers as Mock).mockResolvedValue(allUsersResp);
   (getQuicksightUsers as Mock).mockResolvedValue(qsUserResp);
   (getUserLevels as Mock).mockResolvedValue(userLvlResp);
@@ -53,6 +56,23 @@ const defaultRender = () => {
 };
 
 describe("Team Page Delete User Form (DCR user)", () => {
+  it("should handle api failure when fetching a selected user's assigned base groups", async () => {
+    defaultRender();
+    (getBGAssignedToUserSplit as Mock).mockRejectedValueOnce(defaultError);
+
+    const usersForm = await screen.findByTestId("team-users-form");
+    await user.click(usersForm);
+
+    const deleteForm = await screen.findByTestId("user-form-delete");
+    await user.click(deleteForm);
+
+    const searchUserInput = await screen.findByTestId("search-user-input");
+    await user.type(searchUserInput, "test2"); // type in dropdown input to search for user
+
+    const selectedUser = await screen.findByTestId("search-user-0");
+    await user.click(selectedUser);
+  });
+
   it("should handle api failure when trying to delete a user", async () => {
     defaultRender();
     (deleteUser as Mock).mockRejectedValueOnce(defaultError);

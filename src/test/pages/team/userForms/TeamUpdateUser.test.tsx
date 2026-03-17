@@ -3,9 +3,14 @@ import { renderWithProviders } from "../../../utils";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-import { updateUser, getUserLevels } from "../../../../api/team";
+import {
+  updateUser,
+  getUserLevels,
+  assignUserToStore,
+} from "../../../../api/team";
 import { getAllUsers, getUserStores } from "../../../../api/user";
 import { getQuicksightUsers } from "../../../../api/quicksight";
+import { getBGAssignedToUserSplit } from "../../../../api/baseGroups";
 import {
   allUsersResp,
   defaultResp,
@@ -13,10 +18,16 @@ import {
   qsUserResp,
   loggedInUserCompanies,
   userLvlResp,
+  assignedBGResp,
+  assignOneStoreResp,
 } from "..";
 import { setupStore } from "../../../../store";
 import Team from "../../../../pages/team/Team";
-import { setCompanies, setUserLevel } from "../../../../features/userSlice";
+import {
+  setCompanies,
+  setUserId,
+  setUserLevel,
+} from "../../../../features/userSlice";
 import { defaultError } from "../../sales";
 import { setUserLevels } from "../../../../features/usersSlice";
 
@@ -44,6 +55,7 @@ vi.mock("../../../../components/toasts/hooks/useToast", () => ({
 }));
 
 const defaultRender = () => {
+  (getBGAssignedToUserSplit as Mock).mockResolvedValue(assignedBGResp);
   (getAllUsers as Mock).mockResolvedValue(allUsersResp);
   (getQuicksightUsers as Mock).mockResolvedValue(qsUserResp);
   (getUserLevels as Mock).mockResolvedValue(userLvlResp);
@@ -145,5 +157,39 @@ describe("Team Page Update User Form (DCR user)", () => {
     await waitFor(() => {
       expect(mockedToastError).toHaveBeenCalled();
     });
+  });
+
+  it("should refresh the user stores if assigning/unassigning stores after update", async () => {
+    // this test is for the logged in user updating themselves
+    (updateUser as Mock).mockResolvedValue(defaultResp);
+    (getUserStores as Mock).mockResolvedValue(userStoresResp);
+    defaultRender();
+
+    await waitFor(() => {
+      // Setting the logged in user's id to get the response
+      store.dispatch(setUserId(2));
+    });
+
+    const usersForm = await screen.findByTestId("team-users-form");
+    await user.click(usersForm);
+
+    const updateForm = await screen.findByTestId("user-form-update");
+    await user.click(updateForm);
+
+    const searchUserInput = await screen.findByTestId("search-user-input");
+    await user.type(searchUserInput, "test2"); // type in dropdown input to search for user
+
+    const selectedUser = await screen.findByTestId("search-user-0");
+    await user.click(selectedUser); // select user from dropdown
+
+    const updateBtn = await screen.findByTestId("update-user-btn");
+    await user.click(updateBtn);
+
+    const storeToAssign = await screen.findByTestId("unassigned-store-5");
+    await user.click(storeToAssign); // assign store
+
+    (assignUserToStore as Mock).mockResolvedValue(assignOneStoreResp);
+    const assignStoreBtn = await screen.findByTestId("ctrl-assign-stores-btn");
+    await user.click(assignStoreBtn);
   });
 });

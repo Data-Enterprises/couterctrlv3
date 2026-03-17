@@ -664,3 +664,20 @@ export const createUserResp = {
     new_userid: 50,
   },
 };
+
+export const assignedBGResp = {
+  data: {
+    error: 0,
+    success: true,
+    active: [
+      {
+        id: 1,
+        name: "All Stores",
+        company: 1,
+        company_name: "Test Company 1",
+        active: 1,
+      },
+    ],
+    inactive: [],
+  },
+};

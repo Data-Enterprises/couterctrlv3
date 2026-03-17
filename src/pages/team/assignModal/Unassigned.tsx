@@ -36,25 +36,6 @@ const Unassigned = () => {
     return stores.length > 0;
   };
 
-  const handleAssignStore = () => {
-    dispatch(setStoresAssignedForUser(storesToAssign));
-    assignUserToStore(
-      context.url,
-      context.token,
-      users.selectedUserId,
-      storesToAssign,
-    )
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0 && users.selectedUserId === userid) {
-          dispatch(setRefreshStores(true));
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error("Error assigning store " + err.message);
-      });
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setFilterText(value);
@@ -74,18 +55,20 @@ const Unassigned = () => {
     });
   };
 
-  const handleAssignAll = () => {
+  const handleStoreAssignment = (type: "all" | "selected") => {
     const allToAdd = users.selectedUserStores.unassigned.map((s) => s.storeid);
-    dispatch(setStoresAssignedForUser(allToAdd));
+    const storeids = type === "all" ? allToAdd : storesToAssign;
+    dispatch(setStoresAssignedForUser(storeids));
     assignUserToStore(
       context.url,
       context.token,
       users.selectedUserId,
-      allToAdd,
+      storeids,
     )
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0 && users.selectedUserId === userid) {
+          console.log(users.selectedUserId, userid)
           dispatch(setRefreshStores(true));
         }
       })
@@ -132,11 +115,15 @@ const Unassigned = () => {
         <button
           data-testid="ctrl-assign-stores-btn"
           className="btn-themeGreen w-1/2 px-0"
-          onClick={handleAssignStore}
+          onClick={() => handleStoreAssignment("selected")}
         >
           Assign
         </button>
-        <button data-testid="ctrl-assign-all-stores-btn" className="btn-themeGreen w-1/2 px-0" onClick={handleAssignAll}>
+        <button
+          data-testid="ctrl-assign-all-stores-btn"
+          className="btn-themeGreen w-1/2 px-0"
+          onClick={() => handleStoreAssignment("all")}
+        >
           Assign All
         </button>
       </div>

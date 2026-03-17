@@ -14,7 +14,7 @@ const ProfileCard = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token, isDesktop } = useAppSelector((state) => state.app);
-  const { companies, userid } = useAppSelector((state) => state.user);
+  const { companies } = useAppSelector((state) => state.user);
   const {
     userInfo,
     userCompanyIds,
@@ -30,7 +30,7 @@ const ProfileCard = () => {
   // dropdown showing only what companies the new user can be assigned to based on the creator's companies
   useEffect(() => {
     dispatch(setAllSelectedBaseGroups([]));
-    if (selectedUserId && selectedUserId <= userid) {
+    if (selectedUserId) {
       getBGAssignedToUserSplit(url, token, selectedUserId)
         .then((resp) => {
           const j = resp.data;

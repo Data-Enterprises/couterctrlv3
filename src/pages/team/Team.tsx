@@ -48,9 +48,8 @@ const Team = () => {
   const dispatch = useAppDispatch();
   const { url, token, isDesktop } = useAppSelector((state) => state.app);
   const companies = useAppSelector((state) => state.user.companies);
-  const { refresh, selectedUserId, selectedForm, selectedUserStores } = useAppSelector(
-    (state) => state.users,
-  );
+  const { refresh, selectedUserId, selectedForm, selectedUserStores } =
+    useAppSelector((state) => state.users);
 
   const { filteredMissingStores } = useAppSelector((state) => state.admin);
 
@@ -199,7 +198,7 @@ const Team = () => {
             <div className="w-[45%]">
               <div
                 data-testId="ctrl-store-assign"
-                className={`grid grid-cols-2 gap-4 h-[65vh] ${selectedUserStores.unassigned.length ? "" : "hidden"}`}
+                className={`grid grid-cols-2 gap-4 h-[65vh] ${selectedUserStores.unassigned.length || selectedUserStores.assigned.length ? "" : "hidden"}`}
               >
                 <Unassigned />
                 <Assigned />

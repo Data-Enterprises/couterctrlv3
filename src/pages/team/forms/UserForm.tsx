@@ -8,8 +8,8 @@ import { getBaseGroups } from "../../../api/baseGroups";
 import {
   resetSelectedBaseGroups,
   setBaseGroups,
-  setBgsToAssign,
-  setBgsToUnassign,
+  // setBgsToAssign,
+  // setBgsToUnassign,
   setCompany,
   setSelectedBaseGroups,
 } from "../../../features/baseGroupSlice";
@@ -38,7 +38,7 @@ const UserForm = () => {
     userCompanyIds,
     selectedUserId,
     isDeletingUser,
-    alreadyAssignedBgs,
+    // alreadyAssignedBgs,
   } = useAppSelector((state) => state.users);
   const { baseGroups, selectedBaseGroups } = useAppSelector(
     (state) => state.baseGroup,
@@ -75,17 +75,17 @@ const UserForm = () => {
       [],
     );
 
-    const selectedBGIDs = selected.map((bg) => bg.id);
-    const alreadyAssignedBGIDs = alreadyAssignedBgs.map((bg) => bg.id);
-    const baseGroupsToAssign = selectedBGIDs.filter(
-      (id) => !alreadyAssignedBGIDs.includes(id),
-    );
-    const baseGroupsToUnassign = alreadyAssignedBGIDs.filter(
-      (id) => !selectedBGIDs.includes(id),
-    );
+    // const selectedBGIDs = selected.map((bg) => bg.id);
+    // const alreadyAssignedBGIDs = alreadyAssignedBgs.map((bg) => bg.id);
+    // const baseGroupsToAssign = selectedBGIDs.filter(
+    //   (id) => !alreadyAssignedBGIDs.includes(id),
+    // );
+    // const baseGroupsToUnassign = alreadyAssignedBGIDs.filter(
+    //   (id) => !selectedBGIDs.includes(id),
+    // );
 
-    dispatch(setBgsToAssign(baseGroupsToAssign));
-    dispatch(setBgsToUnassign(baseGroupsToUnassign));
+    // dispatch(setBgsToAssign(baseGroupsToAssign));
+    // dispatch(setBgsToUnassign(baseGroupsToUnassign));
     dispatch(setUserCompanyIds(newCompanyIds));
   }, [selectedBaseGroups]);
 
