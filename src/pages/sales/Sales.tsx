@@ -26,7 +26,6 @@ import { addDays, formatGoliathDate } from "../../utils";
 import type { JsonError } from "../../interfaces";
 import { useLeftColHeight } from "./utils/hooks";
 import { useEffect, useState } from "react";
-import ReportBuilder from "./reports/ReportBuilder";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 
 const Sales = () => {
@@ -111,7 +110,6 @@ const Sales = () => {
 
   return (
     <div data-testid="sales-page" className={pageContainer}>
-      <ReportBuilder />
       {!context.isMobile ? (
         <div className={gridContainer}>
           <div
