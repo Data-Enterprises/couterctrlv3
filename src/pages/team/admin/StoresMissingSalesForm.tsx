@@ -89,6 +89,7 @@ const StoresMissingSalesForm = () => {
         {/* filters */}
         <div className="space-y-2 bg-custom-white rounded-lg shadow-lg p-4">
           <SingleSelect
+            id={1}
             label="Company"
             data={companies}
             displayKey="name"
@@ -98,18 +99,21 @@ const StoresMissingSalesForm = () => {
           <SingleDatePicker />
           <div className="grid grid-cols-2 gap-2">
             <button
+              data-testid="no-sales-submit-btn"
               className={`btn-themeBlue ${canSubmit}`}
               onClick={handleSubmit}
             >
               Submit
             </button>
             <button
+              data-testid="export-missing-stores-btn"
               className={`btn-themeGreen ${canExport}`}
               onClick={openExportModal}
             >
               Export
             </button>
             <button
+              data-testid="refresh-missing-stores-btn"
               className="btn-themeBlue col-span-2"
               onClick={handleRefresh}
             >

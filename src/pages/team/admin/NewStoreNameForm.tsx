@@ -139,6 +139,7 @@ const NewStoreNameForm = () => {
       </div>
       <div className="grid grid-cols-2 gap-2">
         <SingleSelect
+          id={1}
           label="Company"
           data={[allCompFilter, ...companies]}
           displayKey="name"
@@ -147,6 +148,7 @@ const NewStoreNameForm = () => {
           defaultQuery="All"
         />
         <SingleSelect
+          id={2}
           label="Assignment"
           data={options}
           displayKey="label"
@@ -157,6 +159,7 @@ const NewStoreNameForm = () => {
       </div>
       {/* store list */}
       <SingleSelect
+        id={3}
         label={`Stores - ${filteredStores.length}`}
         data={filteredStores}
         displayKey="store_name"
@@ -178,6 +181,7 @@ const NewStoreNameForm = () => {
           setValue={handleNewNameTextChange}
         />
         <button
+        data-testid="submit-new-store-name-btn"
           className={`btn-themeBlue w-full ${canSubmit()}`}
           onClick={handleSubmit}
         >
