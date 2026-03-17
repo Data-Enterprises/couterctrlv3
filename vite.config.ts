@@ -26,7 +26,10 @@ export default defineConfig({
         "src/pages/forecast/grids/PriceHistoryGrid.tsx",
         "src/functions/**",
         "src/pages/forecast/ReplayModal.tsx",
-        "src/pages/upcList/**"
+        "src/pages/upcList/**",
+        "src/pages/team/assignModal/QuicksightStores.tsx",
+        "src/pages/team/assignModal/QsAssigned.tsx",
+        "src/pages/team/assignModal/QsUnassigned.tsx",
       ],
     },
     pool: "threads",

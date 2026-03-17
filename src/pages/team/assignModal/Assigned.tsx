@@ -121,12 +121,14 @@ const Assigned = () => {
       </div>
       <div className="flex justify-between gap-2 mt-2">
         <button
+          data-testid="ctrl-unassign-stores-btn"
           className="btn-themeGreen w-1/2 px-0"
           onClick={handleUnassignStore}
         >
           Unassign
         </button>
         <button
+          data-testid="ctrl-unassign-all-stores-btn"
           className="btn-themeGreen w-1/2 px-0"
           onClick={handleUnassignAll}
         >

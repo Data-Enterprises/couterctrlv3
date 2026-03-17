@@ -50,7 +50,7 @@ const defaultRender = () => {
   renderWithProviders(<Team />, { store });
 };
 
-describe("Team Page Create User Form (DCR user)", () => {
+describe("Team Page Update User Form (DCR user)", () => {
   it("should now allow a user to modify a user with higher user level", async () => {
     defaultRender();
 

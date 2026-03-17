@@ -22,7 +22,6 @@ import { getAllUsers } from "../../api/user";
 
 import UserControls from "./forms/UserControls";
 import FormHeader from "./forms/FormHeader";
-import CounterCtrlStores from "./assignModal/CounterCtrlStores";
 import StoreControls from "./stores/StoreControls";
 import BaseGroupControls from "./baseGroups/BaseGroupControls";
 import CompanyControls from "./company/CompanyControls";
@@ -34,6 +33,8 @@ import {
 } from "../../features/adminSlice";
 import ExportMissingStoresModal from "./admin/ExportMissingStoresModal";
 import { adminMissingSalesColumns } from "./admin";
+import Assigned from "./assignModal/Assigned";
+import Unassigned from "./assignModal/Unassigned";
 
 const options = [
   { label: "Users", value: 1 },
@@ -47,7 +48,7 @@ const Team = () => {
   const dispatch = useAppDispatch();
   const { url, token, isDesktop } = useAppSelector((state) => state.app);
   const companies = useAppSelector((state) => state.user.companies);
-  const { refresh, selectedUserId, selectedForm } = useAppSelector(
+  const { refresh, selectedUserId, selectedForm, selectedUserStores } = useAppSelector(
     (state) => state.users,
   );
 
@@ -196,7 +197,13 @@ const Team = () => {
           </div>
           {selectedForm !== 3 && (
             <div className="w-[45%]">
-              <CounterCtrlStores />
+              <div
+                data-testId="ctrl-store-assign"
+                className={`grid grid-cols-2 gap-4 h-[65vh] ${selectedUserStores.unassigned.length ? "" : "hidden"}`}
+              >
+                <Unassigned />
+                <Assigned />
+              </div>
             </div>
           )}
         </div>

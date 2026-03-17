@@ -130,12 +130,13 @@ const Unassigned = () => {
       </div>
       <div className="flex justify-between gap-2 mt-2">
         <button
+          data-testid="ctrl-assign-stores-btn"
           className="btn-themeGreen w-1/2 px-0"
           onClick={handleAssignStore}
         >
           Assign
         </button>
-        <button className="btn-themeGreen w-1/2 px-0" onClick={handleAssignAll}>
+        <button data-testid="ctrl-assign-all-stores-btn" className="btn-themeGreen w-1/2 px-0" onClick={handleAssignAll}>
           Assign All
         </button>
       </div>

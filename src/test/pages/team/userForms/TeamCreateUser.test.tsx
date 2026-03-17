@@ -7,6 +7,8 @@ import {
   createUser,
   assignBaseGroupToUser,
   getUserLevels,
+  assignUserToStore,
+  unassignUserFromStore,
 } from "../../../../api/team";
 import {
   assignUserToCompany,
@@ -23,6 +25,10 @@ import {
   userLvlResp,
   getBGResp,
   createUserResp,
+  unassignOneStoreResp,
+  allUnassignedStoresResp,
+  allAssignedStoresResp,
+  assignOneStoreResp,
 } from "..";
 import { setupStore } from "../../../../store";
 import Team from "../../../../pages/team/Team";
@@ -376,6 +382,7 @@ describe("Team Page Create User Form (DCR user)", () => {
       expect(mockedToastError).toHaveBeenCalled();
     });
   });
+
   it("should handle successful user creation in User Form and return the new user's stores", async () => {
     (getAllUsers as Mock).mockResolvedValue(allUsersResp);
     (getQuicksightUsers as Mock).mockResolvedValue(qsUserResp);
@@ -384,7 +391,7 @@ describe("Team Page Create User Form (DCR user)", () => {
     (createUser as Mock).mockResolvedValue(createUserResp);
     (assignUserToCompany as Mock).mockResolvedValue(defaultResp);
     (assignBaseGroupToUser as Mock).mockResolvedValue(defaultResp);
-    (getUserStores as Mock).mockResolvedValue(userStoresResp);
+    (getUserStores as Mock).mockResolvedValue(allUnassignedStoresResp);
     renderWithProviders(<Team />, { store });
 
     const usersForm = await screen.findByTestId("team-users-form");
@@ -397,6 +404,43 @@ describe("Team Page Create User Form (DCR user)", () => {
 
     const createUserBtn = await screen.findByTestId("create-user-btn");
     await user.click(createUserBtn);
+
+    const ctrlStores = await screen.findByTestId("ctrl-store-assign");
+    expect(ctrlStores).toBeInTheDocument();
+
+    const storeToAssign = await screen.findByTestId("unassigned-store-1");
+    await user.click(storeToAssign);
+
+    (assignUserToStore as Mock).mockResolvedValue(assignOneStoreResp);
+    const assignStoreBtn = await screen.findByTestId("ctrl-assign-stores-btn");
+    await user.click(assignStoreBtn);
+
+    (assignUserToStore as Mock).mockResolvedValue(allAssignedStoresResp);
+    const assignAllStoresBtn = await screen.findByTestId(
+      "ctrl-assign-all-stores-btn",
+    );
+    await user.click(assignAllStoresBtn);
+
+    (unassignUserFromStore as Mock).mockResolvedValue(unassignOneStoreResp);
+    const storeToUnassign = await screen.findByTestId("assigned-store-1");
+    await user.click(storeToUnassign);
+
+    const unassignStoreBtn = await screen.findByTestId(
+      "ctrl-unassign-stores-btn",
+    );
+    await user.click(unassignStoreBtn);
+
+    (unassignUserFromStore as Mock).mockResolvedValue(allUnassignedStoresResp);
+    const unassignAllStoresBtn = await screen.findByTestId(
+      "ctrl-unassign-all-stores-btn",
+    );
+    await user.click(unassignAllStoresBtn);
+
+    await waitFor(() => {
+      const state = store.getState().users.selectedUserStores;
+      expect(state.unassigned.length).toBe(5);
+      expect(state.assigned.length).toBe(0);
+    });
   });
 
   it("should handle the clearing of the input fields", async () => {
@@ -430,6 +474,105 @@ describe("Team Page Create User Form (DCR user)", () => {
       expect(state.role).toEqual(0);
     });
   });
+
+  it("should handle api failure when trying to unassign stores from a user", async () => {
+    (getAllUsers as Mock).mockResolvedValue(allUsersResp);
+    (getQuicksightUsers as Mock).mockResolvedValue(qsUserResp);
+    (getUserLevels as Mock).mockResolvedValue(userLvlResp);
+    (getBaseGroups as Mock).mockResolvedValue(getBGResp);
+    (createUser as Mock).mockResolvedValue(createUserResp);
+    (assignUserToCompany as Mock).mockResolvedValue(defaultResp);
+    (assignBaseGroupToUser as Mock).mockResolvedValue(defaultResp);
+    (getUserStores as Mock).mockResolvedValue(userStoresResp);
+    renderWithProviders(<Team />, { store });
+
+    const usersForm = await screen.findByTestId("team-users-form");
+    await user.click(usersForm);
+
+    const createBtn = await screen.findByTestId("user-form-create");
+    await user.click(createBtn);
+
+    await setCreateUserInfo();
+
+    const createUserBtn = await screen.findByTestId("create-user-btn");
+    await user.click(createUserBtn);
+
+    const ctrlStores = await screen.findByTestId("ctrl-store-assign");
+    expect(ctrlStores).toBeInTheDocument();
+
+    // (assignUserToStore as Mock).mockRejectedValue(defaultError);
+    (unassignUserFromStore as Mock).mockRejectedValue(defaultError);
+
+    const assignedFilter = await screen.findByTestId("ctrl-assigned-filter");
+    await user.type(assignedFilter, "Store 1");
+
+    const storeToUnassign = await screen.findByTestId("assigned-store-1");
+    await user.click(storeToUnassign);
+
+    await user.click(storeToUnassign);
+    const unassignStoreBtn = await screen.findByTestId(
+      "ctrl-unassign-stores-btn",
+    );
+    await user.click(unassignStoreBtn);
+
+    const unassignAllStoresBtn = await screen.findByTestId(
+      "ctrl-unassign-all-stores-btn",
+    );
+    await user.click(unassignAllStoresBtn);
+
+    await waitFor(() => {
+      expect(mockedToastError).toHaveBeenCalled();
+    });
+  });
+
+    it("should handle api failure when trying to assign stores to a user", async () => {
+      (getAllUsers as Mock).mockResolvedValue(allUsersResp);
+      (getQuicksightUsers as Mock).mockResolvedValue(qsUserResp);
+      (getUserLevels as Mock).mockResolvedValue(userLvlResp);
+      (getBaseGroups as Mock).mockResolvedValue(getBGResp);
+      (createUser as Mock).mockResolvedValue(createUserResp);
+      (assignUserToCompany as Mock).mockResolvedValue(defaultResp);
+      (assignBaseGroupToUser as Mock).mockResolvedValue(defaultResp);
+      (getUserStores as Mock).mockResolvedValue(userStoresResp);
+      renderWithProviders(<Team />, { store });
+
+      const usersForm = await screen.findByTestId("team-users-form");
+      await user.click(usersForm);
+
+      const createBtn = await screen.findByTestId("user-form-create");
+      await user.click(createBtn);
+
+      await setCreateUserInfo();
+
+      const createUserBtn = await screen.findByTestId("create-user-btn");
+      await user.click(createUserBtn);
+
+      const ctrlStores = await screen.findByTestId("ctrl-store-assign");
+      expect(ctrlStores).toBeInTheDocument();
+
+      (assignUserToStore as Mock).mockRejectedValue(defaultError);
+
+      const assignedFilter = await screen.findByTestId("ctrl-unassigned-filter");
+      await user.type(assignedFilter, "Store 5");
+
+      const storeToAssign = await screen.findByTestId("unassigned-store-5");
+      await user.click(storeToAssign);
+
+      await user.click(storeToAssign);
+      const assignStoreBtn = await screen.findByTestId(
+        "ctrl-assign-stores-btn",
+      );
+      await user.click(assignStoreBtn);
+
+      const assignAllStoresBtn = await screen.findByTestId(
+        "ctrl-assign-all-stores-btn",
+      );
+      await user.click(assignAllStoresBtn);
+
+      await waitFor(() => {
+        expect(mockedToastError).toHaveBeenCalled();
+      });
+    });
 });
 
 describe("Team Page Base Groups Form", () => {
