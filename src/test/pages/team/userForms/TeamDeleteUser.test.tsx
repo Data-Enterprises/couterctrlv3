@@ -114,9 +114,15 @@ describe("Team Page Delete User Form (DCR user)", () => {
     const searchUserInput = await screen.findByTestId("search-user-input");
     await user.type(searchUserInput, "test2"); // type in dropdown input to search for user
 
+    const emailFilterBtn = await screen.findByTestId("email-filter-btn");
+    await user.click(emailFilterBtn); // click email filter to switch to email filtering
+
+    const usernameFilterBtn = await screen.findByTestId("username-filter-btn");
+    await user.click(usernameFilterBtn); // click username filter to switch back to username filtering
+
     const selectedUser = await screen.findByTestId("search-user-0");
     await user.click(selectedUser); // select user from dropdown
-
+    
     const cancelBtn = await screen.findByTestId("delete-user-cancel-btn");
     await user.click(cancelBtn);
 

@@ -94,7 +94,19 @@ const setCreateUserInfo = async () => {
 };
 
 describe("Team Page Create User Form (DCR user)", () => {
+  // it("", async () => {
+  //   defaultRender();
+  //   await waitFor(() => store.dispatch(setIsDesktop(false)));
+  //   const singleSelect = await screen.findByTestId(
+  //     "single-select-trigger-icon-0",
+  //   );
+  //   await user.click(singleSelect);
+  //   const usersOption = await screen.findByTestId("single-select-option-0-0");
+  //   await user.click(usersOption);
+  // });
+
   it("should handle api failure when fetching all users", async () => {
+    await waitFor(() => store.dispatch(setIsDesktop(true)));
     (getAllUsers as Mock).mockRejectedValue(defaultError);
     (getQuicksightUsers as Mock).mockRejectedValue(defaultError);
     (getUserLevels as Mock).mockRejectedValue(defaultError);

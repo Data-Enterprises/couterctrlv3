@@ -8,7 +8,7 @@ import {
 import { WarningIcon } from "../../../components/toasts/Icons";
 import UserForm from "./UserForm";
 import ProfileCard from "./ProfileCard";
-import SingleSelect from "../../../components/SingleSelect";
+// import SingleSelect from "../../../components/SingleSelect";
 
 const UserControls = () => {
   const dispatch = useAppDispatch();
@@ -34,19 +34,19 @@ const UserControls = () => {
     dispatch(resetUserInfo());
   };
 
-  const options = [
-    { label: "Create", value: "create" },
-    { label: "Update", value: "update" },
-    { label: "Delete", value: "delete" },
-    { label: "Password", value: "update_password" },
-    { label: "Security", value: "reset_security" },
-    { label: "Info", value: "user_info" },
-  ];
+  // const options = [
+  //   { label: "Create", value: "create" },
+  //   { label: "Update", value: "update" },
+  //   { label: "Delete", value: "delete" },
+  //   { label: "Password", value: "update_password" },
+  //   { label: "Security", value: "reset_security" },
+  //   { label: "Info", value: "user_info" },
+  // ];
 
-  const handleUserFormMobileSelect = (val: string | number) => {
-    const form = String(val) as UserFormType;
-    handleReset(form);
-  };
+  // const handleUserFormMobileSelect = (val: string | number) => {
+  //   const form = String(val) as UserFormType;
+  //   handleReset(form);
+  // };
 
   return (
     <div className="max-h-[65vh]">
@@ -96,13 +96,14 @@ const UserControls = () => {
           </button>
         </div>
       ) : (
-        <SingleSelect
-          label="Users"
-          data={options}
-          displayKey="label"
-          valueKey="value"
-          onSelect={handleUserFormMobileSelect}
-        />
+        // <SingleSelect
+        //   label="Users"
+        //   data={options}
+        //   displayKey="label"
+        //   valueKey="value"
+        //   onSelect={handleUserFormMobileSelect}
+        // />
+        null
       )}
       {!selectedUserForm ? null : (
         <>
