@@ -83,6 +83,22 @@ describe("Cashiers Page", () => {
     await user.click(saleTypePanel);
   });
 
+  it("should handle API error when fetching transaction list", async () => {
+    (getCashierTable as Mock).mockResolvedValueOnce(
+      mockCashierCancelledTableResp,
+    );
+    (getCashierDetails as Mock).mockResolvedValueOnce(mockSaleTrendCancelResp);
+    (getTransactionList as Mock).mockRejectedValueOnce(new Error("API Error"));
+
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
+    const refundPanel = await screen.findByTestId("sale-type-panel-Refunded");
+    await user.click(refundPanel);
+
+    const card = await screen.findByTestId("cashier-trend-card-0-2");
+    await user.click(card);
+  });
+
   // Testing the clicking of a sale type to fetch cashier sales and trends
   // /////////////////////////////////////////////////////////////////////
   it("selecting a sale type should make a call to get cashier sales and trends", async () => {
@@ -511,12 +527,10 @@ describe("Cashiers Page", () => {
 
   it("should handle Cancelled data", async () => {
     (getCashierDetails as Mock).mockResolvedValue(mockSaleTrendCancelResp);
-    (getCashierTable as Mock).mockResolvedValue({
-      data: mockCashierCancelledTableResp,
+    (getCashierTable as Mock).mockResolvedValue(mockCashierCancelledTableResp);
+    (getTransactionList as Mock).mockResolvedValue({
+      data: mockTransListResp,
     });
-    // (getTransactionList as Mock).mockResolvedValue({
-    //   data: mockTransListResp,
-    // });
 
     renderWithProviders(<Cashiers />, { store: initialStore });
 
@@ -526,22 +540,45 @@ describe("Cashiers Page", () => {
     const trendCard = await screen.findByTestId("cashier-trend-card-0-2");
     await user.click(trendCard);
 
-    // if (trendCard) return;
+    const showAllBtn = await screen.findByTestId("cashiers-table-showall-btn");
+    await user.click(showAllBtn);
 
-    // const showAll = await screen.findByTestId("cashiers-table-showall-btn");
-    // await user.click(showAll);
+    const modal = await screen.findByTestId("trans-modal");
+    expect(modal).toBeInTheDocument();
 
     await waitFor(() => {
       const state = initialStore.getState().cashier;
-      console.log(state)
       expect(state.selectedSaleType).toBe("Cancelled");
     });
   });
 
-  it("should handle the less than threshold filter", async () => {
-    (getCashierTable as Mock).mockResolvedValueOnce({
+  it("should handle description sale type", async () => {
+    (getCashierDetails as Mock).mockResolvedValue(mockSaleTrendCancelResp);
+    (getCashierTable as Mock).mockResolvedValue({
       data: mockCashierCancelledTableResp,
     });
+
+    renderWithProviders(<Cashiers />, { store: initialStore });
+    const descPanel = await screen.findByTestId("sale-type-panel-Description");
+    await user.click(descPanel);
+
+    await user.click(document.body); // Click outside to close the description input
+    await user.click(descPanel); // Click again to open the description input
+
+    const descInput = await screen.findByTestId("desc-input");
+    await user.type(descInput, "milk");
+
+    const submitBtn = await screen.findByTestId("desc-submit-btn");
+    await user.click(submitBtn);
+
+    const card = await screen.findByTestId("cashier-trend-card-0-2");
+    await user.click(card);
+  });
+
+  it("should handle the less than threshold filter", async () => {
+    (getCashierTable as Mock).mockResolvedValueOnce(
+      mockCashierCancelledTableResp,
+    );
     (getCashierDetails as Mock).mockResolvedValueOnce(mockSaleTrendCancelResp);
     (getTransactionList as Mock).mockResolvedValueOnce({
       data: mockTransListResp,
@@ -628,5 +665,80 @@ describe("Cashiers Page", () => {
       expect(state.totalSalesFilter).toBe(5);
       expect(state.cashierTableThreshComp.gt).toBe(true);
     });
+  });
+
+  it("should handle the cashiers grid pagination", async () => {
+    (getCashierTable as Mock).mockResolvedValue(mockCashierCancelledTableResp);
+    (getCashierDetails as Mock).mockResolvedValue(mockSaleTrendCancelResp);
+    (getTransactionList as Mock).mockResolvedValue({
+      data: mockTransListResp,
+    });
+
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
+    const cancelPanel = await screen.findByTestId("sale-type-panel-Cancelled");
+    await user.click(cancelPanel);
+
+    const trendCard = await screen.findByTestId("cashier-trend-card-0-2");
+    await user.click(trendCard);
+
+    const nextBtn = await screen.findByTestId("cashiers-next-page-btn");
+    // const prevBtn = await screen.findByTestId("cashiers-prev-page-btn");
+
+    await user.click(nextBtn);
+  });
+
+  it("should handle transaction list api failure on cashiers table pagination", async () => {
+    (getCashierTable as Mock).mockResolvedValue(mockCashierCancelledTableResp);
+    (getCashierDetails as Mock).mockResolvedValue(mockSaleTrendCancelResp);
+    (getTransactionList as Mock).mockResolvedValueOnce({
+      data: mockTransListResp,
+    });
+
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
+    const cancelPanel = await screen.findByTestId("sale-type-panel-Cancelled");
+    await user.click(cancelPanel);
+
+    const trendCard = await screen.findByTestId("cashier-trend-card-0-2");
+    await user.click(trendCard);
+
+    (getTransactionList as Mock).mockRejectedValue(new Error("API Error"));
+
+    const prevBtn = await screen.findByTestId("cashiers-prev-page-btn");
+    await user.click(prevBtn);
+  });
+
+  it("should handle the cashiers tableapi failure on cashiers table pagination", async () => {
+    (getCashierTable as Mock).mockResolvedValue(mockCashierCancelledTableResp);
+    (getCashierDetails as Mock).mockResolvedValue(mockSaleTrendCancelResp);
+    (getTransactionList as Mock).mockResolvedValueOnce({
+      data: mockTransListResp,
+    });
+
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
+    const cancelPanel = await screen.findByTestId(
+      "sale-type-panel-Description",
+    );
+    await user.click(cancelPanel);
+
+    const descInput = await screen.findByTestId("desc-input");
+    await user.type(descInput, "milk");
+
+    const submitBtn = await screen.findByTestId("desc-submit-btn");
+    await user.click(submitBtn);
+
+    const trendCard = await screen.findByTestId("cashier-trend-card-0-2");
+    await user.click(trendCard);
+
+    // const nextBtn = await screen.findByTestId("cashiers-next-page-btn");
+
+    (getCashierTable as Mock).mockRejectedValue(new Error("API Error"));
+    // await user.click(nextBtn);
+    const input = await screen.findByTestId("input-");
+    await user.clear(input);
+    await user.type(input, "2");
+    await user.keyboard("{Enter}");
   });
 });

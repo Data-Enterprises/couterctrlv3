@@ -163,39 +163,6 @@ export const theme = themeQuartz.withParams({
   selectedRowBackgroundColor: "#93c5fd",
 });
 
-export const filterData = (
-  data: CashierTransaction[],
-  selectedSaleType: string,
-  storeid: number,
-  cardSaleType: string,
-) => {
-  const saleType = selectedSaleType === "Description" ? cardSaleType : selectedSaleType;
-  console.log(data);
-  const filtered = [...data]
-    .filter((t) => { 
-      if (t.sale_type === saleType && t.storeid === storeid) {
-        console.log("found a match!", t);
-      }
-      if (t.sale_type === saleType) {
-        console.log('found a sale type match!', saleType, t);
-      }
-      if (t.storeid === storeid) { 
-        console.log('found a store match!', storeid, t);
-      }
-        return t.sale_type === saleType && t.storeid === storeid;
-    })
-    .reduce((acc: CashierTransaction[], current: CashierTransaction) => {
-      const x = acc.find((item) => item.sale_id === current.sale_id);
-      if (!x) {
-        return acc.concat([current]);
-      } else {
-        return acc;
-      }
-    }, []);
-
-  return filtered;
-};
-
 export const chunkData = (arr: any[], chunkSize: number = 3) => {
   const chunks = [];
   for (let i = 0; i < arr.length; i += chunkSize) {

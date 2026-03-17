@@ -304,6 +304,7 @@ const CashiersTable = () => {
   };
 
   const handlePageInput = (x: string) => {
+    console.log(x)
     if (!isNaN(Number(x)) && Number(x) >= 0 && Number(x) <= cashier.gridPages) {
       dispatch(setCurrentGridPage(Number(x)));
       dispatch(setPageText(x));
