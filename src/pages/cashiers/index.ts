@@ -1,6 +1,5 @@
 import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
 import type {
-  CashierTransaction,
   TransactionListItem,
   UniqueCashier,
 } from "../../interfaces";
