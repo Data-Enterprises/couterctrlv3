@@ -9,6 +9,7 @@ import { userStores } from "../sales";
 import { setAssignedStores } from "../../../features/userSlice";
 import { renderWithProviders } from "../../utils";
 import { receiverListResp, detailsResp } from ".";
+import { resetFilters } from "../../../features/receiversSlice";
 
 const user = userEvent.setup();
 const store = setupStore();
@@ -234,6 +235,9 @@ describe("Receivers Page", () => {
   });
 
   it("should handle the Transaction ID filter", async () => {
+    await waitFor(() => {
+      store.dispatch(resetFilters());
+    });
     renderWithProviders(<Receivers />, { store });
 
     const refreshFiltersBtn = await screen.findByTestId(
@@ -250,12 +254,12 @@ describe("Receivers Page", () => {
       "rec-list-filter-modal-submit-btn",
     );
     const input = await screen.findByTestId("text-filter-input");
-    await user.type(input, "74");
+    await user.type(input, "104188");
     await user.click(submitBtn);
 
     await waitFor(() => {
       const state = store.getState().receivers;
-      expect(state.listGridData.length).toBe(2);
+      expect(state.listGridData.length).toBe(1);
     });
   });
 
@@ -271,7 +275,7 @@ describe("Receivers Page", () => {
       "rec-list-filter-modal-submit-btn",
     );
     const input = await screen.findByTestId("text-filter-input");
-    await user.type(input, "179");
+    await user.type(input, "161");
 
     await user.click(submitBtn);
 
