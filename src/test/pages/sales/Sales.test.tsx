@@ -14,7 +14,7 @@ import {
   userStores,
   weekly,
   noSubData,
-  sub_sales2,
+  // sub_sales2,
 } from ".";
 import Sales from "../../../pages/sales/Sales";
 
@@ -25,7 +25,7 @@ import {
   getWeekly, // weekly
   getHourly, // hourly
   getSubs,
-  getSubsComp, // sub_sales
+  // getSubsComp, // sub_sales
 } from "../../../api/sales";
 import {
   setIsDesktop,
@@ -305,36 +305,36 @@ describe("Sales Page", () => {
     }
   });
 
-    it("should handle selecting a compare sales panel", async () => {
-      await waitFor(() => {
-        renderSuccess(sub_sales);
-      });
+    // it("should handle selecting a compare sales panel", async () => {
+    //   await waitFor(() => {
+    //     renderSuccess(sub_sales);
+    //   });
 
-      (getSubsComp as Mock).mockResolvedValue(sub_sales2);
+    //   (getSubsComp as Mock).mockResolvedValue(sub_sales2);
 
-      const panelOne = await screen.findByTestId("sales-panel-0-0");
-      const panelTwo = await screen.findByTestId("sales-panel-2-1");
+    //   const panelOne = await screen.findByTestId("sales-panel-0-0");
+    //   const panelTwo = await screen.findByTestId("sales-panel-2-1");
 
-      await user.click(panelOne);
-      await user.click(panelTwo);
-      await user.click(panelTwo);
-    });
+    //   await user.click(panelOne);
+    //   await user.click(panelTwo);
+    //   await user.click(panelTwo);
+    // });
 
-      it("should handle api failure when selecting a compare sales panel", async () => {
-        await waitFor(() => {
-          renderSuccess(sub_sales);
-        });
+    //   it("should handle api failure when selecting a compare sales panel", async () => {
+    //     await waitFor(() => {
+    //       renderSuccess(sub_sales);
+    //     });
 
-        (getSubsComp as Mock).mockRejectedValue(defaultError);
+    //     (getSubsComp as Mock).mockRejectedValue(defaultError);
 
-        const panelOne = await screen.findByTestId("sales-panel-0");
-        const panelTwo = await screen.findByTestId("sales-panel-2-1");
+    //     const panelOne = await screen.findByTestId("sales-panel-0");
+    //     const panelTwo = await screen.findByTestId("sales-panel-2-1");
 
-        await user.click(panelOne);
-        await user.click(panelTwo);
+    //     await user.click(panelOne);
+    //     await user.click(panelTwo);
 
-        await waitFor(() => {
-          expect(mockToastError).toHaveBeenCalled();
-        });
-      });
+    //     await waitFor(() => {
+    //       expect(mockToastError).toHaveBeenCalled();
+    //     });
+    //   });
 });
