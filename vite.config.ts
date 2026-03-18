@@ -30,6 +30,7 @@ export default defineConfig({
         "src/pages/team/assignModal/QuicksightStores.tsx",
         "src/pages/team/assignModal/QsAssigned.tsx",
         "src/pages/team/assignModal/QsUnassigned.tsx",
+        "src/pages/upc/**"
       ],
     },
     pool: "threads",
