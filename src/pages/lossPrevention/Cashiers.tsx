@@ -16,6 +16,7 @@ import UniqueCashiersTable from "./UniqueCashiersTable";
 import CashierSales from "./cashierSales/CashierSales";
 import SaleTypes from "./SaleTypes";
 import CashiersTableFilters from "./filters/CashiersTableFilters";
+import MobileTrendCards from "./cashierSales/MobileTrendCards";
 
 const Cashiers = () => {
   const toast = useToast();
@@ -92,7 +93,7 @@ const Cashiers = () => {
         )}
         {cashier.cashierDetails.length > 0 ? (
           <div className="w-full ">
-            <CashierSales />
+            {context.isDesktop ? <CashierSales /> : <MobileTrendCards />}
           </div>
         ) : (
           <div className="h-[260px] w-full">
