@@ -147,7 +147,7 @@ const CashierTrendCard = () => {
   };
 
   return (
-    <div className={`bg-custom-white rounded-lg h-full`}>
+    <div className={`bg-custom-white rounded-lg h-full select-none`}>
       <div className="text-center font-medium bg-blue-500 text-sm text-custom-white py-1 rounded-t-lg flex px-2 justify-between">
         <div>{selectedCashierDetails!.store_name}</div>
         <div>{selectedCashierDetails!.sale_type}</div>
