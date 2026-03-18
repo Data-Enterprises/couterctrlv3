@@ -32,8 +32,8 @@ export const useScrollHeight = () => {
 };
 
 export const theme = themeQuartz.withParams({
-  headerHeight: 30,
-  rowHeight: 26.5,
+  headerHeight: 26,
+  rowHeight: 26,
   headerBackgroundColor: "#3b82f6",
   headerTextColor: "#ffffff",
   oddRowBackgroundColor: "#bfdbfe",
@@ -47,8 +47,8 @@ export const theme = themeQuartz.withParams({
 });
 
 export const themeTwo = themeQuartz.withParams({
-  headerHeight: 30,
-  rowHeight: 26.5,
+  headerHeight: 26,
+  rowHeight: 26,
   headerBackgroundColor: "#3b82f6",
   headerTextColor: "#ffffff",
   oddRowBackgroundColor: "#bfdbfe",

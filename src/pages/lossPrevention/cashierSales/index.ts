@@ -3,8 +3,8 @@ import type { CashierDetails } from "../../../interfaces";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 
 export const theme = themeQuartz.withParams({
-  headerHeight: 30,
-  rowHeight: 26.5,
+  headerHeight: 26,
+  rowHeight: 26,
   headerBackgroundColor: "#3b82f6",
   headerTextColor: "#ffffff",
   oddRowBackgroundColor: "#bfdbfe",
