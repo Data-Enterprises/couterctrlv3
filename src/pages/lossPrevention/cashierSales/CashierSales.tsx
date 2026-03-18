@@ -58,7 +58,7 @@ const CashierSales = () => {
   const handleRowClicked = (e: RowClickedEvent) => {
     const data: CashierDetails = e.data;
     if (cashier.selectedStoreId === data.storeid) return;
-    
+
     dispatch(reQuery());
     dispatch(setSelectedStoreId(data.storeid));
     dispatch(setFetchingCashierTransactions(true));
@@ -162,7 +162,7 @@ const CashierSales = () => {
   };
 
   return (
-    <div className="grid grid-cols-[64%_35%] gap-4 h-[24.5vh]">
+    <div className="grid grid-cols-[64%_35%] gap-4 h-[24vh]">
       <div className="bg-custom-white rounded-lg shadow-lg ">
         <AgGridReact
           rowData={cashier.cashierDetails}
