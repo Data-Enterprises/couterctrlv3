@@ -150,7 +150,7 @@ const SelectStore = () => {
                 key={`store-${idx}`}
                 onClick={() => handleSelect(store)}
               >
-                <div className="p-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer text-xs">
+                <div className="p-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer text-sm">
                   {store.store_name}
                 </div>
               </div>
