@@ -159,7 +159,7 @@ export const theme = themeQuartz.withParams({
   dataFontSize: 13,
   selectCellBorder: "transparent",
   rowBorder: "1px solid white",
-  selectedRowBackgroundColor: "#93c5fd",
+  selectedRowBackgroundColor: "#fed7aa",
 });
 
 export const chunkData = (arr: any[], chunkSize: number = 3) => {
