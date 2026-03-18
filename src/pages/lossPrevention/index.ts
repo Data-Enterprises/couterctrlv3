@@ -149,7 +149,7 @@ export const cashierColDefs: (
 ];
 
 export const theme = themeQuartz.withParams({
-  headerHeight: 27,
+  headerHeight: 26,
   rowHeight: 26,
   headerBackgroundColor: "#3b82f6",
   headerTextColor: "#ffffff",

@@ -26,7 +26,7 @@ export const roles: CustomSelectOption[] = [
 ];
 
 export const theme = themeQuartz.withParams({
-  headerHeight: 30,
+  headerHeight: 26,
   rowHeight: 26,
   headerBackgroundColor: "#1e2d50",
   headerTextColor: "#ffffff",
