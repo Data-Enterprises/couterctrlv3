@@ -84,8 +84,14 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
         const j = resp.data;
         if (j.error === 0) {
           const stores = {
-            assigned: filterNulls(j.assigned_stores),
-            unassigned: filterNulls(j.unassigned_stores),
+            assigned: filterNulls(j.assigned_stores).sort(
+              (a: Store, b: Store) =>
+                parseInt(a.store_number) - parseInt(b.store_number),
+            ),
+            unassigned: filterNulls(j.unassigned_stores).sort(
+              (a: Store, b: Store) =>
+                parseInt(a.store_number) - parseInt(b.store_number),
+            ),
           };
           dispatch(setSelectedUserStores(stores));
           dispatch(setRefresh(true));
@@ -140,7 +146,11 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
   return (
     <div className={`grid ${gridLayout} gap-2`}>
       {formType !== "delete" && (
-        <button data-testid="user-form-clear-fields-btn" className="btn-themeBlue px-0" onClick={handleReset}>
+        <button
+          data-testid="user-form-clear-fields-btn"
+          className="btn-themeBlue px-0"
+          onClick={handleReset}
+        >
           Clear Fields
         </button>
       )}
@@ -155,7 +165,6 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
       ) : formType === "update" ? (
         <button
           data-testid="update-user-btn"
-
           className={`btn-themeBlue px-0 ${selectedUserId == 0 ? "opacity-50 pointer-events-none" : ""}`}
           onClick={handleCreateOrUpdate}
         >

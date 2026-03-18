@@ -28,21 +28,19 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
   // const toast = useToast();
   // const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { selectedSalesPanel, compareSalesPanel } = useAppSelector(
+  const { selectedSalesPanel } = useAppSelector(
     (state) => state.sales,
   );
 
   const border = (panel: WeeklySale, selected: SelectedSalesPanel) => {
     const date = panel.sale_date.split("T")[0];
-    if (
-      date === compareSalesPanel.sale_date &&
-      panel.storeid === compareSalesPanel.storeid
-    ) {
-      return "shadow-inner border-2 border-emerald-500 rounded-xl";
-    } else if (
-      date === selected.sale_date &&
-      panel.storeid === selected.storeid
-    ) {
+    // if (
+    //   date === compareSalesPanel.sale_date &&
+    //   panel.storeid === compareSalesPanel.storeid
+    // ) {
+    //   return "shadow-inner border-2 border-emerald-500 rounded-xl";
+    // } else
+    if (date === selected.sale_date && panel.storeid === selected.storeid) {
       return "shadow-inner border-2 border-content/70 rounded-xl";
     } else {
       return "";
@@ -119,7 +117,7 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
       <div
         data-testid={`sales-panel-${id}`}
         className={`font-bold text-center`}
-        onClick={(e) => handlePanelClick(e, panel)}
+        // onClick={(e) => handlePanelClick(e, panel)}
       >
         <div className="">{panel.store_name}</div>
       </div>

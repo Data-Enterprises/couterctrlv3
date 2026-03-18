@@ -135,12 +135,14 @@ const CreateCompany = () => {
       </div>
       <div className="grid grid-cols-2 gap-2">
         <button
+          data-testid="clear-create-company-fields-btn"
           className="btn-themeBlue mt-4"
           onClick={() => dispatch(resetCompanyInfo())}
         >
           Clear Fields
         </button>
         <button
+          data-testid="create-company-submit-btn"
           className={`btn-themeBlue mt-4 ${!canSubmit() && "opacity-50 pointer-events-none"}`}
           onClick={handleSubmit}
         >

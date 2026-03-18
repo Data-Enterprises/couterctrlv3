@@ -18,7 +18,7 @@ import DatePickers from "../../components/datePickers/DatePickers";
 import CouponsGrid from "./CouponsGrid";
 import CouponGridFilters from "./CouponGridFilters";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import TransactionModal from "../cashiers/TransactionModal";
+import TransactionModal from "../lossPrevention/TransactionModal";
 import FiltersModal from "./filters/FiltersModal";
 import ExportModal from "../../components/modals/ExportModal";
 import CouponKpis from "./kpi/CouponKpis";
@@ -46,7 +46,7 @@ const Coupons = () => {
       end,
       useGroups,
       singleStore,
-      searchValue
+      searchValue,
     )
       .then((resp) => {
         const j: CouponsResponse = resp.data;

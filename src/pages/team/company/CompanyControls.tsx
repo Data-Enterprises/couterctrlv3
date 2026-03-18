@@ -71,24 +71,28 @@ const CompanyControls = () => {
     <div className="">
       <div className="bg-custom-white rounded-lg shadow-lg p-4 grid grid-cols-4 gap-2 w-[50vw]">
         <button
+          data-testid="create-company-form"
           className={`${selectedForm === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleFormSelect("create")}
         >
           Create
         </button>
         <button
+          data-testid="update-company-form"
           className={`${selectedForm === "update" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleFormSelect("update")}
         >
           Update
         </button>
         <button
+          data-testid="delete-company-form"
           className={`${selectedForm === "delete" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleFormSelect("delete")}
         >
           Delete
         </button>
         <button
+          data-testid="assign-company-to-user-form"
           className={`${selectedForm === "assign_to_user" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleFormSelect("assign_to_user")}
         >

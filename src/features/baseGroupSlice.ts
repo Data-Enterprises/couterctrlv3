@@ -88,12 +88,12 @@ export const baseGroupSlice = createSlice({
       state.baseGroups = [];
       state.selectedBaseGroups = [];
     },
-    setBgsToAssign: (state, action: PayloadAction<number[]>) => {
-      state.bgsToAssign = action.payload;
-    },
-    setBgsToUnassign: (state, action: PayloadAction<number[]>) => {
-      state.bgsToUnassign = action.payload;
-    },
+    // setBgsToAssign: (state, action: PayloadAction<number[]>) => {
+    //   state.bgsToAssign = action.payload;
+    // },
+    // setBgsToUnassign: (state, action: PayloadAction<number[]>) => {
+    //   state.bgsToUnassign = action.payload;
+    // },
     setBgIdsToAssign: (state, action: PayloadAction<number>) => {
       const id = action.payload;
       if (state.bgIdsToAssign.includes(id)) {
@@ -127,8 +127,8 @@ export const {
   setCompany,
   setUserCompany,
   setAllSelectedBaseGroups,
-  setBgsToAssign,
-  setBgsToUnassign,
+  // setBgsToAssign,
+  // setBgsToUnassign,
   setUserBaseGroups,
   setBgIdsToAssign,
   setBgIdsToUnassign,

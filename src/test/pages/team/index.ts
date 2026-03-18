@@ -101,7 +101,7 @@ export const allUsersResp = {
         id: 3,
         username: "test3",
         password: "",
-        user_level: 5,
+        user_level: 0,
         last_visit: null,
         join_date: null,
         first_name: "three",
@@ -206,6 +206,220 @@ export const deleteUpdateBaseGroupLinkResp = {
 
 export const defaultResp = { data: { error: 0 } };
 export const defaultErrorResp = new Error("An error occurred");
+
+export const allAssignedStoresResp = {
+  data: {
+    error: 0,
+    success: true,
+    all_stores_for_user: [],
+    assigned_stores: [
+      {
+        storeid: 1,
+        store_number: "1",
+        store_name: "Store 1",
+        company_id: 1,
+        company_name: "Test Company",
+      },
+      {
+        storeid: 2,
+        store_number: "2",
+        store_name: "Store 2",
+        company_id: 1,
+        company_name: "Test Company",
+      },
+      {
+        storeid: 3,
+        store_number: "3",
+        store_name: "Store 3",
+        company_id: 2,
+        company_name: "Test Company 2",
+      },
+      {
+        storeid: 4,
+        store_number: "4",
+        store_name: "Store 4",
+        company_id: 2,
+        company_name: "Test Company 2",
+      },
+      {
+        storeid: 5,
+        store_number: "5",
+        store_name: "Store 5",
+        company_id: 1,
+        company_name: "Test Company",
+      },
+      {
+        storeid: 6,
+        store_number: "6",
+        store_name: "Store 6",
+        company_id: 2,
+        company_name: "Test Company 2",
+      },
+    ],
+    unassigned_stores: [],
+  },
+};
+
+export const allUnassignedStoresResp = {
+  data: {
+    error: 0,
+    success: true,
+    all_stores_for_user: [],
+    assigned_stores: [],
+    unassigned_stores: [
+      {
+        storeid: 1,
+        store_number: "1",
+        store_name: "Store 1",
+        company_id: 1,
+        company_name: "Test Company",
+      },
+      {
+        storeid: 2,
+        store_number: "2",
+        store_name: "Store 2",
+        company_id: 1,
+        company_name: "Test Company",
+      },
+      {
+        storeid: 3,
+        store_number: "3",
+        store_name: "Store 3",
+        company_id: 2,
+        company_name: "Test Company 2",
+      },
+      {
+        storeid: 4,
+        store_number: "4",
+        store_name: "Store 4",
+        company_id: 2,
+        company_name: "Test Company 2",
+      },
+      {
+        storeid: 5,
+        store_number: "5",
+        store_name: "Store 5",
+        company_id: 1,
+        company_name: "Test Company",
+      },
+      {
+        storeid: 6,
+        store_number: "6",
+        store_name: "Store 6",
+        company_id: 2,
+        company_name: "Test Company 2",
+      },
+    ],
+  },
+};
+
+export const unassignOneStoreResp = {
+  data: {
+    error: 0,
+    success: true,
+    all_stores_for_user: [],
+    assignedStores: [
+      {
+        storeid: 2,
+        store_number: "2",
+        store_name: "Store 2",
+        company_id: 1,
+        company_name: "Test Company",
+      },
+      {
+        storeid: 3,
+        store_number: "3",
+        store_name: "Store 3",
+        company_id: 2,
+        company_name: "Test Company 2",
+      },
+      {
+        storeid: 4,
+        store_number: "4",
+        store_name: "Store 4",
+        company_id: 2,
+        company_name: "Test Company 2",
+      },
+      {
+        storeid: 5,
+        store_number: "5",
+        store_name: "Store 5",
+        company_id: 1,
+        company_name: "Test Company",
+      },
+      {
+        storeid: 6,
+        store_number: "6",
+        store_name: "Store 6",
+        company_id: 2,
+        company_name: "Test Company 2",
+      },
+    ],
+    unassignedStores: [
+      {
+        storeid: 1,
+        store_number: "1",
+        store_name: "Store 1",
+        company_id: 1,
+        company_name: "Test Company",
+      },
+    ],
+  },
+};
+
+export const assignOneStoreResp = {
+  data: {
+    error: 0,
+    success: true,
+    all_stores_for_user: [],
+    assignedStores: [
+      {
+        storeid: 1,
+        store_number: "1",
+        store_name: "Store 1",
+        company_id: 1,
+        company_name: "Test Company",
+      },
+    ],
+    unassignedStores: [
+      {
+        storeid: 2,
+        store_number: "2",
+        store_name: "Store 2",
+        company_id: 1,
+        company_name: "Test Company",
+      },
+      {
+        storeid: 3,
+        store_number: "3",
+        store_name: "Store 3",
+        company_id: 2,
+        company_name: "Test Company 2",
+      },
+      {
+        storeid: 4,
+        store_number: "4",
+        store_name: "Store 4",
+        company_id: 2,
+        company_name: "Test Company 2",
+      },
+      {
+        storeid: 5,
+        store_number: "5",
+        store_name: "Store 5",
+        company_id: 1,
+        company_name: "Test Company",
+      },
+      {
+        storeid: 6,
+        store_number: "6",
+        store_name: "Store 6",
+        company_id: 2,
+        company_name: "Test Company 2",
+      },
+    ],
+  },
+};
 
 export const userStoresResp = {
   data: {
@@ -334,6 +548,30 @@ export const loggedInUserCompanies = [
   },
 ];
 
+export const nonDCRCompanies = [
+  {
+    id: 1,
+    company: 1,
+    userid: 1,
+    name: "Test Company 1",
+    username: "tguy",
+  },
+  {
+    id: 2,
+    company: 2,
+    userid: 1,
+    name: "Test Company 2",
+    username: "tguy",
+  },
+  {
+    id: 3,
+    company: 3,
+    userid: 1,
+    name: "Test Company 3",
+    username: "tguy",
+  },
+];
+
 export const nonDCRUserCompanies = [
   {
     id: 1,
@@ -448,5 +686,22 @@ export const createUserResp = {
     error: 0,
     success: true,
     new_userid: 50,
+  },
+};
+
+export const assignedBGResp = {
+  data: {
+    error: 0,
+    success: true,
+    active: [
+      {
+        id: 1,
+        name: "All Stores",
+        company: 1,
+        company_name: "Test Company 1",
+        active: 1,
+      },
+    ],
+    inactive: [],
   },
 };

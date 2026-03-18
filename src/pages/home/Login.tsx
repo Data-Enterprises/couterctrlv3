@@ -109,7 +109,7 @@ const Login = () => {
     <div data-testid="login-page" className="flex min-h-full justify-center">
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
-          <div>
+          <div className="select-none">
             <img className="h-50 w-auto" src={logo} alt="Mikto" />
             <h2 className="mt-4 md:mt-8 text-2xl/9 font-bold tracking-tight text-center">
               Sign in to your account
@@ -124,7 +124,7 @@ const Login = () => {
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-sm/6 font-medium "
+                    className="block text-sm/6 font-medium select-none"
                   >
                     Username
                   </label>
@@ -144,7 +144,7 @@ const Login = () => {
                 <div>
                   <label
                     htmlFor="password"
-                    className="block text-sm/6 font-medium "
+                    className="block text-sm/6 font-medium select-none"
                   >
                     Password
                   </label>
@@ -173,7 +173,8 @@ const Login = () => {
                     />
                     <label
                       htmlFor="remember-me"
-                      className="ml-3 block text-sm/6 "
+                      className="ml-3 block text-sm/6 font-medium select-none"
+                      draggable={false}
                     >
                       Remember me
                     </label>
@@ -181,7 +182,7 @@ const Login = () => {
 
                   <div
                     data-testid="login-forgot-password"
-                    className="text-sm/6"
+                    className="text-sm/6 select-none"
                     onClick={() => {
                       dispatch(setForgotPassword(true));
                     }}
@@ -189,6 +190,7 @@ const Login = () => {
                     <a
                       href="#"
                       className="font-semibold text-accent-1 transition-all duration-600"
+                      draggable={false}
                     >
                       Forgot password?
                     </a>
@@ -233,8 +235,8 @@ const Login = () => {
           </div>
         </div>
         {/* Change this before pushing for publishing */}
-        <div className="absolute bottom-1 left-0 text-sm pl-2">
-          Last Updated 3/16/2026 @ 2:10 PM CST
+        <div className="absolute bottom-1 left-0 text-sm pl-2 select-none">
+          Last Updated 3/18/2026 @ 3:53 PM CST
         </div>
       </div>
       <div className="relative hidden w-0 flex-1 lg:block">

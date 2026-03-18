@@ -30,12 +30,14 @@ const AdminControls = () => {
     <div className="space-y-4">
       <div className="bg-custom-white rounded-lg shadow-lg grid grid-cols-2 gap-2 p-4 w-[50%] select-none">
         <button
+          data-testid="admin-new-store-name-form"
           className={`${selectedAdminForm === "store_name" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleReset("store_name")}
         >
           New Store Name
         </button>
         <button
+          data-testid="admin-stores-missing-sales-form"
           className={`${selectedAdminForm === "store_missing_sales" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleReset("store_missing_sales")}
         >

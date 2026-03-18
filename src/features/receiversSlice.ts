@@ -101,21 +101,22 @@ export const receiversSlice = createSlice({
 
         // Using the filters in the state to check for matches,
         // if the filter has no value, then it's not being used, so we consider it a match by default
-        const vIdMatch = state.vendorIdFilter
+        const vIdMatch = state.vendorIdFilter.length
           ? vId.includes(state.vendorIdFilter.toLowerCase())
           : true;
 
-        const vNameMatch = state.vendorNameFilter
+        const vNameMatch = state.vendorNameFilter.length
           ? vName.includes(state.vendorNameFilter.toLowerCase())
           : true;
 
-        const invIdMatch = state.invoiceIdFilter
+        const invIdMatch = state.invoiceIdFilter.length
           ? transId.includes(state.invoiceIdFilter.toLowerCase())
           : true;
 
-        const transIdMatch = state.transIDFilter
+        const transIdMatch = state.transIDFilter.length
           ? invId.includes(state.transIDFilter.toLowerCase())
           : true;
+
         return vIdMatch && vNameMatch && invIdMatch && transIdMatch;
       });
       state.listGridData = filteredData;

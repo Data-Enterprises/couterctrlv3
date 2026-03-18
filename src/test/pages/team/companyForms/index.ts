@@ -1,0 +1,62 @@
+export const defaultError = new Error("Test error");
+export const defaultResp = { data: { error: 0 } };
+
+export const defaultCompaniesResp = {
+  data: {
+    error: 0,
+    success: true,
+    msg: "Success",
+    companies: [
+      {
+        id: 1,
+        name: "Test Company 1",
+        address: "Test St 1",
+        city: "Test City 1",
+        state: "TS",
+        zip: 12345,
+        phone: "5555555555",
+        contact_email: "test@example.com",
+      },
+      {
+        id: 2,
+        name: "Test Company 2",
+        address: "Test St 2",
+        city: "Test City 2",
+        state: "TS",
+        zip: 23456,
+        phone: "5555555555",
+        contact_email: "test2@example.com",
+      },
+      {
+        id: 3,
+        name: "Test Company 3",
+        address: "Test St 3",
+        city: "Test City 3",
+        state: "TS",
+        zip: 34567,
+        phone: "5555555555",
+        contact_email: "test3@example.com",
+      },
+      {
+        id: 4,
+        name: "Test Company 4",
+        address: "Test St 4",
+        city: "Test City 4",
+        state: "TS",
+        zip: 45678,
+        phone: "5555555555",
+        contact_email: "test4@example.com",
+      },
+      {
+        id: 5,
+        name: "Test Company 5",
+        address: "Test St 5",
+        city: "Test City 5",
+        state: "TS",
+        zip: 56789,
+        phone: "5555555555",
+        contact_email: "test5@example.com",
+      },
+    ],
+  },
+};

@@ -7,7 +7,6 @@ import type {
   UniqueCashier,
   TransactionListItem,
 } from "../interfaces";
-import { chunkData } from "../pages/cashiers";
 
 type SelectedCashier = {
   cashier_number: number;
@@ -17,9 +16,10 @@ type SelectedCashier = {
 export interface CashierState {
   // for raw data and the chunked versions for carousel view
   cashierDetails: CashierDetails[];
-  chunkedTrends: CashierTrend[][];
+  selectedCashierDetails: CashierDetails | null;
+  selectedCashierDetailsIdx: number;
+  cashierDetailsTrendDirection: number;
   cashierTrends: CashierTrend[];
-  chunkedSales: CashierDetails[][];
   cashiers: UniqueCashier[];
   selectedCashier: SelectedCashier;
   cashierTransactions: CashierTransaction[];
@@ -52,14 +52,13 @@ export interface CashierState {
 
 const initialState: CashierState = {
   cashierDetails: [],
+  selectedCashierDetails: null,
   cashierTrends: [],
   cashierTransactions: [],
   saleTypes: [],
   selectedSaleType: "",
   transModalOpen: false,
   cashiers: [],
-  chunkedTrends: [],
-  chunkedSales: [],
   selectedCashier: { cashier_number: 0, store_number: "" },
   selectedSaleIds: [],
   transList: [],
@@ -83,6 +82,8 @@ const initialState: CashierState = {
   currentGridPage: 0,
   pageText: "1",
   searchString: "",
+  selectedCashierDetailsIdx: -1,
+  cashierDetailsTrendDirection: 0,
 };
 
 export const cashierSlice = createSlice({
@@ -91,11 +92,9 @@ export const cashierSlice = createSlice({
   reducers: {
     setCashierDetails: (state, action: PayloadAction<CashierDetails[]>) => {
       state.cashierDetails = action.payload;
-      state.chunkedSales = chunkData(action.payload);
     },
     setCashierTrends: (state, action: PayloadAction<CashierTrend[]>) => {
       state.cashierTrends = action.payload;
-      state.chunkedTrends = chunkData(action.payload);
     },
     setCashierTransactions: (
       state,
@@ -198,6 +197,21 @@ export const cashierSlice = createSlice({
     setSearchString: (state, action: PayloadAction<string>) => {
       state.searchString = action.payload;
     },
+    setSelectedCashierDetails: (
+      state,
+      action: PayloadAction<CashierDetails | null>,
+    ) => {
+      const data = action.payload;
+      state.selectedCashierDetails = data;
+      if (data === null) {
+        state.selectedCashierDetailsIdx = -1;
+      } else {
+        const idx = state.cashierDetails.findIndex(
+          (c) => c.storeid === data.storeid,
+        );
+        state.selectedCashierDetailsIdx = idx;
+      }
+    },
     reQuery: (state) => {
       state.cashierTransactions = [];
       state.selectedSaleIds = [];
@@ -208,7 +222,13 @@ export const cashierSlice = createSlice({
       state.noTransMsg = false;
       state.availablePriceTypes = [];
       state.cashiers = [];
+      state.selectedCashierDetails = null;
+      state.selectedCashierDetailsIdx = -1;
       state.selectedCashier = { cashier_number: 0, store_number: "" };
+      state.cashierDetailsTrendDirection = 0;
+    },
+    setCashierDetailsTrendDirection: (state, action: PayloadAction<number>) => {
+      state.cashierDetailsTrendDirection = action.payload;
     },
     resetCashierSlice: () => initialState,
   },
@@ -247,5 +267,7 @@ export const {
   setPageText,
   setSearchString,
   reQuery,
+  setSelectedCashierDetails,
+  setCashierDetailsTrendDirection,
 } = cashierSlice.actions;
 export default cashierSlice.reducer;

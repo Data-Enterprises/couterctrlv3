@@ -32,23 +32,6 @@ const Assigned = () => {
     }
   }, [filterText, users.selectedUserStores.assigned]);
 
-  const handleUnassignStore = () => {
-    dispatch(setStoresUnassignedForUser(storesToUnassign));
-    unassignUserFromStore(
-      context.url,
-      context.token,
-      users.selectedUserId,
-      storesToUnassign,
-    ).then((resp) =>{
-      const j = resp.data;
-      if (j.error === 0 && users.selectedUserId === userid) {
-        dispatch(setRefreshStores(true));
-      }
-    }).catch((err: JsonError) => {
-      toast.error("Error unassigning store " + err.message);
-    });
-  };
-
   const handleStoreCardClick = (storeId: number) => {
     setStoresToUnassign((prev) => {
       if (prev.includes(storeId)) {
@@ -58,14 +41,15 @@ const Assigned = () => {
     });
   };
 
-  const handleUnassignAll = () => {
+  const handleStoreUnassignment = (type: "all" | "selected") => {
     const allToRemove = users.selectedUserStores.assigned.map((s) => s.storeid);
-    dispatch(setStoresUnassignedForUser(allToRemove));
+    const storeids = type === "all" ? allToRemove : storesToUnassign;
+    dispatch(setStoresUnassignedForUser(storeids));
     unassignUserFromStore(
       context.url,
       context.token,
       users.selectedUserId,
-      allToRemove,
+      storeids,
     )
       .then((resp) => {
         const j = resp.data;
@@ -121,14 +105,16 @@ const Assigned = () => {
       </div>
       <div className="flex justify-between gap-2 mt-2">
         <button
+          data-testid="ctrl-unassign-stores-btn"
           className="btn-themeGreen w-1/2 px-0"
-          onClick={handleUnassignStore}
+          onClick={() => handleStoreUnassignment("selected")}
         >
           Unassign
         </button>
         <button
+          data-testid="ctrl-unassign-all-stores-btn"
           className="btn-themeGreen w-1/2 px-0"
-          onClick={handleUnassignAll}
+          onClick={() => handleStoreUnassignment("all")}
         >
           Unassign All
         </button>

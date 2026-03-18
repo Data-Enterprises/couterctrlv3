@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, type Mock } from "vitest";
 import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../../utils";
-import Cashiers from "../../../pages/cashiers/Cashiers";
+import Cashiers from "../../../pages/lossPrevention/Cashiers";
 import {
   getSaleTypes,
   getCashierTable,
@@ -124,7 +124,7 @@ describe("LPDescSaleType", () => {
     const submit = screen.getByTestId("desc-submit-btn");
     await user.click(submit);
     expect(
-      await screen.findByTestId("no-transactions-msg")
+      await screen.findByTestId("no-transactions-msg"),
     ).toBeInTheDocument();
   });
 
@@ -142,7 +142,7 @@ describe("LPDescSaleType", () => {
     await user.click(refundedPanel);
 
     expect(
-      await screen.findByTestId("no-transactions-msg")
+      await screen.findByTestId("no-transactions-msg"),
     ).toBeInTheDocument();
   });
 });

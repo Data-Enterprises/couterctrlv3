@@ -4,7 +4,7 @@ import { formatCurrency2 } from "../../../utils";
 import type { UpcPriceOpt } from "../../../interfaces";
 
 export const theme = themeQuartz.withParams({
-  headerHeight: 40,
+  headerHeight: 26,
   rowHeight: 25.5,
   headerBackgroundColor: "#3b82f6",
   headerTextColor: "#ffffff",

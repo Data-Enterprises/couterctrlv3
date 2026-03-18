@@ -1,6 +1,5 @@
 import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
 import type {
-  CashierTransaction,
   TransactionListItem,
   UniqueCashier,
 } from "../../interfaces";
@@ -150,7 +149,7 @@ export const cashierColDefs: (
 ];
 
 export const theme = themeQuartz.withParams({
-  headerHeight: 27,
+  headerHeight: 26,
   rowHeight: 26,
   headerBackgroundColor: "#3b82f6",
   headerTextColor: "#ffffff",
@@ -160,49 +159,8 @@ export const theme = themeQuartz.withParams({
   dataFontSize: 13,
   selectCellBorder: "transparent",
   rowBorder: "1px solid white",
-  selectedRowBackgroundColor: "#93c5fd",
+  selectedRowBackgroundColor: "#fed7aa",
 });
-
-export const filterData = (
-  data: CashierTransaction[],
-  selectedSaleType: string,
-  storeid: number,
-  cardSaleType: string,
-) => {
-  const saleType = selectedSaleType === "Description" ? cardSaleType : selectedSaleType;
-  console.log(data);
-  const filtered = [...data]
-    .filter((t) => { 
-      if (t.sale_type === saleType && t.storeid === storeid) {
-        console.log("found a match!", t);
-      }
-      if (t.sale_type === saleType) {
-        console.log('found a sale type match!', saleType, t);
-      }
-      if (t.storeid === storeid) { 
-        console.log('found a store match!', storeid, t);
-      }
-        return t.sale_type === saleType && t.storeid === storeid;
-    })
-    .reduce((acc: CashierTransaction[], current: CashierTransaction) => {
-      const x = acc.find((item) => item.sale_id === current.sale_id);
-      if (!x) {
-        return acc.concat([current]);
-      } else {
-        return acc;
-      }
-    }, []);
-
-  return filtered;
-};
-
-export const chunkData = (arr: any[], chunkSize: number = 3) => {
-  const chunks = [];
-  for (let i = 0; i < arr.length; i += chunkSize) {
-    chunks.push(arr.slice(i, i + chunkSize));
-  }
-  return chunks;
-};
 
 export const activePanelStyle = (type: string, selected: string) => {
   if (selected === type) {

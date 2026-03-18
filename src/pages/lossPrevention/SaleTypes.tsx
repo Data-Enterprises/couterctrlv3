@@ -10,6 +10,7 @@ import {
   toggleNoTransMsg,
   reQuery,
   setSearchString,
+  setSelectedStoreId,
 } from "../../features/cashierSlice";
 import type { JsonError } from "../../interfaces";
 import { activePanelStyle } from ".";
@@ -75,6 +76,9 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
     // Doing this to reset when looking for a different sale type
     const panels = cashier.saleTypes;
     const selectedSaleType = cashier.selectedSaleType;
+    dispatch(setSelectedStoreId(0));
+    dispatch(setCashierTrends([]));
+    dispatch(setCashierDetails([]));
     dispatch(reQuery());
     dispatch(setSaleTypes(panels));
     dispatch(setSelectedSaleType(selectedSaleType));
@@ -141,7 +145,9 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
                 cursor-pointer transition-all duration-200 ripple-button`}
             onClick={() => handlePanelClick(st.sale_type)}
           >
-            <span>{st.sale_type}</span>
+            <span>
+              {st.sale_type}
+            </span>
           </div>
         ))}
       </div>

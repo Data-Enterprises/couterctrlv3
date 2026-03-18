@@ -63,7 +63,7 @@ const ExportMissingStoresModal = <T extends Record<string, any>>({
           setValue={handleFileNameChange}
         />
         <div className="grid grid-cols-2 gap-4 mt-4">
-          <button className="btn-themeGreen" onClick={handleExport}>
+          <button data-testid="export-ms-submit-btn" className="btn-themeGreen" onClick={handleExport}>
             Export
           </button>
           <button className="btn-themeOrange" onClick={handleClose}>

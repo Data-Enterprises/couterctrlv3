@@ -38,10 +38,12 @@ const DeleteUserForm = () => {
       </div>
 
       <div className="w-1/2 flex gap-2">
-        <button className="btn-themeGreen w-1/2 px-0" onClick={handleDeleteUser}>
+        <button data-testid="delete-user-confirm-btn" className="btn-themeGreen w-1/2 px-0" onClick={handleDeleteUser}>
           Yes
         </button>
         <button
+          data-testid="delete-user-cancel-btn"
+
           className="btn-themeOrange w-1/2 px-0"
           onClick={() => dispatch(setIsDeletingUser(false))}
         >

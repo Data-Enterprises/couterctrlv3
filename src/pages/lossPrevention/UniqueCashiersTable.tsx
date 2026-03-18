@@ -28,6 +28,7 @@ const UniqueCashiersTable = () => {
     ) {
       dispatch(setCashierSaleIds([]));
       dispatch(setSelectedCashier({ cashier_number: 0, store_number: "" }));
+      e.api.deselectAll();
       return;
     }
     dispatch(setSelectedCashier({ cashier_number, store_number }));

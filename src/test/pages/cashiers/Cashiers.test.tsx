@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, type Mock } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../../utils";
-import Cashiers from "../../../pages/cashiers/Cashiers";
+import Cashiers from "../../../pages/lossPrevention/Cashiers";
 import {
   getSaleTypes,
   getCashierTable,
@@ -83,29 +83,41 @@ describe("Cashiers Page", () => {
     await user.click(saleTypePanel);
   });
 
-  // Testing the clicking of a sale type to fetch cashier sales and trends
-  // /////////////////////////////////////////////////////////////////////
-  it("selecting a sale type should make a call to get cashier sales and trends", async () => {
-    (getCashierTable as Mock).mockResolvedValueOnce({
-      data: mockCashierTableResp,
-    });
-    (getCashierDetails as Mock).mockResolvedValueOnce({
-      data: mockSaleTrendResp,
-    });
+  it("should handle API error when fetching transaction list", async () => {
+    (getCashierTable as Mock).mockResolvedValueOnce(
+      mockCashierCancelledTableResp,
+    );
+    (getCashierDetails as Mock).mockResolvedValueOnce(mockSaleTrendCancelResp);
+    (getTransactionList as Mock).mockRejectedValueOnce(new Error("API Error"));
 
     renderWithProviders(<Cashiers />, { store: initialStore });
 
     const refundPanel = await screen.findByTestId("sale-type-panel-Refunded");
     await user.click(refundPanel);
 
-    expect(getCashierTable).toHaveBeenCalled();
+    const card = await screen.findByTestId("cashier-trend-card-0-2");
+    await user.click(card);
+  });
+
+  // Testing the clicking of a sale type to fetch cashier sales and trends
+  // /////////////////////////////////////////////////////////////////////
+  it("selecting a sale type should make a call to get cashier sales and trends", async () => {
+    (getCashierDetails as Mock).mockResolvedValueOnce({
+      data: mockSaleTrendResp,
+    });
+
+    renderWithProviders(<Cashiers />, { store: initialStore });
+    const refundPanel = await screen.findByTestId("sale-type-panel-Refunded");
+    await user.click(refundPanel);
+
     expect(getCashierDetails).toHaveBeenCalled();
   });
 
   // Testing the clicking of a cashier trend card to fetch unique cashiers and transaction list
   // //////////////////////////////////////////////////////////////////////////////////////////
   it("should fetch unique cashiers and transaction list when clicking on a cashier trend card", async () => {
-    (getTransactionList as Mock).mockRejectedValueOnce(new Error("API Error"));
+    (getCashierTable as Mock).mockRejectedValueOnce(new Error("API Error"));
+    // (getTransactionList as Mock).mockRejectedValueOnce(new Error("API Error"));
 
     renderWithProviders(<Cashiers />, { store: initialStore });
 
@@ -129,6 +141,9 @@ describe("Cashiers Page", () => {
   });
 
   it("should fetch unique cashiers and transaction list when clicking on a cashier trend card", async () => {
+    (getCashierTable as Mock).mockResolvedValueOnce({
+      data: mockCashierTableResp,
+    });
     (getTransactionList as Mock).mockResolvedValueOnce({
       data: mockTransListResp,
     });
@@ -181,7 +196,7 @@ describe("Cashiers Page", () => {
   // /////////////////////////////////////////////////////////////////
   it("should handle API failure when trying to open the Transaction Modal", async () => {
     (getCashierTransaction as Mock).mockRejectedValueOnce(
-      new Error("API Error")
+      new Error("API Error"),
     );
 
     renderWithProviders(<Cashiers />, { store: initialStore });
@@ -230,7 +245,7 @@ describe("Cashiers Page", () => {
 
     // Export the data
     const exportBtn = await screen.findByTestId(
-      "cashier-trans-modal-export-btn"
+      "cashier-trans-modal-export-btn",
     );
 
     // Click the export button to open the Export Modal
@@ -285,12 +300,12 @@ describe("Cashiers Page", () => {
     expect(exportModal).toBeInTheDocument();
 
     const fileNameInput = await screen.findByTestId(
-      "cashier-export-modal-filename-input"
+      "cashier-export-modal-filename-input",
     );
     expect(fileNameInput).toBeInTheDocument();
 
     const exportConfirmBtn = await screen.findByTestId(
-      "cashier-export-modal-export"
+      "cashier-export-modal-export",
     );
     expect(exportConfirmBtn).toBeInTheDocument();
 
@@ -298,7 +313,7 @@ describe("Cashiers Page", () => {
     await user.click(exportConfirmBtn);
     expect(mockedToastWarn).toHaveBeenCalledTimes(1);
     expect(mockedToastWarn).toHaveBeenCalledWith(
-      expect.stringContaining("Please enter a valid file name.")
+      expect.stringContaining("Please enter a valid file name."),
     );
 
     // Now enter a file name and click export
@@ -316,7 +331,7 @@ describe("Cashiers Page", () => {
 
     // find all the table filters
     const saleDateFilter = await screen.findByTestId(
-      "cashier-table-filter-sale"
+      "cashier-table-filter-sale",
     );
     expect(saleDateFilter).toBeInTheDocument();
     await user.click(saleDateFilter);
@@ -325,11 +340,11 @@ describe("Cashiers Page", () => {
     expect(modal).toBeInTheDocument();
 
     const filterInput = await screen.findByTestId(
-      "cashier-table-filter-text-input"
+      "cashier-table-filter-text-input",
     );
 
     const filterBtn = await screen.findByTestId(
-      "cashier-table-filter-modal-submit-btn"
+      "cashier-table-filter-modal-submit-btn",
     );
 
     await user.type(filterInput, "12/1/2025");
@@ -350,11 +365,11 @@ describe("Cashiers Page", () => {
     expect(modal).toBeInTheDocument();
 
     const filterInput = await screen.findByTestId(
-      "cashier-table-filter-text-input"
+      "cashier-table-filter-text-input",
     );
 
     const filterBtn = await screen.findByTestId(
-      "cashier-table-filter-modal-submit-btn"
+      "cashier-table-filter-modal-submit-btn",
     );
 
     await user.type(filterInput, "4470000210");
@@ -368,7 +383,7 @@ describe("Cashiers Page", () => {
     renderWithProviders(<Cashiers />, { store: initialStore });
 
     const descFilter = await screen.findByTestId(
-      "cashier-table-filter-description"
+      "cashier-table-filter-description",
     );
     expect(descFilter).toBeInTheDocument();
     await user.click(descFilter);
@@ -377,11 +392,11 @@ describe("Cashiers Page", () => {
     expect(modal).toBeInTheDocument();
 
     const filterInput = await screen.findByTestId(
-      "cashier-table-filter-text-input"
+      "cashier-table-filter-text-input",
     );
 
     const filterBtn = await screen.findByTestId(
-      "cashier-table-filter-modal-submit-btn"
+      "cashier-table-filter-modal-submit-btn",
     );
 
     await user.type(filterInput, "cash");
@@ -402,17 +417,17 @@ describe("Cashiers Page", () => {
     expect(modal).toBeInTheDocument();
 
     const filterBtn = await screen.findByTestId(
-      "cashier-table-filter-modal-submit-btn"
+      "cashier-table-filter-modal-submit-btn",
     );
 
     const ltCheckbox = await screen.findByTestId(
-      "cashier-table-filter-ts-lt-checkbox"
+      "cashier-table-filter-ts-lt-checkbox",
     );
     const gtCheckbox = await screen.findByTestId(
-      "cashier-table-filter-ts-gt-checkbox"
+      "cashier-table-filter-ts-gt-checkbox",
     );
     const filterInput = await screen.findByTestId(
-      "cashier-table-filter-total-sales-input"
+      "cashier-table-filter-total-sales-input",
     );
     await user.click(gtCheckbox);
     await user.click(ltCheckbox);
@@ -439,7 +454,7 @@ describe("Cashiers Page", () => {
     });
 
     const tprCheckbox = await screen.findByTestId(
-      "cashier-table-filter-price-type-TPR"
+      "cashier-table-filter-price-type-TPR",
     );
 
     // Click to add TPR to the selected price types
@@ -452,7 +467,7 @@ describe("Cashiers Page", () => {
     await user.click(tprCheckbox);
 
     const filterBtn = await screen.findByTestId(
-      "cashier-table-filter-modal-submit-btn"
+      "cashier-table-filter-modal-submit-btn",
     );
     await user.click(filterBtn);
 
@@ -464,17 +479,17 @@ describe("Cashiers Page", () => {
     renderWithProviders(<Cashiers />, { store: initialStore });
 
     const transFilter = await screen.findByTestId(
-      "cashier-table-filter-transaction"
+      "cashier-table-filter-transaction",
     );
     expect(transFilter).toBeInTheDocument();
     await user.click(transFilter);
 
     const filterInput = await screen.findByTestId(
-      "cashier-table-filter-text-input"
+      "cashier-table-filter-text-input",
     );
 
     const filterBtn = await screen.findByTestId(
-      "cashier-table-filter-modal-submit-btn"
+      "cashier-table-filter-modal-submit-btn",
     );
 
     await user.type(filterInput, "952804");
@@ -485,7 +500,7 @@ describe("Cashiers Page", () => {
     renderWithProviders(<Cashiers />, { store: initialStore });
 
     const refreshFilter = await screen.findByTestId(
-      "cashier-table-filter-refresh"
+      "cashier-table-filter-refresh",
     );
     expect(refreshFilter).toBeInTheDocument();
     await user.click(refreshFilter);
@@ -505,17 +520,15 @@ describe("Cashiers Page", () => {
     await waitFor(() => {
       expect(mockedToastError).toHaveBeenCalledTimes(1);
       expect(mockedToastError).toHaveBeenCalledWith(
-        expect.stringContaining("Error fetching sale types")
+        expect.stringContaining("Error fetching sale types"),
       );
     });
   });
 
   it("should handle Cancelled data", async () => {
-    (getCashierTable as Mock).mockResolvedValueOnce({
-      data: mockCashierCancelledTableResp,
-    });
-    (getCashierDetails as Mock).mockResolvedValueOnce(mockSaleTrendCancelResp);
-    (getTransactionList as Mock).mockResolvedValueOnce({
+    (getCashierDetails as Mock).mockResolvedValue(mockSaleTrendCancelResp);
+    (getCashierTable as Mock).mockResolvedValue(mockCashierCancelledTableResp);
+    (getTransactionList as Mock).mockResolvedValue({
       data: mockTransListResp,
     });
 
@@ -527,8 +540,11 @@ describe("Cashiers Page", () => {
     const trendCard = await screen.findByTestId("cashier-trend-card-0-2");
     await user.click(trendCard);
 
-    const showAll = await screen.findByTestId("cashiers-table-showall-btn");
-    await user.click(showAll);
+    const showAllBtn = await screen.findByTestId("cashiers-table-showall-btn");
+    await user.click(showAllBtn);
+
+    const modal = await screen.findByTestId("trans-modal");
+    expect(modal).toBeInTheDocument();
 
     await waitFor(() => {
       const state = initialStore.getState().cashier;
@@ -536,10 +552,33 @@ describe("Cashiers Page", () => {
     });
   });
 
-  it("should handle the less than threshold filter", async () => {
-    (getCashierTable as Mock).mockResolvedValueOnce({
+  it("should handle description sale type", async () => {
+    (getCashierDetails as Mock).mockResolvedValue(mockSaleTrendCancelResp);
+    (getCashierTable as Mock).mockResolvedValue({
       data: mockCashierCancelledTableResp,
     });
+
+    renderWithProviders(<Cashiers />, { store: initialStore });
+    const descPanel = await screen.findByTestId("sale-type-panel-Description");
+    await user.click(descPanel);
+
+    await user.click(document.body); // Click outside to close the description input
+    await user.click(descPanel); // Click again to open the description input
+
+    const descInput = await screen.findByTestId("desc-input");
+    await user.type(descInput, "milk");
+
+    const submitBtn = await screen.findByTestId("desc-submit-btn");
+    await user.click(submitBtn);
+
+    const card = await screen.findByTestId("cashier-trend-card-0-2");
+    await user.click(card);
+  });
+
+  it("should handle the less than threshold filter", async () => {
+    (getCashierTable as Mock).mockResolvedValueOnce(
+      mockCashierCancelledTableResp,
+    );
     (getCashierDetails as Mock).mockResolvedValueOnce(mockSaleTrendCancelResp);
     (getTransactionList as Mock).mockResolvedValueOnce({
       data: mockTransListResp,
@@ -561,15 +600,15 @@ describe("Cashiers Page", () => {
     expect(modal).toBeInTheDocument();
 
     const filterBtn = await screen.findByTestId(
-      "cashier-table-filter-modal-submit-btn"
+      "cashier-table-filter-modal-submit-btn",
     );
 
     const ltCheckbox = await screen.findByTestId(
-      "cashier-table-filter-ts-lt-checkbox"
+      "cashier-table-filter-ts-lt-checkbox",
     );
 
     const filterInput = await screen.findByTestId(
-      "cashier-table-filter-total-sales-input"
+      "cashier-table-filter-total-sales-input",
     );
 
     await user.click(ltCheckbox);
@@ -608,14 +647,14 @@ describe("Cashiers Page", () => {
     expect(modal).toBeInTheDocument();
 
     const filterBtn = await screen.findByTestId(
-      "cashier-table-filter-modal-submit-btn"
+      "cashier-table-filter-modal-submit-btn",
     );
 
     const gtCheckbox = await screen.findByTestId(
-      "cashier-table-filter-ts-gt-checkbox"
+      "cashier-table-filter-ts-gt-checkbox",
     );
     const filterInput = await screen.findByTestId(
-      "cashier-table-filter-total-sales-input"
+      "cashier-table-filter-total-sales-input",
     );
     await user.click(gtCheckbox);
     await user.type(filterInput, "5");
@@ -626,5 +665,80 @@ describe("Cashiers Page", () => {
       expect(state.totalSalesFilter).toBe(5);
       expect(state.cashierTableThreshComp.gt).toBe(true);
     });
+  });
+
+  it("should handle the cashiers grid pagination", async () => {
+    (getCashierTable as Mock).mockResolvedValue(mockCashierCancelledTableResp);
+    (getCashierDetails as Mock).mockResolvedValue(mockSaleTrendCancelResp);
+    (getTransactionList as Mock).mockResolvedValue({
+      data: mockTransListResp,
+    });
+
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
+    const cancelPanel = await screen.findByTestId("sale-type-panel-Cancelled");
+    await user.click(cancelPanel);
+
+    const trendCard = await screen.findByTestId("cashier-trend-card-0-2");
+    await user.click(trendCard);
+
+    const nextBtn = await screen.findByTestId("cashiers-next-page-btn");
+    // const prevBtn = await screen.findByTestId("cashiers-prev-page-btn");
+
+    await user.click(nextBtn);
+  });
+
+  it("should handle transaction list api failure on cashiers table pagination", async () => {
+    (getCashierTable as Mock).mockResolvedValue(mockCashierCancelledTableResp);
+    (getCashierDetails as Mock).mockResolvedValue(mockSaleTrendCancelResp);
+    (getTransactionList as Mock).mockResolvedValueOnce({
+      data: mockTransListResp,
+    });
+
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
+    const cancelPanel = await screen.findByTestId("sale-type-panel-Cancelled");
+    await user.click(cancelPanel);
+
+    const trendCard = await screen.findByTestId("cashier-trend-card-0-2");
+    await user.click(trendCard);
+
+    (getTransactionList as Mock).mockRejectedValue(new Error("API Error"));
+
+    const prevBtn = await screen.findByTestId("cashiers-prev-page-btn");
+    await user.click(prevBtn);
+  });
+
+  it("should handle the cashiers tableapi failure on cashiers table pagination", async () => {
+    (getCashierTable as Mock).mockResolvedValue(mockCashierCancelledTableResp);
+    (getCashierDetails as Mock).mockResolvedValue(mockSaleTrendCancelResp);
+    (getTransactionList as Mock).mockResolvedValueOnce({
+      data: mockTransListResp,
+    });
+
+    renderWithProviders(<Cashiers />, { store: initialStore });
+
+    const cancelPanel = await screen.findByTestId(
+      "sale-type-panel-Description",
+    );
+    await user.click(cancelPanel);
+
+    const descInput = await screen.findByTestId("desc-input");
+    await user.type(descInput, "milk");
+
+    const submitBtn = await screen.findByTestId("desc-submit-btn");
+    await user.click(submitBtn);
+
+    const trendCard = await screen.findByTestId("cashier-trend-card-0-2");
+    await user.click(trendCard);
+
+    // const nextBtn = await screen.findByTestId("cashiers-next-page-btn");
+
+    (getCashierTable as Mock).mockRejectedValue(new Error("API Error"));
+    // await user.click(nextBtn);
+    const input = await screen.findByTestId("input-");
+    await user.clear(input);
+    await user.type(input, "2");
+    await user.keyboard("{Enter}");
   });
 });

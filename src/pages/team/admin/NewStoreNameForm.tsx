@@ -111,14 +111,24 @@ const NewStoreNameForm = () => {
             .then((resp) => {
               const j = resp.data;
               if (j.error === 0) {
-                const assigned = j.assigned_stores.filter(
-                  (s: Store) =>
-                    s.store_number !== null && s.store_name !== null,
-                );
-                const unassigned = j.unassigned_stores.filter(
-                  (s: Store) =>
-                    s.store_number !== null && s.store_name !== null,
-                );
+                const assigned = j.assigned_stores
+                  .filter(
+                    (s: Store) =>
+                      s.store_number !== null && s.store_name !== null,
+                  )
+                  .sort(
+                    (a: Store, b: Store) =>
+                      parseInt(a.store_number) - parseInt(b.store_number),
+                  );
+                const unassigned = j.unassigned_stores
+                  .filter(
+                    (s: Store) =>
+                      s.store_number !== null && s.store_name !== null,
+                  )
+                  .sort(
+                    (a: Store, b: Store) =>
+                      parseInt(a.store_number) - parseInt(b.store_number),
+                  );
 
                 dispatch(setAssignedStores(assigned));
                 dispatch(setUnassignedStores(unassigned));
@@ -139,6 +149,7 @@ const NewStoreNameForm = () => {
       </div>
       <div className="grid grid-cols-2 gap-2">
         <SingleSelect
+          id={1}
           label="Company"
           data={[allCompFilter, ...companies]}
           displayKey="name"
@@ -147,6 +158,7 @@ const NewStoreNameForm = () => {
           defaultQuery="All"
         />
         <SingleSelect
+          id={2}
           label="Assignment"
           data={options}
           displayKey="label"
@@ -157,6 +169,7 @@ const NewStoreNameForm = () => {
       </div>
       {/* store list */}
       <SingleSelect
+        id={3}
         label={`Stores - ${filteredStores.length}`}
         data={filteredStores}
         displayKey="store_name"
@@ -178,6 +191,7 @@ const NewStoreNameForm = () => {
           setValue={handleNewNameTextChange}
         />
         <button
+          data-testid="submit-new-store-name-btn"
           className={`btn-themeBlue w-full ${canSubmit()}`}
           onClick={handleSubmit}
         >
