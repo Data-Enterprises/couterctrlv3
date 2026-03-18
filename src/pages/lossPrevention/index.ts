@@ -162,14 +162,6 @@ export const theme = themeQuartz.withParams({
   selectedRowBackgroundColor: "#fed7aa",
 });
 
-export const chunkData = (arr: any[], chunkSize: number = 3) => {
-  const chunks = [];
-  for (let i = 0; i < arr.length; i += chunkSize) {
-    chunks.push(arr.slice(i, i + chunkSize));
-  }
-  return chunks;
-};
-
 export const activePanelStyle = (type: string, selected: string) => {
   if (selected === type) {
     return "bg-emerald-500 text-custom-white font-medium shadow-inner hover:shadow-lg";

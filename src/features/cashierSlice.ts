@@ -7,7 +7,6 @@ import type {
   UniqueCashier,
   TransactionListItem,
 } from "../interfaces";
-import { chunkData } from "../pages/lossPrevention";
 
 type SelectedCashier = {
   cashier_number: number;
@@ -20,9 +19,7 @@ export interface CashierState {
   selectedCashierDetails: CashierDetails | null;
   selectedCashierDetailsIdx: number;
   cashierDetailsTrendDirection: number;
-  chunkedTrends: CashierTrend[][];
   cashierTrends: CashierTrend[];
-  chunkedSales: CashierDetails[][];
   cashiers: UniqueCashier[];
   selectedCashier: SelectedCashier;
   cashierTransactions: CashierTransaction[];
@@ -62,8 +59,6 @@ const initialState: CashierState = {
   selectedSaleType: "",
   transModalOpen: false,
   cashiers: [],
-  chunkedTrends: [],
-  chunkedSales: [],
   selectedCashier: { cashier_number: 0, store_number: "" },
   selectedSaleIds: [],
   transList: [],
@@ -97,11 +92,9 @@ export const cashierSlice = createSlice({
   reducers: {
     setCashierDetails: (state, action: PayloadAction<CashierDetails[]>) => {
       state.cashierDetails = action.payload;
-      state.chunkedSales = chunkData(action.payload);
     },
     setCashierTrends: (state, action: PayloadAction<CashierTrend[]>) => {
       state.cashierTrends = action.payload;
-      state.chunkedTrends = chunkData(action.payload);
     },
     setCashierTransactions: (
       state,
