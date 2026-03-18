@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, type Mock } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../../utils";
-import Cashiers from "../../../pages/cashiers/Cashiers";
+import Cashiers from "../../../pages/lossPrevention/Cashiers";
 import {
   getSaleTypes,
   getCashierTable,

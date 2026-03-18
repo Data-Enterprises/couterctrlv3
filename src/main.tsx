@@ -13,7 +13,7 @@ import Home from "./pages/home/Home.tsx";
 import Sales from "./pages/sales/Sales.tsx";
 import Team from "./pages/team/Team.tsx";
 import Groups from "./pages/groups/Groups.tsx";
-import Cashiers from "./pages/cashiers/Cashiers.tsx";
+import Cashiers from "./pages/lossPrevention/Cashiers.tsx";
 import Settings from "./pages/settings/Settings.tsx";
 import UpcList from "./pages/upc/UpcList.tsx";
 import ItemLookup from "./pages/lookup/ItemLookup.tsx";

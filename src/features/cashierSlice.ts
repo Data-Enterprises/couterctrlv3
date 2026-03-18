@@ -7,7 +7,7 @@ import type {
   UniqueCashier,
   TransactionListItem,
 } from "../interfaces";
-import { chunkData } from "../pages/cashiers";
+import { chunkData } from "../pages/lossPrevention";
 
 type SelectedCashier = {
   cashier_number: number;
