@@ -10,6 +10,7 @@ import {
   toggleNoTransMsg,
   reQuery,
   setSearchString,
+  setSelectedStoreId,
 } from "../../features/cashierSlice";
 import type { JsonError } from "../../interfaces";
 import { activePanelStyle } from ".";
@@ -75,6 +76,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
     // Doing this to reset when looking for a different sale type
     const panels = cashier.saleTypes;
     const selectedSaleType = cashier.selectedSaleType;
+    dispatch(setSelectedStoreId(0))
     dispatch(reQuery());
     dispatch(setSaleTypes(panels));
     dispatch(setSelectedSaleType(selectedSaleType));

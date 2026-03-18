@@ -13,7 +13,7 @@ import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import TransactionModal from "./TransactionModal";
 import CashiersTable from "./CashiersTable";
 import UniqueCashiersTable from "./UniqueCashiersTable";
-import TrendCardCarousel from "./TrendCardCarousel";
+import CashierSales from "./cashierSales/CashierSales";
 import SaleTypes from "./SaleTypes";
 import CashiersTableFilters from "./filters/CashiersTableFilters";
 
@@ -65,9 +65,7 @@ const Cashiers = () => {
       : ""
     : "";
   const cols = context.isDesktop ? "grid-cols-2" : "grid-cols-1 mt-4";
-  const cardContainer = context.isDesktop
-    ? `flex flex-col mr-4 gap-2`
-    : "";
+  const cardContainer = context.isDesktop ? `flex flex-col mr-4 gap-2` : "";
 
   return (
     <div data-testid="cashiers-page" className={pageContainer}>
@@ -92,9 +90,9 @@ const Cashiers = () => {
             </p>
           </div>
         )}
-        {cashier.chunkedSales.length > 0 ? (
+        {cashier.cashierDetails.length > 0 ? (
           <div className="w-full ">
-            <TrendCardCarousel />
+            <CashierSales />
           </div>
         ) : (
           <div className="h-[260px] w-full">

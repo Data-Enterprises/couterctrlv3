@@ -34,8 +34,14 @@ const AssignStoresToUser = () => {
         const j = resp.data;
         if (j.error === 0) {
           const stores = {
-            assigned: filterNulls(j.assigned_stores),
-            unassigned: filterNulls(j.unassigned_stores),
+            assigned: filterNulls(j.assigned_stores).sort(
+              (a: Store, b: Store) =>
+                parseInt(a.store_number) - parseInt(b.store_number),
+            ),
+            unassigned: filterNulls(j.unassigned_stores).sort(
+              (a: Store, b: Store) =>
+                parseInt(a.store_number) - parseInt(b.store_number),
+            ),
           };
           dispatch(setSelectedUserStores(stores));
         }

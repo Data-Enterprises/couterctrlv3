@@ -38,12 +38,22 @@ const App = () => {
             const all = (j.all_stores_for_user ?? []).filter(
               (s: Store) => s.store_number !== null && s.store_name !== null,
             );
-            const assigned = j.assigned_stores.filter(
-              (s: Store) => s.store_number !== null && s.store_name !== null,
-            );
-            const unassigned = j.unassigned_stores.filter(
-              (s: Store) => s.store_number !== null && s.store_name !== null,
-            );
+            const assigned = j.assigned_stores
+              .filter(
+                (s: Store) => s.store_number !== null && s.store_name !== null,
+              )
+              .sort(
+                (a: Store, b: Store) =>
+                  parseInt(a.store_number) - parseInt(b.store_number),
+              );
+            const unassigned = j.unassigned_stores
+              .filter(
+                (s: Store) => s.store_number !== null && s.store_name !== null,
+              )
+              .sort(
+                (a: Store, b: Store) =>
+                  parseInt(a.store_number) - parseInt(b.store_number),
+              );
 
             dispatch(setAllAvailableStores(all));
             dispatch(setAssignedStores(assigned));
