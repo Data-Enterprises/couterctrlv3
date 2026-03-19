@@ -66,7 +66,7 @@ const stepOne = async (setInputValues: boolean = false) => {
     store.dispatch(setCompanyInfo({ key: "city", val: "Testville" }));
     store.dispatch(setCompanyInfo({ key: "state", val: "TS" }));
     store.dispatch(setCompanyInfo({ key: "zip", val: "12345" }));
-    store.dispatch(setCompanyInfo({ key: "phone", val: "555-555-5555" }));
+    store.dispatch(setCompanyInfo({ key: "phone", val: "5555555555" }));
     store.dispatch(
       setCompanyInfo({ key: "contact_email", val: "test@example.com" }),
     );
