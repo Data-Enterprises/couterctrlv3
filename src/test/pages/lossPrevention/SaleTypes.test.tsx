@@ -7,7 +7,7 @@ import {
   getCashierDetails,
   getCashierTable,
   getSaleTypes,
-} from "../../../api/cashiers";
+} from "../../../api/lossPrevention";
 import { screen, waitFor } from "@testing-library/react";
 
 const user = userEvent.setup();

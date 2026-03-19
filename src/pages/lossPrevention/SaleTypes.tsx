@@ -1,6 +1,6 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { getCashierDetails } from "../../api/cashiers";
+import { getCashierDetails } from "../../api/lossPrevention";
 import {
   setSelectedSaleType,
   setCashierDetails,
@@ -145,9 +145,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
                 cursor-pointer transition-all duration-200 ripple-button`}
             onClick={() => handlePanelClick(st.sale_type)}
           >
-            <span>
-              {st.sale_type}
-            </span>
+            <span>{st.sale_type}</span>
           </div>
         ))}
       </div>

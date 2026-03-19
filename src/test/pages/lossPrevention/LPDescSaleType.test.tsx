@@ -6,7 +6,7 @@ import {
   getSaleTypes,
   getCashierTable,
   getCashierDetails,
-} from "../../../api/cashiers";
+} from "../../../api/lossPrevention";
 import userEvent from "@testing-library/user-event";
 import { setupStore } from "../../../store";
 import { saleTypes, mockSaleTrendResp, mockCashierTableResp } from ".";

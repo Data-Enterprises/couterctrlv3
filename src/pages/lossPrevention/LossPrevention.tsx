@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
-import { getSaleTypes } from "../../api/cashiers";
+import { getSaleTypes } from "../../api/lossPrevention";
 import { formatGoliathDate } from "../../utils";
 import { resetCashierSlice, setSaleTypes } from "../../features/cashierSlice";
 import type { JsonError } from "../../interfaces";

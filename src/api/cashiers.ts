@@ -1,161 +1,61 @@
 import axios from "axios";
 
-export const getSaleTypes = async (
+export const getStoreCards = async (
   url: string,
-  token: string,
+  userid: number,
   startDate: string,
   endDate: string,
   useGroups: number,
   searchValue: number,
   singleStore: number,
-  saleTypes: string[] = [""]
+  api_key: string,
 ) => {
   const json = await axios({
-    method: "POST",
+    method: "GET",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
-    url: url + "cashiers/preflight",
+    url: url + "cashiers/store_card",
     data: {
+      userid,
       startDate,
       endDate,
       useGroups,
       searchValue,
       singleStore,
-      saleTypes,
+      api_key,
     },
   });
+
   return json;
 };
 
-export const getCashierDetails = async (
+export const getCashierCards = async (
   url: string,
-  token: string,
+  userid: number,
   startDate: string,
   endDate: string,
   useGroups: number,
   searchValue: number,
   singleStore: number,
-  saleTypes: string[],
-  searchString: string = ""
+  api_key: string,
 ) => {
   const json = await axios({
-    method: "POST",
+    method: "GET",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
-    url: url + "cashiers/",
+    url: url + "cashiers/cashier_card",
     data: {
+      userid,
       startDate,
       endDate,
       useGroups,
       searchValue,
       singleStore,
-      saleTypes,
-      searchString,
+      api_key,
     },
   });
-  return json;
-};
 
-export const getCashierTransaction = async (
-  url: string,
-  token: string,
-  transactionDate: string,
-  saleid: string,
-  storeid: number
-) => {
-  const json = await axios({
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    url: url + "cashiers/transaction",
-    data: {
-      transactionDate,
-      saleid,
-      storeid,
-    },
-  });
-  return json;
-};
-
-export const getCashierTable = async (
-  url: string,
-  token: string,
-  startDate: string,
-  endDate: string,
-  useGroups: number,
-  searchValue: number,
-  singleStore: number,
-  saleTypes: string[],
-  page: number = 1,
-  searchString: string = ""
-) => {
-  const json = await axios({
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    url: url + "cashiers/cashier_table",
-    data: {
-      startDate,
-      endDate,
-      useGroups,
-      searchValue,
-      singleStore,
-      saleTypes,
-      page,
-      searchString,
-    },
-  });
-  return json;
-};
-
-export const getTransactionList = async (
-  url: string,
-  token: string,
-  transaction_ids: string[],
-  page: number = 1,
-  sale_type: string,
-  search_string: string = "",
-) => {
-  const json = await axios({
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    url: url + "cashiers/transaction_list",
-    data: {
-      transaction_ids,
-      sale_type,
-      page,
-      search_string,
-    },
-  });
-  return json;
-};
-
-export const emailTransaction = async (
-  url: string,
-  token: string,
-  transaction_id: string
-) => {
-  const json = await axios({
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    url: url + "cashiers/email_transaction",
-    data: {
-      transaction_id,
-    },
-  });
   return json;
 };

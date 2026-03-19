@@ -2,7 +2,10 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { cashierDetailCols, theme } from ".";
 
-import { getCashierTable, getTransactionList } from "../../../api/cashiers";
+import {
+  getCashierTable,
+  getTransactionList,
+} from "../../../api/lossPrevention";
 
 import { AgGridReact } from "ag-grid-react";
 import {
