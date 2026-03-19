@@ -45,6 +45,7 @@ interface SalesState {
   selectedSubDept: TopSub | null;
   compareSubsModalOpen: boolean;
   leftSubCompare: WeeklySale | null;
+  rightSubCompare: WeeklySale | null;
   compareSubsLeftCompare: SubSale[];
   compareSubsRightCompare: SubSale[];
 }
@@ -79,6 +80,7 @@ const initialState: SalesState = {
   selectedSubDept: {} as SubSale,
   compareSubsModalOpen: false,
   leftSubCompare: null,
+  rightSubCompare: null,
   compareSubsLeftCompare: [],
   compareSubsRightCompare: [],
 };
@@ -171,6 +173,9 @@ export const salesSlice = createSlice({
     setLeftSubCompare: (state, action: PayloadAction<WeeklySale | null>) => {
       state.leftSubCompare = action.payload;
     },
+    setRightSubCompare: (state, action: PayloadAction<WeeklySale | null>) => {
+      state.rightSubCompare = action.payload;
+    },
     setCompareSubsLeftCompareData: (state, action: PayloadAction<SubSale[]>) => {
       state.compareSubsLeftCompare = action.payload;
     },
@@ -179,6 +184,7 @@ export const salesSlice = createSlice({
     },
     resetCompareSubs: (state) => {
       state.leftSubCompare = null;
+      state.rightSubCompare = null;
       state.compareSubsLeftCompare = [];
       state.compareSubsRightCompare = [];
       state.compareSubsModalOpen = false;
@@ -205,6 +211,7 @@ export const {
   setCompareSubsRightCompareData,
   setLeftSubCompare,
   setCompareSubsModalOpen,
+  setRightSubCompare,
   resetCompareSubs,
   resetSalesSlice,
 } = salesSlice.actions;
