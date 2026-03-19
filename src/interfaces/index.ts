@@ -1068,3 +1068,16 @@ export interface CashierCardResp {
   success: boolean;
   stores: CashierCard[];
 }
+
+export type Cashier = {
+  storeid: number;
+  store_name: string;
+  store_number: string;
+  cashier_number: number;
+  cashier_name: string;
+}
+
+export type CashierStore = {
+  storeid: number;
+  store_name: string;
+}

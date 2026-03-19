@@ -11,7 +11,7 @@ export const getStoreCards = async (
   api_key: string,
 ) => {
   const json = await axios({
-    method: "GET",
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
@@ -41,7 +41,7 @@ export const getCashierCards = async (
   api_key: string,
 ) => {
   const json = await axios({
-    method: "GET",
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
