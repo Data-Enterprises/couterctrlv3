@@ -23,6 +23,7 @@ import Receivers from "./pages/receivers/Receivers.tsx";
 import Coupons from "./pages/coupons/Coupons.tsx";
 import AdminPage from "./pages/admin/AdminPage.tsx";
 import SubDeptMargins from "./pages/subDepts/SubDeptMargins.tsx";
+import Cashiers from "./pages/cashiers/Cashiers.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -46,6 +47,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="coupons" element={<Coupons />} />
                 <Route path="admin" element={<AdminPage />} />
                 <Route path="sub-dept-margins" element={<SubDeptMargins />} />
+                <Route path="cashiers" element={<Cashiers />} />
               </Route>
             </Routes>
           </ToastProvider>
