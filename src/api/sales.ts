@@ -197,14 +197,15 @@ export const getSubs = async (
   return json;
 };
 
+// This is setup to handle the single store sub dept comparison
 export const getSubsComp = async (
   url: string,
   token: string,
   startDate: string,
   endDate: string,
-  useGroups: number,
   searchValue: number,
-  singleStore: number,
+  useGroups: number = 0,
+  singleStore: number = 1,
   consolidated: number = 0,
   displayHourly: number = 0,
 ) => {

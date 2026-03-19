@@ -66,7 +66,7 @@ const TotalsBar = ({ valueKey = "total_sales" }: TotalsBarProps) => {
   }, [state.selectedSalesPanel, state.weeklySales]);
 
   const setMarginLeft = () => {
-    return barData.length > 6 ? 75 : 68;
+    return barData.length > 6 ? 75 : 75;
   };
 
   const renderTitle = () => {

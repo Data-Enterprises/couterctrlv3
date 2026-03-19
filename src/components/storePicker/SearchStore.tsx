@@ -136,7 +136,7 @@ const SelectStore = () => {
             ref={listRef}
             data-display="closed"
             className="absolute w-full bg-custom-white text-content
-            max-h-[300px] overflow-y-scroll z-20 rounded-b-xl shadow-lg no-scrollbar
+            max-h-[300px] overflow-y-scroll z-20 rounded-b-xl shadow-lg
             data-[display=open]:animate-appear
             data-[display=closed]:animate-dissapear
             data-[display=closed]:hidden
@@ -150,7 +150,7 @@ const SelectStore = () => {
                 key={`store-${idx}`}
                 onClick={() => handleSelect(store)}
               >
-                <div className="p-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer text-sm">
+                <div className="p-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer text-[13px]">
                   {store.store_name}
                 </div>
               </div>
