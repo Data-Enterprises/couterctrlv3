@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, type Mock } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../../utils";
-import Cashiers from "../../../pages/lossPrevention/Cashiers";
+import LossPrevention from "../../../pages/lossPrevention/LossPrevention";
 import {
   getSaleTypes,
   getCashierTable,
@@ -37,15 +37,15 @@ vi.mock("../../../components/toasts/hooks/useToast", () => ({
   }),
 }));
 
-describe("Cashiers Page", () => {
-  // Testing the fetching of sale types and resetting between fetches (Step 1 of the Cashiers flow)
+describe("LossPrevention Page", () => {
+  // Testing the fetching of sale types and resetting between fetches (Step 1 of the LossPrevention flow)
   // //////////////////////////////////////////////////////////////////////////////////////////////
   it("should fetch sale types and reset the sales types between fetches", async () => {
     (getSaleTypes as Mock).mockResolvedValueOnce({
       data: { error: 0, sale_types: saleTypes },
     });
 
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
     const btn = screen.getByTestId("date-picker-search-btn");
     await user.click(btn);
 
@@ -65,7 +65,7 @@ describe("Cashiers Page", () => {
     (getCashierTable as Mock).mockRejectedValueOnce(new Error("API Error"));
     (getCashierDetails as Mock).mockRejectedValueOnce(new Error("API Error"));
 
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     const saleTypePanel = await screen.findByTestId("sale-type-panel-Refunded");
     await user.click(saleTypePanel);
@@ -77,7 +77,7 @@ describe("Cashiers Page", () => {
     });
     (getCashierDetails as Mock).mockRejectedValueOnce(new Error("API Error"));
 
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     const saleTypePanel = await screen.findByTestId("sale-type-panel-Refunded");
     await user.click(saleTypePanel);
@@ -90,7 +90,7 @@ describe("Cashiers Page", () => {
     (getCashierDetails as Mock).mockResolvedValueOnce(mockSaleTrendCancelResp);
     (getTransactionList as Mock).mockRejectedValueOnce(new Error("API Error"));
 
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     const refundPanel = await screen.findByTestId("sale-type-panel-Refunded");
     await user.click(refundPanel);
@@ -110,7 +110,7 @@ describe("Cashiers Page", () => {
       data: mockSaleTrendResp,
     });
 
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
     const refundPanel = await screen.findByTestId("sale-type-panel-Refunded");
     await user.click(refundPanel);
 
@@ -123,7 +123,7 @@ describe("Cashiers Page", () => {
     (getCashierTable as Mock).mockRejectedValueOnce(new Error("API Error"));
     // (getTransactionList as Mock).mockRejectedValueOnce(new Error("API Error"));
 
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     // Doing this just to cover some of the mobile styling, functionally all is passing and working correctly
     await waitFor(() => {
@@ -156,7 +156,7 @@ describe("Cashiers Page", () => {
       data: mockTransListResp,
     });
 
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     // Doing this just to cover some of the mobile styling, functionally all is passing and working correctly
     await waitFor(() => {
@@ -175,10 +175,10 @@ describe("Cashiers Page", () => {
     // expect(getTransactionList).toHaveBeenCalled();
   });
 
-  // Testing the selection/deselection of a cashier behavior from the Unique Cashiers Table
+  // Testing the selection/deselection of a cashier behavior from the Unique LossPrevention Table
   // /////////////////////////////////////////////////////////////////////////////
-  it("should handle the selection/deselection of a cashier from the Unique Cashiers Table", async () => {
-    renderWithProviders(<Cashiers />, { store: initialStore });
+  it("should handle the selection/deselection of a cashier from the Unique LossPrevention Table", async () => {
+    renderWithProviders(<LossPrevention />, { store: initialStore });
     (getCashierDetails as Mock).mockResolvedValueOnce({
       data: mockSaleTrendResp,
     });
@@ -230,7 +230,7 @@ describe("Cashiers Page", () => {
       new Error("API Error"),
     );
 
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     // Grabbing the first cell with a sale_id to click on
     const cells = await screen.findAllByRole("gridcell");
@@ -246,7 +246,7 @@ describe("Cashiers Page", () => {
   // Testing the Show All Button Click behavior at the bottom of the cashiers table
   // //////////////////////////////////////////////////////////////////////////////
   it("Should show all transactions when clicking Show All button", async () => {
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     const showAllBtn = await screen.findByTestId("cashiers-table-showall-btn");
     await user.click(showAllBtn);
@@ -255,14 +255,14 @@ describe("Cashiers Page", () => {
     expect(modal).toBeInTheDocument();
   });
 
-  // Testing the the opening and closing of the Transaction Modal from the Cashiers Table
+  // Testing the the opening and closing of the Transaction Modal from the LossPrevention Table
   // ///////////////////////////////////////////////////////////////////////////////////
   it("should open transaction modal and handle its behavior", async () => {
     (getCashierTransaction as Mock).mockResolvedValueOnce({
       data: mockSingleTransResp,
     });
 
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     // Grabbing the first cell with a sale_id to click on
     const cells = await screen.findAllByRole("gridcell");
@@ -304,7 +304,7 @@ describe("Cashiers Page", () => {
   // Clicking Export at the bottom of the Cashies Table
   // //////////////////////////////////////////
   it("should load all transactions in the Transaction Modal when clicking Show All", async () => {
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
     const exportAllBtn = await screen.findByTestId("cashiers-table-export-btn");
     await user.click(exportAllBtn);
 
@@ -322,7 +322,7 @@ describe("Cashiers Page", () => {
   // Testing the exporting of transactions from the Export Modal
   // //////////////////////////////////////////
   it("should handle the exporting of transactions from the Export Modal component", async () => {
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
     const exportBtn = await screen.findByTestId("cashiers-table-export-btn");
     await user.click(exportBtn);
 
@@ -358,7 +358,7 @@ describe("Cashiers Page", () => {
   // Testing the Cashier Table Filters component behavior now that the export modal is out of the document
   // ////////////////////////////////////////////////////
   it("should handle the Cashier Table Sale Date filter", async () => {
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     // find all the table filters
     const saleDateFilter = await screen.findByTestId(
@@ -386,7 +386,7 @@ describe("Cashiers Page", () => {
   });
 
   it("Should handle the Cashier Table UPC Filter", async () => {
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     const upcFilter = await screen.findByTestId("cashier-table-filter-upc");
     expect(upcFilter).toBeInTheDocument();
@@ -411,7 +411,7 @@ describe("Cashiers Page", () => {
   });
 
   it("Should handle the Cashier Table Description Filter", async () => {
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     const descFilter = await screen.findByTestId(
       "cashier-table-filter-description",
@@ -438,7 +438,7 @@ describe("Cashiers Page", () => {
   });
 
   it("Should handle the Cashier Table Total Sales Filter", async () => {
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     const totalFilter = await screen.findByTestId("cashier-table-filter-total");
     expect(totalFilter).toBeInTheDocument();
@@ -470,7 +470,7 @@ describe("Cashiers Page", () => {
   });
 
   it("Should handle the Cashier Table Price Type Filter", async () => {
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     const priceFilter = await screen.findByTestId("cashier-table-filter-price");
     expect(priceFilter).toBeInTheDocument();
@@ -507,7 +507,7 @@ describe("Cashiers Page", () => {
   });
 
   it("should handle the transaction id filter for the cashiers table", async () => {
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     const transFilter = await screen.findByTestId(
       "cashier-table-filter-transaction",
@@ -528,7 +528,7 @@ describe("Cashiers Page", () => {
   });
 
   it("Should refresh all the Cashier Table Filters when clicking Refresh", async () => {
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     const refreshFilter = await screen.findByTestId(
       "cashier-table-filter-refresh",
@@ -543,7 +543,7 @@ describe("Cashiers Page", () => {
     const failStore = setupStore();
 
     (getSaleTypes as Mock).mockRejectedValueOnce(new Error("API Error"));
-    renderWithProviders(<Cashiers />, { store: failStore });
+    renderWithProviders(<LossPrevention />, { store: failStore });
 
     const btn = screen.getByTestId("date-picker-search-btn");
     await user.click(btn);
@@ -563,14 +563,14 @@ describe("Cashiers Page", () => {
       data: mockTransListResp,
     });
 
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     const cancelPanel = await screen.findByTestId("sale-type-panel-Cancelled");
     await user.click(cancelPanel);
 
     const rows = await screen.findAllByRole("row");
     const rowToClick = rows.find((row) => row.textContent.includes("10"));
-    console.log(rowToClick)
+    console.log(rowToClick);
 
     if (rowToClick) {
       await user.click(rowToClick);
@@ -595,7 +595,7 @@ describe("Cashiers Page", () => {
       data: mockCashierCancelledTableResp,
     });
 
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
     const descPanel = await screen.findByTestId("sale-type-panel-Description");
     await user.click(descPanel);
 
@@ -628,7 +628,7 @@ describe("Cashiers Page", () => {
       data: mockTransListResp,
     });
 
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     const cancelPanel = await screen.findByTestId("sale-type-panel-Cancelled");
     await user.click(cancelPanel);
@@ -679,7 +679,7 @@ describe("Cashiers Page", () => {
       data: mockTransListResp,
     });
 
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     const cancelPanel = await screen.findByTestId("sale-type-panel-Cancelled");
     await user.click(cancelPanel);
@@ -726,7 +726,7 @@ describe("Cashiers Page", () => {
       data: mockTransListResp,
     });
 
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     const cancelPanel = await screen.findByTestId("sale-type-panel-Cancelled");
     await user.click(cancelPanel);
@@ -751,7 +751,7 @@ describe("Cashiers Page", () => {
       data: mockTransListResp,
     });
 
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     const cancelPanel = await screen.findByTestId("sale-type-panel-Cancelled");
     await user.click(cancelPanel);
@@ -776,7 +776,7 @@ describe("Cashiers Page", () => {
       data: mockTransListResp,
     });
 
-    renderWithProviders(<Cashiers />, { store: initialStore });
+    renderWithProviders(<LossPrevention />, { store: initialStore });
 
     const cancelPanel = await screen.findByTestId(
       "sale-type-panel-Description",

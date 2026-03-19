@@ -18,7 +18,7 @@ import SaleTypes from "./SaleTypes";
 import CashiersTableFilters from "./filters/CashiersTableFilters";
 import MobileTrendCards from "./cashierSales/MobileTrendCards";
 
-const Cashiers = () => {
+const LossPrevention = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
@@ -124,4 +124,4 @@ const Cashiers = () => {
   );
 };
 
-export default Cashiers;
+export default LossPrevention;
