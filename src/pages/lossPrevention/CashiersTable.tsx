@@ -19,7 +19,7 @@ import {
   setTransactionDrillDown,
   setTransList,
   setTransModalOpen,
-} from "../../features/cashierSlice";
+} from "../../features/lossPreventionSlice";
 import type {
   JsonError,
   TransactionListItem,
@@ -45,7 +45,7 @@ const CashiersTable = () => {
   const [filtered, setFiltered] = useState<TransactionListItem[]>([]);
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const cashier = useAppSelector((state) => state.cashier);
+  const cashier = useAppSelector((state) => state.lossPrevention);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   useEffect(() => {

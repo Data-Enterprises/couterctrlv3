@@ -17,7 +17,7 @@ import { resetUsersSlice } from "../../features/usersSlice";
 import { resetUpcState } from "../../features/upcSlice";
 import { resetSearchSlice } from "../../features/searchSlice";
 import { resetForgotPasswordSlice } from "../../features/forgotPasswordSlice";
-import { resetCashierSlice } from "../../features/cashierSlice";
+import { resetCashierSlice } from "../../features/lossPreventionSlice";
 import { resetLookupSlice } from "../../features/itemLookupSlice";
 import { resetQsSlice } from "../../features/qsSlice";
 import { resetForecastSlice } from "../../features/forecastSlice";
@@ -64,7 +64,6 @@ const SideBar = () => {
         // Just take them to the home page
         navigate("/sales");
       }
-
     } else {
       setNavItems(navigation);
     }

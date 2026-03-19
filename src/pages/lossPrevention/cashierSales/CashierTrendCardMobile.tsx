@@ -19,7 +19,7 @@ interface CashierTrendCardProps {
 
 const CashierTrendCardMobile = ({ s, idx }: CashierTrendCardProps) => {
   const context = useAppSelector((state) => state.app);
-  const cashier = useAppSelector((state) => state.cashier);
+  const cashier = useAppSelector((state) => state.lossPrevention);
 
   const renderOverallTrend = () => {
     const trends = cashier.cashierTrends;

@@ -4,7 +4,7 @@ import CashierTrendCardMobile from "./CashierTrendCardMobile";
 
 
 const MobileTrendCards = () => {
-  const cashier = useAppSelector((state) => state.cashier);
+  const cashier = useAppSelector((state) => state.lossPrevention);
   return (
     <div className="grid gap-4">
       {cashier.cashierDetails.map((s, idx) => (

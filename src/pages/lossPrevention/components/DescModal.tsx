@@ -1,6 +1,6 @@
 import Modal from "../../../components/Modal";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { setSearchString } from "../../../features/cashierSlice";
+import { setSearchString } from "../../../features/lossPreventionSlice";
 
 interface DescModalProps {
   open: boolean;
@@ -9,7 +9,7 @@ interface DescModalProps {
 }
 
 const DescModal = ({ open, onClose, handleSubmit }: DescModalProps) => {
-  const cashier = useAppSelector((state) => state.cashier);
+  const cashier = useAppSelector((state) => state.lossPrevention);
   const dispatch = useAppDispatch();
 
   const handleClose = () => {

@@ -29,7 +29,7 @@ import {
   setSelectedSaleIds,
   setSelectedStoreId,
   setTransList,
-} from "../../../features/cashierSlice";
+} from "../../../features/lossPreventionSlice";
 import { formatGoliathDate } from "../../../utils";
 import { useEffect } from "react";
 import CashierTrendCard from "./CashierTrendCard";
@@ -40,7 +40,7 @@ const CashierSales = () => {
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const cashier = useAppSelector((state) => state.cashier);
+  const cashier = useAppSelector((state) => state.lossPrevention);
 
   useEffect(() => {
     if (!cashier.selectedStoreId) {

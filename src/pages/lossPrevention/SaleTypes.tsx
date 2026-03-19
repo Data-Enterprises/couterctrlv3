@@ -11,7 +11,7 @@ import {
   reQuery,
   setSearchString,
   setSelectedStoreId,
-} from "../../features/cashierSlice";
+} from "../../features/lossPreventionSlice";
 import type { JsonError } from "../../interfaces";
 import { activePanelStyle } from ".";
 import { useApiContext } from "../hooks";
@@ -26,7 +26,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
   const toast = useToast();
   const params = useApiContext();
   const dispatch = useAppDispatch();
-  const cashier = useAppSelector((state) => state.cashier);
+  const cashier = useAppSelector((state) => state.lossPrevention);
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const submitDescription = (description: string) => {

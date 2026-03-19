@@ -9,7 +9,7 @@ import groupReducer from "../features/groupSlice";
 import storeReducer from "../features/storeSlice";
 import usersReducer from "../features/usersSlice";
 import forgotPasswordReducer from "../features/forgotPasswordSlice";
-import cashierReducer from "../features/cashierSlice";
+import lossPreventionReducer from "../features/lossPreventionSlice.ts";
 import upcReducer from "../features/upcSlice";
 import itemLookupReducer from "../features/itemLookupSlice";
 import trendModalReducer from "../features/trendModalSlice";
@@ -39,7 +39,7 @@ export const setupStore = () =>
       stores: storeReducer,
       users: usersReducer,
       forgotPassword: forgotPasswordReducer,
-      cashier: cashierReducer,
+      lossPrevention: lossPreventionReducer,
       upc: upcReducer,
       item: itemLookupReducer,
       trendModal: trendModalReducer,

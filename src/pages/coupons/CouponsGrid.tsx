@@ -12,7 +12,7 @@ import { getCashierTransaction } from "../../api/lossPrevention";
 import {
   setTransactionDrillDown,
   setTransModalOpen,
-} from "../../features/cashierSlice";
+} from "../../features/lossPreventionSlice";
 import type { JsonError } from "../../interfaces";
 ModuleRegistry.registerModules([AllCommunityModule]);
 

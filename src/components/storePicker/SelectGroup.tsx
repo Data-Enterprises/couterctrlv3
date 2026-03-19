@@ -120,7 +120,7 @@ const SelectGroup = () => {
               autoComplete="off"
               type="text"
               name="group-search"
-              className={`${inputStyle} select-none`}
+              className={`${inputStyle} text-sm select-none`}
             />
             <div className="absolute top-2 right-2 cursor-pointer">
               <ChevronUpDownIcon className="fill-content" />

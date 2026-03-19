@@ -2,7 +2,7 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import {
   setCashierSaleIds,
   setSelectedCashier,
-} from "../../features/cashierSlice";
+} from "../../features/lossPreventionSlice";
 
 import { AgGridReact } from "ag-grid-react";
 import { cashierColDefs, theme } from ".";
@@ -16,7 +16,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 const UniqueCashiersTable = () => {
   const dispatch = useAppDispatch();
   const { cashiers, selectedCashier, fetchingCashierTransactions } =
-    useAppSelector((state) => state.cashier);
+    useAppSelector((state) => state.lossPrevention);
 
   const onRowClicked = (e: RowClickedEvent) => {
     const cashier_number = e.data.cashier_number;

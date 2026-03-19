@@ -13,7 +13,7 @@ type SelectedCashier = {
   store_number: string;
 };
 
-export interface CashierState {
+export interface LossPreventionState {
   // for raw data and the chunked versions for carousel view
   cashierDetails: CashierDetails[];
   selectedCashierDetails: CashierDetails | null;
@@ -50,7 +50,7 @@ export interface CashierState {
   searchString: string;
 }
 
-const initialState: CashierState = {
+const initialState: LossPreventionState = {
   cashierDetails: [],
   selectedCashierDetails: null,
   cashierTrends: [],
@@ -86,8 +86,8 @@ const initialState: CashierState = {
   cashierDetailsTrendDirection: 0,
 };
 
-export const cashierSlice = createSlice({
-  name: "cashiers",
+export const lossPreventionSlice = createSlice({
+  name: "lossPrevention",
   initialState,
   reducers: {
     setCashierDetails: (state, action: PayloadAction<CashierDetails[]>) => {
@@ -269,5 +269,5 @@ export const {
   reQuery,
   setSelectedCashierDetails,
   setCashierDetailsTrendDirection,
-} = cashierSlice.actions;
-export default cashierSlice.reducer;
+} = lossPreventionSlice.actions;
+export default lossPreventionSlice.reducer;

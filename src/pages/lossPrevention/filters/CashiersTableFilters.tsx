@@ -8,7 +8,7 @@ import {
   setTotalSalesFilter,
   setTransIdFilter,
   setUpcFilter,
-} from "../../../features/cashierSlice";
+} from "../../../features/lossPreventionSlice";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { formatCurrency2 } from "../../../utils";
 import FiltersModal from "./FiltersModal";
@@ -25,7 +25,7 @@ const filterOptions = [
 
 const CashiersTableFilters = () => {
   const dispatch = useAppDispatch();
-  const cashier = useAppSelector((state) => state.cashier);
+  const cashier = useAppSelector((state) => state.lossPrevention);
 
   const panelStyle =
     "py-1.5 rounded-lg text-center shadow-md shadow-content/20 hover:bg-orange-200 cursor-pointer transition-all duration-200";
@@ -72,15 +72,17 @@ const CashiersTableFilters = () => {
       const thresh = cashier.cashierTableThreshComp.gt
         ? "Over"
         : cashier.cashierTableThreshComp.lt
-        ? "Under"
-        : "";
+          ? "Under"
+          : "";
 
       // This might change, but if no threshold is selected, just show "Total Sales"
       return thresh.length > 0
         ? `${thresh} ${formatCurrency2(cashier.totalSalesFilter)}`
         : "Total Sales";
     } else if (type === "Transaction ID") {
-      return cashier.transIdFilter ? `${cashier.transIdFilter}` : "Transaction ID";
+      return cashier.transIdFilter
+        ? `${cashier.transIdFilter}`
+        : "Transaction ID";
     } else {
       return type;
     }

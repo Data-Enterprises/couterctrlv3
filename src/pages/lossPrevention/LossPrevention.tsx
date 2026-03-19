@@ -4,7 +4,10 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 
 import { getSaleTypes } from "../../api/lossPrevention";
 import { formatGoliathDate } from "../../utils";
-import { resetCashierSlice, setSaleTypes } from "../../features/cashierSlice";
+import {
+  resetCashierSlice,
+  setSaleTypes,
+} from "../../features/lossPreventionSlice";
 import type { JsonError } from "../../interfaces";
 
 import DatePickers from "../../components/datePickers/DatePickers";
@@ -23,7 +26,7 @@ const LossPrevention = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const cashier = useAppSelector((state) => state.cashier);
+  const cashier = useAppSelector((state) => state.lossPrevention);
   const [loading, setLoading] = useState<boolean>(false);
 
   const getSaleTypesData = () => {

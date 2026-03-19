@@ -79,7 +79,7 @@ const SelectStore = () => {
 
   const styling = "w-full md:px-0";
   const inputStyle =
-    "basic-input focus:border bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer w-full";
+    "basic-input focus:border bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer w-full text-sm";
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
