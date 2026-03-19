@@ -35,7 +35,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 const CashierSales = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const { url, token, isDesktop } = useAppSelector((state) => state.app);
+  const { url, token } = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
   const cashier = useAppSelector((state) => state.cashier);
 
@@ -48,10 +48,10 @@ const CashierSales = () => {
     } else {
       // find the trend here and its index => pass both into the card
       // => card will take care of the rest
-      const details = cashier.cashierDetails.find(
+      const details = cashier.cashierDetails.filter(
         (d) => d.storeid === cashier.selectedStoreId,
-      );
-      dispatch(setSelectedCashierDetails(details || null));
+      )[0];
+      dispatch(setSelectedCashierDetails(details));
     }
   }, [cashier.selectedStoreId]);
 
@@ -168,7 +168,7 @@ const CashierSales = () => {
           rowData={cashier.cashierDetails}
           columnDefs={cashierDetailCols}
           theme={theme}
-          rowSelection={isDesktop ? "single" : undefined}
+          rowSelection="single"
           onRowClicked={handleRowClicked}
           pagination={true}
           paginationAutoPageSize={true}

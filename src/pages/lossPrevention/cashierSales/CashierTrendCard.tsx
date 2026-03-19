@@ -68,8 +68,6 @@ const CashierTrendCard = () => {
         // max = 5, min =-5 => this is used in the overallTrendLine to determine which icon to show
         dispatch(setCashierDetailsTrendDirection(trendDirection));
       }
-    } else {
-      dispatch(setCashierDetailsTrendDirection(0));
     }
   }, [selectedCashierDetails]);
 
