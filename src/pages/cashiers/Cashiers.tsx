@@ -14,9 +14,10 @@ import {
 
 import DatePickers from "../../components/datePickers/DatePickers";
 import StorePicker from "../../components/storePicker/StorePicker";
-import CardFilters from "./components/CardFilters";
+import CardFilters from "./filters/CardFilters";
 import StoresView from "./stores/StoresView";
 import CashiersView from "./cashiers/CashiersView";
+import CashierFiltersModal from "./filters/CashierFiltersModal";
 
 const Cashiers = () => {
   const toast = useToast();
@@ -59,6 +60,7 @@ const Cashiers = () => {
 
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] w-full p-4 overflow-hidden grid grid-cols-[1fr_4fr] gap-4">
+      <CashierFiltersModal />
       <div className="flex flex-col gap-2">
         <div className="bg-custom-white p-2 rounded-lg shadow-lg">
           <StorePicker />
