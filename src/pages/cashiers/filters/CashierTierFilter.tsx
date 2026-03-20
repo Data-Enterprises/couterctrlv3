@@ -5,9 +5,9 @@ import { setRiskLevelFilter } from "../../../features/cashiersSlice";
 import type { RiskLevel } from "../../../features/cashiersSlice";
 
 const tierOptions = [
-  { label: "Low", value: "low" },
-  { label: "Medium", value: "medium" },
-  { label: "High", value: "high" },
+  { label: "Low", value: "Low" },
+  { label: "Medium", value: "Medium" },
+  { label: "High", value: "High" },
 ];
 
 const CashierTierFilter = () => {
@@ -32,6 +32,8 @@ const CashierTierFilter = () => {
         displayKey="label"
         valueKey="value"
         onSelect={handleSelect}
+        resetQuery={true}
+        defaultQuery={ctx.cashierFilterType === "risk_level" ? ctx.riskLevelFilter : ctx.exceptionTierFilter}
       />
     </div>
   );

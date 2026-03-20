@@ -4,6 +4,11 @@ import {
   setApplyFilters,
   setCashierFilterModalOpen,
   setCashierFilterType,
+  setExceptionTierFilter,
+  setRiskLevelFilter,
+  setStoreNameFilter,
+  setTotalQtyFilter,
+  setTotalSalesFilter,
 } from "../../../features/cashiersSlice";
 import CashierNumberFilter from "./CashierNumberFilter";
 
@@ -41,16 +46,52 @@ const CashierFiltersModal = () => {
     handleClose();
   };
 
+  const handleCleanup = () => {
+    if (ctx.cashierFilterType === "cashier_name") {
+      ctx.dispatch(setCashierFilterType(""));
+    }
+
+    if (ctx.cashierFilterType === "store_name") {
+      ctx.dispatch(setStoreNameFilter(""));
+    }
+
+    if (ctx.cashierFilterType === "total_sales") {
+      ctx.dispatch(setTotalSalesFilter({ operator: "", value: 0 }));
+    }
+
+    if (ctx.cashierFilterType === "total_qty") {
+      ctx.dispatch(setTotalQtyFilter({ operator: "", value: 0 }));
+    }
+
+    if (ctx.cashierFilterType === "total_transactions") {
+      ctx.dispatch(setTotalQtyFilter({ operator: "", value: 0 }));
+    }
+
+    if (ctx.cashierFilterType === "risk_level") {
+      ctx.dispatch(setRiskLevelFilter(""));
+    }
+
+    if (ctx.cashierFilterType === "exception_tier") {
+      ctx.dispatch(setExceptionTierFilter(""));
+    }
+
+    handleClose();
+    ctx.dispatch(setApplyFilters(true));
+  };
+
   return (
     <Modal
       isOpen={ctx.cashierFilterModalOpen}
       onClose={handleClose}
-      modalClassName="bg-custom-white w-1/4 space-y-4"
+      modalClassName="bg-custom-white min-w-1/4 space-y-4"
     >
       {renderFilter()}
-      <div className="grid grid-cols-2 gap-2">
-        <button className="btn-themeBlue" onClick={handleSubmit}>
+      <div className="grid grid-cols-3 gap-2">
+        <button className="btn-themeGreen" onClick={handleSubmit}>
           Submit
+        </button>
+        <button className="btn-themeBlue" onClick={handleCleanup}>
+          Clear
         </button>
         <button className="btn-themeOrange" onClick={handleClose}>
           Cancel
