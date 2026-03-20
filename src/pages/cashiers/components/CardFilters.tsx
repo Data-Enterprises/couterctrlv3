@@ -23,12 +23,57 @@ const CardFilters = () => {
     ctx.dispatch(setCashierFilterModalOpen(true));
   };
 
+  const handleFilterTextDisplay = (type: CashierFilterType) => {
+    // This will determin what is displayed in the button text based on if that filter is set or not
+    switch (type) {
+      case "store_name":
+        return "Store Name";
+      case "cashier_name":
+        return "Cashier Name";
+      case "total_sales":
+        return "Total Sales";
+      case "total_qty":
+        return "Total Qty";
+      case "total_transactions":
+        return "Total Transactions";
+      case "risk_level":
+        return "Risk Level";
+      case "exception_tier":
+        return "Exception Tier";
+      default:
+        return "Refresh";
+    }
+  };
+
+  const activeFilterStyle = (type: CashierFilterType) => {
+    if (type === "cashier_name" && ctx.cashierNameFilter.length) {
+      return "bg-orange-500 text-white font-medium";
+    } else if (type === "store_name" && ctx.storeNameFilter.length) {
+      return "bg-orange-500 text-white font-medium";
+    } else if (type === "total_sales" && ctx.totalSalesFilter !== null) {
+      return "bg-orange-500 text-white font-medium";
+    } else if (type === "total_qty" && ctx.totalQtyFilter !== null) {
+      return "bg-orange-500 text-white font-medium";
+    } else if (
+      type === "total_transactions" &&
+      ctx.totalTransactionsFilter !== null
+    ) {
+      return "bg-orange-500 text-white font-medium";
+    } else if (type === "risk_level" && ctx.riskLevelFilter.length) {
+      return "bg-orange-500 text-white font-medium";
+    } else if (type === "exception_tier" && ctx.exceptionTierFilter.length) {
+      return "bg-orange-500 text-white font-medium";
+    } else {
+      return "";
+    }
+  };
+
   return (
     <div className="relative bg-custom-white p-2 rounded-lg shadow-lg flex flex-col gap-2">
       {showViewToggle && (
         <button
           onClick={handleToggleView}
-          className="py-2 shadow-md rounded-lg hover:bg-orange-200 transition-all duration-200"
+          className="py-2 shadow-md rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200"
         >
           View {ctx.dataView === "stores" ? "Cashiers" : "Stores"}
         </button>
@@ -39,42 +84,46 @@ const CardFilters = () => {
             ctx.dataView === "stores" ? "store_name" : "cashier_name",
           )
         }
-        className="py-2 shadow-md rounded-lg hover:bg-orange-200 transition-all duration-200"
+        className={`py-2 shadow-md rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200 ${activeFilterStyle(
+          ctx.dataView === "stores" ? "store_name" : "cashier_name",
+        )}`}
       >
-        {ctx.dataView === "stores" ? "Store Name" : "Cashier Name"}
+        {handleFilterTextDisplay(
+          ctx.dataView === "stores" ? "store_name" : "cashier_name",
+        )}
       </button>
       <button
         onClick={() => handleOpenFilterModal("total_sales")}
-        className="py-2 shadow-md rounded-lg hover:bg-orange-200 transition-all duration-200"
+        className={`py-2 shadow-md rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200 ${activeFilterStyle("total_sales")}`}
       >
-        Total Sales
+        {handleFilterTextDisplay("total_sales")}
       </button>
       <button
         onClick={() => handleOpenFilterModal("total_qty")}
-        className="py-2 shadow-md rounded-lg hover:bg-orange-200 transition-all duration-200"
+        className={`py-2 shadow-md rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200 ${activeFilterStyle("total_qty")}`}
       >
-        Total Qty
+        {handleFilterTextDisplay("total_qty")}
       </button>
       <button
         onClick={() => handleOpenFilterModal("total_transactions")}
-        className="py-2 shadow-md rounded-lg hover:bg-orange-200 transition-all duration-200"
+        className={`py-2 shadow-md rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200 ${activeFilterStyle("total_transactions")}`}
       >
-        Total Transactions
+        {handleFilterTextDisplay("total_transactions")}
       </button>
       <button
         onClick={() => handleOpenFilterModal("risk_level")}
-        className="py-2 shadow-md rounded-lg hover:bg-orange-200 transition-all duration-200"
+        className={`py-2 shadow-md rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200 ${activeFilterStyle("risk_level")}`}
       >
-        Risk Level
+        {handleFilterTextDisplay("risk_level")}
       </button>
       <button
         onClick={() => handleOpenFilterModal("exception_tier")}
-        className="py-2 shadow-md rounded-lg hover:bg-orange-200 transition-all duration-200"
+        className={`py-2 shadow-md rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200 ${activeFilterStyle("exception_tier")}`}
       >
-        Exception Tier
+        {handleFilterTextDisplay("exception_tier")}
       </button>
-      <button className="py-2 shadow-md rounded-lg hover:bg-orange-200 transition-all duration-200">
-        Refresh
+      <button className="py-2 shadow-md rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200">
+        {handleFilterTextDisplay("")}
       </button>
     </div>
   );
