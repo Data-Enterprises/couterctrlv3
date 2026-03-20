@@ -50,13 +50,13 @@ const CardFilters = () => {
       return "bg-orange-500 text-white font-medium";
     } else if (type === "store_name" && ctx.storeNameFilter.length) {
       return "bg-orange-500 text-white font-medium";
-    } else if (type === "total_sales" && ctx.totalSalesFilter !== null) {
+    } else if (type === "total_sales" && ctx.totalSalesFilter.operator !== "") {
       return "bg-orange-500 text-white font-medium";
-    } else if (type === "total_qty" && ctx.totalQtyFilter !== null) {
+    } else if (type === "total_qty" && ctx.totalQtyFilter.operator !== "") {
       return "bg-orange-500 text-white font-medium";
     } else if (
       type === "total_transactions" &&
-      ctx.totalTransactionsFilter !== null
+      ctx.totalTransactionsFilter.operator !== ""
     ) {
       return "bg-orange-500 text-white font-medium";
     } else if (type === "risk_level" && ctx.riskLevelFilter.length) {

@@ -16,8 +16,13 @@ export type CashierFilterType =
   | "exception_tier"
   | "";
 export type NumberFilter = {
-  operator: ">" | "<" | "=";
+  operator: ">" | "<" | "=" | "";
   value: number;
+};
+
+export const defaultNumberFilter: NumberFilter = {
+  operator: "",
+  value: 0,
 };
 
 export type RiskLevel = "Low" | "Medium" | "High" | "Very High" | "";
@@ -36,12 +41,13 @@ interface CashiersState {
   cashierFilterModalOpen: boolean;
   cashierNameFilter: string;
   storeNameFilter: string;
-  totalSalesFilter: NumberFilter | null;
-  totalQtyFilter: NumberFilter | null;
-  totalTransactionsFilter: NumberFilter | null;
+  totalSalesFilter: NumberFilter;
+  totalQtyFilter: NumberFilter;
+  totalTransactionsFilter: NumberFilter;
   riskLevelFilter: RiskLevel;
   exceptionTierFilter: RiskLevel;
   cashierFilterType: CashierFilterType;
+  applyFilters: boolean;
 }
 
 const initialState: CashiersState = {
@@ -57,12 +63,13 @@ const initialState: CashiersState = {
   cashierFilterModalOpen: false,
   cashierNameFilter: "",
   storeNameFilter: "",
-  totalSalesFilter: null,
-  totalQtyFilter: null,
-  totalTransactionsFilter: null,
+  totalSalesFilter: defaultNumberFilter,
+  totalQtyFilter: defaultNumberFilter,
+  totalTransactionsFilter: defaultNumberFilter,
   riskLevelFilter: "",
   exceptionTierFilter: "",
   cashierFilterType: "",
+  applyFilters: false,
 };
 
 const cashiersSlice = createSlice({
@@ -109,18 +116,15 @@ const cashiersSlice = createSlice({
     setStoreNameFilter: (state, action: PayloadAction<string>) => {
       state.storeNameFilter = action.payload;
     },
-    setTotalSalesFilter: (
-      state,
-      action: PayloadAction<NumberFilter | null>,
-    ) => {
+    setTotalSalesFilter: (state, action: PayloadAction<NumberFilter>) => {
       state.totalSalesFilter = action.payload;
     },
-    setTotalQtyFilter: (state, action: PayloadAction<NumberFilter | null>) => {
+    setTotalQtyFilter: (state, action: PayloadAction<NumberFilter>) => {
       state.totalQtyFilter = action.payload;
     },
     setTotalTransactionsFilter: (
       state,
-      action: PayloadAction<NumberFilter | null>,
+      action: PayloadAction<NumberFilter>,
     ) => {
       state.totalTransactionsFilter = action.payload;
     },
@@ -135,6 +139,9 @@ const cashiersSlice = createSlice({
     },
     setCashierFilterType: (state, action: PayloadAction<CashierFilterType>) => {
       state.cashierFilterType = action.payload;
+    },
+    setApplyFilters: (state, action: PayloadAction<boolean>) => {
+      state.applyFilters = action.payload;
     },
     reQueryStepOne: (state) => {
       state.storeCards = [];
@@ -153,12 +160,13 @@ const cashiersSlice = createSlice({
     resetCashierFilters: (state) => {
       state.cashierNameFilter = "";
       state.storeNameFilter = "";
-      state.totalSalesFilter = null;
-      state.totalQtyFilter = null;
-      state.totalTransactionsFilter = null;
+      state.totalSalesFilter = defaultNumberFilter;
+      state.totalQtyFilter = defaultNumberFilter;
+      state.totalTransactionsFilter = defaultNumberFilter;
       state.riskLevelFilter = "";
       state.exceptionTierFilter = "";
       state.cashierFilterType = "";
+      state.applyFilters = false;
     },
     resetCashierState: () => initialState,
   },
@@ -184,6 +192,7 @@ export const {
   setTotalSalesFilter,
   setTotalTransactionsFilter,
   setCashierFilterModalOpen,
+  setApplyFilters,
   setCashierFilterType,
 } = cashiersSlice.actions;
 export default cashiersSlice.reducer;
