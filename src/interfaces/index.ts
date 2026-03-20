@@ -1016,9 +1016,9 @@ export interface StoreCardResp {
 export type CashierCard = {
   storeid: number;
   store_name: string;
-  store_number: string;
   cashier_number: number;
   cashier_name: string;
+  store_number: number;
   total_transactions: number;
   total_sales: number;
   net_sales: number;
@@ -1058,6 +1058,8 @@ export type CashierCard = {
   modified_rate: number;
   flagged_rate: number;
   weighted_risk_rate: number;
+  blended_base_score: number;
+  volume_factor: number;
   risk_score: number;
   risk_tier: string;
   exception_tier: string;
@@ -1072,7 +1074,7 @@ export interface CashierCardResp {
 export type Cashier = {
   storeid: number;
   store_name: string;
-  store_number: string;
+  store_number: number;
   cashier_number: number;
   cashier_name: string;
 }

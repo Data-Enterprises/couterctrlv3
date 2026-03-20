@@ -11,6 +11,8 @@ interface CashiersState {
   cashierCards: CashierCard[];
   cashiers: Cashier[];
   stores: CashierStore[];
+  storeFilterText: string;
+  selectedStoreCard: number;
 }
 
 const initialState: CashiersState = {
@@ -18,6 +20,8 @@ const initialState: CashiersState = {
   cashierCards: [],
   cashiers: [],
   stores: [],
+  storeFilterText: "",
+  selectedStoreCard: 0,
 };
 
 const cashiersSlice = createSlice({
@@ -26,10 +30,12 @@ const cashiersSlice = createSlice({
   reducers: {
     setStoreCards: (state, action: PayloadAction<StoreCard[]>) => {
       state.storeCards = action.payload;
-      state.stores = [...action.payload].map((sc) => ({
-        storeid: sc.storeid,
-        store_name: sc.store_name,
-      }));
+      state.stores = [...action.payload]
+        .map((sc) => ({
+          storeid: sc.storeid,
+          store_name: sc.store_name,
+        }))
+        .sort((a, b) => a.storeid - b.storeid);
     },
     setCashierCards: (state, action: PayloadAction<CashierCard[]>) => {
       state.cashierCards = action.payload;
@@ -41,11 +47,18 @@ const cashiersSlice = createSlice({
         cashier_name: cc.cashier_name,
       }));
     },
+    setStoreFilterText: (state, action: PayloadAction<string>) => {
+      state.storeFilterText = action.payload;
+    },
+    setSelectedStoreCard: (state, action: PayloadAction<number>) => {
+      state.selectedStoreCard = action.payload;
+    },
     reQueryStepOne: (state) => {
       state.storeCards = [];
       state.cashierCards = [];
       state.cashiers = [];
       state.stores = [];
+      state.selectedStoreCard = 0;
     },
     resetCashierState: () => initialState,
   },
@@ -54,6 +67,8 @@ const cashiersSlice = createSlice({
 export const {
   setStoreCards,
   setCashierCards,
+  setSelectedStoreCard,
+  setStoreFilterText,
   reQueryStepOne,
   resetCashierState,
 } = cashiersSlice.actions;
