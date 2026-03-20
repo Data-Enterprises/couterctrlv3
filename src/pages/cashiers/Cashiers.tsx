@@ -7,14 +7,24 @@ import {
 } from "../../utils";
 
 import { getCashierCards, getStoreCards } from "../../api/cashiers";
-import type { CashierCardResp, JsonError, StoreCardResp } from "../../interfaces";
-import { reQueryStepOne, setCashierCards, setSelectedStoreCard, setStoreCards } from "../../features/cashiersSlice";
+import type {
+  CashierCardResp,
+  JsonError,
+  StoreCardResp,
+} from "../../interfaces";
+import {
+  reQueryStepOne,
+  setCashierCards,
+  setSelectedStoreCard,
+  setStoreCards,
+} from "../../features/cashiersSlice";
 
 import DatePickers from "../../components/datePickers/DatePickers";
 import StorePicker from "../../components/storePicker/StorePicker";
 import Input from "../../components/inputs/Input";
 import { useState } from "react";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
+import StoreOverview from "./stores/StoreOverview";
 
 const Cashiers = () => {
   const toast = useToast();
@@ -55,7 +65,16 @@ const Cashiers = () => {
     ctx.dispatch(setSelectedStoreCard(storeid));
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
-    getCashierCards(ctx.miktoUrl, ctx.userid, start, end, 0, storeid, 1, ctx.apiKey)
+    getCashierCards(
+      ctx.miktoUrl,
+      ctx.userid,
+      start,
+      end,
+      0,
+      storeid,
+      1,
+      ctx.apiKey,
+    )
       .then((resp) => {
         const j: CashierCardResp = resp.data;
         if (j.error === 0) {
@@ -148,7 +167,7 @@ const Cashiers = () => {
       <div className="grid grid-cols-[1fr_2fr] gap-4">
         {/* right col => col 1 */}
         <div className="">
-          <div className="bg-custom-white p-2 rounded-lg shadow-lg"></div>
+          <StoreOverview />
         </div>
 
         {/* right col => col 2 */}

@@ -4,6 +4,7 @@ import Modal from "../../../components/Modal";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import { resetCompareSubs } from "../../../features/salesSlice";
 import CompareCard from "./CompareCard";
+import CompareSummary from "./CompareSummary";
 
 const SubsCompareModal = () => {
   const dispatch = useAppDispatch();
@@ -21,10 +22,11 @@ const SubsCompareModal = () => {
     <Modal
       isOpen={compareSubsModalOpen}
       onClose={handleClose}
-      modalClassName="bg-bkg w-[45%] min-h-[70vh] max-h-[70vh] overflow-hidden"
+      modalClassName="bg-bkg w-[45%] min-h-[100vh] max-h-[100vh] overflow-hidden overflow-y-auto no-scrollbar"
     >
+      <CompareSummary />
       {compareSubsLeftCompare.length && compareSubsRightCompare.length ? (
-        <div className="flex h-full max-h-[66.5vh] rounded-lg overflow-hidden overflow-y-auto no-scrollbar ">
+        <div className="flex h-full rounded-lg ">
           <div className="mr-2 text-sm rounded-lg w-1/2 space-y-2">
             {compareSubsLeftCompare.map((sub, i) => (
               <CompareCard
