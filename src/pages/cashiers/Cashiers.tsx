@@ -6,6 +6,7 @@ import { getStoreCards } from "../../api/cashiers";
 import type { JsonError, StoreCardResp } from "../../interfaces";
 import {
   reQueryStepOne,
+  setCashierFilterType,
   setDataView,
   setLoadingStores,
   setStoreCards,
@@ -22,6 +23,7 @@ const Cashiers = () => {
   const ctx = useCashierCtx();
 
   const getSCards = () => {
+    ctx.dispatch(setCashierFilterType(""));
     ctx.dispatch(reQueryStepOne());
     ctx.dispatch(setLoadingStores(true));
     ctx.dispatch(setDataView("stores"));

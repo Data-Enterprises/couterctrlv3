@@ -4,6 +4,7 @@ import { getCashierCards } from "../../../api/cashiers";
 import {
   reQueryStepTwo,
   setCashierCards,
+  setCashierFilterType,
   setDataView,
   setLoadingCashiers,
   setSelectedStoreCard,
@@ -49,6 +50,7 @@ const StoreOverview = ({ store }: StoreCardProps) => {
   };
 
   const getCCards = () => {
+    ctx.dispatch(setCashierFilterType(""));
     ctx.dispatch(setSelectedStoreCard(store.storeid));
     ctx.dispatch(reQueryStepTwo());
     ctx.dispatch(setLoadingCashiers(true));
