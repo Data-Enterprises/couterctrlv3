@@ -23,7 +23,7 @@ const CashierTierFilter = () => {
       ctx.dispatch(setExceptionTierFilter(x.toString() as RiskLevel));
     }
   };
-  
+
   return (
     <div>
       <SingleSelect
@@ -33,7 +33,11 @@ const CashierTierFilter = () => {
         valueKey="value"
         onSelect={handleSelect}
         resetQuery={true}
-        defaultQuery={ctx.cashierFilterType === "risk_level" ? ctx.riskLevelFilter : ctx.exceptionTierFilter}
+        defaultQuery={
+          ctx.cashierFilterType === "risk_level"
+            ? ctx.riskLevelFilter
+            : ctx.exceptionTierFilter
+        }
       />
     </div>
   );

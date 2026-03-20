@@ -26,24 +26,42 @@ const CardFilters = () => {
 
   const handleFilterTextDisplay = (type: CashierFilterType) => {
     // This will determin what is displayed in the button text based on if that filter is set or not
-    switch (type) {
-      case "store_name":
-        return "Store Name";
-      case "cashier_name":
-        return "Cashier Name";
-      case "total_sales":
-        return "Total Sales";
-      case "total_qty":
-        return "Total Qty";
-      case "total_transactions":
-        return "Total Transactions";
-      case "risk_level":
-        return "Risk Level";
-      case "exception_tier":
-        return "Exception Tier";
-      default:
-        return "Refresh";
+    if (type === "cashier_name") {
+      return ctx.cashierNameFilter.length
+        ? `Cashier: ${ctx.cashierNameFilter}`
+        : "Cashier Name";
     }
+    if (type === "store_name") {
+      return ctx.storeNameFilter.length
+        ? `${ctx.storeNameFilter}`
+        : "Store Name";
+    }
+    if (type === "total_sales") {
+      return ctx.totalSalesFilter.operator !== "" && ctx.totalSalesFilter.value > 0
+        ? `Sales ${ctx.totalSalesFilter.operator} ${ctx.totalSalesFilter.value}`
+        : "Total Sales";
+    }
+    if (type === "total_qty") {
+      return ctx.totalQtyFilter.operator !== "" && ctx.totalQtyFilter.value > 0
+        ? `Qty ${ctx.totalQtyFilter.operator} ${ctx.totalQtyFilter.value}`
+        : "Total Qty";
+    }
+    if (type === "total_transactions") {
+      return ctx.totalTransactionsFilter.operator !== "" && ctx.totalTransactionsFilter.value > 0
+        ? `Transactions ${ctx.totalTransactionsFilter.operator} ${ctx.totalTransactionsFilter.value}`
+        : "Total Transactions";
+    }
+    if (type === "risk_level") {
+      return ctx.riskLevelFilter.length
+        ? `Risk: ${ctx.riskLevelFilter}`
+        : "Risk Level";
+    }
+    if (type === "exception_tier") {
+      return ctx.exceptionTierFilter.length
+        ? `Tier: ${ctx.exceptionTierFilter}`
+        : "Exception Tier";
+    }
+    return "Refresh";
   };
 
   const activeFilterStyle = (type: CashierFilterType) => {
@@ -51,13 +69,22 @@ const CardFilters = () => {
       return "bg-orange-500 text-white font-medium";
     } else if (type === "store_name" && ctx.storeNameFilter.length) {
       return "bg-orange-500 text-white font-medium";
-    } else if (type === "total_sales" && ctx.totalSalesFilter.operator !== "") {
+    } else if (
+      type === "total_sales" &&
+      ctx.totalSalesFilter.operator !== "" &&
+      ctx.totalSalesFilter.value > 0
+    ) {
       return "bg-orange-500 text-white font-medium";
-    } else if (type === "total_qty" && ctx.totalQtyFilter.operator !== "") {
+    } else if (
+      type === "total_qty" &&
+      ctx.totalQtyFilter.operator !== "" &&
+      ctx.totalQtyFilter.value > 0
+    ) {
       return "bg-orange-500 text-white font-medium";
     } else if (
       type === "total_transactions" &&
-      ctx.totalTransactionsFilter.operator !== ""
+      ctx.totalTransactionsFilter.operator !== "" &&
+      ctx.totalTransactionsFilter.value > 0
     ) {
       return "bg-orange-500 text-white font-medium";
     } else if (type === "risk_level" && ctx.riskLevelFilter.length) {

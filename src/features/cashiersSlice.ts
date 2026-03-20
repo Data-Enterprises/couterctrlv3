@@ -32,7 +32,6 @@ interface CashiersState {
   cashierCards: CashierCard[];
   cashiers: Cashier[];
   stores: CashierStore[];
-  storeFilterText: string;
   selectedStoreCard: number;
   dataView: "stores" | "cashiers" | "";
   loadingStores: boolean;
@@ -55,7 +54,6 @@ const initialState: CashiersState = {
   cashierCards: [],
   cashiers: [],
   stores: [],
-  storeFilterText: "",
   selectedStoreCard: 0,
   dataView: "",
   loadingStores: false,
@@ -94,9 +92,6 @@ const cashiersSlice = createSlice({
         cashier_number: cc.cashier_number,
         cashier_name: cc.cashier_name,
       }));
-    },
-    setStoreFilterText: (state, action: PayloadAction<string>) => {
-      state.storeFilterText = action.payload;
     },
     setSelectedStoreCard: (state, action: PayloadAction<number>) => {
       state.selectedStoreCard = action.payload;
@@ -177,7 +172,6 @@ export const {
   setCashierCards,
   setDataView,
   setSelectedStoreCard,
-  setStoreFilterText,
   setLoadingStores,
   setLoadingCashiers,
   reQueryStepOne,

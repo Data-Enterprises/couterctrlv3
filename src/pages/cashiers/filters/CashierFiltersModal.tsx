@@ -9,6 +9,7 @@ import {
   setStoreNameFilter,
   setTotalQtyFilter,
   setTotalSalesFilter,
+  setTotalTransactionsFilter,
 } from "../../../features/cashiersSlice";
 import CashierNumberFilter from "./CashierNumberFilter";
 
@@ -17,11 +18,6 @@ import CashierTierFilter from "./CashierTierFilter";
 
 const CashierFiltersModal = () => {
   const ctx = useCashierCtx();
-
-  const handleClose = () => {
-    ctx.dispatch(setCashierFilterModalOpen(false));
-    ctx.dispatch(setCashierFilterType(""));
-  };
 
   const renderFilter = () => {
     switch (ctx.cashierFilterType) {
@@ -46,43 +42,46 @@ const CashierFiltersModal = () => {
     handleClose();
   };
 
-  const handleCleanup = () => {
-    if (ctx.cashierFilterType === "cashier_name") {
-      ctx.dispatch(setCashierFilterType(""));
+  const handleClose = (isClearing: boolean = false) => {
+    if (isClearing) {
+      if (ctx.cashierFilterType === "cashier_name") {
+        ctx.dispatch(setCashierFilterType(""));
+      }
+
+      if (ctx.cashierFilterType === "store_name") {
+        ctx.dispatch(setStoreNameFilter(""));
+      }
+
+      if (ctx.cashierFilterType === "total_sales") {
+        ctx.dispatch(setTotalSalesFilter({ operator: "", value: 0 }));
+      }
+
+      if (ctx.cashierFilterType === "total_qty") {
+        ctx.dispatch(setTotalQtyFilter({ operator: "", value: 0 }));
+      }
+
+      if (ctx.cashierFilterType === "total_transactions") {
+        ctx.dispatch(setTotalTransactionsFilter({ operator: "", value: 0 }));
+      }
+
+      if (ctx.cashierFilterType === "risk_level") {
+        ctx.dispatch(setRiskLevelFilter(""));
+      }
+
+      if (ctx.cashierFilterType === "exception_tier") {
+        ctx.dispatch(setExceptionTierFilter(""));
+      }
     }
 
-    if (ctx.cashierFilterType === "store_name") {
-      ctx.dispatch(setStoreNameFilter(""));
-    }
-
-    if (ctx.cashierFilterType === "total_sales") {
-      ctx.dispatch(setTotalSalesFilter({ operator: "", value: 0 }));
-    }
-
-    if (ctx.cashierFilterType === "total_qty") {
-      ctx.dispatch(setTotalQtyFilter({ operator: "", value: 0 }));
-    }
-
-    if (ctx.cashierFilterType === "total_transactions") {
-      ctx.dispatch(setTotalQtyFilter({ operator: "", value: 0 }));
-    }
-
-    if (ctx.cashierFilterType === "risk_level") {
-      ctx.dispatch(setRiskLevelFilter(""));
-    }
-
-    if (ctx.cashierFilterType === "exception_tier") {
-      ctx.dispatch(setExceptionTierFilter(""));
-    }
-
-    handleClose();
+    ctx.dispatch(setCashierFilterModalOpen(false));
+    ctx.dispatch(setCashierFilterType(""));
     ctx.dispatch(setApplyFilters(true));
   };
 
   return (
     <Modal
       isOpen={ctx.cashierFilterModalOpen}
-      onClose={handleClose}
+      onClose={() => handleClose()}
       modalClassName="bg-custom-white min-w-1/4 space-y-4"
     >
       {renderFilter()}
@@ -90,10 +89,10 @@ const CashierFiltersModal = () => {
         <button className="btn-themeGreen" onClick={handleSubmit}>
           Submit
         </button>
-        <button className="btn-themeBlue" onClick={handleCleanup}>
+        <button className="btn-themeBlue" onClick={() => handleClose(true)}>
           Clear
         </button>
-        <button className="btn-themeOrange" onClick={handleClose}>
+        <button className="btn-themeOrange" onClick={() => handleClose()}>
           Cancel
         </button>
       </div>
