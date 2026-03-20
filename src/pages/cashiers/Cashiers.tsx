@@ -52,32 +52,6 @@ const Cashiers = () => {
       .finally(() => setLoadingStepOne(false));
   };
 
-  // const getCCards = (storeid: number) => {
-  //   ctx.dispatch(setSelectedStoreCard(storeid));
-  //   const start = formatGoliathDate(ctx.startDate);
-  //   const end = formatGoliathDate(ctx.endDate);
-  //   getCashierCards(
-  //     ctx.miktoUrl,
-  //     ctx.userid,
-  //     start,
-  //     end,
-  //     0,
-  //     storeid,
-  //     1,
-  //     ctx.apiKey,
-  //   )
-  //     .then((resp) => {
-  //       const j: CashierCardResp = resp.data;
-  //       if (j.error === 0) {
-  //         ctx.dispatch(setCashierCards(j.stores));
-  //       }
-  //     })
-  //     .catch((err: JsonError) => {
-  //       ctx.dispatch(setSelectedStoreCard(0));
-  //       toast.error(err.message);
-  //     });
-  // };
-
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] w-full p-4 overflow-hidden grid grid-cols-[1fr_4fr] gap-4">
       <div className="flex flex-col gap-2">
