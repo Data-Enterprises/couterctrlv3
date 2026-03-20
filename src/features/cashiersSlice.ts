@@ -14,6 +14,8 @@ interface CashiersState {
   storeFilterText: string;
   selectedStoreCard: number;
   dataView: "stores" | "cashiers" | "";
+  loadingStores: boolean;
+  loadingCashiers: boolean;
 }
 
 const initialState: CashiersState = {
@@ -24,6 +26,8 @@ const initialState: CashiersState = {
   storeFilterText: "",
   selectedStoreCard: 0,
   dataView: "",
+  loadingStores: false,
+  loadingCashiers: false,
 };
 
 const cashiersSlice = createSlice({
@@ -58,6 +62,12 @@ const cashiersSlice = createSlice({
     setDataView: (state, action: PayloadAction<"stores" | "cashiers" | "">) => {
       state.dataView = action.payload;
     },
+    setLoadingStores: (state, action: PayloadAction<boolean>) => {
+      state.loadingStores = action.payload;
+    },
+    setLoadingCashiers: (state, action: PayloadAction<boolean>) => {
+      state.loadingCashiers = action.payload;
+    },
     reQueryStepOne: (state) => {
       state.storeCards = [];
       state.cashierCards = [];
@@ -65,6 +75,12 @@ const cashiersSlice = createSlice({
       state.stores = [];
       state.selectedStoreCard = 0;
       state.dataView = "";
+      state.loadingStores = true;
+    },
+    reQueryStepTwo: (state) => {
+      state.cashierCards = [];
+      state.cashiers = [];
+      state.loadingCashiers = true;
     },
     resetCashierState: () => initialState,
   },
@@ -76,7 +92,10 @@ export const {
   setDataView,
   setSelectedStoreCard,
   setStoreFilterText,
+  setLoadingStores,
+  setLoadingCashiers,
   reQueryStepOne,
+  reQueryStepTwo,
   resetCashierState,
 } = cashiersSlice.actions;
 export default cashiersSlice.reducer;

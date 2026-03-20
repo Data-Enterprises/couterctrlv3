@@ -1,9 +1,23 @@
 import { useCashierCtx } from "..";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getCashierCards } from "../../../api/cashiers";
-import { setCashierCards, setSelectedStoreCard } from "../../../features/cashiersSlice";
-import type { CashierCardResp, JsonError, StoreCard } from "../../../interfaces";
-import { formatBigNumber, formatCurrency2, formatGoliathDate } from "../../../utils";
+import {
+  reQueryStepTwo,
+  setCashierCards,
+  setDataView,
+  setLoadingCashiers,
+  setSelectedStoreCard,
+} from "../../../features/cashiersSlice";
+import type {
+  CashierCardResp,
+  JsonError,
+  StoreCard,
+} from "../../../interfaces";
+import {
+  formatBigNumber,
+  formatCurrency2,
+  formatGoliathDate,
+} from "../../../utils";
 import ExceptionRow from "./ExceptionRow";
 
 interface StoreCardProps {
@@ -12,7 +26,6 @@ interface StoreCardProps {
 const StoreOverview = ({ store }: StoreCardProps) => {
   const ctx = useCashierCtx();
   const toast = useToast();
-
 
   const riskTierColor = () => {
     switch (store.risk_tier) {
@@ -37,6 +50,10 @@ const StoreOverview = ({ store }: StoreCardProps) => {
 
   const getCCards = () => {
     ctx.dispatch(setSelectedStoreCard(store.storeid));
+    ctx.dispatch(reQueryStepTwo());
+    ctx.dispatch(setLoadingCashiers(true));
+    ctx.dispatch(setDataView("cashiers"));
+
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
     getCashierCards(
@@ -57,20 +74,20 @@ const StoreOverview = ({ store }: StoreCardProps) => {
       })
       .catch((err: JsonError) => {
         ctx.dispatch(setSelectedStoreCard(0));
-        toast.error(err.message);
-      });
+        ctx.dispatch(setDataView("stores"));
+        toast.error("Error fetching cashiers... " + err.message);
+      })
+      .finally(() => ctx.dispatch(setLoadingCashiers(false)));
   };
 
   return (
-    <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm hover:bg-orange-200 transition-all duration-200 cursor-pointer h-[360px]" onClick={getCCards}>
+    <div
+      className="bg-custom-white p-2 rounded-lg shadow-lg text-sm hover:bg-orange-200 transition-all duration-200 cursor-pointer h-[360px]"
+      onClick={getCCards}
+    >
       <div className="flex justify-between items-center border-b border-content/60">
-        <div className="font-medium">{store.store_name}</div>
-        <div className="font-medium">
-          <span>Risk:</span>
-          <span className={`ml-1 font-bold ${riskTierColor()}`}>
-            {store.risk_tier}
-          </span>
-        </div>
+        <div className="font-medium">{store.store_name.split(" - ")[0]}</div>
+        <div className="font-medium">{store.store_name.split(" - ")[1]}</div>
       </div>
 
       <div className="mt-1 grid grid-cols-2">
@@ -166,9 +183,17 @@ const StoreOverview = ({ store }: StoreCardProps) => {
           col5={store.modified_rate}
           bgColor="bg-blue-200/50"
         />
-        <div className="flex gap-1">
-          <div>Tier:</div>
-          <div className={exceptionTierColor()}>{store.exception_tier}</div>
+        <div className="flex justify-between font-medium">
+          <div className="flex gap-1">
+            <div>Tier:</div>
+            <div className={exceptionTierColor()}>{store.exception_tier}</div>
+          </div>
+          <div className="flex gap-1">
+            <div>Risk:</div>
+            <div className={`font-bold ${riskTierColor()}`}>
+              {store.risk_tier}
+            </div>
+          </div>
         </div>
       </div>
     </div>
