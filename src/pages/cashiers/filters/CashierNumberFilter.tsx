@@ -55,27 +55,40 @@ const CashierNumberFilter = () => {
     }
   };
 
+  const handleValue = (id: number) => {
+    if (id === 1 && reduxValueToSet.operator === ">") {
+      return true;
+    } else if (id === 2 && reduxValueToSet.operator === "=") {
+      return true;
+    } else if (id === 3 && reduxValueToSet.operator === "<") {
+      return true;
+    }
+    
+
+    return false;
+  };
+
   return (
     <div>
       <div className="flex justify-around items-center">
         <CheckBox
           label="Greater Than"
           id={1}
-          value={false}
+          value={handleValue(1)}
           onChange={handleOperandSelect}
           isBool={false}
         />
         <CheckBox
           label="Equal To"
           id={2}
-          value={false}
+          value={handleValue(2)}
           onChange={handleOperandSelect}
           isBool={false}
         />
         <CheckBox
           label="Less Than"
           id={3}
-          value={false}
+          value={handleValue(3)}
           onChange={handleOperandSelect}
           isBool={false}
         />

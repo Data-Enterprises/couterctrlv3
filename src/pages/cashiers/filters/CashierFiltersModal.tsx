@@ -8,6 +8,7 @@ import {
 import CashierNumberFilter from "./CashierNumberFilter";
 
 import CashierTextFilter from "./CashierTextFilter";
+import CashierTierFilter from "./CashierTierFilter";
 
 const CashierFiltersModal = () => {
   const ctx = useCashierCtx();
@@ -29,7 +30,7 @@ const CashierFiltersModal = () => {
 
       case "risk_level":
       case "exception_tier":
-        return <div>Dropdown filter goes here</div>;
+        return <CashierTierFilter />;
       default:
         return null;
     }

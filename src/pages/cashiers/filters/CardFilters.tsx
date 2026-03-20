@@ -4,6 +4,7 @@ import {
   setCashierFilterModalOpen,
   type CashierFilterType,
   setCashierFilterType,
+  resetCashierFilters,
 } from "../../../features/cashiersSlice";
 
 const CardFilters = () => {
@@ -122,7 +123,10 @@ const CardFilters = () => {
       >
         {handleFilterTextDisplay("exception_tier")}
       </button>
-      <button className="py-2 shadow-md rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200">
+      <button
+        className="py-2 shadow-md rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200"
+        onClick={() => ctx.dispatch(resetCashierFilters())}
+      >
         {handleFilterTextDisplay("")}
       </button>
     </div>
