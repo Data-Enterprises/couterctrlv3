@@ -26,9 +26,6 @@ const KpiContainer = () => {
       0,
     );
 
-    // console.log("total sales", total_sales);
-    // console.log("total cogs", total_cogs);
-
     return gpm(total_sales, total_cogs);
   };
 
