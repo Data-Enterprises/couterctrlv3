@@ -36,7 +36,7 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
       </div>
 
       <div className="mt-1 grid grid-cols-[25%_75%]">
-        <div className="rounded-full border-[3px] border-blue-500 bg-blue-200/40 w-[90%] flex justify-center items-center">
+        <div className="rounded-full w-[90%] flex justify-center items-center">
           <UserIcon className="w-16 h-16 text-blue-500" />
         </div>
         <div className="grid grid-cols-2">

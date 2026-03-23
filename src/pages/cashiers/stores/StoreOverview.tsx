@@ -95,7 +95,7 @@ const StoreOverview = ({ store }: StoreCardProps) => {
       </div>
 
       <div className="mt-1 grid grid-cols-[25%_75%]">
-        <div className="rounded-full border-[3px] bg-blue-200/40 border-blue-500 w-[90%] flex justify-center items-center">
+        <div className="rounded-full w-[90%] flex justify-center items-center">
           <BuildingStorefrontIcon className="w-16 h-16 text-blue-500" />
         </div>
         <div className="mt-1 grid grid-cols-2">
