@@ -158,7 +158,7 @@ const CalcModal = () => {
                   onChange={(e) => handleCostChange(e.target.value)}
                 />
               </div>
-              <div className="w-full mt-2 space-y-2">
+              <div className="w-full mt-4 space-y-2">
                 <button
                   className="btn-themeBlue w-full py-1.5"
                   onClick={() => calcNewMetrics()}
@@ -177,7 +177,7 @@ const CalcModal = () => {
             </div>
             <div>
               <div className="font-medium underline text-sm">Prices/Qty</div>
-              <div className="min-h-20 max-h-20 overflow-hidden overflow-y-auto">
+              <div className="min-h-28 max-h-28 overflow-hidden overflow-y-auto">
                 {prices.map((p, i) => {
                   return (
                     <div key={i} className="text-sm grid grid-cols-2">
@@ -187,7 +187,7 @@ const CalcModal = () => {
                   );
                 })}
               </div>
-              <div className="border-2 p-3 mt-5 border-emerald-500 rounded-lg bg-emerald-100 text-sm">
+              <div className="border-2 p-2 mt-1 border-emerald-500 rounded-lg bg-emerald-100 text-sm">
                 <div className="font-medium underline">Predicted Metrics</div>
                 <div className="text-sm">
                   <span>Qty:</span>
