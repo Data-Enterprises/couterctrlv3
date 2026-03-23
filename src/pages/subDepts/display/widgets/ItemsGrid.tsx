@@ -91,10 +91,13 @@ const ItemsGrid = () => {
   ]);
 
   useEffect(() => {
-    const dateComp = new Date(selectedWeekDay).toISOString().split("T")[0];
-    const filtered = margins.filter(
-      (margin) => margin.sale_date.split("T")[0] === dateComp,
-    );
+    const dateComp = selectedWeekDay
+      ? new Date(selectedWeekDay).toISOString().split("T")[0]
+      : "";
+
+    const filtered = margins.filter((margin) => {
+      return dateComp ? margin.sale_date.split("T")[0] === dateComp : true;
+    });
 
     const reduced = filtered.reduce((acc: ItemRow[], margin) => {
       const found = acc.find(
