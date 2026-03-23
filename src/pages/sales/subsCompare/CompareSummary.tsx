@@ -22,10 +22,12 @@ const CompareSummary = () => {
 
   const totals = () => {
     const leftTotal = compareSubsLeftCompare.reduce(
+      // (acc, sub) => acc + sub.total_sales,
       (acc, sub) => acc + sub.total_sales - sub.total_tax,
       0,
     );
     const rightTotal = compareSubsRightCompare.reduce(
+      // (acc, sub) => acc + sub.total_sales,
       (acc, sub) => acc + sub.total_sales - sub.total_tax,
       0,
     );
@@ -48,59 +50,59 @@ const CompareSummary = () => {
     }
   };
 
-  console.log("Left Compare Total Sales", compareSubsLeftCompare.reduce((acc, sub) => acc + sub.total_sales, 0));
-  console.log("Right Compare Total Sales", compareSubsRightCompare.reduce((acc, sub) => acc + sub.total_sales, 0));
+  // console.log("Left Compare Total Sales", compareSubsLeftCompare.reduce((acc, sub) => acc + sub.total_sales, 0));
+  // console.log("Right Compare Total Sales", compareSubsRightCompare.reduce((acc, sub) => acc + sub.total_sales, 0));
 
-  console.log(
-    "Left Compare Total Sales - Total Tax",
-    compareSubsLeftCompare.reduce(
-      (acc, sub) => acc + sub.total_sales - sub.total_tax,
-      0,
-    ),
-  );
-  console.log(
-    "Right Compare Total Sales - Total Tax",
-    compareSubsRightCompare.reduce(
-      (acc, sub) => acc + sub.total_sales - sub.total_tax,
-      0,
-    ),
-  );
+  // console.log(
+  //   "Left Compare Total Sales - Total Tax",
+  //   compareSubsLeftCompare.reduce(
+  //     (acc, sub) => acc + sub.total_sales - sub.total_tax,
+  //     0,
+  //   ),
+  // );
+  // console.log(
+  //   "Right Compare Total Sales - Total Tax",
+  //   compareSubsRightCompare.reduce(
+  //     (acc, sub) => acc + sub.total_sales - sub.total_tax,
+  //     0,
+  //   ),
+  // );
 
-  console.log(
-    "Left Compare Net Sales",
-    compareSubsLeftCompare.reduce((acc, sub) => acc + sub.net_sales, 0),
-  );
+  // console.log(
+  //   "Left Compare Net Sales",
+  //   compareSubsLeftCompare.reduce((acc, sub) => acc + sub.net_sales, 0),
+  // );
 
-  console.log(
-    "Left Compare Total Tax",
-    compareSubsLeftCompare.reduce((acc, sub) => acc + sub.total_tax, 0),
-  );
-  console.log(
-    "Right Compare Total Tax",
-    compareSubsRightCompare.reduce((acc, sub) => acc + sub.total_tax, 0),
-  );
+  // console.log(
+  //   "Left Compare Total Tax",
+  //   compareSubsLeftCompare.reduce((acc, sub) => acc + sub.total_tax, 0),
+  // );
+  // console.log(
+  //   "Right Compare Total Tax",
+  //   compareSubsRightCompare.reduce((acc, sub) => acc + sub.total_tax, 0),
+  // );
 
-  console.log(
-    "Right Compare Net Sales",
-    compareSubsRightCompare.reduce((acc, sub) => acc + sub.net_sales, 0),
-  );
+  // console.log(
+  //   "Right Compare Net Sales",
+  //   compareSubsRightCompare.reduce((acc, sub) => acc + sub.net_sales, 0),
+  // );
 
-  console.log(
-    "Left Compare Qty",
-    compareSubsLeftCompare.reduce((acc, sub) => acc + sub.qty, 0),
-  );
-  console.log(
-    "Right Compare Qty",
-    compareSubsRightCompare.reduce((acc, sub) => acc + sub.qty, 0),
-  );
-  console.log(
-    "Left Compare Weight",
-    compareSubsLeftCompare.reduce((acc, sub) => acc + sub.weight, 0),
-  );
-  console.log(
-    "Right Compare Weight",
-    compareSubsRightCompare.reduce((acc, sub) => acc + sub.weight, 0),
-  );
+  // console.log(
+  //   "Left Compare Qty",
+  //   compareSubsLeftCompare.reduce((acc, sub) => acc + sub.qty, 0),
+  // );
+  // console.log(
+  //   "Right Compare Qty",
+  //   compareSubsRightCompare.reduce((acc, sub) => acc + sub.qty, 0),
+  // );
+  // console.log(
+  //   "Left Compare Weight",
+  //   compareSubsLeftCompare.reduce((acc, sub) => acc + sub.weight, 0),
+  // );
+  // console.log(
+  //   "Right Compare Weight",
+  //   compareSubsRightCompare.reduce((acc, sub) => acc + sub.weight, 0),
+  // );
 
   return (
     <div className="text-sm">

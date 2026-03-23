@@ -63,7 +63,7 @@ export const theme = themeQuartz.withParams({
 });
 
 export interface HourlyTotal {
-  hour:number;
+  hour: number;
   total_sales: number;
   trans: number;
 }
@@ -125,7 +125,7 @@ export const subCols: (ColDef<SubSale> | ColGroupDef<SubSale>)[] = [
       return pct;
     },
     headerStyle: { borderRight: "1px solid white" },
-    cellClass: 'text-right'
+    cellClass: "text-right",
   },
   {
     field: "net_sales",
@@ -148,7 +148,9 @@ export const subCols: (ColDef<SubSale> | ColGroupDef<SubSale>)[] = [
           ? "bg-emerald-200"
           : pct >= 90
             ? "bg-yellow-200"
-            : "bg-orange-200"
+            : pct > 0
+              ? "bg-orange-200"
+              : ""
       }`;
     },
   },

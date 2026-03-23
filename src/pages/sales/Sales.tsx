@@ -156,7 +156,9 @@ const Sales = () => {
               )}
             </div>
           ) : isReady ? (
-            <div className="md:grid h-full md:grid-rows-[20%_78%] md:gap-4 overflow-hidden">
+            <div
+              className="md:max-h-[calc(100vh-5rem)] overflow-y-auto no-scrollbar md:grid-rows-[20%_78%] md:space-y-2 overflow-hidden"
+            >
               <KpiHeader />
               <div className="grid grid-cols-2 gap-2">
                 <div className="grid grid-rows-2 gap-2">
