@@ -37,7 +37,7 @@ export const cols: ColDef<BarData>[] = [
     headerName: "Date",
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus text-right",
+    cellClass: "no-outline-on-focus",
     valueFormatter: (params) => {
       const dow = new Date(params.value).toDateString().split(" ")[0];
       return `${dow}, ${params.value}`;
