@@ -62,7 +62,7 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
       </div>
 
       <div className="grid grid-rows-9 mt-1">
-        <div className="grid grid-cols-[22%_26%_22%_20%_10%] border-b border-content/60 font-medium">
+        <div className="grid grid-cols-[22%_26%_22%_17%_13%] border-b border-content/60 font-medium">
           <div>Exception</div>
           <div>Sales</div>
           <div>Qty</div>

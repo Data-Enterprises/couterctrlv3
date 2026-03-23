@@ -28,13 +28,13 @@ const ExceptionRow = ({
 }: ExceptionInnerCardProps) => {
   return (
     <div
-      className={`grid grid-cols-[22%_26%_22%_20%_10%] text-[13px] py-0.5 ${bgColor}`}
+      className={`grid grid-cols-[22%_26%_22%_17%_13%] text-[13px] py-0.5 ${bgColor}`}
     >
       <div className="font-medium text-content/60">{type}</div>
       <div className="font-medium">{formatCurrency2(col2)}</div>
       <div className="font-medium">{formatBigNumber(col3, 0)}</div>
       <div className="font-medium">{formatBigNumber(col4, 0)}</div>
-      <div className="font-medium">{col5}</div>
+      <div className="font-medium">{formatBigNumber(col5, 2)}%</div>
     </div>
   );
 };
