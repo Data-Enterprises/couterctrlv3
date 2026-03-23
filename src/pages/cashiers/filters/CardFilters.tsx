@@ -70,34 +70,34 @@ const CardFilters = () => {
 
   const activeFilterStyle = (type: CashierFilterType) => {
     if (type === "cashier_name" && ctx.cashNameFilterApplied.length) {
-      return "bg-orange-500 text-white font-medium";
+      return "bg-orange-200";
     } else if (type === "store_name" && ctx.storeNameFilterApplied.length) {
-      return "bg-orange-500 text-white font-medium";
+      return "bg-orange-200";
     } else if (
       type === "total_sales" &&
       ctx.totalSalesFilterApplied.operator !== "" &&
       ctx.totalSalesFilterApplied.value > 0
     ) {
-      return "bg-orange-500 text-white font-medium";
+      return "bg-orange-200";
     } else if (
       type === "total_qty" &&
       ctx.totalQtyFilterApplied.operator !== "" &&
       ctx.totalQtyFilterApplied.value > 0
     ) {
-      return "bg-orange-500 text-white font-medium";
+      return "bg-orange-200";
     } else if (
       type === "total_transactions" &&
       ctx.totalTransactionsFilterApplied.operator !== "" &&
       ctx.totalTransactionsFilterApplied.value > 0
     ) {
-      return "bg-orange-500 text-white font-medium";
+      return "bg-orange-200";
     } else if (type === "risk_level" && ctx.riskLevelFilterApplied.length) {
-      return "bg-orange-500 text-white font-medium";
+      return "bg-orange-200";
     } else if (
       type === "exception_tier" &&
       ctx.exceptionTierFilterApplied.length
     ) {
-      return "bg-orange-500 text-white font-medium";
+      return "bg-orange-200";
     } else {
       return "";
     }
