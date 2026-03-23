@@ -29,7 +29,9 @@ export type RiskLevel = "Low" | "Medium" | "High" | "Very High" | "";
 
 interface CashiersState {
   storeCards: StoreCard[];
+  filteredStoreCards: StoreCard[];
   cashierCards: CashierCard[];
+  filteredCashierCards: CashierCard[];
   cashiers: Cashier[];
   stores: CashierStore[];
   selectedStoreCard: number;
@@ -47,11 +49,21 @@ interface CashiersState {
   exceptionTierFilter: RiskLevel;
   cashierFilterType: CashierFilterType;
   applyFilters: boolean;
+  // applied filters
+  cashNameFilterApplied: string;
+  storeNameFilterApplied: string;
+  totalSalesFilterApplied: NumberFilter;
+  totalQtyFilterApplied: NumberFilter;
+  totalTransactionsFilterApplied: NumberFilter;
+  riskLevelFilterApplied: RiskLevel;
+  exceptionTierFilterApplied: RiskLevel;
 }
 
 const initialState: CashiersState = {
   storeCards: [],
+  filteredStoreCards: [],
   cashierCards: [],
+  filteredCashierCards: [],
   cashiers: [],
   stores: [],
   selectedStoreCard: 0,
@@ -68,6 +80,13 @@ const initialState: CashiersState = {
   exceptionTierFilter: "",
   cashierFilterType: "",
   applyFilters: false,
+  cashNameFilterApplied: "",
+  storeNameFilterApplied: "",
+  totalSalesFilterApplied: defaultNumberFilter,
+  totalQtyFilterApplied: defaultNumberFilter,
+  totalTransactionsFilterApplied: defaultNumberFilter,
+  riskLevelFilterApplied: "",
+  exceptionTierFilterApplied: "",
 };
 
 const cashiersSlice = createSlice({
@@ -82,6 +101,10 @@ const cashiersSlice = createSlice({
           store_name: sc.store_name,
         }))
         .sort((a, b) => a.storeid - b.storeid);
+        state.filteredStoreCards = action.payload;
+    },
+    setFilteredStoreCards: (state, action: PayloadAction<StoreCard[]>) => {
+      state.filteredStoreCards = action.payload;
     },
     setCashierCards: (state, action: PayloadAction<CashierCard[]>) => {
       state.cashierCards = action.payload;
@@ -92,6 +115,10 @@ const cashiersSlice = createSlice({
         cashier_number: cc.cashier_number,
         cashier_name: cc.cashier_name,
       }));
+      state.filteredCashierCards = action.payload;
+    },
+    setFilteredCashierCards: (state, action: PayloadAction<CashierCard[]>) => {
+      state.filteredCashierCards = action.payload;
     },
     setSelectedStoreCard: (state, action: PayloadAction<number>) => {
       state.selectedStoreCard = action.payload;
@@ -137,10 +164,19 @@ const cashiersSlice = createSlice({
     },
     setApplyFilters: (state, action: PayloadAction<boolean>) => {
       state.applyFilters = action.payload;
+      state.cashNameFilterApplied = state.cashierNameFilter;
+      state.storeNameFilterApplied = state.storeNameFilter;
+      state.totalSalesFilterApplied = state.totalSalesFilter;
+      state.totalQtyFilterApplied = state.totalQtyFilter;
+      state.totalTransactionsFilterApplied = state.totalTransactionsFilter;
+      state.riskLevelFilterApplied = state.riskLevelFilter;
+      state.exceptionTierFilterApplied = state.exceptionTierFilter;
     },
     reQueryStepOne: (state) => {
       state.storeCards = [];
       state.cashierCards = [];
+      state.filteredCashierCards = [];
+      state.filteredStoreCards = [];
       state.cashiers = [];
       state.stores = [];
       state.selectedStoreCard = 0;
@@ -149,6 +185,7 @@ const cashiersSlice = createSlice({
     },
     reQueryStepTwo: (state) => {
       state.cashierCards = [];
+      state.filteredCashierCards = [];
       state.cashiers = [];
       state.loadingCashiers = true;
     },
@@ -162,6 +199,16 @@ const cashiersSlice = createSlice({
       state.exceptionTierFilter = "";
       state.cashierFilterType = "";
       state.applyFilters = false;
+      state.cashNameFilterApplied = "";
+      state.storeNameFilterApplied = "";
+      state.totalSalesFilterApplied = defaultNumberFilter;
+      state.totalQtyFilterApplied = defaultNumberFilter;
+      state.totalTransactionsFilterApplied = defaultNumberFilter;
+      state.riskLevelFilterApplied = "";
+      state.exceptionTierFilterApplied = "";
+
+      state.filteredStoreCards = state.storeCards;
+      state.filteredCashierCards = state.cashierCards;
     },
     resetCashierState: () => initialState,
   },
@@ -169,7 +216,9 @@ const cashiersSlice = createSlice({
 
 export const {
   setStoreCards,
+  setFilteredStoreCards,
   setCashierCards,
+  setFilteredCashierCards,
   setDataView,
   setSelectedStoreCard,
   setLoadingStores,

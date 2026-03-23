@@ -17,6 +17,7 @@ const CardFilters = () => {
     ctx.dispatch(
       setDataView(ctx.dataView === "stores" ? "cashiers" : "stores"),
     );
+    ctx.dispatch(resetCashierFilters());
   };
 
   const handleOpenFilterModal = (type: CashierFilterType) => {
@@ -27,69 +28,75 @@ const CardFilters = () => {
   const handleFilterTextDisplay = (type: CashierFilterType) => {
     // This will determin what is displayed in the button text based on if that filter is set or not
     if (type === "cashier_name") {
-      return ctx.cashierNameFilter.length
-        ? `Cashier: ${ctx.cashierNameFilter}`
+      return ctx.cashNameFilterApplied.length
+        ? `Cashier: ${ctx.cashNameFilterApplied}`
         : "Cashier Name";
     }
     if (type === "store_name") {
-      return ctx.storeNameFilter.length
-        ? `${ctx.storeNameFilter}`
+      return ctx.storeNameFilterApplied.length
+        ? `${ctx.storeNameFilterApplied}`
         : "Store Name";
     }
     if (type === "total_sales") {
-      return ctx.totalSalesFilter.operator !== "" && ctx.totalSalesFilter.value > 0
-        ? `Sales ${ctx.totalSalesFilter.operator} ${ctx.totalSalesFilter.value}`
+      return ctx.totalSalesFilterApplied.operator !== "" &&
+        ctx.totalSalesFilterApplied.value > 0
+        ? `Sales ${ctx.totalSalesFilterApplied.operator} ${ctx.totalSalesFilterApplied.value}`
         : "Total Sales";
     }
     if (type === "total_qty") {
-      return ctx.totalQtyFilter.operator !== "" && ctx.totalQtyFilter.value > 0
-        ? `Qty ${ctx.totalQtyFilter.operator} ${ctx.totalQtyFilter.value}`
+      return ctx.totalQtyFilterApplied.operator !== "" &&
+        ctx.totalQtyFilterApplied.value > 0
+        ? `Qty ${ctx.totalQtyFilterApplied.operator} ${ctx.totalQtyFilterApplied.value}`
         : "Total Qty";
     }
     if (type === "total_transactions") {
-      return ctx.totalTransactionsFilter.operator !== "" && ctx.totalTransactionsFilter.value > 0
-        ? `Transactions ${ctx.totalTransactionsFilter.operator} ${ctx.totalTransactionsFilter.value}`
+      return ctx.totalTransactionsFilterApplied.operator !== "" &&
+        ctx.totalTransactionsFilterApplied.value > 0
+        ? `Transactions ${ctx.totalTransactionsFilterApplied.operator} ${ctx.totalTransactionsFilterApplied.value}`
         : "Total Transactions";
     }
     if (type === "risk_level") {
-      return ctx.riskLevelFilter.length
-        ? `Risk: ${ctx.riskLevelFilter}`
+      return ctx.riskLevelFilterApplied.length
+        ? `Risk: ${ctx.riskLevelFilterApplied}`
         : "Risk Level";
     }
     if (type === "exception_tier") {
-      return ctx.exceptionTierFilter.length
-        ? `Tier: ${ctx.exceptionTierFilter}`
+      return ctx.exceptionTierFilterApplied.length
+        ? `Tier: ${ctx.exceptionTierFilterApplied}`
         : "Exception Tier";
     }
     return "Refresh";
   };
 
   const activeFilterStyle = (type: CashierFilterType) => {
-    if (type === "cashier_name" && ctx.cashierNameFilter.length) {
+    if (type === "cashier_name" && ctx.cashNameFilterApplied.length) {
       return "bg-orange-500 text-white font-medium";
-    } else if (type === "store_name" && ctx.storeNameFilter.length) {
+    } else if (type === "store_name" && ctx.storeNameFilterApplied.length) {
       return "bg-orange-500 text-white font-medium";
     } else if (
       type === "total_sales" &&
-      ctx.totalSalesFilter.operator !== "" &&
-      ctx.totalSalesFilter.value > 0
+      ctx.totalSalesFilterApplied.operator !== "" &&
+      ctx.totalSalesFilterApplied.value > 0
     ) {
       return "bg-orange-500 text-white font-medium";
     } else if (
       type === "total_qty" &&
-      ctx.totalQtyFilter.operator !== "" &&
-      ctx.totalQtyFilter.value > 0
+      ctx.totalQtyFilterApplied.operator !== "" &&
+      ctx.totalQtyFilterApplied.value > 0
     ) {
       return "bg-orange-500 text-white font-medium";
     } else if (
       type === "total_transactions" &&
-      ctx.totalTransactionsFilter.operator !== "" &&
-      ctx.totalTransactionsFilter.value > 0
+      ctx.totalTransactionsFilterApplied.operator !== "" &&
+      ctx.totalTransactionsFilterApplied.value > 0
     ) {
       return "bg-orange-500 text-white font-medium";
-    } else if (type === "risk_level" && ctx.riskLevelFilter.length) {
+    } else if (type === "risk_level" && ctx.riskLevelFilterApplied.length) {
       return "bg-orange-500 text-white font-medium";
-    } else if (type === "exception_tier" && ctx.exceptionTierFilter.length) {
+    } else if (
+      type === "exception_tier" &&
+      ctx.exceptionTierFilterApplied.length
+    ) {
       return "bg-orange-500 text-white font-medium";
     } else {
       return "";
