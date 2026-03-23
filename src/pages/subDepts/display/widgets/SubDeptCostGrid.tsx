@@ -29,6 +29,7 @@ const SubDeptCostGrid = () => {
 
   useEffect(() => {
     if (sm.subDeptCost.length) {
+      const date = sm.selectedWeekDay;
       const upc = sm.upcFilter;
       const desc = sm.descFilter;
       const unitCost = sm.unitCostFilter;
@@ -54,6 +55,7 @@ const SubDeptCostGrid = () => {
       };
 
       const filteredData = [...sm.subDeptCost].filter((item) => {
+        const dateMatch = date ? date === item.date : true;
         const upcMatch = upc ? item.product_code.includes(upc) : true;
         const descMatch = desc
           ? item.description.toLowerCase().includes(desc.toLowerCase())
@@ -76,6 +78,7 @@ const SubDeptCostGrid = () => {
           : true;
 
         return (
+          dateMatch &&
           upcMatch &&
           descMatch &&
           unitCostMatch &&
@@ -88,6 +91,7 @@ const SubDeptCostGrid = () => {
       dispatch(setFilteredCostGridData(filteredData));
     }
   }, [
+    sm.selectedWeekDay,
     sm.upcFilter,
     sm.descFilter,
     sm.caseCostFilter,

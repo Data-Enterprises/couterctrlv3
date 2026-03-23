@@ -40,7 +40,7 @@ const SalesGrid = ({ gridData }: SalesGridProps) => {
         }
       });
     }
-  }, [selectedWeekDay, gridRef.current, sm.itemGridData]);
+  }, [selectedWeekDay, gridRef.current, sm.itemGridData, sm.filteredCostGridData]);
 
   return (
     <div className="rounded-lg shadow-lg">

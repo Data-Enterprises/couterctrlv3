@@ -24,6 +24,10 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
     if (ctx.selectedWeek === 5) return;
 
     if (title === "Cost") {
+      const formatDate = (dte: string) => {
+        const split = dte.split("T")[0].split("-");
+        return `${split[1]}/${split[2]}/${split[0]}`;
+      };
       const margins: SubDeptCost[] = ctx.margins.reduce(
         (acc: SubDeptCost[], curr) => {
           const found = acc.find(
@@ -31,6 +35,7 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
           );
           if (!found) {
             acc.push({
+              date: formatDate(curr.sale_date),
               product_code: curr.product_code,
               description: curr.product_description,
               calculated_cost: curr.calculated_cost,

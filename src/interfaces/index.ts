@@ -948,6 +948,7 @@ export type StoresMissingSalesJsonResp = {
 };
 
 export type SubDeptCost = {
+  date: string;
   product_code: string;
   description: string;
   calculated_cost: number;
