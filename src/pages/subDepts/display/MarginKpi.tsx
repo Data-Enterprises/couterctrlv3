@@ -21,6 +21,8 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
   const [showTooltip, setShowTooltip] = useState<boolean>(false);
 
   const handleCostClick = () => {
+    if (ctx.selectedWeek === 5) return;
+
     if (title === "Cost") {
       const margins: SubDeptCost[] = ctx.margins.reduce(
         (acc: SubDeptCost[], curr) => {
@@ -86,8 +88,8 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
 
   const hoverStyle = () => {
     if (
-      title === "Cost" ||
-      (title === "Unique Items" && ctx.selectedWeek < 5)
+      (title === "Cost" || title === "Unique Items") &&
+      ctx.selectedWeek < 5
     ) {
       return "hover:bg-blue-200 cursor-pointer transition-all duration-200";
     }
@@ -98,7 +100,10 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
       title === "Cost"
         ? "Shows the cost data for all items sold"
         : "Shows data for the unique items sold";
-    if (title === "Cost" || title === "Unique Items") {
+    if (
+      (title === "Cost" || title === "Unique Items") &&
+      ctx.selectedWeek < 5
+    ) {
       return (
         <div className="absolute right-1 top-0.5 flex gap-1 items-center">
           <div
