@@ -32,19 +32,15 @@ export const formatDate = (dateStr: string) => {
 
 export const cols: ColDef<BarData>[] = [
   {
-    flex: 1.1,
+    flex: 0.8,
     field: "date",
     headerName: "Date",
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
-    valueFormatter: (params) => {
-      const dow = new Date(params.value).toDateString().split(" ")[0];
-      return `${dow}, ${params.value}`;
-    }
   },
   {
-    flex: 0.9,
+    flex: 1,
     field: "sales",
     headerName: "Sales",
     resizable: false,
@@ -53,7 +49,7 @@ export const cols: ColDef<BarData>[] = [
     cellClass: "no-outline-on-focus text-right",
   },
   {
-    flex: 0.9,
+    flex: 1,
     field: "net",
     headerName: "Net Sales",
     resizable: false,
