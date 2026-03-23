@@ -130,6 +130,8 @@ const SubMarginControls = () => {
           valueKey="storeid"
           onSelect={handleStoreSelect}
           defaultQuery={`${ctx.searchValue > 0 ? findStoreName() : ""}`}
+          innerClass="text-sm"
+          listClass="text-sm"
         />
         <SingleDatePicker />
         <button

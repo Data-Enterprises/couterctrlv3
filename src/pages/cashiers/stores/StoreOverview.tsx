@@ -19,7 +19,9 @@ import {
   formatCurrency2,
   formatGoliathDate,
 } from "../../../utils";
+
 import ExceptionRow from "./ExceptionRow";
+import { BuildingStorefrontIcon } from "@heroicons/react/24/outline";
 
 interface StoreCardProps {
   store: StoreCard;
@@ -92,27 +94,34 @@ const StoreOverview = ({ store }: StoreCardProps) => {
         <div className="font-medium">{store.store_name.split(" - ")[1]}</div>
       </div>
 
-      <div className="mt-1 grid grid-cols-2">
-        <div>
-          <div className="text-content/60">Total Sales</div>
-          <div className="font-medium">
-            {formatCurrency2(store.total_sales)}
+      <div className="mt-1 grid grid-cols-[25%_75%]">
+        <div className="rounded-full border-[3px] bg-blue-200/40 border-blue-500 w-[90%] flex justify-center items-center">
+          <BuildingStorefrontIcon className="w-16 h-16 text-blue-500" />
+        </div>
+        <div className="mt-1 grid grid-cols-2">
+          <div>
+            <div className="text-content/60">Total Sales</div>
+            <div className="font-medium">
+              {formatCurrency2(store.total_sales)}
+            </div>
           </div>
-        </div>
-        <div>
-          <div className="text-content/60">Net Sales</div>
-          <div className="font-medium">{formatCurrency2(store.net_sales)}</div>
-        </div>
-        <div>
-          <div className="text-content/60">Total Qty</div>
-          <div className="font-medium">
-            {formatBigNumber(store.total_qty, 0)}
+          <div>
+            <div className="text-content/60">Net Sales</div>
+            <div className="font-medium">
+              {formatCurrency2(store.net_sales)}
+            </div>
           </div>
-        </div>
-        <div>
-          <div className="text-content/60">Total Transactions</div>
-          <div className="font-medium">
-            {formatBigNumber(store.total_transactions, 0)}
+          <div>
+            <div className="text-content/60">Total Qty</div>
+            <div className="font-medium">
+              {formatBigNumber(store.total_qty, 0)}
+            </div>
+          </div>
+          <div>
+            <div className="text-content/60">Total Transactions</div>
+            <div className="font-medium">
+              {formatBigNumber(store.total_transactions, 0)}
+            </div>
           </div>
         </div>
       </div>
@@ -185,7 +194,7 @@ const StoreOverview = ({ store }: StoreCardProps) => {
           col5={store.modified_rate}
           bgColor="bg-blue-200/50"
         />
-        <div className="flex justify-between font-medium">
+        <div className="flex justify-center gap-4 font-medium">
           <div className="flex gap-1">
             <div>Tier:</div>
             <div className={exceptionTierColor()}>{store.exception_tier}</div>

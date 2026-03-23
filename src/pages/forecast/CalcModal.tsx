@@ -28,8 +28,8 @@ const CalcModal = () => {
     if (selectedRow) {
       setNewPrice(selectedRow.fcstPrice.toString());
       setPriceText(selectedRow.fcstPrice.toString());
-      setNewCost("12.90");
-      setCostText("12.90");
+      setNewCost("0.00");
+      setCostText("0.00");
       const prices = forecastResults.find(
         (r) => r.upc === selectedRow.upc,
       )?.price_history;

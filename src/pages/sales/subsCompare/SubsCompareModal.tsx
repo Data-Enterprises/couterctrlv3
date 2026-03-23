@@ -22,17 +22,18 @@ const SubsCompareModal = () => {
     <Modal
       isOpen={compareSubsModalOpen}
       onClose={handleClose}
-      modalClassName="bg-bkg w-[45%] min-h-[100vh] max-h-[100vh] overflow-hidden overflow-y-auto no-scrollbar"
+      modalClassName="bg-bkg w-[70%] grid grid-cols-[1fr_2fr] gap-4 min-h-[96vh] max-h-[96vh]"
     >
       <CompareSummary />
       {compareSubsLeftCompare.length && compareSubsRightCompare.length ? (
-        <div className="flex h-full rounded-lg ">
+        <div className="flex h-full rounded-lg max-h-[92.3vh] overflow-hidden overflow-y-auto no-scrollbar">
           <div className="mr-2 text-sm rounded-lg w-1/2 space-y-2">
             {compareSubsLeftCompare.map((sub, i) => (
               <CompareCard
                 key={i}
                 data={sub}
                 compareData={compareSubsRightCompare[i]}
+                side="left"
               />
             ))}
           </div>
@@ -42,6 +43,7 @@ const SubsCompareModal = () => {
                 key={i}
                 data={sub}
                 compareData={compareSubsLeftCompare[i]}
+                side="right"
               />
             ))}
           </div>

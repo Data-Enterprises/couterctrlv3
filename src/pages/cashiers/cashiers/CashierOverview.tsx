@@ -1,6 +1,7 @@
 import type { CashierCard } from "../../../interfaces";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import ExceptionRow from "../stores/ExceptionRow";
+import { UserIcon } from "@heroicons/react/24/outline";
 
 interface CashierCardProps {
   cashier: CashierCard;
@@ -34,29 +35,34 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
         <div className="font-medium">{cashier.store_name}</div>
       </div>
 
-      <div className="mt-1 grid grid-cols-2">
-        <div>
-          <div className="text-content/60">Total Sales</div>
-          <div className="font-medium">
-            {formatCurrency2(cashier.total_sales)}
-          </div>
+      <div className="mt-1 grid grid-cols-[25%_75%]">
+        <div className="rounded-full border-[3px] border-blue-500 bg-blue-200/40 w-[90%] flex justify-center items-center">
+          <UserIcon className="w-16 h-16 text-blue-500" />
         </div>
-        <div>
-          <div className="text-content/60">Net Sales</div>
-          <div className="font-medium">
-            {formatCurrency2(cashier.net_sales)}
+        <div className="grid grid-cols-2">
+          <div>
+            <div className="text-content/60">Total Sales</div>
+            <div className="font-medium">
+              {formatCurrency2(cashier.total_sales)}
+            </div>
           </div>
-        </div>
-        <div>
-          <div className="text-content/60">Total Qty</div>
-          <div className="font-medium">
-            {formatBigNumber(cashier.total_qty, 0)}
+          <div>
+            <div className="text-content/60">Net Sales</div>
+            <div className="font-medium">
+              {formatCurrency2(cashier.net_sales)}
+            </div>
           </div>
-        </div>
-        <div>
-          <div className="text-content/60">Total Transactions</div>
-          <div className="font-medium">
-            {formatBigNumber(cashier.total_transactions, 0)}
+          <div>
+            <div className="text-content/60">Total Qty</div>
+            <div className="font-medium">
+              {formatBigNumber(cashier.total_qty, 0)}
+            </div>
+          </div>
+          <div>
+            <div className="text-content/60">Total Transactions</div>
+            <div className="font-medium">
+              {formatBigNumber(cashier.total_transactions, 0)}
+            </div>
           </div>
         </div>
       </div>
@@ -129,7 +135,7 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
           col5={cashier.modified_rate}
           bgColor="bg-blue-200/50"
         />
-        <div className="flex justify-between font-medium">
+        <div className="flex justify-center gap-4 font-medium">
           <div className="flex gap-1">
             <div>Tier:</div>
             <div className={exceptionTierColor()}>{cashier.exception_tier}</div>

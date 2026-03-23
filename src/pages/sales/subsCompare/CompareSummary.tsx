@@ -34,75 +34,21 @@ const CompareSummary = () => {
     return { leftTotal, rightTotal };
   };
 
-  const resultIcons = (side: "left" | "right") => {
-    if (side === "left") {
-      return totals().leftTotal > totals().rightTotal ? (
-        <ArrowUpCircleIcon className="h-6 w-6 stroke-emerald-500 stroke-2 inline-block" />
-      ) : totals().leftTotal < totals().rightTotal ? (
-        <ArrowDownCircleIcon className="h-6 w-6 stroke-orange-500 stroke-2 inline-block" />
-      ) : null;
-    } else {
-      return totals().rightTotal > totals().leftTotal ? (
-        <ArrowUpCircleIcon className="h-6 w-6 stroke-emerald-500 stroke-2 inline-block" />
-      ) : totals().rightTotal < totals().leftTotal ? (
-        <ArrowDownCircleIcon className="h-6 w-6 stroke-orange-500 stroke-2 inline-block" />
-      ) : null;
-    }
+  const resultIcons = () => {
+    return totals().leftTotal > totals().rightTotal ? (
+      <ArrowUpCircleIcon className="h-6 w-6 stroke-emerald-500 stroke-2 inline-block" />
+    ) : totals().leftTotal < totals().rightTotal ? (
+      <ArrowDownCircleIcon className="h-6 w-6 stroke-orange-500 stroke-2 inline-block" />
+    ) : null;
+    // if (side === "left") {
+    // } else {
+    //   return totals().rightTotal > totals().leftTotal ? (
+    //     <ArrowUpCircleIcon className="h-6 w-6 stroke-emerald-500 stroke-2 inline-block" />
+    //   ) : totals().rightTotal < totals().leftTotal ? (
+    //     <ArrowDownCircleIcon className="h-6 w-6 stroke-orange-500 stroke-2 inline-block" />
+    //   ) : null;
+    // }
   };
-
-  // console.log("Left Compare Total Sales", compareSubsLeftCompare.reduce((acc, sub) => acc + sub.total_sales, 0));
-  // console.log("Right Compare Total Sales", compareSubsRightCompare.reduce((acc, sub) => acc + sub.total_sales, 0));
-
-  // console.log(
-  //   "Left Compare Total Sales - Total Tax",
-  //   compareSubsLeftCompare.reduce(
-  //     (acc, sub) => acc + sub.total_sales - sub.total_tax,
-  //     0,
-  //   ),
-  // );
-  // console.log(
-  //   "Right Compare Total Sales - Total Tax",
-  //   compareSubsRightCompare.reduce(
-  //     (acc, sub) => acc + sub.total_sales - sub.total_tax,
-  //     0,
-  //   ),
-  // );
-
-  // console.log(
-  //   "Left Compare Net Sales",
-  //   compareSubsLeftCompare.reduce((acc, sub) => acc + sub.net_sales, 0),
-  // );
-
-  // console.log(
-  //   "Left Compare Total Tax",
-  //   compareSubsLeftCompare.reduce((acc, sub) => acc + sub.total_tax, 0),
-  // );
-  // console.log(
-  //   "Right Compare Total Tax",
-  //   compareSubsRightCompare.reduce((acc, sub) => acc + sub.total_tax, 0),
-  // );
-
-  // console.log(
-  //   "Right Compare Net Sales",
-  //   compareSubsRightCompare.reduce((acc, sub) => acc + sub.net_sales, 0),
-  // );
-
-  // console.log(
-  //   "Left Compare Qty",
-  //   compareSubsLeftCompare.reduce((acc, sub) => acc + sub.qty, 0),
-  // );
-  // console.log(
-  //   "Right Compare Qty",
-  //   compareSubsRightCompare.reduce((acc, sub) => acc + sub.qty, 0),
-  // );
-  // console.log(
-  //   "Left Compare Weight",
-  //   compareSubsLeftCompare.reduce((acc, sub) => acc + sub.weight, 0),
-  // );
-  // console.log(
-  //   "Right Compare Weight",
-  //   compareSubsRightCompare.reduce((acc, sub) => acc + sub.weight, 0),
-  // );
 
   return (
     <div className="text-sm">
@@ -118,9 +64,9 @@ const CompareSummary = () => {
             </div>
           </div>
         </div>
-        <div className="bg-custom-white border-b border-content/60 font-medium text-nowrap flex items-end">
+        {/* <div className="bg-custom-white border-b border-content/60 font-medium text-nowrap flex items-end">
           Total Sales
-        </div>
+        </div> */}
         <div className="bg-custom-white pt-1 pr-2 w-1/2 border-b border-content/60 rounded-tr-lg text-right">
           <div className="flex justify-end">
             <div className="font-medium">{rightSubCompare!.store_name}</div>
@@ -143,17 +89,18 @@ const CompareSummary = () => {
             compKey="total_sales"
           />
         ))}
-        <div className="grid grid-cols-[5.5%_42.5%_42.5%_5.5%] gap-2 py-0.5">
-          <div className="flex justify-center">{resultIcons("left")}</div>
+        <div className="grid grid-cols-[30%_40%_30%] py-[3px] justify-center items-center">
+          {/* <div className="flex justify-center">{resultIcons("left")}</div> */}
           <div className="flex justify-between font-medium">
-            <div>Total</div>
+            {resultIcons()}
             <div>{formatCurrency2(totals().leftTotal)}</div>
           </div>
-          <div className="flex justify-between font-medium">
-            <div>{formatCurrency2(totals().rightTotal)}</div>
+          <div className="flex justify-center items-center">
             <div>Total</div>
           </div>
-          <div className="flex justify-center">{resultIcons("right")}</div>
+          <div className="flex font-medium">
+            <div>{formatCurrency2(totals().rightTotal)}</div>
+          </div>
         </div>
       </div>
     </div>

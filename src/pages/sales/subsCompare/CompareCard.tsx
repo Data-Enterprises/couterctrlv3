@@ -9,9 +9,10 @@ import {
 interface CompareCardProps {
   data: SubSale;
   compareData: SubSale;
+  side: "left" | "right";
 }
 
-const CompareCard = ({ data, compareData }: CompareCardProps) => {
+const CompareCard = ({ data, compareData, side }: CompareCardProps) => {
   const formatDate = (date: string) => {
     const split = date.split("T")[0].split("-");
     return `${split[1]}/${split[2]}/${split[0]}`;
@@ -32,14 +33,14 @@ const CompareCard = ({ data, compareData }: CompareCardProps) => {
   }
 
   const showArrowIcon = (key: keyof SubSale) => {
-    if (!isValidData(compareData)) return null;
+    if (!isValidData(compareData) || side === "right") return null;
     if (data[key] > compareData[key]) {
       return (
-        <ArrowUpCircleIcon className="h-4 w-4 stroke-emerald-500 stroke-2 inline-block" />
+        <ArrowUpCircleIcon className="h-5 w-5 stroke-emerald-500 stroke-2 inline-block" />
       );
     } else if (data[key] < compareData[key]) {
       return (
-        <ArrowDownCircleIcon className="h-4 w-4 stroke-orange-500 stroke-2 inline-block" />
+        <ArrowDownCircleIcon className="h-5 w-5 stroke-orange-500 stroke-2 inline-block" />
       );
     }
     return null;
@@ -48,7 +49,7 @@ const CompareCard = ({ data, compareData }: CompareCardProps) => {
   return (
     <div className="pb-2 shadow-md bg-custom-white rounded-lg text-[13px] min-h-[160px] max-h-[160px]">
       <div className="bg-blue-500 text-custom-white font-medium px-2 rounded-t-lg py-0.5 flex justify-between">
-        <div>{formatDate(data.sale_date)}</div>
+        <div>{data.store_name}</div>
         <div>{data.sub_department_description}</div>
       </div>
       <div className="px-2 font-medium mt-1">Totals</div>

@@ -90,16 +90,26 @@ const SalesBar = ({ barData }: SalesBarProps) => {
             const dow = new Date(value).toDateString().split(" ")[0];
             const datePart = value.split("/").slice(0, 2).join("/");
             return (
-              <g transform={`translate(${x},${y + 3})`}>
+              <g transform={`translate(${x},${y + 4})`}>
+                {/* the tick */}
+                <line
+                  x1={0}
+                  y1={-4}
+                  x2={0}
+                  y2={1.5}
+                  stroke="black"
+                  strokeWidth={0.5}
+                />
+                {/* the text */}
                 <text
                   textAnchor={"middle"}
-                  transform={`translate(${textX},${textY})`}
-                  style={{ fontSize: 10.5, fontWeight: "bolder" }}
+                  transform={`translate(${textX},${textY + 2})`}
+                  style={{ fontSize: 10.5, fontWeight: "bolder", fontFamily: "Arial" }}
                 >
                   <tspan x={0} dy={0}>
                     {dow}
                   </tspan>
-                  <tspan x={0} dy={14}>
+                  <tspan x={0} dy={12}>
                     {datePart}
                   </tspan>
                 </text>

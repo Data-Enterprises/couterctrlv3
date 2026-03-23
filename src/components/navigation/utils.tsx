@@ -7,7 +7,7 @@ import {
   ClipboardDocumentCheckIcon,
   CurrencyDollarIcon,
   KeyIcon,
-  MagnifyingGlassCircleIcon
+  MagnifyingGlassCircleIcon,
 } from "@heroicons/react/16/solid";
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
