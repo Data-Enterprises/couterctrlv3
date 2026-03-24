@@ -65,6 +65,8 @@ interface CashiersState {
   transModalOpen: boolean;
   noTransactions: boolean;
   exportModalOpen: boolean;
+  noRowsFound: boolean;
+  fetchingTransactions: boolean;
 }
 
 const initialState: CashiersState = {
@@ -101,6 +103,8 @@ const initialState: CashiersState = {
   transModalOpen: false,
   noTransactions: false,
   exportModalOpen: false,
+  noRowsFound: false,
+  fetchingTransactions: false,
 };
 
 const cashiersSlice = createSlice({
@@ -195,6 +199,9 @@ const cashiersSlice = createSlice({
     setExceptionQtyTypes: (state, action: PayloadAction<ExceptionType[]>) => {
       state.exceptionQtyTypes = action.payload;
     },
+    setFetchingTransactions: (state, action: PayloadAction<boolean>) => {
+      state.fetchingTransactions = action.payload;
+    },
     reQueryStepOne: (state) => {
       state.storeCards = [];
       state.cashierCards = [];
@@ -253,6 +260,9 @@ const cashiersSlice = createSlice({
     setExportModalOpen: (state, action: PayloadAction<boolean>) => {
       state.exportModalOpen = action.payload;
     },
+    setNoRowsFound: (state, action: PayloadAction<boolean>) => {
+      state.noRowsFound = action.payload;
+    },
     resetCashierState: () => initialState,
   },
 });
@@ -287,5 +297,7 @@ export const {
   setTransDrillDown,
   setNoTransactions,
   setExportModalOpen,
+  setNoRowsFound,
+  setFetchingTransactions,
 } = cashiersSlice.actions;
 export default cashiersSlice.reducer;

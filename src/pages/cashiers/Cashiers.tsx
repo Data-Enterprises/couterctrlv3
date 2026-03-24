@@ -23,6 +23,7 @@ import TransactionsView from "./transactions/TransactionsView";
 import TransactionModal from "./transactions/TransactionModal";
 import ExportModal from "./transactions/ExportModal";
 import { colDefs } from "./transactions";
+import ViewToggle from "./ViewToggle";
 
 const Cashiers = () => {
   const toast = useToast();
@@ -91,6 +92,7 @@ const Cashiers = () => {
           <StorePicker />
           <DatePickers handleQuery={getSCards} />
         </div>
+        <ViewToggle />
         {ctx.dataView.length ? <CardFilters /> : null}
       </div>
 

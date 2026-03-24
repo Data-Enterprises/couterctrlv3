@@ -11,7 +11,12 @@ import {
   formatCurrency2,
   formatGoliathDate,
 } from "../../../utils";
-import { setDataView, setTransList } from "../../../features/cashiersSlice";
+import {
+  setDataView,
+  setFetchingTransactions,
+  setNoRowsFound,
+  setTransList,
+} from "../../../features/cashiersSlice";
 
 interface ExceptionInnerCardProps {
   type: ExceptionType;
@@ -39,6 +44,10 @@ const ExceptionRow = ({
   const dispatch = useAppDispatch();
 
   const handleTransactionCall = () => {
+    dispatch(setNoRowsFound(false));
+    dispatch(setTransList([]));
+    dispatch(setDataView("transactions"));
+    dispatch(setFetchingTransactions(true));
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
     getCashierTable(ctx.url, ctx.token, start, end, 0, storeid, 1, [type], 1)
@@ -54,17 +63,25 @@ const ExceptionRow = ({
             .then((resp) => {
               const j = resp.data;
               if (j.error === 0) {
+                if (!j.transactions.length) {
+                  dispatch(setNoRowsFound(true));
+                  return;
+                }
                 const filtered = [...j.transactions].filter((trans) => {
-                  return cashierNumber ? trans.cashier_number === cashierNumber : true;
-                })
+                  return cashierNumber
+                    ? trans.cashier_number === cashierNumber
+                    : true;
+                });
                 dispatch(setTransList(filtered));
-                dispatch(setDataView("transactions"));
               }
             })
             .catch((err: JsonError) => toast.error(err.message));
+        } else {
+          dispatch(setNoRowsFound(true));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => dispatch(setFetchingTransactions(false)));
   };
 
   return (

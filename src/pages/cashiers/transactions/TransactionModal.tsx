@@ -11,7 +11,7 @@ const TransactionModal = () => {
   return (
     <Modal
       isOpen={cashier.transModalOpen}
-      modalClassName="bg-custom-white w-1/3 relative no-scrollbar max-h-[80vh] overflow-y-auto p-2 rounded-lg shadow-lg"
+      modalClassName="bg-custom-white w-[40%] relative no-scrollbar max-h-[80vh] overflow-y-auto p-2 rounded-lg shadow-lg"
       onClose={() => dispatch(setTransModalOpen(false))}
     >
       {cashier.noTransactions && (

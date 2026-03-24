@@ -1,6 +1,5 @@
 import { useCashierCtx } from "..";
 import {
-  setDataView,
   setCashierFilterModalOpen,
   type CashierFilterType,
   setCashierFilterType,
@@ -9,16 +8,6 @@ import {
 
 const CardFilters = () => {
   const ctx = useCashierCtx();
-
-  const showViewToggle =
-    ctx.storeCards.length > 0 && ctx.cashierCards.length > 0;
-
-  const handleToggleView = () => {
-    ctx.dispatch(
-      setDataView(ctx.dataView === "stores" ? "cashiers" : "stores"),
-    );
-    ctx.dispatch(resetCashierFilters());
-  };
 
   const handleOpenFilterModal = (type: CashierFilterType) => {
     ctx.dispatch(setCashierFilterType(type));
@@ -116,14 +105,6 @@ const CardFilters = () => {
       <div className="bg-blue-500 text-custom-white py-0.5 px-2 font-medium rounded-t-lg">
         Filter By
       </div>
-      {showViewToggle && (
-        <button
-          onClick={handleToggleView}
-          className="py-2 shadow-md mx-2 rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200 text-[14px]"
-        >
-          View {ctx.dataView === "stores" ? "Cashiers" : "Stores"}
-        </button>
-      )}
       <button
         onClick={() =>
           handleOpenFilterModal(

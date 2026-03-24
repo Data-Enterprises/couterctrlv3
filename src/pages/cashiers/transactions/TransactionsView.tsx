@@ -15,8 +15,10 @@ import {
 import { getCashierTransaction } from "../../../api/lossPrevention";
 import type { JsonError, TransactionListItem } from "../../../interfaces";
 import { useToast } from "../../../components/toasts/hooks/useToast";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
+
 const TransactionsView = () => {
   const ctx = useCashierCtx();
   const toast = useToast();
@@ -71,6 +73,24 @@ const TransactionsView = () => {
     ctx.dispatch(setTransModalOpen(true));
   };
 
+  if (ctx.noRowsFound) {
+    return (
+      <div className="h-full w-full flex items-center justify-center rounded-lg shadow-lg">
+        <p className="text-content/60 font-medium bg-custom-white px-4 py-8 rounded-lg shadow-lg">
+          No transactions found for the selected date range.
+        </p>
+      </div>
+    );
+  }
+
+  if (ctx.fetchingTransactions) {
+    return (
+      <div className="relative h-full w-full flex items-center justify-center rounded-lg shadow-lg">
+        <LoadingIndicator message="Fetching transactions..." />
+      </div>
+    );
+  }
+
   return (
     <div
       className={`bg-custom-white h-full w-full space-y-2 p-2 rounded-lg shadow-lg`}
@@ -81,13 +101,20 @@ const TransactionsView = () => {
           columnDefs={colDefs}
           onCellClicked={handleCellClicked}
           theme={theme}
+          pagination={true}
+          paginationAutoPageSize={true}
         />
       </div>
       <div className="flex gap-2">
         <button className="btn-themeGreen py-1" onClick={handleShowAll}>
           Show All
         </button>
-        <button className="btn-themeGreen py-1" onClick={() => ctx.dispatch(setExportModalOpen(true))}>Export</button>
+        <button
+          className="btn-themeGreen py-1"
+          onClick={() => ctx.dispatch(setExportModalOpen(true))}
+        >
+          Export
+        </button>
       </div>
     </div>
   );

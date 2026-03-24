@@ -33,6 +33,8 @@ export const useCashierCtx = () => {
     exceptionSalesTypes,
     transList,
     exportModalOpen,
+    noRowsFound,
+    fetchingTransactions,
   } = useAppSelector((state) => state.cashier);
   const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector(
     (state) => state.search,
@@ -80,5 +82,7 @@ export const useCashierCtx = () => {
     type,
     url,
     userid,
+    noRowsFound,
+    fetchingTransactions,
   };
 };
