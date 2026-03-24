@@ -29,12 +29,12 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
     }
   };
   return (
-    <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm hover:bg-orange-200 transition-all duration-200 cursor-pointer h-[360px]">
+    <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm cursor-pointer h-[360px]">
       <div className="flex justify-between items-center border-b border-content/60">
-        <div className="font-medium">
+        <div className="font-medium text-[13px]">
           {cashier.cashier_number} - {cashier.cashier_name}
         </div>
-        <div className="font-medium">{cashier.store_name}</div>
+        <div className="font-medium text-[13px]">{cashier.store_name}</div>
       </div>
 
       <div className="mt-1 grid grid-cols-[25%_75%]">
@@ -83,7 +83,8 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
           col3={cashier.voided_qty}
           col4={cashier.voided_count}
           col5={cashier.voided_rate}
-          storeid={1}
+          storeid={cashier.storeid}
+          cashierNumber={cashier.cashier_number}
         />
         <ExceptionRow
           type="Refunded"
@@ -92,7 +93,8 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
           col4={cashier.refunded_count}
           col5={cashier.refunded_rate}
           bgColor="bg-blue-200/50"
-          storeid={1}
+          storeid={cashier.storeid}
+          cashierNumber={cashier.cashier_number}
         />
         <ExceptionRow
           type="No Sale"
@@ -100,7 +102,8 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
           col3={cashier.no_sale_qty}
           col4={cashier.no_sale_count}
           col5={cashier.no_sale_rate}
-          storeid={1}
+          storeid={cashier.storeid}
+          cashierNumber={cashier.cashier_number}
         />
         <ExceptionRow
           type="Hand Key"
@@ -109,7 +112,8 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
           col4={cashier.hand_key_count}
           col5={cashier.hand_key_rate}
           bgColor="bg-blue-200/50"
-          storeid={1}
+          storeid={cashier.storeid}
+          cashierNumber={cashier.cashier_number}
         />
         <ExceptionRow
           type="Cancelled"
@@ -117,7 +121,8 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
           col3={cashier.cancelled_qty}
           col4={cashier.cancelled_count}
           col5={cashier.cancelled_rate}
-          storeid={1}
+          storeid={cashier.storeid}
+          cashierNumber={cashier.cashier_number}
         />
         <ExceptionRow
           type="Adjustment"
@@ -126,7 +131,8 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
           col4={cashier.adjustment_count}
           col5={cashier.adjustment_rate}
           bgColor="bg-blue-200/50"
-          storeid={1}
+          storeid={cashier.storeid}
+          cashierNumber={cashier.cashier_number}
         />
         <ExceptionRow
           type="Backup"
@@ -134,7 +140,8 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
           col3={cashier.backup_qty}
           col4={cashier.backup_count}
           col5={cashier.backup_rate}
-          storeid={1}
+          storeid={cashier.storeid}
+          cashierNumber={cashier.cashier_number}
         />
         <ExceptionRow
           type="Modified"
@@ -143,7 +150,8 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
           col4={cashier.modified_count}
           col5={cashier.modified_rate}
           bgColor="bg-blue-200/50"
-          storeid={1}
+          storeid={cashier.storeid}
+          cashierNumber={cashier.cashier_number}
         />
         <div className="flex justify-center gap-4 font-medium">
           <div className="flex gap-1">

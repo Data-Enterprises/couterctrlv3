@@ -58,6 +58,19 @@ const Cashiers = () => {
       .finally(() => ctx.dispatch(setLoadingStores(false)));
   };
 
+  const renderView = () => {
+    switch (ctx.dataView) {
+      case "stores":
+        return <StoresView />;
+      case "cashiers":
+        return <CashiersView />;
+      case "transactions":
+        return <div>Transactions View Coming Soon...</div>;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] w-full p-4 overflow-hidden grid grid-cols-[18%_81.6%] gap-2">
       <CashierFiltersModal />
@@ -71,7 +84,7 @@ const Cashiers = () => {
 
       {ctx.dataView.length ? (
         <div className="h-full min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)] overflow-y-auto no-scrollbar">
-          {ctx.dataView === "stores" ? <StoresView /> : <CashiersView />}
+          {renderView()}
         </div>
       ) : null}
     </div>

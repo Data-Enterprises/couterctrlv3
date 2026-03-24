@@ -5,6 +5,7 @@ import type {
   Cashier,
   CashierStore,
   ExceptionType,
+  TransactionListItem,
 } from "../interfaces";
 
 export type CashierFilterType =
@@ -35,8 +36,9 @@ interface CashiersState {
   filteredCashierCards: CashierCard[];
   cashiers: Cashier[];
   stores: CashierStore[];
+  transList: TransactionListItem[];
   selectedStoreCard: number;
-  dataView: "stores" | "cashiers" | "";
+  dataView: "stores" | "cashiers" | "transactions" | "";
   loadingStores: boolean;
   loadingCashiers: boolean;
   // card filters
@@ -65,6 +67,7 @@ const initialState: CashiersState = {
   filteredStoreCards: [],
   cashierCards: [],
   filteredCashierCards: [],
+  transList: [],
   cashiers: [],
   stores: [],
   selectedStoreCard: 0,
@@ -102,7 +105,7 @@ const cashiersSlice = createSlice({
           store_name: sc.store_name,
         }))
         .sort((a, b) => a.storeid - b.storeid);
-        state.filteredStoreCards = action.payload;
+      state.filteredStoreCards = action.payload;
     },
     setFilteredStoreCards: (state, action: PayloadAction<StoreCard[]>) => {
       state.filteredStoreCards = action.payload;
@@ -124,7 +127,7 @@ const cashiersSlice = createSlice({
     setSelectedStoreCard: (state, action: PayloadAction<number>) => {
       state.selectedStoreCard = action.payload;
     },
-    setDataView: (state, action: PayloadAction<"stores" | "cashiers" | "">) => {
+    setDataView: (state, action: PayloadAction<"stores" | "cashiers" | "transactions" | "">) => {
       state.dataView = action.payload;
     },
     setLoadingStores: (state, action: PayloadAction<boolean>) => {
@@ -158,6 +161,9 @@ const cashiersSlice = createSlice({
     setCashierFilterType: (state, action: PayloadAction<CashierFilterType>) => {
       state.cashierFilterType = action.payload;
     },
+    setTransList: (state, action: PayloadAction<TransactionListItem[]>) => {
+      state.transList = action.payload;
+    },
     setApplyFilters: (state, action: PayloadAction<boolean>) => {
       state.applyFilters = action.payload;
       state.cashNameFilterApplied = state.cashierNameFilter;
@@ -183,12 +189,14 @@ const cashiersSlice = createSlice({
       state.selectedStoreCard = 0;
       state.dataView = "";
       state.loadingStores = true;
+      state.transList = [];
     },
     reQueryStepTwo: (state) => {
       state.cashierCards = [];
       state.filteredCashierCards = [];
       state.cashiers = [];
       state.loadingCashiers = true;
+      state.transList = [];
     },
     resetCashierFilters: (state) => {
       state.cashierNameFilter = "";
@@ -238,5 +246,6 @@ export const {
   setCashierFilterType,
   setExceptionQtyTypes,
   setExceptionSalesTypes,
+  setTransList,
 } = cashiersSlice.actions;
 export default cashiersSlice.reducer;
