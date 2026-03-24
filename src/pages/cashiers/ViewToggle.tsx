@@ -24,7 +24,7 @@ const ViewToggle = () => {
       <div className="bg-blue-500 text-custom-white font-medium rounded-t-lg py-0.5 px-2">
         Select View
       </div>
-      <div className="grid gap-2 p-2 bg-custom-white rounded-b-lg shadow-lg">
+      <div className="grid grid-cols-2 gap-2 p-2 bg-custom-white rounded-b-lg shadow-lg">
         <button
           className={`${!ctx.storeCards.length && "hidden"} ${activeStyle("stores")} py-1 rounded-lg shadow-md transition-all duration-200 hover:shadow-inner`}
           onClick={() => handleToggle("stores")}
@@ -38,7 +38,7 @@ const ViewToggle = () => {
           Cashiers
         </button>
         <button
-          className={`${!ctx.transList.length && "hidden"} ${activeStyle("transactions")} py-1 rounded-lg shadow-md transition-all duration-200 hover:shadow-inner`}
+          className={`${!ctx.transList.length && "hidden"} ${activeStyle("transactions")} col-span-2 py-1 rounded-lg shadow-md transition-all duration-200 hover:shadow-inner`}
           onClick={() => handleToggle("transactions")}
         >
           Transactions

@@ -111,7 +111,7 @@ const CardFilters = () => {
             ctx.dataView === "stores" ? "store_name" : "cashier_name",
           )
         }
-        className={`py-2 shadow-md mx-2 rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200 text-[14px] ${activeFilterStyle(
+        className={`py-2 shadow-md mx-2 rounded-lg hover:shadow-inner hover:text-content transition-all duration-200 text-[14px] ${activeFilterStyle(
           ctx.dataView === "stores" ? "store_name" : "cashier_name",
         )}`}
       >
@@ -121,30 +121,30 @@ const CardFilters = () => {
       </button>
       <button
         onClick={() => handleOpenFilterModal("total_sales")}
-        className={`py-2 shadow-md mx-2 rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200 text-[14px] ${activeFilterStyle("total_sales")}`}
+        className={`py-2 shadow-md mx-2 rounded-lg hover:shadow-inner hover:text-content transition-all duration-200 text-[14px] ${activeFilterStyle("total_sales")}`}
       >
         {handleFilterTextDisplay("total_sales")}
       </button>
       <button
         onClick={() => handleOpenFilterModal("total_qty")}
-        className={`py-2 shadow-md mx-2 rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200 text-[14px] ${activeFilterStyle("total_qty")}`}
+        className={`py-2 shadow-md mx-2 rounded-lg hover:shadow-inner hover:text-content transition-all duration-200 text-[14px] ${activeFilterStyle("total_qty")}`}
       >
         {handleFilterTextDisplay("total_qty")}
       </button>
       <button
         onClick={() => handleOpenFilterModal("risk_level")}
-        className={`py-2 shadow-md mx-2 rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200 text-[14px] ${activeFilterStyle("risk_level")}`}
+        className={`py-2 shadow-md mx-2 rounded-lg hover:shadow-inner hover:text-content transition-all duration-200 text-[14px] ${activeFilterStyle("risk_level")}`}
       >
         {handleFilterTextDisplay("risk_level")}
       </button>
       <button
         onClick={() => handleOpenFilterModal("exception_tier")}
-        className={`py-2 shadow-md mx-2 rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200 text-[14px] ${activeFilterStyle("exception_tier")}`}
+        className={`py-2 shadow-md mx-2 rounded-lg hover:shadow-inner hover:text-content transition-all duration-200 text-[14px] ${activeFilterStyle("exception_tier")}`}
       >
         {handleFilterTextDisplay("exception_tier")}
       </button>
       <button
-        className="py-2 shadow-md mx-2 rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200 text-[14px]"
+        className="py-2 shadow-md mx-2 rounded-lg hover:shadow-inner hover:text-content transition-all duration-200 text-[14px]"
         onClick={() => ctx.dispatch(resetCashierFilters())}
       >
         {handleFilterTextDisplay("")}

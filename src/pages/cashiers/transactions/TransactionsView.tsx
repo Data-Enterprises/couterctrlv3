@@ -97,7 +97,7 @@ const TransactionsView = () => {
     >
       <div className="h-[94%]">
         <AgGridReact
-          rowData={ctx.transList}
+          rowData={ctx.filteredTransList}
           columnDefs={colDefs}
           onCellClicked={handleCellClicked}
           theme={theme}

@@ -37,6 +37,7 @@ interface CashiersState {
   cashiers: Cashier[];
   stores: CashierStore[];
   transList: TransactionListItem[];
+  filteredTransList: TransactionListItem[];
   transDrillDown: TransactionListItem[][];
   selectedSaleType: string;
   selectedStoreCard: number;
@@ -67,6 +68,16 @@ interface CashiersState {
   exportModalOpen: boolean;
   noRowsFound: boolean;
   fetchingTransactions: boolean;
+
+  // transaction filters
+  selectedTransFilter: string;
+  transFilterModalOpen: boolean;
+  applyTransFilters: boolean;
+  transDateFilter: string;
+  transCashNameFilter: string;
+  transTotalSalesFilter: NumberFilter;
+  transUpcFilter: string;
+  transDescFilter: string;
 }
 
 const initialState: CashiersState = {
@@ -75,6 +86,7 @@ const initialState: CashiersState = {
   cashierCards: [],
   filteredCashierCards: [],
   transList: [],
+  filteredTransList: [],
   transDrillDown: [],
   selectedSaleType: "",
   cashiers: [],
@@ -105,6 +117,14 @@ const initialState: CashiersState = {
   exportModalOpen: false,
   noRowsFound: false,
   fetchingTransactions: false,
+  transDateFilter: "",
+  transCashNameFilter: "",
+  transTotalSalesFilter: defaultNumberFilter,
+  transUpcFilter: "",
+  transDescFilter: "",
+  transFilterModalOpen: false,
+  applyTransFilters: false,
+  selectedTransFilter: "",
 };
 
 const cashiersSlice = createSlice({
@@ -183,6 +203,10 @@ const cashiersSlice = createSlice({
     },
     setTransList: (state, action: PayloadAction<TransactionListItem[]>) => {
       state.transList = action.payload;
+      state.filteredTransList = action.payload;
+    },
+    setFilteredTransList: (state, action: PayloadAction<TransactionListItem[]>) => {
+      state.filteredTransList = action.payload;
     },
     setApplyFilters: (state, action: PayloadAction<boolean>) => {
       state.applyFilters = action.payload;
@@ -248,6 +272,21 @@ const cashiersSlice = createSlice({
     setTransModalOpen: (state, action: PayloadAction<boolean>) => {
       state.transModalOpen = action.payload;
     },
+    setTransDateFilter: (state, action: PayloadAction<string>) => {
+      state.transDateFilter = action.payload;
+    },
+    setTransCashNameFilter: (state, action: PayloadAction<string>) => {
+      state.transCashNameFilter = action.payload;
+    },
+    setTransUpcFilter: (state, action: PayloadAction<string>) => {
+      state.transUpcFilter = action.payload;
+    },
+    setTransDescFilter: (state, action: PayloadAction<string>) => {
+      state.transDescFilter = action.payload;
+    },
+    setTransTotalSalesFilter: (state, action: PayloadAction<NumberFilter>) => {
+      state.transTotalSalesFilter = action.payload;
+    },
     setNoTransactions: (state, action: PayloadAction<boolean>) => {
       state.noTransactions = action.payload;
     },
@@ -262,6 +301,23 @@ const cashiersSlice = createSlice({
     },
     setNoRowsFound: (state, action: PayloadAction<boolean>) => {
       state.noRowsFound = action.payload;
+    },
+    setApplyTransFilters: (state, action: PayloadAction<boolean>) => {
+      state.applyTransFilters = action.payload;
+    },
+    setTransFilterModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.transFilterModalOpen = action.payload;
+    },
+    setSelectedTransFilter: (state, action: PayloadAction<string>) => {
+      state.selectedTransFilter = action.payload;
+    },
+    resetAllTransFilters: (state) => {
+      state.transDateFilter = "";
+      state.transCashNameFilter = "";
+      state.transTotalSalesFilter = defaultNumberFilter;
+      state.transUpcFilter = "";
+      state.transDescFilter = "";
+      state.applyTransFilters = false;
     },
     resetCashierState: () => initialState,
   },
@@ -299,5 +355,15 @@ export const {
   setExportModalOpen,
   setNoRowsFound,
   setFetchingTransactions,
+  setTransDateFilter,
+  setTransCashNameFilter,
+  setTransUpcFilter,
+  setTransDescFilter,
+  setTransTotalSalesFilter,
+  setApplyTransFilters,
+  setTransFilterModalOpen,
+  setSelectedTransFilter,
+  resetAllTransFilters,
+  setFilteredTransList,
 } = cashiersSlice.actions;
 export default cashiersSlice.reducer;

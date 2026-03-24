@@ -35,6 +35,15 @@ export const useCashierCtx = () => {
     exportModalOpen,
     noRowsFound,
     fetchingTransactions,
+    transCashNameFilter,
+    transDateFilter,
+    transDescFilter,
+    transUpcFilter,
+    transTotalSalesFilter,
+    transFilterModalOpen,
+    selectedTransFilter,
+    applyTransFilters,
+    filteredTransList,
   } = useAppSelector((state) => state.cashier);
   const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector(
     (state) => state.search,
@@ -84,5 +93,14 @@ export const useCashierCtx = () => {
     userid,
     noRowsFound,
     fetchingTransactions,
+    transCashNameFilter,
+    transDateFilter,
+    transDescFilter,
+    transUpcFilter,
+    transTotalSalesFilter,
+    transFilterModalOpen,
+    selectedTransFilter,
+    applyTransFilters,
+    filteredTransList,
   };
 };

@@ -24,6 +24,8 @@ import TransactionModal from "./transactions/TransactionModal";
 import ExportModal from "./transactions/ExportModal";
 import { colDefs } from "./transactions";
 import ViewToggle from "./ViewToggle";
+import TransFilters from "./transactions/TransFilters";
+import TransFilterModal from "./transactions/TransFilterModal";
 
 const Cashiers = () => {
   const toast = useToast();
@@ -81,6 +83,7 @@ const Cashiers = () => {
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] w-full p-4 overflow-hidden grid grid-cols-[18%_81.6%] gap-2">
       <CashierFiltersModal />
       <TransactionModal />
+      <TransFilterModal />
       <ExportModal
         isOpen={ctx.exportModalOpen}
         onClose={() => ctx.dispatch(setExportModalOpen(false))}
@@ -93,7 +96,10 @@ const Cashiers = () => {
           <DatePickers handleQuery={getSCards} />
         </div>
         <ViewToggle />
-        {ctx.dataView.length ? <CardFilters /> : null}
+        {ctx.dataView === "cashiers" || ctx.dataView === "stores" ? (
+          <CardFilters />
+        ) : null}
+        {ctx.dataView === "transactions" ? <TransFilters /> : null}
       </div>
 
       {ctx.dataView.length ? (
