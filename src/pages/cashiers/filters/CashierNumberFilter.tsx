@@ -1,11 +1,25 @@
 import { useCashierCtx } from "..";
 import {
+  setExceptionQtyTypes,
+  setExceptionSalesTypes,
   setTotalQtyFilter,
   setTotalSalesFilter,
 } from "../../../features/cashiersSlice";
+import type { ExceptionType } from "../../../interfaces";
 
 import CheckBox from "../../../components/inputs/CheckBox";
 import Input from "../../../components/inputs/Input";
+
+const exceptions: ExceptionType[] = [
+  "Adjustment",
+  "Backup",
+  "Cancelled",
+  "Hand Key",
+  "Modified",
+  "No Sale",
+  "Refunded",
+  "Voided",
+];
 
 const CashierNumberFilter = () => {
   const ctx = useCashierCtx();
@@ -62,9 +76,46 @@ const CashierNumberFilter = () => {
     return false;
   };
 
+  const handleExceptionSelect = (exc: ExceptionType) => {
+    if (ctx.cashierFilterType === "total_sales") {
+      // looking at sales
+      const types = ctx.exceptionSalesTypes.includes(exc)
+        ? ctx.exceptionSalesTypes.filter((e) => e !== exc)
+        : [...ctx.exceptionSalesTypes, exc];
+      ctx.dispatch(setExceptionSalesTypes(types));
+    } else {
+      // looking at qty
+      const types = ctx.exceptionQtyTypes.includes(exc)
+        ? ctx.exceptionQtyTypes.filter((e) => e !== exc)
+        : [...ctx.exceptionQtyTypes, exc];
+      ctx.dispatch(setExceptionQtyTypes(types));
+    }
+  };
+
+  const selectedStyle = (exc: ExceptionType) => {
+    if (ctx.cashierFilterType === "total_sales") {
+      // looking at sales
+      return ctx.exceptionSalesTypes.includes(exc) ? "bg-orange-200" : "bg-bkg"
+    } else {
+      //  looking at qty
+      return ctx.exceptionQtyTypes.includes(exc) ? "bg-orange-200" : "bg-bkg"
+    }
+  };
+
   return (
-    <div>
-      <div className="flex justify-around items-center">
+    <div className="text-sm">
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        {exceptions.map((exc) => (
+          <div
+            key={exc}
+            className={`rounded-full border text-center py-0.5 hover:bg-orange-200 cursor-pointer transition-all duration-200 ${selectedStyle(exc)}`}
+            onClick={() => handleExceptionSelect(exc)}
+          >
+            {exc}
+          </div>
+        ))}
+      </div>
+      <div className="flex justify-between items-center">
         <CheckBox
           label="Greater Than"
           id={1}

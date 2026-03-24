@@ -4,6 +4,8 @@ import {
   setApplyFilters,
   setCashierFilterModalOpen,
   setCashierFilterType,
+  setExceptionQtyTypes,
+  setExceptionSalesTypes,
   setExceptionTierFilter,
   setRiskLevelFilter,
   setStoreNameFilter,
@@ -53,10 +55,12 @@ const CashierFiltersModal = () => {
 
       if (ctx.cashierFilterType === "total_sales") {
         ctx.dispatch(setTotalSalesFilter({ operator: "", value: 0 }));
+        ctx.dispatch(setExceptionSalesTypes([]));
       }
 
       if (ctx.cashierFilterType === "total_qty") {
         ctx.dispatch(setTotalQtyFilter({ operator: "", value: 0 }));
+        ctx.dispatch(setExceptionQtyTypes([]));
       }
 
       if (ctx.cashierFilterType === "risk_level") {

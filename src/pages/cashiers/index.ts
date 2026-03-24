@@ -29,6 +29,8 @@ export const useCashierCtx = () => {
     riskLevelFilterApplied,
     filteredCashierCards,
     filteredStoreCards,
+    exceptionQtyTypes,
+    exceptionSalesTypes,
   } = useAppSelector((state) => state.cashier);
   const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector(
     (state) => state.search,
@@ -46,7 +48,9 @@ export const useCashierCtx = () => {
     storeNameFilterApplied,
     totalSalesFilterApplied,
     totalQtyFilterApplied,
+    exceptionSalesTypes,
     exceptionTierFilterApplied,
+    exceptionQtyTypes,
     riskLevelFilterApplied,
     cashiers,
     dataView,
