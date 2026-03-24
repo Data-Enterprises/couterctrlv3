@@ -334,7 +334,7 @@ describe("Coupons Page", () => {
     await user.click(rows[1]);
 
     await waitFor(() => {
-      const state = store.getState().cashier;
+      const state = store.getState().lossPrevention;
       expect(state.transactionDrillDown.length).toBe(0);
     });
   });
@@ -347,7 +347,7 @@ describe("Coupons Page", () => {
     await user.click(rows[1]);
 
     await waitFor(() => {
-      const state = store.getState().cashier;
+      const state = store.getState().lossPrevention;
       expect(state.transactionDrillDown.length).toBeGreaterThan(0);
     });
     expect(await screen.findByTestId("modal")).toBeInTheDocument();
