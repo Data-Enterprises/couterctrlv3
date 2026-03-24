@@ -88,11 +88,15 @@ const StoreOverview = ({ store }: StoreCardProps) => {
     <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm cursor-pointer h-[360px]">
       <div onClick={getCCards}>
         <div className="flex justify-between items-center border-b border-content/60">
-          <div className="font-medium text-[13px]">{store.store_name.split(" - ")[0]}</div>
-          <div className="font-medium text-[13px]">{store.store_name.split(" - ")[1]}</div>
+          <div className="font-medium text-[13px]">
+            {store.store_name.split(" - ")[0]}
+          </div>
+          <div className="font-medium text-[13px]">
+            {store.store_name.split(" - ")[1]}
+          </div>
         </div>
 
-        <div className="mt-1 grid grid-cols-[25%_75%]">
+        <div className="mt-1 grid grid-cols-[25%_75%] hover:bg-orange-200 transition-all duration-200 rounded-lg">
           <div className="rounded-full w-[90%] flex justify-center items-center">
             <BuildingStorefrontIcon className="w-16 h-16 text-blue-500" />
           </div>

@@ -179,6 +179,14 @@ const StoresView = () => {
     );
   }
 
+  if (ctx.noStoresFound) {
+    return (
+      <div className="h-full w-full flex justify-center items-center text-content/60 font-medium">
+        <div className="bg-custom-white px-4 py-8 rounded-lg shadow-lg">No stores found in this date range</div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-full grid grid-cols-4 gap-2">
       {ctx.filteredStoreCards.map((card, i) => (

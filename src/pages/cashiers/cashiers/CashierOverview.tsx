@@ -29,7 +29,7 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
     }
   };
   return (
-    <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm cursor-pointer h-[360px]">
+    <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm h-[360px] cursor-default">
       <div className="flex justify-between items-center border-b border-content/60">
         <div className="font-medium text-[13px]">
           {cashier.cashier_number} - {cashier.cashier_name}

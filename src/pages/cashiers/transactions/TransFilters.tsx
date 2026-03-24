@@ -24,7 +24,7 @@ const TransFilters = () => {
       const totalSales = ctx.transTotalSalesFilter;
 
       const filtered = [...ctx.transList].filter((item) => {
-        const matchesDate = date.length ? item.sale_date.includes(date) : true;
+        const matchesDate = date.length ? new Date(item.sale_date).toDateString() === new Date(date).toDateString() : true;
         const matchesUpc =
           upc.length && item.product_code
             ? item.product_code.includes(upc)
@@ -51,7 +51,6 @@ const TransFilters = () => {
           matchesTotalSales
         );
       });
-
       ctx.dispatch(setFilteredTransList(filtered));
     }
   }, [
@@ -96,6 +95,8 @@ const TransFilters = () => {
     ctx.dispatch(resetAllTransFilters());
     ctx.dispatch(setFilteredTransList(ctx.transList));
   };
+
+  if (!ctx.transList.length) return null;
 
   return (
     <div className="shadow-lg">

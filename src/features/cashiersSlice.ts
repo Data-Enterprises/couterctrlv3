@@ -44,6 +44,7 @@ interface CashiersState {
   dataView: "stores" | "cashiers" | "transactions" | "";
   loadingStores: boolean;
   loadingCashiers: boolean;
+  noStoresFound: boolean;
   // card filters
   exceptionSalesTypes: ExceptionType[];
   exceptionQtyTypes: ExceptionType[];
@@ -56,6 +57,7 @@ interface CashiersState {
   exceptionTierFilter: RiskLevel;
   cashierFilterType: CashierFilterType;
   applyFilters: boolean;
+
   // applied filters
   cashNameFilterApplied: string;
   storeNameFilterApplied: string;
@@ -96,6 +98,7 @@ const initialState: CashiersState = {
   loadingStores: false,
   loadingCashiers: false,
   cashierFilterModalOpen: false,
+  noStoresFound: false,
   cashierNameFilter: "",
   storeNameFilter: "",
   totalSalesFilter: defaultNumberFilter,
@@ -205,7 +208,10 @@ const cashiersSlice = createSlice({
       state.transList = action.payload;
       state.filteredTransList = action.payload;
     },
-    setFilteredTransList: (state, action: PayloadAction<TransactionListItem[]>) => {
+    setFilteredTransList: (
+      state,
+      action: PayloadAction<TransactionListItem[]>,
+    ) => {
       state.filteredTransList = action.payload;
     },
     setApplyFilters: (state, action: PayloadAction<boolean>) => {
@@ -239,6 +245,7 @@ const cashiersSlice = createSlice({
       state.transList = [];
       state.transDrillDown = [];
       state.selectedSaleType = "";
+      state.filteredTransList = [];
     },
     reQueryStepTwo: (state) => {
       state.cashierCards = [];
@@ -311,6 +318,9 @@ const cashiersSlice = createSlice({
     setSelectedTransFilter: (state, action: PayloadAction<string>) => {
       state.selectedTransFilter = action.payload;
     },
+    setNoStoresFound: (state, action: PayloadAction<boolean>) => {
+      state.noStoresFound = action.payload;
+    },
     resetAllTransFilters: (state) => {
       state.transDateFilter = "";
       state.transCashNameFilter = "";
@@ -365,5 +375,6 @@ export const {
   setSelectedTransFilter,
   resetAllTransFilters,
   setFilteredTransList,
+  setNoStoresFound,
 } = cashiersSlice.actions;
 export default cashiersSlice.reducer;

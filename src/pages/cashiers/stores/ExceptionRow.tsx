@@ -44,16 +44,16 @@ const ExceptionRow = ({
   const dispatch = useAppDispatch();
 
   const handleTransactionCall = () => {
-    dispatch(setNoRowsFound(false));
     dispatch(setTransList([]));
     dispatch(setDataView("transactions"));
+    dispatch(setNoRowsFound(false));
     dispatch(setFetchingTransactions(true));
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
     getCashierTable(ctx.url, ctx.token, start, end, 0, storeid, 1, [type], 1)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
+    .then((resp) => {
+      const j = resp.data;
+      if (j.error === 0) {
           const trans = [...j.transactions];
           const uniqueSaleIds = Array.from(
             new Set(trans.map((item) => item.sale_id)),
@@ -86,7 +86,7 @@ const ExceptionRow = ({
 
   return (
     <div
-      className={`grid grid-cols-[26%_24%_18%_15%_19%] text-[12.5px] py-0.5 ${bgColor} hover:bg-orange-200 transtion-all duration-200`}
+      className={`grid grid-cols-[26%_24%_18%_15%_19%] text-[12.5px] py-0.5 ${bgColor} hover:bg-orange-200 transtion-all duration-200 cursor-pointer`}
       onClick={handleTransactionCall}
     >
       <div className="font-medium text-content/60">{type}</div>

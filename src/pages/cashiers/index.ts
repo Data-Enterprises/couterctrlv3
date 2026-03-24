@@ -44,6 +44,7 @@ export const useCashierCtx = () => {
     selectedTransFilter,
     applyTransFilters,
     filteredTransList,
+    noStoresFound,
   } = useAppSelector((state) => state.cashier);
   const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector(
     (state) => state.search,
@@ -102,5 +103,6 @@ export const useCashierCtx = () => {
     selectedTransFilter,
     applyTransFilters,
     filteredTransList,
+    noStoresFound,
   };
 };

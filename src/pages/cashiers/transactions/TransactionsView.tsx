@@ -90,7 +90,8 @@ const TransactionsView = () => {
       </div>
     );
   }
-
+ 
+  console.log(ctx.filteredTransList);
   return (
     <div
       className={`bg-custom-white h-full w-full space-y-2 p-2 rounded-lg shadow-lg`}

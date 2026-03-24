@@ -10,6 +10,7 @@ import {
   setDataView,
   setExportModalOpen,
   setLoadingStores,
+  setNoStoresFound,
   setStoreCards,
 } from "../../features/cashiersSlice";
 
@@ -56,6 +57,7 @@ const Cashiers = () => {
       .then((resp) => {
         const j: StoreCardResp = resp.data;
         if (j.error === 0) {
+          ctx.dispatch(setNoStoresFound(j.stores.length === 0));
           ctx.dispatch(setStoreCards(j.stores));
         }
       })
