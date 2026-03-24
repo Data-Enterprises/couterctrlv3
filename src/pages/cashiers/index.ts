@@ -31,6 +31,7 @@ export const useCashierCtx = () => {
     filteredStoreCards,
     exceptionQtyTypes,
     exceptionSalesTypes,
+    transList,
   } = useAppSelector((state) => state.cashier);
   const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector(
     (state) => state.search,
@@ -73,6 +74,7 @@ export const useCashierCtx = () => {
     token,
     totalSalesFilter,
     totalQtyFilter,
+    transList,
     type,
     url,
     userid,

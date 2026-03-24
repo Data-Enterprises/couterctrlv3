@@ -37,6 +37,8 @@ interface CashiersState {
   cashiers: Cashier[];
   stores: CashierStore[];
   transList: TransactionListItem[];
+  transDrillDown: TransactionListItem[][];
+  selectedSaleType: string;
   selectedStoreCard: number;
   dataView: "stores" | "cashiers" | "transactions" | "";
   loadingStores: boolean;
@@ -60,6 +62,9 @@ interface CashiersState {
   totalQtyFilterApplied: NumberFilter;
   riskLevelFilterApplied: RiskLevel;
   exceptionTierFilterApplied: RiskLevel;
+  transModalOpen: boolean;
+  noTransactions: boolean;
+  exportModalOpen: boolean;
 }
 
 const initialState: CashiersState = {
@@ -68,6 +73,8 @@ const initialState: CashiersState = {
   cashierCards: [],
   filteredCashierCards: [],
   transList: [],
+  transDrillDown: [],
+  selectedSaleType: "",
   cashiers: [],
   stores: [],
   selectedStoreCard: 0,
@@ -91,6 +98,9 @@ const initialState: CashiersState = {
   exceptionTierFilterApplied: "",
   exceptionQtyTypes: [],
   exceptionSalesTypes: [],
+  transModalOpen: false,
+  noTransactions: false,
+  exportModalOpen: false,
 };
 
 const cashiersSlice = createSlice({
@@ -127,7 +137,10 @@ const cashiersSlice = createSlice({
     setSelectedStoreCard: (state, action: PayloadAction<number>) => {
       state.selectedStoreCard = action.payload;
     },
-    setDataView: (state, action: PayloadAction<"stores" | "cashiers" | "transactions" | "">) => {
+    setDataView: (
+      state,
+      action: PayloadAction<"stores" | "cashiers" | "transactions" | "">,
+    ) => {
       state.dataView = action.payload;
     },
     setLoadingStores: (state, action: PayloadAction<boolean>) => {
@@ -161,6 +174,9 @@ const cashiersSlice = createSlice({
     setCashierFilterType: (state, action: PayloadAction<CashierFilterType>) => {
       state.cashierFilterType = action.payload;
     },
+    setSelectedSaleType: (state, action: PayloadAction<string>) => {
+      state.selectedSaleType = action.payload;
+    },
     setTransList: (state, action: PayloadAction<TransactionListItem[]>) => {
       state.transList = action.payload;
     },
@@ -190,6 +206,8 @@ const cashiersSlice = createSlice({
       state.dataView = "";
       state.loadingStores = true;
       state.transList = [];
+      state.transDrillDown = [];
+      state.selectedSaleType = "";
     },
     reQueryStepTwo: (state) => {
       state.cashierCards = [];
@@ -197,6 +215,8 @@ const cashiersSlice = createSlice({
       state.cashiers = [];
       state.loadingCashiers = true;
       state.transList = [];
+      state.transDrillDown = [];
+      state.selectedSaleType = "";
     },
     resetCashierFilters: (state) => {
       state.cashierNameFilter = "";
@@ -217,6 +237,21 @@ const cashiersSlice = createSlice({
       state.exceptionSalesTypes = [];
       state.filteredStoreCards = state.storeCards;
       state.filteredCashierCards = state.cashierCards;
+    },
+    setTransModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.transModalOpen = action.payload;
+    },
+    setNoTransactions: (state, action: PayloadAction<boolean>) => {
+      state.noTransactions = action.payload;
+    },
+    setTransDrillDown: (
+      state,
+      action: PayloadAction<TransactionListItem[][]>,
+    ) => {
+      state.transDrillDown = action.payload;
+    },
+    setExportModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.exportModalOpen = action.payload;
     },
     resetCashierState: () => initialState,
   },
@@ -247,5 +282,10 @@ export const {
   setExceptionQtyTypes,
   setExceptionSalesTypes,
   setTransList,
+  setSelectedSaleType,
+  setTransModalOpen,
+  setTransDrillDown,
+  setNoTransactions,
+  setExportModalOpen,
 } = cashiersSlice.actions;
 export default cashiersSlice.reducer;
