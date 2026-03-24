@@ -100,6 +100,8 @@ const CardFilters = () => {
     }
   };
 
+  if(ctx.noStoresFound || ctx.loadingStores) return null;
+
   return (
     <div className="relative bg-custom-white pb-2 rounded-lg shadow-lg flex flex-col gap-2">
       <div className="bg-blue-500 text-custom-white py-0.5 px-2 font-medium rounded-t-lg">
