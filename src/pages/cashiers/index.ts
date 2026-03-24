@@ -32,6 +32,7 @@ export const useCashierCtx = () => {
     exceptionQtyTypes,
     exceptionSalesTypes,
     transList,
+    exportModalOpen,
   } = useAppSelector((state) => state.cashier);
   const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector(
     (state) => state.search,
@@ -46,6 +47,7 @@ export const useCashierCtx = () => {
     cashierFilterType,
     cashierNameFilter,
     cashNameFilterApplied,
+    exportModalOpen,
     storeNameFilterApplied,
     totalSalesFilterApplied,
     totalQtyFilterApplied,

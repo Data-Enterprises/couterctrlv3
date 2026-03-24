@@ -8,6 +8,7 @@ import {
   reQueryStepOne,
   setCashierFilterType,
   setDataView,
+  setExportModalOpen,
   setLoadingStores,
   setStoreCards,
 } from "../../features/cashiersSlice";
@@ -20,6 +21,8 @@ import CashiersView from "./cashiers/CashiersView";
 import CashierFiltersModal from "./filters/CashierFiltersModal";
 import TransactionsView from "./transactions/TransactionsView";
 import TransactionModal from "./transactions/TransactionModal";
+import ExportModal from "./transactions/ExportModal";
+import { colDefs } from "./transactions";
 
 const Cashiers = () => {
   const toast = useToast();
@@ -77,6 +80,12 @@ const Cashiers = () => {
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] w-full p-4 overflow-hidden grid grid-cols-[18%_81.6%] gap-2">
       <CashierFiltersModal />
       <TransactionModal />
+      <ExportModal
+        isOpen={ctx.exportModalOpen}
+        onClose={() => ctx.dispatch(setExportModalOpen(false))}
+        data={ctx.transList}
+        columns={colDefs}
+      />
       <div className="flex flex-col gap-2">
         <div className="bg-custom-white p-2 rounded-lg shadow-lg">
           <StorePicker />
