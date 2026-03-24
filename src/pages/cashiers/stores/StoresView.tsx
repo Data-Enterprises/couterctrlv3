@@ -90,7 +90,7 @@ const StoresView = () => {
   }
 
   return (
-    <div className="min-h-full grid grid-cols-3 gap-2">
+    <div className="min-h-full grid grid-cols-4 gap-2">
       {ctx.filteredStoreCards.map((card, i) => (
         <StoreOverview key={i} store={card} />
       ))}

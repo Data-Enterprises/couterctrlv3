@@ -1084,3 +1084,13 @@ export type CashierStore = {
   storeid: number;
   store_name: string;
 }
+
+export type ExceptionType =
+  | "Voided"
+  | "Refunded"
+  | "No Sale"
+  | "Hand Key"
+  | "Cancelled"
+  | "Adjustment"
+  | "Backup"
+  | "Modified";

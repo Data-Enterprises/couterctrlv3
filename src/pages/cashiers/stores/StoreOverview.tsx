@@ -85,49 +85,48 @@ const StoreOverview = ({ store }: StoreCardProps) => {
   };
 
   return (
-    <div
-      className="bg-custom-white p-2 rounded-lg shadow-lg text-sm hover:bg-orange-200 transition-all duration-200 cursor-pointer h-[360px]"
-      onClick={getCCards}
-    >
-      <div className="flex justify-between items-center border-b border-content/60">
-        <div className="font-medium">{store.store_name.split(" - ")[0]}</div>
-        <div className="font-medium">{store.store_name.split(" - ")[1]}</div>
+    <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm cursor-pointer h-[360px]">
+      <div onClick={getCCards}>
+        <div className="flex justify-between items-center border-b border-content/60">
+          <div className="font-medium">{store.store_name.split(" - ")[0]}</div>
+          <div className="font-medium">{store.store_name.split(" - ")[1]}</div>
+        </div>
+
+        <div className="mt-1 grid grid-cols-[25%_75%]">
+          <div className="rounded-full w-[90%] flex justify-center items-center">
+            <BuildingStorefrontIcon className="w-16 h-16 text-blue-500" />
+          </div>
+          <div className="mt-1 grid grid-cols-2 text-content/60">
+            <div>
+              <div>Sales</div>
+              <div className="font-medium">
+                {formatCurrency2(store.total_sales)}
+              </div>
+            </div>
+            <div>
+              <div>Net</div>
+              <div className="font-medium">
+                {formatCurrency2(store.net_sales)}
+              </div>
+            </div>
+            <div>
+              <div>Qty</div>
+              <div className="font-medium">
+                {formatBigNumber(store.total_qty, 0)}
+              </div>
+            </div>
+            <div>
+              <div>Transactions</div>
+              <div className="font-medium">
+                {formatBigNumber(store.total_transactions, 0)}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="mt-1 grid grid-cols-[25%_75%]">
-        <div className="rounded-full w-[90%] flex justify-center items-center">
-          <BuildingStorefrontIcon className="w-16 h-16 text-blue-500" />
-        </div>
-        <div className="mt-1 grid grid-cols-2">
-          <div>
-            <div className="text-content/60">Total Sales</div>
-            <div className="font-medium">
-              {formatCurrency2(store.total_sales)}
-            </div>
-          </div>
-          <div>
-            <div className="text-content/60">Net Sales</div>
-            <div className="font-medium">
-              {formatCurrency2(store.net_sales)}
-            </div>
-          </div>
-          <div>
-            <div className="text-content/60">Total Qty</div>
-            <div className="font-medium">
-              {formatBigNumber(store.total_qty, 0)}
-            </div>
-          </div>
-          <div>
-            <div className="text-content/60">Total Transactions</div>
-            <div className="font-medium">
-              {formatBigNumber(store.total_transactions, 0)}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-rows-9 mt-1">
-        <div className="grid grid-cols-[22%_26%_22%_17%_13%] border-b border-content/60 font-medium">
+      <div className="grid grid-rows-9 mt-1 text-[13px]">
+        <div className="grid grid-cols-[26%_24%_18%_15%_19%] border-b border-content/60 font-medium">
           <div>Exception</div>
           <div>Sales</div>
           <div>Qty</div>
@@ -140,6 +139,7 @@ const StoreOverview = ({ store }: StoreCardProps) => {
           col3={store.voided_qty}
           col4={store.voided_count}
           col5={store.voided_rate}
+          storeid={store.storeid}
         />
         <ExceptionRow
           type="Refunded"
@@ -148,6 +148,7 @@ const StoreOverview = ({ store }: StoreCardProps) => {
           col4={store.refunded_count}
           col5={store.refunded_rate}
           bgColor="bg-blue-200/50"
+          storeid={store.storeid}
         />
         <ExceptionRow
           type="No Sale"
@@ -155,6 +156,7 @@ const StoreOverview = ({ store }: StoreCardProps) => {
           col3={store.no_sale_qty}
           col4={store.no_sale_count}
           col5={store.no_sale_rate}
+          storeid={store.storeid}
         />
         <ExceptionRow
           type="Hand Key"
@@ -163,6 +165,7 @@ const StoreOverview = ({ store }: StoreCardProps) => {
           col4={store.hand_key_count}
           col5={store.hand_key_rate}
           bgColor="bg-blue-200/50"
+          storeid={store.storeid}
         />
         <ExceptionRow
           type="Cancelled"
@@ -170,6 +173,7 @@ const StoreOverview = ({ store }: StoreCardProps) => {
           col3={store.cancelled_qty}
           col4={store.cancelled_count}
           col5={store.cancelled_rate}
+          storeid={store.storeid}
         />
         <ExceptionRow
           type="Adjustment"
@@ -178,6 +182,7 @@ const StoreOverview = ({ store }: StoreCardProps) => {
           col4={store.adjustment_count}
           col5={store.adjustment_rate}
           bgColor="bg-blue-200/50"
+          storeid={store.storeid}
         />
         <ExceptionRow
           type="Backup"
@@ -185,6 +190,7 @@ const StoreOverview = ({ store }: StoreCardProps) => {
           col3={store.backup_qty}
           col4={store.backup_count}
           col5={store.backup_rate}
+          storeid={store.storeid}
         />
         <ExceptionRow
           type="Modified"
@@ -193,8 +199,12 @@ const StoreOverview = ({ store }: StoreCardProps) => {
           col4={store.modified_count}
           col5={store.modified_rate}
           bgColor="bg-blue-200/50"
+          storeid={store.storeid}
         />
-        <div className="flex justify-center gap-4 font-medium">
+        <div
+          className="flex justify-center gap-4 font-medium"
+          onClick={getCCards}
+        >
           <div className="flex gap-1">
             <div>Tier:</div>
             <div className={exceptionTierColor()}>{store.exception_tier}</div>

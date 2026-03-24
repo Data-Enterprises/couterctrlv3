@@ -87,7 +87,7 @@ const CashiersView = () => {
     );
   }
   return (
-    <div className="min-h-full grid grid-cols-3 gap-2">
+    <div className="min-h-full grid grid-cols-4 gap-2">
       {ctx.filteredCashierCards.map((card, i) => (
         <CashierOverview key={i} cashier={card} />
       ))}

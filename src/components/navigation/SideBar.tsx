@@ -58,7 +58,6 @@ const SideBar = () => {
       const filteredNav = navigation.filter((item) => item.mobile);
       setNavItems(filteredNav);
       const found = filteredNav.find((item) => item.href === nav.lastRoute);
-      console.log(found, filteredNav, nav.lastRoute);
       if (!found) {
         // if the last route isn't in the mobile nav, default to dashboard or settings if dashboard isn't available
         // Just take them to the home page
