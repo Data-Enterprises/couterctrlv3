@@ -9,7 +9,6 @@ import {
   setStoreNameFilter,
   setTotalQtyFilter,
   setTotalSalesFilter,
-  setTotalTransactionsFilter,
 } from "../../../features/cashiersSlice";
 import CashierNumberFilter from "./CashierNumberFilter";
 
@@ -58,10 +57,6 @@ const CashierFiltersModal = () => {
 
       if (ctx.cashierFilterType === "total_qty") {
         ctx.dispatch(setTotalQtyFilter({ operator: "", value: 0 }));
-      }
-
-      if (ctx.cashierFilterType === "total_transactions") {
-        ctx.dispatch(setTotalTransactionsFilter({ operator: "", value: 0 }));
       }
 
       if (ctx.cashierFilterType === "risk_level") {

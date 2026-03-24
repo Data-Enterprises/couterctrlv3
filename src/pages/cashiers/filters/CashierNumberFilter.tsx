@@ -2,7 +2,6 @@ import { useCashierCtx } from "..";
 import {
   setTotalQtyFilter,
   setTotalSalesFilter,
-  setTotalTransactionsFilter,
 } from "../../../features/cashiersSlice";
 
 import CheckBox from "../../../components/inputs/CheckBox";
@@ -14,18 +13,14 @@ const CashierNumberFilter = () => {
   const reduxValueToSet =
     ctx.cashierFilterType === "total_sales"
       ? ctx.totalSalesFilter
-      : ctx.cashierFilterType === "total_qty"
-        ? ctx.totalQtyFilter
-        : ctx.totalTransactionsFilter;
+      : ctx.totalQtyFilter;
 
   const dispatchToUse = () => {
     switch (ctx.cashierFilterType) {
       case "total_sales":
         return setTotalSalesFilter;
-      case "total_qty":
-        return setTotalQtyFilter;
       default:
-        return setTotalTransactionsFilter;
+        return setTotalQtyFilter;
     }
   };
 
@@ -63,7 +58,6 @@ const CashierNumberFilter = () => {
     } else if (id === 3 && reduxValueToSet.operator === "<") {
       return true;
     }
-    
 
     return false;
   };

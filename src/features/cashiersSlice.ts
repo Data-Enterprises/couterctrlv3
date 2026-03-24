@@ -4,6 +4,7 @@ import type {
   StoreCard,
   Cashier,
   CashierStore,
+  ExceptionType,
 } from "../interfaces";
 
 export type CashierFilterType =
@@ -39,12 +40,13 @@ interface CashiersState {
   loadingStores: boolean;
   loadingCashiers: boolean;
   // card filters
+  exceptionSalesTypes: ExceptionType[];
+  exceptionQtyTypes: ExceptionType[];
   cashierFilterModalOpen: boolean;
   cashierNameFilter: string;
   storeNameFilter: string;
   totalSalesFilter: NumberFilter;
   totalQtyFilter: NumberFilter;
-  totalTransactionsFilter: NumberFilter;
   riskLevelFilter: RiskLevel;
   exceptionTierFilter: RiskLevel;
   cashierFilterType: CashierFilterType;
@@ -54,7 +56,6 @@ interface CashiersState {
   storeNameFilterApplied: string;
   totalSalesFilterApplied: NumberFilter;
   totalQtyFilterApplied: NumberFilter;
-  totalTransactionsFilterApplied: NumberFilter;
   riskLevelFilterApplied: RiskLevel;
   exceptionTierFilterApplied: RiskLevel;
 }
@@ -75,7 +76,6 @@ const initialState: CashiersState = {
   storeNameFilter: "",
   totalSalesFilter: defaultNumberFilter,
   totalQtyFilter: defaultNumberFilter,
-  totalTransactionsFilter: defaultNumberFilter,
   riskLevelFilter: "",
   exceptionTierFilter: "",
   cashierFilterType: "",
@@ -84,9 +84,10 @@ const initialState: CashiersState = {
   storeNameFilterApplied: "",
   totalSalesFilterApplied: defaultNumberFilter,
   totalQtyFilterApplied: defaultNumberFilter,
-  totalTransactionsFilterApplied: defaultNumberFilter,
   riskLevelFilterApplied: "",
   exceptionTierFilterApplied: "",
+  exceptionQtyTypes: [],
+  exceptionSalesTypes: [],
 };
 
 const cashiersSlice = createSlice({
@@ -144,12 +145,7 @@ const cashiersSlice = createSlice({
     setTotalQtyFilter: (state, action: PayloadAction<NumberFilter>) => {
       state.totalQtyFilter = action.payload;
     },
-    setTotalTransactionsFilter: (
-      state,
-      action: PayloadAction<NumberFilter>,
-    ) => {
-      state.totalTransactionsFilter = action.payload;
-    },
+
     setRiskLevelFilter: (state, action: PayloadAction<RiskLevel>) => {
       state.riskLevelFilter = action.payload;
     },
@@ -168,9 +164,14 @@ const cashiersSlice = createSlice({
       state.storeNameFilterApplied = state.storeNameFilter;
       state.totalSalesFilterApplied = state.totalSalesFilter;
       state.totalQtyFilterApplied = state.totalQtyFilter;
-      state.totalTransactionsFilterApplied = state.totalTransactionsFilter;
       state.riskLevelFilterApplied = state.riskLevelFilter;
       state.exceptionTierFilterApplied = state.exceptionTierFilter;
+    },
+    setExceptionSalesTypes: (state, action: PayloadAction<ExceptionType[]>) => {
+      state.exceptionSalesTypes = action.payload;
+    },
+    setExceptionQtyTypes: (state, action: PayloadAction<ExceptionType[]>) => {
+      state.exceptionQtyTypes = action.payload;
     },
     reQueryStepOne: (state) => {
       state.storeCards = [];
@@ -194,7 +195,6 @@ const cashiersSlice = createSlice({
       state.storeNameFilter = "";
       state.totalSalesFilter = defaultNumberFilter;
       state.totalQtyFilter = defaultNumberFilter;
-      state.totalTransactionsFilter = defaultNumberFilter;
       state.riskLevelFilter = "";
       state.exceptionTierFilter = "";
       state.cashierFilterType = "";
@@ -203,10 +203,10 @@ const cashiersSlice = createSlice({
       state.storeNameFilterApplied = "";
       state.totalSalesFilterApplied = defaultNumberFilter;
       state.totalQtyFilterApplied = defaultNumberFilter;
-      state.totalTransactionsFilterApplied = defaultNumberFilter;
       state.riskLevelFilterApplied = "";
       state.exceptionTierFilterApplied = "";
-
+      state.exceptionQtyTypes = [];
+      state.exceptionSalesTypes = [];
       state.filteredStoreCards = state.storeCards;
       state.filteredCashierCards = state.cashierCards;
     },
@@ -233,9 +233,10 @@ export const {
   setRiskLevelFilter,
   setTotalQtyFilter,
   setTotalSalesFilter,
-  setTotalTransactionsFilter,
   setCashierFilterModalOpen,
   setApplyFilters,
   setCashierFilterType,
+  setExceptionQtyTypes,
+  setExceptionSalesTypes,
 } = cashiersSlice.actions;
 export default cashiersSlice.reducer;

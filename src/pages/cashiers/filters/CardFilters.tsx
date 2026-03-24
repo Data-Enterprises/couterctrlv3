@@ -49,12 +49,6 @@ const CardFilters = () => {
         ? `Qty ${ctx.totalQtyFilterApplied.operator} ${ctx.totalQtyFilterApplied.value}`
         : "Total Qty";
     }
-    if (type === "total_transactions") {
-      return ctx.totalTransactionsFilterApplied.operator !== "" &&
-        ctx.totalTransactionsFilterApplied.value > 0
-        ? `Transactions ${ctx.totalTransactionsFilterApplied.operator} ${ctx.totalTransactionsFilterApplied.value}`
-        : "Total Transactions";
-    }
     if (type === "risk_level") {
       return ctx.riskLevelFilterApplied.length
         ? `Risk: ${ctx.riskLevelFilterApplied}`
@@ -83,12 +77,6 @@ const CardFilters = () => {
       type === "total_qty" &&
       ctx.totalQtyFilterApplied.operator !== "" &&
       ctx.totalQtyFilterApplied.value > 0
-    ) {
-      return "bg-orange-200";
-    } else if (
-      type === "total_transactions" &&
-      ctx.totalTransactionsFilterApplied.operator !== "" &&
-      ctx.totalTransactionsFilterApplied.value > 0
     ) {
       return "bg-orange-200";
     } else if (type === "risk_level" && ctx.riskLevelFilterApplied.length) {
@@ -139,12 +127,6 @@ const CardFilters = () => {
         className={`py-2 shadow-md mx-2 rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200 ${activeFilterStyle("total_qty")}`}
       >
         {handleFilterTextDisplay("total_qty")}
-      </button>
-      <button
-        onClick={() => handleOpenFilterModal("total_transactions")}
-        className={`py-2 shadow-md mx-2 rounded-lg hover:bg-orange-200 hover:text-content transition-all duration-200 ${activeFilterStyle("total_transactions")}`}
-      >
-        {handleFilterTextDisplay("total_transactions")}
       </button>
       <button
         onClick={() => handleOpenFilterModal("risk_level")}
