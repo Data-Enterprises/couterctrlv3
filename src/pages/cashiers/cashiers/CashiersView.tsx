@@ -4,7 +4,12 @@ import { useAppDispatch } from "../../../hooks";
 
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import CashierOverview from "./CashierOverview";
-import { setApplyFilters, setFilteredCashierCards } from "../../../features/cashiersSlice";
+import {
+  setApplyFilters,
+  setFilteredCashierCards,
+  type NumberFilter,
+} from "../../../features/cashiersSlice";
+import type { CashierCard, ExceptionType } from "../../../interfaces";
 
 const CashiersView = () => {
   const ctx = useCashierCtx();
@@ -18,26 +23,111 @@ const CashiersView = () => {
       const riskLvl = ctx.riskLevelFilterApplied;
       const excTier = ctx.exceptionTierFilterApplied;
 
+      const salesTypes = ctx.exceptionSalesTypes;
+      const qtyTypes = ctx.exceptionQtyTypes;
+
+      const handleThreshold = (
+        card: CashierCard,
+        exc: ExceptionType,
+        filter: NumberFilter,
+        metric: "sales" | "qty",
+      ) => {
+        const formattedKey = `${exc
+          .toLowerCase()
+          .replace(/\s/g, "_")}_${metric}` as keyof CashierCard;
+
+        if (filter.operator === ">") {
+          // greater than
+          return (card[formattedKey] as number) > filter.value;
+        } else if (filter.operator === "<") {
+          // less than
+          return (card[formattedKey] as number) < filter.value;
+        } else if (filter.operator === "=") {
+          // equal to
+          return (card[formattedKey] as number) === filter.value;
+        }
+        return false;
+      };
+
       const filtered = ctx.cashierCards.filter((card) => {
-        const matchesCashierName = cashName.length
-          ? card.cashier_name.toLowerCase().includes(cashName.toLowerCase())
+        const matchesStoreName = cashName.length
+          ? card.store_name.toLowerCase().includes(cashName.toLowerCase())
           : true;
 
-        const matchesTotalSales = totalSales.operator.length
-          ? totalSales.operator === ">"
-            ? card.total_sales > totalSales.value
-            : totalSales.operator === "<"
-              ? card.total_sales < totalSales.value
-              : card.total_sales === totalSales.value
-          : true;
+        const salesOperator = totalSales.operator.length > 0;
+        const qtyOperator = totalQty.operator.length > 0;
 
-        const matchesTotalQty = totalQty.operator.length
-          ? totalQty.operator === ">"
-            ? card.total_qty > totalQty.value
-            : totalQty.operator === "<"
-              ? card.total_qty < totalQty.value
-              : card.total_qty === totalQty.value
-          : true;
+        const adjustmetSalesMatch =
+          salesTypes.includes("Adjustment") && salesOperator
+            ? handleThreshold(card, "Adjustment", totalSales, "sales")
+            : true;
+        const adjustmentQtyMatch =
+          qtyTypes.includes("Adjustment") && qtyOperator
+            ? handleThreshold(card, "Adjustment", totalQty, "qty")
+            : true;
+
+        const backupSalesMatch =
+          salesTypes.includes("Backup") && salesOperator
+            ? handleThreshold(card, "Backup", totalSales, "sales")
+            : true;
+        const backupQtyMatch =
+          qtyTypes.includes("Backup") && qtyOperator
+            ? handleThreshold(card, "Backup", totalQty, "qty")
+            : true;
+
+        const cancelledSalesMatch =
+          salesTypes.includes("Cancelled") && salesOperator
+            ? handleThreshold(card, "Cancelled", totalSales, "sales")
+            : true;
+        const cancelledQtyMatch =
+          qtyTypes.includes("Cancelled") && qtyOperator
+            ? handleThreshold(card, "Cancelled", totalQty, "qty")
+            : true;
+
+        const handKeySalesMatch =
+          salesTypes.includes("Hand Key") && salesOperator
+            ? handleThreshold(card, "Hand Key", totalSales, "sales")
+            : true;
+        const handKeyQtyMatch =
+          qtyTypes.includes("Hand Key") && qtyOperator
+            ? handleThreshold(card, "Hand Key", totalQty, "qty")
+            : true;
+
+        const modifiedSalesMatch =
+          salesTypes.includes("Modified") && salesOperator
+            ? handleThreshold(card, "Modified", totalSales, "sales")
+            : true;
+        const modifiedQtyMatch =
+          qtyTypes.includes("Modified") && qtyOperator
+            ? handleThreshold(card, "Modified", totalQty, "qty")
+            : true;
+
+        const noSaleSalesMatch =
+          salesTypes.includes("No Sale") && salesOperator
+            ? handleThreshold(card, "No Sale", totalSales, "sales")
+            : true;
+        const noSaleQtyMatch =
+          qtyTypes.includes("No Sale") && qtyOperator
+            ? handleThreshold(card, "No Sale", totalQty, "qty")
+            : true;
+
+        const refundedSalesMatch =
+          salesTypes.includes("Refunded") && salesOperator
+            ? handleThreshold(card, "Refunded", totalSales, "sales")
+            : true;
+        const refundedQtyMatch =
+          qtyTypes.includes("Refunded") && qtyOperator
+            ? handleThreshold(card, "Refunded", totalQty, "qty")
+            : true;
+
+        const voidedSalesMatch =
+          salesTypes.includes("Voided") && salesOperator
+            ? handleThreshold(card, "Voided", totalSales, "sales")
+            : true;
+        const voidedQtyMatch =
+          qtyTypes.includes("Voided") && qtyOperator
+            ? handleThreshold(card, "Voided", totalQty, "qty")
+            : true;
 
         const matchesRiskLvl = riskLvl.length
           ? card.risk_tier.toLowerCase() === riskLvl.toLowerCase()
@@ -48,11 +138,25 @@ const CashiersView = () => {
           : true;
 
         return (
-          matchesCashierName &&
-          matchesTotalSales &&
-          matchesTotalQty &&
+          matchesStoreName &&
           matchesRiskLvl &&
-          matchesExcTier
+          matchesExcTier &&
+          adjustmetSalesMatch &&
+          adjustmentQtyMatch &&
+          backupSalesMatch &&
+          backupQtyMatch &&
+          cancelledSalesMatch &&
+          cancelledQtyMatch &&
+          handKeySalesMatch &&
+          handKeyQtyMatch &&
+          modifiedSalesMatch &&
+          modifiedQtyMatch &&
+          noSaleSalesMatch &&
+          noSaleQtyMatch &&
+          refundedSalesMatch &&
+          refundedQtyMatch &&
+          voidedSalesMatch &&
+          voidedQtyMatch
         );
       });
       dispatch(setFilteredCashierCards(filtered));
@@ -66,7 +170,6 @@ const CashiersView = () => {
     ctx.riskLevelFilterApplied,
     ctx.exceptionTierFilterApplied,
   ]);
-
 
   if (ctx.loadingCashiers) {
     return (

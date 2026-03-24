@@ -41,13 +41,13 @@ const CardFilters = () => {
       return ctx.totalSalesFilterApplied.operator !== "" &&
         ctx.totalSalesFilterApplied.value > 0
         ? `Sales ${ctx.totalSalesFilterApplied.operator} ${ctx.totalSalesFilterApplied.value}`
-        : "Total Sales";
+        : "Exceptions Sales";
     }
     if (type === "total_qty") {
       return ctx.totalQtyFilterApplied.operator !== "" &&
         ctx.totalQtyFilterApplied.value > 0
         ? `Qty ${ctx.totalQtyFilterApplied.operator} ${ctx.totalQtyFilterApplied.value}`
-        : "Total Qty";
+        : "Exceptions Qty";
     }
     if (type === "risk_level") {
       return ctx.riskLevelFilterApplied.length
