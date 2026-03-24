@@ -6,7 +6,7 @@ import {
   getCashierTable,
   getCashierTransaction,
   getTransactionList,
-} from "../../api/cashiers";
+} from "../../api/lossPrevention";
 import {
   setAvailablePriceTypes,
   setCashiers,
@@ -19,7 +19,7 @@ import {
   setTransactionDrillDown,
   setTransList,
   setTransModalOpen,
-} from "../../features/cashierSlice";
+} from "../../features/lossPreventionSlice";
 import type {
   JsonError,
   TransactionListItem,
@@ -45,7 +45,7 @@ const CashiersTable = () => {
   const [filtered, setFiltered] = useState<TransactionListItem[]>([]);
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const cashier = useAppSelector((state) => state.cashier);
+  const cashier = useAppSelector((state) => state.lossPrevention);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
@@ -255,7 +255,6 @@ const CashiersTable = () => {
               .then((resp) => {
                 const j = resp.data;
                 if (j.error === 0) {
-                  
                   const newTrans = [...j.transactions];
                   const uniqueCashiers = newTrans.reduce(
                     (acc: UniqueCashier[], curr) => {
@@ -304,7 +303,7 @@ const CashiersTable = () => {
   };
 
   const handlePageInput = (x: string) => {
-    console.log(x)
+    console.log(x);
     if (!isNaN(Number(x)) && Number(x) >= 0 && Number(x) <= cashier.gridPages) {
       dispatch(setCurrentGridPage(Number(x)));
       dispatch(setPageText(x));

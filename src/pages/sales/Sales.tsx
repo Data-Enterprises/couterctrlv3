@@ -27,6 +27,7 @@ import type { JsonError } from "../../interfaces";
 import { useLeftColHeight } from "./utils/hooks";
 import { useEffect, useState } from "react";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
+import SubsCompareModal from "./subsCompare/SubsCompareModal";
 
 const Sales = () => {
   const toast = useToast();
@@ -112,6 +113,7 @@ const Sales = () => {
     <div data-testid="sales-page" className={pageContainer}>
       {!context.isMobile ? (
         <div className={gridContainer}>
+          <SubsCompareModal />
           <div
             ref={leftColRef}
             className={`h-full md:grid-rows-[25%_74%] md:gap-4`}
@@ -154,7 +156,9 @@ const Sales = () => {
               )}
             </div>
           ) : isReady ? (
-            <div className="md:grid h-full md:grid-rows-[20%_78%] md:gap-4 overflow-hidden">
+            <div
+              className="md:max-h-[calc(100vh-5rem)] overflow-y-auto no-scrollbar md:grid-rows-[20%_78%] md:space-y-2 overflow-hidden"
+            >
               <KpiHeader />
               <div className="grid grid-cols-2 gap-2">
                 <div className="grid grid-rows-2 gap-2">

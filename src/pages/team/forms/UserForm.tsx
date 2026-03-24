@@ -308,122 +308,123 @@ const UserForm = () => {
           </div>
         </div>
       ) : (
-        <div className="grid">
-          <div
-            className={`${selectedUserForm === "delete" ? "opacity-50 pointer-events-none" : ""}`}
-          >
-            <Input
-              label="Username"
-              value={userInfo.username}
-              setValue={handleUsername}
-              className={`${selectedUserForm === "update" ? "opacity-50 pointer-events-none" : ""} py-1.5`}
-            />
-            <Input
-              label="Email"
-              value={userInfo.email}
-              setValue={handleEmail}
-            />
-            <Input
-              label="First Name"
-              value={userInfo.first_name}
-              setValue={handleFirstName}
-            />
-            {selectedUserForm === "create" && (
-              <Input
-                label="Last Name"
-                value={userInfo.last_name}
-                setValue={handleLastName}
-              />
-            )}
-          </div>
-          <div
-            className={`${selectedUserForm === "delete" ? "opacity-50 pointer-events-none" : ""}`}
-          >
-            <SingleSelect
-              id={1}
-              label="User Level"
-              data={userLevels.filter((ul) => ul.id <= user.userLevel)}
-              displayKey={"name"}
-              valueKey="id"
-              className="text-sm mt-1"
-              innerClass="text-sm"
-              onSelect={handleUserLvlSelect}
-              resetQuery={true}
-              defaultQuery={findUserLvl()}
-            />
-            <SingleSelect
-              id={2}
-              data={roles}
-              valueKey={"value"}
-              displayKey={"label"}
-              label={"Role"}
-              className="text-sm mt-1"
-              innerClass="text-sm"
-              onSelect={handleRoleSelect}
-              resetQuery={true}
-              defaultQuery={findRole()}
-            />
-            {selectedUserForm === "create" && (
-              <SingleSelect
-                id={3}
-                data={user.companies}
-                valueKey={"company"}
-                displayKey={"name"}
-                label={"Company"}
-                className="text-sm mt-1"
-                innerClass="text-sm"
-                onSelect={handleCompanySelect}
-                resetQuery={true}
-                defaultQuery={defaultCompanyQuery}
-              />
-            )}
-            {selectedUserForm === "create" && (
-              <SingleSelect
-                id={4}
-                data={baseGroups}
-                valueKey={"id"}
-                displayKey={"name"}
-                label={"Base Group"}
-                className="text-sm mt-1"
-                innerClass="text-sm"
-                onSelect={handleBaseGroupSelect}
-                resetQuery={true}
-                defaultQuery={
-                  baseGroups.length === 0 ? "Select company first" : ""
-                }
-              />
-            )}
-            {selectedUserForm !== "create" && (
-              <Input
-                label="Last Name"
-                value={userInfo.last_name}
-                setValue={handleLastName}
-              />
-            )}
-            {selectedUserForm === "create" && (
-              <PasswordInput
-                label="Password"
-                name="password"
-                setText={handlePassword}
-                text={userInfo.password}
-                className="py-1.5"
-                leftCompare={userInfo.password}
-                rightCompare={userInfo.confirm_password}
-              />
-            )}
-            {selectedUserForm === "create" && (
-              <PasswordInput
-                label="Confirm Password"
-                name="confirm_password"
-                setText={handleConfirmPassword}
-                text={userInfo.confirm_password}
-                className="py-1.5"
-                leftCompare={userInfo.password}
-                rightCompare={userInfo.confirm_password}
-              />
-            )}
-          </div>
-        </div>
+        // <div className="grid">
+        //   <div
+        //     className={`${selectedUserForm === "delete" ? "opacity-50 pointer-events-none" : ""}`}
+        //   >
+        //     <Input
+        //       label="Username"
+        //       value={userInfo.username}
+        //       setValue={handleUsername}
+        //       className={`${selectedUserForm === "update" ? "opacity-50 pointer-events-none" : ""} py-1.5`}
+        //     />
+        //     <Input
+        //       label="Email"
+        //       value={userInfo.email}
+        //       setValue={handleEmail}
+        //     />
+        //     <Input
+        //       label="First Name"
+        //       value={userInfo.first_name}
+        //       setValue={handleFirstName}
+        //     />
+        //     {selectedUserForm === "create" && (
+        //       <Input
+        //         label="Last Name"
+        //         value={userInfo.last_name}
+        //         setValue={handleLastName}
+        //       />
+        //     )}
+        //   </div>
+        //   <div
+        //     className={`${selectedUserForm === "delete" ? "opacity-50 pointer-events-none" : ""}`}
+        //   >
+        //     <SingleSelect
+        //       id={1}
+        //       label="User Level"
+        //       data={userLevels.filter((ul) => ul.id <= user.userLevel)}
+        //       displayKey={"name"}
+        //       valueKey="id"
+        //       className="text-sm mt-1"
+        //       innerClass="text-sm"
+        //       onSelect={handleUserLvlSelect}
+        //       resetQuery={true}
+        //       defaultQuery={findUserLvl()}
+        //     />
+        //     <SingleSelect
+        //       id={2}
+        //       data={roles}
+        //       valueKey={"value"}
+        //       displayKey={"label"}
+        //       label={"Role"}
+        //       className="text-sm mt-1"
+        //       innerClass="text-sm"
+        //       onSelect={handleRoleSelect}
+        //       resetQuery={true}
+        //       defaultQuery={findRole()}
+        //     />
+        //     {selectedUserForm === "create" && (
+        //       <SingleSelect
+        //         id={3}
+        //         data={user.companies}
+        //         valueKey={"company"}
+        //         displayKey={"name"}
+        //         label={"Company"}
+        //         className="text-sm mt-1"
+        //         innerClass="text-sm"
+        //         onSelect={handleCompanySelect}
+        //         resetQuery={true}
+        //         defaultQuery={defaultCompanyQuery}
+        //       />
+        //     )}
+        //     {selectedUserForm === "create" && (
+        //       <SingleSelect
+        //         id={4}
+        //         data={baseGroups}
+        //         valueKey={"id"}
+        //         displayKey={"name"}
+        //         label={"Base Group"}
+        //         className="text-sm mt-1"
+        //         innerClass="text-sm"
+        //         onSelect={handleBaseGroupSelect}
+        //         resetQuery={true}
+        //         defaultQuery={
+        //           baseGroups.length === 0 ? "Select company first" : ""
+        //         }
+        //       />
+        //     )}
+        //     {selectedUserForm !== "create" && (
+        //       <Input
+        //         label="Last Name"
+        //         value={userInfo.last_name}
+        //         setValue={handleLastName}
+        //       />
+        //     )}
+        //     {selectedUserForm === "create" && (
+        //       <PasswordInput
+        //         label="Password"
+        //         name="password"
+        //         setText={handlePassword}
+        //         text={userInfo.password}
+        //         className="py-1.5"
+        //         leftCompare={userInfo.password}
+        //         rightCompare={userInfo.confirm_password}
+        //       />
+        //     )}
+        //     {selectedUserForm === "create" && (
+        //       <PasswordInput
+        //         label="Confirm Password"
+        //         name="confirm_password"
+        //         setText={handleConfirmPassword}
+        //         text={userInfo.confirm_password}
+        //         className="py-1.5"
+        //         leftCompare={userInfo.password}
+        //         rightCompare={userInfo.confirm_password}
+        //       />
+        //     )}
+        //   </div>
+        // </div>
+        null
       )}
       <UserFormButtons formType={selectedUserForm} />
     </div>

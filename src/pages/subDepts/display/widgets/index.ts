@@ -37,7 +37,7 @@ export const cols: ColDef<BarData>[] = [
     headerName: "Date",
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus text-right",
+    cellClass: "no-outline-on-focus",
   },
   {
     flex: 1,
@@ -76,7 +76,7 @@ export const cols: ColDef<BarData>[] = [
     cellClass: "no-outline-on-focus text-right",
   },
   {
-    flex: 1,
+    flex: 0.9,
     field: "cogs",
     headerName: "COGS",
     resizable: false,

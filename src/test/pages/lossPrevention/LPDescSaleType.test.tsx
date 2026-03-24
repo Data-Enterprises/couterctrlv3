@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, type Mock } from "vitest";
 import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../../utils";
-import Cashiers from "../../../pages/lossPrevention/Cashiers";
+import Cashiers from "../../../pages/lossPrevention/LossPrevention";
 import {
   getSaleTypes,
   getCashierTable,
   getCashierDetails,
-} from "../../../api/cashiers";
+} from "../../../api/lossPrevention";
 import userEvent from "@testing-library/user-event";
 import { setupStore } from "../../../store";
 import { saleTypes, mockSaleTrendResp, mockCashierTableResp } from ".";

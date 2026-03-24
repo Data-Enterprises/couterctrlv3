@@ -7,9 +7,9 @@ import {
   ArrowDownCircleIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
 } from "@heroicons/react/24/outline";
-import { setCashierDetailsTrendDirection } from "../../../features/cashierSlice";
+import { setCashierDetailsTrendDirection } from "../../../features/lossPreventionSlice";
 import { useEffect } from "react";
 import { defaultCashierTrend, findTrendDirection } from ".";
 
@@ -21,7 +21,7 @@ const CashierTrendCard = () => {
     selectedCashierDetailsIdx,
     selectedSaleType,
     cashierDetailsTrendDirection,
-  } = useAppSelector((state) => state.cashier);
+  } = useAppSelector((state) => state.lossPrevention);
 
   useEffect(() => {
     if (selectedCashierDetails !== null) {
@@ -68,8 +68,6 @@ const CashierTrendCard = () => {
         // max = 5, min =-5 => this is used in the overallTrendLine to determine which icon to show
         dispatch(setCashierDetailsTrendDirection(trendDirection));
       }
-    } else {
-      dispatch(setCashierDetailsTrendDirection(0));
     }
   }, [selectedCashierDetails]);
 
@@ -152,7 +150,9 @@ const CashierTrendCard = () => {
         <div>{selectedCashierDetails!.store_name}</div>
         <div>{selectedCashierDetails!.sale_type}</div>
       </div>
-      <div className="flex items-center justify-center font-bold">Overall Trend {overallTrendLine()}</div>
+      <div className="flex items-center justify-center font-bold">
+        Overall Trend {overallTrendLine()}
+      </div>
       <div className="grid grid-cols-[43%_28%_34%] pb-2 text-sm h-[75%]">
         <div className="pr-1 grid place-items-stretch">
           <div className="font-medium pl-2 flex justify-between">

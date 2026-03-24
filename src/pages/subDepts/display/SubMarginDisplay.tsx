@@ -20,7 +20,6 @@ const SubMarginDisplay = () => {
     margins,
     loadingMargins,
     selectedWeek,
-    selectedWeekDay,
     subDeptGridView,
   } = useSubMarginCtx();
   const height = useHeight();
@@ -85,7 +84,7 @@ const SubMarginDisplay = () => {
   }
 
   const renderGrid = () => {
-    if (selectedWeekDay && subDeptGridView === "item") {
+    if (subDeptGridView === "item") {
       return (
         <div className="grid grid-cols-[18%_81.5%] gap-2">
           <ItemsGridFilters />

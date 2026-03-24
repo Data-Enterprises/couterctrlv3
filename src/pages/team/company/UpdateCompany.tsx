@@ -76,7 +76,9 @@ const UpdateCompany = () => {
       <div className="grid grid-cols-2 gap-2 items-end">
         <SingleSelect
           label="Companies"
-          data={companies.filter((c) => user.companies.some((uc) => uc.company === c.id))}
+          data={companies.filter((c) =>
+            user.companies.some((uc) => uc.company === c.id),
+          )}
           displayKey="name"
           valueKey="id"
           innerClass="py-1.5"
@@ -127,12 +129,17 @@ const UpdateCompany = () => {
       </div>
       <div className="grid grid-cols-2 gap-2 mt-4">
         <button
+          data-testid="update-company-clear-btn"
           className="btn-themeBlue"
           onClick={() => dispatch(resetCompanyInfo())}
         >
           Clear Fields
         </button>
-        <button className="btn-themeBlue" onClick={handleSubmit}>
+        <button
+          data-testid="update-company-submit-btn"
+          className="btn-themeBlue"
+          onClick={handleSubmit}
+        >
           Update
         </button>
       </div>

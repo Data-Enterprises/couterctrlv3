@@ -211,7 +211,7 @@ export interface BaseGroupJsonResp {
 }
 
 //////////////////////////////////////////////////////////////
-// Cashiers Interfaces
+// Loss Prevention Interfaces
 //////////////////////////////////////////////////////////////
 
 // cashiers/preflight endpoint => sale_types property from response object
@@ -948,6 +948,7 @@ export type StoresMissingSalesJsonResp = {
 };
 
 export type SubDeptCost = {
+  date: string;
   product_code: string;
   description: string;
   calculated_cost: number;
@@ -955,3 +956,141 @@ export type SubDeptCost = {
   qty: number;
   total_cost: number;
 };
+
+////////////////////////////
+// Cashiers Interfaces
+///////////////////////////
+
+export type StoreCard = {
+  storeid: number;
+  store_name: string;
+  total_transactions: number;
+  total_sales: number;
+  net_sales: number;
+  total_qty: number;
+  voided_count: number;
+  voided_sales: number;
+  voided_qty: number;
+  refunded_count: number;
+  refunded_sales: number;
+  refunded_qty: number;
+  no_sale_count: number;
+  no_sale_sales: number;
+  no_sale_qty: number;
+  hand_key_count: number;
+  hand_key_sales: number;
+  hand_key_qty: number;
+  cancelled_count: number;
+  cancelled_sales: number;
+  cancelled_qty: number;
+  adjustment_count: number;
+  adjustment_sales: number;
+  adjustment_qty: number;
+  backup_count: number;
+  backup_sales: number;
+  backup_qty: number;
+  modified_count: number;
+  modified_sales: number;
+  modified_qty: number;
+  total_flagged: number;
+  voided_rate: number;
+  refunded_rate: number;
+  no_sale_rate: number;
+  hand_key_rate: number;
+  cancelled_rate: number;
+  adjustment_rate: number;
+  backup_rate: number;
+  modified_rate: number;
+  flagged_rate: number;
+  weighted_risk_rate: number;
+  risk_score: number;
+  risk_tier: string;
+  exception_tier: string;
+};
+
+export interface StoreCardResp {
+  error: number;
+  success: boolean;
+  stores: StoreCard[];
+}
+
+export type CashierCard = {
+  storeid: number;
+  store_name: string;
+  cashier_number: number;
+  cashier_name: string;
+  store_number: number;
+  total_transactions: number;
+  total_sales: number;
+  net_sales: number;
+  total_qty: number;
+  voided_count: number;
+  voided_sales: number;
+  voided_qty: number;
+  refunded_count: number;
+  refunded_sales: number;
+  refunded_qty: number;
+  no_sale_count: number;
+  no_sale_sales: number;
+  no_sale_qty: number;
+  hand_key_count: number;
+  hand_key_sales: number;
+  hand_key_qty: number;
+  cancelled_count: number;
+  cancelled_sales: number;
+  cancelled_qty: number;
+  adjustment_count: number;
+  adjustment_sales: number;
+  adjustment_qty: number;
+  backup_count: number;
+  backup_sales: number;
+  backup_qty: number;
+  modified_count: number;
+  modified_sales: number;
+  modified_qty: number;
+  total_flagged: number;
+  voided_rate: number;
+  refunded_rate: number;
+  no_sale_rate: number;
+  hand_key_rate: number;
+  cancelled_rate: number;
+  adjustment_rate: number;
+  backup_rate: number;
+  modified_rate: number;
+  flagged_rate: number;
+  weighted_risk_rate: number;
+  blended_base_score: number;
+  volume_factor: number;
+  risk_score: number;
+  risk_tier: string;
+  exception_tier: string;
+};
+
+export interface CashierCardResp {
+  error: number;
+  success: boolean;
+  stores: CashierCard[];
+}
+
+export type Cashier = {
+  storeid: number;
+  store_name: string;
+  store_number: number;
+  cashier_number: number;
+  cashier_name: string;
+}
+
+export type CashierStore = {
+  storeid: number;
+  store_name: string;
+}
+
+export type ExceptionType =
+  | "Voided"
+  | "Refunded"
+  | "No Sale"
+  | "Hand Key"
+  | "Cancelled"
+  | "Adjustment"
+  | "Backup"
+  | "Modified";

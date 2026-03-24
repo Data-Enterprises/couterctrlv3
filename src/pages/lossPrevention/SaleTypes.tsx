@@ -1,6 +1,6 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { getCashierDetails } from "../../api/cashiers";
+import { getCashierDetails } from "../../api/lossPrevention";
 import {
   setSelectedSaleType,
   setCashierDetails,
@@ -11,7 +11,7 @@ import {
   reQuery,
   setSearchString,
   setSelectedStoreId,
-} from "../../features/cashierSlice";
+} from "../../features/lossPreventionSlice";
 import type { JsonError } from "../../interfaces";
 import { activePanelStyle } from ".";
 import { useApiContext } from "../hooks";
@@ -26,7 +26,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
   const toast = useToast();
   const params = useApiContext();
   const dispatch = useAppDispatch();
-  const cashier = useAppSelector((state) => state.cashier);
+  const cashier = useAppSelector((state) => state.lossPrevention);
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const submitDescription = (description: string) => {
@@ -145,9 +145,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
                 cursor-pointer transition-all duration-200 ripple-button`}
             onClick={() => handlePanelClick(st.sale_type)}
           >
-            <span>
-              {st.sale_type}
-            </span>
+            <span>{st.sale_type}</span>
           </div>
         ))}
       </div>

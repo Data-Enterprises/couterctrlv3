@@ -2,7 +2,7 @@ import type { JsonError, TransactionListItem } from "../../interfaces";
 import { formatCurrency2, formatDate } from "../../utils";
 import { exportData } from "../../utils/export";
 import { useAppSelector } from "../../hooks";
-import { emailTransaction } from "../../api/cashiers";
+import { emailTransaction } from "../../api/lossPrevention";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
 interface TransactionProps {
@@ -11,7 +11,7 @@ interface TransactionProps {
 const Transaction = ({ trans }: TransactionProps) => {
   const toast = useToast();
   const context = useAppSelector((state) => state.app);
-  const cashier = useAppSelector((state) => state.cashier);
+  const cashier = useAppSelector((state) => state.lossPrevention);
   const extractSaleId = (saleId: string) => {
     return saleId.split("-")[1];
   };

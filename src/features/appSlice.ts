@@ -2,6 +2,8 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface AppState {
   url: string;
+  miktoUrl: string;
+  apiKey: string;
   chatUrl: string;
   key: string;
   loggedIn: boolean;
@@ -17,6 +19,8 @@ interface AppState {
 
 export const initialState: AppState = {
   url: "https://y9v6viv36h.execute-api.us-east-1.amazonaws.com/Prod/",
+  miktoUrl: "https://goliathai.casa/",
+  apiKey: "35Se0kl65Far1hT4",
   key: "7801882436271592", // for the url api if needed (above)
   loggedIn: false,
   token: "",

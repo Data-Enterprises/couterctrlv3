@@ -1,12 +1,12 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { setTransModalOpen } from "../../features/cashierSlice";
+import { setTransModalOpen } from "../../features/lossPreventionSlice";
 import Modal from "../../components/Modal";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import Transaction from "./Transaction";
 
 const TransactionModal = () => {
   const dispatch = useAppDispatch();
-  const cashier = useAppSelector((state) => state.cashier);
+  const cashier = useAppSelector((state) => state.lossPrevention);
 
   return (
     <Modal

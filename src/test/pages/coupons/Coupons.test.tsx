@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../../utils";
 import Coupons from "../../../pages/coupons/Coupons";
 import { getCoupons } from "../../../api/coupons";
-import { getCashierTransaction } from "../../../api/cashiers";
+import { getCashierTransaction } from "../../../api/lossPrevention";
 import { setupStore } from "../../../store";
 import { setToken } from "../../../features/appSlice";
 import {

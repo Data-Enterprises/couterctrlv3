@@ -72,7 +72,7 @@ const ItemsGridFilters = () => {
       <div className="bg-blue-500 text-custom-white font-medium px-2 py-0.5 rounded-t-lg">
         Item Filters
       </div>
-      <div className="p-2 grid grid-rows-7 h-[94%] gap-3">
+      <div className="p-2 grid grid-rows-7 h-[93%] gap-3">
         <div
           className={`${divStyle} ${sm.upcFilter.length ? "bg-orange-200" : ""}`}
           onClick={() => handleClick("upc")}

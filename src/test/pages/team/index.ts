@@ -546,6 +546,20 @@ export const loggedInUserCompanies = [
     name: "DCR",
     username: "tguy",
   },
+  {
+    id: 5,
+    company: 5,
+    userid: 1,
+    name: "Test Company 4",
+    username: "tguy",
+  },
+  {
+    id: 6,
+    company: 6,
+    userid: 1,
+    name: "Test Company 6",
+    username: "tguy",
+  },
 ];
 
 export const nonDCRCompanies = [

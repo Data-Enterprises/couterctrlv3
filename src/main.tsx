@@ -13,7 +13,7 @@ import Home from "./pages/home/Home.tsx";
 import Sales from "./pages/sales/Sales.tsx";
 import Team from "./pages/team/Team.tsx";
 import Groups from "./pages/groups/Groups.tsx";
-import Cashiers from "./pages/lossPrevention/Cashiers.tsx";
+import LossPrevention from "./pages/lossPrevention/LossPrevention.tsx";
 import Settings from "./pages/settings/Settings.tsx";
 import UpcList from "./pages/upc/UpcList.tsx";
 import ItemLookup from "./pages/lookup/ItemLookup.tsx";
@@ -23,6 +23,7 @@ import Receivers from "./pages/receivers/Receivers.tsx";
 import Coupons from "./pages/coupons/Coupons.tsx";
 import AdminPage from "./pages/admin/AdminPage.tsx";
 import SubDeptMargins from "./pages/subDepts/SubDeptMargins.tsx";
+import Cashiers from "./pages/cashiers/Cashiers.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -35,7 +36,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route index element={<Home />} />
                 <Route path="sales" element={<Sales />} />
                 <Route path="team" element={<Team />} />
-                <Route path="loss-prevention" element={<Cashiers />} />
+                <Route path="loss-prevention" element={<LossPrevention />} />
                 <Route path="groups" element={<Groups />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="upc-upload" element={<UpcList />} />
@@ -46,6 +47,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="coupons" element={<Coupons />} />
                 <Route path="admin" element={<AdminPage />} />
                 <Route path="sub-dept-margins" element={<SubDeptMargins />} />
+                <Route path="cashiers" element={<Cashiers />} />
               </Route>
             </Routes>
           </ToastProvider>

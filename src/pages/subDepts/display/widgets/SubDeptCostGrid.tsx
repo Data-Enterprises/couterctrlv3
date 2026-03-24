@@ -5,7 +5,6 @@ import { AgGridReact } from "ag-grid-react";
 import {
   AllCommunityModule,
   ModuleRegistry,
-  // type ColumnHeaderContextMenuEvent,
 } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -14,21 +13,19 @@ import {
   setFilteredCostGridData,
   type ThreshOperator,
 } from "../../../../features/subMarginSlice";
-// import type { SubDeptCost } from "../../../../interfaces";
 import {
   setMenuPosition,
   setSMClipboardText,
 } from "../../../../features/ctxMenuSlice";
-// import { useSubMarginCtx } from "../../hooks";
 
 const SubDeptCostGrid = () => {
   const gridRef = useRef<AgGridReact>(null);
   const dispatch = useAppDispatch();
   const sm = useAppSelector((state) => state.subMargin);
-  // const { selectedWeekDay } = useSubMarginCtx();
 
   useEffect(() => {
-    if (sm.subDeptCost.length) {
+    if (sm.margins.length) {
+      const date = sm.selectedWeekDay;
       const upc = sm.upcFilter;
       const desc = sm.descFilter;
       const unitCost = sm.unitCostFilter;
@@ -54,6 +51,7 @@ const SubDeptCostGrid = () => {
       };
 
       const filteredData = [...sm.subDeptCost].filter((item) => {
+        const dateMatch = date.length ? date === item.date : true;
         const upcMatch = upc ? item.product_code.includes(upc) : true;
         const descMatch = desc
           ? item.description.toLowerCase().includes(desc.toLowerCase())
@@ -76,6 +74,7 @@ const SubDeptCostGrid = () => {
           : true;
 
         return (
+          dateMatch &&
           upcMatch &&
           descMatch &&
           unitCostMatch &&
@@ -88,6 +87,8 @@ const SubDeptCostGrid = () => {
       dispatch(setFilteredCostGridData(filteredData));
     }
   }, [
+    sm.subDeptGridView,
+    sm.selectedWeekDay,
     sm.upcFilter,
     sm.descFilter,
     sm.caseCostFilter,
@@ -95,12 +96,6 @@ const SubDeptCostGrid = () => {
     sm.qtyFilter,
     sm.unitCostFilter,
   ]);
-
-  useEffect(() => {
-    if (sm.subDeptCost.length) {
-      dispatch(setFilteredCostGridData(sm.subDeptCost));
-    }
-  }, [sm.subDeptCost]);
 
   const handleCtxMenu = (event: React.MouseEvent<HTMLDivElement>) => {
     if (!gridRef.current) return;

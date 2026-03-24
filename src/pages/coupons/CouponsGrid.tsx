@@ -8,11 +8,11 @@ import {
   type RowClickedEvent,
 } from "ag-grid-community";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { getCashierTransaction } from "../../api/cashiers";
+import { getCashierTransaction } from "../../api/lossPrevention";
 import {
   setTransactionDrillDown,
   setTransModalOpen,
-} from "../../features/cashierSlice";
+} from "../../features/lossPreventionSlice";
 import type { JsonError } from "../../interfaces";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -37,7 +37,7 @@ const CouponsGrid = () => {
       context.token,
       saleDate,
       joinedSaleId,
-      storeid
+      storeid,
     )
       .then((resp) => {
         const j = resp.data;

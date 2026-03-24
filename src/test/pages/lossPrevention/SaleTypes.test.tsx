@@ -2,12 +2,12 @@ import { describe, expect, it, vi, type Mock } from "vitest";
 import { renderWithProviders } from "../../utils";
 import { setupStore } from "../../../store";
 import userEvent from "@testing-library/user-event";
-import Cashiers from "../../../pages/lossPrevention/Cashiers";
+import Cashiers from "../../../pages/lossPrevention/LossPrevention";
 import {
   getCashierDetails,
   getCashierTable,
   getSaleTypes,
-} from "../../../api/cashiers";
+} from "../../../api/lossPrevention";
 import { screen, waitFor } from "@testing-library/react";
 
 const user = userEvent.setup();

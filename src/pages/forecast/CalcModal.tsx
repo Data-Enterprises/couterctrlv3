@@ -28,8 +28,8 @@ const CalcModal = () => {
     if (selectedRow) {
       setNewPrice(selectedRow.fcstPrice.toString());
       setPriceText(selectedRow.fcstPrice.toString());
-      setNewCost("12.90");
-      setCostText("12.90");
+      setNewCost("0.00");
+      setCostText("0.00");
       const prices = forecastResults.find(
         (r) => r.upc === selectedRow.upc,
       )?.price_history;
@@ -128,7 +128,7 @@ const CalcModal = () => {
     <Modal
       isOpen={open}
       onClose={handleClose}
-      modalClassName="bg-bkg p-2 w-[22%] -translate-x-[136%]"
+      modalClassName="bg-bkg p-2 w-[29%] -translate-x-[115%]"
     >
       {selectedRow && isReady ? (
         <div className="bg-custom-white rounded-lg shadow-lg">
@@ -158,7 +158,7 @@ const CalcModal = () => {
                   onChange={(e) => handleCostChange(e.target.value)}
                 />
               </div>
-              <div className="w-full mt-2 space-y-2">
+              <div className="w-full mt-4 space-y-2">
                 <button
                   className="btn-themeBlue w-full py-1.5"
                   onClick={() => calcNewMetrics()}
@@ -177,15 +177,17 @@ const CalcModal = () => {
             </div>
             <div>
               <div className="font-medium underline text-sm">Prices/Qty</div>
-              {prices.map((p, i) => {
-                return (
-                  <div key={i} className="text-sm grid grid-cols-2">
-                    <div>Price: {formatCurrency2(p[0])}</div>
-                    <div>Qty: {p[1]}</div>
-                  </div>
-                );
-              })}
-              <div className="border-2 p-3 mt-5 border-emerald-500 rounded-lg bg-emerald-100 text-sm">
+              <div className="min-h-28 max-h-28 overflow-hidden overflow-y-auto">
+                {prices.map((p, i) => {
+                  return (
+                    <div key={i} className="text-sm grid grid-cols-2">
+                      <div>Price: {formatCurrency2(p[0])}</div>
+                      <div>Qty: {p[1]}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="border-2 p-2 mt-1 border-emerald-500 rounded-lg bg-emerald-100 text-sm">
                 <div className="font-medium underline">Predicted Metrics</div>
                 <div className="text-sm">
                   <span>Qty:</span>

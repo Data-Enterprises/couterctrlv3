@@ -134,11 +134,8 @@ const SearchType = ({ singleStoreOnly = false }: Props) => {
               autoComplete="off"
               type="text"
               name="search"
-              className="basic-input bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer focus:border"
+              className="basic-input bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer focus:border text-sm"
             />
-            {/* <div className={`${type === 'Store' ? "hidden" : "absolute"} top-2 right-0 w-[24px] cursor-pointer `}>
-              <ChevronUpDownIcon className="fill-content" />
-            </div> */}
           </div>
           <div
             data-testid="type-list-ref"

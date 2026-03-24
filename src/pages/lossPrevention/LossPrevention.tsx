@@ -2,9 +2,12 @@ import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
-import { getSaleTypes } from "../../api/cashiers";
+import { getSaleTypes } from "../../api/lossPrevention";
 import { formatGoliathDate } from "../../utils";
-import { resetCashierSlice, setSaleTypes } from "../../features/cashierSlice";
+import {
+  resetCashierSlice,
+  setSaleTypes,
+} from "../../features/lossPreventionSlice";
 import type { JsonError } from "../../interfaces";
 
 import DatePickers from "../../components/datePickers/DatePickers";
@@ -18,12 +21,12 @@ import SaleTypes from "./SaleTypes";
 import CashiersTableFilters from "./filters/CashiersTableFilters";
 import MobileTrendCards from "./cashierSales/MobileTrendCards";
 
-const Cashiers = () => {
+const LossPrevention = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const cashier = useAppSelector((state) => state.cashier);
+  const cashier = useAppSelector((state) => state.lossPrevention);
   const [loading, setLoading] = useState<boolean>(false);
 
   const getSaleTypesData = () => {
@@ -124,4 +127,4 @@ const Cashiers = () => {
   );
 };
 
-export default Cashiers;
+export default LossPrevention;

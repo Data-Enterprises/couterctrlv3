@@ -9,7 +9,7 @@ import groupReducer from "../features/groupSlice";
 import storeReducer from "../features/storeSlice";
 import usersReducer from "../features/usersSlice";
 import forgotPasswordReducer from "../features/forgotPasswordSlice";
-import cashierReducer from "../features/cashierSlice";
+import lossPreventionReducer from "../features/lossPreventionSlice.ts";
 import upcReducer from "../features/upcSlice";
 import itemLookupReducer from "../features/itemLookupSlice";
 import trendModalReducer from "../features/trendModalSlice";
@@ -26,6 +26,7 @@ import adminReducer from "../features/adminSlice.ts";
 import baseGroupReducer from "../features/baseGroupSlice.ts";
 import companyReducer from "../features/companySlice.ts";
 import subMarginReducer from "../features/subMarginSlice.ts";
+import cashiersReducer from '../features/cashiersSlice.ts';
 
 export const setupStore = () =>
   configureStore({
@@ -39,7 +40,7 @@ export const setupStore = () =>
       stores: storeReducer,
       users: usersReducer,
       forgotPassword: forgotPasswordReducer,
-      cashier: cashierReducer,
+      lossPrevention: lossPreventionReducer,
       upc: upcReducer,
       item: itemLookupReducer,
       trendModal: trendModalReducer,
@@ -56,6 +57,7 @@ export const setupStore = () =>
       baseGroup: baseGroupReducer,
       company: companyReducer,
       subMargin: subMarginReducer,
+      cashier: cashiersReducer,
     },
   });
 

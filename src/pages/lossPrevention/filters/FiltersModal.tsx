@@ -11,7 +11,7 @@ import {
   setSaleDateFilter,
   setSelectedPriceTypes,
   setTransIdFilter,
-} from "../../../features/cashierSlice";
+} from "../../../features/lossPreventionSlice";
 
 // Modal and filter components
 import Modal from "../../../components/Modal";
@@ -22,7 +22,7 @@ import TotalSalesFilter from "./TotalSalesFilter";
 const FiltersModal = () => {
   const dispatch = useAppDispatch();
   const { filterType, filterModalOpen, availablePriceTypes } = useAppSelector(
-    (state) => state.cashier
+    (state) => state.lossPrevention,
   );
   const [text, setText] = useState<string>("");
   const [threshold, setThreshold] = useState<string>("");

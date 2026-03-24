@@ -30,7 +30,6 @@ interface SalesState {
   topTenItems: TopTenItem[];
   salesPanels: WeeklySale[];
   selectedSalesPanel: SelectedSalesPanel;
-  compareSalesPanel: SelectedSalesPanel;
   weeklySales: WeeklySale[];
   panelsLoading: boolean;
   windowVisible: WindowVisible;
@@ -40,11 +39,15 @@ interface SalesState {
   subSalesWk2: SubSale[];
   subSalesWk3: SubSale[];
   subSalesWk4: SubSale[];
-  compareSubs: SubSale[];
   queryChecker: QueryChecker;
   selectedItem: string;
   topSubDept: TopSub | null;
   selectedSubDept: TopSub | null;
+  compareSubsModalOpen: boolean;
+  leftSubCompare: WeeklySale | null;
+  rightSubCompare: WeeklySale | null;
+  compareSubsLeftCompare: SubSale[];
+  compareSubsRightCompare: SubSale[];
 }
 
 export const defaultSelectedPanel: SelectedSalesPanel = {
@@ -57,7 +60,6 @@ const initialState: SalesState = {
   topTenItems: [],
   salesPanels: [],
   selectedSalesPanel: defaultSelectedPanel,
-  compareSalesPanel: defaultSelectedPanel,
   weeklySales: [],
   panelsLoading: false,
   windowVisible: defaultWindowVisible,
@@ -67,7 +69,6 @@ const initialState: SalesState = {
   subSalesWk2: [],
   subSalesWk3: [],
   subSalesWk4: [],
-  compareSubs: [],
   queryChecker: {
     topTen: false,
     hourly: false,
@@ -77,6 +78,11 @@ const initialState: SalesState = {
   selectedItem: "",
   topSubDept: null,
   selectedSubDept: {} as SubSale,
+  compareSubsModalOpen: false,
+  leftSubCompare: null,
+  rightSubCompare: null,
+  compareSubsLeftCompare: [],
+  compareSubsRightCompare: [],
 };
 
 export const salesSlice = createSlice({
@@ -95,12 +101,6 @@ export const salesSlice = createSlice({
     ) => {
       state.selectedSalesPanel = action.payload;
     },
-    setCompareSalesPanel: (
-      state,
-      action: PayloadAction<SelectedSalesPanel>,
-    ) => {
-      state.compareSalesPanel = action.payload;
-    },
     setWeeklySales: (state, action: PayloadAction<WeeklySale[]>) => {
       state.weeklySales = action.payload;
     },
@@ -112,9 +112,6 @@ export const salesSlice = createSlice({
     },
     setSubSales: (state, action: PayloadAction<SubSale[]>) => {
       state.subSales = action.payload;
-    },
-    setCompareSubs: (state, action: PayloadAction<SubSale[]>) => {
-      state.compareSubs = action.payload;
     },
     finishQuery: (state, action: PayloadAction<string>) => {
       if (action.payload === "top ten") {
@@ -159,7 +156,6 @@ export const salesSlice = createSlice({
       state.weeklySales = [];
       state.hourlySales = [];
       state.subSales = [];
-      state.compareSubs = [];
       state.subSalesWk2 = [];
       state.subSalesWk3 = [];
       state.subSalesWk4 = [];
@@ -171,6 +167,28 @@ export const salesSlice = createSlice({
         weekly: false,
       };
     },
+    setCompareSubsModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.compareSubsModalOpen = action.payload;
+    },
+    setLeftSubCompare: (state, action: PayloadAction<WeeklySale | null>) => {
+      state.leftSubCompare = action.payload;
+    },
+    setRightSubCompare: (state, action: PayloadAction<WeeklySale | null>) => {
+      state.rightSubCompare = action.payload;
+    },
+    setCompareSubsLeftCompareData: (state, action: PayloadAction<SubSale[]>) => {
+      state.compareSubsLeftCompare = action.payload;
+    },
+    setCompareSubsRightCompareData: (state, action: PayloadAction<SubSale[]>) => {
+      state.compareSubsRightCompare = action.payload;
+    },
+    resetCompareSubs: (state) => {
+      state.leftSubCompare = null;
+      state.rightSubCompare = null;
+      state.compareSubsLeftCompare = [];
+      state.compareSubsRightCompare = [];
+      state.compareSubsModalOpen = false;
+    },
     resetSalesSlice: () => initialState,
   },
 });
@@ -179,18 +197,22 @@ export const {
   setTopTenItems,
   setSalesPanels,
   setSelectedSalesPanel,
-  setCompareSalesPanel,
   setWeeklySales,
   setPanelsLoading,
   setHourlySales,
   setSubSales,
-  setCompareSubs,
   finishQuery,
   setSelectedItem,
   setPeriodSubSales,
   setSelectedSubDept,
   setTopSubDept,
   reQuery,
+  setCompareSubsLeftCompareData,
+  setCompareSubsRightCompareData,
+  setLeftSubCompare,
+  setCompareSubsModalOpen,
+  setRightSubCompare,
+  resetCompareSubs,
   resetSalesSlice,
 } = salesSlice.actions;
 export default salesSlice.reducer;

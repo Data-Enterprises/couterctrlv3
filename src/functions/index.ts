@@ -141,6 +141,7 @@ export const crr = (coupons: number[], units: number) => {
  * @returns Coupon Redemption Rate => string percentage value e.g. '12.34%'
  */
 export const couponSalePct = (coupons: number[], net: number) => {
+  if (net === 0) return "0.00%";
   const couponSales = coupons.reduce((acc, val) => acc + val, 0);
   return ((couponSales / net) * 100).toFixed(2) + "%";
 };
@@ -158,6 +159,7 @@ export const couponSalePct = (coupons: number[], net: number) => {
  * @returns Net Sales Percent => string
  */
 export const netSalesPct = (net: number, rev: number) => {
+  if (rev === 0) return "0.00%";
   const pct = (net / rev) * 100;
   return `${pct.toFixed(2)}%`;
 };
@@ -175,6 +177,7 @@ export const netSalesPct = (net: number, rev: number) => {
  * @returns Net Sales Percent => string
  */
 export const promoLeakage = (net: number, rev: number) => {
+  if (rev === 0) return "0.00%";
   const pct = ((rev - net) / rev) * 100;
   return `${pct.toFixed(2)}%`;
 };

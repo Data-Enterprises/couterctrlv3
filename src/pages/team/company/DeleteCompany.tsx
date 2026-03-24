@@ -76,9 +76,10 @@ const DeleteCompany = () => {
       <div className="text-sm">
         <div className="font-medium">Select company to delete</div>
         <div className="select-none grid rounded-lg p-1 min-h-20 max-h-32 overflow-hidden overflow-y-auto">
-          {filteredCompanies.map((c) => (
+          {filteredCompanies.map((c, i) => (
             <div
               key={c.id}
+              data-testid={`delete-company-select-${i}`}
               className={`${selectedCompanyId === c.id && "bg-orange-200"} rounded-full py-1 pl-2 border-b transition-all duration-200 cursor-pointer hover:bg-blue-200`}
               onClick={() => handleCompanyClick(c.id)}
             >
@@ -93,6 +94,7 @@ const DeleteCompany = () => {
           className="opacity-50 pointer-events-none"
         />
         <button
+          data-testid="delete-company-step-one-btn"
           className={`${selectedCompanyId === 0 && "opacity-50 pointer-events-none"} btn-themeOrange mt-2 w-full`}
           onClick={() => setIsDeleting(true)}
         >

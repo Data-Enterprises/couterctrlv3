@@ -2,7 +2,10 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { cashierDetailCols, theme } from ".";
 
-import { getCashierTable, getTransactionList } from "../../../api/cashiers";
+import {
+  getCashierTable,
+  getTransactionList,
+} from "../../../api/lossPrevention";
 
 import { AgGridReact } from "ag-grid-react";
 import {
@@ -26,7 +29,7 @@ import {
   setSelectedSaleIds,
   setSelectedStoreId,
   setTransList,
-} from "../../../features/cashierSlice";
+} from "../../../features/lossPreventionSlice";
 import { formatGoliathDate } from "../../../utils";
 import { useEffect } from "react";
 import CashierTrendCard from "./CashierTrendCard";
@@ -35,9 +38,9 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 const CashierSales = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const { url, token, isDesktop } = useAppSelector((state) => state.app);
+  const { url, token } = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const cashier = useAppSelector((state) => state.cashier);
+  const cashier = useAppSelector((state) => state.lossPrevention);
 
   useEffect(() => {
     if (!cashier.selectedStoreId) {
@@ -48,10 +51,10 @@ const CashierSales = () => {
     } else {
       // find the trend here and its index => pass both into the card
       // => card will take care of the rest
-      const details = cashier.cashierDetails.find(
+      const details = cashier.cashierDetails.filter(
         (d) => d.storeid === cashier.selectedStoreId,
-      );
-      dispatch(setSelectedCashierDetails(details || null));
+      )[0];
+      dispatch(setSelectedCashierDetails(details));
     }
   }, [cashier.selectedStoreId]);
 
@@ -168,7 +171,7 @@ const CashierSales = () => {
           rowData={cashier.cashierDetails}
           columnDefs={cashierDetailCols}
           theme={theme}
-          rowSelection={isDesktop ? "single" : undefined}
+          rowSelection="single"
           onRowClicked={handleRowClicked}
           pagination={true}
           paginationAutoPageSize={true}

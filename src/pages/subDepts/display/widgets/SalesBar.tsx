@@ -54,7 +54,7 @@ const SalesBar = ({ barData }: SalesBarProps) => {
       </div>
       <ResponsiveBar
         data={barData as unknown as BarDatum[]}
-        margin={{ top: 15, right: 15, bottom: 55, left: max > 9999 ? 65 : 50 }}
+        margin={{ top: 15, right: 15, bottom: 58, left: max > 9999 ? 65 : 50 }}
         indexBy={"date"}
         keys={["sales"]}
         colors={() => rgbaColor("#3b82f6", 0.3)}
@@ -84,10 +84,51 @@ const SalesBar = ({ barData }: SalesBarProps) => {
               text: { fontSize: 11, strokeWidth: 2, fontWeight: "bolder" },
             },
           },
-          format: (value) => value.split("/").slice(0, 2).join("/"),
+          // format: (value) =>
+          //   value.split("/").slice(0, 2).join("/"),
+          renderTick: ({ x, y, textX, textY, value }) => {
+            const dow = new Date(value).toDateString().split(" ")[0];
+            const datePart = value.split("/").slice(0, 2).join("/");
+            return (
+              <g transform={`translate(${x},${y + 4})`}>
+                {/* the tick */}
+                <line
+                  x1={0}
+                  y1={-4}
+                  x2={0}
+                  y2={1.5}
+                  stroke="black"
+                  strokeWidth={0.5}
+                />
+                {/* the text */}
+                <text
+                  textAnchor={"middle"}
+                  transform={`translate(${textX},${textY + 2})`}
+                  style={{ fontSize: 10.5, fontWeight: "bolder", fontFamily: "Arial" }}
+                >
+                  <tspan x={0} dy={0}>
+                    {dow}
+                  </tspan>
+                  <tspan x={0} dy={12}>
+                    {datePart}
+                  </tspan>
+                </text>
+              </g>
+            );
+          },
         }}
         enableLabel={false}
         enableGridX={false}
+        tooltip={({ value, data }) => {
+          const dow = new Date(data.date).toDateString().split(" ")[0];
+          return (
+            <div className="p-2 bg-white shadow-lg rounded text-sm text-nowrap">
+              <strong>
+                {dow} {formatCurrency2(value)}
+              </strong>
+            </div>
+          );
+        }}
       />
     </div>
   );

@@ -17,7 +17,7 @@ import { resetUsersSlice } from "../../features/usersSlice";
 import { resetUpcState } from "../../features/upcSlice";
 import { resetSearchSlice } from "../../features/searchSlice";
 import { resetForgotPasswordSlice } from "../../features/forgotPasswordSlice";
-import { resetCashierSlice } from "../../features/cashierSlice";
+import { resetCashierSlice } from "../../features/lossPreventionSlice";
 import { resetLookupSlice } from "../../features/itemLookupSlice";
 import { resetQsSlice } from "../../features/qsSlice";
 import { resetForecastSlice } from "../../features/forecastSlice";
@@ -58,13 +58,11 @@ const SideBar = () => {
       const filteredNav = navigation.filter((item) => item.mobile);
       setNavItems(filteredNav);
       const found = filteredNav.find((item) => item.href === nav.lastRoute);
-      console.log(found, filteredNav, nav.lastRoute);
       if (!found) {
         // if the last route isn't in the mobile nav, default to dashboard or settings if dashboard isn't available
         // Just take them to the home page
         navigate("/sales");
       }
-
     } else {
       setNavItems(navigation);
     }

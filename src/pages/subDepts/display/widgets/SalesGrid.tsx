@@ -1,5 +1,5 @@
 import { useSubMarginCtx } from "../../hooks";
-import { useCallback, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { AgGridReact } from "ag-grid-react";
 import {
@@ -22,24 +22,25 @@ const SalesGrid = ({ gridData }: SalesGridProps) => {
   const dispatch = useAppDispatch();
   const sm = useAppSelector((state) => state.subMargin);
 
-  const handleRowClick = useCallback(
-    (event: RowClickedEvent) => {
+  const handleRowClick = (event: RowClickedEvent) => {
+    if (event.data.date !== selectedWeekDay) {
       dispatch(setSelectedWeekDay(event.data.date));
-    },
-    [dispatch],
-  );
+    } else {
+      dispatch(setSelectedWeekDay(""));
+    }
+  };
 
   useEffect(() => {
     if (gridRef.current && gridRef.current.api && selectedWeekDay) {
       gridRef.current.api.forEachNode((node) => {
         const date = new Date(selectedWeekDay).toISOString().split("T")[0];
         const nodeDate = new Date(node.data.date).toISOString().split("T")[0];
-        if (nodeDate === date) {
+        if (nodeDate === date && !node.isSelected()) {
           node.setSelected(true);
         }
       });
     }
-  }, [selectedWeekDay, gridRef.current, sm.itemGridData]);
+  }, [selectedWeekDay, gridRef.current, sm.itemGridData, sm.filteredCostGridData]);
 
   return (
     <div className="rounded-lg shadow-lg">
