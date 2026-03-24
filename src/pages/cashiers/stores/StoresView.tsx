@@ -18,7 +18,6 @@ const StoresView = () => {
       const storeName = ctx.storeNameFilterApplied;
       const totalSales = ctx.totalSalesFilterApplied;
       const totalQty = ctx.totalQtyFilterApplied;
-      const totalTrans = ctx.totalTransactionsFilterApplied;
       const riskLvl = ctx.riskLevelFilterApplied;
       const excTier = ctx.exceptionTierFilterApplied;
 
@@ -43,14 +42,6 @@ const StoresView = () => {
               : card.total_qty === totalQty.value
           : true;
 
-        const matchesTotalTrans = totalTrans.operator.length
-          ? totalTrans.operator === ">"
-            ? card.total_transactions > totalTrans.value
-            : totalTrans.operator === "<"
-              ? card.total_transactions < totalTrans.value
-              : card.total_transactions === totalTrans.value
-          : true;
-
         const matchesRiskLvl = riskLvl.length
           ? card.risk_tier.toLowerCase() === riskLvl.toLowerCase()
           : true;
@@ -63,7 +54,6 @@ const StoresView = () => {
           matchesStoreName &&
           matchesTotalSales &&
           matchesTotalQty &&
-          matchesTotalTrans &&
           matchesRiskLvl &&
           matchesExcTier
         );
@@ -76,7 +66,6 @@ const StoresView = () => {
     ctx.storeNameFilterApplied,
     ctx.totalSalesFilterApplied,
     ctx.totalQtyFilterApplied,
-    ctx.totalTransactionsFilterApplied,
     ctx.riskLevelFilterApplied,
     ctx.exceptionTierFilterApplied,
   ]);

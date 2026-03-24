@@ -15,7 +15,6 @@ const CashiersView = () => {
       const cashName = ctx.cashNameFilterApplied;
       const totalSales = ctx.totalSalesFilterApplied;
       const totalQty = ctx.totalQtyFilterApplied;
-      const totalTrans = ctx.totalTransactionsFilterApplied;
       const riskLvl = ctx.riskLevelFilterApplied;
       const excTier = ctx.exceptionTierFilterApplied;
 
@@ -40,14 +39,6 @@ const CashiersView = () => {
               : card.total_qty === totalQty.value
           : true;
 
-        const matchesTotalTrans = totalTrans.operator.length
-          ? totalTrans.operator === ">"
-            ? card.total_transactions > totalTrans.value
-            : totalTrans.operator === "<"
-              ? card.total_transactions < totalTrans.value
-              : card.total_transactions === totalTrans.value
-          : true;
-
         const matchesRiskLvl = riskLvl.length
           ? card.risk_tier.toLowerCase() === riskLvl.toLowerCase()
           : true;
@@ -60,7 +51,6 @@ const CashiersView = () => {
           matchesCashierName &&
           matchesTotalSales &&
           matchesTotalQty &&
-          matchesTotalTrans &&
           matchesRiskLvl &&
           matchesExcTier
         );
@@ -73,7 +63,6 @@ const CashiersView = () => {
     ctx.cashNameFilterApplied,
     ctx.totalSalesFilterApplied,
     ctx.totalQtyFilterApplied,
-    ctx.totalTransactionsFilterApplied,
     ctx.riskLevelFilterApplied,
     ctx.exceptionTierFilterApplied,
   ]);
