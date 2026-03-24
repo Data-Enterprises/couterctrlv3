@@ -28,6 +28,7 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
         const split = dte.split("T")[0].split("-");
         return `${split[1]}/${split[2]}/${split[0]}`;
       };
+
       const margins: SubDeptCost[] = ctx.margins.reduce(
         (acc: SubDeptCost[], curr) => {
           const found = acc.find(
@@ -63,6 +64,7 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
         },
         [],
       );
+
       dispatch(setSubDeptCost(margins));
       dispatch(
         setSubDeptGridView(ctx.subDeptGridView === "cost" ? "item" : "cost"),
