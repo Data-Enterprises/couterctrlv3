@@ -12,10 +12,7 @@ import type { UpcPriceOpt } from "../../../interfaces";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import "./grid.css";
 import { priceColDefs, theme } from ".";
-import {
-  setOptDisplayMode,
-  setSelectedOptItem,
-} from "../../../features/upcSlice";
+import { setOptDisplayMode } from "../../../features/upcSlice";
 
 interface GridProps {
   rowData: UpcPriceOpt[];

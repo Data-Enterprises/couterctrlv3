@@ -56,7 +56,7 @@ const UpcList = () => {
   const context = useUpcContext();
   const dispatch = useAppDispatch();
   const [_, setFile] = useState<File | null>(null);
-  const { upcs } = useAppSelector((state) => state.upcs);
+  const {uploadedUpcs} = useAppSelector((state) => state.upc);
 
   useEffect(() => {
     return () => {
@@ -106,7 +106,7 @@ const UpcList = () => {
       context.storeids,
       context.startDate,
       context.endDate,
-      upcs.join(","),
+      uploadedUpcs.join(","),
     )
       .then((resp) => {
         const j = resp.data;
@@ -139,7 +139,7 @@ const UpcList = () => {
       context.storeids,
       context.startDate,
       context.endDate,
-      upcs.join(","),
+      uploadedUpcs.join(","),
     )
       .then((resp) => {
         const j = resp.data;
@@ -207,7 +207,7 @@ const UpcList = () => {
       context.storeids,
       context.startDate,
       context.endDate,
-      upcs.join(","),
+      uploadedUpcs.join(","),
     )
       .then((resp) => {
         const j = resp.data;
@@ -239,7 +239,7 @@ const UpcList = () => {
       context.startDate,
       context.endDate,
       parseInt(context.trendPeriods),
-      upcs.join(","),
+      uploadedUpcs.join(","),
     )
       .then((resp) => {
         const j = resp.data;
@@ -311,6 +311,7 @@ const UpcList = () => {
         <UpcSelector setFile={setFile} getData={getModuleData} />
       );
     if (context.selectedMode == 5) {
+      console.log(context.selectedMode, context.upcItems);
       return context.upcItems.length ? (
         <UpcAssociation />
       ) : (
