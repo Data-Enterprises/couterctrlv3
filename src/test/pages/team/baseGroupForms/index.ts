@@ -157,7 +157,7 @@ export const selectedCompanyBGResp = {
       },
     ],
   },
-}; 
+};
 
 export const updatedBGResp = {
   data: {
@@ -185,6 +185,53 @@ export const updatedBGResp = {
       {
         id: 2,
         name: "updated group",
+        company: 4,
+      },
+      {
+        id: 3,
+        name: "Zone 1",
+        company: 4,
+      },
+      {
+        id: 4,
+        name: "Zone 2",
+        company: 4,
+      },
+      {
+        id: 5,
+        name: "Zone 3",
+        company: 4,
+      },
+      {
+        id: 6,
+        name: "Zone 4",
+        company: 4,
+      },
+    ],
+  },
+};
+
+export const deletedBGResp = {
+  data: {
+    error: 0,
+    success: true,
+    group_count: 6,
+    company: [
+      {
+        id: 4,
+        name: "Test Company",
+        address: "",
+        city: "",
+        state: "",
+        zip: 0,
+        phone: "",
+        contact_email: "test@example.com",
+      },
+    ],
+    groups: [
+      {
+        id: 1,
+        name: "All Stores",
         company: 4,
       },
       {
