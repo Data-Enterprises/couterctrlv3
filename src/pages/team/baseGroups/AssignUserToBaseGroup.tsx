@@ -106,12 +106,14 @@ const AssignUserToBG = () => {
     } else {
       // we are unassigning
       const ids = activeBaseGroups.map((bg) => bg.id);
-      deleteUserBaseGroupLink(url, token, selectedUserId, ids).then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          getData(userCompany!);
-        }
-      });
+      deleteUserBaseGroupLink(url, token, selectedUserId, ids)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            getData(userCompany!);
+          }
+        })
+        .catch((err: JsonError) => toast.error(err.message));;
     }
   };
 
@@ -128,15 +130,15 @@ const AssignUserToBG = () => {
   };
 
   const handleUnassignClick = () => {
-    deleteUserBaseGroupLink(url, token, selectedUserId, bgIdsToUnassign).then(
-      (resp) => {
+    deleteUserBaseGroupLink(url, token, selectedUserId, bgIdsToUnassign)
+      .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(resetBgIds());
           getData(userCompany!);
         }
-      },
-    );
+      })
+      .catch((err: JsonError) => toast.error(err.message));
   };
 
   const filtered = (data: BaseGroup[], filter: string) => {
@@ -168,13 +170,14 @@ const AssignUserToBG = () => {
 
   if (isOutranked()) {
     return (
-      <div className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg">
+      <div data-testid="bg-assign-outrank-container" className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg">
         <div className="font-medium text-sm flex flex-col items-center">
           <WarningIcon fill="#f97316" height={56} width={56} />
           <div className="mb-2">We're sorry...</div>
           <div>You are not authorized to make changes to this user</div>
           <div>Please contact them if assistance is needed</div>
           <button
+            data-testid="bg-assign-outrank-reset-btn"
             className="btn-themeBlue py-1.5 mt-2"
             onClick={() => handleReset()}
           >
@@ -186,7 +189,7 @@ const AssignUserToBG = () => {
   }
 
   return (
-    <div className={`${isDesktop? "" :"max-h-[65vh] overflow-hidden overflow-y-scroll"} space-y-2`}>
+    <div data-testid="bg-assign-form-container" className={`${isDesktop? "" :"max-h-[65vh] overflow-hidden overflow-y-scroll"} space-y-2`}>
       <SearchUser />
       <SingleSelect
         label="Select Company"
@@ -204,9 +207,10 @@ const AssignUserToBG = () => {
             setValue={handleUnasignedFilterText}
           />
           <div className="space-y-2 h-[40vh] max-h-[40vh] overflow-hidden overflow-y-auto no-scrollbar">
-            {filtered(inactiveBaseGroups, unassignedFilter).map((bg) => (
+            {filtered(inactiveBaseGroups, unassignedFilter).map((bg, i) => (
               <div
                 key={bg.id}
+                data-testid={`unassigned-bg-${i}`}
                 className={`${bgIdsToAssign.includes(bg.id) && "bg-emerald-200"} px-2 py-3 rounded-lg shadow-lg flex justify-between items-center hover:bg-blue-200 cursor-pointer transition-all duration-200`}
                 onClick={() => handleBGToAssign(bg.id)}
               >
@@ -225,12 +229,14 @@ const AssignUserToBG = () => {
           </div>
           <div className={`grid ${isDesktop ? "grid-cols-2" : "grid-cols-1"} gap-2`}>
             <button
+              data-testid="bg-assign-form-assign-btn"
               className={`btn-themeGreen ${bgIdsToAssign.length === 0 && "opacity-50 pointer-events-none"}`}
               onClick={() => handleAssignClick()}
             >
               Assign
             </button>
             <button
+              data-testid="bg-assign-form-assign-all-btn"
               className="btn-themeGreen"
               onClick={() => handleSubmitAll("assign_all")}
             >
@@ -245,9 +251,10 @@ const AssignUserToBG = () => {
             setValue={handleAssignedFilterText}
           />
           <div className="space-y-2 h-[40vh] max-h-[40vh] overflow-hidden overflow-y-auto no-scrollbar">
-            {filtered(activeBaseGroups, assignedFilter).map((bg) => (
+            {filtered(activeBaseGroups, assignedFilter).map((bg, i) => (
               <div
                 key={bg.id}
+                data-testid={`assigned-bg-${i}`}
                 className={`${bgIdsToUnassign.includes(bg.id) && "bg-emerald-200"} px-2 py-3 rounded-lg shadow-lg flex justify-between items-center hover:bg-blue-200 cursor-pointer transition-all duration-200`}
                 onClick={() => handleBGToUnassign(bg.id)}
               >
@@ -266,12 +273,14 @@ const AssignUserToBG = () => {
           </div>
           <div className={`grid ${isDesktop ? "grid-cols-2" : "grid-cols-1"} gap-2`}>
             <button
+              data-testid="bg-assign-form-unassign-btn"
               className={`btn-themeGreen ${bgIdsToUnassign.length === 0 && "opacity-50 pointer-events-none"}`}
               onClick={() => handleUnassignClick()}
             >
               Unassign
             </button>
             <button
+              data-testid="bg-assign-form-unassign-all-btn"
               className="btn-themeGreen"
               onClick={() => handleSubmitAll("unassign_all")}
             >

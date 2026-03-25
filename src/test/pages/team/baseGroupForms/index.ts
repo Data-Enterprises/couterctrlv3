@@ -257,3 +257,56 @@ export const deletedBGResp = {
     ],
   },
 };
+
+export const bgAssignedToUserResp = {
+  data: {
+    error: 0,
+    success: true,
+    active: [
+      {
+        id: 1,
+        name: "All Stores",
+        company: 4,
+        company_name: "Test Company 1",
+        active: 1,
+      },
+      {
+        id: 2,
+        name: "All Stores",
+        company: 3,
+        company_name: "Test Company 2",
+        active: 1,
+      },
+      {
+        id: 3,
+        name: "Stores 1",
+        company: 1,
+        company_name: "Test Company 1",
+        active: 1,
+      },
+    ],
+    inactive: [
+      {
+        id: 4,
+        name: "All Stores",
+        company: 2,
+        company_name: "Test Company 3",
+        active: 0,
+      },
+      {
+        id: 5,
+        name: "Stores 2",
+        company: 1,
+        company_name: "Test Company 1",
+        active: 0,
+      },
+      {
+        id: 6,
+        name: "Stores 3",
+        company: 1,
+        company_name: "Test Company 1",
+        active: 0,
+      },
+    ],
+  },
+};
