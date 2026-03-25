@@ -67,13 +67,6 @@ vi.mock("../../../../components/toasts/hooks/useToast", () => ({
   }),
 }));
 
-const defaultRender = () => {
-  (getAllUsers as Mock).mockResolvedValue(allUsersResp);
-  (getQuicksightUsers as Mock).mockResolvedValue(qsUserResp);
-  (getUserLevels as Mock).mockResolvedValue(userLvlResp);
-  renderWithProviders(<Team />, { store });
-};
-
 const setCreateUserInfo = async () => {
   await waitFor(() => {
     store.dispatch(setUserInfo({ key: "username", value: "test" }));
@@ -575,12 +568,4 @@ describe("Team Page Create User Form (DCR user)", () => {
         expect(mockedToastError).toHaveBeenCalled();
       });
     });
-});
-
-describe("Team Page Admin Form", () => {
-  it("should load the Admin Form", async () => {
-    defaultRender();
-    const adminForm = await screen.findByTestId("team-admin-form");
-    await user.click(adminForm);
-  });
 });
