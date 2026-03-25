@@ -16,7 +16,9 @@ import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
 
 // Dispatchers
 import {
+  setLeftSubCompare,
   setPanelsLoading,
+  setRightSubCompare,
   setSalesPanels,
   setSelectedSalesPanel,
 } from "../../features/salesSlice";
@@ -48,6 +50,8 @@ const Sales = () => {
   }, []);
 
   const getSalesPanels = () => {
+    dispatch(setLeftSubCompare(null));
+    dispatch(setRightSubCompare(null));
     dispatch(
       setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
     );
@@ -156,9 +160,7 @@ const Sales = () => {
               )}
             </div>
           ) : isReady ? (
-            <div
-              className="md:max-h-[calc(100vh-5rem)] overflow-y-auto no-scrollbar md:grid-rows-[20%_78%] md:space-y-2 overflow-hidden"
-            >
+            <div className="md:max-h-[calc(100vh-5rem)] overflow-y-auto no-scrollbar md:grid-rows-[20%_78%] md:space-y-2 overflow-hidden">
               <KpiHeader />
               <div className="grid grid-cols-2 gap-2">
                 <div className="grid grid-rows-2 gap-2">
