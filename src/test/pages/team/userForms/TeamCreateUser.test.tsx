@@ -94,17 +94,6 @@ const setCreateUserInfo = async () => {
 };
 
 describe("Team Page Create User Form (DCR user)", () => {
-  // it("", async () => {
-  //   defaultRender();
-  //   await waitFor(() => store.dispatch(setIsDesktop(false)));
-  //   const singleSelect = await screen.findByTestId(
-  //     "single-select-trigger-icon-0",
-  //   );
-  //   await user.click(singleSelect);
-  //   const usersOption = await screen.findByTestId("single-select-option-0-0");
-  //   await user.click(usersOption);
-  // });
-
   it("should handle api failure when fetching all users", async () => {
     await waitFor(() => store.dispatch(setIsDesktop(true)));
     (getAllUsers as Mock).mockRejectedValue(defaultError);
@@ -586,22 +575,6 @@ describe("Team Page Create User Form (DCR user)", () => {
         expect(mockedToastError).toHaveBeenCalled();
       });
     });
-});
-
-describe("Team Page Base Groups Form", () => {
-  it("should load the Base Groups Form", async () => {
-    defaultRender();
-    const bgForm = await screen.findByTestId("team-bg-form");
-    await user.click(bgForm);
-  });
-});
-
-describe("Team Page Companies Form", () => {
-  it("should load the Companies Form", async () => {
-    defaultRender();
-    const companiesForm = await screen.findByTestId("team-companies-form");
-    await user.click(companiesForm);
-  });
 });
 
 describe("Team Page Admin Form", () => {

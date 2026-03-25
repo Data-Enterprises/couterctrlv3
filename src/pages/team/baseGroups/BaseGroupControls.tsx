@@ -41,34 +41,38 @@ const BaseGroupControls = () => {
     }
   };
 
-    const handleMobileFormSelect = (val: string | number) => {
+  const handleMobileFormSelect = (val: string | number) => {
     const form = val as BaseGroupOption;
     setBgOption(form);
-    };
+  };
 
   return (
     <div className={`${isDesktop ? "space-y-4" : "space-y-2"} w-full`}>
       {isDesktop ? (
         <div className="grid grid-cols-4 gap-2 p-4 bg-custom-white rounded-lg shadow-lg">
           <button
+            data-testid="bg-create-form-btn"
             className={`${bgOption === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
             onClick={() => setBgOption("create")}
           >
             Create
           </button>
           <button
+            data-testid="bg-update-form-btn"
             className={`${bgOption === "update" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
             onClick={() => setBgOption("update")}
           >
             Update
           </button>
           <button
+            data-testid="bg-delete-form-btn"
             className={`${bgOption === "delete" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
             onClick={() => setBgOption("delete")}
           >
             Delete
           </button>
           <button
+            data-testid="bg-assign-form-btn"
             className={`${bgOption === "assign_to_user" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
             onClick={() => setBgOption("assign_to_user")}
           >
