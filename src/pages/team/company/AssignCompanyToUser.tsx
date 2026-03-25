@@ -153,13 +153,14 @@ const AssignCompanyToUser = () => {
 
   if (isOutranked()) {
     return (
-      <div className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg">
+      <div data-testid="outranked-message-container" className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg">
         <div className="font-medium text-sm flex flex-col items-center">
           <WarningIcon fill="#f97316" height={56} width={56} />
           <div className="mb-2">We're sorry...</div>
           <div>You are not authorized to make changes to this user</div>
           <div>Please contact them if assistance is needed</div>
           <button
+            data-testid="company-assign-reset-btn"
             className="btn-themeBlue py-1.5 mt-2"
             onClick={() => handleReset()}
           >
@@ -173,7 +174,10 @@ const AssignCompanyToUser = () => {
   return (
     <div>
       <SearchUser />
-      <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
+      <div
+        data-testid="company-assign-container"
+        className="grid grid-cols-2 gap-4 mt-4 text-sm"
+      >
         <div className="bg-custom-white rounded-lg shadow-lg space-y-2 p-2">
           <Input
             label={`Unassigned - ${filtered(userUnassignedCompanies, unassignedFilter).length}`}
@@ -181,9 +185,10 @@ const AssignCompanyToUser = () => {
             setValue={handleUnassignedFilterText}
           />
           <div className="space-y-2 h-[50vh] max-h-[50vh] overflow-hidden overflow-y-auto no-scrollbar">
-            {filtered(userUnassignedCompanies, unassignedFilter).map((c) => (
+            {filtered(userUnassignedCompanies, unassignedFilter).map((c, i) => (
               <div
                 key={c.id}
+                data-testid={`unassigned-company-${i}`}
                 className={`${companiesToAssign.includes(c.company) && "bg-emerald-200"} px-2 py-3 rounded-lg shadow-lg flex justify-between items-center hover:bg-blue-200 cursor-pointer transition-all duration-200`}
                 onClick={() => handleCompanyToAssign(c.company)}
               >
@@ -193,20 +198,20 @@ const AssignCompanyToUser = () => {
                 </div>
                 <div className="text-orange-500 font-medium">
                   Inactive
-                  {/* <div className="font-medium">Id</div>
-                  <div>{c.company}</div> */}
                 </div>
               </div>
             ))}
           </div>
           <div className="grid grid-cols-2 gap-2">
             <button
+              data-testid="company-assign-btn"
               className={`btn-themeGreen ${companiesToAssign.length === 0 && "opacity-50 pointer-events-none"}`}
               onClick={() => handleSubmit("assign")}
             >
               Assign
             </button>
             <button
+              data-testid="company-assign-all-btn"
               className="btn-themeGreen"
               onClick={() => handleSubmit("assign_all")}
             >
@@ -221,9 +226,10 @@ const AssignCompanyToUser = () => {
             setValue={handleAssignedFilterText}
           />
           <div className="space-y-2 h-[50vh] max-h-[50vh] overflow-hidden overflow-y-auto no-scrollbar">
-            {filtered(userAssignedCompanies, assignedFilter).map((c) => (
+            {filtered(userAssignedCompanies, assignedFilter).map((c, i) => (
               <div
                 key={c.id}
+                data-testid={`assigned-company-${i}`}
                 className={`${companiesToUnassign.includes(c.company) && "bg-emerald-200"} px-2 py-3 rounded-lg shadow-lg flex justify-between items-center hover:bg-blue-200 cursor-pointer transition-all duration-200`}
                 onClick={() => handleCompanyToUnassign(c.company)}
               >
@@ -233,20 +239,20 @@ const AssignCompanyToUser = () => {
                 </div>
                 <div className="text-emerald-500 font-medium">
                   Active
-                  {/* <div className="font-medium">Id</div>
-                  <div>{c.company}</div> */}
                 </div>
               </div>
             ))}
           </div>
           <div className="grid grid-cols-2 gap-2">
             <button
+              data-testid="company-unassign-btn"
               className={`btn-themeGreen ${companiesToUnassign.length === 0 && "opacity-50 pointer-events-none"}`}
               onClick={() => handleSubmit("unassign")}
             >
               Unassign
             </button>
             <button
+              data-testid="company-unassign-all-btn"
               className="btn-themeGreen"
               onClick={() => handleSubmit("unassign_all")}
             >

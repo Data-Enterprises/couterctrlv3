@@ -22,11 +22,7 @@ import {
   userLvlResp,
   deleteCompanyFormCompanies,
 } from "..";
-import {
-  defaultError,
-  defaultResp,
-  companyRespForUpdate,
-} from ".";
+import { defaultError, defaultResp, companyRespForUpdate } from ".";
 
 import Team from "../../../../pages/team/Team";
 import { setCompanies, setUserLevel } from "../../../../features/userSlice";
@@ -91,6 +87,7 @@ describe("Delete Company Form", () => {
       await screen.findByTestId("delete-company-form-container"),
     ).toBeInTheDocument();
   });
+
   it("should handle api error when deleting a company", async () => {
     await stepOne();
     const deleteStepOne = await screen.findByTestId(
@@ -100,6 +97,25 @@ describe("Delete Company Form", () => {
 
     const submitBtn = await screen.findByTestId("delete-company-submit-btn");
     (deleteCompany as Mock).mockRejectedValue(defaultError);
+    await user.click(submitBtn);
+
+    await waitFor(() =>
+      expect(mockedToastError).toHaveBeenCalledWith(defaultError.message),
+    );
+  });
+
+  it("should handle api failure when refrshing companies", async () => {
+    await stepOne();
+
+    const deleteStepOne = await screen.findByTestId(
+      "delete-company-step-one-btn",
+    );
+    await user.click(deleteStepOne);
+
+    (getCompanies as Mock).mockRejectedValueOnce(defaultError);
+
+    const submitBtn = await screen.findByTestId("delete-company-submit-btn");
+    (deleteCompany as Mock).mockResolvedValue(defaultResp);
     await user.click(submitBtn);
 
     await waitFor(() =>
