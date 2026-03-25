@@ -22,7 +22,7 @@ import { getCouponsResp, getTransResp } from ".";
 
 const store = setupStore();
 const user = userEvent.setup();
-vi.mock("../../../api/cashiers");
+vi.mock("../../../api/lossPrevention");
 vi.mock("../../../api/coupons");
 store.dispatch(setToken("fake-token"));
 store.dispatch(setLastGroup(1));

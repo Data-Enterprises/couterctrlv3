@@ -9,13 +9,13 @@ import {
   getSaleTypes,
 } from "../../../api/lossPrevention";
 import { screen, waitFor } from "@testing-library/react";
+import { saleTypes } from ".";
+import { setType } from "../../../features/searchSlice";
 
 const user = userEvent.setup();
 const store = setupStore();
 store.dispatch(setType("Group"));
-vi.mock("../../../api/cashiers");
-import { saleTypes } from ".";
-import { setType } from "../../../features/searchSlice";
+vi.mock("../../../api/lossPrevention");
 
 // just testing the if else paths in the useApiContext
 describe("SaleTypes Component", () => {
