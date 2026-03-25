@@ -141,6 +141,10 @@ export const upcSlice = createSlice({
         state.selectedUpcs = state.selectedUpcs.filter(
           (u) => u !== action.payload,
         );
+        if (state.selectedOptItem.product_code === action.payload) {
+          state.selectedOptItem = {} as UpcPriceOpt;
+          state.optDisplayMode = "multiRow";
+        }
       } else {
         state.selectedUpcs.push(action.payload);
       }

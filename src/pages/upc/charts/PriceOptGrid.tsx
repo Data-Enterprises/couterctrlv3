@@ -9,9 +9,13 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 import { useState, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
 import type { UpcPriceOpt } from "../../../interfaces";
-import { useAppSelector } from "../../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import "./grid.css";
 import { priceColDefs, theme } from ".";
+import {
+  setOptDisplayMode,
+  setSelectedOptItem,
+} from "../../../features/upcSlice";
 
 interface GridProps {
   rowData: UpcPriceOpt[];
@@ -20,6 +24,7 @@ interface GridProps {
 }
 
 const Grid = ({ rowData, handleCellClick, type = "best" }: GridProps) => {
+  const dispatch = useAppDispatch();
   const gridRef = useRef<AgGridReact>(null);
   const { selectedUpcs, selectedOptItem } = useAppSelector(
     (state) => state.upc,
@@ -28,31 +33,36 @@ const Grid = ({ rowData, handleCellClick, type = "best" }: GridProps) => {
 
   useEffect(() => {
     if (type === "all") {
-      const filtered = rowData.filter(
-        (item) =>
-          item.product_code === selectedOptItem.product_code &&
-          item.product_description
-            .toLowerCase()
-            .includes(selectedOptItem.product_description.toLowerCase()),
-      );
-      setRows(filtered);
+      if (selectedUpcs.includes(selectedOptItem.product_code)) {
+        const filtered = rowData.filter(
+          (item) =>
+            item.product_code === selectedOptItem.product_code &&
+            item.product_description
+              .toLowerCase()
+              .includes(selectedOptItem.product_description.toLowerCase()),
+        );
+        setRows(filtered);
+      } else {
+        dispatch(setOptDisplayMode("multiRow"));
+        setRows([]);
+      }
     } else if (type === "best") {
       const filtered = rowData.filter((item) =>
         selectedUpcs.includes(item.product_code),
       );
       setRows(filtered);
     }
-  }, [rowData, selectedOptItem, selectedUpcs]);
+  }, [rowData, selectedUpcs, selectedOptItem]);
 
   useEffect(() => {
-    if (gridRef.current && type === "best") {
+    if (gridRef.current && gridRef.current.api && type === "best") {
       gridRef.current.api.forEachNode((node) => {
         if (node.data.product_code === selectedOptItem.product_code) {
           node.setSelected(true);
         }
       });
     }
-  }, [rows, selectedOptItem]);
+  }, [rows, selectedOptItem, gridRef.current]);
 
   const handleClick = (e: CellClickedEvent<UpcPriceOpt>) => {
     if (handleCellClick) {

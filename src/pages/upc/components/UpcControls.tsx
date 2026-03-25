@@ -10,7 +10,9 @@ import {
   resetSelectedUpcs,
   setAllSelectedUpcParam,
   setAllSelectedUpcs,
+  setSelectedOptItem,
   setSelectedUpcs,
+  setOptDisplayMode,
   setTrendMode,
 } from "../../../features/upcSlice";
 import { useScrollHeight } from ".";
@@ -22,7 +24,7 @@ import {
   setClipboardText,
   setMenuPosition,
 } from "../../../features/ctxMenuSlice";
-import type { UpcItem } from "../../../interfaces";
+import type { UpcItem, UpcPriceOpt } from "../../../interfaces";
 
 const UpcControls = () => {
   const [filtered, setFiltered] = useState<UpcItem[]>([]);
@@ -109,6 +111,8 @@ const UpcControls = () => {
       dispatch(resetAssociations());
       dispatch(resetDeeperLvlQueryUpcs());
     }
+    dispatch(setSelectedOptItem({} as UpcPriceOpt));
+    dispatch(setOptDisplayMode("multiRow"));
     dispatch(resetSelectedUpcs());
   };
 
