@@ -79,6 +79,15 @@ describe("Assign/Unassign Stores to User Form", () => {
     expect(
       await screen.findByTestId("user-store-form-outranked-container"),
     ).toBeInTheDocument();
+
+    const resetBtn = await screen.findByTestId(
+      "user-store-form-outranked-reset-btn",
+    );
+    await user.click(resetBtn);
+
+    expect(
+      await screen.findByTestId("user-store-form-main-container"),
+    ).toBeInTheDocument();
   });
 
   it("should handle api failure when fetching stores for a user", async () => {

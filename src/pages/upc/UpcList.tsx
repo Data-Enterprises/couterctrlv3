@@ -269,7 +269,6 @@ const UpcList = () => {
   };
 
   const getAssData = () => {
-    console.log("Getting Associations");
     dispatch(resetDeeperLvlQueryUpcs());
     const upcItems = [...context.uploadedUpcs].map((item) => ({
       product_code: item,

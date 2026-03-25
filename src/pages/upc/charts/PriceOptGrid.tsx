@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import {
   AllCommunityModule,
   ModuleRegistry,
@@ -19,26 +20,52 @@ interface GridProps {
 }
 
 const Grid = ({ rowData, handleCellClick, type = "best" }: GridProps) => {
-  const state = useAppSelector((state) => state.upc);
+  const gridRef = useRef<AgGridReact>(null);
+  const { selectedUpcs, selectedOptItem } = useAppSelector(
+    (state) => state.upc,
+  );
   const [rows, setRows] = useState<UpcPriceOpt[]>(rowData);
 
   useEffect(() => {
-    const filtered = rowData.filter((item) =>
-      state.selectedUpcs.includes(item.product_code)
-    );
-    setRows(filtered);
-  }, [rowData, state.selectedUpcs]);
+    if (type === "all") {
+      const filtered = rowData.filter(
+        (item) =>
+          item.product_code === selectedOptItem.product_code &&
+          item.product_description
+            .toLowerCase()
+            .includes(selectedOptItem.product_description.toLowerCase()),
+      );
+      setRows(filtered);
+    } else if (type === "best") {
+      const filtered = rowData.filter((item) =>
+        selectedUpcs.includes(item.product_code),
+      );
+      setRows(filtered);
+    }
+  }, [rowData, selectedOptItem, selectedUpcs]);
+
+  useEffect(() => {
+    if (gridRef.current && type === "best") {
+      gridRef.current.api.forEachNode((node) => {
+        if (node.data.product_code === selectedOptItem.product_code) {
+          node.setSelected(true);
+        }
+      });
+    }
+  }, [rows, selectedOptItem]);
 
   const handleClick = (e: CellClickedEvent<UpcPriceOpt>) => {
-    e.event?.preventDefault();
-    if (handleCellClick) handleCellClick(e.data as UpcPriceOpt);
+    if (handleCellClick) {
+      handleCellClick(e.data as UpcPriceOpt);
+    }
   };
 
   return (
     <div className="h-[100%] shadow-lg rounded-lg">
-      {state.selectedUpcs.length ? (
+      {selectedUpcs.length ? (
         <div className="h-full relative">
           <AgGridReact
+            ref={gridRef}
             rowData={rows}
             columnDefs={priceColDefs}
             theme={theme}
@@ -47,7 +74,7 @@ const Grid = ({ rowData, handleCellClick, type = "best" }: GridProps) => {
             paginationAutoPageSize={true}
             animateRows={true}
             enableCellTextSelection={true}
-            rowSelection={"multiple"}
+            rowSelection={"single"}
             onCellClicked={handleClick}
           />
         </div>
