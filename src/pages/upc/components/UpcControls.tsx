@@ -43,6 +43,7 @@ const UpcControls = () => {
     selectedStores,
     selectedAssociationUpcParam,
     uploadedUpcs,
+    forecastQtyData,
   } = useUpcContext();
   const dispatch = useAppDispatch();
   const { height, topRef } = useScrollHeight();
@@ -129,6 +130,19 @@ const UpcControls = () => {
     dispatch(setSelectedUpcs(pc));
   };
 
+  const renderDates = () => {
+    if (selectedMode === 4) {
+      return `${startDate} - ${trendPeriods} Days`;
+    } else if (selectedMode === 2) {
+      const forecastStart = forecastQtyData[0].data.history[0].date;
+      const lastIndex = forecastQtyData[0].data.history.length - 1;
+      const forecastEnd = forecastQtyData[0].data.history[lastIndex].date;
+      return `${forecastStart} - ${forecastEnd}`;
+    } else {
+      return `${startDate} - ${endDate}`;
+    }
+  };
+
   return (
     <div
       data-testid="upc-controls"
@@ -136,7 +150,7 @@ const UpcControls = () => {
     >
       <div className="flex flex-col gap-2 rounded-t-lg px-2 pt-3 pb-2">
         <div className="font-medium text-center rounded-t-lg">
-          {startDate} - {selectedMode === 4 ? `${trendPeriods} Days` : endDate}
+          {renderDates()}
         </div>
         <div className="flex flex-col gap-2">
           <button

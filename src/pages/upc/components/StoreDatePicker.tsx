@@ -100,7 +100,7 @@ const StoreDatePicker = () => {
             onSelect={handleSelectClick}
             keepOpen={true}
             resetQuery={true}
-            innerClass="border-2 focus:border-blue-500 border-content/20"
+            innerClass=" focus:border-blue-500 py-1.5"
             id={2}
             className="col-span-2 text-sm"
           />

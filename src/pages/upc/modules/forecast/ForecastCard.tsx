@@ -53,16 +53,6 @@ const ForecastCard = ({ card }: ForecastCardProps) => {
         </div>
       </div>
       <div className="mt-1 text-[13.5px] font-medium">Price History/Qty Sold</div>
-      {/* <div className="grid grid-cols-2 px-2 min-h-10 max-h-10 overflow-hidden overflow-y-auto">
-          {data.metrics.prices.map((p: any) => {
-            return (
-              <div key={p.price as string} className="even:text-right">
-                {formatBigNumber(p.qty as number, 0)} @{" "}
-                {formatCurrency2(p.price)}
-              </div>
-            );
-          })}
-        </div> */}
       <div className="w-full min-h-20 max-h-20 overflow-hidden overflow-y-auto">
         {[...data.metrics.prices]
           .sort((a: any, b: any) => b.qty - a.qty)
