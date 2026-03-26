@@ -59,7 +59,7 @@ const Forecast = () => {
                 </div>
                 {instructions.map((line, i) => (
                   <div key={i} className="text-[15px]">
-                    {i === 4 ? (
+                    {i === 2 ? (
                       <div className="flex gap-1">
                         {line.text.split("icons")[0]}
                         <InformationCircleIcon

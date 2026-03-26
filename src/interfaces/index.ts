@@ -363,6 +363,11 @@ export type Forecast = {
   color: string;
 };
 
+export interface UpcForecastData {
+  product_code: string;
+  data: UpcForecast;
+}
+
 export interface UpcForecast {
   forecast: { date: string; value: number }[];
   forecast_dimension: number;

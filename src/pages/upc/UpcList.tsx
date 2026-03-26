@@ -16,6 +16,7 @@ import {
   setForecastExport,
   setForecastHistory,
   setForecastMetricExport,
+  setForecastQtyData,
   setIndex,
   setIsLoading,
   setOptBestPrices,
@@ -37,6 +38,7 @@ import {
 import type {
   JsonError,
   UpcForecast,
+  UpcForecastData,
   UpcItem,
   UpcPriceOpt,
   UpcTrend,
@@ -56,7 +58,7 @@ const UpcList = () => {
   const context = useUpcContext();
   const dispatch = useAppDispatch();
   const [_, setFile] = useState<File | null>(null);
-  const {uploadedUpcs} = useAppSelector((state) => state.upc);
+  const { uploadedUpcs } = useAppSelector((state) => state.upc);
 
   useEffect(() => {
     return () => {
@@ -144,6 +146,11 @@ const UpcList = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0 && j.qty_results !== null) {
+          const qtyResults: UpcForecastData[] = Object.entries(
+            j.qty_results,
+          ).map(([k, v]) => ({ product_code: k, data: v as UpcForecast }));
+          console.log("qtyResults", qtyResults);
+
           const history = Object.entries(j.qty_results)
             .map(([k, v]) => [k, structuredClone(v as UpcForecast).history])
             .map(([id, obj], idx) =>
@@ -182,6 +189,7 @@ const UpcList = () => {
           }));
 
           const qty = formatForecastExport(j.qty_results);
+          dispatch(setForecastQtyData(qtyResults));
           dispatch(setForecastExport(qty.data));
           dispatch(setForecastMetricExport(qty.metrics));
           dispatch(setUpcItems(upcItems));

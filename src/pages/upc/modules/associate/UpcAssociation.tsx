@@ -76,7 +76,7 @@ const UpcAssociation = () => {
         end,
         ids,
         selectedUpcs,
-        20,
+        50,
         "top",
       )
         .then((resp) => {
