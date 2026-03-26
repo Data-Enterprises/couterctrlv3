@@ -3,16 +3,17 @@ import { InformationCircleIcon } from "@heroicons/react/24/solid";
 import { instructions } from "../../components";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
-// Components
-import UpcControls from "../../components/UpcControls";
-import QtyMetrics from "../forecast/QtyMetrics";
-import UpcModal from "../../modal/UpcModal";
 import {
   tableHeaderForecast,
   tableHeaderForecastMetrics,
 } from "../../exportHeaders";
 import { exportData } from "../../exportHeaders/utils";
 import { reset } from "../../../../features/upcModalSlice";
+
+// Components
+import UpcControls from "../../components/UpcControls";
+import QtyMetrics from "../forecast/QtyMetrics";
+import UpcModal from "../../modal/UpcModal";
 import ForecastCardList from "./ForecastCardList";
 
 const Forecast = () => {
