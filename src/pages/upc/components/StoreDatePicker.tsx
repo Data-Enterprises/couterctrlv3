@@ -77,7 +77,7 @@ const StoreDatePicker = () => {
   };
 
   return (
-    <div className="bg-custom-white px-4 py-2 rounded-lg shadow-lg">
+    <div className="bg-custom-white px-4 pt-2 pb-4 rounded-lg shadow-lg">
       <div className="w-full gap-2 mb-1">
         <div className="">
           <SingleSelect
