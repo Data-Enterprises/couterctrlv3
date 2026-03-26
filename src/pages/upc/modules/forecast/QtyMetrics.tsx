@@ -4,6 +4,7 @@ import MetricCard from "./MetricCard";
 import type { UpcMetrics } from "../../../../interfaces";
 import {
   getOverallMetrics,
+  reducePriceHistory,
   // getItemMetrics,
   // getForecast,
 } from "../../components";
@@ -25,18 +26,20 @@ const QtyMetrics = () => {
 
   useEffect(() => {
     // Grabbing the top and bottom items for overall metrics for qty
-    const topItem = [...state.upcList].sort(
-      (a, b) => b.metrics.qty - a.metrics.qty,
-    )[0];
-    const bottomItem = [...state.upcList].sort(
-      (a, b) => a.metrics.qty - b.metrics.qty,
-    )[0];
-
-    const upcs = state.upcList.filter((upc) =>
-      state.selectedUpcs.includes(upc.label),
+    const upcs = state.forecastQtyData.filter((upc) =>
+      state.selectedUpcs.includes(upc.product_code),
     );
+
+    const qtySorted = [...upcs].sort(
+      (a, b) =>
+        reducePriceHistory(b.data.metrics.prices) -
+        reducePriceHistory(a.data.metrics.prices),
+    );
+    const topItem = qtySorted[0];
+    const bottomItem = qtySorted[qtySorted.length - 1];
+
     setMetrics(getOverallMetrics(upcs, topItem, bottomItem));
-  }, [state.upcList, state.selectedLegendForecast, state.selectedUpcs]);
+  }, [state.forecastQtyData, state.selectedLegendForecast, state.selectedUpcs]);
 
   return (
     <>

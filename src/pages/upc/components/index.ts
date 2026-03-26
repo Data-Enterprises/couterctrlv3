@@ -1,6 +1,6 @@
 import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
 import { useRef, useState, useEffect } from "react";
-import type { UpcSalesComp, UpcInfo } from "../../../interfaces";
+import type { UpcSalesComp, UpcForecastData } from "../../../interfaces";
 import { formatCurrency2, formatDate } from "../../../utils";
 
 export const useScrollHeight = () => {
@@ -169,10 +169,18 @@ export const colorCodes = [
   "#fdba74", // orange-300
 ];
 
+export type Price = {
+  price: string;
+  qty: number;
+};
+export const reducePriceHistory = (prices: Price[]) => {
+  return prices.reduce((acc: number, cur) => acc + cur.qty, 0);
+};
+
 export const getOverallMetrics = (
-  upcList: UpcInfo[],
-  top: UpcInfo,
-  bottom: UpcInfo,
+  upcList: UpcForecastData[],
+  top: UpcForecastData,
+  bottom: UpcForecastData,
 ) => {
   if (upcList.length === 0) {
     return [
@@ -198,21 +206,31 @@ export const getOverallMetrics = (
       },
     ];
   }
-  const totalQty = upcList.reduce((acc, cur) => (acc += cur.metrics.qty), 0);
+
+  const totalQty = upcList.reduce(
+    (acc, cur) => (acc += reducePriceHistory(cur.data.metrics.prices)),
+    0,
+  );
+
   const avgDailyQty =
-    upcList.reduce((acc, cur) => (acc += cur.metrics.avg_daily_qty), 0) /
+    upcList.reduce((acc, cur) => (acc += cur.data.metrics.avg_daily_qty), 0) /
     upcList.length;
 
-  const totalQtyRange = top.metrics.qty - bottom.metrics.qty;
+  const totalQtyRange = top.data.metrics.qty - bottom.data.metrics.qty;
   const avgDailyQtyRange =
-    top.metrics.avg_daily_qty - bottom.metrics.avg_daily_qty;
+    top.data.metrics.avg_daily_qty - bottom.data.metrics.avg_daily_qty;
 
-  const sorted = [...upcList].sort((a, b) => a.metrics.qty - b.metrics.qty);
+  const sorted = [...upcList].sort(
+    (a, b) => a.data.metrics.qty - b.data.metrics.qty,
+  );
+
   const mid = Math.floor(upcList.length / 2);
   const medianQty =
     upcList.length % 2 === 0
-      ? (sorted[mid - 1].metrics.qty + sorted[mid].metrics.qty) / 2
-      : sorted[mid].metrics.qty;
+      ? (reducePriceHistory(sorted[mid - 1].data.metrics.prices) +
+          reducePriceHistory(sorted[mid].data.metrics.prices)) /
+        2
+      : reducePriceHistory(sorted[mid].data.metrics.prices);
 
   return [
     { label: "Total Qty", value: totalQty, item: null, type: "quantity" },
