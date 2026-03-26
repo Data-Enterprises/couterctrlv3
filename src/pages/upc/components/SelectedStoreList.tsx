@@ -13,7 +13,7 @@ const SelectedStoreList = ({
   selectedStores,
   radioId,
   className = "",
-  gridCols = "grid-cols-3",
+  gridCols = "grid-cols-1",
   context = ""
 }: SelectedStoreListProps) => {
   const { height } = useResizeContext(context);

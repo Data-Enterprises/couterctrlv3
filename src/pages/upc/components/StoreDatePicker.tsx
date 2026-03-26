@@ -79,7 +79,7 @@ const StoreDatePicker = () => {
   return (
     <div className="bg-custom-white px-4 py-2 rounded-lg shadow-lg">
       <div className="w-full gap-2 mb-1">
-        <div className="flex gap-2 items-end">
+        <div className="">
           <SingleSelect
             data={options}
             label="Store or Group"
@@ -89,11 +89,6 @@ const StoreDatePicker = () => {
             defaultQuery="Stores"
             id={1}
             innerClass="py-1.5"
-          />
-          <Input
-            label="Trend Periods"
-            value={context.trendPeriods}
-            setValue={(x) => dispatch(setTrendPeriods(x))}
           />
         </div>
         {context.radioId === 1 ? (
@@ -107,7 +102,7 @@ const StoreDatePicker = () => {
             resetQuery={true}
             innerClass="border-2 focus:border-blue-500 border-content/20"
             id={2}
-            className="col-span-2"
+            className="col-span-2 text-sm"
           />
         ) : (
           <SingleSelect
@@ -119,9 +114,14 @@ const StoreDatePicker = () => {
             resetQuery={true}
             innerClass="border-2 focus:border-blue-500 border-content/20"
             id={2}
-            className="col-span-2"
+            className="col-span-2 text-sm"
           />
         )}
+        <Input
+          label="Trend Periods"
+          value={context.trendPeriods}
+          setValue={(x) => dispatch(setTrendPeriods(x))}
+        />
         <div className="col-span-2">
           <DatePickers showBtn={false} />
         </div>
@@ -130,21 +130,6 @@ const StoreDatePicker = () => {
         selectedStores={context.selectedStores}
         radioId={context.radioId}
       />
-      {/* <div className="flex gap-2 mt-2">
-        <FileInput
-          page="upc"
-          fileExt={[".csv"]}
-          setFile={setFile}
-          className="w-1/2 py-0"
-        />
-        <button
-          className="btn-themeBlue w-1/2"
-          data-testid="upc-module-data-search-btn"
-          onClick={() => getModuleData(context.selectedMode)}
-        >
-          Search
-        </button>
-      </div> */}
     </div>
   );
 };

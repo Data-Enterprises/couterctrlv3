@@ -1,5 +1,5 @@
 import type { UpcForecastData } from "../../../../interfaces";
-import { formatBigNumber } from "../../../../utils";
+import { formatBigNumber, formatCurrency2 } from "../../../../utils";
 
 interface ForecastCardProps {
   card: UpcForecastData;
@@ -25,7 +25,9 @@ const ForecastCard = ({ card }: ForecastCardProps) => {
         </div>
       </div>
       <div className="font-medium rounded-lg bg-bkg p-1 text-[13px]">
-        <div>{data.metrics.description}</div>
+        <div className="text-nowrap text-ellipsis truncate">
+          {data.metrics.description}
+        </div>
         <div className="flex gap-1 text-[13.5px]">
           <div className="text-content/60">Avg Day Qty:</div>
           <div>{formatBigNumber(data.metrics.avg_daily_qty, 2)}</div>
@@ -35,6 +37,17 @@ const ForecastCard = ({ card }: ForecastCardProps) => {
           <div>
             {formatBigNumber(data.metrics.max_day_qty, 0)} - {maxDayQty}
           </div>
+        </div>
+        <div className="mt-1 text-center">Price history with qty</div>
+        <div className="grid grid-cols-2 px-2 min-h-10 max-h-10 overflow-hidden overflow-y-auto">
+          {data.metrics.prices.map((p: any) => {
+            return (
+              <div key={p.price as string} className="even:text-right">
+                {formatBigNumber(p.qty as number, 0)} @{" "}
+                {formatCurrency2(p.price)}
+              </div>
+            );
+          })}
         </div>
       </div>
       <div>
