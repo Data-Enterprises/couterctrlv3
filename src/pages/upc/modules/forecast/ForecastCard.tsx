@@ -19,16 +19,13 @@ const ForecastCard = ({ card }: ForecastCardProps) => {
     <div className="bg-custom-white rounded-lg p-2 shadow-lg space-y-1 cursor-default select-none">
       <div className="border-b border-content/60 font-medium flex justify-between items-center">
         <div>{product_code}</div>
-        <div>
-          Qty: {data.history.reduce((acc, curr) => acc + curr.value, 0)}
-        </div>
-      </div>
-      <div className="font-medium rounded-lg bg-bkg p-1 text-[13px]">
-        <div>{data.metrics.description}</div>
         <div className="flex gap-1 text-[13.5px]">
           <div className="text-content/60">Days Active:</div>
           <div>{data.metrics.days_active}</div>
         </div>
+      </div>
+      <div className="font-medium rounded-lg bg-bkg p-1 text-[13px]">
+        <div>{data.metrics.description}</div>
         <div className="flex gap-1 text-[13.5px]">
           <div className="text-content/60">Avg Day Qty:</div>
           <div>{formatBigNumber(data.metrics.avg_daily_qty, 2)}</div>

@@ -381,6 +381,7 @@ export interface UpcForecast {
     max_day_qty: number;
     qty: number;
     outliers: { date: string; qty: number }[];
+    prices: any
   };
 }
 

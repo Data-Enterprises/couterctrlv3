@@ -10,7 +10,6 @@ import {
 
 type MetricKey =
   | "active"
-  | "forecast"
   | "quantity"
   | "qtyRange"
   | "mdq"
@@ -33,21 +32,26 @@ const QtyMetrics = () => {
       (a, b) => a.metrics.qty - b.metrics.qty,
     )[0];
 
-    setMetrics(getOverallMetrics(state.upcList, topItem, bottomItem));
-  }, [state.upcList, state.selectedLegendForecast]);
+    const upcs = state.upcList.filter((upc) =>
+      state.selectedUpcs.includes(upc.label),
+    );
+    setMetrics(getOverallMetrics(upcs, topItem, bottomItem));
+  }, [state.upcList, state.selectedLegendForecast, state.selectedUpcs]);
 
   return (
     <>
-      <div className="grid grid-cols-5 gap-2 w-full">
-        {metrics.map((metric) => (
-          <MetricCard
-            key={metric.label}
-            metric={metric.value}
-            label={metric.label}
-            type={metric.type as MetricKey}
-          />
-        ))}
-      </div>
+      {state.selectedUpcs.length > 0 ? (
+        <div className="grid grid-cols-5 gap-2 w-full">
+          {metrics.map((metric) => (
+            <MetricCard
+              key={metric.label}
+              metric={metric.value}
+              label={metric.label}
+              type={metric.type as MetricKey}
+            />
+          ))}
+        </div>
+      ) : null}
     </>
   );
 };

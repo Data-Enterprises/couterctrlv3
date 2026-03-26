@@ -25,6 +25,7 @@ export const useUpcContext = () => {
     uploadedUpcs,
     selectedView,
     selectedAssociationUpcParam,
+    forecastQtyData
   } = useAppSelector((state) => state.upc);
 
   return {
@@ -33,6 +34,7 @@ export const useUpcContext = () => {
     userid,
     startDate,
     endDate,
+    forecastQtyData,
     index,
     selectedMode,
     storeids,

@@ -172,8 +172,32 @@ export const colorCodes = [
 export const getOverallMetrics = (
   upcList: UpcInfo[],
   top: UpcInfo,
-  bottom: UpcInfo
+  bottom: UpcInfo,
 ) => {
+  if (upcList.length === 0) {
+    return [
+      { label: "Total Qty", value: 0, item: null, type: "quantity" },
+      {
+        label: "Total Range",
+        value: 0,
+        item: null,
+        type: "qtyRange",
+      },
+      { label: "Median Qty", value: 0, item: null, type: "median" },
+      {
+        label: "Avg Daily Qty",
+        value: 0,
+        item: null,
+        type: "avgQty",
+      },
+      {
+        label: "ADQ Range",
+        value: 0,
+        item: null,
+        type: "avgQtyRange",
+      },
+    ];
+  }
   const totalQty = upcList.reduce((acc, cur) => (acc += cur.metrics.qty), 0);
   const avgDailyQty =
     upcList.reduce((acc, cur) => (acc += cur.metrics.avg_daily_qty), 0) /
