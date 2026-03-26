@@ -15,7 +15,6 @@ interface MetricCardProps {
   metric: number;
   label: string;
   type: keyof typeof icons;
-  mode: "overall" | "top" | "selected";
 }
 
 const icons = {
@@ -85,7 +84,7 @@ const icons = {
   ),
 };
 
-const MetricCard = ({ metric, label, type, mode }: MetricCardProps) => {
+const MetricCard = ({ metric, label, type }: MetricCardProps) => {
   const search = useAppSelector((state) => state.search);
   const upcState = useAppSelector((state) => state.upc);
   const isInteger = (n: number) =>
@@ -157,7 +156,7 @@ const MetricCard = ({ metric, label, type, mode }: MetricCardProps) => {
           {tooltipText[type]}
         </div>
         <InformationCircleIcon
-          data-testid={`info-icon-${type}-${mode}`}
+          data-testid={`info-icon-${type}`}
           onMouseEnter={() => setShowTooltip(true)}
           onMouseLeave={() => setShowTooltip(false)}
           height={23}

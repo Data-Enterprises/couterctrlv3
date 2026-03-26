@@ -246,7 +246,7 @@ const UpcControls = () => {
 
       <div
         data-testid="upc-controls-list"
-        className="bg-custom-white rounded-b-lg overflow-y-scroll no-scrollbar"
+        className="rounded-b-lg overflow-y-scroll no-scrollbar"
         style={{ minHeight: height, maxHeight: height }}
       >
         {showDisplay === "all" &&

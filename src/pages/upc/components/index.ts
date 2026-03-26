@@ -1,6 +1,6 @@
 import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
 import { useRef, useState, useEffect } from "react";
-import type { UpcSalesComp, Forecast, UpcInfo } from "../../../interfaces";
+import type { UpcSalesComp, UpcInfo } from "../../../interfaces";
 import { formatCurrency2, formatDate } from "../../../utils";
 
 export const useScrollHeight = () => {
@@ -207,49 +207,6 @@ export const getOverallMetrics = (
       type: "avgQtyRange",
     },
   ];
-};
-
-export const getItemMetrics = (item: UpcInfo, expectedForecast: number) => {
-  return [
-    {
-      label: "Total Qty",
-      value: item.metrics.qty,
-      item: null,
-      type: "quantity",
-    },
-    {
-      label: "Max Daily Qty",
-      value: item.metrics.max_day_qty,
-      item: null,
-      type: "mdq",
-    },
-    {
-      label: "Days Active",
-      value: item.metrics.days_active,
-      item: null,
-      type: "active",
-    },
-    {
-      label: "Avg Daily Qty",
-      value: item.metrics.avg_daily_qty,
-      item: null,
-      type: "avgQty",
-    },
-    {
-      label: "Qty Forecast",
-      value: expectedForecast,
-      item: null,
-      type: "forecast",
-    },
-  ];
-};
-
-export const getForecast = (items: Forecast[], item: UpcInfo) => {
-  return (
-    items
-      .find((f) => f.id.includes(item.label))
-      ?.data.reduce((acc, cur) => (acc += cur.y), 0) ?? 0
-  );
 };
 
 // Price Optimization Utils

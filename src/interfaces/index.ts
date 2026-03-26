@@ -380,6 +380,7 @@ export interface UpcForecast {
     description: string;
     max_day_qty: number;
     qty: number;
+    outliers: { date: string; qty: number }[];
   };
 }
 

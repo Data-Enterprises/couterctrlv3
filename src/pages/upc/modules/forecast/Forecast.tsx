@@ -5,9 +5,7 @@ import { useToast } from "../../../../components/toasts/hooks/useToast";
 
 // Components
 import UpcControls from "../../components/UpcControls";
-import MetricsCarousel from "../forecast/MetricsCarousel";
 import QtyMetrics from "../forecast/QtyMetrics";
-import ForecastLine from "../../components/ForecastLine";
 import UpcModal from "../../modal/UpcModal";
 import {
   tableHeaderForecast,
@@ -15,6 +13,7 @@ import {
 } from "../../exportHeaders";
 import { exportData } from "../../exportHeaders/utils";
 import { reset } from "../../../../features/upcModalSlice";
+import ForecastCardList from "./ForecastCardList";
 
 const Forecast = () => {
   const toast = useToast();
@@ -34,7 +33,7 @@ const Forecast = () => {
       exportData(
         upcState.forecastMetricExport,
         tableHeaderForecastMetrics,
-        modal.fileName
+        modal.fileName,
       );
     }
 
@@ -42,14 +41,16 @@ const Forecast = () => {
   };
 
   return (
-    <div data-testid="upc-forecast" className="h-full w-full grid grid-cols-[15%_84%] gap-4">
+    <div
+      data-testid="upc-forecast"
+      className="min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)] overflow-hidden w-full grid grid-cols-[15%_84%] gap-4"
+    >
       <UpcModal handleExport={handleExport} />
-      <UpcControls />
-      <div className="grid grid-rows-[19%_81%] gap-2 mr-4 mb-2">
-        <MetricsCarousel className={"-mt-2"}>
-          <QtyMetrics mode="overall" metric="Quantity" />
-          <QtyMetrics mode="selected" metric="Quantity" />
-        </MetricsCarousel>
+      <div>
+        <UpcControls />
+      </div>
+      <div className="space-y-4 mr-4 mb-2">
+        <QtyMetrics />
         <>
           {upcState.selectedUpcs.length === 0 ? (
             <div className="w-full h-[100%] flex justify-center items-center rounded-lg cursor-default">
@@ -74,18 +75,10 @@ const Forecast = () => {
                     )}
                   </div>
                 ))}
-                <div className="bg-bkg"></div>
               </div>
             </div>
           ) : (
-            <div className="bg-bkg rounded-lg shadow-lg">
-              <ForecastLine
-                title={"History"}
-                title2={"Forecast"}
-                data={[...upcState.forecastHistory, ...upcState.forecast]}
-                search={upcState.selectedUpcs}
-              />
-            </div>
+            <ForecastCardList />
           )}
         </>
       </div>
