@@ -74,18 +74,18 @@ const Coupons = () => {
         data={context.gridCoupons}
         columns={cols}
       />
-      <div className="grid grid-cols-[20%_auto] p-4 gap-4 w-full h-full">
+      <div className="grid grid-cols-[17%_auto] p-4 gap-4 w-full h-full">
         <div>
-          <div className="bg-custom-white p-4 rounded-lg shadow-lg">
+          <div className="bg-custom-white p-2 rounded-lg shadow-lg">
             <StorePicker />
             <DatePickers handleQuery={getData} />
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-2">
               <button
                 data-testid="coupons-refresh-btn"
                 className={`${
                   context.coupons.length === 0 &&
                   "opacity-50 pointer-events-none"
-                } btn-themeOrange w-full mt-2`}
+                } btn-themeOrange w-full px-0`}
                 onClick={() => dispatch(resetCoupons())}
               >
                 Refresh
@@ -95,7 +95,7 @@ const Coupons = () => {
                 className={`${
                   context.coupons.length === 0 &&
                   "opacity-50 pointer-events-none"
-                } btn-themeGreen w-full mt-2`}
+                } btn-themeGreen w-full px-0`}
                 onClick={() => setIsOpen(true)}
               >
                 Export

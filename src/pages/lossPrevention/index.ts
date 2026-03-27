@@ -195,6 +195,7 @@ export const colDefs: (
     flex: 0.4,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
+    valueFormatter: (params) => formatBigNumber(params.value, 0),
     cellClass: "no-outline-on-focus text-right",
   },
   {

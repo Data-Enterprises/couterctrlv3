@@ -1,6 +1,6 @@
 import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
 import type { TransactionListItem } from "../../../interfaces";
-import { formatCurrency2, formatDate } from "../../../utils";
+import { formatBigNumber, formatCurrency2, formatDate } from "../../../utils";
 
 export const colDefs: (
   | ColDef<TransactionListItem>
@@ -8,17 +8,35 @@ export const colDefs: (
 )[] = [
   {
     headerName: "Trans ID",
-    field: "sale_id",
+    field: "transaction_id",
     flex: 0.5,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
-    valueFormatter: (params) => params.value.split("-")[1],
     cellClass: "no-outline-on-focus underline font-medium cursor-pointer",
+  },
+  {
+    headerName: "Sale Date",
+    field: "sale_date",
+    flex: 0.5,
+    hide: true,
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus",
+  },
+  {
+    headerName: "Register",
+    field: "terminal",
+    flex: 0.5,
+    hide: true,
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus",
   },
   {
     headerName: "Sale ID",
     field: "sale_id",
     flex: 1,
+    hide: true,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
@@ -34,7 +52,7 @@ export const colDefs: (
   {
     headerName: "Price Type",
     field: "price_type",
-    flex: 0.5,
+    flex: 0.6,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
@@ -42,7 +60,7 @@ export const colDefs: (
   {
     headerName: "Date",
     field: "sale_date",
-    flex: 0.6,
+    flex: 0.5,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
@@ -87,6 +105,15 @@ export const colDefs: (
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
+  },
+  {
+    headerName: "Qty",
+    field: "qty",
+    flex: 0.4,
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    valueFormatter: (params) => formatBigNumber(params.value, 0),
+    cellClass: "no-outline-on-focus text-right",
   },
   {
     headerName: "Total Sales",

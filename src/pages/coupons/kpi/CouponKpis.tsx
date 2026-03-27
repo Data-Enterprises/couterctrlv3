@@ -50,7 +50,7 @@ const CouponKpis = () => {
           className="absolute left-5"
           fill="#3b82f6"
         />
-        <div>Average Amount</div>
+        <div>Avg Amount</div>
         <div>{formatCurrency2(avgCpnAmount)}</div>
       </div>
       <div className={kpiStyle}>

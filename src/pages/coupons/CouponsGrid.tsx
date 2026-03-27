@@ -13,7 +13,7 @@ import {
   setTransactionDrillDown,
   setTransModalOpen,
 } from "../../features/lossPreventionSlice";
-import type { JsonError } from "../../interfaces";
+import type { JsonError, TransactionListItem } from "../../interfaces";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const CouponsGrid = () => {
@@ -42,11 +42,32 @@ const CouponsGrid = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          const transactions = [...j.transaction].map((item) => ({
-            ...item,
-            transaction_id: item.sale_id.split("-")[1],
-          }));
-          dispatch(setTransactionDrillDown([transactions]));
+          const transactions: TransactionListItem[] = [...j.transaction].map(
+            (item) => ({
+              ...item,
+              transaction_id: item.sale_id.split("-")[1],
+              qty: item.qty ? item.qty : 0,
+            }),
+          );
+          const reducedTransactions: TransactionListItem[] =
+            transactions.reduce((acc: TransactionListItem[], curr) => {
+              const found = acc.find(
+                (item) =>
+                  item.storeid === curr.storeid &&
+                  item.sale_type === curr.sale_type &&
+                  item.product_code === curr.product_code &&
+                  item.product_description === curr.product_description,
+              );
+              if (found) {
+                found.qty! += curr.qty!;
+                found.total_sales += curr.total_sales;
+                found.net_sales += curr.net_sales;
+              } else {
+                acc.push({ ...curr, qty: curr.qty });
+              }
+              return acc;
+            }, []);
+          dispatch(setTransactionDrillDown([reducedTransactions]));
         }
       })
       .catch((err: JsonError) => {
@@ -64,7 +85,6 @@ const CouponsGrid = () => {
         pagination={true}
         paginationAutoPageSize={true}
         onRowClicked={onRowClicked}
-        // rowSelection="single" // => this may need to come back in but for now we just want to open the modal on row click
       />
     </div>
   );
