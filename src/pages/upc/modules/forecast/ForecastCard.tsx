@@ -71,11 +71,6 @@ const ForecastCard = ({ card }: ForecastCardProps) => {
         <div className="font-medium text-center border-b border-content/60">
           Next 7 Day Qty Forecast
         </div>
-        {/* <div className="grid grid-cols-[1fr_2fr_1fr] font-medium bg-blue-500 text-custom-white rounded-t-lg py-0.5">
-          <div className="border-r px-2">Day</div>
-          <div className="border-r px-2">Date</div>
-          <div className="px-2">Qty</div>
-        </div> */}
         {data.forecast.map((point, i) => (
           <div
             key={i}
