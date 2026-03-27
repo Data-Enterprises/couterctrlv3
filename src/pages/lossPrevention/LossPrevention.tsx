@@ -61,7 +61,7 @@ const LossPrevention = () => {
 
   // Styles for mobile and desktop
   const pageContainer = context.isDesktop
-    ? "w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden overflow-y-auto no-scrollbar p-4 grid grid-cols-[22%_78%] gap-4"
+    ? "w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden overflow-y-auto no-scrollbar p-4 grid grid-cols-[20%_80%] gap-4"
     : "p-4 w-full min-h-full overflow-y-auto space-y-4 max-h-screen";
   const leftContainer = context.isDesktop
     ? cashier.saleTypes.length

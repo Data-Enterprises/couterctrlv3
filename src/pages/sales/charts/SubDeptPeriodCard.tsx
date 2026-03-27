@@ -75,7 +75,7 @@ const SubDeptPeriodCard = ({
   const renderArrowIcon = (val: number, type: "overall" | "weekly") => {
     let trendingUp = false;
     let textColor = "";
-    const classStr = "h-6 w-6 inline-block stroke-2";
+    const classStr = "h-5 w-5 inline-block stroke-2";
 
     let compareVal = 0;
     if (type === "overall") {
@@ -122,8 +122,7 @@ const SubDeptPeriodCard = ({
       </div>
       <div className="relative">
         {period < 4 ? (
-          <div className="absolute right-2 top-0">
-            <div className="font-medium">Sales Trend</div>
+          <div className="absolute right-2 top-0 text-[13.5px] flex gap-2">
             {period === 1 && (
               <div className="text-content font-medium flex gap-1 items-center">
                 <div>Overall</div>
@@ -138,7 +137,7 @@ const SubDeptPeriodCard = ({
         ) : null}
 
         <div className="font-medium px-2">Totals</div>
-        <div className="grid grid-cols-4 gap-2 px-2">
+        <div className="grid grid-cols-3 gap-4 px-2 mt-1">
           <div>
             <div className="text-content/60">Sales</div>
             <div className="font-medium text-xs">
@@ -160,8 +159,8 @@ const SubDeptPeriodCard = ({
         </div>
       </div>
 
-      <div className="px-2 pb-2 pt-1 md:pt-1">
-        <div className="font-medium mt-1">Coupons</div>
+      <div className="px-2 pb-2 pt-1">
+        <div className="font-medium">Coupons</div>
         <div className="grid grid-cols-4 gap-2">
           <div>
             <div className="text-content/60">Digital</div>
