@@ -282,7 +282,21 @@ export type UniqueCashier = {
   transaction_ids: string[];
 };
 
+export type TransactionOverview = {
+  transaction_id:string;
+  sale_id: string;
+  sale_date:string;
+  sale_type: string;
+  store_number: string;
+  cashier_name: string;
+  cashier_number: number;
+  qty: number;
+  storeid: number;
+  total_sales: number;
+}
+
 export interface TransactionListItem {
+  transaction_id: string;
   storeid: number;
   store_name: string;
   store_number: string;

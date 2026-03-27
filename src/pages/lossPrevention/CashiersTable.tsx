@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { colDefs, theme, reducePriceTypes, reduceSaleIds } from ".";
+import {
+  colDefs,
+  theme,
+  reducePriceTypes,
+  reduceSaleIds,
+  overviewCols,
+  formatDate,
+} from ".";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import {
   getCashierTable,
@@ -23,6 +30,7 @@ import {
 import type {
   JsonError,
   TransactionListItem,
+  TransactionOverview,
   UniqueCashier,
 } from "../../interfaces";
 
@@ -32,7 +40,7 @@ import {
   ModuleRegistry,
   type CellClickedEvent,
 } from "ag-grid-community";
-import { formatDate, formatGoliathDate } from "../../utils";
+import { formatGoliathDate } from "../../utils";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 import ExportModal from "./export/ExportModal";
@@ -43,10 +51,15 @@ const CashiersTable = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const [filtered, setFiltered] = useState<TransactionListItem[]>([]);
+  const [filteredOverviews, setFilteredOverviews] = useState<
+    TransactionOverview[]
+  >([]);
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
   const cashier = useAppSelector((state) => state.lossPrevention);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
+
+  console.log(filtered);
 
   useEffect(() => {
     const selectedCashier = cashier.selectedCashier.cashier_number;
@@ -70,29 +83,32 @@ const CashiersTable = () => {
       !transId
     ) {
       // No filters applied, show all data
-      const reducedSaleIds = reduceSaleIds(cashier.transList);
+      const reducedSaleIds = reduceSaleIds(cashier.transOverviews);
       const reducedPriceTypes = reducePriceTypes(cashier.transList);
       dispatch(setAvailablePriceTypes(reducedPriceTypes));
       dispatch(setCashierSaleIds(reducedSaleIds));
       setFiltered(cashier.transList);
+      setFilteredOverviews(cashier.transOverviews);
       return;
     }
 
-    const currentFiltered = () => {
-      const result = cashier.transList.filter((item) => {
+    const currentFiltered = (type: "items" | "transactions") => {
+      const data =
+        type === "items" ? cashier.transList : cashier.transOverviews;
+      const result = data.filter((item) => {
         const matchCashier = selectedCashier
           ? item.cashier_number === selectedCashier
           : true;
         const matchesDate = formatDate(item.sale_date).includes(saleDate);
-        const matchesUpc =
-          item.product_code !== null
-            ? item.product_code.toLowerCase().includes(upc.toLowerCase())
-            : true;
-        const matchesDesc = item.product_description
-          .toLowerCase()
-          .includes(desc.toLowerCase());
-        const matchesPriceType =
-          priceTypes.length > 0 ? priceTypes.includes(item.price_type) : true;
+        // const matchesUpc =
+        //   item.product_code !== null
+        //     ? item.product_code.toLowerCase().includes(upc.toLowerCase())
+        //     : true;
+        // const matchesDesc = item.product_description
+        //   .toLowerCase()
+        //   .includes(desc.toLowerCase());
+        // const matchesPriceType =
+        //   priceTypes.length > 0 ? priceTypes.includes(item.price_type) : true;
         const matchesTotalSales = () => {
           if (totalSales === 0 || (!threshold.gt && !threshold.lt)) return true;
           if (threshold.gt) {
@@ -102,19 +118,19 @@ const CashiersTable = () => {
           }
         };
 
-        const saleSplit = item.sale_id.split("-")[1];
+        // const saleSplit = item.sale_id.split("-")[1];
         const matchesTransId =
-          saleSplit !== null
-            ? saleSplit.toLowerCase().includes(transId.toLowerCase())
+          item.transaction_id !== null
+            ? item.transaction_id.toLowerCase().includes(transId.toLowerCase())
             : true;
 
         // Then return all of these filters values
         return (
           matchCashier &&
           matchesDate &&
-          matchesUpc &&
-          matchesDesc &&
-          matchesPriceType &&
+          // matchesUpc &&
+          // matchesDesc &&
+          // matchesPriceType &&
           matchesTotalSales() &&
           matchesTransId
         );
@@ -123,12 +139,16 @@ const CashiersTable = () => {
     };
 
     // Updating available price types and sale IDs based on the new filtered data
-    const newFiltered = currentFiltered();
-    const reducedSaleIds = reduceSaleIds(newFiltered);
-    const reducedPriceTypes = reducePriceTypes(newFiltered);
-    dispatch(setAvailablePriceTypes(reducedPriceTypes));
+    const newFilteredTransactions = currentFiltered("transactions");
+    const newFilteredItems = currentFiltered("items");
+    setFiltered(newFilteredItems as TransactionListItem[]);
+    const reducedSaleIds = reduceSaleIds(
+      newFilteredTransactions as TransactionOverview[],
+    );
+    // const reducedPriceTypes = reducePriceTypes(newFiltered);
+    // dispatch(setAvailablePriceTypes(reducedPriceTypes));
     dispatch(setCashierSaleIds(reducedSaleIds));
-    setFiltered(newFiltered);
+    setFilteredOverviews(newFilteredTransactions as TransactionOverview[]);
   }, [
     cashier.transList,
     cashier.selectedCashier,
@@ -142,8 +162,8 @@ const CashiersTable = () => {
 
   const onCellClicked = (e: CellClickedEvent) => {
     const def = e.column.getColDef();
-    if (def.headerName === "Trans ID") {
-      const saleId = e.value;
+    if (def.headerName === "Transaction ID") {
+      const saleId = e.data.sale_id;
       const saleDate = e.data.sale_date.split("T")[0];
       const storeid = e.data.storeid;
       dispatch(setTransactionDrillDown([]));
@@ -158,7 +178,32 @@ const CashiersTable = () => {
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
-            dispatch(setTransactionDrillDown([j.transaction]));
+            const transactions: TransactionListItem[] = [...j.transaction].map(
+              (item) => ({
+                ...item,
+                transaction_id: item.sale_id.split("-")[1],
+                qty: item.qty ? item.qty : 0,
+              }),
+            );
+            const reducedTransactions: TransactionListItem[] =
+              transactions.reduce((acc: TransactionListItem[], curr) => {
+                const found = acc.find(
+                  (item) =>
+                    item.storeid === curr.storeid &&
+                    item.sale_type === curr.sale_type &&
+                    item.product_code === curr.product_code &&
+                    item.product_description === curr.product_description,
+                );
+                if (found) {
+                  found.qty! += curr.qty!;
+                  found.total_sales += curr.total_sales;
+                  found.net_sales += curr.net_sales;
+                } else {
+                  acc.push({ ...curr, qty: curr.qty });
+                }
+                return acc;
+              }, []);
+            dispatch(setTransactionDrillDown([reducedTransactions]));
           }
         })
         .catch((err: JsonError) => {
@@ -287,7 +332,11 @@ const CashiersTable = () => {
 
                   // Everything below is going inside the then block of the cashier_table call
                   dispatch(setCashiers(uniqueCashiers));
-                  dispatch(setTransList(j.transactions));
+                  const formatted = [...j.transactions].map((item) => {
+                    const transactionId = item.sale_id.split("-")[1];
+                    return { ...item, transaction_id: transactionId };
+                  });
+                  dispatch(setTransList(formatted));
                 }
               })
               .catch((err: JsonError) =>
@@ -303,7 +352,6 @@ const CashiersTable = () => {
   };
 
   const handlePageInput = (x: string) => {
-    console.log(x);
     if (!isNaN(Number(x)) && Number(x) >= 0 && Number(x) <= cashier.gridPages) {
       dispatch(setCurrentGridPage(Number(x)));
       dispatch(setPageText(x));
@@ -323,8 +371,8 @@ const CashiersTable = () => {
       />
       <div className="h-[91%]">
         <AgGridReact
-          rowData={filtered}
-          columnDefs={colDefs}
+          rowData={filteredOverviews}
+          columnDefs={overviewCols}
           theme={theme}
           pagination={true}
           paginationAutoPageSize={true}

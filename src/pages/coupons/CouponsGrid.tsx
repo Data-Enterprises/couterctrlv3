@@ -42,7 +42,11 @@ const CouponsGrid = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          dispatch(setTransactionDrillDown([j.transaction]));
+          const transactions = [...j.transaction].map((item) => ({
+            ...item,
+            transaction_id: item.sale_id.split("-")[1],
+          }));
+          dispatch(setTransactionDrillDown([transactions]));
         }
       })
       .catch((err: JsonError) => {

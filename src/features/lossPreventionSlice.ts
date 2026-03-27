@@ -6,6 +6,7 @@ import type {
   SaleType,
   UniqueCashier,
   TransactionListItem,
+  TransactionOverview,
 } from "../interfaces";
 
 type SelectedCashier = {
@@ -23,6 +24,7 @@ export interface LossPreventionState {
   cashiers: UniqueCashier[];
   selectedCashier: SelectedCashier;
   cashierTransactions: CashierTransaction[];
+  transOverviews: TransactionOverview[];
   transList: TransactionListItem[];
   transactionDrillDown: TransactionListItem[][];
   saleTypes: SaleType[];
@@ -59,6 +61,7 @@ const initialState: LossPreventionState = {
   selectedSaleType: "",
   transModalOpen: false,
   cashiers: [],
+  transOverviews: [],
   selectedCashier: { cashier_number: 0, store_number: "" },
   selectedSaleIds: [],
   transList: [],
@@ -226,6 +229,10 @@ export const lossPreventionSlice = createSlice({
       state.selectedCashierDetailsIdx = -1;
       state.selectedCashier = { cashier_number: 0, store_number: "" };
       state.cashierDetailsTrendDirection = 0;
+      state.transOverviews = [];
+    },
+    setTransOverviews: (state, action: PayloadAction<TransactionOverview[]>) => {
+      state.transOverviews = action.payload;
     },
     setCashierDetailsTrendDirection: (state, action: PayloadAction<number>) => {
       state.cashierDetailsTrendDirection = action.payload;
@@ -267,6 +274,7 @@ export const {
   setPageText,
   setSearchString,
   reQuery,
+  setTransOverviews,
   setSelectedCashierDetails,
   setCashierDetailsTrendDirection,
 } = lossPreventionSlice.actions;

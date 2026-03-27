@@ -15,10 +15,10 @@ import FiltersModal from "./FiltersModal";
 
 const filterOptions = [
   "Sale Date",
-  "UPC",
-  "Description",
+  // "UPC",
+  // "Description",
   "Total Sales",
-  "Price Type",
+  // "Price Type",
   "Transaction ID",
   "Refresh",
 ];
