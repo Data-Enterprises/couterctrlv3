@@ -11,6 +11,8 @@ import {
   setSaleDateFilter,
   setSelectedPriceTypes,
   setTransIdFilter,
+  setTotalQtyFilter,
+  setCashierTableQtyThreshComp,
 } from "../../../features/lossPreventionSlice";
 
 // Modal and filter components
@@ -52,8 +54,8 @@ const FiltersModal = () => {
     }
   };
 
-  const setTotalSales = (value: string) => {
-    if (!isNaN(parseFloat(value))) {
+  const setNumberValue = (value: string) => {
+    if (value === "-" || !isNaN(parseFloat(value))) {
       setThreshold(value);
     }
   };
@@ -69,7 +71,7 @@ const FiltersModal = () => {
   };
 
   const renderFilter = () => {
-    if (filterType !== "Total Sales" && filterType !== "Price Type") {
+    if (filterType !== "Total Sales" && filterType !== "Price Type" && filterType !== "Total Qty") {
       return <TextFilter type={filterType} text={text} setText={setText} />;
     } else if (filterType === "Price Type") {
       return (
@@ -79,11 +81,11 @@ const FiltersModal = () => {
           availablePriceTypes={availablePriceTypes}
         />
       );
-    } else if (filterType === "Total Sales") {
+    } else if (filterType === "Total Sales" || filterType === "Total Qty") {
       return (
         <TotalSalesFilter
           threshold={threshold}
-          setThreshold={setTotalSales}
+          setThreshold={setNumberValue}
           handleSelection={handleSelection}
           threshComp={threshComp}
         />
@@ -108,6 +110,10 @@ const FiltersModal = () => {
       case "Total Sales":
         dispatch(setCashierTableThreshComp(threshComp));
         dispatch(setTotalSalesFilter(parseFloat(threshold)));
+        break;
+      case "Total Qty":
+        dispatch(setCashierTableQtyThreshComp(threshComp));
+        dispatch(setTotalQtyFilter(parseFloat(threshold)));
         break;
       case "Transaction ID":
         dispatch(setTransIdFilter(text));

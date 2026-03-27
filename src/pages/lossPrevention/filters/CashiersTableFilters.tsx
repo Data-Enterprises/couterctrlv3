@@ -1,10 +1,12 @@
 import {
+  setCashierTableQtyThreshComp,
   setCashierTableThreshComp,
   setDescFilter,
   setFilterModalOpen,
   setFilterType,
   setSaleDateFilter,
   setSelectedPriceTypes,
+  setTotalQtyFilter,
   setTotalSalesFilter,
   setTransIdFilter,
   setUpcFilter,
@@ -18,6 +20,7 @@ const filterOptions = [
   // "UPC",
   // "Description",
   "Total Sales",
+  "Total Qty",
   // "Price Type",
   "Transaction ID",
   "Refresh",
@@ -38,6 +41,8 @@ const CashiersTableFilters = () => {
     const priceType = cashier.selectedPriceTypes.length > 0;
     const totalSales = cashier.totalSalesFilter;
     const threshold = cashier.cashierTableThreshComp;
+    const qtyThreshold = cashier.cashierTableQtyThreshComp;
+    const totalQty = cashier.totalQtyFilter;
     const transId = cashier.transIdFilter;
 
     // Declaring the active style and applying it to the matching conditions
@@ -47,12 +52,21 @@ const CashiersTableFilters = () => {
     if (option === "UPC" && upc) result = true;
     if (option === "Description" && desc) result = true;
     if (option === "Price Type" && priceType) result = true;
+
     if (
       option === "Total Sales" &&
       totalSales !== 0 &&
       (threshold.gt || threshold.lt)
     )
       result = true;
+
+    if (
+      option === "Total Qty" &&
+      totalQty !== 0 &&
+      (qtyThreshold.gt || qtyThreshold.lt)
+    )
+      result = true;
+
     if (option === "Transaction ID" && transId) result = true;
     return result ? style : "";
   };
@@ -79,6 +93,16 @@ const CashiersTableFilters = () => {
       return thresh.length > 0
         ? `${thresh} ${formatCurrency2(cashier.totalSalesFilter)}`
         : "Total Sales";
+    }else if (type === "Total Qty") {
+      const thresh = cashier.cashierTableQtyThreshComp.gt
+        ? "Over"
+        : cashier.cashierTableQtyThreshComp.lt
+          ? "Under"
+          : "";
+
+      return thresh.length > 0
+        ? `${thresh} ${cashier.totalQtyFilter}`
+        : "Total Qty";
     } else if (type === "Transaction ID") {
       return cashier.transIdFilter
         ? `${cashier.transIdFilter}`
@@ -91,6 +115,10 @@ const CashiersTableFilters = () => {
   const setFilterModal = (type: string) => {
     if (type === "Refresh") {
       dispatch(setCashierTableThreshComp({ gt: false, lt: false }));
+      dispatch(setCashierTableQtyThreshComp({ gt: false, lt: false }));
+      dispatch(setTotalQtyFilter(0));
+      dispatch(setTotalSalesFilter(0));
+      dispatch(setTransIdFilter(""));
       dispatch(setSaleDateFilter(""));
       dispatch(setFilterType(""));
       dispatch(setUpcFilter(""));

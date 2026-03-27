@@ -19,6 +19,14 @@ export const theme = themeQuartz.withParams({
 
 export const cashierDetailCols: ColDef<CashierDetails>[] = [
   {
+    headerName: "Store Name",
+    field: "store_name",
+    flex: 0.8,
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus",
+  },
+  {
     headerName: "Store",
     field: "store_number",
     flex: 0.6,
@@ -29,7 +37,7 @@ export const cashierDetailCols: ColDef<CashierDetails>[] = [
   {
     headerName: "Trans",
     field: "transaction_count",
-    flex: 0.7,
+    flex: 0.5,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus text-right",

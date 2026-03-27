@@ -31,6 +31,7 @@ export interface LossPreventionState {
   selectedSaleType: string;
   selectedSaleIds: string[];
   cashierSaleIds: string[];
+  cashierTableQtyThreshComp: { gt: boolean; lt: boolean };
   cashierTableThreshComp: { gt: boolean; lt: boolean };
   transModalOpen: boolean;
   filterModalOpen: boolean;
@@ -39,6 +40,7 @@ export interface LossPreventionState {
   upcFilter: string;
   descFilter: string;
   totalSalesFilter: number;
+  totalQtyFilter: number;
   availablePriceTypes: string[];
   selectedPriceTypes: string[];
   fetchingCashierTransactions: boolean;
@@ -67,12 +69,14 @@ const initialState: LossPreventionState = {
   transList: [],
   cashierSaleIds: [],
   cashierTableThreshComp: { gt: false, lt: false },
+  cashierTableQtyThreshComp: { gt: false, lt: false },
   filterModalOpen: false,
   filterType: "",
   saleDateFilter: "",
   upcFilter: "",
   descFilter: "",
   totalSalesFilter: 0,
+  totalQtyFilter: 0,
   availablePriceTypes: [],
   selectedPriceTypes: [],
   fetchingCashierTransactions: false,
@@ -150,6 +154,15 @@ export const lossPreventionSlice = createSlice({
       action: PayloadAction<{ gt: boolean; lt: boolean }>,
     ) => {
       state.cashierTableThreshComp = action.payload;
+    },
+    setTotalQtyFilter: (state, action: PayloadAction<number>) => {
+      state.totalQtyFilter = action.payload;
+    },
+    setCashierTableQtyThreshComp: (
+      state,
+      action: PayloadAction<{ gt: boolean; lt: boolean }>,
+    ) => {
+      state.cashierTableQtyThreshComp = action.payload;
     },
     setFilterModalOpen: (state, action: PayloadAction<boolean>) => {
       state.filterModalOpen = action.payload;
@@ -231,7 +244,10 @@ export const lossPreventionSlice = createSlice({
       state.cashierDetailsTrendDirection = 0;
       state.transOverviews = [];
     },
-    setTransOverviews: (state, action: PayloadAction<TransactionOverview[]>) => {
+    setTransOverviews: (
+      state,
+      action: PayloadAction<TransactionOverview[]>,
+    ) => {
       state.transOverviews = action.payload;
     },
     setCashierDetailsTrendDirection: (state, action: PayloadAction<number>) => {
@@ -277,5 +293,7 @@ export const {
   setTransOverviews,
   setSelectedCashierDetails,
   setCashierDetailsTrendDirection,
+  setCashierTableQtyThreshComp,
+  setTotalQtyFilter,
 } = lossPreventionSlice.actions;
 export default lossPreventionSlice.reducer;

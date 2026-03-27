@@ -59,8 +59,6 @@ const CashiersTable = () => {
   const cashier = useAppSelector((state) => state.lossPrevention);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
 
-  console.log(filtered);
-
   useEffect(() => {
     const selectedCashier = cashier.selectedCashier.cashier_number;
     const saleDate = cashier.saleDateFilter;
@@ -70,6 +68,8 @@ const CashiersTable = () => {
     const totalSales = cashier.totalSalesFilter;
     const threshold = cashier.cashierTableThreshComp;
     const transId = cashier.transIdFilter.toLowerCase();
+    const qtyThreshold = cashier.cashierTableQtyThreshComp;
+    const totalQty = cashier.totalQtyFilter;
 
     if (
       !selectedCashier &&
@@ -80,7 +80,10 @@ const CashiersTable = () => {
       totalSales === 0 &&
       !threshold.gt &&
       !threshold.lt &&
-      !transId
+      !transId &&
+      !qtyThreshold.gt &&
+      !qtyThreshold.lt &&
+      totalQty === 0
     ) {
       // No filters applied, show all data
       const reducedSaleIds = reduceSaleIds(cashier.transOverviews);
@@ -92,10 +95,10 @@ const CashiersTable = () => {
       return;
     }
 
-    const currentFiltered = (type: "items" | "transactions") => {
-      const data =
-        type === "items" ? cashier.transList : cashier.transOverviews;
-      const result = data.filter((item) => {
+    const currentFiltered = () => {
+      // const data =
+      //   type === "items" ? cashier.transList : cashier.transOverviews;
+      const result = cashier.transOverviews.filter((item) => {
         const matchCashier = selectedCashier
           ? item.cashier_number === selectedCashier
           : true;
@@ -118,6 +121,16 @@ const CashiersTable = () => {
           }
         };
 
+        const matchesTotalQty = () => {
+          if (totalQty === 0 || (!qtyThreshold.gt && !qtyThreshold.lt))
+            return true;
+          if (qtyThreshold.gt) {
+            return item.qty! > totalQty;
+          } else if (qtyThreshold.lt) {
+            return item.qty! < totalQty;
+          }
+        };
+
         // const saleSplit = item.sale_id.split("-")[1];
         const matchesTransId =
           item.transaction_id !== null
@@ -132,6 +145,7 @@ const CashiersTable = () => {
           // matchesDesc &&
           // matchesPriceType &&
           matchesTotalSales() &&
+          matchesTotalQty() &&
           matchesTransId
         );
       });
@@ -139,9 +153,14 @@ const CashiersTable = () => {
     };
 
     // Updating available price types and sale IDs based on the new filtered data
-    const newFilteredTransactions = currentFiltered("transactions");
-    const newFilteredItems = currentFiltered("items");
+    const newFilteredTransactions = currentFiltered();
+
+    const transIds = newFilteredTransactions.map((item) => item.transaction_id);
+    const newFilteredItems = [...cashier.transList].filter((item) =>
+      transIds.includes(item.transaction_id),
+    );
     setFiltered(newFilteredItems as TransactionListItem[]);
+    
     const reducedSaleIds = reduceSaleIds(
       newFilteredTransactions as TransactionOverview[],
     );
@@ -158,6 +177,7 @@ const CashiersTable = () => {
     cashier.selectedPriceTypes,
     cashier.totalSalesFilter,
     cashier.transIdFilter,
+    cashier.totalQtyFilter,
   ]);
 
   const onCellClicked = (e: CellClickedEvent) => {

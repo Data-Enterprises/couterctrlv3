@@ -52,7 +52,7 @@ const Transaction = ({ trans }: TransactionProps) => {
       trans,
       [
         { headerName: "Sale Date", field: "sale_date" },
-        { headerName: "Terminal", field: "terminal" },
+        { headerName: "Register", field: "terminal" },
         { headerName: "Transaction ID", field: "transaction_id" },
         { headerName: "Product Code", field: "product_code" },
         { headerName: "Product Description", field: "product_description" },
