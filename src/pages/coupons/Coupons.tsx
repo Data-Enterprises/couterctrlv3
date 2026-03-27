@@ -106,7 +106,7 @@ const Coupons = () => {
         </div>
 
         {showGrid && (
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-[calc(100vh-5rem)] ">
             <CouponKpis />
             <CouponsGrid />
           </div>
