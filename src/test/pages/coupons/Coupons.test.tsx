@@ -22,7 +22,7 @@ import { getCouponsResp, getTransResp } from ".";
 
 const store = setupStore();
 const user = userEvent.setup();
-vi.mock("../../../api/cashiers");
+vi.mock("../../../api/lossPrevention");
 vi.mock("../../../api/coupons");
 store.dispatch(setToken("fake-token"));
 store.dispatch(setLastGroup(1));
@@ -334,7 +334,7 @@ describe("Coupons Page", () => {
     await user.click(rows[1]);
 
     await waitFor(() => {
-      const state = store.getState().cashier;
+      const state = store.getState().lossPrevention;
       expect(state.transactionDrillDown.length).toBe(0);
     });
   });
@@ -347,7 +347,7 @@ describe("Coupons Page", () => {
     await user.click(rows[1]);
 
     await waitFor(() => {
-      const state = store.getState().cashier;
+      const state = store.getState().lossPrevention;
       expect(state.transactionDrillDown.length).toBeGreaterThan(0);
     });
     expect(await screen.findByTestId("modal")).toBeInTheDocument();

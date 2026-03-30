@@ -1,8 +1,6 @@
 import type {
   ForecastExport,
   ForecastMetrics,
-  UpcForecast,
-  Forecast,
   Handlers,
 } from "../../interfaces";
 
@@ -84,48 +82,6 @@ export const colorCodes = [
   "#f97316", // orange-500
   "#fdba74", // orange-300
 ];
-
-export const convertData = (
-  id: string,
-  data: { date: string; value: number }[],
-  idx: number,
-  type = "history",
-  results: any,
-): Forecast => {
-  const newData = {
-    id: `${id} - ${type}`,
-    data: data
-      .map((item) => ({
-        x: item.date.split("/").splice(0, 2).join("/"),
-        y: item.value,
-      }))
-      .slice(-7),
-    color: colorCodes[idx % colorCodes.length],
-  };
-
-  if (type === "forecast") {
-    // Find the last date in the history data for that upc and shift the forecast dates accordingly => attaches both history and forecast on the chart
-    const historyEntry = Object.entries(results)
-      .map(([k, v]) => [k, structuredClone(v as UpcForecast).history])
-      .find(([k]) => k === id);
-
-    if (historyEntry) {
-      const historyDates = historyEntry[1] as {
-        date: string;
-        value: number;
-      }[];
-      const lastHistoryDate = historyDates[historyDates.length - 1] as {
-        date: string;
-        value: number;
-      };
-      newData.data.unshift({
-        x: lastHistoryDate.date.split("/").splice(0, 2).join("/"),
-        y: lastHistoryDate.value,
-      });
-    }
-  }
-  return newData;
-};
 
 export type ContextEvent = React.MouseEvent<
   HTMLTableRowElement | HTMLDivElement

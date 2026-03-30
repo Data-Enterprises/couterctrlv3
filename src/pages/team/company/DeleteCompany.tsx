@@ -53,10 +53,11 @@ const DeleteCompany = () => {
         </div>
 
         <div className="mt-2 grid grid-cols-2 gap-2">
-          <button className="btn-themeGreen" onClick={handleSubmit}>
+          <button data-testid="delete-company-submit-btn" className="btn-themeGreen" onClick={handleSubmit}>
             Yes
           </button>
           <button
+            data-testid="delete-company-reset-stepone-btn"
             className="btn-themeOrange"
             onClick={() => setIsDeleting(false)}
           >
@@ -72,7 +73,7 @@ const DeleteCompany = () => {
   );
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg p-4 w-[25vw]">
+    <div data-testid="delete-company-form-container" className="bg-custom-white rounded-lg shadow-lg p-4 w-[25vw]">
       <div className="text-sm">
         <div className="font-medium">Select company to delete</div>
         <div className="select-none grid rounded-lg p-1 min-h-20 max-h-32 overflow-hidden overflow-y-auto">

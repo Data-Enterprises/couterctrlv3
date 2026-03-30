@@ -73,7 +73,7 @@ const CreateBaseGroup = () => {
   };
 
   return (
-    <div className="bg-custom-white p-4 rounded-lg shadow-lg">
+    <div data-testid="create-bg-form-container" className="bg-custom-white p-4 rounded-lg shadow-lg">
       <SingleSelect
         label="Select Company"
         data={companies}
@@ -102,7 +102,7 @@ const CreateBaseGroup = () => {
       {showForm && (
         <div className="space-y-2">
           {showWarning ? (
-            <div className="font-medium text-sm text-orange-500 text-center">
+            <div data-testid="create-bg-warning-div" className="font-medium text-sm text-orange-500 text-center">
               Group name already exists
             </div>
           ) : null}
@@ -112,6 +112,7 @@ const CreateBaseGroup = () => {
             setValue={handleGroupName}
           />
           <button
+            data-testid="create-bg-submit-btn"
             className={`btn-themeBlue w-full ${!canSubmit() && "opacity-50 pointer-events-none"}`}
             onClick={handleSubmit}
           >

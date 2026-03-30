@@ -197,7 +197,7 @@ const Team = () => {
           {selectedForm !== 3 && (
             <div className="w-[45%]">
               <div
-                data-testId="ctrl-store-assign"
+                data-testid="ctrl-store-assign"
                 className={`grid grid-cols-2 gap-4 h-[65vh] ${selectedUserStores.unassigned.length || selectedUserStores.assigned.length ? "" : "hidden"}`}
               >
                 <Unassigned />

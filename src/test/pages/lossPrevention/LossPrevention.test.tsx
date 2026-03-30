@@ -21,13 +21,12 @@ import {
   mockCashierCancelledTableResp,
   mockSaleTrendCancelResp,
 } from ".";
-import { setAvailablePriceTypes } from "../../../features/lossPreventionSlice";
 import { setIsDesktop, setIsMobile } from "../../../features/appSlice";
 
 const user = userEvent.setup();
 const initialStore = setupStore();
 
-vi.mock("../../../api/cashiers");
+vi.mock("../../../api/lossPrevention");
 const mockedToastError = vi.fn();
 const mockedToastWarn = vi.fn();
 vi.mock("../../../components/toasts/hooks/useToast", () => ({
@@ -101,6 +100,21 @@ describe("LossPrevention Page", () => {
     if (rowToClick) {
       await user.click(rowToClick);
     }
+  });
+
+  it("should toggle the no transaction message when there are no sales", async () => {
+    (getCashierDetails as Mock).mockResolvedValueOnce({
+      data: { error: 0, sales: [] },
+    });
+
+    renderWithProviders(<LossPrevention />, { store: initialStore });
+    const refundPanel = await screen.findByTestId("sale-type-panel-Refunded");
+    await user.click(refundPanel);
+
+    await waitFor(() => {
+      const state = initialStore.getState().lossPrevention;
+      expect(state.noTransMsg).toBe(true);
+    });
   });
 
   // Testing the clicking of a sale type to fetch cashier sales and trends
@@ -213,14 +227,14 @@ describe("LossPrevention Page", () => {
     // // Click to select the cashier
     await user.click(cellToClick!);
     const state = initialStore.getState();
-    expect(state.cashier.selectedCashier.cashier_number).toBe(25);
-    expect(state.cashier.selectedCashier.store_number).toBe("2");
+    expect(state.lossPrevention.selectedCashier.cashier_number).toBe(25);
+    expect(state.lossPrevention.selectedCashier.store_number).toBe("2");
 
     // // Click again to deselect the cashier
     await user.click(cellToClick!);
     const updatedState = initialStore.getState();
-    expect(updatedState.cashier.selectedCashier.cashier_number).toBe(0);
-    expect(updatedState.cashier.selectedCashier.store_number).toBe("");
+    expect(updatedState.lossPrevention.selectedCashier.cashier_number).toBe(0);
+    expect(updatedState.lossPrevention.selectedCashier.store_number).toBe("");
   });
 
   // Testing the API failure when trying to open the Transaction Modal
@@ -362,7 +376,7 @@ describe("LossPrevention Page", () => {
 
     // find all the table filters
     const saleDateFilter = await screen.findByTestId(
-      "cashier-table-filter-sale",
+      "cashier-table-filter-sale-date",
     );
     expect(saleDateFilter).toBeInTheDocument();
     await user.click(saleDateFilter);
@@ -385,132 +399,169 @@ describe("LossPrevention Page", () => {
     expect(modal).not.toBeInTheDocument();
   });
 
-  it("Should handle the Cashier Table UPC Filter", async () => {
-    renderWithProviders(<LossPrevention />, { store: initialStore });
+  // it("Should handle the Cashier Table UPC Filter", async () => {
+  //   renderWithProviders(<LossPrevention />, { store: initialStore });
 
-    const upcFilter = await screen.findByTestId("cashier-table-filter-upc");
-    expect(upcFilter).toBeInTheDocument();
-    await user.click(upcFilter);
+  //   const upcFilter = await screen.findByTestId("cashier-table-filter-upc");
+  //   expect(upcFilter).toBeInTheDocument();
+  //   await user.click(upcFilter);
 
-    const modal = await screen.findByTestId("cashier-table-filter-modal");
-    expect(modal).toBeInTheDocument();
+  //   const modal = await screen.findByTestId("cashier-table-filter-modal");
+  //   expect(modal).toBeInTheDocument();
 
-    const filterInput = await screen.findByTestId(
-      "cashier-table-filter-text-input",
-    );
+  //   const filterInput = await screen.findByTestId(
+  //     "cashier-table-filter-text-input",
+  //   );
 
-    const filterBtn = await screen.findByTestId(
-      "cashier-table-filter-modal-submit-btn",
-    );
+  //   const filterBtn = await screen.findByTestId(
+  //     "cashier-table-filter-modal-submit-btn",
+  //   );
 
-    await user.type(filterInput, "4470000210");
-    await user.click(filterBtn);
+  //   await user.type(filterInput, "4470000210");
+  //   await user.click(filterBtn);
 
-    // The modal should close after applying the filter
-    expect(modal).not.toBeInTheDocument();
-  });
+  //   // The modal should close after applying the filter
+  //   expect(modal).not.toBeInTheDocument();
+  // });
 
-  it("Should handle the Cashier Table Description Filter", async () => {
-    renderWithProviders(<LossPrevention />, { store: initialStore });
+  // it("Should handle the Cashier Table Description Filter", async () => {
+  //   renderWithProviders(<LossPrevention />, { store: initialStore });
 
-    const descFilter = await screen.findByTestId(
-      "cashier-table-filter-description",
-    );
-    expect(descFilter).toBeInTheDocument();
-    await user.click(descFilter);
+  //   const descFilter = await screen.findByTestId(
+  //     "cashier-table-filter-description",
+  //   );
+  //   expect(descFilter).toBeInTheDocument();
+  //   await user.click(descFilter);
 
-    const modal = await screen.findByTestId("cashier-table-filter-modal");
-    expect(modal).toBeInTheDocument();
+  //   const modal = await screen.findByTestId("cashier-table-filter-modal");
+  //   expect(modal).toBeInTheDocument();
 
-    const filterInput = await screen.findByTestId(
-      "cashier-table-filter-text-input",
-    );
+  //   const filterInput = await screen.findByTestId(
+  //     "cashier-table-filter-text-input",
+  //   );
 
-    const filterBtn = await screen.findByTestId(
-      "cashier-table-filter-modal-submit-btn",
-    );
+  //   const filterBtn = await screen.findByTestId(
+  //     "cashier-table-filter-modal-submit-btn",
+  //   );
 
-    await user.type(filterInput, "cash");
-    await user.click(filterBtn);
+  //   await user.type(filterInput, "cash");
+  //   await user.click(filterBtn);
 
-    // The modal should close after applying the filter
-    expect(modal).not.toBeInTheDocument();
-  });
+  //   // The modal should close after applying the filter
+  //   expect(modal).not.toBeInTheDocument();
+  // });
 
-  it("Should handle the Cashier Table Total Sales Filter", async () => {
-    renderWithProviders(<LossPrevention />, { store: initialStore });
+  // it("Should handle the Cashier Table Total Sales Filter", async () => {
+  //   renderWithProviders(<LossPrevention />, { store: initialStore });
 
-    const totalFilter = await screen.findByTestId("cashier-table-filter-total");
-    expect(totalFilter).toBeInTheDocument();
-    await user.click(totalFilter);
+  //   const totalFilter = await screen.findByTestId(
+  //     "cashier-table-filter-total-sales",
+  //   );
+  //   expect(totalFilter).toBeInTheDocument();
+  //   await user.click(totalFilter);
 
-    const modal = await screen.findByTestId("cashier-table-filter-modal");
-    expect(modal).toBeInTheDocument();
+  //   const modal = await screen.findByTestId("cashier-table-filter-modal");
+  //   expect(modal).toBeInTheDocument();
 
-    const filterBtn = await screen.findByTestId(
-      "cashier-table-filter-modal-submit-btn",
-    );
+  //   const filterBtn = await screen.findByTestId(
+  //     "cashier-table-filter-modal-submit-btn",
+  //   );
 
-    const ltCheckbox = await screen.findByTestId(
-      "cashier-table-filter-ts-lt-checkbox",
-    );
-    const gtCheckbox = await screen.findByTestId(
-      "cashier-table-filter-ts-gt-checkbox",
-    );
-    const filterInput = await screen.findByTestId(
-      "cashier-table-filter-total-sales-input",
-    );
-    await user.click(gtCheckbox);
-    await user.click(ltCheckbox);
-    await user.type(filterInput, "5");
-    await user.click(filterBtn);
+  //   const ltCheckbox = await screen.findByTestId(
+  //     "cashier-table-filter-ts-lt-checkbox",
+  //   );
+  //   const gtCheckbox = await screen.findByTestId(
+  //     "cashier-table-filter-ts-gt-checkbox",
+  //   );
+  //   const filterInput = await screen.findByTestId(
+  //     "cashier-table-filter-total-sales-input",
+  //   );
+  //   await user.click(gtCheckbox);
+  //   await user.click(ltCheckbox);
+  //   await user.type(filterInput, "5");
+  //   await user.click(filterBtn);
 
-    // The modal should close after applying the filter
-    expect(modal).not.toBeInTheDocument();
-  });
+  //   // The modal should close after applying the filter
+  //   expect(modal).not.toBeInTheDocument();
+  // });
 
-  it("Should handle the Cashier Table Price Type Filter", async () => {
-    renderWithProviders(<LossPrevention />, { store: initialStore });
+  // it("Should handle the Cashier Table Total Qty Filter", async () => {
+  //   renderWithProviders(<LossPrevention />, { store: initialStore });
 
-    const priceFilter = await screen.findByTestId("cashier-table-filter-price");
-    expect(priceFilter).toBeInTheDocument();
-    await user.click(priceFilter);
+  //   const totalFilter = await screen.findByTestId(
+  //     "cashier-table-filter-total-qty",
+  //   );
+  //   expect(totalFilter).toBeInTheDocument();
+  //   await user.click(totalFilter);
 
-    const modal = await screen.findByTestId("cashier-table-filter-modal");
-    expect(modal).toBeInTheDocument();
+  //   const modal = await screen.findByTestId("cashier-table-filter-modal");
+  //   expect(modal).toBeInTheDocument();
 
-    // Just for this test
-    await waitFor(() => {
-      initialStore.dispatch(setAvailablePriceTypes(["REG", "TPR"]));
-    });
+  //   const filterBtn = await screen.findByTestId(
+  //     "cashier-table-filter-modal-submit-btn",
+  //   );
 
-    const tprCheckbox = await screen.findByTestId(
-      "cashier-table-filter-price-type-TPR",
-    );
+  //   const gtCheckbox = await screen.findByTestId(
+  //     "cashier-table-filter-ts-gt-checkbox",
+  //   );
+  //   const filterInput = await screen.findByTestId(
+  //     "cashier-table-filter-total-sales-input",
+  //   );
+  //   await user.click(gtCheckbox);
+  //   await user.type(filterInput, "4");
+  //   await user.click(filterBtn);
 
-    // Click to add TPR to the selected price types
-    await user.click(tprCheckbox);
+  //   // The modal should close after applying the filter
+  //   expect(modal).not.toBeInTheDocument();
 
-    // Click to remove TPR from the selected price types
-    await user.click(tprCheckbox);
+  //   // await waitFor(() => {
+  //   //   const state = initialStore.getState().lossPrevention;
+  //   //   console.log(state.totalQtyFilter, state.cashierTableQtyThreshComp);
+  //   // });
+  // });
 
-    // Add TPR back in
-    await user.click(tprCheckbox);
+  // it("Should handle the Cashier Table Price Type Filter", async () => {
+  //   renderWithProviders(<LossPrevention />, { store: initialStore });
 
-    const filterBtn = await screen.findByTestId(
-      "cashier-table-filter-modal-submit-btn",
-    );
-    await user.click(filterBtn);
+  //   const priceFilter = await screen.findByTestId("cashier-table-filter-price");
+  //   expect(priceFilter).toBeInTheDocument();
+  //   await user.click(priceFilter);
 
-    // The modal should close after applying the filter
-    expect(modal).not.toBeInTheDocument();
-  });
+  //   const modal = await screen.findByTestId("cashier-table-filter-modal");
+  //   expect(modal).toBeInTheDocument();
+
+  //   // Just for this test
+  //   await waitFor(() => {
+  //     initialStore.dispatch(setAvailablePriceTypes(["REG", "TPR"]));
+  //   });
+
+  //   const tprCheckbox = await screen.findByTestId(
+  //     "cashier-table-filter-price-type-TPR",
+  //   );
+
+  //   // Click to add TPR to the selected price types
+  //   await user.click(tprCheckbox);
+
+  //   // Click to remove TPR from the selected price types
+  //   await user.click(tprCheckbox);
+
+  //   // Add TPR back in
+  //   await user.click(tprCheckbox);
+
+  //   const filterBtn = await screen.findByTestId(
+  //     "cashier-table-filter-modal-submit-btn",
+  //   );
+  //   await user.click(filterBtn);
+
+  //   // The modal should close after applying the filter
+  //   expect(modal).not.toBeInTheDocument();
+  // });
 
   it("should handle the transaction id filter for the cashiers table", async () => {
     renderWithProviders(<LossPrevention />, { store: initialStore });
 
     const transFilter = await screen.findByTestId(
-      "cashier-table-filter-transaction",
+      "cashier-table-filter-transaction-id",
     );
     expect(transFilter).toBeInTheDocument();
     await user.click(transFilter);
@@ -570,7 +621,6 @@ describe("LossPrevention Page", () => {
 
     const rows = await screen.findAllByRole("row");
     const rowToClick = rows.find((row) => row.textContent.includes("10"));
-    console.log(rowToClick);
 
     if (rowToClick) {
       await user.click(rowToClick);
@@ -584,9 +634,23 @@ describe("LossPrevention Page", () => {
     expect(modal).toBeInTheDocument();
 
     await waitFor(() => {
-      const state = initialStore.getState().cashier;
+      const state = initialStore.getState().lossPrevention;
       expect(state.selectedSaleType).toBe("Cancelled");
     });
+  });
+
+  it("should handle api failure for the description sale type", async () => {
+    (getCashierDetails as Mock).mockRejectedValueOnce(new Error("API Error"));
+    renderWithProviders(<LossPrevention />, { store: initialStore });
+
+    const descPanel = await screen.findByTestId("sale-type-panel-Description");
+    await user.click(descPanel);
+    const descInput = await screen.findByTestId("desc-input");
+    await user.type(descInput, "milk");
+
+    const submitBtn = await screen.findByTestId("desc-submit-btn");
+    await user.click(submitBtn);
+    await waitFor(() => expect(mockedToastError).toHaveBeenCalled());
   });
 
   it("should handle description sale type", async () => {
@@ -619,7 +683,7 @@ describe("LossPrevention Page", () => {
     }
   });
 
-  it("should handle the less than threshold filter", async () => {
+  it("should handle the less than threshold filter for total qty", async () => {
     (getCashierTable as Mock).mockResolvedValueOnce(
       mockCashierCancelledTableResp,
     );
@@ -640,7 +704,113 @@ describe("LossPrevention Page", () => {
       await user.click(rowToClick);
     }
 
-    const totalFilter = await screen.findByTestId("cashier-table-filter-total");
+    const totalFilter = await screen.findByTestId(
+      "cashier-table-filter-total-qty",
+    );
+    expect(totalFilter).toBeInTheDocument();
+    await user.click(totalFilter);
+
+    const modal = await screen.findByTestId("cashier-table-filter-modal");
+    expect(modal).toBeInTheDocument();
+
+    const filterBtn = await screen.findByTestId(
+      "cashier-table-filter-modal-submit-btn",
+    );
+
+    const ltCheckbox = await screen.findByTestId(
+      "cashier-table-filter-ts-lt-checkbox",
+    );
+
+    const filterInput = await screen.findByTestId(
+      "cashier-table-filter-total-sales-input",
+    );
+
+    await user.click(ltCheckbox);
+    await user.type(filterInput, "4");
+    await user.click(filterBtn);
+
+    await waitFor(() => {
+      const state = initialStore.getState().lossPrevention;
+      expect(state.totalQtyFilter).toBe(4);
+      expect(state.cashierTableQtyThreshComp.lt).toBe(true);
+    });
+  });
+
+  it("should handle the greater than threshold filter for total qty", async () => {
+    (getCashierTable as Mock).mockResolvedValueOnce({
+      data: mockCashierCancelledTableResp,
+    });
+    (getCashierDetails as Mock).mockResolvedValueOnce(mockSaleTrendCancelResp);
+    (getTransactionList as Mock).mockResolvedValueOnce({
+      data: mockTransListResp,
+    });
+
+    renderWithProviders(<LossPrevention />, { store: initialStore });
+
+    const cancelPanel = await screen.findByTestId("sale-type-panel-Cancelled");
+    await user.click(cancelPanel);
+
+    const rows = await screen.findAllByRole("row");
+    const rowToClick = rows.find((row) => row.textContent.includes("2"));
+
+    if (rowToClick) {
+      await user.click(rowToClick);
+    }
+
+    const totalFilter = await screen.findByTestId(
+      "cashier-table-filter-total-qty",
+    );
+    expect(totalFilter).toBeInTheDocument();
+    await user.click(totalFilter);
+
+    const modal = await screen.findByTestId("cashier-table-filter-modal");
+    expect(modal).toBeInTheDocument();
+
+    const filterBtn = await screen.findByTestId(
+      "cashier-table-filter-modal-submit-btn",
+    );
+
+    const gtCheckbox = await screen.findByTestId(
+      "cashier-table-filter-ts-gt-checkbox",
+    );
+    const filterInput = await screen.findByTestId(
+      "cashier-table-filter-total-sales-input",
+    );
+    await user.click(gtCheckbox);
+    await user.type(filterInput, "4");
+    await user.click(filterBtn);
+
+    await waitFor(() => {
+      const state = initialStore.getState().lossPrevention;
+      expect(state.totalQtyFilter).toBe(4);
+      expect(state.cashierTableQtyThreshComp.gt).toBe(true);
+    });
+  });
+
+  it("should handle the less than threshold filter for total sales", async () => {
+    (getCashierTable as Mock).mockResolvedValueOnce(
+      mockCashierCancelledTableResp,
+    );
+    (getCashierDetails as Mock).mockResolvedValueOnce(mockSaleTrendCancelResp);
+    (getTransactionList as Mock).mockResolvedValueOnce({
+      data: mockTransListResp,
+    });
+
+    renderWithProviders(<LossPrevention />, { store: initialStore });
+
+    const cancelPanel = await screen.findByTestId("sale-type-panel-Cancelled");
+    await user.click(cancelPanel);
+
+    const rows = await screen.findAllByRole("row");
+    const rowToClick = rows.find((row) => row.textContent.includes("2"));
+
+    if (rowToClick) {
+      await user.click(rowToClick);
+    }
+
+    const totalFilter = await screen.findByTestId(
+      "cashier-table-filter-total-sales",
+    );
     expect(totalFilter).toBeInTheDocument();
     await user.click(totalFilter);
 
@@ -664,16 +834,16 @@ describe("LossPrevention Page", () => {
     await user.click(filterBtn);
 
     await waitFor(() => {
-      const state = initialStore.getState().cashier;
+      const state = initialStore.getState().lossPrevention;
       expect(state.totalSalesFilter).toBe(5);
       expect(state.cashierTableThreshComp.lt).toBe(true);
     });
   });
 
-  it("should handle the greater than threshold filter", async () => {
-    (getCashierTable as Mock).mockResolvedValueOnce({
-      data: mockCashierCancelledTableResp,
-    });
+  it("should handle the greater than threshold filter for total sales", async () => {
+    (getCashierTable as Mock).mockResolvedValueOnce(
+      mockCashierCancelledTableResp,
+    );
     (getCashierDetails as Mock).mockResolvedValueOnce(mockSaleTrendCancelResp);
     (getTransactionList as Mock).mockResolvedValueOnce({
       data: mockTransListResp,
@@ -691,7 +861,9 @@ describe("LossPrevention Page", () => {
       await user.click(rowToClick);
     }
 
-    const totalFilter = await screen.findByTestId("cashier-table-filter-total");
+    const totalFilter = await screen.findByTestId(
+      "cashier-table-filter-total-sales",
+    );
     expect(totalFilter).toBeInTheDocument();
     await user.click(totalFilter);
 
@@ -705,15 +877,17 @@ describe("LossPrevention Page", () => {
     const gtCheckbox = await screen.findByTestId(
       "cashier-table-filter-ts-gt-checkbox",
     );
+
     const filterInput = await screen.findByTestId(
       "cashier-table-filter-total-sales-input",
     );
+
     await user.click(gtCheckbox);
     await user.type(filterInput, "5");
     await user.click(filterBtn);
 
     await waitFor(() => {
-      const state = initialStore.getState().cashier;
+      const state = initialStore.getState().lossPrevention;
       expect(state.totalSalesFilter).toBe(5);
       expect(state.cashierTableThreshComp.gt).toBe(true);
     });

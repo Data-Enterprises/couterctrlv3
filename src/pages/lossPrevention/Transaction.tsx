@@ -51,10 +51,14 @@ const Transaction = ({ trans }: TransactionProps) => {
     exportData<TransactionListItem>(
       trans,
       [
+        { headerName: "Sale Date", field: "sale_date" },
+        { headerName: "Register", field: "terminal" },
+        { headerName: "Transaction ID", field: "transaction_id" },
         { headerName: "Product Code", field: "product_code" },
         { headerName: "Product Description", field: "product_description" },
         { headerName: "Sale Start Time", field: "sale_start_time" },
         { headerName: "Sale End Time", field: "sale_end_time" },
+        { headerName: "Quantity", field: "qty" },
         { headerName: "Net Sales", field: "net_sales" },
         { headerName: "Sale Type", field: "sale_type" },
       ],

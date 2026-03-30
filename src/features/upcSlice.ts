@@ -9,6 +9,7 @@ import type {
   UpcTrend,
   ForecastExport,
   ForecastMetrics,
+  UpcForecastData,
 } from "../interfaces";
 
 export interface ItemAssociate {
@@ -34,6 +35,7 @@ interface UpcState {
   salesComp: UpcSalesComp[];
   selectedCompOne: UpcSalesComp | null;
   selectedCompTwo: UpcSalesComp | null;
+  forecastQtyData: UpcForecastData[];
   forecast: Forecast[];
   forecastHistory: Forecast[];
   forecastExport: ForecastExport[];
@@ -74,6 +76,7 @@ const initialState: UpcState = {
   selectedUpcs: [],
   selectedCompOne: null,
   selectedCompTwo: null,
+  forecastQtyData: [],
   forecast: [],
   forecastHistory: [],
   forecastExport: [],
@@ -141,6 +144,10 @@ export const upcSlice = createSlice({
         state.selectedUpcs = state.selectedUpcs.filter(
           (u) => u !== action.payload,
         );
+        if (state.selectedOptItem.product_code === action.payload) {
+          state.selectedOptItem = {} as UpcPriceOpt;
+          state.optDisplayMode = "multiRow";
+        }
       } else {
         state.selectedUpcs.push(action.payload);
       }
@@ -251,6 +258,9 @@ export const upcSlice = createSlice({
     setReQueryAssociations: (state, action: PayloadAction<boolean>) => {
       state.reQueryAssociations = action.payload;
     },
+    setForecastQtyData: (state, action: PayloadAction<UpcForecastData[]>) => {
+      state.forecastQtyData = action.payload;
+    },
     resetSelectedUpcs: (state) => {
       state.selectedUpcs = [];
       state.selectedCompOne = null;
@@ -288,6 +298,7 @@ export const upcSlice = createSlice({
       state.forecastMetricExport = [];
       state.uploadedUpcs = [];
       state.fileName = "";
+      state.forecastQtyData = [];
     },
     resetUpcState: () => initialState,
   },
@@ -337,5 +348,6 @@ export const {
   setAllSelectedUpcParam,
   setSingleAssocitions,
   resetUpcState,
+  setForecastQtyData,
 } = upcSlice.actions;
 export default upcSlice.reducer;

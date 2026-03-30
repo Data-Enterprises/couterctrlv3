@@ -80,6 +80,7 @@ const HourlyGrid = () => {
         hour: d.hour,
         total_sales: d.total_sales - d.total_tax,
         date: formatDate(d.sale_date),
+        full_date: d.sale_date,
       }));
 
     setBarData(hourFiltered);
@@ -133,7 +134,7 @@ const HourlyGrid = () => {
         </div>
         <span className="text-right text-sm md:text-[16px]">Hour: {hour}</span>
       </div>
-      <div className="h-[93%] grid grid-cols-2 gap-2 md:gap-0 md:grid-cols-[40%_59%] mt-1 md:mt-0">
+      <div className="h-[93%] grid grid-cols-2 gap-2 md:gap-0 md:grid-cols-[45%_54%] mt-1 md:mt-0">
         <div className="grid md:grid-cols-2 gap-2 max-h-[200px] md:max-h-[290px] rounded-lg overflow-y-scroll mx-1 md:mx-2 no-scrollbar">
           {rowData.map((r) => (
             <div
@@ -163,7 +164,7 @@ const HourlyGrid = () => {
           {!isMobile ? (
             <ResponsiveBar
               data={barData}
-              margin={{ top: 10, right: 0, bottom: 25, left: 50 }}
+              margin={{ top: 10, right: 0, bottom: 32, left: 50 }}
               keys={["total_sales"]}
               indexBy={barIndex}
               tooltip={({ value }) => (
@@ -179,6 +180,42 @@ const HourlyGrid = () => {
               borderColor={(d) =>
                 rgbaColor(findBarColor(d.data.data.total_sales), 1)
               }
+              axisBottom={{
+                renderTick: ({ x, y, textX, textY, value }) => {
+                  // I set the full_date property on barData so I can process the DOW here
+                  const fullDate = barData.filter((d) => d.date === value)[0]
+                    .full_date;
+                  const dow = new Date(fullDate).toDateString().split(" ")[0];
+                  return (
+                    <g transform={`translate(${x},${y + 4})`}>
+                      <line
+                        x1={0}
+                        y1={-4}
+                        x2={0}
+                        y2={1.5}
+                        stroke="black"
+                        strokeWidth={0.5}
+                      />
+                      <text
+                        textAnchor={"middle"}
+                        transform={`translate(${textX},${textY + 2})`}
+                        style={{
+                          fontSize: 10.5,
+                          fontWeight: "bolder",
+                          fontFamily: "Arial",
+                        }}
+                      >
+                        <tspan x={0} dy={0}>
+                          {dow}
+                        </tspan>
+                        <tspan x={0} dy={12}>
+                          {value}
+                        </tspan>
+                      </text>
+                    </g>
+                  );
+                },
+              }}
             />
           ) : (
             <div className="grid gap-2 min-h[200px] max-h-[200px] overflow-y-scroll no-scrollbar mr-1">

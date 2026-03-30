@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { colDefs, theme, reducePriceTypes, reduceSaleIds } from ".";
+import {
+  theme,
+  formatDate,
+  chunkSales,
+  reduceCashiers,
+  reduceTransactions,
+} from ".";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import {
   getCashierTable,
@@ -8,9 +14,7 @@ import {
   getTransactionList,
 } from "../../api/lossPrevention";
 import {
-  setAvailablePriceTypes,
   setCashiers,
-  setCashierSaleIds,
   setCashierTransactions,
   setCurrentGridPage,
   setFetchingCashierTransactions,
@@ -19,11 +23,12 @@ import {
   setTransactionDrillDown,
   setTransList,
   setTransModalOpen,
+  setTransOverviews,
 } from "../../features/lossPreventionSlice";
 import type {
   JsonError,
   TransactionListItem,
-  UniqueCashier,
+  TransactionOverview,
 } from "../../interfaces";
 
 import { AgGridReact } from "ag-grid-react";
@@ -31,8 +36,14 @@ import {
   AllCommunityModule,
   ModuleRegistry,
   type CellClickedEvent,
+  type ColDef,
+  type ColGroupDef,
 } from "ag-grid-community";
-import { formatDate, formatGoliathDate } from "../../utils";
+import {
+  formatBigNumber,
+  formatCurrency2,
+  formatGoliathDate,
+} from "../../utils";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 import ExportModal from "./export/ExportModal";
@@ -43,6 +54,9 @@ const CashiersTable = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const [filtered, setFiltered] = useState<TransactionListItem[]>([]);
+  const [filteredOverviews, setFilteredOverviews] = useState<
+    TransactionOverview[]
+  >([]);
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
   const cashier = useAppSelector((state) => state.lossPrevention);
@@ -51,71 +65,66 @@ const CashiersTable = () => {
   useEffect(() => {
     const selectedCashier = cashier.selectedCashier.cashier_number;
     const saleDate = cashier.saleDateFilter;
-    const upc = cashier.upcFilter.toLowerCase();
-    const desc = cashier.descFilter.toLowerCase();
-    const priceTypes = cashier.selectedPriceTypes;
     const totalSales = cashier.totalSalesFilter;
     const threshold = cashier.cashierTableThreshComp;
     const transId = cashier.transIdFilter.toLowerCase();
+    const qtyThreshold = cashier.cashierTableQtyThreshComp;
+    const totalQty = cashier.totalQtyFilter;
 
     if (
       !selectedCashier &&
       !saleDate &&
-      !upc &&
-      !desc &&
-      priceTypes.length === 0 &&
       totalSales === 0 &&
       !threshold.gt &&
       !threshold.lt &&
-      !transId
+      !transId &&
+      !qtyThreshold.gt &&
+      !qtyThreshold.lt &&
+      totalQty === 0
     ) {
       // No filters applied, show all data
-      const reducedSaleIds = reduceSaleIds(cashier.transList);
-      const reducedPriceTypes = reducePriceTypes(cashier.transList);
-      dispatch(setAvailablePriceTypes(reducedPriceTypes));
-      dispatch(setCashierSaleIds(reducedSaleIds));
       setFiltered(cashier.transList);
+      setFilteredOverviews(cashier.transOverviews);
       return;
     }
 
     const currentFiltered = () => {
-      const result = cashier.transList.filter((item) => {
+      const result = cashier.transOverviews.filter((item) => {
         const matchCashier = selectedCashier
           ? item.cashier_number === selectedCashier
           : true;
         const matchesDate = formatDate(item.sale_date).includes(saleDate);
-        const matchesUpc =
-          item.product_code !== null
-            ? item.product_code.toLowerCase().includes(upc.toLowerCase())
-            : true;
-        const matchesDesc = item.product_description
-          .toLowerCase()
-          .includes(desc.toLowerCase());
-        const matchesPriceType =
-          priceTypes.length > 0 ? priceTypes.includes(item.price_type) : true;
         const matchesTotalSales = () => {
-          if (totalSales === 0 || (!threshold.gt && !threshold.lt)) return true;
           if (threshold.gt) {
             return item.total_sales > totalSales;
           } else if (threshold.lt) {
             return item.total_sales < totalSales;
+          } else {
+            return true;
           }
         };
 
-        const saleSplit = item.sale_id.split("-")[1];
+        const matchesTotalQty = () => {
+          if (qtyThreshold.gt) {
+            return item.qty! > totalQty;
+          } else if (qtyThreshold.lt) {
+            return item.qty! < totalQty;
+          } else {
+            return true;
+          }
+        };
+
         const matchesTransId =
-          saleSplit !== null
-            ? saleSplit.toLowerCase().includes(transId.toLowerCase())
+          item.transaction_id !== null
+            ? item.transaction_id.toLowerCase().includes(transId.toLowerCase())
             : true;
 
         // Then return all of these filters values
         return (
           matchCashier &&
           matchesDate &&
-          matchesUpc &&
-          matchesDesc &&
-          matchesPriceType &&
           matchesTotalSales() &&
+          matchesTotalQty() &&
           matchesTransId
         );
       });
@@ -123,27 +132,27 @@ const CashiersTable = () => {
     };
 
     // Updating available price types and sale IDs based on the new filtered data
-    const newFiltered = currentFiltered();
-    const reducedSaleIds = reduceSaleIds(newFiltered);
-    const reducedPriceTypes = reducePriceTypes(newFiltered);
-    dispatch(setAvailablePriceTypes(reducedPriceTypes));
-    dispatch(setCashierSaleIds(reducedSaleIds));
-    setFiltered(newFiltered);
+    const newFilteredTransactions = currentFiltered();
+
+    const transIds = newFilteredTransactions.map((item) => item.transaction_id);
+    const newFilteredItems = [...cashier.transList].filter((item) =>
+      transIds.includes(item.transaction_id),
+    );
+    setFiltered(newFilteredItems as TransactionListItem[]);
+    setFilteredOverviews(newFilteredTransactions as TransactionOverview[]);
   }, [
     cashier.transList,
     cashier.selectedCashier,
     cashier.saleDateFilter,
-    cashier.upcFilter,
-    cashier.descFilter,
-    cashier.selectedPriceTypes,
     cashier.totalSalesFilter,
     cashier.transIdFilter,
+    cashier.totalQtyFilter,
   ]);
 
   const onCellClicked = (e: CellClickedEvent) => {
     const def = e.column.getColDef();
-    if (def.headerName === "Trans ID") {
-      const saleId = e.value;
+    if (def.headerName === "Transaction ID") {
+      const saleId = e.data.sale_id;
       const saleDate = e.data.sale_date.split("T")[0];
       const storeid = e.data.storeid;
       dispatch(setTransactionDrillDown([]));
@@ -158,7 +167,16 @@ const CashiersTable = () => {
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
-            dispatch(setTransactionDrillDown([j.transaction]));
+            const transactions: TransactionListItem[] = [...j.transaction].map(
+              (item) => ({
+                ...item,
+                transaction_id: item.sale_id.split("-")[1],
+                qty: item.qty ? item.qty : 0,
+              }),
+            );
+            const reducedTransactions: TransactionListItem[] =
+              reduceTransactions(transactions);
+            dispatch(setTransactionDrillDown([reducedTransactions]));
           }
         })
         .catch((err: JsonError) => {
@@ -169,28 +187,7 @@ const CashiersTable = () => {
   };
 
   const handleShowAll = () => {
-    const chunked: TransactionListItem[][] = [];
-    let result: TransactionListItem[] = [];
-    filtered.forEach((item, i) => {
-      // if starting a new chunk or every item shares the same sale_id
-      if (
-        result.length === 0 ||
-        result.every((res) => res.sale_id === item.sale_id)
-      ) {
-        result.push(item);
-
-        // if at the end, then push the final chunk otherwise, it gets left out
-        if (i === filtered.length - 1) {
-          chunked.push(result);
-        }
-      } else {
-        // if this new sale_id is different, push the current chunk and start a new one
-        chunked.push(result);
-        result = [];
-        result.push(item);
-      }
-    });
-
+    const chunked: TransactionListItem[][] = chunkSales(filtered);
     dispatch(setTransactionDrillDown(chunked));
     dispatch(setTransModalOpen(true));
   };
@@ -256,38 +253,45 @@ const CashiersTable = () => {
                 const j = resp.data;
                 if (j.error === 0) {
                   const newTrans = [...j.transactions];
-                  const uniqueCashiers = newTrans.reduce(
-                    (acc: UniqueCashier[], curr) => {
+                  const uniqueCashiers = reduceCashiers(newTrans);
+
+                  // Everything below is going inside the then block of the cashier_table call
+                  dispatch(setCashiers(uniqueCashiers));
+                  const formatted = newTrans.map((item) => {
+                    const transactionId = item.sale_id.split("-")[1];
+                    return { ...item, transaction_id: transactionId };
+                  });
+                  const overviews: TransactionOverview[] = [
+                    ...formatted,
+                  ].reduce(
+                    (acc: TransactionOverview[], curr: TransactionListItem) => {
                       const found = acc.find(
-                        (item) => item.cashier_number === curr.cashier_number,
+                        (item) => item.transaction_id === curr.transaction_id,
                       );
 
                       if (!found) {
                         acc.push({
+                          transaction_id: curr.transaction_id,
+                          sale_date: curr.sale_date,
+                          sale_type: curr.sale_type,
+                          store_number: curr.store_number,
                           cashier_name: curr.cashier_name,
                           cashier_number: curr.cashier_number,
+                          qty: curr.qty ? curr.qty : 0,
                           total_sales: curr.total_sales,
-                          transaction_count: 1,
-                          store_number: curr.store_number,
-                          transaction_ids: [curr.sale_id],
+                          sale_id: curr.sale_id,
+                          storeid: curr.storeid,
                         });
                       } else {
-                        // if found but the transaction_id is not in the array, add it and increment transaction_count by 1
-                        // else, do nothing since the unique transaction_id is already accounted for
-                        if (!found.transaction_ids.includes(curr.sale_id)) {
-                          found.transaction_ids.push(curr.sale_id);
-                          found.transaction_count += 1;
-                        }
+                        found.qty += curr.qty ? curr.qty : 0;
                         found.total_sales += curr.total_sales;
                       }
                       return acc;
                     },
                     [],
                   );
-
-                  // Everything below is going inside the then block of the cashier_table call
-                  dispatch(setCashiers(uniqueCashiers));
-                  dispatch(setTransList(j.transactions));
+                  dispatch(setTransOverviews(overviews));
+                  dispatch(setTransList(formatted));
                 }
               })
               .catch((err: JsonError) =>
@@ -303,12 +307,207 @@ const CashiersTable = () => {
   };
 
   const handlePageInput = (x: string) => {
-    console.log(x);
     if (!isNaN(Number(x)) && Number(x) >= 0 && Number(x) <= cashier.gridPages) {
       dispatch(setCurrentGridPage(Number(x)));
       dispatch(setPageText(x));
     }
   };
+
+  const overviewCols: (
+    | ColDef<TransactionOverview>
+    | ColGroupDef<TransactionOverview>
+  )[] = [
+    {
+      headerName: "Transaction ID",
+      field: "transaction_id",
+      resizable: false,
+      flex: 1,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus underline font-medium cursor-pointer",
+    },
+    {
+      headerName: "Date",
+      field: "sale_date",
+      resizable: false,
+      flex: 1,
+      valueFormatter: (params) => formatDate(params.value),
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Sale Type",
+      field: "sale_type",
+      resizable: false,
+      flex: 1,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Store Number",
+      field: "store_number",
+      resizable: false,
+      flex: 1,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Cashier Name",
+      field: "cashier_name",
+      resizable: false,
+      flex: 1,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Cashier Number",
+      field: "cashier_number",
+      resizable: false,
+      flex: 1,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Qty",
+      field: "qty",
+      resizable: false,
+      flex: 0.7,
+      headerStyle: { borderRight: "1px solid white" },
+      valueFormatter: (params) => formatBigNumber(params.value, 0),
+      cellClass: "no-outline-on-focus text-right",
+    },
+    {
+      headerName: "Total Sales",
+      field: "total_sales",
+      resizable: false,
+      flex: 0.7,
+      headerStyle: { borderRight: "1px solid white" },
+      valueFormatter: (params) => formatCurrency2(params.value),
+      cellClass: "no-outline-on-focus text-right",
+    },
+  ];
+
+  const colDefs: (
+    | ColDef<TransactionListItem>
+    | ColGroupDef<TransactionListItem>
+  )[] = [
+    {
+      headerName: "Trans ID",
+      field: "transaction_id",
+      flex: 0.5,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus underline font-medium cursor-pointer",
+    },
+    {
+      headerName: "Sale Date",
+      field: "sale_date",
+      flex: 0.5,
+      hide: true,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Register",
+      field: "terminal",
+      flex: 0.5,
+      hide: true,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Sale ID",
+      field: "sale_id",
+      flex: 1,
+      hide: true,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Type",
+      field: "sale_type",
+      flex: 0.5,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Price Type",
+      field: "price_type",
+      flex: 0.6,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Date",
+      field: "sale_date",
+      flex: 0.5,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+      valueFormatter: (params) => formatDate(params.value),
+    },
+    {
+      headerName: "Store",
+      field: "store_number",
+      flex: 0.4,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Cashier",
+      field: "cashier_name",
+      flex: 0.5,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Cashier ID",
+      field: "cashier_number",
+      flex: 0.5,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Upc",
+      field: "product_code",
+      flex: 0.6,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Description",
+      field: "product_description",
+      flex: 1.3,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      cellClass: "no-outline-on-focus",
+    },
+    {
+      headerName: "Qty",
+      field: "qty",
+      flex: 0.4,
+      resizable: false,
+      headerStyle: { borderRight: "1px solid white" },
+      valueFormatter: (params) => formatBigNumber(params.value, 0),
+      cellClass: "no-outline-on-focus text-right",
+    },
+    {
+      headerName: "Total Sales",
+      field: "total_sales",
+      flex: 0.6,
+      resizable: false,
+      valueFormatter: (params) => formatCurrency2(params.value),
+      cellClass: "no-outline-on-focus text-right",
+    },
+  ];
 
   return (
     <div
@@ -323,8 +522,8 @@ const CashiersTable = () => {
       />
       <div className="h-[91%]">
         <AgGridReact
-          rowData={filtered}
-          columnDefs={colDefs}
+          rowData={filteredOverviews}
+          columnDefs={overviewCols}
           theme={theme}
           pagination={true}
           paginationAutoPageSize={true}
@@ -355,7 +554,7 @@ const CashiersTable = () => {
       >
         <ChevronLeftIcon
           data-testid="cashiers-prev-page-btn"
-          className={`w-6 h-6 border rounded-full text-custom-white bg-blue-500 hover:bg-blue-200 hover:text-content transition-all duration-200 cursor-pointer ${cashier.currentGridPage < 2 ? "opacity-50 cursor-not-allowed" : ""}`}
+          className={`w-6 h-6 border rounded-full text-custom-white bg-blue-500 hover:bg-blue-200 hover:text-content transition-all duration-200 cursor-pointer ${cashier.currentGridPage < 2 ? "opacity-50 pointer-events-none" : ""}`}
           onClick={() => handlePageChange("prev")}
         />
         <div className="flex gap-2 justify-center text-sm font-medium">
@@ -372,7 +571,7 @@ const CashiersTable = () => {
         </div>
         <ChevronRightIcon
           data-testid="cashiers-next-page-btn"
-          className={`w-6 h-6 border rounded-full text-custom-white bg-blue-500 hover:bg-blue-200 hover:text-content transition-all duration-200 cursor-pointer ${cashier.currentGridPage === cashier.gridPages ? "opacity-50 cursor-not-allowed" : ""}`}
+          className={`w-6 h-6 border rounded-full text-custom-white bg-blue-500 hover:bg-blue-200 hover:text-content transition-all duration-200 cursor-pointer ${cashier.currentGridPage === cashier.gridPages ? "opacity-50 pointer-events-none" : ""}`}
           onClick={() => handlePageChange("next")}
         />
       </div>

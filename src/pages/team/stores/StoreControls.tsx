@@ -41,18 +41,21 @@ const StoreControls = () => {
       {isDesktop ? (
         <div className="bg-custom-white p-4 rounded-lg shadow-lg grid grid-cols-3 gap-2 w-[59%]">
           <button
+            data-testid="user-store-assign-btn"
             className={`${option === "assign" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
             onClick={() => setOption("assign")}
           >
             Assign/Unassign Stores
           </button>
           <button
+            data-testid="user-store-info-btn"
             className={`${option === "info" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
             onClick={() => setOption("info")}
           >
             Store Info
           </button>
           <button
+            data-testid="bg-store-assign-btn"
             className={`${option === "bg_assign" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
             onClick={() => setOption("bg_assign")}
           >

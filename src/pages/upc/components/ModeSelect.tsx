@@ -15,10 +15,10 @@ const ModeSelect = () => {
   const {
     selectedMode,
     salesComp,
-    forecast,
     optBestPrices,
     upcTrends,
     itemAssociations,
+    forecastQtyData,
   } = useAppSelector((state) => state.upc);
 
   const handleModeSelect = (mode: number) => {
@@ -29,7 +29,7 @@ const ModeSelect = () => {
     let active = false;
 
     if (mode === 1) active = salesComp.length > 0;
-    else if (mode === 2) active = forecast.length > 0;
+    else if (mode === 2) active = forecastQtyData.length > 0;
     else if (mode === 3) active = optBestPrices.length > 0;
     else if (mode === 4) active = upcTrends.length > 0;
     else if (mode === 5) active = itemAssociations.length > 0;

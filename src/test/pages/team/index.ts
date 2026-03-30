@@ -719,3 +719,48 @@ export const assignedBGResp = {
     inactive: [],
   },
 };
+
+export const deleteCompanyFormCompanies = [
+  {
+    id: 1,
+    company: 1,
+    userid: 1,
+    name: "Test Company 1",
+    username: "tguy",
+  },
+  {
+    id: 2,
+    company: 2,
+    userid: 1,
+    name: "Test Company 2",
+    username: "tguy",
+  },
+  {
+    id: 3,
+    company: 3,
+    userid: 1,
+    name: "Test Company 3",
+    username: "tguy",
+  },
+  {
+    id: 4,
+    company: 5,
+    userid: 1,
+    name: "DCR",
+    username: "tguy",
+  },
+  {
+    id: 5,
+    company: 5,
+    userid: 1,
+    name: "Test Company 4",
+    username: "tguy",
+  },
+  {
+    id: 6,
+    company: 6,
+    userid: 1,
+    name: "Updated Company 6",
+    username: "tguy",
+  },
+];

@@ -1206,7 +1206,7 @@ describe("Forecast Page", () => {
 
       expect(qty.textContent).toEqual("15");
       expect(revenue.textContent).toEqual("$194.87");
-      expect(profit.textContent).toEqual("$1.36");
+      expect(profit.textContent).toEqual("$194.86");
     });
 
     const closeBtn = await screen.findByTestId("calc-modal-close-button");

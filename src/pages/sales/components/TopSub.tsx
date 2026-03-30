@@ -170,7 +170,7 @@ const TopSubDept = ({ inReport }: Props) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-[50%_45%] gap-4 mt-3">
+          <div className="grid grid-cols-[45%_55%] gap-4 mt-3">
             <div>
               <div className="font-medium border-b text-sm">Flags</div>
               <div className="grid grid-cols-2 gap-2 py-1">

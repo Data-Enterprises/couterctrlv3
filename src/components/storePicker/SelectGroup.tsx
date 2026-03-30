@@ -145,7 +145,7 @@ const SelectGroup = () => {
                 key={`group-${idx}`}
                 onClick={() => handleSelect(group)}
               >
-                <div className="p-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer text-[13px]">
+                <div className="p-1 hover:bg-blue-200 transition-all duration-200 cursor-pointer text-sm">
                   {group.group_name}
                 </div>
               </div>

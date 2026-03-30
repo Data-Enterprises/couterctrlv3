@@ -23,7 +23,7 @@ export const handleCsv = <T extends Record<string, any>>(
 ) => {
   let body = "";
   const headersString = headers
-    .filter((h) => h.hide !== true)
+    // .filter((h) => h.hide !== true)
     .map((h) => h.headerName)
     .join(",");
 

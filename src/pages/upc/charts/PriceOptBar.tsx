@@ -19,8 +19,12 @@ const PriceOptBar = ({ type, yKey }: BarProps) => {
     let data: UpcPriceOpt[] = [];
     if (state.optDisplayMode === "singleRow") {
       data = state.optBestPrices
-        .filter((item) =>
-          state.selectedOptItem.product_code.includes(item.product_code),
+        .filter(
+          (item) =>
+            state.selectedOptItem.product_code.includes(item.product_code) &&
+            state.selectedOptItem.product_description
+              .toLowerCase()
+              .includes(item.product_description.toLowerCase()),
         )
         .map((item, i) => ({
           ...item,

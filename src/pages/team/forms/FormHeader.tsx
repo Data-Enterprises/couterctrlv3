@@ -1,5 +1,8 @@
 import { useEffect } from "react";
-import { setSelectedForm, setSelectedUserStores } from "../../../features/usersSlice";
+import {
+  setSelectedForm,
+  setSelectedUserStores,
+} from "../../../features/usersSlice";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 
 const FormHeader = () => {
@@ -8,7 +11,7 @@ const FormHeader = () => {
   const user = useAppSelector((state) => state.user);
 
   useEffect(() => {
-    dispatch(setSelectedUserStores({assigned: [], unassigned: []}))
+    dispatch(setSelectedUserStores({ assigned: [], unassigned: [] }));
   }, [selectedForm]);
 
   const handleFormSelection = (x: number) => {
@@ -36,7 +39,7 @@ const FormHeader = () => {
           Base Groups
         </div>
         <div
-      data-testid="team-stores-form"
+          data-testid="team-stores-form"
           className={`${selectedForm === 3 ? "bg-orange-200" : ""} rounded-full hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
           onClick={() => handleFormSelection(3)}
         >

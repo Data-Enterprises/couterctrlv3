@@ -76,7 +76,7 @@ const UpcAssociation = () => {
         end,
         ids,
         selectedUpcs,
-        20,
+        50,
         "top",
       )
         .then((resp) => {
@@ -98,7 +98,8 @@ const UpcAssociation = () => {
             );
             const main = groupedProductCodes.filter((item: ItemAssociate) =>
               selectedUpcs.includes(item.product_code),
-            );
+          );
+          console.log("groupedProductCodes", groupedProductCodes, main, selectedUpcs);
 
             const associates = groupedProductCodes.filter(
               (item: ItemAssociate) =>
@@ -116,7 +117,7 @@ const UpcAssociation = () => {
         );
       // .finally(() => setIsFetching(false));
     }
-  }, [selectedUpcs]);
+  }, [selectedUpcs, selectedMode]);
 
   useEffect(() => {
     if (!reQueryAssociations) return;
@@ -186,7 +187,7 @@ const UpcAssociation = () => {
           dispatch(setReQueryAssociations(true));
         }
       } else {
-        // select => basedon level and # of columns
+        // select => based on level and # of columns
         dispatch(addSelectedUpcParam(item.product_code));
         dispatch(handleAssociationDeselect(level));
         dispatch(setReQueryAssociations(true));

@@ -16,6 +16,8 @@ import {
 import type {
   CashierDetails,
   JsonError,
+  TransactionListItem,
+  TransactionOverview,
   UniqueCashier,
 } from "../../../interfaces";
 import {
@@ -29,6 +31,7 @@ import {
   setSelectedSaleIds,
   setSelectedStoreId,
   setTransList,
+  setTransOverviews,
 } from "../../../features/lossPreventionSlice";
 import { formatGoliathDate } from "../../../utils";
 import { useEffect } from "react";
@@ -142,7 +145,47 @@ const CashierSales = () => {
 
                 // Everything below is going inside the then block of the cashier_table call
                 dispatch(setCashiers(uniqueCashiers));
-                dispatch(setTransList(j.transactions));
+                const formatted: TransactionListItem[] = [
+                  ...j.transactions,
+                ].map((item) => {
+                  const transactionId = item.sale_id.split("-")[1];
+                  return {
+                    ...item,
+                    transaction_id: transactionId,
+                    sale_date: item.sale_date.split("T")[0],
+                    qty: item.qty ? item.qty : 0,
+                  };
+                });
+
+                const overviews: TransactionOverview[] = [...formatted].reduce(
+                  (acc: TransactionOverview[], curr: TransactionListItem) => {
+                    const found = acc.find(
+                      (item) => item.transaction_id === curr.transaction_id,
+                    );
+
+                    if (!found) {
+                      acc.push({
+                        transaction_id: curr.transaction_id,
+                        sale_date: curr.sale_date,
+                        sale_type: curr.sale_type,
+                        store_number: curr.store_number,
+                        cashier_name: curr.cashier_name,
+                        cashier_number: curr.cashier_number,
+                        qty: curr.qty ? curr.qty : 0,
+                        total_sales: curr.total_sales,
+                        sale_id: curr.sale_id,
+                        storeid: curr.storeid,
+                      });
+                    } else {
+                      found.qty += curr.qty ? curr.qty : 0;
+                      found.total_sales += curr.total_sales;
+                    }
+                    return acc;
+                  },
+                  [],
+                );
+                dispatch(setTransOverviews(overviews));
+                dispatch(setTransList(formatted));
               }
             })
             .catch((err: JsonError) =>

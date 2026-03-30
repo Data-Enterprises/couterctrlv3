@@ -23,7 +23,7 @@ const AssignStoresToUser = () => {
   const user = useAppSelector((state) => state.user);
 
   useEffect(() => {
-    if (selectedUserId === 0) return;
+    if (selectedUserId === 0 || isOutranked()) return;
 
     const filterNulls = (arr: Store[]) => {
       return arr.filter((store) => store.store_name !== null);
@@ -67,13 +67,14 @@ const AssignStoresToUser = () => {
 
   if (isOutranked()) {
     return (
-      <div className="flex justify-center items-center bg-custom-white p-4 rounded-lg shadow-lg w-[50%]">
+      <div data-testid="user-store-form-outranked-container" className="flex justify-center items-center bg-custom-white p-4 rounded-lg shadow-lg w-[50%]">
         <div className="font-medium text-sm flex flex-col items-center">
           <WarningIcon fill="#f97316" height={56} width={56} />
           <div className="mb-2">We're sorry...</div>
           <div>You are not authorized to make changes to this user</div>
           <div>Please contact them if assistance is needed</div>
           <button
+            data-testid="user-store-form-outranked-reset-btn"
             className="btn-themeBlue py-1.5 mt-2"
             onClick={() => handleReset()}
           >
@@ -85,7 +86,7 @@ const AssignStoresToUser = () => {
   }
 
   return (
-    <div className="grid gap-4 w-[50%]">
+    <div data-testid="user-store-form-main-container" className="grid gap-4 w-[50%]">
       <SearchUser />
       <div className="grid grid-cols-2 gap-x-4">
         <Unassigned />

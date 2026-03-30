@@ -51,9 +51,9 @@ const ExceptionRow = ({
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
     getCashierTable(ctx.url, ctx.token, start, end, 0, storeid, 1, [type], 1)
-    .then((resp) => {
-      const j = resp.data;
-      if (j.error === 0) {
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
           const trans = [...j.transactions];
           const uniqueSaleIds = Array.from(
             new Set(trans.map((item) => item.sale_id)),
@@ -67,12 +67,17 @@ const ExceptionRow = ({
                   dispatch(setNoRowsFound(true));
                   return;
                 }
-                const filtered = [...j.transactions].filter((trans) => {
+                const formatted = [...j.transactions].map((item) => ({
+                  ...item,
+                  transaction_id: item.sale_id.split("-")[1],
+                }));
+                const filtered = formatted.filter((trans) => {
                   return cashierNumber
                     ? trans.cashier_number === cashierNumber
                     : true;
                 });
                 dispatch(setTransList(filtered));
+                // dispatch(setTransOverviews(filtered))
               }
             })
             .catch((err: JsonError) => toast.error(err.message));

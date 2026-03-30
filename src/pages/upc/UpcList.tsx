@@ -12,10 +12,9 @@ import {
   setBottomFiveTrends,
   setDataLoaded,
   setFileName,
-  setForecastData,
   setForecastExport,
-  setForecastHistory,
   setForecastMetricExport,
+  setForecastQtyData,
   setIndex,
   setIsLoading,
   setOptBestPrices,
@@ -37,12 +36,13 @@ import {
 import type {
   JsonError,
   UpcForecast,
+  UpcForecastData,
   UpcItem,
   UpcPriceOpt,
   UpcTrend,
 } from "../../interfaces";
 import { colorCodes } from "./components";
-import { convertData, formatForecastExport } from "./utils";
+import { formatForecastExport } from "./utils";
 
 import ModeSelect from "./components/ModeSelect";
 import StoreDatePicker from "./components/StoreDatePicker";
@@ -56,7 +56,7 @@ const UpcList = () => {
   const context = useUpcContext();
   const dispatch = useAppDispatch();
   const [_, setFile] = useState<File | null>(null);
-  const { upcs } = useAppSelector((state) => state.upcs);
+  const { uploadedUpcs } = useAppSelector((state) => state.upc);
 
   useEffect(() => {
     return () => {
@@ -106,7 +106,7 @@ const UpcList = () => {
       context.storeids,
       context.startDate,
       context.endDate,
-      upcs.join(","),
+      uploadedUpcs.join(","),
     )
       .then((resp) => {
         const j = resp.data;
@@ -139,34 +139,24 @@ const UpcList = () => {
       context.storeids,
       context.startDate,
       context.endDate,
-      upcs.join(","),
+      uploadedUpcs.join(","),
     )
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0 && j.qty_results !== null) {
-          const history = Object.entries(j.qty_results)
-            .map(([k, v]) => [k, structuredClone(v as UpcForecast).history])
-            .map(([id, obj], idx) =>
-              convertData(
-                id as string,
-                obj as { date: string; value: number }[],
-                idx,
-                "history",
-                j.qty_results,
-              ),
-            );
-
-          const forecast = Object.entries(j.qty_results)
-            .map(([k, v]) => [k, structuredClone(v as UpcForecast).forecast])
-            .map(([id, obj], idx) =>
-              convertData(
-                id as string,
-                obj as { date: string; value: number }[],
-                idx,
-                "forecast",
-                j.qty_results,
-              ),
-            );
+          const qtyResults: UpcForecastData[] = Object.entries(
+            j.qty_results,
+          ).map(([k, v]) => {
+            const prices = Object.entries(
+              (v as UpcForecast).metrics.prices,
+            ).map(([price, qty]) => ({
+              price,
+              qty: typeof qty === "number" ? qty : (qty as any).qty,
+            }));
+            const dataObj = v as UpcForecast;
+            dataObj.metrics.prices = prices;
+            return { product_code: k, data: dataObj };
+          });
 
           // This is the new way to set the upc items and upc list from the rest of the endpoints
           const upcItems = Object.keys(j.qty_results).map((k) => ({
@@ -182,11 +172,10 @@ const UpcList = () => {
           }));
 
           const qty = formatForecastExport(j.qty_results);
+          dispatch(setForecastQtyData(qtyResults));
           dispatch(setForecastExport(qty.data));
           dispatch(setForecastMetricExport(qty.metrics));
           dispatch(setUpcItems(upcItems));
-          dispatch(setForecastData(forecast));
-          dispatch(setForecastHistory(history));
           dispatch(setUpcList(upcList));
           dispatch(setUpcCount(j.upc_count));
           dispatch(setDataLoaded(true));
@@ -207,7 +196,7 @@ const UpcList = () => {
       context.storeids,
       context.startDate,
       context.endDate,
-      upcs.join(","),
+      uploadedUpcs.join(","),
     )
       .then((resp) => {
         const j = resp.data;
@@ -239,7 +228,7 @@ const UpcList = () => {
       context.startDate,
       context.endDate,
       parseInt(context.trendPeriods),
-      upcs.join(","),
+      uploadedUpcs.join(","),
     )
       .then((resp) => {
         const j = resp.data;
@@ -269,7 +258,6 @@ const UpcList = () => {
   };
 
   const getAssData = () => {
-    console.log("Getting Associations");
     dispatch(resetDeeperLvlQueryUpcs());
     const upcItems = [...context.uploadedUpcs].map((item) => ({
       product_code: item,
@@ -294,7 +282,7 @@ const UpcList = () => {
         <UpcSelector setFile={setFile} getData={getModuleData} />
       );
     if (context.selectedMode == 2)
-      return context.forecast.length > 0 ? (
+      return context.forecastQtyData.length > 0 ? (
         <Forecast />
       ) : (
         <UpcSelector setFile={setFile} getData={getModuleData} />

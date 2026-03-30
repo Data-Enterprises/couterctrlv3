@@ -131,7 +131,7 @@ const TopTen = () => {
           />
         )}
       </div>
-      <div className="md:grid md:grid-cols-[55%_42%] gap-2 h-[90%]">
+      <div className="md:grid md:grid-cols-[65%_35%] gap-2 h-[90%]">
         <div data-testid="top-10-chart">
           {!isMobile ? (
             <ResponsiveBar
@@ -151,7 +151,7 @@ const TopTen = () => {
                 )
               }
               enableLabel={false}
-              axisBottom={{ tickValues: 5, format: (v) => `$${v}` }}
+              axisBottom={{ tickValues: 4 }}
               borderRadius={4}
               borderWidth={2}
               borderColor={(d) =>
@@ -188,18 +188,20 @@ const TopTen = () => {
           ) : null}
         </div>
         <div className="text-sm pb-2 md:pb-0 px-2 md:px-0">
-          <div className="flex justify-between items-center">
-            <div className="font-medium border-b">Item:</div>
-          </div>
-          <div className="font-medium text-xs mt-1">
-            {selectedTopTenItem?.product_code}
-          </div>
-          <div className="font-medium text-xs mb-4">
-            {selectedTopTenItem?.product_description}
+          <div className="text-xs mb-2">
+            <div className="flex gap-1 items-center">
+              <div className="text-content/60">UPC:</div>
+              <div className="font-medium">
+                {selectedTopTenItem?.product_code}
+              </div>
+            </div>
+            <div className="font-medium">
+              {selectedTopTenItem?.product_description}
+            </div>
           </div>
 
-          <div className="mt-1 w-full border-b font-medium">Item Totals</div>
-          <div className="grid grid-cols-4 mt-1 mb-4">
+          <div className="mt-1 w-full border-b font-medium">Totals</div>
+          <div className="grid grid-cols-2 mt-1 gap-2 mb-4">
             <div>
               <div className="text-content/60">Sales:</div>
               <div className="font-medium text-xs  ">
@@ -230,8 +232,8 @@ const TopTen = () => {
           </div>
 
           {/* Calculations */}
-          <div className="mt-1 w-full border-b font-medium">Item Metrics</div>
-          <div className="grid grid-cols-4 mt-1">
+          <div className="mt-1 w-full border-b font-medium">Metrics</div>
+          <div className="grid grid-cols-2 mt-1 gap-2">
             <div>
               <div className="flex gap-1 items-center relative">
                 <div className="text-content/60">GPM:</div>

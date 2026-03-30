@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import {
   AllCommunityModule,
   ModuleRegistry,
@@ -8,9 +9,10 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 import { useState, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
 import type { UpcPriceOpt } from "../../../interfaces";
-import { useAppSelector } from "../../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import "./grid.css";
 import { priceColDefs, theme } from ".";
+import { setOptDisplayMode } from "../../../features/upcSlice";
 
 interface GridProps {
   rowData: UpcPriceOpt[];
@@ -19,26 +21,58 @@ interface GridProps {
 }
 
 const Grid = ({ rowData, handleCellClick, type = "best" }: GridProps) => {
-  const state = useAppSelector((state) => state.upc);
+  const dispatch = useAppDispatch();
+  const gridRef = useRef<AgGridReact>(null);
+  const { selectedUpcs, selectedOptItem } = useAppSelector(
+    (state) => state.upc,
+  );
   const [rows, setRows] = useState<UpcPriceOpt[]>(rowData);
 
   useEffect(() => {
-    const filtered = rowData.filter((item) =>
-      state.selectedUpcs.includes(item.product_code)
-    );
-    setRows(filtered);
-  }, [rowData, state.selectedUpcs]);
+    if (type === "all") {
+      if (selectedUpcs.includes(selectedOptItem.product_code)) {
+        const filtered = rowData.filter(
+          (item) =>
+            item.product_code === selectedOptItem.product_code &&
+            item.product_description
+              .toLowerCase()
+              .includes(selectedOptItem.product_description.toLowerCase()),
+        );
+        setRows(filtered);
+      } else {
+        dispatch(setOptDisplayMode("multiRow"));
+        setRows([]);
+      }
+    } else if (type === "best") {
+      const filtered = rowData.filter((item) =>
+        selectedUpcs.includes(item.product_code),
+      );
+      setRows(filtered);
+    }
+  }, [rowData, selectedUpcs, selectedOptItem]);
+
+  useEffect(() => {
+    if (gridRef.current && gridRef.current.api && type === "best") {
+      gridRef.current.api.forEachNode((node) => {
+        if (node.data.product_code === selectedOptItem.product_code) {
+          node.setSelected(true);
+        }
+      });
+    }
+  }, [rows, selectedOptItem, gridRef.current]);
 
   const handleClick = (e: CellClickedEvent<UpcPriceOpt>) => {
-    e.event?.preventDefault();
-    if (handleCellClick) handleCellClick(e.data as UpcPriceOpt);
+    if (handleCellClick) {
+      handleCellClick(e.data as UpcPriceOpt);
+    }
   };
 
   return (
     <div className="h-[100%] shadow-lg rounded-lg">
-      {state.selectedUpcs.length ? (
+      {selectedUpcs.length ? (
         <div className="h-full relative">
           <AgGridReact
+            ref={gridRef}
             rowData={rows}
             columnDefs={priceColDefs}
             theme={theme}
@@ -47,7 +81,7 @@ const Grid = ({ rowData, handleCellClick, type = "best" }: GridProps) => {
             paginationAutoPageSize={true}
             animateRows={true}
             enableCellTextSelection={true}
-            rowSelection={"multiple"}
+            rowSelection={"single"}
             onCellClicked={handleClick}
           />
         </div>

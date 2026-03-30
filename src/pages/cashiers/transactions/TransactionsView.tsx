@@ -24,8 +24,8 @@ const TransactionsView = () => {
   const toast = useToast();
 
   const handleCellClicked = (event: CellClickedEvent) => {
-    if (event.colDef.field === "sale_id") {
-      const saleId = event.value;
+    if (event.colDef.field === "transaction_id") {
+      const saleId = event.data.sale_id;
       const saleDate = event.data.sale_date.split("T")[0];
       const storeid = event.data.storeid;
       ctx.dispatch(setTransDrillDown([]));
@@ -34,7 +34,33 @@ const TransactionsView = () => {
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0 && j.transaction.length > 0) {
-            ctx.dispatch(setTransDrillDown([j.transaction]));
+            const transactions: TransactionListItem[] = [...j.transaction].map(
+              (item) => ({
+                ...item,
+                transaction_id: item.sale_id.split("-")[1],
+                qty: item.qty ? item.qty : 0,
+              }),
+            );
+            const reducedTransactions: TransactionListItem[] =
+              transactions.reduce((acc: TransactionListItem[], curr) => {
+                const found = acc.find(
+                  (item) =>
+                    item.storeid === curr.storeid &&
+                    item.sale_type === curr.sale_type &&
+                    item.product_code === curr.product_code &&
+                    item.product_description === curr.product_description,
+                );
+                if (found) {
+                  found.qty! += curr.qty!;
+                  found.total_sales += curr.total_sales;
+                  found.net_sales += curr.net_sales;
+                } else {
+                  acc.push({ ...curr, qty: curr.qty });
+                }
+                return acc;
+              }, []);
+            ctx.dispatch(setNoTransactions(false));
+            ctx.dispatch(setTransDrillDown([reducedTransactions]));
           } else {
             ctx.dispatch(setNoTransactions(true));
           }
@@ -90,7 +116,7 @@ const TransactionsView = () => {
       </div>
     );
   }
- 
+
   console.log(ctx.filteredTransList);
   return (
     <div

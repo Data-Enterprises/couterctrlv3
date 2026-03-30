@@ -1,8 +1,9 @@
 import {
   removeSingleUpc,
-  setUpcs,
+  // setUploadedUpcs,
   setUpcText,
 } from "../../../features/upcUploadSlice";
+import { setUploadedUpcs } from "../../../features/upcSlice";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import FileInput from "../../forecast/controls/FileInput";
 
@@ -14,14 +15,16 @@ interface UpcSelectorProps {
 const UpcSelector = ({ setFile, getData }: UpcSelectorProps) => {
   const dispatch = useAppDispatch();
   const { upcs, upcText } = useAppSelector((state) => state.upcs);
+  const { uploadedUpcs } = useAppSelector((state) => state.upc);
 
   const handleAddUpc = (upc: string) => {
     if (upc === "") {
-      dispatch(setUpcs([]));
+      dispatch(setUploadedUpcs([]));
       return;
     }
     const newUpcs = upc.split(",").map((u) => u.trim());
-    dispatch(setUpcs(newUpcs));
+    dispatch(setUploadedUpcs(newUpcs));
+    dispatch(setUpcText(""));
   };
 
   const handleEnterDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -76,7 +79,7 @@ const UpcSelector = ({ setFile, getData }: UpcSelectorProps) => {
         <div
           className={`bg-bkg min-h-32 max-h-32 shadow rounded-lg grid grid-cols-3 text-xs overflow-y-scroll no-scrollbar mb-2`}
         >
-          {upcs.map((u, i) => (
+          {uploadedUpcs.map((u, i) => (
             <div
               key={i}
               data-testid={`forecast-upc-item-${u}-${i}`}
@@ -89,7 +92,7 @@ const UpcSelector = ({ setFile, getData }: UpcSelectorProps) => {
         </div>
         <div className="grid grid-cols-2 gap-2">
           <FileInput
-            page="forecast"
+            page="upc"
             fileExt={[".csv"]}
             setFile={setFile}
             className="w-full"

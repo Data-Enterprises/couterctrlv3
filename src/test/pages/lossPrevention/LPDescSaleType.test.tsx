@@ -14,7 +14,7 @@ import { saleTypes, mockSaleTrendResp, mockCashierTableResp } from ".";
 const user = userEvent.setup();
 const initialStore = setupStore();
 
-vi.mock("../../../api/cashiers");
+vi.mock("../../../api/lossPrevention");
 const mockedToastError = vi.fn();
 const mockedToastWarn = vi.fn();
 vi.mock("../../../components/toasts/hooks/useToast", () => ({

@@ -67,7 +67,7 @@ const UpdateBaseGroup = () => {
   };
 
   return (
-    <div className="bg-custom-white p-4 rounded-lg shadow-lg max-h-[70vh]">
+    <div data-testid="update-bg-form-container" className="bg-custom-white p-4 rounded-lg shadow-lg max-h-[70vh]">
       <SingleSelect
         label="Select Company"
         data={companies}
@@ -82,9 +82,10 @@ const UpdateBaseGroup = () => {
             <div>Select group to update</div>
           </div>
           <div className={`select-none rounded-lg p-1 overflow-hidden overflow-y-auto ${isDesktop ? "max-h-[39vh]" : "max-h-[25vh]"}`}>
-            {baseGroups.map((bg) => (
+            {baseGroups.map((bg, i) => (
               <div
                 key={bg.id}
+                data-testid={`bg-option-${i}`}
                 className={`${selectedBgID === bg.id && "bg-orange-200"} rounded-full py-1 pl-2 border-b transition-all duration-200 cursor-pointer hover:bg-blue-200`}
                 onClick={() => handleBGSelect(bg.id, bg.name)}
               >
@@ -103,6 +104,7 @@ const UpdateBaseGroup = () => {
             setValue={handleGroupName}
           />
           <button
+            data-testid="submit-update-bg-btn"
             className={`btn-themeBlue w-full ${!selectedBgID && "opacity-50 pointer-events-none"}`}
             onClick={handleSubmit}
           >

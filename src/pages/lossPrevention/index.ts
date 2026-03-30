@@ -1,106 +1,11 @@
 import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
-import type {
-  TransactionListItem,
-  UniqueCashier,
-} from "../../interfaces";
-import { formatCurrency2, formatDate } from "../../utils";
+import type { TransactionListItem, UniqueCashier } from "../../interfaces";
+import { formatCurrency2 } from "../../utils";
 
-// sale date, upc, descption, total sales, sale_id
-export const colDefs: (
-  | ColDef<TransactionListItem>
-  | ColGroupDef<TransactionListItem>
-)[] = [
-  {
-    headerName: "Trans ID",
-    field: "sale_id",
-    flex: 0.5,
-    resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
-    valueFormatter: (params) => params.value.split("-")[1],
-    cellClass: "no-outline-on-focus underline font-medium cursor-pointer",
-  },
-  {
-    headerName: "Sale ID",
-    field: "sale_id",
-    flex: 1,
-    resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
-  },
-  {
-    headerName: "Type",
-    field: "sale_type",
-    flex: 0.5,
-    resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
-  },
-  {
-    headerName: "Price Type",
-    field: "price_type",
-    flex: 0.5,
-    resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
-  },
-  {
-    headerName: "Date",
-    field: "sale_date",
-    flex: 0.6,
-    resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
-    valueFormatter: (params) => formatDate(params.value),
-  },
-  {
-    headerName: "Store",
-    field: "store_number",
-    flex: 0.4,
-    resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
-  },
-  {
-    headerName: "Cashier",
-    field: "cashier_name",
-    flex: 0.5,
-    resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
-  },
-  {
-    headerName: "Cashier ID",
-    field: "cashier_number",
-    flex: 0.5,
-    resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
-  },
-  {
-    headerName: "Upc",
-    field: "product_code",
-    flex: 0.6,
-    resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
-  },
-  {
-    headerName: "Description",
-    field: "product_description",
-    flex: 1.3,
-    resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus",
-  },
-  {
-    headerName: "Total Sales",
-    field: "total_sales",
-    flex: 0.6,
-    resizable: false,
-    valueFormatter: (params) => formatCurrency2(params.value),
-    cellClass: "no-outline-on-focus text-right",
-  },
-];
+export const formatDate = (dateStr: string) => {
+  const split = dateStr.split("T")[0].split("-");
+  return `${split[1]}/${split[2]}/${split[0]}`;
+};
 
 export const cashierColDefs: (
   | ColDef<UniqueCashier>
@@ -170,21 +75,74 @@ export const activePanelStyle = (type: string, selected: string) => {
   }
 };
 
-// Grabbing the unique sale ids from the current state of the transaction list
-export const reduceSaleIds = (data: TransactionListItem[]) => {
-  return [...data].reduce((acc: string[], item) => {
-    if (!acc.includes(item.sale_id)) {
-      acc.push(item.sale_id);
+export const reduceTransactions = (data: TransactionListItem[]) => {
+  return data.reduce((acc: TransactionListItem[], curr) => {
+    const found = acc.find(
+      (item) =>
+        item.storeid === curr.storeid &&
+        item.sale_type === curr.sale_type &&
+        item.product_code === curr.product_code &&
+        item.product_description === curr.product_description,
+    );
+    if (found) {
+      found.qty! += curr.qty!;
+      found.total_sales += curr.total_sales;
+      found.net_sales += curr.net_sales;
+    } else {
+      acc.push({ ...curr, qty: curr.qty });
     }
     return acc;
   }, []);
 };
 
-// Grabbing the unique price types from the current state of the transaction list
-export const reducePriceTypes = (data: TransactionListItem[]) => {
-  return [...data].reduce((acc: string[], item) => {
-    if (item.price_type !== null && !acc.includes(item.price_type)) {
-      acc.push(item.price_type);
+export const chunkSales = (data: TransactionListItem[]) => {
+  const chunked: TransactionListItem[][] = [];
+  let result: TransactionListItem[] = [];
+  data.forEach((item, i) => {
+    // if starting a new chunk or every item shares the same sale_id
+    if (
+      result.length === 0 ||
+      result.every((res) => res.sale_id === item.sale_id)
+    ) {
+      result.push(item);
+
+      // if at the end, then push the final chunk otherwise, it gets left out
+      if (i === data.length - 1) {
+        chunked.push(result);
+      }
+    } else {
+      // if this new sale_id is different, push the current chunk and start a new one
+      chunked.push(result);
+      result = [];
+      result.push(item);
+    }
+  });
+  return chunked;
+};
+
+export const reduceCashiers = (data: TransactionListItem[]) => {
+  return data.reduce((acc: UniqueCashier[], curr) => {
+    const found = acc.find(
+      (item) => item.cashier_number === curr.cashier_number,
+    );
+
+    if (!found) {
+      acc.push({
+        cashier_name: curr.cashier_name,
+        cashier_number: curr.cashier_number,
+        total_sales: curr.total_sales,
+        transaction_count: 1,
+        store_number: curr.store_number,
+        transaction_ids: [curr.sale_id],
+      });
+    } else {
+      // if found but the transaction_id is not in the array, add it and increment transaction_count by 1
+      // else, do nothing since the unique transaction_id is already accounted for
+      if (!found.transaction_ids.includes(curr.sale_id)) {
+        found.transaction_ids.push(curr.sale_id);
+        found.transaction_count += 1;
+      }
+      found.total_sales += curr.total_sales;
     }
     return acc;
   }, []);

@@ -2,7 +2,6 @@ import {
   ArrowsRightLeftIcon,
   AdjustmentsHorizontalIcon,
   ClockIcon,
-  ArrowTrendingUpIcon,
   ArrowUpCircleIcon,
   HashtagIcon,
   InformationCircleIcon,
@@ -15,7 +14,6 @@ interface MetricCardProps {
   metric: number;
   label: string;
   type: keyof typeof icons;
-  mode: "overall" | "top" | "selected";
 }
 
 const icons = {
@@ -75,27 +73,18 @@ const icons = {
       fill="#f97316"
     />
   ),
-  forecast: (
-    <ArrowTrendingUpIcon
-      height={42}
-      width={42}
-      className="absolute ml-2 -translate-y-0"
-      fill="#10b981"
-    />
-  ),
 };
 
-const MetricCard = ({ metric, label, type, mode }: MetricCardProps) => {
+const MetricCard = ({ metric, label, type }: MetricCardProps) => {
   const search = useAppSelector((state) => state.search);
   const upcState = useAppSelector((state) => state.upc);
   const isInteger = (n: number) =>
     Number.isInteger(n) ? formatBigNumber(n).split(".")[0] : n.toFixed(2);
   const [showTooltip, setShowTooltip] = useState<boolean>(false);
 
-  const ty = new Date().getFullYear();
-  const forecastStart = upcState.forecast[0].data[1].x + `/${ty}`;
-  const lastIndex = upcState.forecast[0].data.length - 1;
-  const forecastEnd = upcState.forecast[0].data[lastIndex].x + `/${ty}`;
+  const forecastStart = upcState.forecastQtyData[0].data.history[0].date;
+  const lastIndex = upcState.forecastQtyData[0].data.history.length - 1;
+  const forecastEnd = upcState.forecastQtyData[0].data.history[lastIndex].date;
 
   const days = () => {
     const d1 = new Date(search.startDate);
@@ -105,14 +94,13 @@ const MetricCard = ({ metric, label, type, mode }: MetricCardProps) => {
   };
 
   const tooltipText = {
-    quantity: `Total quantity ${search.startDate}-${search.endDate}`,
-    qtyRange: `Total quantity range ${search.startDate}-${search.endDate}`,
-    median: `Median quantity of all items ${search.startDate}-${search.endDate}`,
-    avgQty: `Average daily quantity ${search.startDate}-${search.endDate}`,
-    avgQtyRange: `Average daily quantity range ${search.startDate}-${search.endDate}`,
+    quantity: `Total quantity ${forecastStart}-${forecastEnd}`,
+    qtyRange: `Total quantity range ${forecastStart}-${forecastEnd}`,
+    median: `Median quantity of all items ${forecastStart}-${forecastEnd}`,
+    avgQty: `Average daily quantity ${forecastStart}-${forecastEnd}`,
+    avgQtyRange: `Average daily quantity range ${forecastStart}-${forecastEnd}`,
     active: `Number of active days out of ${days()} days`,
-    mdq: `Max daily quantity ${search.startDate}-${search.endDate}`,
-    forecast: `Projected 7 day forecast ${forecastStart}-${forecastEnd}`,
+    mdq: `Max daily quantity ${forecastStart}-${forecastEnd}`,
   };
 
   const bg = {
@@ -123,7 +111,6 @@ const MetricCard = ({ metric, label, type, mode }: MetricCardProps) => {
     avgQty: "bg-green-100",
     avgQtyRange: "bg-green-100",
     active: "bg-orange-100",
-    forecast: "bg-green-100",
   };
 
   const border = {
@@ -134,7 +121,6 @@ const MetricCard = ({ metric, label, type, mode }: MetricCardProps) => {
     avgQty: "border-green-300",
     avgQtyRange: "border-green-300",
     active: "border-orange-300",
-    forecast: "border-green-300",
   };
 
   return (
@@ -157,7 +143,7 @@ const MetricCard = ({ metric, label, type, mode }: MetricCardProps) => {
           {tooltipText[type]}
         </div>
         <InformationCircleIcon
-          data-testid={`info-icon-${type}-${mode}`}
+          data-testid={`info-icon-${type}`}
           onMouseEnter={() => setShowTooltip(true)}
           onMouseLeave={() => setShowTooltip(false)}
           height={23}
