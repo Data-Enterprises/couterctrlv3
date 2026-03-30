@@ -77,6 +77,7 @@ const ExceptionRow = ({
                     : true;
                 });
                 dispatch(setTransList(filtered));
+                // dispatch(setTransOverviews(filtered))
               }
             })
             .catch((err: JsonError) => toast.error(err.message));
