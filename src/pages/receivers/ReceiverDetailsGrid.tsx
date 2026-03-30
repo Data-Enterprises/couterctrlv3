@@ -35,7 +35,7 @@ const ReceiverDetailsGrid = () => {
           <div>
             <div
               ref={topRef}
-              className="w-full mx-2 font-medium border-content border-b-2 grid grid-cols-[4%_10%_30%_6%_6%_6%_6%_6%_6%_6%_6%_6%]"
+              className="w-full mx-2 font-medium border-content border-b-2 grid grid-cols-[4%_10%_28%_6%_6%_6%_6%_6%_8%_6%_6%_6%]"
             >
               <div>Line</div>
               <div>UPC</div>
@@ -57,7 +57,7 @@ const ReceiverDetailsGrid = () => {
               {state.details.map((item, i) => (
                 <div
                   key={i}
-                  className="w-full mx-2 text-sm grid grid-cols-[4%_10%_30%_6%_6%_6%_6%_6%_6%_6%_6%_6%]"
+                  className="w-full mx-2 text-sm grid grid-cols-[4%_10%_28%_6%_6%_6%_6%_6%_8%_6%_6%_6%]"
                 >
                   <div>{item.line_number}</div>
                   <div>{item.product_code}</div>
@@ -81,7 +81,7 @@ const ReceiverDetailsGrid = () => {
               {state.totals.map((item, i) => (
                 <div
                   key={i}
-                  className="w-full mx-2 text-sm grid grid-cols-[4%_10%_30%_6%_6%_6%_6%_6%_6%_6%_6%_7%] font-medium"
+                  className="w-full mx-2 text-sm grid grid-cols-[4%_10%_28%_6%_6%_6%_6%_6%_8%_6%_6%_7%] font-medium"
                 >
                   <div></div>
                   <div></div>

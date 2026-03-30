@@ -134,7 +134,7 @@ const HourlyGrid = () => {
         </div>
         <span className="text-right text-sm md:text-[16px]">Hour: {hour}</span>
       </div>
-      <div className="h-[93%] grid grid-cols-2 gap-2 md:gap-0 md:grid-cols-[40%_59%] mt-1 md:mt-0">
+      <div className="h-[93%] grid grid-cols-2 gap-2 md:gap-0 md:grid-cols-[45%_54%] mt-1 md:mt-0">
         <div className="grid md:grid-cols-2 gap-2 max-h-[200px] md:max-h-[290px] rounded-lg overflow-y-scroll mx-1 md:mx-2 no-scrollbar">
           {rowData.map((r) => (
             <div

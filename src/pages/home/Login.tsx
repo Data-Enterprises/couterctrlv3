@@ -234,9 +234,9 @@ const Login = () => {
             </div>
           </div>
         </div>
-        {/* Change this before pushing for publishing */}
+        {/* TODO: Update this before pushing to publish */}
         <div className="absolute bottom-1 left-0 text-sm pl-2 select-none">
-          Last Updated 3/27/2026 @ 2:22 PM CST
+          Last Updated 3/30/2026 @ 10:00 AM CST
         </div>
       </div>
       <div className="relative hidden w-0 flex-1 lg:block">
