@@ -17,11 +17,8 @@ import FiltersModal from "./FiltersModal";
 
 const filterOptions = [
   "Sale Date",
-  // "UPC",
-  // "Description",
   "Total Sales",
   "Total Qty",
-  // "Price Type",
   "Transaction ID",
   "Refresh",
 ];
@@ -148,7 +145,7 @@ const CashiersTableFilters = () => {
           <div
             key={i}
             data-testid={`cashier-table-filter-${option
-              .split(" ")[0]
+              .split(" ").join("-")
               .toLowerCase()}`}
             className={`${panelStyle} ${activePanelStyle(option)}`}
             onClick={() => setFilterModal(option)}

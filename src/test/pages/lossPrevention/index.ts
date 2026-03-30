@@ -12,6 +12,7 @@ export const saleTypes = [
 export const transactions: TransactionListItem[] = [
   {
     storeid: 1,
+    transaction_id: "123",
     store_name: "Main Street Market",
     store_number: "001",
     sale_type: "CASH",
@@ -45,6 +46,7 @@ export const transactions: TransactionListItem[] = [
   },
   {
     storeid: 2,
+    transaction_id: "456",
     store_name: "Lakeside Grocery",
     store_number: "002",
     sale_type: "CARD",
@@ -839,7 +841,7 @@ export const mockTransListResp = {
       sale_start_time: "184044",
       sale_end_time: "184124",
       fs: 1,
-      fsa: 0,
+      fsa: 1,
       wic: 0,
       scalable: 0,
     },
