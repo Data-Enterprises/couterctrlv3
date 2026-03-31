@@ -129,7 +129,7 @@ const SideBar = () => {
   };
 
   const slidingStyle =
-    "data-[open=true]:w-[145px] md:data-[open=true]:w-[200px] data-[open=false]:w-0 md:data-[open=false]:w-12 transition-all duration-300 data-[open=true]:shadow-[0px_2px_4px_rgba(0,0,0,0.2)] data-[open=false]:shadow-[0px_3px_3px_rgba(0,0,0,0.2)]";
+    "data-[open=true]:w-[165px] md:data-[open=true]:w-[200px] data-[open=false]:w-0 md:data-[open=false]:w-12 transition-all duration-300 data-[open=true]:shadow-[0px_2px_4px_rgba(0,0,0,0.2)] data-[open=false]:shadow-[0px_3px_3px_rgba(0,0,0,0.2)]";
 
   // experimenting with this for mobile icon sizing
   const mobileIconStyle = () => {
