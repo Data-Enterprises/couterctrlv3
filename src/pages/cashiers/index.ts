@@ -45,6 +45,8 @@ export const useCashierCtx = () => {
     applyTransFilters,
     filteredTransList,
     noStoresFound,
+    transOverviews,
+    filteredTransOverviews
   } = useAppSelector((state) => state.cashier);
   const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector(
     (state) => state.search,
@@ -66,6 +68,7 @@ export const useCashierCtx = () => {
     exceptionSalesTypes,
     exceptionTierFilterApplied,
     exceptionQtyTypes,
+    filteredTransOverviews,
     riskLevelFilterApplied,
     cashiers,
     dataView,
@@ -104,5 +107,6 @@ export const useCashierCtx = () => {
     applyTransFilters,
     filteredTransList,
     noStoresFound,
+    transOverviews
   };
 };

@@ -9,9 +9,12 @@ import {
   setIsFetchingList,
   setListGridData,
   setNoReceivers,
+  setOperatorsList,
   setReceiverDetails,
   setReceiversList,
+  setRecMobileStage,
   setStoreId,
+  type Operator,
 } from "../../features/receiversSlice";
 
 import DatePickers from "../../components/datePickers/DatePickers";
@@ -23,12 +26,13 @@ import FiltersModal from "./filters/FiltersModal";
 import ExportModal from "./ExportModal";
 import { detailCols } from ".";
 import { useEffect, useState } from "react";
+import ReceiversMobileView from "./mobile/ReceiversMobileView";
 
 const Receivers = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.receivers);
-  const { url, token } = useAppSelector((state) => state.app);
+  const { url, token, isMobile } = useAppSelector((state) => state.app);
   const { assignedStores } = useAppSelector((state) => state.user);
   const { startDate, endDate } = useAppSelector((state) => state.search);
   const [totalsLine, setTotalsLine] = useState<string>("");
@@ -38,7 +42,7 @@ const Receivers = () => {
       const { cases, units, ucost, ext_cost, retail, ext_retail } =
         state.totals[0];
       setTotalsLine(
-        `,,Totals,${cases},${units},${ucost},${ext_cost},${retail},${ext_retail}`
+        `,,Totals,${cases},${units},${ucost},${ext_cost},${retail},${ext_retail}`,
       );
     }
   }, [state.totals]);
@@ -47,7 +51,7 @@ const Receivers = () => {
     if (state.listGridData.length === 0) {
       dispatch(setReceiverDetails([]));
     }
-  },[state.listGridData]);
+  }, [state.listGridData]);
 
   const getReceivers = () => {
     if (!state.storeid) {
@@ -62,6 +66,28 @@ const Receivers = () => {
         if (j.error == 0 && j.recievers.length > 0) {
           dispatch(setReceiversList(j.recievers));
           dispatch(setListGridData(j.recievers));
+
+          if (isMobile) {
+            dispatch(setRecMobileStage(2));
+            const reducedOperators: Operator[] = [...j.recievers].reduce(
+              (acc: Operator[], curr) => {
+                const found = acc.find(
+                  (o) =>
+                    o.cashier_number === curr.cashier_number &&
+                    o.cashier_name === curr.cashier_name,
+                );
+                if (!found) {
+                  acc.push({
+                    cashier_name: curr.cashier_name,
+                    cashier_number: curr.cashier_number,
+                  });
+                }
+                return acc;
+              },
+              [],
+            );
+            dispatch(setOperatorsList(reducedOperators));
+          }
         } else {
           dispatch(setNoReceivers(true));
         }
@@ -77,6 +103,15 @@ const Receivers = () => {
   const openExportModal = () => {
     dispatch(setIsExportModalOpen(true));
   };
+
+  if (isMobile) {
+    return (
+      <ReceiversMobileView
+        getReceivers={getReceivers}
+        setSelectedStore={setSelectedStore}
+      />
+    );
+  }
 
   return (
     <div className="w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 overflow-hidden">

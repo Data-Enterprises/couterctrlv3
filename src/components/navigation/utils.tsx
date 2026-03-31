@@ -131,7 +131,7 @@ export const navigation: Navigation[] = [
     name: "Receivers",
     href: "receivers",
     icon: ClipboardDocumentCheckIcon,
-    mobile: false,
+    mobile: true,
     children: [],
     childOpen: false,
     userLevels: ["*"],

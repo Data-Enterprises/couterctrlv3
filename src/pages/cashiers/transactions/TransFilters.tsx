@@ -3,6 +3,7 @@ import { useCashierCtx } from "..";
 import {
   resetAllTransFilters,
   setFilteredTransList,
+  setFilteredTransOverviews,
   setSelectedTransFilter,
   setTransFilterModalOpen,
 } from "../../../features/cashiersSlice";
@@ -18,21 +19,21 @@ const TransFilters = () => {
   useEffect(() => {
     if (ctx.applyTransFilters) {
       const date = ctx.transDateFilter;
-      const upc = ctx.transUpcFilter;
-      const desc = ctx.transDescFilter.toLowerCase();
+      // const upc = ctx.transUpcFilter;
+      // const desc = ctx.transDescFilter.toLowerCase();
       const cashierName = ctx.transCashNameFilter.toLowerCase();
       const totalSales = ctx.transTotalSalesFilter;
 
-      const filtered = [...ctx.transList].filter((item) => {
+      const filtered = [...ctx.transOverviews].filter((item) => {
         const matchesDate = date.length ? new Date(item.sale_date).toDateString() === new Date(date).toDateString() : true;
-        const matchesUpc =
-          upc.length && item.product_code
-            ? item.product_code.includes(upc)
-            : true;
-        const matchesDesc =
-          desc.length && item.product_description
-            ? item.product_description.toLowerCase().includes(desc)
-            : true;
+        // const matchesUpc =
+        //   upc.length && item.product_code
+        //     ? item.product_code.includes(upc)
+        //     : true;
+        // const matchesDesc =
+        //   desc.length && item.product_description
+        //     ? item.product_description.toLowerCase().includes(desc)
+        //     : true;
         const matchesCashierName = cashierName.length
           ? item.cashier_name.toLowerCase().includes(cashierName)
           : true;
@@ -45,13 +46,14 @@ const TransFilters = () => {
 
         return (
           matchesDate &&
-          matchesUpc &&
-          matchesDesc &&
+          // matchesUpc &&
+          // matchesDesc &&
           matchesCashierName &&
           matchesTotalSales
         );
       });
-      ctx.dispatch(setFilteredTransList(filtered));
+      // ctx.dispatch(setFilteredTransList(filtered));
+      ctx.dispatch(setFilteredTransOverviews(filtered));
     }
   }, [
     ctx.applyTransFilters,

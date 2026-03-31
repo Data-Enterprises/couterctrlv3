@@ -6,6 +6,7 @@ import type {
   CashierStore,
   ExceptionType,
   TransactionListItem,
+  TransactionOverview,
 } from "../interfaces";
 
 export type CashierFilterType =
@@ -37,6 +38,8 @@ interface CashiersState {
   cashiers: Cashier[];
   stores: CashierStore[];
   transList: TransactionListItem[];
+  transOverviews: TransactionOverview[];
+  filteredTransOverviews: TransactionOverview[];
   filteredTransList: TransactionListItem[];
   transDrillDown: TransactionListItem[][];
   selectedSaleType: string;
@@ -128,6 +131,8 @@ const initialState: CashiersState = {
   transFilterModalOpen: false,
   applyTransFilters: false,
   selectedTransFilter: "",
+  transOverviews: [],
+  filteredTransOverviews: [],
 };
 
 const cashiersSlice = createSlice({
@@ -246,6 +251,7 @@ const cashiersSlice = createSlice({
       state.transDrillDown = [];
       state.selectedSaleType = "";
       state.filteredTransList = [];
+      state.transOverviews = [];
     },
     reQueryStepTwo: (state) => {
       state.cashierCards = [];
@@ -255,6 +261,7 @@ const cashiersSlice = createSlice({
       state.transList = [];
       state.transDrillDown = [];
       state.selectedSaleType = "";
+      state.transOverviews = [];
     },
     resetCashierFilters: (state) => {
       state.cashierNameFilter = "";
@@ -321,6 +328,16 @@ const cashiersSlice = createSlice({
     setNoStoresFound: (state, action: PayloadAction<boolean>) => {
       state.noStoresFound = action.payload;
     },
+    setTransOverviews: (state, action: PayloadAction<TransactionOverview[]>) => {
+      state.transOverviews = action.payload;
+      state.filteredTransOverviews = action.payload;
+    },
+    setFilteredTransOverviews: (
+      state,
+      action: PayloadAction<TransactionOverview[]>,
+    ) => {
+      state.filteredTransOverviews = action.payload;
+    },
     resetAllTransFilters: (state) => {
       state.transDateFilter = "";
       state.transCashNameFilter = "";
@@ -376,5 +393,7 @@ export const {
   resetAllTransFilters,
   setFilteredTransList,
   setNoStoresFound,
+  setTransOverviews,
+  setFilteredTransOverviews,
 } = cashiersSlice.actions;
 export default cashiersSlice.reducer;

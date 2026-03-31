@@ -5,7 +5,7 @@ import {
   ModuleRegistry,
   type CellClickedEvent,
 } from "ag-grid-community";
-import { colDefs, theme } from ".";
+import { cols, theme } from ".";
 import {
   setExportModalOpen,
   setNoTransactions,
@@ -117,15 +117,14 @@ const TransactionsView = () => {
     );
   }
 
-  console.log(ctx.filteredTransList);
   return (
     <div
       className={`bg-custom-white h-full w-full space-y-2 p-2 rounded-lg shadow-lg`}
     >
       <div className="h-[94%]">
         <AgGridReact
-          rowData={ctx.filteredTransList}
-          columnDefs={colDefs}
+          rowData={ctx.filteredTransOverviews}
+          columnDefs={cols}
           onCellClicked={handleCellClicked}
           theme={theme}
           pagination={true}
