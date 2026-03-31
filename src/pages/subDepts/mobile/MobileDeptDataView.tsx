@@ -7,7 +7,8 @@ import { gpm } from "../../../functions";
 import { useAppDispatch } from "../../../hooks";
 import type { BarData } from "../display/widgets";
 import { useSubMarginCtx } from "../hooks";
-import { formatCurrency2 } from "../../../utils";
+import MarginDayCardOverview from "./MarginDayCardOverview";
+import ItemsView from "./ItemsView";
 const MobileDeptDataView = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
@@ -93,7 +94,7 @@ const MobileDeptDataView = () => {
           Reset Search
         </button>
         <button className="btn-themeBlue px-0" onClick={handleViewToggle}>
-          {}{view === "overview" ? "View Items" : "View Overview"}
+          {view === "overview" ? "View Items" : "View Overview"}
         </button>
       </div>
 
@@ -103,51 +104,13 @@ const MobileDeptDataView = () => {
           {barData
             .slice()
             .reverse()
-            .map((data) => (
-              <MarginDayCardOverview key={data.date} {...data} />
+            .map((data, i) => (
+              <MarginDayCardOverview key={i} {...data} />
             ))}
         </div>
       ) : (
-        <div>
-          <div>Item cards here</div>
-        </div>
+        <ItemsView />
       )}
-    </div>
-  );
-};
-
-const MarginDayCardOverview = (margin: BarData) => {
-  return (
-    <div className="bg-custom-white rounded-lg shadow-md text-sm">
-      <div className="bg-blue-500 text-custom-white rounded-t-lg py-0.5 px-2 font-medium">
-        {margin.date}
-      </div>
-      <div className="grid grid-cols-3 gap-2 p-2">
-        <div>
-          <div className="text-content/60">Total $ </div>
-          <div className="font-medium">{formatCurrency2(margin.sales)}</div>
-        </div>
-        <div>
-          <div className="text-content/60">Net $</div>
-          <div className="font-medium">{formatCurrency2(margin.net)}</div>
-        </div>
-        <div>
-          <div className="text-content/60">Qty</div>
-          <div className="font-medium">{margin.qty}</div>
-        </div>
-        <div>
-          <div className="text-content/60">Tax</div>
-          <div className="font-medium">{formatCurrency2(margin.tax)}</div>
-        </div>
-        <div>
-          <div className="text-content/60">COGS</div>
-          <div className="font-medium">{formatCurrency2(margin.cogs)}</div>
-        </div>
-        <div>
-          <div className="text-content/60">GPM</div>
-          <div className="font-medium">{margin.gpm}%</div>
-        </div>
-      </div>
     </div>
   );
 };
