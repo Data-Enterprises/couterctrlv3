@@ -82,7 +82,7 @@ const App = () => {
     >
       <UserDataLoader />
       {context.loggedIn ? (
-        <div className="h-screen w-screen">
+        <div className="max-h-screen max-w-screen">
           <TitleBar />
           <SideBar />
           <div
