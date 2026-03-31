@@ -151,10 +151,10 @@ export const navigation: Navigation[] = [
     name: "Sub Dept Margins",
     href: "sub-dept-margins",
     icon: CurrencyDollarIcon,
-    mobile: true,
+    mobile: false,
     children: [],
     childOpen: false,
-    userLevels: ["5", "7", "9"],
+    userLevels: ["*"],
     isHovering: false,
   },
   {
@@ -164,7 +164,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: ["5", "7", "9"],
+    userLevels: ["*"],
     isHovering: false,
   },
   {

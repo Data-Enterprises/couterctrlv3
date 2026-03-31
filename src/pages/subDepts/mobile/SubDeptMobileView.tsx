@@ -64,7 +64,7 @@ const SubDeptMobileView = () => {
     return store ? store.store_name : "";
   };
 
-  if (ctx.margins.length) return <MobileDeptDataView />;
+  if (ctx.selectedSubDeptId) return <MobileDeptDataView />;
 
   return (
     <div className="max-h-[calc(100vh-3rem)] min-h-[calc(100vh-3rem)] overflow-hidden">
