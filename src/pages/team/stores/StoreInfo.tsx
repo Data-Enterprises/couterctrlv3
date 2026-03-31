@@ -50,6 +50,7 @@ const StoreInfo = () => {
           </button>
           <input
             type="text"
+            data-testid="store-info-filter-input"
             className="basic-input focus:border col-span-2 bg-custom-white"
             value={filterText}
             onChange={(e) => setFilterText(e.currentTarget.value)}
