@@ -2,7 +2,10 @@ import { useMemo, useState } from "react";
 import { formatSubDate } from ".";
 import { calculateCogs } from "..";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
-import { resetSubMarginState } from "../../../features/subMarginSlice";
+import {
+  resetSubMarginState,
+  setSelectedWeekDay,
+} from "../../../features/subMarginSlice";
 import { gpm } from "../../../functions";
 import { useAppDispatch } from "../../../hooks";
 import type { BarData } from "../display/widgets";
@@ -87,6 +90,15 @@ const MobileDeptDataView = () => {
     setView((prev) => (prev === "overview" ? "items" : "overview"));
   };
 
+  const handleCardClick = (date: string) => {
+    if (ctx.selectedWeekDay === date) {
+      dispatch(setSelectedWeekDay(""));
+    } else {
+      dispatch(setSelectedWeekDay(date));
+      setView("items");
+    }
+  };
+
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-auto">
       <div className="w-full p-2 grid grid-cols-2 gap-2">
@@ -94,7 +106,7 @@ const MobileDeptDataView = () => {
           Reset Search
         </button>
         <button className="btn-themeBlue px-0" onClick={handleViewToggle}>
-          {view === "overview" ? "View Items" : "View Overview"}
+          {view === "overview" ? "Items" : "Day Overview"}
         </button>
       </div>
 
@@ -105,7 +117,11 @@ const MobileDeptDataView = () => {
             .slice()
             .reverse()
             .map((data, i) => (
-              <MarginDayCardOverview key={i} {...data} />
+              <MarginDayCardOverview
+                key={i}
+                margin={data}
+                onCardClick={() => handleCardClick(data.date)}
+              />
             ))}
         </div>
       ) : (

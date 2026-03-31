@@ -4,19 +4,25 @@ import { useAppDispatch } from "../../../hooks";
 import { useEffect, useState } from "react";
 import type { ItemRow } from "../display/widgets";
 import {
+  setFilteredCostGridData,
   setFilteredItemGridData,
   setItemGridData,
+  setSubDeptCost,
+  setSubDeptGridView,
 } from "../../../features/subMarginSlice";
 import MarginCard from "./MarginCard";
+import type { SubDeptCost } from "../../../interfaces";
+import CostCard from "./CostCard";
+import Input from "../../../components/inputs/Input";
 
 const ItemsView = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
-  const [gridData, setGridData] = useState<ItemRow[]>([]);
-  const [itemView, setItemView] = useState<"margin" | "cost">("margin");
+  const [searchText, setSearchText] = useState<string>("");
+  const [refreshFiltered, setRefreshFiltered] = useState<boolean>(true);
 
   useEffect(() => {
-    if (itemView === "margin") {
+    if (ctx.subDeptGridView === "item" && refreshFiltered) {
       const dateComp = ctx.selectedWeekDay
         ? new Date(ctx.selectedWeekDay).toISOString().split("T")[0]
         : "";
@@ -64,48 +70,127 @@ const ItemsView = () => {
         return acc;
       }, []);
 
-      const newData = reduced.map((item) => ({
-        ...item,
-        margin: ((item.total_sales - item.cogs) / item.total_sales) * 100 || 0,
-      }));
+      const newData = reduced
+        .map((item) => ({
+          ...item,
+          margin:
+            ((item.total_sales - item.cogs) / item.total_sales) * 100 || 0,
+        }))
+        .filter((item) => item.product_code.includes(searchText));
       dispatch(setItemGridData(newData));
       dispatch(setFilteredItemGridData(newData));
-      setGridData(newData);
-    } else {
-      // cost view
-    }
-  }, [ctx.selectedWeekDay, itemView]);
+      setRefreshFiltered(false);
 
-  const handleViewToggle = (option: "margin" | "cost") => {
-    setItemView(option);
+    } else if (ctx.subDeptGridView === "cost" && refreshFiltered) {
+      // cost view
+      const formatDate = (dte: string) => {
+        const split = dte.split("T")[0].split("-");
+        return `${split[1]}/${split[2]}/${split[0]}`;
+      };
+
+      const costData: SubDeptCost[] = ctx.margins.reduce(
+        (acc: SubDeptCost[], curr) => {
+          const found = acc.find(
+            (item) => item.product_code === curr.product_code,
+          );
+          if (!found) {
+            acc.push({
+              date: formatDate(curr.sale_date),
+              product_code: curr.product_code,
+              description: curr.product_description,
+              calculated_cost: curr.calculated_cost,
+              cost: curr.cost,
+              qty: curr.qty,
+              total_cost: calculateCogs(
+                curr.net_cost,
+                curr.cost,
+                curr.case_size,
+                curr.qty,
+                curr.weight,
+              ),
+            });
+          } else {
+            found.qty += curr.qty;
+            found.total_cost += calculateCogs(
+              curr.net_cost,
+              curr.cost,
+              curr.case_size,
+              curr.qty,
+              curr.weight,
+            );
+          }
+          return acc;
+        },
+        [],
+      ).filter((item) => item.product_code.includes(searchText));
+
+      dispatch(setSubDeptCost(costData));
+      dispatch(setFilteredCostGridData(costData));
+      setRefreshFiltered(false);
+    }
+  }, [ctx.selectedWeekDay, ctx.subDeptGridView, refreshFiltered]);
+
+  const handleViewToggle = (option: "item" | "cost") => {
+    dispatch(setSubDeptGridView(option));
+    setRefreshFiltered(true);
+  };
+
+  const handleTextChange = (text: string) => {
+    setSearchText(text);
+  };
+
+  const handleClear = () => {
+    setSearchText("");
+    setRefreshFiltered(true);
   };
 
   return (
     <div>
       <div className="grid grid-cols-2 gap-2 px-2">
         <button
-          className={`${itemView === "margin" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleViewToggle("margin")}
+          className={`${ctx.subDeptGridView === "item" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+          onClick={() => handleViewToggle("item")}
         >
-          Margin
+          Unique Items
         </button>
         <button
-          className={`${itemView === "cost" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
+          className={`${ctx.subDeptGridView === "cost" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
           onClick={() => handleViewToggle("cost")}
         >
-          Cost
+          Item Cost
         </button>
       </div>
 
-      {itemView === "margin" ? (
-        <div className="grid gap-2 p-2">
-          {gridData.map((item, i) => (
+      <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 p-2 items-end">
+        <Input
+          label="Full or Partial UPC"
+          value={searchText}
+          setValue={handleTextChange}
+        />
+        <button
+          className="btn-themeGreen px-0 py-1.5"
+          onClick={() => setRefreshFiltered(true)}
+        >
+          Search
+        </button>
+        <button
+          className="btn-themeOrange px-0 py-1.5"
+          onClick={handleClear}
+        >
+          Clear
+        </button>
+      </div>
+      {ctx.subDeptGridView === "item" ? (
+        <div className="grid gap-2 p-2 max-h-[calc(100vh-14.4rem)] overflow-y-auto">
+          {ctx.filteredItemGridData.map((item, i) => (
             <MarginCard key={i} item={item} />
           ))}
         </div>
       ) : (
-        <div>
-          <div>Cost</div>
+        <div className="grid gap-2 p-2 max-h-[calc(100vh-14.4rem)] overflow-y-auto">
+          {ctx.filteredCostGridData.map((cost, i) => (
+            <CostCard key={i} cost={cost} />
+          ))}
         </div>
       )}
     </div>
