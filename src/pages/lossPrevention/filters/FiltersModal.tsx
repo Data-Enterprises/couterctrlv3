@@ -2,14 +2,14 @@ import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 // The respective filter setters
 import {
-  setUpcFilter,
-  setDescFilter,
+  // setUpcFilter,
+  // setDescFilter,
   setTotalSalesFilter,
   setCashierTableThreshComp,
   setFilterModalOpen,
   setFilterType,
   setSaleDateFilter,
-  setSelectedPriceTypes,
+  // setSelectedPriceTypes,
   setTransIdFilter,
   setTotalQtyFilter,
   setCashierTableQtyThreshComp,
@@ -17,18 +17,20 @@ import {
 
 // Modal and filter components
 import Modal from "../../../components/Modal";
-import PriceTypeFilter from "./PriceTypeFilter";
+// import PriceTypeFilter from "./PriceTypeFilter";
 import TextFilter from "./TextFilter";
 import TotalSalesFilter from "./TotalSalesFilter";
 
 const FiltersModal = () => {
   const dispatch = useAppDispatch();
-  const { filterType, filterModalOpen, availablePriceTypes } = useAppSelector(
+  const { filterType, filterModalOpen, 
+    // availablePriceTypes 
+  } = useAppSelector(
     (state) => state.lossPrevention,
   );
   const [text, setText] = useState<string>("");
   const [threshold, setThreshold] = useState<string>("");
-  const [priceTypes, setPriceTypes] = useState<string[]>([]);
+  // const [priceTypes, setPriceTypes] = useState<string[]>([]);
   const [threshComp, setThreshComp] = useState<{ gt: boolean; lt: boolean }>({
     gt: false,
     lt: false,
@@ -39,7 +41,7 @@ const FiltersModal = () => {
     setText("");
     setThreshold("");
     dispatch(setFilterType(""));
-    setPriceTypes([]);
+    // setPriceTypes([]);
   };
 
   const handleSelection = (value: string) => {
@@ -60,27 +62,23 @@ const FiltersModal = () => {
     }
   };
 
-  const handlePriceTypeSelection = (type: string) => {
-    setPriceTypes((prev) => {
-      if (prev.includes(type)) {
-        return prev.filter((t) => t !== type);
-      } else {
-        return [...prev, type];
-      }
-    });
-  };
+  // const handlePriceTypeSelection = (type: string) => {
+  //   setPriceTypes((prev) => {
+  //     if (prev.includes(type)) {
+  //       return prev.filter((t) => t !== type);
+  //     } else {
+  //       return [...prev, type];
+  //     }
+  //   });
+  // };
 
   const renderFilter = () => {
-    if (filterType !== "Total Sales" && filterType !== "Price Type" && filterType !== "Total Qty") {
+    if (
+      filterType !== "Total Sales" &&
+      filterType !== "Price Type" &&
+      filterType !== "Total Qty"
+    ) {
       return <TextFilter type={filterType} text={text} setText={setText} />;
-    } else if (filterType === "Price Type") {
-      return (
-        <PriceTypeFilter
-          priceTypes={priceTypes}
-          handleSelection={handlePriceTypeSelection}
-          availablePriceTypes={availablePriceTypes}
-        />
-      );
     } else if (filterType === "Total Sales" || filterType === "Total Qty") {
       return (
         <TotalSalesFilter
@@ -90,7 +88,16 @@ const FiltersModal = () => {
           threshComp={threshComp}
         />
       );
-    }
+    } 
+    // else if (filterType === "Price Type") {
+    //   return (
+    //     <PriceTypeFilter
+    //       priceTypes={priceTypes}
+    //       handleSelection={handlePriceTypeSelection}
+    //       availablePriceTypes={availablePriceTypes}
+    //     />
+    //   );
+    // } 
   };
 
   const handleSubmit = () => {
@@ -98,15 +105,15 @@ const FiltersModal = () => {
       case "Sale Date":
         dispatch(setSaleDateFilter(text));
         break;
-      case "UPC":
-        dispatch(setUpcFilter(text));
-        break;
-      case "Description":
-        dispatch(setDescFilter(text));
-        break;
-      case "Price Type":
-        dispatch(setSelectedPriceTypes(priceTypes));
-        break;
+      // case "UPC":
+      //   dispatch(setUpcFilter(text));
+      //   break;
+      // case "Description":
+      //   dispatch(setDescFilter(text));
+      //   break;
+      // case "Price Type":
+      //   dispatch(setSelectedPriceTypes(priceTypes));
+      //   break;
       case "Total Sales":
         dispatch(setCashierTableThreshComp(threshComp));
         dispatch(setTotalSalesFilter(parseFloat(threshold)));

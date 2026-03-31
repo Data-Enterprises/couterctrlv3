@@ -5,7 +5,12 @@ import {
   getCashierTable,
   getTransactionList,
 } from "../../../api/lossPrevention";
-import type { ExceptionType, JsonError } from "../../../interfaces";
+import type {
+  ExceptionType,
+  JsonError,
+  // TransactionListItem,
+  // TransactionOverview,
+} from "../../../interfaces";
 import {
   formatBigNumber,
   formatCurrency2,
@@ -76,8 +81,36 @@ const ExceptionRow = ({
                     ? trans.cashier_number === cashierNumber
                     : true;
                 });
+
+                // const overviews: TransactionOverview[] = [...formatted].reduce(
+                //   (acc: TransactionOverview[], curr: TransactionListItem) => {
+                //     const found = acc.find(
+                //       (item) => item.transaction_id === curr.transaction_id,
+                //     );
+
+                //     if (!found) {
+                //       acc.push({
+                //         transaction_id: curr.transaction_id,
+                //         sale_date: curr.sale_date,
+                //         sale_type: curr.sale_type,
+                //         store_number: curr.store_number,
+                //         cashier_name: curr.cashier_name,
+                //         cashier_number: curr.cashier_number,
+                //         qty: curr.qty ? curr.qty : 0,
+                //         total_sales: curr.total_sales,
+                //         sale_id: curr.sale_id,
+                //         storeid: curr.storeid,
+                //       });
+                //     } else {
+                //       found.qty += curr.qty ? curr.qty : 0;
+                //       found.total_sales += curr.total_sales;
+                //     }
+                //     return acc;
+                //   },
+                //   [],
+                // );
                 dispatch(setTransList(filtered));
-                // dispatch(setTransOverviews(filtered))
+                // dispatch(setTransOverviews(overviews))
               }
             })
             .catch((err: JsonError) => toast.error(err.message));
