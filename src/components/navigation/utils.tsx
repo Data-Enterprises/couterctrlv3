@@ -151,7 +151,7 @@ export const navigation: Navigation[] = [
     name: "Sub Dept Margins",
     href: "sub-dept-margins",
     icon: CurrencyDollarIcon,
-    mobile: false,
+    mobile: true,
     children: [],
     childOpen: false,
     userLevels: ["5", "7", "9"],
