@@ -448,7 +448,6 @@ const CashiersTable = () => {
       resizable: false,
       headerStyle: { borderRight: "1px solid white" },
       cellClass: "no-outline-on-focus",
-      valueFormatter: (params) => formatDate(params.value),
     },
     {
       headerName: "Store",
@@ -496,7 +495,6 @@ const CashiersTable = () => {
       flex: 0.4,
       resizable: false,
       headerStyle: { borderRight: "1px solid white" },
-      valueFormatter: (params) => formatBigNumber(params.value, 0),
       cellClass: "no-outline-on-focus text-right",
     },
     {
@@ -504,7 +502,6 @@ const CashiersTable = () => {
       field: "total_sales",
       flex: 0.6,
       resizable: false,
-      valueFormatter: (params) => formatCurrency2(params.value),
       cellClass: "no-outline-on-focus text-right",
     },
   ];

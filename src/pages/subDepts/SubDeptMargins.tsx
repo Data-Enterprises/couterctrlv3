@@ -20,6 +20,7 @@ import CtxMenu from "../../components/CtxMenu";
 import { setMenuPosition } from "../../features/ctxMenuSlice";
 import type { Handlers } from "../../interfaces";
 import { smOptions } from "../upc/utils";
+import SubDeptMobileView from "./mobile/SubDeptMobileView";
 
 const SubDeptMargins = () => {
   const ctx = useSubMarginCtx();
@@ -87,6 +88,8 @@ const SubDeptMargins = () => {
     copyUpc: () => handleCopy(context.smClipboardText.upc),
     copyAllUpcs: () => handleCopy(context.smClipboardText.allUpc),
   };
+
+  if (ctx.isMobile) return <SubDeptMobileView />;
 
   return (
     <div className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] grid grid-cols-[18%_82%] gap-2 p-4">

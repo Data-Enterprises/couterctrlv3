@@ -170,9 +170,9 @@ export const lossPreventionSlice = createSlice({
     setFilterType: (state, action: PayloadAction<string>) => {
       state.filterType = action.payload;
     },
-    setAvailablePriceTypes: (state, action: PayloadAction<string[]>) => {
-      state.availablePriceTypes = action.payload;
-    },
+    // setAvailablePriceTypes: (state, action: PayloadAction<string[]>) => {
+    //   state.availablePriceTypes = action.payload;
+    // },
     setSelectedPriceTypes: (state, action: PayloadAction<string[]>) => {
       state.selectedPriceTypes = action.payload;
     },
@@ -205,11 +205,11 @@ export const lossPreventionSlice = createSlice({
     setPageText: (state, action: PayloadAction<string>) => {
       state.pageText = action.payload;
     },
-    resetGridPages: (state) => {
-      state.gridPages = 0;
-      state.currentGridPage = 0;
-      state.pageText = "1";
-    },
+    // resetGridPages: (state) => {
+    //   state.gridPages = 0;
+    //   state.currentGridPage = 0;
+    //   state.pageText = "1";
+    // },
     setSearchString: (state, action: PayloadAction<string>) => {
       state.searchString = action.payload;
     },
@@ -276,7 +276,7 @@ export const {
   setFilterModalOpen,
   setFilterType,
   setTotalSalesFilter,
-  setAvailablePriceTypes,
+  // setAvailablePriceTypes,
   setSelectedPriceTypes,
   setFetchingCashierTransactions,
   setTransactionDrillDown,
@@ -285,7 +285,7 @@ export const {
   resetCashierSlice,
   setTransIdFilter,
   setGridPages,
-  resetGridPages,
+  // resetGridPages,
   setCurrentGridPage,
   setPageText,
   setSearchString,
