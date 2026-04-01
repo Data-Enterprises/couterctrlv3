@@ -117,7 +117,8 @@ const ExceptionRow = ({
                           }));
                           const filtered = formatted.filter((trans) => {
                             return cashierNumber
-                              ? trans.cashier_number === cashierNumber && trans.sale_type === type
+                              ? trans.cashier_number === cashierNumber &&
+                                  trans.sale_type === type
                               : trans.sale_type === type;
                           });
 
@@ -154,14 +155,22 @@ const ExceptionRow = ({
                             },
                             [],
                           );
-                          console.log(overviews)
-                          console.log(overviews.reduce((acc, curr) => acc + curr.total_sales, 0))
-                          console.log(overviews.reduce((acc, curr) => acc + curr.qty, 0))
+                          // console.log(overviews);
+                          // console.log(
+                          //   overviews.reduce(
+                          //     (acc, curr) => acc + curr.total_sales,
+                          //     0,
+                          //   ),
+                          // );
+                          // console.log(
+                          //   overviews.reduce((acc, curr) => acc + curr.qty, 0),
+                          // );
                           dispatch(setTransList(filtered));
                           dispatch(setTransOverviews(overviews));
                         }
                       })
-                      .catch((err: JsonError) => toast.error(err.message));
+                      .catch((err: JsonError) => toast.error(err.message))
+                      .finally(() => dispatch(setFetchingTransactions(false)));
                   }
                 }
               });
@@ -220,14 +229,14 @@ const ExceptionRow = ({
                   dispatch(setTransOverviews(overviews));
                 }
               })
-              .catch((err: JsonError) => toast.error(err.message));
+              .catch((err: JsonError) => toast.error(err.message))
+              .finally(() => dispatch(setFetchingTransactions(false)));
           }
         } else {
           dispatch(setNoRowsFound(true));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setFetchingTransactions(false)));
   };
 
   return (

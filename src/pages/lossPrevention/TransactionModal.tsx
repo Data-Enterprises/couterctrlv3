@@ -6,28 +6,28 @@ import Transaction from "./Transaction";
 
 const TransactionModal = () => {
   const dispatch = useAppDispatch();
-  const cashier = useAppSelector((state) => state.lossPrevention);
+  const lp = useAppSelector((state) => state.lossPrevention);
 
   return (
     <Modal
-      isOpen={cashier.transModalOpen}
+      isOpen={lp.transModalOpen}
       modalClassName="bg-custom-white w-[38%] relative no-scrollbar max-h-[80vh] overflow-y-auto p-2 rounded-lg shadow-lg"
       onClose={() => dispatch(setTransModalOpen(false))}
     >
-      {cashier.noRowsReturned && (
+      {lp.noRowsReturned && (
         <div className="w-full h-full flex items-center justify-center">
           <p className="text-center text-gray-500 mt-4">
             No transactions found
           </p>
         </div>
       )}
-      {cashier.transactionDrillDown.length === 0 && !cashier.noRowsReturned ? (
+      {lp.transactionDrillDown.length === 0 && !lp.noRowsReturned ? (
         <div className="h-[320px]">
           <LoadingIndicator message="Fetching transaction..." />
         </div>
       ) : (
         <div data-testid="trans-modal" className="space-y-4">
-          {cashier.transactionDrillDown.map((transaction, i) => (
+          {lp.transactionDrillDown.map((transaction, i) => (
             <Transaction key={i} trans={transaction} />
           ))}
         </div>

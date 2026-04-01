@@ -19,49 +19,42 @@ const TransFilters = () => {
   useEffect(() => {
     if (ctx.applyTransFilters) {
       const date = ctx.transDateFilter;
-      // const upc = ctx.transUpcFilter;
-      // const desc = ctx.transDescFilter.toLowerCase();
       const cashierName = ctx.transCashNameFilter.toLowerCase();
       const totalSales = ctx.transTotalSalesFilter;
+      const totalQty = ctx.transTotalQtyFilter;
 
       const filtered = [...ctx.transOverviews].filter((item) => {
-        const matchesDate = date.length ? new Date(item.sale_date).toDateString() === new Date(date).toDateString() : true;
-        // const matchesUpc =
-        //   upc.length && item.product_code
-        //     ? item.product_code.includes(upc)
-        //     : true;
-        // const matchesDesc =
-        //   desc.length && item.product_description
-        //     ? item.product_description.toLowerCase().includes(desc)
-        //     : true;
+        const matchesDate = date.length
+          ? new Date(item.sale_date).toDateString() ===
+            new Date(date).toDateString()
+          : true;
         const matchesCashierName = cashierName.length
           ? item.cashier_name.toLowerCase().includes(cashierName)
           : true;
-        const matchesTotalSales =
-          totalSales.operator.length && totalSales.value
-            ? eval(
-                `${item.total_sales} ${totalSales.operator} ${totalSales.value}`,
-              )
-            : true;
+        const matchesTotalSales = totalSales.operator.length
+          ? eval(
+              `${item.total_sales} ${totalSales.operator} ${totalSales.value}`,
+            )
+          : true;
+        const matchesTotalQty = totalQty.operator.length
+          ? eval(`${item.qty} ${totalQty.operator} ${totalQty.value}`)
+          : true;
 
         return (
           matchesDate &&
-          // matchesUpc &&
-          // matchesDesc &&
           matchesCashierName &&
+          matchesTotalQty &&
           matchesTotalSales
         );
       });
-      // ctx.dispatch(setFilteredTransList(filtered));
       ctx.dispatch(setFilteredTransOverviews(filtered));
     }
   }, [
     ctx.applyTransFilters,
     ctx.transCashNameFilter,
     ctx.transDateFilter,
-    ctx.transDescFilter,
     ctx.transTotalSalesFilter,
-    ctx.transUpcFilter,
+    ctx.transTotalQtyFilter,
   ]);
 
   const activeFilter = (filter: string) => {
@@ -73,6 +66,8 @@ const TransFilters = () => {
       if (filter === "description" && ctx.transDescFilter.length) return true;
       if (filter === "total_sales" && ctx.transTotalSalesFilter.operator.length)
         return true;
+      if (filter === "total_qty" && ctx.transTotalQtyFilter.operator.length)
+        return true;
     }
     return false;
   };
@@ -81,14 +76,12 @@ const TransFilters = () => {
     if (ctx.applyTransFilters) {
       if (filter === "date" && ctx.transDateFilter.length)
         return `Date: ${ctx.transDateFilter}`;
-      if (filter === "upc" && ctx.transUpcFilter.length)
-        return `UPC: ${ctx.transUpcFilter}`;
       if (filter === "cashier_name" && ctx.transCashNameFilter.length)
         return `Cashier Name: ${ctx.transCashNameFilter}`;
-      if (filter === "description" && ctx.transDescFilter.length)
-        return `Description: ${ctx.transDescFilter}`;
       if (filter === "total_sales" && ctx.transTotalSalesFilter.operator.length)
         return `Total Sales: ${ctx.transTotalSalesFilter.operator} ${ctx.transTotalSalesFilter.value}`;
+      if (filter === "total_qty" && ctx.transTotalQtyFilter.operator.length)
+        return `Total Qty: ${ctx.transTotalQtyFilter.operator} ${ctx.transTotalQtyFilter.value}`;
     }
     return label;
   };
@@ -96,6 +89,7 @@ const TransFilters = () => {
   const handleRefresh = () => {
     ctx.dispatch(resetAllTransFilters());
     ctx.dispatch(setFilteredTransList(ctx.transList));
+    ctx.dispatch(setFilteredTransOverviews(ctx.transOverviews));
   };
 
   if (!ctx.transList.length) return null;
@@ -116,14 +110,6 @@ const TransFilters = () => {
         </button>
         <button
           className={`hover:shadow-inner shadow-md rounded-lg py-2 text-sm transition-all duration-200 ${
-            activeFilter("upc") ? "bg-orange-200" : ""
-          }`}
-          onClick={() => handleClick("upc")}
-        >
-          {renderText("upc", "UPC")}
-        </button>
-        <button
-          className={`hover:shadow-inner shadow-md rounded-lg py-2 text-sm transition-all duration-200 ${
             activeFilter("cashier_name") ? "bg-orange-200" : ""
           }`}
           onClick={() => handleClick("cashier_name")}
@@ -132,11 +118,11 @@ const TransFilters = () => {
         </button>
         <button
           className={`hover:shadow-inner shadow-md rounded-lg py-2 text-sm transition-all duration-200 ${
-            activeFilter("description") ? "bg-orange-200" : ""
+            activeFilter("total_qty") ? "bg-orange-200" : ""
           }`}
-          onClick={() => handleClick("description")}
+          onClick={() => handleClick("total_qty")}
         >
-          {renderText("description", "Description")}
+          {renderText("total_qty", "Total Qty")}
         </button>
         <button
           className={`hover:shadow-inner shadow-md rounded-lg py-2 text-sm transition-all duration-200 ${

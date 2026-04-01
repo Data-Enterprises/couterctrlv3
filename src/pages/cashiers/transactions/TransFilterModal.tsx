@@ -2,14 +2,13 @@ import { useCashierCtx } from "..";
 import Modal from "../../../components/Modal";
 import {
   setTransCashNameFilter,
-  setTransUpcFilter,
   setTransDateFilter,
-  setTransDescFilter,
   setTransTotalSalesFilter,
   defaultNumberFilter,
   setTransFilterModalOpen,
   setSelectedTransFilter,
   setApplyTransFilters,
+  setTransTotalQtyFilter,
 } from "../../../features/cashiersSlice";
 import Input from "../../../components/inputs/Input";
 import CheckBox from "../../../components/inputs/CheckBox";
@@ -18,8 +17,6 @@ import { useState } from "react";
 const TransFilterModal = () => {
   const ctx = useCashierCtx();
   const [date, setDate] = useState<string>(ctx.transDateFilter);
-  const [upc, setUpc] = useState<string>(ctx.transUpcFilter);
-  const [desc, setDesc] = useState<string>(ctx.transDescFilter);
   const [cashierName, setCashierName] = useState<string>(
     ctx.transCashNameFilter,
   );
@@ -36,15 +33,12 @@ const TransFilterModal = () => {
       } else if (ctx.selectedTransFilter === "cashier_name") {
         setCashierName("");
         ctx.dispatch(setTransCashNameFilter(""));
-      } else if (ctx.selectedTransFilter === "upc") {
-        setUpc("");
-        ctx.dispatch(setTransUpcFilter(""));
-      } else if (ctx.selectedTransFilter === "description") {
-        setDesc("");
-        ctx.dispatch(setTransDescFilter(""));
       } else if (ctx.selectedTransFilter === "total_sales") {
         setTotalValue("");
         ctx.dispatch(setTransTotalSalesFilter(defaultNumberFilter));
+      } else {
+        setTotalValue("");
+        ctx.dispatch(setTransTotalQtyFilter(defaultNumberFilter));
       }
     }
 
@@ -62,16 +56,17 @@ const TransFilterModal = () => {
       );
     }
 
+    if (ctx.selectedTransFilter === "total_qty") {
+      ctx.dispatch(
+        setTransTotalQtyFilter({
+          operator: ctx.transTotalQtyFilter.operator,
+          value: !isNaN(parseFloat(totalValue)) ? parseFloat(totalValue) : 0,
+        }),
+      );
+    }
+
     if (ctx.selectedTransFilter === "date") {
       ctx.dispatch(setTransDateFilter(date));
-    }
-
-    if (ctx.selectedTransFilter === "upc") {
-      ctx.dispatch(setTransUpcFilter(upc));
-    }
-
-    if (ctx.selectedTransFilter === "description") {
-      ctx.dispatch(setTransDescFilter(desc));
     }
 
     if (ctx.selectedTransFilter === "cashier_name") {
@@ -99,25 +94,11 @@ const TransFilterModal = () => {
           setValue={setDate}
         />
       )}
-      {ctx.selectedTransFilter === "upc" && (
-        <Input
-          label="UPC Filter"
-          value={upc}
-          setValue={setUpc}
-        />
-      )}
       {ctx.selectedTransFilter === "cashier_name" && (
         <Input
           label="Cashier Name Filter"
           value={cashierName}
           setValue={setCashierName}
-        />
-      )}
-      {ctx.selectedTransFilter === "description" && (
-        <Input
-          label="Description Filter"
-          value={desc}
-          setValue={setDesc}
         />
       )}
       {ctx.selectedTransFilter === "total_sales" && (
@@ -160,6 +141,60 @@ const TransFilterModal = () => {
                 ctx.dispatch(
                   setTransTotalSalesFilter({
                     ...ctx.transTotalSalesFilter,
+                    operator: "<",
+                  }),
+                )
+              }
+            />
+          </div>
+          <Input
+            label="Total Sales Filter"
+            value={totalValue}
+            setValue={handleSalesValue}
+          />
+        </div>
+      )}
+
+      {ctx.selectedTransFilter === "total_qty" && (
+        <div>
+          <div className="flex gap-2 justify-between">
+            <CheckBox
+              id={1}
+              label="Greater Than"
+              value={ctx.transTotalQtyFilter.operator === ">"}
+              isBool={true}
+              onChange={() =>
+                ctx.dispatch(
+                  setTransTotalQtyFilter({
+                    ...ctx.transTotalQtyFilter,
+                    operator: ">",
+                  }),
+                )
+              }
+            />
+            <CheckBox
+              id={2}
+              label="Equal To"
+              value={ctx.transTotalQtyFilter.operator === "="}
+              isBool={true}
+              onChange={() =>
+                ctx.dispatch(
+                  setTransTotalQtyFilter({
+                    ...ctx.transTotalQtyFilter,
+                    operator: "=",
+                  }),
+                )
+              }
+            />
+            <CheckBox
+              id={3}
+              label="Less Than"
+              value={ctx.transTotalQtyFilter.operator === "<"}
+              isBool={true}
+              onChange={() =>
+                ctx.dispatch(
+                  setTransTotalQtyFilter({
+                    ...ctx.transTotalQtyFilter,
                     operator: "<",
                   }),
                 )

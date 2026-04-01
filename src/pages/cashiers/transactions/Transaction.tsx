@@ -66,12 +66,6 @@ const Transaction = ({ trans }: TransactionProps) => {
     );
   };
 
-  const agg = () => {
-    return trans.reduce((acc, cur) => {
-      return acc + cur.net_sales;
-    }, 0);
-  };
-
   const handleEmailClick = () => {
     emailTransaction(context.url, context.token, trans[0].sale_id)
       .then((resp) => {
@@ -84,6 +78,20 @@ const Transaction = ({ trans }: TransactionProps) => {
         toast.error("Error emailing transaction: " + err.message),
       );
   };
+
+  const transaction =
+    cashier.selectedSaleType.toLowerCase() === "cancelled"
+      ? trans
+      : trans.slice(0, -1);
+  const totalSales = transaction.reduce((acc, cur) => acc + cur.total_sales, 0);
+  const netSales = transaction.reduce(
+    (acc, cur) => acc + cur.total_sales - cur.total_rounded_tax,
+    0,
+  );
+  const totalTax = transaction.reduce(
+    (acc, cur) => acc + cur.total_rounded_tax,
+    0,
+  );
 
   return (
     <div className="border border-blue-500 p-2 rounded-lg relative">
@@ -152,22 +160,18 @@ const Transaction = ({ trans }: TransactionProps) => {
           );
         })}
       </div>
-      <div className="mt-2">
+      <div className="mt-2 text-sm font-medium">
         <div className="flex gap-1">
           <div>Net Sales:</div>
-          {cashier.selectedSaleType.toLowerCase() === "cancelled" ? (
-            <div>{formatCurrency2(agg())}</div>
-          ) : (
-            <div>{formatCurrency2(trans[trans.length - 1].net_sales)}</div>
-          )}
+          <div>{formatCurrency2(netSales)}</div>
+        </div>
+        <div className="flex gap-1">
+          <div>Total Tax:</div>
+          <div>{formatCurrency2(totalTax)}</div>
         </div>
         <div className="flex gap-1">
           <div>Total Sales:</div>
-          {cashier.selectedSaleType.toLowerCase() === "cancelled" ? (
-            <div>{formatCurrency2(agg())}</div>
-          ) : (
-            <div>{formatCurrency2(trans[trans.length - 1].total_sales)}</div>
-          )}
+          <div>{formatCurrency2(totalSales)}</div>
         </div>
       </div>
     </div>
