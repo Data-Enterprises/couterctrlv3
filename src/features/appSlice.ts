@@ -15,10 +15,14 @@ interface AppState {
   isTablet: boolean;
   isDesktop: boolean;
   fetchingCredentials: boolean;
+  useDev: boolean;
 }
 
+const liveUrl = "https://y9v6viv36h.execute-api.us-east-1.amazonaws.com/Prod/";
+const devUrl = "http://127.0.0.1:5005/";
+
 export const initialState: AppState = {
-  url: "https://y9v6viv36h.execute-api.us-east-1.amazonaws.com/Prod/",
+  url: liveUrl,
   miktoUrl: "https://goliathai.casa/",
   apiKey: "35Se0kl65Far1hT4",
   key: "7801882436271592", // for the url api if needed (above)
@@ -32,6 +36,7 @@ export const initialState: AppState = {
   isTablet: false,
   isDesktop: true,
   fetchingCredentials: false,
+  useDev: false,
 };
 
 export const appSlice = createSlice({
@@ -59,6 +64,10 @@ export const appSlice = createSlice({
     setFetchingCredentials: (state, action: PayloadAction<boolean>) => {
       state.fetchingCredentials = action.payload;
     },
+    setUseDev: (state, action: PayloadAction<boolean>) => {
+      state.useDev = action.payload;
+      state.url = action.payload ? devUrl : liveUrl;
+    },
     resetAppSlice: () => initialState,
   },
 });
@@ -71,6 +80,7 @@ export const {
   setIsTablet,
   setIsDesktop,
   setFetchingCredentials,
+  setUseDev,
   resetAppSlice,
 } = appSlice.actions;
 

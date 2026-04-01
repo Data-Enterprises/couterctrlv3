@@ -157,6 +157,8 @@ const CashierSales = () => {
                   };
                 });
 
+                console.log(formatted)
+
                 const overviews: TransactionOverview[] = [...formatted].reduce(
                   (acc: TransactionOverview[], curr: TransactionListItem) => {
                     const found = acc.find(
