@@ -48,6 +48,7 @@ interface CashiersState {
   loadingStores: boolean;
   loadingCashiers: boolean;
   noStoresFound: boolean;
+  transactionLoadingMessage: string;
   // card filters
   exceptionSalesTypes: ExceptionType[];
   exceptionQtyTypes: ExceptionType[];
@@ -135,6 +136,7 @@ const initialState: CashiersState = {
   selectedTransFilter: "",
   transOverviews: [],
   filteredTransOverviews: [],
+  transactionLoadingMessage: "",
 };
 
 const cashiersSlice = createSlice({
@@ -221,6 +223,9 @@ const cashiersSlice = createSlice({
     ) => {
       state.filteredTransList = action.payload;
     },
+    setTransactionLoadingMessage: (state, action: PayloadAction<string>) => {
+      state.transactionLoadingMessage = action.payload;
+    },
     setApplyFilters: (state, action: PayloadAction<boolean>) => {
       state.applyFilters = action.payload;
       state.cashNameFilterApplied = state.cashierNameFilter;
@@ -254,6 +259,7 @@ const cashiersSlice = createSlice({
       state.selectedSaleType = "";
       state.filteredTransList = [];
       state.transOverviews = [];
+      state.transactionLoadingMessage = "";
     },
     reQueryStepTwo: (state) => {
       state.cashierCards = [];
@@ -262,6 +268,7 @@ const cashiersSlice = createSlice({
       state.loadingCashiers = true;
       state.transList = [];
       state.transDrillDown = [];
+      state.transactionLoadingMessage = "";
       state.selectedSaleType = "";
       state.transOverviews = [];
     },
@@ -284,6 +291,7 @@ const cashiersSlice = createSlice({
       state.exceptionSalesTypes = [];
       state.filteredStoreCards = state.storeCards;
       state.filteredCashierCards = state.cashierCards;
+      state.transactionLoadingMessage = "";
     },
     setTransModalOpen: (state, action: PayloadAction<boolean>) => {
       state.transModalOpen = action.payload;
@@ -333,7 +341,10 @@ const cashiersSlice = createSlice({
     setNoStoresFound: (state, action: PayloadAction<boolean>) => {
       state.noStoresFound = action.payload;
     },
-    setTransOverviews: (state, action: PayloadAction<TransactionOverview[]>) => {
+    setTransOverviews: (
+      state,
+      action: PayloadAction<TransactionOverview[]>,
+    ) => {
       state.transOverviews = action.payload;
       state.filteredTransOverviews = action.payload;
     },
@@ -400,5 +411,6 @@ export const {
   setTransOverviews,
   setTransTotalQtyFilter,
   setFilteredTransOverviews,
+  setTransactionLoadingMessage,
 } = cashiersSlice.actions;
 export default cashiersSlice.reducer;

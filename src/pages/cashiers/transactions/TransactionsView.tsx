@@ -112,7 +112,7 @@ const TransactionsView = () => {
   if (ctx.fetchingTransactions) {
     return (
       <div className="relative h-full w-full flex items-center justify-center rounded-lg shadow-lg">
-        <LoadingIndicator message="Fetching transactions..." />
+        <LoadingIndicator message={ctx.transactionLoadingMessage} />
       </div>
     );
   }

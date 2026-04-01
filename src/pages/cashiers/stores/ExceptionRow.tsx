@@ -20,6 +20,7 @@ import {
   setDataView,
   setFetchingTransactions,
   setNoRowsFound,
+  setTransactionLoadingMessage,
   setTransList,
   setTransOverviews,
 } from "../../../features/cashiersSlice";
@@ -51,6 +52,7 @@ const ExceptionRow = ({
 
   const handleTransactionCall = () => {
     dispatch(setTransList([]));
+    dispatch(setTransactionLoadingMessage("Loading Cashiers..."));
     dispatch(setDataView("transactions"));
     dispatch(setNoRowsFound(false));
     dispatch(setFetchingTransactions(true));
@@ -102,6 +104,9 @@ const ExceptionRow = ({
                   if (pages.every((p) => p.fetched)) {
                     const saleIds = Array.from(
                       new Set(allTrans.map((t) => t.sale_id)),
+                    );
+                    dispatch(
+                      setTransactionLoadingMessage("Loading Transactions..."),
                     );
                     getTransactionList(ctx.url, ctx.token, saleIds, 1, type)
                       .then((resp) => {
@@ -170,13 +175,17 @@ const ExceptionRow = ({
                         }
                       })
                       .catch((err: JsonError) => toast.error(err.message))
-                      .finally(() => dispatch(setFetchingTransactions(false)));
+                      .finally(() => {
+                        dispatch(setFetchingTransactions(false));
+                        dispatch(setTransactionLoadingMessage("Loading Cashiers..."));
+                      });
                   }
                 }
               });
             }
           } else {
             const saleIds = Array.from(new Set(allTrans.map((t) => t.sale_id)));
+            dispatch(setTransactionLoadingMessage("Loading Transactions..."));
             getTransactionList(ctx.url, ctx.token, saleIds, 1, type)
               .then((resp) => {
                 const j = resp.data;
@@ -230,7 +239,10 @@ const ExceptionRow = ({
                 }
               })
               .catch((err: JsonError) => toast.error(err.message))
-              .finally(() => dispatch(setFetchingTransactions(false)));
+              .finally(() => {
+                dispatch(setFetchingTransactions(false));
+                dispatch(setTransactionLoadingMessage("Loading Cashiers..."));
+              })
           }
         } else {
           dispatch(setNoRowsFound(true));

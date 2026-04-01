@@ -94,11 +94,6 @@ const Transaction = ({ trans }: TransactionProps) => {
     0,
   );
 
-  trans.forEach((item) => console.log(item));
-
-  // console.log("Total Sales:", totalSales);
-  // console.log("Net Sales:", netSales);
-
   return (
     <div className="border border-blue-500 p-2 rounded-lg relative">
       <div className="absolute right-2 top-2 flex gap-2">
