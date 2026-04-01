@@ -323,6 +323,7 @@ export interface TransactionListItem {
   cashier_name: string;
   sale_start_time: string;
   sale_end_time: string;
+  total_rounded_tax: number;
   fs: number;
   fsa: number;
   wic: number;

@@ -8,8 +8,8 @@ import {
 import type {
   ExceptionType,
   JsonError,
-  // TransactionListItem,
-  // TransactionOverview,
+  TransactionListItem,
+  TransactionOverview,
 } from "../../../interfaces";
 import {
   formatBigNumber,
@@ -20,7 +20,10 @@ import {
   setDataView,
   setFetchingTransactions,
   setNoRowsFound,
+  setSelectedSaleType,
+  setTransactionLoadingMessage,
   setTransList,
+  setTransOverviews,
 } from "../../../features/cashiersSlice";
 
 interface ExceptionInnerCardProps {
@@ -50,8 +53,10 @@ const ExceptionRow = ({
 
   const handleTransactionCall = () => {
     dispatch(setTransList([]));
+    dispatch(setTransactionLoadingMessage("Loading Cashiers..."));
     dispatch(setDataView("transactions"));
     dispatch(setNoRowsFound(false));
+    dispatch(setSelectedSaleType(type));
     dispatch(setFetchingTransactions(true));
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
@@ -59,67 +64,193 @@ const ExceptionRow = ({
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          const trans = [...j.transactions];
-          const uniqueSaleIds = Array.from(
-            new Set(trans.map((item) => item.sale_id)),
+          const allTrans = [...j.transactions].filter((t) =>
+            cashierNumber === 0
+              ? true
+              : t.cashier_number === cashierNumber && t.sale_type === type,
           );
+          // const trans = [...j.transactions].filter((t) =>
+          //   cashierNumber === 0 ? true : t.cashier_number === cashierNumber,
+          // );
+          // const uniqueSaleIds = trans.map((t) => t.sale_id);
+          if (j.total_pages > 1) {
+            const pages: { page: number; fetched: boolean }[] = [];
+            for (let page = 2; page <= j.total_pages; page++) {
+              pages.push({ page, fetched: false });
+            }
 
-          getTransactionList(ctx.url, ctx.token, uniqueSaleIds, 1, type)
-            .then((resp) => {
-              const j = resp.data;
-              if (j.error === 0) {
-                if (!j.transactions.length) {
-                  dispatch(setNoRowsFound(true));
-                  return;
+            for (let page = 2; page <= j.total_pages; page++) {
+              getCashierTable(
+                ctx.url,
+                ctx.token,
+                start,
+                end,
+                0,
+                storeid,
+                1,
+                [type],
+                page,
+              ).then((resp) => {
+                const j = resp.data;
+                if (j.error === 0) {
+                  allTrans.push(
+                    ...j.transactions.filter((t: any) =>
+                      cashierNumber === 0
+                        ? true
+                        : t.cashier_number === cashierNumber &&
+                          t.sale_type === type,
+                    ),
+                  );
+                  pages.find((p) => p.page === page)!.fetched = true;
+
+                  if (pages.every((p) => p.fetched)) {
+                    const saleIds = Array.from(
+                      new Set(allTrans.map((t) => t.sale_id)),
+                    );
+                    dispatch(
+                      setTransactionLoadingMessage("Loading Transactions..."),
+                    );
+                    getTransactionList(ctx.url, ctx.token, saleIds, 1, type)
+                      .then((resp) => {
+                        const j = resp.data;
+                        if (j.error === 0) {
+                          if (!j.transactions.length) {
+                            dispatch(setNoRowsFound(true));
+                            return;
+                          }
+                          const formatted = [...j.transactions].map((item) => ({
+                            ...item,
+                            transaction_id: item.sale_id.split("-")[1],
+                          }));
+                          const filtered = formatted.filter((trans) => {
+                            return cashierNumber
+                              ? trans.cashier_number === cashierNumber &&
+                                  trans.sale_type === type
+                              : trans.sale_type === type;
+                          });
+
+                          const overviews: TransactionOverview[] = [
+                            ...formatted,
+                          ].reduce(
+                            (
+                              acc: TransactionOverview[],
+                              curr: TransactionListItem,
+                            ) => {
+                              const found = acc.find(
+                                (item) =>
+                                  item.transaction_id === curr.transaction_id,
+                              );
+
+                              if (!found) {
+                                acc.push({
+                                  transaction_id: curr.transaction_id,
+                                  sale_date: curr.sale_date,
+                                  sale_type: curr.sale_type,
+                                  store_number: curr.store_number,
+                                  cashier_name: curr.cashier_name,
+                                  cashier_number: curr.cashier_number,
+                                  qty: curr.qty ? curr.qty : 0,
+                                  total_sales: curr.net_sales,
+                                  sale_id: curr.sale_id,
+                                  storeid: curr.storeid,
+                                });
+                              } else {
+                                found.qty += curr.qty ? curr.qty : 0;
+                                found.total_sales += curr.net_sales;
+                              }
+                              return acc;
+                            },
+                            [],
+                          );
+                          // console.log(overviews);
+                          // console.log(
+                          //   overviews.reduce(
+                          //     (acc, curr) => acc + curr.total_sales,
+                          //     0,
+                          //   ),
+                          // );
+                          // console.log(
+                          //   overviews.reduce((acc, curr) => acc + curr.qty, 0),
+                          // );
+                          dispatch(setTransList(filtered));
+                          dispatch(setTransOverviews(overviews));
+                        }
+                      })
+                      .catch((err: JsonError) => toast.error(err.message))
+                      .finally(() => {
+                        dispatch(setFetchingTransactions(false));
+                        dispatch(setTransactionLoadingMessage("Loading Cashiers..."));
+                      });
+                  }
                 }
-                const formatted = [...j.transactions].map((item) => ({
-                  ...item,
-                  transaction_id: item.sale_id.split("-")[1],
-                }));
-                const filtered = formatted.filter((trans) => {
-                  return cashierNumber
-                    ? trans.cashier_number === cashierNumber
-                    : true;
-                });
+              });
+            }
+          } else {
+            const saleIds = Array.from(new Set(allTrans.map((t) => t.sale_id)));
+            dispatch(setTransactionLoadingMessage("Loading Transactions..."));
+            getTransactionList(ctx.url, ctx.token, saleIds, 1, type)
+              .then((resp) => {
+                const j = resp.data;
+                if (j.error === 0) {
+                  if (!j.transactions.length) {
+                    dispatch(setNoRowsFound(true));
+                    return;
+                  }
+                  const formatted = [...j.transactions].map((item) => ({
+                    ...item,
+                    transaction_id: item.sale_id.split("-")[1],
+                  }));
+                  const filtered = formatted.filter((trans) => {
+                    return cashierNumber
+                      ? trans.cashier_number === cashierNumber &&
+                          trans.sale_type === type
+                      : trans.sale_type === type;
+                  });
 
-                // const overviews: TransactionOverview[] = [...formatted].reduce(
-                //   (acc: TransactionOverview[], curr: TransactionListItem) => {
-                //     const found = acc.find(
-                //       (item) => item.transaction_id === curr.transaction_id,
-                //     );
+                  const overviews: TransactionOverview[] = [
+                    ...formatted,
+                  ].reduce(
+                    (acc: TransactionOverview[], curr: TransactionListItem) => {
+                      const found = acc.find(
+                        (item) => item.transaction_id === curr.transaction_id,
+                      );
 
-                //     if (!found) {
-                //       acc.push({
-                //         transaction_id: curr.transaction_id,
-                //         sale_date: curr.sale_date,
-                //         sale_type: curr.sale_type,
-                //         store_number: curr.store_number,
-                //         cashier_name: curr.cashier_name,
-                //         cashier_number: curr.cashier_number,
-                //         qty: curr.qty ? curr.qty : 0,
-                //         total_sales: curr.total_sales,
-                //         sale_id: curr.sale_id,
-                //         storeid: curr.storeid,
-                //       });
-                //     } else {
-                //       found.qty += curr.qty ? curr.qty : 0;
-                //       found.total_sales += curr.total_sales;
-                //     }
-                //     return acc;
-                //   },
-                //   [],
-                // );
-                dispatch(setTransList(filtered));
-                // dispatch(setTransOverviews(overviews))
-              }
-            })
-            .catch((err: JsonError) => toast.error(err.message));
+                      if (!found) {
+                        acc.push({
+                          transaction_id: curr.transaction_id,
+                          sale_date: curr.sale_date,
+                          sale_type: curr.sale_type,
+                          store_number: curr.store_number,
+                          cashier_name: curr.cashier_name,
+                          cashier_number: curr.cashier_number,
+                          qty: curr.qty ? curr.qty : 0,
+                          total_sales: curr.total_sales,
+                          sale_id: curr.sale_id,
+                          storeid: curr.storeid,
+                        });
+                      } else {
+                        found.qty += curr.qty ? curr.qty : 0;
+                        found.total_sales += curr.total_sales;
+                      }
+                      return acc;
+                    },
+                    [],
+                  );
+                  dispatch(setTransList(filtered));
+                  dispatch(setTransOverviews(overviews));
+                }
+              })
+              .catch((err: JsonError) => toast.error(err.message))
+              .finally(() => {
+                dispatch(setFetchingTransactions(false));
+                dispatch(setTransactionLoadingMessage("Loading Cashiers..."));
+              })
+          }
         } else {
           dispatch(setNoRowsFound(true));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setFetchingTransactions(false)));
   };
 
   return (

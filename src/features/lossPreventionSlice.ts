@@ -52,6 +52,7 @@ export interface LossPreventionState {
   currentGridPage: number;
   pageText: string;
   searchString: string;
+  transactionLoadingMessage: string;
 }
 
 const initialState: LossPreventionState = {
@@ -91,6 +92,7 @@ const initialState: LossPreventionState = {
   searchString: "",
   selectedCashierDetailsIdx: -1,
   cashierDetailsTrendDirection: 0,
+  transactionLoadingMessage: "",
 };
 
 export const lossPreventionSlice = createSlice({
@@ -170,6 +172,9 @@ export const lossPreventionSlice = createSlice({
     setFilterType: (state, action: PayloadAction<string>) => {
       state.filterType = action.payload;
     },
+    setTransactionLoadingMessage: (state, action: PayloadAction<string>) => {
+      state.transactionLoadingMessage = action.payload;
+    },
     // setAvailablePriceTypes: (state, action: PayloadAction<string[]>) => {
     //   state.availablePriceTypes = action.payload;
     // },
@@ -243,6 +248,7 @@ export const lossPreventionSlice = createSlice({
       state.selectedCashier = { cashier_number: 0, store_number: "" };
       state.cashierDetailsTrendDirection = 0;
       state.transOverviews = [];
+      state.transactionLoadingMessage = "";
     },
     setTransOverviews: (
       state,
@@ -295,5 +301,6 @@ export const {
   setCashierDetailsTrendDirection,
   setCashierTableQtyThreshComp,
   setTotalQtyFilter,
+  setTransactionLoadingMessage,
 } = lossPreventionSlice.actions;
 export default lossPreventionSlice.reducer;

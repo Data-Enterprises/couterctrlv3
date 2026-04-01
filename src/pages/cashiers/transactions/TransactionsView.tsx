@@ -5,7 +5,7 @@ import {
   ModuleRegistry,
   type CellClickedEvent,
 } from "ag-grid-community";
-import { colDefs, theme } from ".";
+import { cols, theme } from ".";
 import {
   setExportModalOpen,
   setNoTransactions,
@@ -54,6 +54,7 @@ const TransactionsView = () => {
                   found.qty! += curr.qty!;
                   found.total_sales += curr.total_sales;
                   found.net_sales += curr.net_sales;
+                  found.total_rounded_tax += curr.total_rounded_tax;
                 } else {
                   acc.push({ ...curr, qty: curr.qty });
                 }
@@ -112,20 +113,19 @@ const TransactionsView = () => {
   if (ctx.fetchingTransactions) {
     return (
       <div className="relative h-full w-full flex items-center justify-center rounded-lg shadow-lg">
-        <LoadingIndicator message="Fetching transactions..." />
+        <LoadingIndicator message={ctx.transactionLoadingMessage} />
       </div>
     );
   }
 
-  console.log(ctx.filteredTransList);
   return (
     <div
       className={`bg-custom-white h-full w-full space-y-2 p-2 rounded-lg shadow-lg`}
     >
       <div className="h-[94%]">
         <AgGridReact
-          rowData={ctx.filteredTransList}
-          columnDefs={colDefs}
+          rowData={ctx.filteredTransOverviews}
+          columnDefs={cols}
           onCellClicked={handleCellClicked}
           theme={theme}
           pagination={true}

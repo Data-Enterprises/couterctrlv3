@@ -164,7 +164,7 @@ const HourlyGrid = () => {
           {!isMobile ? (
             <ResponsiveBar
               data={barData}
-              margin={{ top: 10, right: 0, bottom: 32, left: 50 }}
+              margin={{ top: 10, right: 0, bottom: selectedSalesPanel.sale_date ? 28 : 32, left: 50 }}
               keys={["total_sales"]}
               indexBy={barIndex}
               tooltip={({ value }) => (
@@ -183,9 +183,13 @@ const HourlyGrid = () => {
               axisBottom={{
                 renderTick: ({ x, y, textX, textY, value }) => {
                   // I set the full_date property on barData so I can process the DOW here
-                  const fullDate = barData.filter((d) => d.date === value)[0]
-                    .full_date;
-                  const dow = new Date(fullDate).toDateString().split(" ")[0];
+                  let fullDate = "";
+                  let dow = "";
+                  if (typeof value === "string") {
+                    fullDate = barData.filter((d) => d.date === value)[0]
+                      .full_date;
+                    dow = new Date(fullDate).toDateString().split(" ")[0];
+                  }
                   return (
                     <g transform={`translate(${x},${y + 4})`}>
                       <line
@@ -208,7 +212,7 @@ const HourlyGrid = () => {
                         <tspan x={0} dy={0}>
                           {dow}
                         </tspan>
-                        <tspan x={0} dy={12}>
+                        <tspan x={0} dy={typeof value === "number" ? 4 : 12}>
                           {value}
                         </tspan>
                       </text>

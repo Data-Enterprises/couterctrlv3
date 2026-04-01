@@ -6,6 +6,7 @@ import type {
   CashierStore,
   ExceptionType,
   TransactionListItem,
+  TransactionOverview,
 } from "../interfaces";
 
 export type CashierFilterType =
@@ -37,6 +38,8 @@ interface CashiersState {
   cashiers: Cashier[];
   stores: CashierStore[];
   transList: TransactionListItem[];
+  transOverviews: TransactionOverview[];
+  filteredTransOverviews: TransactionOverview[];
   filteredTransList: TransactionListItem[];
   transDrillDown: TransactionListItem[][];
   selectedSaleType: string;
@@ -45,6 +48,7 @@ interface CashiersState {
   loadingStores: boolean;
   loadingCashiers: boolean;
   noStoresFound: boolean;
+  transactionLoadingMessage: string;
   // card filters
   exceptionSalesTypes: ExceptionType[];
   exceptionQtyTypes: ExceptionType[];
@@ -78,6 +82,7 @@ interface CashiersState {
   transDateFilter: string;
   transCashNameFilter: string;
   transTotalSalesFilter: NumberFilter;
+  transTotalQtyFilter: NumberFilter;
   transUpcFilter: string;
   transDescFilter: string;
 }
@@ -123,11 +128,15 @@ const initialState: CashiersState = {
   transDateFilter: "",
   transCashNameFilter: "",
   transTotalSalesFilter: defaultNumberFilter,
+  transTotalQtyFilter: defaultNumberFilter,
   transUpcFilter: "",
   transDescFilter: "",
   transFilterModalOpen: false,
   applyTransFilters: false,
   selectedTransFilter: "",
+  transOverviews: [],
+  filteredTransOverviews: [],
+  transactionLoadingMessage: "",
 };
 
 const cashiersSlice = createSlice({
@@ -214,6 +223,9 @@ const cashiersSlice = createSlice({
     ) => {
       state.filteredTransList = action.payload;
     },
+    setTransactionLoadingMessage: (state, action: PayloadAction<string>) => {
+      state.transactionLoadingMessage = action.payload;
+    },
     setApplyFilters: (state, action: PayloadAction<boolean>) => {
       state.applyFilters = action.payload;
       state.cashNameFilterApplied = state.cashierNameFilter;
@@ -246,6 +258,8 @@ const cashiersSlice = createSlice({
       state.transDrillDown = [];
       state.selectedSaleType = "";
       state.filteredTransList = [];
+      state.transOverviews = [];
+      state.transactionLoadingMessage = "";
     },
     reQueryStepTwo: (state) => {
       state.cashierCards = [];
@@ -254,7 +268,9 @@ const cashiersSlice = createSlice({
       state.loadingCashiers = true;
       state.transList = [];
       state.transDrillDown = [];
+      state.transactionLoadingMessage = "";
       state.selectedSaleType = "";
+      state.transOverviews = [];
     },
     resetCashierFilters: (state) => {
       state.cashierNameFilter = "";
@@ -275,6 +291,7 @@ const cashiersSlice = createSlice({
       state.exceptionSalesTypes = [];
       state.filteredStoreCards = state.storeCards;
       state.filteredCashierCards = state.cashierCards;
+      state.transactionLoadingMessage = "";
     },
     setTransModalOpen: (state, action: PayloadAction<boolean>) => {
       state.transModalOpen = action.payload;
@@ -293,6 +310,9 @@ const cashiersSlice = createSlice({
     },
     setTransTotalSalesFilter: (state, action: PayloadAction<NumberFilter>) => {
       state.transTotalSalesFilter = action.payload;
+    },
+    setTransTotalQtyFilter: (state, action: PayloadAction<NumberFilter>) => {
+      state.transTotalQtyFilter = action.payload;
     },
     setNoTransactions: (state, action: PayloadAction<boolean>) => {
       state.noTransactions = action.payload;
@@ -321,12 +341,24 @@ const cashiersSlice = createSlice({
     setNoStoresFound: (state, action: PayloadAction<boolean>) => {
       state.noStoresFound = action.payload;
     },
+    setTransOverviews: (
+      state,
+      action: PayloadAction<TransactionOverview[]>,
+    ) => {
+      state.transOverviews = action.payload;
+      state.filteredTransOverviews = action.payload;
+    },
+    setFilteredTransOverviews: (
+      state,
+      action: PayloadAction<TransactionOverview[]>,
+    ) => {
+      state.filteredTransOverviews = action.payload;
+    },
     resetAllTransFilters: (state) => {
       state.transDateFilter = "";
       state.transCashNameFilter = "";
       state.transTotalSalesFilter = defaultNumberFilter;
-      state.transUpcFilter = "";
-      state.transDescFilter = "";
+      state.transTotalQtyFilter = defaultNumberFilter;
       state.applyTransFilters = false;
     },
     resetCashierState: () => initialState,
@@ -376,5 +408,9 @@ export const {
   resetAllTransFilters,
   setFilteredTransList,
   setNoStoresFound,
+  setTransOverviews,
+  setTransTotalQtyFilter,
+  setFilteredTransOverviews,
+  setTransactionLoadingMessage,
 } = cashiersSlice.actions;
 export default cashiersSlice.reducer;

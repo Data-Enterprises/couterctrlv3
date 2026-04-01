@@ -23,6 +23,10 @@ export const useSubMarginCtx = () => {
     searchValue,
     selectedWeekDay,
     subDeptGridView,
+    subDeptCost,
+    filteredCostGridData,
+    filteredItemGridData,
+    itemGridData,
   } = useAppSelector((state) => state.subMargin);
 
   const { assignedStores } = useAppSelector((state) => state.user);
@@ -41,6 +45,7 @@ export const useSubMarginCtx = () => {
     selectedWeek,
     selectedWeekDay,
     singleDate,
+    subDeptCost,
     subDepts,
     subDeptFitlerText,
     subDeptGridView,
@@ -51,6 +56,9 @@ export const useSubMarginCtx = () => {
     weekTwoMargins,
     weekThreeMargins,
     weekFourMargins,
+    filteredCostGridData,
+    filteredItemGridData,
+    itemGridData,
   };
 };
 

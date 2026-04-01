@@ -12,6 +12,9 @@ export type FilterType =
   | "TransactionID"
   | "";
 
+export type RecMobileStage = 1 | 2 | 3;
+export type Operator = { cashier_name: string; cashier_number: number };
+
 interface ReceiversState {
   storeid: number;
   list: ReceiverListItem[];
@@ -30,6 +33,10 @@ interface ReceiversState {
   filterType: FilterType;
   noReceivers: boolean;
   selectedInvoice: string;
+  recMobileStage: RecMobileStage;
+  selectedOperator: Operator | null;
+  operatorsList: Operator[];
+  filteredListDataMobile: ReceiverListItem[];
 }
 
 export const initialState: ReceiversState = {
@@ -50,6 +57,10 @@ export const initialState: ReceiversState = {
   filterType: "",
   noReceivers: false,
   selectedInvoice: "",
+  recMobileStage: 1,
+  selectedOperator: null,
+  operatorsList: [],
+  filteredListDataMobile: [],
 };
 
 export const receiversSlice = createSlice({
@@ -165,6 +176,22 @@ export const receiversSlice = createSlice({
       state.totals = [];
       state.noReceivers = false;
       state.selectedInvoice = "";
+      state.recMobileStage = 1;
+      state.selectedOperator = null;
+      state.operatorsList = [];
+      state.filteredListDataMobile = [];
+    },
+    setRecMobileStage: (state, action: PayloadAction<RecMobileStage>) => {
+      state.recMobileStage = action.payload;
+    },
+    setSelectedOperator: (state, action: PayloadAction<Operator>) => {
+      state.selectedOperator = action.payload;
+      state.filteredListDataMobile = state.list.filter(
+        (item) => item.cashier_number === action.payload.cashier_number,
+      );
+    },
+    setOperatorsList: (state, action: PayloadAction<Operator[]>) => {
+      state.operatorsList = action.payload;
     },
     resetReceiverSlice: () => initialState,
   },
@@ -186,7 +213,10 @@ export const {
   setFilterType,
   setFilterModalOpen,
   resetFilters,
+  setRecMobileStage,
   setSelectedInvoice,
   setNoReceivers,
+  setSelectedOperator,
+  setOperatorsList,
 } = receiversSlice.actions;
 export default receiversSlice.reducer;

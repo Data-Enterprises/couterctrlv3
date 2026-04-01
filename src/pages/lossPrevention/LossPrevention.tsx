@@ -30,7 +30,6 @@ const LossPrevention = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const getSaleTypesData = () => {
-    // dispatch(setFetchingCashierTransactions(false));
     if (cashier.saleTypes.length > 0) {
       dispatch(resetCashierSlice());
     }
@@ -117,7 +116,7 @@ const LossPrevention = () => {
             {cashier.fetchingCashierTransactions && (
               <LoadingIndicator
                 className="text-sm"
-                message={`Fetching Transactions`}
+                message={cashier.transactionLoadingMessage}
               />
             )}
           </div>
