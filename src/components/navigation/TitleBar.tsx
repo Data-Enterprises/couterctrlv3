@@ -2,15 +2,12 @@ import logo from "../../assets/dcr_counterctrl-favicon_32.png";
 import { BellIcon, ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { setIsNavOpen } from "../../features/navSlice";
-import { useEffect, useRef } from "react";
-import { setUseDev } from "../../features/appSlice";
 
 const TitleBar = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
   const nav = useAppSelector((state) => state.nav);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   const toggleNav = () => {
     dispatch(setIsNavOpen(!nav.isNavOpen));
@@ -20,38 +17,6 @@ const TitleBar = () => {
   const welcomeWidth = context.isDesktop
     ? "w-[calc(100vw-12rem)]"
     : "w-[calc(100vw-3rem)]";
-
-  const handleDevClick = (bool: boolean) => {
-    dispatch(setUseDev(bool));
-    handleChevronClick();
-  };
-
-  const handleChevronClick = () => {
-    if (menuRef.current) {
-      const display = menuRef.current.getAttribute("data-display");
-      menuRef.current.setAttribute(
-        "data-display",
-        display === "open" ? "close" : "open",
-      );
-    }
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target as Node) &&
-        (event.target as HTMLElement).id !== "dev-chevron"
-      ) {
-        menuRef.current.setAttribute("data-display", "close");
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   return (
     <div
@@ -71,7 +36,6 @@ const TitleBar = () => {
       >
         <div className="ml-4 flex items-center justify-between font-medium w-full relative">
           <div>Welcome {user.firstName}</div>
-          {context.useDev && <div data-testid="dev-mode-text" className="absolute right-[43%]">Development Mode</div>}
         </div>
         <div className="flex items-center h-full">
           <BellIcon className="h-6 w-6 m-2 cursor-pointer hover:text-accent1 transition-colors" />
@@ -80,27 +44,8 @@ const TitleBar = () => {
               <div className="text-sm font-medium">{user.username}</div>
               <ChevronDownIcon
                 id="dev-chevron"
-                className={`${user.userLevel < 9 ? "hidden" : "block"} h-4 w-4 m-2 cursor-pointer hover:text-accent1 transition-colors`}
-                onClick={handleChevronClick}
+                className={`h-4 w-4 m-2 cursor-pointer hover:text-accent1 transition-colors`}
               />
-              <div
-                ref={menuRef}
-                data-display="close"
-                className="data-[display=close]:hidden data-[display=open]:block bg-custom-white w-full rounded-b-lg shadow-md absolute left-0 translate-y-[91%] text-[13.5px] text-nowrap"
-              >
-                <div
-                  className={`${context.useDev ? "bg-orange-200 font-medium" : ""} cursor-pointer hover:bg-blue-200 transition-all duration-200 px-2 py-1`}
-                  onClick={() => handleDevClick(true)}
-                >
-                  Use Dev API
-                </div>
-                <div
-                  className={`${!context.useDev ? "bg-orange-200 font-medium" : ""} cursor-pointer hover:bg-blue-200 transition-all duration-200 px-2 py-1 rounded-b-lg`}
-                  onClick={() => handleDevClick(false)}
-                >
-                  Use Prod API
-                </div>
-              </div>
             </div>
           )}
         </div>

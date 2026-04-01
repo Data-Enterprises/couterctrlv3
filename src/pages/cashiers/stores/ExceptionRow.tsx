@@ -20,6 +20,7 @@ import {
   setDataView,
   setFetchingTransactions,
   setNoRowsFound,
+  setSelectedSaleType,
   setTransactionLoadingMessage,
   setTransList,
   setTransOverviews,
@@ -55,6 +56,7 @@ const ExceptionRow = ({
     dispatch(setTransactionLoadingMessage("Loading Cashiers..."));
     dispatch(setDataView("transactions"));
     dispatch(setNoRowsFound(false));
+    dispatch(setSelectedSaleType(type));
     dispatch(setFetchingTransactions(true));
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);

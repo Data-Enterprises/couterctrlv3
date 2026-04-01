@@ -54,6 +54,7 @@ const TransactionsView = () => {
                   found.qty! += curr.qty!;
                   found.total_sales += curr.total_sales;
                   found.net_sales += curr.net_sales;
+                  found.total_rounded_tax += curr.total_rounded_tax;
                 } else {
                   acc.push({ ...curr, qty: curr.qty });
                 }
