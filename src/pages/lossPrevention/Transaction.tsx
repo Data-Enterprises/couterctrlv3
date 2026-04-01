@@ -94,7 +94,7 @@ const Transaction = ({ trans }: TransactionProps) => {
     0,
   );
 
-  // trans.forEach((item) => console.log(item));
+  trans.forEach((item) => console.log(item));
 
   // console.log("Total Sales:", totalSales);
   // console.log("Net Sales:", netSales);

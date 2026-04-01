@@ -56,7 +56,7 @@ const TitleBar = () => {
   return (
     <div
       data-testid="title-bar"
-      className="h-12 w-full flex cursor-default select-none"
+      className="h-12 w-full flex cursor-default select-none transition-all duration-200"
     >
       <div
         data-testid="logo-area"
@@ -69,8 +69,9 @@ const TitleBar = () => {
       <div
         className={`shadow shadow-content/10 ${welcomeWidth} flex justify-between`}
       >
-        <div className="ml-4 flex items-center font-medium">
-          Welcome {user.firstName}
+        <div className="ml-4 flex items-center justify-between font-medium w-full relative">
+          <div>Welcome {user.firstName}</div>
+          {context.useDev && <div data-testid="dev-mode-text" className="absolute right-[43%]">Development Mode</div>}
         </div>
         <div className="flex items-center h-full">
           <BellIcon className="h-6 w-6 m-2 cursor-pointer hover:text-accent1 transition-colors" />

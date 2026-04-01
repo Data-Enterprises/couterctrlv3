@@ -52,7 +52,7 @@ const ReceiverDetailsGrid = () => {
             </div>
             <div
               style={{ maxHeight: height }}
-              className="overflow-y-scroll no-scrollbar"
+              className="overflow-y-auto no-scrollbar"
             >
               {state.details.map((item, i) => (
                 <div
@@ -68,7 +68,7 @@ const ReceiverDetailsGrid = () => {
                   <div className="pl-2">{formatCurrency2(item.ext_cost)}</div>
                   <div className="pl-2">{formatCurrency2(item.retail)}</div>
                   <div className="pl-2">{formatCurrency2(item.ext_retail)}</div>
-                  <div className="pl-2">{formatBigNumber(item.gm)}</div>
+                  <div className="pl-2">{formatBigNumber(item.gm, 2)}</div>
                   <div className="pl-2">{item.free}</div>
                   <div className="pl-2">{item.return}</div>
                 </div>
