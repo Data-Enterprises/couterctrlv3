@@ -39,7 +39,7 @@ const UniqueCashiersTable = () => {
       {cashiers.length && !fetchingCashierTransactions ? (
         <div
           data-testid="unique-cashiers-table"
-          className="bg-custom-white p-2 rounded-lg shadow-lg h-[85%]"
+          className="rounded-lg shadow-lg h-[85%]"
         >
           <div className="h-full">
             <AgGridReact
