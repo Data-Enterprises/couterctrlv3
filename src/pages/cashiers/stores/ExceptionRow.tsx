@@ -162,16 +162,6 @@ const ExceptionRow = ({
                             },
                             [],
                           );
-                          // console.log(overviews);
-                          // console.log(
-                          //   overviews.reduce(
-                          //     (acc, curr) => acc + curr.total_sales,
-                          //     0,
-                          //   ),
-                          // );
-                          // console.log(
-                          //   overviews.reduce((acc, curr) => acc + curr.qty, 0),
-                          // );
                           dispatch(setTransList(filtered));
                           dispatch(setTransOverviews(overviews));
                         }

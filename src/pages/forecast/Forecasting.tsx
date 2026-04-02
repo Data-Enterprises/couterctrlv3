@@ -51,7 +51,7 @@ const Forecasting = () => {
   const dispatch = useAppDispatch();
   const context = useForecastContext();
   const { height, scrollHeight } = useResizeContext("");
-  const [file, setFile] = useState<File | null>(null);
+  const [_, setFile] = useState<File | null>(null);
   const [filteredData, setFilteredData] = useState<Store[] | Group[]>([]);
   const { upcs, upcText } = useAppSelector((state) => state.upcs);
 
@@ -87,7 +87,6 @@ const Forecasting = () => {
 
     dispatch(setIsLoading(true));
     dispatch(reQuery());
-    console.log(file);
 
     getHistoryFromList(
       context.url,

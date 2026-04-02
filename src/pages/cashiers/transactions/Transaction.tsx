@@ -90,8 +90,8 @@ const Transaction = ({ trans }: TransactionProps) => {
     const transaction = trans.filter(
       (t) =>
         t.sale_type.toLowerCase() !== "tender" &&
-        t.product_description.toLowerCase() !== "ewic"
-        // t.product_code !== null,
+        t.product_description.toLowerCase() !== "ewic",
+      // t.product_code !== null,
     );
     totalTax = transaction.reduce((acc, cur) => {
       if (!cur.sale_type.toLowerCase().includes("void")) {
@@ -120,12 +120,6 @@ const Transaction = ({ trans }: TransactionProps) => {
       }
       return acc;
     }, 0);
-
-    // console.log(transaction);
-    // console.log("total sales: ", totalSales);
-    // console.log("net sales: ", netSales);
-    // console.log("total tax: ", totalTax);
-    // console.log("VOID AMOUNT: ", voidAmount);
   } else if (cashier.selectedSaleType.toLowerCase() === "refunded") {
     const transaction = trans.slice(0, -1);
     totalSales = transaction.reduce((acc, cur) => acc + cur.total_sales, 0);
@@ -146,12 +140,10 @@ const Transaction = ({ trans }: TransactionProps) => {
   } else {
     // The default works for No Sale, Backup, Cancelled
     totalSales = trans.reduce((acc, cur) => acc + cur.total_sales, 0);
-
     netSales = trans.reduce(
       (acc, cur) => acc + cur.total_sales - cur.total_rounded_tax,
       0,
     );
-
     totalTax = trans.reduce((acc, cur) => acc + cur.total_rounded_tax, 0);
   }
 
@@ -227,10 +219,12 @@ const Transaction = ({ trans }: TransactionProps) => {
           <div>Net Sales:</div>
           <div>{formatCurrency2(netSales)}</div>
         </div>
-        {totalTax > 0 && <div className="flex gap-1">
-          <div>Total Tax:</div>
-          <div>{formatCurrency2(totalTax)}</div>
-        </div>}
+        {totalTax > 0 && (
+          <div className="flex gap-1">
+            <div>Total Tax:</div>
+            <div>{formatCurrency2(totalTax)}</div>
+          </div>
+        )}
         <div className="flex gap-1">
           <div>Total Sales:</div>
           <div>{formatCurrency2(totalSales)}</div>

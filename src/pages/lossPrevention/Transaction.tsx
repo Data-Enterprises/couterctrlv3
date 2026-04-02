@@ -90,7 +90,7 @@ const Transaction = ({ trans }: TransactionProps) => {
     const transaction = trans.filter(
       (t) =>
         t.sale_type.toLowerCase() !== "tender" &&
-        t.product_description.toLowerCase() !== "ewic"
+        t.product_description.toLowerCase() !== "ewic",
       // t.product_code !== null,
     );
     totalTax = transaction.reduce((acc, cur) => {
@@ -207,7 +207,7 @@ const Transaction = ({ trans }: TransactionProps) => {
               <div>{item.product_code}</div>
               <div>{item.product_description}</div>
               <div>{item.qty}</div>
-              <div>{formatCurrency2(item.total_sales)}</div>
+              <div>{formatCurrency2(item.net_sales)}</div>
               <div>{renderStamps(item)}</div>
               <div>{item.sale_type}</div>
             </div>

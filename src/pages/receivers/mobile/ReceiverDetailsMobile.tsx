@@ -1,9 +1,9 @@
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppSelector } from "../../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 const ReceiverDetailsMobile = () => {
-  const dispatch = useAppDispatch();
+  // const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.receivers);
-  const details = state.details;
+  // const details = state.details;
   const totals = state.totals[0];
 
   return (

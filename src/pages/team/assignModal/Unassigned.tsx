@@ -68,7 +68,6 @@ const Unassigned = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0 && users.selectedUserId === userid) {
-          console.log(users.selectedUserId, userid)
           dispatch(setRefreshStores(true));
         }
       })

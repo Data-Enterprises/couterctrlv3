@@ -4,6 +4,8 @@ import { type SEARCH_TYPE, setType } from "../../features/searchSlice";
 import { useDispatch } from "react-redux";
 import { useEffect, useState, useRef } from "react";
 import { setUserPrefs } from "../../api/user";
+import type { JsonError } from "../../interfaces";
+import { useToast } from "../toasts/hooks/useToast";
 
 interface Props {
   singleStoreOnly?: boolean;
@@ -22,6 +24,7 @@ const options: iOption[] = [
 ];
 
 const SearchType = ({ singleStoreOnly = false }: Props) => {
+  const toast = useToast();
   const user = useAppSelector((state) => state.user);
   const context = useAppSelector((state) => state.app);
   const type = useAppSelector((state) => state.search.type);
@@ -90,7 +93,7 @@ const SearchType = ({ singleStoreOnly = false }: Props) => {
       last_route: nav.lastRoute,
       last_search: search.lastStore,
       last_group: search.lastGroup,
-    }).then((resp) => console.log(resp.data));
+    }).catch((err: JsonError) => toast.error(err.message));
 
     if (listRef.current) {
       listRef.current.setAttribute("data-display", "closed");
@@ -102,7 +105,7 @@ const SearchType = ({ singleStoreOnly = false }: Props) => {
       const currentStatus = listRef.current.getAttribute("data-display");
       listRef.current.setAttribute(
         "data-display",
-        currentStatus === "open" ? "closed" : "open"
+        currentStatus === "open" ? "closed" : "open",
       );
     }
   };
