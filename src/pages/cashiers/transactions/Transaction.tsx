@@ -157,6 +157,13 @@ const Transaction = ({ trans }: TransactionProps) => {
       }
       return acc;
     }, 0);
+
+    voidAmount = transaction.reduce((acc, cur) => {
+      if (cur.sale_type.toLowerCase().includes("void")) {
+        return acc + cur.net_sales;
+      }
+      return acc;
+    }, 0);
   } else {
     // The default works for No Sale, Backup, Cancelled
     totalSales = trans.reduce((acc, cur) => acc + cur.total_sales, 0);
@@ -249,13 +256,13 @@ const Transaction = ({ trans }: TransactionProps) => {
           <div>Total Sales:</div>
           <div>{formatCurrency2(totalSales)}</div>
         </div>
-        {cashier.selectedSaleType.toLowerCase() === "voided" && (
+        {voidAmount !== 0 && (
           <div className="flex gap-1">
             <div>Void Amount:</div>
             <div>{formatCurrency2(voidAmount)}</div>
           </div>
         )}
-        {cashier.selectedSaleType.toLowerCase() === "refunded" && (
+        {refundAmount !== 0 && (
           <div className="flex gap-1">
             <div>Refund Amount:</div>
             <div>{formatCurrency2(refundAmount)}</div>
