@@ -70,6 +70,8 @@ const LossPrevention = () => {
   const cols = context.isDesktop ? "grid-cols-2" : "grid-cols-1 mt-4";
   const cardContainer = context.isDesktop ? `flex flex-col mr-4 gap-2` : "";
 
+  const msg = cashier.selectedSaleType === "Description" ? cashier.searchString : cashier.selectedSaleType;
+
   return (
     <div data-testid="cashiers-page" className={pageContainer}>
       <TransactionModal />
@@ -103,7 +105,7 @@ const LossPrevention = () => {
               <div className="w-full h-64 relative">
                 <LoadingIndicator
                   className="text-sm"
-                  message={`Loading data for ${cashier.selectedSaleType}`}
+                  message={`Loading data for ${msg}`}
                 />
               </div>
             ) : null}

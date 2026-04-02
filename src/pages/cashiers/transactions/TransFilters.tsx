@@ -101,7 +101,7 @@ const TransFilters = () => {
       </div>
       <div className="bg-custom-white grid p-2 gap-2 rounded-b-lg">
         <button
-          className={`hover:shadow-inner shadow-md rounded-lg py-2 text-sm transition-all duration-200 ${
+          className={`hover:bg-blue-200 shadow-md rounded-lg py-2 transition-all duration-200 ${
             activeFilter("date") ? "bg-orange-200" : ""
           }`}
           onClick={() => handleClick("date")}
@@ -109,7 +109,7 @@ const TransFilters = () => {
           {renderText("date", "Date")}
         </button>
         <button
-          className={`hover:shadow-inner shadow-md rounded-lg py-2 text-sm transition-all duration-200 ${
+          className={`hover:bg-blue-200 shadow-md rounded-lg py-2 transition-all duration-200 ${
             activeFilter("cashier_name") ? "bg-orange-200" : ""
           }`}
           onClick={() => handleClick("cashier_name")}
@@ -117,7 +117,7 @@ const TransFilters = () => {
           {renderText("cashier_name", "Cashier Name")}
         </button>
         <button
-          className={`hover:shadow-inner shadow-md rounded-lg py-2 text-sm transition-all duration-200 ${
+          className={`hover:bg-blue-200 shadow-md rounded-lg py-2 transition-all duration-200 ${
             activeFilter("total_qty") ? "bg-orange-200" : ""
           }`}
           onClick={() => handleClick("total_qty")}
@@ -125,7 +125,7 @@ const TransFilters = () => {
           {renderText("total_qty", "Total Qty")}
         </button>
         <button
-          className={`hover:shadow-inner shadow-md rounded-lg py-2 text-sm transition-all duration-200 ${
+          className={`hover:bg-blue-200 shadow-md rounded-lg py-2 transition-all duration-200 ${
             activeFilter("total_sales") ? "bg-orange-200" : ""
           }`}
           onClick={() => handleClick("total_sales")}
@@ -133,7 +133,7 @@ const TransFilters = () => {
           {renderText("total_sales", "Total Sales")}
         </button>
         <button
-          className={`hover:shadow-inner shadow-md rounded-lg py-2 text-sm transition-all duration-200`}
+          className={`hover:bg-blue-200 shadow-md rounded-lg py-2 transition-all duration-200`}
           onClick={handleRefresh}
         >
           Refresh

@@ -73,24 +73,22 @@ const CouponGridFilters = () => {
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg mt-4">
-      <div className="bg-blue-500 text-custom-white font-medium rounded-t-lg px-4 py-1">
+      <div className="bg-blue-500 text-custom-white font-medium rounded-t-lg px-2 py-0.5">
         Filter By
       </div>
-      <div className="px-4 py-2">
-        <div className="grid grid-row-6 py-2 gap-2">
-          {filterOptions.map((option, i) => (
-            <div
-              key={i}
-              data-testid={`coupons-table-filter-${option
-                .split(" ")[0]
-                .toLowerCase()}`}
-              className={`${panelStyle} ${activePanelStyle(option)}`}
-              onClick={() => setFilterModal(option)}
-            >
-              {renderFilterText(option as FilterType)}
-            </div>
-          ))}
-        </div>
+      <div className="grid grid-row-6 p-2 gap-2">
+        {filterOptions.map((option, i) => (
+          <div
+            key={i}
+            data-testid={`coupons-table-filter-${option
+              .split(" ")[0]
+              .toLowerCase()}`}
+            className={`${panelStyle} ${activePanelStyle(option)}`}
+            onClick={() => setFilterModal(option)}
+          >
+            {renderFilterText(option as FilterType)}
+          </div>
+        ))}
       </div>
     </div>
   );

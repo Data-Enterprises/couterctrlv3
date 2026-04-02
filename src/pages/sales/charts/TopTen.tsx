@@ -190,7 +190,6 @@ const TopTen = () => {
         <div className="text-sm pb-2 md:pb-0 px-2 md:px-0">
           <div className="text-xs mb-2">
             <div className="flex gap-1 items-center">
-              <div className="text-content/60">UPC:</div>
               <div className="font-medium">
                 {selectedTopTenItem?.product_code}
               </div>

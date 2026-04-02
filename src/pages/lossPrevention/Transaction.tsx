@@ -132,11 +132,6 @@ const Transaction = ({ trans }: TransactionProps) => {
     }, 0);
 
     netSales = transaction.reduce((acc, cur) => {
-      // voided => do not add
-      // if (cur.sale_type.toLowerCase().includes("void")) {
-      //   return acc;
-      // }
-
       if (
         cur.sale_type.toLowerCase().includes("refund") ||
         cur.sale_type.toLowerCase().includes("sale")
@@ -163,13 +158,15 @@ const Transaction = ({ trans }: TransactionProps) => {
       return acc;
     }, 0);
   } else {
-    // The default works for No Sale, Backup, Cancelled
-    totalSales = trans.reduce((acc, cur) => acc + cur.total_sales, 0);
-    netSales = trans.reduce(
+    // The default works for No Sale, Backup, Cancelled, and Description
+    const bool = cashier.selectedSaleType.toLowerCase() === "description";
+    const transaction = bool ? trans.slice(0, -1) : trans;
+    totalSales = transaction.reduce((acc, cur) => acc + cur.total_sales, 0);
+    netSales = transaction.reduce(
       (acc, cur) => acc + cur.total_sales - cur.total_rounded_tax,
       0,
     );
-    totalTax = trans.reduce((acc, cur) => acc + cur.total_rounded_tax, 0);
+    totalTax = transaction.reduce((acc, cur) => acc + cur.total_rounded_tax, 0);
   }
 
   return (
@@ -232,7 +229,13 @@ const Transaction = ({ trans }: TransactionProps) => {
               <div>{item.product_code}</div>
               <div>{item.product_description}</div>
               <div>{item.qty}</div>
-              <div>{formatCurrency2(item.net_sales)}</div>
+              <div>
+                {formatCurrency2(
+                  cashier.selectedSaleType === "Description"
+                    ? item.total_sales
+                    : item.net_sales,
+                )}
+              </div>
               <div>{renderStamps(item)}</div>
               <div>{item.sale_type}</div>
             </div>
