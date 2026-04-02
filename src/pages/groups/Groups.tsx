@@ -78,8 +78,8 @@ const Groups = () => {
     : "w-full h-[calc(100vh-3rem)] p-2 flex flex-col gap-2";
 
   const optionBtnStyle = ctx.isDesktop
-    ? "bg-custom-white rounded-lg shadow-lg p-4 grid grid-cols-4 gap-4 w-[55%]"
-    : "bg-custom-white rounded-lg shadow-lg p-4 grid gap-2";
+    ? "bg-custom-white rounded-lg shadow-lg p-2 grid grid-cols-4 gap-2 w-[55%]"
+    : "bg-custom-white rounded-lg shadow-lg p-2 grid gap-2";
 
   const renderForm = () => {
     switch (ctx.selectedForm) {
