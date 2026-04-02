@@ -122,18 +122,38 @@ const Transaction = ({ trans }: TransactionProps) => {
     }, 0);
   } else if (cashier.selectedSaleType.toLowerCase() === "refunded") {
     const transaction = trans.slice(0, -1);
-    totalSales = transaction.reduce((acc, cur) => acc + cur.total_sales, 0);
+    totalSales = transaction.reduce((acc, cur) => {
+      // voided => do not add
+      if (cur.sale_type.toLowerCase().includes("void")) {
+        return acc;
+      }
 
-    netSales = transaction.reduce(
-      (acc, cur) => acc + cur.total_sales - cur.total_rounded_tax,
-      0,
-    );
+      return acc + cur.total_sales;
+    }, 0);
 
-    totalTax = transaction.reduce((acc, cur) => acc + cur.total_rounded_tax, 0);
+    netSales = transaction.reduce((acc, cur) => {
+      if (
+        cur.sale_type.toLowerCase().includes("refund") ||
+        cur.sale_type.toLowerCase().includes("sale")
+      ) {
+        return acc + cur.total_sales - cur.total_rounded_tax;
+      }
+
+      return acc;
+    }, 0);
+
+    totalTax = transaction.reduce((acc, cur) => {
+      // voided => do not add
+      if (cur.sale_type.toLowerCase().includes("void")) {
+        return acc;
+      }
+
+      return acc + cur.total_rounded_tax;
+    }, 0);
 
     refundAmount = transaction.reduce((acc, cur) => {
       if (cur.sale_type.toLowerCase().includes("refund")) {
-        return acc + cur.net_sales;
+        return acc + cur.total_sales;
       }
       return acc;
     }, 0);
@@ -148,7 +168,7 @@ const Transaction = ({ trans }: TransactionProps) => {
   }
 
   return (
-    <div className="border border-blue-500 p-2 rounded-lg relative">
+    <div className="border border-blue-500 p-2 rounded-lg relative select-none">
       <div className="absolute right-2 top-2 flex gap-2">
         <button
           data-testid="cashier-trans-modal-email-btn"
