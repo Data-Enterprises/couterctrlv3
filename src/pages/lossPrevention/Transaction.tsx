@@ -202,7 +202,7 @@ const Transaction = ({ trans }: TransactionProps) => {
           return (
             <div
               key={i}
-              className="grid grid-cols-[18%_40%_5%_10%_12%_1fr] gap-1 text-[13px] mt-1.5"
+              className="grid grid-cols-[18%_42%_5%_10%_10%_1fr] gap-1 text-[13px] mt-1.5"
             >
               <div>{item.product_code}</div>
               <div>{item.product_description}</div>
@@ -219,10 +219,12 @@ const Transaction = ({ trans }: TransactionProps) => {
           <div>Net Sales:</div>
           <div>{formatCurrency2(netSales)}</div>
         </div>
-        <div className="flex gap-1">
-          <div>Total Tax:</div>
-          <div>{formatCurrency2(totalTax)}</div>
-        </div>
+        {totalTax > 0 && (
+          <div className="flex gap-1">
+            <div>Total Tax:</div>
+            <div>{formatCurrency2(totalTax)}</div>
+          </div>
+        )}
         <div className="flex gap-1">
           <div>Total Sales:</div>
           <div>{formatCurrency2(totalSales)}</div>

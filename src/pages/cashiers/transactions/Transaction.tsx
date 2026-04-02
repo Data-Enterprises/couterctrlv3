@@ -202,7 +202,7 @@ const Transaction = ({ trans }: TransactionProps) => {
           return (
             <div
               key={i}
-              className="grid grid-cols-[18%_40%_5%_10%_12%_1fr] gap-1 text-[13px] mt-1.5"
+              className="grid grid-cols-[18%_42%_5%_10%_10%_1fr] gap-1 text-[13px] mt-1.5"
             >
               <div>{item.product_code}</div>
               <div>{item.product_description}</div>
