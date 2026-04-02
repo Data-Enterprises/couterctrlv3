@@ -43,7 +43,7 @@ const CreateUserGroup = () => {
   };
 
   const containerStyle = isDesktop
-    ? "bg-custom-white p-4 rounded-md shadow-md w-[30%]"
+    ? "bg-custom-white p-4 rounded-md shadow-md w-[25%]"
     : "bg-custom-white p-4 rounded-md shadow-md w-full";
 
   return (

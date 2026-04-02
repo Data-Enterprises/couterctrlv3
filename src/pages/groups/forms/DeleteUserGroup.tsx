@@ -60,7 +60,7 @@ const DeleteUserGroup = () => {
 
     return (
       <div
-        className={`p-4 bg-custom-white rounded-lg shadow-lg ${isDesktop ? "w-[30%]" : "w-full"}`}
+        className={`p-4 bg-custom-white rounded-lg shadow-lg ${isDesktop ? "w-[25%]" : "w-full"}`}
       >
         <div className="text-center">Are you sure you want to delete</div>
         <div className="text-center">
@@ -81,7 +81,7 @@ const DeleteUserGroup = () => {
   }
 
   const containerStyle = isDesktop
-    ? "bg-custom-white p-4 rounded-md shadow-md w-[30%]"
+    ? "bg-custom-white p-4 rounded-md shadow-md w-[25%]"
     : "bg-custom-white p-4 rounded-md shadow-md w-full";
 
   return (
