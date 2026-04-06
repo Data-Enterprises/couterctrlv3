@@ -9,12 +9,14 @@ import {
   setIsFetchingList,
   setListGridData,
   setNoReceivers,
-  setOperatorsList,
+  // setOperatorsList,
   setReceiverDetails,
   setReceiversList,
   setRecMobileStage,
+  setReducedVendors,
   setStoreId,
-  type Operator,
+  // type Operator,
+  type ReducedVendor,
 } from "../../features/receiversSlice";
 
 import DatePickers from "../../components/datePickers/DatePickers";
@@ -69,24 +71,49 @@ const Receivers = () => {
 
           if (isMobile) {
             dispatch(setRecMobileStage(2));
-            const reducedOperators: Operator[] = [...j.recievers].reduce(
-              (acc: Operator[], curr) => {
-                const found = acc.find(
-                  (o) =>
-                    o.cashier_number === curr.cashier_number &&
-                    o.cashier_name === curr.cashier_name,
-                );
-                if (!found) {
-                  acc.push({
-                    cashier_name: curr.cashier_name,
-                    cashier_number: curr.cashier_number,
-                  });
-                }
-                return acc;
-              },
-              [],
-            );
-            dispatch(setOperatorsList(reducedOperators));
+            // const reducedOperators: Operator[] = [...j.recievers].reduce(
+            //   (acc: Operator[], curr) => {
+            //     const found = acc.find(
+            //       (o) =>
+            //         o.cashier_number === curr.cashier_number &&
+            //         o.cashier_name === curr.cashier_name,
+            //     );
+            //     if (!found) {
+            //       acc.push({
+            //         cashier_name: curr.cashier_name,
+            //         cashier_number: curr.cashier_number,
+            //       });
+            //     }
+            //     return acc;
+            //   },
+            //   [],
+            // );
+            // dispatch(setOperatorsList(reducedOperators));
+
+            if (isMobile) {
+              const reducedVendors: ReducedVendor[] = [...j.recievers].reduce(
+                (acc: ReducedVendor[], curr) => {
+                  const found = acc.find((o) => o.vendorid === curr.vendorid);
+                  if (!found) {
+                    acc.push({
+                      vendorid: curr.vendorid,
+                      vendor_name: curr.vendor_name,
+                      items: curr.items,
+                      cashiers: [curr.cashier_number],
+                      store_number: curr.store_number,
+                    });
+                  } else {
+                    found.items += curr.items;
+                    if (!found.cashiers.includes(curr.cashier_number)) {
+                      found.cashiers.push(curr.cashier_number);
+                    }
+                  }
+                  return acc;
+                },
+                [],
+              );
+              dispatch(setReducedVendors(reducedVendors));
+            }
           }
         } else {
           dispatch(setNoReceivers(true));

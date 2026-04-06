@@ -22,7 +22,7 @@ const ReceiverDetailsMobile = () => {
           Refresh
         </button>
         <button className="btn-themeBlue px-0" onClick={handleReceiversClick}>
-          Receivers
+          Invoices
         </button>
       </div>
       <div className="font-medium px-2 underline">Totals</div>
@@ -82,7 +82,7 @@ const ReceiverDetailsMobile = () => {
               key={i}
               className="bg-custom-white rounded-lg shadow-md p-2 grid grid-cols-3 text-[13.5px]"
             >
-              <div className="col-span-3 flex justify-between mb-2">
+              <div className="col-span-3 mb-2">
                 <div>{d.product_code}</div>
                 <div>{d.product_description}</div>
               </div>

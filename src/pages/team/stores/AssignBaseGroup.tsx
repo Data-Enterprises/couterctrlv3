@@ -114,7 +114,7 @@ const AssignBaseGroup = () => {
   };
 
   const handleAssignAll = () => {
-    const ids = unassignedBGStores.map((bg) => bg.storeid);
+    const ids = filtered(unassignedBGStores, unassignedFilter).map((s) => s.storeid);
     assignStoreToBaseGroup(url, token, ids, selectedGroupId)
       .then((resp) => {
         const j = resp.data;
@@ -126,7 +126,7 @@ const AssignBaseGroup = () => {
   };
 
   const handleUnassignAll = () => {
-    const ids = assignedBGStores.map((bg) => bg.storeid);
+    const ids = filtered(assignedBGStores, assignedFilter).map((s) => s.storeid);
     unAssignStoreToBaseGroup(url, token, ids, selectedGroupId)
       .then((resp) => {
         const j = resp.data;
