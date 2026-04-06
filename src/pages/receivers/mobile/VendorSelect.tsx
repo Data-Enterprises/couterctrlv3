@@ -12,7 +12,6 @@ import {
   setTotals,
   setVendorView,
   setViewAllVendors,
-  type RecMobileStage,
   type ReducedVendor,
 } from "../../../features/receiversSlice";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
@@ -81,19 +80,7 @@ const VendorSelect = () => {
   const handleGoBackClick = () => {
     dispatch(setSelectedVendor(null));
     dispatch(setViewAllVendors(false));
-    let view: RecMobileStage = 1;
-    switch (state.vendorView) {
-      case 2:
-        view = 1;
-        break;
-      case 3:
-        view = 2;
-        break;
-      default:
-        view = 1;
-    }
-
-    dispatch(setVendorView(view));
+    dispatch(setVendorView(1));
   };
 
   return (
@@ -106,7 +93,7 @@ const VendorSelect = () => {
           className={`btn-themeBlue px-0 ${state.vendorView === 1 && "opacity-50 pointer-events-none"}`}
           onClick={handleGoBackClick}
         >
-          Go Back
+          Vendors
         </button>
       </div>
       <div className="bg-custom-white rounded-lg p-2 mx-2 mb-2 shadow-md">

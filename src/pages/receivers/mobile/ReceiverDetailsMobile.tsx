@@ -31,44 +31,44 @@ const ReceiverDetailsMobile = () => {
           <div className="bg-custom-white rounded-lg shadow-md p-2 grid grid-cols-3">
             <div className="col-span-3 flex justify-between pb-2">
               <div className="flex gap-1">
-                <div>Receiver:</div>
+                <div className="text-content/60">Operator:</div>
                 <div className="font-medium">{totals.cashier_name}</div>
               </div>
               <div className="flex gap-1">
-                <div>Date:</div>
+                <div className="text-content/60">Date:</div>
                 <div className="font-medium">{state.detailsDate}</div>
               </div>
             </div>
             <div className="flex gap-1">
-              <div>Cases:</div>
+              <div className="text-content/60">Cases:</div>
               <div className="font-medium">
                 {formatBigNumber(totals.cases, 0)}
               </div>
             </div>
             <div className="flex gap-1">
-              <div>Units:</div>
+              <div className="text-content/60">Units:</div>
               <div className="font-medium">
                 {formatBigNumber(totals.units, 0)}
               </div>
             </div>
             <div className="flex gap-1">
-              <div>U Cost:</div>
+              <div className="text-content/60">U Cost:</div>
               <div className="font-medium">{formatCurrency2(totals.ucost)}</div>
             </div>
             <div className="flex gap-1">
-              <div>E Cost:</div>
+              <div className="text-content/60">E Cost:</div>
               <div className="font-medium">
                 {formatCurrency2(totals.ext_cost)}
               </div>
             </div>
             <div className="flex gap-1">
-              <div>Retail:</div>
+              <div className="text-content/60">Retail:</div>
               <div className="font-medium">
                 {formatCurrency2(totals.retail)}
               </div>
             </div>
             <div className="flex gap-1">
-              <div>E Retail:</div>
+              <div className="text-content/60">E Retail:</div>
               <div className="font-medium">
                 {formatCurrency2(totals.ext_retail)}
               </div>
@@ -87,41 +87,41 @@ const ReceiverDetailsMobile = () => {
                 <div>{d.product_description}</div>
               </div>
               <div className="flex gap-1">
-                <div>Cases:</div>
+                <div className="text-content/60">Cases:</div>
                 <div className="font-medium">{d.cases}</div>
               </div>
               <div className="flex gap-1">
-                <div>Units:</div>
+                <div className="text-content/60">Units:</div>
                 <div className="font-medium">{d.units}</div>
               </div>
               <div className="flex gap-1">
-                <div>U Cost:</div>
+                <div className="text-content/60">U Cost:</div>
                 <div className="font-medium">{formatCurrency2(d.ucost)}</div>
               </div>
               <div className="flex gap-1">
-                <div>E. Cost:</div>
+                <div className="text-content/60">E. Cost:</div>
                 <div className="font-medium">{formatCurrency2(d.ext_cost)}</div>
               </div>
               <div className="flex gap-1">
-                <div>Retail:</div>
+                <div className="text-content/60">Retail:</div>
                 <div className="font-medium">{formatCurrency2(d.retail)}</div>
               </div>
               <div className="flex gap-1">
-                <div>E. Retail:</div>
+                <div className="text-content/60">E. Retail:</div>
                 <div className="font-medium">
                   {formatCurrency2(d.ext_retail)}
                 </div>
               </div>
               <div className="flex gap-1">
-                <div>GM:</div>
+                <div className="text-content/60">GM:</div>
                 <div className="font-medium">{formatBigNumber(d.gm, 2)}</div>
               </div>
               <div className="flex gap-1">
-                <div>Free:</div>
+                <div className="text-content/60">Free:</div>
                 <div className="font-medium">{formatBigNumber(d.free, 0)}</div>
               </div>
               <div className="flex gap-1">
-                <div>Return:</div>
+                <div className="text-content/60">Return:</div>
                 <div className="font-medium">
                   {formatBigNumber(d.return, 0)}
                 </div>
