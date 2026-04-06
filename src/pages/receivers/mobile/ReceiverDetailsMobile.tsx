@@ -1,27 +1,30 @@
-import { useAppSelector } from "../../../hooks";
+import { reQuery, setRecMobileStage } from "../../../features/receiversSlice";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 const ReceiverDetailsMobile = () => {
-  // const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.receivers);
   const details = state.details;
   const totals = state.totals[0];
 
+  const handleRefreshClick = () => {
+    dispatch(reQuery());
+  };
+
+  const handleReceiversClick = () => {
+    dispatch(setRecMobileStage(2));
+  };
+
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-auto text-sm">
       <div className="grid grid-cols-2 gap-2 p-2">
-        <button className="btn-themeBlue px-0">Refresh</button>
-        <button className="btn-themeBlue px-0">Receivers</button>
+        <button className="btn-themeBlue px-0" onClick={handleRefreshClick}>
+          Refresh
+        </button>
+        <button className="btn-themeBlue px-0" onClick={handleReceiversClick}>
+          Receivers
+        </button>
       </div>
-      {/* <div className="flex justify-between px-2">
-        <div className="flex gap-1">
-          <div>Receiver:</div>
-          <div className="font-medium">{totals.cashier_name}</div>
-        </div>
-        <div className="flex gap-1">
-          <div>Date:</div>
-          <div className="font-medium">{state.detailsDate}</div>
-        </div>
-      </div> */}
       <div className="font-medium px-2 underline">Totals</div>
       <div className="p-2 space-y-2">
         <div>
@@ -73,7 +76,7 @@ const ReceiverDetailsMobile = () => {
           </div>
         </div>
         <div className="font-medium underline">Details</div>
-        <div className="space-y-2 max-h-[62vh] overflow-y-auto">
+        <div className="space-y-2 min-h-[61vh] max-h-[61vh] overflow-y-auto">
           {details.map((d, i) => (
             <div
               key={i}
