@@ -37,6 +37,7 @@ interface ReceiversState {
   selectedOperator: Operator | null;
   operatorsList: Operator[];
   filteredListDataMobile: ReceiverListItem[];
+  detailsDate: string;
 }
 
 export const initialState: ReceiversState = {
@@ -61,6 +62,7 @@ export const initialState: ReceiversState = {
   selectedOperator: null,
   operatorsList: [],
   filteredListDataMobile: [],
+  detailsDate: "",
 };
 
 export const receiversSlice = createSlice({
@@ -156,6 +158,9 @@ export const receiversSlice = createSlice({
     setSelectedInvoice: (state, action: PayloadAction<string>) => {
       state.selectedInvoice = action.payload;
     },
+    setDetailsDate: (state, action: PayloadAction<string>) => {
+      state.detailsDate = action.payload;
+    },
     resetFilters: (state) => {
       state.vendorIdFilter = "";
       state.vendorNameFilter = "";
@@ -163,6 +168,7 @@ export const receiversSlice = createSlice({
       state.transIDFilter = "";
       state.listGridData = state.list;
       state.selectedInvoice = "";
+      state.detailsDate = "";
     },
     reQuery: (state) => {
       state.list = [];
@@ -180,6 +186,7 @@ export const receiversSlice = createSlice({
       state.selectedOperator = null;
       state.operatorsList = [];
       state.filteredListDataMobile = [];
+      state.detailsDate = "";
     },
     setRecMobileStage: (state, action: PayloadAction<RecMobileStage>) => {
       state.recMobileStage = action.payload;
@@ -218,5 +225,6 @@ export const {
   setNoReceivers,
   setSelectedOperator,
   setOperatorsList,
+  setDetailsDate,
 } = receiversSlice.actions;
 export default receiversSlice.reducer;

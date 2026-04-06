@@ -2,6 +2,7 @@ import { getReceiverDetails } from "../../../api/receivers";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   reQuery,
+  setDetailsDate,
   setIsFetchingDetails,
   setReceiverDetails,
   setRecMobileStage,
@@ -42,14 +43,14 @@ const ReceiverSelect = () => {
     const formattedDate = formatDate(date).split(", ")[1];
     dispatch(setIsFetchingDetails(true));
     dispatch(setSelectedInvoice(invoiceid.toString()));
-    dispatch(setRecMobileStage(3));
     getReceiverDetails(url, token, state.storeid, invoiceid, formattedDate)
       .then((resp) => {
         const j: ReceiverDetailsResponse = resp.data;
         if (j.error == 0) {
           dispatch(setReceiverDetails(j.records));
           dispatch(setTotals(j.totals));
-          // dispatch(setDetailsDate(formattedDate));
+          dispatch(setRecMobileStage(3));
+          dispatch(setDetailsDate(formattedDate));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
