@@ -236,7 +236,7 @@ const Login = () => {
         </div>
         {/* TODO: Update this before pushing to publish */}
         <div className="absolute bottom-1 left-0 text-sm pl-2 select-none">
-          Last Updated 4/1/2026 @ 4:26 PM CST
+          Last Updated 4/6/2026 @ 9:01 AM CST
         </div>
       </div>
       <div className="relative hidden w-0 flex-1 lg:block">
