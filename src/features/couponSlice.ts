@@ -10,6 +10,11 @@ export type FilterType =
   | "Sub Department"
   | "";
 
+export type UniqueCpnDate = {
+  label: string;
+  value: string;
+};
+
 interface CouponState {
   coupons: CouponItem[];
   gridCoupons: CouponItem[];
@@ -25,6 +30,9 @@ interface CouponState {
   amtLessThan: boolean;
   amtGreaterThan: boolean;
   noCouponsFound: boolean;
+  couponMobileStage: number;
+  uniqueCpnDates: UniqueCpnDate[];
+  uniqueSubDepts: string[];
 }
 
 const initialState: CouponState = {
@@ -42,6 +50,10 @@ const initialState: CouponState = {
   amtLessThan: false,
   amtGreaterThan: false,
   noCouponsFound: false,
+  couponMobileStage: 0,
+  uniqueCpnDates: [],
+  uniqueSubDepts: [],
+
 };
 
 const couponSlice = createSlice({
@@ -146,6 +158,9 @@ const couponSlice = createSlice({
 
       state.gridCoupons = state.coupons;
     },
+    setCouponMobileStage: (state, action: PayloadAction<number>) => {
+      state.couponMobileStage = action.payload;
+    },
     setFilterModalOpen: (state, action: PayloadAction<boolean>) => {
       state.filterModalOpen = action.payload;
     },
@@ -179,6 +194,16 @@ const couponSlice = createSlice({
       state.amtLessThan = false;
       state.amtGreaterThan = false;
       state.noCouponsFound = false;
+      state.couponMobileStage = 0;
+      state.uniqueCpnDates = [];
+      state.uniqueSubDepts = [];
+    },
+    setUniqueCpnDates: (state, action: PayloadAction<UniqueCpnDate[]>) => {
+      state.uniqueCpnDates = action.payload;
+      // state.uniqueCpnDates
+    },
+    setUniqueSubDepts: (state, action: PayloadAction<string[]>) => {
+      state.uniqueSubDepts = action.payload;
     },
     resetCouponsSlice: () => initialState,
   },
@@ -196,5 +221,8 @@ export const {
   setThresh,
   setNoCouponsFound,
   resetCouponsSlice,
+  setCouponMobileStage,
+  setUniqueCpnDates,
+  setUniqueSubDepts,
 } = couponSlice.actions;
 export default couponSlice.reducer;

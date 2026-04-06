@@ -4,13 +4,19 @@ import type { CouponItem } from "../../interfaces";
 import { formatCurrency2, formatDate } from "../../utils";
 
 export const useCouponContext = () => {
-  const { coupons, isFetching, gridCoupons, noCouponsFound } = useAppSelector(
-    (state) => state.coupons,
-  );
+  const {
+    coupons,
+    isFetching,
+    gridCoupons,
+    noCouponsFound,
+    couponMobileStage,
+    uniqueCpnDates,
+    uniqueSubDepts,
+  } = useAppSelector((state) => state.coupons);
   const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector(
     (state) => state.search,
   );
-  const { url, token } = useAppSelector((state) => state.app);
+  const { url, token, isMobile } = useAppSelector((state) => state.app);
 
   return {
     url,
@@ -24,6 +30,10 @@ export const useCouponContext = () => {
     isFetching,
     gridCoupons,
     noCouponsFound,
+    isMobile,
+    couponMobileStage,
+    uniqueCpnDates,
+    uniqueSubDepts,
   };
 };
 

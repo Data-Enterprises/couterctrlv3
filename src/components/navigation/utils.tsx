@@ -141,7 +141,7 @@ export const navigation: Navigation[] = [
     name: "Coupons",
     href: "coupons",
     icon: CouponIcon,
-    mobile: false,
+    mobile: true,
     children: [],
     childOpen: false,
     userLevels: ["*"],
