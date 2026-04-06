@@ -2,20 +2,23 @@ import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../../hooks";
 import { setUpcCode, setSelectedStore } from "../../features/itemLookupSlice";
+import { setScannedUpc } from "../../features/subMarginSlice";
 import Modal from "../../components/Modal";
 import type { Store } from "../../interfaces";
 
 interface ScanItemProps {
   scanItem: () => void;
+  storeSelect?: boolean;
 }
 
-const ScanItem = ({ scanItem }: ScanItemProps) => {
+const ScanItem = ({ scanItem, storeSelect = true }: ScanItemProps) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
   const [filteredStores, setFilteredStores] = useState<Store[]>([]);
   const { upcCode, selectedStore, itemsLoaded } = useAppSelector(
     (state) => state.item
   );
+  const scannedUpc = useAppSelector((state) => state.subMargin.scannedUpc);
   const dispatch = useDispatch();
   const { assignedStores } = useAppSelector((state) => state.user);
 
@@ -47,6 +50,14 @@ const ScanItem = ({ scanItem }: ScanItemProps) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
+  };
+
+  const handleUpcChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (storeSelect) {
+      dispatch(setUpcCode(e.target.value));
+    } else {
+      dispatch(setScannedUpc(e.target.value));
+    }
   };
 
   return (
@@ -86,8 +97,8 @@ const ScanItem = ({ scanItem }: ScanItemProps) => {
         <input
           type="text"
           data-testid="scan-item-input"
-          value={upcCode}
-          onChange={(e) => dispatch(setUpcCode(e.target.value))}
+          value={storeSelect ? upcCode : scannedUpc}
+          onChange={handleUpcChange}
           className="basic-input bg-custom-white"
         />
         <button
@@ -98,7 +109,7 @@ const ScanItem = ({ scanItem }: ScanItemProps) => {
           Scan
         </button>
       </div>
-      {!itemsLoaded && (
+      {!itemsLoaded && storeSelect ? (
         <button
           data-testid="lookup-select-store"
           className="btn-themeBlue mt-2 w-full"
@@ -106,8 +117,8 @@ const ScanItem = ({ scanItem }: ScanItemProps) => {
         >
           {!selectedStore ? "Select Store" : "Change Store"}
         </button>
-      )}
-      {selectedStore && !itemsLoaded ? (
+      ) : null}
+      {selectedStore && !itemsLoaded && storeSelect ? (
         <button
           data-testid="scan-item-clear-store"
           className="btn-themeOrange mt-2 w-full"

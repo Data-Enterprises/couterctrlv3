@@ -26,7 +26,11 @@ export const useSubMarginCtx = () => {
     subDeptCost,
     filteredCostGridData,
     filteredItemGridData,
+    pause,
+    scannedUpc,
     itemGridData,
+    scannedItemHistory,
+    itemHistoryModalOpen,
   } = useAppSelector((state) => state.subMargin);
 
   const { assignedStores } = useAppSelector((state) => state.user);
@@ -59,6 +63,10 @@ export const useSubMarginCtx = () => {
     filteredCostGridData,
     filteredItemGridData,
     itemGridData,
+    pause,
+    scannedUpc,
+    scannedItemHistory,
+    itemHistoryModalOpen,
   };
 };
 

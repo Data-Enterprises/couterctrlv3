@@ -1,25 +1,150 @@
 import { calculateCogs } from "..";
+import Quagga from "@ericblade/quagga2";
+import { useMediaDevices } from "react-media-devices";
 import { useSubMarginCtx } from "../hooks";
 import { useAppDispatch } from "../../../hooks";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ItemRow } from "../display/widgets";
 import {
   setFilteredCostGridData,
   setFilteredItemGridData,
   setItemGridData,
+  setPause,
+  setScannedItemHistory,
+  setScannedUpc,
   setSubDeptCost,
   setSubDeptGridView,
 } from "../../../features/subMarginSlice";
 import MarginCard from "./MarginCard";
-import type { SubDeptCost } from "../../../interfaces";
+import type { JsonError, SubDeptCost } from "../../../interfaces";
 import CostCard from "./CostCard";
-import Input from "../../../components/inputs/Input";
+import ScanItem from "../../lookup/ScanItem";
+import { getItemLookupSingleStore } from "../../../api/itemLookup";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+import ItemHistoryModal from "./ItemHistoryModal";
 
 const ItemsView = () => {
+  const ref = useRef<HTMLDivElement>(null);
   const ctx = useSubMarginCtx();
+  const toast = useToast();
   const dispatch = useAppDispatch();
-  const [searchText, setSearchText] = useState<string>("");
+  const constraints = {
+    video: { facingMode: "environment", width: 1280, height: 720 },
+  };
+  const { devices } = useMediaDevices({ constraints });
+  const [deviceId, setDeviceId] = useState<string>("");
   const [refreshFiltered, setRefreshFiltered] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current!.style.display = "none";
+    }
+  }, [ref.current]);
+
+  useEffect(() => {
+    if (devices) {
+      const backCamera = devices.find(
+        (device) =>
+          device.label.toLowerCase().includes("back") ||
+          device.label.toLowerCase().includes("environment") ||
+          device.label.toLowerCase().includes("rear"),
+      );
+
+      const selectedDeviceId = backCamera
+        ? backCamera.deviceId
+        : devices[1].deviceId;
+      setDeviceId(selectedDeviceId);
+    }
+  }, [devices]);
+
+  const clear = () => {
+    dispatch(setPause(true));
+  };
+
+  const stopScanner = () => {
+    if (!ctx.pause) {
+      clear();
+      return;
+    }
+
+    Quagga.stop();
+    Quagga.offDetected();
+    dispatch(setPause(false));
+  };
+
+  const handleScanItem = (upc: string) => {
+    getItemLookupSingleStore(ctx.url, ctx.token, upc, ctx.searchValue)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(setScannedItemHistory(j.history));
+          setRefreshFiltered(true);
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+  };
+
+  const scanItem = () => {
+    if (ref.current) {
+      // If it was typed in, get the data without scanning
+      if (ctx.scannedUpc.length) {
+        handleScanItem(ctx.scannedUpc);
+        return;
+      }
+
+      // Otherwise, open the scanner and wait for a scan
+
+      if (ref.current.style.display === "block") {
+        ref.current.style.display = "none";
+        stopScanner();
+        return;
+      }
+
+      ref.current.style.display = "block";
+
+      Quagga.init(
+        {
+          inputStream: {
+            type: "LiveStream",
+            target: ref.current!,
+            constraints: {
+              width: { min: 640, ideal: 1280, max: 1920 },
+              height: { min: 480, ideal: 720, max: 1080 },
+              facingMode: { exact: "environment" },
+              deviceId: deviceId,
+            },
+          },
+          decoder: {
+            readers: [
+              "upc_reader",
+              "upc_e_reader",
+              "ean_reader",
+              "ean_8_reader",
+            ],
+          },
+          locate: true,
+        },
+        (err) => {
+          if (!err) {
+            Quagga.start();
+            dispatch(setPause(false));
+          }
+        },
+      );
+
+      Quagga.onDetected((result) => {
+        Quagga.stop();
+        Quagga.offDetected();
+
+        ref.current!.style.display = "none";
+        const code = result.codeResult.code;
+        dispatch(setScannedUpc(code!));
+        // Get the data
+        handleScanItem(code!);
+        dispatch(setPause(true));
+      });
+    }
+  };
 
   useEffect(() => {
     if (ctx.subDeptGridView === "item" && refreshFiltered) {
@@ -76,11 +201,10 @@ const ItemsView = () => {
           margin:
             ((item.total_sales - item.cogs) / item.total_sales) * 100 || 0,
         }))
-        .filter((item) => item.product_code.includes(searchText));
+        .filter((item) => item.product_code.includes(ctx.scannedUpc));
       dispatch(setItemGridData(newData));
       dispatch(setFilteredItemGridData(newData));
       setRefreshFiltered(false);
-
     } else if (ctx.subDeptGridView === "cost" && refreshFiltered) {
       // cost view
       const formatDate = (dte: string) => {
@@ -88,8 +212,8 @@ const ItemsView = () => {
         return `${split[1]}/${split[2]}/${split[0]}`;
       };
 
-      const costData: SubDeptCost[] = ctx.margins.reduce(
-        (acc: SubDeptCost[], curr) => {
+      const costData: SubDeptCost[] = ctx.margins
+        .reduce((acc: SubDeptCost[], curr) => {
           const found = acc.find(
             (item) => item.product_code === curr.product_code,
           );
@@ -120,9 +244,8 @@ const ItemsView = () => {
             );
           }
           return acc;
-        },
-        [],
-      ).filter((item) => item.product_code.includes(searchText));
+        }, [])
+        .filter((item) => item.product_code.includes(ctx.scannedUpc));
 
       dispatch(setSubDeptCost(costData));
       dispatch(setFilteredCostGridData(costData));
@@ -135,17 +258,15 @@ const ItemsView = () => {
     setRefreshFiltered(true);
   };
 
-  const handleTextChange = (text: string) => {
-    setSearchText(text);
-  };
-
-  const handleClear = () => {
-    setSearchText("");
+  const handleRefresh = () => {
+    dispatch(setScannedUpc(""));
+    dispatch(setScannedItemHistory([]));
     setRefreshFiltered(true);
   };
 
   return (
     <div>
+      <ItemHistoryModal />
       <div className="grid grid-cols-2 gap-2 px-2">
         <button
           className={`${ctx.subDeptGridView === "item" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
@@ -161,35 +282,26 @@ const ItemsView = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 p-2 items-end">
-        <Input
-          label="Full or Partial UPC"
-          value={searchText}
-          setValue={handleTextChange}
+      <div className="p-2">
+        <div
+          ref={ref}
+          className={`scanner-container ${
+            ctx.pause ? "hidden" : "block"
+          } mb-2 rounded-lg`}
+          style={{ objectFit: "cover", height: "175px", width: "100%" }}
         />
-        <button
-          className="btn-themeGreen px-0 py-1.5"
-          onClick={() => setRefreshFiltered(true)}
-        >
-          Search
-        </button>
-        <button
-          className="btn-themeOrange px-0 py-1.5"
-          onClick={handleClear}
-        >
-          Clear
-        </button>
+        <ScanItem scanItem={scanItem} storeSelect={false} />
       </div>
       {ctx.subDeptGridView === "item" ? (
         <div className="grid gap-2 p-2 max-h-[calc(100vh-14.4rem)] overflow-y-auto">
           {ctx.filteredItemGridData.map((item, i) => (
-            <MarginCard key={i} item={item} />
+            <MarginCard key={i} item={item} onRefresh={handleRefresh} />
           ))}
         </div>
       ) : (
         <div className="grid gap-2 p-2 max-h-[calc(100vh-14.4rem)] overflow-y-auto">
           {ctx.filteredCostGridData.map((cost, i) => (
-            <CostCard key={i} cost={cost} />
+            <CostCard key={i} cost={cost} onRefresh={handleRefresh} />
           ))}
         </div>
       )}

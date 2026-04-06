@@ -2,10 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import Quagga from "@ericblade/quagga2";
 import { useMediaDevices } from "react-media-devices";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import {
-  getItemLookup,
-  getItemLookupSingleStore,
-} from "../../api/itemLookup";
+import { getItemLookup, getItemLookupSingleStore } from "../../api/itemLookup";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import {
   setUpcCode,
@@ -17,7 +14,7 @@ import {
   setMetrics,
   setHistoryMetrics,
   setItemLookupHistory,
-  setPause
+  setPause,
 } from "../../features/itemLookupSlice";
 import "./scanner.css";
 import { useHeight } from "./utils";
@@ -48,7 +45,6 @@ const ItemLookup = () => {
   const { devices } = useMediaDevices({ constraints });
   const { height, topRef, bottomRef } = useHeight();
 
-
   useEffect(() => {
     return () => {
       dispatch(setUpcCode(""));
@@ -61,7 +57,7 @@ const ItemLookup = () => {
         (device) =>
           device.label.toLowerCase().includes("back") ||
           device.label.toLowerCase().includes("environment") ||
-          device.label.toLowerCase().includes("rear")
+          device.label.toLowerCase().includes("rear"),
       );
 
       const selectedDeviceId = backCamera
@@ -91,7 +87,7 @@ const ItemLookup = () => {
               totalQty: j.total_qty,
               avgPrice: j.average_price,
               daysSold: j.days_sold,
-            })
+            }),
           );
           dispatch(setProductCode(j.product_code));
           dispatch(setDescription(j.description));
@@ -134,14 +130,14 @@ const ItemLookup = () => {
               totalSales: j.total_sales,
               totalQty: j.total_qty,
               avgPrice: j.average_price,
-            })
+            }),
           );
           dispatch(setItemsLoaded(true));
         } else {
           setError(
             `We're sorry, item ${
               j.product_code.split(".")[0]
-            } was not found in your inventory`
+            } was not found in your inventory`,
           );
           dispatch(setItemsLoaded(false));
         }
@@ -202,7 +198,7 @@ const ItemLookup = () => {
             Quagga.start();
             dispatch(setPause(false));
           }
-        }
+        },
       );
 
       Quagga.onDetected((result) => {
@@ -247,7 +243,7 @@ const ItemLookup = () => {
       />
       <ScanItem scanItem={scanItem} />
       <div ref={topRef} className="text-center font-bold underline">
-      {assignedStores.find((s) => s.storeid === selectedStore)?.store_name}
+        {assignedStores.find((s) => s.storeid === selectedStore)?.store_name}
       </div>
       {itemsLoaded ? (
         <>
