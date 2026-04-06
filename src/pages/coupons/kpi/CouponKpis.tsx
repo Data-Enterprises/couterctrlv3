@@ -22,7 +22,7 @@ const CouponKpis = () => {
     "bg-custom-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center font-medium relative";
 
   return (
-    <div className="grid grid-cols-5 gap-4">
+    <div className="grid grid-cols-5 gap-4 cursor-default select-none">
       <div className={kpiStyle}>
         <HashtagIcon
           height={42}
