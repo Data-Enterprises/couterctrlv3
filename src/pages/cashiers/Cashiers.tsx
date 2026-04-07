@@ -27,6 +27,7 @@ import { colDefs } from "./transactions";
 import ViewToggle from "./ViewToggle";
 import TransFilters from "./transactions/TransFilters";
 import TransFilterModal from "./transactions/TransFilterModal";
+import CashiersMobile from "./mobile/CashiersMobile";
 
 const Cashiers = () => {
   const toast = useToast();
@@ -80,6 +81,8 @@ const Cashiers = () => {
         return null;
     }
   };
+
+  if (ctx.isMobile) return <CashiersMobile />;
 
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] w-full p-4 overflow-hidden grid grid-cols-[18%_81.6%] gap-2">
