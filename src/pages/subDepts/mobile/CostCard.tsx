@@ -8,6 +8,7 @@ interface CostCardProps {
   cost: SubDeptCost;
   onRefresh: () => void;
 }
+
 const CostCard = ({ cost, onRefresh }: CostCardProps) => {
   const ctx = useSubMarginCtx();
   const { upcCode } = useAppSelector((state) => state.itemScan);
