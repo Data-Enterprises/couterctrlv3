@@ -200,15 +200,17 @@ const Transaction = ({ trans }: TransactionProps) => {
         >
           Email
         </button>
-        <button
-          data-testid="cashier-trans-modal-export-btn"
-          className="btn-themeBlue px-4 py-0.5"
-          onClick={handleExportClick}
-        >
-          Export
-        </button>
+        {context.isDesktop && (
+          <button
+            data-testid="cashier-trans-modal-export-btn"
+            className="btn-themeBlue px-4 py-0.5"
+            onClick={handleExportClick}
+          >
+            Export
+          </button>
+        )}
       </div>
-      <div className="pb-2 border-b border-content">
+      <div className="pb-2 border-b border-content text-sm">
         <div className="flex gap-1">
           <div className="font-medium">Store Name:</div>
           <div>{trans[0].store_name}</div>
@@ -242,6 +244,32 @@ const Transaction = ({ trans }: TransactionProps) => {
         <div className="my-2 text-lg font-medium">Line Items</div>
         {/* Line Items */}
         {trans.map((item, i) => {
+          if (context.isMobile) {
+            return (
+              <div
+                key={i}
+                className="text-[13px] mt-1.5 border-b border-content/30 mb-2"
+              >
+                <div className="">
+                  <div>{item.product_code}</div>
+                  <div>{item.product_description}</div>
+                </div>
+                <div className="grid grid-cols-[1fr_1fr_1fr_1fr]">
+                  <div>{item.qty}</div>
+                  <div>
+                    {formatCurrency2(
+                      cashier.selectedSaleType === "Description"
+                        ? item.total_sales
+                        : item.net_sales,
+                    )}
+                  </div>
+                  <div>{renderStamps(item)}</div>
+                  <div>{item.sale_type}</div>
+                </div>
+              </div>
+            );
+          }
+
           return (
             <div
               key={i}

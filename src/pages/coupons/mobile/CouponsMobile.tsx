@@ -15,7 +15,6 @@ import {
 import { useAppDispatch } from "../../../hooks";
 import type { CouponsResponse, JsonError } from "../../../interfaces";
 import { formatGoliathDate } from "../../../utils";
-import TransactionModal from "../../lossPrevention/TransactionModal";
 import CouponsGridMobile from "./CouponsGridMobile";
 
 const CouponsMobile = () => {
@@ -70,7 +69,6 @@ const CouponsMobile = () => {
 
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
-      <TransactionModal />
       <div className="m-2 p-2 bg-custom-white rounded-lg shadow-lg">
         <StorePicker />
         <DatePickers handleQuery={getData} />

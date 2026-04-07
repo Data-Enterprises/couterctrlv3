@@ -7,11 +7,13 @@ import Transaction from "./Transaction";
 const TransactionModal = () => {
   const dispatch = useAppDispatch();
   const lp = useAppSelector((state) => state.lossPrevention);
+  const isMobile = useAppSelector((state) => state.app.isMobile);
 
   return (
     <Modal
       isOpen={lp.transModalOpen}
-      modalClassName="bg-custom-white w-[38%] relative no-scrollbar max-h-[80vh] overflow-y-auto p-2 rounded-lg shadow-lg"
+      className={`${isMobile ? "-ml-12 px-2" : ''}`}
+      modalClassName={`bg-custom-white ${isMobile ? "w-[90%]" : "w-[38%]"} relative no-scrollbar max-h-[80vh] overflow-y-auto p-2 rounded-lg shadow-lg`}
       onClose={() => dispatch(setTransModalOpen(false))}
     >
       {lp.noRowsReturned && (

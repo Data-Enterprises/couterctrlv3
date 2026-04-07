@@ -5,9 +5,12 @@ import type { CashierDetails, CashierTrend } from "../../../interfaces";
 import {
   ArrowUpCircleIcon,
   ArrowDownCircleIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
+  // ArrowTrendingUpIcon,
+  // ArrowTrendingDownIcon,
   ArrowRightIcon,
+  HandThumbUpIcon,
+  HandThumbDownIcon,
+  // FaceSmileIcon,
 } from "@heroicons/react/24/outline";
 
 import { findTrendDirection } from ".";
@@ -48,11 +51,11 @@ const CashierTrendCardMobile = ({ s, idx }: CashierTrendCardProps) => {
 
     if (direction > 0) {
       return (
-        <ArrowTrendingUpIcon className="h-6 w-6 stroke-emerald-500 stroke-2 inline-block ml-1" />
+        <HandThumbUpIcon className="h-6 w-6 stroke-emerald-500 stroke-2 inline-block ml-1" />
       );
     } else if (direction < 0) {
       return (
-        <ArrowTrendingDownIcon className="h-6 w-6 stroke-orange-500 stroke-2 inline-block ml-1" />
+        <HandThumbDownIcon className="h-6 w-6 stroke-orange-500 stroke-2 inline-block ml-1" />
       );
     } else {
       return (
@@ -139,7 +142,7 @@ const CashierTrendCardMobile = ({ s, idx }: CashierTrendCardProps) => {
         <div>{s.sale_type}</div>
       </div>
       <div className="flex items-center justify-center font-bold">
-        Overall Trend {renderOverallTrend()}
+        Overall {renderOverallTrend()}
       </div>
       <div className="grid grid-cols-[45%_27%_33%] py-2 text-sm">
         <div className="px-2">

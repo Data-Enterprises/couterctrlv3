@@ -12,6 +12,9 @@ export const useCouponContext = () => {
     couponMobileStage,
     uniqueCpnDates,
     uniqueSubDepts,
+    subDeptMobileFilter,
+    uniqueDateMobileFilter,
+    showSubsMobileFilter,
   } = useAppSelector((state) => state.coupons);
   const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector(
     (state) => state.search,
@@ -34,6 +37,9 @@ export const useCouponContext = () => {
     couponMobileStage,
     uniqueCpnDates,
     uniqueSubDepts,
+    subDeptMobileFilter,
+    uniqueDateMobileFilter,
+    showSubsMobileFilter,
   };
 };
 

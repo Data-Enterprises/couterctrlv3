@@ -33,6 +33,9 @@ interface CouponState {
   couponMobileStage: number;
   uniqueCpnDates: UniqueCpnDate[];
   uniqueSubDepts: string[];
+  subDeptMobileFilter: string[];
+  uniqueDateMobileFilter: string;
+  showSubsMobileFilter: boolean;
 }
 
 const initialState: CouponState = {
@@ -52,8 +55,10 @@ const initialState: CouponState = {
   noCouponsFound: false,
   couponMobileStage: 0,
   uniqueCpnDates: [],
+  uniqueDateMobileFilter: "",
   uniqueSubDepts: [],
-
+  subDeptMobileFilter: [],
+  showSubsMobileFilter: false,
 };
 
 const couponSlice = createSlice({
@@ -66,7 +71,7 @@ const couponSlice = createSlice({
     },
     setFilter: (
       state,
-      action: PayloadAction<{ type: FilterType; value: string | number }>
+      action: PayloadAction<{ type: FilterType; value: string | number }>,
     ) => {
       const { type, value } = action.payload;
       switch (type) {
@@ -161,6 +166,9 @@ const couponSlice = createSlice({
     setCouponMobileStage: (state, action: PayloadAction<number>) => {
       state.couponMobileStage = action.payload;
     },
+    setGridCoupons: (state, action: PayloadAction<CouponItem[]>) => {
+      state.gridCoupons = action.payload;
+    },
     setFilterModalOpen: (state, action: PayloadAction<boolean>) => {
       state.filterModalOpen = action.payload;
     },
@@ -199,11 +207,34 @@ const couponSlice = createSlice({
       state.uniqueSubDepts = [];
     },
     setUniqueCpnDates: (state, action: PayloadAction<UniqueCpnDate[]>) => {
-      state.uniqueCpnDates = action.payload;
-      // state.uniqueCpnDates
+      const dates = [{label: "All Dates", value: ""}, ...action.payload]
+      state.uniqueCpnDates = dates;
     },
     setUniqueSubDepts: (state, action: PayloadAction<string[]>) => {
       state.uniqueSubDepts = action.payload;
+    },
+    setSubDeptMobileFilter: (state, action: PayloadAction<string>) => {
+      if (action.payload === "") {
+        state.subDeptMobileFilter = [];
+        return;
+      }
+
+      // Otherwise, we're passing in a sub department to toggle on/off
+      const found = state.subDeptMobileFilter.find((s) => s === action.payload);
+
+      if (found) {
+        state.subDeptMobileFilter = state.subDeptMobileFilter.filter(
+          (s) => s !== action.payload,
+        );
+      } else {
+        state.subDeptMobileFilter.push(action.payload);
+      }
+    },
+    setUniqueDateMobileFilter: (state, action: PayloadAction<string>) => {
+      state.uniqueDateMobileFilter = action.payload;
+    },
+    setShowSubsMobileFilter: (state, action: PayloadAction<boolean>) => {
+      state.showSubsMobileFilter = action.payload;
     },
     resetCouponsSlice: () => initialState,
   },
@@ -224,5 +255,9 @@ export const {
   setCouponMobileStage,
   setUniqueCpnDates,
   setUniqueSubDepts,
+  setSubDeptMobileFilter,
+  setUniqueDateMobileFilter,
+  setShowSubsMobileFilter,
+  setGridCoupons,
 } = couponSlice.actions;
 export default couponSlice.reducer;
