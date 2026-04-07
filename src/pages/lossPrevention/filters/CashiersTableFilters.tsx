@@ -33,9 +33,6 @@ const CashiersTableFilters = () => {
   const activePanelStyle = (option: string) => {
     // Grabbing the filters
     const saleDate = cashier.saleDateFilter;
-    // const upc = cashier.upcFilter;
-    // const desc = cashier.descFilter;
-    // const priceType = cashier.selectedPriceTypes.length > 0;
     const totalSales = cashier.totalSalesFilter;
     const threshold = cashier.cashierTableThreshComp;
     const qtyThreshold = cashier.cashierTableQtyThreshComp;
@@ -46,9 +43,6 @@ const CashiersTableFilters = () => {
     const style = "bg-orange-500 text-white font-semibold shadow-inner";
     let result = false;
     if (option === "Sale Date" && saleDate) result = true;
-    // if (option === "UPC" && upc) result = true;
-    // if (option === "Description" && desc) result = true;
-    // if (option === "Price Type" && priceType) result = true;
 
     if (
       option === "Total Sales" &&
@@ -71,15 +65,6 @@ const CashiersTableFilters = () => {
   const renderFilterText = (type: string) => {
     if (type === "Sale Date") {
       return cashier.saleDateFilter ? `${cashier.saleDateFilter}` : "Sale Date";
-      // } else if (type === "UPC") {
-      //   return cashier.upcFilter ? `${cashier.upcFilter}` : "UPC";
-      // } else if (type === "Description") {
-      //   return cashier.descFilter ? `${cashier.descFilter}` : "Description";
-      // } else if (type === "Price Type") {
-      //   return cashier.selectedPriceTypes.length > 0
-      //     ? `${cashier.selectedPriceTypes.join(", ")}`
-      //     : "Price Type";
-      // }
     } else if (type === "Total Sales") {
       const thresh = cashier.cashierTableThreshComp.gt
         ? "Over"
@@ -138,7 +123,7 @@ const CashiersTableFilters = () => {
       }`}
     >
       <FiltersModal />
-      <div className="rounded-t-lg text-center py-0.5 bg-blue-500 text-custom-white font-medium">
+      <div className="rounded-t-lg text-center py-0.5 text-sm bg-blue-500 text-custom-white font-medium">
         Filter By
       </div>
       <div className="grid text-sm p-2 gap-2">

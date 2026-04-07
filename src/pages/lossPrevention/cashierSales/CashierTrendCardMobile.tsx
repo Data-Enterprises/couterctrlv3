@@ -5,12 +5,9 @@ import type { CashierDetails, CashierTrend } from "../../../interfaces";
 import {
   ArrowUpCircleIcon,
   ArrowDownCircleIcon,
-  // ArrowTrendingUpIcon,
-  // ArrowTrendingDownIcon,
   ArrowRightIcon,
   HandThumbUpIcon,
   HandThumbDownIcon,
-  // FaceSmileIcon,
 } from "@heroicons/react/24/outline";
 
 import { findTrendDirection } from ".";

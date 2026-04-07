@@ -5,9 +5,9 @@ import type { CashierDetails, CashierTrend } from "../../../interfaces";
 import {
   ArrowUpCircleIcon,
   ArrowDownCircleIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
   ArrowRightIcon,
+  HandThumbUpIcon,
+  HandThumbDownIcon,
 } from "@heroicons/react/24/outline";
 import { setCashierDetailsTrendDirection } from "../../../features/lossPreventionSlice";
 import { useEffect } from "react";
@@ -131,11 +131,11 @@ const CashierTrendCard = () => {
   const overallTrendLine = () => {
     if (cashierDetailsTrendDirection > 0) {
       return (
-        <ArrowTrendingUpIcon className="h-6 w-6 stroke-emerald-500 stroke-2 inline-block ml-1" />
+        <HandThumbUpIcon className="h-6 w-6 stroke-emerald-500 stroke-2 inline-block ml-1" />
       );
     } else if (cashierDetailsTrendDirection < 0) {
       return (
-        <ArrowTrendingDownIcon className="h-6 w-6 stroke-orange-500 stroke-2 inline-block ml-1" />
+        <HandThumbDownIcon className="h-6 w-6 stroke-orange-500 stroke-2 inline-block ml-1" />
       );
     } else {
       return (
