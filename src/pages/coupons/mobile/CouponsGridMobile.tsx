@@ -17,13 +17,14 @@ const CouponsGridMobile = () => {
   const dispatch = useAppDispatch();
 
   const handleFilter = () => {
-    const dateFilter = new Date(ctx.uniqueDateMobileFilter).getTime();
+    const dateFilter = new Date(ctx.uniqueDateMobileFilter);
+    console.log(dateFilter);
 
     // if there is no date selected, then dateFilter will be "Invalid Date" and we want to ignore the date filtering in that case
     const filtered = ctx.coupons.filter((c) => {
       const dateCheck =
         dateFilter.toString() !== "Invalid Date"
-          ? new Date(c.sale_date).getTime() === dateFilter
+          ? new Date(c.sale_date).getTime() === dateFilter.getTime()
           : true;
       const subDeptCheck = ctx.subDeptMobileFilter.length
         ? ctx.subDeptMobileFilter.includes(c.sub_department_description)
