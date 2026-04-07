@@ -1,5 +1,5 @@
 import { setItemHistoryModalOpen } from "../../../features/subMarginSlice";
-import { useAppDispatch } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import type { ItemRow } from "../display/widgets";
 import { useSubMarginCtx } from "../hooks";
@@ -10,6 +10,7 @@ interface MarginCardProps {
 }
 const MarginCard = ({ item, onRefresh }: MarginCardProps) => {
   const ctx = useSubMarginCtx();
+  const { upcCode } = useAppSelector((state) => state.itemScan);
   const dispatch = useAppDispatch();
 
   const handleHistoryClick = () => {
@@ -55,7 +56,7 @@ const MarginCard = ({ item, onRefresh }: MarginCardProps) => {
           <div className="font-medium">{item.margin.toFixed(2)}%</div>
         </div>
       </div>
-      {ctx.scannedUpc.length && ctx.scannedItemHistory.length ? (
+      {upcCode.length && ctx.scannedItemHistory.length ? (
         <div className="px-2 pb-2 grid grid-cols-2 gap-2">
           <button
             className="btn-themeBlue w-full px-0 py-1.5"

@@ -10,11 +10,12 @@ import {
 } from "../../features/itemScanSlice";
 
 interface UpcScannerProps {
+  containerClassName?: string;
   handleScan: () => void;
   onClear?: () => void;
 }
 
-const UpcScanner = ({ handleScan, onClear }: UpcScannerProps) => {
+const UpcScanner = ({ handleScan, onClear, containerClassName= "" }: UpcScannerProps) => {
   const dispatch = useAppDispatch();
   const ref = useRef<HTMLDivElement>(null);
   const state = useAppSelector((state) => state.itemScan);
@@ -125,7 +126,7 @@ const UpcScanner = ({ handleScan, onClear }: UpcScannerProps) => {
   };
 
   return (
-    <div>
+    <div className={containerClassName}>
       <div
         ref={ref}
         className={`scanner-container ${
