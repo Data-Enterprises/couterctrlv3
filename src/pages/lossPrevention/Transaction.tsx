@@ -168,11 +168,32 @@ const Transaction = ({ trans }: TransactionProps) => {
     // The default works for No Sale, Backup, Cancelled, and Description
     const bool = cashier.selectedSaleType.toLowerCase() === "description";
     const transaction = bool ? trans.slice(0, -1) : trans;
-    totalSales = transaction.reduce((acc, cur) => acc + cur.total_sales, 0);
+
+    totalSales = transaction.reduce((acc, cur) => {
+      if (cur.sale_type === "Tender") {
+        return acc;
+      } else if (cur.is_coupon === 1 || cur.coupon_amount > 0) {
+        return acc - (cur.coupon_amount + Math.abs(cur.total_sales));
+      } else if (!cur.sale_type.toLowerCase().includes("void")) {
+        return acc + cur.total_sales;
+      }
+      return acc;
+    }, 0);
+
     netSales = transaction.reduce(
-      (acc, cur) => acc + cur.total_sales - cur.total_rounded_tax,
+      (acc, cur) => {
+        if (cur.sale_type === "Tender") {
+          return acc;
+        } else if (cur.is_coupon === 1 || cur.coupon_amount > 0) {
+          return acc - (cur.coupon_amount + Math.abs(cur.total_sales));
+        } else if (!cur.sale_type.toLowerCase().includes("void")) {
+          return acc + cur.total_sales-cur.total_rounded_tax;
+        }
+        return acc;
+      },
       0,
     );
+
     totalTax = transaction.reduce((acc, cur) => acc + cur.total_rounded_tax, 0);
 
     refundAmount = transaction.reduce((acc, cur) => {

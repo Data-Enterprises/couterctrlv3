@@ -166,9 +166,28 @@ const Transaction = ({ trans }: TransactionProps) => {
     }, 0);
   } else {
     // The default works for No Sale, Backup, Cancelled
-    totalSales = trans.reduce((acc, cur) => acc + cur.total_sales, 0);
+    totalSales = trans.reduce((acc, cur) => {
+      if (cur.sale_type === "Tender") {
+        return acc;
+      } else if (cur.is_coupon === 1 || cur.coupon_amount > 0) {
+        return acc - (cur.coupon_amount + Math.abs(cur.total_sales));
+      } else if (!cur.sale_type.toLowerCase().includes("void")) {
+        return acc + cur.total_sales;
+      }
+      return acc;
+    }, 0);
+
     netSales = trans.reduce(
-      (acc, cur) => acc + cur.total_sales - cur.total_rounded_tax,
+      (acc, cur) => {
+        if (cur.sale_type === "Tender") {
+          return acc;
+        } else if (cur.is_coupon === 1 || cur.coupon_amount > 0) {
+          return acc - (cur.coupon_amount + Math.abs(cur.total_sales));
+        } else if (!cur.sale_type.toLowerCase().includes("void")) {
+          return acc + cur.total_sales-cur.total_rounded_tax;
+        }
+        return acc;
+      },
       0,
     );
     totalTax = trans.reduce((acc, cur) => acc + cur.total_rounded_tax, 0);
