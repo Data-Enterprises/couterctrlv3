@@ -18,7 +18,6 @@ import {
 import MarginCard from "./MarginCard";
 import type { JsonError, SubDeptCost } from "../../../interfaces";
 import CostCard from "./CostCard";
-import ScanItem from "../../lookup/ScanItem";
 import { getItemLookupSingleStore } from "../../../api/itemLookup";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import ItemHistoryModal from "./ItemHistoryModal";
@@ -290,7 +289,7 @@ const ItemsView = () => {
           } mb-2 rounded-lg`}
           style={{ objectFit: "cover", height: "175px", width: "100%" }}
         />
-        <ScanItem scanItem={scanItem} storeSelect={false} />
+        {/* <ScanItem scanItem={scanItem} storeSelect={false} /> */}
       </div>
       {ctx.subDeptGridView === "item" ? (
         <div className="grid gap-2 p-2 max-h-[calc(100vh-14.4rem)] overflow-y-auto">

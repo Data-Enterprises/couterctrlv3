@@ -1,24 +1,17 @@
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../../hooks";
-import { setUpcCode, setSelectedStore } from "../../features/itemLookupSlice";
-import { setScannedUpc } from "../../features/subMarginSlice";
+import { setSelectedStore } from "../../features/itemLookupSlice";
 import Modal from "../../components/Modal";
 import type { Store } from "../../interfaces";
 
-interface ScanItemProps {
-  scanItem: () => void;
-  storeSelect?: boolean;
-}
-
-const ScanItem = ({ scanItem, storeSelect = true }: ScanItemProps) => {
+const StoreSelector = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
   const [filteredStores, setFilteredStores] = useState<Store[]>([]);
-  const { upcCode, selectedStore, itemsLoaded } = useAppSelector(
+  const { selectedStore, itemsLoaded } = useAppSelector(
     (state) => state.item
   );
-  const scannedUpc = useAppSelector((state) => state.subMargin.scannedUpc);
   const dispatch = useDispatch();
   const { assignedStores } = useAppSelector((state) => state.user);
 
@@ -35,10 +28,6 @@ const ScanItem = ({ scanItem, storeSelect = true }: ScanItemProps) => {
     }
   }, [searchText]);
 
-  const handleScan = () => {
-    scanItem();
-  };
-
   const handleClose = () => {
     setIsOpen(false);
   };
@@ -52,29 +41,21 @@ const ScanItem = ({ scanItem, storeSelect = true }: ScanItemProps) => {
     setSearchText(e.target.value);
   };
 
-  const handleUpcChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (storeSelect) {
-      dispatch(setUpcCode(e.target.value));
-    } else {
-      dispatch(setScannedUpc(e.target.value));
-    }
-  };
-
   return (
     <div className="mb-1">
-      <Modal className="px-12" isOpen={isOpen} onClose={handleClose}>
+      <Modal className="px-12 -ml-12" isOpen={isOpen} onClose={handleClose}>
         <div className="-mt-2 mb-2">
           <label className="text-xs font-medium">Search stores:</label>
           <input
             data-testid="lookup-store-input"
             id="store-search"
             type="text"
-            className="basic-input"
+            className="basic-input py-1.5"
             onChange={handleChange}
             value={searchText}
           />
         </div>
-        <div className="h-96 max-h-96 overflow-y-auto rounded-lg no-scrollbar">
+        <div className="h-96 max-h-96 text-sm overflow-y-auto rounded-lg no-scrollbar">
           {filteredStores.map((store, i) => (
             <div
               key={i}
@@ -92,25 +73,7 @@ const ScanItem = ({ scanItem, storeSelect = true }: ScanItemProps) => {
           ))}
         </div>
       </Modal>
-      <div className="text-sm font-medium">Scan item:</div>
-      <div className="flex gap-2 items-center">
-        <input
-          type="text"
-          data-testid="scan-item-input"
-          value={storeSelect ? upcCode : scannedUpc}
-          onChange={handleUpcChange}
-          className="basic-input bg-custom-white"
-        />
-        <button
-          data-testid="scan-button"
-          onClick={handleScan}
-          className="btn-themeBlue px-4"
-        >
-          Scan
-        </button>
-      </div>
-      {/* <UpcScanner  /> */}
-      {!itemsLoaded && storeSelect ? (
+      {!itemsLoaded ? (
         <button
           data-testid="lookup-select-store"
           className="btn-themeBlue mt-2 w-full"
@@ -119,7 +82,7 @@ const ScanItem = ({ scanItem, storeSelect = true }: ScanItemProps) => {
           {!selectedStore ? "Select Store" : "Change Store"}
         </button>
       ) : null}
-      {selectedStore && !itemsLoaded && storeSelect ? (
+      {selectedStore && !itemsLoaded ? (
         <button
           data-testid="scan-item-clear-store"
           className="btn-themeOrange mt-2 w-full"
@@ -132,4 +95,4 @@ const ScanItem = ({ scanItem, storeSelect = true }: ScanItemProps) => {
   );
 };
 
-export default ScanItem;
+export default StoreSelector;

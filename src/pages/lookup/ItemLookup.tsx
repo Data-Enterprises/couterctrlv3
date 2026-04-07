@@ -3,7 +3,6 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 import { getItemLookup, getItemLookupSingleStore } from "../../api/itemLookup";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import {
-  setUpcCode,
   setItems,
   resetLookupSlice,
   setItemsLoaded,
@@ -23,7 +22,8 @@ import BottomStoreLookup from "./BottomStoreLookup";
 import ItemLookupHeader from "./ItemLookupHeader";
 import HistoryItemCard from "./HistoryItemCard";
 import UpcScanner from "../../components/scanner/UpcScanner";
-import { setError } from "../../features/itemScanSlice";
+import StoreSelector from "./StoreSelector";
+import { setError, setUpcCode } from "../../features/itemScanSlice";
 
 const ItemLookup = () => {
   const toast = useToast();
@@ -40,15 +40,9 @@ const ItemLookup = () => {
   useEffect(() => {
     return () => {
       dispatch(setUpcCode(""));
-    };
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      dispatch(setUpcCode(""));
       dispatch(resetLookupSlice());
     };
-  }, [dispatch]);
+  }, []);
 
   const getSingleStoreData = (upc: string) => {
     setIsLoading(true);
@@ -70,17 +64,16 @@ const ItemLookup = () => {
           dispatch(setItemsLoaded(true));
         } else {
           // If item is not found
-          dispatch(setError(`We're sorry, that item was not found in your inventory`));
+          dispatch(
+            setError(`We're sorry, that item was not found in your inventory`),
+          );
           dispatch(setItemsLoaded(false));
           dispatch(resetLookupSlice());
           dispatch(setPause(true));
         }
       })
       .catch((err) => toast.error(err.message))
-      .finally(() => {
-        dispatch(setUpcCode(""));
-        setIsLoading(false);
-      });
+      .finally(() => setIsLoading(false));
   };
 
   const getData = (upc: string) => {
@@ -110,23 +103,24 @@ const ItemLookup = () => {
           );
           dispatch(setItemsLoaded(true));
         } else {
-          dispatch(setError(
-            `We're sorry, item ${
-              j.product_code.split(".")[0]
-            } was not found in your inventory`,
-          ));
+          dispatch(
+            setError(
+              `We're sorry, item ${
+                j.product_code.split(".")[0]
+              } was not found in your inventory`,
+            ),
+          );
           dispatch(setItemsLoaded(false));
         }
       })
       .catch((err) => toast.error(err.message))
-      .finally(() => {
-        dispatch(setUpcCode(""));
-        setIsLoading(false);
-      });
+      .finally(() => setIsLoading(false));
   };
 
   const clear = () => {
     dispatch(resetLookupSlice());
+    dispatch(setUpcCode(""));
+    dispatch(setError(""));
   };
 
   const scanItem = () => {
@@ -142,6 +136,7 @@ const ItemLookup = () => {
         <LoadingIndicator message={`Looking up item: ${upcCode}`} />
       </div>
       <UpcScanner handleScan={scanItem} onClear={clear} />
+      <StoreSelector />
       <div ref={topRef} className="text-center font-bold underline">
         {assignedStores.find((s) => s.storeid === selectedStore)?.store_name}
       </div>
