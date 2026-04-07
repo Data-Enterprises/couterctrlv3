@@ -10,16 +10,11 @@ import {
 } from "../../features/itemScanSlice";
 
 interface UpcScannerProps {
-  handleUpcChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleScan: () => void;
   onClear?: () => void;
 }
 
-const UpcScanner = ({
-  handleUpcChange,
-  handleScan,
-  onClear,
-}: UpcScannerProps) => {
+const UpcScanner = ({ handleScan, onClear }: UpcScannerProps) => {
   const dispatch = useAppDispatch();
   const ref = useRef<HTMLDivElement>(null);
   const state = useAppSelector((state) => state.itemScan);
@@ -55,7 +50,6 @@ const UpcScanner = ({
 
       // Otherwise, we start the scanner,
       // get the upc code and then call the scan item function passed in
-
       if (ref.current.style.display === "block") {
         ref.current.style.display = "none";
         stopScanner();
@@ -102,7 +96,6 @@ const UpcScanner = ({
         const code = result.codeResult.code;
         dispatch(setUpcCode(code!));
         // Run the passed in scan item function here with the scanned upc code
-        // selectedStore > 0 ? getSingleStoreData(code!) : getData(code!);
         handleScan();
         dispatch(setPause(true));
       });
@@ -122,10 +115,13 @@ const UpcScanner = ({
   };
 
   const clear = () => {
-    if (onClear) onClear(); // pass the below dispatch from ItemLookup.tsx as onClose
-    // dispatch(resetLookupSlice());
+    if (onClear) onClear();
     dispatch(setError(""));
     dispatch(setPause(true));
+  };
+
+  const handleUpcChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(setUpcCode(e.target.value));
   };
 
   return (
