@@ -22,6 +22,7 @@ import TransactionModal from "../lossPrevention/TransactionModal";
 import FiltersModal from "./filters/FiltersModal";
 import ExportModal from "../../components/modals/ExportModal";
 import CouponKpis from "./kpi/CouponKpis";
+import CouponsMobile from "./mobile/CouponsMobile";
 
 const Coupons = () => {
   const toast = useToast();
@@ -59,6 +60,8 @@ const Coupons = () => {
       .catch((err: JsonError) => toast.error(err.message))
       .finally(() => dispatch(setIsFetching(false)));
   };
+
+  if (context.isMobile) return <CouponsMobile />;
 
   const showGrid = context.coupons.length > 0 && !context.isFetching;
   const showLoading = context.coupons.length === 0 && context.isFetching;

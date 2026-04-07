@@ -70,7 +70,7 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
       </div>
 
       <div className="grid grid-rows-9 mt-1 text-[13px]">
-        <div className="grid grid-cols-[26%_24%_18%_15%_19%] border-b border-content/60 font-medium">
+        <div className="grid grid-cols-[26%_24%_18%_15%_19%] border-b border-content/60 font-medium cursor-default">
           <div>Exception</div>
           <div>Sales</div>
           <div>Qty</div>
@@ -153,7 +153,7 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
           storeid={cashier.storeid}
           cashierNumber={cashier.cashier_number}
         />
-        <div className="flex justify-center gap-4 font-medium">
+        <div className="flex justify-center gap-4 font-medium cursor-default">
           <div className="flex gap-1">
             <div>Tier:</div>
             <div className={exceptionTierColor()}>{cashier.exception_tier}</div>

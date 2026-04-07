@@ -98,8 +98,7 @@ const UpcAssociation = () => {
             );
             const main = groupedProductCodes.filter((item: ItemAssociate) =>
               selectedUpcs.includes(item.product_code),
-          );
-          console.log("groupedProductCodes", groupedProductCodes, main, selectedUpcs);
+            );
 
             const associates = groupedProductCodes.filter(
               (item: ItemAssociate) =>

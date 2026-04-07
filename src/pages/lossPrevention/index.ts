@@ -16,6 +16,7 @@ export const cashierColDefs: (
     field: "cashier_number",
     flex: 1,
     resizable: false,
+    hide: true,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
   },
@@ -88,6 +89,7 @@ export const reduceTransactions = (data: TransactionListItem[]) => {
       found.qty! += curr.qty!;
       found.total_sales += curr.total_sales;
       found.net_sales += curr.net_sales;
+      found.total_rounded_tax += curr.total_rounded_tax;
     } else {
       acc.push({ ...curr, qty: curr.qty });
     }

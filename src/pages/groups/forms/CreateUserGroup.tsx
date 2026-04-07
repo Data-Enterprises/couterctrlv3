@@ -43,16 +43,21 @@ const CreateUserGroup = () => {
   };
 
   const containerStyle = isDesktop
-    ? "bg-custom-white p-4 rounded-md shadow-md w-[30%]"
+    ? "bg-custom-white p-4 rounded-md shadow-md w-[25%]"
     : "bg-custom-white p-4 rounded-md shadow-md w-full";
 
   return (
     <div data-testid="create-usergroup-form" className={containerStyle}>
       <div className="bg-custom-white text-sm">
         <div className="font-medium">Existing Groups</div>
-        <div className="p-2 bg-bkg/80 rounded-lg grid grid-cols-2 gap-2 max-h-36 overflow-y-auto no-scrollbar">
+        <div className="p-2 bg-bkg/80 rounded-lg grid grid-cols-2 max-h-36 overflow-y-auto select-none">
           {groupNames.map((g, i) => (
-            <div key={i}>{g}</div>
+            <div
+              key={i}
+              className={`${createInput.trim().toLowerCase() === g.toLowerCase() ? "bg-orange-200" : ""} px-2 py-0.5 rounded-full`}
+            >
+              {g}
+            </div>
           ))}
         </div>
       </div>

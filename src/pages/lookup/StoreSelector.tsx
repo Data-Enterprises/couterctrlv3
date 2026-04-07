@@ -1,19 +1,15 @@
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../../hooks";
-import { setUpcCode, setSelectedStore } from "../../features/itemLookupSlice";
+import { setSelectedStore } from "../../features/itemLookupSlice";
 import Modal from "../../components/Modal";
 import type { Store } from "../../interfaces";
 
-interface ScanItemProps {
-  scanItem: () => void;
-}
-
-const ScanItem = ({ scanItem }: ScanItemProps) => {
+const StoreSelector = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
   const [filteredStores, setFilteredStores] = useState<Store[]>([]);
-  const { upcCode, selectedStore, itemsLoaded } = useAppSelector(
+  const { selectedStore, itemsLoaded } = useAppSelector(
     (state) => state.item
   );
   const dispatch = useDispatch();
@@ -32,10 +28,6 @@ const ScanItem = ({ scanItem }: ScanItemProps) => {
     }
   }, [searchText]);
 
-  const handleScan = () => {
-    scanItem();
-  };
-
   const handleClose = () => {
     setIsOpen(false);
   };
@@ -51,19 +43,19 @@ const ScanItem = ({ scanItem }: ScanItemProps) => {
 
   return (
     <div className="mb-1">
-      <Modal className="px-12" isOpen={isOpen} onClose={handleClose}>
+      <Modal className="px-12 -ml-12" isOpen={isOpen} onClose={handleClose}>
         <div className="-mt-2 mb-2">
           <label className="text-xs font-medium">Search stores:</label>
           <input
             data-testid="lookup-store-input"
             id="store-search"
             type="text"
-            className="basic-input"
+            className="basic-input py-1.5"
             onChange={handleChange}
             value={searchText}
           />
         </div>
-        <div className="h-96 max-h-96 overflow-y-auto rounded-lg no-scrollbar">
+        <div className="h-96 max-h-96 text-sm overflow-y-auto rounded-lg no-scrollbar">
           {filteredStores.map((store, i) => (
             <div
               key={i}
@@ -81,24 +73,7 @@ const ScanItem = ({ scanItem }: ScanItemProps) => {
           ))}
         </div>
       </Modal>
-      <div className="text-sm font-medium">Scan item:</div>
-      <div className="flex gap-2 items-center">
-        <input
-          type="text"
-          data-testid="scan-item-input"
-          value={upcCode}
-          onChange={(e) => dispatch(setUpcCode(e.target.value))}
-          className="basic-input bg-custom-white"
-        />
-        <button
-          data-testid="scan-button"
-          onClick={handleScan}
-          className="btn-themeBlue px-4"
-        >
-          Scan
-        </button>
-      </div>
-      {!itemsLoaded && (
+      {!itemsLoaded ? (
         <button
           data-testid="lookup-select-store"
           className="btn-themeBlue mt-2 w-full"
@@ -106,7 +81,7 @@ const ScanItem = ({ scanItem }: ScanItemProps) => {
         >
           {!selectedStore ? "Select Store" : "Change Store"}
         </button>
-      )}
+      ) : null}
       {selectedStore && !itemsLoaded ? (
         <button
           data-testid="scan-item-clear-store"
@@ -120,4 +95,4 @@ const ScanItem = ({ scanItem }: ScanItemProps) => {
   );
 };
 
-export default ScanItem;
+export default StoreSelector;

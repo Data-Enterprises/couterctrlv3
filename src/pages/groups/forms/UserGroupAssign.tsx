@@ -88,7 +88,7 @@ const UserGroupAssign = () => {
     : "bg-custom-white p-2 w-[49%] rounded-lg shadow-lg h-[65vh] absolute text-xs";
 
   return (
-    <div className={`${isDesktop ? "w-[55%]" : "w-full"} space-y-4`}>
+    <div className={`${isDesktop ? "w-[45%]" : "w-full"} space-y-4`}>
       <SingleSelect
         id={1}
         label="Select User Group"
@@ -114,7 +114,7 @@ const UserGroupAssign = () => {
                   onClick={() => handleStoreClick(store.storeid, "unassigned")}
                 >
                   <div
-                    className={`font-medium space-y-0.5 ${isDesktop ? "" : "text-[12px]"} `}
+                    className={`font-medium space-y-0.5 ${isDesktop ? "text-[13.5px]" : "text-[12px]"} `}
                   >
                     <div>Store {store.store_number}</div>
                     <div>
@@ -157,7 +157,7 @@ const UserGroupAssign = () => {
                 onClick={() => handleStoreClick(store.storeid, "assigned")}
               >
                 <div
-                  className={`font-medium space-y-0.5 ${isDesktop ? "" : "text-[12px]"} `}
+                  className={`font-medium space-y-0.5 ${isDesktop ? "text-[13.5px]" : "text-[12px]"} `}
                 >
                   <div>Store {store.store_number}</div>
                   <div>

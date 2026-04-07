@@ -1,7 +1,7 @@
 import { useAppSelector } from "../../../hooks";
 import DatePickers from "../../../components/datePickers/DatePickers";
 import SingleSelect from "../../../components/SingleSelect";
-import ReceiverSelect from "./ReceiverSelect";
+import VendorSelect from "./VendorSelect";
 import ReceiverDetailsMobile from "./ReceiverDetailsMobile";
 
 interface ReceiversMobileViewProps {
@@ -33,7 +33,7 @@ const ReceiversMobileView = ({
     );
   }
 
-  if (recMobileStage === 2) return <ReceiverSelect />;
+  if (recMobileStage === 2) return <VendorSelect />;
   if (recMobileStage === 3) return <ReceiverDetailsMobile />
 };
 

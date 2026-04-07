@@ -71,10 +71,10 @@ const RecevierListFilters = () => {
         state.list.length === 0 && "hidden"
       } bg-custom-white rounded-lg shadow-lg`}
     >
-      <div className="bg-blue-500 text-custom-white font-medium rounded-t-lg px-4 py-1">
+      <div className="bg-blue-500 text-custom-white font-medium rounded-t-lg px-2 py-0.5">
         Filter By
       </div>
-      <div className="bg-custom-white p-4 rounded-b-lg space-y-2">
+      <div className="bg-custom-white p-2 rounded-b-lg space-y-2">
         {filterOptions.map((option, i) => (
           <div
             key={i}

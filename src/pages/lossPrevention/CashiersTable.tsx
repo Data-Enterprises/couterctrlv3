@@ -4,26 +4,13 @@ import {
   theme,
   formatDate,
   chunkSales,
-  // reduceCashiers,
   reduceTransactions,
 } from ".";
 import { useToast } from "../../components/toasts/hooks/useToast";
+import { getCashierTransaction } from "../../api/lossPrevention";
 import {
-  // getCashierTable,
-  getCashierTransaction,
-  // getTransactionList,
-} from "../../api/lossPrevention";
-import {
-  // setCashiers,
-  // setCashierTransactions,
-  // setCurrentGridPage,
-  // setFetchingCashierTransactions,
-  // setPageText,
-  // setSelectedSaleIds,
   setTransactionDrillDown,
-  // setTransList,
   setTransModalOpen,
-  // setTransOverviews,
 } from "../../features/lossPreventionSlice";
 import type {
   JsonError,
@@ -39,16 +26,10 @@ import {
   type ColDef,
   type ColGroupDef,
 } from "ag-grid-community";
-import {
-  formatBigNumber,
-  formatCurrency2,
-  // formatGoliathDate,
-} from "../../utils";
+import { formatBigNumber, formatCurrency2 } from "../../utils";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 import ExportModal from "./export/ExportModal";
-// import Input from "../../components/inputs/Input";
-// import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 
 const CashiersTable = () => {
   const toast = useToast();
@@ -58,7 +39,6 @@ const CashiersTable = () => {
     TransactionOverview[]
   >([]);
   const context = useAppSelector((state) => state.app);
-  // const search = useAppSelector((state) => state.search);
   const cashier = useAppSelector((state) => state.lossPrevention);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
 
@@ -191,127 +171,6 @@ const CashiersTable = () => {
     dispatch(setTransactionDrillDown(chunked));
     dispatch(setTransModalOpen(true));
   };
-
-  // const handlePageChange = (direction?: "prev" | "next") => {
-  //   if (context.isDesktop) {
-  //     const start = formatGoliathDate(search.startDate);
-  //     const end = formatGoliathDate(search.endDate);
-  //     const saleType =
-  //       cashier.selectedSaleType === "Description"
-  //         ? "description"
-  //         : cashier.selectedSaleType;
-  //     let pageToSend;
-  //     if (direction) {
-  //       pageToSend =
-  //         direction === "next"
-  //           ? cashier.currentGridPage + 1
-  //           : cashier.currentGridPage - 1;
-  //       dispatch(setCurrentGridPage(pageToSend));
-  //     } else {
-  //       pageToSend = cashier.currentGridPage;
-  //     }
-
-  //     dispatch(setPageText(pageToSend.toString()));
-  //     dispatch(setCurrentGridPage(pageToSend));
-  //     dispatch(setFetchingCashierTransactions(true));
-  //     dispatch(setTransList([]));
-
-  //     getCashierTable(
-  //       context.url,
-  //       context.token,
-  //       start,
-  //       end,
-  //       0,
-  //       cashier.selectedStoreId,
-  //       1,
-  //       [saleType],
-  //       pageToSend,
-  //       cashier.searchString,
-  //     )
-  //       .then((resp) => {
-  //         const j = resp.data;
-  //         if (j.error === 0) {
-  //           const transactions = [...j.transactions];
-  //           dispatch(setCashierTransactions(transactions));
-
-  //           const saleIds = Array.from(
-  //             new Set(transactions.map((item) => item.sale_id)),
-  //           );
-  //           dispatch(setSelectedSaleIds(saleIds));
-  //           dispatch(setTransList([]));
-
-  //           // call the api
-  //           getTransactionList(
-  //             context.url,
-  //             context.token,
-  //             saleIds,
-  //             1,
-  //             saleType,
-  //             cashier.searchString,
-  //           )
-  //             .then((resp) => {
-  //               const j = resp.data;
-  //               if (j.error === 0) {
-  //                 const newTrans = [...j.transactions];
-  //                 const uniqueCashiers = reduceCashiers(newTrans);
-
-  //                 // Everything below is going inside the then block of the cashier_table call
-  //                 dispatch(setCashiers(uniqueCashiers));
-  //                 const formatted = newTrans.map((item) => {
-  //                   const transactionId = item.sale_id.split("-")[1];
-  //                   return { ...item, transaction_id: transactionId };
-  //                 });
-  //                 const overviews: TransactionOverview[] = [
-  //                   ...formatted,
-  //                 ].reduce(
-  //                   (acc: TransactionOverview[], curr: TransactionListItem) => {
-  //                     const found = acc.find(
-  //                       (item) => item.transaction_id === curr.transaction_id,
-  //                     );
-
-  //                     if (!found) {
-  //                       acc.push({
-  //                         transaction_id: curr.transaction_id,
-  //                         sale_date: curr.sale_date,
-  //                         sale_type: curr.sale_type,
-  //                         store_number: curr.store_number,
-  //                         cashier_name: curr.cashier_name,
-  //                         cashier_number: curr.cashier_number,
-  //                         qty: curr.qty ? curr.qty : 0,
-  //                         total_sales: curr.total_sales,
-  //                         sale_id: curr.sale_id,
-  //                         storeid: curr.storeid,
-  //                       });
-  //                     } else {
-  //                       found.qty += curr.qty ? curr.qty : 0;
-  //                       found.total_sales += curr.total_sales;
-  //                     }
-  //                     return acc;
-  //                   },
-  //                   [],
-  //                 );
-  //                 dispatch(setTransOverviews(overviews));
-  //                 dispatch(setTransList(formatted));
-  //               }
-  //             })
-  //             .catch((err: JsonError) =>
-  //               toast.error("Error fetching transactions: " + err.message),
-  //             )
-  //             .finally(() => {
-  //               dispatch(setFetchingCashierTransactions(false));
-  //             });
-  //         }
-  //       })
-  //       .catch((err: JsonError) => toast.error(err.message));
-  //   }
-  // };
-
-  // const handlePageInput = (x: string) => {
-  //   if (!isNaN(Number(x)) && Number(x) >= 0 && Number(x) <= cashier.gridPages) {
-  //     dispatch(setCurrentGridPage(Number(x)));
-  //     dispatch(setPageText(x));
-  //   }
-  // };
 
   const overviewCols: (
     | ColDef<TransactionOverview>
@@ -546,32 +405,6 @@ const CashiersTable = () => {
           Export
         </button>
       </div>
-      {/* <div
-        className={`${cashier.gridPages > 1 ? "absolute " : "hidden"} bottom-2.5 right-2 flex items-center gap-2 ${cashier.fetchingCashierTransactions ? "pointer-events-none opacity-50" : ""}`}
-      >
-        <ChevronLeftIcon
-          data-testid="cashiers-prev-page-btn"
-          className={`w-6 h-6 border rounded-full text-custom-white bg-blue-500 hover:bg-blue-200 hover:text-content transition-all duration-200 cursor-pointer ${cashier.currentGridPage < 2 ? "opacity-50 pointer-events-none" : ""}`}
-          onClick={() => handlePageChange("prev")}
-        />
-        <div className="flex gap-2 justify-center text-sm font-medium">
-          <div className="pt-0.5 select-none">Page </div>
-          <Input
-            label=""
-            value={cashier.pageText}
-            setValue={handlePageInput}
-            className="p-0 text-center rounded-full"
-            onKeyDown={handlePageChange}
-            width="w-8"
-          />
-          <div className="pt-0.5 select-none"> of {cashier.gridPages}</div>
-        </div>
-        <ChevronRightIcon
-          data-testid="cashiers-next-page-btn"
-          className={`w-6 h-6 border rounded-full text-custom-white bg-blue-500 hover:bg-blue-200 hover:text-content transition-all duration-200 cursor-pointer ${cashier.currentGridPage === cashier.gridPages ? "opacity-50 pointer-events-none" : ""}`}
-          onClick={() => handlePageChange("next")}
-        />
-      </div> */}
     </div>
   );
 };

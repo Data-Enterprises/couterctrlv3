@@ -58,10 +58,10 @@ const ExportModal = <T extends Record<string, any>>({
       <div className="flex gap-4">
         <button
           data-testid="receivers-data-export"
-          className="btn-themeBlue w-full"
+          className="btn-themeGreen w-full"
           onClick={handleExport}
         >
-          Export
+          Submit
         </button>
         <button
           data-testid="cashier-export-modal-cancel"

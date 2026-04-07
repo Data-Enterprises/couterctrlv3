@@ -297,6 +297,7 @@ export type TransactionOverview = {
 
 export interface TransactionListItem {
   transaction_id: string;
+  coupon_amount:number;
   storeid: number;
   store_name: string;
   store_number: string;

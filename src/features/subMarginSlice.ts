@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { SubDeptMargin, SubDept, SubDeptCost } from "../interfaces";
 import type { ItemRow } from "../pages/subDepts/display/widgets";
+import type { ItemLookupHistory } from "./itemLookupSlice";
 
 export type SubDeptGridView = "item" | "cost";
 export type MarginWeek = 0 | 1 | 2 | 3 | 4 | 5;
@@ -68,6 +69,11 @@ interface SubMarginState {
   // filters specific to the cost grid
   unitCostFilter: ThresholdFilter;
   caseCostFilter: ThresholdFilter;
+
+  scannedUpc: string;
+  pause: boolean;
+  scannedItemHistory: ItemLookupHistory[];
+  itemHistoryModalOpen: boolean;
 }
 
 const initialState: SubMarginState = {
@@ -104,6 +110,10 @@ const initialState: SubMarginState = {
   filteredCostGridData: [],
   caseCostFilter: defaultThreshFilter,
   unitCostFilter: defaultThreshFilter,
+  scannedUpc: "",
+  pause: true,
+  scannedItemHistory: [],
+  itemHistoryModalOpen: false,
 };
 
 const subMarginSlice = createSlice({
@@ -174,6 +184,8 @@ const subMarginSlice = createSlice({
       state.marginFilter = defaultThreshFilter;
       state.itemFilterType = "";
       state.itemGridData = [];
+      state.scannedUpc = "";
+      state.pause = false;
     },
     setSelectedWeek: (state, action: PayloadAction<MarginWeek>) => {
       state.selectedWeek = action.payload;
@@ -273,6 +285,18 @@ const subMarginSlice = createSlice({
       state.selectedWeekDay = "";
       state.subDeptGridView = "item";
     },
+    setScannedUpc: (state, action: PayloadAction<string>) => {
+      state.scannedUpc = action.payload;
+    },
+    setPause: (state, action: PayloadAction<boolean>) => {
+      state.pause = action.payload;
+    },
+    setScannedItemHistory: (state, action: PayloadAction<ItemLookupHistory[]>) => {
+      state.scannedItemHistory = action.payload;
+    },
+    setItemHistoryModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.itemHistoryModalOpen = action.payload;
+    },
     resetSubMarginState: () => initialState,
   },
 });
@@ -307,5 +331,9 @@ export const {
   setOpenCostExportModal,
   handleWeekReset,
   requerySubDeptMargins,
+  setScannedUpc,
+  setPause,
+  setScannedItemHistory,
+  setItemHistoryModalOpen,
 } = subMarginSlice.actions;
 export default subMarginSlice.reducer;

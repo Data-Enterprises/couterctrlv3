@@ -130,7 +130,7 @@ const StoreOverview = ({ store }: StoreCardProps) => {
       </div>
 
       <div className="grid grid-rows-9 mt-1 text-[13px]">
-        <div className="grid grid-cols-[26%_24%_18%_15%_19%] border-b border-content/60 font-medium">
+        <div className="grid grid-cols-[26%_24%_18%_15%_19%] border-b border-content/60 font-medium cursor-default">
           <div>Exception</div>
           <div>Sales</div>
           <div>Qty</div>
@@ -206,8 +206,8 @@ const StoreOverview = ({ store }: StoreCardProps) => {
           storeid={store.storeid}
         />
         <div
-          className="flex justify-center gap-4 font-medium"
-          onClick={getCCards}
+          className="flex justify-center gap-4 font-medium cursor-default"
+          // onClick={getCCards}
         >
           <div className="flex gap-1">
             <div>Tier:</div>

@@ -1,11 +1,12 @@
 import type { IconProps } from ".";
 
-const CouponIcon = ({ size = 24, onClick }: IconProps) => {
+const CouponIcon = ({ size = 24, onClick, className }: IconProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       height={`${size}px`}
       width={`${size}px`}
+      className={`cursor-pointer ${className}`}
       onClick={onClick}
       version="1.1"
       viewBox="0 0 512 512"

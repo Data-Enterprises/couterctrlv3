@@ -90,8 +90,8 @@ const Transaction = ({ trans }: TransactionProps) => {
     const transaction = trans.filter(
       (t) =>
         t.sale_type.toLowerCase() !== "tender" &&
-        t.product_description.toLowerCase() !== "ewic"
-        // t.product_code !== null,
+        t.product_description.toLowerCase() !== "ewic",
+      // t.product_code !== null,
     );
     totalTax = transaction.reduce((acc, cur) => {
       if (!cur.sale_type.toLowerCase().includes("void")) {
@@ -120,43 +120,81 @@ const Transaction = ({ trans }: TransactionProps) => {
       }
       return acc;
     }, 0);
-
-    // console.log(transaction);
-    // console.log("total sales: ", totalSales);
-    // console.log("net sales: ", netSales);
-    // console.log("total tax: ", totalTax);
-    // console.log("VOID AMOUNT: ", voidAmount);
   } else if (cashier.selectedSaleType.toLowerCase() === "refunded") {
     const transaction = trans.slice(0, -1);
-    totalSales = transaction.reduce((acc, cur) => acc + cur.total_sales, 0);
+    totalSales = transaction.reduce((acc, cur) => {
+      // voided => do not add
+      if (cur.sale_type.toLowerCase().includes("void")) {
+        return acc;
+      }
 
-    netSales = transaction.reduce(
-      (acc, cur) => acc + cur.total_sales - cur.total_rounded_tax,
-      0,
-    );
+      return acc + cur.total_sales;
+    }, 0);
 
-    totalTax = transaction.reduce((acc, cur) => acc + cur.total_rounded_tax, 0);
+    netSales = transaction.reduce((acc, cur) => {
+      if (
+        cur.sale_type.toLowerCase().includes("refund") ||
+        cur.sale_type.toLowerCase().includes("sale")
+      ) {
+        return acc + cur.total_sales - cur.total_rounded_tax;
+      }
+
+      return acc;
+    }, 0);
+
+    totalTax = transaction.reduce((acc, cur) => {
+      // voided => do not add
+      if (cur.sale_type.toLowerCase().includes("void")) {
+        return acc;
+      }
+
+      return acc + cur.total_rounded_tax;
+    }, 0);
 
     refundAmount = transaction.reduce((acc, cur) => {
       if (cur.sale_type.toLowerCase().includes("refund")) {
+        return acc + cur.total_sales;
+      }
+      return acc;
+    }, 0);
+
+    voidAmount = transaction.reduce((acc, cur) => {
+      if (cur.sale_type.toLowerCase().includes("void")) {
         return acc + cur.net_sales;
       }
       return acc;
     }, 0);
   } else {
     // The default works for No Sale, Backup, Cancelled
-    totalSales = trans.reduce((acc, cur) => acc + cur.total_sales, 0);
+    totalSales = trans.reduce((acc, cur) => {
+      if (cur.sale_type === "Tender") {
+        return acc;
+      } else if (cur.is_coupon === 1 || cur.coupon_amount > 0) {
+        return acc - (cur.coupon_amount + Math.abs(cur.total_sales));
+      } else if (!cur.sale_type.toLowerCase().includes("void")) {
+        return acc + cur.total_sales;
+      }
+      return acc;
+    }, 0);
 
     netSales = trans.reduce(
-      (acc, cur) => acc + cur.total_sales - cur.total_rounded_tax,
+      (acc, cur) => {
+        if (cur.sale_type === "Tender") {
+          return acc;
+        } else if (cur.is_coupon === 1 || cur.coupon_amount > 0) {
+          return acc - (cur.coupon_amount + Math.abs(cur.total_sales));
+        } else if (!cur.sale_type.toLowerCase().includes("void")) {
+          return acc + cur.total_sales-cur.total_rounded_tax;
+        }
+        return acc;
+      },
       0,
     );
-
     totalTax = trans.reduce((acc, cur) => acc + cur.total_rounded_tax, 0);
   }
 
   return (
-    <div className="border border-blue-500 p-2 rounded-lg relative">
+    <div className="border border-blue-500 p-2 rounded-lg relative select-none">
       <div className="absolute right-2 top-2 flex gap-2">
         <button
           data-testid="cashier-trans-modal-email-btn"
@@ -210,7 +248,7 @@ const Transaction = ({ trans }: TransactionProps) => {
           return (
             <div
               key={i}
-              className="grid grid-cols-[18%_40%_5%_10%_12%_1fr] gap-1 text-[13px] mt-1.5"
+              className="grid grid-cols-[18%_42%_5%_10%_10%_1fr] gap-1 text-[13px] mt-1.5"
             >
               <div>{item.product_code}</div>
               <div>{item.product_description}</div>
@@ -227,21 +265,23 @@ const Transaction = ({ trans }: TransactionProps) => {
           <div>Net Sales:</div>
           <div>{formatCurrency2(netSales)}</div>
         </div>
-        {totalTax > 0 && <div className="flex gap-1">
-          <div>Total Tax:</div>
-          <div>{formatCurrency2(totalTax)}</div>
-        </div>}
+        {totalTax > 0 && (
+          <div className="flex gap-1">
+            <div>Total Tax:</div>
+            <div>{formatCurrency2(totalTax)}</div>
+          </div>
+        )}
         <div className="flex gap-1">
           <div>Total Sales:</div>
           <div>{formatCurrency2(totalSales)}</div>
         </div>
-        {cashier.selectedSaleType.toLowerCase() === "voided" && (
+        {voidAmount !== 0 && (
           <div className="flex gap-1">
             <div>Void Amount:</div>
             <div>{formatCurrency2(voidAmount)}</div>
           </div>
         )}
-        {cashier.selectedSaleType.toLowerCase() === "refunded" && (
+        {refundAmount !== 0 && (
           <div className="flex gap-1">
             <div>Refund Amount:</div>
             <div>{formatCurrency2(refundAmount)}</div>

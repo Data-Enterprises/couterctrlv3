@@ -1,14 +1,8 @@
-import { useState, useEffect, useRef } from "react";
-import Quagga from "@ericblade/quagga2";
-import { useMediaDevices } from "react-media-devices";
+import { useState, useEffect } from "react";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import {
-  getItemLookup,
-  getItemLookupSingleStore,
-} from "../../api/itemLookup";
+import { getItemLookup, getItemLookupSingleStore } from "../../api/itemLookup";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import {
-  setUpcCode,
   setItems,
   resetLookupSlice,
   setItemsLoaded,
@@ -17,66 +11,38 @@ import {
   setMetrics,
   setHistoryMetrics,
   setItemLookupHistory,
-  setPause
+  setPause,
 } from "../../features/itemLookupSlice";
 import "./scanner.css";
 import { useHeight } from "./utils";
 
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import ScanItem from "./ScanItem";
 import TopStoreLookup from "./TopStoreLookup";
 import BottomStoreLookup from "./BottomStoreLookup";
 import ItemLookupHeader from "./ItemLookupHeader";
 import HistoryItemCard from "./HistoryItemCard";
+import UpcScanner from "../../components/scanner/UpcScanner";
+import StoreSelector from "./StoreSelector";
+import { setError, setUpcCode } from "../../features/itemScanSlice";
 
 const ItemLookup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
-  const { pause, upcCode, itemsLoaded, selectedStore, itemLookupHistory } =
-    useAppSelector((state) => state.item);
+  const { itemsLoaded, selectedStore, itemLookupHistory } = useAppSelector(
+    (state) => state.item,
+  );
+  const { upcCode, error } = useAppSelector((state) => state.itemScan);
   const { assignedStores } = useAppSelector((state) => state.user);
-
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [deviceId, setDeviceId] = useState<string>("");
-  const ref = useRef<HTMLDivElement>(null);
-
-  const constraints = {
-    video: { facingMode: "environment", width: 1280, height: 720 },
-  };
-  const { devices } = useMediaDevices({ constraints });
   const { height, topRef, bottomRef } = useHeight();
-
-
-  useEffect(() => {
-    return () => {
-      dispatch(setUpcCode(""));
-    };
-  }, []);
-
-  useEffect(() => {
-    if (devices) {
-      const backCamera = devices.find(
-        (device) =>
-          device.label.toLowerCase().includes("back") ||
-          device.label.toLowerCase().includes("environment") ||
-          device.label.toLowerCase().includes("rear")
-      );
-
-      const selectedDeviceId = backCamera
-        ? backCamera.deviceId
-        : devices[1].deviceId;
-      setDeviceId(selectedDeviceId);
-    }
-  }, [devices]);
 
   useEffect(() => {
     return () => {
       dispatch(setUpcCode(""));
       dispatch(resetLookupSlice());
     };
-  }, [dispatch]);
+  }, []);
 
   const getSingleStoreData = (upc: string) => {
     setIsLoading(true);
@@ -91,24 +57,23 @@ const ItemLookup = () => {
               totalQty: j.total_qty,
               avgPrice: j.average_price,
               daysSold: j.days_sold,
-            })
+            }),
           );
           dispatch(setProductCode(j.product_code));
           dispatch(setDescription(j.description));
           dispatch(setItemsLoaded(true));
         } else {
           // If item is not found
-          setError(`We're sorry, that item was not found in your inventory`);
+          dispatch(
+            setError(`We're sorry, that item was not found in your inventory`),
+          );
           dispatch(setItemsLoaded(false));
           dispatch(resetLookupSlice());
           dispatch(setPause(true));
         }
       })
       .catch((err) => toast.error(err.message))
-      .finally(() => {
-        dispatch(setUpcCode(""));
-        setIsLoading(false);
-      });
+      .finally(() => setIsLoading(false));
   };
 
   const getData = (upc: string) => {
@@ -134,100 +99,32 @@ const ItemLookup = () => {
               totalSales: j.total_sales,
               totalQty: j.total_qty,
               avgPrice: j.average_price,
-            })
+            }),
           );
           dispatch(setItemsLoaded(true));
         } else {
-          setError(
-            `We're sorry, item ${
-              j.product_code.split(".")[0]
-            } was not found in your inventory`
+          dispatch(
+            setError(
+              `We're sorry, item ${
+                j.product_code.split(".")[0]
+              } was not found in your inventory`,
+            ),
           );
           dispatch(setItemsLoaded(false));
         }
       })
       .catch((err) => toast.error(err.message))
-      .finally(() => {
-        dispatch(setUpcCode(""));
-        setIsLoading(false);
-      });
+      .finally(() => setIsLoading(false));
   };
 
   const clear = () => {
     dispatch(resetLookupSlice());
-    setError("");
-    dispatch(setPause(true));
+    dispatch(setUpcCode(""));
+    dispatch(setError(""));
   };
 
   const scanItem = () => {
-    if (ref.current) {
-      if (upcCode.length) {
-        return selectedStore > 0
-          ? getSingleStoreData(upcCode)
-          : getData(upcCode);
-      }
-
-      if (ref.current.style.display === "block") {
-        ref.current.style.display = "none";
-        stopScanner();
-        return;
-      }
-
-      ref.current.style.display = "block";
-
-      Quagga.init(
-        {
-          inputStream: {
-            type: "LiveStream",
-            target: ref.current!,
-            constraints: {
-              width: { min: 640, ideal: 1280, max: 1920 },
-              height: { min: 480, ideal: 720, max: 1080 },
-              facingMode: { exact: "environment" },
-              deviceId: deviceId,
-            },
-          },
-          decoder: {
-            readers: [
-              "upc_reader",
-              "upc_e_reader",
-              "ean_reader",
-              "ean_8_reader",
-            ],
-          },
-          locate: true,
-        },
-        (err) => {
-          if (!err) {
-            Quagga.start();
-            dispatch(setPause(false));
-          }
-        }
-      );
-
-      Quagga.onDetected((result) => {
-        Quagga.stop();
-        Quagga.offDetected();
-
-        ref.current!.style.display = "none";
-        const code = result.codeResult.code;
-        dispatch(setUpcCode(code!));
-        selectedStore > 0 ? getSingleStoreData(code!) : getData(code!);
-        dispatch(setPause(true));
-      });
-    }
-  };
-
-  const stopScanner = () => {
-    if (!pause) {
-      clear();
-      return;
-    }
-
-    setError("");
-    Quagga.stop();
-    Quagga.offDetected();
-    dispatch(setPause(false));
+    return selectedStore > 0 ? getSingleStoreData(upcCode) : getData(upcCode);
   };
 
   return (
@@ -238,16 +135,10 @@ const ItemLookup = () => {
       <div className={`${isLoading ? "block z-50 " : "hidden z-0"}`}>
         <LoadingIndicator message={`Looking up item: ${upcCode}`} />
       </div>
-      <div
-        ref={ref}
-        className={`scanner-container ${
-          pause ? "hidden" : "block"
-        } mb-2 rounded-lg`}
-        style={{ objectFit: "cover", height: "175px", width: "100%" }}
-      />
-      <ScanItem scanItem={scanItem} />
+      <UpcScanner handleScan={scanItem} onClear={clear} />
+      <StoreSelector />
       <div ref={topRef} className="text-center font-bold underline">
-      {assignedStores.find((s) => s.storeid === selectedStore)?.store_name}
+        {assignedStores.find((s) => s.storeid === selectedStore)?.store_name}
       </div>
       {itemsLoaded ? (
         <>

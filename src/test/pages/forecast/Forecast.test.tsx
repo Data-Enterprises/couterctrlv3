@@ -1157,8 +1157,6 @@ describe("Forecast Page", () => {
   it("should handle opening and closing the CalcModal", async () => {
     await waitFor(() => renderSuccess());
 
-    // const rows = await screen.findAllByRole("row");
-    // rows.forEach((row, i) => console.log(`Row ${i}: `, row.children[0].innerHTML));
     const calcNowCheckbox = await screen.findByTestId(
       "calc-now-checkbox-1200000017",
     );

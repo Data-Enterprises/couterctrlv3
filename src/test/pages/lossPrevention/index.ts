@@ -43,6 +43,7 @@ export const transactions: TransactionListItem[] = [
     wic: 0,
     scalable: 0,
     qty: 1,
+    total_rounded_tax: 2.5,
   },
   {
     storeid: 2,
@@ -77,6 +78,7 @@ export const transactions: TransactionListItem[] = [
     wic: 0,
     scalable: 1,
     qty: 2,
+    total_rounded_tax: 1.2,
   },
 ];
 

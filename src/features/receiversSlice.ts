@@ -12,6 +12,14 @@ export type FilterType =
   | "TransactionID"
   | "";
 
+export type ReducedVendor = {
+  vendorid: string;
+  vendor_name: string;
+  items: number;
+  cashiers: number[];
+  store_number: string;
+};
+
 export type RecMobileStage = 1 | 2 | 3;
 export type Operator = { cashier_name: string; cashier_number: number };
 
@@ -37,6 +45,11 @@ interface ReceiversState {
   selectedOperator: Operator | null;
   operatorsList: Operator[];
   filteredListDataMobile: ReceiverListItem[];
+  detailsDate: string;
+  reducedVendors: ReducedVendor[];
+  selectedVendor: ReducedVendor | null;
+  viewAllVendors: boolean;
+  vendorView: RecMobileStage;
 }
 
 export const initialState: ReceiversState = {
@@ -61,6 +74,11 @@ export const initialState: ReceiversState = {
   selectedOperator: null,
   operatorsList: [],
   filteredListDataMobile: [],
+  detailsDate: "",
+  reducedVendors: [],
+  selectedVendor: null,
+  viewAllVendors: false,
+  vendorView: 1,
 };
 
 export const receiversSlice = createSlice({
@@ -156,6 +174,9 @@ export const receiversSlice = createSlice({
     setSelectedInvoice: (state, action: PayloadAction<string>) => {
       state.selectedInvoice = action.payload;
     },
+    setDetailsDate: (state, action: PayloadAction<string>) => {
+      state.detailsDate = action.payload;
+    },
     resetFilters: (state) => {
       state.vendorIdFilter = "";
       state.vendorNameFilter = "";
@@ -163,6 +184,7 @@ export const receiversSlice = createSlice({
       state.transIDFilter = "";
       state.listGridData = state.list;
       state.selectedInvoice = "";
+      state.detailsDate = "";
     },
     reQuery: (state) => {
       state.list = [];
@@ -180,18 +202,37 @@ export const receiversSlice = createSlice({
       state.selectedOperator = null;
       state.operatorsList = [];
       state.filteredListDataMobile = [];
+      state.detailsDate = "";
+      state.reducedVendors = [];
+      state.selectedVendor = null;
     },
     setRecMobileStage: (state, action: PayloadAction<RecMobileStage>) => {
       state.recMobileStage = action.payload;
     },
     setSelectedOperator: (state, action: PayloadAction<Operator>) => {
       state.selectedOperator = action.payload;
-      state.filteredListDataMobile = state.list.filter(
-        (item) => item.cashier_number === action.payload.cashier_number,
-      );
     },
     setOperatorsList: (state, action: PayloadAction<Operator[]>) => {
       state.operatorsList = action.payload;
+    },
+    setReducedVendors: (state, action: PayloadAction<ReducedVendor[]>) => {
+      state.reducedVendors = action.payload;
+    },
+    setSelectedVendor: (state, action: PayloadAction<ReducedVendor | null>) => {
+      state.selectedVendor = action.payload;
+      if (action.payload !== null) {
+        state.filteredListDataMobile = state.list.filter(
+          (item) => item.vendorid === action.payload!.vendorid,
+        );
+      } else {
+        state.filteredListDataMobile = state.list;
+      }
+    },
+    setViewAllVendors: (state, action: PayloadAction<boolean>) => {
+      state.viewAllVendors = action.payload;
+    },
+    setVendorView: (state, action: PayloadAction<RecMobileStage>) => {
+      state.vendorView = action.payload;
     },
     resetReceiverSlice: () => initialState,
   },
@@ -218,5 +259,10 @@ export const {
   setNoReceivers,
   setSelectedOperator,
   setOperatorsList,
+  setDetailsDate,
+  setReducedVendors,
+  setSelectedVendor,
+  setViewAllVendors,
+  setVendorView,
 } = receiversSlice.actions;
 export default receiversSlice.reducer;
