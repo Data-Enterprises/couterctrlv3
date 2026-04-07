@@ -161,7 +161,7 @@ export const navigation: Navigation[] = [
     name: "Cashiers",
     href: "cashiers",
     icon: MagnifyingGlassCircleIcon,
-    mobile: true,
+    mobile: false,
     children: [],
     childOpen: false,
     userLevels: ["*"],
