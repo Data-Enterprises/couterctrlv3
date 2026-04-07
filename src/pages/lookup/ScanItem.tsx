@@ -109,6 +109,7 @@ const ScanItem = ({ scanItem, storeSelect = true }: ScanItemProps) => {
           Scan
         </button>
       </div>
+      {/* <UpcScanner  /> */}
       {!itemsLoaded && storeSelect ? (
         <button
           data-testid="lookup-select-store"
