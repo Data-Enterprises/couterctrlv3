@@ -15,6 +15,7 @@ interface UpcScannerProps {
   onClear?: () => void;
   isFiltering?: boolean;
   handleFilter?: () => void;
+  totalItems?: number;
 }
 
 const UpcScanner = ({
@@ -23,6 +24,7 @@ const UpcScanner = ({
   containerClassName = "",
   isFiltering = false,
   handleFilter,
+  totalItems,
 }: UpcScannerProps) => {
   const dispatch = useAppDispatch();
   const ref = useRef<HTMLDivElement>(null);
@@ -150,7 +152,7 @@ const UpcScanner = ({
         } mb-2 rounded-lg`}
         style={{ objectFit: "cover", height: "175px", width: "100%" }}
       />
-      <div className="text-sm font-medium">Search item:</div>
+      <div className="text-[13px] font-medium">Search item {totalItems ? `- ${totalItems}` : ""}</div>
       <div className="flex gap-1 items-center">
         <input
           type="text"

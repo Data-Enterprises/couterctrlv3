@@ -19,10 +19,6 @@ type QtyGrouped = {
 
 const ItemHistoryStatic = () => {
   const ctx = useSubMarginCtx();
-  // const { upcCode } = useAppSelector((state) => state.itemScan);
-  // const [upc, setUpc] = useState<string>("");
-  // const [cat, setCat] = useState<string>("");
-  // const [store, setStore] = useState<string>("");
   const [dateRange, setDateRange] = useState<string>("");
   const [groupedByPrice, setGroupedByPrice] = useState<GroupedData[]>([]);
   const [groupedByCost, setGroupedByCost] = useState<GroupedData[]>([]);
@@ -48,13 +44,6 @@ const ItemHistoryStatic = () => {
 
   useEffect(() => {
     if (ctx.scannedItemHistory.length) {
-      // if (!upcCode.length) {
-      //   setUpc(ctx.scannedItemHistory[0].product_code);
-      // } else {
-      //   setUpc(upcCode);
-      // }
-      // setStore(ctx.scannedItemHistory[0].store_name);
-      // setCat(ctx.scannedItemHistory[0].category_description);
       const lastIdx = ctx.scannedItemHistory.length - 1;
       setDateRange(
         `${formatDate(ctx.scannedItemHistory[0].sale_date)} - ${formatDate(ctx.scannedItemHistory[lastIdx].sale_date)}`,

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { getItemLookupSingleStore } from "../../../api/itemLookup";
 import UpcScanner from "../../../components/scanner/UpcScanner";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -11,18 +12,27 @@ import type { JsonError } from "../../../interfaces";
 import { useSubMarginCtx } from "../hooks";
 import ItemCardSingle from "./ItemCardSingle";
 import ItemHistoryStatic from "./ItemHistoryStatic";
+import { setUpcCode } from "../../../features/itemScanSlice";
 
 const ScanView = () => {
   const ctx = useSubMarginCtx();
   const toast = useToast();
   const dispatch = useAppDispatch();
   const scan = useAppSelector((state) => state.itemScan);
+  const [msg, setMsg] = useState<string>("");
+
+  useEffect(() => {
+    if (!ctx.viewDaily && ctx.scannedItemMobile && !scan.upcCode.length) {
+      dispatch(setUpcCode(ctx.scannedItemMobile.product_code));
+    }
+  }, [ctx.viewDaily]);
 
   const handleScan = () => {
+    setMsg("");
     const upc = scan.upcCode;
     const item = ctx.itemDataMobile.find((item) => item.product_code === upc);
     if (!item) {
-      toast.error("Item not found in current data");
+      setMsg("Item not found in current data");
       return;
     }
 
@@ -40,9 +50,20 @@ const ScanView = () => {
       .finally(() => dispatch(setFetchingItemHistory(false)));
   };
 
+  const clear = () => {
+    dispatch(setScannedItemMobile(null));
+    dispatch(setScannedItemHistory([]));
+    dispatch(setUpcCode(""));
+  };
+
   return (
     <div className="space-y-2">
-      <UpcScanner handleScan={handleScan} />
+      <UpcScanner handleScan={handleScan} onClear={clear} />
+      {msg.length ? (
+        <div className="h-16 font-medium flex items-center justify-center">
+          <div className="text-content/60 bg-custom-white p-2 rounded-lg shadow-md">{msg}</div>
+        </div>
+      ) : null}
       {ctx.scannedItemMobile ? (
         <div className="text-[13px] max-h-[59vh] overflow-y-auto rounded-lg">
           <ItemCardSingle item={ctx.scannedItemMobile} />

@@ -80,7 +80,9 @@ interface SubMarginState {
   processMobileItemData: boolean;
   itemDataMobile: ItemRowMobile[];
   filteredItemDataMobile: ItemRowMobile[];
+  filteredItemDataMobileCopy: ItemRowMobile[];
   scannedItemMobile: ItemRowMobile | null;
+  searchedItemMobile: ItemRowMobile | null;
   mobileMainView: MobileMainView;
   viewDaily:boolean;
 }
@@ -127,7 +129,9 @@ const initialState: SubMarginState = {
   processMobileItemData: false,
   itemDataMobile: [],
   filteredItemDataMobile: [],
+  filteredItemDataMobileCopy: [],
   scannedItemMobile: null,
+  searchedItemMobile: null,
   mobileMainView: "overview",
   viewDaily: false,
 };
@@ -328,6 +332,9 @@ const subMarginSlice = createSlice({
     setScannedItemMobile: (state, action: PayloadAction<ItemRowMobile | null>) => {
       state.scannedItemMobile = action.payload;
     },
+    setSearchedItemMobile: (state, action: PayloadAction<ItemRowMobile | null>) => {
+      state.searchedItemMobile = action.payload;
+    },
     setMobileMainView: (state, action: PayloadAction<MobileMainView>) => {
       state.mobileMainView = action.payload;
     },
@@ -379,5 +386,6 @@ export const {
   setScannedItemMobile,
   setMobileMainView,
   setViewDaily,
+  setSearchedItemMobile,
 } = subMarginSlice.actions;
 export default subMarginSlice.reducer;

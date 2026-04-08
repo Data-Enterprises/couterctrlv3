@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import {
   setFetchingItemHistory,
   setItemDataFilteredMobile,
-  setItemHistoryModalOpen,
   setScannedItemHistory,
+  setScannedItemMobile,
 } from "../../../features/subMarginSlice";
 import type { JsonError } from "../../../interfaces";
 import { getItemLookupSingleStore } from "../../../api/itemLookup";
@@ -15,13 +15,17 @@ import { reduceItemData } from ".";
 
 import ItemCard from "./ItemCard";
 import UpcScanner from "../../../components/scanner/UpcScanner";
+import ItemCardSingle from "./ItemCardSingle";
+import ItemHistoryStatic from "./ItemHistoryStatic";
+import type { BarData } from "../display/widgets";
+import DayTotalsHeader from "./DayTotalsHeader";
+import TotalsHeader from "./TotalsHeader";
 
 interface ItemsViewProps {
-  startDate: string;
-  endDate: string;
+  barData: BarData[];
 }
 
-const ItemsView = ({ startDate, endDate }: ItemsViewProps) => {
+const ItemsView = ({ barData }: ItemsViewProps) => {
   const toast = useToast();
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
@@ -30,7 +34,7 @@ const ItemsView = ({ startDate, endDate }: ItemsViewProps) => {
   const handleScanItem = (upc: string) => {
     dispatch(setScannedItemHistory([]));
     dispatch(setFetchingItemHistory(true));
-    dispatch(setItemHistoryModalOpen(true));
+    // dispatch(setItemHistoryModalOpen(true));
     getItemLookupSingleStore(ctx.url, ctx.token, upc, ctx.searchValue)
       .then((resp) => {
         const j = resp.data;
@@ -46,14 +50,37 @@ const ItemsView = ({ startDate, endDate }: ItemsViewProps) => {
     handleScanItem(scan.upcCode);
   };
 
+  const resetFilteredItems = () => {
+    const dateComp = ctx.selectedWeekDay
+      ? new Date(ctx.selectedWeekDay).toISOString().split("T")[0]
+      : "";
+
+    const filtered = ctx.margins.filter((margin) => {
+      const matchesDate = dateComp
+        ? margin.sale_date.split("T")[0] === dateComp
+        : true;
+      return matchesDate;
+    });
+
+    const reduced = reduceItemData(filtered);
+    const newData = reduced.map((item) => ({
+      ...item,
+      margin: ((item.total_sales - item.cogs) / item.total_sales) * 100 || 0,
+    }));
+
+    dispatch(setItemDataFilteredMobile(newData));
+  };
+
   const clear = () => {
-    dispatch(setItemDataFilteredMobile(ctx.itemDataMobile));
+    resetFilteredItems();
+    dispatch(setScannedItemMobile(null));
+    dispatch(setScannedItemHistory([]));
     dispatch(setUpcCode(""));
     dispatch(setError(""));
   };
 
   // Testing to see if this is necessary => works
-  const filterItems = () => {
+  const filterItemsByUpc = () => {
     const filtered = ctx.itemDataMobile.filter((item) =>
       item.product_code.includes(scan.upcCode),
     );
@@ -62,46 +89,42 @@ const ItemsView = ({ startDate, endDate }: ItemsViewProps) => {
 
   useEffect(() => {
     if (ctx.subDeptGridView === "item") {
-      const dateComp = ctx.selectedWeekDay
-        ? new Date(ctx.selectedWeekDay).toISOString().split("T")[0]
-        : "";
-
-      const filtered = ctx.margins.filter((margin) => {
-        return dateComp ? margin.sale_date.split("T")[0] === dateComp : true;
-      });
-
-      const reduced = reduceItemData(filtered);
-      const newData = reduced.map((item) => ({
-        ...item,
-        margin: ((item.total_sales - item.cogs) / item.total_sales) * 100 || 0,
-      }));
-
-      dispatch(setItemDataFilteredMobile(newData));
+      resetFilteredItems();
     }
   }, [ctx.selectedWeekDay]);
 
-  const dateRange = ctx.selectedWeekDay
-    ? ctx.selectedWeekDay
-    : `${startDate} - ${endDate}`;
-
   return (
     <div className="text-[13.5px]">
-      <div className="px-2 flex justify-between font-medium">
-        <div>{dateRange}</div>
-        <div>{ctx.filteredItemDataMobile.length} Items</div>
+      {/* put the day's or the full date range totals here */}
+      <div className="px-2">
+        {ctx.selectedWeekDay.length ? (
+          <DayTotalsHeader
+            barData={barData.filter((bd) => bd.date === ctx.selectedWeekDay)[0]}
+          />
+        ) : (
+          <TotalsHeader barData={barData} />
+        )}
       </div>
       <UpcScanner
         containerClassName="px-2"
         handleScan={scanItem}
         onClear={clear}
         isFiltering={true}
-        handleFilter={filterItems}
+        handleFilter={filterItemsByUpc}
+        totalItems={ctx.filteredItemDataMobile.length}
       />
-      <div className="grid m-2 max-h-[calc(100vh-13rem)] rounded-lg shadow-md overflow-y-auto">
-        {ctx.filteredItemDataMobile.map((item, i) => (
-          <ItemCard key={i} item={item} handleClick={handleScanItem} />
-        ))}
-      </div>
+      {!ctx.scannedItemMobile ? (
+        <div className="grid m-2 max-h-[calc(100vh-17rem)] rounded-lg shadow-md overflow-y-auto">
+          {ctx.filteredItemDataMobile.map((item, i) => (
+            <ItemCard key={i} item={item} handleClick={handleScanItem} />
+          ))}
+        </div>
+      ) : (
+        <div className="m-2 max-h-[calc(100vh-17rem)] overflow-y-auto rounded-lg">
+          <ItemCardSingle item={ctx.scannedItemMobile} />
+          <ItemHistoryStatic />
+        </div>
+      )}
     </div>
   );
 };

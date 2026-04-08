@@ -1,19 +1,31 @@
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
+import { useAppDispatch } from "../../../hooks";
 import type { ItemRowMobile } from "../display/widgets";
+import { setScannedItemMobile } from "../../../features/subMarginSlice";
+import { setUpcCode } from "../../../features/itemScanSlice";
 
 interface MarginCardProps {
   item: ItemRowMobile;
   handleClick: (product_code: string) => void;
 }
 const ItemCard = ({ item, handleClick }: MarginCardProps) => {
+  const dispatch = useAppDispatch();
+  const onItemClick = () => {
+    dispatch(setUpcCode(item.product_code));
+    dispatch(setScannedItemMobile(item));
+    handleClick(item.product_code);
+  };
+
   return (
     <div
       className="bg-custom-white even:bg-blue-200/50 text-[13px]"
-      onClick={() => handleClick(item.product_code)}
+      onClick={onItemClick}
     >
       <div className="px-2 py-0.5 font-medium grid grid-cols-[1fr_3fr]">
         <div>{item.product_code}</div>
-        <div className="text-right text-nowrap truncate">{item.product_description}</div>
+        <div className="text-right text-nowrap truncate">
+          {item.product_description}
+        </div>
       </div>
       <div className="grid grid-cols-6 px-2 pb-0.5">
         <div>

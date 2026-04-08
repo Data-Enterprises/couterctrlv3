@@ -1,28 +1,21 @@
-import { setSelectedWeekDay } from "../../../features/subMarginSlice";
+import {
+  setMobileMainView,
+  setSelectedWeekDay,
+} from "../../../features/subMarginSlice";
 import { useAppDispatch } from "../../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import type { BarData } from "../display/widgets";
-import { useSubMarginCtx } from "../hooks";
 
 interface MarginDayCardOverviewProps {
   margin: BarData;
-  onCardClick: (date: string) => void;
 }
 
-const MarginDayCardOverview = ({
-  margin,
-  onCardClick,
-}: MarginDayCardOverviewProps) => {
-  const ctx = useSubMarginCtx();
+const MarginDayCardOverview = ({ margin }: MarginDayCardOverviewProps) => {
   const dispatch = useAppDispatch();
 
   const handleCardClick = (date: string) => {
-    onCardClick(date);
-    if (date === ctx.selectedWeekDay) {
-      dispatch(setSelectedWeekDay(""));
-    } else {
-      dispatch(setSelectedWeekDay(date));
-    }
+    dispatch(setSelectedWeekDay(date));
+    dispatch(setMobileMainView("items"));
   };
 
   const dayOfWeek = new Date(margin.date).toLocaleDateString("en-US", {
@@ -31,16 +24,20 @@ const MarginDayCardOverview = ({
 
   return (
     <div
-      className={`bg-custom-white first:rounded-t-lg even:bg-blue-200/50 px-2 py-0.5 text-[13px] last:border-none`}
+      className={`bg-custom-white first:rounded-t-lg last:rounded-b-lg even:bg-blue-200/50 px-2 py-0.5 text-[13px] last:border-none`}
       onClick={() => handleCardClick(margin.date)}
     >
       <div className="font-medium flex justify-between text-[13px]">
-        <div>{dayOfWeek}, {margin.date}</div>
+        <div>
+          {dayOfWeek}, {margin.date}
+        </div>
       </div>
       <div className="grid grid-cols-[1.2fr_0.9fr_0.9fr_1.2fr_0.8fr] gap-x-2">
         <div>
           <div className="text-content/60">Sales</div>
-          <div className="font-medium">{formatCurrency2(margin.sales - margin.tax)}</div>
+          <div className="font-medium">
+            {formatCurrency2(margin.sales - margin.tax)}
+          </div>
         </div>
         <div>
           <div className="text-content/60">Qty</div>
