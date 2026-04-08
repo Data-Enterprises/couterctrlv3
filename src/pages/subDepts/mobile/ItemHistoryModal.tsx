@@ -5,6 +5,8 @@ import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { useSubMarginCtx } from "../hooks";
 import type { ItemLookupHistory } from "../../../features/itemLookupSlice";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+import { setUpcCode } from "../../../features/itemScanSlice";
 
 type GroupedData = {
   price: number;
@@ -24,6 +26,7 @@ const ItemHistoryModal = () => {
   const dispatch = useAppDispatch();
   const { upcCode } = useAppSelector((state) => state.itemScan);
 
+  const [upc, setUpc] = useState<string>("");
   const [desc, setDesc] = useState<string>("");
   const [store, setStore] = useState<string>("");
   const [cat, setCat] = useState<string>("");
@@ -46,6 +49,7 @@ const ItemHistoryModal = () => {
   const [qtyAvg, setQtyAvg] = useState<number>(0);
 
   const handleClose = () => {
+    dispatch(setUpcCode(""));
     dispatch(setItemHistoryModalOpen(false));
   };
 
@@ -56,6 +60,12 @@ const ItemHistoryModal = () => {
 
   useEffect(() => {
     if (ctx.scannedItemHistory.length && ctx.itemHistoryModalOpen) {
+      console.log(upcCode);
+      if (!upcCode.length) {
+        setUpc(ctx.scannedItemHistory[0].product_code);
+      } else {
+        setUpc(upcCode);
+      }
       setDesc(ctx.scannedItemHistory[0].product_description);
       setStore(ctx.scannedItemHistory[0].store_name);
       setCat(ctx.scannedItemHistory[0].category_description);
@@ -227,218 +237,231 @@ const ItemHistoryModal = () => {
     }
   }, [ctx.scannedItemHistory, ctx.itemHistoryModalOpen]);
 
-  if (!ctx.scannedItemHistory.length) return null;
+  if (!ctx.itemHistoryModalOpen) return null;
 
   return (
     <Modal
       isOpen={ctx.itemHistoryModalOpen}
       onClose={handleClose}
       className="-ml-12 text-[13.5px]"
-      modalClassName="min-h-[100vh] max-h-[100vh] bg-custom-white w-full"
+      modalClassName="min-h-[88vh] max-h-[88vh] bg-custom-white w-full"
     >
-      <div className="flex justify-between font-medium">
-        <div>{store}</div>
-        <div>{dateRange}</div>
-      </div>
-      <div className="font-medium mb-2">
-        <div className="flex gap-1.5">
-          <div className="font-normal text-content/60">UPC:</div>
-          <div className="text-nowrap truncate">{upcCode}</div>
-        </div>
-        <div className="flex gap-1.5">
-          <div className="font-normal text-content/60">Desc:</div>
-          <div className="text-nowrap truncate">{desc}</div>
-        </div>
-        <div className="flex gap-1.5">
-          <div className="font-normal text-content/60">Cat:</div>
-          <div className="text-nowrap truncate">{cat}</div>
-        </div>
-      </div>
+      {ctx.scannedItemHistory.length ? (
+        <>
+          <div className="flex justify-between font-medium">
+            <div>{store}</div>
+            <div>{dateRange}</div>
+          </div>
+          <div className="font-medium mb-2">
+            <div className="flex gap-1.5">
+              <div className="font-normal text-content/60">UPC:</div>
+              <div className="text-nowrap truncate">{upc}</div>
+            </div>
+            <div className="flex gap-1.5">
+              <div className="font-normal text-content/60">Desc:</div>
+              <div className="text-nowrap truncate">{desc}</div>
+            </div>
+            <div className="flex gap-1.5">
+              <div className="font-normal text-content/60">Cat:</div>
+              <div className="text-nowrap truncate">{cat}</div>
+            </div>
+          </div>
 
-      <div className="h-0.5 w-full grid grid-cols-2">
-        <div className="h-full bg-gradient-to-r from-blue-200 to-custom-white"></div>
-        <div className="h-full bg-gradient-to-l from-blue-200 to-custom-white"></div>
-      </div>
+          <div className="h-0.5 w-full grid grid-cols-2">
+            <div className="h-full bg-gradient-to-r from-blue-200 to-custom-white"></div>
+            <div className="h-full bg-gradient-to-l from-blue-200 to-custom-white"></div>
+          </div>
 
-      {/* Scrollview */}
-      <div className="min-h-[77vh] max-h-[77vh] overflow-y-auto">
-        <div className="mb-1 pb-1 ">
-          {/* Summary */}
-          <div className="font-medium text-[14px]">
-            Totals Summary
-          </div>
-          <div className="grid grid-cols-3  w-[75%]">
-            <div>
-              <div className="font-medium text-content/60">Total Sales:</div>
-              <div className="">{formatCurrency2(totalSales)}</div>
-            </div>
-            <div>
-              <div className="font-medium text-content/60">Total Qty:</div>
-              <div className="">{formatBigNumber(totalQty, 0)}</div>
-            </div>
-            <div>
-              <div className="font-medium text-content/60">Ext Cost:</div>
-              <div className="">{formatCurrency2(totalExtendedCost)}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Sales */}
-        <div className=" mb-1 py-1">
-          <div className="font-medium text-[14px]">Sales</div>
-          <div className="grid grid-cols-3  w-[75%]">
-            <div>
-              <div className="font-medium text-content/60">Min Sales:</div>
-              <div className="">{formatCurrency2(minSales)}</div>
-            </div>
-            <div>
-              <div className="font-medium text-content/60">Max Sales:</div>
-              <div className="">{formatCurrency2(maxSales)}</div>
-            </div>
-            <div>
-              <div className="font-medium text-content/60">Sales Range:</div>
-              <div className="">{formatCurrency2(maxSales - minSales)}</div>
-            </div>
-            <div className="">
-              <div className="font-medium text-content/60">Median</div>
-              <div className="">{formatCurrency2(salesMedian)}</div>
-            </div>
-            <div className="">
-              <div className="font-medium text-content/60">Average</div>
-              <div className="">{formatCurrency2(salesAvg)}</div>
-            </div>
-            <div className="">
-              <div className="font-medium text-content/60">Most Freq.</div>
-              <div className="">{formatCurrency2(salesMode)}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Quantities */}
-        <div className="font-medium text-[14px]">Quantities</div>
-        <div className="grid grid-cols-3  w-[75%] mb-1 pb-1">
-          <div>
-            <div className="font-medium text-content/60">Min Qty:</div>
-            <div className="">{formatBigNumber(minQty, 0)}</div>
-          </div>
-          <div>
-            <div className="font-medium text-content/60">Max Qty:</div>
-            <div className="">{formatBigNumber(maxQty, 0)}</div>
-          </div>
-          <div>
-            <div className="font-medium text-content/60">Qty Range:</div>
-            <div className="">{formatBigNumber(maxQty - minQty, 0)}</div>
-          </div>
-          <div className="">
-            <div className="font-medium text-content/60">Median</div>
-            <div className="">{formatBigNumber(qtyMedian, 0)}</div>
-          </div>
-          <div className="">
-            <div className="font-medium text-content/60">Average</div>
-            <div className="">{formatBigNumber(qtyAvg, 2)}</div>
-          </div>
-          <div className="">
-            <div className="font-medium text-content/60">Most Freq.</div>
-            <div className="">{formatBigNumber(qtyMode, 0)}</div>
-          </div>
-        </div>
-
-        {/* Price points */}
-        <div className=" mb-1 py-1 w-[80%]">
-          <div className="font-medium text-[14px]">
-            Prices - {groupedByPrice.length}
-          </div>
-          <div className="grid grid-cols-5  text-content/60 font-medium">
-            <div>Price</div>
-            <div>Sales</div>
-            <div>Qty</div>
-            <div>Cost</div>
-            <div>Ext Cost</div>
-          </div>
-          {groupedByPrice.map((g, i) => (
-            <div key={i} className="">
-              <div className="grid grid-cols-5  border-b border-content/25 last:border-none">
-                <div>{formatCurrency2(g.price)}</div>
-                <div>{formatCurrency2(g.total_sales)}</div>
-                <div>{formatBigNumber(g.qty, 0)}</div>
-                <div>{formatCurrency2(g.casecost)}</div>
-                <div>{formatCurrency2(g.extended_cost)}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/*Cost points */}
-        <div className=" mb-1 py-1 w-[80%]">
-          <div className="font-medium text-[14px]">
-            Case Costs - {groupedByCost.length}
-          </div>
-          <div className="grid grid-cols-5  text-content/60 font-medium">
-            <div>Cost</div>
-            <div>Sales</div>
-            <div>Qty</div>
-            <div>Price</div>
-            <div>Ext Cost</div>
-          </div>
-          {groupedByCost.map((g, i) => (
-            <div key={i}>
-              <div className="grid grid-cols-5  border-b border-content/25 last:border-none">
-                <div>{formatCurrency2(g.casecost)}</div>
-                <div>{formatCurrency2(g.total_sales)}</div>
-                <div>{formatBigNumber(g.qty, 0)}</div>
-                <div>{formatCurrency2(g.price)}</div>
-                <div>{formatCurrency2(g.extended_cost)}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Unique Quantities */}
-        <div className="mb-1 py-1 w-[80%]">
-          <div className="font-medium text-[14px]">
-            Unique Qty - {groupedByQty.length}
-          </div>
-          <div className="grid grid-cols-5  text-content/60 font-medium">
-            <div>Qty</div>
-            <div>Sales</div>
-            <div>Price</div>
-            <div>C Cost</div>
-            <div>Ext Cost</div>
-            {/* <div>Date</div> */}
-          </div>
-          {groupedByQty.map((g, i) => {
-            return (
-              <div
-                key={i}
-                className="border-b border-content/20 last:border-none"
-              >
-                {g.items.map((item, j) => (
-                  <div
-                    key={j}
-                    className="grid grid-cols-5  py-0.5"
-                  >
-                    <div>{j === 0 ? formatBigNumber(item.qty, 0) : ""}</div>
-                    <div>{formatCurrency2(item.total_sales)}</div>
-                    <div>{formatCurrency2(item.price)}</div>
-                    <div>{formatCurrency2(item.casecost)}</div>
-                    <div>{formatCurrency2(item.extended_cost)}</div>
-                    {/* <div>{formatDate(item.sale_date)}</div> */}
+          {/* Scrollview */}
+          <div className="min-h-[65vh] max-h-[65vh] overflow-y-auto">
+            <div className="mb-1 pb-1 ">
+              {/* Summary */}
+              <div className="font-medium text-[14px]">Totals Summary</div>
+              <div className="grid grid-cols-3  w-[75%]">
+                <div>
+                  <div className="font-medium text-content/60">
+                    Total Sales:
                   </div>
-                ))}
+                  <div className="">{formatCurrency2(totalSales)}</div>
+                </div>
+                <div>
+                  <div className="font-medium text-content/60">Total Qty:</div>
+                  <div className="">{formatBigNumber(totalQty, 0)}</div>
+                </div>
+                <div>
+                  <div className="font-medium text-content/60">Ext Cost:</div>
+                  <div className="">{formatCurrency2(totalExtendedCost)}</div>
+                </div>
               </div>
-            );
-          })}
-        </div>
-      </div>
+            </div>
 
-      <div>
-        <button
-          className="btn-themeOrange px-0 w-full mt-2"
-          onClick={handleClose}
-        >
-          Close
-        </button>
-      </div>
+            {/* Sales */}
+            <div className=" mb-1 py-1">
+              <div className="font-medium text-[14px]">Sales</div>
+              <div className="grid grid-cols-3  w-[75%]">
+                <div>
+                  <div className="font-medium text-content/60">Min Sales:</div>
+                  <div className="">{formatCurrency2(minSales)}</div>
+                </div>
+                <div>
+                  <div className="font-medium text-content/60">Max Sales:</div>
+                  <div className="">{formatCurrency2(maxSales)}</div>
+                </div>
+                <div>
+                  <div className="font-medium text-content/60">
+                    Sales Range:
+                  </div>
+                  <div className="">{formatCurrency2(maxSales - minSales)}</div>
+                </div>
+                <div className="">
+                  <div className="font-medium text-content/60">Median</div>
+                  <div className="">{formatCurrency2(salesMedian)}</div>
+                </div>
+                <div className="">
+                  <div className="font-medium text-content/60">Average</div>
+                  <div className="">{formatCurrency2(salesAvg)}</div>
+                </div>
+                <div className="">
+                  <div className="font-medium text-content/60">Most Freq.</div>
+                  <div className="">{formatCurrency2(salesMode)}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quantities */}
+            <div className="font-medium text-[14px]">Quantities</div>
+            <div className="grid grid-cols-3  w-[75%] mb-1 pb-1">
+              <div>
+                <div className="font-medium text-content/60">Min Qty:</div>
+                <div className="">{formatBigNumber(minQty, 0)}</div>
+              </div>
+              <div>
+                <div className="font-medium text-content/60">Max Qty:</div>
+                <div className="">{formatBigNumber(maxQty, 0)}</div>
+              </div>
+              <div>
+                <div className="font-medium text-content/60">Qty Range:</div>
+                <div className="">{formatBigNumber(maxQty - minQty, 0)}</div>
+              </div>
+              <div className="">
+                <div className="font-medium text-content/60">Median</div>
+                <div className="">{formatBigNumber(qtyMedian, 0)}</div>
+              </div>
+              <div className="">
+                <div className="font-medium text-content/60">Average</div>
+                <div className="">{formatBigNumber(qtyAvg, 2)}</div>
+              </div>
+              <div className="">
+                <div className="font-medium text-content/60">Most Freq.</div>
+                <div className="">{formatBigNumber(qtyMode, 0)}</div>
+              </div>
+            </div>
+
+            {/* Price points */}
+            <div className=" mb-1 py-1 w-[80%]">
+              <div className="font-medium text-[14px]">
+                Prices - {groupedByPrice.length}
+              </div>
+              <div className="grid grid-cols-5  text-content/60 font-medium">
+                <div>Price</div>
+                <div>Sales</div>
+                <div>Qty</div>
+                <div>Cost</div>
+                <div>Ext Cost</div>
+              </div>
+              {groupedByPrice.map((g, i) => (
+                <div key={i} className="">
+                  <div className="grid grid-cols-5  border-b border-content/25 last:border-none">
+                    <div>{formatCurrency2(g.price)}</div>
+                    <div>{formatCurrency2(g.total_sales)}</div>
+                    <div>{formatBigNumber(g.qty, 0)}</div>
+                    <div>{formatCurrency2(g.casecost)}</div>
+                    <div>{formatCurrency2(g.extended_cost)}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/*Cost points */}
+            <div className=" mb-1 py-1 w-[80%]">
+              <div className="font-medium text-[14px]">
+                Case Costs - {groupedByCost.length}
+              </div>
+              <div className="grid grid-cols-5  text-content/60 font-medium">
+                <div>Cost</div>
+                <div>Sales</div>
+                <div>Qty</div>
+                <div>Price</div>
+                <div>Ext Cost</div>
+              </div>
+              {groupedByCost.map((g, i) => (
+                <div key={i}>
+                  <div className="grid grid-cols-5  border-b border-content/25 last:border-none">
+                    <div>{formatCurrency2(g.casecost)}</div>
+                    <div>{formatCurrency2(g.total_sales)}</div>
+                    <div>{formatBigNumber(g.qty, 0)}</div>
+                    <div>{formatCurrency2(g.price)}</div>
+                    <div>{formatCurrency2(g.extended_cost)}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Unique Quantities */}
+            <div className="mb-1 py-1 w-[80%]">
+              <div className="font-medium text-[14px]">
+                Unique Qty - {groupedByQty.length}
+              </div>
+              <div className="grid grid-cols-5  text-content/60 font-medium">
+                <div>Qty</div>
+                <div>Sales</div>
+                <div>Price</div>
+                <div>C Cost</div>
+                <div>Ext Cost</div>
+                {/* <div>Date</div> */}
+              </div>
+              {groupedByQty.map((g, i) => {
+                return (
+                  <div
+                    key={i}
+                    className="border-b border-content/20 last:border-none"
+                  >
+                    {g.items.map((item, j) => (
+                      <div key={j} className="grid grid-cols-5  py-0.5">
+                        <div>{j === 0 ? formatBigNumber(item.qty, 0) : ""}</div>
+                        <div>{formatCurrency2(item.total_sales)}</div>
+                        <div>{formatCurrency2(item.price)}</div>
+                        <div>{formatCurrency2(item.casecost)}</div>
+                        <div>{formatCurrency2(item.extended_cost)}</div>
+                        {/* <div>{formatDate(item.sale_date)}</div> */}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      ) : ctx.fetchingItemHistory ? (
+        <div className="h-[85vh]">
+          <LoadingIndicator className="ml-6" message="Loading item history" />
+        </div>
+      ) : (
+        <div>
+          <div>No data available</div>
+        </div>
+      )}
+
+      {!ctx.fetchingItemHistory && (
+        <div>
+          <button
+            className="btn-themeOrange px-0 w-full mt-2"
+            onClick={handleClose}
+          >
+            Close
+          </button>
+        </div>
+      )}
     </Modal>
   );
 };

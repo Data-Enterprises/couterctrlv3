@@ -8,9 +8,11 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   /* overflow: hidden; */
   overscroll-behavior: contain;
+  overscroll-behavior-y: none;
 }
 
 .ripple-button {

@@ -74,6 +74,7 @@ interface SubMarginState {
   pause: boolean;
   scannedItemHistory: ItemLookupHistory[];
   itemHistoryModalOpen: boolean;
+  fetchingItemHistory: boolean;
 }
 
 const initialState: SubMarginState = {
@@ -114,6 +115,7 @@ const initialState: SubMarginState = {
   pause: true,
   scannedItemHistory: [],
   itemHistoryModalOpen: false,
+  fetchingItemHistory: false,
 };
 
 const subMarginSlice = createSlice({
@@ -297,6 +299,9 @@ const subMarginSlice = createSlice({
     setItemHistoryModalOpen: (state, action: PayloadAction<boolean>) => {
       state.itemHistoryModalOpen = action.payload;
     },
+    setFetchingItemHistory: (state, action: PayloadAction<boolean>) => {
+      state.fetchingItemHistory = action.payload;
+    },
     resetSubMarginState: () => initialState,
   },
 });
@@ -335,5 +340,6 @@ export const {
   setPause,
   setScannedItemHistory,
   setItemHistoryModalOpen,
+  setFetchingItemHistory,
 } = subMarginSlice.actions;
 export default subMarginSlice.reducer;

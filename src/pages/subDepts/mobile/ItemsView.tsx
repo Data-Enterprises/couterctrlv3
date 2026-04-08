@@ -2,22 +2,25 @@ import { useSubMarginCtx } from "../hooks";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useEffect, useState } from "react";
 import {
+  setFetchingItemHistory,
   setFilteredCostGridData,
   setFilteredItemGridData,
   setItemGridData,
+  setItemHistoryModalOpen,
   setScannedItemHistory,
   setSubDeptCost,
   setSubDeptGridView,
 } from "../../../features/subMarginSlice";
-import MarginCard from "./MarginCard";
 import type { JsonError, SubDeptCost } from "../../../interfaces";
-import CostCard from "./CostCard";
 import { getItemLookupSingleStore } from "../../../api/itemLookup";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import ItemHistoryModal from "./ItemHistoryModal";
 import { setError, setUpcCode } from "../../../features/itemScanSlice";
-import UpcScanner from "../../../components/scanner/UpcScanner";
 import { reduceCostData, reduceItemData } from ".";
+
+import MarginCard from "./MarginCard";
+import CostCard from "./CostCard";
+import ItemHistoryModal from "./ItemHistoryModal";
+import UpcScanner from "../../../components/scanner/UpcScanner";
 
 const ItemsView = () => {
   const toast = useToast();
@@ -27,15 +30,18 @@ const ItemsView = () => {
   const [refreshFiltered, setRefreshFiltered] = useState<boolean>(true);
 
   const handleScanItem = (upc: string) => {
+    dispatch(setScannedItemHistory([]));
+    dispatch(setFetchingItemHistory(true));
+    dispatch(setItemHistoryModalOpen(true));
     getItemLookupSingleStore(ctx.url, ctx.token, upc, ctx.searchValue)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setScannedItemHistory(j.history));
-          setRefreshFiltered(true);
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => dispatch(setFetchingItemHistory(false)));
   };
 
   const scanItem = () => {
@@ -58,21 +64,17 @@ const ItemsView = () => {
       });
 
       const reduced = reduceItemData(filtered);
-      const newData = reduced
-        .map((item) => ({
-          ...item,
-          margin:
-            ((item.total_sales - item.cogs) / item.total_sales) * 100 || 0,
-        }))
-        .filter((item) => item.product_code.includes(scan.upcCode));
+      const newData = reduced.map((item) => ({
+        ...item,
+        margin: ((item.total_sales - item.cogs) / item.total_sales) * 100 || 0,
+      }));
+
       dispatch(setItemGridData(newData));
       dispatch(setFilteredItemGridData(newData));
       setRefreshFiltered(false);
     } else if (ctx.subDeptGridView === "cost" && refreshFiltered) {
       // cost view
-      const costData: SubDeptCost[] = reduceCostData(ctx.margins).filter(
-        (item) => item.product_code.includes(scan.upcCode),
-      );
+      const costData: SubDeptCost[] = reduceCostData(ctx.margins);
 
       dispatch(setSubDeptCost(costData));
       dispatch(setFilteredCostGridData(costData));
@@ -82,12 +84,6 @@ const ItemsView = () => {
 
   const handleViewToggle = (option: "item" | "cost") => {
     dispatch(setSubDeptGridView(option));
-    setRefreshFiltered(true);
-  };
-
-  const handleRefresh = () => {
-    dispatch(setUpcCode(""));
-    dispatch(setScannedItemHistory([]));
     setRefreshFiltered(true);
   };
 
@@ -116,13 +112,13 @@ const ItemsView = () => {
       {ctx.subDeptGridView === "item" ? (
         <div className="grid gap-2 p-2 max-h-[calc(100vh-14.4rem)] overflow-y-auto">
           {ctx.filteredItemGridData.map((item, i) => (
-            <MarginCard key={i} item={item} onRefresh={handleRefresh} />
+            <MarginCard key={i} item={item} handleClick={handleScanItem} />
           ))}
         </div>
       ) : (
         <div className="grid gap-2 p-2 max-h-[calc(100vh-14.4rem)] overflow-y-auto">
           {ctx.filteredCostGridData.map((cost, i) => (
-            <CostCard key={i} cost={cost} onRefresh={handleRefresh} />
+            <CostCard key={i} cost={cost} handleClick={handleScanItem} />
           ))}
         </div>
       )}

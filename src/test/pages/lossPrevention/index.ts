@@ -13,6 +13,7 @@ export const transactions: TransactionListItem[] = [
   {
     storeid: 1,
     transaction_id: "123",
+    coupon_amount:0,
     store_name: "Main Street Market",
     store_number: "001",
     sale_type: "CASH",
@@ -48,6 +49,7 @@ export const transactions: TransactionListItem[] = [
   {
     storeid: 2,
     transaction_id: "456",
+    coupon_amount: 0,
     store_name: "Lakeside Grocery",
     store_number: "002",
     sale_type: "CARD",

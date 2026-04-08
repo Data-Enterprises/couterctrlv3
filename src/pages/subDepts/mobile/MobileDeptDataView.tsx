@@ -3,11 +3,11 @@ import { formatSubDate } from ".";
 import { calculateCogs } from "..";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import {
-  resetSubMarginState,
+  setSelectedSubDeptId,
   setSelectedWeekDay,
 } from "../../../features/subMarginSlice";
 import { gpm } from "../../../functions";
-import { useAppDispatch } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import type { BarData } from "../display/widgets";
 import { useSubMarginCtx } from "../hooks";
 import MarginDayCardOverview from "./MarginDayCardOverview";
@@ -16,9 +16,11 @@ const MobileDeptDataView = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
   const [view, setView] = useState<"overview" | "items">("overview");
+  const { assignedStores } = useAppSelector((state) => state.user);
 
   const handleReset = () => {
-    dispatch(resetSubMarginState());
+    // dispatch(resetSubMarginState());
+    dispatch(setSelectedSubDeptId(0));
   };
 
   const dates = useMemo(() => {
@@ -99,11 +101,23 @@ const MobileDeptDataView = () => {
     }
   };
 
+  const findStoreName = () => {
+    return (
+      assignedStores.find((store) => store.storeid === ctx.searchValue)
+        ?.store_name || ""
+    );
+  };
+
+  const findSubDeptName = () => {
+    const subDept = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId);
+    return subDept ? subDept.desc : "";
+  };
+
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-auto">
       <div className="w-full p-2 grid grid-cols-2 gap-2">
         <button className="btn-themeBlue px-0" onClick={handleReset}>
-          Reset Search
+          Sub Depts
         </button>
         <button className="btn-themeBlue px-0" onClick={handleViewToggle}>
           {view === "overview" ? "Items" : "Day Overview"}
@@ -112,17 +126,29 @@ const MobileDeptDataView = () => {
 
       {/* Cards */}
       {view === "overview" ? (
-        <div className="grid grid-cols-1 gap-2 p-2 max-h-[calc(100vh-6.8rem)] overflow-y-auto">
-          {barData
-            .slice()
-            .reverse()
-            .map((data, i) => (
-              <MarginDayCardOverview
-                key={i}
-                margin={data}
-                onCardClick={() => handleCardClick(data.date)}
-              />
-            ))}
+        <div className="px-2">
+          <div className="text-[13.5px] font-medium p-2">
+            {/* <div className="flex gap-1.5">
+              <div className="font-normal">Store:</div>
+            </div>
+            <div className="flex gap-1.5">
+              <div className="font-normal">Sub Dept:</div>
+            </div> */}
+              <div>{findSubDeptName()}</div>
+              <div>{findStoreName()}</div>
+          </div>
+          <div className="max-h-[calc(100vh-11.5rem)] overflow-y-auto rounded-lg space-y-2">
+            {barData
+              .slice()
+              .reverse()
+              .map((data, i) => (
+                <MarginDayCardOverview
+                  key={i}
+                  margin={data}
+                  onCardClick={() => handleCardClick(data.date)}
+                />
+              ))}
+          </div>
         </div>
       ) : (
         <ItemsView />
