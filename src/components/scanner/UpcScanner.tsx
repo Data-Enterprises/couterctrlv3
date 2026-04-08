@@ -13,9 +13,17 @@ interface UpcScannerProps {
   containerClassName?: string;
   handleScan: () => void;
   onClear?: () => void;
+  isFiltering?: boolean;
+  handleFilter?: () => void;
 }
 
-const UpcScanner = ({ handleScan, onClear, containerClassName= "" }: UpcScannerProps) => {
+const UpcScanner = ({
+  handleScan,
+  onClear,
+  containerClassName = "",
+  isFiltering = false,
+  handleFilter,
+}: UpcScannerProps) => {
   const dispatch = useAppDispatch();
   const ref = useRef<HTMLDivElement>(null);
   const state = useAppSelector((state) => state.itemScan);
@@ -45,7 +53,11 @@ const UpcScanner = ({ handleScan, onClear, containerClassName= "" }: UpcScannerP
     if (ref.current) {
       if (state.upcCode.length) {
         // run the passed in scan item function here
-        handleScan();
+        if (isFiltering && handleFilter) {
+          handleFilter();
+        } else {
+          handleScan();
+        }
         return;
       }
 
@@ -97,7 +109,11 @@ const UpcScanner = ({ handleScan, onClear, containerClassName= "" }: UpcScannerP
         const code = result.codeResult.code;
         dispatch(setUpcCode(code!));
         // Run the passed in scan item function here with the scanned upc code
-        handleScan();
+        if (isFiltering && handleFilter) {
+          handleFilter();
+        } else {
+          handleScan();
+        }
         dispatch(setPause(true));
       });
     }
@@ -134,8 +150,8 @@ const UpcScanner = ({ handleScan, onClear, containerClassName= "" }: UpcScannerP
         } mb-2 rounded-lg`}
         style={{ objectFit: "cover", height: "175px", width: "100%" }}
       />
-      <div className="text-sm font-medium">Scan item:</div>
-      <div className="flex gap-2 items-center">
+      <div className="text-sm font-medium">Search item:</div>
+      <div className="flex gap-1 items-center">
         <input
           type="text"
           data-testid="scan-item-input"
@@ -146,9 +162,16 @@ const UpcScanner = ({ handleScan, onClear, containerClassName= "" }: UpcScannerP
         <button
           data-testid="scan-button"
           onClick={scanItem}
-          className="btn-themeBlue px-4 py-1.5 text-[13.5px]"
+          className="btn-themeGreen px-4 py-1.5 text-[13.5px]"
         >
           Search
+        </button>
+        <button
+          data-testid="scan-button"
+          onClick={clear}
+          className="btn-themeOrange px-4 py-1.5 text-[13.5px]"
+        >
+          Clear
         </button>
       </div>
     </div>

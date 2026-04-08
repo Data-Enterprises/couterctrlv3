@@ -4,13 +4,12 @@ import type { ItemRowMobile } from "../display/widgets";
 interface MarginCardProps {
   item: ItemRowMobile;
 }
+
 const ItemCardSingle = ({ item }: MarginCardProps) => {
   return (
     <div className="bg-custom-white text-[13px] rounded-t-lg">
       <div className="px-2 py-0.5 font-medium">
-        <div>
-          {item.product_code} | {item.product_description}
-        </div>
+        <div>{item.product_description}</div>
       </div>
       <div className="grid grid-cols-6 px-2 pb-0.5">
         <div>

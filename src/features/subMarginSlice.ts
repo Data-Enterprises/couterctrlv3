@@ -28,6 +28,8 @@ const defaultThreshFilter: ThresholdFilter = {
   value: 0,
 };
 
+export type MobileMainView = "overview" | "items";
+
 interface SubMarginState {
   subDepts: SubDept[];
   margins: SubDeptMargin[];
@@ -79,7 +81,8 @@ interface SubMarginState {
   itemDataMobile: ItemRowMobile[];
   filteredItemDataMobile: ItemRowMobile[];
   scannedItemMobile: ItemRowMobile | null;
-
+  mobileMainView: MobileMainView;
+  viewDaily:boolean;
 }
 
 const initialState: SubMarginState = {
@@ -125,6 +128,8 @@ const initialState: SubMarginState = {
   itemDataMobile: [],
   filteredItemDataMobile: [],
   scannedItemMobile: null,
+  mobileMainView: "overview",
+  viewDaily: false,
 };
 
 const subMarginSlice = createSlice({
@@ -323,6 +328,12 @@ const subMarginSlice = createSlice({
     setScannedItemMobile: (state, action: PayloadAction<ItemRowMobile | null>) => {
       state.scannedItemMobile = action.payload;
     },
+    setMobileMainView: (state, action: PayloadAction<MobileMainView>) => {
+      state.mobileMainView = action.payload;
+    },
+    setViewDaily: (state, action: PayloadAction<boolean>) => {
+      state.viewDaily = action.payload;
+    },
     resetSubMarginState: () => initialState,
   },
 });
@@ -366,5 +377,7 @@ export const {
   setItemDataFilteredMobile,
   setProcessMobileItemData,
   setScannedItemMobile,
+  setMobileMainView,
+  setViewDaily,
 } = subMarginSlice.actions;
 export default subMarginSlice.reducer;

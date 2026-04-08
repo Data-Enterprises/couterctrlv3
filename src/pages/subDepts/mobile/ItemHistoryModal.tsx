@@ -1,12 +1,13 @@
 import Modal from "../../../components/Modal";
 import { useState, useEffect } from "react";
+// import { setItemDataFilteredMobile, setItemHistoryModalOpen } from "../../../features/subMarginSlice";
 import { setItemHistoryModalOpen } from "../../../features/subMarginSlice";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { useSubMarginCtx } from "../hooks";
 import type { ItemLookupHistory } from "../../../features/itemLookupSlice";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
-import { setUpcCode } from "../../../features/itemScanSlice";
+// import { setUpcCode } from "../../../features/itemScanSlice";
 
 type GroupedData = {
   price: number;
@@ -49,7 +50,8 @@ const ItemHistoryModal = () => {
   const [qtyAvg, setQtyAvg] = useState<number>(0);
 
   const handleClose = () => {
-    dispatch(setUpcCode(""));
+    // dispatch(setUpcCode(""));
+    // dispatch(setItemDataFilteredMobile(ctx.itemDataMobile));
     dispatch(setItemHistoryModalOpen(false));
   };
 
@@ -60,7 +62,6 @@ const ItemHistoryModal = () => {
 
   useEffect(() => {
     if (ctx.scannedItemHistory.length && ctx.itemHistoryModalOpen) {
-      console.log(upcCode);
       if (!upcCode.length) {
         setUpc(ctx.scannedItemHistory[0].product_code);
       } else {
@@ -418,7 +419,6 @@ const ItemHistoryModal = () => {
                 <div>Price</div>
                 <div>C Cost</div>
                 <div>Ext Cost</div>
-                {/* <div>Date</div> */}
               </div>
               {groupedByQty.map((g, i) => {
                 return (
@@ -447,8 +447,8 @@ const ItemHistoryModal = () => {
           <LoadingIndicator className="ml-6" message="Loading item history" />
         </div>
       ) : (
-        <div>
-          <div>No data available</div>
+        <div className="w-full h-[78vh] flex justify-center items-center">
+          <div className="font-medium">No data returned</div>
         </div>
       )}
 

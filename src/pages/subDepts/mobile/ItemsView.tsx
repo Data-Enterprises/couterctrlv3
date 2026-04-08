@@ -1,6 +1,6 @@
 import { useSubMarginCtx } from "../hooks";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   setFetchingItemHistory,
   setItemDataFilteredMobile,
@@ -13,7 +13,7 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import { setError, setUpcCode } from "../../../features/itemScanSlice";
 import { reduceItemData } from ".";
 
-import MarginCard from "./MarginCard";
+import ItemCard from "./ItemCard";
 import UpcScanner from "../../../components/scanner/UpcScanner";
 
 interface ItemsViewProps {
@@ -26,7 +26,6 @@ const ItemsView = ({ startDate, endDate }: ItemsViewProps) => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
   const scan = useAppSelector((state) => state.itemScan);
-  const [refreshFiltered, setRefreshFiltered] = useState<boolean>(true);
 
   const handleScanItem = (upc: string) => {
     dispatch(setScannedItemHistory([]));
@@ -48,12 +47,21 @@ const ItemsView = ({ startDate, endDate }: ItemsViewProps) => {
   };
 
   const clear = () => {
+    dispatch(setItemDataFilteredMobile(ctx.itemDataMobile));
     dispatch(setUpcCode(""));
     dispatch(setError(""));
   };
 
+  // Testing to see if this is necessary => works
+  const filterItems = () => {
+    const filtered = ctx.itemDataMobile.filter((item) =>
+      item.product_code.includes(scan.upcCode),
+    );
+    dispatch(setItemDataFilteredMobile(filtered));
+  };
+
   useEffect(() => {
-    if (ctx.subDeptGridView === "item" && refreshFiltered) {
+    if (ctx.subDeptGridView === "item") {
       const dateComp = ctx.selectedWeekDay
         ? new Date(ctx.selectedWeekDay).toISOString().split("T")[0]
         : "";
@@ -69,9 +77,8 @@ const ItemsView = ({ startDate, endDate }: ItemsViewProps) => {
       }));
 
       dispatch(setItemDataFilteredMobile(newData));
-      setRefreshFiltered(false);
     }
-  }, [ctx.selectedWeekDay, refreshFiltered]);
+  }, [ctx.selectedWeekDay]);
 
   const dateRange = ctx.selectedWeekDay
     ? ctx.selectedWeekDay
@@ -87,10 +94,12 @@ const ItemsView = ({ startDate, endDate }: ItemsViewProps) => {
         containerClassName="px-2"
         handleScan={scanItem}
         onClear={clear}
+        isFiltering={true}
+        handleFilter={filterItems}
       />
       <div className="grid m-2 max-h-[calc(100vh-13rem)] rounded-lg shadow-md overflow-y-auto">
         {ctx.filteredItemDataMobile.map((item, i) => (
-          <MarginCard key={i} item={item} handleClick={handleScanItem} />
+          <ItemCard key={i} item={item} handleClick={handleScanItem} />
         ))}
       </div>
     </div>

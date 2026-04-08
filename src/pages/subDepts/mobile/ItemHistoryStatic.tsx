@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { ItemLookupHistory } from "../../../features/itemLookupSlice";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { useSubMarginCtx } from "../hooks";
+// import { useAppSelector } from "../../../hooks";
 
 type GroupedData = {
   price: number;
@@ -18,6 +19,11 @@ type QtyGrouped = {
 
 const ItemHistoryStatic = () => {
   const ctx = useSubMarginCtx();
+  // const { upcCode } = useAppSelector((state) => state.itemScan);
+  // const [upc, setUpc] = useState<string>("");
+  // const [cat, setCat] = useState<string>("");
+  // const [store, setStore] = useState<string>("");
+  const [dateRange, setDateRange] = useState<string>("");
   const [groupedByPrice, setGroupedByPrice] = useState<GroupedData[]>([]);
   const [groupedByCost, setGroupedByCost] = useState<GroupedData[]>([]);
   const [groupedByQty, setGroupedByQty] = useState<QtyGrouped[]>([]);
@@ -35,8 +41,25 @@ const ItemHistoryStatic = () => {
   const [salesAvg, setSalesAvg] = useState<number>(0);
   const [qtyAvg, setQtyAvg] = useState<number>(0);
 
+  const formatDate = (dateStr: string) => {
+    const split = dateStr.split("T")[0].split("-");
+    return `${split[1]}/${split[2]}/${split[0]}`;
+  };
+
   useEffect(() => {
     if (ctx.scannedItemHistory.length) {
+      // if (!upcCode.length) {
+      //   setUpc(ctx.scannedItemHistory[0].product_code);
+      // } else {
+      //   setUpc(upcCode);
+      // }
+      // setStore(ctx.scannedItemHistory[0].store_name);
+      // setCat(ctx.scannedItemHistory[0].category_description);
+      const lastIdx = ctx.scannedItemHistory.length - 1;
+      setDateRange(
+        `${formatDate(ctx.scannedItemHistory[0].sale_date)} - ${formatDate(ctx.scannedItemHistory[lastIdx].sale_date)}`,
+      );
+
       const pricesGrouped = ctx.scannedItemHistory.reduce(
         (acc: GroupedData[], curr) => {
           const found = acc.find(
@@ -204,6 +227,15 @@ const ItemHistoryStatic = () => {
     <div className="bg-custom-white p-2">
       <div className="mb-1 pb-1 ">
         {/* Summary */}
+        <div className="font-medium mb-2">
+          {dateRange}
+          {/* <div>{dateRange}</div> */}
+          {/* <div className="flex gap-1.5">
+            <div className="font-normal text-content/60">Cat:</div>
+            <div className="text-nowrap truncate">{cat}</div>
+          </div> */}
+        </div>
+
         <div className="font-medium text-[14px]">Totals Summary</div>
         <div className="grid grid-cols-3  w-[75%]">
           <div>

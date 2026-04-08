@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { formatSubDate, reduceItemData } from ".";
 import { calculateCogs } from "..";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import {
   setItemDataFilteredMobile,
   setItemDataMobile,
+  setMobileMainView,
   setProcessMobileItemData,
   setSelectedSubDeptId,
   setSelectedWeekDay,
+  setViewDaily,
 } from "../../../features/subMarginSlice";
 import { gpm } from "../../../functions";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
@@ -21,17 +23,13 @@ import ItemHistoryModal from "./ItemHistoryModal";
 const MobileDeptDataView = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
-  const [view, setView] = useState<"overview" | "items">("overview");
+  // const [view, setView] = useState<"overview" | "items">("overview");
   const { assignedStores } = useAppSelector((state) => state.user);
-  const [viewDaily, setViewDaily] = useState<boolean>(false);
+  // const [viewDaily, setViewDaily] = useState<boolean>(false);
 
-  const handleReset = () => {
-    if (view === "items") {
-      setView("overview");
-    } else {
-      // dispatch(resetSubMarginState());
-      dispatch(setSelectedSubDeptId(0));
-    }
+  const handleMainView = (isResetting: boolean) => {
+    dispatch(setMobileMainView("overview"));
+    if (isResetting) dispatch(setSelectedSubDeptId(0));
   };
 
   useEffect(() => {
@@ -113,14 +111,9 @@ const MobileDeptDataView = () => {
     );
   }
 
-  // const handleViewToggle = () => {
-  //   setView((prev) => (prev === "overview" ? "items" : "overview"));
-  //   if (view === "items") dispatch(setSelectedWeekDay(""));
-  // };
-
   const handleCardClick = (date: string) => {
     dispatch(setSelectedWeekDay(date));
-    setView("items");
+    dispatch(setMobileMainView("items"));
   };
 
   const findStoreName = () => {
@@ -156,8 +149,8 @@ const MobileDeptDataView = () => {
   const endDate = barData[barData.length - 1].date;
 
   const handleAllDates = () => {
-    if (viewDaily) {
-      setView("items");
+    if (ctx.viewDaily) {
+      dispatch(setMobileMainView("items"));
       dispatch(setSelectedWeekDay(""));
     }
   };
@@ -168,20 +161,29 @@ const MobileDeptDataView = () => {
       <div className="w-full p-2 grid grid-cols-2 gap-2">
         <button
           className="btn-themeBlue py-1.5 px-0 text-[13.5px]"
-          onClick={handleReset}
+          onClick={() => handleMainView(true)}
         >
           Sub Depts
         </button>
-        <button
-          className="btn-themeBlue py-1.5 px-0 text-[13.5px]"
-          onClick={() => setViewDaily((prev) => !prev)}
-        >
-          {!viewDaily ? "View Daily" : "Scan"}
-        </button>
+        {ctx.mobileMainView === "overview" ? (
+          <button
+            className="btn-themeBlue py-1.5 px-0 text-[13.5px]"
+            onClick={() => dispatch(setViewDaily(!ctx.viewDaily))}
+          >
+            {!ctx.viewDaily ? "View Daily" : "Scan"}
+          </button>
+        ) : (
+          <button
+            className="btn-themeBlue py-1.5 px-0 text-[13.5px]"
+            onClick={() => handleMainView(false)}
+          >
+            Overview
+          </button>
+        )}
       </div>
 
       {/* Cards */}
-      {view === "overview" ? (
+      {ctx.mobileMainView === "overview" ? (
         <div className="mx-2">
           <div
             className="text-[13px] pb-2 px-2 grid grid-cols-2 bg-custom-white rounded-lg shadow-md"
@@ -220,7 +222,7 @@ const MobileDeptDataView = () => {
             </div>
           </div>
           <div className="mt-2">
-            {viewDaily ? (
+            {ctx.viewDaily ? (
               <div className="shadow-md">
                 {barData
                   .slice()
