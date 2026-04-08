@@ -2,7 +2,6 @@ import { useSubMarginCtx } from "../hooks";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import type { BarData } from "../display/widgets";
 import { gpm } from "../../../functions";
-import { calculateCogs } from "..";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import {
   setMobileMainView,
@@ -21,20 +20,8 @@ const TotalsHeader = ({ barData }: TotalsHeaderProps) => {
   const sales = barData.sales;
   const tax = barData.tax;
   const qty = barData.qty;
-  const totalCogs = ctx.margins.reduce(
-    (acc, curr) =>
-      acc +
-      calculateCogs(
-        curr.net_cost,
-        curr.cost,
-        curr.case_size,
-        curr.qty,
-        curr.weight,
-      ),
-    0,
-  );
-  const margin = gpm(sales, totalCogs);
-
+  const cogs = barData.cogs;
+  const margin = gpm(sales, cogs);
   const date = barData.date;
 
   const handleAllDates = () => {
@@ -81,7 +68,7 @@ const TotalsHeader = ({ barData }: TotalsHeaderProps) => {
         </div>
         <div className="flex gap-1.5 justify-end">
           <div className="text-content/50">COGS:</div>
-          <div className="font-medium">{formatCurrency2(totalCogs)}</div>
+          <div className="font-medium">{formatCurrency2(cogs)}</div>
         </div>
         <div className="flex gap-1.5 justify-end">
           <div className="text-content/50">GPM:</div>

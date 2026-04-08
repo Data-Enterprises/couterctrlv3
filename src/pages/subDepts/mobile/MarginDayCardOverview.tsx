@@ -35,9 +35,7 @@ const MarginDayCardOverview = ({ margin }: MarginDayCardOverviewProps) => {
       <div className="grid grid-cols-[1.2fr_0.9fr_0.9fr_1.2fr_0.8fr] gap-x-2">
         <div>
           <div className="text-content/60">Sales</div>
-          <div className="font-medium">
-            {formatCurrency2(margin.sales - margin.tax)}
-          </div>
+          <div className="font-medium">{formatCurrency2(margin.sales)}</div>
         </div>
         <div>
           <div className="text-content/60">Qty</div>

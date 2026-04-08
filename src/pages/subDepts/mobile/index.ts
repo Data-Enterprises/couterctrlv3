@@ -23,7 +23,7 @@ export const reduceItemData = (data: SubDeptMargin[]) => {
           margin.weight,
         ),
         cost_fees: margin.cost_fees,
-        total_sales: margin.total_sales - margin.total_tax,
+        total_sales: margin.total_sales,
         net_sales: margin.net_sales,
         total_tax: margin.total_tax,
         qty: margin.qty,
@@ -39,7 +39,7 @@ export const reduceItemData = (data: SubDeptMargin[]) => {
         margin.qty,
         margin.weight,
       );
-      found.total_sales += margin.total_sales - margin.total_tax;
+      found.total_sales += margin.total_sales;
       found.net_sales += margin.net_sales;
       found.total_tax += margin.total_tax;
       found.qty += margin.qty;

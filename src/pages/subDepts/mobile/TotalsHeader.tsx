@@ -67,7 +67,7 @@ const TotalsHeader = ({ barData }: TotalsHeaderProps) => {
         <div className="font-medium">{findSubDeptName()}</div>
         <div className="flex gap-1.5">
           <div className="text-content/50">Sales:</div>
-          <div className="font-medium">{formatCurrency2(sales - tax)}</div>
+          <div className="font-medium">{formatCurrency2(sales)}</div>
         </div>
         <div className="flex gap-1.5">
           <div className="text-content/50">Qty:</div>
