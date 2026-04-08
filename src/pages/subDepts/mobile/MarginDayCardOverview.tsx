@@ -27,7 +27,7 @@ const MarginDayCardOverview = ({
 
   return (
     <div
-      className={`${ctx.selectedWeekDay === margin.date ? "bg-orange-200" : "bg-custom-white"} shadow-md p-2 rounded-lg text-[13.5px] border-b border-content last:border-none`}
+      className={`bg-custom-white even:bg-blue-200/50 px-2 py-0.5 text-[13.5px] last:border-none`}
       onClick={() => handleCardClick(margin.date)}
     >
       <div className="font-medium flex justify-between text-[13.5px]">
@@ -35,8 +35,8 @@ const MarginDayCardOverview = ({
       </div>
       <div className="grid grid-cols-5 gap-x-2">
         <div>
-          <div className="text-content/60">Total $ </div>
-          <div className="font-medium">{formatCurrency2(margin.sales)}</div>
+          <div className="text-content/60">Sales</div>
+          <div className="font-medium">{formatCurrency2(margin.sales - margin.tax)}</div>
         </div>
         {/* <div>
           <div className="text-content/60">Net $</div>

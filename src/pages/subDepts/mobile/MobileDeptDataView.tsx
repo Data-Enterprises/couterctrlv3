@@ -12,6 +12,7 @@ import type { BarData } from "../display/widgets";
 import { useSubMarginCtx } from "../hooks";
 import MarginDayCardOverview from "./MarginDayCardOverview";
 import ItemsView from "./ItemsView";
+import { formatBigNumber, formatCurrency2 } from "../../../utils";
 const MobileDeptDataView = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
@@ -90,15 +91,12 @@ const MobileDeptDataView = () => {
 
   const handleViewToggle = () => {
     setView((prev) => (prev === "overview" ? "items" : "overview"));
+    if (view === "items") dispatch(setSelectedWeekDay(""));
   };
 
   const handleCardClick = (date: string) => {
-    if (ctx.selectedWeekDay === date) {
-      dispatch(setSelectedWeekDay(""));
-    } else {
-      dispatch(setSelectedWeekDay(date));
-      setView("items");
-    }
+    dispatch(setSelectedWeekDay(date));
+    setView("items");
   };
 
   const findStoreName = () => {
@@ -108,10 +106,30 @@ const MobileDeptDataView = () => {
     );
   };
 
+  const sales = barData.reduce((acc, data) => acc + data.sales, 0);
+  const tax = barData.reduce((acc, data) => acc + data.tax, 0);
+  const qty = barData.reduce((acc, data) => acc + data.qty, 0);
+  const totalCogs = ctx.margins.reduce(
+    (acc, curr) =>
+      acc +
+      calculateCogs(
+        curr.net_cost,
+        curr.cost,
+        curr.case_size,
+        curr.qty,
+        curr.weight,
+      ),
+    0,
+  );
+  const margin = gpm(sales, totalCogs);
+
   const findSubDeptName = () => {
     const subDept = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId);
     return subDept ? subDept.desc : "";
   };
+
+  const startDate = barData[0].date;
+  const endDate = barData[barData.length - 1].date;
 
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-auto">
@@ -127,17 +145,40 @@ const MobileDeptDataView = () => {
       {/* Cards */}
       {view === "overview" ? (
         <div className="px-2">
-          <div className="text-[13.5px] font-medium p-2">
-            {/* <div className="flex gap-1.5">
-              <div className="font-normal">Store:</div>
+          <div className="text-[13px] px-2 pb-2 grid grid-cols-2">
+            <div>
+              <div className="font-medium">{findStoreName()}</div>
+              <div className="font-medium">{findSubDeptName()}</div>
+              <div className="flex gap-1.5">
+                <div className="text-content/50">Sales:</div>
+                <div className="font-medium">
+                  {formatCurrency2(sales - tax)}
+                </div>
+              </div>
+              <div className="flex gap-1.5">
+                <div className="text-content/50">Qty:</div>
+                <div className="font-medium">{formatBigNumber(qty, 0)}</div>
+              </div>
             </div>
-            <div className="flex gap-1.5">
-              <div className="font-normal">Sub Dept:</div>
-            </div> */}
-              <div>{findSubDeptName()}</div>
-              <div>{findStoreName()}</div>
+            <div className="">
+              <div className="text-right font-medium">
+                {startDate} - {endDate}
+              </div>
+              <div className="flex gap-1.5 justify-end">
+                <div className="text-content/50">Tax:</div>
+                <div className="font-medium">{formatCurrency2(tax)}</div>
+              </div>
+              <div className="flex gap-1.5 justify-end">
+                <div className="text-content/50">COGS:</div>
+                <div className="font-medium">{formatCurrency2(totalCogs)}</div>
+              </div>
+              <div className="flex gap-1.5 justify-end">
+                <div className="text-content/50">GPM:</div>
+                <div className="font-medium">{margin}</div>
+              </div>
+            </div>
           </div>
-          <div className="max-h-[calc(100vh-11.5rem)] overflow-y-auto rounded-lg space-y-2">
+          <div className="max-h-[calc(100vh-11.5rem)] overflow-y-auto rounded-lg shadow-md">
             {barData
               .slice()
               .reverse()
