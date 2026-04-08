@@ -25,23 +25,23 @@ const MarginDayCardOverview = ({
     }
   };
 
+  const dayOfWeek = new Date(margin.date).toLocaleDateString("en-US", {
+    weekday: "short",
+  });
+
   return (
     <div
-      className={`bg-custom-white even:bg-blue-200/50 px-2 py-0.5 text-[13.5px] last:border-none`}
+      className={`bg-custom-white first:rounded-t-lg even:bg-blue-200/50 px-2 py-0.5 text-[13px] last:border-none`}
       onClick={() => handleCardClick(margin.date)}
     >
-      <div className="font-medium flex justify-between text-[13.5px]">
-        <div>{margin.date}</div>
+      <div className="font-medium flex justify-between text-[13px]">
+        <div>{dayOfWeek}, {margin.date}</div>
       </div>
-      <div className="grid grid-cols-5 gap-x-2">
+      <div className="grid grid-cols-[1.2fr_0.9fr_0.9fr_1.2fr_0.8fr] gap-x-2">
         <div>
           <div className="text-content/60">Sales</div>
           <div className="font-medium">{formatCurrency2(margin.sales - margin.tax)}</div>
         </div>
-        {/* <div>
-          <div className="text-content/60">Net $</div>
-          <div className="font-medium">{formatCurrency2(margin.net)}</div>
-        </div> */}
         <div>
           <div className="text-content/60">Qty</div>
           <div className="font-medium">{formatBigNumber(margin.qty, 0)}</div>

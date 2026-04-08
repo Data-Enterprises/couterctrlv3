@@ -1,6 +1,6 @@
 import type { SubDeptCost } from "../../../interfaces";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
-import { useSubMarginCtx } from "../hooks";
+// import { useSubMarginCtx } from "../hooks";
 
 interface CostCardProps {
   cost: SubDeptCost;
@@ -8,27 +8,29 @@ interface CostCardProps {
 }
 
 const CostCard = ({ cost, handleClick }: CostCardProps) => {
-  const ctx = useSubMarginCtx();
+  // const ctx = useSubMarginCtx();
 
   return (
     <div
-      className="bg-custom-white rounded-lg shadow-md text-sm"
+      className="bg-custom-white even:bg-blue-200/50 text-[13px]"
       onClick={() => handleClick(cost.product_code)}
     >
-      <div className="bg-blue-500 text-custom-white px-2 py-0.5 rounded-t-lg font-medium text-[13px] flex justify-between">
-        <div>{cost.product_code}</div>
-        <div className="font-medium">{ctx.selectedWeekDay || "All Dates"}</div>
-      </div>
-      <div className="px-2 text-[13px] font-medium">{cost.description}</div>
-      <div className="grid grid-cols-4 p-2 gap-y-1 text-[13.5px]">
+      <div className="px-2 py-0.5 font-medium">
         <div>
-          <div className="text-content/60">Unit Cost:</div>
+          {cost.product_code} | {cost.description}
+        </div>
+        {/* <div className="font-medium">{ctx.selectedWeekDay || "All Dates"}</div> */}
+      </div>
+      {/* <div className="px-2 text-[13px] font-medium">{cost.description}</div> */}
+      <div className="grid grid-cols-4 px-2 pb-0.5">
+        <div>
+          <div className="text-content/60">U Cost:</div>
           <div className="font-medium">
             {formatCurrency2(cost.calculated_cost)}
           </div>
         </div>
         <div>
-          <div className="text-content/60">Case Cost:</div>
+          <div className="text-content/60">C Cost:</div>
           <div className="font-medium">{formatCurrency2(cost.cost)}</div>
         </div>
         <div>

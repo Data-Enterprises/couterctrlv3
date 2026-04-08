@@ -9,6 +9,7 @@ import {
   setLoadingMargins,
   setSelectedWeek,
   setWeekTrendMargins,
+  setProcessMobileItemData,
 } from "../../../features/subMarginSlice";
 import { useAppDispatch } from "../../../hooks";
 import type {
@@ -82,6 +83,7 @@ const MobileDeptSelect = () => {
                     // If all pages have been fetched, we can set the margins for the week
                     if (pages.every((p) => p.fetched)) {
                       dispatch(setWeekTrendMargins({ data: marginData, week }));
+                      dispatch(setProcessMobileItemData(true));
                     }
                   }
                 })
@@ -90,6 +92,7 @@ const MobileDeptSelect = () => {
           } else {
             // If we only have one page of data total, we can just set the margins for the week
             dispatch(setWeekTrendMargins({ data: marginData, week }));
+            dispatch(setProcessMobileItemData(true));
           }
         }
       })

@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { SubDeptMargin, SubDept, SubDeptCost } from "../interfaces";
-import type { ItemRow } from "../pages/subDepts/display/widgets";
+import type { ItemRow, ItemRowMobile } from "../pages/subDepts/display/widgets";
 import type { ItemLookupHistory } from "./itemLookupSlice";
 
 export type SubDeptGridView = "item" | "cost";
@@ -75,6 +75,11 @@ interface SubMarginState {
   scannedItemHistory: ItemLookupHistory[];
   itemHistoryModalOpen: boolean;
   fetchingItemHistory: boolean;
+  processMobileItemData: boolean;
+  itemDataMobile: ItemRowMobile[];
+  filteredItemDataMobile: ItemRowMobile[];
+  scannedItemMobile: ItemRowMobile | null;
+
 }
 
 const initialState: SubMarginState = {
@@ -116,6 +121,10 @@ const initialState: SubMarginState = {
   scannedItemHistory: [],
   itemHistoryModalOpen: false,
   fetchingItemHistory: false,
+  processMobileItemData: false,
+  itemDataMobile: [],
+  filteredItemDataMobile: [],
+  scannedItemMobile: null,
 };
 
 const subMarginSlice = createSlice({
@@ -302,6 +311,18 @@ const subMarginSlice = createSlice({
     setFetchingItemHistory: (state, action: PayloadAction<boolean>) => {
       state.fetchingItemHistory = action.payload;
     },
+    setItemDataMobile: (state, action: PayloadAction<ItemRowMobile[]>) => {
+      state.itemDataMobile = action.payload;
+    },
+    setItemDataFilteredMobile: (state, action: PayloadAction<ItemRowMobile[]>) => {
+      state.filteredItemDataMobile = action.payload;
+    },
+    setProcessMobileItemData: (state, action: PayloadAction<boolean>) => {
+      state.processMobileItemData = action.payload;
+    },
+    setScannedItemMobile: (state, action: PayloadAction<ItemRowMobile | null>) => {
+      state.scannedItemMobile = action.payload;
+    },
     resetSubMarginState: () => initialState,
   },
 });
@@ -341,5 +362,9 @@ export const {
   setScannedItemHistory,
   setItemHistoryModalOpen,
   setFetchingItemHistory,
+  setItemDataMobile,
+  setItemDataFilteredMobile,
+  setProcessMobileItemData,
+  setScannedItemMobile,
 } = subMarginSlice.actions;
 export default subMarginSlice.reducer;

@@ -3,26 +3,25 @@ import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useEffect, useState } from "react";
 import {
   setFetchingItemHistory,
-  setFilteredCostGridData,
-  setFilteredItemGridData,
-  setItemGridData,
+  setItemDataFilteredMobile,
   setItemHistoryModalOpen,
   setScannedItemHistory,
-  setSubDeptCost,
-  setSubDeptGridView,
 } from "../../../features/subMarginSlice";
-import type { JsonError, SubDeptCost } from "../../../interfaces";
+import type { JsonError } from "../../../interfaces";
 import { getItemLookupSingleStore } from "../../../api/itemLookup";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { setError, setUpcCode } from "../../../features/itemScanSlice";
-import { reduceCostData, reduceItemData } from ".";
+import { reduceItemData } from ".";
 
 import MarginCard from "./MarginCard";
-import CostCard from "./CostCard";
-import ItemHistoryModal from "./ItemHistoryModal";
 import UpcScanner from "../../../components/scanner/UpcScanner";
 
-const ItemsView = () => {
+interface ItemsViewProps {
+  startDate: string;
+  endDate: string;
+}
+
+const ItemsView = ({ startDate, endDate }: ItemsViewProps) => {
   const toast = useToast();
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
@@ -69,59 +68,31 @@ const ItemsView = () => {
         margin: ((item.total_sales - item.cogs) / item.total_sales) * 100 || 0,
       }));
 
-      dispatch(setItemGridData(newData));
-      dispatch(setFilteredItemGridData(newData));
-      setRefreshFiltered(false);
-    } else if (ctx.subDeptGridView === "cost" && refreshFiltered) {
-      // cost view
-      const costData: SubDeptCost[] = reduceCostData(ctx.margins);
-
-      dispatch(setSubDeptCost(costData));
-      dispatch(setFilteredCostGridData(costData));
+      dispatch(setItemDataFilteredMobile(newData));
       setRefreshFiltered(false);
     }
-  }, [ctx.selectedWeekDay, ctx.subDeptGridView, refreshFiltered]);
+  }, [ctx.selectedWeekDay, refreshFiltered]);
 
-  const handleViewToggle = (option: "item" | "cost") => {
-    dispatch(setSubDeptGridView(option));
-    setRefreshFiltered(true);
-  };
+  const dateRange = ctx.selectedWeekDay
+    ? ctx.selectedWeekDay
+    : `${startDate} - ${endDate}`;
 
   return (
-    <div>
-      <ItemHistoryModal />
-      <div className="grid grid-cols-2 gap-2 px-2">
-        <button
-          className={`${ctx.subDeptGridView === "item" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleViewToggle("item")}
-        >
-          Unique Items
-        </button>
-        <button
-          className={`${ctx.subDeptGridView === "cost" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleViewToggle("cost")}
-        >
-          Item Cost
-        </button>
+    <div className="text-[13.5px]">
+      <div className="px-2 flex justify-between font-medium">
+        <div>{dateRange}</div>
+        <div>{ctx.filteredItemDataMobile.length} Items</div>
       </div>
       <UpcScanner
         containerClassName="px-2"
         handleScan={scanItem}
         onClear={clear}
       />
-      {ctx.subDeptGridView === "item" ? (
-        <div className="grid gap-2 p-2 max-h-[calc(100vh-14.4rem)] overflow-y-auto">
-          {ctx.filteredItemGridData.map((item, i) => (
-            <MarginCard key={i} item={item} handleClick={handleScanItem} />
-          ))}
-        </div>
-      ) : (
-        <div className="grid gap-2 p-2 max-h-[calc(100vh-14.4rem)] overflow-y-auto">
-          {ctx.filteredCostGridData.map((cost, i) => (
-            <CostCard key={i} cost={cost} handleClick={handleScanItem} />
-          ))}
-        </div>
-      )}
+      <div className="grid m-2 max-h-[calc(100vh-13rem)] rounded-lg shadow-md overflow-y-auto">
+        {ctx.filteredItemDataMobile.map((item, i) => (
+          <MarginCard key={i} item={item} handleClick={handleScanItem} />
+        ))}
+      </div>
     </div>
   );
 };
