@@ -1,7 +1,11 @@
+import { useEffect } from "react";
+import { useAppDispatch } from "../../../hooks";
+import { useParams, useSubMarginCtx } from "../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+
 import { formatSubDate } from ".";
 import { getSubMargins } from "../../../api/subMargins";
-import LoadingIndicator from "../../../components/loading/LoadingIndicator";
-import { useToast } from "../../../components/toasts/hooks/useToast";
+
 import {
   requerySubDeptMargins,
   setSelectedSubDeptId,
@@ -11,19 +15,28 @@ import {
   setWeekTrendMargins,
   setProcessMobileItemData,
 } from "../../../features/subMarginSlice";
-import { useAppDispatch } from "../../../hooks";
+
 import type {
   SubMarginsJsonResp,
   SubDeptMargin,
   JsonError,
 } from "../../../interfaces";
-import { useParams, useSubMarginCtx } from "../hooks";
+
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+import {
+  BuildingStorefrontIcon,
+  CalendarIcon,
+} from "@heroicons/react/24/solid";
 
 const MobileDeptSelect = () => {
   const ctx = useSubMarginCtx();
   const params = useParams();
   const toast = useToast();
   const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(setSubDepts([]));
+  }, [ctx.searchValue]);
 
   const getData = (week: number, id: number) => {
     const subs = [...ctx.subDepts];
@@ -99,20 +112,46 @@ const MobileDeptSelect = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
-  if (!ctx.subDepts.length && !ctx.loadingSubDepts) return null;
+  const storeName =
+    ctx.assignedStores.find((s) => s.storeid === ctx.searchValue)?.store_name ||
+    "";
+
+  if (!ctx.subDepts.length && !ctx.loadingSubDepts) {
+    return (
+      <div className="bg-custom-white m-4 px-2 py-4 rounded-lg shadow-md text-[14px] text-center font-medium">
+        <div className="flex gap-2 translate-x-[20%]">
+          <BuildingStorefrontIcon className="w-6 h-6 text-blue-500" />
+          <div>{storeName}</div>
+        </div>
+        <div className="flex gap-2 translate-x-[20%]">
+          <CalendarIcon className="w-6 h-6 text-blue-500" />
+          {formatSubDate(params.start)} - {formatSubDate(params.end)}
+        </div>
+        <div className="h-0.5 grid grid-cols-2 my-2">
+          <div className="bg-gradient-to-r from-blue-200 to-custom-white h-full"></div>
+          <div className="bg-gradient-to-l from-blue-200 to-custom-white h-full"></div>
+        </div>
+        <div>Press Search to view the selected store's</div>
+        <div>sub departments in the date range</div>
+      </div>
+    );
+  }
 
   if (ctx.loadingSubDepts) {
     return (
       <div className="relative w-full h-[calc(100vh-257px)]">
-        <LoadingIndicator message="Loading Sub Depts..." className="" />
+        <LoadingIndicator message="Loading Sub Depts" className="" />
       </div>
     );
   }
 
   return (
     <div className="text-[13px] font-medium">
-      <div className="w-full px-2 text-[13.5px] text-center">
-        {formatSubDate(params.start)} - {formatSubDate(params.end)}
+      <div className="w-full px-2 text-[13.5px] flex justify-between items-center">
+        <div>
+          {formatSubDate(params.start)} - {formatSubDate(params.end)}
+        </div>
+        <div>{storeName}</div>
       </div>
       <div className="flex flex-wrap gap-2 p-2 max-h-[calc(100vh-283px)] overflow-y-auto">
         {ctx.subDepts.map((s, i) => (
