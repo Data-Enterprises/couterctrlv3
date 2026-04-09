@@ -208,6 +208,8 @@ const subMarginSlice = createSlice({
       state.itemGridData = [];
       state.scannedUpc = "";
       state.pause = false;
+      state.upcSearch = "";
+      state.viewDaily = false;
     },
     setSelectedWeek: (state, action: PayloadAction<MarginWeek>) => {
       state.selectedWeek = action.payload;

@@ -21,14 +21,24 @@ import ItemsView from "./ItemsView";
 import ScanView from "./ScanView";
 import ItemHistoryModal from "./ItemHistoryModal";
 import TotalsHeader from "./TotalsHeader";
+import { setUpcCode } from "../../../features/itemScanSlice";
 
 const MobileDeptDataView = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
 
   const handleMainView = (isResetting: boolean) => {
+    if (!ctx.viewDaily) dispatch(setViewDaily(true));
+    // dispatch(setViewDaily(false));
     dispatch(setMobileMainView("overview"));
+    dispatch(setUpcCode(""));
     if (isResetting) dispatch(setSelectedSubDeptId(0));
+  };
+
+  const handleScanView = () => {
+    dispatch(setViewDaily(false));
+    dispatch(setMobileMainView("overview"));
+    dispatch(setUpcCode(""));
   };
 
   useEffect(() => {
@@ -103,9 +113,10 @@ const MobileDeptDataView = () => {
   if (!ctx.margins.length && !ctx.loadingMargins) return null;
 
   if (ctx.loadingMargins) {
+    const deptName = ctx.subDepts.find((d) => d.id === ctx.selectedSubDeptId)?.desc || "";
     return (
       <div className="relative h-[calc(100vh-3rem)]">
-        <LoadingIndicator message="Loading margins..." className="" />
+        <LoadingIndicator message={`Loading ${deptName}`} className="" />
       </div>
     );
   }
@@ -113,28 +124,25 @@ const MobileDeptDataView = () => {
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-auto">
       <ItemHistoryModal />
-      <div className="w-full p-2 grid grid-cols-2 gap-2">
+      <div className="w-full p-2 grid grid-cols-3 gap-2">
         <button
           className="btn-themeBlue py-1.5 px-0 text-[13.5px]"
           onClick={() => handleMainView(true)}
         >
           Sub Depts
         </button>
-        {ctx.mobileMainView === "overview" ? (
-          <button
-            className="btn-themeBlue py-1.5 px-0 text-[13.5px]"
-            onClick={() => dispatch(setViewDaily(!ctx.viewDaily))}
-          >
-            {!ctx.viewDaily ? "View Daily" : "Scan"}
-          </button>
-        ) : (
-          <button
-            className="btn-themeBlue py-1.5 px-0 text-[13.5px]"
-            onClick={() => handleMainView(false)}
-          >
-            View Daily
-          </button>
-        )}
+        <button
+          className={`btn-themeBlue ${!ctx.viewDaily ? "opacity-50 pointer-events-none" : ""} py-1.5 px-0 text-[13.5px]`}
+          onClick={handleScanView}
+        >
+          Search
+        </button>
+        <button
+          className={`btn-themeBlue ${ctx.viewDaily ? "opacity-50 pointer-events-none" : ""} py-1.5 px-0 text-[13.5px]`}
+          onClick={() => handleMainView(false)}
+        >
+          View Daily
+        </button>
       </div>
 
       {/* Overview and Items views */}

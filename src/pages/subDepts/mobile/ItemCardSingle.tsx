@@ -8,8 +8,11 @@ interface MarginCardProps {
 const ItemCardSingle = ({ item }: MarginCardProps) => {
   return (
     <div className="bg-custom-white text-[13px] rounded-t-lg">
-      <div className="px-2 py-0.5 font-medium">
-        <div>{item.product_description}</div>
+      <div className="px-2 py-0.5 font-medium grid grid-cols-[1fr_3fr]">
+        <div>{item.product_code}</div>
+        <div className="text-right text-nowrap truncate">
+          {item.product_description}
+        </div>
       </div>
       <div className="grid grid-cols-6 px-2 pb-0.5">
         <div>

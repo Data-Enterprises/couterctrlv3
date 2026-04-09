@@ -176,7 +176,8 @@ const SideBar = () => {
       ref={ref}
       data-testid="side-bar"
       data-open={nav.isNavOpen}
-      className={`bg-bkg absolute top-12 left-0 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] flex flex-col justify-between border-t ${slidingStyle}`}
+      className={`bg-bkg absolute top-12 left-0 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] flex flex-col justify-between border-t 
+        ${slidingStyle} ${context.isMobile && !nav.isNavOpen ? "pointer-events-none" : ""}`}
       style={styleObj()}
     >
       {/* using this to close the nav when clicking outside if it is open. User events are disabled in the Outlet when nav is open */}
