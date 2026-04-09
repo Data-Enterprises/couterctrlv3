@@ -12,10 +12,11 @@ import {
 interface UpcScannerProps {
   containerClassName?: string;
   handleScan: () => void;
-  onClear?: () => void;
+  onClear: () => void;
   isFiltering?: boolean;
   handleFilter?: () => void;
   totalItems?: number;
+  setUpcSearch?: (value: string) => void;
 }
 
 const UpcScanner = ({
@@ -25,6 +26,7 @@ const UpcScanner = ({
   isFiltering = false,
   handleFilter,
   totalItems,
+  setUpcSearch = () => {},
 }: UpcScannerProps) => {
   const dispatch = useAppDispatch();
   const ref = useRef<HTMLDivElement>(null);
@@ -34,6 +36,14 @@ const UpcScanner = ({
     video: { facingMode: "environment", width: 1280, height: 720 },
   };
   const { devices } = useMediaDevices({ constraints });
+
+  useEffect(() => {
+    return () => {
+      Quagga.stop();
+      Quagga.offDetected();
+      dispatch(setPause(true));
+    };
+  }, []);
 
   useEffect(() => {
     if (devices) {
@@ -134,12 +144,13 @@ const UpcScanner = ({
   };
 
   const clear = () => {
-    if (onClear) onClear();
+    // if (onClear) onClear();
     dispatch(setError(""));
     dispatch(setPause(true));
   };
 
   const handleUpcChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUpcSearch(e.target.value);
     dispatch(setUpcCode(e.target.value));
   };
 
@@ -152,7 +163,9 @@ const UpcScanner = ({
         } mb-2 rounded-lg`}
         style={{ objectFit: "cover", height: "175px", width: "100%" }}
       />
-      <div className="text-[13px] font-medium">Search item {totalItems ? `- ${totalItems}` : ""}</div>
+      <div className="text-[13px] font-medium">
+        Search item {totalItems ? `- ${totalItems}` : ""}
+      </div>
       <div className="flex gap-1 items-center">
         <input
           type="text"
@@ -170,7 +183,7 @@ const UpcScanner = ({
         </button>
         <button
           data-testid="scan-button"
-          onClick={clear}
+          onClick={onClear}
           className="btn-themeOrange px-4 py-1.5 text-[13.5px]"
         >
           Clear

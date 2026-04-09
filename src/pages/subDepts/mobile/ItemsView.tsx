@@ -6,6 +6,7 @@ import {
   setItemDataFilteredMobile,
   setScannedItemHistory,
   setScannedItemMobile,
+  setUpcSearch,
 } from "../../../features/subMarginSlice";
 import type { JsonError } from "../../../interfaces";
 import { getItemLookupSingleStore } from "../../../api/itemLookup";
@@ -20,6 +21,7 @@ import ItemHistoryStatic from "./ItemHistoryStatic";
 import type { BarData } from "../display/widgets";
 import DayTotalsHeader from "./DayTotalsHeader";
 import TotalsHeader from "./TotalsHeader";
+import { WarningIcon } from "../../../components/toasts/Icons";
 
 interface ItemsViewProps {
   barData: BarData[];
@@ -76,6 +78,7 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
     dispatch(setScannedItemMobile(null));
     dispatch(setScannedItemHistory([]));
     dispatch(setUpcCode(""));
+    dispatch(setUpcSearch(""));
     dispatch(setError(""));
   };
 
@@ -92,6 +95,12 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
       resetFilteredItems();
     }
   }, [ctx.selectedWeekDay]);
+
+  const subDept = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId);
+
+  const handleUpcSearchText = (value: string) => {
+    dispatch(setUpcSearch(value));
+  };
 
   return (
     <div className="text-[13.5px]">
@@ -112,16 +121,36 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
         isFiltering={true}
         handleFilter={filterItemsByUpc}
         totalItems={ctx.filteredItemDataMobile.length}
+        setUpcSearch={handleUpcSearchText}
       />
       {!ctx.scannedItemMobile ? (
-        <div className="grid m-2 max-h-[calc(100vh-17rem)] rounded-lg shadow-md overflow-y-auto">
-          {ctx.filteredItemDataMobile.map((item, i) => (
-            <ItemCard key={i} item={item} handleClick={handleScanItem} />
-          ))}
+        <div>
+          {ctx.filteredItemDataMobile.length ? (
+            <div className="grid m-2 max-h-[calc(100vh-17rem)] rounded-lg shadow-md overflow-y-auto">
+              {ctx.filteredItemDataMobile.map((item, i) => (
+                <ItemCard key={i} item={item} handleClick={handleScanItem} />
+              ))}
+            </div>
+          ) : (
+            <div className="w-full mt-4 flex flex-col items-center justify-center text-content/60 font-medium">
+              <div className="text-center p-2 rounded-lg shadow-lg bg-custom-white flex flex-col items-center gap-1">
+                <WarningIcon height={60} width={60} fill="rgb(249 115 22)" />
+                <div className="text-orange-500">
+                  No items found with UPC containing
+                </div>
+                <div>"{scan.upcCode}"</div>
+                <div>Sub Dept: {subDept!.desc}</div>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
-        <div className="m-2 max-h-[calc(100vh-17rem)] overflow-y-auto rounded-lg">
+        <div className="m-2 rounded-lg">
           <ItemCardSingle item={ctx.scannedItemMobile} />
+          <div className="grid grid-cols-2 h-0.5">
+            <div className="bg-gradient-to-r from-blue-200 to-custom-white"></div>
+            <div className="bg-gradient-to-l from-blue-200 to-custom-white"></div>
+          </div>
           <ItemHistoryStatic />
         </div>
       )}

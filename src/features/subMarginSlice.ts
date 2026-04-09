@@ -85,6 +85,7 @@ interface SubMarginState {
   searchedItemMobile: ItemRowMobile | null;
   mobileMainView: MobileMainView;
   viewDaily:boolean;
+  upcSearch: string;
 }
 
 const initialState: SubMarginState = {
@@ -134,6 +135,7 @@ const initialState: SubMarginState = {
   searchedItemMobile: null,
   mobileMainView: "overview",
   viewDaily: false,
+  upcSearch: "",
 };
 
 const subMarginSlice = createSlice({
@@ -341,6 +343,9 @@ const subMarginSlice = createSlice({
     setViewDaily: (state, action: PayloadAction<boolean>) => {
       state.viewDaily = action.payload;
     },
+    setUpcSearch: (state, action: PayloadAction<string>) => {
+      state.upcSearch = action.payload;
+    },
     resetSubMarginState: () => initialState,
   },
 });
@@ -387,5 +392,6 @@ export const {
   setMobileMainView,
   setViewDaily,
   setSearchedItemMobile,
+  setUpcSearch,
 } = subMarginSlice.actions;
 export default subMarginSlice.reducer;

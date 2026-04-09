@@ -27,12 +27,14 @@ const ScanView = () => {
     }
   }, [ctx.viewDaily]);
 
+  const subDept = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId);
+
   const handleScan = () => {
     setMsg("");
     const upc = scan.upcCode;
     const item = ctx.itemDataMobile.find((item) => item.product_code === upc);
     if (!item) {
-      setMsg("Item not found in current data");
+      setMsg(`Item not found in Sub Department: ${subDept!.desc}`);
       return;
     }
 
@@ -54,6 +56,7 @@ const ScanView = () => {
     dispatch(setScannedItemMobile(null));
     dispatch(setScannedItemHistory([]));
     dispatch(setUpcCode(""));
+    setMsg("");
   };
 
   return (
