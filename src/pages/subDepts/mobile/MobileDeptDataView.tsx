@@ -8,6 +8,7 @@ import {
   setItemDataMobile,
   setMobileMainView,
   setProcessMobileItemData,
+  setScannedItemMobile,
   setSelectedSubDeptId,
   setViewDaily,
 } from "../../../features/subMarginSlice";
@@ -30,6 +31,7 @@ const MobileDeptDataView = () => {
   const handleMainView = (isResetting: boolean) => {
     if (!ctx.viewDaily) dispatch(setViewDaily(true));
     // dispatch(setViewDaily(false));
+    dispatch(setScannedItemMobile(null));
     dispatch(setMobileMainView("overview"));
     dispatch(setUpcCode(""));
     if (isResetting) dispatch(setSelectedSubDeptId(0));

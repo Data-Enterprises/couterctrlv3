@@ -86,6 +86,7 @@ const ScanView = ({ dates }: ScanViewProps) => {
     dispatch(setScannedItemMobile(null));
     dispatch(setScannedItemHistory([]));
     dispatch(setUpcCode(""));
+    dispatch(setSelectedWeekDay(""))
     setMsg("");
   };
 
