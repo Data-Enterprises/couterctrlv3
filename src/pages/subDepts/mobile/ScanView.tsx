@@ -155,6 +155,9 @@ const ScanView = ({ dates }: ScanViewProps) => {
       return acc;
     }, {} as ItemRowMobile);
 
+    reduced.margin =
+      ((reduced.total_sales - reduced.cogs) / reduced.total_sales) * 100 || 0;
+
     // console.log("filtered", filtered);
     // console.log("reduced", reduced);
     dispatch(setScannedItemMobile(reduced));
