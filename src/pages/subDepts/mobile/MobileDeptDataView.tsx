@@ -149,7 +149,7 @@ const MobileDeptDataView = () => {
                   ))}
               </div>
             ) : (
-              <ScanView />
+              <ScanView dates={dates} />
             )}
           </div>
         </div>

@@ -123,7 +123,8 @@ const ItemLookup = () => {
     dispatch(setError(""));
   };
 
-  const scanItem = () => {
+  // This may not work
+  const scanItem = (upcCode: string) => {
     return selectedStore > 0 ? getSingleStoreData(upcCode) : getData(upcCode);
   };
 

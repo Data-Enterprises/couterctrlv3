@@ -48,8 +48,8 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
       .finally(() => dispatch(setFetchingItemHistory(false)));
   };
 
-  const scanItem = () => {
-    handleScanItem(scan.upcCode);
+  const scanItem = (upc: string) => {
+    handleScanItem(upc);
   };
 
   const resetFilteredItems = () => {
@@ -83,9 +83,9 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
   };
 
   // Testing to see if this is necessary => works
-  const filterItemsByUpc = () => {
+  const filterItemsByUpc = (upc: string) => {
     const filtered = ctx.itemDataMobile.filter((item) =>
-      item.product_code.includes(scan.upcCode),
+      item.product_code.includes(upc),
     );
     dispatch(setItemDataFilteredMobile(filtered));
   };

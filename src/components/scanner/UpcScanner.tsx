@@ -8,13 +8,14 @@ import {
   setPause,
   setUpcCode,
 } from "../../features/itemScanSlice";
+import { normalizeUpc } from ".";
 
 interface UpcScannerProps {
   containerClassName?: string;
-  handleScan: () => void;
+  handleScan: (upc: string) => void;
   onClear: () => void;
   isFiltering?: boolean;
-  handleFilter?: () => void;
+  handleFilter?: (upc: string) => void;
   totalItems?: number;
   setUpcSearch?: (value: string) => void;
 }
@@ -66,9 +67,9 @@ const UpcScanner = ({
       if (state.upcCode.length) {
         // run the passed in scan item function here
         if (isFiltering && handleFilter) {
-          handleFilter();
+          handleFilter(state.upcCode);
         } else {
-          handleScan();
+          handleScan(state.upcCode);
         }
         return;
       }
@@ -93,6 +94,12 @@ const UpcScanner = ({
               height: { min: 480, ideal: 720, max: 1080 },
               facingMode: { exact: "environment" },
               deviceId: state.deviceId,
+            },
+            area: {
+              top: "30%",
+              bottom: "30%",
+              left: "10%",
+              right: "10%",
             },
           },
           decoder: {
@@ -119,12 +126,16 @@ const UpcScanner = ({
 
         ref.current!.style.display = "none";
         const code = result.codeResult.code;
-        dispatch(setUpcCode(code!));
+        let normalizedUpc = "";
+        if (code) {
+          normalizedUpc = normalizeUpc(code);
+        }
+        dispatch(setUpcCode(normalizedUpc));
         // Run the passed in scan item function here with the scanned upc code
         if (isFiltering && handleFilter) {
-          handleFilter();
+          handleFilter(normalizedUpc);
         } else {
-          handleScan();
+          handleScan(normalizedUpc);
         }
         dispatch(setPause(true));
       });

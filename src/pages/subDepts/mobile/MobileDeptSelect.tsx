@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useAppDispatch } from "../../../hooks";
 import { useParams, useSubMarginCtx } from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -28,15 +27,15 @@ import {
   CalendarIcon,
 } from "@heroicons/react/24/solid";
 
-const MobileDeptSelect = () => {
+interface MobileDeptSelectProps {
+  warning: boolean;
+}
+
+const MobileDeptSelect = ({ warning }: MobileDeptSelectProps) => {
   const ctx = useSubMarginCtx();
   const params = useParams();
   const toast = useToast();
   const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    dispatch(setSubDepts([]));
-  }, [ctx.searchValue]);
 
   const getData = (week: number, id: number) => {
     const subs = [...ctx.subDepts];
@@ -116,12 +115,12 @@ const MobileDeptSelect = () => {
     ctx.assignedStores.find((s) => s.storeid === ctx.searchValue)?.store_name ||
     "";
 
-  if (!ctx.subDepts.length && !ctx.loadingSubDepts) {
+  if (!ctx.searchValue && !ctx.loadingSubDepts) {
     return (
-      <div className="bg-custom-white m-4 px-2 py-4 rounded-lg shadow-md text-[14px] text-center font-medium">
+      <div className="bg-custom-white m-2 px-2 py-4 rounded-lg shadow-md text-[14px] text-center font-medium">
         <div className="flex gap-2 translate-x-[20%]">
           <BuildingStorefrontIcon className="w-6 h-6 text-blue-500" />
-          <div>{storeName}</div>
+          <div className={`${warning ? "text-orange-500" : ""}`}>{warning ? "Please select a store" :storeName}</div>
         </div>
         <div className="flex gap-2 translate-x-[20%]">
           <CalendarIcon className="w-6 h-6 text-blue-500" />
