@@ -152,7 +152,7 @@ const MobileDeptSelect = ({ warning }: MobileDeptSelectProps) => {
         </div>
         <div>{storeName}</div>
       </div>
-      <div className="flex flex-wrap gap-2 p-2 max-h-[calc(100vh-283px)] overflow-y-auto">
+      <div className="grid grid-cols-2 gap-2 p-2 max-h-[calc(100vh-283px)] overflow-y-auto">
         {ctx.subDepts.map((s, i) => (
           <div
             key={i}

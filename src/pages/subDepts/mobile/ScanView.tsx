@@ -170,6 +170,7 @@ const ScanView = ({ dates }: ScanViewProps) => {
       {!ctx.scannedItemMobile && (
         <UpcScanner handleScan={handleScan} onClear={clear} />
       )}
+      {/* <UpcScanner handleScan={handleScan} onClear={clear} /> */}
       {msg.length ? (
         <div className="w-full mt-4 flex flex-col items-center justify-center text-content/60 font-medium">
           <div className="text-center p-2 rounded-lg shadow-lg bg-custom-white flex flex-col items-center gap-1 w-full">
@@ -184,7 +185,7 @@ const ScanView = ({ dates }: ScanViewProps) => {
         <div className="text-[13px] rounded-lg">
           <div className="grid grid-cols-4 text-center gap-2 mb-2">
             <div
-              className={`${ctx.selectedWeekDay === "" ? "bg-orange-200" : ""} rounded-full bg-custom-white px-0 py-0.5`}
+              className={`${ctx.selectedWeekDay === "" ? "bg-orange-200 font-medium" : ""} rounded-full bg-custom-white px-0 py-0.5`}
               onClick={() => setWeekDay("")}
             >
               All Dates
@@ -192,14 +193,15 @@ const ScanView = ({ dates }: ScanViewProps) => {
             {activeDates.map((d, i) => (
               <div
                 key={i}
-                className={`${activeDateStyle(d) ? "bg-orange-200" : ""} rounded-full bg-custom-white px-0 py-0.5`}
+                className={`${activeDateStyle(d) ? "bg-orange-200 font-medium" : ""} rounded-full bg-custom-white px-0 py-0.5`}
                 onClick={() => setWeekDay(d)}
               >
                 {formatDteStr(d)}
               </div>
             ))}
             <div
-              className="rounded-full bg-custom-white px-0 py-0.5"
+              className="rounded-full bg-orange-500 text-custom-white font-medium px-0 py-0.5"
+              // className="rounded-full bg-custom-white px-0 py-0.5"
               onClick={clear}
             >
               Clear

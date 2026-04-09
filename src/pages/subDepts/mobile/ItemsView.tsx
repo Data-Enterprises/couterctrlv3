@@ -36,7 +36,12 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
   const handleScanItem = (upc: string) => {
     dispatch(setScannedItemHistory([]));
     dispatch(setFetchingItemHistory(true));
-    // dispatch(setItemHistoryModalOpen(true));
+
+    // Setting the upc search string here for SDM so when you press Close on ItemHistoryStatic, 
+    // it will set scan.upcCode to this code to maintain the filtered item list.
+    // The clear function here will reset the same value along side scan.upcCode to reset the item list when you press Clear.
+    dispatch(setUpcSearch(upc));
+    
     getItemLookupSingleStore(ctx.url, ctx.token, upc, ctx.searchValue)
       .then((resp) => {
         const j = resp.data;

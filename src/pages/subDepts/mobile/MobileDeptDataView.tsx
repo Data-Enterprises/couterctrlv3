@@ -1,7 +1,8 @@
 import { useEffect, useMemo } from "react";
+import { useSubMarginCtx } from "../hooks";
+
 import { formatSubDate, reduceItemData } from ".";
 import { calculateCogs } from "..";
-import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import {
   setItemDataFilteredMobile,
   setItemDataMobile,
@@ -13,12 +14,14 @@ import {
 import { gpm } from "../../../functions";
 import { useAppDispatch } from "../../../hooks";
 import type { BarData } from "../display/widgets";
-import { useSubMarginCtx } from "../hooks";
+
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import MarginDayCardOverview from "./MarginDayCardOverview";
 import ItemsView from "./ItemsView";
 import ScanView from "./ScanView";
 import ItemHistoryModal from "./ItemHistoryModal";
 import TotalsHeader from "./TotalsHeader";
+
 const MobileDeptDataView = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
@@ -129,7 +132,7 @@ const MobileDeptDataView = () => {
             className="btn-themeBlue py-1.5 px-0 text-[13.5px]"
             onClick={() => handleMainView(false)}
           >
-            Overview
+            View Daily
           </button>
         )}
       </div>
