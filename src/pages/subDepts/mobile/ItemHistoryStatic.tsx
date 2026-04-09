@@ -23,7 +23,11 @@ type QtyGrouped = {
   items: ItemLookupHistory[];
 };
 
-const ItemHistoryStatic = () => {
+interface ItemHistoryStaticProps {
+  showClose?: boolean;
+}
+
+const ItemHistoryStatic = ({ showClose = true }: ItemHistoryStaticProps) => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
   const [dateRange, setDateRange] = useState<string>("");
@@ -225,9 +229,11 @@ const ItemHistoryStatic = () => {
     dispatch(setUpcCode(ctx.upcSearch));
   };
 
+  const maxHeight = showClose ? "max-h-[40vh]" : "max-h-[45vh]";
+
   return (
     <div className="bg-custom-white p-2 rounded-b-lg shadow-md">
-      <div className="max-h-[40vh] overflow-y-auto">
+      <div className={`${maxHeight} overflow-y-auto`}>
         <div className="mb-1 pb-1 ">
           {/* Summary */}
           <div className="font-medium mb-2">{dateRange}</div>
@@ -392,9 +398,11 @@ const ItemHistoryStatic = () => {
           })}
         </div>
       </div>
-      <button className="btn-themeOrange px-0 w-full" onClick={handleClose}>
-        Close
-      </button>
+      {showClose ? (
+        <button className="btn-themeOrange px-0 w-full" onClick={handleClose}>
+          Close
+        </button>
+      ) : null}
     </div>
   );
 };

@@ -110,20 +110,18 @@ const MobileDeptSelect = () => {
   }
 
   return (
-    <div>
-      <div className="w-full text-center font-medium">
+    <div className="text-[13px] font-medium">
+      <div className="w-full px-2 text-[13.5px] text-center">
         {formatSubDate(params.start)} - {formatSubDate(params.end)}
       </div>
-      <div className="grid grid-cols-2 gap-2 p-2 max-h-[calc(100vh-283px)] overflow-y-auto">
+      <div className="flex flex-wrap gap-2 p-2 max-h-[calc(100vh-283px)] overflow-y-auto">
         {ctx.subDepts.map((s, i) => (
           <div
             key={i}
-            className="px-2 py-3 bg-custom-white rounded-lg shadow-md text-sm flex justify-between items-center"
+            className="p-2 bg-custom-white rounded-full shadow-md text-[13px] flex justify-between items-center"
             onClick={() => getData(1, s.id)}
           >
-            <div className="font-medium">
-              {s.id} - {s.desc}
-            </div>
+            <div className="font-medium text-center w-full">{s.desc}</div>
           </div>
         ))}
       </div>

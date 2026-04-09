@@ -64,13 +64,19 @@ const ScanView = () => {
       <UpcScanner handleScan={handleScan} onClear={clear} />
       {msg.length ? (
         <div className="h-16 font-medium flex items-center justify-center">
-          <div className="text-content/60 bg-custom-white p-2 rounded-lg shadow-md">{msg}</div>
+          <div className="text-content/60 bg-custom-white p-2 rounded-lg shadow-md">
+            {msg}
+          </div>
         </div>
       ) : null}
       {ctx.scannedItemMobile ? (
-        <div className="text-[13px] max-h-[59vh] overflow-y-auto rounded-lg">
+        <div className="text-[13px] rounded-lg">
           <ItemCardSingle item={ctx.scannedItemMobile} />
-          <ItemHistoryStatic />
+          <div className="grid grid-cols-2 h-0.5">
+            <div className="bg-gradient-to-r from-blue-200 to-custom-white"></div>
+            <div className="bg-gradient-to-l from-blue-200 to-custom-white"></div>
+          </div>
+          <ItemHistoryStatic showClose={false} />
         </div>
       ) : null}
     </div>
