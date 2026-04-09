@@ -25,13 +25,10 @@ import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import {
   BuildingStorefrontIcon,
   CalendarIcon,
+  BuildingOfficeIcon,
 } from "@heroicons/react/24/solid";
 
-interface MobileDeptSelectProps {
-  warning: boolean;
-}
-
-const MobileDeptSelect = ({ warning }: MobileDeptSelectProps) => {
+const MobileDeptSelect = () => {
   const ctx = useSubMarginCtx();
   const params = useParams();
   const toast = useToast();
@@ -115,26 +112,7 @@ const MobileDeptSelect = ({ warning }: MobileDeptSelectProps) => {
     ctx.assignedStores.find((s) => s.storeid === ctx.searchValue)?.store_name ||
     "";
 
-  if (!ctx.searchValue && !ctx.loadingSubDepts) {
-    return (
-      <div className="bg-custom-white m-2 px-2 py-4 rounded-lg shadow-md text-[14px] text-center font-medium">
-        <div className="flex gap-2 translate-x-[20%]">
-          <BuildingStorefrontIcon className="w-6 h-6 text-blue-500" />
-          <div className={`${warning ? "text-orange-500" : ""}`}>{warning ? "Please select a store" :storeName}</div>
-        </div>
-        <div className="flex gap-2 translate-x-[20%]">
-          <CalendarIcon className="w-6 h-6 text-blue-500" />
-          {formatSubDate(params.start)} - {formatSubDate(params.end)}
-        </div>
-        <div className="h-0.5 grid grid-cols-2 my-2">
-          <div className="bg-gradient-to-r from-blue-200 to-custom-white h-full"></div>
-          <div className="bg-gradient-to-l from-blue-200 to-custom-white h-full"></div>
-        </div>
-        <div>Press Search to view the selected store's</div>
-        <div>sub departments in the date range</div>
-      </div>
-    );
-  }
+  if (!ctx.loadingSubDepts && !ctx.subDepts.length) return null;
 
   if (ctx.loadingSubDepts) {
     return (
@@ -146,13 +124,24 @@ const MobileDeptSelect = ({ warning }: MobileDeptSelectProps) => {
 
   return (
     <div className="text-[13px] font-medium">
-      <div className="w-full px-2 text-[13.5px] flex justify-between items-center">
-        <div>
+      <div className="mt-2 mx-2 px-2 text-[13.5px] font-medium grid grid-cols-[2fr_1fr]">
+        <div className="flex gap-2 items-center col-span-2">
+          {/* <BuildingStorefrontIcon className="w-6 h-6 text-blue-500" /> */}
+          <BuildingOfficeIcon className="w-6 h-6 text-blue-500" />
+          <div>
+            {storeName}
+          </div>
+        </div>
+        <div className="flex gap-2 items-center">
+          <CalendarIcon className="w-6 h-6 text-blue-500" />
           {formatSubDate(params.start)} - {formatSubDate(params.end)}
         </div>
-        <div>{storeName}</div>
+        <div className="flex gap-2 items-center justify-end">
+          <BuildingStorefrontIcon className="w-6 h-6 text-blue-500" />
+          <div>{ctx.subDepts.length}</div>
+        </div>
       </div>
-      <div className="grid grid-cols-2 gap-2 p-2 max-h-[calc(100vh-283px)] overflow-y-auto">
+      <div className="grid grid-cols-2 gap-2 px-2 pb-2 mt-2 max-h-[calc(100vh-320px)] overflow-y-auto">
         {ctx.subDepts.map((s, i) => (
           <div
             key={i}

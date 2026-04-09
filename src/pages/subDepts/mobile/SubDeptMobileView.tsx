@@ -14,23 +14,20 @@ import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
 import SingleSelect from "../../../components/SingleSelect";
 import MobileDeptSelect from "./MobileDeptSelect";
 import MobileDeptDataView from "./MobileDeptDataView";
-import { useState } from "react";
 
 const SubDeptMobileView = () => {
   const ctx = useSubMarginCtx();
   const params = useParams();
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const [warning, setWarning] = useState<boolean>(false);
 
   const handleStoreSelect = (id: string | number) => {
-    if (warning) setWarning(false);
     dispatch(setSearchValue(Number(id)));
   };
 
   const handleSubDeptSearch = () => {
     if (!params.searchValue) {
-      setWarning(true);
+      toast.warn("Please select a store");
       return;
     }
     dispatch(requerySubDeptMargins());
@@ -94,7 +91,7 @@ const SubDeptMobileView = () => {
           Search
         </button>
       </div>
-      <MobileDeptSelect warning={warning} />
+      <MobileDeptSelect />
     </div>
   );
 };
