@@ -11,7 +11,6 @@ interface TotalsHeaderProps {
 const TotalsHeader = ({ barData }: TotalsHeaderProps) => {
   const ctx = useSubMarginCtx();
   const { assignedStores } = useAppSelector((state) => state.user);
-
   const sales = barData.sales;
   const tax = barData.tax;
   const qty = barData.qty;

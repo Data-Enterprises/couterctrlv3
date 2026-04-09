@@ -25,7 +25,6 @@ import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import {
   BuildingStorefrontIcon,
   CalendarIcon,
-  BuildingOfficeIcon,
 } from "@heroicons/react/24/solid";
 
 const MobileDeptSelect = () => {
@@ -108,10 +107,6 @@ const MobileDeptSelect = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
-  const storeName =
-    ctx.assignedStores.find((s) => s.storeid === ctx.searchValue)?.store_name ||
-    "";
-
   if (!ctx.loadingSubDepts && !ctx.subDepts.length) return null;
 
   if (ctx.loadingSubDepts) {
@@ -125,23 +120,16 @@ const MobileDeptSelect = () => {
   return (
     <div className="text-[13px] font-medium">
       <div className="mt-2 mx-2 px-2 text-[13.5px] font-medium grid grid-cols-[2fr_1fr]">
-        <div className="flex gap-2 items-center col-span-2">
-          {/* <BuildingStorefrontIcon className="w-6 h-6 text-blue-500" /> */}
-          <BuildingOfficeIcon className="w-6 h-6 text-blue-500" />
-          <div>
-            {storeName}
-          </div>
-        </div>
         <div className="flex gap-2 items-center">
           <CalendarIcon className="w-6 h-6 text-blue-500" />
           {formatSubDate(params.start)} - {formatSubDate(params.end)}
         </div>
         <div className="flex gap-2 items-center justify-end">
           <BuildingStorefrontIcon className="w-6 h-6 text-blue-500" />
-          <div>{ctx.subDepts.length}</div>
+          <div>{ctx.subDepts.length} Sub Depts</div>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2 px-2 pb-2 mt-2 max-h-[calc(100vh-320px)] overflow-y-auto">
+      <div className="grid grid-cols-2 gap-2 px-2 pb-2 mt-2 max-h-[calc(100vh-310px)] overflow-y-auto">
         {ctx.subDepts.map((s, i) => (
           <div
             key={i}
