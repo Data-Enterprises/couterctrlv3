@@ -33,15 +33,24 @@ const ScanView = ({ dates }: ScanViewProps) => {
   useEffect(() => {
     // This is setting the active dates for the scanned item
     if (ctx.scannedItemMobile !== null) {
+      console.log(
+        ctx.margins.filter(
+          (margin) =>
+            margin.product_code.includes("1200000017")
+            // margin.sale_date.split("T")[0] === "2026-04-05",
+        ),
+      );
       const viewDates = ctx.margins
         .filter((margin) => {
           const matchesUpc = margin.product_code.includes(scan.upcCode);
-          const matchesDate = dates.length
-            ? dates.includes(margin.sale_date.split("T")[0])
-            : true;
+          const matchesDate =
+            dates.indexOf(margin.sale_date.split("T")[0]) > -1;
           return matchesUpc && matchesDate;
         })
         .map((margin) => margin.sale_date.split("T")[0]);
+
+      // console.log("view dates", viewDates);
+      // console.log(dates, viewDates);
       setActiveDates(viewDates);
     }
   }, [dates, ctx.scannedItemMobile]);
@@ -86,7 +95,7 @@ const ScanView = ({ dates }: ScanViewProps) => {
     dispatch(setScannedItemMobile(null));
     dispatch(setScannedItemHistory([]));
     dispatch(setUpcCode(""));
-    dispatch(setSelectedWeekDay(""))
+    dispatch(setSelectedWeekDay(""));
     setMsg("");
   };
 

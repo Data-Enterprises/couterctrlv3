@@ -37,11 +37,11 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
     dispatch(setScannedItemHistory([]));
     dispatch(setFetchingItemHistory(true));
 
-    // Setting the upc search string here for SDM so when you press Close on ItemHistoryStatic, 
+    // Setting the upc search string here for SDM so when you press Close on ItemHistoryStatic,
     // it will set scan.upcCode to this code to maintain the filtered item list.
     // The clear function here will reset the same value along side scan.upcCode to reset the item list when you press Clear.
     dispatch(setUpcSearch(upc));
-    
+
     getItemLookupSingleStore(ctx.url, ctx.token, upc, ctx.searchValue)
       .then((resp) => {
         const j = resp.data;
@@ -89,10 +89,25 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
 
   // Testing to see if this is necessary => works
   const filterItemsByUpc = (upc: string) => {
-    const filtered = ctx.itemDataMobile.filter((item) =>
-      item.product_code.includes(upc),
-    );
-    dispatch(setItemDataFilteredMobile(filtered));
+    const dateComp = ctx.selectedWeekDay
+      ? new Date(ctx.selectedWeekDay).toISOString().split("T")[0]
+      : "";
+
+    const filtered = ctx.margins.filter((margin) => {
+      const matchesDate = dateComp
+        ? margin.sale_date.split("T")[0] === dateComp
+        : true;
+        const matchesUpc = margin.product_code.includes(upc);
+      return matchesDate && matchesUpc;
+    });
+
+    const reduced = reduceItemData(filtered);
+    const newData = reduced.map((item) => ({
+      ...item,
+      margin: ((item.total_sales - item.cogs) / item.total_sales) * 100 || 0,
+    }));
+
+    dispatch(setItemDataFilteredMobile(newData));
   };
 
   useEffect(() => {

@@ -39,7 +39,7 @@ const TotalsHeader = ({ barData }: TotalsHeaderProps) => {
   const endDate = barData[barData.length - 1].date;
 
   const handleAllDates = () => {
-    if (ctx.viewDaily) {
+    if (ctx.viewDaily && ctx.mobileMainView === "overview") {
       dispatch(setMobileMainView("items"));
       dispatch(setSelectedWeekDay(""));
     }

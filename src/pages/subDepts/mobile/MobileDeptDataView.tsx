@@ -30,7 +30,6 @@ const MobileDeptDataView = () => {
 
   const handleMainView = (isResetting: boolean) => {
     if (!ctx.viewDaily) dispatch(setViewDaily(true));
-    // dispatch(setViewDaily(false));
     dispatch(setScannedItemMobile(null));
     dispatch(setMobileMainView("overview"));
     dispatch(setUpcCode(""));
@@ -134,13 +133,13 @@ const MobileDeptDataView = () => {
           Sub Depts
         </button>
         <button
-          className={`btn-themeBlue ${!ctx.viewDaily ? "opacity-50 pointer-events-none" : ""} py-1.5 px-0 text-[13.5px]`}
+          className={`btn-themeBlue py-1.5 px-0 text-[13.5px]`}
           onClick={handleScanView}
         >
           Search
         </button>
         <button
-          className={`btn-themeBlue ${ctx.viewDaily ? "opacity-50 pointer-events-none" : ""} py-1.5 px-0 text-[13.5px]`}
+          className={`btn-themeBlue py-1.5 px-0 text-[13.5px]`}
           onClick={() => handleMainView(false)}
         >
           View Daily

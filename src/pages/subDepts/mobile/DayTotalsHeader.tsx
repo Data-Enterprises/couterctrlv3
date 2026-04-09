@@ -1,12 +1,8 @@
 import { useSubMarginCtx } from "../hooks";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppSelector } from "../../../hooks";
 import type { BarData } from "../display/widgets";
 import { gpm } from "../../../functions";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
-import {
-  setMobileMainView,
-  setSelectedWeekDay,
-} from "../../../features/subMarginSlice";
 
 interface TotalsHeaderProps {
   barData: BarData;
@@ -14,7 +10,6 @@ interface TotalsHeaderProps {
 
 const TotalsHeader = ({ barData }: TotalsHeaderProps) => {
   const ctx = useSubMarginCtx();
-  const dispatch = useAppDispatch();
   const { assignedStores } = useAppSelector((state) => state.user);
 
   const sales = barData.sales;
@@ -23,13 +18,6 @@ const TotalsHeader = ({ barData }: TotalsHeaderProps) => {
   const cogs = barData.cogs;
   const margin = gpm(sales, cogs);
   const date = barData.date;
-
-  const handleAllDates = () => {
-    if (ctx.viewDaily) {
-      dispatch(setMobileMainView("items"));
-      dispatch(setSelectedWeekDay(""));
-    }
-  };
 
   const findStoreName = () => {
     return (
@@ -44,10 +32,7 @@ const TotalsHeader = ({ barData }: TotalsHeaderProps) => {
   };
 
   return (
-    <div
-      className="text-[13px] pb-2 px-2 grid grid-cols-2 bg-custom-white rounded-lg shadow-md"
-      onClick={handleAllDates}
-    >
+    <div className="text-[13px] pb-2 px-2 grid grid-cols-2 bg-custom-white rounded-lg shadow-md">
       <div>
         <div className="font-medium">{findStoreName()}</div>
         <div className="font-medium">{findSubDeptName()}</div>
