@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { useSubMarginCtx } from "../hooks";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+
 import {
   resetMobileSort,
   setFetchingItemHistory,
@@ -12,26 +14,28 @@ import {
   type MobileSort,
   type SortOption,
 } from "../../../features/subMarginSlice";
-import type { JsonError } from "../../../interfaces";
-import { getItemLookupSingleStore } from "../../../api/itemLookup";
-import { useToast } from "../../../components/toasts/hooks/useToast";
 import { setError, setUpcCode } from "../../../features/itemScanSlice";
+
+import type { JsonError } from "../../../interfaces";
+import type { BarData, ItemRowMobile } from "../display/widgets";
+
+import { getItemLookupSingleStore } from "../../../api/itemLookup";
 import { reduceItemData } from ".";
 
 import ItemCard from "./ItemCard";
 import UpcScanner from "../../../components/scanner/UpcScanner";
 import ItemCardSingle from "./ItemCardSingle";
 import ItemHistoryStatic from "./ItemHistoryStatic";
-import type { BarData, ItemRowMobile } from "../display/widgets";
 import DayTotalsHeader from "./DayTotalsHeader";
 import TotalsHeader from "./TotalsHeader";
 import { WarningIcon } from "../../../components/toasts/Icons";
+import { ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/solid";
 
 interface ItemsViewProps {
   barData: BarData[];
 }
 
-type Option = {label: string, value: SortOption}
+type Option = { label: string; value: SortOption };
 const sortOptions: Option[] = [
   { label: "Sales", value: "total_sales" },
   { label: "COGS", value: "cogs" },
@@ -132,6 +136,7 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
   useEffect(() => {
     if (ctx.subDeptGridView === "item") {
       resetFilteredItems();
+      dispatch(resetMobileSort());
     }
   }, [ctx.selectedWeekDay]);
 
@@ -152,30 +157,41 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
   };
 
   const activeSortStyle = (option: SortOption) => {
-    return ctx.mSort[option].length > 0 ? "bg-orange-200" : "bg-custom-white";
+    return ctx.mSort[option].length > 0 ? "bg-orange-200 font-medium" : "bg-custom-white";
+  };
+
+  const renderIcon = (option: SortOption) => {
+    if (ctx.mSort[option] === "asc") {
+      return <ArrowUpIcon className="w-[13px] h-[13px] stroke-current" />;
+    } else if (ctx.mSort[option] === "desc") {
+      return <ArrowDownIcon className="w-[13px] h-[13px] stroke-current" />;
+    }
+    return null;
   };
 
   const itemListDisplay = () => {
-    const result = ctx.filteredItemDataMobile;
+    // light copy to avoid mutating state in sort function
+    const result = [...ctx.filteredItemDataMobile];
+
+    // Grabbing the individual options and their sort directions
     const props = Object.entries(ctx.mSort);
     const sortBy = props.filter((sort) => sort[1].length > 0)[0];
-    console.log(sortBy);
 
+    // if the sortBy found is not an empty array, we are sorting
     if (sortBy) {
-      const sortKey = sortBy[0] as keyof ItemRowMobile;
-      const sortDirection = sortBy[1] as MobileSort;
-      return [...result].sort((a, b) => {
-        console.log(a[sortKey], b[sortKey]);
+      const sortKey = sortBy[0] as keyof ItemRowMobile; // total_sales, cogs, margin, or qty
+      const sortDirection = sortBy[1] as MobileSort; // determines the control flow in the sort method below for asc or desc
+      return result.sort((a, b) => {
         if (sortDirection === "asc") {
           return a[sortKey] > b[sortKey] ? 1 : -1;
         } else {
           return a[sortKey] < b[sortKey] ? 1 : -1;
         }
       });
-    } else {
-      // Once the above sorting is implemented,this is the default return (no sort)
-      return result;
     }
+
+    // Returns by default initially and when the sorting options are reset or toggled off
+    return result;
   };
 
   return (
@@ -209,6 +225,7 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
                 onClick={() => setSort(option.value as SortOption)}
               >
                 <div>{option.label}</div>
+                <div className="ml-1">{renderIcon(option.value)}</div>
               </div>
             ))}
           </div>

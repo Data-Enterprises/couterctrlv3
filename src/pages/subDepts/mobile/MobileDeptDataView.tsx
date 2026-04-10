@@ -10,6 +10,7 @@ import {
   setProcessMobileItemData,
   setScannedItemMobile,
   setSelectedSubDeptId,
+  setSelectedWeekDay,
   setViewDaily,
 } from "../../../features/subMarginSlice";
 import { gpm } from "../../../functions";
@@ -23,6 +24,7 @@ import ScanView from "./ScanView";
 import ItemHistoryModal from "./ItemHistoryModal";
 import TotalsHeader from "./TotalsHeader";
 import { setUpcCode } from "../../../features/itemScanSlice";
+import DayTotalsHeader from "./DayTotalsHeader";
 
 const MobileDeptDataView = () => {
   const ctx = useSubMarginCtx();
@@ -40,6 +42,7 @@ const MobileDeptDataView = () => {
     dispatch(setViewDaily(false));
     dispatch(setMobileMainView("overview"));
     dispatch(setUpcCode(""));
+    dispatch(setSelectedWeekDay(""));
   };
 
   useEffect(() => {
@@ -149,7 +152,17 @@ const MobileDeptDataView = () => {
       {/* Overview and Items views */}
       {ctx.mobileMainView === "overview" ? (
         <div className="px-2 rounded-lg">
-          <TotalsHeader barData={barData} />
+          {/* <TotalsHeader barData={barData} /> */}
+          {ctx.selectedWeekDay.length ? (
+            <DayTotalsHeader
+              barData={
+                barData.filter((bd) => bd.date === ctx.selectedWeekDay)[0]
+              }
+            />
+          ) : (
+            <TotalsHeader barData={barData} />
+          )}
+          {/* {ctx.selected} */}
           <div className="mt-2">
             {ctx.viewDaily ? (
               <div className="shadow-md">
