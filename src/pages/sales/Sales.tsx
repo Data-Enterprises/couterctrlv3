@@ -15,7 +15,7 @@ import SubDeptComps from "./charts/SubDeptComps";
 import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import SubsCompareModal from "./subsCompare/SubsCompareModal";
-import SalesMobile from "./mobile/SalesMobile";
+// import SalesMobile from "./mobile/SalesMobile";
 
 // Dispatchers
 import {
@@ -44,8 +44,8 @@ const Sales = () => {
 
   // On mount, get data if user prefs has a last store or group, meaning there is a last search type as well
   useEffect(() => {
-    if ((search.lastStore > 0 || search.lastGroup > 0) && context.isDesktop) {
-    // if (search.lastStore > 0 || search.lastGroup > 0) {
+    // if ((search.lastStore > 0 || search.lastGroup > 0) && context.isDesktop) {
+    if (search.lastStore > 0 || search.lastGroup > 0) {
       getSalesPanels();
     }
   }, []);
@@ -93,7 +93,7 @@ const Sales = () => {
       });
   };
 
-  if (context.isMobile) return <SalesMobile />;
+  // if (context.isMobile) return <SalesMobile />;
 
   const pageContainer = context.isDesktop
     ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none"
