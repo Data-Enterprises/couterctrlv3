@@ -123,7 +123,7 @@ const itemLookupSlice = createSlice({
         totalSales: number;
         totalQty: number;
         avgPrice: number;
-      }>
+      }>,
     ) => {
       state.totalStores = action.payload.totalStores;
       state.totalSales = action.payload.totalSales;
@@ -139,7 +139,7 @@ const itemLookupSlice = createSlice({
     },
     setItemLookupHistory: (
       state,
-      action: PayloadAction<ItemLookupHistory[]>
+      action: PayloadAction<ItemLookupHistory[]>,
     ) => {
       state.itemLookupHistory = action.payload;
     },
@@ -151,6 +151,27 @@ const itemLookupSlice = createSlice({
     },
     setPause: (state, action: PayloadAction<boolean>) => {
       state.pause = action.payload;
+    },
+    reQueryUpc: (state) => {
+      state.upcCode = "";
+      state.mode = "Sales";
+      state.topStoreSales = null;
+      state.lowestStoreSales = null;
+      state.topStoreQty = null;
+      state.lowestStoreQty = null;
+      state.highestPriceStore = null;
+      state.lowestPriceStore = null;
+      state.totalStores = 0;
+      state.productCode = "";
+      state.description = "";
+      state.totalSales = 0;
+      state.totalQty = 0;
+      state.avgPrice = 0;
+      state.itemsLoaded = false;
+      // state.selectedStore = 0;
+      state.itemLookupHistory = [];
+      state.daysSold = 0;
+      state.pause = true;
     },
     resetLookupSlice: () => initialState,
   },
@@ -169,6 +190,7 @@ export const {
   setItemLookupHistory,
   setHistoryMetrics,
   setPause,
+  reQueryUpc,
 } = itemLookupSlice.actions;
 
 export default itemLookupSlice.reducer;
