@@ -2,7 +2,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { HourlySale, SubSale, TopTenItem, WeeklySale } from '../interfaces';
 import type { TopSub } from '../pages/sales/components';
 
-export type SalesMobileView = 'sales' | 'subdept';
+export type SalesMobileView = 'main' | 'sales' | 'subdept';
 
 interface SalesMobileState {
   topTenItems: TopTenItem[];
@@ -29,7 +29,7 @@ const initialState: SalesMobileState = {
   subSalesWk4: [],
   topSubDept: null,
   panelsLoading: false,
-  view: 'sales',
+  view: 'main',
 };
 
 const salesMobileSlice = createSlice({
@@ -66,6 +66,9 @@ const salesMobileSlice = createSlice({
     setMobilePanelsLoading: (state, action: PayloadAction<boolean>) => {
       state.panelsLoading = action.payload;
     },
+    setView: (state, action: PayloadAction<SalesMobileView>) => {
+      state.view = action.payload;
+    },
     resetMobileSalesState: () => initialState,
   }
 });
@@ -82,5 +85,6 @@ export const {
   setMobileTopSubDept,
   setMobilePanelsLoading,
   resetMobileSalesState,
+  setView,
 } = salesMobileSlice.actions;
 export default salesMobileSlice.reducer;

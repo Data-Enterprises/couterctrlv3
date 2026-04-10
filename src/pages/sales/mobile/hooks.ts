@@ -14,6 +14,7 @@ export const useMobileSalesCtx = () => {
     subSalesWk4,
     topSubDept,
     topTenItems,
+    view,
   } = useAppSelector((state) => state.salesMobile);
 
   const { token, url } = useAppSelector((state) => state.app);
@@ -49,5 +50,6 @@ export const useMobileSalesCtx = () => {
     type,
     url,
     useGroups,
+    view,
   };
 };
