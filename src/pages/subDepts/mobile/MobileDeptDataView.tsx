@@ -162,7 +162,6 @@ const MobileDeptDataView = () => {
           ) : (
             <TotalsHeader barData={barData} />
           )}
-          {/* {ctx.selected} */}
           <div className="mt-2">
             {ctx.viewDaily ? (
               <div className="shadow-md">
