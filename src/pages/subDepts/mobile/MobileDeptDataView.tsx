@@ -127,22 +127,22 @@ const MobileDeptDataView = () => {
       <ItemHistoryModal />
       <div className="w-full p-2 grid grid-cols-3 gap-2">
         <button
-          className="btn-themeBlue py-1.5 px-0 text-[13.5px]"
+          className="btn-themeBlue py-1.5 px-0 text-[13px]"
           onClick={() => handleMainView(true)}
         >
           Sub Depts
         </button>
         <button
-          className={`btn-themeBlue py-1.5 px-0 text-[13.5px]`}
+          className={`${!ctx.viewDaily ? "btn-themeGreen" : "btn-themeBlue"} py-1.5 px-0 text-[13px]`}
           onClick={handleScanView}
         >
           Search
         </button>
         <button
-          className={`btn-themeBlue py-1.5 px-0 text-[13.5px]`}
+          className={`${ctx.viewDaily ? "btn-themeGreen" : "btn-themeBlue"} py-1.5 px-0 text-[13px]`}
           onClick={() => handleMainView(false)}
         >
-          View Daily
+          {ctx.mobileMainView === "overview" ? "View Daily" : "Go Back"}
         </button>
       </div>
 

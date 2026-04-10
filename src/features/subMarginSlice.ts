@@ -29,6 +29,15 @@ const defaultThreshFilter: ThresholdFilter = {
 };
 
 export type MobileMainView = "overview" | "items";
+export type MobileSort = "asc" | "desc" | "";
+export type SortOption = "total_sales" | "qty" | "margin" | "cogs" | "reset";
+export type MSort = {
+  total_sales: MobileSort;
+  qty: MobileSort;
+  cogs: MobileSort;
+  margin: MobileSort;
+  reset: MobileSort;
+};
 
 interface SubMarginState {
   subDepts: SubDept[];
@@ -84,8 +93,9 @@ interface SubMarginState {
   scannedItemMobile: ItemRowMobile | null;
   searchedItemMobile: ItemRowMobile | null;
   mobileMainView: MobileMainView;
-  viewDaily:boolean;
+  viewDaily: boolean;
   upcSearch: string;
+  mSort: MSort;
 }
 
 const initialState: SubMarginState = {
@@ -136,6 +146,14 @@ const initialState: SubMarginState = {
   mobileMainView: "overview",
   viewDaily: false,
   upcSearch: "",
+  // mobile sort options
+  mSort: {
+    total_sales: "",
+    qty: "",
+    cogs: "",
+    margin: "",
+    reset: "",
+  },
 };
 
 const subMarginSlice = createSlice({
@@ -301,7 +319,7 @@ const subMarginSlice = createSlice({
     setFilteredCostGridData: (state, action: PayloadAction<SubDeptCost[]>) => {
       state.filteredCostGridData = action.payload;
     },
-    handleWeekReset: (state) =>{
+    handleWeekReset: (state) => {
       state.itemGridData = [];
       state.filteredItemGridData = [];
       state.subDeptCost = [];
@@ -315,7 +333,10 @@ const subMarginSlice = createSlice({
     setPause: (state, action: PayloadAction<boolean>) => {
       state.pause = action.payload;
     },
-    setScannedItemHistory: (state, action: PayloadAction<ItemLookupHistory[]>) => {
+    setScannedItemHistory: (
+      state,
+      action: PayloadAction<ItemLookupHistory[]>,
+    ) => {
       state.scannedItemHistory = action.payload;
     },
     setItemHistoryModalOpen: (state, action: PayloadAction<boolean>) => {
@@ -327,16 +348,25 @@ const subMarginSlice = createSlice({
     setItemDataMobile: (state, action: PayloadAction<ItemRowMobile[]>) => {
       state.itemDataMobile = action.payload;
     },
-    setItemDataFilteredMobile: (state, action: PayloadAction<ItemRowMobile[]>) => {
+    setItemDataFilteredMobile: (
+      state,
+      action: PayloadAction<ItemRowMobile[]>,
+    ) => {
       state.filteredItemDataMobile = action.payload;
     },
     setProcessMobileItemData: (state, action: PayloadAction<boolean>) => {
       state.processMobileItemData = action.payload;
     },
-    setScannedItemMobile: (state, action: PayloadAction<ItemRowMobile | null>) => {
+    setScannedItemMobile: (
+      state,
+      action: PayloadAction<ItemRowMobile | null>,
+    ) => {
       state.scannedItemMobile = action.payload;
     },
-    setSearchedItemMobile: (state, action: PayloadAction<ItemRowMobile | null>) => {
+    setSearchedItemMobile: (
+      state,
+      action: PayloadAction<ItemRowMobile | null>,
+    ) => {
       state.searchedItemMobile = action.payload;
     },
     setMobileMainView: (state, action: PayloadAction<MobileMainView>) => {
@@ -347,6 +377,42 @@ const subMarginSlice = createSlice({
     },
     setUpcSearch: (state, action: PayloadAction<string>) => {
       state.upcSearch = action.payload;
+    },
+    setMobileSort: (
+      state: SubMarginState,
+      action: PayloadAction<{ option: SortOption }>,
+    ) => {
+      const { option } = action.payload; // the key of the mSort obj to be updated
+      const currentSort = state.mSort[option]; // the key's current sort value (asc | desc | "")
+
+      // The value to be set to the selected sorting option
+      let newSort: MobileSort;
+      if (currentSort === "asc") {
+        newSort = "desc";
+      } else if (currentSort === "desc") {
+        newSort = "";
+      } else {
+        newSort = "asc";
+      }
+
+      // Set the sort option's new value
+      state.mSort[option] = newSort;
+
+      // reset other sort options
+      (Object.keys(state.mSort) as SortOption[]).forEach((key) => {
+        if (key !== option && state.mSort[key] !== "") {
+          state.mSort[key] = "";
+        }
+      });
+    },
+    resetMobileSort: (state) => {
+      state.mSort = {
+        total_sales: "",
+        qty: "",
+        cogs: "",
+        margin: "",
+        reset: "",
+      };
     },
     resetSubMarginState: () => initialState,
   },
@@ -395,5 +461,7 @@ export const {
   setViewDaily,
   setSearchedItemMobile,
   setUpcSearch,
+  setMobileSort,
+  resetMobileSort,
 } = subMarginSlice.actions;
 export default subMarginSlice.reducer;

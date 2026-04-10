@@ -21,7 +21,7 @@ const ItemCard = ({ item, handleClick }: MarginCardProps) => {
       className="bg-custom-white even:bg-blue-200/50 text-[13px]"
       onClick={onItemClick}
     >
-      <div className="px-2 py-0.5 font-medium grid grid-cols-[1fr_3fr]">
+      <div className="px-2 py-[1px] font-medium grid grid-cols-[1fr_3fr]">
         <div>{item.product_code}</div>
         <div className="text-right text-nowrap truncate">
           {item.product_description}

@@ -1,12 +1,16 @@
+import { useEffect } from "react";
 import { useSubMarginCtx } from "../hooks";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useEffect } from "react";
 import {
+  resetMobileSort,
   setFetchingItemHistory,
   setItemDataFilteredMobile,
+  setMobileSort,
   setScannedItemHistory,
   setScannedItemMobile,
   setUpcSearch,
+  type MobileSort,
+  type SortOption,
 } from "../../../features/subMarginSlice";
 import type { JsonError } from "../../../interfaces";
 import { getItemLookupSingleStore } from "../../../api/itemLookup";
@@ -18,7 +22,7 @@ import ItemCard from "./ItemCard";
 import UpcScanner from "../../../components/scanner/UpcScanner";
 import ItemCardSingle from "./ItemCardSingle";
 import ItemHistoryStatic from "./ItemHistoryStatic";
-import type { BarData } from "../display/widgets";
+import type { BarData, ItemRowMobile } from "../display/widgets";
 import DayTotalsHeader from "./DayTotalsHeader";
 import TotalsHeader from "./TotalsHeader";
 import { WarningIcon } from "../../../components/toasts/Icons";
@@ -26,6 +30,15 @@ import { WarningIcon } from "../../../components/toasts/Icons";
 interface ItemsViewProps {
   barData: BarData[];
 }
+
+type Option = {label: string, value: SortOption}
+const sortOptions: Option[] = [
+  { label: "Sales", value: "total_sales" },
+  { label: "COGS", value: "cogs" },
+  { label: "GPM", value: "margin" },
+  { label: "Qty", value: "qty" },
+  { label: "Reset", value: "reset" },
+];
 
 const ItemsView = ({ barData }: ItemsViewProps) => {
   const toast = useToast();
@@ -57,7 +70,7 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
     handleScanItem(upc);
   };
 
-  const resetFilteredItems = () => {
+  const resetFilteredItems = (isResetting: boolean = true) => {
     const dateComp = ctx.selectedWeekDay
       ? new Date(ctx.selectedWeekDay).toISOString().split("T")[0]
       : "";
@@ -74,6 +87,12 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
       ...item,
       margin: ((item.total_sales - item.cogs) / item.total_sales) * 100 || 0,
     }));
+
+    // sorting logic here
+    if (!isResetting) {
+      // sort here
+      return;
+    }
 
     dispatch(setItemDataFilteredMobile(newData));
   };
@@ -97,7 +116,7 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
       const matchesDate = dateComp
         ? margin.sale_date.split("T")[0] === dateComp
         : true;
-        const matchesUpc = margin.product_code.includes(upc);
+      const matchesUpc = margin.product_code.includes(upc);
       return matchesDate && matchesUpc;
     });
 
@@ -116,10 +135,47 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
     }
   }, [ctx.selectedWeekDay]);
 
+  const setSort = (option: SortOption) => {
+    if (option === "reset") {
+      dispatch(resetMobileSort());
+      resetFilteredItems();
+      return;
+    }
+
+    dispatch(setMobileSort({ option }));
+  };
+
   const subDept = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId);
 
   const handleUpcSearchText = (value: string) => {
     dispatch(setUpcSearch(value));
+  };
+
+  const activeSortStyle = (option: SortOption) => {
+    return ctx.mSort[option].length > 0 ? "bg-orange-200" : "bg-custom-white";
+  };
+
+  const itemListDisplay = () => {
+    const result = ctx.filteredItemDataMobile;
+    const props = Object.entries(ctx.mSort);
+    const sortBy = props.filter((sort) => sort[1].length > 0)[0];
+    console.log(sortBy);
+
+    if (sortBy) {
+      const sortKey = sortBy[0] as keyof ItemRowMobile;
+      const sortDirection = sortBy[1] as MobileSort;
+      return [...result].sort((a, b) => {
+        console.log(a[sortKey], b[sortKey]);
+        if (sortDirection === "asc") {
+          return a[sortKey] > b[sortKey] ? 1 : -1;
+        } else {
+          return a[sortKey] < b[sortKey] ? 1 : -1;
+        }
+      });
+    } else {
+      // Once the above sorting is implemented,this is the default return (no sort)
+      return result;
+    }
   };
 
   return (
@@ -145,9 +201,20 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
       />
       {!ctx.scannedItemMobile ? (
         <div>
+          <div className="px-2 pt-2 grid grid-cols-5 gap-2">
+            {sortOptions.map((option, i) => (
+              <div
+                key={i}
+                className={`rounded-full py-0.5 text-center text-[12px] flex items-center justify-center ${activeSortStyle(option.value)}`}
+                onClick={() => setSort(option.value as SortOption)}
+              >
+                <div>{option.label}</div>
+              </div>
+            ))}
+          </div>
           {ctx.filteredItemDataMobile.length ? (
-            <div className="grid m-2 max-h-[calc(100vh-17rem)] rounded-lg shadow-md overflow-y-auto">
-              {ctx.filteredItemDataMobile.map((item, i) => (
+            <div className="grid m-2 max-h-[calc(100vh-19rem)] rounded-lg shadow-md overflow-y-auto">
+              {itemListDisplay().map((item, i) => (
                 <ItemCard key={i} item={item} handleClick={handleScanItem} />
               ))}
             </div>
