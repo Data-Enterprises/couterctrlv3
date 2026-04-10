@@ -12,30 +12,24 @@ import {
   setHistoryMetrics,
   setItemLookupHistory,
   setPause,
+  setSelectedStore,
 } from "../../features/itemLookupSlice";
 import "./scanner.css";
-import { useHeight } from "./utils";
 
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import TopStoreLookup from "./TopStoreLookup";
-import BottomStoreLookup from "./BottomStoreLookup";
-import ItemLookupHeader from "./ItemLookupHeader";
-import HistoryItemCard from "./HistoryItemCard";
 import UpcScanner from "../../components/scanner/UpcScanner";
-import StoreSelector from "./StoreSelector";
 import { setError, setUpcCode } from "../../features/itemScanSlice";
+import SingleSelect from "../../components/SingleSelect";
+import ItemHIstory from "./ItemHistory";
 
 const ItemLookup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
-  const { itemsLoaded, selectedStore, itemLookupHistory } = useAppSelector(
-    (state) => state.item,
-  );
+  const { itemsLoaded, selectedStore } = useAppSelector((state) => state.item);
   const { upcCode, error } = useAppSelector((state) => state.itemScan);
   const { assignedStores } = useAppSelector((state) => state.user);
   const [isLoading, setIsLoading] = useState(false);
-  const { height, topRef, bottomRef } = useHeight();
 
   useEffect(() => {
     return () => {
@@ -118,7 +112,9 @@ const ItemLookup = () => {
   };
 
   const clear = () => {
+    const storeid = selectedStore;
     dispatch(resetLookupSlice());
+    dispatch(setSelectedStore(storeid));
     dispatch(setUpcCode(""));
     dispatch(setError(""));
   };
@@ -126,6 +122,15 @@ const ItemLookup = () => {
   // This may not work
   const scanItem = (upcCode: string) => {
     return selectedStore > 0 ? getSingleStoreData(upcCode) : getData(upcCode);
+  };
+
+  const handleStoreSelect = (id: string | number) => {
+    dispatch(setSelectedStore(Number(id)));
+  };
+
+  const findStoreName = () => {
+    const store = assignedStores.find((s) => s.storeid === selectedStore);
+    return store ? store.store_name : "";
   };
 
   return (
@@ -136,41 +141,20 @@ const ItemLookup = () => {
       <div className={`${isLoading ? "block z-50 " : "hidden z-0"}`}>
         <LoadingIndicator message={`Looking up item: ${upcCode}`} />
       </div>
-      <UpcScanner handleScan={scanItem} onClear={clear} />
-      <StoreSelector />
-      <div ref={topRef} className="text-center font-bold underline">
-        {assignedStores.find((s) => s.storeid === selectedStore)?.store_name}
+      <div className="bg-custom-white p-2 rounded-lg shadow-md space-y-2 mb-2">
+        <SingleSelect
+          label="Store"
+          data={assignedStores}
+          displayKey="store_name"
+          valueKey="storeid"
+          onSelect={handleStoreSelect}
+          defaultQuery={`${selectedStore > 0 ? findStoreName() : ""}`}
+          innerClass="text-sm"
+          listClass="text-sm"
+        />
+        <UpcScanner handleScan={scanItem} onClear={clear} />
       </div>
-      {itemsLoaded ? (
-        <>
-          <ItemLookupHeader />
-          {!selectedStore ? (
-            <>
-              <TopStoreLookup />
-              <BottomStoreLookup />
-            </>
-          ) : (
-            <>
-              <div
-                className="space-y-2 overflow-y-auto mb-3"
-                style={{ maxHeight: `${height}px` }}
-              >
-                {itemLookupHistory.map((item, i) => (
-                  <HistoryItemCard key={i} item={item} />
-                ))}
-              </div>
-            </>
-          )}
-          <button
-            ref={bottomRef}
-            data-testid="lookup-clear"
-            className="btn-themeBlue w-full text-[15px]"
-            onClick={clear}
-          >
-            Clear Item
-          </button>
-        </>
-      ) : null}
+      {itemsLoaded ? <ItemHIstory /> : null}
       {error.length > 0 ? (
         <div className="text-content mt-8 text-center">{error}</div>
       ) : null}

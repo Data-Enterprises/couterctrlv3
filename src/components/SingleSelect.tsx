@@ -131,7 +131,7 @@ const SingleSelect = <T,>({
       className={`single-select ${className}`}
     >
       <div className="flex flex-col">
-        <label htmlFor="search" className="text-sm font-medium ml-0.5">
+        <label htmlFor="search" className="text-[13px] md:text-sm font-medium ml-0.5">
           {label}
         </label>
         <div className="relative">

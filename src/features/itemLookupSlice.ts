@@ -45,7 +45,6 @@ interface ItemLookupState {
   totalQty: number;
   avgPrice: number;
   itemsLoaded: boolean;
-  // storeList: StoreList[];
   selectedStore: number;
   itemLookupHistory: ItemLookupHistory[];
   daysSold: number;
@@ -68,7 +67,6 @@ const initialState: ItemLookupState = {
   totalQty: 0,
   avgPrice: 0,
   itemsLoaded: false,
-  // storeList: [],
   selectedStore: 0,
   itemLookupHistory: [],
   daysSold: 0,
@@ -132,9 +130,6 @@ const itemLookupSlice = createSlice({
       state.totalQty = action.payload.totalQty;
       state.avgPrice = action.payload.avgPrice;
     },
-    // setStoreList: (state, action: PayloadAction<StoreList[]>) => {
-    //   state.storeList = action.payload;
-    // },
     setSelectedStore: (state, action: PayloadAction<number>) => {
       if (state.selectedStore === action.payload) {
         state.selectedStore = 0;
