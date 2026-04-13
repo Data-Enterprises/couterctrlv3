@@ -3,6 +3,12 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../utils";
 import ItemHIstory from "./ItemHistory";
 import { setViewHistory } from "../../features/itemLookupSlice";
+import {
+  ShoppingCartIcon,
+  // CurrencyDollarIcon,
+  // HashtagIcon,
+} from "@heroicons/react/24/solid";
+import UpcListIcon from "../../svgs/UpcListIcon";
 
 type QtyData = {
   id: string;
@@ -48,7 +54,10 @@ const LookupCharts = () => {
   const costData = () => {
     const qtyByCost = itemLookupHistory
       .reduce((acc: QtyData[], curr) => {
-        const found = acc.find((item) => item.id === curr.casecost.toString());
+        const found = acc.find(
+          (item) =>
+            formatCurrency2(Number(item.id)) === formatCurrency2(curr.casecost),
+        );
         if (found) {
           found.value += curr.qty;
         } else {
@@ -63,7 +72,10 @@ const LookupCharts = () => {
 
     const salesByCost = itemLookupHistory
       .reduce((acc: QtyData[], curr) => {
-        const found = acc.find((item) => item.id === curr.casecost.toString());
+        const found = acc.find(
+          (item) =>
+            formatCurrency2(Number(item.id)) === formatCurrency2(curr.casecost),
+        );
         if (found) {
           found.value += curr.total_sales;
         } else {
@@ -81,13 +93,9 @@ const LookupCharts = () => {
 
   const colors = [
     "#00CC55",
-    "#10b981",
     "#0099AA",
     "#0066FF",
-    "#3366FF",
     "#3b82f6",
-    "#6688FF",
-    "#FFA500",
     "#FF9900",
     "#CC8844",
   ];
@@ -101,19 +109,46 @@ const LookupCharts = () => {
 
   if (viewHistory) return <ItemHIstory />;
 
+  const productDesc = itemLookupHistory[0]?.product_description || "";
+  const upc = itemLookupHistory[0]?.product_code || "";
+
   return (
     <div>
-      {/* <button
-        className="btn-themeBlue mb-2 w-full text-[13px]"
-        onClick={() => dispatch(setViewHistory(true))}
-      >
-        View History
-      </button> */}
+      <div className="text-[13px] mb-2 font-medium flex justify-between">
+        <div className="flex items-center gap-1">
+          <UpcListIcon className="h-4 w-4 fill-blue-500" />
+          <div>{upc}</div>
+        </div>
+        <div className="flex items-center gap-1">
+          <ShoppingCartIcon className="h-4 w-4 text-blue-500" />
+          <div>{productDesc}</div>
+        </div>
+        {/* <div>
+          <div className="flex items-center gap-1">
+            <UpcListIcon className="h-4 w-4 fill-blue-500" />
+            <div>{upc}</div>
+          </div>
+          <div className="flex items-center gap-1">
+            <ShoppingCartIcon className="h-4 w-4 text-blue-500" />
+            <div>{productDesc}</div>
+          </div>
+        </div> */}
+        {/* <div className="">
+          <div className="flex items-center justify-end gap-1">
+            <CurrencyDollarIcon className="h-4 w-4 text-blue-500" />
+            <div>{formatCurrency2(totalSales)}</div>
+          </div>
+          <div className="flex items-center justify-end gap-1">
+            <HashtagIcon className="h-4 w-4 text-blue-500" />
+            <div>{formatBigNumber(totalQty, 0)}</div>
+          </div>
+        </div> */}
+      </div>
       <div className="grid grid-cols-2 gap-2 text-[13px] max-h-[calc(100vh-16.7rem)] overflow-y-auto">
         <div className="grid gap-2">
           <div className="bg-custom-white px-2 rounded-lg shadow-md relative">
             <div className="font-medium">Total Sales by Price</div>
-            <div className="h-[100px]">
+            <div className="h-[80px]">
               <ResponsivePie
                 data={priceData().salesByPrice}
                 animate={true}
@@ -127,11 +162,14 @@ const LookupCharts = () => {
                 margin={{ top: 0, bottom: 0, left: 5, right: 5 }}
               />
             </div>
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 font-bold">
+            <div className="absolute top-10 left-1/2 flex justify-center items-center transform -translate-x-1/2 font-bold w-full h-[80px]">
               {formatCurrency2(totalSales)}
             </div>
             <div>
-              <div>Price Points - {priceData().salesByPrice.length}</div>
+              <div className="flex justify-between">
+                <div>Prices - {priceData().salesByPrice.length}</div>
+                <div>Sales</div>
+              </div>
               <div className="pb-2">
                 {priceData().salesByPrice.map((item, i) => (
                   <div key={i}>
@@ -142,7 +180,7 @@ const LookupCharts = () => {
                       ></div>
                       <div className="flex gap-1.5 items-center justify-between w-full">
                         <div>{formatCurrency2(Number(item.id))}</div>
-                        <div>Total: {formatCurrency2(item.value)}</div>
+                        <div>{formatCurrency2(item.value)}</div>
                       </div>
                     </div>
                   </div>
@@ -152,7 +190,7 @@ const LookupCharts = () => {
           </div>
           <div className="bg-custom-white px-2 rounded-lg shadow-md relative">
             <div className="font-medium">Qty by Price</div>
-            <div className="h-[100px]">
+            <div className="h-[80px]">
               <ResponsivePie
                 data={priceData().qtyByPrice}
                 animate={true}
@@ -166,11 +204,14 @@ const LookupCharts = () => {
                 margin={{ top: 0, bottom: 0, left: 5, right: 5 }}
               />
             </div>
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 font-bold">
+            <div className="absolute top-10 left-1/2 flex justify-center items-center transform -translate-x-1/2 font-bold w-full h-[80px]">
               {formatBigNumber(totalQty, 0)}
             </div>
             <div>
-              <div>Price Points - {priceData().qtyByPrice.length}</div>
+              <div className="flex justify-between">
+                <div>Prices - {priceData().qtyByPrice.length}</div>
+                <div>Qty</div>
+              </div>
               <div className="pb-2">
                 {priceData().qtyByPrice.map((item, i) => (
                   <div key={i}>
@@ -181,7 +222,7 @@ const LookupCharts = () => {
                       ></div>
                       <div className="flex gap-1.5 items-center justify-between w-full">
                         <div>{formatCurrency2(Number(item.id))}</div>
-                        <div>Total: {formatBigNumber(item.value, 0)}</div>
+                        <div>{formatBigNumber(item.value, 0)}</div>
                       </div>
                     </div>
                   </div>
@@ -193,7 +234,7 @@ const LookupCharts = () => {
         <div className="grid gap-2">
           <div className="bg-custom-white px-2 rounded-lg shadow-md relative">
             <div className="font-medium">Total Sales by Case Cost</div>
-            <div className="h-[100px]">
+            <div className="h-[80px]">
               <ResponsivePie
                 data={costData().salesByCost}
                 animate={true}
@@ -207,11 +248,14 @@ const LookupCharts = () => {
                 margin={{ top: 0, bottom: 0, left: 5, right: 5 }}
               />
             </div>
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 font-bold">
+            <div className="absolute top-10 left-1/2 flex justify-center items-center transform -translate-x-1/2 font-bold w-full h-[80px]">
               {formatCurrency2(totalSales)}
             </div>
             <div>
-              <div>Case Cost Points - {costData().salesByCost.length}</div>
+              <div className="flex justify-between">
+                <div className="">Costs - {costData().salesByCost.length}</div>
+                <div>Sales</div>
+              </div>
               <div className="pb-2">
                 {costData().salesByCost.map((item, i) => (
                   <div key={i}>
@@ -222,7 +266,7 @@ const LookupCharts = () => {
                       ></div>
                       <div className="flex gap-1.5 items-center justify-between w-full">
                         <div>{formatCurrency2(Number(item.id))}</div>
-                        <div>Total: {formatCurrency2(item.value)}</div>
+                        <div>{formatCurrency2(item.value)}</div>
                       </div>
                     </div>
                   </div>
@@ -232,7 +276,7 @@ const LookupCharts = () => {
           </div>
           <div className="bg-custom-white px-2 rounded-lg shadow-md relative">
             <div className="font-medium">Qty by Case Cost</div>
-            <div className="h-[100px]">
+            <div className="h-[80px]">
               <ResponsivePie
                 data={costData().qtyByCost}
                 animate={true}
@@ -246,11 +290,14 @@ const LookupCharts = () => {
                 margin={{ top: 0, bottom: 0, left: 5, right: 5 }}
               />
             </div>
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 font-bold">
+            <div className="absolute top-10 left-1/2 flex justify-center items-center transform -translate-x-1/2 font-bold w-full h-[80px]">
               {formatBigNumber(totalQty, 0)}
             </div>
             <div>
-              <div>Case Cost Points - {costData().qtyByCost.length}</div>
+              <div className="flex justify-between">
+                <div>Costs - {costData().qtyByCost.length}</div>
+                <div>Qty</div>
+              </div>
               <div className="pb-2">
                 {costData().qtyByCost.map((item, i) => (
                   <div key={i}>
@@ -261,7 +308,7 @@ const LookupCharts = () => {
                       ></div>
                       <div className="flex gap-1.5 items-center justify-between w-full">
                         <div>{formatCurrency2(Number(item.id))}</div>
-                        <div>Total: {formatBigNumber(item.value, 0)}</div>
+                        <div>{formatBigNumber(item.value, 0)}</div>
                       </div>
                     </div>
                   </div>

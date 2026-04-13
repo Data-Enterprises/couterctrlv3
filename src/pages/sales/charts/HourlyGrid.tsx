@@ -118,6 +118,8 @@ const HourlyGrid = () => {
     }
   };
 
+  if (!barData.length) return null;
+
   return (
     <div className="bg-custom-white rounded-lg shadow-lg my-2 md:my-0 py-2">
       <div className="px-2 font-medium grid grid-cols-[25%_50%_25%]">
@@ -164,7 +166,12 @@ const HourlyGrid = () => {
           {!isMobile ? (
             <ResponsiveBar
               data={barData}
-              margin={{ top: 10, right: 0, bottom: selectedSalesPanel.sale_date ? 28 : 32, left: 50 }}
+              margin={{
+                top: 10,
+                right: 0,
+                bottom: selectedSalesPanel.sale_date ? 28 : 32,
+                left: 50,
+              }}
               keys={["total_sales"]}
               indexBy={barIndex}
               tooltip={({ value }) => (
@@ -185,10 +192,13 @@ const HourlyGrid = () => {
                   // I set the full_date property on barData so I can process the DOW here
                   let fullDate = "";
                   let dow = "";
+
                   if (typeof value === "string") {
-                    fullDate = barData.filter((d) => d.date === value)[0]
-                      .full_date;
-                    dow = new Date(fullDate).toDateString().split(" ")[0];
+                    const found = barData.find((d) => d.date === value);
+                    if (found) {
+                      fullDate = found.full_date;
+                      dow = new Date(fullDate).toDateString().split(" ")[0];
+                    }
                   }
                   return (
                     <g transform={`translate(${x},${y + 4})`}>
