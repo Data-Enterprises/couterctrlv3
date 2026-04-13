@@ -9,6 +9,7 @@ export const useLeftColHeight = () => {
 
   useEffect(() => {
     const handleheight = () => {
+      if (!topLeftRef.current || !leftColRef.current) return;
       setHeight(
         leftColRef.current!.clientHeight -
           topLeftRef.current!.clientHeight -

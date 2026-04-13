@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 // Hooks/API
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { useAppSelector, useAppDispatch } from "../../hooks";
@@ -11,8 +12,10 @@ import TopTen from "./charts/TopTen";
 import HourlyGrid from "./charts/HourlyGrid";
 import SubDeptGrid from "./charts/SubDeptGrid";
 import SubDeptComps from "./charts/SubDeptComps";
-// import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
+import LoadingIndicator from "../../components/loading/LoadingIndicator";
+import SubsCompareModal from "./subsCompare/SubsCompareModal";
+// import SalesMobile from "./mobile/SalesMobile";
 
 // Dispatchers
 import {
@@ -27,9 +30,6 @@ import {
 import { addDays, formatGoliathDate } from "../../utils";
 import type { JsonError } from "../../interfaces";
 import { useLeftColHeight } from "./utils/hooks";
-import { useEffect, useState } from "react";
-import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import SubsCompareModal from "./subsCompare/SubsCompareModal";
 
 const Sales = () => {
   const toast = useToast();
@@ -44,6 +44,7 @@ const Sales = () => {
 
   // On mount, get data if user prefs has a last store or group, meaning there is a last search type as well
   useEffect(() => {
+    // if ((search.lastStore > 0 || search.lastGroup > 0) && context.isDesktop) {
     if (search.lastStore > 0 || search.lastGroup > 0) {
       getSalesPanels();
     }
@@ -91,6 +92,8 @@ const Sales = () => {
         setShowLoading(false);
       });
   };
+
+  // if (context.isMobile) return <SalesMobile />;
 
   const pageContainer = context.isDesktop
     ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none"

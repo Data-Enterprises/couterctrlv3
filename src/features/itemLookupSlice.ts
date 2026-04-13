@@ -45,11 +45,11 @@ interface ItemLookupState {
   totalQty: number;
   avgPrice: number;
   itemsLoaded: boolean;
-  // storeList: StoreList[];
   selectedStore: number;
   itemLookupHistory: ItemLookupHistory[];
   daysSold: number;
   pause: boolean;
+  viewHistory: boolean;
 }
 
 const initialState: ItemLookupState = {
@@ -68,11 +68,11 @@ const initialState: ItemLookupState = {
   totalQty: 0,
   avgPrice: 0,
   itemsLoaded: false,
-  // storeList: [],
   selectedStore: 0,
   itemLookupHistory: [],
   daysSold: 0,
   pause: true,
+  viewHistory: false,
 };
 
 interface ItemsPayload {
@@ -125,16 +125,13 @@ const itemLookupSlice = createSlice({
         totalSales: number;
         totalQty: number;
         avgPrice: number;
-      }>
+      }>,
     ) => {
       state.totalStores = action.payload.totalStores;
       state.totalSales = action.payload.totalSales;
       state.totalQty = action.payload.totalQty;
       state.avgPrice = action.payload.avgPrice;
     },
-    // setStoreList: (state, action: PayloadAction<StoreList[]>) => {
-    //   state.storeList = action.payload;
-    // },
     setSelectedStore: (state, action: PayloadAction<number>) => {
       if (state.selectedStore === action.payload) {
         state.selectedStore = 0;
@@ -144,7 +141,7 @@ const itemLookupSlice = createSlice({
     },
     setItemLookupHistory: (
       state,
-      action: PayloadAction<ItemLookupHistory[]>
+      action: PayloadAction<ItemLookupHistory[]>,
     ) => {
       state.itemLookupHistory = action.payload;
     },
@@ -156,6 +153,31 @@ const itemLookupSlice = createSlice({
     },
     setPause: (state, action: PayloadAction<boolean>) => {
       state.pause = action.payload;
+    },
+    setViewHistory: (state, action: PayloadAction<boolean>) => {
+      state.viewHistory = action.payload;
+    },
+    reQueryUpc: (state) => {
+      state.upcCode = "";
+      state.mode = "Sales";
+      state.topStoreSales = null;
+      state.lowestStoreSales = null;
+      state.topStoreQty = null;
+      state.lowestStoreQty = null;
+      state.highestPriceStore = null;
+      state.lowestPriceStore = null;
+      state.totalStores = 0;
+      state.productCode = "";
+      state.description = "";
+      state.totalSales = 0;
+      state.totalQty = 0;
+      state.avgPrice = 0;
+      state.itemsLoaded = false;
+      // state.selectedStore = 0;
+      state.itemLookupHistory = [];
+      state.daysSold = 0;
+      state.pause = true;
+      state.viewHistory = false;
     },
     resetLookupSlice: () => initialState,
   },
@@ -174,6 +196,8 @@ export const {
   setItemLookupHistory,
   setHistoryMetrics,
   setPause,
+  reQueryUpc,
+  setViewHistory
 } = itemLookupSlice.actions;
 
 export default itemLookupSlice.reducer;

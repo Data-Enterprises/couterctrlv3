@@ -64,6 +64,22 @@ export type SalesPanelInfo = {
   weight: number;
 };
 
+export type AggTotals = {
+  total_sales: number;
+  total_tax: number;
+  total_cpn_dollars: number;
+  basket_size_sales: number;
+  transactions: number;
+  avg_basket_amount: number;
+};
+
+export type AggCoupons = {
+  digital_coupons: number;
+  elec_instore_coupons: number;
+  elect_store_coupons: number;
+  store_coupon: number;
+};
+
 export type GroupTopTenItem = {
   product_code: string;
   product_description: string;

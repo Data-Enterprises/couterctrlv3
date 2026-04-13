@@ -1,52 +1,41 @@
-import { setSelectedWeekDay } from "../../../features/subMarginSlice";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import {
+  setMobileMainView,
+  setSelectedWeekDay,
+} from "../../../features/subMarginSlice";
+import { useAppDispatch } from "../../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import type { BarData } from "../display/widgets";
-import { useSubMarginCtx } from "../hooks";
 
 interface MarginDayCardOverviewProps {
   margin: BarData;
-  onCardClick: (date: string) => void;
 }
 
-const MarginDayCardOverview = ({margin, onCardClick}: MarginDayCardOverviewProps) => {
-  const ctx = useSubMarginCtx();
-  const { assignedStores } = useAppSelector((state) => state.user);
+const MarginDayCardOverview = ({ margin }: MarginDayCardOverviewProps) => {
   const dispatch = useAppDispatch();
 
   const handleCardClick = (date: string) => {
-    onCardClick(date);
-    if (date === ctx.selectedWeekDay) {
-      dispatch(setSelectedWeekDay(""));
-    } else {
-      dispatch(setSelectedWeekDay(date));
-    }
+    dispatch(setSelectedWeekDay(date));
+    dispatch(setMobileMainView("items"));
   };
 
-  const findStoreName = () => {
-    return (
-      assignedStores.find((store) => store.storeid === ctx.searchValue)
-        ?.store_name || ""
-    );
-  };
+  const dayOfWeek = new Date(margin.date).toLocaleDateString("en-US", {
+    weekday: "short",
+  });
 
   return (
     <div
-      className={`bg-custom-white rounded-lg ${ctx.selectedWeekDay === margin.date ? "bg-orange-200" : "shadow-medium"} text-sm`}
+      className={`bg-custom-white first:rounded-t-lg last:rounded-b-lg even:bg-blue-200/50 px-2 py-0.5 text-[13px] last:border-none`}
       onClick={() => handleCardClick(margin.date)}
     >
-      <div className="bg-blue-500 text-custom-white rounded-t-lg py-0.5 px-2 font-medium flex justify-between text-[13.5px]">
-        <div>{margin.date}</div>
-        <div>{findStoreName()}</div>
-      </div>
-      <div className="grid grid-cols-3 gap-2 p-2">
+      <div className="font-medium flex justify-between text-[13px]">
         <div>
-          <div className="text-content/60">Total $ </div>
-          <div className="font-medium">{formatCurrency2(margin.sales)}</div>
+          {dayOfWeek}, {margin.date}
         </div>
+      </div>
+      <div className="grid grid-cols-[1.2fr_0.9fr_0.9fr_1.2fr_0.8fr] gap-x-2">
         <div>
-          <div className="text-content/60">Net $</div>
-          <div className="font-medium">{formatCurrency2(margin.net)}</div>
+          <div className="text-content/60">Sales</div>
+          <div className="font-medium">{formatCurrency2(margin.sales)}</div>
         </div>
         <div>
           <div className="text-content/60">Qty</div>

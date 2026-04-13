@@ -25,6 +25,21 @@ export interface ItemRow {
   cost_fees: number;
 }
 
+export interface ItemRowMobile {
+  sub_department_description: string; // good
+  product_code: string; // good
+  product_description: string; // good
+  cogs: number; // good
+  total_sales: number; // good
+  net_sales: number; // good
+  total_tax: number; // good
+  qty: number; //good
+  margin: number;
+  cost_fees: number;
+  cost: number;
+  calculated_cost: number;
+}
+
 export const formatDate = (dateStr: string) => {
   const split = dateStr.split("-");
   return `${split[1]}/${split[2]}/${split[0]}`;

@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { SubDeptMargin, SubDept, SubDeptCost } from "../interfaces";
-import type { ItemRow } from "../pages/subDepts/display/widgets";
+import type { ItemRow, ItemRowMobile } from "../pages/subDepts/display/widgets";
 import type { ItemLookupHistory } from "./itemLookupSlice";
 
 export type SubDeptGridView = "item" | "cost";
@@ -26,6 +26,17 @@ export type ThresholdFilter = {
 const defaultThreshFilter: ThresholdFilter = {
   operator: "",
   value: 0,
+};
+
+export type MobileMainView = "overview" | "items";
+export type MobileSort = "asc" | "desc" | "";
+export type SortOption = "total_sales" | "qty" | "margin" | "cogs" | "reset";
+export type MSort = {
+  total_sales: MobileSort;
+  qty: MobileSort;
+  cogs: MobileSort;
+  margin: MobileSort;
+  reset: MobileSort;
 };
 
 interface SubMarginState {
@@ -74,6 +85,17 @@ interface SubMarginState {
   pause: boolean;
   scannedItemHistory: ItemLookupHistory[];
   itemHistoryModalOpen: boolean;
+  fetchingItemHistory: boolean;
+  processMobileItemData: boolean;
+  itemDataMobile: ItemRowMobile[];
+  filteredItemDataMobile: ItemRowMobile[];
+  filteredItemDataMobileCopy: ItemRowMobile[];
+  scannedItemMobile: ItemRowMobile | null;
+  searchedItemMobile: ItemRowMobile | null;
+  mobileMainView: MobileMainView;
+  viewDaily: boolean;
+  upcSearch: string;
+  mSort: MSort;
 }
 
 const initialState: SubMarginState = {
@@ -114,6 +136,24 @@ const initialState: SubMarginState = {
   pause: true,
   scannedItemHistory: [],
   itemHistoryModalOpen: false,
+  fetchingItemHistory: false,
+  processMobileItemData: false,
+  itemDataMobile: [],
+  filteredItemDataMobile: [],
+  filteredItemDataMobileCopy: [],
+  scannedItemMobile: null,
+  searchedItemMobile: null,
+  mobileMainView: "overview",
+  viewDaily: false,
+  upcSearch: "",
+  // mobile sort options
+  mSort: {
+    total_sales: "",
+    qty: "",
+    cogs: "",
+    margin: "",
+    reset: "",
+  },
 };
 
 const subMarginSlice = createSlice({
@@ -186,6 +226,8 @@ const subMarginSlice = createSlice({
       state.itemGridData = [];
       state.scannedUpc = "";
       state.pause = false;
+      state.upcSearch = "";
+      state.viewDaily = false;
     },
     setSelectedWeek: (state, action: PayloadAction<MarginWeek>) => {
       state.selectedWeek = action.payload;
@@ -277,7 +319,7 @@ const subMarginSlice = createSlice({
     setFilteredCostGridData: (state, action: PayloadAction<SubDeptCost[]>) => {
       state.filteredCostGridData = action.payload;
     },
-    handleWeekReset: (state) =>{
+    handleWeekReset: (state) => {
       state.itemGridData = [];
       state.filteredItemGridData = [];
       state.subDeptCost = [];
@@ -291,11 +333,86 @@ const subMarginSlice = createSlice({
     setPause: (state, action: PayloadAction<boolean>) => {
       state.pause = action.payload;
     },
-    setScannedItemHistory: (state, action: PayloadAction<ItemLookupHistory[]>) => {
+    setScannedItemHistory: (
+      state,
+      action: PayloadAction<ItemLookupHistory[]>,
+    ) => {
       state.scannedItemHistory = action.payload;
     },
     setItemHistoryModalOpen: (state, action: PayloadAction<boolean>) => {
       state.itemHistoryModalOpen = action.payload;
+    },
+    setFetchingItemHistory: (state, action: PayloadAction<boolean>) => {
+      state.fetchingItemHistory = action.payload;
+    },
+    setItemDataMobile: (state, action: PayloadAction<ItemRowMobile[]>) => {
+      state.itemDataMobile = action.payload;
+    },
+    setItemDataFilteredMobile: (
+      state,
+      action: PayloadAction<ItemRowMobile[]>,
+    ) => {
+      state.filteredItemDataMobile = action.payload;
+    },
+    setProcessMobileItemData: (state, action: PayloadAction<boolean>) => {
+      state.processMobileItemData = action.payload;
+    },
+    setScannedItemMobile: (
+      state,
+      action: PayloadAction<ItemRowMobile | null>,
+    ) => {
+      state.scannedItemMobile = action.payload;
+    },
+    setSearchedItemMobile: (
+      state,
+      action: PayloadAction<ItemRowMobile | null>,
+    ) => {
+      state.searchedItemMobile = action.payload;
+    },
+    setMobileMainView: (state, action: PayloadAction<MobileMainView>) => {
+      state.mobileMainView = action.payload;
+    },
+    setViewDaily: (state, action: PayloadAction<boolean>) => {
+      state.viewDaily = action.payload;
+    },
+    setUpcSearch: (state, action: PayloadAction<string>) => {
+      state.upcSearch = action.payload;
+    },
+    setMobileSort: (
+      state: SubMarginState,
+      action: PayloadAction<{ option: SortOption }>,
+    ) => {
+      const { option } = action.payload; // the key of the mSort obj to be updated
+      const currentSort = state.mSort[option]; // the key's current sort value (asc | desc | "")
+
+      // The value to be set to the selected sorting option
+      let newSort: MobileSort;
+      if (currentSort === "asc") {
+        newSort = "desc";
+      } else if (currentSort === "desc") {
+        newSort = "";
+      } else {
+        newSort = "asc";
+      }
+
+      // Set the sort option's new value
+      state.mSort[option] = newSort;
+
+      // reset other sort options
+      (Object.keys(state.mSort) as SortOption[]).forEach((key) => {
+        if (key !== option && state.mSort[key] !== "") {
+          state.mSort[key] = "";
+        }
+      });
+    },
+    resetMobileSort: (state) => {
+      state.mSort = {
+        total_sales: "",
+        qty: "",
+        cogs: "",
+        margin: "",
+        reset: "",
+      };
     },
     resetSubMarginState: () => initialState,
   },
@@ -335,5 +452,16 @@ export const {
   setPause,
   setScannedItemHistory,
   setItemHistoryModalOpen,
+  setFetchingItemHistory,
+  setItemDataMobile,
+  setItemDataFilteredMobile,
+  setProcessMobileItemData,
+  setScannedItemMobile,
+  setMobileMainView,
+  setViewDaily,
+  setSearchedItemMobile,
+  setUpcSearch,
+  setMobileSort,
+  resetMobileSort,
 } = subMarginSlice.actions;
 export default subMarginSlice.reducer;

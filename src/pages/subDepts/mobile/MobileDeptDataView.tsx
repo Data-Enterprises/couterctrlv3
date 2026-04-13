@@ -1,25 +1,63 @@
-import { useMemo, useState } from "react";
-import { formatSubDate } from ".";
+import { useEffect, useMemo } from "react";
+import { useSubMarginCtx } from "../hooks";
+
+import { formatSubDate, reduceItemData } from ".";
 import { calculateCogs } from "..";
-import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import {
-  resetSubMarginState,
+  setItemDataFilteredMobile,
+  setItemDataMobile,
+  setMobileMainView,
+  setProcessMobileItemData,
+  setScannedItemMobile,
+  setSelectedSubDeptId,
   setSelectedWeekDay,
+  setViewDaily,
 } from "../../../features/subMarginSlice";
 import { gpm } from "../../../functions";
 import { useAppDispatch } from "../../../hooks";
 import type { BarData } from "../display/widgets";
-import { useSubMarginCtx } from "../hooks";
+
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import MarginDayCardOverview from "./MarginDayCardOverview";
 import ItemsView from "./ItemsView";
+import ScanView from "./ScanView";
+import ItemHistoryModal from "./ItemHistoryModal";
+import TotalsHeader from "./TotalsHeader";
+import { setUpcCode } from "../../../features/itemScanSlice";
+import DayTotalsHeader from "./DayTotalsHeader";
+
 const MobileDeptDataView = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
-  const [view, setView] = useState<"overview" | "items">("overview");
 
-  const handleReset = () => {
-    dispatch(resetSubMarginState());
+  const handleMainView = (isResetting: boolean) => {
+    if (!ctx.viewDaily) dispatch(setViewDaily(true));
+    dispatch(setScannedItemMobile(null));
+    dispatch(setMobileMainView("overview"));
+    dispatch(setUpcCode(""));
+    if (isResetting) dispatch(setSelectedSubDeptId(0));
   };
+
+  const handleScanView = () => {
+    dispatch(setViewDaily(false));
+    dispatch(setMobileMainView("overview"));
+    dispatch(setUpcCode(""));
+    dispatch(setSelectedWeekDay(""));
+  };
+
+  useEffect(() => {
+    if (ctx.processMobileItemData && ctx.margins.length) {
+      const reduced = reduceItemData(ctx.margins);
+      const newData = reduced.map((item) => ({
+        ...item,
+        margin: ((item.total_sales - item.cogs) / item.total_sales) * 100 || 0,
+      }));
+
+      dispatch(setItemDataMobile(newData));
+      dispatch(setItemDataFilteredMobile(newData));
+      dispatch(setProcessMobileItemData(false));
+    }
+  }, [ctx.processMobileItemData, ctx.margins]);
 
   const dates = useMemo(() => {
     const result = Array.from(
@@ -79,53 +117,68 @@ const MobileDeptDataView = () => {
   if (!ctx.margins.length && !ctx.loadingMargins) return null;
 
   if (ctx.loadingMargins) {
+    const deptName = ctx.subDepts.find((d) => d.id === ctx.selectedSubDeptId)?.desc || "";
     return (
       <div className="relative h-[calc(100vh-3rem)]">
-        <LoadingIndicator message="Loading margins..." className="" />
+        <LoadingIndicator message={`Loading ${deptName}`} className="" />
       </div>
     );
   }
 
-  const handleViewToggle = () => {
-    setView((prev) => (prev === "overview" ? "items" : "overview"));
-  };
-
-  const handleCardClick = (date: string) => {
-    if (ctx.selectedWeekDay === date) {
-      dispatch(setSelectedWeekDay(""));
-    } else {
-      dispatch(setSelectedWeekDay(date));
-      setView("items");
-    }
-  };
-
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-auto">
-      <div className="w-full p-2 grid grid-cols-2 gap-2">
-        <button className="btn-themeBlue px-0" onClick={handleReset}>
-          Reset Search
+      <ItemHistoryModal />
+      <div className="w-full p-2 grid grid-cols-3 gap-2">
+        <button
+          className="btn-themeBlue py-1.5 px-0 text-[13px]"
+          onClick={() => handleMainView(true)}
+        >
+          Sub Depts
         </button>
-        <button className="btn-themeBlue px-0" onClick={handleViewToggle}>
-          {view === "overview" ? "Items" : "Day Overview"}
+        <button
+          className={`${!ctx.viewDaily ? "btn-themeGreen" : "btn-themeBlue"} py-1.5 px-0 text-[13px]`}
+          onClick={handleScanView}
+        >
+          Search
+        </button>
+        <button
+          className={`${ctx.viewDaily ? "btn-themeGreen" : "btn-themeBlue"} py-1.5 px-0 text-[13px]`}
+          onClick={() => handleMainView(false)}
+        >
+          {ctx.mobileMainView === "overview" ? "View Daily" : "Go Back"}
         </button>
       </div>
 
-      {/* Cards */}
-      {view === "overview" ? (
-        <div className="grid grid-cols-1 gap-2 p-2 max-h-[calc(100vh-6.8rem)] overflow-y-auto">
-          {barData
-            .slice()
-            .reverse()
-            .map((data, i) => (
-              <MarginDayCardOverview
-                key={i}
-                margin={data}
-                onCardClick={() => handleCardClick(data.date)}
-              />
-            ))}
+      {/* Overview and Items views */}
+      {ctx.mobileMainView === "overview" ? (
+        <div className="px-2 rounded-lg">
+          {/* <TotalsHeader barData={barData} /> */}
+          {ctx.selectedWeekDay.length ? (
+            <DayTotalsHeader
+              barData={
+                barData.filter((bd) => bd.date === ctx.selectedWeekDay)[0]
+              }
+            />
+          ) : (
+            <TotalsHeader barData={barData} />
+          )}
+          <div className="mt-2">
+            {ctx.viewDaily ? (
+              <div className="shadow-md">
+                {barData
+                  .slice()
+                  .reverse()
+                  .map((data, i) => (
+                    <MarginDayCardOverview key={i} margin={data} />
+                  ))}
+              </div>
+            ) : (
+              <ScanView dates={dates} />
+            )}
+          </div>
         </div>
       ) : (
-        <ItemsView />
+        <ItemsView barData={barData} />
       )}
     </div>
   );

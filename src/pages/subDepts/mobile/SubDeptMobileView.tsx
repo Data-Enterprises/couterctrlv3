@@ -26,6 +26,10 @@ const SubDeptMobileView = () => {
   };
 
   const handleSubDeptSearch = () => {
+    if (!params.searchValue) {
+      toast.warn("Please select a store");
+      return;
+    }
     dispatch(requerySubDeptMargins());
     dispatch(setLoadingSubDepts(true));
     getSubDepts(

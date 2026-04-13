@@ -53,7 +53,7 @@ const TopSubDept = ({ inReport }: Props) => {
     // Set the display SubDept
     setTopSub(sub);
 
-    if (sub.sub_department === topSubDept?.sub_department) {
+    if (topSubDept && sub.sub_department === topSubDept.sub_department) {
       setTitle("Top Sub Dept");
     } else {
       setTitle("Selected Sub Dept");

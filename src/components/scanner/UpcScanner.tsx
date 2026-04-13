@@ -8,14 +8,27 @@ import {
   setPause,
   setUpcCode,
 } from "../../features/itemScanSlice";
+import { normalizeUpc } from ".";
 
 interface UpcScannerProps {
   containerClassName?: string;
-  handleScan: () => void;
-  onClear?: () => void;
+  handleScan: (upc: string) => void;
+  onClear: () => void;
+  isFiltering?: boolean;
+  handleFilter?: (upc: string) => void;
+  totalItems?: number;
+  setUpcSearch?: (value: string) => void;
 }
 
-const UpcScanner = ({ handleScan, onClear, containerClassName= "" }: UpcScannerProps) => {
+const UpcScanner = ({
+  handleScan,
+  onClear,
+  containerClassName = "",
+  isFiltering = false,
+  handleFilter,
+  totalItems,
+  setUpcSearch = () => {},
+}: UpcScannerProps) => {
   const dispatch = useAppDispatch();
   const ref = useRef<HTMLDivElement>(null);
   const state = useAppSelector((state) => state.itemScan);
@@ -24,6 +37,14 @@ const UpcScanner = ({ handleScan, onClear, containerClassName= "" }: UpcScannerP
     video: { facingMode: "environment", width: 1280, height: 720 },
   };
   const { devices } = useMediaDevices({ constraints });
+
+  useEffect(() => {
+    return () => {
+      Quagga.stop();
+      Quagga.offDetected();
+      dispatch(setPause(true));
+    };
+  }, []);
 
   useEffect(() => {
     if (devices) {
@@ -45,7 +66,11 @@ const UpcScanner = ({ handleScan, onClear, containerClassName= "" }: UpcScannerP
     if (ref.current) {
       if (state.upcCode.length) {
         // run the passed in scan item function here
-        handleScan();
+        if (isFiltering && handleFilter) {
+          handleFilter(state.upcCode);
+        } else {
+          handleScan(state.upcCode);
+        }
         return;
       }
 
@@ -69,6 +94,12 @@ const UpcScanner = ({ handleScan, onClear, containerClassName= "" }: UpcScannerP
               height: { min: 480, ideal: 720, max: 1080 },
               facingMode: { exact: "environment" },
               deviceId: state.deviceId,
+            },
+            area: {
+              top: "30%",
+              bottom: "30%",
+              left: "10%",
+              right: "10%",
             },
           },
           decoder: {
@@ -95,9 +126,17 @@ const UpcScanner = ({ handleScan, onClear, containerClassName= "" }: UpcScannerP
 
         ref.current!.style.display = "none";
         const code = result.codeResult.code;
-        dispatch(setUpcCode(code!));
+        let normalizedUpc = "";
+        if (code) {
+          normalizedUpc = normalizeUpc(code);
+        }
+        dispatch(setUpcCode(normalizedUpc));
         // Run the passed in scan item function here with the scanned upc code
-        handleScan();
+        if (isFiltering && handleFilter) {
+          handleFilter(normalizedUpc);
+        } else {
+          handleScan(normalizedUpc);
+        }
         dispatch(setPause(true));
       });
     }
@@ -116,12 +155,13 @@ const UpcScanner = ({ handleScan, onClear, containerClassName= "" }: UpcScannerP
   };
 
   const clear = () => {
-    if (onClear) onClear();
+    // if (onClear) onClear();
     dispatch(setError(""));
     dispatch(setPause(true));
   };
 
   const handleUpcChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUpcSearch(e.target.value);
     dispatch(setUpcCode(e.target.value));
   };
 
@@ -134,21 +174,30 @@ const UpcScanner = ({ handleScan, onClear, containerClassName= "" }: UpcScannerP
         } mb-2 rounded-lg`}
         style={{ objectFit: "cover", height: "175px", width: "100%" }}
       />
-      <div className="text-sm font-medium">Scan item:</div>
-      <div className="flex gap-2 items-center">
+      <div className="text-[13px] font-medium">
+        Search item {totalItems ? `- ${totalItems}` : ""}
+      </div>
+      <div className="flex gap-1 items-center">
         <input
           type="text"
           data-testid="scan-item-input"
           value={state.upcCode}
           onChange={handleUpcChange}
-          className="basic-input bg-custom-white"
+          className="basic-input bg-custom-white py-1.5 text-[13.5px]"
         />
         <button
           data-testid="scan-button"
           onClick={scanItem}
-          className="btn-themeBlue px-4"
+          className="btn-themeGreen px-4 py-1.5 text-[13.5px]"
         >
-          Scan
+          Search
+        </button>
+        <button
+          data-testid="scan-button"
+          onClick={onClear}
+          className="btn-themeOrange px-4 py-1.5 text-[13.5px]"
+        >
+          Clear
         </button>
       </div>
     </div>

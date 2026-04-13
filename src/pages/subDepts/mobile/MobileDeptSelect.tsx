@@ -1,7 +1,10 @@
+import { useAppDispatch } from "../../../hooks";
+import { useParams, useSubMarginCtx } from "../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+
 import { formatSubDate } from ".";
 import { getSubMargins } from "../../../api/subMargins";
-import LoadingIndicator from "../../../components/loading/LoadingIndicator";
-import { useToast } from "../../../components/toasts/hooks/useToast";
+
 import {
   requerySubDeptMargins,
   setSelectedSubDeptId,
@@ -9,14 +12,20 @@ import {
   setLoadingMargins,
   setSelectedWeek,
   setWeekTrendMargins,
+  setProcessMobileItemData,
 } from "../../../features/subMarginSlice";
-import { useAppDispatch } from "../../../hooks";
+
 import type {
   SubMarginsJsonResp,
   SubDeptMargin,
   JsonError,
 } from "../../../interfaces";
-import { useParams, useSubMarginCtx } from "../hooks";
+
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+import {
+  BuildingStorefrontIcon,
+  CalendarIcon,
+} from "@heroicons/react/24/solid";
 
 const MobileDeptSelect = () => {
   const ctx = useSubMarginCtx();
@@ -82,6 +91,7 @@ const MobileDeptSelect = () => {
                     // If all pages have been fetched, we can set the margins for the week
                     if (pages.every((p) => p.fetched)) {
                       dispatch(setWeekTrendMargins({ data: marginData, week }));
+                      dispatch(setProcessMobileItemData(true));
                     }
                   }
                 })
@@ -90,37 +100,43 @@ const MobileDeptSelect = () => {
           } else {
             // If we only have one page of data total, we can just set the margins for the week
             dispatch(setWeekTrendMargins({ data: marginData, week }));
+            dispatch(setProcessMobileItemData(true));
           }
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
   };
 
-  if (!ctx.subDepts.length && !ctx.loadingSubDepts) return null;
+  if (!ctx.loadingSubDepts && !ctx.subDepts.length) return null;
 
   if (ctx.loadingSubDepts) {
     return (
       <div className="relative w-full h-[calc(100vh-257px)]">
-        <LoadingIndicator message="Loading Sub Depts..." className="" />
+        <LoadingIndicator message="Loading Sub Depts" className="" />
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="w-full text-center font-medium">
-        {formatSubDate(params.start)} - {formatSubDate(params.end)}
+    <div className="text-[13px] font-medium">
+      <div className="mt-2 mx-2 px-2 text-[13.5px] font-medium grid grid-cols-[2fr_1fr]">
+        <div className="flex gap-2 items-center">
+          <CalendarIcon className="w-6 h-6 text-blue-500" />
+          {formatSubDate(params.start)} - {formatSubDate(params.end)}
+        </div>
+        <div className="flex gap-2 items-center justify-end">
+          <BuildingStorefrontIcon className="w-6 h-6 text-blue-500" />
+          <div>{ctx.subDepts.length} Sub Depts</div>
+        </div>
       </div>
-      <div className="grid grid-cols-2 gap-2 p-2 max-h-[calc(100vh-283px)] overflow-y-auto">
+      <div className="grid grid-cols-2 gap-2 px-2 pb-2 mt-2 max-h-[calc(100vh-310px)] overflow-y-auto">
         {ctx.subDepts.map((s, i) => (
           <div
             key={i}
-            className="px-2 py-3 bg-custom-white rounded-lg shadow-md text-sm flex justify-between items-center"
+            className="p-2 bg-custom-white rounded-full shadow-md text-[13px] flex justify-between items-center"
             onClick={() => getData(1, s.id)}
           >
-            <div className="font-medium">
-              {s.id} - {s.desc}
-            </div>
+            <div className="font-medium text-center w-full">{s.desc}</div>
           </div>
         ))}
       </div>
