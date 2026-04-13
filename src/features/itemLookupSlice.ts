@@ -49,6 +49,7 @@ interface ItemLookupState {
   itemLookupHistory: ItemLookupHistory[];
   daysSold: number;
   pause: boolean;
+  viewHistory: boolean;
 }
 
 const initialState: ItemLookupState = {
@@ -71,6 +72,7 @@ const initialState: ItemLookupState = {
   itemLookupHistory: [],
   daysSold: 0,
   pause: true,
+  viewHistory: false,
 };
 
 interface ItemsPayload {
@@ -152,6 +154,9 @@ const itemLookupSlice = createSlice({
     setPause: (state, action: PayloadAction<boolean>) => {
       state.pause = action.payload;
     },
+    setViewHistory: (state, action: PayloadAction<boolean>) => {
+      state.viewHistory = action.payload;
+    },
     reQueryUpc: (state) => {
       state.upcCode = "";
       state.mode = "Sales";
@@ -172,6 +177,7 @@ const itemLookupSlice = createSlice({
       state.itemLookupHistory = [];
       state.daysSold = 0;
       state.pause = true;
+      state.viewHistory = false;
     },
     resetLookupSlice: () => initialState,
   },
@@ -191,6 +197,7 @@ export const {
   setHistoryMetrics,
   setPause,
   reQueryUpc,
+  setViewHistory
 } = itemLookupSlice.actions;
 
 export default itemLookupSlice.reducer;

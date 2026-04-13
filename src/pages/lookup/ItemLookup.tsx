@@ -19,8 +19,7 @@ import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import UpcScanner from "../../components/scanner/UpcScanner";
 import { setError, setUpcCode } from "../../features/itemScanSlice";
 import SingleSelect from "../../components/SingleSelect";
-import ItemHIstory from "./ItemHistory";
-// import { setDates } from "../subDepts";
+import LookupCharts from "./LookupCharts";
 
 const ItemLookup = () => {
   const toast = useToast();
@@ -29,7 +28,6 @@ const ItemLookup = () => {
   const { itemsLoaded, selectedStore } = useAppSelector((state) => state.item);
   const { upcCode, error } = useAppSelector((state) => state.itemScan);
   const { assignedStores } = useAppSelector((state) => state.user);
-  // const { singleDate } = useAppSelector((state) => state.search);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -58,15 +56,7 @@ const ItemLookup = () => {
           );
           dispatch(setProductCode(j.product_code));
           dispatch(setDescription(j.description));
-
-          // move this inside the next call
           dispatch(setItemsLoaded(true));
-          // const start = setDates(new Date(singleDate), 6);
-          // const end = setDates(new Date(singleDate));
-          // getSubMargins(
-          //   url,
-          //   token,
-          // )
         } else {
           // If item is not found
           dispatch(
@@ -81,56 +71,13 @@ const ItemLookup = () => {
       .finally(() => setIsLoading(false));
   };
 
-  // const getData = (upc: string) => {
-  //   setIsLoading(true);
-  //   getItemLookup(url, token, upc)
-  //     .then((resp) => {
-  //       const j = resp.data;
-  //       if (j.error === 0) {
-  //         const itemsPayload = {
-  //           top_store_sales: j.top_store_sales,
-  //           lowest_store_sales: j.lowest_store_sales,
-  //           top_store_qty: j.top_store_qty,
-  //           lowest_store_qty: j.lowest_store_qty,
-  //           highest_price_store: j.highest_price_store,
-  //           lowest_price_store: j.lowest_price_store,
-  //         };
-  //         dispatch(setItems(itemsPayload));
-  //         dispatch(setProductCode(j.product_code));
-  //         dispatch(setDescription(j.description));
-  //         dispatch(
-  //           setMetrics({
-  //             totalStores: j.total_stores,
-  //             totalSales: j.total_sales,
-  //             totalQty: j.total_qty,
-  //             avgPrice: j.average_price,
-  //           }),
-  //         );
-  //         dispatch(setItemsLoaded(true));
-  //       } else {
-  //         dispatch(
-  //           setError(
-  //             `We're sorry, item ${
-  //               j.product_code.split(".")[0]
-  //             } was not found in your inventory`,
-  //           ),
-  //         );
-  //         dispatch(setItemsLoaded(false));
-  //       }
-  //     })
-  //     .catch((err) => toast.error(err.message))
-  //     .finally(() => setIsLoading(false));
-  // };
-
   const clear = () => {
     dispatch(reQueryUpc());
     dispatch(setUpcCode(""));
     dispatch(setError(""));
   };
 
-  // This may not work
   const scanItem = (upcCode: string) => {
-    // return selectedStore > 0 ? getSingleStoreData(upcCode) : getData(upcCode);
     getSingleStoreData(upcCode);
   };
 
@@ -162,9 +109,9 @@ const ItemLookup = () => {
           innerClass="text-sm"
           listClass="text-sm"
         />
-      <UpcScanner handleScan={scanItem} onClear={clear} />
+        <UpcScanner handleScan={scanItem} onClear={clear} />
       </div>
-      {itemsLoaded ? <ItemHIstory /> : null}
+      {itemsLoaded ? <LookupCharts /> : null}
       {error.length > 0 ? (
         <div className="text-content mt-8 text-center">{error}</div>
       ) : null}
