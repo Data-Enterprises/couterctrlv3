@@ -59,38 +59,38 @@ const MainViewContainer = () => {
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden text-[13px]">
       <div className="flex justify-items-center bg-custom-white shadow-md py-2">
         <div
-          className="border-r w-1/5 flex justify-center items-center"
+          className="border-r w-1/5 flex justify-center items-center transition-all"
           onClick={() => handleViewSelect("main")}
         >
-          <ArrowUturnLeftIcon className={`h-6 w-6 ${activeStyle("main")}`} />
+          <ArrowUturnLeftIcon className={`h-6 w-6 transition-all duration-200 ${activeStyle("main")}`} />
         </div>
         <div
-          className="border-r w-1/5 flex justify-center items-center"
+          className="border-r w-1/5 flex justify-center items-center transition-all"
           onClick={() => handleViewSelect("stores")}
         >
           <BuildingStorefrontIcon
-            className={`h-6 w-6 ${activeStyle("stores")}`}
+            className={`h-6 w-6 transition-all duration-200 ${activeStyle("stores")}`}
           />
         </div>
         <div
-          className="border-r w-1/5 flex justify-center items-center"
+          className="border-r w-1/5 flex justify-center items-center transition-all"
           onClick={() => handleViewSelect("sales")}
         >
           <DocumentCurrencyDollarIcon
-            className={`h-6 w-6 ${activeStyle("sales")}`}
+            className={`h-6 w-6 transition-all duration-200 ${activeStyle("sales")}`}
           />
         </div>
         <div
-          className="border-r w-1/5 flex justify-center items-center"
+          className="border-r w-1/5 flex justify-center items-center transition-all"
           onClick={() => handleViewSelect("hourly")}
         >
-          <ClockIcon className={`h-6 w-6 ${activeStyle("hourly")}`} />
+          <ClockIcon className={`h-6 w-6 transition-all duration-200 ${activeStyle("hourly")}`} />
         </div>
         <div
           className="w-1/5 flex justify-center items-center"
           onClick={() => handleViewSelect("subdept")}
         >
-          <ShoppingCartIcon className={`h-6 w-6 ${activeStyle("subdept")}`} />
+          <ShoppingCartIcon className={`h-6 w-6 transition-all duration-200 ${activeStyle("subdept")}`} />
         </div>
         {/* <button
           className={`${ctx.view === "main" ? "btn-themeGreen" : "btn-themeBlue"} py-1 px-0 text-[13px]`}

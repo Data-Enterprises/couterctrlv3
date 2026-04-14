@@ -1,10 +1,13 @@
+import { setSelectedStore } from "../../../../features/salesMobileSlice";
 import type { WeeklySale } from "../../../../interfaces";
 import { formatBigNumber, formatCurrency2 } from "../../../../utils";
+import { useMobileSalesCtx } from "../hooks";
 interface StoreRowProps {
   panel: WeeklySale;
 }
 
 const StoreRow = ({ panel }: StoreRowProps) => {
+  const ctx = useMobileSalesCtx();
   const dow = new Date(panel.sale_date).toLocaleDateString("en-US", {
     weekday: "short",
   });
@@ -24,13 +27,29 @@ const StoreRow = ({ panel }: StoreRowProps) => {
     return formatted;
   };
 
+  const handleStoreSelect = () => {
+    const selected = {
+      store_name: panel.store_name,
+      storeid: panel.storeid,
+      sale_date: panel.sale_date,
+    };
+    ctx.dispatch(setSelectedStore(selected));
+  };
+
+  const bgStyle = ctx.selectedStore.sale_date === panel.sale_date ? "bg-orange-200" : `odd:bg-custom-white even:bg-blue-200/50`;
+
   return (
-    <div className="odd:bg-custom-white even:bg-blue-200/50 px-2 py-0.5">
+    <div
+      className={`transition-all duration-200 ${bgStyle} px-2 py-0.5`}
+      onClick={handleStoreSelect}
+    >
       <div className="font-medium">{dateStr}</div>
       <div className="grid grid-cols-4">
         <div>
           <div className="text-content/60">Sales</div>
-          <div className="font-medium">{formatCurrency2(panel.total_sales - panel.total_tax)}</div>
+          <div className="font-medium">
+            {formatCurrency2(panel.total_sales - panel.total_tax)}
+          </div>
         </div>
         <div>
           <div className="text-content/60">Tax</div>

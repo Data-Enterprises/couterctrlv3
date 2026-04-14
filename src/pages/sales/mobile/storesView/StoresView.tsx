@@ -34,7 +34,7 @@ const StoresView = () => {
       ctx.selectedStore.sale_date.length > 0
         ? [...ctx.hourlySales].filter((hs) => {
             return ctx.selectedStore.sale_date
-              ? hs.sale_date.split("T")[0] === ctx.selectedStore.sale_date
+              ? hs.sale_date.split("T")[0] === ctx.selectedStore.sale_date.split("T")[0]
               : true;
           })
         : [...ctx.hourlySales];
@@ -54,7 +54,7 @@ const StoresView = () => {
       if (ctx.selectedStore.sale_date.length) {
         // find that sales panel => total sales - total tax => yyyy-mm-dd
         const panel = ctx.salesPanels.find(
-          (sp) => sp.sale_date.split("T")[0] === ctx.selectedStore.sale_date,
+          (sp) => sp.sale_date.split("T")[0] === ctx.selectedStore.sale_date.split("T")[0],
         );
 
         return panel!.total_sales - panel!.total_tax;
@@ -72,7 +72,12 @@ const StoresView = () => {
 
     setAggTotals(totals);
 
-    const cpns = ctx.subSales.reduce(
+    const subs = ctx.selectedStore.sale_date.length
+      ? [...ctx.subSales].filter(
+          (ss) => ss.sale_date.split("T")[0] === ctx.selectedStore.sale_date.split("T")[0],
+        )
+      : ctx.subSales;
+    const cpns = subs.reduce(
       (acc: AggCoupons, val) => {
         acc.digital_coupons += val.digital_coupons;
         acc.elec_instore_coupons += val.elec_instore_coupons;

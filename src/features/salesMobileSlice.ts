@@ -137,6 +137,14 @@ const salesMobileSlice = createSlice({
       state.aggCoupons = action.payload;
     },
     setSelectedStore: (state, action: PayloadAction<SelectedSalesPanel>) => {
+      if (
+        state.selectedStore.sale_date === action.payload.sale_date &&
+        state.selectedStore.storeid === action.payload.storeid &&
+        state.selectedStore.store_name === action.payload.store_name
+      ) {
+        state.selectedStore = defaultSelectedSalesPanel;
+        return;
+      }
       state.selectedStore = action.payload;
     },
     setSPSort: (state, action: PayloadAction<PanelSortOption>) => {

@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
-import {
-  setViewHistory,
-  type ItemLookupHistory,
-} from "../../features/itemLookupSlice";
+import { type ItemLookupHistory } from "../../features/itemLookupSlice";
 import { formatBigNumber, formatCurrency2 } from "../../utils";
-import { useAppSelector, useAppDispatch } from "../../hooks";
+import { useAppSelector } from "../../hooks";
 
 type GroupedData = {
   price: number;
@@ -22,7 +19,7 @@ type QtyGrouped = {
 const ItemHIstory = () => {
   const item = useAppSelector((state) => state.item);
   const { startDate, endDate } = useAppSelector((state) => state.search);
-  const dispatch = useAppDispatch();
+  const { assignedStores } = useAppSelector((state) => state.user);
   const [desc, setDesc] = useState<string>("");
   const [cat, setCat] = useState<string>("");
   const [groupedByPrice, setGroupedByPrice] = useState<GroupedData[]>([]);
@@ -210,22 +207,37 @@ const ItemHIstory = () => {
     }
   }, [item.itemLookupHistory, item.viewHistory]);
 
-  const handleGoBack = () => {
-    dispatch(setViewHistory(false));
-  };
+  if (!item.itemsLoaded) {
+    return (
+      <div className="bg-custom-white px-2 py-8 text-content/60 font-medium rounded-lg shadow-md text-center text-sm mt-2">
+        <div>Please search for an item to view its history data</div>
+      </div>
+    )
+  }
+
+  const storeName =
+    assignedStores.find((s) => s.storeid === item.selectedStore)?.store_name || "";
 
   return (
     <div className="bg-custom-white p-2 rounded-lg shadow-md text-[13px]">
-      <div className={`max-h-[calc(100vh-21rem)] overflow-y-auto`}>
+      <div className={`max-h-[calc(100vh-9rem)] overflow-y-auto`}>
         <div className="mb-1 pb-1 ">
           {/* Summary */}
-          <div className="font-medium">{startDate} - {endDate}</div>
+          <div className="flex justify-between font-medium">
+            <div>
+              {startDate} - {endDate}
+            </div>
+            <div>{storeName}</div>
+          </div>
+          <div className="font-medium">
+            UPC: {item.itemLookupHistory[0].product_code}
+          </div>
           <div className="font-medium">Desc: {desc}</div>
           <div className="font-medium mb-2 text-nowrap truncate">
             Category: {cat}
           </div>
 
-          <div className="font-medium text-[14px]">Totals Summary</div>
+          <div className="font-medium text-[13.5px]">Totals Summary</div>
           <div className="grid grid-cols-3  w-[75%]">
             <div>
               <div className="font-medium text-content/60">Total Sales:</div>
@@ -383,12 +395,6 @@ const ItemHIstory = () => {
             );
           })}
         </div>
-      </div>
-      <div
-        className="btn-themeOrange w-full px-0 text-center"
-        onClick={handleGoBack}
-      >
-        Go Back
       </div>
     </div>
   );
