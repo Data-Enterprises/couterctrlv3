@@ -6,7 +6,10 @@ export const useMobileSalesCtx = () => {
   const {
     hourlySales,
     panelsLoading,
+    panelSortOption,
     salesPanels,
+    selectedStore,
+    sortDir,
     subSales,
     subSalesWk1,
     subSalesWk2,
@@ -17,6 +20,8 @@ export const useMobileSalesCtx = () => {
     view,
     weeklySales,
   } = useAppSelector((state) => state.salesMobile);
+  const { groups } = useAppSelector((state) => state.group);
+  const { assignedStores } = useAppSelector((state) => state.user);
 
   const { token, url } = useAppSelector((state) => state.app);
   const { lastGroup, lastStore, singleDate, type } = useAppSelector(
@@ -31,14 +36,19 @@ export const useMobileSalesCtx = () => {
 
   return {
     dispatch,
+    assignedStores,
     endDate,
+    groups,
     hourlySales,
     lastGroup,
     lastStore,
     panelsLoading,
+    panelSortOption,
     salesPanels,
     searchValue,
+    selectedStore,
     singleStore,
+    sortDir,
     startDate,
     subSales,
     subSalesWk1,

@@ -93,6 +93,11 @@ const SalesMobile = () => {
   // Here is where the main view can be toggled once the sales panels are set
   if (ctx.view !== "main") return <MainViewContainer />;
 
+  const showBtn =
+    ctx.salesPanels.length > 0 &&
+    ctx.subSales.length > 0 &&
+    ctx.weeklySales.length > 0;
+
   // Default return if view is 'main'
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-2 select-none text-[13px]">
@@ -102,12 +107,15 @@ const SalesMobile = () => {
         <button className="btn-themeBlue w-full mt-2" onClick={getSalesPanels}>
           Search
         </button>
+        {showBtn && (
+          <button
+            className="btn-themeBlue w-full mt-2"
+            onClick={() => ctx.dispatch(setView("stores"))}
+          >
+            Overview
+          </button>
+        )}
       </div>
-      {/* {ctx.panelsLoading ? (
-        <div className="h-[35vh] relative">
-          <LoadingIndicator message={`Loading sales`} className="ml-1" />
-        </div>
-      ) : null} */}
     </div>
   );
 };

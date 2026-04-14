@@ -59,3 +59,8 @@ export const aggCoupons = (data: SubSale[]): AggCoupons => {
 
   return totals;
 };
+
+export type PieData = {
+  id: string;
+  value: number;
+};

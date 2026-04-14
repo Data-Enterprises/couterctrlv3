@@ -6,10 +6,31 @@ import type {
   WeeklySale,
   AggTotals,
   AggCoupons,
+  SelectedSalesPanel,
 } from "../interfaces";
 import type { TopSub } from "../pages/sales/components";
 
-export type SalesMobileView = "main" | "stores" | "sales" | "subdept";
+export type SalesMobileView =
+  | "main"
+  | "stores"
+  | "sales"
+  | "subdept"
+  | "hourly";
+
+export const defaultSelectedSalesPanel: SelectedSalesPanel = {
+  sale_date: "",
+  storeid: 0,
+  store_name: "",
+};
+
+export type PanelSortOption =
+  | "total_sales"
+  | "total_tax"
+  | "qty"
+  | "weight"
+  | "";
+
+type SortDir = "asc" | "desc" | "";
 
 interface SalesMobileState {
   topTenItems: TopTenItem[];
@@ -26,6 +47,10 @@ interface SalesMobileState {
   view: SalesMobileView;
   aggTotals: AggTotals;
   aggCoupons: AggCoupons;
+  selectedStore: SelectedSalesPanel;
+  storesViewLoaded: boolean;
+  panelSortOption: PanelSortOption;
+  sortDir: SortDir;
 }
 
 const defaultAggTotals: AggTotals = {
@@ -59,6 +84,10 @@ const initialState: SalesMobileState = {
   view: "main",
   aggTotals: defaultAggTotals,
   aggCoupons: defaultAggCoupons,
+  selectedStore: defaultSelectedSalesPanel,
+  storesViewLoaded: false,
+  panelSortOption: "",
+  sortDir: "",
 };
 
 const salesMobileSlice = createSlice({
@@ -107,6 +136,30 @@ const salesMobileSlice = createSlice({
     setAggCouponTotals: (state, action: PayloadAction<AggCoupons>) => {
       state.aggCoupons = action.payload;
     },
+    setSelectedStore: (state, action: PayloadAction<SelectedSalesPanel>) => {
+      state.selectedStore = action.payload;
+    },
+    setSPSort: (state, action: PayloadAction<PanelSortOption>) => {
+      // if already sorted and pressing Reset => reset sort
+      if (action.payload === "" && state.panelSortOption.length > 0) {
+        state.panelSortOption = "";
+        state.sortDir = "";
+        return;
+      }
+
+      // if selecting the same option => toggle sort direction
+      if (state.panelSortOption === action.payload) {
+        const newSortDir: SortDir = state.sortDir === "asc" ? "desc" : "";
+        state.sortDir = newSortDir;
+        if (state.sortDir === "") {
+          state.panelSortOption = "";
+        }
+        return;
+      }
+      // if switching or initially selecting
+      state.panelSortOption = action.payload;
+      state.sortDir = "asc";
+    },
     resetMobileSalesState: () => initialState,
   },
 });
@@ -127,5 +180,7 @@ export const {
   setMobileWeeklySales,
   setAggTotals,
   setAggCouponTotals,
+  setSelectedStore,
+  setSPSort,
 } = salesMobileSlice.actions;
 export default salesMobileSlice.reducer;
