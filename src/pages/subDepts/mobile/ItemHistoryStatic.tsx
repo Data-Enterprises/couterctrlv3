@@ -8,7 +8,7 @@ import {
   setScannedItemMobile,
 } from "../../../features/subMarginSlice";
 import { setUpcCode } from "../../../features/itemScanSlice";
-// import { useAppSelector } from "../../../hooks";
+import { useParams } from "../hooks";
 
 type GroupedData = {
   price: number;
@@ -30,7 +30,7 @@ interface ItemHistoryStaticProps {
 const ItemHistoryStatic = ({ showClose = true }: ItemHistoryStaticProps) => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
-  const [dateRange, setDateRange] = useState<string>("");
+  const { start, end } = useParams();
   const [groupedByPrice, setGroupedByPrice] = useState<GroupedData[]>([]);
   const [groupedByCost, setGroupedByCost] = useState<GroupedData[]>([]);
   const [groupedByQty, setGroupedByQty] = useState<QtyGrouped[]>([]);
@@ -55,11 +55,6 @@ const ItemHistoryStatic = ({ showClose = true }: ItemHistoryStaticProps) => {
 
   useEffect(() => {
     if (ctx.scannedItemHistory.length) {
-      const lastIdx = ctx.scannedItemHistory.length - 1;
-      setDateRange(
-        `${formatDate(ctx.scannedItemHistory[0].sale_date)} - ${formatDate(ctx.scannedItemHistory[lastIdx].sale_date)}`,
-      );
-
       const pricesGrouped = ctx.scannedItemHistory.reduce(
         (acc: GroupedData[], curr) => {
           const found = acc.find(
@@ -236,7 +231,7 @@ const ItemHistoryStatic = ({ showClose = true }: ItemHistoryStaticProps) => {
       <div className={`${maxHeight} overflow-y-auto`}>
         <div className="mb-1 pb-1 ">
           {/* Summary */}
-          <div className="font-medium mb-2">{dateRange}</div>
+          <div className="font-medium mb-2">{`${formatDate(start)} - ${formatDate(end)}`}</div>
 
           <div className="font-medium text-[14px]">Totals Summary</div>
           <div className="grid grid-cols-3  w-[75%]">

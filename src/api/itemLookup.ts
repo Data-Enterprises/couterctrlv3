@@ -43,7 +43,7 @@ export const getItemLookupSingleStore = async (
   token: string,
   upc: string,
   storeId: number,
-  daysback: number,
+  daysback: number = 14,
 ) => {
   const json = await axios({
     method: "GET",
