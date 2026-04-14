@@ -74,7 +74,9 @@ const ScanView = ({ dates }: ScanViewProps) => {
     dispatch(setScannedItemMobile(item));
     dispatch(setScannedItemHistory([]));
     dispatch(setFetchingItemHistory(true));
-    getItemLookupSingleStore(ctx.url, ctx.token, upc, ctx.searchValue)
+    
+    // 7 be default since this whole module is going one week back
+    getItemLookupSingleStore(ctx.url, ctx.token, upc, ctx.searchValue, 7)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {

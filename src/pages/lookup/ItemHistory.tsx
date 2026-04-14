@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { setViewHistory, type ItemLookupHistory } from "../../features/itemLookupSlice";
+import { type ItemLookupHistory } from "../../features/itemLookupSlice";
 import { formatBigNumber, formatCurrency2 } from "../../utils";
-import { useAppSelector, useAppDispatch } from "../../hooks";
+import { useAppSelector } from "../../hooks";
 
 type GroupedData = {
   price: number;
@@ -18,10 +18,10 @@ type QtyGrouped = {
 
 const ItemHIstory = () => {
   const item = useAppSelector((state) => state.item);
-  const dispatch = useAppDispatch();
-  const [dateRange, setDateRange] = useState<string>("");
+  const { startDate, endDate } = useAppSelector((state) => state.search);
+  const { assignedStores } = useAppSelector((state) => state.user);
   const [desc, setDesc] = useState<string>("");
-  const [cat,setCat] = useState<string>("");
+  const [cat, setCat] = useState<string>("");
   const [groupedByPrice, setGroupedByPrice] = useState<GroupedData[]>([]);
   const [groupedByCost, setGroupedByCost] = useState<GroupedData[]>([]);
   const [groupedByQty, setGroupedByQty] = useState<QtyGrouped[]>([]);
@@ -39,19 +39,10 @@ const ItemHIstory = () => {
   const [salesAvg, setSalesAvg] = useState<number>(0);
   const [qtyAvg, setQtyAvg] = useState<number>(0);
 
-  const formatDate = (dateStr: string) => {
-    const split = dateStr.split("T")[0].split("-");
-    return `${split[1]}/${split[2]}/${split[0]}`;
-  };
-
   useEffect(() => {
     if (item.itemLookupHistory.length && item.viewHistory) {
       setDesc(item.itemLookupHistory[0].product_description);
       setCat(item.itemLookupHistory[0].category_description);
-      const lastIdx = item.itemLookupHistory.length - 1;
-      setDateRange(
-        `${formatDate(item.itemLookupHistory[0].sale_date)} - ${formatDate(item.itemLookupHistory[lastIdx].sale_date)}`,
-      );
 
       const pricesGrouped = item.itemLookupHistory.reduce(
         (acc: GroupedData[], curr) => {
@@ -216,20 +207,38 @@ const ItemHIstory = () => {
     }
   }, [item.itemLookupHistory, item.viewHistory]);
 
-  const handleGoBack = () => {
-    dispatch(setViewHistory(false));
-  };
+  if (!item.itemsLoaded) {
+    return (
+      <div className="bg-custom-white h-[130.2px] flex justify-center items-center text-content/60 font-medium rounded-lg shadow-md text-sm mt-2">
+        <div>Please search for an item to view its history data</div>
+      </div>
+    );
+  }
+
+  const storeName =
+    assignedStores.find((s) => s.storeid === item.selectedStore)?.store_name ||
+    "";
 
   return (
     <div className="bg-custom-white p-2 rounded-lg shadow-md text-[13px]">
-      <div className={`max-h-[calc(100vh-275px)] overflow-y-auto`}>
+      <div className={``}>
         <div className="mb-1 pb-1 ">
           {/* Summary */}
-          <div className="font-medium">{dateRange}</div>
+          <div className="flex justify-between font-medium">
+            <div>
+              {startDate} - {endDate}
+            </div>
+            <div>{storeName}</div>
+          </div>
+          <div className="font-medium">
+            UPC: {item.itemLookupHistory[0].product_code}
+          </div>
           <div className="font-medium">Desc: {desc}</div>
-          <div className="font-medium mb-2 text-nowrap truncate">Category: {cat}</div>
+          <div className="font-medium mb-2 text-nowrap truncate">
+            Category: {cat}
+          </div>
 
-          <div className="font-medium text-[14px]">Totals Summary</div>
+          <div className="font-medium text-[13.5px]">Totals Summary</div>
           <div className="grid grid-cols-3  w-[75%]">
             <div>
               <div className="font-medium text-content/60">Total Sales:</div>
@@ -245,150 +254,157 @@ const ItemHIstory = () => {
             </div>
           </div>
         </div>
+        {/* divider */}
+        <div className="grid grid-cols-2 -mx-2">
+          <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
+          <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
+        </div>
 
-        {/* Sales */}
-        <div className=" mb-1 py-1">
-          <div className="font-medium text-[14px]">Sales</div>
-          <div className="grid grid-cols-3  w-[75%]">
+        {/* Scrollview */}
+        <div className="max-h-[calc(100vh-18.5rem)] overflow-y-auto -mx-2 px-2">
+          {/* Sales */}
+          <div className=" mb-1 py-1">
+            <div className="font-medium text-[14px]">Sales</div>
+            <div className="grid grid-cols-3  w-[75%]">
+              <div>
+                <div className="font-medium text-content/60">Min Sales:</div>
+                <div className="">{formatCurrency2(minSales)}</div>
+              </div>
+              <div>
+                <div className="font-medium text-content/60">Max Sales:</div>
+                <div className="">{formatCurrency2(maxSales)}</div>
+              </div>
+              <div>
+                <div className="font-medium text-content/60">Sales Range:</div>
+                <div className="">{formatCurrency2(maxSales - minSales)}</div>
+              </div>
+              <div className="">
+                <div className="font-medium text-content/60">Median</div>
+                <div className="">{formatCurrency2(salesMedian)}</div>
+              </div>
+              <div className="">
+                <div className="font-medium text-content/60">Average</div>
+                <div className="">{formatCurrency2(salesAvg)}</div>
+              </div>
+              <div className="">
+                <div className="font-medium text-content/60">Most Freq.</div>
+                <div className="">{formatCurrency2(salesMode)}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quantities */}
+          <div className="font-medium text-[14px]">Quantities</div>
+          <div className="grid grid-cols-3  w-[75%] mb-1 pb-1">
             <div>
-              <div className="font-medium text-content/60">Min Sales:</div>
-              <div className="">{formatCurrency2(minSales)}</div>
+              <div className="font-medium text-content/60">Min Qty:</div>
+              <div className="">{formatBigNumber(minQty, 0)}</div>
             </div>
             <div>
-              <div className="font-medium text-content/60">Max Sales:</div>
-              <div className="">{formatCurrency2(maxSales)}</div>
+              <div className="font-medium text-content/60">Max Qty:</div>
+              <div className="">{formatBigNumber(maxQty, 0)}</div>
             </div>
             <div>
-              <div className="font-medium text-content/60">Sales Range:</div>
-              <div className="">{formatCurrency2(maxSales - minSales)}</div>
+              <div className="font-medium text-content/60">Qty Range:</div>
+              <div className="">{formatBigNumber(maxQty - minQty, 0)}</div>
             </div>
             <div className="">
               <div className="font-medium text-content/60">Median</div>
-              <div className="">{formatCurrency2(salesMedian)}</div>
+              <div className="">{formatBigNumber(qtyMedian, 0)}</div>
             </div>
             <div className="">
               <div className="font-medium text-content/60">Average</div>
-              <div className="">{formatCurrency2(salesAvg)}</div>
+              <div className="">{formatBigNumber(qtyAvg, 2)}</div>
             </div>
             <div className="">
               <div className="font-medium text-content/60">Most Freq.</div>
-              <div className="">{formatCurrency2(salesMode)}</div>
+              <div className="">{formatBigNumber(qtyMode, 0)}</div>
             </div>
           </div>
-        </div>
 
-        {/* Quantities */}
-        <div className="font-medium text-[14px]">Quantities</div>
-        <div className="grid grid-cols-3  w-[75%] mb-1 pb-1">
-          <div>
-            <div className="font-medium text-content/60">Min Qty:</div>
-            <div className="">{formatBigNumber(minQty, 0)}</div>
-          </div>
-          <div>
-            <div className="font-medium text-content/60">Max Qty:</div>
-            <div className="">{formatBigNumber(maxQty, 0)}</div>
-          </div>
-          <div>
-            <div className="font-medium text-content/60">Qty Range:</div>
-            <div className="">{formatBigNumber(maxQty - minQty, 0)}</div>
-          </div>
-          <div className="">
-            <div className="font-medium text-content/60">Median</div>
-            <div className="">{formatBigNumber(qtyMedian, 0)}</div>
-          </div>
-          <div className="">
-            <div className="font-medium text-content/60">Average</div>
-            <div className="">{formatBigNumber(qtyAvg, 2)}</div>
-          </div>
-          <div className="">
-            <div className="font-medium text-content/60">Most Freq.</div>
-            <div className="">{formatBigNumber(qtyMode, 0)}</div>
-          </div>
-        </div>
-
-        {/* Price points */}
-        <div className=" mb-1 py-1 w-[80%]">
-          <div className="font-medium text-[14px]">
-            Prices - {groupedByPrice.length}
-          </div>
-          <div className="grid grid-cols-5  text-content/60 font-medium">
-            <div>Price</div>
-            <div>Sales</div>
-            <div>Qty</div>
-            <div>Cost</div>
-            <div>Ext Cost</div>
-          </div>
-          {groupedByPrice.map((g, i) => (
-            <div key={i} className="">
-              <div className="grid grid-cols-5  border-b border-content/25 last:border-none">
-                <div>{formatCurrency2(g.price)}</div>
-                <div>{formatCurrency2(g.total_sales)}</div>
-                <div>{formatBigNumber(g.qty, 0)}</div>
-                <div>{formatCurrency2(g.casecost)}</div>
-                <div>{formatCurrency2(g.extended_cost)}</div>
-              </div>
+          {/* Price points */}
+          <div className=" mb-1 py-1 w-[80%]">
+            <div className="font-medium text-[14px]">
+              Prices - {groupedByPrice.length}
             </div>
-          ))}
-        </div>
-
-        {/*Cost points */}
-        <div className=" mb-1 py-1 w-[80%]">
-          <div className="font-medium text-[14px]">
-            Case Costs - {groupedByCost.length}
-          </div>
-          <div className="grid grid-cols-5  text-content/60 font-medium">
-            <div>Cost</div>
-            <div>Sales</div>
-            <div>Qty</div>
-            <div>Price</div>
-            <div>Ext Cost</div>
-          </div>
-          {groupedByCost.map((g, i) => (
-            <div key={i}>
-              <div className="grid grid-cols-5  border-b border-content/25 last:border-none">
-                <div>{formatCurrency2(g.casecost)}</div>
-                <div>{formatCurrency2(g.total_sales)}</div>
-                <div>{formatBigNumber(g.qty, 0)}</div>
-                <div>{formatCurrency2(g.price)}</div>
-                <div>{formatCurrency2(g.extended_cost)}</div>
-              </div>
+            <div className="grid grid-cols-5  text-content/60 font-medium">
+              <div>Price</div>
+              <div>Sales</div>
+              <div>Qty</div>
+              <div>Cost</div>
+              <div>Ext Cost</div>
             </div>
-          ))}
-        </div>
-
-        {/* Unique Quantities */}
-        <div className="mb-1 py-1 w-[80%]">
-          <div className="font-medium text-[14px]">
-            Unique Qty - {groupedByQty.length}
-          </div>
-          <div className="grid grid-cols-5  text-content/60 font-medium">
-            <div>Qty</div>
-            <div>Sales</div>
-            <div>Price</div>
-            <div>C Cost</div>
-            <div>Ext Cost</div>
-          </div>
-          {groupedByQty.map((g, i) => {
-            return (
-              <div
-                key={i}
-                className="border-b border-content/20 last:border-none"
-              >
-                {g.items.map((item, j) => (
-                  <div key={j} className="grid grid-cols-5  py-0.5">
-                    <div>{j === 0 ? formatBigNumber(item.qty, 0) : ""}</div>
-                    <div>{formatCurrency2(item.total_sales)}</div>
-                    <div>{formatCurrency2(item.price)}</div>
-                    <div>{formatCurrency2(item.casecost)}</div>
-                    <div>{formatCurrency2(item.extended_cost)}</div>
-                  </div>
-                ))}
+            {groupedByPrice.map((g, i) => (
+              <div key={i} className="">
+                <div className="grid grid-cols-5  border-b border-content/25 last:border-none">
+                  <div>{formatCurrency2(g.price)}</div>
+                  <div>{formatCurrency2(g.total_sales)}</div>
+                  <div>{formatBigNumber(g.qty, 0)}</div>
+                  <div>{formatCurrency2(g.casecost)}</div>
+                  <div>{formatCurrency2(g.extended_cost)}</div>
+                </div>
               </div>
-            );
-          })}
+            ))}
+          </div>
+
+          {/*Cost points */}
+          <div className=" mb-1 py-1 w-[80%]">
+            <div className="font-medium text-[14px]">
+              Case Costs - {groupedByCost.length}
+            </div>
+            <div className="grid grid-cols-5  text-content/60 font-medium">
+              <div>Cost</div>
+              <div>Sales</div>
+              <div>Qty</div>
+              <div>Price</div>
+              <div>Ext Cost</div>
+            </div>
+            {groupedByCost.map((g, i) => (
+              <div key={i}>
+                <div className="grid grid-cols-5  border-b border-content/25 last:border-none">
+                  <div>{formatCurrency2(g.casecost)}</div>
+                  <div>{formatCurrency2(g.total_sales)}</div>
+                  <div>{formatBigNumber(g.qty, 0)}</div>
+                  <div>{formatCurrency2(g.price)}</div>
+                  <div>{formatCurrency2(g.extended_cost)}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Unique Quantities */}
+          <div className="mb-1 py-1 w-[80%]">
+            <div className="font-medium text-[14px]">
+              Unique Qty - {groupedByQty.length}
+            </div>
+            <div className="grid grid-cols-5  text-content/60 font-medium">
+              <div>Qty</div>
+              <div>Sales</div>
+              <div>Price</div>
+              <div>C Cost</div>
+              <div>Ext Cost</div>
+            </div>
+            {groupedByQty.map((g, i) => {
+              return (
+                <div
+                  key={i}
+                  className="border-b border-content/20 last:border-none"
+                >
+                  {g.items.map((item, j) => (
+                    <div key={j} className="grid grid-cols-5  py-0.5">
+                      <div>{j === 0 ? formatBigNumber(item.qty, 0) : ""}</div>
+                      <div>{formatCurrency2(item.total_sales)}</div>
+                      <div>{formatCurrency2(item.price)}</div>
+                      <div>{formatCurrency2(item.casecost)}</div>
+                      <div>{formatCurrency2(item.extended_cost)}</div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
-      <div className="btn-themeOrange w-full px-0 text-center" onClick={handleGoBack}>Go Back</div>
     </div>
   );
 };

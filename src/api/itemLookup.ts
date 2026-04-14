@@ -3,7 +3,7 @@ import axios from "axios";
 export const getItemLookup = async (
   url: string,
   token: string,
-  upc: string
+  upc: string,
 ) => {
   const json = await axios({
     method: "GET",
@@ -22,7 +22,7 @@ export const getItemLookup = async (
 export const getStoreList = async (
   url: string,
   token: string,
-  email: string
+  email: string,
 ) => {
   const json = await axios({
     method: "GET",
@@ -42,7 +42,8 @@ export const getItemLookupSingleStore = async (
   url: string,
   token: string,
   upc: string,
-  storeId: number
+  storeId: number,
+  daysback: number = 14,
 ) => {
   const json = await axios({
     method: "GET",
@@ -53,6 +54,7 @@ export const getItemLookupSingleStore = async (
     url: url + `items/itemlookup/${storeId}`,
     params: {
       upc,
+      daysback,
     },
   });
   return json;

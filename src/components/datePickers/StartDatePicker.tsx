@@ -35,19 +35,19 @@ const StartDatePicker = () => {
     : `relative inline-block text-left md:px-0 mx-auto w-full`;
 
   const menuStyle = context.isDesktop ? "px-2.5 md:px-0" : "";
-  const calendarStyle = "w-[98%] md:w-[215px]";
+  const calendarStyle = "w-[150%] md:w-[215px]";
   // const calendarStyle = "w-[98%] md:w-[165%]";
 
   return (
     <Menu data-testid="start-date-picker" as="div" className={styling}>
       <div className={menuStyle}>
-        <label className="md:block flex justify-start md:justify-center pl-1 md:pl-0 text-sm/6 font-medium ">
+        <label className="md:block flex justify-start md:justify-center pl-1 md:pl-0 text-[13px] md:text-sm/6 font-medium ">
           Start Date
         </label>
         <MenuButton
           data-testid="start-date-menu-button"
           ref={menuRef}
-          className="inline-flex w-full bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 justify-between gap-x-1.5 rounded-md px-3 py-3 text-sm font-semibold  shadow-sm ring-1 ring-inset ring-gray-300 "
+          className="inline-flex w-full bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 justify-between gap-x-1.5 rounded-md px-3 py-2 md:py-3 text-sm font-semibold  shadow-sm ring-1 ring-inset ring-gray-300 "
         >
           {formatDisplay()}
           <ChevronDownIcon

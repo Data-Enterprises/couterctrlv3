@@ -28,6 +28,9 @@ export const normalizeUpc = (upc: string): string => {
     // upc = upc.slice(1, -1);
     // Take the last digitoff
     upc = upc.slice(0, -1);
+    if (upc[0] === "0") {
+      upc = upc.slice(1);
+    }
   } else if (upc.length === 8) {
     upc = upc.slice(1, -1);
     upc = upceToUpca(upc);
