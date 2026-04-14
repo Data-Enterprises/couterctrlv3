@@ -17,7 +17,7 @@ const DatePickers = ({ handleQuery, btnPadding = "", showBtn = true }: Props) =>
     }
   };
 
-  const pickerStyle = context.isDesktop ?  "flex gap-2 mb-2" : "mb-2";
+  const pickerStyle = context.isDesktop ?  "flex gap-2" : "grid grid-cols-2 gap-2";
 
   return (
     <div data-testid="date-pickers" className="w-full select-none">
@@ -27,7 +27,7 @@ const DatePickers = ({ handleQuery, btnPadding = "", showBtn = true }: Props) =>
       </div>
       <div
         data-testid="date-picker-search-btn"
-        className={`btn-themeBlue w-full text-center col-span-2 ${btnPadding}`}
+        className={`btn-themeBlue w-full text-center col-span-2 mt-2 text-[13px] md:text-[16px] ${btnPadding}`}
         onClick={handleClick}
         style={{ display: showBtn ? "block" : "none" }}
       >

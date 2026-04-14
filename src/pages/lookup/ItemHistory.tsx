@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { setViewHistory, type ItemLookupHistory } from "../../features/itemLookupSlice";
+import {
+  setViewHistory,
+  type ItemLookupHistory,
+} from "../../features/itemLookupSlice";
 import { formatBigNumber, formatCurrency2 } from "../../utils";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 
@@ -18,10 +21,10 @@ type QtyGrouped = {
 
 const ItemHIstory = () => {
   const item = useAppSelector((state) => state.item);
+  const { startDate, endDate } = useAppSelector((state) => state.search);
   const dispatch = useAppDispatch();
-  const [dateRange, setDateRange] = useState<string>("");
   const [desc, setDesc] = useState<string>("");
-  const [cat,setCat] = useState<string>("");
+  const [cat, setCat] = useState<string>("");
   const [groupedByPrice, setGroupedByPrice] = useState<GroupedData[]>([]);
   const [groupedByCost, setGroupedByCost] = useState<GroupedData[]>([]);
   const [groupedByQty, setGroupedByQty] = useState<QtyGrouped[]>([]);
@@ -39,19 +42,10 @@ const ItemHIstory = () => {
   const [salesAvg, setSalesAvg] = useState<number>(0);
   const [qtyAvg, setQtyAvg] = useState<number>(0);
 
-  const formatDate = (dateStr: string) => {
-    const split = dateStr.split("T")[0].split("-");
-    return `${split[1]}/${split[2]}/${split[0]}`;
-  };
-
   useEffect(() => {
     if (item.itemLookupHistory.length && item.viewHistory) {
       setDesc(item.itemLookupHistory[0].product_description);
       setCat(item.itemLookupHistory[0].category_description);
-      const lastIdx = item.itemLookupHistory.length - 1;
-      setDateRange(
-        `${formatDate(item.itemLookupHistory[0].sale_date)} - ${formatDate(item.itemLookupHistory[lastIdx].sale_date)}`,
-      );
 
       const pricesGrouped = item.itemLookupHistory.reduce(
         (acc: GroupedData[], curr) => {
@@ -222,12 +216,14 @@ const ItemHIstory = () => {
 
   return (
     <div className="bg-custom-white p-2 rounded-lg shadow-md text-[13px]">
-      <div className={`max-h-[calc(100vh-275px)] overflow-y-auto`}>
+      <div className={`max-h-[calc(100vh-21rem)] overflow-y-auto`}>
         <div className="mb-1 pb-1 ">
           {/* Summary */}
-          <div className="font-medium">{dateRange}</div>
+          <div className="font-medium">{startDate} - {endDate}</div>
           <div className="font-medium">Desc: {desc}</div>
-          <div className="font-medium mb-2 text-nowrap truncate">Category: {cat}</div>
+          <div className="font-medium mb-2 text-nowrap truncate">
+            Category: {cat}
+          </div>
 
           <div className="font-medium text-[14px]">Totals Summary</div>
           <div className="grid grid-cols-3  w-[75%]">
@@ -388,7 +384,12 @@ const ItemHIstory = () => {
           })}
         </div>
       </div>
-      <div className="btn-themeOrange w-full px-0 text-center" onClick={handleGoBack}>Go Back</div>
+      <div
+        className="btn-themeOrange w-full px-0 text-center"
+        onClick={handleGoBack}
+      >
+        Go Back
+      </div>
     </div>
   );
 };

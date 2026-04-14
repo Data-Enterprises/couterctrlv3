@@ -1,9 +1,10 @@
 import { ResponsivePie } from "@nivo/pie";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../utils";
-import ItemHIstory from "./ItemHistory";
 import { setViewHistory } from "../../features/itemLookupSlice";
-import { ShoppingCartIcon, CalendarIcon } from "@heroicons/react/24/solid";
+import { ShoppingCartIcon } from "@heroicons/react/24/solid";
+
+import ItemHIstory from "./ItemHistory";
 import UpcListIcon from "../../svgs/UpcListIcon";
 
 type QtyData = {
@@ -105,15 +106,8 @@ const LookupCharts = () => {
 
   if (viewHistory) return <ItemHIstory />;
 
-  const formatDate = (dateStr: string) => {
-    const split = dateStr.split("T")[0].split("-");
-    return `${split[1]}/${split[2]}/${split[0]}`;
-  };
-
   const productDesc = itemLookupHistory[0]?.product_description || "";
   const upc = itemLookupHistory[0]?.product_code || "";
-  const start = itemLookupHistory[0]?.sale_date || "";
-  const end = itemLookupHistory[itemLookupHistory.length - 1]?.sale_date || "";
 
   return (
     <div>
@@ -123,35 +117,29 @@ const LookupCharts = () => {
           <div>{upc}</div>
         </div>
         <div className="flex items-center justify-end gap-1">
-          <CalendarIcon className="h-4 w-4 text-blue-500" />
-          <div>
-            {formatDate(start)} - {formatDate(end)}
-          </div>
-        </div>
-        <div className="flex items-center gap-1">
           <ShoppingCartIcon className="h-4 w-4 text-blue-500" />
           <div>{productDesc}</div>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2 text-[13px] max-h-[calc(100vh-16.7rem)] overflow-y-auto">
+      <div className="grid grid-cols-2 gap-2 text-[13px] max-h-[calc(100vh-22rem)] overflow-y-auto">
         <div className="grid gap-2">
           <div className="bg-custom-white px-2 rounded-lg shadow-md relative">
-            <div className="font-medium">Total Sales by Price</div>
-            <div className="h-[80px]">
+            <div className="font-medium">Sales by Price</div>
+            <div className="h-[65px]">
               <ResponsivePie
                 data={priceData().salesByPrice}
                 animate={true}
                 key={"param"}
                 startAngle={-90}
                 endAngle={90}
-                innerRadius={0.61}
+                innerRadius={0.55}
                 enableArcLabels={false}
                 enableArcLinkLabels={false}
                 colors={colors}
                 margin={{ top: 0, bottom: 0, left: 5, right: 5 }}
               />
             </div>
-            <div className="absolute top-10 left-1/2 flex justify-center items-center transform -translate-x-1/2 font-bold w-full h-[80px]">
+            <div className="absolute top-10 left-1/2 flex justify-center items-center transform -translate-x-1/2 font-medium w-full h-[70px]">
               {formatCurrency2(totalSales)}
             </div>
             <div>
@@ -179,21 +167,21 @@ const LookupCharts = () => {
           </div>
           <div className="bg-custom-white px-2 rounded-lg shadow-md relative">
             <div className="font-medium">Qty by Price</div>
-            <div className="h-[80px]">
+            <div className="h-[65px]">
               <ResponsivePie
                 data={priceData().qtyByPrice}
                 animate={true}
                 key={"param"}
                 startAngle={-90}
                 endAngle={90}
-                innerRadius={0.61}
+                innerRadius={0.55}
                 enableArcLabels={false}
                 enableArcLinkLabels={false}
                 colors={colors}
                 margin={{ top: 0, bottom: 0, left: 5, right: 5 }}
               />
             </div>
-            <div className="absolute top-10 left-1/2 flex justify-center items-center transform -translate-x-1/2 font-bold w-full h-[80px]">
+            <div className="absolute top-10 left-1/2 flex justify-center items-center transform -translate-x-1/2 font-medium w-full h-[70px]">
               {formatBigNumber(totalQty, 0)}
             </div>
             <div>
@@ -222,22 +210,22 @@ const LookupCharts = () => {
         </div>
         <div className="grid gap-2">
           <div className="bg-custom-white px-2 rounded-lg shadow-md relative">
-            <div className="font-medium">Total Sales by Case Cost</div>
-            <div className="h-[80px]">
+            <div className="font-medium">Sales by Case Cost</div>
+            <div className="h-[65px]">
               <ResponsivePie
                 data={costData().salesByCost}
                 animate={true}
                 key={"param"}
                 startAngle={-90}
                 endAngle={90}
-                innerRadius={0.61}
+                innerRadius={0.55}
                 enableArcLabels={false}
                 enableArcLinkLabels={false}
                 colors={colors}
                 margin={{ top: 0, bottom: 0, left: 5, right: 5 }}
               />
             </div>
-            <div className="absolute top-10 left-1/2 flex justify-center items-center transform -translate-x-1/2 font-bold w-full h-[80px]">
+            <div className="absolute top-10 left-1/2 flex justify-center items-center transform -translate-x-1/2 font-medium w-full h-[70px]">
               {formatCurrency2(totalSales)}
             </div>
             <div>
@@ -265,21 +253,21 @@ const LookupCharts = () => {
           </div>
           <div className="bg-custom-white px-2 rounded-lg shadow-md relative">
             <div className="font-medium">Qty by Case Cost</div>
-            <div className="h-[80px]">
+            <div className="h-[65px]">
               <ResponsivePie
                 data={costData().qtyByCost}
                 animate={true}
                 key={"param"}
                 startAngle={-90}
                 endAngle={90}
-                innerRadius={0.61}
+                innerRadius={0.55}
                 enableArcLabels={false}
                 enableArcLinkLabels={false}
                 colors={colors}
                 margin={{ top: 0, bottom: 0, left: 5, right: 5 }}
               />
             </div>
-            <div className="absolute top-10 left-1/2 flex justify-center items-center transform -translate-x-1/2 font-bold w-full h-[80px]">
+            <div className="absolute top-10 left-1/2 flex justify-center items-center transform -translate-x-1/2 font-medium w-full h-[70px]">
               {formatBigNumber(totalQty, 0)}
             </div>
             <div>

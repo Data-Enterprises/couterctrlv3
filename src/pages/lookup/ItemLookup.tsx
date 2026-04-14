@@ -20,6 +20,7 @@ import UpcScanner from "../../components/scanner/UpcScanner";
 import { setError, setUpcCode } from "../../features/itemScanSlice";
 import SingleSelect from "../../components/SingleSelect";
 import LookupCharts from "./LookupCharts";
+import DatePickers from "../../components/datePickers/DatePickers";
 
 const ItemLookup = () => {
   const toast = useToast();
@@ -28,6 +29,7 @@ const ItemLookup = () => {
   const { itemsLoaded, selectedStore } = useAppSelector((state) => state.item);
   const { upcCode, error } = useAppSelector((state) => state.itemScan);
   const { assignedStores } = useAppSelector((state) => state.user);
+  const { startDate, endDate } = useAppSelector((state) => state.search);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -41,7 +43,14 @@ const ItemLookup = () => {
     dispatch(reQueryUpc());
     dispatch(setError(""));
     setIsLoading(true);
-    getItemLookupSingleStore(url, token, upc, selectedStore)
+
+    // find the difference in days between start and end date
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const daysBack = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+    getItemLookupSingleStore(url, token, upc, selectedStore, daysBack)
       .then((resp) => {
         const j = resp.data;
         if (j.error == 0) {
@@ -98,7 +107,7 @@ const ItemLookup = () => {
       <div className={`${isLoading ? "block z-50 " : "hidden z-0"}`}>
         <LoadingIndicator message={`Looking up item: ${upcCode}`} />
       </div>
-      <div className="bg-custom-white p-2 rounded-lg shadow-md space-y-2 mb-2">
+      <div className="bg-custom-white p-2 rounded-lg shadow-md space-y-1 mb-2">
         <SingleSelect
           label="Store"
           data={assignedStores}
@@ -106,9 +115,10 @@ const ItemLookup = () => {
           valueKey="storeid"
           onSelect={handleStoreSelect}
           defaultQuery={`${selectedStore > 0 ? findStoreName() : ""}`}
-          innerClass="text-sm"
+          innerClass="text-sm py-1.5"
           listClass="text-sm"
         />
+        <DatePickers showBtn={false} />
         <UpcScanner handleScan={scanItem} onClear={clear} />
       </div>
       {itemsLoaded ? <LookupCharts /> : null}
