@@ -3,25 +3,20 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 import { getItemLookupSingleStore } from "../../api/itemLookup";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import {
-  // resetLookupSlice,
   setItemsLoaded,
   setProductCode,
   setDescription,
   setHistoryMetrics,
   setItemLookupHistory,
   setPause,
-  // setSelectedStore,
   reQueryUpc,
   setILView,
 } from "../../features/itemLookupSlice";
 import "./scanner.css";
 
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
-// import UpcScanner from "../../components/scanner/UpcScanner";
 import { setError } from "../../features/itemScanSlice";
-// import SingleSelect from "../../components/SingleSelect";
 import LookupCharts from "./LookupCharts";
-// import DatePickers from "../../components/datePickers/DatePickers";
 import ItemHIstory from "./ItemHistory";
 import ItemDaily from "./ItemDaily";
 
@@ -33,16 +28,7 @@ const ItemLookup = () => {
     (state) => state.item,
   );
   const { upcCode, error } = useAppSelector((state) => state.itemScan);
-  // const { assignedStores } = useAppSelector((state) => state.user);
-  // const { startDate, endDate } = useAppSelector((state) => state.search);
   const [isLoading, setIsLoading] = useState(false);
-
-  // useEffect(() => {
-  //   return () => {
-  //     dispatch(setUpcCode(""));
-  //     dispatch(resetLookupSlice());
-  //   };
-  // }, []);
 
   const getSingleStoreData = (upc: string) => {
     dispatch(reQueryUpc());
@@ -85,26 +71,6 @@ const ItemLookup = () => {
       .finally(() => setIsLoading(false));
   };
 
-  // const clear = () => {
-  //   dispatch(reQueryUpc());
-  //   dispatch(setUpcCode(""));
-  //   dispatch(setError(""));
-  //   dispatch(setILView("search"))
-  // };
-
-  // const scanItem = (upcCode: string) => {
-  //   getSingleStoreData(upcCode);
-  // };
-
-  // const handleStoreSelect = (id: string | number) => {
-  //   dispatch(setSelectedStore(Number(id)));
-  // };
-
-  // const findStoreName = () => {
-  //   const store = assignedStores.find((s) => s.storeid === selectedStore);
-  //   return store ? store.store_name : "";
-  // };
-
   const renderView = () => {
     if (viewHistory) return <ItemHIstory />;
     if (viewDaily) return <ItemDaily />;
@@ -139,20 +105,6 @@ const ItemLookup = () => {
       <div className={`${isLoading ? "block z-50 " : "hidden z-0"}`}>
         <LoadingIndicator message={`Looking up item: ${upcCode}`} />
       </div>
-      {/* <div className="bg-custom-white p-2 rounded-lg shadow-md space-y-1 mb-2">
-        <SingleSelect
-          label="Store"
-          data={assignedStores}
-          displayKey="store_name"
-          valueKey="storeid"
-          onSelect={handleStoreSelect}
-          defaultQuery={`${selectedStore > 0 ? findStoreName() : ""}`}
-          innerClass="text-sm py-1.5"
-          listClass="text-sm"
-        />
-        <DatePickers showBtn={false} />
-        <UpcScanner handleScan={scanItem} onClear={clear} />
-      </div> */}
       {renderView()}
       {error.length > 0 ? (
         <div className="text-content mt-8 text-center">{error}</div>

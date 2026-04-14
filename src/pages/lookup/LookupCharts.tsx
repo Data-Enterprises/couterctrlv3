@@ -6,14 +6,12 @@ import {
   reQueryUpc,
   setILView,
   setSelectedStore,
-  setUpcCode,
 } from "../../features/itemLookupSlice";
 
 import UpcListIcon from "../../svgs/UpcListIcon";
 import SingleSelect from "../../components/SingleSelect";
-// import DatePickers from "../../components/datePickers/DatePickers";
 import UpcScanner from "../../components/scanner/UpcScanner";
-import { setError } from "../../features/itemScanSlice";
+import { setError, setUpcCode } from "../../features/itemScanSlice";
 
 type QtyData = {
   id: string;
