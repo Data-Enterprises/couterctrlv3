@@ -127,7 +127,7 @@ const ItemLookup = () => {
           className={`${viewHistory ? "btn-themeGreen" : "btn-themeBlue"} text-[13px] py-1.5 px-0`}
           onClick={() => dispatch(setILView("history"))}
         >
-          History
+          Overview
         </button>
         <button
           className={`${viewDaily ? "btn-themeGreen" : "btn-themeBlue"} text-[13px] py-1.5 px-0`}

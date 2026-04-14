@@ -17,7 +17,7 @@ const ItemDaily = () => {
 
   if (!itemsLoaded) {
     return (
-      <div className="bg-custom-white px-2 py-8 text-content/60 font-medium rounded-lg shadow-md text-center text-sm mt-2">
+      <div className="bg-custom-white h-[130.2px] flex justify-center items-center text-content/60 font-medium rounded-lg shadow-md text-sm mt-2">
         <div>Please search for an item to view its daily data</div>
       </div>
     );
