@@ -14,8 +14,7 @@ export type SalesMobileView =
   | "main"
   | "stores"
   | "sales"
-  | "subdept"
-  | "hourly";
+  | "subdept";
 
 export const defaultSelectedSalesPanel: SelectedSalesPanel = {
   sale_date: "",

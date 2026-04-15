@@ -12,12 +12,9 @@ import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import {
   DocumentCurrencyDollarIcon,
   ShoppingCartIcon,
-  // ArrowLeftCircleIcon,
-  ClockIcon,
 } from "@heroicons/react/20/solid";
 import { BuildingStorefrontIcon } from "@heroicons/react/24/solid";
 import { ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
-import HourlyView from "./hourlyView/HourlyView";
 
 const MainViewContainer = () => {
   const ctx = useMobileSalesCtx();
@@ -32,8 +29,6 @@ const MainViewContainer = () => {
         return <SalesView />;
       case "subdept":
         return <SubsView />;
-      case "hourly":
-        return <HourlyView />;
       default:
         return <StoresView />;
     }
@@ -59,13 +54,15 @@ const MainViewContainer = () => {
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden text-[13px]">
       <div className="flex justify-items-center bg-custom-white shadow-md py-2">
         <div
-          className="border-r w-1/5 flex justify-center items-center transition-all"
+          className="border-r w-1/4 flex justify-center items-center transition-all"
           onClick={() => handleViewSelect("main")}
         >
-          <ArrowUturnLeftIcon className={`h-6 w-6 transition-all duration-200 ${activeStyle("main")}`} />
+          <ArrowUturnLeftIcon
+            className={`h-6 w-6 transition-all duration-200 ${activeStyle("main")}`}
+          />
         </div>
         <div
-          className="border-r w-1/5 flex justify-center items-center transition-all"
+          className="border-r w-1/4 flex justify-center items-center transition-all"
           onClick={() => handleViewSelect("stores")}
         >
           <BuildingStorefrontIcon
@@ -73,7 +70,7 @@ const MainViewContainer = () => {
           />
         </div>
         <div
-          className="border-r w-1/5 flex justify-center items-center transition-all"
+          className="border-r w-1/4 flex justify-center items-center transition-all"
           onClick={() => handleViewSelect("sales")}
         >
           <DocumentCurrencyDollarIcon
@@ -81,16 +78,12 @@ const MainViewContainer = () => {
           />
         </div>
         <div
-          className="border-r w-1/5 flex justify-center items-center transition-all"
-          onClick={() => handleViewSelect("hourly")}
-        >
-          <ClockIcon className={`h-6 w-6 transition-all duration-200 ${activeStyle("hourly")}`} />
-        </div>
-        <div
-          className="w-1/5 flex justify-center items-center"
+          className="w-1/4 flex justify-center items-center"
           onClick={() => handleViewSelect("subdept")}
         >
-          <ShoppingCartIcon className={`h-6 w-6 transition-all duration-200 ${activeStyle("subdept")}`} />
+          <ShoppingCartIcon
+            className={`h-6 w-6 transition-all duration-200 ${activeStyle("subdept")}`}
+          />
         </div>
         {/* <button
           className={`${ctx.view === "main" ? "btn-themeGreen" : "btn-themeBlue"} py-1 px-0 text-[13px]`}

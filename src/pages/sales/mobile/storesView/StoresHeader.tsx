@@ -4,6 +4,10 @@ import type { PieData } from "..";
 import { ResponsivePie } from "@nivo/pie";
 import { colors } from "../../utils";
 import { formatCurrency2 } from "../../../../utils";
+import {
+  setSelectedStore,
+  setView,
+} from "../../../../features/salesMobileSlice";
 
 interface StoresHeaderProps {
   totals: AggTotals;
@@ -42,10 +46,20 @@ const StoresHeader = ({ totals, coupons }: StoresHeaderProps) => {
 
   const totalCpns = coupons.reduce((acc, curr) => acc + curr.value, 0);
 
+  const handleHeaderClick = () => {
+    ctx.dispatch(
+      setSelectedStore({ storeid: 0, store_name: "", sale_date: "" }),
+    );
+    // Set view to Sales just like with the StoreRow, except the data will be all the data and not filtered by selected store
+    ctx.dispatch(setView("sales"));
+  };
+
   return (
-    <div className="bg-custom-white rounded-lg shadow-md px-2 py-1 grid grid-cols-2">
+    <div
+      className="bg-custom-white rounded-lg shadow-md px-2 py-1 grid grid-cols-2"
+      onClick={handleHeaderClick}
+    >
       <div className="col-span-2 flex justify-between">
-        {" "}
         <div className="font-medium text-nowrap truncate">{displayName()}</div>
         <div className="font-medium">{dteStr()}</div>
       </div>
