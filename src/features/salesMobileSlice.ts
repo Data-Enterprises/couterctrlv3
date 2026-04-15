@@ -8,13 +8,10 @@ import type {
   AggCoupons,
   SelectedSalesPanel,
 } from "../interfaces";
-import type { TopSub } from "../pages/sales/components";
 
-export type SalesMobileView =
-  | "main"
-  | "stores"
-  | "sales"
-  | "subdept";
+import type { TopSub } from "../pages/sales/components";
+import type { PieData } from "../pages/sales/mobile";
+export type SalesMobileView = "main" | "stores" | "sales" | "subdept";
 
 export const defaultSelectedSalesPanel: SelectedSalesPanel = {
   sale_date: "",
@@ -50,6 +47,14 @@ interface SalesMobileState {
   storesViewLoaded: boolean;
   panelSortOption: PanelSortOption;
   sortDir: SortDir;
+
+  // Sales View Data (for rendering)
+  selectedHour: number;
+  hours: number[];
+  hourlyKey: "hour" | "sale_date";
+  salesViewWeekly: PieData[];
+  salesViewHourly: HourlySale[];
+  salesViewTopTen: TopTenItem[];
 }
 
 const defaultAggTotals: AggTotals = {
@@ -87,6 +92,17 @@ const initialState: SalesMobileState = {
   storesViewLoaded: false,
   panelSortOption: "",
   sortDir: "",
+  hours: [],
+  hourlyKey: "sale_date",
+  selectedHour: 0,
+  salesViewWeekly: [],
+  salesViewHourly: [],
+  salesViewTopTen: [],
+};
+
+const formatDate = (dte: string) => {
+  const split = dte.split("T")[0].split("-");
+  return `${split[1]}/${split[2]}/${split[0]}`;
 };
 
 const salesMobileSlice = createSlice({
@@ -97,10 +113,133 @@ const salesMobileSlice = createSlice({
       state.salesPanels = action.payload;
     },
     setMobileTopTenItems: (state, action: PayloadAction<TopTenItem[]>) => {
+      // If single store was searched, then only 10 items show up
+      // otherwise, group was searched and everything needs to be reduced to top 10 by sales for the grouped stores
+      const data =
+        action.payload.length < 11
+          ? action.payload
+          : [...action.payload].reduce((acc: TopTenItem[], val: TopTenItem) => {
+              const found = acc.find(
+                (i) => i.product_code === val.product_code,
+              );
+
+              if (found) {
+                found.qty += val.qty;
+                found.total_sales += val.total_sales;
+                found.cost += val.cost;
+              } else {
+                acc.push({ ...val });
+              }
+
+              return acc;
+            }, []);
+
       state.topTenItems = action.payload;
+      state.salesViewTopTen = data
+        .sort((a, b) => b.total_sales - a.total_sales)
+        .slice(0, 10);
+    },
+    setSortedSalesViewTopTen: (
+      state,
+      action: PayloadAction<{ topTen: TopTenItem[]; isResetting: boolean }>,
+    ) => {
+      const { topTen, isResetting } = action.payload;
+      if (isResetting) {
+        // Do what we did in setMobileTopTenItems to reset to the default top ten based on the current data
+        const data =
+          state.topTenItems.length < 11
+            ? state.topTenItems
+            : [...state.topTenItems].reduce(
+                (acc: TopTenItem[], val: TopTenItem) => {
+                  const found = acc.find(
+                    (i) => i.product_code === val.product_code,
+                  );
+                  if (found) {
+                    found.qty += val.qty;
+                    found.total_sales += val.total_sales;
+                    found.cost += val.cost;
+                  } else {
+                    acc.push({ ...val });
+                  }
+                  return acc;
+                },
+                [],
+              );
+        state.salesViewTopTen = data
+          .sort((a, b) => b.total_sales - a.total_sales)
+          .slice(0, 10);
+      } else {
+        state.salesViewTopTen = topTen
+          .sort((a, b) => b.total_sales - a.total_sales)
+          .slice(0, 10);
+      }
     },
     setMobileHourlySales: (state, action: PayloadAction<HourlySale[]>) => {
       state.hourlySales = action.payload;
+      
+      // if it never changed, then don't do anything => less operations
+      if (state.hourlyKey === "hour") {
+        state.hourlyKey = "sale_date";
+      }
+
+      // We are looking for the days of the selected hour across all stores/store
+      const reduced = [...action.payload].reduce((acc: HourlySale[], val) => {
+        const found = acc.find(
+          (h) => h.sale_date === val.sale_date && h.hour === val.hour,
+        );
+        if (found) {
+          // add the sales, transactions
+          found.total_sales += val.total_sales - val.total_tax;
+          found.transactions += val.transactions;
+          found.qty += val.qty;
+        } else {
+          const newSales = val.total_sales - val.total_tax;
+          acc.push({ ...val, total_sales: newSales });
+        }
+
+        return acc;
+      }, []);
+
+      state.salesViewHourly = reduced;
+      state.selectedHour = reduced[0].hour;
+      state.hours = Array.from(new Set(reduced.map((r) => r.hour))).sort(
+        (a, b) => a - b,
+      );
+    },
+    setSalesViewHourly: (
+      state,
+      action: PayloadAction<{ hourly: HourlySale[]; isResetting: boolean }>,
+    ) => {
+      const { hourly, isResetting } = action.payload;
+
+      const data = isResetting
+        ? [...state.hourlySales].reduce((acc: HourlySale[], val) => {
+            const found = acc.find(
+              (h) => h.sale_date === val.sale_date && h.hour === val.hour,
+            );
+            if (found) {
+              // add the sales, transactions
+              found.total_sales += val.total_sales - val.total_tax;
+              found.transactions += val.transactions;
+              found.qty += val.qty;
+            } else {
+              const newSales = val.total_sales - val.total_tax;
+              acc.push({ ...val, total_sales: newSales });
+            }
+
+            return acc;
+          }, [])
+        : hourly;
+
+      state.hourlyKey = isResetting ? "sale_date" : "hour";
+      state.salesViewHourly = data;
+      state.selectedHour = data[0].hour;
+      state.hours = Array.from(new Set(data.map((r) => r.hour))).sort(
+        (a, b) => a - b,
+      );
+    },
+    setSelectedHour: (state, action: PayloadAction<number>) => {
+      state.selectedHour = action.payload;
     },
     setMobileSubSales: (state, action: PayloadAction<SubSale[]>) => {
       state.subSales = action.payload;
@@ -128,6 +267,49 @@ const salesMobileSlice = createSlice({
     },
     setMobileWeeklySales: (state, action: PayloadAction<WeeklySale[]>) => {
       state.weeklySales = action.payload;
+
+      const pieChartData: PieData[] = action.payload.reduce(
+        (acc: PieData[], curr) => {
+          const found = acc.find((d) => d.id === formatDate(curr.sale_date));
+          if (found) {
+            found.value += curr.total_sales - curr.total_tax;
+          } else {
+            acc.push({
+              id: formatDate(curr.sale_date),
+              value: curr.total_sales - curr.total_tax,
+            });
+          }
+          return acc;
+        },
+        [],
+      );
+
+      state.salesViewWeekly = pieChartData;
+    },
+    setSalesViewWeekly: (
+      state,
+      action: PayloadAction<{ weekly: WeeklySale[]; isResetting: boolean }>,
+    ) => {
+      const { weekly, isResetting } = action.payload;
+      const data = isResetting ? state.salesPanels : weekly;
+
+      const pieChartData: PieData[] = [...data].reduce(
+        (acc: PieData[], curr) => {
+          const found = acc.find((d) => d.id === formatDate(curr.sale_date));
+          if (found) {
+            found.value += curr.total_sales - curr.total_tax;
+          } else {
+            acc.push({
+              id: formatDate(curr.sale_date),
+              value: curr.total_sales - curr.total_tax,
+            });
+          }
+          return acc;
+        },
+        [],
+      );
+
+      state.salesViewWeekly = pieChartData;
     },
     setAggTotals: (state, action: PayloadAction<AggTotals>) => {
       state.aggTotals = action.payload;
@@ -189,5 +371,9 @@ export const {
   setAggCouponTotals,
   setSelectedStore,
   setSPSort,
+  setSortedSalesViewTopTen,
+  setSalesViewHourly,
+  setSelectedHour,
+  setSalesViewWeekly,
 } = salesMobileSlice.actions;
 export default salesMobileSlice.reducer;

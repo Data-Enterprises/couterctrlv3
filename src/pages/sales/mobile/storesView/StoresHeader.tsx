@@ -4,7 +4,10 @@ import type { PieData } from "..";
 import { ResponsivePie } from "@nivo/pie";
 import { colors } from "../../utils";
 import { formatCurrency2 } from "../../../../utils";
-import { setSelectedStore } from "../../../../features/salesMobileSlice";
+import {
+  setSelectedStore,
+  setSortedSalesViewTopTen,
+} from "../../../../features/salesMobileSlice";
 
 interface StoresHeaderProps {
   totals: AggTotals;
@@ -20,6 +23,11 @@ const StoresHeader = ({ totals, coupons }: StoresHeaderProps) => {
   };
 
   const displayName = () => {
+    if (ctx.selectedStore.store_name.length > 0) {
+      return ctx.selectedStore.store_name;
+    }
+
+    // If in the general view, either the single store name or group name will render
     if (ctx.type === "Store") {
       const selectedCheck = ctx.selectedStore.store_name.length > 0;
       return selectedCheck
@@ -47,6 +55,8 @@ const StoresHeader = ({ totals, coupons }: StoresHeaderProps) => {
     ctx.dispatch(
       setSelectedStore({ storeid: 0, store_name: "", sale_date: "" }),
     );
+
+    ctx.dispatch(setSortedSalesViewTopTen({ topTen: [], isResetting: true }));
   };
 
   return (
