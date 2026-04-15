@@ -7,7 +7,7 @@ interface SalesViewTopTenProps {
 const SalesViewTopTen = ({ displayName }: SalesViewTopTenProps) => {
   const ctx = useMobileSalesCtx();
   console.log(ctx.salesViewTopTen);
-  
+
   return (
     <div className="bg-custom-white rounded-lg shadow-md px-2 py-0.5">
       <div className="flex justify-between font-medium">
