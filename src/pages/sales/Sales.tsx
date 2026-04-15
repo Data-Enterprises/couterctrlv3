@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 // Hooks/API
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { getWeekly } from "../../api/sales";
+import {
+  // getHourly, getSubs, getTopTen,
+  getWeekly,
+} from "../../api/sales";
 
 // Components
 import StorePicker from "../../components/storePicker/StorePicker";
@@ -15,15 +18,21 @@ import SubDeptComps from "./charts/SubDeptComps";
 import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import SubsCompareModal from "./subsCompare/SubsCompareModal";
-import SalesMobile from "./mobile/SalesMobile";
+// import SalesMobile from "./mobile/SalesMobile";
 
 // Dispatchers
 import {
+  // finishQuery,
+  reQuery,
+  // setHourlySales,
   setLeftSubCompare,
   setPanelsLoading,
   setRightSubCompare,
   setSalesPanels,
   setSelectedSalesPanel,
+  // setSubSales,
+  // setTopTenItems,
+  // setWeeklySales,
 } from "../../features/salesSlice";
 
 // utils
@@ -44,13 +53,14 @@ const Sales = () => {
 
   // On mount, get data if user prefs has a last store or group, meaning there is a last search type as well
   useEffect(() => {
-    if ((search.lastStore > 0 || search.lastGroup > 0) && context.isDesktop) {
-    // if (search.lastStore > 0 || search.lastGroup > 0) {
+    // if ((search.lastStore > 0 || search.lastGroup > 0) && context.isDesktop) {
+    if (search.lastStore > 0 || search.lastGroup > 0) {
       getSalesPanels();
     }
   }, []);
 
   const getSalesPanels = () => {
+    dispatch(reQuery());
     dispatch(setLeftSubCompare(null));
     dispatch(setRightSubCompare(null));
     dispatch(
@@ -82,6 +92,8 @@ const Sales = () => {
               new Date(b.sale_date).getTime() - new Date(a.sale_date).getTime(),
           );
           dispatch(setSalesPanels(sorted));
+          // dispatch(setWeeklySales(j.sales));
+          // dispatch(finishQuery("weekly"));
         }
       })
       .catch((err: JsonError) => {
@@ -91,10 +103,70 @@ const Sales = () => {
         dispatch(setPanelsLoading(false));
         setShowLoading(false);
       });
+
+    // getTopTen(
+    //   context.url,
+    //   context.token,
+    //   searchValue,
+    //   search.type,
+    //   start,
+    //   end,
+    // )
+    //   .then((resp) => {
+    //     const j = resp.data;
+    //     if (j.error === 0) {
+    //       dispatch(setTopTenItems(j.items));
+    //       dispatch(finishQuery("top ten"));
+    //     }
+    //   })
+    //   .catch((err: JsonError) => {
+    //     toast.error("Error getting Top Ten data: " + err.message);
+    //   });
+
+    // // Keep an eye on this - might need to adjust for weeklyStart and weeklyEnd
+    // getHourly(
+    //   context.url,
+    //   context.token,
+    //   start,
+    //   end,
+    //   useGroups,
+    //   searchValue,
+    //   singleStore,
+    // )
+    //   .then((resp) => {
+    //     const j = resp.data;
+    //     if (j.error === 0) {
+    //       dispatch(setHourlySales(j.subs));
+    //       dispatch(finishQuery("hourly"));
+    //     }
+    //   })
+    //   .catch((err: JsonError) =>
+    //     toast.error("Error fetching hourly data: " + err.message),
+    //   );
+
+    // getSubs(
+    //   context.url,
+    //   context.token,
+    //   start,
+    //   end,
+    //   useGroups,
+    //   searchValue,
+    //   singleStore,
+    // )
+    //   .then((resp) => {
+    //     const j = resp.data;
+    //     if (j.error === 0) {
+    //       dispatch(setSubSales(j.subs));
+    //       dispatch(finishQuery("subs"));
+    //     }
+    //   })
+    //   .catch((err: JsonError) =>
+    //     toast.error("Error fetching subs data: " + err.message),
+    //   );
   };
 
   // Just render the mobile version and cut down on excessive operations
-  if (context.isMobile) return <SalesMobile />;
+  // if (context.isMobile) return <SalesMobile />;
 
   const pageContainer = context.isDesktop
     ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none"
@@ -181,7 +253,6 @@ const Sales = () => {
         </div>
       ) : (
         <div className={gridContainer}>
-          {/* <ReportBuilder /> */}
           <div
             ref={leftColRef}
             className="md:grid h-full md:grid-rows-[25%_74%] md:gap-4"
