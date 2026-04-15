@@ -4,10 +4,7 @@ import type { PieData } from "..";
 import { ResponsivePie } from "@nivo/pie";
 import { colors } from "../../utils";
 import { formatCurrency2 } from "../../../../utils";
-import {
-  setSelectedStore,
-  setView,
-} from "../../../../features/salesMobileSlice";
+import { setSelectedStore } from "../../../../features/salesMobileSlice";
 
 interface StoresHeaderProps {
   totals: AggTotals;
@@ -50,8 +47,6 @@ const StoresHeader = ({ totals, coupons }: StoresHeaderProps) => {
     ctx.dispatch(
       setSelectedStore({ storeid: 0, store_name: "", sale_date: "" }),
     );
-    // Set view to Sales just like with the StoreRow, except the data will be all the data and not filtered by selected store
-    ctx.dispatch(setView("sales"));
   };
 
   return (

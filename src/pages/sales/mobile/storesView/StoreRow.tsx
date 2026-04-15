@@ -1,7 +1,4 @@
-import {
-  setSelectedStore,
-  setView,
-} from "../../../../features/salesMobileSlice";
+import { setSelectedStore } from "../../../../features/salesMobileSlice";
 import type { WeeklySale } from "../../../../interfaces";
 import { formatBigNumber, formatCurrency2 } from "../../../../utils";
 import { useMobileSalesCtx } from "../hooks";
@@ -37,8 +34,6 @@ const StoreRow = ({ panel }: StoreRowProps) => {
       sale_date: panel.sale_date,
     };
     ctx.dispatch(setSelectedStore(selected));
-    // From here, go to Sales view and filter by the selected store and date
-    ctx.dispatch(setView("sales"));
   };
 
   const bgStyle =
