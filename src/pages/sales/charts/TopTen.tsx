@@ -113,9 +113,9 @@ const TopTen = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg ">
+    <div className="bg-custom-white rounded-lg shadow-lg  pb-2">
       <div className="font-medium px-2 py-1 flex justify-between items-center">
-        <div>
+        <div className="text-sm">
           {selectedSalesPanel.sale_date ? "Daily" : "Weekly"} Top Ten Items
         </div>
         {isMobile && (
@@ -200,7 +200,7 @@ const TopTen = () => {
           </div>
 
           <div className="mt-1 w-full border-b font-medium">Totals</div>
-          <div className="grid grid-cols-2 mt-1 gap-2 mb-4">
+          <div className="grid grid-cols-2 mt-1 gap-x-2 mb-2">
             <div>
               <div className="text-content/60">Sales:</div>
               <div className="font-medium text-xs  ">
@@ -232,7 +232,7 @@ const TopTen = () => {
 
           {/* Calculations */}
           <div className="mt-1 w-full border-b font-medium">Metrics</div>
-          <div className="grid grid-cols-2 mt-1 gap-2">
+          <div className="grid grid-cols-2 mt-1 gap-x-2">
             <div>
               <div className="flex gap-1 items-center relative">
                 <div className="text-content/60">GPM:</div>

@@ -49,9 +49,9 @@ const TopTotals = () => {
   };
 
   return (
-    <div className="grid grid-cols-2 gap-2 text-sm">
+    <div className="grid grid-cols-2 gap-2 text-[13.5px]">
       <TopTotalsKpi data={aggFunc().total_sales} title="Net Sales" />
-      <TopTotalsKpi data={aggFunc().transactions} title="Total Transactions" />
+      <TopTotalsKpi data={aggFunc().transactions} title="Total Trans" />
       <TopTotalsKpi data={aggFunc().avg_basket_amount} title="Avg Basket" />
       <TopTotalsKpi data={aggFunc().total_tax} title="Total Tax" />
     </div>
@@ -68,7 +68,7 @@ const TopTotalsKpi = ({ data, title }: TopTotalsKpiProps) => {
   return (
     <div className="bg-custom-white rounded-lg shadow-lg pl-1 flex justify-center items-center flex-col gap-2 relative py-2 md:py-0">
       <div className="font-medium text-content/60">{title}</div>
-      {title === "Total Transactions" ? (
+      {title === "Total Trans" ? (
         <div className="font-medium">{formatBigNumber(data, 0)}</div>
       ) : (
         <div className="font-medium">{formatCurrency2(data)}</div>

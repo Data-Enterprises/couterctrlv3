@@ -183,34 +183,43 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
         panel,
         selectedSalesPanel,
       )} bg-custom-white rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-inner 
-      transition-all duration-200 select-none ripple-button md:min-h-[160px] relative text-sm`}
+      transition-all duration-200 select-none ripple-button relative text-[13.5px]`}
     >
       <div
         data-testid={`sales-panel-${id}`}
-        className={`font-bold text-center`}
+        className={`font-medium flex justify-between`}
       >
         <div className="">{panel.store_name}</div>
+
+        <div className="font-medium">
+          {getDateLayout(panel.sale_date.split("T")[0])}
+        </div>
+      </div>
+      <div className="grid grid-cols-2">
+        <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
+        <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
       </div>
       <div
         data-testid={`sales-panel-0-${id}`}
-        className={`flex justify-between items-center px-2`}
+        className={`grid grid-cols-3 text-center pt-1`}
         onClick={(e) => handlePanelClick(e, panel)}
       >
-        <div className="">
-          <div className="text-left">Net Sales</div>
+        <div className="text-left">
+          <div className="">Net Sales</div>
           <div className="font-medium">
             {formatCurrency2(panel.total_sales - panel.total_tax)}
           </div>
         </div>
-        <div className="font-medium">
-          {getDateLayout(panel.sale_date.split("T")[0])}
-        </div>
-        <div className=" pl-4">
-          <div>Quantity</div>
+        <div className="">
+          <div>Qty</div>
           <div className="font-medium">{formatBigNumber(panel.qty, 0)}</div>
         </div>
+        <div className="text-right">
+          <div>Weight</div>
+          <div className="font-medium">{formatWeight(panel.weight)}</div>
+        </div>
       </div>
-      <div
+      {/* <div
         data-testid={`sales-panel-1-${id}`}
         className="w-full flex flex-col items-center"
         onClick={(e) => handlePanelClick(e, panel)}
@@ -219,7 +228,7 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
           <div>Weight</div>
           <div className="font-medium">{formatWeight(panel.weight)}</div>
         </div>
-      </div>
+      </div> */}
       <div
         className={`justify-around mt-2 gap-4 ${
           !context.isDesktop && "hidden"

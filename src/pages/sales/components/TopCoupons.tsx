@@ -26,11 +26,11 @@ const TopCoupons = () => {
   };
 
   return (
-    <div className="grid grid-cols-2 gap-2 text-sm">
-      <TopTotalsKpi data={aggFunc().store_coupon} title="Store Coupons" />
-      <TopTotalsKpi data={aggFunc().digital_coupons} title="Digital Coupons" />
-      <TopTotalsKpi data={aggFunc().elect_store_coupons} title="E. Store Coupons" />
-      <TopTotalsKpi data={aggFunc().elec_instore_coupons} title="E. In-Store Coupons" />
+    <div className="grid grid-cols-2 gap-2 text-[13.5px]">
+      <TopTotalsKpi data={aggFunc().store_coupon} title="Store Cpns" />
+      <TopTotalsKpi data={aggFunc().digital_coupons} title="Digital Cpns" />
+      <TopTotalsKpi data={aggFunc().elect_store_coupons} title="E. Store Cpns" />
+      <TopTotalsKpi data={aggFunc().elec_instore_coupons} title="E. In-Store Cpns" />
     </div>
   );
 };

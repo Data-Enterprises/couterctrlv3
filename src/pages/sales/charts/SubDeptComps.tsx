@@ -4,6 +4,7 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { setPeriodSubSales } from "../../../features/salesSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import SubDeptPeriodCard from "./SubDeptPeriodCard";
+import { sameWeekDayLastYear } from "../../../utils";
 
 interface Props {
   inReport?: boolean;
@@ -15,12 +16,7 @@ const SubDeptComps = ({ inReport = false }: Props) => {
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
   const sales = useAppSelector((state) => state.sales);
-
-  const [dateRange, setDateRange] = useState<{
-    wk2: string;
-    wk3: string;
-    wk4: string;
-  }>({ wk2: "", wk3: "", wk4: "" });
+  const [lyDateRange, setLyDateRange] = useState<string>("");
 
   const setDates = (date: Date, days: number = 0) => {
     const d = new Date(date);
@@ -30,6 +26,8 @@ const SubDeptComps = ({ inReport = false }: Props) => {
   };
 
   useEffect(() => {
+    // if (sales.selectedSalesPanel.storeid > 0) {
+    // }
     getMonthlyTrend();
   }, [sales.selectedSalesPanel]);
 
@@ -43,31 +41,16 @@ const SubDeptComps = ({ inReport = false }: Props) => {
       sales.selectedSalesPanel.sale_date || search.singleDate,
     );
 
-    const wk1End = setDates(date);
+    const wkEnd = setDates(date);
     const wk1Start = setDates(date, 6);
-    getData(wk1Start, wk1End, 1);
+    getData(wk1Start, wkEnd, 1);
 
-    // if the date is 1/27/2026 then the dates below are as follows
-    // Week 2 => 1/20/2026 - 1/14/2026
-    const wk2End = setDates(date, 7);
-    const wk2Start = setDates(date, 13);
-    getData(wk2Start, wk2End, 2);
-
-    // Week 3 => 1/13/2026 - 1/7/2026
-    const wk3End = setDates(date, 14);
-    const wk3Start = setDates(date, 20);
-    getData(wk3Start, wk3End, 3);
-
-    // Week 4 => 1/6/2026 - 12/31/2025
-    const wk4End = setDates(date, 21);
-    const wk4Start = setDates(date, 27);
-    getData(wk4Start, wk4End, 4);
-
-    setDateRange({
-      wk2: `${formatDate(wk2Start)} - ${formatDate(wk2End)}`,
-      wk3: `${formatDate(wk3Start)} - ${formatDate(wk3End)}`,
-      wk4: `${formatDate(wk4Start)} - ${formatDate(wk4End)}`,
-    });
+    const endDateLY = sameWeekDayLastYear(wkEnd);
+    const lyDate = new Date(endDateLY.date);
+    const lyWkEnd = setDates(lyDate);
+    const lyWkStart = setDates(lyDate, 6);
+    getData(lyWkStart, lyWkEnd, 2);
+    setLyDateRange(`${formatDate(lyWkStart)} - ${formatDate(lyWkEnd)}`);
   };
 
   const getData = (ws: string, we: string, period: number) => {
@@ -109,32 +92,34 @@ const SubDeptComps = ({ inReport = false }: Props) => {
   // Once we have both data sets, show the comparisons (final step)
   return (
     <div className="">
-      {!inReport ? <div className="grid md:grid-cols-2 h-full gap-2">
-        <SubDeptPeriodCard
-          inReport={inReport}
-          data={sales.subSalesWk1}
-          dateRange={formateFirstWk()}
-          period={1}
-        />
-        <SubDeptPeriodCard
-          inReport={inReport}
-          data={sales.subSalesWk2}
-          dateRange={dateRange.wk2}
-          period={2}
-        />
-        <SubDeptPeriodCard
-          inReport={inReport}
-          data={sales.subSalesWk3}
-          dateRange={dateRange.wk3}
-          period={3}
-        />
-        <SubDeptPeriodCard
-          inReport={inReport}
-          data={sales.subSalesWk4}
-          dateRange={dateRange.wk4}
-          period={4}
-        />
-      </div> : null}
+      {!inReport ? (
+        <div className="grid md:grid-cols-2 h-full gap-2">
+          <SubDeptPeriodCard
+            inReport={inReport}
+            data={sales.subSalesWk1}
+            dateRange={formateFirstWk()}
+            period={1}
+          />
+          <SubDeptPeriodCard
+            inReport={inReport}
+            data={sales.subSalesWk2}
+            dateRange={lyDateRange}
+            period={2}
+          />
+          {/* <SubDeptPeriodCard
+            inReport={inReport}
+            data={sales.subSalesWk3}
+            dateRange={dateRange.wk3}
+            period={3}
+          />
+          <SubDeptPeriodCard
+            inReport={inReport}
+            data={sales.subSalesWk4}
+            dateRange={dateRange.wk4}
+            period={4}
+          /> */}
+        </div>
+      ) : null}
     </div>
   );
 };
