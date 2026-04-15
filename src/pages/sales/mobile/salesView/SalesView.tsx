@@ -1,5 +1,4 @@
 import { useMobileSalesCtx } from "../hooks";
-
 import SalesViewHourly from "./SalesViewHourly";
 import SalesViewTopTen from "./SalesViewTopTen";
 import SalesViewWeekly from "./SalesViewWeekly";
@@ -11,25 +10,19 @@ import SalesViewWeekly from "./SalesViewWeekly";
  * weekly => hourly => top ten
  */
 const SalesView = () => {
-  const {
-    salesViewHourly,
-    salesViewTopTen,
-    salesViewWeekly,
-    selectedStore,
-    groups,
-    assignedStores,
-    searchValue,
-    type,
-  } = useMobileSalesCtx();
+  const ctx = useMobileSalesCtx();
 
   const displayName = () => {
-    if (selectedStore.store_name.length > 0) return selectedStore.store_name;
+    if (ctx.selectedStore.store_name.length > 0)
+      return ctx.selectedStore.store_name;
 
-    if (type === "Group") {
-      const group = groups.find((g) => g.id === searchValue);
+    if (ctx.type === "Group") {
+      const group = ctx.groups.find((g) => g.id === ctx.searchValue);
       if (group) return group.group_name;
     } else {
-      const store = assignedStores.find((s) => s.storeid === searchValue);
+      const store = ctx.assignedStores.find(
+        (s) => s.storeid === ctx.searchValue,
+      );
       if (store) return store.store_name;
     }
 
@@ -38,23 +31,9 @@ const SalesView = () => {
 
   return (
     <div className="p-2 space-y-2">
-      <div className="bg-custom-white rounded-lg shadow-md px-2 py-0.5">
-        <div className="flex justify-between font-medium">
-          <div>Weekly Sales</div>
-          <div>{displayName()}</div>
-        </div>
-        <div className="grid grid-cols-2 mb-1">
-          <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
-          <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
-        </div>
-        <SalesViewWeekly weekly={[...salesViewWeekly]} />
-      </div>
-      <div className="bg-custom-white rounded-lg shadow-md px-2 py-0.5">
-        <SalesViewHourly hourly={salesViewHourly} />
-      </div>
-      <div className="bg-custom-white rounded-lg shadow-md px-2 py-0.5">
-        <SalesViewTopTen topTen={salesViewTopTen} />
-      </div>
+      <SalesViewWeekly displayName={displayName()} />
+      <SalesViewHourly displayName={displayName()} />
+      <SalesViewTopTen displayName={displayName()} />
     </div>
   );
 };
