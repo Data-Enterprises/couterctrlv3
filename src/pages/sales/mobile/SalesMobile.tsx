@@ -6,10 +6,11 @@ import {
   setMobilePanelsLoading,
   setMobileSalesPanels,
   setMobileSubSales,
+  setMobileTopTenItems,
   setMobileWeeklySales,
   setView,
 } from "../../../features/salesMobileSlice";
-import { getHourly, getSubs, getWeekly } from "../../../api/sales";
+import { getHourly, getSubs, getTopTen, getWeekly } from "../../../api/sales";
 import type { JsonError, WeeklySale } from "../../../interfaces";
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
 import StorePicker from "../../../components/storePicker/StorePicker";
@@ -84,6 +85,24 @@ const SalesMobile = () => {
       })
       .catch((err: JsonError) =>
         toast.error("Error fetching hourly sales: " + err.message),
+      );
+
+    getTopTen(
+      ctx.url,
+      ctx.token,
+      ctx.searchValue,
+      ctx.type,
+      ctx.startDate,
+      ctx.endDate,
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          ctx.dispatch(setMobileTopTenItems(j.items))
+        }
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error fetching top ten items: " + err.message),
       );
 
     // Change the view after the calls are made

@@ -1,140 +1,156 @@
-import { useEffect, useState } from "react";
-import { getSubs } from "../../../api/sales";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { setPeriodSubSales } from "../../../features/salesSlice";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import SubDeptPeriodCard from "./SubDeptPeriodCard";
+import { useAppSelector } from "../../../hooks";
+import type { SubSale } from "../../../interfaces";
+import { formatCurrency2 } from "../../../utils";
+import type { TopSub } from "../components";
+import SubTrendCard from "./SubTrendCard";
+import {
+  HandThumbUpIcon,
+  HandThumbDownIcon,
+} from "@heroicons/react/24/outline";
 
-interface Props {
-  inReport?: boolean;
-}
+const defaultSub: TopSub = {
+  sub_department: 0,
+  sub_department_description: "",
+  total_sales: 0,
+  net_sales: 0,
+  qty: 0,
+  digital_coupons: 0,
+  elec_instore_coupons: 0,
+  elec_store_coupons: 0,
+  store_coupon: 0,
+  total_tax: 0,
+};
 
-const SubDeptComps = ({ inReport = false }: Props) => {
-  const toast = useToast();
-  const dispatch = useAppDispatch();
-  const context = useAppSelector((state) => state.app);
-  const search = useAppSelector((state) => state.search);
+const SubDeptComps = () => {
   const sales = useAppSelector((state) => state.sales);
+  const isMobile = useAppSelector((state) => state.app.isMobile);
 
-  const [dateRange, setDateRange] = useState<{
-    wk2: string;
-    wk3: string;
-    wk4: string;
-  }>({ wk2: "", wk3: "", wk4: "" });
+  const formatCardData = (cardData: SubSale[]) => {
+    if (!sales.selectedSubDept) return defaultSub;
 
-  const setDates = (date: Date, days: number = 0) => {
-    const d = new Date(date);
-    d.setDate(d.getDate() - days);
-    // returns yyyy-mm-dd so sub_sales endpoint can process the dates correctly
-    return d.toISOString().split("T")[0];
-  };
+    const subId = sales.selectedSubDept.sub_department;
+    const filtered = cardData.filter((s) => s.sub_department === subId);
 
-  useEffect(() => {
-    getMonthlyTrend();
-  }, [sales.selectedSalesPanel]);
+    return filtered.reduce(
+      (acc: TopSub, curr: SubSale) => {
+        acc.sub_department = curr.sub_department;
+        acc.sub_department_description = curr.sub_department_description;
+        acc.total_sales += curr.total_sales - curr.total_tax;
+        acc.net_sales += curr.net_sales;
+        acc.qty += curr.qty;
+        acc.digital_coupons += curr.digital_coupons;
+        acc.elec_instore_coupons += curr.elec_instore_coupons;
+        acc.elec_store_coupons += curr.elec_store_coupons;
+        acc.store_coupon += curr.store_coupon;
+        acc.total_tax += curr.total_tax;
 
-  const formatDate = (dateStr: string) => {
-    const dte = dateStr.split("-");
-    return `${parseInt(dte[1])}/${parseInt(dte[2])}/${parseInt(dte[0])}`;
-  };
-
-  const getMonthlyTrend = () => {
-    const date = new Date(
-      sales.selectedSalesPanel.sale_date || search.singleDate,
+        return acc;
+      },
+      { ...defaultSub },
     );
-
-    const wk1End = setDates(date);
-    const wk1Start = setDates(date, 6);
-    getData(wk1Start, wk1End, 1);
-
-    // if the date is 1/27/2026 then the dates below are as follows
-    // Week 2 => 1/20/2026 - 1/14/2026
-    const wk2End = setDates(date, 7);
-    const wk2Start = setDates(date, 13);
-    getData(wk2Start, wk2End, 2);
-
-    // Week 3 => 1/13/2026 - 1/7/2026
-    const wk3End = setDates(date, 14);
-    const wk3Start = setDates(date, 20);
-    getData(wk3Start, wk3End, 3);
-
-    // Week 4 => 1/6/2026 - 12/31/2025
-    const wk4End = setDates(date, 21);
-    const wk4Start = setDates(date, 27);
-    getData(wk4Start, wk4End, 4);
-
-    setDateRange({
-      wk2: `${formatDate(wk2Start)} - ${formatDate(wk2End)}`,
-      wk3: `${formatDate(wk3Start)} - ${formatDate(wk3End)}`,
-      wk4: `${formatDate(wk4Start)} - ${formatDate(wk4End)}`,
-    });
   };
 
-  const getData = (ws: string, we: string, period: number) => {
-    const p = sales.selectedSalesPanel;
-    const useGroups = search.type === "Group" ? 1 : 0;
-    const singleStore = search.type === "Store" ? 1 : 0;
-    const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
+  const tw = formatCardData(sales.subSales);
+  const lw = formatCardData(sales.subSalesWk2);
+  const ly = formatCardData(sales.subSalesWk3);
 
-    const groupParam = p.storeid > 0 ? 0 : useGroups;
-    const singleStoreParam = p.storeid > 0 ? 1 : singleStore;
-    const searchParam = p.storeid > 0 ? p.storeid : searchValue;
-    getSubs(
-      context.url,
-      context.token,
-      ws,
-      we,
-      groupParam,
-      searchParam,
-      singleStoreParam,
-    ).then((resp) => {
-      const j = resp.data;
-      if (j.error === 0 && j.subs.length > 0) {
-        dispatch(setPeriodSubSales({ subs: j.subs, period }));
-      } else {
-        toast.warn(`No Sub-Department data found for week ${period}.`);
-      }
-    });
+  const twDates = sales.subSales.length
+    ? Array.from(
+        new Set(sales.subSales.map((s) => s.sale_date.split("T")[0])),
+      ).sort()
+    : [];
+  const lwDates = sales.subSalesWk2.length
+    ? Array.from(
+        new Set(sales.subSalesWk2.map((s) => s.sale_date.split("T")[0])),
+      ).sort()
+    : [];
+  const lyDates = sales.subSalesWk3.length
+    ? Array.from(
+        new Set(sales.subSalesWk3.map((s) => s.sale_date.split("T")[0])),
+      ).sort()
+    : [];
+
+  const formatDate = (dte: string) => {
+    const split = dte.split("-");
+    return `${split[1]}/${split[2]}/${split[0]}`;
   };
 
-  const formateFirstWk = () => {
-    const date = new Date(
-      sales.selectedSalesPanel.sale_date || search.singleDate,
-    );
-    const we = setDates(date);
-    const ws = setDates(date, 6);
-    return `${formatDate(ws)} - ${formatDate(we)}`;
+  const twDateRange = twDates.length
+    ? `${formatDate(twDates[0])} - ${formatDate(twDates[twDates.length - 1])}`
+    : "";
+  const lwDateRange = lwDates.length
+    ? `${formatDate(lwDates[0])} - ${formatDate(lwDates[lwDates.length - 1])}`
+    : "";
+  const lyDateRange = lyDates.length
+    ? `${formatDate(lyDates[0])} - ${formatDate(lyDates[lyDates.length - 1])}`
+    : "";
+
+  const weekTrend = tw.total_sales - lw.total_sales;
+  const yearTrend = tw.total_sales - ly.total_sales;
+
+  const trendIcon = (trend: number) => {
+    if (trend > 0) {
+      return (
+        <div className="flex items-center text-emerald-500 font-bold">
+          <HandThumbUpIcon className="h-4 w-4 mr-0.5 stroke-2" />
+          {formatCurrency2(trend)}
+        </div>
+      );
+    } else if (trend < 0) {
+      return (
+        <div className="flex items-center text-orange-500 font-bold">
+          <HandThumbDownIcon className="h-4 w-4 mr-0.5 stroke-2" />
+          {formatCurrency2(Math.abs(trend))}
+        </div>
+      );
+    }
+
+    return null;
   };
+
+  const sub = sales.selectedSubDept
+    ? sales.selectedSubDept.sub_department_description
+    : "";
 
   // Once we have both data sets, show the comparisons (final step)
   return (
-    <div className="">
-      {!inReport ? <div className="grid md:grid-cols-2 h-full gap-2">
-        <SubDeptPeriodCard
-          inReport={inReport}
-          data={sales.subSalesWk1}
-          dateRange={formateFirstWk()}
-          period={1}
-        />
-        <SubDeptPeriodCard
-          inReport={inReport}
-          data={sales.subSalesWk2}
-          dateRange={dateRange.wk2}
-          period={2}
-        />
-        <SubDeptPeriodCard
-          inReport={inReport}
-          data={sales.subSalesWk3}
-          dateRange={dateRange.wk3}
-          period={3}
-        />
-        <SubDeptPeriodCard
-          inReport={inReport}
-          data={sales.subSalesWk4}
-          dateRange={dateRange.wk4}
-          period={4}
-        />
-      </div> : null}
+    <div className="bg-custom-white rounded-lg px-2 py-1 shadow-lg text-[13.5px]">
+      <div className="font-medium grid grid-cols-3">
+        <div className="">{sub} Trends</div>
+        {!isMobile ? (
+          <>
+            <div className="flex gap-1 ml-2">
+              <div className="text-content/60">vs Last Week</div>
+              <div>{trendIcon(weekTrend)}</div>
+            </div>
+            <div className="flex gap-1 ml-2">
+              <div className="text-content/60">vs Last Year</div>
+              <div>{trendIcon(yearTrend)}</div>
+            </div>
+          </>
+        ) : null}
+      </div>
+      <div className="grid grid-cols-2">
+        <div className="bg-gradient-to-r from-emerald-200 from-[20%] to-blue-200 h-[1.5px]"></div>
+        <div className="bg-gradient-to-l from-orange-200 from-[20%] to-blue-200 h-[1.5px]"></div>
+      </div>
+      {isMobile ? (
+        <div className="flex justify-between text-[12.5px]">
+          <div className="flex gap-1">
+            <div className="text-content/60">Last Week</div>
+            <div>{trendIcon(weekTrend)}</div>
+          </div>
+          <div className="flex gap-1">
+            <div className="text-content/60">Last Year</div>
+            <div>{trendIcon(yearTrend)}</div>
+          </div>
+        </div>
+      ) : null}
+      <div className="grid md:grid-cols-3 text-[12.5px] py-1 gap-1">
+        <SubTrendCard sub={tw} row={1} dates={twDateRange} />
+        <SubTrendCard sub={lw} row={2} dates={lwDateRange} />
+        <SubTrendCard sub={ly} row={3} dates={lyDateRange} />
+      </div>
     </div>
   );
 };

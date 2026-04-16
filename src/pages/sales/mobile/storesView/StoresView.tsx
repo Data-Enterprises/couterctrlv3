@@ -135,7 +135,7 @@ const StoresView = () => {
   };
 
   return (
-    <div className=" min-h-[calc(100vh-7rem)] max-h-[calc(100vh-7rem)] overflow-hidden p-2 select-none text-[13px] space-y-1.5">
+    <div className=" min-h-[calc(100vh-6rem)] max-h-[calc(100vh-6rem)] overflow-hidden p-2 select-none text-[13px] space-y-1.5">
       <StoresHeader totals={aggTotals} coupons={couponPieData} />
       <div className="grid grid-cols-5 gap-1">
         {sortOptions.map((so, i) => (
@@ -149,7 +149,7 @@ const StoresView = () => {
           </div>
         ))}
       </div>
-      <div className="rounded-lg shadow-md max-h-[calc(100vh-310px)] overflow-y-auto">
+      <div className="rounded-lg shadow-md max-h-[calc(100vh-290px)] overflow-y-auto">
         {currentPanelsList().map((sp, i) => (
           <StoreRow key={i} panel={sp} />
         ))}

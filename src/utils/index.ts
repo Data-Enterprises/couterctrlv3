@@ -121,3 +121,36 @@ export const handleRipple = (e: React.MouseEvent<HTMLDivElement>) => {
   // Then append the new ripple to the parent element
   parent.appendChild(circle);
 };
+
+// This will be used to determine how we get last year's data 
+const days = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+export const sameWeekDayLastYear = (current: string) => {
+  const currDte = new Date(current);
+  const currYear = currDte.getFullYear();
+  const prevYear = currYear - 1;
+
+  const isLeapYr = (y: number) =>
+    (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+
+  const crossesLeapYr =
+    isLeapYr(prevYear) && currDte > new Date(`${currYear}-02-28`);
+  const daysToSubtract = crossesLeapYr ? 365 : 364;
+
+  const result = new Date(currDte);
+  result.setDate(result.getDate() - daysToSubtract);
+
+  const testing = {
+    date: result.toISOString().split("T")[0],
+    dow: days[result.getDay()],
+  };
+
+  return testing;
+};

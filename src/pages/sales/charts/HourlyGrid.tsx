@@ -7,10 +7,11 @@ import { formatBigNumber, formatCurrency2 } from "../../../utils";
 const HourlyGrid = () => {
   const [hour, setHour] = useState<number>(0);
   const [rowData, setRowData] = useState<HourlyTotal[]>([]);
+  const [lyRowData, setLyRowData] = useState<HourlyTotal[]>([]);
   const [barData, setBarData] = useState<any[]>([]);
-  const { hourlySales, selectedSalesPanel } = useAppSelector(
-    (state) => state.sales,
-  );
+  const [_, setLyData] = useState<any[]>([]);
+  const { hourlySales, selectedSalesPanel, hourlySalesLastYear } =
+    useAppSelector((state) => state.sales);
   const { isMobile } = useAppSelector((state) => state.app);
   const [barIndex, setBarIndex] = useState<string>("date");
 
@@ -61,8 +62,34 @@ const HourlyGrid = () => {
         return acc;
       }, []);
 
+    const lyTotals = [...hourlySalesLastYear]
+      .filter((d) => {
+        if (selectedSalesPanel.sale_date) {
+          return (
+            formatDate(d.sale_date) === formatDate(selectedSalesPanel.sale_date)
+          );
+        } else {
+          return true;
+        }
+      })
+      .reduce((acc: HourlyTotal[], curr) => {
+        const exists = acc.find((d) => d.hour === curr.hour);
+        if (exists) {
+          exists.total_sales += curr.total_sales - curr.total_tax;
+          exists.trans += curr.transactions;
+        } else {
+          acc.push({
+            hour: curr.hour,
+            total_sales: curr.total_sales - curr.total_tax,
+            trans: curr.transactions,
+          });
+        }
+        return acc;
+      }, []);
+
+    setLyRowData(lyTotals);
     setRowData(totals);
-  }, [hourlySales]);
+  }, [hourlySales, hourlySalesLastYear]);
 
   useEffect(() => {
     const hourFiltered = [...hourlySales]
@@ -83,7 +110,26 @@ const HourlyGrid = () => {
         full_date: d.sale_date,
       }));
 
+    const lyFiltered = [...hourlySalesLastYear]
+      .filter((d) => {
+        if (selectedSalesPanel.sale_date) {
+          return (
+            formatDate(d.sale_date) === formatDate(selectedSalesPanel.sale_date)
+          );
+        } else {
+          return d.hour === hour;
+        }
+      })
+      .sort((a, b) => a.sale_date.localeCompare(b.sale_date))
+      .map((d) => ({
+        hour: d.hour,
+        total_sales: d.total_sales - d.total_tax,
+        date: formatDate(d.sale_date),
+        full_date: d.sale_date,
+      }));
+
     setBarData(hourFiltered);
+    setLyData(lyFiltered);
   }, [hour]);
 
   const rgbaColor = (hex: string, alpha: number) => {
@@ -93,18 +139,13 @@ const HourlyGrid = () => {
     return `rgba(${r},${g},${b},${alpha})`;
   };
 
-  const handleAvg = (panel: {
-    hour: number;
-    total_sales: number;
-    trans: number;
-  }) => {
-    const avgSales =
-      rowData.reduce((acc, val) => acc + val.total_sales, 0) / rowData.length;
-    if (panel.total_sales > avgSales) {
+  const compareCard = (val1: number, val2: number) => {
+    if (val1 > val2) {
       return "bg-emerald-200";
-    } else {
+    } else if (val1 < val2) {
       return "bg-orange-200";
     }
+    return "";
   };
 
   const findBarColor = (value: number) => {
@@ -120,57 +161,112 @@ const HourlyGrid = () => {
 
   if (!barData.length) return null;
 
+  // Merge all unique hours from both datasets
+  const allHours = Array.from(
+    new Set([...rowData.map((d) => d.hour), ...lyRowData.map((d) => d.hour)]),
+  ).sort((a, b) => a - b);
+
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg my-2 md:my-0 py-2">
-      <div className="px-2 font-medium grid grid-cols-[25%_50%_25%]">
-        <span className="font-medium text-sm md:text-[16px]">Hourly Sales</span>
-        <div className="flex gap-2 md:gap-4 text-sm justify-center">
+    <div className="bg-custom-white rounded-lg shadow-lg my-2 md:my-0 py-1.5">
+      <div className="px-2 font-medium flex justify-between">
+        <span className="font-medium text-sm md:text-[13.5px]">
+          Hourly Sales
+        </span>
+        {/* <div className="flex gap-2 md:gap-4 text-sm justify-center">
           <div className="flex gap-1 items-center">
             <div className="rounded-full h-3 w-3 bg-orange-500"></div>
-            <div className="text-xs md:text-sm">Below Avg</div>
+            <div className="text-[13px]">Below Avg</div>
           </div>
           <div className="flex gap-1 items-center">
             <div className="rounded-full h-3 w-3 bg-emerald-500"></div>
-            <div className="text-xs md:text-sm">Above Avg</div>
+            <div className="text-[13px]">Above Avg</div>
           </div>
-        </div>
-        <span className="text-right text-sm md:text-[16px]">Hour: {hour}</span>
+        </div> */}
+        <span className="text-right text-sm md:text-[13.5px]">
+          Hour: {hour}
+        </span>
       </div>
-      <div className="h-[93%] grid grid-cols-2 gap-2 md:gap-0 md:grid-cols-[45%_54%] mt-1 md:mt-0">
-        <div className="grid md:grid-cols-2 gap-2 max-h-[200px] md:max-h-[290px] rounded-lg overflow-y-scroll mx-1 md:mx-2 no-scrollbar">
-          {rowData.map((r) => (
-            <div
-              key={`hour-${r.hour}`}
-              data-testid={`hour-${r.hour}`}
-              className={`${r.hour === hour ? "bg-blue-200" : handleAvg(r)} text-xs rounded-lg shadow-content/30 shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
-              onClick={() => handleSelect(r)}
-            >
-              <div className="flex justify-between">
-                <div className="font-medium text-content/60">Hour:</div>
-                <div className="font-medium">{r.hour}</div>
-              </div>
-              <div className="flex justify-between">
-                <div className="font-medium text-content/60">Sales:</div>
-                <div className="font-medium">
-                  {formatCurrency2(r.total_sales)}
+      <div className="grid grid-cols-2 md:flex md:w-[45%] text-[13px] font-medium">
+        <div className="md:w-1/2 pl-2">This Year</div>
+        <div className="md:w-1/2 pl-2">Last Year</div>
+      </div>
+      <div className="h-[93%] grid gap-2 md:gap-0 md:grid-cols-[45%_54%] mt-1 md:mt-0">
+        <div className="grid max-h-[200px] md:max-h-[230px] rounded-lg overflow-y-scroll mx-1 md:mx-2 no-scrollbar">
+          <div className="md:grid-cols-2 md:col-span-1 gap-2">
+            {allHours.map((hourVal) => {
+              const current = rowData.find((r) => r.hour === hourVal);
+              const lastYear = lyRowData.find((r) => r.hour === hourVal);
+
+              return (
+                <div
+                  key={`hour-${hourVal}`}
+                  className="grid grid-cols-2 gap-2 mb-1"
+                >
+                  {/* This year */}
+                  {current ? (
+                    <div
+                      className={`${hourVal === hour ? "bg-blue-200" : compareCard(current.total_sales, lastYear ? lastYear.total_sales : 0)} 
+                        text-xs rounded-lg shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
+                      onClick={() => handleSelect(current)}
+                    >
+                      <div className="flex justify-between font-medium">
+                        <div className="text-content/60">Hour:</div>
+                        <div>{current.hour}</div>
+                      </div>
+                      <div className="flex justify-between font-medium">
+                        <div className="text-content/60">Sales:</div>
+                        <div>{formatCurrency2(current.total_sales)}</div>
+                      </div>
+                      <div className="flex justify-between font-medium">
+                        <div className="text-content/60">Trans:</div>
+                        <div>{formatBigNumber(current.trans, 0)}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-bkg text-xs rounded-lg shadow-md p-2 flex justify-center items-center font-medium text-content/60">
+                      No Data Found
+                    </div>
+                  )}
+
+                  {/* Last year */}
+                  {lastYear ? (
+                    <div
+                      className={`${hourVal === hour ? "bg-blue-200" : compareCard(lastYear.total_sales, current ? current.total_sales : 0)} 
+                        text-xs rounded-lg shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
+                      onClick={() => handleSelect(lastYear)}
+                    >
+                      <div className="flex justify-between font-medium">
+                        <div className="text-content/60">Hour:</div>
+                        <div>{lastYear.hour}</div>
+                      </div>
+                      <div className="flex justify-between font-medium">
+                        <div className="text-content/60">Sales:</div>
+                        <div>{formatCurrency2(lastYear.total_sales)}</div>
+                      </div>
+                      <div className="flex justify-between font-medium">
+                        <div className="text-content/60">Trans:</div>
+                        <div>{formatBigNumber(lastYear.trans, 0)}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-bkg text-xs rounded-lg shadow-md p-2 flex justify-center items-center font-medium text-content/60">
+                      No Data Found
+                    </div>
+                  )}
                 </div>
-              </div>
-              <div className="flex justify-between">
-                <div className="font-medium text-content/60">Trans:</div>
-                <div className="font-medium">{formatBigNumber(r.trans, 0)}</div>
-              </div>
-            </div>
-          ))}
+              );
+            })}
+          </div>
         </div>
         <div>
           {!isMobile ? (
             <ResponsiveBar
               data={barData}
               margin={{
-                top: 10,
+                top: 5,
                 right: 0,
-                bottom: selectedSalesPanel.sale_date ? 28 : 32,
-                left: 50,
+                bottom: selectedSalesPanel.sale_date ? 42 : 50,
+                left: 45,
               }}
               keys={["total_sales"]}
               indexBy={barIndex}
@@ -231,34 +327,33 @@ const HourlyGrid = () => {
                 },
               }}
             />
-          ) : (
-            <div className="grid gap-2 min-h[200px] max-h-[200px] overflow-y-scroll no-scrollbar mr-1">
-              {barData
-                .filter((h) => h.hour === hour)
-                .map((h) => (
-                  <div
-                    key={`display-date-${h.hour}-${Math.random()}`}
-                    style={{ backgroundColor: findBarColor(h.total_sales) }}
-                    className={`${findBarColor(h.total_sales)} text-xs rounded-lg shadow-content/30 shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
-                  >
-                    <div className="flex justify-between">
-                      <div className="font-medium text-content/60">Date:</div>
-                      <div className="font-medium">{h.date}</div>
-                    </div>
-                    <div className="flex justify-between">
-                      <div className="font-medium text-content/60">Hour:</div>
-                      <div className="font-medium">{h.hour}</div>
-                    </div>
-                    <div className="flex justify-between">
-                      <div className="font-medium text-content/60">Sales:</div>
-                      <div className="font-medium">
-                        {formatCurrency2(h.total_sales)}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          )}
+          ) : // <div className="grid gap-2 min-h[200px] max-h-[200px] overflow-y-scroll no-scrollbar mr-1">
+          //   {barData
+          //     .filter((h) => h.hour === hour)
+          //     .map((h) => (
+          //       <div
+          //         key={`display-date-${h.hour}-${Math.random()}`}
+          //         style={{ backgroundColor: findBarColor(h.total_sales) }}
+          //         className={`${findBarColor(h.total_sales)} text-xs rounded-lg shadow-content/30 shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
+          //       >
+          //         <div className="flex justify-between">
+          //           <div className="font-medium text-content/60">Date:</div>
+          //           <div className="font-medium">{h.date}</div>
+          //         </div>
+          //         <div className="flex justify-between">
+          //           <div className="font-medium text-content/60">Hour:</div>
+          //           <div className="font-medium">{h.hour}</div>
+          //         </div>
+          //         <div className="flex justify-between">
+          //           <div className="font-medium text-content/60">Sales:</div>
+          //           <div className="font-medium">
+          //             {formatCurrency2(h.total_sales)}
+          //           </div>
+          //         </div>
+          //       </div>
+          //     ))}
+          // </div>
+          null}
         </div>
       </div>
     </div>

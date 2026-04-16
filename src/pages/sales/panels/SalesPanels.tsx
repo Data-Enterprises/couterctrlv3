@@ -1,21 +1,35 @@
 import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import type { JsonError, WeeklySale } from "../../../interfaces";
+import type {
+  JsonError,
+  SelectedSalesPanel,
+  WeeklySale,
+} from "../../../interfaces";
 import {
   finishQuery,
   reQuery,
   setHourlySales,
+  setHourlySalesLastYear,
+  setLeftSubCompare,
+  setPeriodSubSales,
+  setRightSubCompare,
   setSelectedSalesPanel,
   setSubSales,
   setTopTenItems,
   setWeeklySales,
+  setWeeklySalesLastYear,
 } from "../../../features/salesSlice";
 import { getHourly, getSubs, getTopTen, getWeekly } from "../../../api/sales";
-import { addDays, formatGoliathDate, handleRipple } from "../../../utils";
+import {
+  addDays,
+  formatGoliathDate,
+  handleRipple,
+  sameWeekDayLastYear,
+} from "../../../utils";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import SalesPanel from "./SalesPanel";
-import { comparePanels } from "../utils";
+import { comparePanels, setDates } from "../utils";
 
 const SalesPanels = () => {
   const toast = useToast();
@@ -26,24 +40,52 @@ const SalesPanels = () => {
 
   // on mount, fetch the data once
   useEffect(() => {
-    handleDataFetch();
-  }, []);
+    if (sales.salesPanels.length) {
+      handleDataFetch(null);
+    }
+  }, [sales.salesPanels]);
 
-  // This runs after sales panels have been fetched and the user is toggling the selected sales panel
-  useEffect(() => {
-    if (sales.salesPanels.length === 0) return;
-    handleDataFetch();
-  }, [sales.selectedSalesPanel]);
-
-  const handleDataFetch = () => {
-    dispatch(reQuery());
+  const getSubsData = async (ws: string, we: string, period: number) => {
     const p = sales.selectedSalesPanel;
-    const start = p.sale_date
-      ? p.sale_date.split("T")[0]
-      : formatGoliathDate(search.singleDate);
-    const end = p.sale_date
-      ? p.sale_date.split("T")[0]
-      : formatGoliathDate(search.singleDate);
+    const useGroups = search.type === "Group" ? 1 : 0;
+    const singleStore = search.type === "Store" ? 1 : 0;
+    const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
+
+    const groupParam = p.storeid > 0 ? 0 : useGroups;
+    const singleStoreParam = p.storeid > 0 ? 1 : singleStore;
+    const searchParam = p.storeid > 0 ? p.storeid : searchValue;
+    await getSubs(
+      context.url,
+      context.token,
+      ws,
+      we,
+      groupParam,
+      searchParam,
+      singleStoreParam,
+    ).then((resp) => {
+      const j = resp.data;
+      if (j.error === 0 && j.subs.length > 0) {
+        dispatch(setPeriodSubSales({ subs: j.subs, period }));
+      } else {
+        toast.warn(`No Sub-Department data found for week ${period}.`);
+      }
+    });
+  };
+
+  const handleDataFetch = async (p: SelectedSalesPanel | null) => {
+    dispatch(reQuery());
+    dispatch(setLeftSubCompare(null));
+    dispatch(setRightSubCompare(null));
+
+    // const p = sales.selectedSalesPanel;
+    const start =
+      p !== null
+        ? p.sale_date.split("T")[0]
+        : formatGoliathDate(search.singleDate);
+    const end =
+      p !== null
+        ? p.sale_date.split("T")[0]
+        : formatGoliathDate(search.singleDate);
 
     // useGroups and singleStore logic
     const useGroups = search.type === "Group" ? 1 : 0;
@@ -55,14 +97,15 @@ const SalesPanels = () => {
     const weeklyEnd = new Date(end).toISOString().split("T")[0];
 
     // Final logic for params based on if a store panel is selected
-    const groupParam = p.storeid > 0 ? 0 : useGroups;
-    const singleStoreParam = p.storeid > 0 ? 1 : singleStore;
-    const searchParam = p.storeid > 0 ? p.storeid : searchValue;
+    const groupParam = p && p.storeid > 0 ? 0 : useGroups;
+    const singleStoreParam = p && p.storeid > 0 ? 1 : singleStore;
+    const searchParam = p && p.storeid > 0 ? p.storeid : searchValue;
 
     // This is for determining the search type for Top Ten
-    const searchType = p.storeid > 0 ? "Store" : search.type;
+    const searchType = p && p.storeid > 0 ? "Store" : search.type;
 
-    getWeekly(
+    // For this week
+    await getWeekly(
       context.url,
       context.token,
       weeklyStart,
@@ -75,19 +118,41 @@ const SalesPanels = () => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setWeeklySales(j.sales));
-          dispatch(finishQuery("weekly"));
+
+          // Then fetch last year
+          const endDateLY = sameWeekDayLastYear(weeklyEnd);
+          const lyDate = new Date(endDateLY.date);
+          const lyWkEnd = setDates(lyDate);
+          const lyWkStart = setDates(lyDate, 6);
+          getWeekly(
+            context.url,
+            context.token,
+            lyWkStart,
+            lyWkEnd,
+            groupParam,
+            searchParam,
+            singleStoreParam,
+          )
+            .then((resp) => {
+              const j = resp.data;
+              if (j.error === 0) {
+                dispatch(setWeeklySalesLastYear(j.sales));
+              }
+            })
+            .catch((err: JsonError) => toast.error(err.message));
         }
       })
+      .then(() => dispatch(finishQuery("weekly")))
       .catch((err: JsonError) =>
         toast.error("Error fetching weekly data: " + err.message),
       );
 
-    getTopTen(
+    await getTopTen(
       context.url,
       context.token,
       searchParam,
       searchType,
-      p.sale_date ? start : weeklyStart,
+      p && p.sale_date ? start : weeklyStart,
       weeklyEnd,
     )
       .then((resp) => {
@@ -102,7 +167,7 @@ const SalesPanels = () => {
       });
 
     // Keep an eye on this - might need to adjust for weeklyStart and weeklyEnd
-    getHourly(
+    await getHourly(
       context.url,
       context.token,
       weeklyStart,
@@ -115,17 +180,38 @@ const SalesPanels = () => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setHourlySales(j.subs));
-          dispatch(finishQuery("hourly"));
+          // Then fetch last year
+          const endDateLY = sameWeekDayLastYear(weeklyEnd);
+          const lyDate = new Date(endDateLY.date);
+          const lyWkEnd = setDates(lyDate);
+          const lyWkStart = setDates(lyDate, 6);
+          getHourly(
+            context.url,
+            context.token,
+            lyWkStart,
+            lyWkEnd,
+            groupParam,
+            searchParam,
+            singleStoreParam,
+          )
+            .then((resp) => {
+              const j = resp.data;
+              if (j.error === 0) {
+                dispatch(setHourlySalesLastYear(j.subs));
+              }
+            })
+            .catch((err: JsonError) => toast.error(err.message));
         }
       })
+      .then(() => dispatch(finishQuery("hourly")))
       .catch((err: JsonError) =>
         toast.error("Error fetching hourly data: " + err.message),
       );
 
-    getSubs(
+    await getSubs(
       context.url,
       context.token,
-      p.sale_date ? start : weeklyStart,
+      p && p.sale_date ? start : weeklyStart,
       weeklyEnd,
       groupParam,
       searchParam,
@@ -135,12 +221,25 @@ const SalesPanels = () => {
         const j = resp.data;
         if (j.error === 0) {
           dispatch(setSubSales(j.subs));
-          dispatch(finishQuery("subs"));
+          // Last week
+          const lastWkDate = new Date(weeklyEnd);
+          const lastWeekEnd = setDates(lastWkDate, 7);
+          const lastWeekStart = setDates(lastWkDate, 13);
+          getSubsData(p ? lastWeekEnd : lastWeekStart, lastWeekEnd, 2);
+
+          // Last year's same week
+          const endDateLY = sameWeekDayLastYear(weeklyEnd);
+          const lyDate = new Date(endDateLY.date);
+          const lyWkEnd = setDates(lyDate);
+          const lyWkStart = setDates(lyDate, 6);
+          getSubsData(p ? lyWkEnd : lyWkStart, lyWkEnd, 3);
         }
       })
+      // .then(() => dispatch(finishQuery("subs")))
       .catch((err: JsonError) =>
         toast.error("Error fetching subs data: " + err.message),
-      );
+      )
+      .finally(() => dispatch(finishQuery("subs")));
   };
 
   const handlePanelClick = (
@@ -150,18 +249,19 @@ const SalesPanels = () => {
     handleRipple(e);
     // This date is being used to compare with the selected panel in redux
     const date = panel.sale_date.split("T")[0];
+    const newSelection: SelectedSalesPanel = {
+      sale_date: date,
+      storeid: panel.storeid,
+      store_name: panel.store_name,
+    };
     if (!comparePanels(panel, sales.selectedSalesPanel)) {
-      dispatch(
-        setSelectedSalesPanel({
-          sale_date: date,
-          storeid: panel.storeid,
-          store_name: panel.store_name,
-        }),
-      );
+      dispatch(setSelectedSalesPanel(newSelection));
+      handleDataFetch(newSelection);
     } else {
       dispatch(
         setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
       );
+      handleDataFetch(null);
     }
   };
 
@@ -178,8 +278,8 @@ const SalesPanels = () => {
           />
         ))}
       {sales.panelsLoading ? (
-        <div className="mt-52 relative">
-          <LoadingIndicator message="Loading Sales Panels..." />
+        <div className="h-[59vh] relative">
+          <LoadingIndicator message="Loading sales panels" />
         </div>
       ) : null}
     </div>

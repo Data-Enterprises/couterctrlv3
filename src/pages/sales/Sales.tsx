@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 // Hooks/API
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { useAppSelector, useAppDispatch } from "../../hooks";
@@ -19,6 +18,7 @@ import SubsCompareModal from "./subsCompare/SubsCompareModal";
 
 // Dispatchers
 import {
+  reQuery,
   setLeftSubCompare,
   setPanelsLoading,
   setRightSubCompare,
@@ -29,28 +29,16 @@ import {
 // utils
 import { addDays, formatGoliathDate } from "../../utils";
 import type { JsonError } from "../../interfaces";
-import { useLeftColHeight } from "./utils/hooks";
 
 const Sales = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const { username } = useAppSelector((state) => state.user);
-  const { queryChecker, weeklySales, hourlySales, subSales, topTenItems } =
-    useAppSelector((state) => state.sales);
-  const { height, topLeftRef, leftColRef } = useLeftColHeight();
-  const [showLoading, setShowLoading] = useState<boolean>(false);
+  const { queryChecker, salesPanels } = useAppSelector((state) => state.sales);
 
-  // On mount, get data if user prefs has a last store or group, meaning there is a last search type as well
-  useEffect(() => {
-    // if ((search.lastStore > 0 || search.lastGroup > 0) && context.isDesktop) {
-    if (search.lastStore > 0 || search.lastGroup > 0) {
-      getSalesPanels();
-    }
-  }, []);
-
-  const getSalesPanels = () => {
+  const getSalesPanels = async () => {
+    dispatch(reQuery());
     dispatch(setLeftSubCompare(null));
     dispatch(setRightSubCompare(null));
     dispatch(
@@ -64,8 +52,7 @@ const Sales = () => {
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 
     dispatch(setPanelsLoading(true));
-    setShowLoading(true);
-    getWeekly(
+    await getWeekly(
       context.url,
       context.token,
       start,
@@ -89,106 +76,82 @@ const Sales = () => {
       })
       .finally(() => {
         dispatch(setPanelsLoading(false));
-        setShowLoading(false);
       });
   };
 
+  // Just render the mobile version and cut down on excessive operations
   // if (context.isMobile) return <SalesMobile />;
 
-  const pageContainer = context.isDesktop
-    ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none"
-    : " p-4 overflow-y-scroll bg-bkg";
-  const gridContainer = context.isDesktop
-    ? " grid grid-cols-[18%_81%] gap-4 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]"
-    : "h-full";
+  // const pageContainer =
+  //   "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none";
+  // const gridContainer =
+  //   "grid grid-cols-[17%_83%] gap-2 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]";
 
-  const isReady =
-    queryChecker.hourly &&
-    queryChecker.subs &&
-    queryChecker.topTen &&
-    queryChecker.weekly;
+    const pageContainer = context.isDesktop
+      ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none"
+      : "min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 overflow-y-scroll bg-bkg";
+    const gridContainer = context.isDesktop
+      ? " grid grid-cols-[18%_81%] gap-4 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]"
+      : "h-full";
 
   const isLoading =
-    !topTenItems.length &&
-    !hourlySales.length &&
-    !weeklySales.length &&
-    !subSales.length;
-
-  const hasLastSearch = search.lastGroup === 0 && search.lastStore === 0;
+    !queryChecker.hourly ||
+    !queryChecker.subs ||
+    !queryChecker.topTen ||
+    !queryChecker.weekly;
 
   return (
     <div data-testid="sales-page" className={pageContainer}>
       {!context.isMobile ? (
         <div className={gridContainer}>
           <SubsCompareModal />
-          <div
-            ref={leftColRef}
-            className={`h-full md:grid-rows-[25%_74%] md:gap-4`}
-          >
-            <div
-              ref={topLeftRef}
-              className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1"
-            >
+          <div className={`h-full md:grid-rows-[267px_1fr] md:gap-2`}>
+            <div className="bg-custom-white rounded-lg p-2 shadow-lg">
               <StorePicker />
               <SingleDatePicker />
-              <button className="btn-themeBlue w-full" onClick={getSalesPanels}>
+              <button
+                className="btn-themeBlue w-full mt-2"
+                onClick={getSalesPanels}
+              >
                 Search
               </button>
             </div>
-            <div
-              style={{ minHeight: height, maxHeight: height }}
-              className="overflow-y-scroll no-scrollbar mt-4"
-            >
-              <SalesPanels />
-            </div>
+            {salesPanels.length > 0 ? (
+              <div
+                className={`max-h-[calc(100vh-340px)] overflow-y-scroll no-scrollbar mt-2`}
+              >
+                <SalesPanels />
+              </div>
+            ) : null}
           </div>
 
-          {hasLastSearch ? (
-            <div className="flex justify-center items-center">
-              <div className="bg-custom-white rounded-lg shadow-lg p-4 text-center text-sm font-medium">
-                <div className="mb-1">
-                  Welcome to your first login {username}!
-                </div>
-                <div className="mb-1">
-                  Please select a store/group to show sales data
-                </div>
-                <div>Future successful logins will automatically</div>
-                <div>pull data from your last search</div>
-              </div>
-            </div>
-          ) : isLoading && !isReady ? (
+          {isLoading ? (
             <div className="relative">
-              {showLoading && (
-                <LoadingIndicator message="Loading sales data..." />
-              )}
+              {salesPanels.length ? (
+                <LoadingIndicator message="Loading sales data" />
+              ) : null}
             </div>
-          ) : isReady ? (
-            <div className="md:max-h-[calc(100vh-5rem)] overflow-y-auto no-scrollbar md:grid-rows-[20%_78%] md:space-y-2 overflow-hidden">
+          ) : (
+            <div className="md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)] grid grid-rows-[152px_1fr] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
               <KpiHeader />
-              <div className="grid grid-cols-2 gap-2">
-                <div className="grid grid-rows-2 gap-2">
+              <div className="grid grid-cols-[42%_1fr] gap-2 h-[calc(100vh-232px)]">
+                <div className="grid grid-rows-[282px_1fr] gap-2 h-full">
                   <HourlyGrid />
                   <TopTen />
                 </div>
-                <div className="grid grid-rows-2 gap-2">
+                <div className="grid gap-2 h-full grid-rows-[220px_1fr]">
                   <SubDeptComps />
                   <SubDeptGrid />
                 </div>
               </div>
             </div>
-          ) : null}
+          )}
         </div>
       ) : (
         <div className={gridContainer}>
           {/* <ReportBuilder /> */}
-          <div
-            ref={leftColRef}
-            className="md:grid h-full md:grid-rows-[25%_74%] md:gap-4"
-          >
-            <div
-              ref={topLeftRef}
-              className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1"
-            >
+          <div className="md:grid h-full md:grid-rows-[25%_74%] md:gap-4">
+            <div className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1">
               <StorePicker />
               <SingleDatePicker />
               <button className="btn-themeBlue w-full" onClick={getSalesPanels}>
@@ -200,33 +163,21 @@ const Sales = () => {
             </div>
           </div>
 
-          {hasLastSearch ? (
-            <div className="flex justify-center items-center">
-              <div className="bg-custom-white rounded-lg shadow-lg p-4 text-center text-sm font-medium">
-                <div className="mb-1">
-                  Welcome to your first login {username}!
-                </div>
-                <div className="mb-1">
-                  Please select a store/group to show sales data
-                </div>
-                <div>Future successful logins will automatically</div>
-                <div>pull data from your last search</div>
-              </div>
-            </div>
-          ) : isLoading && !isReady ? (
+          {isLoading ? (
             <div className="relative">
-              {showLoading && (
+              {salesPanels.length ? (
                 <LoadingIndicator message="Loading sales data..." />
-              )}
+              ): null}
             </div>
-          ) : isReady ? (
+          ) : (
             <div className="overflow-hidden">
               <KpiHeader />
+              <SubDeptGrid />
               <SubDeptComps />
               <HourlyGrid />
               <TopTen />
             </div>
-          ) : null}
+          )}
         </div>
       )}
     </div>

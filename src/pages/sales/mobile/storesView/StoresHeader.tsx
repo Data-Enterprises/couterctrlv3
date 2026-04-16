@@ -4,6 +4,10 @@ import type { PieData } from "..";
 import { ResponsivePie } from "@nivo/pie";
 import { colors } from "../../utils";
 import { formatCurrency2 } from "../../../../utils";
+import {
+  setSelectedStore,
+  setSortedSalesViewTopTen,
+} from "../../../../features/salesMobileSlice";
 
 interface StoresHeaderProps {
   totals: AggTotals;
@@ -19,6 +23,11 @@ const StoresHeader = ({ totals, coupons }: StoresHeaderProps) => {
   };
 
   const displayName = () => {
+    if (ctx.selectedStore.store_name.length > 0) {
+      return ctx.selectedStore.store_name;
+    }
+
+    // If in the general view, either the single store name or group name will render
     if (ctx.type === "Store") {
       const selectedCheck = ctx.selectedStore.store_name.length > 0;
       return selectedCheck
@@ -42,10 +51,20 @@ const StoresHeader = ({ totals, coupons }: StoresHeaderProps) => {
 
   const totalCpns = coupons.reduce((acc, curr) => acc + curr.value, 0);
 
+  const handleHeaderClick = () => {
+    ctx.dispatch(
+      setSelectedStore({ storeid: 0, store_name: "", sale_date: "" }),
+    );
+
+    ctx.dispatch(setSortedSalesViewTopTen({ topTen: [], isResetting: true }));
+  };
+
   return (
-    <div className="bg-custom-white rounded-lg shadow-md px-2 py-1 grid grid-cols-2">
+    <div
+      className="bg-custom-white rounded-lg shadow-md px-2 py-1 grid grid-cols-2"
+      onClick={handleHeaderClick}
+    >
       <div className="col-span-2 flex justify-between">
-        {" "}
         <div className="font-medium text-nowrap truncate">{displayName()}</div>
         <div className="font-medium">{dteStr()}</div>
       </div>
