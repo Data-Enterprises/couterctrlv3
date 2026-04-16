@@ -10,13 +10,11 @@ import {
 import type { SubSale } from "../../../interfaces";
 import { setSelectedSubDept } from "../../../features/salesSlice";
 import { useState, useEffect, useRef } from "react";
-import SingleSelect from "../../../components/SingleSelect";
 
 const SubDeptGrid = () => {
-  const { isMobile } = useAppSelector((state) => state.app);
   const gridRef = useRef<AgGridReact<SubSale>>(null);
   const dispatch = useAppDispatch();
-  const { subSales, selectedSubDept, topSubDept, selectedSalesPanel } =
+  const { subSales, selectedSubDept, selectedSalesPanel } =
     useAppSelector((state) => state.sales);
   const [groupSubs, setGroupSubs] = useState<SubSale[]>([]);
 
@@ -109,102 +107,62 @@ const SubDeptGrid = () => {
     dispatch(setSelectedSubDept(selected));
   };
 
-  const style = isMobile
-    ? "-mx-2"
-    : "bg-custom-white rounded-lg shadow-lg pb-2 pt-1 h-full";
-
-  const handleSelect = (subDept: string | number) => {
-    const d = groupSubs.find((s) => s.sub_department === Number(subDept));
-    const selected: TopSub = {
-      sub_department: d!.sub_department,
-      sub_department_description: d!.sub_department_description,
-      total_sales: d!.total_sales,
-      net_sales: d!.net_sales,
-      qty: d!.qty,
-      digital_coupons: d!.digital_coupons,
-      elec_instore_coupons: d!.elec_instore_coupons,
-      elec_store_coupons: d!.elec_store_coupons,
-      store_coupon: d!.store_coupon,
-      total_tax: d!.total_tax,
-    };
-    dispatch(setSelectedSubDept(selected));
-  };
-
   return (
-    <div className={style}>
-      {!isMobile ? (
-        <div className="px-2 flex justify-between items-center">
-          <span className="font-medium">
-            {selectedSalesPanel.sale_date ? "Daily" : "Weekly"} Sub Department
-            Sales
-          </span>
-        </div>
-      ) : (
-        <div className="px-2 flex justify-between items-center">
-          <SingleSelect
-            data={groupSubs}
-            displayKey="sub_department_description"
-            valueKey="sub_department"
-            label="Sub Department Sales"
-            innerClass="py-1"
-            className="w-full"
-            defaultQuery={
-              (topSubDept?.sub_department_description as string) || ""
-            } // set default to top sub dept
-            onSelect={handleSelect}
-            id={1}
-          />
-        </div>
-      )}
-      {!isMobile && (
-        <div className="px-2 h-[92%]">
-          <AgGridReact
-            ref={gridRef}
-            rowData={groupSubs}
-            theme={theme}
-            columnDefs={subCols}
-            pagination={true}
-            paginationAutoPageSize={true}
-            onRowClicked={(d) => {
-              if (
-                !selectedSubDept ||
-                (selectedSubDept &&
-                  selectedSubDept.sub_department !== d.data!.sub_department)
-              ) {
-                handleSetSelectedSubDept(d);
-              } else {
-                dispatch(setSelectedSubDept(null));
+    <div className="bg-custom-white rounded-lg shadow-lg pb-2 pt-1 h-full">
+      <div className="px-2 flex justify-between items-center text-sm">
+        <span className="font-medium">
+          {selectedSalesPanel.sale_date ? "Daily" : "Weekly"} Sub Department
+          Sales
+        </span>
+      </div>
+
+      <div className="px-2 h-[92%]">
+        <AgGridReact
+          ref={gridRef}
+          rowData={groupSubs}
+          theme={theme}
+          columnDefs={subCols}
+          pagination={true}
+          paginationAutoPageSize={true}
+          onRowClicked={(d) => {
+            if (
+              !selectedSubDept ||
+              (selectedSubDept &&
+                selectedSubDept.sub_department !== d.data!.sub_department)
+            ) {
+              handleSetSelectedSubDept(d);
+            } else {
+              dispatch(setSelectedSubDept(null));
+            }
+          }}
+          rowSelection="single"
+          onGridReady={(event) => {
+            event.api.forEachNode((node, i) => {
+              // No checking against the selectedSubDept here
+              // because this runs only when the grid is ready,
+              // so the first sub dept in the grid is always the top sub dept
+              if (i === 0) {
+                const selected: TopSub = {
+                  sub_department: node.data!.sub_department,
+                  sub_department_description:
+                    node.data!.sub_department_description,
+                  total_sales: node.data!.total_sales,
+                  net_sales: node.data!.net_sales,
+                  qty: node.data!.qty,
+                  digital_coupons: node.data!.digital_coupons,
+                  elec_instore_coupons: node.data!.elec_instore_coupons,
+                  elec_store_coupons: node.data!.elec_store_coupons,
+                  store_coupon: node.data!.store_coupon,
+                  total_tax: node.data!.total_tax,
+                };
+                dispatch(setSelectedSubDept(selected));
+                node.setSelected(true);
               }
-            }}
-            rowSelection="single"
-            onGridReady={(event) => {
-              event.api.forEachNode((node, i) => {
-                // No checking against the selectedSubDept here
-                // because this runs only when the grid is ready,
-                // so the first sub dept in the grid is always the top sub dept
-                if (i === 0) {
-                  const selected: TopSub = {
-                    sub_department: node.data!.sub_department,
-                    sub_department_description:
-                      node.data!.sub_department_description,
-                    total_sales: node.data!.total_sales,
-                    net_sales: node.data!.net_sales,
-                    qty: node.data!.qty,
-                    digital_coupons: node.data!.digital_coupons,
-                    elec_instore_coupons: node.data!.elec_instore_coupons,
-                    elec_store_coupons: node.data!.elec_store_coupons,
-                    store_coupon: node.data!.store_coupon,
-                    total_tax: node.data!.total_tax,
-                  };
-                  dispatch(setSelectedSubDept(selected));
-                  node.setSelected(true);
-                }
-                return;
-              });
-            }}
-          />
-        </div>
-      )}
+              return;
+            });
+          }}
+        />
+      </div>
     </div>
   );
 };

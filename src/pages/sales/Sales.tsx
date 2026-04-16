@@ -239,11 +239,11 @@ const Sales = () => {
             <div className="md:max-h-[calc(100vh-5rem)] overflow-y-auto no-scrollbar md:grid-rows-[18%_80%] md:space-y-2 overflow-hidden">
               <KpiHeader />
               <div className="grid grid-cols-2 gap-2">
-                <div className="flex flex-col gap-2">
+                <div className="grid gap-2 h-full">
                   <HourlyGrid />
                   <TopTen />
                 </div>
-                <div>
+                <div className="grid gap-2 h-full grid-rows-[160px_1fr]">
                   <SubDeptComps />
                   <SubDeptGrid />
                 </div>

@@ -85,7 +85,7 @@ const TotalsBar = ({ valueKey = "total_sales" }: TotalsBarProps) => {
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg h-[190px] md:h-full w-full relative">
-      <div className="bg-blue-500 text-custom-white font-medium rounded-t-lg flex justify-between px-2 py-0.5">
+      <div className="bg-blue-500 text-custom-white font-medium rounded-t-lg flex justify-between px-2 py-0.5 text-sm">
         <div>{valueKey === "total_sales" ? "Sales" : "Quantity"}</div>
         <div>{renderTitle()}</div>
       </div>

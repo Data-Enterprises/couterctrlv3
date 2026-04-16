@@ -130,7 +130,7 @@ const TopSubDept = ({ inReport }: Props) => {
 
   return (
     <div
-      className={`${inReport ? "bg-custom-white border border-content/50" : "bg-custom-white shadow-lg"} rounded-lg`}
+      className={`${inReport ? "bg-custom-white border border-content/50" : "bg-custom-white shadow-lg"} rounded-lg text-sm`}
     >
       <div className="bg-blue-500 text-custom-white rounded-t-lg font-medium flex justify-between px-2 py-0.5">
         {title}
@@ -170,7 +170,7 @@ const TopSubDept = ({ inReport }: Props) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-[45%_55%] gap-4 mt-3">
+          <div className="grid grid-cols-[45%_55%] gap-4">
             <div>
               <div className="font-medium border-b text-sm">Flags</div>
               <div className="grid grid-cols-2 gap-2 py-1">

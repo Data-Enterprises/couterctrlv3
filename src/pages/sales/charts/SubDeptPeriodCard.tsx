@@ -72,40 +72,20 @@ const SubDeptPeriodCard = ({
     }, defaultSub());
   };
 
-  const renderArrowIcon = (val: number, type: "overall" | "weekly") => {
+  const renderArrowIcon = (val: number) => {
     let trendingUp = false;
     let textColor = "";
     const classStr = "h-5 w-5 inline-block stroke-2";
 
-    let compareVal = 0;
-    if (type === "overall") {
-      // compare the total sales of the target week by the average of the other weeks
-      // just sum up weeks 2, 3, and 4
-      compareVal =
-        formatCardData(sales.subSalesWk2).total_sales +
-        formatCardData(sales.subSalesWk3).total_sales +
-        formatCardData(sales.subSalesWk4).total_sales;
-      // divide by 3 to get the average
-      compareVal = compareVal / 3;
-    } else {
-      // test the next period's value against this one
-      switch (period) {
-        case 1:
-          compareVal = formatCardData(sales.subSalesWk2).total_sales;
-          break;
-        case 2:
-          compareVal = formatCardData(sales.subSalesWk3).total_sales;
-          break;
-        case 3:
-          compareVal = formatCardData(sales.subSalesWk4).total_sales;
-          break;
-      }
-    }
+    const compareVal = formatCardData(sales.subSalesWk2).total_sales;
+
+    console.log(val, compareVal);
 
     if (val === compareVal) return null;
 
     trendingUp = val >= compareVal;
     textColor = trendingUp ? "text-emerald-500" : "text-orange-500";
+    
     // Return based on the total sales comparison
     if (trendingUp) {
       return <ArrowTrendingUpIcon className={classStr + " " + textColor} />;
@@ -115,23 +95,19 @@ const SubDeptPeriodCard = ({
   };
 
   return (
-    <div className={`text-sm rounded-lg ${inReport ? "border border-content/50" : "shadow-md"} bg-custom-white`}>
+    <div
+      className={`text-sm rounded-lg ${inReport ? "border border-content/50" : "shadow-md"} bg-custom-white`}
+    >
       <div className="font-medium flex justify-between mb-1 border-b bg-blue-500 text-custom-white rounded-t-lg px-2 py-0.5">
         <div>{dateRange}</div>
         <div>{display.sub_department_description}</div>
       </div>
       <div className="relative">
-        {period < 4 ? (
+        {period === 1 ? (
           <div className="absolute right-2 top-0 text-[13.5px] flex gap-2">
-            {period === 1 && (
-              <div className="text-content font-medium flex gap-1 items-center">
-                <div>Overall</div>
-                {renderArrowIcon(display.total_sales, "overall")}
-              </div>
-            )}
             <div className="text-content font-medium flex gap-1 items-center">
-              <div>Weekly</div>
-              {renderArrowIcon(display.total_sales, "weekly")}
+              <div>Trend</div>
+              {renderArrowIcon(display.total_sales)}
             </div>
           </div>
         ) : null}
