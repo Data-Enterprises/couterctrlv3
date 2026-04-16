@@ -11,12 +11,14 @@ import {
 } from "ag-grid-community";
 import type { SubGridRow } from "../../../interfaces";
 import { setSelectedSubDept } from "../../../features/salesSlice";
+import SingleSelect from "../../../components/SingleSelect";
 
 const SubDeptGrid = () => {
   const gridRef = useRef<AgGridReact<SubGridRow>>(null);
   const dispatch = useAppDispatch();
-  const { subSales, selectedSubDept, selectedSalesPanel, subSalesWk3 } =
+  const { subSales, selectedSubDept, selectedSalesPanel, subSalesWk3, topSubDept } =
     useAppSelector((state) => state.sales);
+  const isMobile = useAppSelector((state) => state.app.isMobile);
   const [groupSubs, setGroupSubs] = useState<SubGridRow[]>([]);
   const { subCols } = useSubCols();
 
@@ -94,6 +96,42 @@ const SubDeptGrid = () => {
     };
     dispatch(setSelectedSubDept(selected));
   };
+
+  const handleSelect = (subDept: string | number) => {
+    const d = groupSubs.find((s) => s.sub_department === Number(subDept));
+    const selected: TopSub = {
+      sub_department: d!.sub_department,
+      sub_department_description: d!.sub_department_description,
+      total_sales: d!.total_sales,
+      net_sales: d!.net_sales,
+      qty: d!.qty,
+      digital_coupons: d!.digital_coupons,
+      elec_instore_coupons: d!.elec_instore_coupons,
+      elec_store_coupons: d!.elec_store_coupons,
+      store_coupon: d!.store_coupon,
+      total_tax: d!.total_tax,
+    };
+    dispatch(setSelectedSubDept(selected));
+  };
+
+  if (isMobile)
+    return (
+      <div className="mb-2 flex justify-between items-center">
+        <SingleSelect
+          data={groupSubs}
+          displayKey="sub_department_description"
+          valueKey="sub_department"
+          label="Sub Department Sales"
+          innerClass="py-1"
+          className="w-full"
+          defaultQuery={
+            (topSubDept?.sub_department_description as string) || ""
+          } // set default to top sub dept
+          onSelect={handleSelect}
+          id={1}
+        />
+      </div>
+    );
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg pb-2 pt-1 h-full">

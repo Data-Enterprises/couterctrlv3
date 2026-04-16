@@ -21,8 +21,15 @@ const SubTrendCard = ({ sub, row, dates }: TrendRowProps) => {
         ? `from-blue-200 to-custom-white h-[1.5px]`
         : `from-orange-200 to-custom-white h-[1.5px]`;
 
+  const title = row === 1
+    ? "This Week"
+    : row === 2
+      ? "Last Week"
+      : "Last Year";
+
   return (
     <div className={`p-1 rounded-lg shadow-md border ${borderColor}`}>
+      <div className="font-medium text-content/60">{title}</div>
       <div className="flex justify-between">
         <div className="font-medium">{dates}</div>
       </div>

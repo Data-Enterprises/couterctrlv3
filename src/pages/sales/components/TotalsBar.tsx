@@ -62,7 +62,7 @@ const TotalsBar = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg h-full w-full relative">
+    <div className="bg-custom-white rounded-lg shadow-lg h-[190px] md:h-full w-full relative">
       <div className="font-medium rounded-t-lg flex justify-between px-2 py-0.5 text-[13px]">
         <div>Weekly Sales</div>
         <div>{dateRange}</div>
