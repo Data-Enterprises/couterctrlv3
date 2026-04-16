@@ -3,11 +3,7 @@ import { useAppSelector } from "../../../hooks";
 import type { WeeklySale } from "../../../interfaces";
 import { colors, rgbaColor } from "../utils";
 import { ResponsiveBar } from "@nivo/bar";
-import {
-  formatBigNumber,
-  formatCurrency2,
-  formatDateSimple,
-} from "../../../utils";
+import { formatCurrency2, formatDateSimple } from "../../../utils";
 
 type PieData = {
   id: string;
@@ -16,17 +12,10 @@ type PieData = {
   color: string;
 };
 
-interface TotalsBarProps {
-  valueKey?: keyof WeeklySale;
-  inReport?: boolean;
-}
-
-const TotalsBar = ({ valueKey = "total_sales" }: TotalsBarProps) => {
+const TotalsBar = () => {
   const [barData, setBarData] = useState<any[]>([]);
+  const [dateRange, setDateRange] = useState<string>("");
   const state = useAppSelector((state) => state.sales);
-  const search = useAppSelector((state) => state.search);
-  const user = useAppSelector((state) => state.user);
-  const groups = useAppSelector((state) => state.group);
 
   const formatPieData = (data: WeeklySale[]): PieData[] => {
     const grouped: PieData[] = data.reduce((acc: PieData[], curr) => {
@@ -37,11 +26,11 @@ const TotalsBar = ({ valueKey = "total_sales" }: TotalsBarProps) => {
         acc.push({
           id: formatDateSimple(curr.sale_date.split("T")[0]),
           label: formatDateSimple(curr.sale_date.split("T")[0]),
-          value: (curr[valueKey] as number) - curr.total_tax,
+          value: curr.total_sales - curr.total_tax,
           color: "",
         });
       } else {
-        exists.value += (curr[valueKey] as number) - curr.total_tax;
+        exists.value += curr.total_sales - curr.total_tax;
       }
       return acc;
     }, []);
@@ -53,41 +42,30 @@ const TotalsBar = ({ valueKey = "total_sales" }: TotalsBarProps) => {
   };
 
   useEffect(() => {
-    if (!state.selectedSalesPanel.storeid) {
-      setBarData(formatPieData(state.weeklySales));
-      return;
-    } else {
-      // we have a selected sales panel
-      const copy = [...state.weeklySales].filter(
-        (sale) => sale.storeid === state.selectedSalesPanel.storeid,
-      );
-      setBarData(formatPieData(copy));
-    }
+    const data =
+      state.selectedSalesPanel.storeid > 0
+        ? [...state.weeklySales].filter(
+            (sale) => sale.storeid === state.selectedSalesPanel.storeid,
+          )
+        : [...state.weeklySales];
+    const dates = Array.from(
+      new Set(data.map((d) => d.sale_date.split("T")[0])),
+    ).sort();
+    setDateRange(
+      `${formatDateSimple(dates[0])} - ${formatDateSimple(dates[dates.length - 1])}`,
+    );
+    setBarData(formatPieData(data));
   }, [state.selectedSalesPanel, state.weeklySales]);
 
   const setMarginLeft = () => {
     return barData.length > 6 ? 75 : 75;
   };
 
-  const renderTitle = () => {
-    if (state.selectedSalesPanel.storeid) {
-      return `${state.selectedSalesPanel.store_name}`;
-    } else {
-      const storeName = user.assignedStores.filter(
-        (s) => s.storeid === search.lastStore,
-      )[0]?.store_name;
-      const groupName = groups.groups.filter(
-        (g) => g.id === search.lastGroup,
-      )[0]?.group_name;
-      return search.type === "Store" ? `${storeName}` : `${groupName}`;
-    }
-  };
-
   return (
     <div className="bg-custom-white rounded-lg shadow-lg h-full w-full relative">
       <div className="font-medium rounded-t-lg flex justify-between px-2 py-0.5 text-[13px]">
-        <div>{valueKey === "total_sales" ? "Sales" : "Quantity"}</div>
-        <div>{renderTitle()}</div>
+        <div>Weekly Sales</div>
+        <div>{dateRange}</div>
       </div>
       <div className="grid grid-cols-2">
         <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
@@ -95,7 +73,7 @@ const TotalsBar = ({ valueKey = "total_sales" }: TotalsBarProps) => {
       </div>
       <ResponsiveBar
         data={barData}
-        key={valueKey}
+        key={"total_sales"}
         margin={{ top: 15, right: 5, bottom: 51, left: setMarginLeft() }}
         colors={() => rgbaColor("#3b82f6", 0.3)}
         borderWidth={2}
@@ -105,16 +83,17 @@ const TotalsBar = ({ valueKey = "total_sales" }: TotalsBarProps) => {
         enableGridX={false}
         enableGridY={false}
         borderRadius={4}
+        valueScale={{
+          type: "linear",
+          clamp: true,
+          max: Math.max(...barData.map((d) => d.value)) * 1.1,
+        }}
         axisBottom={{
-          tickValues: 5,
           format: (v) => `${v.split("/").slice(0, 2).join("/")}`,
         }}
         axisLeft={{
-          tickValues: 5,
-          format: (v) =>
-            valueKey === "total_sales"
-              ? `${formatCurrency2(Number(v))}`
-              : formatBigNumber(Number(v), 0),
+          tickValues: 4,
+          format: (v) => `${formatCurrency2(Number(v))}`,
         }}
         theme={{
           axis: {
@@ -128,11 +107,7 @@ const TotalsBar = ({ valueKey = "total_sales" }: TotalsBarProps) => {
         }}
         tooltip={({ value }) => (
           <div className="p-2 bg-white shadow-lg rounded text-sm text-nowrap">
-            <strong>
-              {valueKey === "total_sales"
-                ? formatCurrency2(value)
-                : formatBigNumber(value, 0)}
-            </strong>
+            <strong>{formatCurrency2(value)}</strong>
           </div>
         )}
       />

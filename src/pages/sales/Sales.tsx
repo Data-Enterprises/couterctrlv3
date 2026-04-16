@@ -121,17 +121,17 @@ const Sales = () => {
     <div data-testid="sales-page" className={pageContainer}>
       <div className={gridContainer}>
         <SubsCompareModal />
-        <div className={`h-full md:grid-rows-[267px_1fr] md:gap-4`}>
-          <div className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1">
+        <div className={`h-full md:grid-rows-[267px_1fr] md:gap-2`}>
+          <div className="bg-custom-white rounded-lg p-2 shadow-lg">
             <StorePicker />
             <SingleDatePicker />
-            <button className="btn-themeBlue w-full" onClick={getSalesPanels}>
+            <button className="btn-themeBlue w-full mt-2" onClick={getSalesPanels}>
               Search
             </button>
           </div>
           {salesPanels.length > 0 ? (
             <div
-              className={`max-h-[calc(100vh-347px)] overflow-y-scroll no-scrollbar mt-2`}
+              className={`max-h-[calc(100vh-340px)] overflow-y-scroll no-scrollbar mt-2`}
             >
               <SalesPanels />
             </div>

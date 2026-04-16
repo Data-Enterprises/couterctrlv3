@@ -1,8 +1,20 @@
 import { useAppSelector } from "../../../hooks";
+import { sameWeekDayLastYear } from "../../../utils";
 import TopTotalsKpi from "./TopTotalsKpi";
 
 const TopTotals = () => {
   const sales = useAppSelector((state) => state.sales);
+
+  if (!sales.weeklySales.length && !sales.hourlySales.length) return null;
+
+  const defaultTotals = {
+    total_sales: 0,
+    total_tax: 0,
+    total_cpn_dollars: 0,
+    basket_size_sales: 0,
+    transactions: 0,
+    avg_basket_amount: 0,
+  };
 
   const aggFunc = (thisYear: boolean = true) => {
     const p = sales.selectedSalesPanel;
@@ -10,9 +22,11 @@ const TopTotals = () => {
       ? [...sales.hourlySales]
       : [...sales.hourlySalesLastYear];
 
-    const filtered = data.filter((hs) => {
-      return p.sale_date ? hs.sale_date.split("T")[0] === p.sale_date : true;
-    });
+      const dateComp = thisYear ? p.sale_date : p.sale_date.length ? sameWeekDayLastYear(p.sale_date).date : "";
+      
+      const filtered = data.filter((hs) => {
+        return p.sale_date.length ? hs.sale_date.split("T")[0] === dateComp : true;
+      });
 
     const totals = filtered.reduce(
       (acc, val) => {
@@ -21,23 +35,16 @@ const TopTotals = () => {
         acc.transactions += val.transactions;
         return acc;
       },
-      {
-        total_sales: 0,
-        total_tax: 0,
-        total_cpn_dollars: 0,
-        basket_size_sales: 0,
-        transactions: 0,
-        avg_basket_amount: 0,
-      },
+      { ...defaultTotals },
     );
 
     // all needed panels or just the selected panel sale date
     const formatSales = () => {
-      const panels = thisYear ? sales.weeklySales : sales.weeklySalesLastYear
-      if (p.sale_date) {
+      const panels = thisYear ? sales.weeklySales : sales.weeklySalesLastYear;
+      if (p.sale_date.length) {
         // find that sales panel => total sales - total tax => yyyy-mm-dd
         const panel = panels.find(
-          (sp) => sp.sale_date.split("T")[0] === p.sale_date,
+          (sp) => sp.sale_date.split("T")[0] === dateComp,
         );
         return panel!.total_sales - panel!.total_tax;
       } else {
