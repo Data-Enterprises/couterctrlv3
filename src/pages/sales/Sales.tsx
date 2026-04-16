@@ -101,7 +101,7 @@ const Sales = () => {
   const pageContainer =
     "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none";
   const gridContainer =
-    "grid grid-cols-[18%_81%] gap-4 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]";
+    "grid grid-cols-[17%_83%] gap-2 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]";
 
   const isReady =
     queryChecker.hourly &&
@@ -160,12 +160,12 @@ const Sales = () => {
         ) : isReady ? (
           <div className="md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)] grid grid-rows-[152px_1fr] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
             <KpiHeader />
-            <div className="grid grid-cols-[45%_1fr] gap-2 h-[calc(100vh-232px)]">
+            <div className="grid grid-cols-[42%_1fr] gap-2 h-[calc(100vh-232px)]">
               <div className="grid grid-rows-[282px_1fr] gap-2 h-full">
                 <HourlyGrid />
                 <TopTen />
               </div>
-              <div className="grid gap-2 h-full grid-rows-[180px_1fr]">
+              <div className="grid gap-2 h-full grid-rows-[200px_1fr]">
                 <SubDeptComps />
                 <SubDeptGrid />
               </div>

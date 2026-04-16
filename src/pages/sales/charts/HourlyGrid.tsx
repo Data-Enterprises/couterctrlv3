@@ -170,7 +170,7 @@ const HourlyGrid = () => {
                 top: 10,
                 right: 0,
                 bottom: selectedSalesPanel.sale_date ? 28 : 32,
-                left: 50,
+                left: 45,
               }}
               keys={["total_sales"]}
               indexBy={barIndex}

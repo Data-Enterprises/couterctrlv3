@@ -45,7 +45,7 @@ const SalesPanels = () => {
     }
   }, [sales.salesPanels]);
 
-  const getSubsData = (ws: string, we: string, period: number) => {
+  const getSubsData = async (ws: string, we: string, period: number) => {
     const p = sales.selectedSalesPanel;
     const useGroups = search.type === "Group" ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
@@ -54,7 +54,7 @@ const SalesPanels = () => {
     const groupParam = p.storeid > 0 ? 0 : useGroups;
     const singleStoreParam = p.storeid > 0 ? 1 : singleStore;
     const searchParam = p.storeid > 0 ? p.storeid : searchValue;
-    getSubs(
+    await getSubs(
       context.url,
       context.token,
       ws,
