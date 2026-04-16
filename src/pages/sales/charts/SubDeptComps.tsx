@@ -1,4 +1,3 @@
-
 import { useAppSelector } from "../../../hooks";
 import type { SubSale } from "../../../interfaces";
 import { formatCurrency2 } from "../../../utils";
@@ -135,16 +134,18 @@ const SubDeptComps = () => {
         <div className="bg-gradient-to-r from-emerald-200 from-[20%] to-blue-200 h-[1.5px]"></div>
         <div className="bg-gradient-to-l from-orange-200 from-[20%] to-blue-200 h-[1.5px]"></div>
       </div>
-      <div className="flex justify-between text-[12.5px]">
-        <div className="flex gap-1">
-          <div className="text-content/60">Last Week</div>
-          <div>{trendIcon(weekTrend)}</div>
+      {isMobile ? (
+        <div className="flex justify-between text-[12.5px]">
+          <div className="flex gap-1">
+            <div className="text-content/60">Last Week</div>
+            <div>{trendIcon(weekTrend)}</div>
+          </div>
+          <div className="flex gap-1">
+            <div className="text-content/60">Last Year</div>
+            <div>{trendIcon(yearTrend)}</div>
+          </div>
         </div>
-        <div className="flex gap-1">
-          <div className="text-content/60">Last Year</div>
-          <div>{trendIcon(yearTrend)}</div>
-        </div>
-      </div>
+      ) : null}
       <div className="grid md:grid-cols-3 text-[12.5px] py-1 gap-1">
         <SubTrendCard sub={tw} row={1} dates={twDateRange} />
         <SubTrendCard sub={lw} row={2} dates={lwDateRange} />

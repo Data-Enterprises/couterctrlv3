@@ -5,6 +5,7 @@ import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { cpu, gpm, ppu, rpu } from "../../../functions";
 import { QuestionMarkCircleIcon } from "@heroicons/react/16/solid";
 import { setSelectedItem } from "../../../features/salesSlice";
+import SingleSelect from "../../../components/SingleSelect";
 
 interface TopTenGroupItem {
   product_code: string;
@@ -29,6 +30,7 @@ const TopTen = () => {
   const { topTenItems, selectedSalesPanel } = useAppSelector(
     (state) => state.sales,
   );
+  const isMobile = useAppSelector((state) => state.app.isMobile);
 
   const [tooltip, setTooltip] = useState<ShowTooltip>({
     gpm: false,
@@ -99,6 +101,17 @@ const TopTen = () => {
     setTooltip(newSet);
   };
 
+  const mobileData = [...barData].map((item) => ({
+    product_code: item.product_code,
+  }));
+
+  const handleSelect = (upc: string | number) => {
+    dispatch(setSelectedItem(upc as string));
+    setSelectedTopTenItem(
+      topTen.find((item) => item.product_code === (upc as string)) || null,
+    );
+  };
+
   return (
     <div className="bg-custom-white rounded-lg shadow-lg  pb-2">
       <div className="font-medium px-2 pt-1 flex justify-between items-center">
@@ -106,6 +119,19 @@ const TopTen = () => {
           {selectedSalesPanel.sale_date ? "Daily" : "Weekly"} Top Ten Items
         </div>
       </div>
+
+      {isMobile && (
+        <SingleSelect
+          data={mobileData}
+          displayKey="product_code"
+          valueKey="product_code"
+          label=""
+          innerClass="py-1"
+          className="font-normal text-sm px-2 my-1"
+          onSelect={handleSelect}
+          id={2}
+        />
+      )}
 
       <div className="grid grid-cols-2 mb-2">
         <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
