@@ -46,20 +46,22 @@ const Sales = () => {
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
   const { username } = useAppSelector((state) => state.user);
-  const { queryChecker, weeklySales, hourlySales, subSales, topTenItems } =
-    useAppSelector((state) => state.sales);
+  const {
+    queryChecker,
+    weeklySales,
+    hourlySales,
+    subSales,
+    topTenItems,
+    salesPanels,
+  } = useAppSelector((state) => state.sales);
   const { height, topLeftRef, leftColRef } = useLeftColHeight();
   const [showLoading, setShowLoading] = useState<boolean>(false);
 
-  // On mount, get data if user prefs has a last store or group, meaning there is a last search type as well
   useEffect(() => {
-    // if ((search.lastStore > 0 || search.lastGroup > 0) && context.isDesktop) {
-    if (search.lastStore > 0 || search.lastGroup > 0) {
-      getSalesPanels();
-    }
+    getSalesPanels();
   }, []);
 
-  const getSalesPanels = () => {
+  const getSalesPanels = async () => {
     dispatch(reQuery());
     dispatch(setLeftSubCompare(null));
     dispatch(setRightSubCompare(null));
@@ -75,7 +77,7 @@ const Sales = () => {
 
     dispatch(setPanelsLoading(true));
     setShowLoading(true);
-    getWeekly(
+    await getWeekly(
       context.url,
       context.token,
       start,
@@ -92,8 +94,6 @@ const Sales = () => {
               new Date(b.sale_date).getTime() - new Date(a.sale_date).getTime(),
           );
           dispatch(setSalesPanels(sorted));
-          // dispatch(setWeeklySales(j.sales));
-          // dispatch(finishQuery("weekly"));
         }
       })
       .catch((err: JsonError) => {
@@ -103,66 +103,6 @@ const Sales = () => {
         dispatch(setPanelsLoading(false));
         setShowLoading(false);
       });
-
-    // getTopTen(
-    //   context.url,
-    //   context.token,
-    //   searchValue,
-    //   search.type,
-    //   start,
-    //   end,
-    // )
-    //   .then((resp) => {
-    //     const j = resp.data;
-    //     if (j.error === 0) {
-    //       dispatch(setTopTenItems(j.items));
-    //       dispatch(finishQuery("top ten"));
-    //     }
-    //   })
-    //   .catch((err: JsonError) => {
-    //     toast.error("Error getting Top Ten data: " + err.message);
-    //   });
-
-    // // Keep an eye on this - might need to adjust for weeklyStart and weeklyEnd
-    // getHourly(
-    //   context.url,
-    //   context.token,
-    //   start,
-    //   end,
-    //   useGroups,
-    //   searchValue,
-    //   singleStore,
-    // )
-    //   .then((resp) => {
-    //     const j = resp.data;
-    //     if (j.error === 0) {
-    //       dispatch(setHourlySales(j.subs));
-    //       dispatch(finishQuery("hourly"));
-    //     }
-    //   })
-    //   .catch((err: JsonError) =>
-    //     toast.error("Error fetching hourly data: " + err.message),
-    //   );
-
-    // getSubs(
-    //   context.url,
-    //   context.token,
-    //   start,
-    //   end,
-    //   useGroups,
-    //   searchValue,
-    //   singleStore,
-    // )
-    //   .then((resp) => {
-    //     const j = resp.data;
-    //     if (j.error === 0) {
-    //       dispatch(setSubSales(j.subs));
-    //       dispatch(finishQuery("subs"));
-    //     }
-    //   })
-    //   .catch((err: JsonError) =>
-    //     toast.error("Error fetching subs data: " + err.message),
-    //   );
   };
 
   // Just render the mobile version and cut down on excessive operations
@@ -208,12 +148,12 @@ const Sales = () => {
                 Search
               </button>
             </div>
-            <div
+            {salesPanels.length > 0 ?<div
               style={{ minHeight: height, maxHeight: height }}
-              className="overflow-y-scroll no-scrollbar mt-4"
+              className={`overflow-y-scroll no-scrollbar mt-2`}
             >
               <SalesPanels />
-            </div>
+            </div> : null}
           </div>
 
           {hasLastSearch ? (
@@ -236,9 +176,9 @@ const Sales = () => {
               )}
             </div>
           ) : isReady ? (
-            <div className="md:max-h-[calc(100vh-5rem)] overflow-y-auto no-scrollbar md:grid-rows-[18%_80%] md:space-y-2 overflow-hidden">
+            <div className="md:min-h-[calc(100vh-5rem)] md:max-h-[calc(100vh-5rem)] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
               <KpiHeader />
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-[45%_1fr] gap-2">
                 <div className="grid gap-2 h-full">
                   <HourlyGrid />
                   <TopTen />

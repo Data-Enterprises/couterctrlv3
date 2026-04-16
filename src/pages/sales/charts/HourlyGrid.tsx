@@ -121,20 +121,20 @@ const HourlyGrid = () => {
   if (!barData.length) return null;
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg my-2 md:my-0 py-2">
+    <div className="bg-custom-white rounded-lg shadow-lg my-2 md:my-0 py-1.5">
       <div className="px-2 font-medium grid grid-cols-[25%_50%_25%]">
-        <span className="font-medium text-sm md:text-[16px]">Hourly Sales</span>
+        <span className="font-medium text-sm md:text-[13.5px]">Hourly Sales</span>
         <div className="flex gap-2 md:gap-4 text-sm justify-center">
           <div className="flex gap-1 items-center">
             <div className="rounded-full h-3 w-3 bg-orange-500"></div>
-            <div className="text-xs md:text-sm">Below Avg</div>
+            <div className="text-[13px]">Below Avg</div>
           </div>
           <div className="flex gap-1 items-center">
             <div className="rounded-full h-3 w-3 bg-emerald-500"></div>
-            <div className="text-xs md:text-sm">Above Avg</div>
+            <div className="text-[13px]">Above Avg</div>
           </div>
         </div>
-        <span className="text-right text-sm md:text-[16px]">Hour: {hour}</span>
+        <span className="text-right text-sm md:text-[13.5px]">Hour: {hour}</span>
       </div>
       <div className="h-[93%] grid grid-cols-2 gap-2 md:gap-0 md:grid-cols-[45%_54%] mt-1 md:mt-0">
         <div className="grid md:grid-cols-2 gap-2 max-h-[200px] md:max-h-[250px] rounded-lg overflow-y-scroll mx-1 md:mx-2 no-scrollbar">

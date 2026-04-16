@@ -15,19 +15,17 @@ interface SubDeptPeriodCardProps {
   inReport?: boolean;
 }
 
-const defaultSub = (): TopSub => {
-  return {
-    sub_department: 0,
-    sub_department_description: "",
-    total_sales: 0,
-    net_sales: 0,
-    qty: 0,
-    digital_coupons: 0,
-    elec_instore_coupons: 0,
-    elec_store_coupons: 0,
-    store_coupon: 0,
-    total_tax: 0,
-  };
+const defaultSub: TopSub = {
+  sub_department: 0,
+  sub_department_description: "",
+  total_sales: 0,
+  net_sales: 0,
+  qty: 0,
+  digital_coupons: 0,
+  elec_instore_coupons: 0,
+  elec_store_coupons: 0,
+  store_coupon: 0,
+  total_tax: 0,
 };
 
 const SubDeptPeriodCard = ({
@@ -40,36 +38,33 @@ const SubDeptPeriodCard = ({
   const [display, setDisplay] = useState<TopSub>(defaultSub);
 
   useEffect(() => {
-    if (sales.subSales.length === 0) {
-      setDisplay(defaultSub);
-    }
-  }, [sales.subSales]);
-
-  useEffect(() => {
-    if (sales.selectedSubDept) {
+    if (sales.selectedSubDept && data.length) {
       const displayData = formatCardData(data);
       setDisplay(displayData);
     }
-  }, [sales.selectedSubDept]);
+  }, [sales.selectedSubDept, data]);
 
   const formatCardData = (cardData: SubSale[]) => {
-    if (!sales.selectedSubDept) return defaultSub();
+    if (!sales.selectedSubDept) return defaultSub;
     const subId = sales.selectedSubDept.sub_department;
     const filtered = cardData.filter((s) => s.sub_department === subId);
-    return filtered.reduce((acc: TopSub, curr: SubSale) => {
-      acc.sub_department = curr.sub_department;
-      acc.sub_department_description = curr.sub_department_description;
-      acc.total_sales += curr.total_sales - curr.total_tax;
-      acc.net_sales += curr.net_sales;
-      acc.qty += curr.qty;
-      acc.digital_coupons += curr.digital_coupons;
-      acc.elec_instore_coupons += curr.elec_instore_coupons;
-      acc.elec_store_coupons += curr.elec_store_coupons;
-      acc.store_coupon += curr.store_coupon;
-      acc.total_tax += curr.total_tax;
+    return filtered.reduce(
+      (acc: TopSub, curr: SubSale) => {
+        acc.sub_department = curr.sub_department;
+        acc.sub_department_description = curr.sub_department_description;
+        acc.total_sales += curr.total_sales - curr.total_tax;
+        acc.net_sales += curr.net_sales;
+        acc.qty += curr.qty;
+        acc.digital_coupons += curr.digital_coupons;
+        acc.elec_instore_coupons += curr.elec_instore_coupons;
+        acc.elec_store_coupons += curr.elec_store_coupons;
+        acc.store_coupon += curr.store_coupon;
+        acc.total_tax += curr.total_tax;
 
-      return acc;
-    }, defaultSub());
+        return acc;
+      },
+      { ...defaultSub },
+    );
   };
 
   const renderArrowIcon = (val: number) => {
@@ -79,13 +74,10 @@ const SubDeptPeriodCard = ({
 
     const compareVal = formatCardData(sales.subSalesWk2).total_sales;
 
-    console.log(val, compareVal);
-
     if (val === compareVal) return null;
-
     trendingUp = val >= compareVal;
     textColor = trendingUp ? "text-emerald-500" : "text-orange-500";
-    
+
     // Return based on the total sales comparison
     if (trendingUp) {
       return <ArrowTrendingUpIcon className={classStr + " " + textColor} />;
