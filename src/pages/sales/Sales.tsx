@@ -30,7 +30,6 @@ import {
 // utils
 import { addDays, formatGoliathDate } from "../../utils";
 import type { JsonError } from "../../interfaces";
-import { useLeftColHeight } from "./utils/hooks";
 
 const Sales = () => {
   const toast = useToast();
@@ -46,7 +45,6 @@ const Sales = () => {
     topTenItems,
     salesPanels,
   } = useAppSelector((state) => state.sales);
-  const { height, topLeftRef, leftColRef } = useLeftColHeight();
   const [showLoading, setShowLoading] = useState<boolean>(false);
 
   // useEffect(() => {
@@ -123,14 +121,8 @@ const Sales = () => {
     <div data-testid="sales-page" className={pageContainer}>
       <div className={gridContainer}>
         <SubsCompareModal />
-        <div
-          ref={leftColRef}
-          className={`h-full md:grid-rows-[25%_74%] md:gap-4`}
-        >
-          <div
-            ref={topLeftRef}
-            className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1"
-          >
+        <div className={`h-full md:grid-rows-[267px_1fr] md:gap-4`}>
+          <div className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1">
             <StorePicker />
             <SingleDatePicker />
             <button className="btn-themeBlue w-full" onClick={getSalesPanels}>
@@ -139,8 +131,7 @@ const Sales = () => {
           </div>
           {salesPanels.length > 0 ? (
             <div
-              style={{ minHeight: height, maxHeight: height }}
-              className={`overflow-y-scroll no-scrollbar mt-2`}
+              className={`max-h-[calc(100vh-347px)] overflow-y-scroll no-scrollbar mt-2`}
             >
               <SalesPanels />
             </div>
@@ -167,14 +158,14 @@ const Sales = () => {
             )}
           </div>
         ) : isReady ? (
-          <div className="md:min-h-[calc(100vh-5rem)] md:max-h-[calc(100vh-5rem)] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
+          <div className="md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)] grid grid-rows-[152px_1fr] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
             <KpiHeader />
-            <div className="grid grid-cols-[45%_1fr] gap-2 h-[78.3%]">
+            <div className="grid grid-cols-[45%_1fr] gap-2 h-[calc(100vh-232px)]">
               <div className="grid grid-rows-[282px_1fr] gap-2 h-full">
                 <HourlyGrid />
                 <TopTen />
               </div>
-              <div className="grid gap-2 h-full grid-rows-[160px_1fr]">
+              <div className="grid gap-2 h-full grid-rows-[180px_1fr]">
                 <SubDeptComps />
                 <SubDeptGrid />
               </div>
