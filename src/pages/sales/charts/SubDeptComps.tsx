@@ -110,18 +110,31 @@ const SubDeptComps = () => {
   // Once we have both data sets, show the comparisons (final step)
   return (
     <div className="bg-custom-white rounded-lg px-2 py-1 shadow-lg text-[13.5px]">
-      <div className="text-sm font-medium">Weekly Sub Dept Trend</div>
+      <div className="font-medium grid grid-cols-[1fr_50%_1fr]">
+        <div>Sub Dept Trend</div>
+        <div className="flex justify-around">
+          <div className="flex gap-1">
+            <div>Last Week</div>
+            <div>{trendIcon(weekTrend)}</div>
+          </div>
+          <div className="flex gap-1">
+            <div>Last Year</div>
+            <div>{trendIcon(yearTrend)}</div>
+          </div>
+        </div>
+        <div className="text-right">
+          {sales.selectedSubDept
+            ? sales.selectedSubDept.sub_department_description
+            : ""}
+        </div>
+      </div>
       <div className="grid grid-cols-2">
         <div className="bg-gradient-to-r from-emerald-200 from-[20%] to-blue-200 h-[1.5px]"></div>
         <div className="bg-gradient-to-l from-orange-200 from-[20%] to-blue-200 h-[1.5px]"></div>
       </div>
 
       <div className="grid grid-cols-3 gap-1 text-[12.5px]">
-        <SubTrendCard
-          sub={tw}
-          row={1}
-          dates={twDateRange}
-        />
+        <SubTrendCard sub={tw} row={1} dates={twDateRange} />
         <SubTrendCard sub={lw} row={2} dates={lwDateRange} />
         <SubTrendCard sub={ly} row={3} dates={lyDateRange} />
       </div>
