@@ -72,9 +72,10 @@ export interface HourlyTotal {
 export const useSubCols = () => {
   const { selectedSubDept } = useAppSelector((state) => state.sales);
 
-  const isSelected = (subDeptId: number) => {
-    if (!selectedSubDept) return "";
-    return selectedSubDept.sub_department === subDeptId ? "bg-orange-200" : "";
+  const isSelected = (idx: number) => {
+    // if (!selectedSubDept) return "";
+    // return selectedSubDept.sub_department === subDeptId ? "bg-orange-200" : "";
+    if (!selectedSubDept && idx === 0) return "bg-orange-200";
   };
 
   const subCols: (ColDef<SubGridRow> | ColGroupDef<SubGridRow>)[] = [
@@ -85,8 +86,7 @@ export const useSubCols = () => {
       headerStyle: { borderRight: "1px solid white" },
       resizable: false,
       cellClass: (params) => {
-        const sub = params.data as SubGridRow;
-        return `text-left ${isSelected(sub.sub_department)}`;
+        return `text-left ${isSelected(params.rowIndex)}`;
       },
     },
 
@@ -101,8 +101,7 @@ export const useSubCols = () => {
       headerStyle: { borderRight: "1px solid white" },
       resizable: false,
       cellClass: (params) => {
-        const sub = params.data as SubGridRow;
-        return `text-right ${isSelected(sub.sub_department)}`;
+        return `text-right ${isSelected(params.rowIndex)}`;
       },
     },
     {
@@ -113,8 +112,7 @@ export const useSubCols = () => {
       headerStyle: { borderRight: "1px solid white" },
       resizable: false,
       cellClass: (params) => {
-        const sub = params.data as SubGridRow;
-        return `text-right ${isSelected(sub.sub_department)}`;
+        return `text-right ${isSelected(params.rowIndex)}`;
       },
     },
     {
@@ -125,8 +123,7 @@ export const useSubCols = () => {
       headerStyle: { borderRight: "1px solid white" },
       resizable: false,
       cellClass: (params) => {
-        const sub = params.data as SubGridRow;
-        return `text-right ${isSelected(sub.sub_department)}`;
+        return `text-right ${isSelected(params.rowIndex)}`;
       },
     },
     {
@@ -147,8 +144,7 @@ export const useSubCols = () => {
       },
       headerStyle: { borderRight: "1px solid white" },
       cellClass: (params) => {
-        const sub = params.data as SubGridRow;
-        return `text-right ${isSelected(sub.sub_department)}`;
+        return `text-right ${isSelected(params.rowIndex)}`;
       },
     },
   ];
@@ -178,7 +174,7 @@ export const subCols: (ColDef<SubGridRow> | ColGroupDef<SubGridRow>)[] = [
     resizable: false,
     cellClass: "text-right",
     // cellClass: (params) =>{
-    //   const sub = params.data as SubGridRow;
+
     //   const difference = params.value - sub.lastYrSales;
     //   if (difference > 0) {
     //     return 'text-right bg-emerald-200/60';

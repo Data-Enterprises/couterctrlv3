@@ -279,7 +279,7 @@ const SalesPanels = () => {
         ))}
       {sales.panelsLoading ? (
         <div className="h-[59vh] relative">
-          <LoadingIndicator message="Loading Sales Panels..." />
+          <LoadingIndicator message="Loading sales panels" />
         </div>
       ) : null}
     </div>

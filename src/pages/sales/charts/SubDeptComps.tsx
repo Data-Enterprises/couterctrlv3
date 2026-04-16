@@ -115,7 +115,7 @@ const SubDeptComps = () => {
   return (
     <div className="bg-custom-white rounded-lg px-2 py-1 shadow-lg text-[13.5px]">
       <div className="font-medium grid grid-cols-3">
-        <div className="">{sub} Trend Comparisons</div>
+        <div className="">{sub} Trends</div>
         <div className="flex gap-1 ml-2">
           <div className="text-content/60">vs Last Week</div>
           <div>{trendIcon(weekTrend)}</div>

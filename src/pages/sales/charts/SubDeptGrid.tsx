@@ -1,6 +1,8 @@
+import { useState, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useSubCols } from "../components";
 import { AgGridReact } from "ag-grid-react";
-import { theme, subCols, type TopSub } from "../components";
+import { theme, type TopSub } from "../components";
 ModuleRegistry.registerModules([AllCommunityModule]);
 import {
   AllCommunityModule,
@@ -9,7 +11,6 @@ import {
 } from "ag-grid-community";
 import type { SubGridRow } from "../../../interfaces";
 import { setSelectedSubDept } from "../../../features/salesSlice";
-import { useState, useEffect, useRef } from "react";
 
 const SubDeptGrid = () => {
   const gridRef = useRef<AgGridReact<SubGridRow>>(null);
@@ -17,36 +18,7 @@ const SubDeptGrid = () => {
   const { subSales, selectedSubDept, selectedSalesPanel, subSalesWk3 } =
     useAppSelector((state) => state.sales);
   const [groupSubs, setGroupSubs] = useState<SubGridRow[]>([]);
-
-  const setSelected = () => {
-    if (gridRef.current && gridRef.current.api) {
-      // find the first node)
-      const firstNode = gridRef.current.api.getDisplayedRowAtIndex(0);
-      if (!firstNode) return;
-
-      const selected: TopSub = {
-        sub_department: firstNode.data!.sub_department,
-        sub_department_description: firstNode.data!.sub_department_description,
-        total_sales: firstNode.data!.total_sales,
-        net_sales: firstNode.data!.net_sales,
-        qty: firstNode.data!.qty,
-        digital_coupons: firstNode.data!.digital_coupons,
-        elec_instore_coupons: firstNode.data!.elec_instore_coupons,
-        elec_store_coupons: firstNode.data!.elec_store_coupons,
-        store_coupon: firstNode.data!.store_coupon,
-        total_tax: firstNode.data!.total_tax,
-      };
-      dispatch(setSelectedSubDept(selected));
-      firstNode.setSelected(true);
-    }
-  };
-
-  useEffect(() => {
-    if (subSales.length && subSalesWk3.length) {
-      console.log("testing");
-      setSelected();
-    }
-  }, [subSalesWk3, gridRef.current, subSales]);
+  const { subCols } = useSubCols();
 
   // This useEffect does the same as above, but when the groupSubs changes
   // This triggers the change in the grid, so this reflects in the salesSlice.ts file
@@ -150,31 +122,6 @@ const SubDeptGrid = () => {
             }
           }}
           rowSelection="single"
-          onGridReady={(event) => {
-            event.api.forEachNode((node, i) => {
-              // No checking against the selectedSubDept here
-              // because this runs only when the grid is ready,
-              // so the first sub dept in the grid is always the top sub dept
-              if (i === 0) {
-                const selected: TopSub = {
-                  sub_department: node.data!.sub_department,
-                  sub_department_description:
-                    node.data!.sub_department_description,
-                  total_sales: node.data!.total_sales,
-                  net_sales: node.data!.net_sales,
-                  qty: node.data!.qty,
-                  digital_coupons: node.data!.digital_coupons,
-                  elec_instore_coupons: node.data!.elec_instore_coupons,
-                  elec_store_coupons: node.data!.elec_store_coupons,
-                  store_coupon: node.data!.store_coupon,
-                  total_tax: node.data!.total_tax,
-                };
-                dispatch(setSelectedSubDept(selected));
-                node.setSelected(true);
-              }
-              return;
-            });
-          }}
         />
       </div>
     </div>

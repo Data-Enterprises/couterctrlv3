@@ -119,7 +119,9 @@ const Sales = () => {
 
         {isLoading ? (
           <div className="relative">
-            {salesPanels.length && <LoadingIndicator message="Loading sales data..." />}
+            {salesPanels.length ? (
+              <LoadingIndicator message="Loading sales data" />
+            ) : null}
           </div>
         ) : (
           <div className="md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)] grid grid-rows-[152px_1fr] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
