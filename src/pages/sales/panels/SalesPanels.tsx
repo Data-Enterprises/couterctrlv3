@@ -235,10 +235,11 @@ const SalesPanels = () => {
           getSubsData(p ? lyWkEnd : lyWkStart, lyWkEnd, 3);
         }
       })
-      .then(() => dispatch(finishQuery("subs")))
+      // .then(() => dispatch(finishQuery("subs")))
       .catch((err: JsonError) =>
         toast.error("Error fetching subs data: " + err.message),
-      );
+      )
+      .finally(() => dispatch(finishQuery("subs")));
   };
 
   const handlePanelClick = (
@@ -277,7 +278,7 @@ const SalesPanels = () => {
           />
         ))}
       {sales.panelsLoading ? (
-        <div className="mt-52 relative">
+        <div className="h-[59vh] relative">
           <LoadingIndicator message="Loading Sales Panels..." />
         </div>
       ) : null}

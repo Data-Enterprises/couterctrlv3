@@ -7,43 +7,46 @@ import {
   ModuleRegistry,
   type RowClickedEvent,
 } from "ag-grid-community";
-import type { SubSale } from "../../../interfaces";
+import type { SubGridRow } from "../../../interfaces";
 import { setSelectedSubDept } from "../../../features/salesSlice";
 import { useState, useEffect, useRef } from "react";
 
 const SubDeptGrid = () => {
-  const gridRef = useRef<AgGridReact<SubSale>>(null);
+  const gridRef = useRef<AgGridReact<SubGridRow>>(null);
   const dispatch = useAppDispatch();
-  const { subSales, selectedSubDept, selectedSalesPanel } =
+  const { subSales, selectedSubDept, selectedSalesPanel, subSalesWk3 } =
     useAppSelector((state) => state.sales);
-  const [groupSubs, setGroupSubs] = useState<SubSale[]>([]);
+  const [groupSubs, setGroupSubs] = useState<SubGridRow[]>([]);
+
+  const setSelected = () => {
+    if (gridRef.current && gridRef.current.api) {
+      // find the first node)
+      const firstNode = gridRef.current.api.getDisplayedRowAtIndex(0);
+      if (!firstNode) return;
+
+      const selected: TopSub = {
+        sub_department: firstNode.data!.sub_department,
+        sub_department_description: firstNode.data!.sub_department_description,
+        total_sales: firstNode.data!.total_sales,
+        net_sales: firstNode.data!.net_sales,
+        qty: firstNode.data!.qty,
+        digital_coupons: firstNode.data!.digital_coupons,
+        elec_instore_coupons: firstNode.data!.elec_instore_coupons,
+        elec_store_coupons: firstNode.data!.elec_store_coupons,
+        store_coupon: firstNode.data!.store_coupon,
+        total_tax: firstNode.data!.total_tax,
+      };
+      dispatch(setSelectedSubDept(selected));
+      firstNode.setSelected(true);
+    }
+  };
 
   useEffect(() => {
-    // This useEffect is for checking to see if the user clicks on an already selected sub dept
-    // in this case, the grid goes back to having the top sub dept selected
-    // Therefore in here, we simply show that visually in the grid by selecting the first sub dept
-    if (!selectedSubDept && gridRef.current && gridRef.current.api) {
-      gridRef.current.api.forEachNode((node, i) => {
-        if (i === 0) {
-          const selected: TopSub = {
-            sub_department: node.data!.sub_department,
-            sub_department_description: node.data!.sub_department_description,
-            total_sales: node.data!.total_sales,
-            net_sales: node.data!.net_sales,
-            qty: node.data!.qty,
-            digital_coupons: node.data!.digital_coupons,
-            elec_instore_coupons: node.data!.elec_instore_coupons,
-            elec_store_coupons: node.data!.elec_store_coupons,
-            store_coupon: node.data!.store_coupon,
-            total_tax: node.data!.total_tax,
-          };
-          dispatch(setSelectedSubDept(selected));
-          node.setSelected(true);
-        }
-        return;
-      });
+    if (subSales.length && subSalesWk3.length) {
+      console.log("testing");
+      setSelected();
     }
-  }, [selectedSubDept, gridRef.current]);
+  }, [subSalesWk3, gridRef.current, subSales]);
 
   // This useEffect does the same as above, but when the groupSubs changes
   // This triggers the change in the grid, so this reflects in the salesSlice.ts file
@@ -67,8 +70,17 @@ const SubDeptGrid = () => {
   }, [groupSubs]);
 
   useEffect(() => {
+    const getLastYrSales = (subDeptId: number) => {
+      return subSalesWk3
+        .filter((s) => s.sub_department === subDeptId)
+        .reduce(
+          (acc: number, curr) => (acc += curr.total_sales - curr.total_tax),
+          0,
+        );
+    };
+
     const grouped = () => {
-      return [...subSales].reduce((acc: SubSale[], curr) => {
+      return [...subSales].reduce((acc: SubGridRow[], curr) => {
         const exists = acc.find(
           (d) => d.sub_department === curr.sub_department,
         );
@@ -83,15 +95,19 @@ const SubDeptGrid = () => {
           exists.weight += curr.weight;
           exists.total_tax += curr.total_tax;
         } else {
-          acc.push({ ...curr });
+          const lastYrSales = getLastYrSales(curr.sub_department);
+          acc.push({ ...curr, lastYrSales: lastYrSales });
         }
         return acc;
       }, []);
     };
-    setGroupSubs(grouped());
-  }, [subSales]);
 
-  const handleSetSelectedSubDept = (d: RowClickedEvent<SubSale>) => {
+    const result = grouped();
+
+    setGroupSubs(result);
+  }, [subSales, subSalesWk3]);
+
+  const handleSetSelectedSubDept = (d: RowClickedEvent<SubGridRow>) => {
     const selected: TopSub = {
       sub_department: d.data!.sub_department,
       sub_department_description: d.data!.sub_department_description,
@@ -117,7 +133,7 @@ const SubDeptGrid = () => {
       </div>
 
       <div className="px-2 h-[92%]">
-        <AgGridReact
+        <AgGridReact<SubGridRow>
           ref={gridRef}
           rowData={groupSubs}
           theme={theme}
@@ -131,8 +147,6 @@ const SubDeptGrid = () => {
                 selectedSubDept.sub_department !== d.data!.sub_department)
             ) {
               handleSetSelectedSubDept(d);
-            } else {
-              dispatch(setSelectedSubDept(null));
             }
           }}
           rowSelection="single"

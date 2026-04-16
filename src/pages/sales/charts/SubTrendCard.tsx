@@ -7,12 +7,12 @@ interface TrendRowProps {
   dates: string;
 }
 const SubTrendCard = ({ sub, row, dates }: TrendRowProps) => {
-  const shadowColor =
+  const borderColor =
     row === 1
-      ? "shadow-emerald-200"
+      ? "border-emerald-200"
       : row === 2
-        ? "shadow-blue-200"
-        : "shadow-orange-200";
+        ? "border-blue-200"
+        : "border-orange-200";
 
   const gradient =
     row === 1
@@ -22,7 +22,7 @@ const SubTrendCard = ({ sub, row, dates }: TrendRowProps) => {
         : `from-orange-200 to-custom-white h-[1.5px]`;
 
   return (
-    <div className={`px-2 py-1 rounded-lg shadow-md ${shadowColor}`}>
+    <div className={`p-1 rounded-lg shadow-md border ${borderColor}`}>
       <div className="flex justify-between">
         <div className="font-medium">{dates}</div>
       </div>
@@ -34,7 +34,7 @@ const SubTrendCard = ({ sub, row, dates }: TrendRowProps) => {
 
       <div className="">
         <div className="font-medium text-content/60">Totals</div>
-        <div className="grid grid-cols-3 text-[12px]">
+        <div className="grid grid-cols-[38%_38%_1fr] text-[12px]">
           <div>
             <div>Sales</div>
             <div className="font-medium">

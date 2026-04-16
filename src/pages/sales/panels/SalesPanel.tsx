@@ -183,7 +183,7 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
         panel,
         selectedSalesPanel,
       )} bg-custom-white rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-inner 
-      transition-all duration-200 select-none ripple-button relative text-[13.5px]`}
+      transition-all duration-200 select-none ripple-button relative text-[13.2px]`}
     >
       <div
         data-testid={`sales-panel-${id}`}

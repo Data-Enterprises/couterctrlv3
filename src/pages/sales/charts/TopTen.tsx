@@ -5,7 +5,6 @@ import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { cpu, gpm, ppu, rpu } from "../../../functions";
 import { QuestionMarkCircleIcon } from "@heroicons/react/16/solid";
 import { setSelectedItem } from "../../../features/salesSlice";
-import SingleSelect from "../../../components/SingleSelect";
 
 interface TopTenGroupItem {
   product_code: string;
@@ -30,7 +29,6 @@ const TopTen = () => {
   const { topTenItems, selectedSalesPanel } = useAppSelector(
     (state) => state.sales,
   );
-  const { isMobile } = useAppSelector((state) => state.app);
 
   const [tooltip, setTooltip] = useState<ShowTooltip>({
     gpm: false,
@@ -101,91 +99,72 @@ const TopTen = () => {
     setTooltip(newSet);
   };
 
-  const mobileData = [...barData].map((item) => ({
-    product_code: item.product_code,
-  }));
-
-  const handleSelect = (upc: string | number) => {
-    dispatch(setSelectedItem(upc as string));
-    setSelectedTopTenItem(
-      topTen.find((item) => item.product_code === (upc as string)) || null,
-    );
-  };
-
   return (
     <div className="bg-custom-white rounded-lg shadow-lg  pb-2">
-      <div className="font-medium px-2 py-1 flex justify-between items-center">
-        <div className="text-sm">
+      <div className="font-medium px-2 pt-1 flex justify-between items-center">
+        <div className="text-[13.5px]">
           {selectedSalesPanel.sale_date ? "Daily" : "Weekly"} Top Ten Items
         </div>
-        {isMobile && (
-          <SingleSelect
-            data={mobileData}
-            displayKey="product_code"
-            valueKey="product_code"
-            label=""
-            innerClass="py-1"
-            className="font-normal text-sm w-1/2 mt-1"
-            onSelect={handleSelect}
-            id={2}
-          />
-        )}
       </div>
+
+      <div className="grid grid-cols-2 mb-2">
+        <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
+        <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
+      </div>
+
       <div className="md:grid md:grid-cols-[65%_35%] gap-2 h-[90%]">
         <div data-testid="top-10-chart">
-          {!isMobile ? (
-            <ResponsiveBar
-              data={barData}
-              margin={{ top: 0, right: 0, bottom: 30, left: 90 }}
-              tooltip={() => null}
-              padding={0.1}
-              layout="horizontal"
-              keys={["total_sales"]}
-              indexBy="product_code"
-              colors={(d) =>
-                rgbaColor(
-                  d.data.product_code === selectedTopTenItem?.product_code
-                    ? "#f97316"
-                    : "#3b82f6",
-                  0.3,
-                )
-              }
-              enableLabel={false}
-              axisBottom={{ tickValues: 4 }}
-              borderRadius={4}
-              borderWidth={2}
-              borderColor={(d) =>
-                rgbaColor(
-                  d.data.indexValue === selectedTopTenItem?.product_code
-                    ? "#f97316"
-                    : "#3b82f6",
-                  1,
-                )
-              }
-              onClick={(d) => {
-                const upc = d.index === 9 ? "" : (d.indexValue as string);
-                dispatch(setSelectedItem(upc));
-                setSelectedTopTenItem(
-                  topTen.find((item) => item.product_code === d.indexValue) ||
-                    null,
-                );
-              }}
-              theme={{
-                axis: {
-                  domain: {
-                    line: { stroke: "#60a5fa", strokeWidth: 1.5 },
-                  },
-                  ticks: {
-                    text: {
-                      fontSize: 10.5,
-                      strokeWidth: 2,
-                      fontWeight: "bolder",
-                    },
+          <ResponsiveBar
+            data={barData}
+            margin={{ top: 0, right: 0, bottom: 30, left: 90 }}
+            tooltip={() => null}
+            padding={0.1}
+            layout="horizontal"
+            keys={["total_sales"]}
+            indexBy="product_code"
+            colors={(d) =>
+              rgbaColor(
+                d.data.product_code === selectedTopTenItem?.product_code
+                  ? "#f97316"
+                  : "#3b82f6",
+                0.3,
+              )
+            }
+            enableLabel={false}
+            axisBottom={{ tickValues: 4 }}
+            borderRadius={4}
+            borderWidth={2}
+            borderColor={(d) =>
+              rgbaColor(
+                d.data.indexValue === selectedTopTenItem?.product_code
+                  ? "#f97316"
+                  : "#3b82f6",
+                1,
+              )
+            }
+            onClick={(d) => {
+              const upc = d.index === 9 ? "" : (d.indexValue as string);
+              dispatch(setSelectedItem(upc));
+              setSelectedTopTenItem(
+                topTen.find((item) => item.product_code === d.indexValue) ||
+                  null,
+              );
+            }}
+            theme={{
+              axis: {
+                domain: {
+                  line: { stroke: "#60a5fa", strokeWidth: 1.5 },
+                },
+                ticks: {
+                  text: {
+                    fontSize: 10.5,
+                    strokeWidth: 2,
+                    fontWeight: "bolder",
                   },
                 },
-              }}
-            />
-          ) : null}
+              },
+            }}
+          />
         </div>
         <div className="text-sm pb-2 md:pb-0 px-2 md:px-0">
           <div className="text-xs mb-2">

@@ -90,15 +90,15 @@ const SubDeptComps = () => {
   const trendIcon = (trend: number) => {
     if (trend > 0) {
       return (
-        <div className="flex items-center text-emerald-600">
-          <HandThumbUpIcon className="h-4 w-4 mr-0.5" />
+        <div className="flex items-center text-emerald-500 font-bold">
+          <HandThumbUpIcon className="h-4 w-4 mr-0.5 stroke-2" />
           {formatCurrency2(trend)}
         </div>
       );
     } else if (trend < 0) {
       return (
-        <div className="flex items-center text-orange-500">
-          <HandThumbDownIcon className="h-4 w-4 mr-0.5" />
+        <div className="flex items-center text-orange-500 font-bold">
+          <HandThumbDownIcon className="h-4 w-4 mr-0.5 stroke-2" />
           {formatCurrency2(Math.abs(trend))}
         </div>
       );
@@ -107,25 +107,22 @@ const SubDeptComps = () => {
     return null;
   };
 
+  const sub = sales.selectedSubDept
+    ? sales.selectedSubDept.sub_department_description
+    : "";
+
   // Once we have both data sets, show the comparisons (final step)
   return (
     <div className="bg-custom-white rounded-lg px-2 py-1 shadow-lg text-[13.5px]">
-      <div className="font-medium grid grid-cols-[1fr_50%_1fr]">
-        <div>Sub Dept Trend</div>
-        <div className="flex justify-around">
-          <div className="flex gap-1">
-            <div>Last Week</div>
-            <div>{trendIcon(weekTrend)}</div>
-          </div>
-          <div className="flex gap-1">
-            <div>Last Year</div>
-            <div>{trendIcon(yearTrend)}</div>
-          </div>
+      <div className="font-medium grid grid-cols-3">
+        <div className="">{sub} Trend Comparisons</div>
+        <div className="flex gap-1 ml-2">
+          <div className="text-content/60">vs Last Week</div>
+          <div>{trendIcon(weekTrend)}</div>
         </div>
-        <div className="text-right">
-          {sales.selectedSubDept
-            ? sales.selectedSubDept.sub_department_description
-            : ""}
+        <div className="flex gap-1 ml-2">
+          <div className="text-content/60">vs Last Year</div>
+          <div>{trendIcon(yearTrend)}</div>
         </div>
       </div>
       <div className="grid grid-cols-2">
@@ -133,7 +130,7 @@ const SubDeptComps = () => {
         <div className="bg-gradient-to-l from-orange-200 from-[20%] to-blue-200 h-[1.5px]"></div>
       </div>
 
-      <div className="grid grid-cols-3 gap-1 text-[12.5px]">
+      <div className="grid grid-cols-3 text-[12.5px] py-1 gap-1">
         <SubTrendCard sub={tw} row={1} dates={twDateRange} />
         <SubTrendCard sub={lw} row={2} dates={lwDateRange} />
         <SubTrendCard sub={ly} row={3} dates={lyDateRange} />

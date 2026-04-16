@@ -1,4 +1,3 @@
-import { useState } from "react";
 // Hooks/API
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { useAppSelector, useAppDispatch } from "../../hooks";
@@ -36,20 +35,7 @@ const Sales = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const { username } = useAppSelector((state) => state.user);
-  const {
-    queryChecker,
-    weeklySales,
-    hourlySales,
-    subSales,
-    topTenItems,
-    salesPanels,
-  } = useAppSelector((state) => state.sales);
-  const [showLoading, setShowLoading] = useState<boolean>(false);
-
-  // useEffect(() => {
-  //   getSalesPanels();
-  // }, []);
+  const { queryChecker, salesPanels } = useAppSelector((state) => state.sales);
 
   const getSalesPanels = async () => {
     dispatch(reQuery());
@@ -66,7 +52,6 @@ const Sales = () => {
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 
     dispatch(setPanelsLoading(true));
-    setShowLoading(true);
     await getWeekly(
       context.url,
       context.token,
@@ -91,7 +76,6 @@ const Sales = () => {
       })
       .finally(() => {
         dispatch(setPanelsLoading(false));
-        setShowLoading(false);
       });
   };
 
@@ -103,19 +87,11 @@ const Sales = () => {
   const gridContainer =
     "grid grid-cols-[17%_83%] gap-2 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]";
 
-  const isReady =
-    queryChecker.hourly &&
-    queryChecker.subs &&
-    queryChecker.topTen &&
-    queryChecker.weekly;
-
   const isLoading =
-    !topTenItems.length &&
-    !hourlySales.length &&
-    !weeklySales.length &&
-    !subSales.length;
-
-  const hasLastSearch = search.lastGroup === 0 && search.lastStore === 0;
+    !queryChecker.hourly ||
+    !queryChecker.subs ||
+    !queryChecker.topTen ||
+    !queryChecker.weekly;
 
   return (
     <div data-testid="sales-page" className={pageContainer}>
@@ -125,7 +101,10 @@ const Sales = () => {
           <div className="bg-custom-white rounded-lg p-2 shadow-lg">
             <StorePicker />
             <SingleDatePicker />
-            <button className="btn-themeBlue w-full mt-2" onClick={getSalesPanels}>
+            <button
+              className="btn-themeBlue w-full mt-2"
+              onClick={getSalesPanels}
+            >
               Search
             </button>
           </div>
@@ -138,26 +117,11 @@ const Sales = () => {
           ) : null}
         </div>
 
-        {hasLastSearch ? (
-          <div className="flex justify-center items-center">
-            <div className="bg-custom-white rounded-lg shadow-lg p-4 text-center text-sm font-medium">
-              <div className="mb-1">
-                Welcome to your first login {username}!
-              </div>
-              <div className="mb-1">
-                Please select a store/group to show sales data
-              </div>
-              <div>Future successful logins will automatically</div>
-              <div>pull data from your last search</div>
-            </div>
-          </div>
-        ) : isLoading && !isReady ? (
+        {isLoading ? (
           <div className="relative">
-            {showLoading && (
-              <LoadingIndicator message="Loading sales data..." />
-            )}
+            {salesPanels.length && <LoadingIndicator message="Loading sales data..." />}
           </div>
-        ) : isReady ? (
+        ) : (
           <div className="md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)] grid grid-rows-[152px_1fr] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
             <KpiHeader />
             <div className="grid grid-cols-[42%_1fr] gap-2 h-[calc(100vh-232px)]">
@@ -171,7 +135,7 @@ const Sales = () => {
               </div>
             </div>
           </div>
-        ) : null}
+        )}
       </div>
     </div>
   );

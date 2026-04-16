@@ -151,6 +151,10 @@ export type SubSale = {
   store_coupon: number;
 };
 
+export type SubGridRow = SubSale & {
+  lastYrSales: number;
+}
+
 /////////////////////// End sales slice //////////////////////
 
 //////////////////////////////////////////////////////////////
