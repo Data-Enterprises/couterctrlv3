@@ -265,7 +265,7 @@ const HourlyGrid = () => {
               margin={{
                 top: 5,
                 right: 0,
-                bottom: selectedSalesPanel.sale_date ? 28 : 50,
+                bottom: selectedSalesPanel.sale_date ? 42 : 50,
                 left: 45,
               }}
               keys={["total_sales"]}
