@@ -1,11 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 // Hooks/API
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import {
-  // getHourly, getSubs, getTopTen,
-  getWeekly,
-} from "../../api/sales";
+import { getWeekly } from "../../api/sales";
 
 // Components
 import StorePicker from "../../components/storePicker/StorePicker";
@@ -22,17 +19,12 @@ import SubsCompareModal from "./subsCompare/SubsCompareModal";
 
 // Dispatchers
 import {
-  // finishQuery,
   reQuery,
-  // setHourlySales,
   setLeftSubCompare,
   setPanelsLoading,
   setRightSubCompare,
   setSalesPanels,
   setSelectedSalesPanel,
-  // setSubSales,
-  // setTopTenItems,
-  // setWeeklySales,
 } from "../../features/salesSlice";
 
 // utils
@@ -57,9 +49,9 @@ const Sales = () => {
   const { height, topLeftRef, leftColRef } = useLeftColHeight();
   const [showLoading, setShowLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    getSalesPanels();
-  }, []);
+  // useEffect(() => {
+  //   getSalesPanels();
+  // }, []);
 
   const getSalesPanels = async () => {
     dispatch(reQuery());
@@ -108,12 +100,10 @@ const Sales = () => {
   // Just render the mobile version and cut down on excessive operations
   // if (context.isMobile) return <SalesMobile />;
 
-  const pageContainer = context.isDesktop
-    ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none"
-    : " p-4 overflow-y-scroll bg-bkg";
-  const gridContainer = context.isDesktop
-    ? " grid grid-cols-[18%_81%] gap-4 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]"
-    : "h-full";
+  const pageContainer =
+    "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none";
+  const gridContainer =
+    "grid grid-cols-[18%_81%] gap-4 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]";
 
   const isReady =
     queryChecker.hourly &&
@@ -131,116 +121,67 @@ const Sales = () => {
 
   return (
     <div data-testid="sales-page" className={pageContainer}>
-      {!context.isMobile ? (
-        <div className={gridContainer}>
-          <SubsCompareModal />
+      <div className={gridContainer}>
+        <SubsCompareModal />
+        <div
+          ref={leftColRef}
+          className={`h-full md:grid-rows-[25%_74%] md:gap-4`}
+        >
           <div
-            ref={leftColRef}
-            className={`h-full md:grid-rows-[25%_74%] md:gap-4`}
+            ref={topLeftRef}
+            className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1"
           >
+            <StorePicker />
+            <SingleDatePicker />
+            <button className="btn-themeBlue w-full" onClick={getSalesPanels}>
+              Search
+            </button>
+          </div>
+          {salesPanels.length > 0 ? (
             <div
-              ref={topLeftRef}
-              className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1"
-            >
-              <StorePicker />
-              <SingleDatePicker />
-              <button className="btn-themeBlue w-full" onClick={getSalesPanels}>
-                Search
-              </button>
-            </div>
-            {salesPanels.length > 0 ?<div
               style={{ minHeight: height, maxHeight: height }}
               className={`overflow-y-scroll no-scrollbar mt-2`}
             >
               <SalesPanels />
-            </div> : null}
-          </div>
-
-          {hasLastSearch ? (
-            <div className="flex justify-center items-center">
-              <div className="bg-custom-white rounded-lg shadow-lg p-4 text-center text-sm font-medium">
-                <div className="mb-1">
-                  Welcome to your first login {username}!
-                </div>
-                <div className="mb-1">
-                  Please select a store/group to show sales data
-                </div>
-                <div>Future successful logins will automatically</div>
-                <div>pull data from your last search</div>
-              </div>
-            </div>
-          ) : isLoading && !isReady ? (
-            <div className="relative">
-              {showLoading && (
-                <LoadingIndicator message="Loading sales data..." />
-              )}
-            </div>
-          ) : isReady ? (
-            <div className="md:min-h-[calc(100vh-5rem)] md:max-h-[calc(100vh-5rem)] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
-              <KpiHeader />
-              <div className="grid grid-cols-[45%_1fr] gap-2">
-                <div className="grid gap-2 h-full">
-                  <HourlyGrid />
-                  <TopTen />
-                </div>
-                <div className="grid gap-2 h-full grid-rows-[160px_1fr]">
-                  <SubDeptComps />
-                  <SubDeptGrid />
-                </div>
-              </div>
             </div>
           ) : null}
         </div>
-      ) : (
-        <div className={gridContainer}>
-          <div
-            ref={leftColRef}
-            className="md:grid h-full md:grid-rows-[25%_74%] md:gap-4"
-          >
-            <div
-              ref={topLeftRef}
-              className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1"
-            >
-              <StorePicker />
-              <SingleDatePicker />
-              <button className="btn-themeBlue w-full" onClick={getSalesPanels}>
-                Search
-              </button>
-            </div>
-            <div className="overflow-y-scroll no-scrollbar my-2 max-h-56">
-              <SalesPanels />
+
+        {hasLastSearch ? (
+          <div className="flex justify-center items-center">
+            <div className="bg-custom-white rounded-lg shadow-lg p-4 text-center text-sm font-medium">
+              <div className="mb-1">
+                Welcome to your first login {username}!
+              </div>
+              <div className="mb-1">
+                Please select a store/group to show sales data
+              </div>
+              <div>Future successful logins will automatically</div>
+              <div>pull data from your last search</div>
             </div>
           </div>
-
-          {hasLastSearch ? (
-            <div className="flex justify-center items-center">
-              <div className="bg-custom-white rounded-lg shadow-lg p-4 text-center text-sm font-medium">
-                <div className="mb-1">
-                  Welcome to your first login {username}!
-                </div>
-                <div className="mb-1">
-                  Please select a store/group to show sales data
-                </div>
-                <div>Future successful logins will automatically</div>
-                <div>pull data from your last search</div>
+        ) : isLoading && !isReady ? (
+          <div className="relative">
+            {showLoading && (
+              <LoadingIndicator message="Loading sales data..." />
+            )}
+          </div>
+        ) : isReady ? (
+          <div className="md:min-h-[calc(100vh-5rem)] md:max-h-[calc(100vh-5rem)] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
+            <KpiHeader />
+            <div className="grid grid-cols-[45%_1fr] gap-2 h-[78.3%]">
+              <div className="grid grid-rows-[282px_1fr] gap-2 h-full">
+                <HourlyGrid />
+                <TopTen />
+              </div>
+              <div className="grid gap-2 h-full grid-rows-[160px_1fr]">
+                <SubDeptComps />
+                <SubDeptGrid />
               </div>
             </div>
-          ) : isLoading && !isReady ? (
-            <div className="relative">
-              {showLoading && (
-                <LoadingIndicator message="Loading sales data..." />
-              )}
-            </div>
-          ) : isReady ? (
-            <div className="overflow-hidden">
-              <KpiHeader />
-              <SubDeptComps />
-              <HourlyGrid />
-              <TopTen />
-            </div>
-          ) : null}
-        </div>
-      )}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 };

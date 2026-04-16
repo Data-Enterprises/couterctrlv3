@@ -48,15 +48,15 @@ export const reduceSubs = (data: SubSale[]): TopSub[] => {
 };
 
 export const theme = themeQuartz.withParams({
-  headerHeight: 26,
-  rowHeight: 26,
+  headerHeight: 24,
+  rowHeight: 23,
   headerBackgroundColor: "#3b82f6",
   headerTextColor: "#ffffff",
   oddRowBackgroundColor: "#dbeafe",
   rowHoverColor: "#93c5fd",
   headerFontWeight: "bold",
   dataFontSize: 13,
-  headerFontSize: 14,
+  headerFontSize: 13.5,
   selectCellBorder: "transparent",
   rowBorder: "1px solid white",
   selectedRowBackgroundColor: "#fed7aa",

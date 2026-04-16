@@ -31,9 +31,11 @@ interface SalesState {
   salesPanels: WeeklySale[];
   selectedSalesPanel: SelectedSalesPanel;
   weeklySales: WeeklySale[];
+  weeklySalesLastYear: WeeklySale[];
   panelsLoading: boolean;
   windowVisible: WindowVisible;
   hourlySales: HourlySale[];
+  hourlySalesLastYear: HourlySale[];
   subSales: SubSale[];
   subSalesWk1: SubSale[];
   subSalesWk2: SubSale[];
@@ -61,9 +63,11 @@ const initialState: SalesState = {
   salesPanels: [],
   selectedSalesPanel: defaultSelectedPanel,
   weeklySales: [],
+  weeklySalesLastYear: [],
   panelsLoading: false,
   windowVisible: defaultWindowVisible,
   hourlySales: [],
+  hourlySalesLastYear: [],
   subSales: [],
   subSalesWk1: [],
   subSalesWk2: [],
@@ -104,11 +108,17 @@ export const salesSlice = createSlice({
     setWeeklySales: (state, action: PayloadAction<WeeklySale[]>) => {
       state.weeklySales = action.payload;
     },
+    setWeeklySalesLastYear: (state, action: PayloadAction<WeeklySale[]>) => {
+      state.weeklySalesLastYear = action.payload;
+    },
     setPanelsLoading: (state, action: PayloadAction<boolean>) => {
       state.panelsLoading = action.payload;
     },
     setHourlySales: (state, action: PayloadAction<HourlySale[]>) => {
       state.hourlySales = action.payload;
+    },
+    setHourlySalesLastYear: (state, action: PayloadAction<HourlySale[]>) => {
+      state.hourlySalesLastYear = action.payload;
     },
     setSubSales: (state, action: PayloadAction<SubSale[]>) => {
       state.subSales = action.payload;
@@ -154,7 +164,9 @@ export const salesSlice = createSlice({
       state.topSubDept = null;
       state.selectedItem = "";
       state.weeklySales = [];
+      state.weeklySalesLastYear = [];
       state.hourlySales = [];
+      state.hourlySalesLastYear = [];
       state.subSales = [];
       state.subSalesWk2 = [];
       state.subSalesWk3 = [];
@@ -214,5 +226,7 @@ export const {
   setRightSubCompare,
   resetCompareSubs,
   resetSalesSlice,
+  setWeeklySalesLastYear,
+  setHourlySalesLastYear,
 } = salesSlice.actions;
 export default salesSlice.reducer;
