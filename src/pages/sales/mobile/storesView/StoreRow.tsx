@@ -57,7 +57,6 @@ const StoreRow = ({ panel }: StoreRowProps) => {
     const endDateLY = sameWeekDayLastYear(date);
     const lyDate = new Date(endDateLY.date);
     const lyWkEnd = setDates(lyDate);
-    // const lyWkStart = setDates(lyDate, 6);
 
     getHourly(ctx.url, ctx.token, date, date, 0, panel.storeid, 1)
       .then((resp) => {

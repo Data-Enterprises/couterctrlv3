@@ -55,9 +55,6 @@ const SalesViewHourly = ({ displayName }: SalesViewHourlyProps) => {
     return acc;
   }, []);
 
-  console.log("data", ctx.hourlySalesLastYear);
-  console.log("lyDates", lyDates);
-
   const formatDate = (dateStr: string) => {
     const split = dateStr.split("T")[0].split("-");
     return `${split[1]}/${split[2]}/${split[0]}`;
@@ -85,8 +82,8 @@ const SalesViewHourly = ({ displayName }: SalesViewHourlyProps) => {
       {ctx.hourlyKey === "sale_date" ? (
         <div>
           <div className="px-2 font-medium grid grid-cols-2 gap-2">
-            <div>This Year</div>
-            <div>Last Year</div>
+            <div>{formatDate(ctx.weeklySales[ctx.weeklySales.length - 1].sale_date)} - {formatDate(ctx.weeklySales[0].sale_date)}</div>
+            <div>{formatDate(ctx.weeklySalesLastYear[ctx.weeklySalesLastYear.length - 1].sale_date)} - {formatDate(ctx.weeklySalesLastYear[0].sale_date)}</div>
           </div>
 
           <div className="text-[12px] space-y-1.5 max-h-[275px] overflow-y-auto">
@@ -119,6 +116,7 @@ const SalesViewHourly = ({ displayName }: SalesViewHourlyProps) => {
                       No Data
                     </div>
                   )}
+
                   {/* Last year */}
                   {lyData ? (
                     <div
