@@ -14,7 +14,7 @@ import SubDeptComps from "./charts/SubDeptComps";
 import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import SubsCompareModal from "./subsCompare/SubsCompareModal";
-// import SalesMobile from "./mobile/SalesMobile";
+import SalesMobile from "./mobile/SalesMobile";
 
 // Dispatchers
 import {
@@ -80,7 +80,7 @@ const Sales = () => {
   };
 
   // Just render the mobile version and cut down on excessive operations
-  // if (context.isMobile) return <SalesMobile />;
+  if (context.isMobile) return <SalesMobile />;
 
   // const pageContainer =
   //   "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none";

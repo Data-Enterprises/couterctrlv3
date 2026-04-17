@@ -32,7 +32,9 @@ interface SalesMobileState {
   topTenItems: TopTenItem[];
   salesPanels: WeeklySale[];
   weeklySales: WeeklySale[];
+  weeklySalesLastYear: WeeklySale[];
   hourlySales: HourlySale[];
+  hourlySalesLastYear: HourlySale[];
   subSales: SubSale[];
   subSalesWk1: SubSale[];
   subSalesWk2: SubSale[];
@@ -54,6 +56,7 @@ interface SalesMobileState {
   hourlyKey: "hour" | "sale_date";
   salesViewWeekly: PieData[];
   salesViewHourly: HourlySale[];
+  salesViewHourlyLastYear: HourlySale[];
   salesViewTopTen: TopTenItem[];
 }
 
@@ -77,7 +80,9 @@ const initialState: SalesMobileState = {
   topTenItems: [],
   salesPanels: [],
   weeklySales: [],
+  weeklySalesLastYear: [],
   hourlySales: [],
+  hourlySalesLastYear: [],
   subSales: [],
   subSalesWk1: [],
   subSalesWk2: [],
@@ -97,6 +102,7 @@ const initialState: SalesMobileState = {
   selectedHour: 0,
   salesViewWeekly: [],
   salesViewHourly: [],
+  salesViewHourlyLastYear: [],
   salesViewTopTen: [],
 };
 
@@ -176,7 +182,7 @@ const salesMobileSlice = createSlice({
     },
     setMobileHourlySales: (state, action: PayloadAction<HourlySale[]>) => {
       state.hourlySales = action.payload;
-      
+
       // if it never changed, then don't do anything => less operations
       if (state.hourlyKey === "hour") {
         state.hourlyKey = "sale_date";
@@ -205,6 +211,36 @@ const salesMobileSlice = createSlice({
       state.hours = Array.from(new Set(reduced.map((r) => r.hour))).sort(
         (a, b) => a - b,
       );
+    },
+    setMobileHourlyLastYearSales: (
+      state,
+      action: PayloadAction<HourlySale[]>,
+    ) => {
+      const reduced = [...action.payload].reduce((acc: HourlySale[], val) => {
+        const found = acc.find(
+          (h) => h.sale_date === val.sale_date && h.hour === val.hour,
+        );
+        if (found) {
+          // add the sales, transactions
+          found.total_sales += val.total_sales - val.total_tax;
+          found.transactions += val.transactions;
+          found.qty += val.qty;
+        } else {
+          const newSales = val.total_sales - val.total_tax;
+          acc.push({ ...val, total_sales: newSales });
+        }
+
+        return acc;
+      }, []);
+
+      const hours = Array.from(new Set(reduced.map((r) => r.hour))).sort(
+        (a, b) => a - b,
+      );
+      const concatHrs = Array.from(new Set([...state.hours, ...hours])).sort(
+        (a, b) => a - b,
+      );
+      state.hours = concatHrs;
+      state.hourlySalesLastYear = reduced;
     },
     setSalesViewHourly: (
       state,
@@ -237,6 +273,41 @@ const salesMobileSlice = createSlice({
       state.hours = Array.from(new Set(data.map((r) => r.hour))).sort(
         (a, b) => a - b,
       );
+    },
+    setSalesViewHourlyLastYear: (
+      state,
+      action: PayloadAction<{ hourly: HourlySale[]; isResetting: boolean }>,
+    ) => {
+      const { hourly, isResetting } = action.payload;
+
+      const data = isResetting
+        ? [...state.hourlySalesLastYear].reduce((acc: HourlySale[], val) => {
+            const found = acc.find(
+              (h) => h.sale_date === val.sale_date && h.hour === val.hour,
+            );
+            if (found) {
+              // add the sales, transactions
+              found.total_sales += val.total_sales - val.total_tax;
+              found.transactions += val.transactions;
+              found.qty += val.qty;
+            } else {
+              const newSales = val.total_sales - val.total_tax;
+              acc.push({ ...val, total_sales: newSales });
+            }
+
+            return acc;
+          }, [])
+        : hourly;
+
+      state.hourlyKey = isResetting ? "sale_date" : "hour";
+      state.salesViewHourlyLastYear = data;
+      const hours = Array.from(new Set(data.map((r) => r.hour))).sort(
+        (a, b) => a - b,
+      );
+      const concatHrs = Array.from(new Set([...state.hours, ...hours])).sort(
+        (a, b) => a - b,
+      );
+      state.hours = concatHrs;
     },
     setSelectedHour: (state, action: PayloadAction<number>) => {
       state.selectedHour = action.payload;
@@ -285,6 +356,12 @@ const salesMobileSlice = createSlice({
       );
 
       state.salesViewWeekly = pieChartData;
+    },
+    setMobileWeeklySalesLastYear: (
+      state,
+      action: PayloadAction<WeeklySale[]>,
+    ) => {
+      state.weeklySalesLastYear = action.payload;
     },
     setSalesViewWeekly: (
       state,
@@ -375,5 +452,8 @@ export const {
   setSalesViewHourly,
   setSelectedHour,
   setSalesViewWeekly,
+  setMobileWeeklySalesLastYear,
+  setMobileHourlyLastYearSales,
+  setSalesViewHourlyLastYear,
 } = salesMobileSlice.actions;
 export default salesMobileSlice.reducer;

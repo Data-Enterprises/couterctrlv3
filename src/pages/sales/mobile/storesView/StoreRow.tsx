@@ -2,12 +2,19 @@ import { getHourly, getTopTen, getWeekly } from "../../../../api/sales";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import {
   setSalesViewHourly,
+  setSalesViewHourlyLastYear,
   setSalesViewWeekly,
   setSelectedStore,
   setSortedSalesViewTopTen,
 } from "../../../../features/salesMobileSlice";
 import type { JsonError, WeeklySale } from "../../../../interfaces";
-import { addDays, formatBigNumber, formatCurrency2 } from "../../../../utils";
+import {
+  addDays,
+  formatBigNumber,
+  formatCurrency2,
+  sameWeekDayLastYear,
+} from "../../../../utils";
+import { setDates } from "../../utils";
 import { useMobileSalesCtx } from "../hooks";
 
 interface StoreRowProps {
@@ -35,7 +42,6 @@ const StoreRow = ({ panel }: StoreRowProps) => {
 
     return formatted;
   };
-  console.log(panel.sale_date);
 
   const handleStoreSelect = () => {
     const selected = {
@@ -48,6 +54,10 @@ const StoreRow = ({ panel }: StoreRowProps) => {
     // Make calls to topTen and weekly, and hourly
     const date = panel.sale_date.split("T")[0];
     const startDate = addDays(date, -6).toISOString().split("T")[0];
+    const endDateLY = sameWeekDayLastYear(date);
+    const lyDate = new Date(endDateLY.date);
+    const lyWkEnd = setDates(lyDate);
+    // const lyWkStart = setDates(lyDate, 6);
 
     getHourly(ctx.url, ctx.token, date, date, 0, panel.storeid, 1)
       .then((resp) => {
@@ -56,6 +66,21 @@ const StoreRow = ({ panel }: StoreRowProps) => {
           ctx.dispatch(
             setSalesViewHourly({ hourly: j.subs, isResetting: false }),
           );
+
+          // Last year's same week
+          getHourly(ctx.url, ctx.token, lyWkEnd, lyWkEnd, 0, panel.storeid, 1)
+            .then((resp) => {
+              const j = resp.data;
+              if (j.error === 0) {
+                ctx.dispatch(
+                  setSalesViewHourlyLastYear({
+                    hourly: j.subs,
+                    isResetting: false,
+                  }),
+                );
+              }
+            })
+            .catch((err: JsonError) => toast.error(err.message));
         }
       })
       .catch((err: JsonError) => toast.error(err.message));

@@ -7,10 +7,12 @@ export const useMobileSalesCtx = () => {
     hourlyKey,
     hours,
     hourlySales,
+    hourlySalesLastYear,
     panelsLoading,
     panelSortOption,
     salesPanels,
     salesViewHourly,
+    salesViewHourlyLastYear,
     salesViewTopTen,
     salesViewWeekly,
     selectedStore,
@@ -24,6 +26,7 @@ export const useMobileSalesCtx = () => {
     topTenItems,
     view,
     weeklySales,
+    weeklySalesLastYear,
   } = useAppSelector((state) => state.salesMobile);
   const { groups } = useAppSelector((state) => state.group);
   const { assignedStores } = useAppSelector((state) => state.user);
@@ -47,12 +50,14 @@ export const useMobileSalesCtx = () => {
     hourlyKey,
     hours,
     hourlySales,
+    hourlySalesLastYear,
     lastGroup,
     lastStore,
     panelsLoading,
     panelSortOption,
     salesPanels,
     salesViewHourly,
+    salesViewHourlyLastYear,
     salesViewTopTen,
     salesViewWeekly,
     searchValue,
@@ -73,5 +78,6 @@ export const useMobileSalesCtx = () => {
     useGroups,
     view,
     weeklySales,
+    weeklySalesLastYear,
   };
 };
