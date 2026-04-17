@@ -2,7 +2,11 @@ import { useState, useEffect } from "react";
 import { useAppSelector } from "../../../hooks";
 import { type HourlyTotal } from "../components";
 import { ResponsiveBar } from "@nivo/bar";
-import { formatBigNumber, formatCurrency2 } from "../../../utils";
+import {
+  formatBigNumber,
+  formatCurrency2,
+  sameWeekDayLastYear,
+} from "../../../utils";
 
 const HourlyGrid = () => {
   const [hour, setHour] = useState<number>(0);
@@ -27,8 +31,8 @@ const HourlyGrid = () => {
     setBarIndex(selectedSalesPanel.sale_date ? "hour" : "date");
   }, [hourlySales, selectedSalesPanel]);
 
-  const formatDate = (dateStr: string): string => {
-    const split = dateStr.split("T")[0].split("-");
+  const formatDate = (dateStr: string, char: "-" | "/" = "-"): string => {
+    const split = dateStr.split("T")[0].split(char);
     return `${split[1]}/${split[2]}`;
   };
 
@@ -65,9 +69,8 @@ const HourlyGrid = () => {
     const lyTotals = [...hourlySalesLastYear]
       .filter((d) => {
         if (selectedSalesPanel.sale_date) {
-          return (
-            formatDate(d.sale_date) === formatDate(selectedSalesPanel.sale_date)
-          );
+          const lyDate = sameWeekDayLastYear(selectedSalesPanel.sale_date).date;
+          return formatDate(d.sale_date) === formatDate(lyDate);
         } else {
           return true;
         }
@@ -113,9 +116,8 @@ const HourlyGrid = () => {
     const lyFiltered = [...hourlySalesLastYear]
       .filter((d) => {
         if (selectedSalesPanel.sale_date) {
-          return (
-            formatDate(d.sale_date) === formatDate(selectedSalesPanel.sale_date)
-          );
+          const lyDate = sameWeekDayLastYear(selectedSalesPanel.sale_date).date;
+          return formatDate(d.sale_date) === formatDate(lyDate);
         } else {
           return d.hour === hour;
         }
@@ -140,12 +142,13 @@ const HourlyGrid = () => {
   };
 
   const compareCard = (val1: number, val2: number) => {
+    if (!val2 || val1 === val2) return "text-content";
+
     if (val1 > val2) {
       return "bg-emerald-200";
-    } else if (val1 < val2) {
+    } else {
       return "bg-orange-200";
     }
-    return "";
   };
 
   const findBarColor = (value: number) => {
@@ -159,8 +162,6 @@ const HourlyGrid = () => {
     }
   };
 
-  if (!barData.length) return null;
-
   // Merge all unique hours from both datasets
   const allHours = Array.from(
     new Set([...rowData.map((d) => d.hour), ...lyRowData.map((d) => d.hour)]),
@@ -172,23 +173,16 @@ const HourlyGrid = () => {
         <span className="font-medium text-sm md:text-[13.5px]">
           Hourly Sales
         </span>
-        {/* <div className="flex gap-2 md:gap-4 text-sm justify-center">
-          <div className="flex gap-1 items-center">
-            <div className="rounded-full h-3 w-3 bg-orange-500"></div>
-            <div className="text-[13px]">Below Avg</div>
-          </div>
-          <div className="flex gap-1 items-center">
-            <div className="rounded-full h-3 w-3 bg-emerald-500"></div>
-            <div className="text-[13px]">Above Avg</div>
-          </div>
-        </div> */}
         <span className="text-right text-sm md:text-[13.5px]">
           Hour: {hour}
         </span>
       </div>
-      <div className="grid grid-cols-2 md:flex md:w-[45%] text-[13px] font-medium">
-        <div className="md:w-1/2 pl-2">This Year</div>
-        <div className="md:w-1/2 pl-2">Last Year</div>
+      <div className="flex text-[13px] font-medium">
+        <div className="grid grid-cols-2 md:flex md:w-[45%]">
+          <div className="md:w-1/2 pl-2">This Year</div>
+          <div className="md:w-1/2 pl-2">Last Year</div>
+        </div>
+        <div className="md:w-[55%] text-right pr-2">This Week</div>
       </div>
       <div className="h-[93%] grid gap-2 md:gap-0 md:grid-cols-[45%_54%] mt-1 md:mt-0">
         <div className="grid max-h-[200px] md:max-h-[230px] rounded-lg overflow-y-scroll mx-1 md:mx-2 no-scrollbar">

@@ -187,17 +187,18 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
     >
       <div
         data-testid={`sales-panel-${id}`}
-        className={`font-medium flex justify-between`}
+        className={`font-medium grid grid-cols-2`}
+        onClick={(e) => handlePanelClick(e, panel)}
       >
         <div className="">{panel.store_name}</div>
 
         <div className="font-medium">
           {getDateLayout(panel.sale_date.split("T")[0])}
         </div>
-      </div>
-      <div className="grid grid-cols-2">
-        <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
-        <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
+        <div className="grid grid-cols-2 col-span-2">
+          <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
+          <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
+        </div>
       </div>
       <div
         data-testid={`sales-panel-0-${id}`}
@@ -219,16 +220,6 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
           <div className="font-medium">{formatWeight(panel.weight)}</div>
         </div>
       </div>
-      {/* <div
-        data-testid={`sales-panel-1-${id}`}
-        className="w-full flex flex-col items-center"
-        onClick={(e) => handlePanelClick(e, panel)}
-      >
-        <div>
-          <div>Weight</div>
-          <div className="font-medium">{formatWeight(panel.weight)}</div>
-        </div>
-      </div> */}
       <div
         className={`justify-around mt-2 gap-4 ${
           !context.isDesktop && "hidden"

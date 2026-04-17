@@ -1,4 +1,5 @@
 import { useAppSelector } from "../../../hooks";
+import { sameWeekDayLastYear } from "../../../utils";
 import TopTotalsKpi from "./TopTotalsKpi";
 
 const TopCoupons = () => {
@@ -6,8 +7,30 @@ const TopCoupons = () => {
 
   const aggFunc = (thisYear: boolean = true) => {
     const data = thisYear ? [...sales.subSales] : [...sales.subSalesWk3];
+    const p = sales.selectedSalesPanel;
+    if (data.length === 0) {
+      return {
+        digital_coupons: 0,
+        elec_instore_coupons: 0,
+        elect_store_coupons: 0,
+        store_coupon: 0,
+      };
+    }
+
+    const dateComp = thisYear
+      ? p.sale_date
+      : p.sale_date.length
+        ? sameWeekDayLastYear(p.sale_date).date
+        : "";
+
+        const filtered = data.filter((sub) => {
+          return p.sale_date.length
+            ? sub.sale_date.split("T")[0] === dateComp
+            : true;
+        });
+
     // ned to use hourlySales to get avg_basket_size, total sales, total tax and subSales for total cpn dollars
-    const totals = data.reduce(
+    const totals = filtered.reduce(
       (acc, val) => {
         acc.digital_coupons += val.digital_coupons;
         acc.elec_instore_coupons += val.elec_instore_coupons;
