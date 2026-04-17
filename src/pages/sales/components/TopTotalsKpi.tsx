@@ -7,6 +7,7 @@ interface TopTotalsKpiProps {
 }
 const TopTotalsKpi = ({ tyData, lyData, title }: TopTotalsKpiProps) => {
   const textStyle = () => {
+    if (lyData === 0) return "text-content";
     if (tyData > lyData) {
       return "text-emerald-500";
     } else if (tyData < lyData) {
@@ -14,6 +15,7 @@ const TopTotalsKpi = ({ tyData, lyData, title }: TopTotalsKpiProps) => {
     }
     return "text-content";
   };
+
   return (
     <div className="bg-custom-white rounded-lg shadow-lg text-center flex-col gap-2 relative py-2 md:py-0">
       <div className="font-medium text-content/60 mt-1">{title}</div>

@@ -1,5 +1,10 @@
 import type { TopSub } from "../components";
-import { formatCurrency2, formatBigNumber } from "../../../utils";
+import {
+  formatCurrency2,
+  formatBigNumber,
+  sameWeekDayLastYear,
+} from "../../../utils";
+import { useAppSelector } from "../../../hooks";
 
 interface TrendRowProps {
   sub: TopSub;
@@ -7,6 +12,7 @@ interface TrendRowProps {
   dates: string;
 }
 const SubTrendCard = ({ sub, row, dates }: TrendRowProps) => {
+  const { selectedSalesPanel } = useAppSelector((state) => state.sales);
   const borderColor =
     row === 1
       ? "border-emerald-200"
@@ -21,17 +27,40 @@ const SubTrendCard = ({ sub, row, dates }: TrendRowProps) => {
         ? `from-blue-200 to-custom-white h-[1.5px]`
         : `from-orange-200 to-custom-white h-[1.5px]`;
 
-  const title = row === 1
-    ? "This Week"
-    : row === 2
-      ? "Last Week"
-      : "Last Year";
+  const title = row === 1 ? "This Week" : row === 2 ? "Last Week" : "Last Year";
+
+  const noData =
+    sub.total_sales === 0 && sub.net_sales === 0 && sub.qty === 0
+      ? "No Data"
+      : "";
+
+  const dateRange = () => {
+    if (!dates.length && selectedSalesPanel.sale_date && row === 3) {
+      const ly = sameWeekDayLastYear(selectedSalesPanel.sale_date);
+      const split = ly.date.split("-");
+      return `${ly.dow.substring(0, 3)}, ${split[1]}/${split[2]}/${split[0]}`;
+    }
+    const split = dates.split(" - ");
+    const left = split[0];
+    const right = split[1];
+
+    if (left === right) {
+      const dow = new Date(left).toLocaleDateString("en-US", {
+        weekday: "short",
+      });
+      return `${dow}, ${left}`;
+    }
+    return dates;
+  };
 
   return (
     <div className={`p-1 rounded-lg shadow-md border ${borderColor}`}>
-      <div className="font-medium text-content/60">{title}</div>
+      <div className="font-medium text-content/60 flex justify-between">
+        <div>{title}</div>
+        <div className="font-bold underline">{noData}</div>
+      </div>
       <div className="flex justify-between">
-        <div className="font-medium">{dates}</div>
+        <div className="font-medium">{dateRange()}</div>
       </div>
 
       <div className="grid grid-cols-2">

@@ -88,7 +88,15 @@ const SubDeptComps = () => {
   const weekTrend = tw.total_sales - lw.total_sales;
   const yearTrend = tw.total_sales - ly.total_sales;
 
-  const trendIcon = (trend: number) => {
+  const trendIcon = (trend: number, period: "this" | "last") => {
+    // For no data being found
+    if (
+      (period === "last" && ly.total_sales === 0) ||
+      (period === "this" && lw.total_sales === 0)
+    ) {
+      return <div className="flex items-center font-bold">N/A</div>;
+    }
+
     if (trend > 0) {
       return (
         <div className="flex items-center text-emerald-500 font-bold">
@@ -121,11 +129,11 @@ const SubDeptComps = () => {
           <>
             <div className="flex gap-1 ml-2">
               <div className="text-content/60">vs Last Week</div>
-              <div>{trendIcon(weekTrend)}</div>
+              <div>{trendIcon(weekTrend, "this")}</div>
             </div>
             <div className="flex gap-1 ml-2">
               <div className="text-content/60">vs Last Year</div>
-              <div>{trendIcon(yearTrend)}</div>
+              <div>{trendIcon(yearTrend, "last")}</div>
             </div>
           </>
         ) : null}
@@ -138,11 +146,11 @@ const SubDeptComps = () => {
         <div className="flex justify-between text-[12.5px]">
           <div className="flex gap-1">
             <div className="text-content/60">Last Week</div>
-            <div>{trendIcon(weekTrend)}</div>
+            <div>{trendIcon(weekTrend, "this")}</div>
           </div>
           <div className="flex gap-1">
             <div className="text-content/60">Last Year</div>
-            <div>{trendIcon(yearTrend)}</div>
+            <div>{trendIcon(yearTrend, "last")}</div>
           </div>
         </div>
       ) : null}

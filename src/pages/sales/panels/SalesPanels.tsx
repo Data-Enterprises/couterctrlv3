@@ -67,7 +67,8 @@ const SalesPanels = () => {
       if (j.error === 0 && j.subs.length > 0) {
         dispatch(setPeriodSubSales({ subs: j.subs, period }));
       } else {
-        toast.warn(`No Sub-Department data found for week ${period}.`);
+        // const periodLabel = period === 2 ? "last week" : "last year";
+        // toast.warn(`No Sub Dept data found for ${periodLabel}`);
       }
     });
   };

@@ -22,11 +22,19 @@ const TopTotals = () => {
       ? [...sales.hourlySales]
       : [...sales.hourlySalesLastYear];
 
-      const dateComp = thisYear ? p.sale_date : p.sale_date.length ? sameWeekDayLastYear(p.sale_date).date : "";
-      
-      const filtered = data.filter((hs) => {
-        return p.sale_date.length ? hs.sale_date.split("T")[0] === dateComp : true;
-      });
+    if (data.length === 0) return defaultTotals;
+
+    const dateComp = thisYear
+      ? p.sale_date
+      : p.sale_date.length
+        ? sameWeekDayLastYear(p.sale_date).date
+        : "";
+
+    const filtered = data.filter((hs) => {
+      return p.sale_date.length
+        ? hs.sale_date.split("T")[0] === dateComp
+        : true;
+    });
 
     const totals = filtered.reduce(
       (acc, val) => {
@@ -41,12 +49,18 @@ const TopTotals = () => {
     // all needed panels or just the selected panel sale date
     const formatSales = () => {
       const panels = thisYear ? sales.weeklySales : sales.weeklySalesLastYear;
+      if (panels.length === 0) return 0;
+
       if (p.sale_date.length) {
         // find that sales panel => total sales - total tax => yyyy-mm-dd
         const panel = panels.find(
           (sp) => sp.sale_date.split("T")[0] === dateComp,
         );
-        return panel!.total_sales - panel!.total_tax;
+        if (panel) {
+          return panel.total_sales - panel.total_tax;
+        }
+
+        return 0;
       } else {
         // all panels
         return [...panels].reduce((acc, cur) => {
@@ -57,7 +71,8 @@ const TopTotals = () => {
     };
 
     totals.total_sales = formatSales();
-    totals.avg_basket_amount = totals.total_sales / totals.transactions;
+    const basket = totals.total_sales / totals.transactions;
+    totals.avg_basket_amount = !isNaN(basket) ? basket : 0;
 
     return totals;
   };
