@@ -98,9 +98,13 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
           <div>Weekly Sales</div>
           <div>{displayName}</div>
         </div>
-        <div className="grid grid-cols-2 mb-1">
+        <div className="grid grid-cols-2">
           <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
           <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
+        </div>
+        <div className="font-medium">
+          {pieChartData[pieChartData.length - 1][0].id} -{" "}
+          {pieChartData[0][0].id}
         </div>
         <div className="grid grid-cols-[30.5%_69.5%]">
           <div>
