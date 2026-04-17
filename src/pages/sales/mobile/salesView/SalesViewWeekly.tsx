@@ -80,6 +80,17 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
     });
   };
 
+  const activePieBg = (id: string) => {
+    if (ctx.selectedStore.storeid > 0) {
+      if (id === formatDate(ctx.selectedStore.sale_date)) {
+        return "bg-orange-200";
+      }
+      return "bg-custom-white";
+    }
+
+    return "bg-custom-white";
+  };
+
   return (
     <>
       <div className="bg-custom-white rounded-lg shadow-md px-2 py-0.5">
@@ -154,7 +165,7 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
         </div>
       </div>
       <div>
-      {/* <div className="bg-custom-white rounded-lg shadow-md px-2 py-0.5"> */}
+        {/* <div className="bg-custom-white rounded-lg shadow-md px-2 py-0.5"> */}
         {/* <div className="flex justify-between font-medium">
           <div>Daily Sales</div>
           <div>{displayName}</div>
@@ -166,15 +177,18 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
         <div className="h-full grid grid-cols-2 gap-2 mt-2">
           {pieChartData.map((data, i) => {
             return (
-              <div key={i} className="bg-custom-white rounded-lg shadow-md p-1.5">
-              {/* <div key={i} className="mb-2 rounded-lg shadow-md p-1.5"> */}
+              <div
+                key={i}
+                className={`${activePieBg(data[0].id)} rounded-lg shadow-md p-1.5`}
+              >
+                {/* <div key={i} className="mb-2 rounded-lg shadow-md p-1.5"> */}
                 <div className="h-[80px] relative">
                   <ResponsivePie
                     data={data}
                     margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
                     startAngle={-90}
                     endAngle={90}
-                    innerRadius={0.5}
+                    innerRadius={0.51}
                     enableArcLabels={false}
                     enableArcLinkLabels={false}
                     colors={colors}
@@ -183,27 +197,27 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
                     {dow(data[0].id)}
                   </div>
                 </div>
-                <div>
-                  <div className="font-medium text-[11px] flex justify-between">
-                    <div className="flex gap-1 items-center">
-                      <div
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: colors[0] }}
-                      ></div>
-                      <div>{data[0].id}</div>
-                    </div>
-                    <div>{formatCurrency2(data[0].value)}</div>
+
+                {/* Values with dates */}
+                <div className="font-medium text-[11px] flex justify-between mt-1">
+                  <div className="flex gap-1 items-center">
+                    <div
+                      className="h-3 w-3 rounded-full"
+                      style={{ backgroundColor: colors[0] }}
+                    ></div>
+                    <div>{data[0].id}</div>
                   </div>
-                  <div className="font-medium text-[11px] flex justify-between">
-                    <div className="flex gap-1 items-center">
-                      <div
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: colors[1] }}
-                      ></div>
-                      <div>{data[1].id}</div>
-                    </div>
-                    <div>{formatCurrency2(data[1].value)}</div>
+                  <div>{formatCurrency2(data[0].value)}</div>
+                </div>
+                <div className="font-medium text-[11px] flex justify-between">
+                  <div className="flex gap-1 items-center">
+                    <div
+                      className="h-3 w-3 rounded-full"
+                      style={{ backgroundColor: colors[1] }}
+                    ></div>
+                    <div>{data[1].id}</div>
                   </div>
+                  <div>{formatCurrency2(data[1].value)}</div>
                 </div>
               </div>
             );

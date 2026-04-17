@@ -401,9 +401,14 @@ const salesMobileSlice = createSlice({
         state.selectedStore.store_name === action.payload.store_name
       ) {
         state.selectedStore = defaultSelectedSalesPanel;
+        state.hourlyKey = "sale_date";
         return;
       }
+      state.hourlyKey = "hour";
       state.selectedStore = action.payload;
+    },
+    setHourlyKey: (state, action: PayloadAction<"hour" | "sale_date">) => {
+      state.hourlyKey = action.payload;
     },
     setSPSort: (state, action: PayloadAction<PanelSortOption>) => {
       // if already sorted and pressing Reset => reset sort
@@ -455,5 +460,6 @@ export const {
   setMobileWeeklySalesLastYear,
   setMobileHourlyLastYearSales,
   setSalesViewHourlyLastYear,
+  setHourlyKey,
 } = salesMobileSlice.actions;
 export default salesMobileSlice.reducer;
