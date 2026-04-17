@@ -192,7 +192,7 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
       >
         <div className="">{panel.store_name}</div>
 
-        <div className="font-medium">
+        <div className="font-medium text-right">
           {getDateLayout(panel.sale_date.split("T")[0])}
         </div>
         <div className="grid grid-cols-2 col-span-2">

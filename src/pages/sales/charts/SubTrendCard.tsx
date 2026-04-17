@@ -38,7 +38,8 @@ const SubTrendCard = ({ sub, row, dates }: TrendRowProps) => {
     if (!dates.length && selectedSalesPanel.sale_date && row === 3) {
       const ly = sameWeekDayLastYear(selectedSalesPanel.sale_date);
       const split = ly.date.split("-");
-      return `${ly.dow.substring(0, 3)}, ${split[1]}/${split[2]}/${split[0]}`;
+      const formatted = `${split[1]}/${split[2]}/${split[0]}`;
+      return `${ly.dow.substring(0, 3)}, ${formatted}`;
     }
     const split = dates.split(" - ");
     const left = split[0];
