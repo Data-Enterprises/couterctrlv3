@@ -8,7 +8,6 @@ interface SalesViewTopTenProps {
 
 const SalesViewTopTen = ({ displayName }: SalesViewTopTenProps) => {
   const ctx = useMobileSalesCtx();
-  console.log(ctx.salesViewTopTen);
 
   return (
     <div className="bg-custom-white rounded-lg shadow-md pt-0.5">
@@ -22,7 +21,10 @@ const SalesViewTopTen = ({ displayName }: SalesViewTopTenProps) => {
       </div>
       <div>
         {ctx.salesViewTopTen.map((item, i) => (
-          <div key={i} className="text-[12px] even:bg-blue-200 py-1 px-2 last:rounded-b-lg">
+          <div
+            key={i}
+            className="text-[12px] even:bg-blue-200 py-1 px-2 last:rounded-b-lg"
+          >
             <div className="flex justify-between font-medium">
               <div>{item.product_code}</div>
               <div>{item.product_description}</div>
@@ -30,11 +32,15 @@ const SalesViewTopTen = ({ displayName }: SalesViewTopTenProps) => {
             <div className="grid grid-cols-4 gap-1">
               <div>
                 <div className="text-content/60">Sales</div>
-                <div className="font-medium">{formatCurrency2(item.total_sales)}</div>
+                <div className="font-medium">
+                  {formatCurrency2(item.total_sales)}
+                </div>
               </div>
               <div>
                 <div className="text-content/60">Qty</div>
-                <div className="font-medium">{formatBigNumber(item.qty, 0)}</div>
+                <div className="font-medium">
+                  {formatBigNumber(item.qty, 0)}
+                </div>
               </div>
               <div>
                 <div className="text-content/60">COGS</div>
@@ -42,25 +48,33 @@ const SalesViewTopTen = ({ displayName }: SalesViewTopTenProps) => {
               </div>
               <div>
                 <div className="text-content/60">Profit</div>
-                <div className="font-medium">{formatCurrency2(item.total_sales - item.cost)}</div>
+                <div className="font-medium">
+                  {formatCurrency2(item.total_sales - item.cost)}
+                </div>
               </div>
               <div>
                 <div className="text-content/60">GPM</div>
-                <div className="font-medium">{gpm(item.total_sales, item.cost)}</div>
+                <div className="font-medium">
+                  {gpm(item.total_sales, item.cost)}
+                </div>
               </div>
               <div>
                 <div className="text-content/60">RPU</div>
-                <div className="font-medium">{formatCurrency2(rpu(item.total_sales, item.qty))}</div>
+                <div className="font-medium">
+                  {formatCurrency2(rpu(item.total_sales, item.qty))}
+                </div>
               </div>
               <div>
-                <div>PPU</div>
-                <div>
+                <div className="text-content/60">PPU</div>
+                <div className="font-medium">
                   {formatCurrency2(ppu(item.total_sales, item.cost, item.qty))}
                 </div>
               </div>
               <div>
                 <div className="text-content/60">CPU</div>
-                <div className="font-medium">{formatCurrency2(cpu(item.cost, item.qty))}</div>
+                <div className="font-medium">
+                  {formatCurrency2(cpu(item.cost, item.qty))}
+                </div>
               </div>
             </div>
           </div>

@@ -16,8 +16,13 @@ import SingleSelect from "../../../components/SingleSelect";
 const SubDeptGrid = () => {
   const gridRef = useRef<AgGridReact<SubGridRow>>(null);
   const dispatch = useAppDispatch();
-  const { subSales, selectedSubDept, selectedSalesPanel, subSalesWk3, topSubDept } =
-    useAppSelector((state) => state.sales);
+  const {
+    subSales,
+    selectedSubDept,
+    selectedSalesPanel,
+    subSalesWk3,
+    topSubDept,
+  } = useAppSelector((state) => state.sales);
   const isMobile = useAppSelector((state) => state.app.isMobile);
   const [groupSubs, setGroupSubs] = useState<SubGridRow[]>([]);
   const { subCols } = useSubCols();
@@ -30,7 +35,7 @@ const SubDeptGrid = () => {
       const selected: TopSub = {
         sub_department: topSub.sub_department,
         sub_department_description: topSub.sub_department_description,
-        total_sales: topSub.total_sales,
+        total_sales: topSub.total_sales - topSub.total_tax,
         net_sales: topSub.net_sales,
         qty: topSub.qty,
         digital_coupons: topSub.digital_coupons,

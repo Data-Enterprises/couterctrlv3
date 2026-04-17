@@ -1,15 +1,14 @@
-import { useAppSelector } from "../../../../hooks";
-import type { SubSale } from "../../../../interfaces";
-import { formatCurrency2 } from "../../../../utils";
+import type { SubGridRow, SubSale } from "../../../../interfaces";
+import { formatBigNumber, formatCurrency2 } from "../../../../utils";
 import type { TopSub } from "../../components";
-import SubTrendCard from "../../charts/SubTrendCard";
 import { useMobileSalesCtx } from "../hooks";
 import {
   HandThumbUpIcon,
   HandThumbDownIcon,
 } from "@heroicons/react/24/outline";
-import SingleSelect from "../../../../components/SingleSelect";
 import { setSelectedSubDept } from "../../../../features/salesMobileSlice";
+import MobileSubTrendCard from "./MobileSubTrendCard";
+// import SingleSelect from "../../../../components/SingleSelect";
 
 const defaultSub: TopSub = {
   sub_department: 0,
@@ -26,13 +25,23 @@ const defaultSub: TopSub = {
 
 const SubsView = () => {
   const ctx = useMobileSalesCtx();
-  const isMobile = useAppSelector((state) => state.app.isMobile);
 
   const formatCardData = (cardData: SubSale[]) => {
     if (!ctx.selectedSubDept) return defaultSub;
+    const selectedDow = ctx.selectedStore.sale_date
+      ? new Date(ctx.selectedStore.sale_date).toDateString().split(" ")[0]
+      : "";
 
     const subId = ctx.selectedSubDept;
-    const filtered = cardData.filter((s) => s.sub_department === subId);
+    const filtered = cardData.filter((s) => {
+      const currentDow = new Date(s.sale_date).toDateString().split(" ")[0];
+      const matchesDow = selectedDow ? currentDow === selectedDow : true;
+      const matchesSub = s.sub_department === subId;
+      const matchesStoreId = ctx.selectedStore.storeid
+        ? s.storeid === ctx.selectedStore.storeid
+        : true;
+      return matchesSub && matchesStoreId && matchesDow;
+    });
 
     return filtered.reduce(
       (acc: TopSub, curr: SubSale) => {
@@ -57,7 +66,7 @@ const SubsView = () => {
   const lw = formatCardData(ctx.subSalesWk2);
   const ly = formatCardData(ctx.subSalesWk3);
 
-  console.log(ctx.subSales, ctx.subSalesWk3);
+  // console.log(ctx.subSales, ctx.subSalesWk3);
 
   const twDates = ctx.subSales.length
     ? Array.from(
@@ -126,21 +135,99 @@ const SubsView = () => {
         .sub_department_description
     : "";
 
-  const handleSelect = (id: number | string) => {
-    ctx.dispatch(setSelectedSubDept(Number(id)));
+  const getLastYrSales = (subDeptId: number) => {
+    return ctx.subSalesWk3
+      .filter((s) => {
+        const matchesSubId = s.sub_department === subDeptId;
+        const matchesStoreId = ctx.selectedStore.storeid
+          ? s.storeid === ctx.selectedStore.storeid
+          : true;
+        const matchesDow = ctx.selectedStore.sale_date
+          ? new Date(s.sale_date).toDateString().split(" ")[0] ===
+            new Date(ctx.selectedStore.sale_date).toDateString().split(" ")[0]
+          : true;
+        return matchesSubId && matchesStoreId && matchesDow;
+      })
+      .reduce(
+        (acc: number, curr) => (acc += curr.total_sales - curr.total_tax),
+        0,
+      );
+  };
+
+  const filteredSubs = (): SubGridRow[] => {
+    const thisWeek = [...ctx.subSales]
+      .filter((s) => {
+        const matchesStoreId = ctx.selectedStore.storeid
+          ? s.storeid === ctx.selectedStore.storeid
+          : true;
+
+        const matchesDow = ctx.selectedStore.sale_date
+          ? new Date(s.sale_date).toDateString().split(" ")[0] ===
+            new Date(ctx.selectedStore.sale_date).toDateString().split(" ")[0]
+          : true;
+        return matchesStoreId && matchesDow;
+      })
+      .map((s) => ({ ...s, lastYrSales: getLastYrSales(s.sub_department) }));
+    return thisWeek;
+  };
+
+  const subs = filteredSubs();
+  const handleRowClick = (subDeptId: number) => {
+    ctx.dispatch(setSelectedSubDept(subDeptId));
+  };
+
+  const selectedRow = (id: number) => {
+    if (id === ctx.selectedSubDept) return "bg-orange-200 font-medium";
+    return "even:bg-blue-200/50";
   };
 
   // Once we have both data sets, show the comparisons (final step)
   return (
     <div className="p-2 space-y-2 max-h-[calc(100vh-6rem)] overflow-y-auto">
-      <SingleSelect
-        label="Sub Departments"
-        data={ctx.subSales}
-        valueKey="sub_department"
-        displayKey="sub_department_description"
-        onSelect={handleSelect}
-      />
+      <div className="bg-custom-white rounded-lg shadow-lg">
+        <div className="grid grid-cols-[30%_1fr_1fr_0.5fr] px-2 py-0.5 text-content/60 font-medium">
+          <div>Sub Dept</div>
+          <div>This Yr $</div>
+          <div>Last Yr $</div>
+          <div>Qty</div>
+        </div>
+        <div className="grid grid-cols-2 mb-1">
+          <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
+          <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
+        </div>
+        <div className="max-h-[180px] overflow-y-auto">
+          {subs.map((s, i) => (
+            <div
+              key={i}
+              className={`${selectedRow(s.sub_department)} transition-all duration-200 px-2 py-1`}
+              onClick={() => handleRowClick(s.sub_department)}
+            >
+              <div></div>
+              <div className="grid grid-cols-[30%_1fr_1fr_0.5fr]">
+                <div>{s.sub_department_description}</div>
+                <div>
+                  <div>{formatCurrency2(s.total_sales - s.total_tax)}</div>
+                </div>
+                <div>
+                  <div>{formatCurrency2(s.lastYrSales)}</div>
+                </div>
+                <div>
+                  <div>{formatBigNumber(s.qty, 0)}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
       <div className="bg-custom-white rounded-lg px-2 py-1 shadow-lg text-[13.5px]">
+        {/* <SingleSelect
+          label="Sub Department"
+          data={ctx.subSales}
+          displayKey="sub_department_description"
+          valueKey="sub_department"
+          innerClass="py-1"
+          className="mb-1"
+        /> */}
         <div className="font-medium grid grid-cols-3">
           <div className="">{sub} Trends</div>
         </div>
@@ -148,22 +235,21 @@ const SubsView = () => {
           <div className="bg-gradient-to-r from-emerald-200 from-[20%] to-blue-200 h-[1.5px]"></div>
           <div className="bg-gradient-to-l from-orange-200 from-[20%] to-blue-200 h-[1.5px]"></div>
         </div>
-        {isMobile ? (
-          <div className="flex justify-between text-[12.5px]">
-            <div className="flex gap-1">
-              <div className="text-content/60">Last Week</div>
-              <div>{trendIcon(weekTrend, "this")}</div>
-            </div>
-            <div className="flex gap-1">
-              <div className="text-content/60">Last Year</div>
-              <div>{trendIcon(yearTrend, "last")}</div>
-            </div>
+
+        <div className="flex justify-between text-[12.5px]">
+          <div className="flex gap-1">
+            <div className="text-content/60">Last Week</div>
+            <div>{trendIcon(weekTrend, "this")}</div>
           </div>
-        ) : null}
-        <div className="grid md:grid-cols-3 text-[12.5px] py-1 gap-1">
-          <SubTrendCard sub={tw} row={1} dates={twDateRange} />
-          <SubTrendCard sub={lw} row={2} dates={lwDateRange} />
-          <SubTrendCard sub={ly} row={3} dates={lyDateRange} />
+          <div className="flex gap-1">
+            <div className="text-content/60">Last Year</div>
+            <div>{trendIcon(yearTrend, "last")}</div>
+          </div>
+        </div>
+        <div className="grid gap-4 text-[12px] py-1">
+          <MobileSubTrendCard sub={tw} row={1} dates={twDateRange} />
+          <MobileSubTrendCard sub={lw} row={2} dates={lwDateRange} />
+          <MobileSubTrendCard sub={ly} row={3} dates={lyDateRange} />
         </div>
       </div>
     </div>
