@@ -58,6 +58,8 @@ interface SalesMobileState {
   salesViewHourly: HourlySale[];
   salesViewHourlyLastYear: HourlySale[];
   salesViewTopTen: TopTenItem[];
+
+  selectedSubDept: number;
 }
 
 const defaultAggTotals: AggTotals = {
@@ -104,6 +106,7 @@ const initialState: SalesMobileState = {
   salesViewHourly: [],
   salesViewHourlyLastYear: [],
   salesViewTopTen: [],
+  selectedSubDept: 0,
 };
 
 const formatDate = (dte: string) => {
@@ -431,6 +434,9 @@ const salesMobileSlice = createSlice({
       state.panelSortOption = action.payload;
       state.sortDir = "asc";
     },
+    setSelectedSubDept: (state, action: PayloadAction<number>) => {
+      state.selectedSubDept = action.payload;
+    },
     resetMobileSalesState: () => initialState,
   },
 });
@@ -461,5 +467,6 @@ export const {
   setMobileHourlyLastYearSales,
   setSalesViewHourlyLastYear,
   setHourlyKey,
+  setSelectedSubDept,
 } = salesMobileSlice.actions;
 export default salesMobileSlice.reducer;
