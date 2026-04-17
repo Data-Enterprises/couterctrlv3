@@ -124,13 +124,13 @@ export const handleRipple = (e: React.MouseEvent<HTMLDivElement>) => {
 
 // This will be used to determine how we get last year's data 
 const days = [
-  "Saturday",
   "Sunday",
   "Monday",
   "Tuesday",
   "Wednesday",
   "Thursday",
   "Friday",
+  "Saturday",
 ];
 export const sameWeekDayLastYear = (current: string) => {
   const currDte = new Date(current);
@@ -147,9 +147,11 @@ export const sameWeekDayLastYear = (current: string) => {
   const result = new Date(currDte);
   result.setDate(result.getDate() - daysToSubtract);
 
+  const formattedDate = result.toISOString().split("T")[0];
+
   const testing = {
-    date: result.toISOString().split("T")[0],
-    dow: days[result.getDay()],
+    date: formattedDate,
+    dow: days[result.getDay() + 1 === 7 ? 0 : result.getDay() + 1],
   };
 
   return testing;
