@@ -153,7 +153,7 @@ export type SubSale = {
 
 export type SubGridRow = SubSale & {
   lastYrSales: number;
-}
+};
 
 /////////////////////// End sales slice //////////////////////
 
@@ -303,9 +303,9 @@ export type UniqueCashier = {
 };
 
 export type TransactionOverview = {
-  transaction_id:string;
+  transaction_id: string;
   sale_id: string;
-  sale_date:string;
+  sale_date: string;
   sale_type: string;
   store_number: string;
   cashier_name: string;
@@ -313,11 +313,11 @@ export type TransactionOverview = {
   qty: number;
   storeid: number;
   total_sales: number;
-}
+};
 
 export interface TransactionListItem {
   transaction_id: string;
-  coupon_amount:number;
+  coupon_amount: number;
   storeid: number;
   store_name: string;
   store_number: string;
@@ -417,7 +417,7 @@ export interface UpcForecast {
     max_day_qty: number;
     qty: number;
     outliers: { date: string; qty: number }[];
-    prices: any
+    prices: any;
   };
 }
 
@@ -1121,12 +1121,12 @@ export type Cashier = {
   store_number: number;
   cashier_number: number;
   cashier_name: string;
-}
+};
 
 export type CashierStore = {
   storeid: number;
   store_name: string;
-}
+};
 
 export type ExceptionType =
   | "Voided"
@@ -1137,3 +1137,63 @@ export type ExceptionType =
   | "Adjustment"
   | "Backup"
   | "Modified";
+
+//////////////////////////////////////
+// Orders Interfaces
+//////////////////////////////////////
+
+export interface AvailableOrder {
+  order_date: string;
+  storenumber: string;
+  order_type: string;
+  record_count: number;
+  storeid: number;
+}
+
+export interface AvailableOrderResp {
+  error: number;
+  success: boolean;
+  msg: string;
+  orders: AvailableOrder[];
+}
+
+export interface AllOrder {
+  storeid: number;
+  order_id: number;
+  order_date: string;
+  storenumber: string;
+  storename: string;
+  status: string;
+  record_count: number;
+  order_type: string;
+  product_code: string;
+  qty: number;
+  line_number: number;
+  tpr: number;
+  active_price: number;
+  active_qty: number;
+  extended_plessy: string | null;
+  net_cost: number;
+  weight: number;
+  active_retail_price: number;
+  active_retail_qty: number;
+  description: string;
+  base_cost: number;
+  category: number;
+  category_description: string;
+  vendor_id: string;
+  retail_price: number | null;
+  sub_department: number;
+  sub_department_description: string;
+  vendor_name: string;
+  casesize: number;
+  edited: number | null;
+  scalable: number;
+}
+
+export interface AllOrderResp {
+  error: number;
+  success: boolean;
+  msg: string;
+  orders: AllOrder[];
+}
