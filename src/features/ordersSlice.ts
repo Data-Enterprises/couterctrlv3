@@ -12,6 +12,10 @@ interface OrdersState {
   loadingAllOrders: boolean;
   availableOrderTypes: string[];
   selectedAvailableOrder: AvailableOrder | null;
+  ordersExportModalOpen: boolean;
+  orderFilters: AvailableOrder[];
+  filteredAvailableOrders: AvailableOrder[];
+  typeFilterArr: string[];
 }
 
 const initialState: OrdersState = {
@@ -25,6 +29,10 @@ const initialState: OrdersState = {
   loadingAllOrders: false,
   availableOrderTypes: [],
   selectedAvailableOrder: null,
+  ordersExportModalOpen: false,
+  orderFilters: [],
+  filteredAvailableOrders: [],
+  typeFilterArr: [],
 };
 
 const ordersSlice = createSlice({
@@ -33,6 +41,10 @@ const ordersSlice = createSlice({
   reducers: {
     setAvailableOrders: (state, action: PayloadAction<AvailableOrder[]>) => {
       state.availableOrders = action.payload;
+      state.filteredAvailableOrders = action.payload;
+    },
+    setFilteredAvailableOrders: (state, action: PayloadAction<AvailableOrder[]>) => {
+      state.filteredAvailableOrders = action.payload;
     },
     setAllOrders: (state, action: PayloadAction<AllOrder[]>) => {
       state.allOrders = action.payload;
@@ -70,6 +82,27 @@ const ordersSlice = createSlice({
     setSelectedAvailableOrder: (state, action: PayloadAction<AvailableOrder | null>) => {
       state.selectedAvailableOrder = action.payload;
     },
+    setOrdersExportModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.ordersExportModalOpen = action.payload;
+    },
+    setTypeFilterArr: (state, action: PayloadAction<string[]>) => {
+      state.typeFilterArr = action.payload;
+    },
+    setOrderFilters: (state, action: PayloadAction<AvailableOrder[]>) => {
+      if (action.payload.length === 0) {
+        state.filteredOrders = state.allOrders;
+        state.orderFilters = [];
+        return;
+      }
+
+      state.orderFilters = action.payload;
+      state.filteredOrders = [...state.allOrders].filter((o) => {
+        const matchesDate= action.payload.some((f) => f.order_date === o.order_date);
+        const matchesStore = action.payload.some((f) => f.storeid === o.storeid);
+        const matchesType = action.payload.some((f) => f.order_type === o.order_type);
+        return matchesDate && matchesStore && matchesType;
+      });
+    },
     resetOrdersState: () => initialState,
   },
 });
@@ -86,5 +119,9 @@ export const {
   setLoadingAllOrders,
   setAvailableOrderTypes,
   setSelectedAvailableOrder,
+  setOrdersExportModalOpen,
+  setOrderFilters,
+  setFilteredAvailableOrders,
+  setTypeFilterArr,
 } = ordersSlice.actions;
 export default ordersSlice.reducer;

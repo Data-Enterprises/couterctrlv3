@@ -17,8 +17,9 @@ const AllOrdersGrid = () => {
   }
 
   if (!ctx.allOrders.length) return null;
+
   return (
-    <div className="bg-custom-white p-2 rounded-lg shadow-lg h-full">
+    <div className="bg-custom-white p-2 rounded-lg shadow-lg h-full relative">
       <AgGridReact
         rowData={ctx.filteredOrders}
         columnDefs={ordersCols}

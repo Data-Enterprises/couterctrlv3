@@ -126,7 +126,7 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
     field: "qty",
     flex: 0.8,
     resizable: false,
-    headerStyle: { borderRight: "1px solid white" },
+    // headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus text-right",
     valueFormatter: (params) => {
       if (params.data) {
