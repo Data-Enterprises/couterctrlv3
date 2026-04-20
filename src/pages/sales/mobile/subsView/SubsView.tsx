@@ -36,10 +36,12 @@ const SubsView = () => {
     const filtered = cardData.filter((s) => {
       const currentDow = new Date(s.sale_date).toDateString().split(" ")[0];
       const matchesDow = selectedDow ? currentDow === selectedDow : true;
+      // console.log(matchesDow, selectedDow, currentDow, s);
       const matchesSub = s.sub_department === subId;
       const matchesStoreId = ctx.selectedStore.storeid
         ? s.storeid === ctx.selectedStore.storeid
         : true;
+
       return matchesSub && matchesStoreId && matchesDow;
     });
 
@@ -168,7 +170,19 @@ const SubsView = () => {
         return matchesStoreId && matchesDow;
       })
       .map((s) => ({ ...s, lastYrSales: getLastYrSales(s.sub_department) }));
-    return thisWeek;
+
+    const result = [...thisWeek].reduce((acc: SubGridRow[], curr) => {
+      const found = acc.find(a => a.sub_department === curr.sub_department);
+      if (found){
+        found.total_sales += curr.total_sales;
+        found.total_tax += curr.total_tax;
+        found.qty += curr.qty;
+      } else {
+        acc.push(curr);
+      }
+      return acc;
+    }, [])
+    return result;
   };
 
   const subs = filteredSubs();

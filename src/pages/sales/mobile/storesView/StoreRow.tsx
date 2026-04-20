@@ -1,6 +1,7 @@
 import { getHourly, getTopTen, getWeekly } from "../../../../api/sales";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import {
+  setHourlyKey,
   setSalesViewHourly,
   setSalesViewHourlyLastYear,
   setSalesViewWeekly,
@@ -49,6 +50,20 @@ const StoreRow = ({ panel }: StoreRowProps) => {
       storeid: panel.storeid,
       sale_date: panel.sale_date,
     };
+
+    if (
+      ctx.selectedStore.storeid === selected.storeid &&
+      ctx.selectedStore.sale_date === selected.sale_date &&
+      ctx.selectedStore.store_name === selected.store_name
+    ) {
+      // Deselect if same store is clicked
+      ctx.dispatch(
+        setSelectedStore({ store_name: "", storeid: 0, sale_date: "" }),
+      );
+      ctx.dispatch(setHourlyKey("sale_date"));
+      return;
+    }
+
     ctx.dispatch(setSelectedStore(selected));
 
     // Make calls to topTen and weekly, and hourly
