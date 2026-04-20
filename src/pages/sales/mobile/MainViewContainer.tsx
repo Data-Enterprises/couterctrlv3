@@ -47,49 +47,53 @@ const MainViewContainer = () => {
     );
 
   const activeStyle = (view: SalesMobileView) => {
-    return ctx.view === view ? "text-orange-500" : "text-slate-300";
+    return ctx.view === view ? "text-orange-500" : "text-content/60";
   };
 
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden text-[13px]">
-      <div className="flex justify-items-center bg-custom-white shadow-md py-2">
+      <div className="flex justify-items-center bg-custom-white shadow-md py-2 text-[12px]">
         <div
-          className="border-r w-1/4 flex justify-center items-center transition-all"
+          className="border-r w-1/4 flex justify-center gap-2 items-center transition-all"
           onClick={() => handleViewSelect("main")}
         >
           <ArrowUturnLeftIcon
             className={`h-6 w-6 transition-all duration-200 ${activeStyle("main")}`}
           />
+          Go Back
         </div>
         <div
-          className="border-r w-1/4 flex justify-center items-center transition-all"
+          className="border-r w-1/4 flex justify-center gap-2 items-center transition-all"
           onClick={() => handleViewSelect("stores")}
         >
           <BuildingStorefrontIcon
             className={`h-6 w-6 transition-all duration-200 ${activeStyle("stores")}`}
           />
+          Stores
         </div>
         <div
-          className="border-r w-1/4 flex justify-center items-center transition-all"
+          className="border-r w-1/4 flex justify-center gap-2 items-center transition-all"
           onClick={() => handleViewSelect("sales")}
         >
           <DocumentCurrencyDollarIcon
             className={`h-6 w-6 transition-all duration-200 ${activeStyle("sales")}`}
           />
+          Sales
         </div>
         <div
-          className="w-1/4 flex justify-center items-center"
+          className="w-1/4 flex justify-center gap-2 items-center"
           onClick={() => handleViewSelect("subdept")}
         >
           <ShoppingCartIcon
             className={`h-6 w-6 transition-all duration-200 ${activeStyle("subdept")}`}
           />
+          Subs
         </div>
         {/* <button
           className={`${ctx.view === "main" ? "btn-themeGreen" : "btn-themeBlue"} py-1 px-0 text-[13px]`}
           onClick={() => handleViewSelect("main")}
         >
-          Main
+          Go Back
         </button>
         <button
           className={`${ctx.view === "stores" ? "btn-themeGreen" : "btn-themeBlue"} py-1 px-0 text-[13px]`}
