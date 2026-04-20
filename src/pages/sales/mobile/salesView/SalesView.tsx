@@ -30,7 +30,7 @@ const SalesView = () => {
   };
 
   return (
-    <div className="p-2 space-y-2">
+    <div className="p-2 space-y-2 min-h-[calc(100vh-102px)] max-h-[calc(100vh-102px)] overflow-y-scroll">
       <SalesViewWeekly displayName={displayName()} />
       <SalesViewHourly displayName={displayName()} />
       <SalesViewTopTen displayName={displayName()} />

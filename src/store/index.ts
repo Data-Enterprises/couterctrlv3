@@ -29,6 +29,7 @@ import subMarginReducer from "../features/subMarginSlice.ts";
 import cashiersReducer from '../features/cashiersSlice.ts';
 import itemScanReducer from "../features/itemScanSlice.ts";
 import mobileSalesReducer from "../features/salesMobileSlice.ts";
+import ordersReducer from '../features/ordersSlice.ts';
 
 export const setupStore = () =>
   configureStore({
@@ -62,6 +63,7 @@ export const setupStore = () =>
       cashier: cashiersReducer,
       itemScan: itemScanReducer,
       salesMobile: mobileSalesReducer,
+      orders: ordersReducer,
     },
   });
 

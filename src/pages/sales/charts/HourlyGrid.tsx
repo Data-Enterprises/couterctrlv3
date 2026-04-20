@@ -90,6 +90,8 @@ const HourlyGrid = () => {
         return acc;
       }, []);
 
+    console.log(hourlySalesLastYear, lyTotals);
+
     setLyRowData(lyTotals);
     setRowData(totals);
   }, [hourlySales, hourlySalesLastYear]);
@@ -187,19 +189,16 @@ const HourlyGrid = () => {
       <div className="h-[93%] grid gap-2 md:gap-0 md:grid-cols-[45%_54%] mt-1 md:mt-0">
         <div className="grid max-h-[200px] md:max-h-[230px] rounded-lg overflow-y-scroll mx-1 md:mx-2 no-scrollbar">
           <div className="md:grid-cols-2 md:col-span-1 gap-2">
-            {allHours.map((hourVal) => {
-              const current = rowData.find((r) => r.hour === hourVal);
-              const lastYear = lyRowData.find((r) => r.hour === hourVal);
+            {allHours.map((h) => {
+              const current = rowData.find((r) => r.hour === h);
+              const lastYear = lyRowData.find((r) => r.hour === h);
 
               return (
-                <div
-                  key={`hour-${hourVal}`}
-                  className="grid grid-cols-2 gap-2 mb-1"
-                >
+                <div key={`hour-${h}`} className="grid grid-cols-2 gap-2 mb-1">
                   {/* This year */}
                   {current ? (
                     <div
-                      className={`${hourVal === hour ? "bg-blue-200" : compareCard(current.total_sales, lastYear ? lastYear.total_sales : 0)} 
+                      className={`${h === hour ? "bg-blue-200" : compareCard(current.total_sales, lastYear ? lastYear.total_sales : 0)} 
                         text-xs rounded-lg shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
                       onClick={() => handleSelect(current)}
                     >
@@ -225,7 +224,7 @@ const HourlyGrid = () => {
                   {/* Last year */}
                   {lastYear ? (
                     <div
-                      className={`${hourVal === hour ? "bg-blue-200" : compareCard(lastYear.total_sales, current ? current.total_sales : 0)} 
+                      className={`${h === hour ? "bg-blue-200" : compareCard(lastYear.total_sales, current ? current.total_sales : 0)} 
                         text-xs rounded-lg shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
                       onClick={() => handleSelect(lastYear)}
                     >

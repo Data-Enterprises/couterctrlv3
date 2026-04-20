@@ -2,12 +2,23 @@ import { useMobileSalesCtx } from "../hooks";
 import type { AggTotals } from "../../../../interfaces";
 import type { PieData } from "..";
 import { ResponsivePie } from "@nivo/pie";
-import { colors } from "../../utils";
+
 import { formatCurrency2 } from "../../../../utils";
 import {
+  setHourlyKey,
   setSelectedStore,
   setSortedSalesViewTopTen,
 } from "../../../../features/salesMobileSlice";
+
+const colors = [
+  "#00CC55",
+  "#0099AA",
+  // "#0066FF",
+  "#3b82f6",
+  "#6688FF",
+  "#FF9900",
+  "#CC8844",
+];
 
 interface StoresHeaderProps {
   totals: AggTotals;
@@ -55,8 +66,15 @@ const StoresHeader = ({ totals, coupons }: StoresHeaderProps) => {
     ctx.dispatch(
       setSelectedStore({ storeid: 0, store_name: "", sale_date: "" }),
     );
-
+    ctx.dispatch(setHourlyKey("sale_date"));
     ctx.dispatch(setSortedSalesViewTopTen({ topTen: [], isResetting: true }));
+  };
+
+  // For the component's footer for displaying the coupon types
+  const titles = ["Digital", "Store", "E. In-Store", "E. Store"];
+  const getData = (id: string) => {
+    const filtered = coupons.filter((c) => c.id.split(" Coupons")[0] === id);
+    return filtered.length > 0 ? filtered[0].value : 0;
   };
 
   return (
@@ -122,16 +140,16 @@ const StoresHeader = ({ totals, coupons }: StoresHeaderProps) => {
         </div>
       </div>
       <div className="grid grid-cols-2 col-span-2 gap-x-4 border-t">
-        {coupons.map((c, i) => (
+        {titles.map((c, i) => (
           <div key={i} className="flex justify-between items-center">
             <div className="flex gap-1 items-center">
               <div
                 className={`h-3 w-3 mt-[2px] rounded-full`}
-                style={{ backgroundColor: colors[i % colors.length] }}
+                style={{ backgroundColor: colors[i] }}
               ></div>
-              <div>{c.id.split("Coupons")[0].trim()}</div>
+              <div>{c}</div>
             </div>
-            <div className="font-medium">{formatCurrency2(c.value)}</div>
+            <div className="font-medium">{formatCurrency2(getData(c))}</div>
           </div>
         ))}
       </div>

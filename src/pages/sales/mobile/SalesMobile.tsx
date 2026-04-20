@@ -2,12 +2,17 @@ import { useMobileSalesCtx } from "./hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   resetMobileSalesState,
+  setMobileHourlyLastYearSales,
   setMobileHourlySales,
   setMobilePanelsLoading,
   setMobileSalesPanels,
   setMobileSubSales,
+  setMobileSubSalesWk2,
+  setMobileSubSalesWk3,
   setMobileTopTenItems,
   setMobileWeeklySales,
+  setMobileWeeklySalesLastYear,
+  setSelectedSubDept,
   setView,
 } from "../../../features/salesMobileSlice";
 import { getHourly, getSubs, getTopTen, getWeekly } from "../../../api/sales";
@@ -16,6 +21,8 @@ import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
 import StorePicker from "../../../components/storePicker/StorePicker";
 // import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import MainViewContainer from "./MainViewContainer";
+import { sameWeekDayLastYear } from "../../../utils";
+import { setDates } from "../utils";
 
 const SalesMobile = () => {
   const toast = useToast();
@@ -23,6 +30,11 @@ const SalesMobile = () => {
 
   const getSalesPanels = () => {
     ctx.dispatch(resetMobileSalesState());
+
+    const endDateLY = sameWeekDayLastYear(ctx.endDate);
+    const lyDate = new Date(endDateLY.date);
+    const lyWkEnd = setDates(lyDate);
+    const lyWkStart = setDates(lyDate, 6);
 
     getSubs(
       ctx.url,
@@ -36,12 +48,51 @@ const SalesMobile = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
+          ctx.dispatch(setSelectedSubDept(j.subs[0].sub_department));
           ctx.dispatch(setMobileSubSales(j.subs));
+
+          // Get last week
+          const wk2EndDate = new Date(ctx.endDate);
+          const wk2End = setDates(wk2EndDate, 7);
+          const wk2Start = setDates(wk2EndDate, 13);
+
+          getSubs(
+            ctx.url,
+            ctx.token,
+            wk2Start,
+            wk2End,
+            ctx.useGroups,
+            ctx.searchValue,
+            ctx.singleStore,
+          )
+            .then((resp) => {
+              const j = resp.data;
+              if (j.error === 0) {
+                ctx.dispatch(setMobileSubSalesWk2(j.subs));
+              }
+            })
+            .catch((err: JsonError) => toast.error(err.message));
+
+          // Then fetch last year
+          getSubs(
+            ctx.url,
+            ctx.token,
+            lyWkStart,
+            lyWkEnd,
+            ctx.useGroups,
+            ctx.searchValue,
+            ctx.singleStore,
+          )
+            .then((resp) => {
+              const j = resp.data;
+              if (j.error === 0) {
+                ctx.dispatch(setMobileSubSalesWk3(j.subs));
+              }
+            })
+            .catch((err: JsonError) => toast.error(err.message));
         }
       })
-      .catch((err: JsonError) =>
-        toast.error("Error fetching sub sales: " + err.message),
-      );
+      .catch((err: JsonError) => toast.error(err.message));
 
     getWeekly(
       ctx.url,
@@ -61,6 +112,29 @@ const SalesMobile = () => {
           );
           ctx.dispatch(setMobileSalesPanels(sorted));
           ctx.dispatch(setMobileWeeklySales(sorted));
+
+          // Then fetch last year
+          getWeekly(
+            ctx.url,
+            ctx.token,
+            lyWkStart,
+            lyWkEnd,
+            ctx.useGroups,
+            ctx.searchValue,
+            ctx.singleStore,
+          )
+            .then((resp) => {
+              const j = resp.data;
+              if (j.error === 0) {
+                const sorted: WeeklySale[] = [...j.sales].sort(
+                  (a, b) =>
+                    new Date(b.sale_date).getTime() -
+                    new Date(a.sale_date).getTime(),
+                );
+                ctx.dispatch(setMobileWeeklySalesLastYear(sorted));
+              }
+            })
+            .catch((err: JsonError) => toast.error(err.message));
         }
       })
       .catch((err: JsonError) =>
@@ -81,6 +155,24 @@ const SalesMobile = () => {
         const j = resp.data;
         if (j.error === 0) {
           ctx.dispatch(setMobileHourlySales(j.subs));
+
+          // Then fetch last year
+          getHourly(
+            ctx.url,
+            ctx.token,
+            lyWkStart,
+            lyWkEnd,
+            ctx.useGroups,
+            ctx.searchValue,
+            ctx.singleStore,
+          )
+            .then((resp) => {
+              const j = resp.data;
+              if (j.error === 0) {
+                ctx.dispatch(setMobileHourlyLastYearSales(j.subs));
+              }
+            })
+            .catch((err: JsonError) => toast.error(err.message));
         }
       })
       .catch((err: JsonError) =>
@@ -98,7 +190,7 @@ const SalesMobile = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          ctx.dispatch(setMobileTopTenItems(j.items))
+          ctx.dispatch(setMobileTopTenItems(j.items));
         }
       })
       .catch((err: JsonError) =>

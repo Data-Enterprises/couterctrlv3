@@ -95,7 +95,7 @@ const StoresView = () => {
       { id: "Store Coupons", value: cpns.store_coupon },
     ];
     setAggCoupons(cpns);
-    setCouponPieData(pieValues.sort((a, b) => b.value - a.value));
+    setCouponPieData(pieValues);
   }, [ctx.hourlySales, ctx.salesPanels, ctx.selectedStore, ctx.subSales]);
 
   const currentPanelsList = () => {
