@@ -137,4 +137,94 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
       return "";
     },
   },
+  {
+    headerName: "Order Type",
+    field: "order_type",
+    hide: true,
+  },
+  {
+    headerName: "Status",
+    field: "status",
+    hide: true,
+  },
+  {
+    headerName: "TPR",
+    field: "tpr",
+    hide: true,
+  },
+  {
+    headerName: "Active Price",
+    field: "active_price",
+    hide: true,
+  },
+  {
+    headerName: "Active Qty",
+    field: "active_qty",
+    hide: true,
+  },
+  {
+    headerName: "Ext Plessy",
+    field: "extended_plessy",
+    hide: true,
+  },
+  {
+    headerName: "Net Cost",
+    field: "net_cost",
+    hide: true,
+  },
+  {
+    headerName: "Active Retail Price",
+    field: "active_retail_price",
+    hide: true,
+  },
+  {
+    headerName: "Active Retail Qty",
+    field: "active_retail_qty",
+    hide: true,
+  },
+  {
+    headerName: "Base Cost",
+    field: "base_cost",
+    hide: true,
+  },
+  {
+    headerName: "Category",
+    field: "category",
+    hide: true,
+  },
+  {
+    headerName: "Category Description",
+    field: "category_description",
+    hide: true,
+  },
+  {
+    headerName: "Vendor ID",
+    field: "vendor_id",
+    hide: true,
+  },
+  {
+    headerName: "Vendor Name",
+    field: "vendor_name",
+    hide: true,
+  },
+  {
+    headerName: "Retail Price",
+    field: "retail_price",
+    hide: true,
+  },
+  {
+    headerName: "Case Size",
+    field: "casesize",
+    hide: true,
+  },
+  {
+    headerName: "Edited",
+    field: "edited",
+    hide: true,
+  },
+  {
+    headerName: "Scalable",
+    field: "scalable",
+    hide: true,
+  },
 ];
