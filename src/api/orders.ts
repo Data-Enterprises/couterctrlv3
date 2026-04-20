@@ -8,7 +8,7 @@ export const getAvailableOrders = async (
   storeids: number[],
 ) => {
   const json = await axios({
-    method: "GET",
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -32,7 +32,7 @@ export const getAllOrders = async (
   storeids: number[],
 ) => {
   const json = await axios({
-    method: "GET",
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
