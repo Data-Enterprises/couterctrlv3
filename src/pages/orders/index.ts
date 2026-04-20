@@ -16,17 +16,6 @@ export const theme = themeQuartz.withParams({
   selectedRowBackgroundColor: "#fed7aa",
 });
 
-/**
- *   {
-     headerName: "Total Sales",
-     field: "total_sales",
-     flex: 0.6,
-     resizable: false,
-     valueFormatter: (params) => formatCurrency2(params.value),
-     cellClass: "no-outline-on-focus text-right",
-   },
- */
-
 export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
   {
     headerName: "Order",
@@ -37,7 +26,15 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
     cellClass: "no-outline-on-focus",
   },
   {
-    headerName: "Seq",
+    headerName: "Type",
+    field: "order_type",
+    flex: 0.8,
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus",
+  },
+  {
+    headerName: "Line #",
     field: "line_number",
     flex: 1,
     resizable: false,
@@ -121,27 +118,22 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
     cellClass: "no-outline-on-focus text-right",
     valueFormatter: (params) => formatBigNumber(params.value, 0),
   },
-  {
-    headerName: "ERet",
-    field: "qty",
-    flex: 0.8,
-    resizable: false,
-    // headerStyle: { borderRight: "1px solid white" },
-    cellClass: "no-outline-on-focus text-right",
-    valueFormatter: (params) => {
-      if (params.data) {
-        const qty = params.data.qty;
-        const active_retail_price = params.data.active_retail_price;
-        return formatCurrency2(qty * active_retail_price);
-      }
-      return "";
-    },
-  },
-  {
-    headerName: "Order Type",
-    field: "order_type",
-    hide: true,
-  },
+  // {
+  //   headerName: "ERet",
+  //   field: "qty",
+  //   flex: 0.8,
+  //   resizable: false,
+  //   // headerStyle: { borderRight: "1px solid white" },
+  //   cellClass: "no-outline-on-focus text-right",
+  //   valueFormatter: (params) => {
+  //     if (params.data) {
+  //       const qty = params.data.qty;
+  //       const active_retail_price = params.data.active_retail_price;
+  //       return formatCurrency2(qty * active_retail_price);
+  //     }
+  //     return "";
+  //   },
+  // },
   {
     headerName: "Status",
     field: "status",

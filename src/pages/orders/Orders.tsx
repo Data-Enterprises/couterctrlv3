@@ -8,6 +8,7 @@ import {
   setAvailableOrders,
   setAvailableOrderTypes,
   setFilteredAvailableOrders,
+  setFilteredOrders,
   setLoadingAllOrders,
   setLoadingAvailableOrders,
   setOrderFilters,
@@ -167,17 +168,6 @@ const Orders = () => {
     }
   };
 
-  // const handleOrderFilterClick = (type: string) => {
-  //   const currentFilters = [...ctx.orderTypeFilter];
-  //   if (currentFilters.includes(type)) {
-  //     ctx.dispatch(
-  //       setOrderTypeFilter(currentFilters.filter((t) => t !== type)),
-  //     );
-  //   } else {
-  //     ctx.dispatch(setOrderTypeFilter([...currentFilters, type]));
-  //   }
-  // };
-
   const handleOrderTypeBtnClick = (type: string) => {
     const current = [...ctx.typeFilterArr];
     let result = [];
@@ -188,13 +178,22 @@ const Orders = () => {
     }
     ctx.dispatch(setTypeFilterArr(result));
 
+    const setFilters = [...ctx.orderFilters].filter((f) => ctx.typeFilterArr.includes(f.order_type));
+    ctx.dispatch(setOrderFilters(setFilters));
+
     if (result.length === 0) {
       ctx.dispatch(setFilteredAvailableOrders(ctx.availableOrders));
+      ctx.dispatch(setFilteredOrders(ctx.allOrders));
     } else {
       const filtered = [...ctx.availableOrders].filter((o) =>
         result.includes(o.order_type),
       );
 
+      const allFiltered = [...ctx.allOrders].filter((o) =>
+        result.includes(o.order_type),
+      );
+
+      ctx.dispatch(setFilteredOrders(allFiltered));
       ctx.dispatch(setFilteredAvailableOrders(filtered));
     }
   };
@@ -249,22 +248,6 @@ const Orders = () => {
             <LoadingIndicator message="Loading Available Orders" />
           </div>
         )}
-        {/* {!isLoadingAvailableOrders && ctx.availableOrders.length ? (
-          <div className="bg-custom-white p-2 text-sm rounded-lg shadow-lg">
-            <div className="font-medium mb-2">Order Types</div>
-            <div className="grid gap-2 grid-cols-2">
-              {ctx.availableOrderTypes.map((t, i) => (
-                <div
-                  key={i}
-                  className={`rounded-full py-0.5 shadow-md text-center cursor-pointer hover:bg-orange-200 transition-all duration-200 ${ctx.orderTypeFilter.includes(t) ? "bg-orange-200" : ""}`}
-                  onClick={() => handleOrderFilterClick(t)}
-                >
-                  {t}
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null} */}
 
         {!isLoadingAvailableOrders && ctx.availableOrders.length ? (
           <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm h-[calc(100vh-395px)] relative">
@@ -279,7 +262,6 @@ const Orders = () => {
                 </div>
               ))}
             </div>
-            {/* <div className="font-medium text-[13.5px]">Available Orders</div> */}
             <div className="grid grid-cols-[1.6fr_1.1fr_0.9fr_0.9fr] text-sm px-2 border-b border-content">
               <div className="font-medium">Date</div>
               <div className="font-medium">Type</div>
@@ -303,7 +285,12 @@ const Orders = () => {
             <div className="absolute bottom-2 left-0 w-full px-2">
               <button
                 className="btn-themeOrange w-full"
-                onClick={() => ctx.dispatch(setOrderFilters([]))}
+                onClick={() => {
+                  ctx.dispatch(setOrderFilters([]));
+                  ctx.dispatch(setTypeFilterArr([]));
+                  ctx.dispatch(setFilteredAvailableOrders(ctx.availableOrders));
+                  ctx.dispatch(setFilteredOrders(ctx.allOrders));
+                }}
               >
                 All Orders
               </button>
