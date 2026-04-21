@@ -17,3 +17,4 @@ export const defaultSummary: TotalsSummary = {
   vendors: 0,
   categories: 0,
 };
+

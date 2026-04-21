@@ -5,10 +5,14 @@ import OrderDistribution from "./OrderDistribution";
 import TotalsKpi from "./TotalsKpi";
 import VendorDistribution from "./VendorDistribution";
 import { defaultSummary, type TotalsSummary } from "./index";
+import type { PieData } from "../../sales/mobile";
 
 const KpiContainer = () => {
   const ctx = useOrdersCtx();
   const [summary, setSummary] = useState<TotalsSummary>(defaultSummary);
+  const [orderPieData, setOrderPieData] = useState<PieData[]>([]);
+  const [vendorPieData, setVendorPieData] = useState<PieData[]>([]);
+  const [catPieData, setCatPieData] = useState<PieData[]>([]);
 
   useEffect(() => {
     if (ctx.filteredOrders.length) {
@@ -39,7 +43,41 @@ const KpiContainer = () => {
       const vendors = new Set(ctx.filteredOrders.map((o) => o.vendor_id)).size;
       const categories = new Set(ctx.filteredOrders.map((o) => o.category))
         .size;
+
+      const orderPie = [...ctx.filteredOrders].reduce((acc: PieData[], o) => {
+        const found = acc.find((a) => a.id === o.order_type);
+        if (found) {
+          found.value += 1;
+        } else {
+          acc.push({ id: o.order_type, value: 1 });
+        }
+        return acc;
+      }, []).sort((a, b) => b.value - a.value);
+
+      const vendorPie = [...ctx.filteredOrders].reduce((acc: PieData[], o) => {
+        const found = acc.find((a) => a.id === o.vendor_name);
+        if (found) {
+          found.value += 1;
+        } else {
+          acc.push({ id: o.vendor_name, value: 1 });
+        }
+        return acc;
+      }, []).sort((a, b) => b.value - a.value);
+
+      const catPie = [...ctx.filteredOrders].reduce((acc: PieData[], o) => {
+        const found = acc.find((a) => a.id === o.category_description);
+        if (found) {
+          found.value += 1;
+        } else {
+          acc.push({ id: o.category_description, value: 1 });
+        }
+        return acc;
+      }, []).sort((a, b) => b.value - a.value);
+
       setSummary({ weight, cost, retail, qty, eret, vendors, categories });
+      setOrderPieData(orderPie);
+      setVendorPieData(vendorPie);
+      setCatPieData(catPie);
     } else {
       setSummary(defaultSummary);
     }
@@ -48,9 +86,9 @@ const KpiContainer = () => {
   return (
     <div className="grid grid-cols-4 gap-2">
       <TotalsKpi summary={summary} />
-      <OrderDistribution />
-      <VendorDistribution />
-      <CatDistribution />
+      <OrderDistribution data={orderPieData} />
+      <VendorDistribution data={vendorPieData} />
+      <CatDistribution data={catPieData} />
     </div>
   );
 };
