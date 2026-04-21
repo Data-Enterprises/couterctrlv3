@@ -1189,6 +1189,7 @@ export interface AllOrder {
   casesize: number;
   edited: number | null;
   scalable: number;
+  e_ret: number;
 }
 
 export interface AllOrderResp {

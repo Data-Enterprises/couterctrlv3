@@ -10,7 +10,7 @@ const AllOrdersGrid = () => {
 
   if (ctx.loadingAllOrders) {
     return (
-      <div className="relative h-full">
+      <div className="relative h-[calc(100vh-5rem)]">
         <LoadingIndicator message="Loading orders" />
       </div>
     );

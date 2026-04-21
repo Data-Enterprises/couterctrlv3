@@ -1,6 +1,6 @@
 import type { PieData } from "../../sales/mobile";
 import { ResponsivePie } from "@nivo/pie";
-import { colors } from "../../sales/utils";
+import { colors } from ".";
 import { formatBigNumber } from "../../../utils";
 
 interface OrderDistributionProps {
@@ -11,13 +11,13 @@ const OrderDistribution = ({ data }: OrderDistributionProps) => {
   const total = data.reduce((acc, d) => acc + d.value, 0);
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg px-2 text-sm">
+    <div className="bg-custom-white rounded-lg shadow-lg px-2 text-sm w-[20%]">
       <div className="font-medium">Order Distribution</div>
       <div className="grid grid-cols-2">
         <div className="bg-gradient-to-r from-emerald-200 to-custom-white h-[1.5px]"></div>
         <div className="bg-gradient-to-l from-emerald-200 to-custom-white h-[1.5px]"></div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-[55%_45%] gap-2">
         <div className="h-[120px] py-1 relative">
           <ResponsivePie
             data={data}
@@ -36,7 +36,7 @@ const OrderDistribution = ({ data }: OrderDistributionProps) => {
             </div>
           </div>
         </div>
-        <div className="flex flex-col justify-center gap-1 pl-4">
+        <div className="max-h-[100px] overflow-y-auto my-2">
           {data.map((d, i) => (
             <div key={i} className="flex items-center gap-1 text-[13px]">
               <div

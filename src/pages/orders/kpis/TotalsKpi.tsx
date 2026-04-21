@@ -7,8 +7,8 @@ interface TotalsKpiProps {
 
 const TotalsKpi = ({ summary }: TotalsKpiProps) => {
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg px-2 text-sm">
-      <div className="font-medium">Totals Summary</div>
+    <div className="bg-custom-white rounded-lg shadow-lg px-2 text-[13px] w-[24%]">
+      <div className="font-medium text-sm">Totals Summary</div>
       <div className="grid grid-cols-2">
         <div className="bg-gradient-to-r from-content/60 to-custom-white h-[1.5px]"></div>
         <div className="bg-gradient-to-l from-content/60 to-custom-white h-[1.5px]"></div>

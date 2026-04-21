@@ -35,12 +35,12 @@ const KpiContainer = () => {
       const eret = ctx.filteredOrders.reduce(
         (acc, o) =>
           (acc +=
-            o.weight > 0
+            o.scalable > 0
               ? o.active_retail_price * o.weight
               : o.active_retail_price * o.qty),
         0,
       );
-      const vendors = new Set(ctx.filteredOrders.map((o) => o.vendor_id)).size;
+      // const vendors = new Set(ctx.filteredOrders.map((o) => o.vendor_id)).size;
       const categories = new Set(ctx.filteredOrders.map((o) => o.category))
         .size;
 
@@ -74,6 +74,8 @@ const KpiContainer = () => {
         return acc;
       }, []).sort((a, b) => b.value - a.value);
 
+      const vendors = vendorPie.length;
+
       setSummary({ weight, cost, retail, qty, eret, vendors, categories });
       setOrderPieData(orderPie);
       setVendorPieData(vendorPie);
@@ -83,8 +85,10 @@ const KpiContainer = () => {
     }
   }, [ctx.filteredOrders]);
 
+  if (!ctx.filteredOrders.length) return null;
+
   return (
-    <div className="grid grid-cols-4 gap-2">
+    <div className="flex justify-between gap-2">
       <TotalsKpi summary={summary} />
       <OrderDistribution data={orderPieData} />
       <VendorDistribution data={vendorPieData} />

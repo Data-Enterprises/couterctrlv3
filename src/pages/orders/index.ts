@@ -16,6 +16,18 @@ export const theme = themeQuartz.withParams({
   selectedRowBackgroundColor: "#fed7aa",
 });
 
+export const getERet = (data?: AllOrder) => {
+  if (!data) return 0;
+
+  const { qty, weight, active_retail_price } = data;
+
+  if (weight > 0) {
+    return active_retail_price * weight;
+  }
+
+  return qty * active_retail_price;
+};
+
 export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
   {
     headerName: "Order",
@@ -118,7 +130,7 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
         }
         return formatCurrency2(params.value);
       }
-      return "";  
+      return "";
     },
   },
   {
@@ -132,23 +144,12 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
   },
   {
     headerName: "ERet",
-    field: "qty",
+    field: "e_ret",
     flex: 0.8,
     resizable: false,
     // headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus text-right",
-    valueFormatter: (params) => {
-      if (params.data) {
-        const qty = params.data.qty;
-        const weight = params.data.weight;
-        const active_retail_price = params.data.active_retail_price;
-        if (weight > 0) {
-          return formatCurrency2(active_retail_price * weight);
-        }
-        return formatCurrency2(qty * active_retail_price);
-      }
-      return "";
-    },
+    valueFormatter: (params) => formatCurrency2(params.value),
   },
   {
     headerName: "Status",

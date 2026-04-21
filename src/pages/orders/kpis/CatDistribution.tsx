@@ -1,6 +1,6 @@
 import { ResponsivePie } from "@nivo/pie";
 import type { PieData } from "../../sales/mobile";
-import { colors } from "../../sales/utils";
+import { colors } from ".";
 
 interface CatDistributionProps {
   data: PieData[];
@@ -8,13 +8,13 @@ interface CatDistributionProps {
 
 const CatDistribution = ({ data }: CatDistributionProps) => {
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg px-2 text-sm">
+    <div className="bg-custom-white rounded-lg shadow-lg px-2 text-sm w-[32%]">
       <div className="font-medium">Category Frequency</div>
       <div className="grid grid-cols-2">
         <div className="bg-gradient-to-r from-orange-200 to-custom-white h-[1.5px]"></div>
         <div className="bg-gradient-to-l from-orange-200 to-custom-white h-[1.5px]"></div>
       </div>
-      <div className="grid grid-cols-[45%_55%]">
+      <div className="grid grid-cols-[40%_60%]">
         <div className="h-[120px] py-1 relative">
           <ResponsivePie
             data={data.slice(0, 10)}

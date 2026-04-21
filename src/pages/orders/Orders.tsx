@@ -22,7 +22,7 @@ import type {
   JsonError,
   Store,
 } from "../../interfaces";
-import { ordersCols } from ".";
+import { getERet, ordersCols } from ".";
 import { formatGoliathDate } from "../../utils";
 
 import DatePickers from "../../components/datePickers/DatePickers";
@@ -91,6 +91,11 @@ const Orders = () => {
               const j: AllOrderResp = resp.data;
               if (j.error === 0) {
                 ctx.dispatch(setAllOrders(j.orders));
+                const ordersWERet = j.orders.map((o) => {
+                  return { ...o, e_ret: getERet(o) };
+                });
+                console.log(ordersWERet);
+                ctx.dispatch(setFilteredOrders(ordersWERet));
               }
             })
             .catch((err: JsonError) => toast.error(err.message))
