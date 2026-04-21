@@ -21,6 +21,8 @@ export const useOrdersCtx = () => {
     filteredAvailableOrders,
     typeFilterArr,
     orderStatusFilter,
+    subIdsFilter,
+    uniqueSubs,
   } = useAppSelector((state) => state.orders);
 
   return {
@@ -43,8 +45,10 @@ export const useOrdersCtx = () => {
     selectedStoreIds,
     startDate,
     subDeptFilter,
+    subIdsFilter,
     token,
     type,
+    uniqueSubs,
     url,
     userid,
     filteredAvailableOrders,

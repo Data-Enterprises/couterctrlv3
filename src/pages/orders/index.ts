@@ -16,16 +16,33 @@ export const theme = themeQuartz.withParams({
   selectedRowBackgroundColor: "#fed7aa",
 });
 
-export const getERet = (data?: AllOrder) => {
-  if (!data) return 0;
+export const getCogs = (data: AllOrder) => {
+  const { base_cost, qty, scalable, weight, casesize } = data;
 
-  const { qty, weight, active_retail_price } = data;
+  // Prevents NaN and infinites
+  if (!base_cost) {
+    return 0;
+  }
 
-  if (weight > 0) {
+  // For weighted items
+  if (scalable > 0) {
+    const unitCost = base_cost / casesize;
+    return unitCost * weight;
+  }
+  
+  // For non-weighted items
+  const unitCost = base_cost / casesize;
+  return unitCost * qty;
+};
+
+export const getERet = (data: AllOrder) => {
+  const { qty, weight, active_retail_price, scalable } = data;
+
+  if (scalable > 0) {
     return active_retail_price * weight;
   }
 
-  return qty * active_retail_price;
+  return active_retail_price * qty;
 };
 
 export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
@@ -44,7 +61,7 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
-    hide: true,
+    // hide: true,
   },
   {
     headerName: "Line #",
@@ -53,7 +70,7 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
-    // hide: true,
+    hide: true,
   },
   {
     headerName: "UPC",
@@ -70,6 +87,11 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
+  },
+  {
+    headerName: "Dept Description",
+    field: "sub_department_description",
+    hide: true,
   },
   {
     headerName: "Dept",
@@ -121,16 +143,19 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus text-right",
     valueFormatter: (params) => {
-      if (params.data) {
-        const caseSize = params.data.casesize;
-        const scalable = params.data.scalable;
+      if (!params.data) return "";
 
-        if (scalable > 0 && params.data.weight > 0) {
-          return formatCurrency2(params.value / caseSize);
-        }
-        return formatCurrency2(params.value);
-      }
-      return "";
+      const caseSize = params.data.casesize;
+      const cost = params.value;
+      // if (caseSize === 0 || cost === 0) {
+      //   return "N/A";
+      // }
+      if (cost === 0 || caseSize === 0) return "$0.00";
+      // if (cost > 0 && caseSize > 0) {
+      //   console.log(cost, caseSize);
+      // }
+
+      return formatCurrency2(cost / caseSize);
     },
   },
   {
@@ -143,8 +168,26 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
     valueFormatter: (params) => formatBigNumber(params.value, 0),
   },
   {
-    headerName: "ERet",
+    headerName: "E Retail",
     field: "e_ret",
+    flex: 0.8,
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus text-right",
+    valueFormatter: (params) => formatCurrency2(params.value),
+  },
+  {
+    headerName: "COGS",
+    field: "cogs",
+    flex: 0.8,
+    resizable: false,
+    headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus text-right",
+    valueFormatter: (params) => formatCurrency2(params.value),
+  },
+  {
+    headerName: "Profit",
+    field: "rev",
     flex: 0.8,
     resizable: false,
     // headerStyle: { borderRight: "1px solid white" },

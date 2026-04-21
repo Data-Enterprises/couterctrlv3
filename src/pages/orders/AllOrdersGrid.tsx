@@ -4,13 +4,22 @@ import { AgGridReact } from "ag-grid-react";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import {
-  setOrderStatusFilter,
-  type OrderStatus,
+  // setOrderStatusFilter,
+  setSubIdsFilter,
+  // type OrderStatus,
 } from "../../features/ordersSlice";
+// import { useEffect } from "react";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const AllOrdersGrid = () => {
   const ctx = useOrdersCtx();
+
+  // useEffect(() => {
+  //   if (ctx.filteredOrders.length) {
+  //     const subIds = Array.from(new Set(ctx.filteredOrders.map((o) => o.sub_department)));
+
+  //   }
+  // }, [ctx.filteredOrders]);
 
   if (ctx.loadingAllOrders) {
     return (
@@ -22,40 +31,80 @@ const AllOrdersGrid = () => {
 
   if (!ctx.allOrders.length) return null;
 
-  const showOpenCloseAll = (status: OrderStatus) => {
-    const currentStatus = ctx.orderStatusFilter;
-    if (currentStatus === status) {
-      ctx.dispatch(setOrderStatusFilter(""));
+  // const showOpenCloseAll = (status: OrderStatus) => {
+  //   const currentStatus = ctx.orderStatusFilter;
+  //   if (currentStatus === status) {
+  //     ctx.dispatch(setOrderStatusFilter(""));
+  //   } else {
+  //     ctx.dispatch(setOrderStatusFilter(status));
+  //   }
+  // };
+
+  const hadleSubIdClick = (subId: number) => {
+    const currentSubIds = ctx.subIdsFilter;
+    if (subId === 0) {
+      ctx.dispatch(setSubIdsFilter([]));
+    } else if (currentSubIds.includes(subId)) {
+      ctx.dispatch(setSubIdsFilter(currentSubIds.filter((id) => id !== subId)));
     } else {
-      ctx.dispatch(setOrderStatusFilter(status));
+      ctx.dispatch(setSubIdsFilter([...currentSubIds, subId]));
     }
   };
 
   const currentOrders = () => {
-    const copy = [...ctx.filteredOrders];
-    if (ctx.orderStatusFilter) {
-      return copy.filter(
-        (o) => o.status.toLowerCase() === ctx.orderStatusFilter,
-      );
-    }
-    return copy;
+    const result = [...ctx.filteredOrders].filter((o) => {
+      const statusCheck = o.status
+        .toLowerCase()
+        .includes(ctx.orderStatusFilter);
+      const subIdCheck =
+        ctx.subIdsFilter.length === 0 ||
+        ctx.subIdsFilter.includes(o.sub_department);
+      return statusCheck && subIdCheck;
+    });
+    console.log("currentOrders", result);
+    return result;
   };
 
   return (
     <div className="bg-custom-white px-2 pb-2 rounded-lg shadow-lg h-full grid grid-rows-[auto_1fr] relative">
-      <div className="py-2 text-xs">
-        <div className="flex gap-2">
-          <div
-            className={`rounded-full shadow-md px-2 bg-bkg cursor-pointer ${ctx.orderStatusFilter === "open" ? "bg-orange-200" : ""} transition-all duration-200`}
-            onClick={() => showOpenCloseAll("open")}
-          >
-            Open
+      <div className="py-2 text-xs flex gap-4">
+        {/* Open/Close Status */}
+        {/* <div>
+          <div className="font-medium">Order Status</div>
+          <div className="flex flex-col gap-2 text-center">
+            <div
+              className={`rounded-full shadow-md bg-bkg cursor-pointer border border-content/40 hover:shadow-inner ${ctx.orderStatusFilter === "open" ? "bg-orange-200" : ""} transition-all duration-200`}
+              onClick={() => showOpenCloseAll("open")}
+            >
+              Open
+            </div>
+            <div
+              className={`rounded-full shadow-md bg-bkg cursor-pointer border border-content/40 hover:shadow-inner ${ctx.orderStatusFilter === "closed" ? "bg-orange-200" : ""} transition-all duration-200`}
+              onClick={() => showOpenCloseAll("closed")}
+            >
+              Closed
+            </div>
           </div>
-          <div
-            className={`rounded-full shadow-md px-2 bg-bkg cursor-pointer ${ctx.orderStatusFilter === "closed" ? "bg-orange-200" : ""} transition-all duration-200`}
-            onClick={() => showOpenCloseAll("closed")}
-          >
-            Closed
+        </div> */}
+
+        {/* Sub Departments */}
+        <div className="w-full">
+          <div className="flex gap-2 flex-wrap">
+            {ctx.uniqueSubs.map((s, i) => (
+              <div
+                key={i}
+                className={`rounded-full border border-content/40 shadow-md px-2 bg-bkg cursor-pointer hover:shadow-inner ${ctx.subIdsFilter.includes(s.subId) ? "bg-orange-200" : ""} transition-all duration-200`}
+                onClick={() => hadleSubIdClick(s.subId)}
+              >
+                {s.desc}
+              </div>
+            ))}
+            <div
+              className={`rounded-full border border-content/40 shadow-md px-2 bg-orange-500 text-custom-white cursor-pointer hover:shadow-inner transition-all duration-200`}
+              onClick={() => hadleSubIdClick(0)}
+            >
+              All
+            </div>
           </div>
         </div>
       </div>

@@ -1190,6 +1190,8 @@ export interface AllOrder {
   edited: number | null;
   scalable: number;
   e_ret: number;
+  cogs: number;
+  rev: number;
 }
 
 export interface AllOrderResp {

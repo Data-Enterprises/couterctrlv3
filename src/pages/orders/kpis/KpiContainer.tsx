@@ -6,6 +6,7 @@ import TotalsKpi from "./TotalsKpi";
 import VendorDistribution from "./VendorDistribution";
 import { defaultSummary, type TotalsSummary } from "./index";
 import type { PieData } from "../../sales/mobile";
+import { getCogs } from "..";
 
 const KpiContainer = () => {
   const ctx = useOrdersCtx();
@@ -16,23 +17,25 @@ const KpiContainer = () => {
 
   useEffect(() => {
     if (ctx.filteredOrders.length) {
-      const weight = ctx.filteredOrders.reduce((acc, o) => acc + o.weight, 0);
-      const cost = ctx.filteredOrders.reduce(
-        (acc, o) => {
+      const current = [...ctx.filteredOrders].filter((o) => {
+        const statusCheck = o.status
+          .toLowerCase()
+          .includes(ctx.orderStatusFilter);
+        const subIdCheck =
+          ctx.subIdsFilter.length === 0 ||
+          ctx.subIdsFilter.includes(o.sub_department);
+        return statusCheck && subIdCheck;
+      });
 
-          if (o.weight > 0) {
-            return acc += o.base_cost / o.weight
-          }
-          return acc += o.base_cost / o.casesize || 1;
-        },
-        0,
-      );
-      const retail = ctx.filteredOrders.reduce(
-        (acc, o) => acc += o.active_retail_price,
-        0,
-      );
-      const qty = ctx.filteredOrders.reduce((acc, o) => (acc += o.qty), 0);
-      const eret = ctx.filteredOrders.reduce(
+      const weight = current.reduce((acc, o) => acc + o.weight, 0);
+
+      const cost = current.reduce((acc, o) => {
+        const cogs = getCogs(o);
+        return acc += cogs;
+      }, 0);
+
+      const qty = current.reduce((acc, o) => (acc += o.qty), 0);
+      const eret = current.reduce(
         (acc, o) =>
           (acc +=
             o.scalable > 0
@@ -40,50 +43,57 @@ const KpiContainer = () => {
               : o.active_retail_price * o.qty),
         0,
       );
-      // const vendors = new Set(ctx.filteredOrders.map((o) => o.vendor_id)).size;
-      const categories = new Set(ctx.filteredOrders.map((o) => o.category))
-        .size;
+      // const vendors = new Set(current.map((o) => o.vendor_id)).size;
+      const categories = new Set(current.map((o) => o.category)).size;
 
-      const orderPie = [...ctx.filteredOrders].reduce((acc: PieData[], o) => {
-        const found = acc.find((a) => a.id === o.order_type);
-        if (found) {
-          found.value += 1;
-        } else {
-          acc.push({ id: o.order_type, value: 1 });
-        }
-        return acc;
-      }, []).sort((a, b) => b.value - a.value);
+      const profit = eret - cost;
 
-      const vendorPie = [...ctx.filteredOrders].reduce((acc: PieData[], o) => {
-        const found = acc.find((a) => a.id === o.vendor_name);
-        if (found) {
-          found.value += 1;
-        } else {
-          acc.push({ id: o.vendor_name, value: 1 });
-        }
-        return acc;
-      }, []).sort((a, b) => b.value - a.value);
+      const orderPie = current
+        .reduce((acc: PieData[], o) => {
+          const found = acc.find((a) => a.id === o.order_type);
+          if (found) {
+            found.value += 1;
+          } else {
+            acc.push({ id: o.order_type, value: 1 });
+          }
+          return acc;
+        }, [])
+        .sort((a, b) => b.value - a.value);
 
-      const catPie = [...ctx.filteredOrders].reduce((acc: PieData[], o) => {
-        const found = acc.find((a) => a.id === o.category_description);
-        if (found) {
-          found.value += 1;
-        } else {
-          acc.push({ id: o.category_description, value: 1 });
-        }
-        return acc;
-      }, []).sort((a, b) => b.value - a.value);
+      const vendorPie = current
+        .reduce((acc: PieData[], o) => {
+          const found = acc.find((a) => a.id === o.vendor_name);
+          if (found) {
+            found.value += 1;
+          } else {
+            acc.push({ id: o.vendor_name, value: 1 });
+          }
+          return acc;
+        }, [])
+        .sort((a, b) => b.value - a.value);
 
-      const vendors = new Set(ctx.filteredOrders.map((o) => o.sub_department)).size;
+      const catPie = current
+        .reduce((acc: PieData[], o) => {
+          const found = acc.find((a) => a.id === o.category_description);
+          if (found) {
+            found.value += 1;
+          } else {
+            acc.push({ id: o.category_description, value: 1 });
+          }
+          return acc;
+        }, [])
+        .sort((a, b) => b.value - a.value);
 
-      setSummary({ weight, cost, retail, qty, eret, vendors, categories });
+      const vendors = new Set(current.map((o) => o.sub_department)).size;
+
+      setSummary({ weight, cost, retail: profit, qty, eret, vendors, categories });
       setOrderPieData(orderPie);
       setVendorPieData(vendorPie);
       setCatPieData(catPie);
     } else {
       setSummary(defaultSummary);
     }
-  }, [ctx.filteredOrders]);
+  }, [ctx.filteredOrders, ctx.subIdsFilter]);
 
   if (!ctx.filteredOrders.length) return null;
 

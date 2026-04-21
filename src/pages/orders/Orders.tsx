@@ -13,7 +13,9 @@ import {
   setOrderFilters,
   setOrdersExportModalOpen,
   setSelectedAvailableOrder,
+  setSubIdsFilter,
   setTypeFilterArr,
+  setUniqueSubs,
 } from "../../features/ordersSlice";
 import type {
   AllOrderResp,
@@ -22,7 +24,7 @@ import type {
   JsonError,
   Store,
 } from "../../interfaces";
-import { getERet, ordersCols } from ".";
+import { getCogs, getERet, ordersCols } from ".";
 import { formatGoliathDate } from "../../utils";
 
 import DatePickers from "../../components/datePickers/DatePickers";
@@ -91,9 +93,30 @@ const Orders = () => {
               const j: AllOrderResp = resp.data;
               if (j.error === 0) {
                 // Adding extended retail calculation here so it can be exported easier
-                const ordersWERet = j.orders.map((o) => {
-                  return { ...o, e_ret: getERet(o) };
+                const ordersWERet = [...j.orders].map((o) => {
+                  const e_ret = getERet(o);
+                  const base_cost = o.base_cost === null ? 0 : o.base_cost;
+                  const net_cost = o.net_cost === null ? 0 : o.net_cost;
+                  const weight = o.weight !== null ? o.weight : 0;
+                  const casesize = o.casesize !== null ? o.casesize : 0;
+                  const cogs = getCogs(o);
+                  const rev = e_ret - cogs;
+                  return { ...o, e_ret, base_cost, net_cost, weight, casesize, cogs, rev };
                 });
+
+                const subIdsForFilter = [...j.orders].reduce(
+                  (acc: any[], o) => {
+                    if (!acc.some((a) => a.subId === o.sub_department)) {
+                      acc.push({
+                        desc: o.sub_department_description,
+                        subId: o.sub_department,
+                      });
+                    }
+                    return acc;
+                  },
+                  [],
+                );
+                ctx.dispatch(setUniqueSubs(subIdsForFilter));
                 ctx.dispatch(setAllOrders(ordersWERet));
               }
             })
@@ -170,8 +193,8 @@ const Orders = () => {
       const allFiltered = [...ctx.allOrders].filter((o) =>
         result.includes(o.order_type),
       );
-      console.log("filtered", allFiltered);
 
+      ctx.dispatch(setSubIdsFilter([]));
       ctx.dispatch(setFilteredOrders(allFiltered));
       ctx.dispatch(setFilteredAvailableOrders(filtered));
     }
@@ -269,6 +292,7 @@ const Orders = () => {
                   ctx.dispatch(setTypeFilterArr([]));
                   ctx.dispatch(setFilteredAvailableOrders(ctx.availableOrders));
                   ctx.dispatch(setFilteredOrders(ctx.allOrders));
+                  ctx.dispatch(setSubIdsFilter([]));
                 }}
               >
                 All Orders
