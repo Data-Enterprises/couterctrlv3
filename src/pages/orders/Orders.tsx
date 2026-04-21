@@ -90,12 +90,11 @@ const Orders = () => {
             .then((resp) => {
               const j: AllOrderResp = resp.data;
               if (j.error === 0) {
-                ctx.dispatch(setAllOrders(j.orders));
+                // Adding extended retail calculation here so it can be exported easier
                 const ordersWERet = j.orders.map((o) => {
                   return { ...o, e_ret: getERet(o) };
                 });
-                console.log(ordersWERet);
-                ctx.dispatch(setFilteredOrders(ordersWERet));
+                ctx.dispatch(setAllOrders(ordersWERet));
               }
             })
             .catch((err: JsonError) => toast.error(err.message))
@@ -171,6 +170,7 @@ const Orders = () => {
       const allFiltered = [...ctx.allOrders].filter((o) =>
         result.includes(o.order_type),
       );
+      console.log("filtered", allFiltered);
 
       ctx.dispatch(setFilteredOrders(allFiltered));
       ctx.dispatch(setFilteredAvailableOrders(filtered));

@@ -74,7 +74,7 @@ const KpiContainer = () => {
         return acc;
       }, []).sort((a, b) => b.value - a.value);
 
-      const vendors = vendorPie.length;
+      const vendors = new Set(ctx.filteredOrders.map((o) => o.sub_department)).size;
 
       setSummary({ weight, cost, retail, qty, eret, vendors, categories });
       setOrderPieData(orderPie);

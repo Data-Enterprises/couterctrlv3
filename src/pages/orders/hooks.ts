@@ -20,6 +20,7 @@ export const useOrdersCtx = () => {
     orderFilters,
     filteredAvailableOrders,
     typeFilterArr,
+    orderStatusFilter,
   } = useAppSelector((state) => state.orders);
 
   return {
@@ -36,6 +37,7 @@ export const useOrdersCtx = () => {
     loadingAvailableOrders,
     ordersExportModalOpen,
     orderFilters,
+    orderStatusFilter,
     orderTypeFilter,
     selectedAvailableOrder,
     selectedStoreIds,
