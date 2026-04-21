@@ -1,4 +1,3 @@
-// import { useEffect } from "react";
 import { useOrdersCtx } from "./hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { getAllOrders, getAvailableOrders } from "../../api/orders";
@@ -13,10 +12,8 @@ import {
   setLoadingAvailableOrders,
   setOrderFilters,
   setOrdersExportModalOpen,
-  // setOrderTypeFilter,
   setSelectedAvailableOrder,
   setTypeFilterArr,
-  // setSelectedStoreIds,
 } from "../../features/ordersSlice";
 import type {
   AllOrderResp,
@@ -25,44 +22,19 @@ import type {
   JsonError,
   Store,
 } from "../../interfaces";
+import { ordersCols } from ".";
 import { formatGoliathDate } from "../../utils";
 
 import DatePickers from "../../components/datePickers/DatePickers";
 import StorePicker from "../../components/storePicker/StorePicker";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import AllOrdersGrid from "./AllOrdersGrid";
+import KpiContainer from "./kpis/KpiContainer";
 import ExportModal from "../../components/modals/ExportModal";
-import { ordersCols } from ".";
-// import { useState } from "react";
 
 const Orders = () => {
   const ctx = useOrdersCtx();
   const toast = useToast();
-  // const [typeFilterArr, setTypeFilterArr] = useState<string[]>([]);
-
-  // useEffect(() => {
-  //   if (ctx.selectedStoreIds.length) {
-  //     // fetch all orders
-  //     ctx.dispatch(setLoadingAllOrders(true));
-  //     getAllOrders(
-  //       ctx.url,
-  //       ctx.token,
-  //       formatGoliathDate(ctx.startDate),
-  //       formatGoliathDate(ctx.endDate),
-  //       ctx.selectedStoreIds,
-  //     )
-  //       .then((resp) => {
-  //         const j: AllOrderResp = resp.data;
-  //         if (j.error === 0) {
-  //           ctx.dispatch(setAllOrders(j.orders));
-  //         }
-  //       })
-  //       .catch((err: JsonError) => toast.error(err.message))
-  //       .finally(() => ctx.dispatch(setLoadingAllOrders(false)));
-  //   } else {
-  //     ctx.dispatch(setAllOrders([]));
-  //   }
-  // }, [ctx.selectedStoreIds]);
 
   const handleSearch = () => {
     if (ctx.type === "Group") {
@@ -178,7 +150,9 @@ const Orders = () => {
     }
     ctx.dispatch(setTypeFilterArr(result));
 
-    const setFilters = [...ctx.orderFilters].filter((f) => ctx.typeFilterArr.includes(f.order_type));
+    const setFilters = [...ctx.orderFilters].filter((f) =>
+      ctx.typeFilterArr.includes(f.order_type),
+    );
     ctx.dispatch(setOrderFilters(setFilters));
 
     if (result.length === 0) {
@@ -284,7 +258,7 @@ const Orders = () => {
             </div>
             <div className="absolute bottom-2 left-0 w-full px-2">
               <button
-                className="btn-themeOrange w-full"
+                className="btn-themeBlue w-full"
                 onClick={() => {
                   ctx.dispatch(setOrderFilters([]));
                   ctx.dispatch(setTypeFilterArr([]));
@@ -298,7 +272,8 @@ const Orders = () => {
           </div>
         ) : null}
       </div>
-      <div>
+      <div className="grid grid-rows-[auto_1fr] gap-2">
+        <KpiContainer />
         <AllOrdersGrid />
       </div>
     </div>

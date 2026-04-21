@@ -32,15 +32,16 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
+    hide: true,
   },
   {
     headerName: "Line #",
     field: "line_number",
-    flex: 1,
+    flex: 0.8,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
-    hide: true,
+    // hide: true,
   },
   {
     headerName: "UPC",
@@ -93,7 +94,7 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
   },
   {
     headerName: "Retail",
-    field: "retail_price",
+    field: "active_retail_price",
     flex: 1,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
@@ -107,7 +108,18 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus text-right",
-    valueFormatter: (params) => formatCurrency2(params.value),
+    valueFormatter: (params) => {
+      if (params.data) {
+        const caseSize = params.data.casesize;
+        const scalable = params.data.scalable;
+
+        if (scalable > 0 && params.data.weight > 0) {
+          return formatCurrency2(params.value / caseSize);
+        }
+        return formatCurrency2(params.value);
+      }
+      return "";  
+    },
   },
   {
     headerName: "Qty",
@@ -118,22 +130,26 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
     cellClass: "no-outline-on-focus text-right",
     valueFormatter: (params) => formatBigNumber(params.value, 0),
   },
-  // {
-  //   headerName: "ERet",
-  //   field: "qty",
-  //   flex: 0.8,
-  //   resizable: false,
-  //   // headerStyle: { borderRight: "1px solid white" },
-  //   cellClass: "no-outline-on-focus text-right",
-  //   valueFormatter: (params) => {
-  //     if (params.data) {
-  //       const qty = params.data.qty;
-  //       const active_retail_price = params.data.active_retail_price;
-  //       return formatCurrency2(qty * active_retail_price);
-  //     }
-  //     return "";
-  //   },
-  // },
+  {
+    headerName: "ERet",
+    field: "qty",
+    flex: 0.8,
+    resizable: false,
+    // headerStyle: { borderRight: "1px solid white" },
+    cellClass: "no-outline-on-focus text-right",
+    valueFormatter: (params) => {
+      if (params.data) {
+        const qty = params.data.qty;
+        const weight = params.data.weight;
+        const active_retail_price = params.data.active_retail_price;
+        if (weight > 0) {
+          return formatCurrency2(active_retail_price * weight);
+        }
+        return formatCurrency2(qty * active_retail_price);
+      }
+      return "";
+    },
+  },
   {
     headerName: "Status",
     field: "status",
