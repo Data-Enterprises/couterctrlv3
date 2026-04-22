@@ -96,7 +96,7 @@ const AllOrdersGrid = () => {
               onClick={() => hadleSubIdClick(0)}
             >
               <div>All</div>
-              <div>{currentOrders().length}</div>
+              <div>{ctx.filteredOrders.length}</div>
             </div>
           </div>
         </div>

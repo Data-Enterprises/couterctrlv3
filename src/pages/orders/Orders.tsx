@@ -132,9 +132,13 @@ const Orders = () => {
                   (acc: UniqueSub[], o) => {
                     if (!acc.some((a) => a.subId === o.sub_department)) {
                       acc.push({
-                        desc: o.sub_department_description,
+                        desc: o.sub_department_description
+                          ? o.sub_department_description
+                          : "null",
                         subId: o.sub_department,
-                        count: [...j.orders].filter((f) => f.sub_department === o.sub_department).length,
+                        count: [...j.orders].filter(
+                          (f) => f.sub_department === o.sub_department,
+                        ).length,
                       });
                     }
                     return acc;
