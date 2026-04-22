@@ -16,8 +16,14 @@ export const theme = themeQuartz.withParams({
   selectedRowBackgroundColor: "#fed7aa",
 });
 
-export const getCogs = (data: AllOrder) => {
-  const { base_cost, qty, scalable, weight, casesize } = data;
+export const getCogs = (
+  base_cost: number,
+  qty: number,
+  scalable: number,
+  weight: number,
+  casesize: number,
+) => {
+  // const { base_cost, qty, scalable, weight, casesize } = data;
 
   // Prevents NaN and infinites
   if (!base_cost) {
@@ -27,12 +33,15 @@ export const getCogs = (data: AllOrder) => {
   // For weighted items
   if (scalable > 0) {
     const unitCost = base_cost / casesize;
+    if (!weight || weight === 0) {
+      return unitCost * qty;
+    }
     return unitCost * weight;
   }
-  
+
   // For non-weighted items
   if (casesize === 1) {
-    const unitCost = base_cost /qty;
+    const unitCost = base_cost / qty;
     return unitCost * qty;
   }
 
@@ -41,10 +50,18 @@ export const getCogs = (data: AllOrder) => {
   return unitCost * qty;
 };
 
-export const getERet = (data: AllOrder) => {
-  const { qty, weight, active_retail_price, scalable } = data;
+export const getERet = (
+  qty: number,
+  weight: number,
+  active_retail_price: number,
+  scalable: number,
+) => {
+  // const { qty, weight, active_retail_price, scalable } = data;
 
   if (scalable > 0) {
+    if (!weight || weight === 0) {
+      return active_retail_price * qty;
+    }
     return active_retail_price * weight;
   }
 

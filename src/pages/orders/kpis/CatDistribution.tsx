@@ -8,7 +8,7 @@ interface CatDistributionProps {
 
 const CatDistribution = ({ data }: CatDistributionProps) => {
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg px-2 text-sm w-[32%] cursor-default">
+    <div className="bg-custom-white rounded-lg shadow-lg px-2 text-sm w-[32%] cursor-default select-none">
       <div className="font-medium">Category Frequency</div>
       <div className="grid grid-cols-2">
         <div className="bg-gradient-to-r from-orange-200 to-custom-white h-[1.5px]"></div>

@@ -61,34 +61,12 @@ const AllOrdersGrid = () => {
         ctx.subIdsFilter.includes(o.sub_department);
       return statusCheck && subIdCheck;
     });
-    // console.log("currentOrders", result);
-    const test= result.find((o) => o.sub_department === 9 && o.product_code === "7625912650")
-    console.log(test)
     return result;
   };
 
   return (
     <div className="bg-custom-white px-2 pb-2 rounded-lg shadow-lg h-full grid grid-rows-[auto_1fr] relative">
       <div className="py-2 text-xs flex gap-4">
-        {/* Open/Close Status */}
-        {/* <div>
-          <div className="font-medium">Order Status</div>
-          <div className="flex flex-col gap-2 text-center">
-            <div
-              className={`rounded-full shadow-md bg-bkg cursor-pointer border border-content/40 hover:shadow-inner ${ctx.orderStatusFilter === "open" ? "bg-orange-200" : ""} transition-all duration-200`}
-              onClick={() => showOpenCloseAll("open")}
-            >
-              Open
-            </div>
-            <div
-              className={`rounded-full shadow-md bg-bkg cursor-pointer border border-content/40 hover:shadow-inner ${ctx.orderStatusFilter === "closed" ? "bg-orange-200" : ""} transition-all duration-200`}
-              onClick={() => showOpenCloseAll("closed")}
-            >
-              Closed
-            </div>
-          </div>
-        </div> */}
-
         {/* Sub Departments */}
         <div className="w-full">
           <div className="flex gap-2 flex-wrap">

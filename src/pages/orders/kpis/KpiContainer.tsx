@@ -32,7 +32,7 @@ const KpiContainer = () => {
       const weight = current.reduce((acc, o) => acc + o.weight, 0);
 
       const cost = current.reduce((acc, o) => {
-        const cogs = getCogs(o);
+        const cogs = getCogs(o.base_cost, o.qty, o.scalable, o.weight, o.casesize);
         return (acc += cogs);
       }, 0);
 
@@ -119,7 +119,7 @@ const KpiContainer = () => {
   if (!ctx.filteredOrders.length) return null;
 
   return (
-    <div className="flex justify-between gap-2">
+    <div className="flex justify-between gap-2 select-none">
       <TotalsKpi summary={summary} />
       <OrderDistribution data={orderPieData} />
       <VendorDistribution data={vendorPieData} />

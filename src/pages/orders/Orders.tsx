@@ -68,6 +68,7 @@ const Orders = () => {
     ctx.dispatch(setAvailableOrderTypes([]));
     ctx.dispatch(setSelectedAvailableOrder(null));
     ctx.dispatch(setOrderFilters([]));
+    ctx.dispatch(setSubIdsFilter([]));
 
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
@@ -77,7 +78,9 @@ const Orders = () => {
         const j: AvailableOrderResp = resp.data;
         if (j.error === 0) {
           ctx.dispatch(setAvailableOrders(j.orders));
+
           const types = Array.from(new Set(j.orders.map((o) => o.order_type)));
+
           ctx.dispatch(setAvailableOrderTypes(types));
           const storeids = Array.from(new Set(j.orders.map((o) => o.storeid)));
 
@@ -94,14 +97,34 @@ const Orders = () => {
               if (j.error === 0) {
                 // Adding extended retail calculation here so it can be exported easier
                 const ordersWERet = [...j.orders].map((o) => {
-                  const e_ret = getERet(o);
                   const base_cost = o.base_cost === null ? 0 : o.base_cost;
                   const net_cost = o.net_cost === null ? 0 : o.net_cost;
                   const weight = o.weight !== null ? o.weight : 0;
                   const casesize = o.casesize !== null ? o.casesize : 0;
-                  const cogs = getCogs(o);
+                  const e_ret = getERet(
+                    o.qty,
+                    weight,
+                    o.active_retail_price,
+                    o.scalable,
+                  );
+                  const cogs = getCogs(
+                    base_cost,
+                    o.qty,
+                    o.scalable,
+                    weight,
+                    casesize,
+                  );
                   const rev = e_ret - cogs;
-                  return { ...o, e_ret, base_cost, net_cost, weight, casesize, cogs, rev };
+                  return {
+                    ...o,
+                    e_ret,
+                    base_cost,
+                    net_cost,
+                    weight,
+                    casesize,
+                    cogs,
+                    rev,
+                  };
                 });
 
                 const subIdsForFilter = [...j.orders].reduce(
@@ -116,6 +139,7 @@ const Orders = () => {
                   },
                   [],
                 );
+
                 ctx.dispatch(setUniqueSubs(subIdsForFilter));
                 ctx.dispatch(setAllOrders(ordersWERet));
               }
