@@ -79,12 +79,12 @@ const AllOrdersGrid = () => {
     <div className="bg-custom-white px-2 rounded-lg shadow-lg h-full grid grid-rows-[auto_1fr] relative">
       <div className="pb-1 pt-1.5 text-[11.5px] flex gap-4">
         {/* Sub Departments */}
-        <div className="w-full">
+        <div className="w-full select-none">
           <div className="flex gap-2 flex-wrap">
             {ctx.uniqueSubs.map((s, i) => (
               <div
                 key={i}
-                className={`flex gap-1 rounded-full border border-content/40 shadow px-2 bg-bkg cursor-pointer hover:shadow-inner ${ctx.subIdsFilter.includes(s.subId) ? "bg-orange-200" : ""} transition-all duration-200`}
+                className={`flex gap-1 rounded-full border border-content/40 shadow px-2 cursor-pointer hover:shadow-inner ${ctx.subIdsFilter.includes(s.subId) ? "bg-orange-200" : "bg-bkg"} transition-all duration-200`}
                 onClick={() => hadleSubIdClick(s.subId)}
               >
                 <div>{s.desc}</div>
@@ -92,11 +92,11 @@ const AllOrdersGrid = () => {
               </div>
             ))}
             <div
-              className={`flex gap-1 rounded-full border border-content/40 shadow px-2 bg-orange-500 text-custom-white cursor-pointer hover:shadow-inner transition-all duration-200`}
+              className={`flex gap-1 rounded-full border border-content/40 shadow px-2 ${ctx.subIdsFilter.length === 0 ? "bg-orange-200" : "bg-bkg"} cursor-pointer hover:shadow-inner transition-all duration-200`}
               onClick={() => hadleSubIdClick(0)}
             >
               <div>All</div>
-              <div>{ctx.filteredOrders.length}</div>
+              <div className="font-medium">{ctx.filteredOrders.length}</div>
             </div>
           </div>
         </div>
