@@ -64,26 +64,39 @@ const AllOrdersGrid = () => {
     return result;
   };
 
+  const currentCount = (subId: number) => {
+    const result = [...ctx.filteredOrders].filter((o) => {
+      const statusCheck = o.status
+        .toLowerCase()
+        .includes(ctx.orderStatusFilter);
+      const subIdCheck = o.sub_department === subId;
+      return statusCheck && subIdCheck;
+    });
+    return result.length;
+  };
+
   return (
-    <div className="bg-custom-white px-2 pb-2 rounded-lg shadow-lg h-full grid grid-rows-[auto_1fr] relative">
-      <div className="py-2 text-xs flex gap-4">
+    <div className="bg-custom-white px-2 rounded-lg shadow-lg h-full grid grid-rows-[auto_1fr] relative">
+      <div className="pb-1 pt-1.5 text-[11.5px] flex gap-4">
         {/* Sub Departments */}
         <div className="w-full">
           <div className="flex gap-2 flex-wrap">
             {ctx.uniqueSubs.map((s, i) => (
               <div
                 key={i}
-                className={`rounded-full border border-content/40 shadow-md px-2 bg-bkg cursor-pointer hover:shadow-inner ${ctx.subIdsFilter.includes(s.subId) ? "bg-orange-200" : ""} transition-all duration-200`}
+                className={`flex gap-1 rounded-full border border-content/40 shadow px-2 bg-bkg cursor-pointer hover:shadow-inner ${ctx.subIdsFilter.includes(s.subId) ? "bg-orange-200" : ""} transition-all duration-200`}
                 onClick={() => hadleSubIdClick(s.subId)}
               >
-                {s.desc}
+                <div>{s.desc}</div>
+                <div className="font-medium">{currentCount(s.subId)}</div>
               </div>
             ))}
             <div
-              className={`rounded-full border border-content/40 shadow-md px-2 bg-orange-500 text-custom-white cursor-pointer hover:shadow-inner transition-all duration-200`}
+              className={`flex gap-1 rounded-full border border-content/40 shadow px-2 bg-orange-500 text-custom-white cursor-pointer hover:shadow-inner transition-all duration-200`}
               onClick={() => hadleSubIdClick(0)}
             >
-              All
+              <div>All</div>
+              <div>{currentOrders().length}</div>
             </div>
           </div>
         </div>

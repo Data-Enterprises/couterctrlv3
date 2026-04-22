@@ -16,6 +16,7 @@ import {
   setSubIdsFilter,
   setTypeFilterArr,
   setUniqueSubs,
+  type UniqueSub,
 } from "../../features/ordersSlice";
 import type {
   AllOrderResp,
@@ -128,11 +129,12 @@ const Orders = () => {
                 });
 
                 const subIdsForFilter = [...j.orders].reduce(
-                  (acc: any[], o) => {
+                  (acc: UniqueSub[], o) => {
                     if (!acc.some((a) => a.subId === o.sub_department)) {
                       acc.push({
                         desc: o.sub_department_description,
                         subId: o.sub_department,
+                        count: [...j.orders].filter((f) => f.sub_department === o.sub_department).length,
                       });
                     }
                     return acc;

@@ -8,7 +8,7 @@ const VendorDistribution = ({ data }: VendorDistributionProps) => {
   const sliced = data.slice(0, 10);
 
   return (
-    <div className="w-[32%] rounded-lg bg-custom-white shadow-lg py-1">
+    <div className="w-[32%] min-h-[120px] max-h-[120px] rounded-lg bg-custom-white shadow-lg py-1">
       <div className="flex items-start justify-between px-2 text-[13px]">
         <div>
           <div className="font-medium tracking-wide text-content">

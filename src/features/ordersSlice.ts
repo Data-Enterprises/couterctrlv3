@@ -5,6 +5,7 @@ export type OrderStatus = "open" | "closed" | "";
 export type UniqueSub = {
   desc: string;
   subId: number;
+  count: number;
 }
 
 interface OrdersState {
