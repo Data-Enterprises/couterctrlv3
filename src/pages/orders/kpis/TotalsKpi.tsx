@@ -11,7 +11,7 @@ const TotalsKpi = ({ summary }: TotalsKpiProps) => {
     <div className="text-[13px] w-[30%]">
       <div className="grid grid-cols-3 gap-2 h-full">
         <div className="bg-custom-white rounded-lg shadow-lg px-2 flex flex-col justify-center items-center">
-          <div className="text-content/60">Sales</div>
+          <div className="text-content/60">Ext Retail</div>
           <div className="font-medium">{formatCurrency2(summary.eret)}</div>
         </div>
         <div className="bg-custom-white rounded-lg shadow-lg px-2 flex flex-col justify-center items-center">

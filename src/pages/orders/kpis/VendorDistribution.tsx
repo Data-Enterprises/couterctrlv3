@@ -10,7 +10,7 @@ interface VendorDistributionProps {
 const VendorDistribution = ({ data }: VendorDistributionProps) => {
   return (
     <div className="bg-custom-white rounded-lg shadow-lg px-2 text-sm w-[32%]">
-      <div className="font-medium">Total Vendors</div>
+      <div className="font-medium">Vendors</div>
       <div className="grid grid-cols-2">
         <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
         <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
@@ -26,19 +26,22 @@ const VendorDistribution = ({ data }: VendorDistributionProps) => {
             animate={true}
           />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-            <div className="text-content/60 font-medium">{formatBigNumber(data.length, 0)}</div>
+            <div className="text-content/60 font-medium">
+              {formatBigNumber(data.length, 0)}
+            </div>
           </div>
         </div>
         <div className="max-h-[100px] overflow-y-auto my-2">
           {data.map((d, i) => (
-            <div key={i} className="flex items-center gap-1 text-[11px]">
+            <div key={i} className="flex items-center gap-1 text-[12px]">
               <div className="grid grid-cols-[auto_1fr] gap-1 items-center">
                 <div
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: colors[i % colors.length] }}
                 ></div>
                 <div className="text-content/60 text-nowrap truncate w-full">
-                  {d.id ? d.id : "null"}
+                  {d.id ? d.id : "null"} -{" "}
+                  <span className="font-medium text-content">{d.value}</span>
                 </div>
               </div>
             </div>
