@@ -31,6 +31,12 @@ export const getCogs = (data: AllOrder) => {
   }
   
   // For non-weighted items
+  if (casesize === 1) {
+    const unitCost = base_cost /qty;
+    return unitCost * qty;
+  }
+
+  // case size > 1
   const unitCost = base_cost / casesize;
   return unitCost * qty;
 };
@@ -57,7 +63,7 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
   {
     headerName: "Type",
     field: "order_type",
-    flex: 0.8,
+    flex: 0.6,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
@@ -83,7 +89,7 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
   {
     headerName: "Desc",
     field: "description",
-    flex: 2.4,
+    flex: 2.6,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
@@ -112,7 +118,7 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
   {
     headerName: "Store #",
     field: "storenumber",
-    flex: 0.8,
+    flex: 0.7,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus",
@@ -161,16 +167,16 @@ export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
   {
     headerName: "Qty",
     field: "qty",
-    flex: 0.8,
+    flex: 0.7,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus text-right",
     valueFormatter: (params) => formatBigNumber(params.value, 0),
   },
   {
-    headerName: "E Retail",
+    headerName: "Ext Retail",
     field: "e_ret",
-    flex: 0.8,
+    flex: 1,
     resizable: false,
     headerStyle: { borderRight: "1px solid white" },
     cellClass: "no-outline-on-focus text-right",

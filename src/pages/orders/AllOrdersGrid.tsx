@@ -61,7 +61,9 @@ const AllOrdersGrid = () => {
         ctx.subIdsFilter.includes(o.sub_department);
       return statusCheck && subIdCheck;
     });
-    console.log("currentOrders", result);
+    // console.log("currentOrders", result);
+    const test= result.find((o) => o.sub_department === 9 && o.product_code === "7625912650")
+    console.log(test)
     return result;
   };
 

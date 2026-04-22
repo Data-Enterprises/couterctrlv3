@@ -227,7 +227,7 @@ const Orders = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden p-4 grid grid-cols-[18%_1fr] gap-2">
+    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden p-4 grid grid-cols-[16%_1fr] gap-2">
       <ExportModal
         isOpen={ctx.ordersExportModalOpen}
         data={ctx.filteredOrders}
@@ -235,11 +235,11 @@ const Orders = () => {
         onClose={() => ctx.dispatch(setOrdersExportModalOpen(false))}
       />
       <div className="flex flex-col gap-2">
-        <div className="bg-custom-white p-2 rounded-lg shadow-lg h-[310px]">
+        <div className="bg-custom-white p-2 rounded-lg shadow-lg h-[302px]">
           <StorePicker />
-          <DatePickers handleQuery={handleSearch} />
+          <DatePickers handleQuery={handleSearch} btnPadding="py-1.5" />
           <button
-            className={`btn-themeGreen mt-2 w-full ${ctx.filteredOrders.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`btn-themeGreen mt-2 py-1.5 w-full ${ctx.filteredOrders.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
             onClick={handleExportBtnClick}
           >
             Export
@@ -252,7 +252,7 @@ const Orders = () => {
         )}
 
         {!isLoadingAvailableOrders && ctx.availableOrders.length ? (
-          <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm h-[calc(100vh-395px)] relative">
+          <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm h-[calc(100vh-390px)] flex flex-col relative">
             <div className="grid grid-cols-4 gap-2">
               {ctx.availableOrderTypes.map((t, i) => (
                 <div
@@ -264,17 +264,17 @@ const Orders = () => {
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-[1.6fr_1.1fr_0.9fr_0.9fr] text-sm px-2 border-b border-content">
+            <div className="grid grid-cols-[1.6fr_1.1fr_0.9fr_0.9fr] text-[13px] px-2 border-b border-content">
               <div className="font-medium">Date</div>
               <div className="font-medium">Type</div>
               <div className="font-medium">Count</div>
-              <div className="font-medium">Store #</div>
+              <div className="font-medium">Store</div>
             </div>
-            <div className="max-h-[78%] overflow-y-auto no-scrollbar">
+            <div className="flex-1 overflow-y-auto no-scrollbar">
               {ctx.filteredAvailableOrders.map((ao, i) => (
                 <div
                   key={i}
-                  className={`${activeFilter(ao)} py-0.5 hover:bg-orange-200 transition-all duration-200 cursor-pointer px-2 grid grid-cols-[1.6fr_1.1fr_0.9fr_0.9fr] text-[13px]`}
+                  className={`${activeFilter(ao)} py-0.5 hover:bg-orange-200 transition-all duration-200 cursor-pointer px-2 grid grid-cols-[1.6fr_1.1fr_0.9fr_0.9fr] text-[12px]`}
                   onClick={() => handleRowClick(ao)}
                 >
                   <div>{formatDate(ao.order_date)}</div>
@@ -284,7 +284,7 @@ const Orders = () => {
                 </div>
               ))}
             </div>
-            <div className="absolute bottom-2 left-0 w-full px-2">
+            <div className="mt-auto pt-2">
               <button
                 className="btn-themeBlue w-full"
                 onClick={() => {

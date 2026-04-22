@@ -8,6 +8,8 @@ import { defaultSummary, type TotalsSummary } from "./index";
 import type { PieData } from "../../sales/mobile";
 import { getCogs } from "..";
 
+const orderTypes = ["PER", "DAM", "DMG", "INV"];
+
 const KpiContainer = () => {
   const ctx = useOrdersCtx();
   const [summary, setSummary] = useState<TotalsSummary>(defaultSummary);
@@ -31,7 +33,7 @@ const KpiContainer = () => {
 
       const cost = current.reduce((acc, o) => {
         const cogs = getCogs(o);
-        return acc += cogs;
+        return (acc += cogs);
       }, 0);
 
       const qty = current.reduce((acc, o) => (acc += o.qty), 0);
@@ -86,8 +88,27 @@ const KpiContainer = () => {
 
       const vendors = new Set(current.map((o) => o.sub_department)).size;
 
-      setSummary({ weight, cost, retail: profit, qty, eret, vendors, categories });
-      setOrderPieData(orderPie);
+      setSummary({
+        weight,
+        cost,
+        retail: profit,
+        qty,
+        eret,
+        vendors,
+        categories,
+      });
+
+      const orderPieConcat = () => {
+        const result = [...orderPie];
+        orderTypes.forEach((type) => {
+          const found = result.find((r) => r.id === type);
+          if (!found) {
+            result.push({ id: type, value: 0 });
+          }
+        });
+        return result;
+      };
+      setOrderPieData(orderPieConcat());
       setVendorPieData(vendorPie);
       setCatPieData(catPie);
     } else {
