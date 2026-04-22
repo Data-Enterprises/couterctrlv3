@@ -80,7 +80,7 @@ const AllOrdersGrid = () => {
       <div className="pb-1 pt-1.5 text-[11.5px] flex gap-4">
         {/* Sub Departments */}
         <div className="w-full select-none">
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-1 flex-wrap">
             {ctx.uniqueSubs.map((s, i) => (
               <div
                 key={i}
