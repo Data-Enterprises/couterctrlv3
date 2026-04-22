@@ -70,7 +70,7 @@ export const getERet = (
 
 export const ordersCols: (ColDef<AllOrder> | ColGroupDef<AllOrder>)[] = [
   {
-    headerName: "Order",
+    headerName: "Order ID",
     field: "order_id",
     flex: 0.8,
     resizable: false,

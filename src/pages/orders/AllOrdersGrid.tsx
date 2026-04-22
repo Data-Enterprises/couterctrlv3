@@ -1,25 +1,14 @@
 import { useOrdersCtx } from "./hooks";
 import { theme, ordersCols } from ".";
+import { setSubIdsFilter } from "../../features/ordersSlice";
+
 import { AgGridReact } from "ag-grid-react";
-import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import {
-  // setOrderStatusFilter,
-  setSubIdsFilter,
-  // type OrderStatus,
-} from "../../features/ordersSlice";
-// import { useEffect } from "react";
+import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const AllOrdersGrid = () => {
   const ctx = useOrdersCtx();
-
-  // useEffect(() => {
-  //   if (ctx.filteredOrders.length) {
-  //     const subIds = Array.from(new Set(ctx.filteredOrders.map((o) => o.sub_department)));
-
-  //   }
-  // }, [ctx.filteredOrders]);
 
   if (ctx.loadingAllOrders) {
     return (
@@ -30,15 +19,6 @@ const AllOrdersGrid = () => {
   }
 
   if (!ctx.allOrders.length) return null;
-
-  // const showOpenCloseAll = (status: OrderStatus) => {
-  //   const currentStatus = ctx.orderStatusFilter;
-  //   if (currentStatus === status) {
-  //     ctx.dispatch(setOrderStatusFilter(""));
-  //   } else {
-  //     ctx.dispatch(setOrderStatusFilter(status));
-  //   }
-  // };
 
   const hadleSubIdClick = (subId: number) => {
     const currentSubIds = ctx.subIdsFilter;
@@ -76,9 +56,8 @@ const AllOrdersGrid = () => {
   };
 
   return (
-    <div className="bg-custom-white px-2 rounded-lg shadow-lg h-full grid grid-rows-[auto_1fr] relative">
+    <div className="bg-custom-white px-2 pb-2 rounded-lg shadow-lg h-full grid grid-rows-[auto_1fr]">
       <div className="pb-1 pt-1.5 text-[11.5px] flex gap-4">
-        {/* Sub Departments */}
         <div className="w-full select-none">
           <div className="flex gap-1 flex-wrap">
             {ctx.uniqueSubs.map((s, i) => (
