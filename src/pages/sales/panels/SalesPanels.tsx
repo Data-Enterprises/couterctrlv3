@@ -41,6 +41,7 @@ const SalesPanels = () => {
   // on mount, fetch the data once
   useEffect(() => {
     if (sales.salesPanels.length) {
+      console.log('howdy')
       handleDataFetch(null);
     }
   }, [sales.salesPanels]);

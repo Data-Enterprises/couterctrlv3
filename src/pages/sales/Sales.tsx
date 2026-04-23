@@ -52,6 +52,7 @@ const Sales = () => {
   );
 
   const getSalesPanels = async () => {
+    dispatch(setMainView("overview"));
     dispatch(reQuery());
     dispatch(setLeftSubCompare(null));
     dispatch(setRightSubCompare(null));
@@ -67,10 +68,6 @@ const Sales = () => {
 
     // Loading states
     dispatch(setPanelsLoading(true));
-    dispatch(clearTYSubTracker());
-    dispatch(clearLYSubTracker());
-    dispatch(setLoadingTYTrackerData(true));
-    dispatch(setLoadingLYTrackerData(true));
 
     await getWeekly(
       context.url,
@@ -97,9 +94,6 @@ const Sales = () => {
       .finally(() => {
         dispatch(setPanelsLoading(false));
       });
-
-    // Getting the Subs Data for the tracker
-    getSubsTracker();
   };
 
   const getSubsTracker = () => {
@@ -259,6 +253,16 @@ const Sales = () => {
     }
   };
 
+  const handleTrackerBtnClick = () => {
+    dispatch(setMainView("tracker"));
+    dispatch(clearTYSubTracker());
+    dispatch(clearLYSubTracker());
+    dispatch(setLoadingTYTrackerData(true));
+    dispatch(setLoadingLYTrackerData(true));
+    // Getting the Subs Data for the tracker
+    getSubsTracker();
+  };
+
   return (
     <div data-testid="sales-page" className={pageContainer}>
       {!context.isMobile ? (
@@ -272,23 +276,19 @@ const Sales = () => {
                 className="btn-themeBlue w-full mt-2 py-1.5 text-sm"
                 onClick={getSalesPanels}
               >
-                Search
+                Weekly Sales
               </button>
+              <div className={`grid grid-cols-2 gap-2 items-end mt-2 text-sm`}>
               <Input
                 label="Weeks Back"
                 value={weeksBack}
                 setValue={handleWeeksBackChange}
+                // className="py-1.5"
               />
-              <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-                <button
-                  className={`${mainView === "overview" ? "btn-themeGreen" : "btn-themeBlue"} py-1.5 px-0`}
-                  onClick={() => dispatch(setMainView("overview"))}
-                >
-                  Overview
-                </button>
+
                 <button
                   className={`${mainView === "tracker" ? "btn-themeGreen" : "btn-themeBlue"} py-1.5 px-0`}
-                  onClick={() => dispatch(setMainView("tracker"))}
+                  onClick={handleTrackerBtnClick}
                 >
                   Tracker
                 </button>
@@ -296,7 +296,7 @@ const Sales = () => {
             </div>
             {salesPanels.length > 0 && mainView === "overview" ? (
               <div
-                className={`max-h-[calc(100vh-447px)] overflow-y-scroll no-scrollbar mt-2`}
+                className={`max-h-[calc(100vh-400px)] overflow-y-scroll no-scrollbar mt-2`}
               >
                 <SalesPanels />
               </div>
