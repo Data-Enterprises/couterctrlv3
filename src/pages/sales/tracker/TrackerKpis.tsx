@@ -2,7 +2,7 @@
 const TrackerKpis = () => {
 
   return (
-    <div>
+    <div className="min-h-[15vh] max-h-[15vh]">
       <div>Tracker KPIs</div>
     </div>
   )

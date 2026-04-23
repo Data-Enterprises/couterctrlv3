@@ -8,6 +8,11 @@ import type {
 } from "../interfaces";
 import type { TopSub } from "../pages/sales/components";
 
+export type SubTracker = {
+  id: number;
+  desc: string;
+}
+
 export type WeekTotal = {
   sale_date: string;
   storeid: number;
@@ -74,6 +79,7 @@ interface SalesState {
   tyCollapsedSubSales: SubSale[][];
   lyCollapsedSubSales: SubSale[][];
   tyReducedTotals: WeekTotal[][][];
+  uniqueSubs: SubTracker[];
 }
 
 export const defaultSelectedPanel: SelectedSalesPanel = {
@@ -122,6 +128,7 @@ const initialState: SalesState = {
   tyCollapsedSubSales: [],
   lyCollapsedSubSales: [],
   tyReducedTotals: [],
+  uniqueSubs: [],
 };
 
 export const salesSlice = createSlice({
@@ -252,6 +259,7 @@ export const salesSlice = createSlice({
       state.tyWeekCards = [];
       state.tyCollapsedSubSales = [];
       state.tyReducedTotals = [];
+      state.uniqueSubs = [];
     },
     clearLYSubTracker: (state) => {
       state.lastYrSubTracker = [];
@@ -285,6 +293,9 @@ export const salesSlice = createSlice({
     },
     setLyCollapsedSubSales: (state, action: PayloadAction<SubSale[][]>) => {
       state.lyCollapsedSubSales = action.payload;
+    },
+    setUniqueSubs: (state, action: PayloadAction<SubTracker[]>) => {
+      state.uniqueSubs = action.payload;
     },
     resetSalesSlice: () => initialState,
   },
@@ -326,5 +337,6 @@ export const {
   setTyCollapsedSubSales,
   setTyWeekCards,
   setTyReducedTotals,
+  setUniqueSubs,
 } = salesSlice.actions;
 export default salesSlice.reducer;

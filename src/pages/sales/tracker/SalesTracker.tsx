@@ -4,7 +4,12 @@ import { chunkData } from ".";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import { sameWeekDayLastYear } from "../../../utils";
 import type { SubSale } from "../../../interfaces";
-import { setTyReducedTotals, type WeekTotal } from "../../../features/salesSlice";
+import {
+  setTyReducedTotals,
+  setUniqueSubs,
+  type SubTracker,
+  type WeekTotal,
+} from "../../../features/salesSlice";
 import TrackerKpis from "./TrackerKpis";
 import TotalsCards from "./TotalsCards";
 
@@ -13,9 +18,22 @@ const SalesTracker = () => {
   const sales = useAppSelector((state) => state.sales);
 
   useEffect(() => {
-    if (
-      sales.thisYrSubTracker.length > 0
-    ) {
+    if (sales.thisYrSubTracker.length > 0) {
+      const uniqueSubs: SubTracker[] = sales.thisYrSubTracker.reduce(
+        (acc: SubTracker[], sale) => {
+          const exists = acc.find((s) => s.id === sale.sub_department);
+          if (!exists) {
+            acc.push({
+              id: sale.sub_department,
+              desc: sale.sub_department_description,
+            });
+          }
+          return acc;
+        },
+        [],
+      );
+      dispatch(setUniqueSubs(uniqueSubs));
+
       const calcTotals = () => {
         const thisYear = sales.tyCollapsedSubSales.flat();
         const lastYear = sales.lyCollapsedSubSales.flat();
@@ -105,12 +123,25 @@ const SalesTracker = () => {
     );
   }
 
-  return (
-    <div className="min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)] space-y-2 text-sm">
-      <TrackerKpis />
+return (
+  <div className="min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)] flex flex-col text-sm overflow-hidden">
+    <TrackerKpis />
+    <div className="bg-custom-white rounded-t-lg shadow-lg px-2 pt-2">
+      <div className="grid grid-cols-6 font-bold text-content/60">
+        <div>Sub Dept/Dates</div>
+        <div>Total Sales TY</div>
+        <div>Total Sales LY</div>
+        <div>Total Sales $ Change</div>
+        <div>Total Sales % Change</div>
+        <div>ATS Total Sales</div>
+      </div>
+      <div className="mt-1 border-b border-content/60"></div>
+    </div>
+    <div className="flex-1 overflow-auto rounded-b-lg shadow-lg">
       <TotalsCards />
     </div>
-  );
+  </div>
+);
 };
 
 export default SalesTracker;
