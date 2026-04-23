@@ -27,6 +27,7 @@ import { resetCouponsSlice } from "../../features/couponSlice";
 
 import { Cog6ToothIcon } from "@heroicons/react/16/solid";
 import SignOutIcon from "../../svgs/SignOutIcon";
+import { resetOrdersState } from "../../features/ordersSlice";
 
 const SideBar = () => {
   const toast = useToast();
@@ -104,6 +105,7 @@ const SideBar = () => {
     dispatch(resetLookupSlice());
     dispatch(resetCashierSlice());
     dispatch(resetForgotPasswordSlice());
+    dispatch(resetOrdersState());
   };
 
   const handleHover = (itemName: string, isHovering: boolean, idx: number) => {

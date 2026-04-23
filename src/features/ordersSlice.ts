@@ -1,6 +1,13 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { AllOrder, AvailableOrder } from "../interfaces";
 
+export type OrderStatus = "open" | "closed" | "";
+export type UniqueSub = {
+  desc: string;
+  subId: number;
+  count: number;
+}
+
 interface OrdersState {
   availableOrders: AvailableOrder[];
   allOrders: AllOrder[];
@@ -16,6 +23,9 @@ interface OrdersState {
   orderFilters: AvailableOrder[];
   filteredAvailableOrders: AvailableOrder[];
   typeFilterArr: string[];
+  orderStatusFilter: OrderStatus;
+  subIdsFilter: number[];
+  uniqueSubs: UniqueSub[];
 }
 
 const initialState: OrdersState = {
@@ -33,6 +43,9 @@ const initialState: OrdersState = {
   orderFilters: [],
   filteredAvailableOrders: [],
   typeFilterArr: [],
+  orderStatusFilter: "",
+  subIdsFilter: [],
+  uniqueSubs: [],
 };
 
 const ordersSlice = createSlice({
@@ -103,6 +116,15 @@ const ordersSlice = createSlice({
         return matchesDate && matchesStore && matchesType;
       });
     },
+    setOrderStatusFilter: (state, action: PayloadAction<OrderStatus>) => {
+      state.orderStatusFilter = action.payload;
+    },
+    setSubIdsFilter: (state, action: PayloadAction<number[]>) => {
+      state.subIdsFilter = action.payload;
+    },
+    setUniqueSubs: (state, action: PayloadAction<UniqueSub[]>) => {
+      state.uniqueSubs = action.payload;
+    },
     resetOrdersState: () => initialState,
   },
 });
@@ -123,5 +145,8 @@ export const {
   setOrderFilters,
   setFilteredAvailableOrders,
   setTypeFilterArr,
+  setOrderStatusFilter,
+  setSubIdsFilter,
+  setUniqueSubs,
 } = ordersSlice.actions;
 export default ordersSlice.reducer;

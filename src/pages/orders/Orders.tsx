@@ -1,4 +1,3 @@
-// import { useEffect } from "react";
 import { useOrdersCtx } from "./hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { getAllOrders, getAvailableOrders } from "../../api/orders";
@@ -13,10 +12,11 @@ import {
   setLoadingAvailableOrders,
   setOrderFilters,
   setOrdersExportModalOpen,
-  // setOrderTypeFilter,
   setSelectedAvailableOrder,
+  setSubIdsFilter,
   setTypeFilterArr,
-  // setSelectedStoreIds,
+  setUniqueSubs,
+  type UniqueSub,
 } from "../../features/ordersSlice";
 import type {
   AllOrderResp,
@@ -25,44 +25,19 @@ import type {
   JsonError,
   Store,
 } from "../../interfaces";
+import { getCogs, getERet, ordersCols } from ".";
 import { formatGoliathDate } from "../../utils";
 
 import DatePickers from "../../components/datePickers/DatePickers";
 import StorePicker from "../../components/storePicker/StorePicker";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import AllOrdersGrid from "./AllOrdersGrid";
+import KpiContainer from "./kpis/KpiContainer";
 import ExportModal from "../../components/modals/ExportModal";
-import { ordersCols } from ".";
-// import { useState } from "react";
 
 const Orders = () => {
   const ctx = useOrdersCtx();
   const toast = useToast();
-  // const [typeFilterArr, setTypeFilterArr] = useState<string[]>([]);
-
-  // useEffect(() => {
-  //   if (ctx.selectedStoreIds.length) {
-  //     // fetch all orders
-  //     ctx.dispatch(setLoadingAllOrders(true));
-  //     getAllOrders(
-  //       ctx.url,
-  //       ctx.token,
-  //       formatGoliathDate(ctx.startDate),
-  //       formatGoliathDate(ctx.endDate),
-  //       ctx.selectedStoreIds,
-  //     )
-  //       .then((resp) => {
-  //         const j: AllOrderResp = resp.data;
-  //         if (j.error === 0) {
-  //           ctx.dispatch(setAllOrders(j.orders));
-  //         }
-  //       })
-  //       .catch((err: JsonError) => toast.error(err.message))
-  //       .finally(() => ctx.dispatch(setLoadingAllOrders(false)));
-  //   } else {
-  //     ctx.dispatch(setAllOrders([]));
-  //   }
-  // }, [ctx.selectedStoreIds]);
 
   const handleSearch = () => {
     if (ctx.type === "Group") {
@@ -94,6 +69,7 @@ const Orders = () => {
     ctx.dispatch(setAvailableOrderTypes([]));
     ctx.dispatch(setSelectedAvailableOrder(null));
     ctx.dispatch(setOrderFilters([]));
+    ctx.dispatch(setSubIdsFilter([]));
 
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
@@ -103,7 +79,9 @@ const Orders = () => {
         const j: AvailableOrderResp = resp.data;
         if (j.error === 0) {
           ctx.dispatch(setAvailableOrders(j.orders));
+
           const types = Array.from(new Set(j.orders.map((o) => o.order_type)));
+
           ctx.dispatch(setAvailableOrderTypes(types));
           const storeids = Array.from(new Set(j.orders.map((o) => o.storeid)));
 
@@ -118,7 +96,58 @@ const Orders = () => {
             .then((resp) => {
               const j: AllOrderResp = resp.data;
               if (j.error === 0) {
-                ctx.dispatch(setAllOrders(j.orders));
+                // Adding extended retail calculation here so it can be exported easier
+                const ordersWERet = [...j.orders].map((o) => {
+                  const base_cost = o.base_cost === null ? 0 : o.base_cost;
+                  const net_cost = o.net_cost === null ? 0 : o.net_cost;
+                  const weight = o.weight !== null ? o.weight : 0;
+                  const casesize = o.casesize !== null ? o.casesize : 0;
+                  const e_ret = getERet(
+                    o.qty,
+                    weight,
+                    o.active_retail_price,
+                    o.scalable,
+                  );
+                  const cogs = getCogs(
+                    base_cost,
+                    o.qty,
+                    o.scalable,
+                    weight,
+                    casesize,
+                  );
+                  const rev = e_ret - cogs;
+                  return {
+                    ...o,
+                    e_ret,
+                    base_cost,
+                    net_cost,
+                    weight,
+                    casesize,
+                    cogs,
+                    rev,
+                  };
+                });
+
+                const subIdsForFilter = [...j.orders].reduce(
+                  (acc: UniqueSub[], o) => {
+                    if (!acc.some((a) => a.subId === o.sub_department)) {
+                      acc.push({
+                        desc: o.sub_department_description
+                          ? o.sub_department_description
+                          : "null",
+                        subId: o.sub_department,
+                        count: [...j.orders].filter(
+                          (f) => f.sub_department === o.sub_department,
+                        ).length,
+                      });
+                    }
+                    return acc;
+                  },
+                  [],
+                );
+
+                ctx.dispatch(setUniqueSubs(subIdsForFilter));
+                ctx.dispatch(setAllOrders(ordersWERet));
               }
             })
             .catch((err: JsonError) => toast.error(err.message))
@@ -178,7 +207,9 @@ const Orders = () => {
     }
     ctx.dispatch(setTypeFilterArr(result));
 
-    const setFilters = [...ctx.orderFilters].filter((f) => ctx.typeFilterArr.includes(f.order_type));
+    const setFilters = [...ctx.orderFilters].filter((f) =>
+      ctx.typeFilterArr.includes(f.order_type),
+    );
     ctx.dispatch(setOrderFilters(setFilters));
 
     if (result.length === 0) {
@@ -193,6 +224,7 @@ const Orders = () => {
         result.includes(o.order_type),
       );
 
+      ctx.dispatch(setSubIdsFilter([]));
       ctx.dispatch(setFilteredOrders(allFiltered));
       ctx.dispatch(setFilteredAvailableOrders(filtered));
     }
@@ -225,7 +257,7 @@ const Orders = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden p-4 grid grid-cols-[18%_1fr] gap-2">
+    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden p-4 grid grid-cols-[16%_1fr] gap-2">
       <ExportModal
         isOpen={ctx.ordersExportModalOpen}
         data={ctx.filteredOrders}
@@ -233,11 +265,11 @@ const Orders = () => {
         onClose={() => ctx.dispatch(setOrdersExportModalOpen(false))}
       />
       <div className="flex flex-col gap-2">
-        <div className="bg-custom-white p-2 rounded-lg shadow-lg h-[310px]">
+        <div className="bg-custom-white p-2 rounded-lg shadow-lg h-[295px] text-sm">
           <StorePicker />
-          <DatePickers handleQuery={handleSearch} />
+          <DatePickers handleQuery={handleSearch} btnPadding="py-1.5" />
           <button
-            className={`btn-themeGreen mt-2 w-full ${ctx.filteredOrders.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`btn-themeGreen mt-2 py-1.5 w-full ${ctx.filteredOrders.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
             onClick={handleExportBtnClick}
           >
             Export
@@ -250,7 +282,7 @@ const Orders = () => {
         )}
 
         {!isLoadingAvailableOrders && ctx.availableOrders.length ? (
-          <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm h-[calc(100vh-395px)] relative">
+          <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm h-[calc(100vh-385px)] flex flex-col relative">
             <div className="grid grid-cols-4 gap-2">
               {ctx.availableOrderTypes.map((t, i) => (
                 <div
@@ -262,17 +294,17 @@ const Orders = () => {
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-[1.6fr_1.1fr_0.9fr_0.9fr] text-sm px-2 border-b border-content">
+            <div className="grid grid-cols-[1.6fr_1.1fr_0.9fr_0.9fr] text-[13px] px-2 border-b border-content">
               <div className="font-medium">Date</div>
               <div className="font-medium">Type</div>
               <div className="font-medium">Count</div>
-              <div className="font-medium">Store #</div>
+              <div className="font-medium">Store</div>
             </div>
-            <div className="max-h-[78%] overflow-y-auto no-scrollbar">
+            <div className="flex-1 overflow-y-auto no-scrollbar">
               {ctx.filteredAvailableOrders.map((ao, i) => (
                 <div
                   key={i}
-                  className={`${activeFilter(ao)} py-0.5 hover:bg-orange-200 transition-all duration-200 cursor-pointer px-2 grid grid-cols-[1.6fr_1.1fr_0.9fr_0.9fr] text-[13px]`}
+                  className={`${activeFilter(ao)} py-0.5 hover:bg-orange-200 transition-all duration-200 cursor-pointer px-2 grid grid-cols-[1.6fr_1.1fr_0.9fr_0.9fr] text-[12px]`}
                   onClick={() => handleRowClick(ao)}
                 >
                   <div>{formatDate(ao.order_date)}</div>
@@ -282,14 +314,15 @@ const Orders = () => {
                 </div>
               ))}
             </div>
-            <div className="absolute bottom-2 left-0 w-full px-2">
+            <div className="mt-auto pt-2">
               <button
-                className="btn-themeOrange w-full"
+                className="btn-themeBlue w-full"
                 onClick={() => {
                   ctx.dispatch(setOrderFilters([]));
                   ctx.dispatch(setTypeFilterArr([]));
                   ctx.dispatch(setFilteredAvailableOrders(ctx.availableOrders));
                   ctx.dispatch(setFilteredOrders(ctx.allOrders));
+                  ctx.dispatch(setSubIdsFilter([]));
                 }}
               >
                 All Orders
@@ -298,7 +331,8 @@ const Orders = () => {
           </div>
         ) : null}
       </div>
-      <div>
+      <div className="grid grid-rows-[auto_1fr] gap-2">
+        <KpiContainer />
         <AllOrdersGrid />
       </div>
     </div>

@@ -8,6 +8,31 @@ import type {
 } from "../interfaces";
 import type { TopSub } from "../pages/sales/components";
 
+export type SubTracker = {
+  id: number;
+  desc: string;
+}
+export type TrackerKpis = {
+  tyTotalSales: number;
+  lyTotalSales: number;
+  percentChange: number;
+  dollarChange: number;
+  dateRange: string;
+}
+
+export type WeekTotal = {
+  sale_date: string;
+  storeid: number;
+  storeName: string;
+  subDept: number;
+  subDesc: string;
+  salesTY: number;
+  salesLY: number;
+  totalSalesDollarChange: number;
+  totalSalesPercentChange: number;
+  atsTotalSales: number;
+};
+
 export type WindowVisible = {
   subs: boolean;
   hourly: boolean;
@@ -50,6 +75,19 @@ interface SalesState {
   rightSubCompare: WeeklySale | null;
   compareSubsLeftCompare: SubSale[];
   compareSubsRightCompare: SubSale[];
+  mainView: "overview" | "tracker";
+  weeksBack: string;
+  loadingTYTrackerData: boolean;
+  loadingLYTrackerData: boolean;
+  thisYrSubTracker: SubSale[];
+  lastYrSubTracker: SubSale[];
+  tyWeekCards: SubSale[];
+  lyWeekCards: SubSale[];
+  tyCollapsedSubSales: SubSale[][];
+  lyCollapsedSubSales: SubSale[][];
+  tyReducedTotals: WeekTotal[][][];
+  uniqueSubs: SubTracker[];
+  trackerKpis: TrackerKpis;
 }
 
 export const defaultSelectedPanel: SelectedSalesPanel = {
@@ -87,6 +125,25 @@ const initialState: SalesState = {
   rightSubCompare: null,
   compareSubsLeftCompare: [],
   compareSubsRightCompare: [],
+  mainView: "overview",
+  weeksBack: "1",
+  loadingTYTrackerData: false,
+  loadingLYTrackerData: false,
+  thisYrSubTracker: [],
+  lastYrSubTracker: [],
+  tyWeekCards: [],
+  lyWeekCards: [],
+  tyCollapsedSubSales: [],
+  lyCollapsedSubSales: [],
+  tyReducedTotals: [],
+  uniqueSubs: [],
+  trackerKpis: {
+    tyTotalSales: 0,
+    lyTotalSales: 0,
+    percentChange: 0,
+    dollarChange: 0,
+    dateRange: "",
+  },
 };
 
 export const salesSlice = createSlice({
@@ -188,11 +245,54 @@ export const salesSlice = createSlice({
     setRightSubCompare: (state, action: PayloadAction<WeeklySale | null>) => {
       state.rightSubCompare = action.payload;
     },
-    setCompareSubsLeftCompareData: (state, action: PayloadAction<SubSale[]>) => {
+    setCompareSubsLeftCompareData: (
+      state,
+      action: PayloadAction<SubSale[]>,
+    ) => {
       state.compareSubsLeftCompare = action.payload;
     },
-    setCompareSubsRightCompareData: (state, action: PayloadAction<SubSale[]>) => {
+    setCompareSubsRightCompareData: (
+      state,
+      action: PayloadAction<SubSale[]>,
+    ) => {
       state.compareSubsRightCompare = action.payload;
+    },
+    setMainView: (state, action: PayloadAction<"overview" | "tracker">) => {
+      state.mainView = action.payload;
+    },
+    setWeeksBack: (state, action: PayloadAction<string>) => {
+      state.weeksBack = action.payload;
+    },
+    concatTYSubTracker: (state, action: PayloadAction<SubSale[]>) => {
+      state.thisYrSubTracker = state.thisYrSubTracker.concat(action.payload);
+    },
+    concatLYSubTracker: (state, action: PayloadAction<SubSale[]>) => {
+      state.lastYrSubTracker = state.lastYrSubTracker.concat(action.payload);
+    },
+    clearTYSubTracker: (state) => {
+      state.thisYrSubTracker = [];
+      state.tyWeekCards = [];
+      state.tyCollapsedSubSales = [];
+      state.tyReducedTotals = [];
+      state.uniqueSubs = [];
+      state.trackerKpis = {
+        tyTotalSales: 0,
+        lyTotalSales: 0,
+        percentChange: 0,
+        dollarChange: 0,
+        dateRange: "",
+      };
+    },
+    clearLYSubTracker: (state) => {
+      state.lastYrSubTracker = [];
+      state.lyWeekCards = [];
+      state.lyCollapsedSubSales = [];
+    },
+    setLoadingTYTrackerData: (state, action: PayloadAction<boolean>) => {
+      state.loadingTYTrackerData = action.payload;
+    },
+    setLoadingLYTrackerData: (state, action: PayloadAction<boolean>) => {
+      state.loadingLYTrackerData = action.payload;
     },
     resetCompareSubs: (state) => {
       state.leftSubCompare = null;
@@ -200,6 +300,27 @@ export const salesSlice = createSlice({
       state.compareSubsLeftCompare = [];
       state.compareSubsRightCompare = [];
       state.compareSubsModalOpen = false;
+    },
+    setTyWeekCards: (state, action: PayloadAction<SubSale[]>) => {
+      state.tyWeekCards = action.payload;
+    },
+    setLyWeekCards: (state, action: PayloadAction<SubSale[]>) => {
+      state.lyWeekCards = action.payload;
+    },
+    setTyCollapsedSubSales: (state, action: PayloadAction<SubSale[][]>) => {
+      state.tyCollapsedSubSales = action.payload;
+    },
+    setTyReducedTotals: (state, action: PayloadAction<WeekTotal[][][]>) => {
+      state.tyReducedTotals = action.payload;
+    },
+    setLyCollapsedSubSales: (state, action: PayloadAction<SubSale[][]>) => {
+      state.lyCollapsedSubSales = action.payload;
+    },
+    setUniqueSubs: (state, action: PayloadAction<SubTracker[]>) => {
+      state.uniqueSubs = action.payload;
+    },
+    setTrackerKpis: (state, action: PayloadAction<TrackerKpis>) => {
+      state.trackerKpis = action.payload;
     },
     resetSalesSlice: () => initialState,
   },
@@ -228,5 +349,20 @@ export const {
   resetSalesSlice,
   setWeeklySalesLastYear,
   setHourlySalesLastYear,
+  setMainView,
+  setWeeksBack,
+  concatTYSubTracker,
+  concatLYSubTracker,
+  setLoadingTYTrackerData,
+  setLoadingLYTrackerData,
+  clearLYSubTracker,
+  clearTYSubTracker,
+  setLyCollapsedSubSales,
+  setLyWeekCards,
+  setTyCollapsedSubSales,
+  setTyWeekCards,
+  setTyReducedTotals,
+  setUniqueSubs,
+  setTrackerKpis,
 } = salesSlice.actions;
 export default salesSlice.reducer;

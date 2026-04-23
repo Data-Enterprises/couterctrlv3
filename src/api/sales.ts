@@ -176,6 +176,7 @@ export const getSubs = async (
   singleStore: number,
   consolidated: number = 0,
   displayHourly: number = 0,
+  pageNum: number = 1
 ) => {
   const json = await axios({
     method: "POST",
@@ -190,6 +191,7 @@ export const getSubs = async (
       useGroups,
       searchValue,
       singleStore,
+      page: pageNum,
       consolidated,
       displayHourly,
     },
