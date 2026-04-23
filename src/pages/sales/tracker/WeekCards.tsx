@@ -1,0 +1,163 @@
+import { useEffect } from "react";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import type { SubSale } from "../../../interfaces";
+import { formatBigNumber, formatCurrency2 } from "../../../utils";
+import {
+  setLyCollapsedSubSales,
+  setLyWeekCards,
+  setTyCollapsedSubSales,
+  setTyWeekCards,
+} from "../../../features/salesSlice";
+import { chunkData } from ".";
+
+const WeekCards = () => {
+  const dispatch = useAppDispatch();
+  const sales = useAppSelector((state) => state.sales);
+
+  useEffect(() => {
+    if (
+      sales.thisYrSubTracker.length > 0 &&
+      sales.lastYrSubTracker.length > 0
+    ) {
+
+      const justTyDates = Array.from(
+        new Set(
+          sales.thisYrSubTracker.map((sale) => sale.sale_date.split("T")[0]),
+        ),
+      ).slice(1);
+
+      const justLyDates = Array.from(
+        new Set(
+          sales.lastYrSubTracker.map((sale) => sale.sale_date.split("T")[0]),
+        ),
+      ).slice(1);
+
+      const chunkedTyDates = chunkData(justTyDates);
+      const tyDateRanges = chunkedTyDates.map((chunk) => {
+        return `${chunk[0]} - ${chunk[chunk.length - 1]}`;
+      });
+
+      const chunkedLyDates = chunkData(justLyDates);
+      const lyDateRanges = chunkedLyDates.map((chunk) => {
+        return `${chunk[0]} - ${chunk[chunk.length - 1]}`;
+      });
+
+      const formatCards = (
+        data: SubSale[],
+        dateRanges: string[],
+        whichYear: "ty" | "ly",
+      ) => {
+        const result: SubSale[] = [];
+        const collapsedSales: SubSale[][] = [];
+        dateRanges.forEach((range) => {
+          // Formatting the date checkers
+          const [start, end] = range.split(" - ");
+          const sd = new Date(start);
+          const ed = new Date(end);
+
+          // filtering all sub sales within the date range of the current chunk
+          const matchingSales = data.filter((sale) => {
+            const saleDate = new Date(sale.sale_date.split("T")[0]);
+            return saleDate >= sd && saleDate <= ed;
+          });
+          collapsedSales.unshift(matchingSales);
+
+          // reducing the matching sales to combine any with the same storeid by summing their values
+          const reduced = matchingSales.reduce((acc: SubSale[], curr) => {
+            const found = acc.find((s) => s.storeid === curr.storeid);
+
+            if (found) {
+              found.total_sales += curr.total_sales;
+              found.digital_coupons += curr.digital_coupons;
+              found.elec_instore_coupons += curr.elec_instore_coupons;
+              found.elec_store_coupons += curr.elec_store_coupons;
+              found.net_sales += curr.net_sales;
+              found.qty += curr.qty;
+              found.store_coupon += curr.store_coupon;
+              found.total_tax += curr.total_tax;
+              found.weight += curr.weight;
+            } else {
+              const sale_date = range;
+              acc.push({ ...curr, sale_date });
+            }
+            return acc;
+          }, []);
+
+          // pushing the final result
+          result.unshift(...reduced);
+        });
+
+        // dispatch the reduces sales/collapsed sales to the store
+        if (whichYear === "ty") {
+          dispatch(setTyWeekCards(result));
+          dispatch(setTyCollapsedSubSales(collapsedSales));
+        } else {
+          dispatch(setLyWeekCards(result));
+          dispatch(setLyCollapsedSubSales(collapsedSales));
+        }
+
+        return result;
+      };
+
+      formatCards(sales.thisYrSubTracker, tyDateRanges, "ty");
+      formatCards(sales.lastYrSubTracker, lyDateRanges, "ly");
+    }
+  }, [sales.thisYrSubTracker, sales.lastYrSubTracker]);
+
+  const formatDate = (date: string) => {
+    const [year, month, day] = date.split("-");
+    return `${month}/${day}/${year}`;
+  };
+
+  const formatWeight = (weight: number) => {
+    const formatted = new Intl.NumberFormat("en-us", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(weight);
+
+    return formatted;
+  };
+
+  return (
+    <div className="space-y-2 max-h-[calc(100vh-447px)] overflow-y-scroll no-scrollbar mt-2">
+      {sales.tyWeekCards.map((sale, idx) => (
+        <div
+          key={idx}
+          className="text-[13px] p-2 rounded-lg bg-custom-white shadow-lg"
+        >
+          <div className="flex justify-between font-medium">
+            <div>{sale.store_name}</div>
+            <div>
+              {formatDate(sale.sale_date.split(" - ")[0])} -{" "}
+              {formatDate(sale.sale_date.split(" - ")[1])}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 col-span-2">
+            <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
+            <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
+          </div>
+          <div className="grid grid-cols-3 mt-1">
+            <div>
+              <div>Net Sales</div>
+              <div className="font-medium">
+                {formatCurrency2(sale.total_sales - sale.total_tax)}
+              </div>
+            </div>
+
+            <div className="text-center">
+              <div>Qty</div>
+              <div className="font-medium">{formatBigNumber(sale.qty, 0)}</div>
+            </div>
+
+            <div className="text-right">
+              <div>Weight</div>
+              <div className="font-medium">{formatWeight(sale.weight)}</div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default WeekCards;

@@ -1,7 +1,7 @@
 // Hooks/API
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { getWeekly } from "../../api/sales";
+import { getSubs, getWeekly } from "../../api/sales";
 
 // Components
 import StorePicker from "../../components/storePicker/StorePicker";
@@ -18,24 +18,38 @@ import SalesMobile from "./mobile/SalesMobile";
 
 // Dispatchers
 import {
+  clearLYSubTracker,
+  clearTYSubTracker,
+  concatLYSubTracker,
+  concatTYSubTracker,
   reQuery,
   setLeftSubCompare,
+  setLoadingLYTrackerData,
+  setLoadingTYTrackerData,
+  setMainView,
   setPanelsLoading,
   setRightSubCompare,
   setSalesPanels,
   setSelectedSalesPanel,
+  setWeeksBack,
 } from "../../features/salesSlice";
 
 // utils
-import { addDays, formatGoliathDate } from "../../utils";
+import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../utils";
 import type { JsonError } from "../../interfaces";
+import SalesTracker from "./tracker/SalesTracker";
+import { getWeeksBackDate } from "./utils";
+import Input from "../../components/inputs/Input";
+import WeekCards from "./tracker/WeekCards";
 
 const Sales = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const { queryChecker, salesPanels } = useAppSelector((state) => state.sales);
+  const { queryChecker, salesPanels, mainView, weeksBack } = useAppSelector(
+    (state) => state.sales,
+  );
 
   const getSalesPanels = async () => {
     dispatch(reQuery());
@@ -51,7 +65,13 @@ const Sales = () => {
     const singleStore = search.type === "Store" ? 1 : 0;
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 
+    // Loading states
     dispatch(setPanelsLoading(true));
+    dispatch(clearTYSubTracker());
+    dispatch(clearLYSubTracker());
+    dispatch(setLoadingTYTrackerData(true));
+    dispatch(setLoadingLYTrackerData(true));
+
     await getWeekly(
       context.url,
       context.token,
@@ -77,6 +97,143 @@ const Sales = () => {
       .finally(() => {
         dispatch(setPanelsLoading(false));
       });
+
+    // Getting the Subs Data for the tracker
+    getSubsTracker();
+  };
+
+  const getSubsTracker = () => {
+    const end = formatGoliathDate(search.singleDate);
+    const start = getWeeksBackDate(search.singleDate, Number(weeksBack));
+
+    const endDateLY = sameWeekDayLastYear(search.singleDate).date;
+    const startDateLY = getWeeksBackDate(
+      sameWeekDayLastYear(search.singleDate).date,
+      Number(weeksBack),
+    );
+
+    const useGroups = search.type === "Group" ? 1 : 0;
+    const singleStore = search.type === "Store" ? 1 : 0;
+    const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
+
+    // This Year
+    getSubs(
+      context.url,
+      context.token,
+      start,
+      end,
+      useGroups,
+      searchValue,
+      singleStore,
+      0,
+      0,
+      1,
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(concatTYSubTracker(j.subs));
+          if (j.total_pages > 1) {
+            const pages: { page: number; fetched: boolean }[] = [];
+            for (let page = 2; page <= j.total_pages; page++) {
+              pages.push({ page, fetched: false });
+            }
+
+            for (let page = 2; page <= j.total_pages; page++) {
+              getSubs(
+                context.url,
+                context.token,
+                start,
+                end,
+                useGroups,
+                searchValue,
+                singleStore,
+                0,
+                0,
+                page,
+              )
+                .then((resp) => {
+                  const j = resp.data;
+                  if (j.error === 0) {
+                    dispatch(concatTYSubTracker(j.subs));
+                    pages.find((p) => p.page === page)!.fetched = true;
+
+                    if (pages.every((p) => p.fetched)) {
+                      dispatch(setLoadingTYTrackerData(false));
+                      toast.success(
+                        "All Subs data fetched for this year tracker",
+                      );
+                    }
+                  }
+                })
+                .catch((err: JsonError) => toast.error(err.message));
+            }
+          } else {
+            dispatch(setLoadingTYTrackerData(false));
+          }
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+
+    // Getting Last Year
+    getSubs(
+      context.url,
+      context.token,
+      startDateLY,
+      endDateLY,
+      useGroups,
+      searchValue,
+      singleStore,
+      0,
+      0,
+      1,
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(concatLYSubTracker(j.subs));
+          if (j.total_pages > 1) {
+            const pages: { page: number; fetched: boolean }[] = [];
+            for (let page = 2; page <= j.total_pages; page++) {
+              pages.push({ page, fetched: false });
+            }
+
+            for (let page = 2; page <= j.total_pages; page++) {
+              getSubs(
+                context.url,
+                context.token,
+                startDateLY,
+                endDateLY,
+                useGroups,
+                searchValue,
+                singleStore,
+                0,
+                0,
+                page,
+              )
+                .then((resp) => {
+                  const j = resp.data;
+                  console.log(j.page, "page");
+                  if (j.error === 0) {
+                    dispatch(concatLYSubTracker(j.subs));
+                    pages.find((p) => p.page === page)!.fetched = true;
+
+                    if (pages.every((p) => p.fetched)) {
+                      dispatch(setLoadingLYTrackerData(false));
+                      toast.success(
+                        "All Subs data fetched for last year tracker",
+                      );
+                    }
+                  }
+                })
+                .catch((err: JsonError) => toast.error(err.message));
+            }
+          } else {
+            dispatch(setLoadingLYTrackerData(false));
+          }
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
   };
 
   // Just render the mobile version and cut down on excessive operations
@@ -87,18 +244,26 @@ const Sales = () => {
   // const gridContainer =
   //   "grid grid-cols-[17%_83%] gap-2 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]";
 
-    const pageContainer = context.isDesktop
-      ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none"
-      : "min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 overflow-y-scroll bg-bkg";
-    const gridContainer = context.isDesktop
-      ? " grid grid-cols-[18%_81%] gap-4 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]"
-      : "h-full";
+  const pageContainer = context.isDesktop
+    ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none"
+    : "min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 overflow-y-scroll bg-bkg";
+  const gridContainer = context.isDesktop
+    ? " grid grid-cols-[250px_1fr] gap-2 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]"
+    : "h-full";
 
   const isLoading =
-    !queryChecker.hourly ||
-    !queryChecker.subs ||
-    !queryChecker.topTen ||
-    !queryChecker.weekly;
+    mainView === "overview" &&
+    (!queryChecker.hourly ||
+      !queryChecker.subs ||
+      !queryChecker.topTen ||
+      !queryChecker.weekly);
+
+  const handleWeeksBackChange = (value: string) => {
+    const num = Number(value);
+    if (!isNaN(num) && num >= 0) {
+      dispatch(setWeeksBack(value));
+    }
+  };
 
   return (
     <div data-testid="sales-page" className={pageContainer}>
@@ -110,19 +275,39 @@ const Sales = () => {
               <StorePicker />
               <SingleDatePicker />
               <button
-                className="btn-themeBlue w-full mt-2"
+                className="btn-themeBlue w-full mt-2 py-1.5 text-sm"
                 onClick={getSalesPanels}
               >
                 Search
               </button>
+              <Input
+                label="Weeks Back"
+                value={weeksBack}
+                setValue={handleWeeksBackChange}
+              />
+              <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
+                <button
+                  className={`${mainView === "overview" ? "btn-themeGreen" : "btn-themeBlue"} py-1.5 px-0`}
+                  onClick={() => dispatch(setMainView("overview"))}
+                >
+                  Overview
+                </button>
+                <button
+                  className={`${mainView === "tracker" ? "btn-themeGreen" : "btn-themeBlue"} py-1.5 px-0`}
+                  onClick={() => dispatch(setMainView("tracker"))}
+                >
+                  Tracker
+                </button>
+              </div>
             </div>
-            {salesPanels.length > 0 ? (
+            {salesPanels.length > 0 && mainView === "overview" ? (
               <div
-                className={`max-h-[calc(100vh-340px)] overflow-y-scroll no-scrollbar mt-2`}
+                className={`max-h-[calc(100vh-447px)] overflow-y-scroll no-scrollbar mt-2`}
               >
                 <SalesPanels />
               </div>
             ) : null}
+            {mainView === "tracker" ? <WeekCards /> : null}
           </div>
 
           {isLoading ? (
@@ -132,19 +317,25 @@ const Sales = () => {
               ) : null}
             </div>
           ) : (
-            <div className="md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)] grid grid-rows-[152px_1fr] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
-              <KpiHeader />
-              <div className="grid grid-cols-[42%_1fr] gap-2 h-[calc(100vh-232px)]">
-                <div className="grid grid-rows-[282px_1fr] gap-2 h-full">
-                  <HourlyGrid />
-                  <TopTen />
+            <>
+              {mainView === "overview" ? (
+                <div className="md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)] grid grid-rows-[152px_1fr] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
+                  <KpiHeader />
+                  <div className="grid grid-cols-[42%_1fr] gap-2 h-[calc(100vh-232px)]">
+                    <div className="grid grid-rows-[282px_1fr] gap-2 h-full">
+                      <HourlyGrid />
+                      <TopTen />
+                    </div>
+                    <div className="grid gap-2 h-full grid-rows-[220px_1fr]">
+                      <SubDeptComps />
+                      <SubDeptGrid />
+                    </div>
+                  </div>
                 </div>
-                <div className="grid gap-2 h-full grid-rows-[220px_1fr]">
-                  <SubDeptComps />
-                  <SubDeptGrid />
-                </div>
-              </div>
-            </div>
+              ) : (
+                <SalesTracker />
+              )}
+            </>
           )}
         </div>
       ) : (
@@ -167,7 +358,7 @@ const Sales = () => {
             <div className="relative">
               {salesPanels.length ? (
                 <LoadingIndicator message="Loading sales data..." />
-              ): null}
+              ) : null}
             </div>
           ) : (
             <div className="overflow-hidden">

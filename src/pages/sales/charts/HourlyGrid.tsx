@@ -90,8 +90,6 @@ const HourlyGrid = () => {
         return acc;
       }, []);
 
-    console.log(hourlySalesLastYear, lyTotals);
-
     setLyRowData(lyTotals);
     setRowData(totals);
   }, [hourlySales, hourlySalesLastYear]);

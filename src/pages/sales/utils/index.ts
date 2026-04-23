@@ -41,3 +41,12 @@ export const setDates = (date: Date, days: number = 0) => {
   // returns yyyy-mm-dd so sub_sales endpoint can process the dates correctly
   return d.toISOString().split("T")[0];
 };
+
+export const getWeeksBackDate = (
+  dateInput: string | Date,
+  weeksBack: number,
+) => {
+  const date = new Date(dateInput);
+  date.setDate(date.getDate() - weeksBack * 7);
+  return date.toISOString().split("T")[0];
+};
