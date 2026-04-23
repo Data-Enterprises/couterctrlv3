@@ -24,7 +24,7 @@ const TotalsGridLvlThree = ({ week }: TotalsGridLvlThreeProps) => {
         <div className={`${changeTextColor(percentChange, 0)}`}>
           {percentChange.toFixed(2)}%
         </div>
-        <div>{formatBigNumber(0)}</div>
+        <div>{formatBigNumber(week.atsTotalSales, 0)}</div>
       </div>
       <div className="even:bg-bkg/85">
         <div className="ml-12 bg-bkg/85 border-b border-content/20"></div>

@@ -19,6 +19,7 @@ interface TotalsGridLvlTwoProps {
 const TotalsGridLvlTwo = ({ week, weekTotals }: TotalsGridLvlTwoProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const atsTotalSales = week.reduce((acc, day) => acc + day.atsTotalSales, 0) / week.length
 
   const chevronTurn = () => {
     if (ref.current) {
@@ -68,7 +69,7 @@ const TotalsGridLvlTwo = ({ week, weekTotals }: TotalsGridLvlTwoProps) => {
         <div className={`${changeTextColor(weekTotals.percentChange, 0)}`}>
           {weekTotals.percentChange.toFixed(2)}%
         </div>
-        <div>{formatBigNumber(0)}</div>
+        <div>{formatBigNumber(atsTotalSales, 2)}</div>
       </div>
       <div
         ref={ref}

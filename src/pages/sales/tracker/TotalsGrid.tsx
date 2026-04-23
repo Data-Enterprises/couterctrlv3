@@ -28,8 +28,15 @@ const TotalsGrid = () => {
         : ((tyTotalSales - lyTotalSales) / lyTotalSales) * 100;
     const dollarChange = tyTotalSales - lyTotalSales;
 
-    return { tyTotalSales, lyTotalSales, percentChange, dollarChange };
-  };
+    const atsTotalSales = data.reduce((acc, weekGroup) => {
+      return (
+        acc +
+        weekGroup.reduce((weekAcc, week) => weekAcc + week.atsTotalSales, 0)
+      );
+    }, 0) / data.reduce((acc, weekGroup) => acc + weekGroup.length, 0);
+
+    return { tyTotalSales, lyTotalSales, percentChange, dollarChange, atsTotalSales };
+  }
 
   return (
     <div className="">

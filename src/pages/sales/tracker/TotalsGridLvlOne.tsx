@@ -12,6 +12,7 @@ interface TotalsGridLvlOneProps {
     lyTotalSales: number;
     percentChange: number;
     dollarChange: number;
+    atsTotalSales: number;
   };
   filtered: WeekTotal[][];
 }
@@ -89,7 +90,7 @@ const TotalsGridLvlOne = ({
         <div className={`${changeTextColor(totals.percentChange, 0)}`}>
           {totals.percentChange.toFixed(2)}%
         </div>
-        <div>{formatBigNumber(0)}</div>
+        <div>{formatBigNumber(totals.atsTotalSales, 2)}</div>
       </div>
 
       {/* Level 2 => weeks */}
