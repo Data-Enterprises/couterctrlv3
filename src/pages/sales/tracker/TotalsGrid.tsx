@@ -2,7 +2,7 @@ import type { WeekTotal } from "../../../features/salesSlice";
 import { useAppSelector } from "../../../hooks";
 import TotalsGridLvlOne from "./TotalsGridLvlOne";
 
-const TotalsCards = () => {
+const TotalsGrid = () => {
   const sales = useAppSelector((state) => state.sales);
 
   if (sales.tyReducedTotals.length === 0) {
@@ -59,4 +59,4 @@ const TotalsCards = () => {
   );
 };
 
-export default TotalsCards;
+export default TotalsGrid;

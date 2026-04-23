@@ -12,6 +12,13 @@ export type SubTracker = {
   id: number;
   desc: string;
 }
+export type TrackerKpis = {
+  tyTotalSales: number;
+  lyTotalSales: number;
+  percentChange: number;
+  dollarChange: number;
+  dateRange: string;
+}
 
 export type WeekTotal = {
   sale_date: string;
@@ -80,6 +87,7 @@ interface SalesState {
   lyCollapsedSubSales: SubSale[][];
   tyReducedTotals: WeekTotal[][][];
   uniqueSubs: SubTracker[];
+  trackerKpis: TrackerKpis;
 }
 
 export const defaultSelectedPanel: SelectedSalesPanel = {
@@ -129,6 +137,13 @@ const initialState: SalesState = {
   lyCollapsedSubSales: [],
   tyReducedTotals: [],
   uniqueSubs: [],
+  trackerKpis: {
+    tyTotalSales: 0,
+    lyTotalSales: 0,
+    percentChange: 0,
+    dollarChange: 0,
+    dateRange: "",
+  },
 };
 
 export const salesSlice = createSlice({
@@ -260,6 +275,13 @@ export const salesSlice = createSlice({
       state.tyCollapsedSubSales = [];
       state.tyReducedTotals = [];
       state.uniqueSubs = [];
+      state.trackerKpis = {
+        tyTotalSales: 0,
+        lyTotalSales: 0,
+        percentChange: 0,
+        dollarChange: 0,
+        dateRange: "",
+      };
     },
     clearLYSubTracker: (state) => {
       state.lastYrSubTracker = [];
@@ -296,6 +318,9 @@ export const salesSlice = createSlice({
     },
     setUniqueSubs: (state, action: PayloadAction<SubTracker[]>) => {
       state.uniqueSubs = action.payload;
+    },
+    setTrackerKpis: (state, action: PayloadAction<TrackerKpis>) => {
+      state.trackerKpis = action.payload;
     },
     resetSalesSlice: () => initialState,
   },
@@ -338,5 +363,6 @@ export const {
   setTyWeekCards,
   setTyReducedTotals,
   setUniqueSubs,
+  setTrackerKpis,
 } = salesSlice.actions;
 export default salesSlice.reducer;

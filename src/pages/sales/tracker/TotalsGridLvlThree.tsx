@@ -14,7 +14,7 @@ const TotalsGridLvlThree = ({ week }: TotalsGridLvlThreeProps) => {
 
   return (
     <>
-      <div className="grid grid-cols-6 gap-4 bg-bkg/85 text-[12px]">
+      <div className="grid grid-cols-6 gap-4 odd:bg-bkg/85 text-[12px]">
         <div className="pl-12 font-medium">{formatDate(week.sale_date)}</div>
         <div>{formatCurrency2(week.salesTY)}</div>
         <div>{formatCurrency2(week.salesLY)}</div>

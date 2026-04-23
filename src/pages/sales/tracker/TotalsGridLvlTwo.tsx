@@ -42,7 +42,7 @@ const TotalsGridLvlTwo = ({ week, weekTotals }: TotalsGridLvlTwoProps) => {
   };
 
   return (
-    <div className="bg-blue-500/20">
+    <div className="odd:bg-blue-500/20">
       <div className="text-[12.5px] grid grid-cols-6 gap-4 font-medium">
         {/* week range */}
         <div className="flex gap-1 items-center pl-2">

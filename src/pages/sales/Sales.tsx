@@ -160,9 +160,6 @@ const Sales = () => {
 
                     if (pages.every((p) => p.fetched)) {
                       dispatch(setLoadingTYTrackerData(false));
-                      toast.success(
-                        "All Subs data fetched for this year tracker",
-                      );
                     }
                   }
                 })
@@ -220,9 +217,6 @@ const Sales = () => {
 
                     if (pages.every((p) => p.fetched)) {
                       dispatch(setLoadingLYTrackerData(false));
-                      toast.success(
-                        "All Subs data fetched for last year tracker",
-                      );
                     }
                   }
                 })
