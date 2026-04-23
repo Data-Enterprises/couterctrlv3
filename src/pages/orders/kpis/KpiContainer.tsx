@@ -31,8 +31,16 @@ const KpiContainer = () => {
 
       const weight = current.reduce((acc, o) => acc + o.weight, 0);
 
+      const tpr = current.reduce((acc, o) => (acc += o.tpr), 0);
+
       const cost = current.reduce((acc, o) => {
-        const cogs = getCogs(o.base_cost, o.qty, o.scalable, o.weight, o.casesize);
+        const cogs = getCogs(
+          o.base_cost,
+          o.qty,
+          o.scalable,
+          o.weight,
+          o.casesize,
+        );
         return (acc += cogs);
       }, 0);
 
@@ -45,10 +53,6 @@ const KpiContainer = () => {
               : o.active_retail_price * o.qty),
         0,
       );
-      // const vendors = new Set(current.map((o) => o.vendor_id)).size;
-      const categories = new Set(current.map((o) => o.category)).size;
-
-      const profit = eret - cost;
 
       const orderPie = current
         .reduce((acc: PieData[], o) => {
@@ -86,16 +90,13 @@ const KpiContainer = () => {
         }, [])
         .sort((a, b) => b.value - a.value);
 
-      const vendors = new Set(current.map((o) => o.sub_department)).size;
-
       setSummary({
         weight,
         cost,
-        retail: profit,
         qty,
         eret,
-        vendors,
-        categories,
+        tpr,
+        uniqueItems: new Set(current.map((o) => o.product_code)).size,
       });
 
       const orderPieConcat = () => {

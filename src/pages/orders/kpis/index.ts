@@ -1,21 +1,19 @@
 export type TotalsSummary = {
   weight: number;
   cost: number;
-  retail: number; // active retail
+  tpr: number;
   qty: number;
   eret: number; // active retail * qty if weight is 0, otherwise use weight
-  vendors: number; // unique vendors
-  categories: number; // unique categories
+  uniqueItems: number; // unique items
 };
 
 export const defaultSummary: TotalsSummary = {
   weight: 0,
   cost: 0,
-  retail: 0,
+  tpr: 0,
   qty: 0,
   eret: 0,
-  vendors: 0,
-  categories: 0,
+  uniqueItems: 0,
 };
 
 export const colors = [

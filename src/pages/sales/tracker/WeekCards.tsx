@@ -13,13 +13,14 @@ import { chunkData } from ".";
 const WeekCards = () => {
   const dispatch = useAppDispatch();
   const sales = useAppSelector((state) => state.sales);
+  const { lastGroup } = useAppSelector((state) => state.search);
+  const { groups } = useAppSelector((state) => state.group);
 
   useEffect(() => {
     if (
       sales.thisYrSubTracker.length > 0 &&
       sales.lastYrSubTracker.length > 0
     ) {
-
       const justTyDates = Array.from(
         new Set(
           sales.thisYrSubTracker.map((sale) => sale.sale_date.split("T")[0]),
@@ -78,7 +79,12 @@ const WeekCards = () => {
               found.weight += curr.weight;
             } else {
               const sale_date = range;
-              acc.push({ ...curr, sale_date });
+              console.log(curr);
+              const store_name = curr.store_name
+                ? curr.store_name
+                : groups.filter((s) => s.id === lastGroup)[0].group_name;
+
+              acc.push({ ...curr, sale_date, store_name });
             }
             return acc;
           }, []);

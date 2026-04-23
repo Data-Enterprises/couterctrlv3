@@ -265,7 +265,7 @@ const Orders = () => {
         onClose={() => ctx.dispatch(setOrdersExportModalOpen(false))}
       />
       <div className="flex flex-col gap-2">
-        <div className="bg-custom-white p-2 rounded-lg shadow-lg h-[302px]">
+        <div className="bg-custom-white p-2 rounded-lg shadow-lg h-[295px] text-sm">
           <StorePicker />
           <DatePickers handleQuery={handleSearch} btnPadding="py-1.5" />
           <button
@@ -282,7 +282,7 @@ const Orders = () => {
         )}
 
         {!isLoadingAvailableOrders && ctx.availableOrders.length ? (
-          <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm h-[calc(100vh-390px)] flex flex-col relative">
+          <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm h-[calc(100vh-385px)] flex flex-col relative">
             <div className="grid grid-cols-4 gap-2">
               {ctx.availableOrderTypes.map((t, i) => (
                 <div

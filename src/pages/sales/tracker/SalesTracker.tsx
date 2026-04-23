@@ -123,6 +123,10 @@ const SalesTracker = () => {
     );
   }
 
+  if (sales.tyReducedTotals.length === 0) {
+    return null;
+  }
+
   return (
     <div className="min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)] flex flex-col text-sm overflow-hidden">
       <div>

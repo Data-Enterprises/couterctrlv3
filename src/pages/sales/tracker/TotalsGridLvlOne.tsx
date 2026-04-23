@@ -69,14 +69,14 @@ const TotalsGridLvlOne = ({
 
   return (
     <div className="">
-      <div className="grid grid-cols-6 gap-4 font-bold text-[13.5px] items-center">
+      <div
+        className="grid grid-cols-6 gap-4 font-bold text-[13.5px] items-center cursor-pointer hover:bg-blue-200 transition-all duration-200"
+        onClick={chevronTurn}
+      >
         <div className="flex gap-1 items-center">
-          <div
-            className="hover:bg-blue-200 transition-all duration-200 rounded-full p-1 flex justify-center"
-            onClick={chevronTurn}
-          >
+          <div className="rounded-full p-1 flex justify-center">
             <ChevronRightIcon
-              className={`w-4 h-4 cursor-pointer transition-transform duration-100 ease-in-out ${chevronClass()}`}
+              className={`w-4 h-4 transition-transform duration-100 ease-in-out ${chevronClass()}`}
             />
           </div>
           <div className="">{desc}</div>

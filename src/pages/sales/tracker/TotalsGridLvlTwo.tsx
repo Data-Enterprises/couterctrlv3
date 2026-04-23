@@ -42,14 +42,14 @@ const TotalsGridLvlTwo = ({ week, weekTotals }: TotalsGridLvlTwoProps) => {
   };
 
   return (
-    <div className="odd:bg-blue-500/20">
-      <div className="text-[12.5px] grid grid-cols-6 gap-4 font-medium">
+    <div className="">
+      <div
+        className="text-[12.5px] grid grid-cols-6 gap-4 font-medium hover:bg-blue-200 transition-all duration-200"
+        onClick={chevronTurn}
+      >
         {/* week range */}
         <div className="flex gap-1 items-center pl-2">
-          <div
-            className="hover:bg-blue-200 transition-all duration-200 rounded-full p-1 flex justify-center"
-            onClick={chevronTurn}
-          >
+          <div className="rounded-full p-1 flex justify-center">
             <ChevronRightIcon
               className={`w-4 h-4 cursor-pointer transition-transform duration-100 ease-in-out ${chevronClass()}`}
             />
