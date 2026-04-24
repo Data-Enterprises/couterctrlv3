@@ -121,7 +121,7 @@ const SearchType = ({ singleStoreOnly = false }: Props) => {
         <label
           htmlFor="search"
           data-testid="type-label"
-          className="block text-sm font-medium "
+          className="block text-[13px] font-medium "
         >
           Type
         </label>

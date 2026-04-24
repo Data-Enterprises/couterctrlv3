@@ -28,6 +28,7 @@ import {
   setLoadingTYTrackerData,
   setMainView,
   setPanelsLoading,
+  setRefreshOverviewData,
   setRightSubCompare,
   setSalesPanels,
   setSelectedSalesPanel,
@@ -52,8 +53,13 @@ const Sales = () => {
   );
 
   const getSalesPanels = async () => {
-    dispatch(setMainView("overview"));
+    // Testing this for renavigating back to overview from tracker
+    if (mainView === "tracker") {
+      dispatch(setMainView("overview"));
+      return;
+    }
     dispatch(reQuery());
+    dispatch(setRefreshOverviewData(true));
     dispatch(setLeftSubCompare(null));
     dispatch(setRightSubCompare(null));
     dispatch(
@@ -227,17 +233,10 @@ const Sales = () => {
   // Just render the mobile version and cut down on excessive operations
   if (context.isMobile) return <SalesMobile />;
 
-  // const pageContainer =
-  //   "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none";
-  // const gridContainer =
-  //   "grid grid-cols-[17%_83%] gap-2 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]";
-
-  const pageContainer = context.isDesktop
-    ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none"
-    : "min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 overflow-y-scroll bg-bkg";
-  const gridContainer = context.isDesktop
-    ? " grid grid-cols-[250px_1fr] gap-2 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]"
-    : "h-full";
+  const pageContainer =
+    "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none";
+  const gridContainer =
+    "grid grid-cols-[17%_83%] gap-2 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]";
 
   const isLoading =
     mainView === "overview" &&
@@ -265,106 +264,71 @@ const Sales = () => {
 
   return (
     <div data-testid="sales-page" className={pageContainer}>
-      {!context.isMobile ? (
-        <div className={gridContainer}>
-          <SubsCompareModal />
-          <div className={`h-full md:grid-rows-[267px_1fr] md:gap-2`}>
-            <div className="bg-custom-white rounded-lg p-2 shadow-lg">
-              <StorePicker />
-              <SingleDatePicker />
-              <button
-                className="btn-themeBlue w-full mt-2 py-1.5 text-sm"
-                onClick={getSalesPanels}
-              >
-                Weekly Sales
-              </button>
-              <div className={`grid grid-cols-2 gap-2 items-end mt-2 text-sm`}>
+      <div className={gridContainer}>
+        <SubsCompareModal />
+        <div className={`h-full md:grid-rows-[267px_1fr] md:gap-2`}>
+          <div className="bg-custom-white rounded-lg p-2 shadow-lg">
+            <StorePicker />
+            <SingleDatePicker />
+            <button
+              className={`${mainView === "overview" ? "btn-themeGreen" : "btn-themeBlue"} w-full mt-2 py-1.5 text-sm`}
+              onClick={getSalesPanels}
+            >
+              Weekly Sales
+            </button>
+            <div className={`grid grid-cols-2 gap-2 items-end text-sm`}>
               <Input
                 label="Weeks Back"
                 value={weeksBack}
                 setValue={handleWeeksBackChange}
-                // className="py-1.5"
               />
 
-                <button
-                  className={`${mainView === "tracker" ? "btn-themeGreen" : "btn-themeBlue"} py-1.5 px-0`}
-                  onClick={handleTrackerBtnClick}
-                >
-                  Tracker
-                </button>
-              </div>
-            </div>
-            {salesPanels.length > 0 && mainView === "overview" ? (
-              <div
-                className={`max-h-[calc(100vh-400px)] overflow-y-scroll no-scrollbar mt-2`}
+              <button
+                className={`${mainView === "tracker" ? "btn-themeGreen" : "btn-themeBlue"} py-1.5 px-0`}
+                onClick={handleTrackerBtnClick}
               >
-                <SalesPanels />
-              </div>
-            ) : null}
-            {mainView === "tracker" ? <WeekCards /> : null}
-          </div>
-
-          {isLoading ? (
-            <div className="relative">
-              {salesPanels.length ? (
-                <LoadingIndicator message="Loading sales data" />
-              ) : null}
-            </div>
-          ) : (
-            <>
-              {mainView === "overview" ? (
-                <div className="md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)] grid grid-rows-[152px_1fr] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
-                  <KpiHeader />
-                  <div className="grid grid-cols-[42%_1fr] gap-2 h-[calc(100vh-232px)]">
-                    <div className="grid grid-rows-[282px_1fr] gap-2 h-full">
-                      <HourlyGrid />
-                      <TopTen />
-                    </div>
-                    <div className="grid gap-2 h-full grid-rows-[220px_1fr]">
-                      <SubDeptComps />
-                      <SubDeptGrid />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <SalesTracker />
-              )}
-            </>
-          )}
-        </div>
-      ) : (
-        <div className={gridContainer}>
-          {/* <ReportBuilder /> */}
-          <div className="md:grid h-full md:grid-rows-[25%_74%] md:gap-4">
-            <div className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1">
-              <StorePicker />
-              <SingleDatePicker />
-              <button className="btn-themeBlue w-full" onClick={getSalesPanels}>
-                Search
+                Tracker
               </button>
             </div>
-            <div className="overflow-y-scroll no-scrollbar my-2 max-h-56">
+          </div>
+          {salesPanels.length > 0 && mainView === "overview" ? (
+            <div
+              className={`max-h-[calc(100vh-378px)] overflow-y-scroll no-scrollbar mt-2`}
+            >
               <SalesPanels />
             </div>
-          </div>
-
-          {isLoading ? (
-            <div className="relative">
-              {salesPanels.length ? (
-                <LoadingIndicator message="Loading sales data..." />
-              ) : null}
-            </div>
-          ) : (
-            <div className="overflow-hidden">
-              <KpiHeader />
-              <SubDeptGrid />
-              <SubDeptComps />
-              <HourlyGrid />
-              <TopTen />
-            </div>
-          )}
+          ) : null}
+          {mainView === "tracker" ? <WeekCards /> : null}
         </div>
-      )}
+
+        {isLoading ? (
+          <div className="relative">
+            {salesPanels.length ? (
+              <LoadingIndicator message="Loading sales overview" />
+            ) : null}
+          </div>
+        ) : (
+          <>
+            {mainView === "overview" ? (
+              <div className="md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)] grid grid-rows-[152px_1fr] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
+                <KpiHeader />
+                <div className="grid grid-cols-[42%_1fr] gap-2 h-[calc(100vh-232px)]">
+                  <div className="grid grid-rows-[282px_1fr] gap-2 h-full">
+                    <HourlyGrid />
+                    <TopTen />
+                  </div>
+                  <div className="grid gap-2 h-full grid-rows-[220px_1fr]">
+                    <SubDeptComps />
+                    <SubDeptGrid />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <SalesTracker />
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

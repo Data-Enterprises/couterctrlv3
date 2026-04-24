@@ -88,6 +88,7 @@ interface SalesState {
   tyReducedTotals: WeekTotal[][][];
   uniqueSubs: SubTracker[];
   trackerKpis: TrackerKpis;
+  refreshOverviewData: boolean;
 }
 
 export const defaultSelectedPanel: SelectedSalesPanel = {
@@ -144,6 +145,7 @@ const initialState: SalesState = {
     dollarChange: 0,
     dateRange: "",
   },
+  refreshOverviewData: false,
 };
 
 export const salesSlice = createSlice({
@@ -322,6 +324,9 @@ export const salesSlice = createSlice({
     setTrackerKpis: (state, action: PayloadAction<TrackerKpis>) => {
       state.trackerKpis = action.payload;
     },
+    setRefreshOverviewData: (state, action: PayloadAction<boolean>) => {
+      state.refreshOverviewData = action.payload;
+    },
     resetSalesSlice: () => initialState,
   },
 });
@@ -364,5 +369,6 @@ export const {
   setTyReducedTotals,
   setUniqueSubs,
   setTrackerKpis,
+  setRefreshOverviewData,
 } = salesSlice.actions;
 export default salesSlice.reducer;

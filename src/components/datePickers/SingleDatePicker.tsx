@@ -38,7 +38,7 @@ const SingleDatePicker = () => {
   return (
     <Menu data-testid="single-date-picker" as="div" className={styling}>
       <div className={menuStyle}>
-        <label className="md:block flex justify-start md:justify-center pl-1 md:pl-0.5 text-sm/6 font-medium">
+        <label className="md:block flex justify-start md:justify-center pl-1 md:pl-0.5 text-[13px] font-medium">
           Date
         </label>{" "}
         <MenuButton

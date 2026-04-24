@@ -12,6 +12,7 @@ import {
   setHourlySalesLastYear,
   setLeftSubCompare,
   setPeriodSubSales,
+  setRefreshOverviewData,
   setRightSubCompare,
   setSelectedSalesPanel,
   setSubSales,
@@ -40,11 +41,11 @@ const SalesPanels = () => {
 
   // on mount, fetch the data once
   useEffect(() => {
-    if (sales.salesPanels.length) {
-      console.log('howdy')
+    if (sales.salesPanels.length && sales.refreshOverviewData) {
       handleDataFetch(null);
+      dispatch(setRefreshOverviewData(false));
     }
-  }, [sales.salesPanels]);
+  }, [sales.salesPanels, sales.refreshOverviewData]);
 
   const getSubsData = async (ws: string, we: string, period: number) => {
     const p = sales.selectedSalesPanel;
@@ -67,9 +68,6 @@ const SalesPanels = () => {
       const j = resp.data;
       if (j.error === 0 && j.subs.length > 0) {
         dispatch(setPeriodSubSales({ subs: j.subs, period }));
-      } else {
-        // const periodLabel = period === 2 ? "last week" : "last year";
-        // toast.warn(`No Sub Dept data found for ${periodLabel}`);
       }
     });
   };
