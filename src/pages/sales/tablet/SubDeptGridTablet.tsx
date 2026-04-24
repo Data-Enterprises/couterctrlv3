@@ -92,7 +92,7 @@ const SubDeptGridTablet = () => {
       <div className="h-full overflow-y-auto rounded-xl border border-slate-200 bg-white">
         <table className="w-full border-collapse text-left">
           <thead className="sticky top-0 z-10 bg-custom-white">
-            <tr className="text-xs uppercase tracking-wide text-slate-500">
+            <tr className="text-sm tracking-wide text-content/60">
               <th className="px-3 py-2 font-semibold">Sub Dept</th>
               <th className="px-3 py-2 font-semibold text-right">Sales</th>
               <th className="px-3 py-2 font-semibold text-right">Net</th>

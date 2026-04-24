@@ -33,13 +33,14 @@ import {
   sameWeekDayLastYear,
 } from "../../../utils";
 
-import TopTen from "../charts/TopTen";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import SalesWeeklyTotals from "./SalesWeeklyTotals";
 import TotalsBarTablet from "./TotalsBarTablet";
 import HourlyGridTablet from "./HourlyGridTablet";
 import TabletSubComps from "./TabletSubComps";
 import SubDeptGridTablet from "./SubDeptGridTablet";
+import TopTenTablet from "./TopTenTablet";
+import SalesTrackerTablet from "../tracker/SalesTrackerTablet";
 
 const SalesTablet = () => {
   const toast = useToast();
@@ -294,12 +295,16 @@ const SalesTablet = () => {
         </div>
       ) : (
         <div className="space-y-4 max-h-[calc(100vh-4.2rem)] overflow-y-scroll no-scrollbar">
-          <SalesWeeklyTotals />
-          <TotalsBarTablet />
-          <HourlyGridTablet />
-          <TabletSubComps />
-          <SubDeptGridTablet />
-          <TopTen />
+          {mainView === "overview" ? (
+            <>
+              <SalesWeeklyTotals />
+              <TotalsBarTablet />
+              <HourlyGridTablet />
+              <TabletSubComps />
+              <SubDeptGridTablet />
+              <TopTenTablet />
+            </>
+          ) : <SalesTrackerTablet />}
         </div>
       )}
     </div>
