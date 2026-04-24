@@ -46,7 +46,7 @@ const ComparisonCard = ({
       </div>
 
       <div className="mt-3 grid grid-cols-[1fr_1fr] items-center gap-2">
-        <div className="text-right bg-custom-white p-2 rounded-lg shadow">
+        <div className=" bg-custom-white p-2 rounded-lg shadow">
           <div className="text-[11px] uppercase tracking-wide text-content/60">
             This Year
           </div>
@@ -55,7 +55,7 @@ const ComparisonCard = ({
           </div>
         </div>
 
-        <div className="text-left bg-custom-white p-2 rounded-lg shadow">
+        <div className="bg-custom-white p-2 rounded-lg shadow">
           <div className="text-[11px] uppercase tracking-wide text-content/60">
             Last Year
           </div>

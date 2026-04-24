@@ -85,18 +85,7 @@ const TabletSubComps = () => {
 
   // Once we have both data sets, show the comparisons (final step)
   return (
-    <div className="bg-custom-white rounded-lg px-2 py-2 shadow-lg text-[13.5px]">
-      <div className="flex items-start justify-between gap-3 px-1">
-        <div className="font-semibold text-content text-sm md:text-[14px]">
-          {sub} Trends
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 mt-2">
-        <div className="bg-gradient-to-r from-emerald-200 from-[20%] to-blue-200 h-[1.5px]" />
-        <div className="bg-gradient-to-l from-orange-200 from-[20%] to-blue-200 h-[1.5px]" />
-      </div>
-
+    <div className="text-[13.5px]">
       <div className="grid grid-cols-1 gap-2 py-2">
         <SubTrendCardTablet
           title="This Week vs Last Week"
@@ -108,6 +97,7 @@ const TabletSubComps = () => {
           rightTone="blue"
           datesLeft={twDateRange}
           datesRight={lwDateRange}
+          sub={sub}
         />
 
         <SubTrendCardTablet
@@ -120,6 +110,7 @@ const TabletSubComps = () => {
           rightTone="orange"
           datesLeft={twDateRange}
           datesRight={lyDateRange}
+          sub={sub}
         />
       </div>
     </div>
