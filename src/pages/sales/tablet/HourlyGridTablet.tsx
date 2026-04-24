@@ -15,7 +15,6 @@ const HourlyGridTablet = () => {
   const [_, setLyData] = useState<any[]>([]);
   const { hourlySales, selectedSalesPanel, hourlySalesLastYear } =
     useAppSelector((state) => state.sales);
-  const [barIndex, setBarIndex] = useState<string>("date");
 
   useEffect(() => {
     const uniqueHours = hourlySales.reduce((acc: { hour: number }[], curr) => {
@@ -26,7 +25,6 @@ const HourlyGridTablet = () => {
     }, []);
 
     setHour(uniqueHours[0]?.hour ?? 0);
-    setBarIndex(selectedSalesPanel.sale_date ? "hour" : "date");
   }, [hourlySales, selectedSalesPanel]);
 
   const formatDate = (dateStr: string, char: "-" | "/" = "-"): string => {
@@ -145,7 +143,7 @@ const HourlyGridTablet = () => {
   const dateRange = () => {
     if (selectedSalesPanel.sale_date) {
       const lyDate = sameWeekDayLastYear(selectedSalesPanel.sale_date).date;
-      console.log(lyDate, selectedSalesPanel.sale_date);
+      // console.log(lyDate, selectedSalesPanel.sale_date);
       return `${formatDateFull(selectedSalesPanel.sale_date, "-")} vs ${formatDateFull(
         lyDate,
         "-",
@@ -169,7 +167,7 @@ const HourlyGridTablet = () => {
             Hourly Sales
           </div>
           <div className="text-sm text-content/60">
-            Sales comparison by hour of day
+            Hourly comparison for this year vs last year
           </div>
         </div>
         <div className="text-sm font-medium">{dateRange()}</div>
@@ -190,7 +188,6 @@ const HourlyGridTablet = () => {
 
           // const transDiff = tyTrans - lyTrans;
           // const transPct = lyTrans !== 0 ? (transDiff / lyTrans) * 100 : 0;
-
           // const active = h === hour;
 
           return (
@@ -201,13 +198,12 @@ const HourlyGridTablet = () => {
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className="text-sm font-semibold text-slate-800">
+                  <div className="text-sm font-semibold text-content">
                     Hour {h}
                   </div>
                 </div>
 
-                <div className="mt-3 text-[11px] text-slate-500">
-                  Sales change:{" "}
+                <div className="text-[12.5px] text-content/60">
                   <span
                     className={`font-semibold ${
                       salesDiff > 0

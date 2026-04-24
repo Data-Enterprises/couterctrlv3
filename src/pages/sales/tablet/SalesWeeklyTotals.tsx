@@ -154,7 +154,7 @@ const SalesWeeklyTotals = () => {
             Weekly Totals
           </div>
           <div className="text-sm text-content/60">
-            Sales comparison by metric
+            Metric comparisons for this year vs last year
           </div>
         </div>
         <div className="text-sm font-medium">{dateRange}</div>
@@ -165,7 +165,7 @@ const SalesWeeklyTotals = () => {
         <div className="h-[2px] rounded-full bg-gradient-to-l from-blue-300 to-transparent" />
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-2">
+      <div className="mt-3 grid grid-cols-2 gap-3">
         <ComparisonCard
           title="Net Sales"
           ty={tyTotals.total_sales}
@@ -175,6 +175,7 @@ const SalesWeeklyTotals = () => {
           title="Transactions"
           ty={tyTotals.transactions}
           ly={lyTotals.transactions}
+          formatAsCurrency={false}
         />
         <ComparisonCard
           title="Avg Basket Amount"

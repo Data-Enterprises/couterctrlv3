@@ -32,13 +32,11 @@ import {
   formatGoliathDate,
   sameWeekDayLastYear,
 } from "../../../utils";
-import HourlyGrid from "../charts/HourlyGrid";
 import SubDeptComps from "../charts/SubDeptComps";
 import SubDeptGrid from "../charts/SubDeptGrid";
 import TopTen from "../charts/TopTen";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import SalesWeeklyTotals from "./SalesWeeklyTotals";
-import TotalsBar from "../components/TotalsBar";
 import TotalsBarTablet from "./TotalsBarTablet";
 import HourlyGridTablet from "./HourlyGridTablet";
 
@@ -52,7 +50,6 @@ const SalesTablet = () => {
   );
 
   const getSalesPanels = async () => {
-    // Testing this for renavigating back to overview from tracker
     if (mainView === "tracker") {
       dispatch(setMainView("overview"));
       return;

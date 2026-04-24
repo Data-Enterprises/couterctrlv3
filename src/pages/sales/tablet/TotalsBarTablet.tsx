@@ -62,7 +62,7 @@ const TotalsBarTablet = () => {
       <div className="px-4 pt-3 pb-2">
         <div className="text-lg font-semibold text-content">Daily Sales</div>
         <div className="flex items-center justify-between text-sm text-content/60">
-          <div>Sales comparison by week day</div>
+          <div>Week day comparison for this year vs last year</div>
           <div className="font-medium text-content">{dateRange}</div>
         </div>
       </div>
