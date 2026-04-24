@@ -21,7 +21,7 @@ import { getUserLevels } from "../../api/team";
 import { getAllUsers } from "../../api/user";
 
 import UserControls from "./forms/UserControls";
-import FormHeader from "./forms/FormHeader";
+import MainForms from "./forms/MainForms";
 import StoreControls from "./stores/StoreControls";
 import BaseGroupControls from "./baseGroups/BaseGroupControls";
 import CompanyControls from "./company/CompanyControls";
@@ -187,7 +187,7 @@ const Team = () => {
             columns={adminMissingSalesColumns}
           />
           <div className="min-w-[178px] max-w-[178px]">
-            <FormHeader />
+            <MainForms />
           </div>
           <div
             className={`${selectedForm !== 3 ? "w-[63%]" : "w-full"} space-y-4`}
