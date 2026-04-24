@@ -17,7 +17,7 @@ const TotalsBar = () => {
   const [dateRange, setDateRange] = useState<string>("");
   const state = useAppSelector((state) => state.sales);
 
-  const formatPieData = (data: WeeklySale[]): PieData[] => {
+  const formatBarData = (data: WeeklySale[]): PieData[] => {
     const grouped: PieData[] = data.reduce((acc: PieData[], curr) => {
       const exists = acc.find(
         (item) => item.label === formatDateSimple(curr.sale_date.split("T")[0]),
@@ -48,13 +48,16 @@ const TotalsBar = () => {
             (sale) => sale.storeid === state.selectedSalesPanel.storeid,
           )
         : [...state.weeklySales];
+
     const dates = Array.from(
       new Set(data.map((d) => d.sale_date.split("T")[0])),
     ).sort();
+
     setDateRange(
       `${formatDateSimple(dates[0])} - ${formatDateSimple(dates[dates.length - 1])}`,
     );
-    setBarData(formatPieData(data));
+
+    setBarData(formatBarData(data));
   }, [state.selectedSalesPanel, state.weeklySales]);
 
   const setMarginLeft = () => {

@@ -73,7 +73,10 @@ const App = () => {
 
   const containerStyle = context.isDesktop
     ? "ml-12 min-w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)]"
-    : "h-full bg-bkg";
+    : context.isMobile
+      ? "h-full bg-bkg"
+      // Tablet
+      : "ml-12 min-w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)]";
 
   return (
     <div

@@ -1,3 +1,4 @@
+import { useAppSelector } from "../../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 
 interface TopTotalsKpiProps {
@@ -6,6 +7,7 @@ interface TopTotalsKpiProps {
   title: string;
 }
 const TopTotalsKpi = ({ tyData, lyData, title }: TopTotalsKpiProps) => {
+  const isTablet = useAppSelector((state) => state.app.isTablet);
   const textStyle = () => {
     if (lyData === 0) return "text-content";
     if (tyData > lyData) {
@@ -17,7 +19,9 @@ const TopTotalsKpi = ({ tyData, lyData, title }: TopTotalsKpiProps) => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg text-center flex-col gap-2 relative py-2 md:py-0">
+    <div
+      className={`bg-custom-white rounded-lg shadow-lg text-center flex-col gap-2 relative py-2 ${isTablet ? "pt-0" : "md:py-0"}`}
+    >
       <div className="font-medium text-content/60 mt-1">{title}</div>
       <div className="flex justify-around">
         <div>

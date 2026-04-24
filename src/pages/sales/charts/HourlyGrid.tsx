@@ -16,7 +16,7 @@ const HourlyGrid = () => {
   const [_, setLyData] = useState<any[]>([]);
   const { hourlySales, selectedSalesPanel, hourlySalesLastYear } =
     useAppSelector((state) => state.sales);
-  const { isMobile } = useAppSelector((state) => state.app);
+  const { isTablet } = useAppSelector((state) => state.app);
   const [barIndex, setBarIndex] = useState<string>("date");
 
   useEffect(() => {
@@ -156,9 +156,9 @@ const HourlyGrid = () => {
       barData.reduce((acc, val) => acc + val.total_sales, 0) / barData.length;
 
     if (value > avgSales) {
-      return isMobile ? "bg-emerald-200" : "#10b981";
+      return "#10b981";
     } else {
-      return isMobile ? "bg-orange-200" : "#f97316";
+      return "#f97316";
     }
   };
 
@@ -166,6 +166,20 @@ const HourlyGrid = () => {
   const allHours = Array.from(
     new Set([...rowData.map((d) => d.hour), ...lyRowData.map((d) => d.hour)]),
   ).sort((a, b) => a - b);
+
+  const margins = !isTablet
+    ? {
+        top: 5,
+        right: 0,
+        bottom: selectedSalesPanel.sale_date ? 42 : 50,
+        left: 45,
+      }
+    : {
+        top: 5,
+        right: 0,
+        bottom: selectedSalesPanel.sale_date ? 25 : 33,
+        left: 30,
+      };
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg my-2 md:my-0 py-1.5">
@@ -250,101 +264,68 @@ const HourlyGrid = () => {
           </div>
         </div>
         <div>
-          {!isMobile ? (
-            <ResponsiveBar
-              data={barData}
-              margin={{
-                top: 5,
-                right: 0,
-                bottom: selectedSalesPanel.sale_date ? 42 : 50,
-                left: 45,
-              }}
-              keys={["total_sales"]}
-              indexBy={barIndex}
-              tooltip={({ value }) => (
-                <div className="p-2 bg-white shadow-lg rounded text-sm text-nowrap">
-                  <strong>{formatCurrency2(value)}</strong>
-                </div>
-              )}
-              padding={0.1}
-              enableLabel={false}
-              borderRadius={4}
-              borderWidth={2}
-              colors={(d) => rgbaColor(findBarColor(d.data.total_sales), 0.3)}
-              borderColor={(d) =>
-                rgbaColor(findBarColor(d.data.data.total_sales), 1)
-              }
-              axisBottom={{
-                renderTick: ({ x, y, textX, textY, value }) => {
-                  // I set the full_date property on barData so I can process the DOW here
-                  let fullDate = "";
-                  let dow = "";
+          <ResponsiveBar
+            data={barData}
+            margin={margins}
+            keys={["total_sales"]}
+            indexBy={barIndex}
+            tooltip={({ value }) => (
+              <div className="p-2 bg-white shadow-lg rounded text-sm text-nowrap">
+                <strong>{formatCurrency2(value)}</strong>
+              </div>
+            )}
+            padding={0.1}
+            enableLabel={false}
+            borderRadius={4}
+            borderWidth={2}
+            colors={(d) => rgbaColor(findBarColor(d.data.total_sales), 0.3)}
+            borderColor={(d) =>
+              rgbaColor(findBarColor(d.data.data.total_sales), 1)
+            }
+            axisBottom={{
+              renderTick: ({ x, y, textX, textY, value }) => {
+                // I set the full_date property on barData so I can process the DOW here
+                let fullDate = "";
+                let dow = "";
 
-                  if (typeof value === "string") {
-                    const found = barData.find((d) => d.date === value);
-                    if (found) {
-                      fullDate = found.full_date;
-                      dow = new Date(fullDate).toDateString().split(" ")[0];
-                    }
+                if (typeof value === "string") {
+                  const found = barData.find((d) => d.date === value);
+                  if (found) {
+                    fullDate = found.full_date;
+                    dow = new Date(fullDate).toDateString().split(" ")[0];
                   }
-                  return (
-                    <g transform={`translate(${x},${y + 4})`}>
-                      <line
-                        x1={0}
-                        y1={-4}
-                        x2={0}
-                        y2={1.5}
-                        stroke="black"
-                        strokeWidth={0.5}
-                      />
-                      <text
-                        textAnchor={"middle"}
-                        transform={`translate(${textX},${textY + 2})`}
-                        style={{
-                          fontSize: 10.5,
-                          fontWeight: "bolder",
-                          fontFamily: "Arial",
-                        }}
-                      >
-                        <tspan x={0} dy={0}>
-                          {dow}
-                        </tspan>
-                        <tspan x={0} dy={typeof value === "number" ? 4 : 12}>
-                          {value}
-                        </tspan>
-                      </text>
-                    </g>
-                  );
-                },
-              }}
-            />
-          ) : // <div className="grid gap-2 min-h[200px] max-h-[200px] overflow-y-scroll no-scrollbar mr-1">
-          //   {barData
-          //     .filter((h) => h.hour === hour)
-          //     .map((h) => (
-          //       <div
-          //         key={`display-date-${h.hour}-${Math.random()}`}
-          //         style={{ backgroundColor: findBarColor(h.total_sales) }}
-          //         className={`${findBarColor(h.total_sales)} text-xs rounded-lg shadow-content/30 shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
-          //       >
-          //         <div className="flex justify-between">
-          //           <div className="font-medium text-content/60">Date:</div>
-          //           <div className="font-medium">{h.date}</div>
-          //         </div>
-          //         <div className="flex justify-between">
-          //           <div className="font-medium text-content/60">Hour:</div>
-          //           <div className="font-medium">{h.hour}</div>
-          //         </div>
-          //         <div className="flex justify-between">
-          //           <div className="font-medium text-content/60">Sales:</div>
-          //           <div className="font-medium">
-          //             {formatCurrency2(h.total_sales)}
-          //           </div>
-          //         </div>
-          //       </div>
-          //     ))}
-          // </div>
-          null}
+                }
+                return (
+                  <g transform={`translate(${x},${y + 4})`}>
+                    <line
+                      x1={0}
+                      y1={-4}
+                      x2={0}
+                      y2={1.5}
+                      stroke="black"
+                      strokeWidth={0.5}
+                    />
+                    <text
+                      textAnchor={"middle"}
+                      transform={`translate(${textX},${textY + 2})`}
+                      style={{
+                        fontSize: 10.5,
+                        fontWeight: "bolder",
+                        fontFamily: "Arial",
+                      }}
+                    >
+                      <tspan x={0} dy={0}>
+                        {dow}
+                      </tspan>
+                      <tspan x={0} dy={typeof value === "number" ? 4 : 12}>
+                        {value}
+                      </tspan>
+                    </text>
+                  </g>
+                );
+              },
+            }}
+          />
         </div>
       </div>
     </div>

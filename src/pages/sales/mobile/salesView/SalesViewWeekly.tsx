@@ -21,27 +21,10 @@ interface SalesViewWeeklyProps {
 const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
   const ctx = useMobileSalesCtx();
 
-  // const formatted = [...ctx.weeklySales].map((item) => {
-  //   const ly = sameWeekDayLastYear(item.sale_date);
-  //   return {
-  //     ...item,
-  //     ly,
-  //   };
-  // });
-
   const formatDate = (dateStr: string) => {
     const split = dateStr.split("T")[0].split("-");
     return `${split[1]}/${split[2]}/${split[0]}`;
   };
-
-  // const tyTotals = ctx.weeklySales.reduce(
-  //   (acc, curr) => acc + (curr.total_sales - curr.total_tax),
-  //   0,
-  // );
-  // const lyTotals = ctx.weeklySalesLastYear.reduce(
-  //   (acc, curr) => acc + (curr.total_sales - curr.total_tax),
-  //   0,
-  // );
 
   const pieChartData: PieData[][] = [...ctx.weeklySales].map((item) => {
     const ly = sameWeekDayLastYear(item.sale_date);
@@ -60,8 +43,6 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
       },
     ];
   });
-
-  // console.log(formatted, ctx.weeklySalesLastYear, pieChartData);
 
   const formatId = (id: string) => {
     return id.split("/").slice(0, 2).join("/");

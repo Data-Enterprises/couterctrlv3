@@ -1,26 +1,12 @@
-// Hooks/API
-import { useToast } from "../../components/toasts/hooks/useToast";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import { getSubs, getWeekly } from "../../api/sales";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
 
 // Components
-import StorePicker from "../../components/storePicker/StorePicker";
-import SalesPanels from "./panels/SalesPanels";
-import KpiHeader from "./components/KpiHeader";
-import TopTen from "./charts/TopTen";
-import HourlyGrid from "./charts/HourlyGrid";
-import SubDeptGrid from "./charts/SubDeptGrid";
-import SubDeptComps from "./charts/SubDeptComps";
-import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
-import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import SubsCompareModal from "./subsCompare/SubsCompareModal";
-import SalesMobile from "./mobile/SalesMobile";
-import SalesTracker from "./tracker/SalesTracker";
-import Input from "../../components/inputs/Input";
-import WeekCards from "./tracker/WeekCards";
-import SalesTablet from "./tablet/SalesTablet";
-
-// Dispatchers
+import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
+import Input from "../../../components/inputs/Input";
+import StorePicker from "../../../components/storePicker/StorePicker";
+import SalesPanels from "../panels/SalesPanels";
+import WeekCards from "../tracker/WeekCards";
 import {
   clearLYSubTracker,
   clearTYSubTracker,
@@ -37,14 +23,24 @@ import {
   setSalesPanels,
   setSelectedSalesPanel,
   setWeeksBack,
-} from "../../features/salesSlice";
+} from "../../../features/salesSlice";
+import type { JsonError } from "../../../interfaces";
+import { getSubs, getWeekly } from "../../../api/sales";
+import { getWeeksBackDate } from "../utils";
+import {
+  addDays,
+  formatGoliathDate,
+  sameWeekDayLastYear,
+} from "../../../utils";
+import HourlyGrid from "../charts/HourlyGrid";
+import SubDeptComps from "../charts/SubDeptComps";
+import SubDeptGrid from "../charts/SubDeptGrid";
+import TopTen from "../charts/TopTen";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+import SalesWeeklyTotals from "./SalesWeeklyTotals";
+import TotalsBar from "../components/TotalsBar";
 
-// utils
-import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../utils";
-import type { JsonError } from "../../interfaces";
-import { getWeeksBackDate } from "./utils";
-
-const Sales = () => {
+const SalesTablet = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
@@ -230,24 +226,6 @@ const Sales = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
-  // Just render the mobile or tablet version and cut down on excessive operations
-  if (context.isMobile) return <SalesMobile />;
-  if (context.isTablet) return <SalesTablet />;
-
-  // ///////////////////////////////////////////////////////////////////
-
-  const pageContainer =
-    "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none";
-  const gridContainer =
-    "grid grid-cols-[17%_83%] gap-2 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]";
-
-  const isLoading =
-    mainView === "overview" &&
-    (!queryChecker.hourly ||
-      !queryChecker.subs ||
-      !queryChecker.topTen ||
-      !queryChecker.weekly);
-
   const handleWeeksBackChange = (value: string) => {
     const num = Number(value);
     if (!isNaN(num) && num >= 0) {
@@ -265,75 +243,69 @@ const Sales = () => {
     getSubsTracker();
   };
 
+  const isLoading =
+    mainView === "overview" &&
+    (!queryChecker.hourly ||
+      !queryChecker.subs ||
+      !queryChecker.topTen ||
+      !queryChecker.weekly);
+
   return (
-    <div data-testid="sales-page" className={pageContainer}>
-      <div className={gridContainer}>
-        <SubsCompareModal />
-        <div className={`h-full md:grid-rows-[267px_1fr] md:gap-2`}>
-          <div className="bg-custom-white rounded-lg p-2 shadow-lg">
-            <StorePicker />
-            <SingleDatePicker />
+    <div className="w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden p-2 select-none grid gap-2 grid-cols-[30%_69%]">
+      <div className={`h-full grid-rows-[267px_1fr] gap-2`}>
+        <div className="bg-custom-white rounded-lg p-2 shadow-lg">
+          <StorePicker />
+          <SingleDatePicker />
+          <button
+            className={`${mainView === "overview" ? "btn-themeGreen" : "btn-themeBlue"} w-full mt-2 py-1.5 text-sm`}
+            onClick={getSalesPanels}
+          >
+            Weekly Sales
+          </button>
+          <div className={`grid grid-cols-2 gap-2 items-end text-sm`}>
+            <Input
+              label="Weeks Back"
+              value={weeksBack}
+              setValue={handleWeeksBackChange}
+            />
+
             <button
-              className={`${mainView === "overview" ? "btn-themeGreen" : "btn-themeBlue"} w-full mt-2 py-1.5 text-sm`}
-              onClick={getSalesPanels}
+              className={`${mainView === "tracker" ? "btn-themeGreen" : "btn-themeBlue"} py-1.5 px-0`}
+              onClick={handleTrackerBtnClick}
             >
-              Weekly Sales
+              Tracker
             </button>
-            <div className={`grid grid-cols-2 gap-2 items-end text-sm`}>
-              <Input
-                label="Weeks Back"
-                value={weeksBack}
-                setValue={handleWeeksBackChange}
-              />
-
-              <button
-                className={`${mainView === "tracker" ? "btn-themeGreen" : "btn-themeBlue"} py-1.5 px-0`}
-                onClick={handleTrackerBtnClick}
-              >
-                Tracker
-              </button>
-            </div>
           </div>
-          {salesPanels.length > 0 && mainView === "overview" ? (
-            <div
-              className={`max-h-[calc(100vh-378px)] overflow-y-scroll no-scrollbar mt-2`}
-            >
-              <SalesPanels />
-            </div>
-          ) : null}
-          {mainView === "tracker" ? <WeekCards /> : null}
         </div>
-
-        {isLoading ? (
-          <div className="relative">
-            {salesPanels.length ? (
-              <LoadingIndicator message="Loading sales overview" />
-            ) : null}
+        {salesPanels.length > 0 && mainView === "overview" ? (
+          <div
+            className={`max-h-[calc(100vh-377px)] overflow-y-scroll no-scrollbar mt-2`}
+          >
+            <SalesPanels />
           </div>
-        ) : (
-          <>
-            {mainView === "overview" ? (
-              <div className="md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)] grid grid-rows-[152px_1fr] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
-                <KpiHeader />
-                <div className="grid grid-cols-[42%_1fr] gap-2 h-[calc(100vh-232px)]">
-                  <div className="grid grid-rows-[282px_1fr] gap-2 h-full">
-                    <HourlyGrid />
-                    <TopTen />
-                  </div>
-                  <div className="grid gap-2 h-full grid-rows-[220px_1fr]">
-                    <SubDeptComps />
-                    <SubDeptGrid />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <SalesTracker />
-            )}
-          </>
-        )}
+        ) : null}
+        {mainView === "tracker" ? <WeekCards /> : null}
       </div>
+      {isLoading ? (
+        <div className="relative">
+          {salesPanels.length ? (
+            <LoadingIndicator message="Loading sales data" />
+          ) : null}
+        </div>
+      ) : (
+        <div className="space-y-2 max-h-[calc(100vh-4.2rem)] overflow-y-scroll no-scrollbar">
+          <SalesWeeklyTotals />
+          {/* <div className="h-[225px]">
+            <TotalsBar />
+          </div> */}
+          <HourlyGrid />
+          <SubDeptComps />
+          <SubDeptGrid />
+          <TopTen />
+        </div>
+      )}
     </div>
   );
 };
 
-export default Sales;
+export default SalesTablet;
