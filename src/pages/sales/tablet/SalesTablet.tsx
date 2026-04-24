@@ -39,6 +39,8 @@ import TopTen from "../charts/TopTen";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import SalesWeeklyTotals from "./SalesWeeklyTotals";
 import TotalsBar from "../components/TotalsBar";
+import TotalsBarTablet from "./TotalsBarTablet";
+import HourlyGridTablet from "./HourlyGridTablet";
 
 const SalesTablet = () => {
   const toast = useToast();
@@ -295,10 +297,8 @@ const SalesTablet = () => {
       ) : (
         <div className="space-y-2 max-h-[calc(100vh-4.2rem)] overflow-y-scroll no-scrollbar">
           <SalesWeeklyTotals />
-          {/* <div className="h-[225px]">
-            <TotalsBar />
-          </div> */}
-          <HourlyGrid />
+          <TotalsBarTablet />
+          <HourlyGridTablet />
           <SubDeptComps />
           <SubDeptGrid />
           <TopTen />

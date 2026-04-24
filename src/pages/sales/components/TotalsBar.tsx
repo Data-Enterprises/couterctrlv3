@@ -67,7 +67,7 @@ const TotalsBar = () => {
   return (
     <div className="bg-custom-white rounded-lg shadow-lg h-[190px] md:h-full w-full relative">
       <div className="font-medium rounded-t-lg flex justify-between px-2 py-0.5 text-[13px]">
-        <div>Weekly Sales</div>
+        <div>Daily Sales</div>
         <div>{dateRange}</div>
       </div>
       <div className="grid grid-cols-2">
@@ -77,7 +77,12 @@ const TotalsBar = () => {
       <ResponsiveBar
         data={barData}
         key={"total_sales"}
-        margin={{ top: 15, right: 5, bottom: 51, left: setMarginLeft() }}
+        margin={{
+          top: 15,
+          right: 5,
+          bottom: 51,
+          left: setMarginLeft(),
+        }}
         colors={() => rgbaColor("#3b82f6", 0.3)}
         borderWidth={2}
         borderColor={() => "#3b82f6"}

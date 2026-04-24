@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useAppSelector } from "../../../hooks";
 import { formatDateSimple, sameWeekDayLastYear } from "../../../utils";
 import ComparisonCard from "./ComparisonCard";
-// import { ResponsivePie } from "@nivo/pie";
 
 const SalesWeeklyTotals = () => {
   const sales = useAppSelector((state) => state.sales);
