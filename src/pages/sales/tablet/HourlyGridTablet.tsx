@@ -11,10 +11,20 @@ const HourlyGridTablet = () => {
   const [hour, setHour] = useState<number>(0);
   const [rowData, setRowData] = useState<HourlyTotal[]>([]);
   const [lyRowData, setLyRowData] = useState<HourlyTotal[]>([]);
+  // const [selectedDay, setSelectedDay] = useState<string>("");
+  // const [dates, setDates] = useState<string[]>([]);
   const [barData, setBarData] = useState<any[]>([]);
   const [_, setLyData] = useState<any[]>([]);
   const { hourlySales, selectedSalesPanel, hourlySalesLastYear } =
     useAppSelector((state) => state.sales);
+
+  // useEffect(() => {
+  //   if (barData.length) {
+  //     const hourlyDates = barData.map((d) => d.full_date);
+  //     const uniqueDates: string[] = Array.from(new Set(hourlyDates)).sort();
+  //     setDates(uniqueDates);
+  //   }
+  // }, [barData]);
 
   useEffect(() => {
     const uniqueHours = hourlySales.reduce((acc: { hour: number }[], curr) => {
@@ -131,16 +141,12 @@ const HourlyGridTablet = () => {
     setLyData(lyFiltered);
   }, [hour, hourlySales, hourlySalesLastYear, selectedSalesPanel.sale_date]);
 
-  // const compareCard = (val1: number, val2: number) => {
-  //   if (!val2 || val1 === val2) return "text-content";
-  //   return val1 > val2 ? "bg-emerald-200" : "bg-orange-200";
-  // };
-
   const allHours = Array.from(
     new Set([...rowData.map((d) => d.hour), ...lyRowData.map((d) => d.hour)]),
   ).sort((a, b) => a - b);
 
   const dateRange = () => {
+    // if (selectedDay.length) return formatDateFull(selectedDay);
     if (selectedSalesPanel.sale_date) {
       const lyDate = sameWeekDayLastYear(selectedSalesPanel.sale_date).date;
       // console.log(lyDate, selectedSalesPanel.sale_date);
@@ -151,7 +157,8 @@ const HourlyGridTablet = () => {
     }
 
     const hourlyDates = barData.map((d) => d.full_date);
-    const uniqueDates = Array.from(new Set(hourlyDates)).sort();
+    const uniqueDates: string[] = Array.from(new Set(hourlyDates)).sort();
+
     if (uniqueDates.length === 0) return "";
     return `${formatDateFull(uniqueDates[0], "-")} - ${formatDateFull(
       uniqueDates[uniqueDates.length - 1],
@@ -159,19 +166,48 @@ const HourlyGridTablet = () => {
     )}`;
   };
 
+  // const handleDaySelection = (date: string) => {
+  //   if (selectedDay === date) {
+  //     setSelectedDay("");
+  //   } else {
+  //     setSelectedDay(date);
+  //   }
+  // };
+
   return (
     <div className="bg-custom-white rounded-2xl shadow-lg ring-1 ring-slate-200/70 p-3 my-2">
       <div className="flex justify-between items-end mb-3">
         <div>
-          <div className="font-semibold text-lg text-content">
-            Hourly Sales
-          </div>
+          <div className="font-semibold text-lg text-content">Hourly Sales</div>
           <div className="text-sm text-content/60">
             Hourly comparison for this year vs last year
           </div>
         </div>
         <div className="text-sm font-medium">{dateRange()}</div>
       </div>
+      <div className="mb-3 grid grid-cols-2 gap-3">
+        <div className="h-[2px] rounded-full bg-gradient-to-r from-blue-300 to-transparent" />
+        <div className="h-[2px] rounded-full bg-gradient-to-l from-blue-300 to-transparent" />
+      </div>
+
+      {/* Testing this out */}
+      {/* <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2">
+        <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          All Dates
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {dates.map((date) => (
+            <span
+              key={date}
+              className={`inline-flex items-center rounded-full border border-blue-200 ${selectedDay === date ? "bg-blue-50 text-blue-700" : "bg-custom-white"} px-3 py-1 text-xs font-semibold shadow-sm`}
+              onClick={() => handleDaySelection(date)}
+            >
+              {formatDateFull(date)}
+            </span>
+          ))}
+        </div>
+      </div> */}
 
       <div className="grid grid-cols-2 gap-2">
         {allHours.map((h) => {

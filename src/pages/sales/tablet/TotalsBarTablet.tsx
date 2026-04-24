@@ -67,12 +67,12 @@ const TotalsBarTablet = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2">
+      <div className="px-2 grid grid-cols-2">
         <div className="h-[1.5px] bg-gradient-to-r from-blue-200 to-custom-white" />
         <div className="h-[1.5px] bg-gradient-to-l from-blue-200 to-custom-white" />
       </div>
 
-      <div className="p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="p-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
         {barData.map((item) => (
           <MetricCard key={item.title} {...item} />
         ))}

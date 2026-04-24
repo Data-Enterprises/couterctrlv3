@@ -32,13 +32,14 @@ import {
   formatGoliathDate,
   sameWeekDayLastYear,
 } from "../../../utils";
-import SubDeptComps from "../charts/SubDeptComps";
+
 import SubDeptGrid from "../charts/SubDeptGrid";
 import TopTen from "../charts/TopTen";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import SalesWeeklyTotals from "./SalesWeeklyTotals";
 import TotalsBarTablet from "./TotalsBarTablet";
 import HourlyGridTablet from "./HourlyGridTablet";
+import TabletSubComps from "./TabletSubComps";
 
 const SalesTablet = () => {
   const toast = useToast();
@@ -296,7 +297,7 @@ const SalesTablet = () => {
           <SalesWeeklyTotals />
           <TotalsBarTablet />
           <HourlyGridTablet />
-          <SubDeptComps />
+          <TabletSubComps />
           <SubDeptGrid />
           <TopTen />
         </div>
