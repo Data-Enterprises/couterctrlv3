@@ -1,31 +1,61 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
 import { getBaseGroups } from "../../../../api/baseGroups";
-import type { CompanyBaseGroup, JsonError } from "../../../../interfaces";
+import type {
+  CompanyBaseGroup,
+  JsonError,
+  Store,
+} from "../../../../interfaces";
 
 import Input from "../../../../components/inputs/Input";
 import PasswordInput from "../../../../components/inputs/PasswordInput";
 import UserInfoCard from "./UserInfoCard";
 import {
+  setAllSelectedBaseGroups,
   setBaseGroups,
   setCompany,
   setSelectedBaseGroups,
 } from "../../../../features/baseGroupSlice";
 import { roles } from "../..";
-import { setUserInfo } from "../../../../features/usersSlice";
+import {
+  resetUserInfo,
+  setRefresh,
+  setSelectedUserStores,
+  setUserInfo,
+} from "../../../../features/usersSlice";
+import { assignBaseGroupToUser, createUser } from "../../../../api/team";
+import { assignUserToCompany, getUserStores } from "../../../../api/user";
+import AssignStoreCheckModal from "./AssignStoreCheckModal";
+import AssignNewUserStores from "./AssignNewUserStors";
 
 const CreateUserFormTablet = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const [formStep, setFormStep] = useState<number>(1);
+  const [openModal, setOpenModal] = useState<boolean>(false);
   const { url, token } = useAppSelector((state) => state.app);
-  const { userInfo, userLevels, userCompanyIds } = useAppSelector((state) => state.users);
+  const { userInfo, userLevels, userCompanyIds } =
+    useAppSelector((state) => state.users);
   const user = useAppSelector((state) => state.user);
   const { baseGroups, selectedBaseGroups, company } = useAppSelector(
     (state) => state.baseGroup,
   );
+
+  useEffect(() => {
+    if (formStep === 2) {
+      getBaseGroups(url, token, user.companies[0].company)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            dispatch(setBaseGroups(j.groups));
+            dispatch(setCompany(j.company[0]));
+          }
+        })
+        .catch((err: JsonError) => toast.error(err.message));
+    }
+  }, [formStep]);
 
   const handleCompanySelect = (x: number) => {
     getBaseGroups(url, token, x)
@@ -39,7 +69,7 @@ const CreateUserFormTablet = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
-  const handleNextStep = (x: number) => {
+  const handleFormStep = (x: number) => {
     setFormStep(x);
   };
 
@@ -50,18 +80,114 @@ const CreateUserFormTablet = () => {
 
   const companyBG = (id: number) => {
     if (company && company.id === id) {
-      return "bg-blue-200"
+      return "bg-blue-200";
     }
     if (userCompanyIds.includes(id)) {
       return "bg-orange-200";
     }
-    return 'bg-custom-white'
+    return "bg-custom-white";
   };
 
-  const handleSubmit = () => {};
+  const handleSubmit = (isAssigning: boolean) => {
+    createUser(url, token, userInfo)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          const userid = j.new_userid;
+          // Assigning the company(ies) to the user with their new user id
+          assignUserToCompany(url, token, userid, userCompanyIds)
+            .then((resp) => {
+              const j = resp.data;
+              if (j.error === 0) {
+                const groupid = [...selectedBaseGroups].map((bg) => bg.id);
+
+                // Assigning the base group(s) to the user
+                assignBaseGroupToUser(url, token, userid, groupid)
+                  .then((resp) => {
+                    const j = resp.data;
+                    if (j.error === 0 && isAssigning) {
+                      // If we're assigning stores, we move to the next step of the flow which is assigning stores to the user. Otherwise, we can end the flow here with a success message
+                      getStores(userid);
+                    } else if (j.error === 0 && !isAssigning) {
+                      // If we're not assigning stores, we can just end the flow here
+                      toast.success("User created successfully");
+                      handleReset();
+                    }
+                  })
+                  .catch((err: JsonError) => toast.error(err.message));
+              }
+            })
+            .catch((err: JsonError) => toast.error(err.message));
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error("Error creating user " + err.message);
+      });
+  };
+
+  const getStores = (userid: number) => {
+    const filterNulls = (arr: Store[]) => {
+      return arr.filter((store) => store.store_name !== null);
+    };
+
+    getUserStores(url, token, userid)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          const stores = {
+            assigned: filterNulls(j.assigned_stores).sort(
+              (a: Store, b: Store) =>
+                parseInt(a.store_number) - parseInt(b.store_number),
+            ),
+            unassigned: filterNulls(j.unassigned_stores).sort(
+              (a: Store, b: Store) =>
+                parseInt(a.store_number) - parseInt(b.store_number),
+            ),
+          };
+          setFormStep(3);
+          dispatch(setSelectedUserStores(stores));
+          dispatch(setRefresh(true));
+          toast.success(
+            "User created, you can add or remove stores for the user",
+          );
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error("Error fetching available stores " + err.message);
+      });
+  };
+
+  const isFormReady = () => {
+    if (
+      userInfo.password !== userInfo.confirm_password ||
+      !userInfo.password.length ||
+      !userInfo.confirm_password.length ||
+      !userInfo.first_name.length ||
+      !userInfo.last_name.length ||
+      !userInfo.username.length ||
+      !userInfo.email.length ||
+      !userInfo.role ||
+      !userInfo.user_level
+    ) {
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleReset = () => {
+    dispatch(setAllSelectedBaseGroups([]));
+    dispatch(setSelectedUserStores({ assigned: [], unassigned: [] }));
+    dispatch(resetUserInfo());
+  };
 
   return (
     <div className="space-y-3">
+      <AssignStoreCheckModal
+        isOpen={openModal}
+        onClose={() => handleSubmit(false)}
+        onConfirm={() => handleSubmit(true)}
+      />
       <UserInfoCard />
 
       {/* Basic User Info */}
@@ -164,10 +290,13 @@ const CreateUserFormTablet = () => {
             leftCompare={userInfo.password}
             rightCompare={userInfo.confirm_password}
           />
-          {/* <div className="grid grid-cols-2 gap-3">
-          </div> */}
-          <button className="btn-themeBlue">Clear Fields</button>
-          <button className="btn-themeBlue" onClick={() => handleNextStep(2)}>
+          <button className="btn-themeBlue" onClick={handleReset}>
+            Clear Fields
+          </button>
+          <button
+            className={`btn-themeBlue ${!isFormReady() ? "opacity-50 pointer-events-none" : ""}`}
+            onClick={() => handleFormStep(2)}
+          >
             Next
           </button>
         </div>
@@ -176,8 +305,11 @@ const CreateUserFormTablet = () => {
       {/* Company/Base Group Assignments */}
       {formStep === 2 ? (
         <div className="p-3 bg-custom-white rounded-lg shadow-lg space-y-3">
-          <div className="font-medium">
-            <div>Companies and Base Groups</div>
+          <div>
+            <div className="font-medium">Companies and Base Groups</div>
+            <div className="text-sm text-content/60">
+              Select a company to assign/unassign its base groups
+            </div>
             <div className="grid grid-cols-2">
               <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
               <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
@@ -221,15 +353,20 @@ const CreateUserFormTablet = () => {
             })}
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <button className="btn-themeBlue" onClick={() => handleNextStep(1)}>
+            <button className="btn-themeBlue" onClick={() => handleFormStep(1)}>
               Prev
             </button>
-            <button className="btn-themeGreen" onClick={handleSubmit}>
+            <button
+              className="btn-themeGreen"
+              onClick={() => setOpenModal(true)}
+            >
               Submit
             </button>
           </div>
         </div>
       ) : null}
+
+      {formStep === 3 ? <AssignNewUserStores /> : null}
     </div>
   );
 };
