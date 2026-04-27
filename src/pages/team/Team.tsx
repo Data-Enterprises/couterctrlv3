@@ -35,6 +35,7 @@ import ExportMissingStoresModal from "./admin/ExportMissingStoresModal";
 import { adminMissingSalesColumns } from "./admin";
 import Assigned from "./assignModal/Assigned";
 import Unassigned from "./assignModal/Unassigned";
+import TeamTablet from "./tabletComps/TeamTablet";
 
 const options = [
   { label: "Users", value: 1 },
@@ -46,7 +47,7 @@ const options = [
 const Team = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const { url, token, isDesktop } = useAppSelector((state) => state.app);
+  const { url, token, isDesktop, isTablet } = useAppSelector((state) => state.app);
   const companies = useAppSelector((state) => state.user.companies);
   const { refresh, selectedUserId, selectedForm, selectedUserStores } =
     useAppSelector((state) => state.users);
@@ -152,6 +153,8 @@ const Team = () => {
   useEffect(() => {
     dispatch(setAssignBaseGroups([]));
   }, [selectedUserId]);
+
+  if (isTablet) return <TeamTablet />;
 
   const renderForm = () => {
     switch (selectedForm) {
