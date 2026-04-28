@@ -9,6 +9,7 @@ import {
   setSelectedForm,
   setSelectedUserForm,
   setSelectedUserId,
+  setUserCompanyIds,
   setUserLevels,
   setUsers,
 } from "../../features/usersSlice";
@@ -36,6 +37,7 @@ import { adminMissingSalesColumns } from "./admin";
 import Assigned from "./assignModal/Assigned";
 import Unassigned from "./assignModal/Unassigned";
 import TeamTablet from "./tabletComps/TeamTablet";
+import { setAllSelectedBaseGroups } from "../../features/baseGroupSlice";
 
 const options = [
   { label: "Users", value: 1 },
@@ -61,6 +63,9 @@ const Team = () => {
       dispatch(setSelectedForm(0));
       dispatch(setSelectedUserForm(""));
       dispatch(setSelectedCompanyForm(""));
+      dispatch(setUserCompanyIds([]));
+      dispatch(setSelectedUserId(0));
+      dispatch(setAllSelectedBaseGroups([]));
     };
   }, []);
 
@@ -71,6 +76,9 @@ const Team = () => {
     dispatch(setSelectedCompanyForm(""));
     dispatch(setSelectedStoreInfo(null));
     dispatch(setNewStoreNameText(""));
+    dispatch(setUserCompanyIds([]));
+    dispatch(setSelectedUserId(0));
+    dispatch(setAllSelectedBaseGroups([]));
   }, [selectedForm]);
 
   useEffect(() => {

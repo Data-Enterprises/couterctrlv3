@@ -22,6 +22,7 @@ import { roles } from "../..";
 import {
   resetUserInfo,
   setRefresh,
+  setSelectedUserId,
   setSelectedUserStores,
   setUserInfo,
 } from "../../../../features/usersSlice";
@@ -108,6 +109,7 @@ const CreateUserFormTablet = () => {
                     if (j.error === 0 && isAssigning) {
                       // If we're assigning stores, we move to the next step of the flow which is assigning stores to the user. Otherwise, we can end the flow here with a success message
                       getStores(userid);
+                      dispatch(setSelectedUserId(userid));
                     } else if (j.error === 0 && !isAssigning) {
                       // If we're not assigning stores, we can just end the flow here
                       toast.success("User created successfully");

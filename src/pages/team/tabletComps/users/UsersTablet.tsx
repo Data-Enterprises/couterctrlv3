@@ -4,6 +4,7 @@ import type { CompanyBaseGroup } from "../../../../interfaces";
 import CreateUserFormTablet from "./CreateUserFormTablet";
 import UserFormOptions from "./UserFormOptions";
 import { setUserCompanyIds } from "../../../../features/usersSlice";
+import UserInfoForm from "./UserInfoForm";
 // import UsersGrid from "./UsersGrid";
 
 const UsersTablet = () => {
@@ -31,7 +32,7 @@ const UsersTablet = () => {
       case "create":
         return <CreateUserFormTablet />;
       case "user_info":
-        return <div>User Info Form</div>;
+        return <UserInfoForm />;
       case "delete":
         return <div>Delete User Form</div>;
       default:
