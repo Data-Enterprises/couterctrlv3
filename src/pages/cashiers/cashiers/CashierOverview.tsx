@@ -31,17 +31,17 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
   return (
     <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm h-[360px] cursor-default">
       <div className="flex justify-between items-center border-b border-content/60">
-        <div className="font-medium text-[13px]">
+        <div className="font-medium text-[12px]">
           {cashier.cashier_number} - {cashier.cashier_name}
         </div>
-        <div className="font-medium text-[13px]">{cashier.store_name}</div>
+        <div className="font-medium text-[12px]">{cashier.store_name}</div>
       </div>
 
       <div className="mt-1 grid grid-cols-[25%_75%]">
         <div className="rounded-full w-[90%] flex justify-center items-center">
           <UserIcon className="w-16 h-16 text-blue-500" />
         </div>
-        <div className="grid grid-cols-2 text-content/60">
+        <div className="grid grid-cols-2 text-content/60 text-[13px]">
           <div>
             <div>Sales</div>
             <div className="font-medium">

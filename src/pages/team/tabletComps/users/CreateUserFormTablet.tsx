@@ -113,6 +113,7 @@ const CreateUserFormTablet = () => {
                       toast.success("User created successfully");
                       handleReset();
                     }
+                    setOpenModal(false);
                   })
                   .catch((err: JsonError) => toast.error(err.message));
               }
@@ -335,7 +336,7 @@ const CreateUserFormTablet = () => {
               return (
                 <div
                   key={bg.id}
-                  className={`rounded-lg border border-content/60 ${selectedBaseGroups.includes(bg) ? "bg-orange-200" : "bg-bkg"} px-4 py-3 shadow-sm`}
+                  className={`rounded-lg border border-content/60 ${selectedBaseGroups.some((b) => b.id === bg.id) ? "bg-orange-200" : "bg-bkg"} px-4 py-3 shadow-sm`}
                   onClick={() => handleBGSelect(bg)}
                 >
                   <div className="flex items-start justify-between gap-3">
