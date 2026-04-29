@@ -47,7 +47,7 @@ const TotalsGridLvlOne = ({
   if (!isLvlTwo) {
     return (
       <div className="bg-custom-white cursor-default text-[13px] rounded-lg shadow-lg border border-content/15 px-3 py-1.5 w-full">
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-end">
           <div className="font-medium">{desc}</div>
           <div className="flex gap-1 text-[10.5px]">
             <div
@@ -74,7 +74,9 @@ const TotalsGridLvlOne = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           <div className="rounded-md bg-bkg/75 p-2">
             <div className="text-content/60">TY Sales</div>
-            <div className="font-semibold">
+            <div
+              className={`font-semibold ${changeTextColor(totals.dollarChange, 0)}`}
+            >
               {formatCurrency2(totals.tyTotalSales)}
             </div>
           </div>

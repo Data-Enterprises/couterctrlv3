@@ -13,7 +13,7 @@ const TotalsGridLvlThree = ({ week }: TotalsGridLvlThreeProps) => {
       : ((week.salesTY - week.salesLY) / week.salesLY) * 100;
 
   return (
-    <div className="odd:bg-custom-white even:bg-bkg/85">
+    <div className="odd:bg-custom-white even:bg-bkg/85 py-[2px]">
       <div className="grid grid-cols-6 gap-4 text-[10px]">
         <div className="font-medium">{formatDate(week.sale_date)}</div>
         <div className="text-right">{formatCurrency2(week.salesTY)}</div>

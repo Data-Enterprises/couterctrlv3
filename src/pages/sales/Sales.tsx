@@ -48,7 +48,7 @@ import DatePickers from "../../components/datePickers/DatePickers";
 const dashboardOptions = [
   { label: "Daily Sales", value: "daily" },
   { label: "Weekly Sales", value: "weekly" },
-  { label: "Tracker Sales", value: "tracker" },
+  { label: "Sales Tracker", value: "tracker" },
 ];
 
 const Sales = () => {

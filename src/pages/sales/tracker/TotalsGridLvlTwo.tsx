@@ -18,7 +18,12 @@ interface TotalsGridLvlTwoProps {
   desc: string;
 }
 
-const TotalsGridLvlTwo = ({ week, weekTotals, idx, desc = "" }: TotalsGridLvlTwoProps) => {
+const TotalsGridLvlTwo = ({
+  week,
+  weekTotals,
+  idx,
+  desc = "",
+}: TotalsGridLvlTwoProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const atsTotalSales =
     week.reduce((acc, day) => acc + day.atsTotalSales, 0) / week.length;
@@ -36,8 +41,28 @@ const TotalsGridLvlTwo = ({ week, weekTotals, idx, desc = "" }: TotalsGridLvlTwo
     }
   };
 
+  // const data = [
+  //   {
+  //     id: "LY",
+  //     value: weekTotals.lyTotalSales,
+  //     color: "#3b82f6",
+  //   },
+  //   {
+  //     id: "TY",
+  //     value: weekTotals.tyTotalSales,
+  //     color: "#10b981",
+  //   },
+  // ];
+
+  // const rgbaColor = (hex: string, alpha: number) => {
+  //   const r = parseInt(hex.slice(1, 3), 16);
+  //   const g = parseInt(hex.slice(3, 5), 16);
+  //   const b = parseInt(hex.slice(5, 7), 16);
+  //   return `rgba(${r},${g},${b},${alpha})`;
+  // };
+
   return (
-    <div className="text-[12px] px-2 py-1.5 rounded-lg shadow-lg grid bg-custom-white max-w-full border border-content/15">
+    <div className="text-[12px] px-2 py-1.5 rounded-lg shadow-lg bg-custom-white max-w-full border border-content/15">
       <div
         className="font-medium cursor-default relative"
         onClick={chevronTurn}
@@ -61,14 +86,18 @@ const TotalsGridLvlTwo = ({ week, weekTotals, idx, desc = "" }: TotalsGridLvlTwo
           </div>
         </div> */}
 
-        {/* metrics grid */}
         <div className="grid grid-cols-4 gap-2 my-1 text-[11.5px]">
-          <div className="bg-bkg/75 px-2 py-[1px] rounded-lg shadow-md text-center">
+          <div
+            className={`bg-bkg/75 ${weekTotals.tyTotalSales > weekTotals.lyTotalSales ? "text-emerald-500" : "text-red-500"} px-2 py-[1px] rounded-lg shadow-md text-center`}
+          >
+            {/* <div className={`bg-bkg/75 px-2 py-[1px] rounded-lg shadow-md text-center`}> */}
             <div className="text-content/60">TY</div>
             <div>{formatCurrency2(weekTotals.tyTotalSales)}</div>
           </div>
 
-          <div className="bg-bkg/75 px-2 py-[1px] rounded-lg shadow-md text-center">
+          <div
+            className={`bg-bkg/75 px-2 py-[1px] rounded-lg shadow-md text-center`}
+          >
             <div className="text-content/60">LY</div>
             <div>{formatCurrency2(weekTotals.lyTotalSales)}</div>
           </div>
