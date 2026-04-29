@@ -39,7 +39,7 @@ const SummaryRow = ({ left, right, compKey }: SummaryRowProps) => {
   };
 
   return (
-    <div className="grid grid-cols-[30%_40%_30%] border-b last:border-none justify-center items-center even:bg-blue-200/50 py-[3px]">
+    <div className="grid grid-cols-[30%_40%_30%] border-b last:border-none justify-center items-center even:bg-blue-200/50 py-[3px] text-[13px]">
       {/* <div className="flex justify-center items-center">
         {resultIcons().left}
       </div> */}
