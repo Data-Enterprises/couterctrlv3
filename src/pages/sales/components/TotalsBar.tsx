@@ -18,6 +18,7 @@ const TotalsBar = () => {
   const state = useAppSelector((state) => state.sales);
 
   const formatBarData = (data: WeeklySale[]): PieData[] => {
+    if (data.length === 0) return [];
     const grouped: PieData[] = data.reduce((acc: PieData[], curr) => {
       const exists = acc.find(
         (item) => item.label === formatDateSimple(curr.sale_date.split("T")[0]),

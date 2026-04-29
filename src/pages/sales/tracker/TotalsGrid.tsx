@@ -1,8 +1,13 @@
-import type { WeekTotal } from "../../../features/salesSlice";
-import { useAppSelector } from "../../../hooks";
+// import { useEffect, useState } from "react";
+import {
+  setSalesTrackerSelectedSubDept,
+  type WeekTotal,
+} from "../../../features/salesSlice";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import TotalsGridLvlOne from "./TotalsGridLvlOne";
 
 const TotalsGrid = () => {
+  const dispatch = useAppDispatch();
   const sales = useAppSelector((state) => state.sales);
 
   if (sales.tyReducedTotals.length === 0) {
@@ -28,20 +33,55 @@ const TotalsGrid = () => {
         : ((tyTotalSales - lyTotalSales) / lyTotalSales) * 100;
     const dollarChange = tyTotalSales - lyTotalSales;
 
-    const atsTotalSales = data.reduce((acc, weekGroup) => {
-      return (
-        acc +
-        weekGroup.reduce((weekAcc, week) => weekAcc + week.atsTotalSales, 0)
-      );
-    }, 0) / data.reduce((acc, weekGroup) => acc + weekGroup.length, 0);
+    const atsTotalSales =
+      data.reduce((acc, weekGroup) => {
+        return (
+          acc +
+          weekGroup.reduce((weekAcc, week) => weekAcc + week.atsTotalSales, 0)
+        );
+      }, 0) / data.reduce((acc, weekGroup) => acc + weekGroup.length, 0);
 
-    return { tyTotalSales, lyTotalSales, percentChange, dollarChange, atsTotalSales };
-  }
+    return {
+      tyTotalSales,
+      lyTotalSales,
+      percentChange,
+      dollarChange,
+      atsTotalSales,
+    };
+  };
+
+  const filteredSubs = () => {
+    if (sales.salesTrackerSelectedSubDept === 0) {
+      return sales.uniqueSubs;
+    }
+    return [...sales.uniqueSubs].filter(
+      (sub) => sub.id === sales.salesTrackerSelectedSubDept,
+    );
+  };
 
   return (
-    <div className="">
-      <div className="bg-custom-white rounded-b-lg shadow-lg">
-        <div className="bg-custom-white rounded-lg shadow-lg px-2 pb-2">
+    <div className="h-full w-full">
+      <div className="flex flex-wrap gap-x-2 gap-y-1 mb-2">
+        <div
+          className={`px-3 text-[9.5px] rounded-full border border-content/25 ${sales.salesTrackerSelectedSubDept === 0 ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200`}
+          onClick={() => dispatch(setSalesTrackerSelectedSubDept(0))}
+        >
+          All Subs
+        </div>
+        {sales.uniqueSubs.map((sub, idx) => {
+          return (
+            <div
+              key={idx}
+              className={`px-3 text-[9.5px] rounded-full border border-content/25 ${sales.salesTrackerSelectedSubDept === sub.id ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200`}
+              onClick={() => dispatch(setSalesTrackerSelectedSubDept(sub.id))}
+            >
+              {sub.desc}
+            </div>
+          );
+        })}
+      </div>
+      {sales.salesTrackerSelectedSubDept === 0 ? (
+        <div className="grid grid-cols-5 gap-2 bg-custom-white p-2 rounded-lg shadow-lg max-h-[80.5%] overflow-auto no-scrollbar">
           {sales.uniqueSubs.map((sub, idx) => {
             const subId = sub.id;
             const desc = sub.desc;
@@ -61,7 +101,29 @@ const TotalsGrid = () => {
             );
           })}
         </div>
-      </div>
+      ) : (
+        <div className="max-h-[80.5%] overflow-auto no-scrollbar">
+          {filteredSubs().map((sub, idx) => {
+            const subId = sub.id;
+            const desc = sub.desc;
+
+            const filtered = sales.tyReducedTotals
+              .filter((wg) => wg[0][0].subDept === subId)
+              .flat();
+
+            const totals = calcTotals(filtered);
+            return (
+              <TotalsGridLvlOne
+                key={idx}
+                desc={desc}
+                totals={totals}
+                isLvlTwo={true}
+                filtered={filtered}
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

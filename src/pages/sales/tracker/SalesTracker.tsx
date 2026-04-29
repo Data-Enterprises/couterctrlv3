@@ -54,9 +54,8 @@ const SalesTracker = () => {
                 ly.storeid === week.storeid &&
                 ly.sub_department === week.sub_department,
             );
-            // console.log(lySale);
 
-            const salesLY = lySale ? lySale.total_sales : 0;
+            const salesLY = lySale ? lySale.total_sales - lySale.total_tax : 0;
 
             if (found) {
               found.salesTY += week.total_sales;
@@ -129,23 +128,8 @@ const SalesTracker = () => {
 
   return (
     <div className="min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)] flex flex-col text-sm overflow-hidden">
-      <div>
-        <SalesTrackerKpis />
-        <div className="bg-custom-white rounded-t-lg shadow-lg px-2 pt-2">
-          <div className="grid grid-cols-6 font-bold text-content/60">
-            <div>Sub Dept/Dates</div>
-            <div>Total Sales TY</div>
-            <div>Total Sales LY</div>
-            <div>Total Sales $ Change</div>
-            <div>Total Sales % Change</div>
-            <div>ATS Total Sales</div>
-          </div>
-          <div className="mt-1 border-b border-content/60"></div>
-        </div>
-      </div>
-      <div className="flex-1 overflow-auto rounded-b-lg shadow-lg">
-        <TotalsGrid />
-      </div>
+      <SalesTrackerKpis />
+      <TotalsGrid />
     </div>
   );
 };

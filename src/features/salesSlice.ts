@@ -51,6 +51,8 @@ type QueryChecker = {
   weekly: boolean;
 };
 
+export type DashboardOption = "daily" | "weekly" | "tracker";
+
 interface SalesState {
   topTenItems: TopTenItem[];
   salesPanels: WeeklySale[];
@@ -89,6 +91,8 @@ interface SalesState {
   uniqueSubs: SubTracker[];
   trackerKpis: TrackerKpis;
   refreshOverviewData: boolean;
+  dashboardOption: DashboardOption;
+  salesTrackerSelectedSubDept: number;
 }
 
 export const defaultSelectedPanel: SelectedSalesPanel = {
@@ -146,6 +150,8 @@ const initialState: SalesState = {
     dateRange: "",
   },
   refreshOverviewData: false,
+  dashboardOption: "daily",
+  salesTrackerSelectedSubDept: 0,
 };
 
 export const salesSlice = createSlice({
@@ -284,6 +290,7 @@ export const salesSlice = createSlice({
         dollarChange: 0,
         dateRange: "",
       };
+      state.salesTrackerSelectedSubDept = 0;
     },
     clearLYSubTracker: (state) => {
       state.lastYrSubTracker = [];
@@ -326,6 +333,12 @@ export const salesSlice = createSlice({
     },
     setRefreshOverviewData: (state, action: PayloadAction<boolean>) => {
       state.refreshOverviewData = action.payload;
+    },
+    setDashboardOption: (state, action: PayloadAction<DashboardOption>) => {
+      state.dashboardOption = action.payload;
+    },
+    setSalesTrackerSelectedSubDept: (state, action: PayloadAction<number>) => {
+      state.salesTrackerSelectedSubDept = action.payload;
     },
     resetSalesSlice: () => initialState,
   },
@@ -370,5 +383,7 @@ export const {
   setUniqueSubs,
   setTrackerKpis,
   setRefreshOverviewData,
+  setDashboardOption,
+  setSalesTrackerSelectedSubDept,
 } = salesSlice.actions;
 export default salesSlice.reducer;

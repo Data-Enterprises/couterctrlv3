@@ -1,3 +1,4 @@
+// import { useState } from "react";
 // Hooks/API
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { useAppSelector, useAppDispatch } from "../../hooks";
@@ -16,7 +17,6 @@ import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import SubsCompareModal from "./subsCompare/SubsCompareModal";
 import SalesMobile from "./mobile/SalesMobile";
 import SalesTracker from "./tracker/SalesTracker";
-import Input from "../../components/inputs/Input";
 import WeekCards from "./tracker/WeekCards";
 import SalesTablet from "./tablet/SalesTablet";
 
@@ -27,38 +27,41 @@ import {
   concatLYSubTracker,
   concatTYSubTracker,
   reQuery,
+  setDashboardOption,
   setLeftSubCompare,
   setLoadingLYTrackerData,
   setLoadingTYTrackerData,
-  setMainView,
   setPanelsLoading,
   setRefreshOverviewData,
   setRightSubCompare,
   setSalesPanels,
   setSelectedSalesPanel,
-  setWeeksBack,
+  type DashboardOption,
 } from "../../features/salesSlice";
 
 // utils
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../utils";
 import type { JsonError } from "../../interfaces";
-import { getWeeksBackDate } from "./utils";
+import SingleSelect from "../../components/SingleSelect";
+import DatePickers from "../../components/datePickers/DatePickers";
+
+const dashboardOptions = [
+  { label: "Daily Sales", value: "daily" },
+  { label: "Weekly Sales", value: "weekly" },
+  { label: "Tracker Sales", value: "tracker" },
+];
 
 const Sales = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const { queryChecker, salesPanels, mainView, weeksBack } = useAppSelector(
+  // const [noPanelsFound, setNoPanelsFound] = useState<boolean>(false);
+  const { queryChecker, salesPanels, dashboardOption } = useAppSelector(
     (state) => state.sales,
   );
 
   const getSalesPanels = async () => {
-    // Testing this for renavigating back to overview from tracker
-    if (mainView === "tracker") {
-      dispatch(setMainView("overview"));
-      return;
-    }
     dispatch(reQuery());
     dispatch(setRefreshOverviewData(true));
     dispatch(setLeftSubCompare(null));
@@ -67,7 +70,18 @@ const Sales = () => {
       setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
     );
 
-    const start = addDays(search.singleDate, -6).toISOString().split("T")[0];
+    if (dashboardOption === "tracker") {
+      dispatch(clearLYSubTracker());
+      dispatch(clearTYSubTracker());
+      getSubsTracker();
+      return;
+    }
+
+    const start =
+      dashboardOption === "weekly"
+        ? addDays(search.singleDate, -6).toISOString().split("T")[0]
+        : formatGoliathDate(search.singleDate);
+
     const end = formatGoliathDate(search.singleDate);
     const useGroups = search.type === "Group" ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
@@ -104,14 +118,11 @@ const Sales = () => {
   };
 
   const getSubsTracker = () => {
-    const end = formatGoliathDate(search.singleDate);
-    const start = getWeeksBackDate(search.singleDate, Number(weeksBack));
+    const end = formatGoliathDate(search.endDate);
+    const start = formatGoliathDate(search.startDate);
 
-    const endDateLY = sameWeekDayLastYear(search.singleDate).date;
-    const startDateLY = getWeeksBackDate(
-      sameWeekDayLastYear(search.singleDate).date,
-      Number(weeksBack),
-    );
+    const endDateLY = sameWeekDayLastYear(search.endDate).date;
+    const startDateLY = sameWeekDayLastYear(search.startDate).date;
 
     const useGroups = search.type === "Group" ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
@@ -242,28 +253,11 @@ const Sales = () => {
     "grid grid-cols-[17%_83%] gap-2 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]";
 
   const isLoading =
-    mainView === "overview" &&
+    dashboardOption !== "tracker" &&
     (!queryChecker.hourly ||
       !queryChecker.subs ||
       !queryChecker.topTen ||
       !queryChecker.weekly);
-
-  const handleWeeksBackChange = (value: string) => {
-    const num = Number(value);
-    if (!isNaN(num) && num >= 0) {
-      dispatch(setWeeksBack(value));
-    }
-  };
-
-  const handleTrackerBtnClick = () => {
-    dispatch(setMainView("tracker"));
-    dispatch(clearTYSubTracker());
-    dispatch(clearLYSubTracker());
-    dispatch(setLoadingTYTrackerData(true));
-    dispatch(setLoadingLYTrackerData(true));
-    // Getting the Subs Data for the tracker
-    getSubsTracker();
-  };
 
   return (
     <div data-testid="sales-page" className={pageContainer}>
@@ -271,37 +265,42 @@ const Sales = () => {
         <SubsCompareModal />
         <div className={`h-full md:grid-rows-[267px_1fr] md:gap-2`}>
           <div className="bg-custom-white rounded-lg p-2 shadow-lg">
+            <SingleSelect
+              label="Views"
+              data={dashboardOptions}
+              valueKey="value"
+              displayKey="label"
+              onSelect={(val) =>
+                dispatch(setDashboardOption(val as DashboardOption))
+              }
+              defaultValue={dashboardOption}
+              defaultQuery={
+                dashboardOptions.filter((o) => o.value === dashboardOption)[0]
+                  .label
+              }
+              innerClass="py-1.5 text-sm"
+            />
             <StorePicker />
-            <SingleDatePicker />
+            {dashboardOption !== "tracker" ? (
+              <SingleDatePicker />
+            ) : (
+              <DatePickers showBtn={false} />
+            )}
             <button
-              className={`${mainView === "overview" ? "btn-themeGreen" : "btn-themeBlue"} w-full mt-2 py-1.5 text-sm`}
+              className={`btn-themeBlue w-full mt-2 py-1.5 text-sm`}
               onClick={getSalesPanels}
             >
-              Weekly Sales
+              Search
             </button>
-            <div className={`grid grid-cols-2 gap-2 items-end text-sm`}>
-              <Input
-                label="Weeks Back"
-                value={weeksBack}
-                setValue={handleWeeksBackChange}
-              />
-
-              <button
-                className={`${mainView === "tracker" ? "btn-themeGreen" : "btn-themeBlue"} py-1.5 px-0`}
-                onClick={handleTrackerBtnClick}
-              >
-                Tracker
-              </button>
-            </div>
           </div>
-          {salesPanels.length > 0 && mainView === "overview" ? (
+          {salesPanels.length > 0 && dashboardOption !== "tracker" ? (
             <div
               className={`max-h-[calc(100vh-378px)] overflow-y-scroll no-scrollbar mt-2`}
             >
               <SalesPanels />
             </div>
           ) : null}
-          {mainView === "tracker" ? <WeekCards /> : null}
+          {dashboardOption === "tracker" ? <WeekCards /> : null}
         </div>
 
         {isLoading ? (
@@ -312,7 +311,7 @@ const Sales = () => {
           </div>
         ) : (
           <>
-            {mainView === "overview" ? (
+            {dashboardOption !== "tracker" ? (
               <div className="md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)] grid grid-rows-[152px_1fr] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
                 <KpiHeader />
                 <div className="grid grid-cols-[42%_1fr] gap-2 h-[calc(100vh-232px)]">

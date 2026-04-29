@@ -131,7 +131,7 @@ const SingleSelect = <T,>({
       className={`single-select ${className}`}
     >
       <div className="flex flex-col">
-        <label htmlFor="search" className="text-[13px] md:text-sm font-medium ml-0.5">
+        <label htmlFor="search" className="text-[13px] md:text-[13px] font-medium ml-0.5">
           {label}
         </label>
         <div className="relative">
@@ -167,7 +167,7 @@ const SingleSelect = <T,>({
             ref={listRef}
             data-display="closed"
             className={`absolute no-scrollbar w-full hover:cursor-pointer text-content rounded-lg bg-custom-white 
-                overflow-y-auto z-20 shadow-lg
+                overflow-y-auto z-20 shadow-lg text-sm
                 data-[display=open]:animate-appear
                 data-[display=closed]:animate-dissapear
                 data-[display=closed]:pointer-events-none

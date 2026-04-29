@@ -1,13 +1,24 @@
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 import type { User } from "../../../../interfaces";
-import { setUserFilterText } from "../../../../features/usersSlice";
+import {
+  setSelectedUserId,
+  setSelectedUserInfo,
+  setUserFilterText,
+} from "../../../../features/usersSlice";
 import Input from "../../../../components/inputs/Input";
-import SingleSelect from "../../../../components/SingleSelect";
+import { useState } from "react";
+import UpdatingUserForm from "./UpdatingUser";
 
 const UserInfoForm = () => {
   const dispatch = useAppDispatch();
   const ctx = useAppSelector((state) => state.users);
   const user = useAppSelector((state) => state.user);
+  const [selectedCompanies, setSelectedCompanies] = useState<number[]>([]);
+  const [selectedUserLevels, setSelectedUserLevels] = useState<number[]>([]);
+  const [textOption, setTextOption] = useState<"username" | "email">(
+    "username",
+  );
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   const isOutranked = (current: User) => {
     return current.user_level > user.userLevel;
@@ -22,36 +33,120 @@ const UserInfoForm = () => {
     dispatch(setUserFilterText(x));
   };
 
+  const handleCompanySelect = (company: number) => {
+    setSelectedCompanies((prev) =>
+      prev.includes(company)
+        ? prev.filter((c) => c !== company)
+        : [...prev, company],
+    );
+  };
+
+  const handleUserLevelSelect = (level: number) => {
+    setSelectedUserLevels((prev) =>
+      prev.includes(level) ? prev.filter((l) => l !== level) : [...prev, level],
+    );
+  };
+
+  // const handleResetPassword = (u: User) => {};
+
+  // const handleResetSecurity = (u: User) => {};
+
+  const filteredUsers = () => {
+    return ctx.users.filter((u) => {
+      const matchesCompany =
+        selectedCompanies.length === 0 ||
+        u.companies.some((c) => selectedCompanies.includes(c.company));
+
+      const matchesUserLevel =
+        selectedUserLevels.length === 0 ||
+        selectedUserLevels.includes(u.user_level);
+
+      const matchesSearch =
+        ctx.userFilterText.trim() === "" ||
+        (textOption === "username"
+          ? u.username.toLowerCase().includes(ctx.userFilterText.toLowerCase())
+          : u.email !== null
+            ? u.email.toLowerCase().includes(ctx.userFilterText.toLowerCase())
+            : false);
+
+      return matchesCompany && matchesUserLevel && matchesSearch;
+    });
+  };
+
+  if (isUpdating)
+    return <UpdatingUserForm goBack={() => setIsUpdating(false)} />;
+
+  const handleUpdateBtnClick = (u: User) => {
+    dispatch(setSelectedUserId(u.id));
+    dispatch(setSelectedUserInfo(u));
+    setIsUpdating(true);
+  };
+
   return (
     <div className="space-y-4">
       {/* User Filters */}
-      <div className="grid grid-cols-3 gap-3">
-        <SingleSelect
-          data={user.companies}
-          label="Company"
-          valueKey="company"
-          displayKey="name"
-          onSelect={(value) => console.log(value)}
-          innerClass="py-1.5"
-        />
-        <SingleSelect
-          label="User Levels"
-          data={ctx.userLevels}
-          valueKey="id"
-          displayKey="name"
-          onSelect={(value) => console.log(value)}
-          innerClass="py-1.5"
-        />
-        <Input
-          label="Search Users"
-          value={ctx.userFilterText}
-          setValue={handleTextChange}
-        />
+      <div className="">
+        <div>
+          <div className="pl-0.5">Companies</div>
+          <div className="flex flex-wrap gap-3">
+            {user.companies.map((c, i) => (
+              <button
+                key={i}
+                className={`py-1.5 px-2 rounded-full border transition-all duration-200 ${
+                  selectedCompanies.includes(c.company)
+                    ? "bg-[rgb(30,45,80)]/95 text-custom-white border-transparent"
+                    : "bg-custom-white text-content border-slate-300"
+                }`}
+                onClick={() => handleCompanySelect(c.company)}
+              >
+                {c.name}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="pl-0.5">User Levels</div>
+          <div className="flex flex-wrap gap-3">
+            {ctx.userLevels.map((l, i) => (
+              <button
+                key={i}
+                className={`py-1.5 px-2 rounded-full border transition-all duration-200 ${
+                  selectedUserLevels.includes(l.id)
+                    ? "bg-[rgb(30,45,80)]/95 text-custom-white border-transparent"
+                    : "bg-custom-white text-content border-slate-300"
+                }`}
+                onClick={() => handleUserLevelSelect(l.id)}
+              >
+                {l.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex gap-3 items-end">
+          <Input
+            label={`Search Users ${filteredUsers().length}`}
+            value={ctx.userFilterText}
+            setValue={handleTextChange}
+          />
+          <button
+            className={`${textOption === "username" ? "bg-[rgb(30,45,80)]/95" : "bg-[rgb(30,45,80)]/45"} transition-all duration-200 text-custom-white py-2 w-1/4 rounded-xl`}
+            onClick={() => setTextOption("username")}
+          >
+            Username
+          </button>
+          <button
+            className={`${textOption === "email" ? "bg-[rgb(30,45,80)]/95" : "bg-[rgb(30,45,80)]/45"} transition-all duration-200 text-custom-white py-2 w-1/4 rounded-xl`}
+            onClick={() => setTextOption("email")}
+          >
+            Email
+          </button>
+        </div>
       </div>
 
       {/* 1. Grid expands to 2 columns on tablets */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[calc(100vh-260px)] overflow-y-auto">
-        {ctx.users.map((user, i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[calc(100vh-380px)] overflow-y-auto">
+        {filteredUsers().map((user, i) => (
           <div
             key={i}
             className="border p-4 rounded-lg bg-custom-white shadow flex flex-col justify-between gap-3"
@@ -92,17 +187,21 @@ const UserInfoForm = () => {
               </div>
             </div>
             <div
-              className={`${isOutranked(user) ? "hidden" : "font-medium grid grid-cols-3 gap-4"}`}
+              className="grid font-medium"
+              // className={`${isOutranked(user) ? "hidden" : "font-medium grid grid-cols-3 gap-4"}`}
             >
-              <button className="bg-[rgb(30,45,80)]/95 text-custom-white py-3 px-0 rounded-2xl shadow">
-                Update Info
-              </button>
-              <button className="bg-[rgb(30,45,80)]/95 text-custom-white py-3 px-0 rounded-2xl shadow">
-                Reset Password
-              </button>
-              <button className="bg-[rgb(30,45,80)]/95 text-custom-white py-3 px-0 rounded-2xl shadow">
-                Reset Security
-              </button>
+              {!isOutranked(user) ? (
+                <button
+                  className="bg-[rgb(30,45,80)]/95 text-custom-white py-3 px-0 rounded-2xl shadow"
+                  onClick={() => handleUpdateBtnClick(user)}
+                >
+                  Update Info
+                </button>
+              ) : (
+                <div className="bg-[rgb(30,45,80)]/50 text-custom-white py-3 px-0 rounded-2xl shadow text-center">
+                  You are not authorized to update this user
+                </div>
+              )}
             </div>
           </div>
         ))}

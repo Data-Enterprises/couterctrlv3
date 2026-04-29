@@ -93,7 +93,7 @@ const SalesPanels = () => {
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 
     // date logic for weekly sales
-    const weeklyStart = addDays(end, -6).toISOString().split("T")[0];
+    const weeklyStart = sales.dashboardOption === "weekly" ? addDays(end, -6).toISOString().split("T")[0] : formatGoliathDate(search.singleDate);
     const weeklyEnd = new Date(end).toISOString().split("T")[0];
 
     // Final logic for params based on if a store panel is selected
@@ -123,7 +123,7 @@ const SalesPanels = () => {
           const endDateLY = sameWeekDayLastYear(weeklyEnd);
           const lyDate = new Date(endDateLY.date);
           const lyWkEnd = setDates(lyDate);
-          const lyWkStart = setDates(lyDate, 6);
+          const lyWkStart = sales.dashboardOption === "weekly" ? setDates(lyDate, 6) : setDates(lyDate, 0);
           getWeekly(
             context.url,
             context.token,
@@ -184,7 +184,7 @@ const SalesPanels = () => {
           const endDateLY = sameWeekDayLastYear(weeklyEnd);
           const lyDate = new Date(endDateLY.date);
           const lyWkEnd = setDates(lyDate);
-          const lyWkStart = setDates(lyDate, 6);
+          const lyWkStart = sales.dashboardOption === "weekly" ? setDates(lyDate, 6) : setDates(lyDate, 0);
           getHourly(
             context.url,
             context.token,
@@ -224,14 +224,14 @@ const SalesPanels = () => {
           // Last week
           const lastWkDate = new Date(weeklyEnd);
           const lastWeekEnd = setDates(lastWkDate, 7);
-          const lastWeekStart = setDates(lastWkDate, 13);
+          const lastWeekStart = sales.dashboardOption === "weekly" ? setDates(lastWkDate, 13) : lastWeekEnd;
           getSubsData(p ? lastWeekEnd : lastWeekStart, lastWeekEnd, 2);
 
           // Last year's same week
           const endDateLY = sameWeekDayLastYear(weeklyEnd);
           const lyDate = new Date(endDateLY.date);
           const lyWkEnd = setDates(lyDate);
-          const lyWkStart = setDates(lyDate, 6);
+          const lyWkStart = sales.dashboardOption === "weekly" ? setDates(lyDate, 6) : setDates(lyDate, 0);
           getSubsData(p ? lyWkEnd : lyWkStart, lyWkEnd, 3);
         }
       })

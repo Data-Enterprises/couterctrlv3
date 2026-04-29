@@ -14,20 +14,17 @@ const TotalsGridLvlThree = ({ week }: TotalsGridLvlThreeProps) => {
 
   return (
     <div className="odd:bg-custom-white even:bg-bkg/85">
-      <div className="grid grid-cols-6 gap-4 text-[12px]">
-        <div className="pl-12 font-medium">{formatDate(week.sale_date)}</div>
-        <div>{formatCurrency2(week.salesTY)}</div>
-        <div>{formatCurrency2(week.salesLY)}</div>
-        <div className={`${changeTextColor(week.salesTY - week.salesLY, 0)}`}>
+      <div className="grid grid-cols-6 gap-4 text-[10px]">
+        <div className="font-medium">{formatDate(week.sale_date)}</div>
+        <div className="text-right">{formatCurrency2(week.salesTY)}</div>
+        <div className="text-right">{formatCurrency2(week.salesLY)}</div>
+        <div className="text-right">{formatBigNumber(week.atsTotalSales, 0)}</div>
+        <div className={`${changeTextColor(week.salesTY - week.salesLY, 0)} text-right`}>
           {formatCurrency2(week.salesTY - week.salesLY)}
         </div>
-        <div className={`${changeTextColor(percentChange, 0)}`}>
+        <div className={`${changeTextColor(percentChange, 0)} text-right`}>
           {percentChange.toFixed(2)}%
         </div>
-        <div>{formatBigNumber(week.atsTotalSales, 0)}</div>
-      </div>
-      <div className="even:bg-bkg/85">
-        <div className="ml-12 bg-bkg/85 border-b border-content/20"></div>
       </div>
     </div>
   );

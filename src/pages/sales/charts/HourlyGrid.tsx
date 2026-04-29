@@ -14,9 +14,14 @@ const HourlyGrid = () => {
   const [lyRowData, setLyRowData] = useState<HourlyTotal[]>([]);
   const [barData, setBarData] = useState<any[]>([]);
   const [_, setLyData] = useState<any[]>([]);
-  const { hourlySales, selectedSalesPanel, hourlySalesLastYear } =
-    useAppSelector((state) => state.sales);
+  const {
+    hourlySales,
+    selectedSalesPanel,
+    hourlySalesLastYear,
+    dashboardOption,
+  } = useAppSelector((state) => state.sales);
   const { isTablet } = useAppSelector((state) => state.app);
+  const search = useAppSelector((state) => state.search);
   const [barIndex, setBarIndex] = useState<string>("date");
 
   useEffect(() => {
@@ -28,12 +33,21 @@ const HourlyGrid = () => {
     }, []);
 
     setHour(uniqueHours[0].hour);
-    setBarIndex(selectedSalesPanel.sale_date ? "hour" : "date");
+    if (dashboardOption === "daily") {
+      setBarIndex("hour");
+    } else {
+      setBarIndex(selectedSalesPanel.sale_date ? "hour" : "date");
+    }
   }, [hourlySales, selectedSalesPanel]);
 
   const formatDate = (dateStr: string, char: "-" | "/" = "-"): string => {
     const split = dateStr.split("T")[0].split(char);
     return `${split[1]}/${split[2]}`;
+  };
+
+  const formatDateLong = (dateStr: string): string => {
+    const split = dateStr.split("T")[0].split("-");
+    return `${split[1]}/${split[2]}/${split[0]}`;
   };
 
   const handleSelect = (param: HourlyTotal) => {
@@ -95,8 +109,17 @@ const HourlyGrid = () => {
   }, [hourlySales, hourlySalesLastYear]);
 
   useEffect(() => {
+    console.log("howdy");
     const hourFiltered = [...hourlySales]
       .filter((d) => {
+        if (dashboardOption === "daily") {
+          const split = search.singleDate.split("/");
+          const month = split[0].length === 1 ? `0${split[0]}` : split[0];
+          const day = split[1].length === 1 ? `0${split[1]}` : split[1];
+          const dateComp = `${month}/${day}`;
+          return dateComp === formatDate(d.sale_date);
+        }
+
         if (selectedSalesPanel.sale_date) {
           return (
             formatDate(d.sale_date) === formatDate(selectedSalesPanel.sale_date)
@@ -115,6 +138,11 @@ const HourlyGrid = () => {
 
     const lyFiltered = [...hourlySalesLastYear]
       .filter((d) => {
+        if (dashboardOption === "daily") {
+          const date = sameWeekDayLastYear(search.singleDate).date;
+          return formatDate(d.sale_date) === formatDate(date);
+        }
+
         if (selectedSalesPanel.sale_date) {
           const lyDate = sameWeekDayLastYear(selectedSalesPanel.sale_date).date;
           return formatDate(d.sale_date) === formatDate(lyDate);
@@ -181,22 +209,47 @@ const HourlyGrid = () => {
         left: 30,
       };
 
+  const formatCurrentDate = () => {
+    const split = search.singleDate.split("/");
+    const month = split[0].length === 1 ? `0${split[0]}` : split[0];
+    const day = split[1].length === 1 ? `0${split[1]}` : split[1];
+    const year = split[2];
+    return `${month}/${day}/${year}`;
+  };
+
   return (
     <div className="bg-custom-white rounded-lg shadow-lg my-2 md:my-0 py-1.5">
       <div className="px-2 font-medium flex justify-between">
-        <span className="font-medium text-sm md:text-[13.5px]">
+        <span className="font-medium text-[13.5px]">
           Hourly Sales
         </span>
-        <span className="text-right text-sm md:text-[13.5px]">
-          Hour: {hour}
-        </span>
+        {dashboardOption === "weekly" ? (
+          <span className="text-right text-[13.5px]">
+            Hour: {hour}
+          </span>
+        ) : (
+          <span className="text-right text-[13.5px]">
+            {search.singleDate}
+          </span>
+        )}
       </div>
       <div className="flex text-[13px] font-medium">
-        <div className="grid grid-cols-2 md:flex md:w-[45%]">
-          <div className="md:w-1/2 pl-2">This Year</div>
-          <div className="md:w-1/2 pl-2">Last Year</div>
+        {dashboardOption === "weekly" ? (
+          <div className="grid grid-cols-2 md:flex md:w-[45%]">
+            <div className="md:w-1/2 pl-2">This Year</div>
+            <div className="md:w-1/2 pl-2">Last Year</div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:flex md:w-[45%]">
+            <div className="md:w-1/2 pl-2">{formatCurrentDate()}</div>
+            <div className="md:w-1/2 pl-2">{formatDateLong(sameWeekDayLastYear(search.singleDate).date)}</div>
+          </div>
+        )}
+        <div
+          className={`w-[55%] text-right pr-2 ${dashboardOption === "daily" ? "opacity-0" : ""}`}
+        >
+          This Week
         </div>
-        <div className="md:w-[55%] text-right pr-2">This Week</div>
       </div>
       <div className="h-[93%] grid gap-2 md:gap-0 md:grid-cols-[45%_54%] mt-1 md:mt-0">
         <div className="grid max-h-[200px] md:max-h-[230px] rounded-lg overflow-y-scroll mx-1 md:mx-2 no-scrollbar">
@@ -210,7 +263,7 @@ const HourlyGrid = () => {
                   {/* This year */}
                   {current ? (
                     <div
-                      className={`${h === hour ? "bg-blue-200" : compareCard(current.total_sales, lastYear ? lastYear.total_sales : 0)} 
+                      className={`${h === hour && dashboardOption === "weekly" ? "bg-blue-200" : compareCard(current.total_sales, lastYear ? lastYear.total_sales : 0)} 
                         text-xs rounded-lg shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
                       onClick={() => handleSelect(current)}
                     >
@@ -236,7 +289,16 @@ const HourlyGrid = () => {
                   {/* Last year */}
                   {lastYear ? (
                     <div
-                      className={`${h === hour ? "bg-blue-200" : compareCard(lastYear.total_sales, current ? current.total_sales : 0)} 
+                      className={`${
+                        h === hour &&
+                        dashboardOption === "weekly" &&
+                        dashboardOption === "weekly"
+                          ? "bg-blue-200"
+                          : compareCard(
+                              lastYear.total_sales,
+                              current ? current.total_sales : 0,
+                            )
+                      } 
                         text-xs rounded-lg shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
                       onClick={() => handleSelect(lastYear)}
                     >
@@ -288,7 +350,7 @@ const HourlyGrid = () => {
                 let fullDate = "";
                 let dow = "";
 
-                if (typeof value === "string") {
+                if (typeof value === "string" && dashboardOption === "weekly") {
                   const found = barData.find((d) => d.date === value);
                   if (found) {
                     fullDate = found.full_date;
