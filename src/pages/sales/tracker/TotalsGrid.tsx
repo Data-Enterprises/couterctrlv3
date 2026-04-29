@@ -60,10 +60,10 @@ const TotalsGrid = () => {
   };
 
   return (
-    <div className="h-full w-full">
-      <div className="flex flex-wrap gap-x-2 gap-y-1 mb-2">
+    <div className="h-full w-full rounded-lg shadow-lg">
+      <div className="flex flex-wrap gap-x-2 gap-y-1 bg-custom-white p-2 rounded-t-lg">
         <div
-          className={`px-3 text-[9.5px] rounded-full border border-content/25 ${sales.salesTrackerSelectedSubDept === 0 ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200`}
+          className={`px-2 text-[9px] rounded-full border border-content/25 cursor-pointer hover:shadow-inner hover:bg-bkg ${sales.salesTrackerSelectedSubDept === 0 ? "bg-orange-200" : "bg-bkg/75"} transition-all duration-200`}
           onClick={() => dispatch(setSalesTrackerSelectedSubDept(0))}
         >
           All Subs
@@ -72,7 +72,7 @@ const TotalsGrid = () => {
           return (
             <div
               key={idx}
-              className={`px-3 text-[9.5px] rounded-full border border-content/25 ${sales.salesTrackerSelectedSubDept === sub.id ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200`}
+              className={`px-2 text-[9px] rounded-full border border-content/25 cursor-pointer hover:shadow-inner hover:bg-bkg ${sales.salesTrackerSelectedSubDept === sub.id ? "bg-orange-200" : "bg-bkg/75"} transition-all duration-200`}
               onClick={() => dispatch(setSalesTrackerSelectedSubDept(sub.id))}
             >
               {sub.desc}
@@ -81,7 +81,7 @@ const TotalsGrid = () => {
         })}
       </div>
       {sales.salesTrackerSelectedSubDept === 0 ? (
-        <div className="grid grid-cols-5 gap-2 bg-custom-white p-2 rounded-lg shadow-lg max-h-[80.5%] overflow-auto no-scrollbar">
+        <div className="grid grid-cols-5 gap-2  bg-custom-white rounded-b-lg shadow-lg max-h-[82%] px-2 pb-2 overflow-auto no-scrollbar">
           {sales.uniqueSubs.map((sub, idx) => {
             const subId = sub.id;
             const desc = sub.desc;
@@ -102,7 +102,7 @@ const TotalsGrid = () => {
           })}
         </div>
       ) : (
-        <div className="max-h-[80.5%] overflow-auto no-scrollbar">
+        <div className="bg-custom-white rounded-b-lg shadow-lg max-h-[82%] overflow-auto no-scrollbar px-2 pb-2">
           {filteredSubs().map((sub, idx) => {
             const subId = sub.id;
             const desc = sub.desc;

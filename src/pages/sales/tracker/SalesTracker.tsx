@@ -127,7 +127,7 @@ const SalesTracker = () => {
   }
 
   return (
-    <div className="min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)] flex flex-col text-sm overflow-hidden">
+    <div className="min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)] flex flex-col overflow-hidden">
       <SalesTrackerKpis />
       <TotalsGrid />
     </div>

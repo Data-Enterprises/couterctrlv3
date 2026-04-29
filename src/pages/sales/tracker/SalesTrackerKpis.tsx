@@ -18,14 +18,20 @@ const SalesTrackerKpis = () => {
         const thisYear = sales.tyCollapsedSubSales.flat();
         const lastYear = sales.lyCollapsedSubSales.flat();
 
-        const tyTotalSales = thisYear.reduce(
-          (acc, sale) => acc + sale.total_sales - sale.total_tax,
-          0,
-        );
-        const lyTotalSales = lastYear.reduce(
-          (acc, sale) => acc + sale.total_sales - sale.total_tax,
-          0,
-        );
+        const tyTotalSales = thisYear
+          .filter((s) =>
+            sales.salesTrackerSelectedSubDept > 0
+              ? s.sub_department === sales.salesTrackerSelectedSubDept
+              : true,
+          )
+          .reduce((acc, sale) => acc + sale.total_sales - sale.total_tax, 0);
+        const lyTotalSales = lastYear
+          .filter((s) =>
+            sales.salesTrackerSelectedSubDept > 0
+              ? s.sub_department === sales.salesTrackerSelectedSubDept
+              : true,
+          )
+          .reduce((acc, sale) => acc + sale.total_sales - sale.total_tax, 0);
 
         const percentChange =
           lyTotalSales === 0
@@ -46,12 +52,11 @@ const SalesTrackerKpis = () => {
           dollarChange,
           dateRange,
         };
-        console.log("Result Object:", result);
         dispatch(setTrackerKpis(result));
       };
       calcTotals();
     }
-  }, [sales.tyReducedTotals]);
+  }, [sales.tyReducedTotals, sales.salesTrackerSelectedSubDept]);
 
   const textColorClass = (num: number) => {
     if (num > 0) {
@@ -74,24 +79,46 @@ const SalesTrackerKpis = () => {
   };
 
   return (
-    <div className="grid text-[13.5px] grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-2 font-medium">
-      <div className="p-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
-        <div className="text-content/60 ">Date Range</div>
+    <div className="grid text-[13px] grid-cols-7 gap-3 mb-2 font-medium">
+      <div className="px-4 py-2 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
+        <div className="text-content/60 ">Viewing</div>
         <div className="flex items-center gap-1 mt-1">
-          <span className="">{sales.trackerKpis.dateRange}</span>
+          <span className="">
+            {sales.salesTrackerSelectedSubDept === 0
+              ? "All Sub Depts"
+              : sales.uniqueSubs.filter(
+                  (s) => s.id === sales.salesTrackerSelectedSubDept,
+                )[0].desc}
+          </span>
+        </div>
+      </div>
+      <div className="p-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
+        <div className="text-content/60 ">Period Start</div>
+        <div className="flex items-center gap-1 mt-1">
+          <span className="">
+            {sales.trackerKpis.dateRange.split(" - ")[0]}
+          </span>
+        </div>
+      </div>
+      <div className="p-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
+        <div className="text-content/60 ">Period End</div>
+        <div className="flex items-center gap-1 mt-1">
+          <span className="">
+            {sales.trackerKpis.dateRange.split(" - ")[1]}
+          </span>
         </div>
       </div>
 
       <div className="p-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
         <div className="text-content/60 ">TY Total Sales</div>
-        <div className="mt-1 font-semibold text-base">
+        <div className="mt-1 font-semibold">
           {formatCurrency2(sales.trackerKpis.tyTotalSales)}
         </div>
       </div>
 
       <div className="p-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
         <div className="text-content/60 ">LY Total Sales</div>
-        <div className="mt-1 font-semibold text-base">
+        <div className="mt-1 font-semibold">
           {formatCurrency2(sales.trackerKpis.lyTotalSales)}
         </div>
       </div>

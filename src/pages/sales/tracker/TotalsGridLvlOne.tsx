@@ -46,7 +46,7 @@ const TotalsGridLvlOne = ({
 
   if (!isLvlTwo) {
     return (
-      <div className="bg-custom-white cursor-pointer transition-all duration-200 hover:bg-orange-200 text-[13px] rounded-lg shadow-lg border border-gray-200 px-3 py-1.5 w-full">
+      <div className="bg-custom-white cursor-pointer text-[13px] rounded-lg shadow-lg border border-content/15 px-3 py-1.5 w-full">
         <div className="flex justify-between items-start">
           <div className="font-medium">{desc}</div>
           <div className="flex gap-1 text-[10.5px]">

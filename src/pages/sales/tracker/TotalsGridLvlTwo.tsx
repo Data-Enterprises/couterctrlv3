@@ -37,13 +37,15 @@ const TotalsGridLvlTwo = ({ week, weekTotals, idx, desc = "" }: TotalsGridLvlTwo
   };
 
   return (
-    <div className="text-[12px] px-2 py-1.5 rounded-lg shadow-lg grid bg-custom-white max-w-full">
+    <div className="text-[12px] px-2 py-1.5 rounded-lg shadow-lg grid bg-custom-white max-w-full border border-content/15">
       <div
         className="font-medium cursor-default relative"
         onClick={chevronTurn}
       >
         <div className="flex justify-between items-center">
-          <div className="text-content/60">{desc} Week {idx}</div>
+          <div className="text-content/60">
+            {desc} Week {idx}
+          </div>
           <div>
             {formatDate(week[0].sale_date)} -{" "}
             {formatDate(week[week.length - 1].sale_date)}

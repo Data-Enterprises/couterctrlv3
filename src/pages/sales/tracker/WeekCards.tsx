@@ -134,7 +134,7 @@ const WeekCards = () => {
   };
 
   return (
-    <div className="space-y-2 max-h-[calc(100vh-447px)] overflow-y-scroll no-scrollbar mt-2">
+    <div className="space-y-2 max-h-[calc(100vh-376px)] overflow-y-scroll no-scrollbar mt-2 pb-2">
       {sales.tyWeekCards.map((sale, idx) => (
         <div
           key={idx}
