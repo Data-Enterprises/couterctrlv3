@@ -525,6 +525,12 @@ const salesMobileSlice = createSlice({
     setSalesTrackerSelectedSubDept: (state, action: PayloadAction<number>) => {
       state.salesTrackerSelectedSubDept = action.payload;
     },
+    concatTYSubTrackerMobile: (state, action: PayloadAction<SubSale[]>) => {
+      state.thisYrSubTrackerMobile = state.thisYrSubTrackerMobile.concat(action.payload);
+    },
+    concatLYSubTrackerMobile: (state, action: PayloadAction<SubSale[]>) => {
+      state.lastYrSubTrackerMobile = state.lastYrSubTrackerMobile.concat(action.payload);
+    },
 
     resetMobileSalesState: (state) => {
       return { ...initialState, dashboardOption: state.dashboardOption };
@@ -560,5 +566,17 @@ export const {
   setHourlyKey,
   setSelectedSubDept,
   setMobileDashboardOption,
+  setLoadingTYTrackerData,
+  setLoadingLYTrackerData,
+  setTyWeekCardsMobile,
+  setLyWeekCardsMobile,
+  setTyCollapsedSubSalesMobile,
+  setLyCollapsedSubSalesMobile,
+  setTyReducedTotalsMobile,
+  setUniqueSubsMobile,
+  setTrackerKpisMobile,
+  setSalesTrackerSelectedSubDept,
+  concatLYSubTrackerMobile,
+  concatTYSubTrackerMobile,
 } = salesMobileSlice.actions;
 export default salesMobileSlice.reducer;

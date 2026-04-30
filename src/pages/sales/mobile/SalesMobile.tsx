@@ -1,7 +1,11 @@
 import { useMobileSalesCtx } from "./hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
+  concatLYSubTrackerMobile,
+  concatTYSubTrackerMobile,
   resetMobileSalesState,
+  setLoadingLYTrackerData,
+  setLoadingTYTrackerData,
   setMobileDashboardOption,
   setMobileHourlyLastYearSales,
   setMobileHourlySales,
@@ -216,8 +220,8 @@ const SalesMobile = () => {
   };
 
   const getSubsTracker = () => {
-    // ctx.dispatch(setLoadingTYTrackerData(true));
-    // ctx.dispatch(setLoadingLYTrackerData(true));
+    ctx.dispatch(setLoadingTYTrackerData(true));
+    ctx.dispatch(setLoadingLYTrackerData(true));
     const end = formatGoliathDate(search.endDate);
     const start = formatGoliathDate(search.startDate);
 
@@ -244,7 +248,7 @@ const SalesMobile = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          // ctx.dispatch(concatTYSubTracker(j.subs));
+          ctx.dispatch(concatTYSubTrackerMobile(j.subs));
           if (j.total_pages > 1) {
             const pages: { page: number; fetched: boolean }[] = [];
             for (let page = 2; page <= j.total_pages; page++) {
@@ -267,18 +271,18 @@ const SalesMobile = () => {
                 .then((resp) => {
                   const j = resp.data;
                   if (j.error === 0) {
-                    // ctx.dispatch(concatTYSubTracker(j.subs));
+                    ctx.dispatch(concatTYSubTrackerMobile(j.subs));
                     pages.find((p) => p.page === page)!.fetched = true;
 
                     if (pages.every((p) => p.fetched)) {
-                      // ctx.dispatch(setLoadingTYTrackerData(false));
+                      ctx.dispatch(setLoadingTYTrackerData(false));
                     }
                   }
                 })
                 .catch((err: JsonError) => toast.error(err.message));
             }
           } else {
-            // ctx.dispatch(setLoadingTYTrackerData(false));
+            ctx.dispatch(setLoadingTYTrackerData(false));
           }
         }
       })
@@ -300,7 +304,7 @@ const SalesMobile = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          // ctx.dispatch(concatLYSubTracker(j.subs));
+          ctx.dispatch(concatLYSubTrackerMobile(j.subs));
           if (j.total_pages > 1) {
             const pages: { page: number; fetched: boolean }[] = [];
             for (let page = 2; page <= j.total_pages; page++) {
@@ -323,18 +327,18 @@ const SalesMobile = () => {
                 .then((resp) => {
                   const j = resp.data;
                   if (j.error === 0) {
-                    // ctx.dispatch(concatLYSubTracker(j.subs));
+                    ctx.dispatch(concatLYSubTrackerMobile(j.subs));
                     pages.find((p) => p.page === page)!.fetched = true;
 
                     if (pages.every((p) => p.fetched)) {
-                      // ctx.dispatch(setLoadingLYTrackerData(false));
+                      ctx.dispatch(setLoadingLYTrackerData(false));
                     }
                   }
                 })
                 .catch((err: JsonError) => toast.error(err.message));
             }
           } else {
-            // ctx.dispatch(setLoadingLYTrackerData(false));
+            ctx.dispatch(setLoadingLYTrackerData(false));
           }
         }
       })
