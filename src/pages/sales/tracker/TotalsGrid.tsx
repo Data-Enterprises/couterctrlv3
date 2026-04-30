@@ -55,10 +55,11 @@ const TotalsGrid = () => {
   };
 
   return (
-    <div className="h-full w-full rounded-lg shadow-lg grid grid-cols-[54%_45%] gap-3">
-      <div>
-        <div className="bg-custom-white rounded-t-lg shadow-lg">
-          <div className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1fr_0.7fr_0.8fr] font-bold text-content/60 text-sm px-2">
+    <div className="h-full w-full rounded-lg shadow-lg grid grid-cols-[54.5%_45%] gap-2">
+      <div className="">
+        {/* Header row */}
+        <div className="bg-custom-white rounded-t-lg shadow">
+          <div className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1fr_0.7fr_0.8fr] font-bold text-content/70 text-sm px-2 py-1">
             <div>Sub Dept</div>
             <div className="text-right">TY Sales</div>
             <div className="text-right">LY Sales</div>
@@ -66,9 +67,11 @@ const TotalsGrid = () => {
             <div className="text-right">$ Change</div>
             <div className="text-right">% Change</div>
           </div>
-          <div className="mt-1 border-b border-content/60 mx-2"></div>
+          <div className="border-b border-content/40 mx-2"></div>
         </div>
-        <div className="grid bg-custom-white rounded-b-lg shadow-lg max-h-[81%] overflow-auto no-scrollbar">
+
+        {/* Scrollable body */}
+        <div className="bg-custom-white rounded-b-lg shadow-lg max-h-[80%] overflow-y-auto no-scrollbar">
           {sales.uniqueSubs.map((sub, idx) => {
             const subId = sub.id;
             const desc = sub.desc;
@@ -91,27 +94,29 @@ const TotalsGrid = () => {
         </div>
       </div>
 
-      <div className="max-h-[84.1%] overflow-auto no-scrollbar">
-        {filteredSubs().map((sub, idx) => {
-          const subId = sub.id;
-          const desc = sub.desc;
+      {sales.salesTrackerSelectedSubDept > 0 && (
+        <div className="max-h-[83.6%] overflow-auto no-scrollbar">
+          {filteredSubs().map((sub, idx) => {
+            const subId = sub.id;
+            const desc = sub.desc;
 
-          const filtered = sales.tyReducedTotals
-            .filter((wg) => wg[0][0].subDept === subId)
-            .flat();
+            const filtered = sales.tyReducedTotals
+              .filter((wg) => wg[0][0].subDept === subId)
+              .flat();
 
-          const totals = calcTotals(filtered);
-          return (
-            <TotalsGridLvlOne
-              key={idx}
-              desc={desc}
-              totals={totals}
-              isLvlTwo={true}
-              filtered={filtered}
-            />
-          );
-        })}
-      </div>
+            const totals = calcTotals(filtered);
+            return (
+              <TotalsGridLvlOne
+                key={idx}
+                desc={desc}
+                totals={totals}
+                isLvlTwo={true}
+                filtered={filtered}
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
