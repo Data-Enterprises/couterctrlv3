@@ -75,7 +75,7 @@ const TotalsGrid = () => {
                 ATS Sales
               </div>
               <div
-                className={`pointer-events-none ${isHovering ? "absolute text-[10px] text-content font-medium text-nowrap top-0 -translate-y-5 translate-x-[5%] bg-orange-200 px-2 rounded-md shadow-md animate-windowIn" : "hidden"}`}
+                className={`pointer-events-none ${isHovering ? "absolute text-[10px] text-content font-medium text-nowrap top-0 -translate-y-0 translate-x-[105%] bg-orange-200 px-2 rounded-md shadow-md animate-windowIn" : "hidden"}`}
               >
                 ATS: Average Transaction Size
               </div>

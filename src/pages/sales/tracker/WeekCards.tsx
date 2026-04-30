@@ -33,16 +33,12 @@ const WeekCards = () => {
         ),
       );
 
-      const chunkedTyDates = chunkData(
-        justTyDates,
-      );
+      const chunkedTyDates = chunkData(justTyDates);
       const tyDateRanges = chunkedTyDates.map((chunk) => {
         return `${chunk[0]} - ${chunk[chunk.length - 1]}`;
       });
 
-      const chunkedLyDates = chunkData(
-        justLyDates,
-      );
+      const chunkedLyDates = chunkData(justLyDates);
 
       const lyDateRanges = chunkedLyDates.map((chunk) => {
         return `${chunk[0]} - ${chunk[chunk.length - 1]}`;
@@ -82,6 +78,7 @@ const WeekCards = () => {
               found.store_coupon += curr.store_coupon;
               found.total_tax += curr.total_tax;
               found.weight += curr.weight;
+              found.transaction_count += curr.transaction_count;
             } else {
               const sale_date = range;
               const store_name = curr.store_name
@@ -135,42 +132,95 @@ const WeekCards = () => {
 
   return (
     <div className="space-y-2 max-h-[calc(100vh-376px)] overflow-y-scroll no-scrollbar mt-2 pb-2">
-      {sales.tyWeekCards.map((sale, idx) => (
-        <div
-          key={idx}
-          className="text-[12px] p-2 rounded-lg bg-custom-white shadow-lg"
-        >
-          <div className="flex justify-between font-medium">
-            <div>{sale.store_name}</div>
-            <div>
-              {formatDate(sale.sale_date.split(" - ")[0])} -{" "}
-              {formatDate(sale.sale_date.split(" - ")[1])}
-            </div>
-          </div>
-          <div className="grid grid-cols-2 col-span-2">
-            <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
-            <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
-          </div>
-          <div className="grid grid-cols-3 mt-1">
-            <div>
-              <div>Net Sales</div>
-              <div className="font-medium">
-                {formatCurrency2(sale.total_sales - sale.total_tax)}
+      {sales.tyWeekCards.map((sale, idx) => {
+        const lyCard = sales.lyWeekCards[idx];
+        
+        // const salesDollarChange = (sale.total_sales - sale.total_tax) - (lyCard.total_sales - lyCard.total_tax);
+        // const salesPercentChange = (salesDollarChange / (lyCard.total_sales - lyCard.total_tax)) * 100;
+
+        // console.log(salesDollarChange, salesPercentChange);
+        return (
+          <div
+            key={idx}
+            className="text-[12px] p-2 rounded-lg bg-custom-white shadow-lg"
+          >
+            <div className="flex justify-between font-medium">
+              <div>{sale.store_name}</div>
+              <div>
+                {formatDate(sale.sale_date.split(" - ")[0])} -{" "}
+                {formatDate(sale.sale_date.split(" - ")[1])}
               </div>
             </div>
-
-            <div className="text-center">
-              <div>Qty</div>
-              <div className="font-medium">{formatBigNumber(sale.qty, 0)}</div>
+            <div className="grid grid-cols-2 col-span-2">
+              <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
+              <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
             </div>
+            <div className="grid grid-cols-3 mt-1 gap-y-1">
+              <div>
+                <div>TY Sales</div>
+                <div className="font-medium">
+                  {formatCurrency2(sale.total_sales - sale.total_tax)}
+                </div>
+              </div>
 
-            <div className="text-right">
-              <div>Weight</div>
-              <div className="font-medium">{formatWeight(sale.weight)}</div>
+              <div className="text-center">
+                <div>TY Qty</div>
+                <div className="font-medium">
+                  {formatBigNumber(sale.qty, 0)}
+                </div>
+              </div>
+
+              <div className="text-right">
+                <div>TY Weight</div>
+                <div className="font-medium">{formatWeight(sale.weight)}</div>
+              </div>
+
+              <div>
+                <div>LY Sales</div>
+                <div className="font-medium">
+                  {formatCurrency2(lyCard.total_sales - lyCard.total_tax)}
+                </div>
+              </div>
+
+              <div className="text-center">
+                <div>LY Qty</div>
+                <div className="font-medium">
+                  {formatBigNumber(lyCard.qty, 0)}
+                </div>
+              </div>
+
+              <div className="text-right">
+                <div>LY Weight</div>
+                <div className="font-medium">{formatWeight(lyCard.weight)}</div>
+              </div>
+
+              {/* Changes */}
+              {/* <div>
+                <div>Change</div>
+                <div className="font-medium">
+                  {formatCurrency2(
+                    sale.total_sales -
+                      sale.total_tax -
+                      (lyCard.total_sales - lyCard.total_tax),
+                  )}
+                </div>
+              </div>
+
+              <div className="text-center">
+                <div>LY Qty</div>
+                <div className="font-medium">
+                  {formatBigNumber(lyCard.qty, 0)}
+                </div>
+              </div>
+
+              <div className="text-right">
+                <div>LY Weight</div>
+                <div className="font-medium">{formatWeight(lyCard.weight)}</div>
+              </div> */}
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

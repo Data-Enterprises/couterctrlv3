@@ -39,7 +39,10 @@ const TotalsGridLvlTwo = ({
             {formatDate(week[week.length - 1].sale_date)}
           </div>
         </div>
-        <div className="h-[1px] bg-gradient-to-r from-gray-200 to-transparent my-1"></div>
+        <div className="h-[1.5px] grid grid-cols-2 my-1">
+          <div className="bg-gradient-to-r from-content/15 to-custom-white"></div>
+          <div className="bg-gradient-to-l from-content/15 to-custom-white"></div>
+        </div>
 
         <div className="grid grid-cols-[1fr_3fr] gap-2 my-2 text-[11px]">
           <div className="bg-bkg/70 px-2 py-[2px] rounded-lg shadow-md border-2 border-content/15">
