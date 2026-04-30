@@ -149,7 +149,7 @@ const initialState: SalesMobileState = {
     dateRange: "",
   },
   refreshOverviewData: false,
-  dashboardOption: "daily",
+  dashboardOption: "weekly",
   salesTrackerSelectedSubDept: 0,
   salesTrackerView: "period",
 };

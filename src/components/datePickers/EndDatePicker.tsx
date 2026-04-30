@@ -34,7 +34,8 @@ const EndDatePicker = () => {
     : `relative inline-block text-left md:px-0 mx-auto w-full`;
 
   const menuStyle = context.isDesktop ? "px-2.5 md:px-0" : "";
-  const calendarStyle = "w-[98%] md:w-[100%]";
+  const calendarStyle = "w-[150%] md:w-[215px]";
+  // const calendarStyle = "w-[98%] md:w-[165%]";
 
   return (
     <Menu data-testid="end-date-picker" as="div" className={styling}>

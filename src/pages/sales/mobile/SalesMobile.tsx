@@ -6,7 +6,7 @@ import {
   resetMobileSalesState,
   setLoadingLYTrackerData,
   setLoadingTYTrackerData,
-  setMobileDashboardOption,
+  // setMobileDashboardOption,
   setMobileHourlyLastYearSales,
   setMobileHourlySales,
   setMobilePanelsLoading,
@@ -28,12 +28,12 @@ import MainViewContainer from "./MainViewContainer";
 import { formatGoliathDate, sameWeekDayLastYear } from "../../../utils";
 import { setDates } from "../utils";
 
-import {
-  CurrencyDollarIcon,
-  ClipboardDocumentIcon,
-  DocumentCurrencyDollarIcon,
-} from "@heroicons/react/24/solid";
-import type { DashboardOption } from "../../../features/salesSlice";
+// import {
+//   CurrencyDollarIcon,
+//   ClipboardDocumentIcon,
+//   DocumentCurrencyDollarIcon,
+// } from "@heroicons/react/24/solid";
+// import type { DashboardOption } from "../../../features/salesSlice";
 import { useAppSelector } from "../../../hooks";
 import DatePickers from "../../../components/datePickers/DatePickers";
 
@@ -357,15 +357,15 @@ const SalesMobile = () => {
 
   const showTrackerBtn = ctx.tyReducedTotalsMobile.length > 0;
 
-  const activeStyle = (dbOption: DashboardOption) => {
-    return ctx.dashboardOption === dbOption
-      ? "text-orange-500"
-      : "text-content/60";
-  };
+  // const activeStyle = (dbOption: DashboardOption) => {
+  //   return ctx.dashboardOption === dbOption
+  //     ? "text-orange-500"
+  //     : "text-content/60";
+  // };
 
-  const handleDashboardSelect = (option: DashboardOption) => {
-    ctx.dispatch(setMobileDashboardOption(option));
-  };
+  // const handleDashboardSelect = (option: DashboardOption) => {
+  //   ctx.dispatch(setMobileDashboardOption(option));
+  // };
 
   const uniqueDates = (): number => {
     const dates = ctx.salesPanels.map((panel) => panel.sale_date);
@@ -375,7 +375,7 @@ const SalesMobile = () => {
   // Default return if view is 'main'
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar select-none text-[13px]">
-      <div className="flex justify-items-center bg-custom-white shadow-md py-2 text-[12px]">
+      {/* <div className="flex justify-items-center bg-custom-white shadow-md py-2 text-[12px]">
         <div
           className="border-r w-1/3 flex justify-center gap-2 items-center transition-all"
           onClick={() => handleDashboardSelect("daily")}
@@ -403,7 +403,7 @@ const SalesMobile = () => {
           />
           Tracker
         </div>
-      </div>
+      </div> */}
       <div className="p-2">
         <div className="bg-custom-white rounded-lg shadow-md p-2 mb-2">
           <StorePicker />
