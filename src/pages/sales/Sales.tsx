@@ -18,7 +18,7 @@ import SubsCompareModal from "./subsCompare/SubsCompareModal";
 import SalesMobile from "./mobile/SalesMobile";
 import SalesTracker from "./tracker/SalesTracker";
 import WeekCards from "./tracker/WeekCards";
-import SalesTablet from "./tablet/SalesTablet";
+// import SalesTablet from "./tablet/SalesTablet";
 
 // Dispatchers
 import {
@@ -243,7 +243,7 @@ const Sales = () => {
 
   // Just render the mobile or tablet version and cut down on excessive operations
   if (context.isMobile) return <SalesMobile />;
-  if (context.isTablet) return <SalesTablet />;
+  // if (context.isTablet) return <SalesTablet />; // commenting this out for publishing until it's ready
 
   // ///////////////////////////////////////////////////////////////////
 
