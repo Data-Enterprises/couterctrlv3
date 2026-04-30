@@ -1,5 +1,4 @@
 import { useRef } from "react";
-// import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { formatDate } from ".";
 import { formatCurrency2 } from "../../../utils";
 import type { WeekTotal } from "../../../features/salesSlice";
@@ -30,7 +29,7 @@ const TotalsGridLvlTwo = ({
 
   return (
     <div className="text-[12px] px-2 py-1.5 rounded-lg shadow-lg bg-custom-white max-w-full border border-content/15 hover:shadow-md transition-shadow duration-200">
-      <div className="font-medium cursor-pointer relative select-none">
+      <div className="font-medium cursor-default select-none">
         <div className="flex justify-between items-center">
           <div className="text-content/60">
             {desc} Week {idx}
@@ -44,7 +43,7 @@ const TotalsGridLvlTwo = ({
 
         <div className="grid grid-cols-[1fr_3fr] gap-2 my-2 text-[11px]">
           <div className="bg-bkg/70 px-2 py-[2px] rounded-lg shadow-md border-2 border-content/15">
-            <div className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-0.5 text-[11px] leading-5 mt-0.5">
+            <div className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-[1px] text-[11px] leading-5 mt-0.5">
               <div className="text-content/60">TY Sales</div>
               <div className="text-right">
                 {formatCurrency2(weekTotals.tyTotalSales)}

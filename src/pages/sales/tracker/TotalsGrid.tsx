@@ -62,17 +62,21 @@ const TotalsGrid = () => {
       <div className="">
         {/* Header row */}
         <div className="bg-custom-white rounded-t-lg shadow">
-          <div className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1fr_0.7fr_0.8fr] font-bold text-content/70 text-sm px-2 py-1">
+          <div className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1fr_0.7fr_0.8fr] font-medium text-content/70 text-sm px-2 py-1">
             <div>Sub Dept</div>
             <div className="text-right">TY Sales</div>
             <div className="text-right">LY Sales</div>
-            <div
-              className={`text-right relative hover:text-orange-200 `}
-              onMouseEnter={() => setIsHovering(true)}
-              onMouseLeave={() => setIsHovering(false)}
-            >
-              ATS Sales
-              <div className={`pointer-events-none ${isHovering ? "absolute text-[10px] text-content font-medium text-nowrap top-0 -translate-y-5 translate-x-[5%] bg-orange-200 px-2 rounded-md shadow-md animate-windowIn" : "hidden"}`}>
+            <div className={`text-right relative flex justify-end`}>
+              <div
+                className="hover:text-orange-200"
+                onMouseEnter={() => setIsHovering(true)}
+                onMouseLeave={() => setIsHovering(false)}
+              >
+                ATS Sales
+              </div>
+              <div
+                className={`pointer-events-none ${isHovering ? "absolute text-[10px] text-content font-medium text-nowrap top-0 -translate-y-5 translate-x-[5%] bg-orange-200 px-2 rounded-md shadow-md animate-windowIn" : "hidden"}`}
+              >
                 ATS: Average Transaction Size
               </div>
             </div>

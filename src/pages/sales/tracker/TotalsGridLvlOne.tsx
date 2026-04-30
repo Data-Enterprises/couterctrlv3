@@ -60,7 +60,13 @@ const TotalsGridLvlOne = ({
     }, 0);
     const atsTotalSales = totalTrans === 0 ? 0 : tyTotalSales / totalTrans;
 
-    return { tyTotalSales, lyTotalSales, percentChange, dollarChange, atsTotalSales };
+    return {
+      tyTotalSales,
+      lyTotalSales,
+      percentChange,
+      dollarChange,
+      atsTotalSales,
+    };
   };
 
   const handleRowClick = () => {
@@ -72,7 +78,7 @@ const TotalsGridLvlOne = ({
   if (!isLvlTwo) {
     return (
       <div
-        className={`text-[13px] transition-all last:rounded-b-lg duration-200 ${salesTrackerSelectedSubDept === subId ? "bg-orange-200 shadow-inner" : "bg-custom-white"}`}
+        className={`text-[12.5px] transition-all last:rounded-b-lg duration-200 ${salesTrackerSelectedSubDept === subId ? "bg-orange-200 shadow-inner" : "bg-custom-white"}`}
         onClick={handleRowClick}
       >
         <div className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1fr_0.7fr_0.8fr] px-2 py-1 font-medium items-center cursor-pointer hover:bg-blue-200/50 transition-all duration-200">
