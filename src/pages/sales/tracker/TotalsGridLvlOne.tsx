@@ -1,5 +1,9 @@
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
-import { type WeekTotal } from "../../../features/salesSlice";
+import {
+  setSalesTrackerSelectedSubDept,
+  type WeekTotal,
+} from "../../../features/salesSlice";
 import { changeTextColor } from ".";
 import TotalsGridLvlTwo from "./TotalsGridLvlTwo";
 
@@ -14,6 +18,7 @@ interface TotalsGridLvlOneProps {
   };
   filtered: WeekTotal[][];
   isLvlTwo?: boolean;
+  subId?: number;
 }
 
 const TotalsGridLvlOne = ({
@@ -21,7 +26,12 @@ const TotalsGridLvlOne = ({
   totals,
   filtered,
   isLvlTwo = false,
+  subId,
 }: TotalsGridLvlOneProps) => {
+  const { salesTrackerSelectedSubDept } = useAppSelector(
+    (state) => state.sales,
+  );
+  const dispatch = useAppDispatch();
   const calcTotals = (data: WeekTotal[][]) => {
     const tyTotalSales = data.reduce((acc, weekGroup) => {
       return (
@@ -44,57 +54,43 @@ const TotalsGridLvlOne = ({
     return { tyTotalSales, lyTotalSales, percentChange, dollarChange };
   };
 
+  const handleRowClick = () => {
+    if (subId !== undefined) {
+      dispatch(setSalesTrackerSelectedSubDept(subId));
+    }
+  };
+
   if (!isLvlTwo) {
     return (
-      <div className="bg-custom-white cursor-default text-[13px] rounded-lg shadow-lg border border-content/15 px-3 py-1.5 w-full">
-        <div className="flex justify-between items-end">
-          <div className="font-medium">{desc}</div>
-          <div className="flex gap-1 text-[10.5px]">
-            <div
-              className={`rounded-md ${changeTextColor(totals.dollarChange, 0)}`}
-            >
-              <div className="font-semibold">
-                {formatCurrency2(totals.dollarChange)}
-              </div>
-            </div>
-            <div
-              className={`rounded-md ${changeTextColor(totals.percentChange, 0)}`}
-            >
-              <div className="font-semibold">
-                ({totals.percentChange.toFixed(2)}%)
-              </div>
-            </div>
+      <div
+        className={`text-[13px] transition-all duration-200 ${salesTrackerSelectedSubDept === subId ? "bg-orange-200 shadow-inner" : ""}`}
+        onClick={handleRowClick}
+      >
+        <div className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1fr_0.7fr_0.8fr] px-2 py-1 font-medium items-center cursor-pointer hover:bg-blue-200/50 transition-all duration-200">
+          <div className="flex gap-1 items-center">
+            <div className="">{desc}</div>
+          </div>
+          <div className="text-right">
+            {formatCurrency2(totals.tyTotalSales)}
+          </div>
+          <div className="text-right">
+            {formatCurrency2(totals.lyTotalSales)}
+          </div>
+          <div className="text-right">
+            {formatBigNumber(totals.atsTotalSales, 2)}
+          </div>
+          <div
+            className={`text-right ${changeTextColor(totals.dollarChange, 0)}`}
+          >
+            {formatCurrency2(totals.dollarChange)}
+          </div>
+          <div
+            className={`text-right ${changeTextColor(totals.percentChange, 0)}`}
+          >
+            {totals.percentChange.toFixed(2)}%
           </div>
         </div>
-        <div className="grid grid-cols-2 mb-1.5">
-          <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
-          <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          <div className="rounded-md bg-bkg/75 p-2">
-            <div className="text-content/60">TY Sales</div>
-            <div
-              className={`font-semibold ${changeTextColor(totals.dollarChange, 0)}`}
-            >
-              {formatCurrency2(totals.tyTotalSales)}
-            </div>
-          </div>
-
-          <div className="rounded-md bg-bkg/75 p-2">
-            <div className="text-content/60">LY Sales</div>
-            <div className="font-semibold">
-              {formatCurrency2(totals.lyTotalSales)}
-            </div>
-          </div>
-
-          <div className="rounded-md bg-bkg/75 p-2 col-span-2">
-            <div className="text-content/60">ATS Sales</div>
-            <div className="font-semibold">
-              {formatBigNumber(totals.atsTotalSales, 2)}
-            </div>
-          </div>
-        </div>
+        <div className="border-b border-content/15"></div>
       </div>
     );
   }
@@ -104,7 +100,8 @@ const TotalsGridLvlOne = ({
     <div className="">
       <div
         data-display="closed"
-        className="grid grid-cols-3 gap-2"
+        className="grid gap-2"
+        // className="grid grid-cols-3 gap-2"
       >
         {filtered.map((week, widx) => {
           const desc = week[0].subDesc;
