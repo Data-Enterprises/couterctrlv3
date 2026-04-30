@@ -134,11 +134,7 @@ const WeekCards = () => {
     <div className="space-y-2 max-h-[calc(100vh-376px)] overflow-y-scroll no-scrollbar mt-2 pb-2">
       {sales.tyWeekCards.map((sale, idx) => {
         const lyCard = sales.lyWeekCards[idx];
-        
-        // const salesDollarChange = (sale.total_sales - sale.total_tax) - (lyCard.total_sales - lyCard.total_tax);
-        // const salesPercentChange = (salesDollarChange / (lyCard.total_sales - lyCard.total_tax)) * 100;
 
-        // console.log(salesDollarChange, salesPercentChange);
         return (
           <div
             key={idx}
