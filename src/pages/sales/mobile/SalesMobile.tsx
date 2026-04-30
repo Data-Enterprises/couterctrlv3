@@ -355,6 +355,8 @@ const SalesMobile = () => {
     ctx.subSales.length > 0 &&
     ctx.weeklySales.length > 0;
 
+  const showTrackerBtn = ctx.tyReducedTotalsMobile.length > 0;
+
   const activeStyle = (dbOption: DashboardOption) => {
     return ctx.dashboardOption === dbOption
       ? "text-orange-500"
@@ -363,6 +365,11 @@ const SalesMobile = () => {
 
   const handleDashboardSelect = (option: DashboardOption) => {
     ctx.dispatch(setMobileDashboardOption(option));
+  };
+
+  const uniqueDates = (): number => {
+    const dates = ctx.salesPanels.map((panel) => panel.sale_date);
+    return Array.from(new Set(dates)).length;
   };
 
   // Default return if view is 'main'
@@ -420,7 +427,16 @@ const SalesMobile = () => {
               className="btn-themeBlue w-full mt-2"
               onClick={() => ctx.dispatch(setView("stores"))}
             >
-              Overview
+              {uniqueDates() < 2 ? "Daily Sales" : "Weekly Sales"}
+            </button>
+          )}
+
+          {showTrackerBtn && (
+            <button
+              className="btn-themeBlue w-full mt-2"
+              onClick={() => ctx.dispatch(setView("tracker"))}
+            >
+              Sales Tracker
             </button>
           )}
         </div>
