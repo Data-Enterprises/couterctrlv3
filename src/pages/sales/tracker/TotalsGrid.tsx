@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { type WeekTotal } from "../../../features/salesSlice";
 import { useAppSelector } from "../../../hooks";
 import TotalsGridLvlOne from "./TotalsGridLvlOne";
 
 const TotalsGrid = () => {
+  const [isHovering, setIsHovering] = useState<boolean>(false);
   const sales = useAppSelector((state) => state.sales);
 
   if (sales.tyReducedTotals.length === 0) {
@@ -56,7 +58,7 @@ const TotalsGrid = () => {
   };
 
   return (
-    <div className="h-full w-full rounded-lg shadow-lg grid grid-cols-[54.5%_45%] gap-2">
+    <div className="h-full w-full rounded-lg grid grid-cols-[54.5%_45%] gap-2">
       <div className="">
         {/* Header row */}
         <div className="bg-custom-white rounded-t-lg shadow">
@@ -64,7 +66,16 @@ const TotalsGrid = () => {
             <div>Sub Dept</div>
             <div className="text-right">TY Sales</div>
             <div className="text-right">LY Sales</div>
-            <div className="text-right">ATS Sales</div>
+            <div
+              className={`text-right relative hover:text-orange-200 `}
+              onMouseEnter={() => setIsHovering(true)}
+              onMouseLeave={() => setIsHovering(false)}
+            >
+              ATS Sales
+              <div className={`pointer-events-none ${isHovering ? "absolute text-[10px] text-content font-medium text-nowrap top-0 -translate-y-5 translate-x-[5%] bg-orange-200 px-2 rounded-md shadow-md animate-windowIn" : "hidden"}`}>
+                ATS: Average Transaction Size
+              </div>
+            </div>
             <div className="text-right">$ vs LY</div>
             <div className="text-right">% vs LY</div>
           </div>
@@ -72,7 +83,7 @@ const TotalsGrid = () => {
         </div>
 
         {/* Scrollable body */}
-        <div className="bg-custom-white rounded-b-lg shadow-lg max-h-[calc(100vh-195px)] overflow-y-auto no-scrollbar">
+        <div className="rounded-b-lg shadow-lg max-h-[calc(100vh-180px)] overflow-y-auto no-scrollbar pb-1">
           {sales.uniqueSubs.map((sub, idx) => {
             const subId = sub.id;
             const desc = sub.desc;
@@ -82,6 +93,7 @@ const TotalsGrid = () => {
               .flat();
 
             const totals = calcTotals(filtered);
+            const isLast = idx === sales.uniqueSubs.length - 1;
             return (
               <TotalsGridLvlOne
                 key={idx}
@@ -89,6 +101,7 @@ const TotalsGrid = () => {
                 totals={totals}
                 filtered={filtered}
                 subId={subId}
+                isLast={isLast}
               />
             );
           })}
@@ -96,7 +109,7 @@ const TotalsGrid = () => {
       </div>
 
       {sales.salesTrackerSelectedSubDept > 0 && (
-        <div className="max-h-[calc(100vh-163px)] overflow-auto no-scrollbar pb-1">
+        <div className="max-h-[calc(100vh-152px)] overflow-auto no-scrollbar pb-1">
           {filteredSubs().map((sub, idx) => {
             const subId = sub.id;
             const desc = sub.desc;

@@ -1,6 +1,6 @@
 import { formatDate } from ".";
 import type { WeekTotal } from "../../../features/salesSlice";
-import { formatBigNumber, formatCurrency2 } from "../../../utils";
+import { formatCurrency2 } from "../../../utils";
 import { changeTextColor } from ".";
 
 interface TotalsGridLvlThreeProps {
@@ -22,17 +22,17 @@ const TotalsGridLvlThree = ({ weekDay }: TotalsGridLvlThreeProps) => {
   const atsTotalSales = totalTrans === 0 ? 0 : totalSales / totalTrans;
 
   return (
-    <div className="bg-bkg/25 shadow-md rounded-lg px-2 py-1 text-[10px] grid grid-cols-2 gap-x-2">
+    <div className="bg-bkg/25 shadow rounded-lg px-2 py-1 text-[10px] grid grid-cols-2 gap-x-2 border border-content/15">
       {/* Header: Day of week + formatted date */}
       <div className="font-medium text-content/60">{dow}</div>
       <div className="font-medium text-content/60 text-right">
         {formatDate(weekDay.sale_date)}
       </div>
 
-      <div className="col-span-2 border-t border-bkg/40 my-0.5 -mx-2"></div>
+      <div className="col-span-2 border-t border-bkg/40 my-[1px] -mx-2"></div>
 
       <div className="text-content/60">ATS Sales</div>
-      <div className="text-right">{formatBigNumber(atsTotalSales, 0)}</div>
+      <div className="text-right font-medium">{formatCurrency2(atsTotalSales)}</div>
 
       <div className="text-content/60 text-xs">$ vs LY</div>
       <div

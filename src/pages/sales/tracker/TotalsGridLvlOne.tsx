@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { formatBigNumber, formatCurrency2 } from "../../../utils";
+import { formatCurrency2 } from "../../../utils";
 import {
   setSalesTrackerSelectedSubDept,
   type WeekTotal,
@@ -19,6 +19,7 @@ interface TotalsGridLvlOneProps {
   filtered: WeekTotal[][];
   isLvlTwo?: boolean;
   subId?: number;
+  isLast?: boolean;
 }
 
 const TotalsGridLvlOne = ({
@@ -27,6 +28,7 @@ const TotalsGridLvlOne = ({
   filtered,
   isLvlTwo = false,
   subId,
+  isLast,
 }: TotalsGridLvlOneProps) => {
   const { salesTrackerSelectedSubDept } = useAppSelector(
     (state) => state.sales,
@@ -70,7 +72,7 @@ const TotalsGridLvlOne = ({
   if (!isLvlTwo) {
     return (
       <div
-        className={`text-[13px] transition-all duration-200 ${salesTrackerSelectedSubDept === subId ? "bg-orange-200 shadow-inner" : ""}`}
+        className={`text-[13px] transition-all last:rounded-b-lg duration-200 ${salesTrackerSelectedSubDept === subId ? "bg-orange-200 shadow-inner" : "bg-custom-white"}`}
         onClick={handleRowClick}
       >
         <div className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1fr_0.7fr_0.8fr] px-2 py-1 font-medium items-center cursor-pointer hover:bg-blue-200/50 transition-all duration-200">
@@ -84,7 +86,7 @@ const TotalsGridLvlOne = ({
             {formatCurrency2(totals.lyTotalSales)}
           </div>
           <div className="text-right">
-            {formatBigNumber(totals.atsTotalSales, 2)}
+            {formatCurrency2(totals.atsTotalSales)}
           </div>
           <div
             className={`text-right ${changeTextColor(totals.dollarChange, 0)}`}
@@ -97,7 +99,7 @@ const TotalsGridLvlOne = ({
             {totals.percentChange.toFixed(2)}%
           </div>
         </div>
-        <div className="border-b border-content/15"></div>
+        {!isLast && <div className="border-b border-content/15"></div>}
       </div>
     );
   }

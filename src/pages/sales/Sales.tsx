@@ -118,6 +118,8 @@ const Sales = () => {
   };
 
   const getSubsTracker = () => {
+    dispatch(setLoadingTYTrackerData(true));
+    dispatch(setLoadingLYTrackerData(true));
     const end = formatGoliathDate(search.endDate);
     const start = formatGoliathDate(search.startDate);
 
