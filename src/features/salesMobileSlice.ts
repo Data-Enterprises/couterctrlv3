@@ -17,7 +17,8 @@ import type {
   TrackerKpis,
   SubTracker,
 } from "./salesSlice";
-export type SalesMobileView = "main" | "stores" | "sales" | "subdept";
+export type SalesMobileView = "main" | "stores" | "sales" | "subdept" | "tracker";
+export type SalesTrackerView= "period" | "weeks" | "days"
 
 export const defaultSelectedSalesPanel: SelectedSalesPanel = {
   sale_date: "",
@@ -82,6 +83,7 @@ interface SalesMobileState {
   refreshOverviewData: boolean;
   dashboardOption: DashboardOption;
   salesTrackerSelectedSubDept: number;
+  salesTrackerView: SalesTrackerView;
 }
 
 const defaultAggTotals: AggTotals = {
@@ -149,6 +151,7 @@ const initialState: SalesMobileState = {
   refreshOverviewData: false,
   dashboardOption: "daily",
   salesTrackerSelectedSubDept: 0,
+  salesTrackerView: "period",
 };
 
 const formatDate = (dte: string) => {
@@ -531,6 +534,9 @@ const salesMobileSlice = createSlice({
     concatLYSubTrackerMobile: (state, action: PayloadAction<SubSale[]>) => {
       state.lastYrSubTrackerMobile = state.lastYrSubTrackerMobile.concat(action.payload);
     },
+    setSalesTrackerView: (state, action: PayloadAction<SalesTrackerView>) => {
+      state.salesTrackerView = action.payload;
+    },
 
     resetMobileSalesState: (state) => {
       return { ...initialState, dashboardOption: state.dashboardOption };
@@ -578,5 +584,6 @@ export const {
   setSalesTrackerSelectedSubDept,
   concatLYSubTrackerMobile,
   concatTYSubTrackerMobile,
+  setSalesTrackerView,
 } = salesMobileSlice.actions;
 export default salesMobileSlice.reducer;

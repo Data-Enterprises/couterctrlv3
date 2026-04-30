@@ -343,6 +343,8 @@ const SalesMobile = () => {
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
+
+    ctx.dispatch(setView("tracker"));
   };
 
   // Here is where the main view can be toggled once the sales panels are set

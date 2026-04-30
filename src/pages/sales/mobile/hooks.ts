@@ -6,7 +6,7 @@ export const useMobileSalesCtx = () => {
   const {
     dashboardOption,
     hourlyKey,
-
+    salesTrackerView,
     hours,
     hourlySales,
     hourlySalesLastYear,
@@ -109,5 +109,6 @@ export const useMobileSalesCtx = () => {
     tyReducedTotalsMobile,
     tyWeekCardsMobile,
     uniqueSubsMobile,
+    salesTrackerView,
   };
 };
