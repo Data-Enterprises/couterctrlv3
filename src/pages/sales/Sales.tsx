@@ -1,3 +1,4 @@
+// import { useState } from "react";
 // Hooks/API
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { useAppSelector, useAppDispatch } from "../../hooks";
@@ -15,6 +16,9 @@ import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import SubsCompareModal from "./subsCompare/SubsCompareModal";
 import SalesMobile from "./mobile/SalesMobile";
+import SalesTracker from "./tracker/SalesTracker";
+import WeekCards from "./tracker/WeekCards";
+// import SalesTablet from "./tablet/SalesTablet";
 
 // Dispatchers
 import {
@@ -23,43 +27,61 @@ import {
   concatLYSubTracker,
   concatTYSubTracker,
   reQuery,
+  setDashboardOption,
   setLeftSubCompare,
   setLoadingLYTrackerData,
   setLoadingTYTrackerData,
-  setMainView,
   setPanelsLoading,
+  setRefreshOverviewData,
   setRightSubCompare,
   setSalesPanels,
   setSelectedSalesPanel,
-  setWeeksBack,
+  type DashboardOption,
 } from "../../features/salesSlice";
 
 // utils
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../utils";
 import type { JsonError } from "../../interfaces";
-import SalesTracker from "./tracker/SalesTracker";
-import { getWeeksBackDate } from "./utils";
-import Input from "../../components/inputs/Input";
-import WeekCards from "./tracker/WeekCards";
+import SingleSelect from "../../components/SingleSelect";
+import DatePickers from "../../components/datePickers/DatePickers";
+
+const dashboardOptions = [
+  { label: "Daily Sales", value: "daily" },
+  { label: "Weekly Sales", value: "weekly" },
+  { label: "Sales Tracker", value: "tracker" },
+];
 
 const Sales = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const { queryChecker, salesPanels, mainView, weeksBack } = useAppSelector(
+  // const [noPanelsFound, setNoPanelsFound] = useState<boolean>(false);
+  const { queryChecker, salesPanels, dashboardOption } = useAppSelector(
     (state) => state.sales,
   );
 
   const getSalesPanels = async () => {
     dispatch(reQuery());
+    dispatch(setRefreshOverviewData(true));
     dispatch(setLeftSubCompare(null));
     dispatch(setRightSubCompare(null));
     dispatch(
       setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
     );
 
-    const start = addDays(search.singleDate, -6).toISOString().split("T")[0];
+    if (dashboardOption === "tracker") {
+      dispatch(clearLYSubTracker());
+      dispatch(clearTYSubTracker());
+      getSubsTracker();
+      return;
+    }
+
+    const start =
+      dashboardOption === "weekly"
+        ? addDays(search.singleDate, -6).toISOString().split("T")[0]
+        : formatGoliathDate(search.singleDate);
+
     const end = formatGoliathDate(search.singleDate);
     const useGroups = search.type === "Group" ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
@@ -67,10 +89,6 @@ const Sales = () => {
 
     // Loading states
     dispatch(setPanelsLoading(true));
-    dispatch(clearTYSubTracker());
-    dispatch(clearLYSubTracker());
-    dispatch(setLoadingTYTrackerData(true));
-    dispatch(setLoadingLYTrackerData(true));
 
     await getWeekly(
       context.url,
@@ -97,20 +115,16 @@ const Sales = () => {
       .finally(() => {
         dispatch(setPanelsLoading(false));
       });
-
-    // Getting the Subs Data for the tracker
-    getSubsTracker();
   };
 
   const getSubsTracker = () => {
-    const end = formatGoliathDate(search.singleDate);
-    const start = getWeeksBackDate(search.singleDate, Number(weeksBack));
+    dispatch(setLoadingTYTrackerData(true));
+    dispatch(setLoadingLYTrackerData(true));
+    const end = formatGoliathDate(search.endDate);
+    const start = formatGoliathDate(search.startDate);
 
-    const endDateLY = sameWeekDayLastYear(search.singleDate).date;
-    const startDateLY = getWeeksBackDate(
-      sameWeekDayLastYear(search.singleDate).date,
-      Number(weeksBack),
-    );
+    const endDateLY = sameWeekDayLastYear(search.endDate).date;
+    const startDateLY = sameWeekDayLastYear(search.startDate).date;
 
     const useGroups = search.type === "Group" ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
@@ -210,7 +224,6 @@ const Sales = () => {
               )
                 .then((resp) => {
                   const j = resp.data;
-                  console.log(j.page, "page");
                   if (j.error === 0) {
                     dispatch(concatLYSubTracker(j.subs));
                     pages.find((p) => p.page === page)!.fetched = true;
@@ -230,141 +243,96 @@ const Sales = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
-  // Just render the mobile version and cut down on excessive operations
+  // Just render the mobile or tablet version and cut down on excessive operations
   if (context.isMobile) return <SalesMobile />;
+  // if (context.isTablet) return <SalesTablet />; // commenting this out for publishing until it's ready
 
-  // const pageContainer =
-  //   "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none";
-  // const gridContainer =
-  //   "grid grid-cols-[17%_83%] gap-2 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]";
+  // ///////////////////////////////////////////////////////////////////
 
-  const pageContainer = context.isDesktop
-    ? "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none"
-    : "min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 overflow-y-scroll bg-bkg";
-  const gridContainer = context.isDesktop
-    ? " grid grid-cols-[250px_1fr] gap-2 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]"
-    : "h-full";
+  const pageContainer =
+    "w-full min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-4 select-none";
+  const gridContainer =
+    "grid grid-cols-[17%_83%] gap-2 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]";
 
   const isLoading =
-    mainView === "overview" &&
+    dashboardOption !== "tracker" &&
     (!queryChecker.hourly ||
       !queryChecker.subs ||
       !queryChecker.topTen ||
       !queryChecker.weekly);
 
-  const handleWeeksBackChange = (value: string) => {
-    const num = Number(value);
-    if (!isNaN(num) && num >= 0) {
-      dispatch(setWeeksBack(value));
-    }
-  };
-
   return (
     <div data-testid="sales-page" className={pageContainer}>
-      {!context.isMobile ? (
-        <div className={gridContainer}>
-          <SubsCompareModal />
-          <div className={`h-full md:grid-rows-[267px_1fr] md:gap-2`}>
-            <div className="bg-custom-white rounded-lg p-2 shadow-lg">
-              <StorePicker />
+      <div className={gridContainer}>
+        <SubsCompareModal />
+        <div className={`h-full md:grid-rows-[267px_1fr] md:gap-2`}>
+          <div className="bg-custom-white rounded-lg p-2 shadow-lg">
+            <SingleSelect
+              label="Views"
+              data={dashboardOptions}
+              valueKey="value"
+              displayKey="label"
+              onSelect={(val) =>
+                dispatch(setDashboardOption(val as DashboardOption))
+              }
+              defaultValue={dashboardOption}
+              defaultQuery={
+                dashboardOptions.filter((o) => o.value === dashboardOption)[0]
+                  .label
+              }
+              innerClass="py-1.5 text-sm"
+            />
+            <StorePicker />
+            {dashboardOption !== "tracker" ? (
               <SingleDatePicker />
-              <button
-                className="btn-themeBlue w-full mt-2 py-1.5 text-sm"
-                onClick={getSalesPanels}
-              >
-                Search
-              </button>
-              <Input
-                label="Weeks Back"
-                value={weeksBack}
-                setValue={handleWeeksBackChange}
-              />
-              <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-                <button
-                  className={`${mainView === "overview" ? "btn-themeGreen" : "btn-themeBlue"} py-1.5 px-0`}
-                  onClick={() => dispatch(setMainView("overview"))}
-                >
-                  Overview
-                </button>
-                <button
-                  className={`${mainView === "tracker" ? "btn-themeGreen" : "btn-themeBlue"} py-1.5 px-0`}
-                  onClick={() => dispatch(setMainView("tracker"))}
-                >
-                  Tracker
-                </button>
-              </div>
-            </div>
-            {salesPanels.length > 0 && mainView === "overview" ? (
-              <div
-                className={`max-h-[calc(100vh-447px)] overflow-y-scroll no-scrollbar mt-2`}
-              >
-                <SalesPanels />
-              </div>
-            ) : null}
-            {mainView === "tracker" ? <WeekCards /> : null}
+            ) : (
+              <DatePickers showBtn={false} />
+            )}
+            <button
+              className={`btn-themeBlue w-full mt-2 py-1.5 text-sm`}
+              onClick={getSalesPanels}
+            >
+              Search
+            </button>
           </div>
-
-          {isLoading ? (
-            <div className="relative">
-              {salesPanels.length ? (
-                <LoadingIndicator message="Loading sales data" />
-              ) : null}
-            </div>
-          ) : (
-            <>
-              {mainView === "overview" ? (
-                <div className="md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)] grid grid-rows-[152px_1fr] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
-                  <KpiHeader />
-                  <div className="grid grid-cols-[42%_1fr] gap-2 h-[calc(100vh-232px)]">
-                    <div className="grid grid-rows-[282px_1fr] gap-2 h-full">
-                      <HourlyGrid />
-                      <TopTen />
-                    </div>
-                    <div className="grid gap-2 h-full grid-rows-[220px_1fr]">
-                      <SubDeptComps />
-                      <SubDeptGrid />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <SalesTracker />
-              )}
-            </>
-          )}
-        </div>
-      ) : (
-        <div className={gridContainer}>
-          {/* <ReportBuilder /> */}
-          <div className="md:grid h-full md:grid-rows-[25%_74%] md:gap-4">
-            <div className="bg-custom-white rounded-lg p-3 shadow-lg space-y-1">
-              <StorePicker />
-              <SingleDatePicker />
-              <button className="btn-themeBlue w-full" onClick={getSalesPanels}>
-                Search
-              </button>
-            </div>
-            <div className="overflow-y-scroll no-scrollbar my-2 max-h-56">
+          {salesPanels.length > 0 && dashboardOption !== "tracker" ? (
+            <div
+              className={`max-h-[calc(100vh-378px)] overflow-y-scroll no-scrollbar mt-2`}
+            >
               <SalesPanels />
             </div>
-          </div>
-
-          {isLoading ? (
-            <div className="relative">
-              {salesPanels.length ? (
-                <LoadingIndicator message="Loading sales data..." />
-              ) : null}
-            </div>
-          ) : (
-            <div className="overflow-hidden">
-              <KpiHeader />
-              <SubDeptGrid />
-              <SubDeptComps />
-              <HourlyGrid />
-              <TopTen />
-            </div>
-          )}
+          ) : null}
+          {dashboardOption === "tracker" ? <WeekCards /> : null}
         </div>
-      )}
+
+        {isLoading ? (
+          <div className="relative">
+            {salesPanels.length ? (
+              <LoadingIndicator message="Loading sales overview" />
+            ) : null}
+          </div>
+        ) : (
+          <>
+            {dashboardOption !== "tracker" ? (
+              <div className="md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)] grid grid-rows-[152px_1fr] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
+                <KpiHeader />
+                <div className="grid grid-cols-[42%_1fr] gap-2 h-[calc(100vh-232px)]">
+                  <div className="grid grid-rows-[282px_1fr] gap-2 h-full">
+                    <HourlyGrid />
+                    <TopTen />
+                  </div>
+                  <div className="grid gap-2 h-full grid-rows-[220px_1fr]">
+                    <SubDeptComps />
+                    <SubDeptGrid />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <SalesTracker />
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

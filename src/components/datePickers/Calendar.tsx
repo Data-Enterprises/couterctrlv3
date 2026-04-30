@@ -102,12 +102,12 @@ const Calendar = ({ handleCancel, handleDate, dateFlag }: Props) => {
       className=" w-full h-full text-content px-2 select-none"
     >
       <div className="calendar border-b">
-        <div className="navigate-date flex items-center gap-2 mx-0 my-2 justify-between">
+        <div className="navigate-date flex items-center gap-2 mx-0 my-1 justify-between">
           <div className="flex">
-            <h2 className="month text-xl px-2 font-bold">
+            <h2 className="month text-lg px-2 font-bold">
               {monthsOfYear[currentMonth]},
             </h2>
-            <h2 className="year text-xl px-2 font-bold ">{currentYear}</h2>
+            <h2 className="year text-lg px-2 font-bold ">{currentYear}</h2>
           </div>
           <div className="buttons flex gap-2 px-2">
             <i
@@ -135,7 +135,7 @@ const Calendar = ({ handleCancel, handleDate, dateFlag }: Props) => {
           </div>
         </div>
       </div>
-      <div className="md:w-full mt-2 flex uppercase font-bold text-sm gap-1 tracking-tight text-center">
+      <div className="md:w-full mt-0.5 md:mt-2 flex uppercase font-bold text-[13px] gap-1 tracking-tight text-center">
         {daysOfWeek.map((day, i) => (
           <div key={`dow=${i}`} className="weekday">
             {day}

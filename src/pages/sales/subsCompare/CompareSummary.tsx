@@ -51,7 +51,7 @@ const CompareSummary = () => {
   };
 
   return (
-    <div className="text-sm">
+    <div className="text-[13.5px] max-h-[95vh] overflow-y-auto no-scrollbar">
       {/* Header */}
       <div className="flex">
         <div className="bg-custom-white pt-1 pl-2 w-1/2 border-b border-content/60 rounded-tl-lg">

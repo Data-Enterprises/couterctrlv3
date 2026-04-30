@@ -135,7 +135,7 @@ const SideBar = () => {
 
   // experimenting with this for mobile icon sizing
   const mobileIconStyle = () => {
-    if (context.isDesktop) {
+    if (context.isDesktop || context.isTablet) {
       return "h-7 w-7";
     } else {
       return !nav.isNavOpen
@@ -248,7 +248,7 @@ const SideBar = () => {
         <div
           data-testid="nav-settings"
           className={`${
-            context.isDesktop ? "" : "hidden"
+            context.isDesktop || context.isTablet ? "" : "hidden"
           } flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200 relative`}
           onClick={() => {
             navigate("settings");

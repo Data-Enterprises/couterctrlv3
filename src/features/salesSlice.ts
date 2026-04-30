@@ -31,6 +31,7 @@ export type WeekTotal = {
   totalSalesDollarChange: number;
   totalSalesPercentChange: number;
   atsTotalSales: number;
+  transaction_count: number;
 };
 
 export type WindowVisible = {
@@ -50,6 +51,8 @@ type QueryChecker = {
   subs: boolean;
   weekly: boolean;
 };
+
+export type DashboardOption = "daily" | "weekly" | "tracker";
 
 interface SalesState {
   topTenItems: TopTenItem[];
@@ -77,6 +80,7 @@ interface SalesState {
   compareSubsRightCompare: SubSale[];
   mainView: "overview" | "tracker";
   weeksBack: string;
+  
   loadingTYTrackerData: boolean;
   loadingLYTrackerData: boolean;
   thisYrSubTracker: SubSale[];
@@ -88,6 +92,9 @@ interface SalesState {
   tyReducedTotals: WeekTotal[][][];
   uniqueSubs: SubTracker[];
   trackerKpis: TrackerKpis;
+  refreshOverviewData: boolean;
+  dashboardOption: DashboardOption;
+  salesTrackerSelectedSubDept: number;
 }
 
 export const defaultSelectedPanel: SelectedSalesPanel = {
@@ -144,6 +151,9 @@ const initialState: SalesState = {
     dollarChange: 0,
     dateRange: "",
   },
+  refreshOverviewData: false,
+  dashboardOption: "daily",
+  salesTrackerSelectedSubDept: 0,
 };
 
 export const salesSlice = createSlice({
@@ -282,6 +292,7 @@ export const salesSlice = createSlice({
         dollarChange: 0,
         dateRange: "",
       };
+      state.salesTrackerSelectedSubDept = 0;
     },
     clearLYSubTracker: (state) => {
       state.lastYrSubTracker = [];
@@ -321,6 +332,15 @@ export const salesSlice = createSlice({
     },
     setTrackerKpis: (state, action: PayloadAction<TrackerKpis>) => {
       state.trackerKpis = action.payload;
+    },
+    setRefreshOverviewData: (state, action: PayloadAction<boolean>) => {
+      state.refreshOverviewData = action.payload;
+    },
+    setDashboardOption: (state, action: PayloadAction<DashboardOption>) => {
+      state.dashboardOption = action.payload;
+    },
+    setSalesTrackerSelectedSubDept: (state, action: PayloadAction<number>) => {
+      state.salesTrackerSelectedSubDept = action.payload;
     },
     resetSalesSlice: () => initialState,
   },
@@ -364,5 +384,8 @@ export const {
   setTyReducedTotals,
   setUniqueSubs,
   setTrackerKpis,
+  setRefreshOverviewData,
+  setDashboardOption,
+  setSalesTrackerSelectedSubDept,
 } = salesSlice.actions;
 export default salesSlice.reducer;

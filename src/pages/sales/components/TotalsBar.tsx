@@ -17,7 +17,8 @@ const TotalsBar = () => {
   const [dateRange, setDateRange] = useState<string>("");
   const state = useAppSelector((state) => state.sales);
 
-  const formatPieData = (data: WeeklySale[]): PieData[] => {
+  const formatBarData = (data: WeeklySale[]): PieData[] => {
+    if (data.length === 0) return [];
     const grouped: PieData[] = data.reduce((acc: PieData[], curr) => {
       const exists = acc.find(
         (item) => item.label === formatDateSimple(curr.sale_date.split("T")[0]),
@@ -48,13 +49,16 @@ const TotalsBar = () => {
             (sale) => sale.storeid === state.selectedSalesPanel.storeid,
           )
         : [...state.weeklySales];
+
     const dates = Array.from(
       new Set(data.map((d) => d.sale_date.split("T")[0])),
     ).sort();
+
     setDateRange(
       `${formatDateSimple(dates[0])} - ${formatDateSimple(dates[dates.length - 1])}`,
     );
-    setBarData(formatPieData(data));
+
+    setBarData(formatBarData(data));
   }, [state.selectedSalesPanel, state.weeklySales]);
 
   const setMarginLeft = () => {
@@ -64,7 +68,7 @@ const TotalsBar = () => {
   return (
     <div className="bg-custom-white rounded-lg shadow-lg h-[190px] md:h-full w-full relative">
       <div className="font-medium rounded-t-lg flex justify-between px-2 py-0.5 text-[13px]">
-        <div>Weekly Sales</div>
+        <div>Daily Sales</div>
         <div>{dateRange}</div>
       </div>
       <div className="grid grid-cols-2">
@@ -74,7 +78,12 @@ const TotalsBar = () => {
       <ResponsiveBar
         data={barData}
         key={"total_sales"}
-        margin={{ top: 15, right: 5, bottom: 51, left: setMarginLeft() }}
+        margin={{
+          top: 15,
+          right: 5,
+          bottom: 51,
+          left: setMarginLeft(),
+        }}
         colors={() => rgbaColor("#3b82f6", 0.3)}
         borderWidth={2}
         borderColor={() => "#3b82f6"}

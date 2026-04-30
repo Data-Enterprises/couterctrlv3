@@ -181,10 +181,15 @@ export const usersSlice = createSlice({
       state.selectedUserStores.assigned = [
         ...state.selectedUserStores.assigned,
         ...newlyAssigned,
-      ];
-      state.selectedUserStores.unassigned =
-        state.selectedUserStores.unassigned.filter(
-          (s) => !action.payload.includes(s.storeid),
+      ].sort(
+        (a: Store, b: Store) =>
+          parseInt(a.store_number) - parseInt(b.store_number),
+      );
+      state.selectedUserStores.unassigned = state.selectedUserStores.unassigned
+        .filter((s) => !action.payload.includes(s.storeid))
+        .sort(
+          (a: Store, b: Store) =>
+            parseInt(a.store_number) - parseInt(b.store_number),
         );
     },
     setStoresUnassignedForUser: (state, action: PayloadAction<number[]>) => {
@@ -194,10 +199,15 @@ export const usersSlice = createSlice({
       state.selectedUserStores.unassigned = [
         ...state.selectedUserStores.unassigned,
         ...newlyUnassigned,
-      ];
-      state.selectedUserStores.assigned =
-        state.selectedUserStores.assigned.filter(
-          (s) => !action.payload.includes(s.storeid),
+      ].sort(
+        (a: Store, b: Store) =>
+          parseInt(a.store_number) - parseInt(b.store_number),
+      );
+      state.selectedUserStores.assigned = state.selectedUserStores.assigned
+        .filter((s) => !action.payload.includes(s.storeid))
+        .sort(
+          (a: Store, b: Store) =>
+            parseInt(a.store_number) - parseInt(b.store_number),
         );
     },
     setAllCompanies: (state, action: PayloadAction<Company[]>) => {

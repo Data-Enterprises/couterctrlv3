@@ -8,7 +8,11 @@ interface Props {
   showBtn?: boolean;
 }
 
-const DatePickers = ({ handleQuery, btnPadding = "", showBtn = true }: Props) => {
+const DatePickers = ({
+  handleQuery,
+  btnPadding = "",
+  showBtn = true,
+}: Props) => {
   const context = useAppSelector((state) => state.app);
 
   const handleClick = () => {
@@ -17,7 +21,10 @@ const DatePickers = ({ handleQuery, btnPadding = "", showBtn = true }: Props) =>
     }
   };
 
-  const pickerStyle = context.isDesktop ?  "flex gap-2" : "grid grid-cols-2 gap-2";
+  const pickerStyle =
+    context.isDesktop || context.isTablet
+      ? "flex gap-2"
+      : "grid grid-cols-1 md:grid-cols-2 gap-2";
 
   return (
     <div data-testid="date-pickers" className="w-full select-none">

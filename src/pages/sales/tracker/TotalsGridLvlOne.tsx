@@ -1,9 +1,11 @@
-import { useRef, useState } from "react";
-import { ChevronRightIcon } from "@heroicons/react/24/outline";
-import { formatBigNumber, formatCurrency2 } from "../../../utils";
-import type { WeekTotal } from "../../../features/salesSlice";
-import TotalsGridLvlTwo from "./TotalsGridLvlTwo";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { formatCurrency2 } from "../../../utils";
+import {
+  setSalesTrackerSelectedSubDept,
+  type WeekTotal,
+} from "../../../features/salesSlice";
 import { changeTextColor } from ".";
+import TotalsGridLvlTwo from "./TotalsGridLvlTwo";
 
 interface TotalsGridLvlOneProps {
   desc: string;
@@ -15,16 +17,23 @@ interface TotalsGridLvlOneProps {
     atsTotalSales: number;
   };
   filtered: WeekTotal[][];
+  isLvlTwo?: boolean;
+  subId?: number;
+  isLast?: boolean;
 }
 
 const TotalsGridLvlOne = ({
   desc,
   totals,
   filtered,
+  isLvlTwo = false,
+  subId,
+  isLast,
 }: TotalsGridLvlOneProps) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-
+  const { salesTrackerSelectedSubDept } = useAppSelector(
+    (state) => state.sales,
+  );
+  const dispatch = useAppDispatch();
   const calcTotals = (data: WeekTotal[][]) => {
     const tyTotalSales = data.reduce((acc, weekGroup) => {
       return (
@@ -43,70 +52,86 @@ const TotalsGridLvlOne = ({
         ? 0
         : ((tyTotalSales - lyTotalSales) / lyTotalSales) * 100;
     const dollarChange = tyTotalSales - lyTotalSales;
+    const totalTrans = data.reduce((acc, weekGroup) => {
+      return (
+        acc +
+        weekGroup.reduce((weekAcc, week) => weekAcc + week.transaction_count, 0)
+      );
+    }, 0);
+    const atsTotalSales = totalTrans === 0 ? 0 : tyTotalSales / totalTrans;
 
-    return { tyTotalSales, lyTotalSales, percentChange, dollarChange };
+    return {
+      tyTotalSales,
+      lyTotalSales,
+      percentChange,
+      dollarChange,
+      atsTotalSales,
+    };
   };
 
-  const chevronTurn = () => {
-    if (ref.current) {
-      const display = ref.current.getAttribute("data-display");
-      if (display === "closed") {
-        ref.current.setAttribute("data-display", "open");
-        setIsOpen(true);
-      } else {
-        ref.current.setAttribute("data-display", "closed");
-        setIsOpen(false);
-      }
+  const handleRowClick = () => {
+    if (subId !== undefined) {
+      dispatch(setSalesTrackerSelectedSubDept(subId));
     }
   };
 
-  const chevronClass = () => {
-    if (isOpen) {
-      return "rotate-90 animate";
-    } else {
-      return "rotate-0 animate";
-    }
-  };
+  if (!isLvlTwo) {
+    return (
+      <div
+        className={`text-[12.5px] transition-all last:rounded-b-lg duration-200 ${salesTrackerSelectedSubDept === subId ? "bg-orange-200 shadow-inner" : "bg-custom-white"}`}
+        onClick={handleRowClick}
+      >
+        <div className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1fr_0.7fr_0.8fr] px-2 py-1 font-medium items-center cursor-pointer hover:bg-blue-200/50 transition-all duration-200">
+          <div className="flex gap-1 items-center">
+            <div className="">{desc}</div>
+          </div>
+          <div className="text-right">
+            {formatCurrency2(totals.tyTotalSales)}
+          </div>
+          <div className="text-right">
+            {formatCurrency2(totals.lyTotalSales)}
+          </div>
+          <div className="text-right">
+            {formatCurrency2(totals.atsTotalSales)}
+          </div>
+          <div
+            className={`text-right ${changeTextColor(totals.dollarChange, 0)}`}
+          >
+            {formatCurrency2(totals.dollarChange)}
+          </div>
+          <div
+            className={`text-right ${changeTextColor(totals.percentChange, 0)}`}
+          >
+            {totals.percentChange.toFixed(2)}%
+          </div>
+        </div>
+        {!isLast && <div className="border-b border-content/15"></div>}
+      </div>
+    );
+  }
 
+  /* Level 2 => weeks */
   return (
     <div className="">
       <div
-        className="grid grid-cols-6 gap-4 font-bold text-[13.5px] items-center cursor-pointer hover:bg-blue-200 transition-all duration-200"
-        onClick={chevronTurn}
-      >
-        <div className="flex gap-1 items-center">
-          <div className="rounded-full p-1 flex justify-center">
-            <ChevronRightIcon
-              className={`w-4 h-4 transition-transform duration-100 ease-in-out ${chevronClass()}`}
-            />
-          </div>
-          <div className="">{desc}</div>
-        </div>
-        <div>{formatCurrency2(totals.tyTotalSales)}</div>
-        <div>{formatCurrency2(totals.lyTotalSales)}</div>
-        <div className={`${changeTextColor(totals.dollarChange, 0)}`}>
-          {formatCurrency2(totals.dollarChange)}
-        </div>
-        <div className={`${changeTextColor(totals.percentChange, 0)}`}>
-          {totals.percentChange.toFixed(2)}%
-        </div>
-        <div>{formatBigNumber(totals.atsTotalSales, 2)}</div>
-      </div>
-
-      {/* Level 2 => weeks */}
-      <div
-        ref={ref}
         data-display="closed"
-        className="data-[display=open]:block data-[display=closed]:hidden"
+        className="grid gap-2"
+        // className="grid grid-cols-3 gap-2"
       >
         {filtered.map((week, widx) => {
+          const desc = week[0].subDesc;
           const weekTotals = calcTotals([week]);
           return (
-            <TotalsGridLvlTwo key={widx} week={week} weekTotals={weekTotals} />
+            <TotalsGridLvlTwo
+              key={widx}
+              idx={widx + 1}
+              week={week}
+              weekTotals={weekTotals}
+              desc={desc}
+            />
           );
         })}
       </div>
-      <div className="border-b border-content"></div>
     </div>
   );
 };

@@ -20,12 +20,17 @@ const CompareCard = ({ data, compareData, side }: CompareCardProps) => {
 
   if (!isValidData(data)) {
     return (
-      <div className="pb-2 shadow-md bg-custom-white rounded-lg min-h-[160px] max-h-[160px]">
-        <div className="bg-blue-500 text-custom-white font-medium px-2 rounded-t-lg py-0.5 flex justify-between">
+      <div className="pb-2 shadow-md bg-custom-white rounded-lg min-h-[75px] max-h-[75px]">
+        {/* <div className="pb-2 shadow-md bg-custom-white rounded-lg min-h-[160px] max-h-[160px]"> */}
+        <div className="font-medium px-2 rounded-t-lg py-0.5 flex justify-between">
           <div>{formatDate(data.sale_date)}</div>
           <div>{data.sub_department_description}</div>
         </div>
-        <div className="flex justify-center items-center font-medium text-content/60 h-[130px]">
+        <div className="grid grid-cols-2">
+          <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
+          <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
+        </div>
+        <div className="flex justify-center items-center font-medium text-content/60 h-[50px]">
           No Data found on this day
         </div>
       </div>
@@ -47,40 +52,50 @@ const CompareCard = ({ data, compareData, side }: CompareCardProps) => {
   };
 
   return (
-    <div className="pb-2 shadow-md bg-custom-white rounded-lg text-[13px] min-h-[160px] max-h-[160px]">
-      <div className="bg-blue-500 text-custom-white font-medium px-2 rounded-t-lg py-0.5 flex justify-between">
+    <div className="pb-2 shadow-md bg-custom-white rounded-lg text-[13px] min-h-[75px] max-h-[75px] border border-content/15">
+      <div className="font-medium px-2 rounded-t-lg py-0.5 flex justify-between">
         <div>{data.store_name}</div>
         <div>{data.sub_department_description}</div>
       </div>
-      <div className="px-2 font-medium mt-1">Totals</div>
+      <div className="grid grid-cols-2">
+        <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
+        <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
+      </div>
+      {/* <div className="px-2 font-medium mt-1">Totals</div> */}
       <div className="grid grid-cols-4 px-2 mb-1">
         <div>
-          <div className="text-content/60">
-            Sales {showArrowIcon("total_sales")}
+          <div className="text-content/60 flex items-center">
+            <div>Sales</div>
+            <div>{showArrowIcon("total_sales")}</div>
           </div>
           <div className="font-medium">
             {formatCurrency2(data.total_sales - data.total_tax)}
           </div>
         </div>
         <div>
-          <div className="text-content/60">
-            Net {showArrowIcon("net_sales")}
+          <div className="text-content/60 flex items-center">
+            <div>Net</div>
+            <div>{showArrowIcon("net_sales")}</div>
           </div>
           <div className="font-medium">{formatCurrency2(data.net_sales)}</div>
         </div>
         <div>
-          <div className="text-content/60">Qty {showArrowIcon("qty")}</div>
+          <div className="text-content/60 flex items-center">
+            <div>Qty</div>
+            <div>{showArrowIcon("qty")}</div>
+          </div>
           <div className="font-medium">{formatBigNumber(data.qty, 0)}</div>
         </div>
         <div>
-          <div className="text-content/60">
-            Weight {showArrowIcon("weight")}
+          <div className="text-content/60 flex items-center">
+            <div>Weight</div>
+            <div>{showArrowIcon("weight")}</div>
           </div>
           <div className="font-medium">{formatBigNumber(data.weight, 2)}</div>
         </div>
       </div>
-      <div className="px-2 font-medium">Coupons</div>
-      <div className="grid grid-cols-4 px-2">
+      {/* <div className="px-2 font-medium">Coupons</div> */}
+      {/* <div className="grid grid-cols-4 px-2">
         <div>
           <div className="text-content/60">
             Digital {showArrowIcon("digital_coupons")}
@@ -113,7 +128,7 @@ const CompareCard = ({ data, compareData, side }: CompareCardProps) => {
             {formatCurrency2(data.elec_instore_coupons)}
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

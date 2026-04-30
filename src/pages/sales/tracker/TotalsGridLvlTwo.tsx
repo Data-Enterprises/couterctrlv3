@@ -1,10 +1,10 @@
-import { useRef, useState } from "react";
-import { ChevronRightIcon } from "@heroicons/react/24/outline";
+import { useRef } from "react";
 import { formatDate } from ".";
-import { formatBigNumber, formatCurrency2 } from "../../../utils";
+import { formatCurrency2 } from "../../../utils";
 import type { WeekTotal } from "../../../features/salesSlice";
 import { changeTextColor } from ".";
 import TotalsGridLvlThree from "./TotalsGridLvlThree";
+import CardLine from "./CardLine";
 
 interface TotalsGridLvlTwoProps {
   week: WeekTotal[];
@@ -13,75 +13,84 @@ interface TotalsGridLvlTwoProps {
     lyTotalSales: number;
     percentChange: number;
     dollarChange: number;
+    atsTotalSales: number;
   };
+  idx: number;
+  desc: string;
 }
 
-const TotalsGridLvlTwo = ({ week, weekTotals }: TotalsGridLvlTwoProps) => {
+const TotalsGridLvlTwo = ({
+  week,
+  weekTotals,
+  idx,
+  desc = "",
+}: TotalsGridLvlTwoProps) => {
   const ref = useRef<HTMLDivElement>(null);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const atsTotalSales = week.reduce((acc, day) => acc + day.atsTotalSales, 0) / week.length
-
-  const chevronTurn = () => {
-    if (ref.current) {
-      const display = ref.current.getAttribute("data-display");
-      if (display === "closed") {
-        ref.current.setAttribute("data-display", "open");
-        setIsOpen(true);
-      } else {
-        ref.current.setAttribute("data-display", "closed");
-        setIsOpen(false);
-      }
-    }
-  };
-
-  const chevronClass = () => {
-    if (isOpen) {
-      return "rotate-90 animate";
-    } else {
-      return "rotate-0 animate";
-    }
-  };
 
   return (
-    <div className="">
-      <div
-        className="text-[12.5px] grid grid-cols-6 gap-4 font-medium hover:bg-blue-200 transition-all duration-200"
-        onClick={chevronTurn}
-      >
-        {/* week range */}
-        <div className="flex gap-1 items-center pl-2">
-          <div className="rounded-full p-1 flex justify-center">
-            <ChevronRightIcon
-              className={`w-4 h-4 cursor-pointer transition-transform duration-100 ease-in-out ${chevronClass()}`}
-            />
+    <div className="text-[12px] px-2 py-1.5 rounded-lg shadow-lg bg-custom-white max-w-full border border-content/15 hover:shadow-md transition-shadow duration-200">
+      <div className="font-medium cursor-default select-none">
+        <div className="flex justify-between items-center">
+          <div className="text-content/60">
+            {desc} Week {idx}
           </div>
-          <div>
-            {formatDate(week[0].sale_date)} -{" "}
+          <div className="text-[11px] text-content/90 flex items-center gap-1">
+            {formatDate(week[0].sale_date)} –{" "}
             {formatDate(week[week.length - 1].sale_date)}
           </div>
         </div>
-        {/* The week totals here */}
-        <div>{formatCurrency2(weekTotals.tyTotalSales)}</div>
-        <div>{formatCurrency2(weekTotals.lyTotalSales)}</div>
-        <div className={`${changeTextColor(weekTotals.dollarChange, 0)}`}>
-          {formatCurrency2(weekTotals.dollarChange)}
+        <div className="h-[1.5px] grid grid-cols-2 my-1">
+          <div className="bg-gradient-to-r from-content/15 to-custom-white"></div>
+          <div className="bg-gradient-to-l from-content/15 to-custom-white"></div>
         </div>
-        <div className={`${changeTextColor(weekTotals.percentChange, 0)}`}>
-          {weekTotals.percentChange.toFixed(2)}%
+
+        <div className="grid grid-cols-[1fr_3fr] gap-2 my-2 text-[11px]">
+          <div className="bg-bkg/70 px-2 py-[2px] rounded-lg shadow-md border-2 border-content/15">
+            <div className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-[1px] text-[11px] leading-5 mt-0.5">
+              <div className="text-content/60">TY Sales</div>
+              <div className="text-right">
+                {formatCurrency2(weekTotals.tyTotalSales)}
+              </div>
+
+              <div className="text-content/60">LY Sales</div>
+              <div className="text-right">
+                {formatCurrency2(weekTotals.lyTotalSales)}
+              </div>
+
+              <div className="text-content/60">ATS Sales</div>
+              <div className="text-right">
+                {formatCurrency2(weekTotals.atsTotalSales)}
+              </div>
+
+              <div className="text-content/60">$ vs LY</div>
+              <div
+                className={`text-right ${changeTextColor(weekTotals.dollarChange, 0)}`}
+              >
+                {formatCurrency2(weekTotals.dollarChange)}
+              </div>
+
+              <div className="text-content/60">% vs LY</div>
+              <div
+                className={`text-right ${changeTextColor(weekTotals.percentChange, 0)}`}
+              >
+                {weekTotals.percentChange.toFixed(2)}%
+              </div>
+            </div>
+          </div>
+
+          <CardLine data={week} />
         </div>
-        <div>{formatBigNumber(atsTotalSales, 2)}</div>
       </div>
+
       <div
         ref={ref}
-        data-display="closed"
-        className="data-[display=open]:block data-[display=closed]:hidden"
+        className={`overflow-hidden transition-all duration-200 grid grid-cols-4 gap-1.5
+          ${ref.current?.getAttribute("data-display") === "closed" ? "max-h-0" : "max-h-[999px]"}
+        `}
       >
         {week.map((day, idx) => (
-          <TotalsGridLvlThree key={idx} week={day} />
+          <TotalsGridLvlThree key={`${day.sale_date}-${idx}`} weekDay={day} />
         ))}
-      </div>
-      <div className="bg-blue-500/20">
-        <div className="ml-4 border-b border-content/40"></div>
       </div>
     </div>
   );

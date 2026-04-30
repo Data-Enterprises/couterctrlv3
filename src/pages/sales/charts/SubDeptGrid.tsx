@@ -23,7 +23,7 @@ const SubDeptGrid = () => {
     subSalesWk3,
     topSubDept,
   } = useAppSelector((state) => state.sales);
-  const isMobile = useAppSelector((state) => state.app.isMobile);
+  const { isMobile, isTablet } = useAppSelector((state) => state.app);
   const [groupSubs, setGroupSubs] = useState<SubGridRow[]>([]);
   const { subCols } = useSubCols();
 
@@ -139,7 +139,7 @@ const SubDeptGrid = () => {
     );
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg pb-2 pt-1 h-full">
+    <div className={`bg-custom-white rounded-lg shadow-lg pb-2 pt-1 ${isTablet ? "h-[300px]" : "h-full"}`}>
       <div className="px-2 flex justify-between items-center text-sm">
         <span className="font-medium">
           {selectedSalesPanel.sale_date ? "Daily" : "Weekly"} Sub Department

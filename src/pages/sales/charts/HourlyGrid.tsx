@@ -14,9 +14,14 @@ const HourlyGrid = () => {
   const [lyRowData, setLyRowData] = useState<HourlyTotal[]>([]);
   const [barData, setBarData] = useState<any[]>([]);
   const [_, setLyData] = useState<any[]>([]);
-  const { hourlySales, selectedSalesPanel, hourlySalesLastYear } =
-    useAppSelector((state) => state.sales);
-  const { isMobile } = useAppSelector((state) => state.app);
+  const {
+    hourlySales,
+    selectedSalesPanel,
+    hourlySalesLastYear,
+    dashboardOption,
+  } = useAppSelector((state) => state.sales);
+  const { isTablet } = useAppSelector((state) => state.app);
+  const search = useAppSelector((state) => state.search);
   const [barIndex, setBarIndex] = useState<string>("date");
 
   useEffect(() => {
@@ -28,12 +33,21 @@ const HourlyGrid = () => {
     }, []);
 
     setHour(uniqueHours[0].hour);
-    setBarIndex(selectedSalesPanel.sale_date ? "hour" : "date");
+    if (dashboardOption === "daily") {
+      setBarIndex("hour");
+    } else {
+      setBarIndex(selectedSalesPanel.sale_date ? "hour" : "date");
+    }
   }, [hourlySales, selectedSalesPanel]);
 
   const formatDate = (dateStr: string, char: "-" | "/" = "-"): string => {
     const split = dateStr.split("T")[0].split(char);
     return `${split[1]}/${split[2]}`;
+  };
+
+  const formatDateLong = (dateStr: string): string => {
+    const split = dateStr.split("T")[0].split("-");
+    return `${split[1]}/${split[2]}/${split[0]}`;
   };
 
   const handleSelect = (param: HourlyTotal) => {
@@ -95,8 +109,17 @@ const HourlyGrid = () => {
   }, [hourlySales, hourlySalesLastYear]);
 
   useEffect(() => {
+    console.log("howdy");
     const hourFiltered = [...hourlySales]
       .filter((d) => {
+        if (dashboardOption === "daily") {
+          const split = search.singleDate.split("/");
+          const month = split[0].length === 1 ? `0${split[0]}` : split[0];
+          const day = split[1].length === 1 ? `0${split[1]}` : split[1];
+          const dateComp = `${month}/${day}`;
+          return dateComp === formatDate(d.sale_date);
+        }
+
         if (selectedSalesPanel.sale_date) {
           return (
             formatDate(d.sale_date) === formatDate(selectedSalesPanel.sale_date)
@@ -115,6 +138,11 @@ const HourlyGrid = () => {
 
     const lyFiltered = [...hourlySalesLastYear]
       .filter((d) => {
+        if (dashboardOption === "daily") {
+          const date = sameWeekDayLastYear(search.singleDate).date;
+          return formatDate(d.sale_date) === formatDate(date);
+        }
+
         if (selectedSalesPanel.sale_date) {
           const lyDate = sameWeekDayLastYear(selectedSalesPanel.sale_date).date;
           return formatDate(d.sale_date) === formatDate(lyDate);
@@ -156,9 +184,9 @@ const HourlyGrid = () => {
       barData.reduce((acc, val) => acc + val.total_sales, 0) / barData.length;
 
     if (value > avgSales) {
-      return isMobile ? "bg-emerald-200" : "#10b981";
+      return "#10b981";
     } else {
-      return isMobile ? "bg-orange-200" : "#f97316";
+      return "#f97316";
     }
   };
 
@@ -167,22 +195,61 @@ const HourlyGrid = () => {
     new Set([...rowData.map((d) => d.hour), ...lyRowData.map((d) => d.hour)]),
   ).sort((a, b) => a - b);
 
+  const margins = !isTablet
+    ? {
+        top: 5,
+        right: 0,
+        bottom: selectedSalesPanel.sale_date ? 42 : 50,
+        left: 45,
+      }
+    : {
+        top: 5,
+        right: 0,
+        bottom: selectedSalesPanel.sale_date ? 25 : 33,
+        left: 30,
+      };
+
+  const formatCurrentDate = () => {
+    const split = search.singleDate.split("/");
+    const month = split[0].length === 1 ? `0${split[0]}` : split[0];
+    const day = split[1].length === 1 ? `0${split[1]}` : split[1];
+    const year = split[2];
+    return `${month}/${day}/${year}`;
+  };
+
   return (
     <div className="bg-custom-white rounded-lg shadow-lg my-2 md:my-0 py-1.5">
       <div className="px-2 font-medium flex justify-between">
-        <span className="font-medium text-sm md:text-[13.5px]">
+        <span className="font-medium text-[13.5px]">
           Hourly Sales
         </span>
-        <span className="text-right text-sm md:text-[13.5px]">
-          Hour: {hour}
-        </span>
+        {dashboardOption === "weekly" ? (
+          <span className="text-right text-[13.5px]">
+            Hour: {hour}
+          </span>
+        ) : (
+          <span className="text-right text-[13.5px]">
+            {search.singleDate}
+          </span>
+        )}
       </div>
       <div className="flex text-[13px] font-medium">
-        <div className="grid grid-cols-2 md:flex md:w-[45%]">
-          <div className="md:w-1/2 pl-2">This Year</div>
-          <div className="md:w-1/2 pl-2">Last Year</div>
+        {dashboardOption === "weekly" ? (
+          <div className="grid grid-cols-2 md:flex md:w-[45%]">
+            <div className="md:w-1/2 pl-2">This Year</div>
+            <div className="md:w-1/2 pl-2">Last Year</div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:flex md:w-[45%]">
+            <div className="md:w-1/2 pl-2">{formatCurrentDate()}</div>
+            <div className="md:w-1/2 pl-2">{formatDateLong(sameWeekDayLastYear(search.singleDate).date)}</div>
+          </div>
+        )}
+        <div
+          className={`w-[55%] text-right pr-2 ${dashboardOption === "daily" ? "opacity-0" : ""}`}
+        >
+          This Week
         </div>
-        <div className="md:w-[55%] text-right pr-2">This Week</div>
       </div>
       <div className="h-[93%] grid gap-2 md:gap-0 md:grid-cols-[45%_54%] mt-1 md:mt-0">
         <div className="grid max-h-[200px] md:max-h-[230px] rounded-lg overflow-y-scroll mx-1 md:mx-2 no-scrollbar">
@@ -196,7 +263,7 @@ const HourlyGrid = () => {
                   {/* This year */}
                   {current ? (
                     <div
-                      className={`${h === hour ? "bg-blue-200" : compareCard(current.total_sales, lastYear ? lastYear.total_sales : 0)} 
+                      className={`${h === hour && dashboardOption === "weekly" ? "bg-blue-200" : compareCard(current.total_sales, lastYear ? lastYear.total_sales : 0)} 
                         text-xs rounded-lg shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
                       onClick={() => handleSelect(current)}
                     >
@@ -222,7 +289,16 @@ const HourlyGrid = () => {
                   {/* Last year */}
                   {lastYear ? (
                     <div
-                      className={`${h === hour ? "bg-blue-200" : compareCard(lastYear.total_sales, current ? current.total_sales : 0)} 
+                      className={`${
+                        h === hour &&
+                        dashboardOption === "weekly" &&
+                        dashboardOption === "weekly"
+                          ? "bg-blue-200"
+                          : compareCard(
+                              lastYear.total_sales,
+                              current ? current.total_sales : 0,
+                            )
+                      } 
                         text-xs rounded-lg shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
                       onClick={() => handleSelect(lastYear)}
                     >
@@ -250,101 +326,68 @@ const HourlyGrid = () => {
           </div>
         </div>
         <div>
-          {!isMobile ? (
-            <ResponsiveBar
-              data={barData}
-              margin={{
-                top: 5,
-                right: 0,
-                bottom: selectedSalesPanel.sale_date ? 42 : 50,
-                left: 45,
-              }}
-              keys={["total_sales"]}
-              indexBy={barIndex}
-              tooltip={({ value }) => (
-                <div className="p-2 bg-white shadow-lg rounded text-sm text-nowrap">
-                  <strong>{formatCurrency2(value)}</strong>
-                </div>
-              )}
-              padding={0.1}
-              enableLabel={false}
-              borderRadius={4}
-              borderWidth={2}
-              colors={(d) => rgbaColor(findBarColor(d.data.total_sales), 0.3)}
-              borderColor={(d) =>
-                rgbaColor(findBarColor(d.data.data.total_sales), 1)
-              }
-              axisBottom={{
-                renderTick: ({ x, y, textX, textY, value }) => {
-                  // I set the full_date property on barData so I can process the DOW here
-                  let fullDate = "";
-                  let dow = "";
+          <ResponsiveBar
+            data={barData}
+            margin={margins}
+            keys={["total_sales"]}
+            indexBy={barIndex}
+            tooltip={({ value }) => (
+              <div className="p-2 bg-white shadow-lg rounded text-sm text-nowrap">
+                <strong>{formatCurrency2(value)}</strong>
+              </div>
+            )}
+            padding={0.1}
+            enableLabel={false}
+            borderRadius={4}
+            borderWidth={2}
+            colors={(d) => rgbaColor(findBarColor(d.data.total_sales), 0.3)}
+            borderColor={(d) =>
+              rgbaColor(findBarColor(d.data.data.total_sales), 1)
+            }
+            axisBottom={{
+              renderTick: ({ x, y, textX, textY, value }) => {
+                // I set the full_date property on barData so I can process the DOW here
+                let fullDate = "";
+                let dow = "";
 
-                  if (typeof value === "string") {
-                    const found = barData.find((d) => d.date === value);
-                    if (found) {
-                      fullDate = found.full_date;
-                      dow = new Date(fullDate).toDateString().split(" ")[0];
-                    }
+                if (typeof value === "string" && dashboardOption === "weekly") {
+                  const found = barData.find((d) => d.date === value);
+                  if (found) {
+                    fullDate = found.full_date;
+                    dow = new Date(fullDate).toDateString().split(" ")[0];
                   }
-                  return (
-                    <g transform={`translate(${x},${y + 4})`}>
-                      <line
-                        x1={0}
-                        y1={-4}
-                        x2={0}
-                        y2={1.5}
-                        stroke="black"
-                        strokeWidth={0.5}
-                      />
-                      <text
-                        textAnchor={"middle"}
-                        transform={`translate(${textX},${textY + 2})`}
-                        style={{
-                          fontSize: 10.5,
-                          fontWeight: "bolder",
-                          fontFamily: "Arial",
-                        }}
-                      >
-                        <tspan x={0} dy={0}>
-                          {dow}
-                        </tspan>
-                        <tspan x={0} dy={typeof value === "number" ? 4 : 12}>
-                          {value}
-                        </tspan>
-                      </text>
-                    </g>
-                  );
-                },
-              }}
-            />
-          ) : // <div className="grid gap-2 min-h[200px] max-h-[200px] overflow-y-scroll no-scrollbar mr-1">
-          //   {barData
-          //     .filter((h) => h.hour === hour)
-          //     .map((h) => (
-          //       <div
-          //         key={`display-date-${h.hour}-${Math.random()}`}
-          //         style={{ backgroundColor: findBarColor(h.total_sales) }}
-          //         className={`${findBarColor(h.total_sales)} text-xs rounded-lg shadow-content/30 shadow-md p-2 cursor-pointer hover:bg-blue-200 transition-all duration-200`}
-          //       >
-          //         <div className="flex justify-between">
-          //           <div className="font-medium text-content/60">Date:</div>
-          //           <div className="font-medium">{h.date}</div>
-          //         </div>
-          //         <div className="flex justify-between">
-          //           <div className="font-medium text-content/60">Hour:</div>
-          //           <div className="font-medium">{h.hour}</div>
-          //         </div>
-          //         <div className="flex justify-between">
-          //           <div className="font-medium text-content/60">Sales:</div>
-          //           <div className="font-medium">
-          //             {formatCurrency2(h.total_sales)}
-          //           </div>
-          //         </div>
-          //       </div>
-          //     ))}
-          // </div>
-          null}
+                }
+                return (
+                  <g transform={`translate(${x},${y + 4})`}>
+                    <line
+                      x1={0}
+                      y1={-4}
+                      x2={0}
+                      y2={1.5}
+                      stroke="black"
+                      strokeWidth={0.5}
+                    />
+                    <text
+                      textAnchor={"middle"}
+                      transform={`translate(${textX},${textY + 2})`}
+                      style={{
+                        fontSize: 10.5,
+                        fontWeight: "bolder",
+                        fontFamily: "Arial",
+                      }}
+                    >
+                      <tspan x={0} dy={0}>
+                        {dow}
+                      </tspan>
+                      <tspan x={0} dy={typeof value === "number" ? 4 : 12}>
+                        {value}
+                      </tspan>
+                    </text>
+                  </g>
+                );
+              },
+            }}
+          />
         </div>
       </div>
     </div>

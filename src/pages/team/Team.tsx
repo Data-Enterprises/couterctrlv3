@@ -9,6 +9,7 @@ import {
   setSelectedForm,
   setSelectedUserForm,
   setSelectedUserId,
+  setUserCompanyIds,
   setUserLevels,
   setUsers,
 } from "../../features/usersSlice";
@@ -21,7 +22,7 @@ import { getUserLevels } from "../../api/team";
 import { getAllUsers } from "../../api/user";
 
 import UserControls from "./forms/UserControls";
-import FormHeader from "./forms/FormHeader";
+import MainForms from "./forms/MainForms";
 import StoreControls from "./stores/StoreControls";
 import BaseGroupControls from "./baseGroups/BaseGroupControls";
 import CompanyControls from "./company/CompanyControls";
@@ -35,6 +36,8 @@ import ExportMissingStoresModal from "./admin/ExportMissingStoresModal";
 import { adminMissingSalesColumns } from "./admin";
 import Assigned from "./assignModal/Assigned";
 import Unassigned from "./assignModal/Unassigned";
+// import TeamTablet from "./tabletComps/TeamTablet";
+import { setAllSelectedBaseGroups } from "../../features/baseGroupSlice";
 
 const options = [
   { label: "Users", value: 1 },
@@ -46,7 +49,9 @@ const options = [
 const Team = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const { url, token, isDesktop } = useAppSelector((state) => state.app);
+  const { url, token, isDesktop,
+    //  isTablet 
+    } = useAppSelector((state) => state.app);
   const companies = useAppSelector((state) => state.user.companies);
   const { refresh, selectedUserId, selectedForm, selectedUserStores } =
     useAppSelector((state) => state.users);
@@ -60,6 +65,9 @@ const Team = () => {
       dispatch(setSelectedForm(0));
       dispatch(setSelectedUserForm(""));
       dispatch(setSelectedCompanyForm(""));
+      dispatch(setUserCompanyIds([]));
+      dispatch(setSelectedUserId(0));
+      dispatch(setAllSelectedBaseGroups([]));
     };
   }, []);
 
@@ -70,6 +78,9 @@ const Team = () => {
     dispatch(setSelectedCompanyForm(""));
     dispatch(setSelectedStoreInfo(null));
     dispatch(setNewStoreNameText(""));
+    dispatch(setUserCompanyIds([]));
+    dispatch(setSelectedUserId(0));
+    dispatch(setAllSelectedBaseGroups([]));
   }, [selectedForm]);
 
   useEffect(() => {
@@ -153,6 +164,8 @@ const Team = () => {
     dispatch(setAssignBaseGroups([]));
   }, [selectedUserId]);
 
+  // if (isTablet) return <TeamTablet />;
+
   const renderForm = () => {
     switch (selectedForm) {
       case 1:
@@ -187,7 +200,7 @@ const Team = () => {
             columns={adminMissingSalesColumns}
           />
           <div className="min-w-[178px] max-w-[178px]">
-            <FormHeader />
+            <MainForms />
           </div>
           <div
             className={`${selectedForm !== 3 ? "w-[63%]" : "w-full"} space-y-4`}

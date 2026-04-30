@@ -7,8 +7,8 @@ export const chunkData = (data: any[]) => {
 };
 
 export const changeTextColor = (num1: number, num2: number) => {
-  if (num1 > num2) return "text-emerald-500";
-  if (num1 < num2) return "text-orange-500";
+  if (num1 > num2) return "text-emerald-600";
+  if (num1 < num2) return "text-red-600";
   return "text-content";
 };
 

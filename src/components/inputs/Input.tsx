@@ -28,7 +28,7 @@ const Input = ({
 
   return (
     <div className={`${width}`}>
-      {label && <label className="font-medium text-[13px] md:text-sm pl-0.5">{label}</label>}
+      {label && <label className="font-medium text-[13px] pl-0.5">{label}</label>}
       <input
         data-testid={testId}
         type={type}

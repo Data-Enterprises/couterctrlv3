@@ -6,7 +6,6 @@ import { formatCurrency2 } from "../../../utils";
 import {
   HandThumbDownIcon,
   HandThumbUpIcon,
-  CalendarIcon,
 } from "@heroicons/react/24/outline";
 
 const SalesTrackerKpis = () => {
@@ -19,14 +18,20 @@ const SalesTrackerKpis = () => {
         const thisYear = sales.tyCollapsedSubSales.flat();
         const lastYear = sales.lyCollapsedSubSales.flat();
 
-        const tyTotalSales = thisYear.reduce(
-          (acc, sale) => acc + sale.total_sales - sale.total_tax,
-          0,
-        );
-        const lyTotalSales = lastYear.reduce(
-          (acc, sale) => acc + sale.total_sales - sale.total_tax,
-          0,
-        );
+        const tyTotalSales = thisYear
+          .filter((s) =>
+            sales.salesTrackerSelectedSubDept > 0
+              ? s.sub_department === sales.salesTrackerSelectedSubDept
+              : true,
+          )
+          .reduce((acc, sale) => acc + sale.total_sales - sale.total_tax, 0);
+        const lyTotalSales = lastYear
+          .filter((s) =>
+            sales.salesTrackerSelectedSubDept > 0
+              ? s.sub_department === sales.salesTrackerSelectedSubDept
+              : true,
+          )
+          .reduce((acc, sale) => acc + sale.total_sales - sale.total_tax, 0);
 
         const percentChange =
           lyTotalSales === 0
@@ -47,12 +52,11 @@ const SalesTrackerKpis = () => {
           dollarChange,
           dateRange,
         };
-        console.log("Result Object:", result);
         dispatch(setTrackerKpis(result));
       };
       calcTotals();
     }
-  }, [sales.tyReducedTotals]);
+  }, [sales.tyReducedTotals, sales.salesTrackerSelectedSubDept]);
 
   const textColorClass = (num: number) => {
     if (num > 0) {
@@ -75,42 +79,71 @@ const SalesTrackerKpis = () => {
   };
 
   return (
-    <div className="grid grid-cols-5 gap-4 mb-2 font-medium">
-      <div className="p-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
-        <div className="text-content/60">Date Range</div>
-        <div className="flex items-center gap-1">
-          <CalendarIcon className="w-5 h-5 text-content stroke-2" />
-          {sales.trackerKpis.dateRange}
+    <div className="grid text-[13px] grid-cols-7 gap-3 mb-2 font-medium">
+      <div className="px-4 py-2 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
+        <div className="text-content/60 ">Viewing</div>
+        <div className="flex items-center gap-1 mt-1">
+          <span className="">
+            {sales.salesTrackerSelectedSubDept === 0
+              ? "All Sub Depts"
+              : sales.uniqueSubs.filter(
+                  (s) => s.id === sales.salesTrackerSelectedSubDept,
+                )[0].desc}
+          </span>
         </div>
       </div>
       <div className="p-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
-        <div className="text-content/60">Total Sales This Year</div>
-        <div className="flex items-center gap-0.5">
+        <div className="text-content/60 ">Period Start</div>
+        <div className="flex items-center gap-1 mt-1">
+          <span className="">
+            {sales.trackerKpis.dateRange.split(" - ")[0]}
+          </span>
+        </div>
+      </div>
+      <div className="p-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
+        <div className="text-content/60 ">Period End</div>
+        <div className="flex items-center gap-1 mt-1">
+          <span className="">
+            {sales.trackerKpis.dateRange.split(" - ")[1]}
+          </span>
+        </div>
+      </div>
+
+      <div className="p-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
+        <div className="text-content/60 ">TY Total Sales</div>
+        <div className="mt-1 font-semibold">
           {formatCurrency2(sales.trackerKpis.tyTotalSales)}
         </div>
       </div>
+
       <div className="p-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
-        <div className="text-content/60">Total Sales Last Year</div>
-        <div className="flex items-center gap-0.5">
+        <div className="text-content/60 ">LY Total Sales</div>
+        <div className="mt-1 font-semibold">
           {formatCurrency2(sales.trackerKpis.lyTotalSales)}
         </div>
       </div>
+
       <div className="p-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
-        <div className="text-content/60">Total Sales $ Change</div>
+        <div className="text-content/60 ">Total Sales $ Change</div>
         <div
-          className={`${textColorClass(sales.trackerKpis.dollarChange)} flex items-center gap-1`}
+          className={`${textColorClass(sales.trackerKpis.dollarChange)} flex items-center gap-1 mt-1`}
         >
           {renderIcon(sales.trackerKpis.dollarChange)}
-          {formatCurrency2(sales.trackerKpis.dollarChange)}
+          <span className="font-semibold">
+            {formatCurrency2(sales.trackerKpis.dollarChange)}
+          </span>
         </div>
       </div>
+
       <div className="p-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
-        <div className="text-content/60">Total Sales % Change</div>
+        <div className="text-content/60 ">Total Sales % Change</div>
         <div
-          className={`${textColorClass(sales.trackerKpis.percentChange)} flex items-center gap-1`}
+          className={`${textColorClass(sales.trackerKpis.percentChange)} flex items-center gap-1 mt-1`}
         >
           {renderIcon(sales.trackerKpis.percentChange)}
-          {sales.trackerKpis.percentChange.toFixed(2)}%
+          <span className="font-semibold">
+            {sales.trackerKpis.percentChange.toFixed(2)}%
+          </span>
         </div>
       </div>
     </div>

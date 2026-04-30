@@ -26,7 +26,7 @@ const SubsCompareModal = () => {
     >
       <CompareSummary />
       {compareSubsLeftCompare.length && compareSubsRightCompare.length ? (
-        <div className="flex h-full rounded-lg max-h-[85.5vh] overflow-hidden overflow-y-auto no-scrollbar">
+        <div className="flex h-full rounded-lg max-h-[95vh] overflow-hidden overflow-y-auto no-scrollbar">
           <div className="mr-2 text-sm rounded-lg w-1/2 space-y-2">
             {compareSubsLeftCompare.map((sub, i) => (
               <CompareCard
