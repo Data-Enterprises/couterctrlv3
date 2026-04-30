@@ -28,13 +28,14 @@ const TotalsGrid = () => {
         : ((tyTotalSales - lyTotalSales) / lyTotalSales) * 100;
     const dollarChange = tyTotalSales - lyTotalSales;
 
-    const atsTotalSales =
-      data.reduce((acc, weekGroup) => {
-        return (
-          acc +
-          weekGroup.reduce((weekAcc, week) => weekAcc + week.atsTotalSales, 0)
-        );
-      }, 0) / data.reduce((acc, weekGroup) => acc + weekGroup.length, 0);
+    const totalTrans = data.reduce((acc, weekGroup) => {
+      return (
+        acc +
+        weekGroup.reduce((weekAcc, week) => weekAcc + week.transaction_count, 0)
+      );
+    }, 0);
+
+    const atsTotalSales = tyTotalSales / totalTrans;
 
     return {
       tyTotalSales,
@@ -64,14 +65,14 @@ const TotalsGrid = () => {
             <div className="text-right">TY Sales</div>
             <div className="text-right">LY Sales</div>
             <div className="text-right">ATS Sales</div>
-            <div className="text-right">$ Change</div>
-            <div className="text-right">% Change</div>
+            <div className="text-right">$ vs LY</div>
+            <div className="text-right">% vs LY</div>
           </div>
           <div className="border-b border-content/40 mx-2"></div>
         </div>
 
         {/* Scrollable body */}
-        <div className="bg-custom-white rounded-b-lg shadow-lg max-h-[80%] overflow-y-auto no-scrollbar">
+        <div className="bg-custom-white rounded-b-lg shadow-lg max-h-[calc(100vh-195px)] overflow-y-auto no-scrollbar">
           {sales.uniqueSubs.map((sub, idx) => {
             const subId = sub.id;
             const desc = sub.desc;
@@ -95,7 +96,7 @@ const TotalsGrid = () => {
       </div>
 
       {sales.salesTrackerSelectedSubDept > 0 && (
-        <div className="max-h-[83.6%] overflow-auto no-scrollbar">
+        <div className="max-h-[calc(100vh-163px)] overflow-auto no-scrollbar pb-1">
           {filteredSubs().map((sub, idx) => {
             const subId = sub.id;
             const desc = sub.desc;

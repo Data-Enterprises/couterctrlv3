@@ -91,13 +91,7 @@ const CardLine = ({ data }: CardLineProps) => {
             <div
               className={`bg-[rgb(30,45,80)] text-custom-white px-2 py-1 text-[10px] rounded shadow text-nowrap ${margin}`}
             >
-              {id}:{" "}
-              {new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "USD",
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              }).format(point.data.y as number)}
+              {id}: {formatCurrency2(point.data.y as number)}
             </div>
           );
         }}

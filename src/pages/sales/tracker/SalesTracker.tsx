@@ -60,6 +60,7 @@ const SalesTracker = () => {
             if (found) {
               found.salesTY += week.total_sales;
               found.salesLY += salesLY;
+              found.transaction_count += week.transaction_count;
             } else {
               acc.push({
                 sale_date: week.sale_date,
@@ -71,7 +72,8 @@ const SalesTracker = () => {
                 salesLY,
                 totalSalesDollarChange: 0,
                 totalSalesPercentChange: 0,
-                atsTotalSales: week.total_sales / week.qty,
+                atsTotalSales: 0,
+                transaction_count: week.transaction_count,
               });
             }
             return acc;
@@ -83,10 +85,12 @@ const SalesTracker = () => {
           const dollarChange = week.salesTY - week.salesLY;
           const percentChange =
             week.salesLY === 0 ? 0 : (dollarChange / week.salesLY) * 100;
+          const atsTotalSales = week.salesTY / week.transaction_count;
           return {
             ...week,
             totalSalesDollarChange: dollarChange,
             totalSalesPercentChange: percentChange,
+            atsTotalSales,
           };
         });
 

@@ -149,6 +149,7 @@ export type SubSale = {
   elec_store_coupons: number;
   digital_coupons: number;
   store_coupon: number;
+  transaction_count: number;
 };
 
 export type SubGridRow = SubSale & {

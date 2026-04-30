@@ -50,8 +50,15 @@ const TotalsGridLvlOne = ({
         ? 0
         : ((tyTotalSales - lyTotalSales) / lyTotalSales) * 100;
     const dollarChange = tyTotalSales - lyTotalSales;
+    const totalTrans = data.reduce((acc, weekGroup) => {
+      return (
+        acc +
+        weekGroup.reduce((weekAcc, week) => weekAcc + week.transaction_count, 0)
+      );
+    }, 0);
+    const atsTotalSales = totalTrans === 0 ? 0 : tyTotalSales / totalTrans;
 
-    return { tyTotalSales, lyTotalSales, percentChange, dollarChange };
+    return { tyTotalSales, lyTotalSales, percentChange, dollarChange, atsTotalSales };
   };
 
   const handleRowClick = () => {

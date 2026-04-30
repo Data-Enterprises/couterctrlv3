@@ -31,6 +31,7 @@ export type WeekTotal = {
   totalSalesDollarChange: number;
   totalSalesPercentChange: number;
   atsTotalSales: number;
+  transaction_count: number;
 };
 
 export type WindowVisible = {
