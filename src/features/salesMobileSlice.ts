@@ -11,6 +11,12 @@ import type {
 
 import type { TopSub } from "../pages/sales/components";
 import type { PieData } from "../pages/sales/mobile";
+import type {
+  DashboardOption,
+  WeekTotal,
+  TrackerKpis,
+  SubTracker,
+} from "./salesSlice";
 export type SalesMobileView = "main" | "stores" | "sales" | "subdept";
 
 export const defaultSelectedSalesPanel: SelectedSalesPanel = {
@@ -60,6 +66,22 @@ interface SalesMobileState {
   salesViewTopTen: TopTenItem[];
 
   selectedSubDept: number;
+
+  // Tracker specific state
+  loadingTYTrackerMobile: boolean;
+  loadingLYTrackerMobile: boolean;
+  thisYrSubTrackerMobile: SubSale[];
+  lastYrSubTrackerMobile: SubSale[];
+  tyWeekCardsMobile: SubSale[];
+  lyWeekCardsMobile: SubSale[];
+  tyCollapsedSubSalesMobile: SubSale[][];
+  lyCollapsedSubSalesMobile: SubSale[][];
+  tyReducedTotalsMobile: WeekTotal[][][];
+  uniqueSubsMobile: SubTracker[];
+  trackerKpis: TrackerKpis;
+  refreshOverviewData: boolean;
+  dashboardOption: DashboardOption;
+  salesTrackerSelectedSubDept: number;
 }
 
 const defaultAggTotals: AggTotals = {
@@ -107,6 +129,26 @@ const initialState: SalesMobileState = {
   salesViewHourlyLastYear: [],
   salesViewTopTen: [],
   selectedSubDept: 0,
+  loadingTYTrackerMobile: false,
+  loadingLYTrackerMobile: false,
+  thisYrSubTrackerMobile: [],
+  lastYrSubTrackerMobile: [],
+  tyWeekCardsMobile: [],
+  lyWeekCardsMobile: [],
+  tyCollapsedSubSalesMobile: [],
+  lyCollapsedSubSalesMobile: [],
+  tyReducedTotalsMobile: [],
+  uniqueSubsMobile: [],
+  trackerKpis: {
+    tyTotalSales: 0,
+    lyTotalSales: 0,
+    percentChange: 0,
+    dollarChange: 0,
+    dateRange: "",
+  },
+  refreshOverviewData: false,
+  dashboardOption: "daily",
+  salesTrackerSelectedSubDept: 0,
 };
 
 const formatDate = (dte: string) => {
@@ -339,6 +381,12 @@ const salesMobileSlice = createSlice({
     setView: (state, action: PayloadAction<SalesMobileView>) => {
       state.view = action.payload;
     },
+    setMobileDashboardOption: (
+      state,
+      action: PayloadAction<DashboardOption>,
+    ) => {
+      state.dashboardOption = action.payload;
+    },
     setMobileWeeklySales: (state, action: PayloadAction<WeeklySale[]>) => {
       state.weeklySales = action.payload;
 
@@ -437,7 +485,50 @@ const salesMobileSlice = createSlice({
     setSelectedSubDept: (state, action: PayloadAction<number>) => {
       state.selectedSubDept = action.payload;
     },
-    resetMobileSalesState: () => initialState,
+
+    setLoadingTYTrackerData: (state, action: PayloadAction<boolean>) => {
+      state.loadingTYTrackerMobile = action.payload;
+    },
+    setLoadingLYTrackerData: (state, action: PayloadAction<boolean>) => {
+      state.loadingLYTrackerMobile = action.payload;
+    },
+    setTyWeekCardsMobile: (state, action: PayloadAction<SubSale[]>) => {
+      state.tyWeekCardsMobile = action.payload;
+    },
+    setLyWeekCardsMobile: (state, action: PayloadAction<SubSale[]>) => {
+      state.lyWeekCardsMobile = action.payload;
+    },
+    setTyCollapsedSubSalesMobile: (
+      state,
+      action: PayloadAction<SubSale[][]>,
+    ) => {
+      state.tyCollapsedSubSalesMobile = action.payload;
+    },
+    setTyReducedTotalsMobile: (
+      state,
+      action: PayloadAction<WeekTotal[][][]>,
+    ) => {
+      state.tyReducedTotalsMobile = action.payload;
+    },
+    setLyCollapsedSubSalesMobile: (
+      state,
+      action: PayloadAction<SubSale[][]>,
+    ) => {
+      state.lyCollapsedSubSalesMobile = action.payload;
+    },
+    setUniqueSubsMobile: (state, action: PayloadAction<SubTracker[]>) => {
+      state.uniqueSubsMobile = action.payload;
+    },
+    setTrackerKpisMobile: (state, action: PayloadAction<TrackerKpis>) => {
+      state.trackerKpis = action.payload;
+    },
+    setSalesTrackerSelectedSubDept: (state, action: PayloadAction<number>) => {
+      state.salesTrackerSelectedSubDept = action.payload;
+    },
+
+    resetMobileSalesState: (state) => {
+      return { ...initialState, dashboardOption: state.dashboardOption };
+    },
   },
 });
 
@@ -468,5 +559,6 @@ export const {
   setSalesViewHourlyLastYear,
   setHourlyKey,
   setSelectedSubDept,
+  setMobileDashboardOption,
 } = salesMobileSlice.actions;
 export default salesMobileSlice.reducer;

@@ -80,6 +80,7 @@ interface SalesState {
   compareSubsRightCompare: SubSale[];
   mainView: "overview" | "tracker";
   weeksBack: string;
+  
   loadingTYTrackerData: boolean;
   loadingLYTrackerData: boolean;
   thisYrSubTracker: SubSale[];

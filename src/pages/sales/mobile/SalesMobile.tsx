@@ -2,6 +2,7 @@ import { useMobileSalesCtx } from "./hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   resetMobileSalesState,
+  setMobileDashboardOption,
   setMobileHourlyLastYearSales,
   setMobileHourlySales,
   setMobilePanelsLoading,
@@ -19,27 +20,43 @@ import { getHourly, getSubs, getTopTen, getWeekly } from "../../../api/sales";
 import type { JsonError, WeeklySale } from "../../../interfaces";
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
 import StorePicker from "../../../components/storePicker/StorePicker";
-// import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import MainViewContainer from "./MainViewContainer";
-import { sameWeekDayLastYear } from "../../../utils";
+import { formatGoliathDate, sameWeekDayLastYear } from "../../../utils";
 import { setDates } from "../utils";
+
+import {
+  CurrencyDollarIcon,
+  ClipboardDocumentIcon,
+  DocumentCurrencyDollarIcon,
+} from "@heroicons/react/24/solid";
+import type { DashboardOption } from "../../../features/salesSlice";
+import { useAppSelector } from "../../../hooks";
+import DatePickers from "../../../components/datePickers/DatePickers";
 
 const SalesMobile = () => {
   const toast = useToast();
   const ctx = useMobileSalesCtx();
+  const search = useAppSelector((state) => state.search);
 
   const getSalesPanels = () => {
     ctx.dispatch(resetMobileSalesState());
+
+    if (ctx.dashboardOption === "tracker") {
+      getSubsTracker();
+      return;
+    }
 
     const endDateLY = sameWeekDayLastYear(ctx.endDate);
     const lyDate = new Date(endDateLY.date);
     const lyWkEnd = setDates(lyDate);
     const lyWkStart = setDates(lyDate, 6);
 
+    const start = ctx.dashboardOption === "daily" ? ctx.endDate : ctx.startDate;
+
     getSubs(
       ctx.url,
       ctx.token,
-      ctx.startDate,
+      start,
       ctx.endDate,
       ctx.useGroups,
       ctx.searchValue,
@@ -55,11 +72,12 @@ const SalesMobile = () => {
           const wk2EndDate = new Date(ctx.endDate);
           const wk2End = setDates(wk2EndDate, 7);
           const wk2Start = setDates(wk2EndDate, 13);
+          const startTwo = ctx.dashboardOption === "daily" ? wk2End : wk2Start;
 
           getSubs(
             ctx.url,
             ctx.token,
-            wk2Start,
+            startTwo,
             wk2End,
             ctx.useGroups,
             ctx.searchValue,
@@ -73,11 +91,12 @@ const SalesMobile = () => {
             })
             .catch((err: JsonError) => toast.error(err.message));
 
+          const lyStart = ctx.dashboardOption === "daily" ? lyWkEnd : lyWkStart;
           // Then fetch last year
           getSubs(
             ctx.url,
             ctx.token,
-            lyWkStart,
+            lyStart,
             lyWkEnd,
             ctx.useGroups,
             ctx.searchValue,
@@ -97,7 +116,7 @@ const SalesMobile = () => {
     getWeekly(
       ctx.url,
       ctx.token,
-      ctx.startDate,
+      start,
       ctx.endDate,
       ctx.useGroups,
       ctx.searchValue,
@@ -114,10 +133,11 @@ const SalesMobile = () => {
           ctx.dispatch(setMobileWeeklySales(sorted));
 
           // Then fetch last year
+          const lyStart = ctx.dashboardOption === "daily" ? lyWkEnd : lyWkStart;
           getWeekly(
             ctx.url,
             ctx.token,
-            lyWkStart,
+            lyStart,
             lyWkEnd,
             ctx.useGroups,
             ctx.searchValue,
@@ -145,7 +165,7 @@ const SalesMobile = () => {
     getHourly(
       ctx.url,
       ctx.token,
-      ctx.startDate,
+      start,
       ctx.endDate,
       ctx.useGroups,
       ctx.searchValue,
@@ -157,10 +177,11 @@ const SalesMobile = () => {
           ctx.dispatch(setMobileHourlySales(j.subs));
 
           // Then fetch last year
+          const lyStart = ctx.dashboardOption === "daily" ? lyWkEnd : lyWkStart;
           getHourly(
             ctx.url,
             ctx.token,
-            lyWkStart,
+            lyStart,
             lyWkEnd,
             ctx.useGroups,
             ctx.searchValue,
@@ -179,14 +200,7 @@ const SalesMobile = () => {
         toast.error("Error fetching hourly sales: " + err.message),
       );
 
-    getTopTen(
-      ctx.url,
-      ctx.token,
-      ctx.searchValue,
-      ctx.type,
-      ctx.startDate,
-      ctx.endDate,
-    )
+    getTopTen(ctx.url, ctx.token, ctx.searchValue, ctx.type, start, ctx.endDate)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
@@ -201,6 +215,132 @@ const SalesMobile = () => {
     ctx.dispatch(setView("stores"));
   };
 
+  const getSubsTracker = () => {
+    // ctx.dispatch(setLoadingTYTrackerData(true));
+    // ctx.dispatch(setLoadingLYTrackerData(true));
+    const end = formatGoliathDate(search.endDate);
+    const start = formatGoliathDate(search.startDate);
+
+    const endDateLY = sameWeekDayLastYear(search.endDate).date;
+    const startDateLY = sameWeekDayLastYear(search.startDate).date;
+
+    const useGroups = search.type === "Group" ? 1 : 0;
+    const singleStore = search.type === "Store" ? 1 : 0;
+    const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
+
+    // This Year
+    getSubs(
+      ctx.url,
+      ctx.token,
+      start,
+      end,
+      useGroups,
+      searchValue,
+      singleStore,
+      0,
+      0,
+      1,
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          // ctx.dispatch(concatTYSubTracker(j.subs));
+          if (j.total_pages > 1) {
+            const pages: { page: number; fetched: boolean }[] = [];
+            for (let page = 2; page <= j.total_pages; page++) {
+              pages.push({ page, fetched: false });
+            }
+
+            for (let page = 2; page <= j.total_pages; page++) {
+              getSubs(
+                ctx.url,
+                ctx.token,
+                start,
+                end,
+                useGroups,
+                searchValue,
+                singleStore,
+                0,
+                0,
+                page,
+              )
+                .then((resp) => {
+                  const j = resp.data;
+                  if (j.error === 0) {
+                    // ctx.dispatch(concatTYSubTracker(j.subs));
+                    pages.find((p) => p.page === page)!.fetched = true;
+
+                    if (pages.every((p) => p.fetched)) {
+                      // ctx.dispatch(setLoadingTYTrackerData(false));
+                    }
+                  }
+                })
+                .catch((err: JsonError) => toast.error(err.message));
+            }
+          } else {
+            // ctx.dispatch(setLoadingTYTrackerData(false));
+          }
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+
+    // Getting Last Year
+    getSubs(
+      ctx.url,
+      ctx.token,
+      startDateLY,
+      endDateLY,
+      useGroups,
+      searchValue,
+      singleStore,
+      0,
+      0,
+      1,
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          // ctx.dispatch(concatLYSubTracker(j.subs));
+          if (j.total_pages > 1) {
+            const pages: { page: number; fetched: boolean }[] = [];
+            for (let page = 2; page <= j.total_pages; page++) {
+              pages.push({ page, fetched: false });
+            }
+
+            for (let page = 2; page <= j.total_pages; page++) {
+              getSubs(
+                ctx.url,
+                ctx.token,
+                startDateLY,
+                endDateLY,
+                useGroups,
+                searchValue,
+                singleStore,
+                0,
+                0,
+                page,
+              )
+                .then((resp) => {
+                  const j = resp.data;
+                  if (j.error === 0) {
+                    // ctx.dispatch(concatLYSubTracker(j.subs));
+                    pages.find((p) => p.page === page)!.fetched = true;
+
+                    if (pages.every((p) => p.fetched)) {
+                      // ctx.dispatch(setLoadingLYTrackerData(false));
+                    }
+                  }
+                })
+                .catch((err: JsonError) => toast.error(err.message));
+            }
+          } else {
+            // ctx.dispatch(setLoadingLYTrackerData(false));
+          }
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+  };
+
   // Here is where the main view can be toggled once the sales panels are set
   if (ctx.view !== "main") return <MainViewContainer />;
 
@@ -209,23 +349,75 @@ const SalesMobile = () => {
     ctx.subSales.length > 0 &&
     ctx.weeklySales.length > 0;
 
+  const activeStyle = (dbOption: DashboardOption) => {
+    return ctx.dashboardOption === dbOption
+      ? "text-orange-500"
+      : "text-content/60";
+  };
+
+  const handleDashboardSelect = (option: DashboardOption) => {
+    ctx.dispatch(setMobileDashboardOption(option));
+  };
+
   // Default return if view is 'main'
   return (
-    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar p-2 select-none text-[13px]">
-      <div className="bg-custom-white rounded-lg shadow-md p-2 mb-2">
-        <StorePicker />
-        <SingleDatePicker />
-        <button className="btn-themeBlue w-full mt-2" onClick={getSalesPanels}>
-          Search
-        </button>
-        {showBtn && (
+    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar select-none text-[13px]">
+      <div className="flex justify-items-center bg-custom-white shadow-md py-2 text-[12px]">
+        <div
+          className="border-r w-1/3 flex justify-center gap-2 items-center transition-all"
+          onClick={() => handleDashboardSelect("daily")}
+        >
+          <CurrencyDollarIcon
+            className={`h-6 w-6 transition-all duration-200 ${activeStyle("daily")}`}
+          />
+          Daily
+        </div>
+        <div
+          className="border-r w-1/3 flex justify-center gap-2 items-center transition-all"
+          onClick={() => handleDashboardSelect("weekly")}
+        >
+          <DocumentCurrencyDollarIcon
+            className={`h-6 w-6 transition-all duration-200 ${activeStyle("weekly")}`}
+          />
+          Weekly
+        </div>
+        <div
+          className="w-1/3 flex justify-center gap-2 items-center transition-all"
+          onClick={() => handleDashboardSelect("tracker")}
+        >
+          <ClipboardDocumentIcon
+            className={`h-6 w-6 transition-all duration-200 ${activeStyle("tracker")}`}
+          />
+          Tracker
+        </div>
+      </div>
+      <div className="p-2">
+        <div className="bg-custom-white rounded-lg shadow-md p-2 mb-2">
+          <StorePicker />
+
+          {ctx.dashboardOption !== "tracker" ? (
+            <SingleDatePicker />
+          ) : (
+            <div className="mt-2">
+              <DatePickers showBtn={false} />
+            </div>
+          )}
+
           <button
             className="btn-themeBlue w-full mt-2"
-            onClick={() => ctx.dispatch(setView("stores"))}
+            onClick={getSalesPanels}
           >
-            Overview
+            Search
           </button>
-        )}
+          {showBtn && (
+            <button
+              className="btn-themeBlue w-full mt-2"
+              onClick={() => ctx.dispatch(setView("stores"))}
+            >
+              Overview
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

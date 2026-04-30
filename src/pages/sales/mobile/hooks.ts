@@ -4,6 +4,7 @@ import { addDays, formatGoliathDate } from "../../../utils";
 export const useMobileSalesCtx = () => {
   const dispatch = useAppDispatch();
   const {
+    dashboardOption,
     hourlyKey,
     hours,
     hourlySales,
@@ -46,6 +47,7 @@ export const useMobileSalesCtx = () => {
   return {
     dispatch,
     assignedStores,
+    dashboardOption,
     endDate,
     groups,
     hourlyKey,
