@@ -14,6 +14,9 @@ import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import {
   DocumentCurrencyDollarIcon,
   ShoppingCartIcon,
+  CalendarDateRangeIcon,
+  CalendarIcon,
+  ChartBarIcon,
 } from "@heroicons/react/20/solid";
 import { BuildingStorefrontIcon } from "@heroicons/react/24/solid";
 import { ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
@@ -52,13 +55,12 @@ const MainViewContainer = () => {
     return ctx.view === view ? "text-orange-500" : "text-content/60";
   };
 
-  
   // The Sales Tracker Dashboard
   if (ctx.dashboardOption === "tracker") {
     const handleTrackerViewSelect = (view: SalesTrackerView) => {
       ctx.dispatch(setSalesTrackerView(view));
     };
-    
+
     const activeTrackerStyle = (view: SalesTrackerView) => {
       return ctx.salesTrackerView === view
         ? "text-orange-500"
@@ -67,7 +69,7 @@ const MainViewContainer = () => {
 
     return (
       <div>
-        <div className="flex justify-items-center bg-custom-white shadow-md py-2 text-[12px]">
+        <div className="flex justify-items-center bg-custom-white shadow-md py-2 text-[11px]">
           <div
             className="border-r w-1/4 flex justify-center gap-2 items-center transition-all"
             onClick={() => handleViewSelect("main")}
@@ -78,30 +80,24 @@ const MainViewContainer = () => {
             Go Back
           </div>
           <div
-            className="border-r w-1/4 flex justify-center gap-2 items-center transition-all"
+            className={`border-r w-1/4 flex justify-center gap-2 items-center transition-all duration-200 ${activeTrackerStyle("period")}`}
             onClick={() => handleTrackerViewSelect("period")}
           >
-            <BuildingStorefrontIcon
-              className={`h-6 w-6 transition-all duration-200 ${activeTrackerStyle("period")}`}
-            />
+            <ChartBarIcon className="h-6 w-6" />
             Period
           </div>
           <div
-            className="border-r w-1/4 flex justify-center gap-2 items-center transition-all"
+            className={`border-r w-1/4 flex justify-center gap-2 items-center transition-all duration-200 ${activeTrackerStyle("weeks")}`}
             onClick={() => handleTrackerViewSelect("weeks")}
           >
-            <DocumentCurrencyDollarIcon
-              className={`h-6 w-6 transition-all duration-200 ${activeTrackerStyle("weeks")}`}
-            />
+            <CalendarDateRangeIcon className="h-6 w-6" />
             Weeks
           </div>
           <div
-            className="w-1/4 flex justify-center gap-2 items-center"
+            className={`w-1/4 flex justify-center gap-2 items-center transition-all duration-200 ${activeTrackerStyle("days")}`}
             onClick={() => handleTrackerViewSelect("days")}
           >
-            <ShoppingCartIcon
-              className={`h-6 w-6 transition-all duration-200 ${activeTrackerStyle("days")}`}
-            />
+            <CalendarIcon className="h-6 w-6" />
             Days
           </div>
         </div>
@@ -112,8 +108,8 @@ const MainViewContainer = () => {
 
   // The other 2 dashboard (daily and weekly sales) => (stores, sales, subdept)
   return (
-    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden text-[13px]">
-      <div className="flex justify-items-center bg-custom-white shadow-md py-2 text-[12px]">
+    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
+      <div className="flex justify-items-center bg-custom-white shadow-md py-2 text-[11px]">
         <div
           className="border-r w-1/4 flex justify-center gap-2 items-center transition-all"
           onClick={() => handleViewSelect("main")}

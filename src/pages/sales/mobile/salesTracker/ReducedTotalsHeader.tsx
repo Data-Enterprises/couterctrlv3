@@ -117,34 +117,38 @@ const ReducedTotalsHeader = () => {
       </div>
       <div className="grid grid-cols-[53%_46%] gap-2">
         {/* col 1 */}
-        <div className="text-content/60 text-[10px]">
-          <div className="flex justify-between text-content/60">
+        <div className="text-content/60 text-[10px] grid grid-cols-2 gap-y-1">
+          <div className="text-content/60">
             <div>Period Start</div>
             <div className="text-content">
               {ctx.trackerKpis.dateRange.split(" - ")[0]}
             </div>
           </div>
-          <div className="flex justify-between text-content/60">
+          <div className="text-content/60">
             <div>Period End</div>
             <div className="text-content">
               {ctx.trackerKpis.dateRange.split(" - ")[1]}
             </div>
           </div>
-          <div className="flex justify-between">
-            <div className="flex gap-1.5 items-center">
-              <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: colors[0]}}></div>
+          <div className="">
+            <div className="flex gap-1 items-center">
+              <div
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ backgroundColor: colors[0] }}
+              ></div>
               TY Sales
-
             </div>
             <div className="font-semibold text-content">
               {formatCurrency2(ctx.trackerKpis.tyTotalSales)}
             </div>
           </div>
-          <div className="flex justify-between">
-            <div className="flex gap-1.5 items-center">
-              <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: colors[1]}}></div>
+          <div className="">
+            <div className="flex gap-1 items-center">
+              <div
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ backgroundColor: colors[1] }}
+              ></div>
               LY Sales
-
             </div>
             <div className="font-semibold text-content">
               {formatCurrency2(ctx.trackerKpis.lyTotalSales)}
@@ -173,7 +177,7 @@ const ReducedTotalsHeader = () => {
             animate={true}
           />
           <div
-            className={`absolute bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-semibold ${ctx.trackerKpis.dollarChange >= 0 ? "text-emerald-600" : "text-red-600"}`}
+            className={`absolute bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-bold ${ctx.trackerKpis.dollarChange >= 0 ? "text-emerald-600" : "text-red-600"}`}
           >
             {ctx.trackerKpis.percentChange.toFixed(2)}%
           </div>
