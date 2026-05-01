@@ -120,7 +120,7 @@ const SalesMobile = () => {
     getWeekly(
       ctx.url,
       ctx.token,
-      start,
+      ctx.startDate,
       ctx.endDate,
       ctx.useGroups,
       ctx.searchValue,
@@ -133,15 +133,18 @@ const SalesMobile = () => {
             (a, b) =>
               new Date(b.sale_date).getTime() - new Date(a.sale_date).getTime(),
           );
-          ctx.dispatch(setMobileSalesPanels(sorted));
+          if (ctx.dashboardOption === "daily") {
+            ctx.dispatch(setMobileSalesPanels([sorted[sorted.length - 1]]));
+          } else {
+            ctx.dispatch(setMobileSalesPanels(sorted));
+          }
           ctx.dispatch(setMobileWeeklySales(sorted));
 
           // Then fetch last year
-          const lyStart = ctx.dashboardOption === "daily" ? lyWkEnd : lyWkStart;
           getWeekly(
             ctx.url,
             ctx.token,
-            lyStart,
+            lyWkStart,
             lyWkEnd,
             ctx.useGroups,
             ctx.searchValue,

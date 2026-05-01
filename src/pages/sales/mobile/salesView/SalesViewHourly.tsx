@@ -67,8 +67,19 @@ const SalesViewHourly = ({ displayName }: SalesViewHourlyProps) => {
     return "bg-bkg";
   };
 
+  const formatDateDisplay = (date: "ty" | "ly") => {
+    if (ctx.dashboardOption === "daily") {
+      return date === "ty" ? formatDate(tyDate) : formatDate(ctx.weeklySalesLastYear[0].sale_date);
+    }
+    if (date === "ty") {
+      return `${formatDate(ctx.weeklySales[ctx.weeklySales.length - 1].sale_date)} - ${formatDate(ctx.weeklySales[0].sale_date)}`;
+    } else {
+      return `${formatDate(ctx.weeklySalesLastYear[ctx.weeklySalesLastYear.length - 1].sale_date)} - ${formatDate(ctx.weeklySalesLastYear[0].sale_date)}`;
+    }
+  };
+
   return (
-    <div className="bg-custom-white rounded-lg shadow-md py-2">
+    <div className="bg-custom-white rounded-lg shadow-md py-2 text-[11px]">
       <div className="flex justify-between font-medium px-2">
         <div>Hourly Sales</div>
         <div>{displayName}</div>
@@ -82,8 +93,12 @@ const SalesViewHourly = ({ displayName }: SalesViewHourlyProps) => {
       {ctx.hourlyKey === "sale_date" ? (
         <div>
           <div className="px-2 font-medium grid grid-cols-2 gap-2">
-            <div>{formatDate(ctx.weeklySales[ctx.weeklySales.length - 1].sale_date)} - {formatDate(ctx.weeklySales[0].sale_date)}</div>
-            <div>{formatDate(ctx.weeklySalesLastYear[ctx.weeklySalesLastYear.length - 1].sale_date)} - {formatDate(ctx.weeklySalesLastYear[0].sale_date)}</div>
+            <div>
+              {formatDateDisplay('ty')}
+            </div>
+            <div>
+              {formatDateDisplay('ly')}
+            </div>
           </div>
 
           <div className="text-[12px] space-y-1.5 max-h-[275px] overflow-y-auto">

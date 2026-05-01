@@ -131,37 +131,43 @@ const StoreRow = ({ panel }: StoreRowProps) => {
     ctx.selectedStore.sale_date === panel.sale_date &&
     ctx.selectedStore.storeid === panel.storeid
       ? "bg-orange-200"
-      : `odd:bg-custom-white even:bg-blue-200/50`;
+      : `odd:bg-custom-white even:bg-bkg`;
 
   return (
     <div
-      className={`transition-all duration-200 ${bgStyle} px-2 py-0.5`}
+      className={`transition-all duration-200 ${bgStyle} px-2 py-0.5 text-[11px]`}
       onClick={handleStoreSelect}
     >
-      <div className="font-medium flex justify-between">
-        <div>{dateStr}</div>
-        <div>{panel.store_name}</div>
+      <div className="font-medium flex justify-between gap-2">
+        <div className="truncate">{dateStr}</div>
+        <div className="truncate font-normal">{panel.store_name}</div>
       </div>
-      <div className="grid grid-cols-4">
-        <div>
-          <div className="text-content/60">Sales</div>
-          <div className="font-medium">
+      <div className="grid grid-cols-2 h-[1.5px]">
+        <div className="bg-gradient-to-r from-content/15 odd:to-custom-white even:to-bkg"></div>
+        <div className="bg-gradient-to-l from-content/15 odd:to-custom-white even:to-bkg"></div>
+      </div>
+
+      <div className="grid grid-cols-4 gap-x-1 pt-1">
+        <div className="min-w-0">
+          <div className="text-content/60 text-[10px]">Sales</div>
+          <div className="font-medium text-[10.5px]">
             {formatCurrency2(panel.total_sales - panel.total_tax)}
           </div>
         </div>
-        <div>
-          <div className="text-content/60">Tax</div>
-          <div className="font-medium">{formatCurrency2(panel.total_tax)}</div>
+
+        <div className="min-w-0">
+          <div className="text-content/60 text-[10px]">Tax</div>
+          <div className="font-medium text-[10.5px]">{formatCurrency2(panel.total_tax)}</div>
         </div>
 
-        <div>
-          <div className="text-content/60">Qty</div>
-          <div className="font-medium">{formatBigNumber(panel.qty, 0)}</div>
+        <div className="min-w-0">
+          <div className="text-content/60 text-[10px]">Qty</div>
+          <div className="font-medium text-[10.5px]">{formatBigNumber(panel.qty, 0)}</div>
         </div>
 
-        <div>
-          <div className="text-content/60">Weight</div>
-          <div className="font-medium">{formatWeight(panel.weight)}</div>
+        <div className="min-w-0">
+          <div className="text-content/60 text-[10px]">Weight</div>
+          <div className="font-medium text-[10.5px]">{formatWeight(panel.weight)}</div>
         </div>
       </div>
     </div>

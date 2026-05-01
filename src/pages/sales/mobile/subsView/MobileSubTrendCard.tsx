@@ -71,70 +71,63 @@ const SubTrendCard = ({ sub, row, dates }: TrendRowProps) => {
   ];
 
   return (
-    <div className={`p-1 rounded-lg shadow-md border ${borderColor}`}>
-      <div className="font-medium text-content/60 flex justify-between">
+    <div className={`p-1 rounded-lg shadow-md border ${borderColor} text-[11px]`}>
+      <div className="font-medium text-content/60 flex justify-between pb-0.5">
         <div>{title}</div>
         <div className="font-bold">{noData.length ? noData : dateRange()}</div>
       </div>
-      <div className="grid grid-cols-2">
-        <div className={`bg-gradient-to-r ${gradient} h-[1.5px]`}></div>
-        <div className={`bg-gradient-to-l ${gradient} h-[1.5px]`}></div>
+
+      <div className="grid grid-cols-2 mb-1">
+        <div className={`bg-gradient-to-r ${gradient}`}></div>
+        <div className={`bg-gradient-to-l ${gradient}`}></div>
       </div>
 
-      <div className="">
-        <div className="grid grid-cols-4 text-[12px]">
-        {/* <div className="grid grid-cols-[38%_38%_1fr] text-[12px]"> */}
-          <div>
-            <div>Sales</div>
-            <div className="font-medium">
-              {formatCurrency2(sub.total_sales)}
-            </div>
-          </div>
-          <div>
-            <div>Net</div>
-            <div className="font-medium">{formatCurrency2(sub.net_sales)}</div>
-          </div>
-          <div>
-            <div>Qty</div>
-            <div className="font-medium">{formatBigNumber(sub.qty, 0)}</div>
-          </div>
-          <div>
-            <div>Cpn %</div>
-            <div className="font-medium">{couponSalePct(cpns, sub.total_sales)}</div>
-          </div>
+      {/* First metrics row (Sales / Net / Qty / Cpn %) */}
+      <div className="grid grid-cols-4 gap-1">
+        <div className="min-w-0">
+          <div className="text-content/60">Sales</div>
+          <div className="font-medium">{formatCurrency2(sub.total_sales)}</div>
+        </div>
+        <div className="min-w-0">
+          <div className="text-content/60">Net</div>
+          <div className="font-medium">{formatCurrency2(sub.net_sales)}</div>
+        </div>
+        <div className="min-w-0">
+          <div className="text-content/60">Qty</div>
+          <div className="font-medium">{formatBigNumber(sub.qty, 0)}</div>
+        </div>
+        <div className="min-w-0">
+          <div className="text-content/60 text-[10.5px]">Cpn %</div>
+          <div className="font-medium">{couponSalePct(cpns, sub.total_sales)}</div>
         </div>
       </div>
 
-      {/* <div className="grid grid-cols-2">
-        <div className={`bg-gradient-to-r ${gradient} h-[1.5px]`}></div>
-        <div className={`bg-gradient-to-l ${gradient} h-[1.5px]`}></div>
-      </div> */}
+      <div className="grid grid-cols-2 my-1">
+        <div className={`bg-gradient-to-r ${gradient}`}></div>
+        <div className={`bg-gradient-to-l ${gradient}`}></div>
+      </div>
 
-      <div className="pt-1">
-        <div className="grid grid-cols-4 text-[12px]">
-          <div>
-            <div>Digital Cpn</div>
-            <div className="font-medium">
-              {formatCurrency2(sub.digital_coupons)}
-            </div>
+      <div className="grid grid-cols-4 gap-1 text-[10.5px]">
+        <div className="min-w-0">
+          <div className="text-content/60">Digital Cpn</div>
+          <div className="font-medium">
+            {formatCurrency2(sub.digital_coupons)}
           </div>
-          <div>
-            <div>Store Cpn</div>
-            <div className="font-medium">
-              {formatCurrency2(sub.store_coupon)}
-            </div>
+        </div>
+        <div className="min-w-0">
+          <div className="text-content/60">Store Cpn</div>
+          <div className="font-medium">{formatCurrency2(sub.store_coupon)}</div>
+        </div>
+        <div className="min-w-0">
+          <div className="text-content/60">E. Store Cpn</div>
+          <div className="font-medium">
+            {formatCurrency2(sub.elec_store_coupons)}
           </div>
-          <div>
-            <div>E. Store Cpn</div>
-            <div className="font-medium">
-              {formatCurrency2(sub.elec_store_coupons)}
-            </div>
-          </div>
-          <div>
-            <div>E. Instore Cpn</div>
-            <div className="font-medium">
-              {formatCurrency2(sub.elec_instore_coupons)}
-            </div>
+        </div>
+        <div className="min-w-0">
+          <div className="text-content/60">E. Instore Cpn</div>
+          <div className="font-medium">
+            {formatCurrency2(sub.elec_instore_coupons)}
           </div>
         </div>
       </div>
