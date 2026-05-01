@@ -85,6 +85,7 @@ interface SalesMobileState {
   dashboardOption: DashboardOption;
   salesTrackerSelectedSubDept: number;
   salesTrackerView: SalesTrackerView;
+  salesTrackerSelectedWeek: number;
 }
 
 const defaultAggTotals: AggTotals = {
@@ -154,6 +155,7 @@ const initialState: SalesMobileState = {
   dashboardOption: "daily",
   salesTrackerSelectedSubDept: 0,
   salesTrackerView: "period",
+  salesTrackerSelectedWeek: -1,
 };
 
 const formatDate = (dte: string) => {
@@ -542,6 +544,9 @@ const salesMobileSlice = createSlice({
     setSalesTrackerView: (state, action: PayloadAction<SalesTrackerView>) => {
       state.salesTrackerView = action.payload;
     },
+    setSalesTrackerSelectedWeek: (state, action: PayloadAction<number>) => {
+      state.salesTrackerSelectedWeek = action.payload;
+    },
 
     resetMobileSalesState: (state) => {
       return { ...initialState, dashboardOption: state.dashboardOption };
@@ -591,5 +596,6 @@ export const {
   concatTYSubTrackerMobile,
   setSalesTrackerView,
   setReducedBySubTotals,
+  setSalesTrackerSelectedWeek,
 } = salesMobileSlice.actions;
 export default salesMobileSlice.reducer;

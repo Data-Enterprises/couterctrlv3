@@ -115,7 +115,7 @@ const SalesTrackerPeriods = () => {
                         >
                           {formatCurrency2(totals.dollarChange)}
                         </div>
-                        <div className="text-[10px]">
+                        <div className="text-[10px] text-content/60">
                           ATS: {formatCurrency2(totals.atsTotalSales)}
                         </div>
                       </div>

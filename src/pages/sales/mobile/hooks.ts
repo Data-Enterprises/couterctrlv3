@@ -19,6 +19,7 @@ export const useMobileSalesCtx = () => {
     panelSortOption,
     salesPanels,
     salesTrackerSelectedSubDept,
+    salesTrackerSelectedWeek,
     salesViewHourly,
     salesViewHourlyLastYear,
     salesViewTopTen,
@@ -112,5 +113,6 @@ export const useMobileSalesCtx = () => {
     uniqueSubsMobile,
     salesTrackerView,
     tyReducedTotalsMobileFilteredBySub,
+    salesTrackerSelectedWeek,
   };
 };

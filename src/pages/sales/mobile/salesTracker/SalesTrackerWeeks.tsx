@@ -4,7 +4,11 @@ import { formatCurrency2 } from "../../../../utils";
 import { formatDate, changeTextColor } from "../../tracker"; // 👈 Added missing import
 import { useMobileSalesCtx } from "../hooks";
 import ReducedTotalsHeader from "./ReducedTotalsHeader";
-import { setSalesTrackerSelectedSubDept } from "../../../../features/salesMobileSlice";
+import {
+  setSalesTrackerSelectedSubDept,
+  setSalesTrackerSelectedWeek,
+  setSalesTrackerView,
+} from "../../../../features/salesMobileSlice";
 
 const colors = [
   "#00CC55",
@@ -101,9 +105,14 @@ const SalesTrackerWeeks = () => {
                 <div
                   key={idx}
                   className="rounded-xl border bg-custom-white shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer p-2"
-                  onClick={() =>
-                    ctx.dispatch(setSalesTrackerSelectedSubDept(subId))
-                  }
+                  onClick={() => {
+                    if (ctx.salesTrackerSelectedSubDept === subId) {
+                      ctx.dispatch(setSalesTrackerSelectedWeek(idx));
+                      ctx.dispatch(setSalesTrackerView("days"));
+                    } else {
+                      ctx.dispatch(setSalesTrackerSelectedSubDept(subId));
+                    }
+                  }}
                 >
                   {/* <div className="font-medium select-none">
                     <div className="grid grid-cols-2">
