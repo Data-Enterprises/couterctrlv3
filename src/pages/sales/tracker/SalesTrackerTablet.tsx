@@ -62,6 +62,7 @@ const SalesTrackerTablet = () => {
             if (found) {
               found.salesTY += week.total_sales;
               found.salesLY += salesLY;
+              found.transaction_count += week.transaction_count;
             } else {
               acc.push({
                 sale_date: week.sale_date,
@@ -74,6 +75,7 @@ const SalesTrackerTablet = () => {
                 totalSalesDollarChange: 0,
                 totalSalesPercentChange: 0,
                 atsTotalSales: week.total_sales / week.qty,
+                transaction_count: week.transaction_count,
               });
             }
             return acc;

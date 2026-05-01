@@ -1,17 +1,12 @@
 import { useMobileSalesCtx } from "../hooks";
-import type { SubTracker, WeekTotal } from "../../../../features/salesSlice";
-import { useEffect } from "react";
-import {
-  setSalesTrackerSelectedSubDept,
-  setTyReducedTotalsMobile,
-  setUniqueSubsMobile,
-} from "../../../../features/salesMobileSlice";
-import type { SubSale } from "../../../../interfaces";
-import { formatCurrency2, sameWeekDayLastYear } from "../../../../utils";
-import { changeTextColor, chunkData } from "../../tracker";
+import type { WeekTotal } from "../../../../features/salesSlice";
+import { setSalesTrackerSelectedSubDept } from "../../../../features/salesMobileSlice";
+import { formatCurrency2 } from "../../../../utils";
+import { changeTextColor } from "../../tracker";
 
 import { ResponsivePie } from "@nivo/pie";
 import ReducedTotalsHeader from "./ReducedTotalsHeader";
+import LoadingIndicator from "../../../../components/loading/LoadingIndicator";
 const colors = [
   "#00CC55",
   "#0099AA",
@@ -24,105 +19,6 @@ const colors = [
 
 const SalesTrackerPeriods = () => {
   const ctx = useMobileSalesCtx();
-
-  useEffect(() => {
-    if (ctx.thisYrSubTrackerMobile.length > 0) {
-      const uniqueSubs: SubTracker[] = ctx.thisYrSubTrackerMobile.reduce(
-        (acc: SubTracker[], sale) => {
-          const exists = acc.find((s) => s.id === sale.sub_department);
-          if (!exists) {
-            acc.push({
-              id: sale.sub_department,
-              desc: sale.sub_department_description,
-            });
-          }
-          return acc;
-        },
-        [],
-      );
-      ctx.dispatch(setUniqueSubsMobile(uniqueSubs));
-
-      const calcTotals = () => {
-        const thisYear = ctx.tyCollapsedSubSalesMobile.flat();
-        const lastYear = ctx.lyCollapsedSubSalesMobile.flat();
-
-        const weekTotals: WeekTotal[] = thisYear.reduce(
-          (acc: WeekTotal[], week: SubSale) => {
-            const found = acc.find(
-              (w) =>
-                w.sale_date === week.sale_date &&
-                w.storeid === week.storeid &&
-                w.subDept === week.sub_department,
-            );
-            const saleDateLY = sameWeekDayLastYear(week.sale_date);
-
-            const lySale = lastYear.find(
-              (ly) =>
-                ly.sale_date.split("T")[0] === saleDateLY.date &&
-                ly.storeid === week.storeid &&
-                ly.sub_department === week.sub_department,
-            );
-
-            const salesLY = lySale ? lySale.total_sales - lySale.total_tax : 0;
-
-            if (found) {
-              found.salesTY += week.total_sales;
-              found.salesLY += salesLY;
-              found.transaction_count += week.transaction_count;
-            } else {
-              acc.push({
-                sale_date: week.sale_date,
-                storeName: week.store_name,
-                storeid: week.storeid,
-                subDesc: week.sub_department_description,
-                subDept: week.sub_department,
-                salesTY: week.total_sales,
-                salesLY,
-                totalSalesDollarChange: 0,
-                totalSalesPercentChange: 0,
-                atsTotalSales: 0,
-                transaction_count: week.transaction_count,
-              });
-            }
-            return acc;
-          },
-          [],
-        );
-
-        const withChanges = weekTotals.map((week) => {
-          const dollarChange = week.salesTY - week.salesLY;
-          const percentChange =
-            week.salesLY === 0 ? 0 : (dollarChange / week.salesLY) * 100;
-          const atsTotalSales = week.salesTY / week.transaction_count;
-          return {
-            ...week,
-            totalSalesDollarChange: dollarChange,
-            totalSalesPercentChange: percentChange,
-            atsTotalSales,
-          };
-        });
-
-        const copy = [...withChanges];
-        const subIds = Array.from(new Set(withChanges.map((w) => w.subDept)));
-
-        const grouped = withChanges.reduce((acc: WeekTotal[][][], _, i) => {
-          const subId = subIds[i];
-          if (subId) {
-            const filtered = copy
-              .filter((w) => w.subDept === subId)
-              .sort((a, b) => a.sale_date.localeCompare(b.sale_date));
-            const grouped = chunkData(filtered);
-            acc.push(grouped);
-          }
-          return acc;
-        }, []);
-
-        return grouped;
-      };
-
-      ctx.dispatch(setTyReducedTotalsMobile(calcTotals()));
-    }
-  }, [ctx.tyCollapsedSubSalesMobile, ctx.lyCollapsedSubSalesMobile]);
 
   const calcTotals = (data: WeekTotal[][]) => {
     const tyTotalSales = data.reduce((acc, weekGroup) => {
@@ -173,11 +69,12 @@ const SalesTrackerPeriods = () => {
   };
 
   return (
-    <div className="space-y-3 p-3">
+    <div className="flex flex-col w-full h-[calc(100vh-90px)] max-h-[calc(100vh-90px)] px-3 py-2 space-y-2">
       <ReducedTotalsHeader />
-      <div className="grid grid-cols-2 gap-2 sm:gap-3">
-        {ctx.uniqueSubsMobile.length > 0
-          ? ctx.uniqueSubsMobile.map((sub, idx) => {
+      <div className="flex-1 w-full grid overflow-y-hidden">
+        <div className="grid grid-cols-2 gap-2 overflow-y-auto">
+          {ctx.uniqueSubsMobile.length > 0 ? (
+            ctx.uniqueSubsMobile.map((sub, idx) => {
               const subId = sub.id;
               const desc = sub.desc;
               const filtered = ctx.tyReducedTotalsMobile
@@ -192,19 +89,19 @@ const SalesTrackerPeriods = () => {
               return (
                 <div
                   key={idx}
-                  className={`rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${
+                  className={`rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer p-2 ${
                     ctx.salesTrackerSelectedSubDept === subId
-                      ? "bg-orange-100 shadow-orange-200"
-                      : "bg-custom-white hover:bg-gray-50"
+                      ? "bg-orange-100 shadow-orange-200 border-orange-300"
+                      : "bg-custom-white hover:bg-gray-50 border-gray-200"
                   }`}
                   onClick={() => handleRowClick(subId)}
                 >
-                  <div className="px-2 py-1.5 space-y-1.5">
+                  {/* ... your existing card content stays identical ... */}
+                  <div className="space-y-1.5">
                     <div>
                       <div className="font-semibold text-[11px] truncate">
                         {desc}
                       </div>
-
                       <div className="flex justify-between items-end">
                         <div className="text-[10px]">
                           ATS: {formatCurrency2(totals.atsTotalSales)}
@@ -235,7 +132,6 @@ const SalesTrackerPeriods = () => {
                               found === 0 ? pieData[1].value : pieData[0].value;
                             if (data < compare)
                               return rgbaColor(colors[found], 0.3);
-
                             return colors[found];
                           }}
                           isInteractive={false}
@@ -250,8 +146,8 @@ const SalesTrackerPeriods = () => {
                     </div>
 
                     <div className="h-[1.5px] grid grid-cols-2">
-                      <div className="bg-gradient-to-r from-blue-200 to-custom-white"></div>
-                      <div className="bg-gradient-to-l from-blue-200 to-custom-white"></div>
+                      <div className="bg-gradient-to-r from-content/25 to-custom-white"></div>
+                      <div className="bg-gradient-to-l from-content/25 to-custom-white"></div>
                     </div>
 
                     <div className="space-y-0.5">
@@ -278,7 +174,12 @@ const SalesTrackerPeriods = () => {
                 </div>
               );
             })
-          : null}
+          ) : (
+            <div className="flex-1 w-full grid overflow-y-hidden relative">
+              <LoadingIndicator message="Processing subs period" />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

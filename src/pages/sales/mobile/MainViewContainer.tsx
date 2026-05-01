@@ -102,7 +102,7 @@ const MainViewContainer = () => {
             <ShoppingCartIcon
               className={`h-6 w-6 transition-all duration-200 ${activeTrackerStyle("days")}`}
             />
-            Subs
+            Days
           </div>
         </div>
         <SalesTrackerMobile />

@@ -78,6 +78,7 @@ interface SalesMobileState {
   tyCollapsedSubSalesMobile: SubSale[][];
   lyCollapsedSubSalesMobile: SubSale[][];
   tyReducedTotalsMobile: WeekTotal[][][];
+  tyReducedTotalsMobileFilteredBySub: WeekTotal[][];
   uniqueSubsMobile: SubTracker[];
   trackerKpis: TrackerKpis;
   refreshOverviewData: boolean;
@@ -140,6 +141,7 @@ const initialState: SalesMobileState = {
   tyCollapsedSubSalesMobile: [],
   lyCollapsedSubSalesMobile: [],
   tyReducedTotalsMobile: [],
+  tyReducedTotalsMobileFilteredBySub: [],
   uniqueSubsMobile: [],
   trackerKpis: {
     tyTotalSales: 0,
@@ -149,7 +151,7 @@ const initialState: SalesMobileState = {
     dateRange: "",
   },
   refreshOverviewData: false,
-  dashboardOption: "weekly",
+  dashboardOption: "daily",
   salesTrackerSelectedSubDept: 0,
   salesTrackerView: "period",
 };
@@ -381,6 +383,9 @@ const salesMobileSlice = createSlice({
     setMobilePanelsLoading: (state, action: PayloadAction<boolean>) => {
       state.panelsLoading = action.payload;
     },
+    setReducedBySubTotals: (state, action: PayloadAction<WeekTotal[][]>) => { 
+      state.tyReducedTotalsMobileFilteredBySub = action.payload;
+    },
     setView: (state, action: PayloadAction<SalesMobileView>) => {
       state.view = action.payload;
     },
@@ -585,5 +590,6 @@ export const {
   concatLYSubTrackerMobile,
   concatTYSubTrackerMobile,
   setSalesTrackerView,
+  setReducedBySubTotals,
 } = salesMobileSlice.actions;
 export default salesMobileSlice.reducer;

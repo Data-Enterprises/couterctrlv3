@@ -106,6 +106,7 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
                   elec_store_coupons: 0,
                   store_coupon: 0,
                   store_number: "",
+                  transaction_count: 0,
                 });
               }
             });
@@ -131,6 +132,7 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
                   elec_store_coupons: 0,
                   store_coupon: 0,
                   store_number: "",
+                  transaction_count: 0,
                 });
               }
             });

@@ -37,6 +37,7 @@ export const useMobileSalesCtx = () => {
     trackerKpis,
     tyCollapsedSubSalesMobile,
     tyReducedTotalsMobile,
+    tyReducedTotalsMobileFilteredBySub,
     tyWeekCardsMobile,
     uniqueSubsMobile,
     view,
@@ -110,5 +111,6 @@ export const useMobileSalesCtx = () => {
     tyWeekCardsMobile,
     uniqueSubsMobile,
     salesTrackerView,
+    tyReducedTotalsMobileFilteredBySub,
   };
 };

@@ -2,7 +2,10 @@ import { useEffect } from "react";
 import { useMobileSalesCtx } from "../hooks";
 import { formatDate } from "../../tracker";
 import type { TrackerKpis } from "../../../../features/salesSlice";
-import { setTrackerKpisMobile } from "../../../../features/salesMobileSlice";
+import {
+  setSalesTrackerSelectedSubDept,
+  setTrackerKpisMobile,
+} from "../../../../features/salesMobileSlice";
 import { formatCurrency2 } from "../../../../utils";
 
 const ReducedTotalsHeader = () => {
@@ -60,17 +63,50 @@ const ReducedTotalsHeader = () => {
     )[0]?.desc;
   };
 
+  const handleHeaderClick = () => {
+    ctx.dispatch(setSalesTrackerSelectedSubDept(0));
+  };
+
   return (
-    <div className="bg-custom-white px-3 py-2 rounded-lg font-medium">
-      <div>
-        Viewing: {ctx.salesTrackerSelectedSubDept === 0 ? "All" : findSubName()}
+    <div
+      className="bg-custom-white px-3 py-2 rounded-lg font-medium shadow-sm border border-content/15"
+      onClick={handleHeaderClick}
+    >
+      <div className="text-[13px] font-semibold text-content truncate">
+        Viewing:{" "}
+        {ctx.salesTrackerSelectedSubDept === 0
+          ? "All Sub Departments"
+          : findSubName()}
       </div>
-      <div>Period Start: {ctx.trackerKpis.dateRange.split(" - ")[0]}</div>
-      <div>Period End: {ctx.trackerKpis.dateRange.split(" - ")[1]}</div>
-      <div>TY Total Sales: {formatCurrency2(ctx.trackerKpis.tyTotalSales)}</div>
-      <div>LY Total Sales: {formatCurrency2(ctx.trackerKpis.lyTotalSales)}</div>
-      <div>Dollar Change: {formatCurrency2(ctx.trackerKpis.dollarChange)}</div>
-      <div>Percent Change: {ctx.trackerKpis.percentChange.toFixed(2)}%</div>
+      <div className="flex items-center justify-between text-xs text-content/60">
+        <span className=" text-xs">{ctx.trackerKpis.dateRange}</span>
+        <div className="flex gap-1 text-xs ">
+          <span className="text-emerald-600 font-semibold">
+            {formatCurrency2(ctx.trackerKpis.dollarChange)}
+          </span>
+          <span
+            className={`font-semibold ${ctx.trackerKpis.dollarChange >= 0 ? "text-emerald-600" : "text-red-600"}`}
+          >
+            ({ctx.trackerKpis.percentChange.toFixed(2)}%)
+          </span>
+        </div>
+      </div>
+      <div className="pt-1 border-t border-content/15">
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="space-y-0.5">
+            <span className="text-content/60 text-[11px]">TY Sales</span>
+            <div className=" font-semibold text-content">
+              {formatCurrency2(ctx.trackerKpis.tyTotalSales)}
+            </div>
+          </div>
+          <div className="space-y-0.5">
+            <span className="text-content/60 text-[11px]">LY Sales</span>
+            <div className=" font-semibold text-content">
+              {formatCurrency2(ctx.trackerKpis.lyTotalSales)}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
