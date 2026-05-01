@@ -1,6 +1,9 @@
 import { useMobileSalesCtx } from "../hooks";
 import type { WeekTotal } from "../../../../features/salesSlice";
-import { setSalesTrackerSelectedSubDept } from "../../../../features/salesMobileSlice";
+import {
+  setSalesTrackerSelectedSubDept,
+  setSalesTrackerView,
+} from "../../../../features/salesMobileSlice";
 import { formatCurrency2 } from "../../../../utils";
 import { changeTextColor } from "../../tracker";
 
@@ -57,8 +60,9 @@ const SalesTrackerPeriods = () => {
     };
   };
 
-  const handleRowClick = (subId: number) => {
+  const handleCardClick = (subId: number) => {
     ctx.dispatch(setSalesTrackerSelectedSubDept(subId));
+    ctx.dispatch(setSalesTrackerView("weeks"));
   };
 
   const rgbaColor = (hex: string, alpha: number) => {
@@ -94,22 +98,25 @@ const SalesTrackerPeriods = () => {
                       ? "bg-orange-100 shadow-orange-200 border-orange-300"
                       : "bg-custom-white hover:bg-gray-50 border-gray-200"
                   }`}
-                  onClick={() => handleRowClick(subId)}
+                  onClick={() => handleCardClick(subId)}
                 >
-                  {/* ... your existing card content stays identical ... */}
                   <div className="space-y-1.5">
-                    <div>
-                      <div className="font-semibold text-[11px] truncate">
-                        {desc}
-                      </div>
-                      <div className="flex justify-between items-end">
-                        <div className="text-[10px]">
-                          ATS: {formatCurrency2(totals.atsTotalSales)}
+                    <div className="flex justify-between gap-2 text-[10px]">
+                      <div className="leading-tight">
+                        <div className="font-semibold text-nowrap truncate">
+                          {desc}
                         </div>
+                        <div className="text-content/60 text-[10px]">ID: {subId}</div>
+                      </div>
+
+                      <div className="text-right leading-tight">
                         <div
-                          className={`text-[9.8px] font-bold ${changeTextColor(totals.dollarChange, 0)}`}
+                          className={`font-medium ${changeTextColor(totals.dollarChange, 0)}`}
                         >
                           {formatCurrency2(totals.dollarChange)}
+                        </div>
+                        <div className="text-[10px]">
+                          ATS: {formatCurrency2(totals.atsTotalSales)}
                         </div>
                       </div>
                     </div>
@@ -135,7 +142,7 @@ const SalesTrackerPeriods = () => {
                             return colors[found];
                           }}
                           isInteractive={false}
-                          animate={false}
+                          animate={true}
                         />
                       </div>
                       <div
@@ -153,16 +160,24 @@ const SalesTrackerPeriods = () => {
                     <div className="space-y-0.5">
                       <div className="flex items-end justify-between gap-1 text-[9.5px]">
                         <div className="text-left min-w-0">
-                          <div className="text-content/60 block -mb-0.5 text-[9px] leading-tight">
-                            TY Sales
+                          <div className="text-content/60 -mb-0.5 text-[9px] flex gap-1 items-center leading-tight">
+                            <div
+                              className="h-1.5 w-1.5 rounded-full"
+                              style={{ backgroundColor: colors[0] }}
+                            ></div>
+                            <div>TY Sales</div>
                           </div>
                           <div className="truncate font-medium">
                             {formatCurrency2(totals.tyTotalSales)}
                           </div>
                         </div>
                         <div className="text-left min-w-0">
-                          <div className="text-content/60 block -mb-0.5 text-[9px] leading-tight">
-                            LY Sales
+                          <div className="text-content/60 -mb-0.5 text-[9px] flex gap-1 items-center leading-tight">
+                            <div
+                              className="h-1.5 w-1.5 rounded-full"
+                              style={{ backgroundColor: colors[1] }}
+                            ></div>
+                            <div>LY Sales</div>
                           </div>
                           <div className="truncate font-medium">
                             {formatCurrency2(totals.lyTotalSales)}
