@@ -14,6 +14,7 @@ interface WeekDayMobileProps {
 const WeekDayMobile = ({ week, desc, idx }: WeekDayMobileProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const iconRef = useRef<SVGSVGElement>(null);
   const targetWeekIndex = useMobileSalesCtx().salesTrackerSelectedWeek;
 
   // open the correct week card automatically when it becomes the selected week
@@ -28,17 +29,19 @@ const WeekDayMobile = ({ week, desc, idx }: WeekDayMobileProps) => {
   }, [idx, targetWeekIndex]);
 
   const handleDayToggle = () => {
-    if (contentRef.current && containerRef.current) {
+    if (contentRef.current && containerRef.current && iconRef.current) {
       const isClosed =
         contentRef.current.getAttribute("data-display") === "closed";
       if (isClosed) {
         contentRef.current.setAttribute("data-display", "open");
+        iconRef.current.style.transform = "rotate(90deg)";
         containerRef.current.scrollIntoView({
           behavior: "smooth",
           block: "start",
         });
       } else {
         contentRef.current.setAttribute("data-display", "closed");
+        iconRef.current.style.transform = "rotate(0deg)";
       }
     }
   };
@@ -51,7 +54,8 @@ const WeekDayMobile = ({ week, desc, idx }: WeekDayMobileProps) => {
       <div className="flex items-center justify-between font-medium pb-0.5 text-[11.5px]">
         <div className="flex gap-0.5 items-center">
           <ArrowRightCircleIcon
-            className="w-6 h-6 text-content/60"
+            ref={iconRef}
+            className="w-6 h-6 text-content/60 transition-all duration-100 ease-in-out"
             onClick={handleDayToggle}
           />
           <div className="leading-tight">
