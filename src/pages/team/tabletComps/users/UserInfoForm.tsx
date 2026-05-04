@@ -50,10 +50,6 @@ const UserInfoForm = () => {
     );
   };
 
-  // const handleResetPassword = (u: User) => {};
-
-  // const handleResetSecurity = (u: User) => {};
-
   const filteredUsers = () => {
     return ctx.users.filter((u) => {
       const matchesCompany =
