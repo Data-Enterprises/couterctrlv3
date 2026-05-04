@@ -94,10 +94,10 @@ const ProfileCard = () => {
   return (
     <div className={`w-full select-none ${!isDesktop && "mt-4"}`}>
       <div
-        className={`bg-[rgb(30,45,80)] text-custom-white rounded-lg shadow-lg p-2 text-sm flex gap-2 mb-4`}
+        className={`bg-[rgb(30,45,80)] text-custom-white rounded-lg shadow-lg p-2 text-[12.5px] flex gap-2 mb-4`}
       >
         {isDesktop && (
-          <UserCircleIcon className="" height={140} width={140} fill="white" />
+          <UserCircleIcon className="" height={125} width={125} fill="white" />
         )}
         <div className="">
           <div className="flex gap-1">

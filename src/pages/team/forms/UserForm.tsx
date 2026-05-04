@@ -215,10 +215,10 @@ const UserForm = () => {
 
   // Otherwise, we're either creating a new user or updating an existing one
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg mt-4 p-4 space-y-2">
-      <div className="flex items-center gap-2 select-none">
+    <div className="bg-custom-white rounded-lg shadow-lg mt-4 p-2 space-y-2">
+      <div className="flex items-center gap-1 select-none">
         <InfoIcon fill="#3b82f6" width={17} height={17} />
-        <div className="text-sm font-medium text-content/70">
+        <div className="text-[11px] font-medium text-content/70">
           Ensure all fields are valid before submitting
         </div>
       </div>
