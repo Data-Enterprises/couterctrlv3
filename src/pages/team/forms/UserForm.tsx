@@ -168,6 +168,15 @@ const UserForm = () => {
   if (selectedUserForm === "reset_security") return <ResetSecurityForm />;
 
   const handleUsernameValidation = () => {
+    if (userInfo.username.length === 0) {
+      dispatch(
+        setAvailableUsernameDetails({
+          availableUsernameText: "",
+          usernameTextColor: "",
+        }),
+      );
+      return;
+    }
     checkUsername(url, token, userInfo.username)
       .then((resp) => {
         const j = resp.data;
@@ -191,6 +200,15 @@ const UserForm = () => {
   };
 
   const handleEmailValidation = () => {
+    if (userInfo.email.length === 0) {
+      dispatch(
+        setAvailableEmailDetails({
+          availableEmailText: "",
+          emailTextColor: "",
+        }),
+      );
+      return;
+    }
     checkEmail(url, token, userInfo.email)
       .then((resp) => {
         const j = resp.data;
