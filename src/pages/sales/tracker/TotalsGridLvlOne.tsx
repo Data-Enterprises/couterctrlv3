@@ -110,16 +110,10 @@ const TotalsGridLvlOne = ({
     );
   }
 
-  console.log(filtered)
-
   /* Level 2 => weeks */
   return (
     <div className="">
-      <div
-        // data-display="closed"
-        className="grid gap-2"
-        // className="grid grid-cols-3 gap-2"
-      >
+      <div className="grid gap-2">
         {filtered.map((week, widx) => {
           const desc = week[0].subDesc;
           const weekTotals = calcTotals([week]);
