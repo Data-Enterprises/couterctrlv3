@@ -34,7 +34,7 @@ const UsersTablet = () => {
       case "user_info":
         return <UserInfoForm />;
       case "delete":
-        return <div>Delete User Form</div>;
+        return <UserInfoForm />;
       default:
         return null;
     };

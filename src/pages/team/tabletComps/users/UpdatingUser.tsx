@@ -100,6 +100,7 @@ const UpdatingUserForm = ({ goBack }: UpdatingUserFormProps) => {
             setValue={(val) =>
               dispatch(setUserInfo({ key: "username", value: val }))
             }
+            className="opacity-75 pointer-events-none"
           />
           <Input
             label="Email"
