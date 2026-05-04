@@ -116,7 +116,7 @@ const SalesTracker = () => {
     }
   }, [sales.tyCollapsedSubSales, sales.lyCollapsedSubSales]);
 
-  if (sales.loadingLYTrackerData || sales.loadingTYTrackerData) {
+  if (sales.loadingLYTrackerData && sales.loadingTYTrackerData) {
     return (
       <div className="min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)] grid text-sm">
         <div className="p-2 relative">

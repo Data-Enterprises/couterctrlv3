@@ -31,8 +31,6 @@ const CardLine = ({ data }: CardLineProps) => {
     },
   ];
 
-  console.log("Line Chart Data:", lineData);
-
   return (
     <div className="h-full rounded-lg border border-content/15 shadow-md">
       <ResponsiveLine

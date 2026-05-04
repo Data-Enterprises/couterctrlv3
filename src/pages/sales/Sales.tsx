@@ -187,6 +187,7 @@ const Sales = () => {
 
                     if (pages.every((p) => p.fetched)) {
                       dispatch(setLoadingTYTrackerData(false));
+                      setIsLoading(false);
                     }
                   }
                 })
@@ -194,7 +195,11 @@ const Sales = () => {
             }
           } else {
             dispatch(setLoadingTYTrackerData(false));
+            setIsLoading(false);
           }
+        } else {
+          dispatch(setLoadingTYTrackerData(false));
+          setIsLoading(false);
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
@@ -243,6 +248,7 @@ const Sales = () => {
 
                     if (pages.every((p) => p.fetched)) {
                       dispatch(setLoadingLYTrackerData(false));
+                      setIsLoading(false);
                     }
                   }
                 })
@@ -250,7 +256,11 @@ const Sales = () => {
             }
           } else {
             dispatch(setLoadingLYTrackerData(false));
+            setIsLoading(false);
           }
+        } else {
+          dispatch(setLoadingLYTrackerData(false));
+          setIsLoading(false);
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
