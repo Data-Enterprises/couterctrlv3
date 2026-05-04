@@ -5,6 +5,7 @@ import {
 } from "../../../features/usersSlice";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import UserForms from "../formControls/UserForms";
+import BaseGroupForms from "../formControls/BaseGroupForms";
 
 const MainForms = () => {
   const dispatch = useAppDispatch();
@@ -21,6 +22,10 @@ const MainForms = () => {
 
   if (selectedForm === 1) {
     return<UserForms />;
+  }
+
+  if (selectedForm === 2) {
+    return <BaseGroupForms />;
   }
 
   return (

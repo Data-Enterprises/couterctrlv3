@@ -50,6 +50,8 @@ export type UserFormType =
   | "reset_security"
   | "";
 
+type BaseGroupOption = "create" | "update" | "delete" | "assign_to_user" | "";
+
 // State for users slice /////////////
 interface UsersState {
   users: User[];
@@ -77,6 +79,7 @@ interface UsersState {
   usernameTextColor: string;
   availableEmailText: string;
   emailTextColor: string;
+  bgOption: BaseGroupOption;
 }
 
 const initialState: UsersState = {
@@ -108,6 +111,7 @@ const initialState: UsersState = {
   usernameTextColor: "",
   availableEmailText: "",
   emailTextColor: "",
+  bgOption: "",
 };
 
 export const usersSlice = createSlice({
@@ -268,17 +272,26 @@ export const usersSlice = createSlice({
     },
     setAvailableUsernameDetails: (
       state,
-      action: PayloadAction<{ availableUsernameText: string; usernameTextColor: string }>,
+      action: PayloadAction<{
+        availableUsernameText: string;
+        usernameTextColor: string;
+      }>,
     ) => {
       state.availableUsernameText = action.payload.availableUsernameText;
       state.usernameTextColor = action.payload.usernameTextColor;
     },
     setAvailableEmailDetails: (
       state,
-      action: PayloadAction<{ availableEmailText: string; emailTextColor: string }>,
+      action: PayloadAction<{
+        availableEmailText: string;
+        emailTextColor: string;
+      }>,
     ) => {
       state.availableEmailText = action.payload.availableEmailText;
       state.emailTextColor = action.payload.emailTextColor;
+    },
+    setBGOption: (state, action: PayloadAction<BaseGroupOption>) => {
+      state.bgOption = action.payload;
     },
     resetUsersSlice: () => initialState,
   },
@@ -315,5 +328,6 @@ export const {
   resetUsersSlice,
   setAvailableUsernameDetails,
   setAvailableEmailDetails,
+  setBGOption,
 } = usersSlice.actions;
 export default usersSlice.reducer;

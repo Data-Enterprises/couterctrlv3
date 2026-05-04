@@ -73,7 +73,7 @@ const CreateBaseGroup = () => {
   };
 
   return (
-    <div data-testid="create-bg-form-container" className="bg-custom-white p-4 rounded-lg shadow-lg">
+    <div data-testid="create-bg-form-container" className="bg-custom-white p-2 rounded-lg shadow-lg">
       <SingleSelect
         label="Select Company"
         data={companies}
