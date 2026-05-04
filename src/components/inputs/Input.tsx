@@ -1,9 +1,3 @@
-import { useState } from "react";
-import { useAppSelector } from "../../hooks";
-import { useToast } from "../toasts/hooks/useToast";
-import type { JsonError } from "../../interfaces";
-import { checkEmail, checkUsername } from "../../api/team";
-
 interface InputProps {
   value: string;
   setValue: (value: string) => void;
@@ -12,10 +6,10 @@ interface InputProps {
   className?: string;
   width?: string;
   onKeyDown?: () => void;
-  validateUsername?: boolean;
-  validateEmail?: boolean;
-  username?: string;
-  email?: string;
+  validateUsername?: () => void;
+  validateEmail?: () => void;
+  availableText?: string;
+  textColor?: string;
 }
 
 const Input = ({
@@ -26,15 +20,11 @@ const Input = ({
   type = "text",
   width = "w-full",
   onKeyDown,
-  validateEmail = false,
-  validateUsername = false,
-  email,
-  username,
+  validateEmail,
+  validateUsername,
+  availableText = "",
+  textColor = "",
 }: InputProps) => {
-  const toast = useToast();
-  const [availableText, setAvailableText] = useState<string>("");
-  const [textColor, setTextColor] = useState<string>("");
-  const { url, token } = useAppSelector((state) => state.app);
   const testId = `input-${label.toLowerCase().replace(/\s+/g, "-")}`;
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -51,32 +41,10 @@ const Input = ({
   const isValidating = validateEmail || validateUsername;
 
   const handleValidationClick = () => {
-    if (validateEmail && email) {
-      checkEmail(url, token, email)
-        .then((resp) => {
-          const j = resp.data;
-          if (j.error === 0) {
-              setAvailableText("- Available")
-              setTextColor("text-emerald-600")
-          } else {
-              setAvailableText("- Not Available")
-              setTextColor("text-red-600")
-          }
-        })
-        .catch((err: JsonError) => toast.error(err.message));
-    } else if (validateUsername && username) {
-      checkUsername(url, token, username)
-        .then((resp) => {
-          const j = resp.data;
-          if (j.error === 0) {
-            setAvailableText("- Available");
-            setTextColor("text-emerald-600")
-          } else {
-            setAvailableText("- Not Available");
-            setTextColor("text-red-600")
-          }
-        })
-        .catch((err: JsonError) => toast.error(err.message));
+    if (validateEmail) {
+      validateEmail();
+    } else if (validateUsername) {
+      validateUsername();
     }
   };
 
@@ -85,7 +53,7 @@ const Input = ({
       <div className="flex justify-between text-[13px] items-end pr-1.5">
         <div>
           <label className="font-medium pl-0.5">{label}</label>
-          <span className={`text-[10px] ${textColor}`}>{availableText}</span>
+          <span className={`text-[10px] ml-1 ${textColor}`}>{availableText}</span>
         </div>
         <div
           className={`${!isValidating ? "hidden" : "text-[10px] underline cursor-pointer hover:text-content/60 transition-all duration-200"}`}

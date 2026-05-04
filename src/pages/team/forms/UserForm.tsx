@@ -3,7 +3,12 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { roles } from "..";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 
-import { setUserCompanyIds, setUserInfo } from "../../../features/usersSlice";
+import {
+  setAvailableEmailDetails,
+  setAvailableUsernameDetails,
+  setUserCompanyIds,
+  setUserInfo,
+} from "../../../features/usersSlice";
 import { getBaseGroups } from "../../../api/baseGroups";
 import {
   resetSelectedBaseGroups,
@@ -26,6 +31,7 @@ import DeleteUserForm from "./DeleteUserForm";
 import UpdatePasswordForm from "./UpdatePasswordForm";
 import UserInfo from "./UserInfo";
 import ResetSecurityForm from "./ResetSecurity";
+import { checkEmail, checkUsername } from "../../../api/team";
 
 const UserForm = () => {
   const toast = useToast();
@@ -38,6 +44,10 @@ const UserForm = () => {
     userCompanyIds,
     selectedUserId,
     isDeletingUser,
+    usernameTextColor,
+    availableUsernameText,
+    emailTextColor,
+    availableEmailText,
   } = useAppSelector((state) => state.users);
   const { baseGroups, selectedBaseGroups } = useAppSelector(
     (state) => state.baseGroup,
@@ -157,6 +167,52 @@ const UserForm = () => {
   if (selectedUserForm === "user_info") return <UserInfo />;
   if (selectedUserForm === "reset_security") return <ResetSecurityForm />;
 
+  const handleUsernameValidation = () => {
+    checkUsername(url, token, userInfo.username)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(
+            setAvailableUsernameDetails({
+              availableUsernameText: "- Available",
+              usernameTextColor: "text-emerald-600",
+            }),
+          );
+        } else {
+          dispatch(
+            setAvailableUsernameDetails({
+              availableUsernameText: "- Not Available",
+              usernameTextColor: "text-red-600",
+            }),
+          );
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+  };
+
+  const handleEmailValidation = () => {
+    checkEmail(url, token, userInfo.email)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(
+            setAvailableEmailDetails({
+              availableEmailText: "- Available",
+              emailTextColor: "text-emerald-600",
+            }),
+          );
+        } else {
+          dispatch(
+            setAvailableEmailDetails({
+              availableEmailText: "- Not Available",
+              emailTextColor: "text-red-600",
+            }),
+          );
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+  };
+
   // Otherwise, we're either creating a new user or updating an existing one
   return (
     <div className="bg-custom-white rounded-lg shadow-lg mt-4 p-4 space-y-2">
@@ -175,15 +231,17 @@ const UserForm = () => {
             value={userInfo.username}
             setValue={handleUsername}
             className={`${selectedUserForm === "update" ? "opacity-50 pointer-events-none" : ""} py-1.5`}
-            validateUsername={true}
-            username={userInfo.username}
+            validateUsername={handleUsernameValidation}
+            availableText={availableUsernameText}
+            textColor={usernameTextColor}
           />
           <Input
             label="Email"
             value={userInfo.email}
             setValue={handleEmail}
-            validateEmail={true}
-            email={userInfo.email}
+            validateEmail={handleEmailValidation}
+            availableText={availableEmailText}
+            textColor={emailTextColor}
           />
           <Input
             label="First Name"
@@ -218,7 +276,7 @@ const UserForm = () => {
             data={userLevels.filter((ul) => ul.id <= user.userLevel)}
             displayKey={"name"}
             valueKey="id"
-            className="text-sm mt-1"
+            className="text-sm"
             innerClass="text-sm"
             onSelect={handleUserLvlSelect}
             resetQuery={true}
@@ -230,7 +288,7 @@ const UserForm = () => {
             valueKey={"value"}
             displayKey={"label"}
             label={"Role"}
-            className="text-sm mt-1"
+            className="text-sm"
             innerClass="text-sm"
             onSelect={handleRoleSelect}
             resetQuery={true}
@@ -243,7 +301,7 @@ const UserForm = () => {
               valueKey={"company"}
               displayKey={"name"}
               label={"Company"}
-              className="text-sm mt-1"
+              className="text-sm"
               innerClass="text-sm"
               onSelect={handleCompanySelect}
               resetQuery={true}
@@ -257,7 +315,7 @@ const UserForm = () => {
               valueKey={"id"}
               displayKey={"name"}
               label={"Base Group"}
-              className="text-sm mt-1"
+              className="text-sm"
               innerClass="text-sm"
               onSelect={handleBaseGroupSelect}
               resetQuery={true}
