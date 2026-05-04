@@ -32,7 +32,7 @@ const CompanyForms = () => {
       </div>
       <div
         data-testid="goback-company-form"
-        className={`${selectedForm === "create" ? "bg-orange-200" : ""} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
+        className={`hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
         onClick={handleGoBack}
       >
         Go Back

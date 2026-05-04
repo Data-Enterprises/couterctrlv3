@@ -8,6 +8,7 @@ import UserForms from "../formControls/UserForms";
 import BaseGroupForms from "../formControls/BaseGroupForms";
 import StoresForms from "../formControls/StoresForms";
 import CompanyForms from "../formControls/CompanyForms";
+import AdminForms from "../formControls/AdminForms";
 
 const MainForms = () => {
   const dispatch = useAppDispatch();
@@ -36,6 +37,10 @@ const MainForms = () => {
 
   if (selectedForm === 4) {
     return <CompanyForms />;
+  }
+
+  if (selectedForm === 5) {
+    return <AdminForms />;
   }
 
   return (
