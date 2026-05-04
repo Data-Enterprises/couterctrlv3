@@ -24,7 +24,7 @@ const SalesTrackerWeeks = () => {
   const ctx = useMobileSalesCtx();
 
   const filteredSubs = () => {
-    if (ctx.salesTrackerSelectedSubDept === 0) {
+    if (ctx.salesTrackerSelectedSubDept === -1) {
       return ctx.uniqueSubsMobile;
     }
     return [...ctx.uniqueSubsMobile].filter(

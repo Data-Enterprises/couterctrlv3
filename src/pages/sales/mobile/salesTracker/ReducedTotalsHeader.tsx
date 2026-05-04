@@ -86,7 +86,7 @@ const ReducedTotalsHeader = () => {
   };
 
   const handleHeaderClick = () => {
-    ctx.dispatch(setSalesTrackerSelectedSubDept(0));
+    ctx.dispatch(setSalesTrackerSelectedSubDept(-1));
   };
 
   const rgbaColor = (hex: string, alpha: number) => {

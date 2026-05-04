@@ -108,7 +108,9 @@ const SalesTrackerPeriods = () => {
                         <div className="font-semibold text-nowrap truncate">
                           {desc}
                         </div>
-                        <div className="text-content/60 text-[10px]">ID: {subId}</div>
+                        <div className="text-content/60 text-[10px]">
+                          ID: {subId}
+                        </div>
                       </div>
 
                       <div className="text-right leading-tight">

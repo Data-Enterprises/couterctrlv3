@@ -208,7 +208,7 @@ const SalesTrackerMobile = () => {
 
         const grouped = withChanges.reduce((acc: WeekTotal[][][], _, i) => {
           const subId = subIds[i];
-          if (subId) {
+          if (subId > -1) {
             const filtered = copy
               .filter((w) => w.subDept === subId)
               .sort((a, b) => a.sale_date.localeCompare(b.sale_date));
@@ -218,6 +218,7 @@ const SalesTrackerMobile = () => {
           return acc;
         }, []);
 
+        console.log(grouped)
         return grouped;
       };
 

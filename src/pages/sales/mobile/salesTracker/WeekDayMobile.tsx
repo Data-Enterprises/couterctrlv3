@@ -52,22 +52,28 @@ const WeekDayMobile = ({ week, desc, idx }: WeekDayMobileProps) => {
       className="bg-custom-white rounded-lg shadow-md p-2"
     >
       <div className="flex items-center justify-between font-medium pb-0.5 text-[11.5px]">
-        <div className="flex gap-0.5 items-center">
-          <ArrowRightCircleIcon
-            ref={iconRef}
-            className="w-6 h-6 text-content/60 transition-all duration-100 ease-in-out"
-            onClick={handleDayToggle}
-          />
-          <div className="leading-tight">
-            <div>{desc}</div>
-            <div className="font-normal text-content/60 -mt-0.5">
-              Week: {idx + 1}
+        <div className="grid grid-cols-[8%_92%] w-full items-center">
+          <div>
+            <ArrowRightCircleIcon
+              ref={iconRef}
+              className="w-6 h-6 text-content/60 transition-all duration-100 ease-in-out"
+              onClick={handleDayToggle}
+            />
+          </div>
+          <div className="w-full leading-tight space-y-[1px]">
+            <div className="leading-tight">
+              <div>{desc}</div>
+            </div>
+            <div className="flex justify-between items-end">
+              <div className="font-normal text-content/60 -mt-0.5">
+                Week: {idx + 1}
+              </div>
+              <div className="text-content/60">
+                {formatDate(week[0].sale_date)} -{" "}
+                {formatDate(week[week.length - 1].sale_date)}
+              </div>
             </div>
           </div>
-        </div>
-        <div className="text-content/60">
-          {formatDate(week[0].sale_date)} -{" "}
-          {formatDate(week[week.length - 1].sale_date)}
         </div>
       </div>
 

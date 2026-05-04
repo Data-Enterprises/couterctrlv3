@@ -1,3 +1,6 @@
+import type { WeekTotal } from "../../../../features/salesSlice";
+import { addDays } from "../../../../utils";
+import { chunkData } from "../../tracker";
 import { useMobileSalesCtx } from "../hooks";
 // import type { WeekTotal } from "../../../../features/salesSlice";
 
@@ -8,48 +11,13 @@ const SalesTrackerDays = () => {
   const ctx = useMobileSalesCtx();
 
   const filteredSubs = () => {
-    if (ctx.salesTrackerSelectedSubDept === 0) {
+    if (ctx.salesTrackerSelectedSubDept === -1) {
       return ctx.uniqueSubsMobile;
     }
     return [...ctx.uniqueSubsMobile].filter(
       (sub) => sub.id === ctx.salesTrackerSelectedSubDept,
     );
   };
-
-  // const calcTotals = (data: WeekTotal[][]) => {
-  //   const tyTotalSales = data.reduce((acc, weekGroup) => {
-  //     return (
-  //       acc + weekGroup.reduce((weekAcc, week) => weekAcc + week.salesTY, 0)
-  //     );
-  //   }, 0);
-
-  //   const lyTotalSales = data.reduce((acc, weekGroup) => {
-  //     return (
-  //       acc + weekGroup.reduce((weekAcc, week) => weekAcc + week.salesLY, 0)
-  //     );
-  //   }, 0);
-
-  //   const percentChange =
-  //     lyTotalSales === 0
-  //       ? 0
-  //       : ((tyTotalSales - lyTotalSales) / lyTotalSales) * 100;
-  //   const dollarChange = tyTotalSales - lyTotalSales;
-  //   const totalTrans = data.reduce((acc, weekGroup) => {
-  //     return (
-  //       acc +
-  //       weekGroup.reduce((weekAcc, week) => weekAcc + week.transaction_count, 0)
-  //     );
-  //   }, 0);
-  //   const atsTotalSales = totalTrans === 0 ? 0 : tyTotalSales / totalTrans;
-
-  //   return {
-  //     tyTotalSales,
-  //     lyTotalSales,
-  //     percentChange,
-  //     dollarChange,
-  //     atsTotalSales,
-  //   };
-  // };
 
   return (
     <div className="flex flex-col w-full h-[calc(100vh-90px)] max-h-[calc(100vh-90px)] px-3 py-2 space-y-2">
@@ -60,11 +28,52 @@ const SalesTrackerDays = () => {
             const subId = sub.id;
             const desc = sub.desc;
 
-            const filteredBySub = ctx.tyReducedTotalsMobile
-              .filter((wg) => wg[0][0].subDept === subId)
-              .flat();
+                        const filteredBySub = ctx.tyReducedTotalsMobile
+                          .filter((wg) => wg[0][0]?.subDept === subId)
+                          .flat();
+            
+                        const storeName = filteredBySub[0][0]?.storeName || "";
+                        const storeId = filteredBySub[0][0]?.storeid || 0;
+                        const missingDates: WeekTotal[] = [];
+                        const flattened = [...filteredBySub].flat();
+            
+                        flattened.flat().forEach((d, i) => {
+                          if (i < flattened.length - 1) {
+                            let currentDateCheck = addDays(new Date(d.sale_date), 1)
+                              .toISOString()
+                              .split("T")[0];
+            
+                            while (
+                              currentDateCheck !== flattened[i + 1].sale_date.split("T")[0]
+                            ) {
+                              const defaultWekTotal: WeekTotal = {
+                                sale_date: currentDateCheck + "T00:00:00",
+                                subDept: subId,
+                                subDesc: desc,
+                                salesTY: 0,
+                                salesLY: 0,
+                                atsTotalSales: 0,
+                                storeid: storeId,
+                                storeName: storeName,
+                                transaction_count: 0,
+                                totalSalesDollarChange: 0,
+                                totalSalesPercentChange: 0,
+                              };
+                              missingDates.push(defaultWekTotal);
+                              currentDateCheck = addDays(new Date(currentDateCheck), 1)
+                                .toISOString()
+                                .split("T")[0];
+                            }
+                          }
+                        });
+            
+                        const concatWithMissing = [...flattened, ...missingDates].sort(
+                          (a, b) => a.sale_date.localeCompare(b.sale_date),
+                        );
+            
+                        const filteredWithMissing = chunkData(concatWithMissing);
 
-            return filteredBySub.map((week, idx) => {
+            return filteredWithMissing.map((week, idx) => {
               return (
                 <WeekDayMobile key={idx} week={week} desc={desc} idx={idx} />
               );

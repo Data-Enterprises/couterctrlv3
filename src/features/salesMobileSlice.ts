@@ -153,7 +153,7 @@ const initialState: SalesMobileState = {
   },
   refreshOverviewData: false,
   dashboardOption: "daily",
-  salesTrackerSelectedSubDept: 0,
+  salesTrackerSelectedSubDept: -1,
   salesTrackerView: "period",
   salesTrackerSelectedWeek: -1,
 };
