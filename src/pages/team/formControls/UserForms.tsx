@@ -23,7 +23,7 @@ const UserForms = () => {
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg min-w-36 text-sm select-none">
-      <div className="font-medium px-2 rounded-t-lg py-0.5">Forms</div>
+      <div className="font-medium px-2 rounded-t-lg py-0.5">User Forms</div>
       <div className="grid grid-cols-2">
         <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
         <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>

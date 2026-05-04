@@ -6,6 +6,8 @@ import {
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import UserForms from "../formControls/UserForms";
 import BaseGroupForms from "../formControls/BaseGroupForms";
+import StoresForms from "../formControls/StoresForms";
+import CompanyForms from "../formControls/CompanyForms";
 
 const MainForms = () => {
   const dispatch = useAppDispatch();
@@ -26,6 +28,14 @@ const MainForms = () => {
 
   if (selectedForm === 2) {
     return <BaseGroupForms />;
+  }
+
+  if (selectedForm === 3) {
+    return <StoresForms />;
+  }
+
+  if (selectedForm === 4) {
+    return <CompanyForms />;
   }
 
   return (

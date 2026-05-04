@@ -51,6 +51,7 @@ export type UserFormType =
   | "";
 
 type BaseGroupOption = "create" | "update" | "delete" | "assign_to_user" | "";
+type StoreFormOption = "assign" | "info" | "bg_assign" | "";
 
 // State for users slice /////////////
 interface UsersState {
@@ -80,6 +81,7 @@ interface UsersState {
   availableEmailText: string;
   emailTextColor: string;
   bgOption: BaseGroupOption;
+  storesOption: StoreFormOption;
 }
 
 const initialState: UsersState = {
@@ -112,6 +114,7 @@ const initialState: UsersState = {
   availableEmailText: "",
   emailTextColor: "",
   bgOption: "",
+  storesOption: "",
 };
 
 export const usersSlice = createSlice({
@@ -293,6 +296,9 @@ export const usersSlice = createSlice({
     setBGOption: (state, action: PayloadAction<BaseGroupOption>) => {
       state.bgOption = action.payload;
     },
+    setStoresFormOption: (state, action: PayloadAction<StoreFormOption>) => {
+      state.storesOption = action.payload;
+    },
     resetUsersSlice: () => initialState,
   },
 });
@@ -329,5 +335,6 @@ export const {
   setAvailableUsernameDetails,
   setAvailableEmailDetails,
   setBGOption,
+  setStoresFormOption,
 } = usersSlice.actions;
 export default usersSlice.reducer;
