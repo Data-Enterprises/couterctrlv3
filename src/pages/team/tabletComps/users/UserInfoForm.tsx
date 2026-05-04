@@ -1,6 +1,7 @@
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 import type { User } from "../../../../interfaces";
 import {
+  resetUserInfo,
   setSelectedUserId,
   setSelectedUserInfo,
   setUserFilterText,
@@ -8,11 +9,13 @@ import {
 import Input from "../../../../components/inputs/Input";
 import { useState } from "react";
 import UpdatingUserForm from "./UpdatingUser";
+import DeleteFormModal from "../DeleteFormModal";
 
 const UserInfoForm = () => {
   const dispatch = useAppDispatch();
   const ctx = useAppSelector((state) => state.users);
   const user = useAppSelector((state) => state.user);
+  const [openModal, setOpenModal] = useState<boolean>(false);
   const [selectedCompanies, setSelectedCompanies] = useState<number[]>([]);
   const [selectedUserLevels, setSelectedUserLevels] = useState<number[]>([]);
   const [textOption, setTextOption] = useState<"username" | "email">(
@@ -47,10 +50,6 @@ const UserInfoForm = () => {
     );
   };
 
-  // const handleResetPassword = (u: User) => {};
-
-  // const handleResetSecurity = (u: User) => {};
-
   const filteredUsers = () => {
     return ctx.users.filter((u) => {
       const matchesCompany =
@@ -76,14 +75,30 @@ const UserInfoForm = () => {
   if (isUpdating)
     return <UpdatingUserForm goBack={() => setIsUpdating(false)} />;
 
-  const handleUpdateBtnClick = (u: User) => {
+  const handleUserCardBtnClick = (u: User) => {
+    if (ctx.selectedUserForm === "delete") {
+      setOpenModal(true);
+      dispatch(setSelectedUserInfo(u));
+      return;
+    }
     dispatch(setSelectedUserId(u.id));
     dispatch(setSelectedUserInfo(u));
     setIsUpdating(true);
   };
 
+  const onClose = () => {
+    setOpenModal(false);
+    dispatch(setSelectedUserId(0));
+    dispatch(resetUserInfo());
+  };
+
   return (
     <div className="space-y-4">
+      <DeleteFormModal
+        isOpen={openModal}
+        onClose={onClose}
+        formType="user"
+      />
       {/* User Filters */}
       <div className="">
         <div>
@@ -144,14 +159,12 @@ const UserInfoForm = () => {
         </div>
       </div>
 
-      {/* 1. Grid expands to 2 columns on tablets */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[calc(100vh-380px)] overflow-y-auto">
         {filteredUsers().map((user, i) => (
           <div
             key={i}
             className="border p-4 rounded-lg bg-custom-white shadow flex flex-col justify-between gap-3"
           >
-            {/* Header section with User info and Last Visit */}
             <div className="flex justify-between items-start">
               <div>
                 <div className="font-medium text-lg">{user.username}</div>
@@ -173,7 +186,6 @@ const UserInfoForm = () => {
               </div>
             </div>
 
-            {/* Companies section - distinct block at the bottom */}
             <div className="pt-2 border-t border-content/10">
               <div className="text-xs font-semibold uppercase text-content/50 mb-1">
                 Companies
@@ -186,16 +198,15 @@ const UserInfoForm = () => {
                 )}
               </div>
             </div>
-            <div
-              className="grid font-medium"
-              // className={`${isOutranked(user) ? "hidden" : "font-medium grid grid-cols-3 gap-4"}`}
-            >
+            <div className="grid font-medium">
               {!isOutranked(user) ? (
                 <button
-                  className="bg-[rgb(30,45,80)]/95 text-custom-white py-3 px-0 rounded-2xl shadow"
-                  onClick={() => handleUpdateBtnClick(user)}
+                  className={`${ctx.selectedUserForm === "user_info" ? "bg-[rgb(30,45,80)]/95" : "bg-red-600"} text-custom-white py-3 px-0 rounded-2xl shadow`}
+                  onClick={() => handleUserCardBtnClick(user)}
                 >
-                  Update Info
+                  {ctx.selectedUserForm === "user_info"
+                    ? "Update Info"
+                    : "Delete User"}
                 </button>
               ) : (
                 <div className="bg-[rgb(30,45,80)]/50 text-custom-white py-3 px-0 rounded-2xl shadow text-center">

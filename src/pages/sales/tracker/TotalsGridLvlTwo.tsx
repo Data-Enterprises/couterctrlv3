@@ -1,4 +1,3 @@
-import { useRef } from "react";
 import { formatDate } from ".";
 import { formatCurrency2 } from "../../../utils";
 import type { WeekTotal } from "../../../features/salesSlice";
@@ -25,8 +24,6 @@ const TotalsGridLvlTwo = ({
   idx,
   desc = "",
 }: TotalsGridLvlTwoProps) => {
-  const ref = useRef<HTMLDivElement>(null);
-
   return (
     <div className="text-[12px] px-2 py-1.5 rounded-lg shadow-lg bg-custom-white max-w-full border border-content/15 hover:shadow-md transition-shadow duration-200">
       <div className="font-medium cursor-default select-none">
@@ -82,12 +79,7 @@ const TotalsGridLvlTwo = ({
         </div>
       </div>
 
-      <div
-        ref={ref}
-        className={`overflow-hidden transition-all duration-200 grid grid-cols-4 gap-1.5
-          ${ref.current?.getAttribute("data-display") === "closed" ? "max-h-0" : "max-h-[999px]"}
-        `}
-      >
+      <div className="overflow-hidden transition-all duration-200 grid grid-cols-4 gap-1.5">
         {week.map((day, idx) => (
           <TotalsGridLvlThree key={`${day.sale_date}-${idx}`} weekDay={day} />
         ))}

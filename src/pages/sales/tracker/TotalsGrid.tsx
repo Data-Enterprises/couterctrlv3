@@ -2,6 +2,8 @@ import { useState } from "react";
 import { type WeekTotal } from "../../../features/salesSlice";
 import { useAppSelector } from "../../../hooks";
 import TotalsGridLvlOne from "./TotalsGridLvlOne";
+import { addDays } from "../../../utils";
+import { chunkData } from ".";
 
 const TotalsGrid = () => {
   const [isHovering, setIsHovering] = useState<boolean>(false);
@@ -37,7 +39,7 @@ const TotalsGrid = () => {
       );
     }, 0);
 
-    const atsTotalSales = tyTotalSales / totalTrans;
+    const atsTotalSales = !isNaN(tyTotalSales / totalTrans) ? tyTotalSales / totalTrans : 0;
 
     return {
       tyTotalSales,
@@ -49,7 +51,7 @@ const TotalsGrid = () => {
   };
 
   const filteredSubs = () => {
-    if (sales.salesTrackerSelectedSubDept === 0) {
+    if (sales.salesTrackerSelectedSubDept === -1) {
       return sales.uniqueSubs;
     }
     return [...sales.uniqueSubs].filter(
@@ -62,7 +64,7 @@ const TotalsGrid = () => {
       <div className="">
         {/* Header row */}
         <div className="bg-custom-white rounded-t-lg shadow">
-          <div className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1fr_0.7fr_0.8fr] font-medium text-content/70 text-sm px-2 py-1">
+          <div className="grid grid-cols-[1.9fr_0.7fr_0.7fr_1fr_0.7fr_0.8fr] font-medium text-content/70 text-sm px-2 py-1">
             <div>Sub Dept</div>
             <div className="text-right">TY Sales</div>
             <div className="text-right">LY Sales</div>
@@ -112,7 +114,7 @@ const TotalsGrid = () => {
         </div>
       </div>
 
-      {sales.salesTrackerSelectedSubDept > 0 && (
+      {sales.salesTrackerSelectedSubDept > -1 && (
         <div className="max-h-[calc(100vh-152px)] overflow-auto no-scrollbar pb-1">
           {filteredSubs().map((sub, idx) => {
             const subId = sub.id;
@@ -122,14 +124,55 @@ const TotalsGrid = () => {
               .filter((wg) => wg[0][0].subDept === subId)
               .flat();
 
-            const totals = calcTotals(filtered);
+            const storeName = filtered[0][0]?.storeName || "";
+            const storeId = filtered[0][0]?.storeid || 0;
+            const missingDates: WeekTotal[] = [];
+            const flattened = [...filtered].flat();
+
+            flattened.flat().forEach((d, i) => {
+              if (i < flattened.length - 1) {
+                let currentDateCheck = addDays(new Date(d.sale_date), 1)
+                  .toISOString()
+                  .split("T")[0];
+
+                while (
+                  currentDateCheck !== flattened[i + 1].sale_date.split("T")[0]
+                ) {
+                  const defaultWekTotal: WeekTotal = {
+                    sale_date: currentDateCheck + "T00:00:00",
+                    subDept: subId,
+                    subDesc: desc,
+                    salesTY: 0,
+                    salesLY: 0,
+                    atsTotalSales: 0,
+                    storeid: storeId,
+                    storeName: storeName,
+                    transaction_count: 0,
+                    totalSalesDollarChange: 0,
+                    totalSalesPercentChange: 0,
+                  };
+                  missingDates.push(defaultWekTotal);
+                  currentDateCheck = addDays(new Date(currentDateCheck), 1)
+                    .toISOString()
+                    .split("T")[0];
+                }
+              }
+            });
+
+            const concatWithMissing = [...flattened, ...missingDates].sort(
+              (a, b) => a.sale_date.localeCompare(b.sale_date),
+            );
+
+            const totalsWithMissing = calcTotals([concatWithMissing]);
+            const filteredWithMissing = chunkData(concatWithMissing);
+
             return (
               <TotalsGridLvlOne
                 key={idx}
                 desc={desc}
-                totals={totals}
+                totals={totalsWithMissing}
                 isLvlTwo={true}
-                filtered={filtered}
+                filtered={filteredWithMissing}
               />
             );
           })}

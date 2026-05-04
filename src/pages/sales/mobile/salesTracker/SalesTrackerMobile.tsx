@@ -5,7 +5,9 @@ import {
   setLyCollapsedSubSalesMobile,
   setLyWeekCardsMobile,
   setTyCollapsedSubSalesMobile,
+  setTyReducedTotalsMobile,
   setTyWeekCardsMobile,
+  setUniqueSubsMobile,
 } from "../../../../features/salesMobileSlice";
 import { chunkData } from "../../tracker";
 
@@ -15,6 +17,8 @@ import LoadingIndicator from "../../../../components/loading/LoadingIndicator";
 import SalesTrackerDays from "./SalesTrackerDays";
 import SalesTrackerPeriods from "./SalesTrackerPeriods";
 import SalesTrackerWeeks from "./SalesTrackerWeeks";
+import type { SubTracker, WeekTotal } from "../../../../features/salesSlice";
+import { sameWeekDayLastYear } from "../../../../utils";
 
 const SalesTrackerMobile = () => {
   const ctx = useMobileSalesCtx();
@@ -22,10 +26,7 @@ const SalesTrackerMobile = () => {
   const { lastGroup } = useAppSelector((state) => state.search);
 
   useEffect(() => {
-    if (
-      ctx.thisYrSubTrackerMobile.length > 0 &&
-      ctx.lastYrSubTrackerMobile.length > 0
-    ) {
+    if (ctx.thisYrSubTrackerMobile.length > 0) {
       const justTyDates = Array.from(
         new Set(
           ctx.thisYrSubTrackerMobile.map(
@@ -125,7 +126,107 @@ const SalesTrackerMobile = () => {
     }
   }, [ctx.thisYrSubTrackerMobile, ctx.lastYrSubTrackerMobile]);
 
-  if (ctx.loadingLYTrackerMobile || ctx.loadingTYTrackerMobile) {
+  useEffect(() => {
+    if (ctx.thisYrSubTrackerMobile.length > 0) {
+      const uniqueSubs: SubTracker[] = ctx.thisYrSubTrackerMobile.reduce(
+        (acc: SubTracker[], sale) => {
+          const exists = acc.find((s) => s.id === sale.sub_department);
+          if (!exists) {
+            acc.push({
+              id: sale.sub_department,
+              desc: sale.sub_department_description,
+            });
+          }
+          return acc;
+        },
+        [],
+      );
+      ctx.dispatch(setUniqueSubsMobile(uniqueSubs));
+
+      const calcTotals = () => {
+        const thisYear = ctx.tyCollapsedSubSalesMobile.flat();
+        const lastYear = ctx.lyCollapsedSubSalesMobile.flat();
+
+        const weekTotals: WeekTotal[] = thisYear.reduce(
+          (acc: WeekTotal[], week: SubSale) => {
+            const found = acc.find(
+              (w) =>
+                w.sale_date === week.sale_date &&
+                w.storeid === week.storeid &&
+                w.subDept === week.sub_department,
+            );
+            const saleDateLY = sameWeekDayLastYear(week.sale_date);
+
+            const lySale = lastYear.find(
+              (ly) =>
+                ly.sale_date.split("T")[0] === saleDateLY.date &&
+                ly.storeid === week.storeid &&
+                ly.sub_department === week.sub_department,
+            );
+
+            const salesLY = lySale ? lySale.total_sales - lySale.total_tax : 0;
+
+            if (found) {
+              found.salesTY += week.total_sales;
+              found.salesLY += salesLY;
+              found.transaction_count += week.transaction_count;
+            } else {
+              acc.push({
+                sale_date: week.sale_date,
+                storeName: week.store_name,
+                storeid: week.storeid,
+                subDesc: week.sub_department_description,
+                subDept: week.sub_department,
+                salesTY: week.total_sales,
+                salesLY,
+                totalSalesDollarChange: 0,
+                totalSalesPercentChange: 0,
+                atsTotalSales: 0,
+                transaction_count: week.transaction_count,
+              });
+            }
+            return acc;
+          },
+          [],
+        );
+
+        const withChanges = weekTotals.map((week) => {
+          const dollarChange = week.salesTY - week.salesLY;
+          const percentChange =
+            week.salesLY === 0 ? 0 : (dollarChange / week.salesLY) * 100;
+          const atsTotalSales = week.salesTY / week.transaction_count;
+          return {
+            ...week,
+            totalSalesDollarChange: dollarChange,
+            totalSalesPercentChange: percentChange,
+            atsTotalSales,
+          };
+        });
+
+        const copy = [...withChanges];
+        const subIds = Array.from(new Set(withChanges.map((w) => w.subDept)));
+
+        const grouped = withChanges.reduce((acc: WeekTotal[][][], _, i) => {
+          const subId = subIds[i];
+          if (subId > -1) {
+            const filtered = copy
+              .filter((w) => w.subDept === subId)
+              .sort((a, b) => a.sale_date.localeCompare(b.sale_date));
+            const grouped = chunkData(filtered);
+            acc.push(grouped);
+          }
+          return acc;
+        }, []);
+
+        console.log(grouped)
+        return grouped;
+      };
+
+      ctx.dispatch(setTyReducedTotalsMobile(calcTotals()));
+    }
+  }, [ctx.tyCollapsedSubSalesMobile, ctx.lyCollapsedSubSalesMobile]);
+
+  if (ctx.loadingLYTrackerMobile && ctx.loadingTYTrackerMobile) {
     return (
       <div className="relative min-h-[calc(100vh-88px)] max-h-[calc(100vh-88px)] overflow-hidden">
         <LoadingIndicator message="Loading tracker data" />

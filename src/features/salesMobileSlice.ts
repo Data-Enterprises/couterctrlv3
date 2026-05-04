@@ -78,12 +78,14 @@ interface SalesMobileState {
   tyCollapsedSubSalesMobile: SubSale[][];
   lyCollapsedSubSalesMobile: SubSale[][];
   tyReducedTotalsMobile: WeekTotal[][][];
+  tyReducedTotalsMobileFilteredBySub: WeekTotal[][];
   uniqueSubsMobile: SubTracker[];
   trackerKpis: TrackerKpis;
   refreshOverviewData: boolean;
   dashboardOption: DashboardOption;
   salesTrackerSelectedSubDept: number;
   salesTrackerView: SalesTrackerView;
+  salesTrackerSelectedWeek: number;
 }
 
 const defaultAggTotals: AggTotals = {
@@ -140,6 +142,7 @@ const initialState: SalesMobileState = {
   tyCollapsedSubSalesMobile: [],
   lyCollapsedSubSalesMobile: [],
   tyReducedTotalsMobile: [],
+  tyReducedTotalsMobileFilteredBySub: [],
   uniqueSubsMobile: [],
   trackerKpis: {
     tyTotalSales: 0,
@@ -149,9 +152,10 @@ const initialState: SalesMobileState = {
     dateRange: "",
   },
   refreshOverviewData: false,
-  dashboardOption: "weekly",
-  salesTrackerSelectedSubDept: 0,
+  dashboardOption: "daily",
+  salesTrackerSelectedSubDept: -1,
   salesTrackerView: "period",
+  salesTrackerSelectedWeek: -1,
 };
 
 const formatDate = (dte: string) => {
@@ -381,6 +385,9 @@ const salesMobileSlice = createSlice({
     setMobilePanelsLoading: (state, action: PayloadAction<boolean>) => {
       state.panelsLoading = action.payload;
     },
+    setReducedBySubTotals: (state, action: PayloadAction<WeekTotal[][]>) => { 
+      state.tyReducedTotalsMobileFilteredBySub = action.payload;
+    },
     setView: (state, action: PayloadAction<SalesMobileView>) => {
       state.view = action.payload;
     },
@@ -537,6 +544,9 @@ const salesMobileSlice = createSlice({
     setSalesTrackerView: (state, action: PayloadAction<SalesTrackerView>) => {
       state.salesTrackerView = action.payload;
     },
+    setSalesTrackerSelectedWeek: (state, action: PayloadAction<number>) => {
+      state.salesTrackerSelectedWeek = action.payload;
+    },
 
     resetMobileSalesState: (state) => {
       return { ...initialState, dashboardOption: state.dashboardOption };
@@ -585,5 +595,7 @@ export const {
   concatLYSubTrackerMobile,
   concatTYSubTrackerMobile,
   setSalesTrackerView,
+  setReducedBySubTotals,
+  setSalesTrackerSelectedWeek,
 } = salesMobileSlice.actions;
 export default salesMobileSlice.reducer;

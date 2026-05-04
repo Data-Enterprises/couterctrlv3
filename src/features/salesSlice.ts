@@ -11,14 +11,14 @@ import type { TopSub } from "../pages/sales/components";
 export type SubTracker = {
   id: number;
   desc: string;
-}
+};
 export type TrackerKpis = {
   tyTotalSales: number;
   lyTotalSales: number;
   percentChange: number;
   dollarChange: number;
   dateRange: string;
-}
+};
 
 export type WeekTotal = {
   sale_date: string;
@@ -80,7 +80,7 @@ interface SalesState {
   compareSubsRightCompare: SubSale[];
   mainView: "overview" | "tracker";
   weeksBack: string;
-  
+
   loadingTYTrackerData: boolean;
   loadingLYTrackerData: boolean;
   thisYrSubTracker: SubSale[];
@@ -95,6 +95,7 @@ interface SalesState {
   refreshOverviewData: boolean;
   dashboardOption: DashboardOption;
   salesTrackerSelectedSubDept: number;
+  noTrackerFound: boolean;
 }
 
 export const defaultSelectedPanel: SelectedSalesPanel = {
@@ -153,7 +154,8 @@ const initialState: SalesState = {
   },
   refreshOverviewData: false,
   dashboardOption: "daily",
-  salesTrackerSelectedSubDept: 0,
+  salesTrackerSelectedSubDept: -1,
+  noTrackerFound: false,
 };
 
 export const salesSlice = createSlice({
@@ -342,6 +344,9 @@ export const salesSlice = createSlice({
     setSalesTrackerSelectedSubDept: (state, action: PayloadAction<number>) => {
       state.salesTrackerSelectedSubDept = action.payload;
     },
+    setNoTrackerFound: (state, action: PayloadAction<boolean>) => {
+      state.noTrackerFound = action.payload;
+    },
     resetSalesSlice: () => initialState,
   },
 });
@@ -387,5 +392,6 @@ export const {
   setRefreshOverviewData,
   setDashboardOption,
   setSalesTrackerSelectedSubDept,
+  setNoTrackerFound,
 } = salesSlice.actions;
 export default salesSlice.reducer;

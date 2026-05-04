@@ -201,3 +201,41 @@ export const getUserLevels = async (url: string, token: string) => {
   });
   return json;
 };
+
+export const checkUsername = async (
+  url: string,
+  token: string,
+  username: string,
+) => {
+  const json = await axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "users/is_username_available",
+    params: {
+      username,
+    },
+  });
+  return json;
+};
+
+export const checkEmail = async (
+  url: string,
+  token: string,
+  email: string,
+) => {
+  const json = await axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "users/is_email_available",
+    params: {
+      email,
+    },
+  });
+  return json;
+};

@@ -4,6 +4,7 @@ import {
   setSelectedUserStores,
 } from "../../../features/usersSlice";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
+// import UserForms from "../formControls/UserForms";
 
 const MainForms = () => {
   const dispatch = useAppDispatch();
@@ -17,6 +18,10 @@ const MainForms = () => {
   const handleFormSelection = (x: number) => {
     dispatch(setSelectedForm(x));
   };
+
+  // if (selectedForm === 1) {
+  //   return<UserForms />;
+  // }
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg min-w-36 text-sm select-none">

@@ -79,8 +79,8 @@ const SalesTrackerKpis = () => {
   };
 
   return (
-    <div className="grid text-[13px] grid-cols-7 gap-3 mb-2 font-medium">
-      <div className="px-4 py-2 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
+    <div className="grid text-[12px] grid-cols-7 gap-3 mb-2 font-medium">
+      <div className="py-2 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
         <div className="text-content/60 ">Viewing</div>
         <div className="flex items-center gap-1 mt-1">
           <span className="">
@@ -92,7 +92,7 @@ const SalesTrackerKpis = () => {
           </span>
         </div>
       </div>
-      <div className="p-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
+      <div className="py-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
         <div className="text-content/60 ">Period Start</div>
         <div className="flex items-center gap-1 mt-1">
           <span className="">
@@ -100,7 +100,7 @@ const SalesTrackerKpis = () => {
           </span>
         </div>
       </div>
-      <div className="p-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
+      <div className="py-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
         <div className="text-content/60 ">Period End</div>
         <div className="flex items-center gap-1 mt-1">
           <span className="">
@@ -109,7 +109,7 @@ const SalesTrackerKpis = () => {
         </div>
       </div>
 
-      <div className="p-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
+      <div className="py-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
         <div className="text-content/60 ">TY Total Sales</div>
         <div className="mt-1 font-semibold">
           {formatCurrency2(sales.trackerKpis.tyTotalSales)}
@@ -123,7 +123,7 @@ const SalesTrackerKpis = () => {
         </div>
       </div>
 
-      <div className="p-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
+      <div className="py-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
         <div className="text-content/60 ">Total Sales $ Change</div>
         <div
           className={`${textColorClass(sales.trackerKpis.dollarChange)} flex items-center gap-1 mt-1`}
@@ -135,7 +135,7 @@ const SalesTrackerKpis = () => {
         </div>
       </div>
 
-      <div className="p-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
+      <div className="py-4 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center">
         <div className="text-content/60 ">Total Sales % Change</div>
         <div
           className={`${textColorClass(sales.trackerKpis.percentChange)} flex items-center gap-1 mt-1`}

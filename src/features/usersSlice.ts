@@ -73,6 +73,10 @@ interface UsersState {
   isDeletingUser: boolean;
   userFilterText: string;
   alreadyAssignedBgs: BaseGroup[];
+  availableUsernameText: string;
+  usernameTextColor: string;
+  availableEmailText: string;
+  emailTextColor: string;
 }
 
 const initialState: UsersState = {
@@ -100,6 +104,10 @@ const initialState: UsersState = {
   isDeletingUser: false,
   userFilterText: "",
   alreadyAssignedBgs: [],
+  availableUsernameText: "",
+  usernameTextColor: "",
+  availableEmailText: "",
+  emailTextColor: "",
 };
 
 export const usersSlice = createSlice({
@@ -150,6 +158,10 @@ export const usersSlice = createSlice({
       state.userInfo = defaultInfo;
       state.userCompanyIds = [];
       state.selectedUserId = 0;
+      state.usernameTextColor = "";
+      state.availableUsernameText = "";
+      state.emailTextColor = "";
+      state.availableEmailText = "";
     },
     setRefresh: (state, action: PayloadAction<boolean>) => {
       state.refresh = action.payload;
@@ -254,6 +266,20 @@ export const usersSlice = createSlice({
     setUserFilterText: (state, action: PayloadAction<string>) => {
       state.userFilterText = action.payload;
     },
+    setAvailableUsernameDetails: (
+      state,
+      action: PayloadAction<{ availableUsernameText: string; usernameTextColor: string }>,
+    ) => {
+      state.availableUsernameText = action.payload.availableUsernameText;
+      state.usernameTextColor = action.payload.usernameTextColor;
+    },
+    setAvailableEmailDetails: (
+      state,
+      action: PayloadAction<{ availableEmailText: string; emailTextColor: string }>,
+    ) => {
+      state.availableEmailText = action.payload.availableEmailText;
+      state.emailTextColor = action.payload.emailTextColor;
+    },
     resetUsersSlice: () => initialState,
   },
 });
@@ -287,5 +313,7 @@ export const {
   setIsDeletingUser,
   setUserFilterText,
   resetUsersSlice,
+  setAvailableUsernameDetails,
+  setAvailableEmailDetails,
 } = usersSlice.actions;
 export default usersSlice.reducer;

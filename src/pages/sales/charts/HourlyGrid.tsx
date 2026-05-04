@@ -32,7 +32,9 @@ const HourlyGrid = () => {
       return acc;
     }, []);
 
-    setHour(uniqueHours[0].hour);
+    if (uniqueHours.length > 0) {
+      setHour(uniqueHours[0].hour);
+    }
     if (dashboardOption === "daily") {
       setBarIndex("hour");
     } else {
@@ -109,7 +111,6 @@ const HourlyGrid = () => {
   }, [hourlySales, hourlySalesLastYear]);
 
   useEffect(() => {
-    console.log("howdy");
     const hourFiltered = [...hourlySales]
       .filter((d) => {
         if (dashboardOption === "daily") {
@@ -220,17 +221,11 @@ const HourlyGrid = () => {
   return (
     <div className="bg-custom-white rounded-lg shadow-lg my-2 md:my-0 py-1.5">
       <div className="px-2 font-medium flex justify-between">
-        <span className="font-medium text-[13.5px]">
-          Hourly Sales
-        </span>
+        <span className="font-medium text-[13.5px]">Hourly Sales</span>
         {dashboardOption === "weekly" ? (
-          <span className="text-right text-[13.5px]">
-            Hour: {hour}
-          </span>
+          <span className="text-right text-[13.5px]">Hour: {hour}</span>
         ) : (
-          <span className="text-right text-[13.5px]">
-            {search.singleDate}
-          </span>
+          <span className="text-right text-[13.5px]">{search.singleDate}</span>
         )}
       </div>
       <div className="flex text-[13px] font-medium">
@@ -242,7 +237,9 @@ const HourlyGrid = () => {
         ) : (
           <div className="grid grid-cols-2 md:flex md:w-[45%]">
             <div className="md:w-1/2 pl-2">{formatCurrentDate()}</div>
-            <div className="md:w-1/2 pl-2">{formatDateLong(sameWeekDayLastYear(search.singleDate).date)}</div>
+            <div className="md:w-1/2 pl-2">
+              {formatDateLong(sameWeekDayLastYear(search.singleDate).date)}
+            </div>
           </div>
         )}
         <div

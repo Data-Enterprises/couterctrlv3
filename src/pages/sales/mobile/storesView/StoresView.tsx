@@ -141,7 +141,7 @@ const StoresView = () => {
         {sortOptions.map((so, i) => (
           <div
             key={i}
-            className={`rounded-full ${activeSortOption(so.id as PanelSortOption)} bg-custom-white flex gap-1 justify-center items-center py-0.5`}
+            className={`rounded-full ${activeSortOption(so.id as PanelSortOption)} bg-custom-white flex gap-1 justify-center items-center py-0.5 text-[11px]`}
             onClick={() => handleSortPress(so.id)}
           >
             <div>{so.label}</div>

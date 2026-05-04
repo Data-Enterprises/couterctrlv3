@@ -88,7 +88,7 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
           {pieChartData[0][0].id}
         </div>
         <div className="grid grid-cols-[31.5%_68.5%]">
-          <div>
+          <div className="text-[11px]">
             {[...ctx.salesViewWeekly].reverse().map((item, i) => (
               <div key={i} className="flex items-center">
                 <div className="w-[30%]">{dow(item.id)}:</div>
@@ -105,12 +105,12 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
               padding={0.1}
               borderRadius={4}
               borderWidth={2}
-              axisLeft={null}
+              axisLeft={{
+                tickSize: 0,
+                tickValues: 4,
+              }}
               axisBottom={{
                 renderTick: ({ x, y, textX, textY, value }) => {
-                  // const dow = new Date(value as string)
-                  //   .toDateString()
-                  //   .split(" ")[0];
                   return (
                     <g transform={`translate(${x},${y + 4})`}>
                       <line
@@ -130,9 +130,6 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
                           fontFamily: "Arial",
                         }}
                       >
-                        {/* <tspan x={0} dy={0}>
-                          {dow}
-                        </tspan> */}
                         <tspan x={0} dy={4}>
                           {formatId(value as string)}
                         </tspan>
@@ -146,29 +143,29 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
           </div>
         </div>
       </div>
-      <div>
+      <div className="text-[11px]">
         <div className="h-full grid grid-cols-2 gap-2 mt-2">
-          {[...pieChartData].reverse().map((pieData, i) => {
+          {[...pieChartData].map((pieData, i) => {
             return (
               <div
                 key={i}
                 className={`${activePieBg(pieData[0].id)} rounded-lg shadow-md p-1.5`}
               >
-                <div className="flex justify-between text-[11px] mb-1.5 font-medium">
+                <div className="flex justify-between mb-1.5 font-medium">
                   <div className="flex gap-1 items-center">
-                      <div
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: colors[0] }}
-                      ></div>
-                      <div>{pieData[0].id}</div>
-                    </div>
+                    <div
+                      className="h-3 w-3 rounded-full"
+                      style={{ backgroundColor: colors[0] }}
+                    ></div>
+                    <div className="text-content/60">{pieData[0].id}</div>
+                  </div>
                   <div className="flex gap-1 items-center">
-                      <div
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: colors[1] }}
-                      ></div>
-                      <div>{pieData[1].id}</div>
-                    </div>
+                    <div
+                      className="h-3 w-3 rounded-full"
+                      style={{ backgroundColor: colors[1] }}
+                    ></div>
+                    <div className="text-content/60">{pieData[1].id}</div>
+                  </div>
                 </div>
                 {/* <div key={i} className="mb-2 rounded-lg shadow-md p-1.5"> */}
                 <div className="h-[80px] relative">

@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { chunkData } from ".";
-import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import { sameWeekDayLastYear } from "../../../utils";
 import type { SubSale } from "../../../interfaces";
 import {
@@ -12,6 +11,7 @@ import {
 } from "../../../features/salesSlice";
 import SalesTrackerKpis from "./SalesTrackerKpis";
 import TotalsGrid from "./TotalsGrid";
+import NoPanelsFound from "../NoPanelsFound";
 
 const SalesTracker = () => {
   const dispatch = useAppDispatch();
@@ -99,7 +99,7 @@ const SalesTracker = () => {
 
         const grouped = withChanges.reduce((acc: WeekTotal[][][], _, i) => {
           const subId = subIds[i];
-          if (subId) {
+          if (subId > -1) {
             const filtered = copy
               .filter((w) => w.subDept === subId)
               .sort((a, b) => a.sale_date.localeCompare(b.sale_date));
@@ -116,19 +116,15 @@ const SalesTracker = () => {
     }
   }, [sales.tyCollapsedSubSales, sales.lyCollapsedSubSales]);
 
-  if (sales.loadingLYTrackerData || sales.loadingTYTrackerData) {
+  if (sales.noTrackerFound) {
     return (
-      <div className="min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)] grid text-sm">
-        <div className="p-2 relative">
-          <LoadingIndicator message="Loading sales tracker" />
-        </div>
+      <div className="min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)] flex justify-center items-center">
+        <NoPanelsFound dashboardOption={sales.dashboardOption} />
       </div>
     );
   }
 
-  if (sales.tyReducedTotals.length === 0) {
-    return null;
-  }
+  if (sales.tyReducedTotals.length === 0) return null;
 
   return (
     <div className="min-h-[calc(100vh-4.3rem)] max-h-[calc(100vh-4.3rem)] flex flex-col overflow-hidden">

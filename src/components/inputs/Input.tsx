@@ -6,6 +6,10 @@ interface InputProps {
   className?: string;
   width?: string;
   onKeyDown?: () => void;
+  validateUsername?: () => void;
+  validateEmail?: () => void;
+  availableText?: string;
+  textColor?: string;
 }
 
 const Input = ({
@@ -16,6 +20,10 @@ const Input = ({
   type = "text",
   width = "w-full",
   onKeyDown,
+  validateEmail,
+  validateUsername,
+  availableText = "",
+  textColor = "",
 }: InputProps) => {
   const testId = `input-${label.toLowerCase().replace(/\s+/g, "-")}`;
 
@@ -24,11 +32,36 @@ const Input = ({
       e.preventDefault();
       onKeyDown();
     }
+    if (e.key === "Enter" && (validateEmail || validateUsername)) {
+      e.preventDefault();
+      handleValidationClick();
+    }
+  };
+
+  const isValidating = validateEmail || validateUsername;
+
+  const handleValidationClick = () => {
+    if (validateEmail) {
+      validateEmail();
+    } else if (validateUsername) {
+      validateUsername();
+    }
   };
 
   return (
     <div className={`${width}`}>
-      {label && <label className="font-medium text-[13px] pl-0.5">{label}</label>}
+      <div className="flex justify-between text-[13px] items-end pr-1.5">
+        <div>
+          <label className="font-medium pl-0.5">{label}</label>
+          <span className={`text-[10px] ml-1 ${textColor}`}>{availableText}</span>
+        </div>
+        <div
+          className={`${!isValidating ? "hidden" : "text-[10px] underline cursor-pointer hover:text-content/60 transition-all duration-200"}`}
+          onClick={handleValidationClick}
+        >
+          Check Availability
+        </div>
+      </div>
       <input
         data-testid={testId}
         type={type}

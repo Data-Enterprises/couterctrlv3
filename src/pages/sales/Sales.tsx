@@ -1,4 +1,4 @@
-// import { useState } from "react";
+import { useState } from "react";
 // Hooks/API
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { useAppSelector, useAppDispatch } from "../../hooks";
@@ -31,6 +31,7 @@ import {
   setLeftSubCompare,
   setLoadingLYTrackerData,
   setLoadingTYTrackerData,
+  setNoTrackerFound,
   setPanelsLoading,
   setRefreshOverviewData,
   setRightSubCompare,
@@ -44,6 +45,7 @@ import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../utils";
 import type { JsonError } from "../../interfaces";
 import SingleSelect from "../../components/SingleSelect";
 import DatePickers from "../../components/datePickers/DatePickers";
+import NoPanelsFound from "./NoPanelsFound";
 
 const dashboardOptions = [
   { label: "Daily Sales", value: "daily" },
@@ -56,13 +58,22 @@ const Sales = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  // const [noPanelsFound, setNoPanelsFound] = useState<boolean>(false);
-  const { queryChecker, salesPanels, dashboardOption } = useAppSelector(
-    (state) => state.sales,
-  );
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [noPanelsFound, setNoPanelsFound] = useState<boolean>(false);
+  const {
+    hourlySales,
+    weeklySales,
+    subSales,
+    salesPanels,
+    dashboardOption,
+    queryChecker,
+  } = useAppSelector((state) => state.sales);
 
   const getSalesPanels = async () => {
     dispatch(reQuery());
+    setIsLoading(true);
+    dispatch(setSalesPanels([]));
+    setNoPanelsFound(false);
     dispatch(setRefreshOverviewData(true));
     dispatch(setLeftSubCompare(null));
     dispatch(setRightSubCompare(null));
@@ -101,23 +112,27 @@ const Sales = () => {
     )
       .then((resp) => {
         const j = resp.data;
-        if (j.error === 0) {
+        if (j.error === 0 && j.sales.length > 0) {
           const sorted = [...j.sales].sort(
             (a, b) =>
               new Date(b.sale_date).getTime() - new Date(a.sale_date).getTime(),
           );
           dispatch(setSalesPanels(sorted));
+        } else {
+          setNoPanelsFound(true);
         }
       })
       .catch((err: JsonError) => {
         toast.error("Error getting Sales Two Dates data: " + err.message);
       })
       .finally(() => {
+        setIsLoading(false);
         dispatch(setPanelsLoading(false));
       });
   };
 
   const getSubsTracker = () => {
+    dispatch(setNoTrackerFound(false));
     dispatch(setLoadingTYTrackerData(true));
     dispatch(setLoadingLYTrackerData(true));
     const end = formatGoliathDate(search.endDate);
@@ -174,6 +189,7 @@ const Sales = () => {
 
                     if (pages.every((p) => p.fetched)) {
                       dispatch(setLoadingTYTrackerData(false));
+                      setIsLoading(false);
                     }
                   }
                 })
@@ -181,7 +197,12 @@ const Sales = () => {
             }
           } else {
             dispatch(setLoadingTYTrackerData(false));
+            setIsLoading(false);
           }
+        } else {
+          dispatch(setLoadingTYTrackerData(false));
+          setIsLoading(false);
+          dispatch(setNoTrackerFound(true));
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
@@ -230,6 +251,7 @@ const Sales = () => {
 
                     if (pages.every((p) => p.fetched)) {
                       dispatch(setLoadingLYTrackerData(false));
+                      setIsLoading(false);
                     }
                   }
                 })
@@ -237,7 +259,11 @@ const Sales = () => {
             }
           } else {
             dispatch(setLoadingLYTrackerData(false));
+            setIsLoading(false);
           }
+        } else {
+          dispatch(setLoadingLYTrackerData(false));
+          setIsLoading(false);
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
@@ -254,7 +280,16 @@ const Sales = () => {
   const gridContainer =
     "grid grid-cols-[17%_83%] gap-2 min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)]";
 
-  const isLoading =
+  const hasData =
+    dashboardOption !== "tracker" &&
+    salesPanels.length > 0 &&
+    hourlySales.length > 0 &&
+    weeklySales.length > 0 &&
+    subSales.length > 0
+      ? true
+      : false;
+
+  const queryCheck =
     dashboardOption !== "tracker" &&
     (!queryChecker.hourly ||
       !queryChecker.subs ||
@@ -306,27 +341,37 @@ const Sales = () => {
         </div>
 
         {isLoading ? (
-          <div className="relative">
-            {salesPanels.length ? (
-              <LoadingIndicator message="Loading sales overview" />
-            ) : null}
+          <div className="relative md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)]">
+            <LoadingIndicator message={dashboardOption !== "tracker" ? "Loading sales overview" : "Loading sales tracker"} />
           </div>
         ) : (
           <>
             {dashboardOption !== "tracker" ? (
-              <div className="md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)] grid grid-rows-[152px_1fr] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
-                <KpiHeader />
-                <div className="grid grid-cols-[42%_1fr] gap-2 h-[calc(100vh-232px)]">
-                  <div className="grid grid-rows-[282px_1fr] gap-2 h-full">
-                    <HourlyGrid />
-                    <TopTen />
+              <>
+                {!noPanelsFound && hasData ? (
+                  <div className="md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)] grid grid-rows-[152px_1fr] overflow-y-auto no-scrollbar md:space-y-2 overflow-hidden">
+                    <KpiHeader />
+                    <div className="grid grid-cols-[42%_1fr] gap-2 h-[calc(100vh-232px)]">
+                      <div className="grid grid-rows-[282px_1fr] gap-2 h-full">
+                        <HourlyGrid />
+                        <TopTen />
+                      </div>
+                      <div className="grid gap-2 h-full grid-rows-[220px_1fr]">
+                        <SubDeptComps />
+                        <SubDeptGrid />
+                      </div>
+                    </div>
                   </div>
-                  <div className="grid gap-2 h-full grid-rows-[220px_1fr]">
-                    <SubDeptComps />
-                    <SubDeptGrid />
+                ) : (
+                  <div className="md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)] relative flex items-center justify-center">
+                    {queryCheck && !noPanelsFound && isLoading ? (
+                      <LoadingIndicator message="Loading sales overview" />
+                    ) : noPanelsFound ? (
+                      <NoPanelsFound dashboardOption={dashboardOption} />
+                    ) : null}
                   </div>
-                </div>
-              </div>
+                )}
+              </>
             ) : (
               <SalesTracker />
             )}

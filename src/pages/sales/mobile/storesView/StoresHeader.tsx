@@ -79,50 +79,43 @@ const StoresHeader = ({ totals, coupons }: StoresHeaderProps) => {
 
   return (
     <div
-      className="bg-custom-white rounded-lg shadow-md px-2 py-1 grid grid-cols-2"
+      className="bg-custom-white rounded-lg shadow-md px-2 py-1 grid grid-cols-2 gap-y-1.5 text-[11px]"
       onClick={handleHeaderClick}
     >
-      <div className="col-span-2 flex justify-between">
+      <div className="col-span-2 flex justify-between items-center pb-0.5">
         <div className="font-medium text-nowrap truncate">{displayName()}</div>
         <div className="font-medium">{dteStr()}</div>
       </div>
-      <div className="grid grid-cols-[55%_45%]">
+
+      <div className="grid grid-cols-[55%_45%] justify-between">
         <div>
-          <div className="text-content/60">Sales</div>
-          <span className="font-medium">
-            {totals.total_sales.toLocaleString("en-US", {
-              style: "currency",
-              currency: "USD",
-            })}
+          <div className="text-content/60 text-[11px]">Sales</div>
+          <span className="block font-medium">
+            {formatCurrency2(totals.total_sales)}
           </span>
         </div>
         <div>
-          <div className="text-content/60">Trans</div>
-          <span className="font-medium">
+          <div className="text-content/60 text-[11px]">Trans</div>
+          <span className="block font-medium">
             {totals.transactions.toLocaleString("en-US")}
           </span>
         </div>
         <div>
-          <div className="text-content/60">Avg Basket</div>
-          <span className="font-medium">
-            {totals.avg_basket_amount.toLocaleString("en-US", {
-              style: "currency",
-              currency: "USD",
-            })}
+          <div className="text-content/60 text-[11px]">Avg Basket</div>
+          <span className="block font-medium">
+            {formatCurrency2(totals.avg_basket_amount)}
           </span>
         </div>
         <div>
-          <div className="text-content/60">Tax</div>
-          <span className="font-medium">
-            {totals.total_tax.toLocaleString("en-US", {
-              style: "currency",
-              currency: "USD",
-            })}
+          <div className="text-content/60 text-[11px]">Tax</div>
+          <span className="block font-medium">
+            {formatCurrency2(totals.total_tax)}
           </span>
         </div>
       </div>
-      <div>
-        <div style={{ height: 78 }} className="relative">
+
+      <div className="flex items-center justify-center">
+        <div style={{ height: 74, width: "100%" }} className="relative">
           <ResponsivePie
             data={coupons}
             animate={true}
@@ -132,19 +125,21 @@ const StoresHeader = ({ totals, coupons }: StoresHeaderProps) => {
             enableArcLabels={false}
             enableArcLinkLabels={false}
             colors={colors}
+            margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
           />
-          <div className="font-bold absolute left-1/2 top-1/2 transform -translate-x-1/2">
-            <div className="text-center font-medium">Cpn</div>
+          <div className="text-center font-bold absolute left-1/2 bottom-0 -translate-x-1/2 whitespace-nowrap">
+            <div className="text-[9.5px]">Cpn $</div>
             {formatCurrency2(totalCpns)}
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-2 col-span-2 gap-x-4 border-t">
+
+      <div className="grid grid-cols-2 gap-x-4 col-span-2 border-t border-content/15 pt-1">
         {titles.map((c, i) => (
           <div key={i} className="flex justify-between items-center">
             <div className="flex gap-1 items-center">
               <div
-                className={`h-3 w-3 mt-[2px] rounded-full`}
+                className="h-2.5 w-2.5 rounded-full"
                 style={{ backgroundColor: colors[i] }}
               ></div>
               <div>{c}</div>

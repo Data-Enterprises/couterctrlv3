@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useMobileSalesCtx } from "./hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
@@ -6,7 +7,7 @@ import {
   resetMobileSalesState,
   setLoadingLYTrackerData,
   setLoadingTYTrackerData,
-  // setMobileDashboardOption,
+  setMobileDashboardOption,
   setMobileHourlyLastYearSales,
   setMobileHourlySales,
   setMobilePanelsLoading,
@@ -28,22 +29,42 @@ import MainViewContainer from "./MainViewContainer";
 import { formatGoliathDate, sameWeekDayLastYear } from "../../../utils";
 import { setDates } from "../utils";
 
-// import {
-//   CurrencyDollarIcon,
-//   ClipboardDocumentIcon,
-//   DocumentCurrencyDollarIcon,
-// } from "@heroicons/react/24/solid";
-// import type { DashboardOption } from "../../../features/salesSlice";
+import {
+  CurrencyDollarIcon,
+  ClipboardDocumentIcon,
+  DocumentCurrencyDollarIcon,
+} from "@heroicons/react/24/solid";
+import type { DashboardOption } from "../../../features/salesSlice";
 import { useAppSelector } from "../../../hooks";
 import DatePickers from "../../../components/datePickers/DatePickers";
+import { formatDate } from "../tracker";
+import NoPanelsFound from "../NoPanelsFound";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 
 const SalesMobile = () => {
   const toast = useToast();
   const ctx = useMobileSalesCtx();
   const search = useAppSelector((state) => state.search);
+  const [noPanelsFound, setNoPanelsFound] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (ctx.thisYrSubTrackerMobile.length > 0) {
+      setNoPanelsFound(false);
+      ctx.dispatch(setView("tracker"));
+    }
+  }, [ctx.thisYrSubTrackerMobile])
+
+  useEffect(() => {
+    if (ctx.salesPanels.length > 0) {
+      setNoPanelsFound(false);
+      ctx.dispatch(setView("stores"));
+    }
+  }, [ctx.salesPanels]);
 
   const getSalesPanels = () => {
     ctx.dispatch(resetMobileSalesState());
+    setNoPanelsFound(false);
+    ctx.dispatch(setMobilePanelsLoading(true));
 
     if (ctx.dashboardOption === "tracker") {
       getSubsTracker();
@@ -54,7 +75,6 @@ const SalesMobile = () => {
     const lyDate = new Date(endDateLY.date);
     const lyWkEnd = setDates(lyDate);
     const lyWkStart = setDates(lyDate, 6);
-
     const start = ctx.dashboardOption === "daily" ? ctx.endDate : ctx.startDate;
 
     getSubs(
@@ -115,12 +135,12 @@ const SalesMobile = () => {
             .catch((err: JsonError) => toast.error(err.message));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError) => toast.error(err.message))
 
     getWeekly(
       ctx.url,
       ctx.token,
-      start,
+      ctx.startDate,
       ctx.endDate,
       ctx.useGroups,
       ctx.searchValue,
@@ -133,15 +153,25 @@ const SalesMobile = () => {
             (a, b) =>
               new Date(b.sale_date).getTime() - new Date(a.sale_date).getTime(),
           );
-          ctx.dispatch(setMobileSalesPanels(sorted));
+          if (ctx.dashboardOption === "daily") {
+            const found = sorted.find(
+              (s) => formatDate(s.sale_date) === formatDate(start),
+            );
+            if (found) {
+              ctx.dispatch(setMobileSalesPanels([found]));
+            } else {
+              setNoPanelsFound(true);
+            }
+          } else {
+            ctx.dispatch(setMobileSalesPanels(sorted));
+          }
           ctx.dispatch(setMobileWeeklySales(sorted));
 
           // Then fetch last year
-          const lyStart = ctx.dashboardOption === "daily" ? lyWkEnd : lyWkStart;
           getWeekly(
             ctx.url,
             ctx.token,
-            lyStart,
+            lyWkStart,
             lyWkEnd,
             ctx.useGroups,
             ctx.searchValue,
@@ -214,9 +244,6 @@ const SalesMobile = () => {
       .catch((err: JsonError) =>
         toast.error("Error fetching top ten items: " + err.message),
       );
-
-    // Change the view after the calls are made
-    ctx.dispatch(setView("stores"));
   };
 
   const getSubsTracker = () => {
@@ -284,9 +311,12 @@ const SalesMobile = () => {
           } else {
             ctx.dispatch(setLoadingTYTrackerData(false));
           }
+        } else {
+          setNoPanelsFound(true);
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => ctx.dispatch(setMobilePanelsLoading(false)));
 
     // Getting Last Year
     getSubs(
@@ -344,7 +374,7 @@ const SalesMobile = () => {
       })
       .catch((err: JsonError) => toast.error(err.message));
 
-    ctx.dispatch(setView("tracker"));
+    // ctx.dispatch(setView("tracker"));
   };
 
   // Here is where the main view can be toggled once the sales panels are set
@@ -357,15 +387,15 @@ const SalesMobile = () => {
 
   const showTrackerBtn = ctx.tyReducedTotalsMobile.length > 0;
 
-  // const activeStyle = (dbOption: DashboardOption) => {
-  //   return ctx.dashboardOption === dbOption
-  //     ? "text-orange-500"
-  //     : "text-content/60";
-  // };
+  const activeStyle = (dbOption: DashboardOption) => {
+    return ctx.dashboardOption === dbOption
+      ? "text-orange-500"
+      : "text-content/60";
+  };
 
-  // const handleDashboardSelect = (option: DashboardOption) => {
-  //   ctx.dispatch(setMobileDashboardOption(option));
-  // };
+  const handleDashboardSelect = (option: DashboardOption) => {
+    ctx.dispatch(setMobileDashboardOption(option));
+  };
 
   const uniqueDates = (): number => {
     const dates = ctx.salesPanels.map((panel) => panel.sale_date);
@@ -375,7 +405,7 @@ const SalesMobile = () => {
   // Default return if view is 'main'
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-scroll no-scrollbar select-none text-[13px]">
-      {/* <div className="flex justify-items-center bg-custom-white shadow-md py-2 text-[12px]">
+      <div className="flex justify-items-center bg-custom-white shadow-md py-2 text-[12px]">
         <div
           className="border-r w-1/3 flex justify-center gap-2 items-center transition-all"
           onClick={() => handleDashboardSelect("daily")}
@@ -403,7 +433,7 @@ const SalesMobile = () => {
           />
           Tracker
         </div>
-      </div> */}
+      </div>
       <div className="p-2">
         <div className="bg-custom-white rounded-lg shadow-md p-2 mb-2">
           <StorePicker />
@@ -441,6 +471,16 @@ const SalesMobile = () => {
           )}
         </div>
       </div>
+      {noPanelsFound && (
+        <div className="px-2">
+          <NoPanelsFound dashboardOption={ctx.dashboardOption} />
+        </div>
+      )}
+      {ctx.panelsLoading && (
+        <div className="relative h-32">
+          <LoadingIndicator message="Loading sales data" />
+        </div>
+      )}
     </div>
   );
 };

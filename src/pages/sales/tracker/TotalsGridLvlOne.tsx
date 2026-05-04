@@ -78,11 +78,11 @@ const TotalsGridLvlOne = ({
   if (!isLvlTwo) {
     return (
       <div
-        className={`text-[12.5px] transition-all last:rounded-b-lg duration-200 ${salesTrackerSelectedSubDept === subId ? "bg-orange-200 shadow-inner" : "bg-custom-white"}`}
+        className={`text-[11px] transition-all last:rounded-b-lg duration-200 ${salesTrackerSelectedSubDept === subId ? "bg-orange-200 shadow-inner" : "bg-custom-white"}`}
         onClick={handleRowClick}
       >
-        <div className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1fr_0.7fr_0.8fr] px-2 py-1 font-medium items-center cursor-pointer hover:bg-blue-200/50 transition-all duration-200">
-          <div className="flex gap-1 items-center">
+        <div className="grid grid-cols-[1.9fr_0.7fr_0.7fr_1fr_0.7fr_0.8fr] px-2 py-1 font-medium items-center cursor-pointer hover:bg-blue-200/50 transition-all duration-200">
+          <div className="">
             <div className="">{desc}</div>
           </div>
           <div className="text-right">
@@ -113,11 +113,7 @@ const TotalsGridLvlOne = ({
   /* Level 2 => weeks */
   return (
     <div className="">
-      <div
-        data-display="closed"
-        className="grid gap-2"
-        // className="grid grid-cols-3 gap-2"
-      >
+      <div className="grid gap-2">
         {filtered.map((week, widx) => {
           const desc = week[0].subDesc;
           const weekTotals = calcTotals([week]);

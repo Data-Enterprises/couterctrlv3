@@ -13,11 +13,9 @@ import {
   setUserLevels,
   setUsers,
 } from "../../features/usersSlice";
-import { setQsUsers } from "../../features/qsSlice";
 import { setSelectedCompanyForm } from "../../features/companySlice";
 import type { JsonError, User, UserLevelJsonResp } from "../../interfaces";
 
-import { getQuicksightUsers } from "../../api/quicksight";
 import { getUserLevels } from "../../api/team";
 import { getAllUsers } from "../../api/user";
 
@@ -36,7 +34,7 @@ import ExportMissingStoresModal from "./admin/ExportMissingStoresModal";
 import { adminMissingSalesColumns } from "./admin";
 import Assigned from "./assignModal/Assigned";
 import Unassigned from "./assignModal/Unassigned";
-// import TeamTablet from "./tabletComps/TeamTablet";
+import TeamTablet from "./tabletComps/TeamTablet";
 import { setAllSelectedBaseGroups } from "../../features/baseGroupSlice";
 
 const options = [
@@ -49,9 +47,9 @@ const options = [
 const Team = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const { url, token, isDesktop,
-    //  isTablet 
-    } = useAppSelector((state) => state.app);
+  const { url, token, isDesktop, isTablet } = useAppSelector(
+    (state) => state.app,
+  );
   const companies = useAppSelector((state) => state.user.companies);
   const { refresh, selectedUserId, selectedForm, selectedUserStores } =
     useAppSelector((state) => state.users);
@@ -138,16 +136,6 @@ const Team = () => {
 
   useEffect(() => {
     if (refresh) {
-      getQuicksightUsers(url, token)
-        .then((resp) => {
-          const j = resp.data;
-          if (j.error === 0) {
-            dispatch(setQsUsers(j.users));
-          }
-        })
-        .catch((err: JsonError) => {
-          toast.error("Error fetching QuickSight users " + err.message);
-        });
       getUserLevels(url, token)
         .then((resp) => {
           const j: UserLevelJsonResp = resp.data;
@@ -164,7 +152,7 @@ const Team = () => {
     dispatch(setAssignBaseGroups([]));
   }, [selectedUserId]);
 
-  // if (isTablet) return <TeamTablet />;
+  if (isTablet) return <TeamTablet />;
 
   const renderForm = () => {
     switch (selectedForm) {

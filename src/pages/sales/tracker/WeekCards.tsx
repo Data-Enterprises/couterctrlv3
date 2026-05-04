@@ -17,10 +17,7 @@ const WeekCards = () => {
   const { groups } = useAppSelector((state) => state.group);
 
   useEffect(() => {
-    if (
-      sales.thisYrSubTracker.length > 0 &&
-      sales.lastYrSubTracker.length > 0
-    ) {
+    if (sales.thisYrSubTracker.length > 0) {
       const justTyDates = Array.from(
         new Set(
           sales.thisYrSubTracker.map((sale) => sale.sale_date.split("T")[0]),
@@ -133,14 +130,35 @@ const WeekCards = () => {
   return (
     <div className="space-y-2 max-h-[calc(100vh-376px)] overflow-y-scroll no-scrollbar mt-2 pb-2">
       {sales.tyWeekCards.map((sale, idx) => {
-        const lyCard = sales.lyWeekCards[idx];
+        let lyCard = sales.lyWeekCards[idx];
+
+        if (!lyCard) {
+          lyCard = {
+            sale_date: sale.sale_date,
+            store_name: sale.store_name,
+            storeid: sale.storeid,
+            total_sales: 0,
+            total_tax: 0,
+            digital_coupons: 0,
+            elec_instore_coupons: 0,
+            elec_store_coupons: 0,
+            net_sales: 0,
+            qty: 0,
+            store_coupon: 0,
+            weight: 0,
+            transaction_count: 0,
+            store_number: "",
+            sub_department: 0,
+            sub_department_description: "",
+          };
+        }
 
         return (
           <div
             key={idx}
             className="text-[12px] p-2 rounded-lg bg-custom-white shadow-lg"
           >
-            <div className="flex justify-between font-medium">
+            <div className="flex flex-col font-medium text-[11px]">
               <div>{sale.store_name}</div>
               <div>
                 {formatDate(sale.sale_date.split(" - ")[0])} -{" "}

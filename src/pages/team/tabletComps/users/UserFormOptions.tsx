@@ -21,16 +21,9 @@ const UserFormOptions = () => {
       case "create":
         dispatch(setSelectedUserForm("create"));
         break;
-      // case "update":
-      //   dispatch(setSelectedUserForm("update"));
-      //   break;
       case "delete":
         dispatch(setSelectedUserForm("delete"));
         break;
-      // case "update_password":
-      //   break;
-      // case "reset_security":
-      //   break;
       case "user_info":
         dispatch(setSelectedUserForm("user_info"));
         break;

@@ -19,6 +19,7 @@ export const useMobileSalesCtx = () => {
     panelSortOption,
     salesPanels,
     salesTrackerSelectedSubDept,
+    salesTrackerSelectedWeek,
     salesViewHourly,
     salesViewHourlyLastYear,
     salesViewTopTen,
@@ -37,11 +38,13 @@ export const useMobileSalesCtx = () => {
     trackerKpis,
     tyCollapsedSubSalesMobile,
     tyReducedTotalsMobile,
+    tyReducedTotalsMobileFilteredBySub,
     tyWeekCardsMobile,
     uniqueSubsMobile,
     view,
     weeklySales,
     weeklySalesLastYear,
+    
   } = useAppSelector((state) => state.salesMobile);
   const { groups } = useAppSelector((state) => state.group);
   const { assignedStores } = useAppSelector((state) => state.user);
@@ -110,5 +113,7 @@ export const useMobileSalesCtx = () => {
     tyWeekCardsMobile,
     uniqueSubsMobile,
     salesTrackerView,
+    tyReducedTotalsMobileFilteredBySub,
+    salesTrackerSelectedWeek,
   };
 };

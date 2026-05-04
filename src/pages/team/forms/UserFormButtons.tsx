@@ -6,6 +6,7 @@ import {
   resetUserInfo,
   setIsDeletingUser,
   setRefresh,
+  setSelectedUserId,
   setSelectedUserStores,
   type UserFormType,
 } from "../../../features/usersSlice";
@@ -13,6 +14,7 @@ import { setAllSelectedBaseGroups } from "../../../features/baseGroupSlice";
 
 import {
   assignBaseGroupToUser,
+  checkUsername,
   createUser,
   updateUser,
 } from "../../../api/team";
@@ -41,6 +43,7 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
         const j = resp.data;
         if (j.error === 0) {
           const userid = j.new_userid;
+          dispatch(setSelectedUserId(userid));
           assignUserToCompany(url, token, userid, userCompanyIds)
             .then((resp) => {
               const j = resp.data;
@@ -107,7 +110,22 @@ const UserFormButtons = ({ formType }: UserFormButtonsProps) => {
 
   const handleCreateOrUpdate = () => {
     if (formType === "create") {
-      handleCreateClick();
+      checkUsername(url, token, userInfo.username)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            handleCreateClick();
+          } else {
+            toast.warn(
+              `Error with username check: ${userInfo.username}, ${j.msg}`,
+            );
+          }
+        })
+        .catch((err: JsonError) =>
+          toast.error(
+            `Error with username check: ${userInfo.username}, ${err.message}`,
+          ),
+        );
     } else {
       handleUpdateClick();
     }
