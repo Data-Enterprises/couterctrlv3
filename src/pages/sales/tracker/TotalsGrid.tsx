@@ -51,7 +51,7 @@ const TotalsGrid = () => {
   };
 
   const filteredSubs = () => {
-    if (sales.salesTrackerSelectedSubDept === 0) {
+    if (sales.salesTrackerSelectedSubDept === -1) {
       return sales.uniqueSubs;
     }
     return [...sales.uniqueSubs].filter(
@@ -64,7 +64,7 @@ const TotalsGrid = () => {
       <div className="">
         {/* Header row */}
         <div className="bg-custom-white rounded-t-lg shadow">
-          <div className="grid grid-cols-[1.3fr_1.1fr_1.1fr_1fr_0.7fr_0.8fr] font-medium text-content/70 text-sm px-2 py-1">
+          <div className="grid grid-cols-[1.9fr_0.7fr_0.7fr_1fr_0.7fr_0.8fr] font-medium text-content/70 text-sm px-2 py-1">
             <div>Sub Dept</div>
             <div className="text-right">TY Sales</div>
             <div className="text-right">LY Sales</div>
@@ -114,7 +114,7 @@ const TotalsGrid = () => {
         </div>
       </div>
 
-      {sales.salesTrackerSelectedSubDept > 0 && (
+      {sales.salesTrackerSelectedSubDept > -1 && (
         <div className="max-h-[calc(100vh-152px)] overflow-auto no-scrollbar pb-1">
           {filteredSubs().map((sub, idx) => {
             const subId = sub.id;

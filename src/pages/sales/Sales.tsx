@@ -31,6 +31,7 @@ import {
   setLeftSubCompare,
   setLoadingLYTrackerData,
   setLoadingTYTrackerData,
+  setNoTrackerFound,
   setPanelsLoading,
   setRefreshOverviewData,
   setRightSubCompare,
@@ -131,6 +132,7 @@ const Sales = () => {
   };
 
   const getSubsTracker = () => {
+    dispatch(setNoTrackerFound(false));
     dispatch(setLoadingTYTrackerData(true));
     dispatch(setLoadingLYTrackerData(true));
     const end = formatGoliathDate(search.endDate);
@@ -200,6 +202,7 @@ const Sales = () => {
         } else {
           dispatch(setLoadingTYTrackerData(false));
           setIsLoading(false);
+          dispatch(setNoTrackerFound(true));
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
@@ -339,7 +342,7 @@ const Sales = () => {
 
         {isLoading ? (
           <div className="relative md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)]">
-            <LoadingIndicator message="Loading sales overview" />
+            <LoadingIndicator message={dashboardOption !== "tracker" ? "Loading sales overview" : "Loading sales tracker"} />
           </div>
         ) : (
           <>
