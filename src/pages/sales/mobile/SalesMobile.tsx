@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useMobileSalesCtx } from "./hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
@@ -36,14 +37,34 @@ import {
 import type { DashboardOption } from "../../../features/salesSlice";
 import { useAppSelector } from "../../../hooks";
 import DatePickers from "../../../components/datePickers/DatePickers";
+import { formatDate } from "../tracker";
+import NoPanelsFound from "../NoPanelsFound";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 
 const SalesMobile = () => {
   const toast = useToast();
   const ctx = useMobileSalesCtx();
   const search = useAppSelector((state) => state.search);
+  const [noPanelsFound, setNoPanelsFound] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (ctx.thisYrSubTrackerMobile.length > 0) {
+      setNoPanelsFound(false);
+      ctx.dispatch(setView("tracker"));
+    }
+  }, [ctx.thisYrSubTrackerMobile])
+
+  useEffect(() => {
+    if (ctx.salesPanels.length > 0) {
+      setNoPanelsFound(false);
+      ctx.dispatch(setView("stores"));
+    }
+  }, [ctx.salesPanels]);
 
   const getSalesPanels = () => {
     ctx.dispatch(resetMobileSalesState());
+    setNoPanelsFound(false);
+    ctx.dispatch(setMobilePanelsLoading(true));
 
     if (ctx.dashboardOption === "tracker") {
       getSubsTracker();
@@ -54,7 +75,6 @@ const SalesMobile = () => {
     const lyDate = new Date(endDateLY.date);
     const lyWkEnd = setDates(lyDate);
     const lyWkStart = setDates(lyDate, 6);
-
     const start = ctx.dashboardOption === "daily" ? ctx.endDate : ctx.startDate;
 
     getSubs(
@@ -115,7 +135,7 @@ const SalesMobile = () => {
             .catch((err: JsonError) => toast.error(err.message));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError) => toast.error(err.message))
 
     getWeekly(
       ctx.url,
@@ -134,7 +154,14 @@ const SalesMobile = () => {
               new Date(b.sale_date).getTime() - new Date(a.sale_date).getTime(),
           );
           if (ctx.dashboardOption === "daily") {
-            ctx.dispatch(setMobileSalesPanels([sorted[sorted.length - 1]]));
+            const found = sorted.find(
+              (s) => formatDate(s.sale_date) === formatDate(start),
+            );
+            if (found) {
+              ctx.dispatch(setMobileSalesPanels([found]));
+            } else {
+              setNoPanelsFound(true);
+            }
           } else {
             ctx.dispatch(setMobileSalesPanels(sorted));
           }
@@ -217,9 +244,6 @@ const SalesMobile = () => {
       .catch((err: JsonError) =>
         toast.error("Error fetching top ten items: " + err.message),
       );
-
-    // Change the view after the calls are made
-    ctx.dispatch(setView("stores"));
   };
 
   const getSubsTracker = () => {
@@ -287,9 +311,12 @@ const SalesMobile = () => {
           } else {
             ctx.dispatch(setLoadingTYTrackerData(false));
           }
+        } else {
+          setNoPanelsFound(true);
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => ctx.dispatch(setMobilePanelsLoading(false)));
 
     // Getting Last Year
     getSubs(
@@ -347,7 +374,7 @@ const SalesMobile = () => {
       })
       .catch((err: JsonError) => toast.error(err.message));
 
-    ctx.dispatch(setView("tracker"));
+    // ctx.dispatch(setView("tracker"));
   };
 
   // Here is where the main view can be toggled once the sales panels are set
@@ -444,6 +471,16 @@ const SalesMobile = () => {
           )}
         </div>
       </div>
+      {noPanelsFound && (
+        <div className="px-2">
+          <NoPanelsFound dashboardOption={ctx.dashboardOption} />
+        </div>
+      )}
+      {ctx.panelsLoading && (
+        <div className="relative h-32">
+          <LoadingIndicator message="Loading sales data" />
+        </div>
+      )}
     </div>
   );
 };

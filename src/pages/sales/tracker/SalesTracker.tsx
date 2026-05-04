@@ -12,6 +12,7 @@ import {
 } from "../../../features/salesSlice";
 import SalesTrackerKpis from "./SalesTrackerKpis";
 import TotalsGrid from "./TotalsGrid";
+import NoPanelsFound from "../NoPanelsFound";
 
 const SalesTracker = () => {
   const dispatch = useAppDispatch();
@@ -127,7 +128,11 @@ const SalesTracker = () => {
   }
 
   if (sales.tyReducedTotals.length === 0) {
-    return null;
+    return (
+      <div className="min-h-[calc(100vh-5rem)] max-h-[calc(100vh-5rem)] flex justify-center items-center">
+        <NoPanelsFound dashboardOption={sales.dashboardOption} />
+      </div>
+    );
   }
 
   return (

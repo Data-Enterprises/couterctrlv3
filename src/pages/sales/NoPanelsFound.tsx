@@ -1,12 +1,16 @@
 import { WarningIcon } from "../../components/toasts/Icons";
+import type { DashboardOption } from "../../features/salesSlice";
 import { useAppSelector } from "../../hooks";
 import { addDays } from "../../utils";
 
-const NoPanelsFound = () => {
-  const { singleDate, endDate, lastStore, lastGroup, type } = useAppSelector(
+interface NoPanelsFoundProps {
+  dashboardOption: DashboardOption
+}
+
+const NoPanelsFound = ({ dashboardOption }: NoPanelsFoundProps) => {
+  const { singleDate, endDate, lastStore, lastGroup, type, startDate } = useAppSelector(
     (state) => state.search,
   );
-  const { dashboardOption } = useAppSelector((state) => state.sales);
   const { assignedStores } = useAppSelector((state) => state.user);
   const { groups } = useAppSelector((state) => state.group);
 
@@ -18,7 +22,7 @@ const NoPanelsFound = () => {
   const dateStr =
     dashboardOption === "daily"
       ? singleDate
-      : `${formatDate(start)} to ${endDate}`;
+      : dashboardOption === "weekly" ? `${formatDate(start)} to ${endDate}` : `${startDate} to ${endDate}`;
 
   const renderGroupOrStore = () => {
     if (type === "Store") {
@@ -29,8 +33,9 @@ const NoPanelsFound = () => {
       return "Group: " + (group ? group.group_name : "the selected group");
     }
   };
+
   return (
-    <div className="bg-custom-white py-4 px-12 flex flex-col items-center justify-center rounded-lg shadow-lg text-[13.5px] gap-2">
+    <div className={`bg-custom-white py-4 px-12 flex flex-col items-center justify-center rounded-lg shadow-lg text-[11px] md:text-[13.5px] gap-2`}>
       <WarningIcon width={50} height={50} fill="#f97316" />
       <div>No sales records found for</div>
       <div className="font-medium">{renderGroupOrStore()}</div>

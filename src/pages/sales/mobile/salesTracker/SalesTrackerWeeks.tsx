@@ -1,7 +1,7 @@
 import { ResponsivePie } from "@nivo/pie";
 import type { WeekTotal } from "../../../../features/salesSlice";
-import { formatCurrency2 } from "../../../../utils";
-import { formatDate, changeTextColor } from "../../tracker"; // 👈 Added missing import
+import { addDays, formatCurrency2 } from "../../../../utils";
+import { formatDate, changeTextColor, chunkData } from "../../tracker"; // 👈 Added missing import
 import { useMobileSalesCtx } from "../hooks";
 import ReducedTotalsHeader from "./ReducedTotalsHeader";
 import {
@@ -84,20 +84,62 @@ const SalesTrackerWeeks = () => {
             const desc = sub.desc;
 
             const filteredBySub = ctx.tyReducedTotalsMobile
-              .filter((wg) => wg[0][0].subDept === subId)
+              .filter((wg) => wg[0][0]?.subDept === subId)
               .flat();
 
-            return filteredBySub.map((week, idx) => {
-              const weekTotals = calcTotals([week]);
+            const storeName = filteredBySub[0][0]?.storeName || "";
+            const storeId = filteredBySub[0][0]?.storeid || 0;
+            const missingDates: WeekTotal[] = [];
+            const flattened = [...filteredBySub].flat();
+
+            flattened.flat().forEach((d, i) => {
+              if (i < flattened.length - 1) {
+                let currentDateCheck = addDays(new Date(d.sale_date), 1)
+                  .toISOString()
+                  .split("T")[0];
+
+                while (
+                  currentDateCheck !== flattened[i + 1].sale_date.split("T")[0]
+                ) {
+                  const defaultWekTotal: WeekTotal = {
+                    sale_date: currentDateCheck + "T00:00:00",
+                    subDept: subId,
+                    subDesc: desc,
+                    salesTY: 0,
+                    salesLY: 0,
+                    atsTotalSales: 0,
+                    storeid: storeId,
+                    storeName: storeName,
+                    transaction_count: 0,
+                    totalSalesDollarChange: 0,
+                    totalSalesPercentChange: 0,
+                  };
+                  missingDates.push(defaultWekTotal);
+                  currentDateCheck = addDays(new Date(currentDateCheck), 1)
+                    .toISOString()
+                    .split("T")[0];
+                }
+              }
+            });
+
+            const concatWithMissing = [...flattened, ...missingDates].sort(
+              (a, b) => a.sale_date.localeCompare(b.sale_date),
+            );
+
+            const filteredWithMissing = chunkData(concatWithMissing);
+
+            return filteredWithMissing.map((week, idx) => {
+              const totalsWithMissing = calcTotals([concatWithMissing]);
+              // const weekTotals = calcTotals([week]);
               const pieData = [
                 {
                   id: "TY",
-                  value: weekTotals.tyTotalSales,
+                  value: totalsWithMissing.tyTotalSales,
                   color: colors[0],
                 },
                 {
                   id: "LY",
-                  value: weekTotals.lyTotalSales,
+                  value: totalsWithMissing.lyTotalSales,
                   color: colors[1],
                 },
               ];
@@ -114,49 +156,6 @@ const SalesTrackerWeeks = () => {
                     }
                   }}
                 >
-                  {/* <div className="font-medium select-none">
-                    <div className="grid grid-cols-2">
-                      <div className="col-span-2 text-content/60 truncate">
-                        {desc} Week {idx + 1}
-                      </div>
-                      <div className="text-[10px] sm:text-[11px] text-content/80">
-                        {formatDate(week[0].sale_date)} –{" "}
-                        {formatDate(week[week.length - 1].sale_date)}
-                      </div>
-                      <div
-                        className={`text-right font-medium ${changeTextColor(weekTotals.dollarChange, 0)}`}
-                      >
-                        {formatCurrency2(weekTotals.dollarChange)} (
-                        {weekTotals.percentChange.toFixed(2)}%)
-                      </div>
-                    </div>
-
-                    <div className="h-px grid grid-cols-2 my-2">
-                      <div className="bg-gradient-to-r from-content/15 to-custom-white" />
-                      <div className="bg-gradient-to-l from-content/15 to-custom-white" />
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1.3fr] items-start">
-                      <div className="bg-bkg/70 px-2 py-2 rounded-lg border border-content/15 shadow-sm">
-                        <div className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-1 text-[10px] sm:text-[11px] leading-tight">
-                          <div className="text-content/60">TY Sales</div>
-                          <div className="text-right font-medium">
-                            {formatCurrency2(weekTotals.tyTotalSales)}
-                          </div>
-
-                          <div className="text-content/60">LY Sales</div>
-                          <div className="text-right font-medium">
-                            {formatCurrency2(weekTotals.lyTotalSales)}
-                          </div>
-
-                          <div className="text-content/60">ATS Sales</div>
-                          <div className="text-right font-medium">
-                            {formatCurrency2(weekTotals.atsTotalSales)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div> */}
                   <div className="space-y-1.5 text-[11px]">
                     <div>
                       <div className="flex justify-between font-medium">
@@ -166,9 +165,9 @@ const SalesTrackerWeeks = () => {
                       <div className="flex justify-between text-[10px] text-content/60">
                         <div>WS: {formatDate(week[0].sale_date)}</div>
                         <div
-                          className={`font-bold ${changeTextColor(weekTotals.dollarChange, 0)}`}
+                          className={`font-bold ${changeTextColor(totalsWithMissing.dollarChange, 0)}`}
                         >
-                          {formatCurrency2(weekTotals.dollarChange)}
+                          {formatCurrency2(totalsWithMissing.dollarChange)}
                         </div>
                       </div>
                       <div className="flex justify-between items-end text-[10px]">
@@ -176,7 +175,8 @@ const SalesTrackerWeeks = () => {
                           WE: {formatDate(week[week.length - 1].sale_date)}
                         </div>
                         <div className="text-content/60">
-                          ATS: {formatCurrency2(weekTotals.atsTotalSales)}
+                          ATS:{" "}
+                          {formatCurrency2(totalsWithMissing.atsTotalSales)}
                         </div>
                       </div>
                     </div>
@@ -206,9 +206,9 @@ const SalesTrackerWeeks = () => {
                         />
                       </div>
                       <div
-                        className={`absolute bottom-1 flex items-center justify-center text-[10px] font-bold ${changeTextColor(weekTotals.percentChange, 0)}`}
+                        className={`absolute bottom-1 flex items-center justify-center text-[10px] font-bold ${changeTextColor(totalsWithMissing.percentChange, 0)}`}
                       >
-                        {weekTotals.percentChange.toFixed(1)}%
+                        {totalsWithMissing.percentChange.toFixed(1)}%
                       </div>
                     </div>
 
@@ -228,7 +228,7 @@ const SalesTrackerWeeks = () => {
                             <div>TY Sales</div>
                           </div>
                           <div className="truncate font-medium">
-                            {formatCurrency2(weekTotals.tyTotalSales)}
+                            {formatCurrency2(totalsWithMissing.tyTotalSales)}
                           </div>
                         </div>
                         <div className="text-left min-w-0">
@@ -240,7 +240,7 @@ const SalesTrackerWeeks = () => {
                             <div>LY Sales</div>
                           </div>
                           <div className="truncate font-medium">
-                            {formatCurrency2(weekTotals.lyTotalSales)}
+                            {formatCurrency2(totalsWithMissing.lyTotalSales)}
                           </div>
                         </div>
                       </div>

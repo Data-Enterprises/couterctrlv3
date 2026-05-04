@@ -44,6 +44,7 @@ export const useMobileSalesCtx = () => {
     view,
     weeklySales,
     weeklySalesLastYear,
+    
   } = useAppSelector((state) => state.salesMobile);
   const { groups } = useAppSelector((state) => state.group);
   const { assignedStores } = useAppSelector((state) => state.user);

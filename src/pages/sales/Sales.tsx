@@ -364,7 +364,7 @@ const Sales = () => {
                     {queryCheck && !noPanelsFound && isLoading ? (
                       <LoadingIndicator message="Loading sales overview" />
                     ) : noPanelsFound ? (
-                      <NoPanelsFound />
+                      <NoPanelsFound dashboardOption={dashboardOption} />
                     ) : null}
                   </div>
                 )}

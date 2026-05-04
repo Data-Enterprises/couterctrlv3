@@ -49,7 +49,9 @@ const SalesTrackerPeriods = () => {
       );
     }, 0);
 
-    const atsTotalSales = tyTotalSales / totalTrans;
+    const atsTotalSales = !isNaN(tyTotalSales / totalTrans)
+      ? tyTotalSales / totalTrans
+      : 0;
 
     return {
       tyTotalSales,

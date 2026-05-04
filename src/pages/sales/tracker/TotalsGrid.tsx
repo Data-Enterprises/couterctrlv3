@@ -3,7 +3,6 @@ import { type WeekTotal } from "../../../features/salesSlice";
 import { useAppSelector } from "../../../hooks";
 import TotalsGridLvlOne from "./TotalsGridLvlOne";
 import { addDays } from "../../../utils";
-import { current } from "@reduxjs/toolkit";
 import { chunkData } from ".";
 
 const TotalsGrid = () => {
@@ -40,7 +39,7 @@ const TotalsGrid = () => {
       );
     }, 0);
 
-    const atsTotalSales = tyTotalSales / totalTrans;
+    const atsTotalSales = !isNaN(tyTotalSales / totalTrans) ? tyTotalSales / totalTrans : 0;
 
     return {
       tyTotalSales,
@@ -127,15 +126,6 @@ const TotalsGrid = () => {
 
             const storeName = filtered[0][0]?.storeName || "";
             const storeId = filtered[0][0]?.storeid || 0;
-
-            const totals = calcTotals(filtered);
-
-            const startDate = [...filtered].flat()[0].sale_date;
-            const endDate = [...filtered].flat()[filtered.length - 1].sale_date;
-
-            // console.log('start', startDate, 'end', endDate);
-            // console.log('start', new Date(startDate), 'end', new Date(endDate));
-
             const missingDates: WeekTotal[] = [];
             const flattened = [...filtered].flat();
 
@@ -174,8 +164,7 @@ const TotalsGrid = () => {
             );
 
             const totalsWithMissing = calcTotals([concatWithMissing]);
-
-            const filteredWithMissing = chunkData(concatWithMissing, 7);
+            const filteredWithMissing = chunkData(concatWithMissing);
 
             return (
               <TotalsGridLvlOne
