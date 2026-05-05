@@ -3,11 +3,11 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   resetUserInfo,
   setAvailableEmailDetails,
-  setAvailableUsernameDetails,
+  setRefresh,
   setUserInfo,
 } from "../../../features/usersSlice";
 import type { JsonError } from "../../../interfaces";
-import { checkEmail, checkUsername } from "../../../api/team";
+import { checkEmail, updateUser } from "../../../api/team";
 import { roles } from "..";
 
 import Input from "../../../components/inputs/Input";
@@ -25,6 +25,8 @@ const UpdateInputs = () => {
     emailTextColor,
     availableEmailText,
     userLevels,
+    users,
+    selectedUserId,
   } = useAppSelector((state) => state.users);
 
   const handleUsername = (x: string) => {
@@ -51,32 +53,23 @@ const UpdateInputs = () => {
   //   dispatch(setUserInfo({ key: "confirm_password", value: x }));
   // };
 
-  const handleUsernameValidation = () => {
-    if (userInfo.username.length === 0) return;
-    checkUsername(url, token, userInfo.username)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          dispatch(
-            setAvailableUsernameDetails({
-              availableUsernameText: "- Available",
-              usernameTextColor: "text-emerald-600",
-            }),
-          );
-        } else {
-          dispatch(
-            setAvailableUsernameDetails({
-              availableUsernameText: "- Not Available",
-              usernameTextColor: "text-red-600",
-            }),
-          );
-        }
-      })
-      .catch((err: JsonError) => toast.error(err.message));
-  };
-
   const handleEmailValidation = () => {
     if (userInfo.email.length === 0) return;
+
+    const findUser = users.find((u) => u.email === userInfo.email);
+    if (
+      findUser &&
+      findUser.id === selectedUserId &&
+      findUser.email === userInfo.email
+    ) {
+      dispatch(
+        setAvailableEmailDetails({
+          availableEmailText: "- No Change",
+          emailTextColor: "text-content",
+        }),
+      );
+      return;
+    }
     checkEmail(url, token, userInfo.email)
       .then((resp) => {
         const j = resp.data;
@@ -110,9 +103,16 @@ const UpdateInputs = () => {
     dispatch(resetUserInfo());
   };
 
-  const handleValidateEmailAndUsername = () => {
-    handleEmailValidation();
-    handleUsernameValidation();
+  const handleUpdateBasicInfo = () => {
+    updateUser(url, token, userInfo, 0, 0)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          toast.success("User updated successfully, refreshing user list...");
+          dispatch(setRefresh(true))
+        }
+      })
+      .catch((err: JsonError) => toast.error("Error Updating User: " + err.message));
   };
 
   return (
@@ -222,7 +222,7 @@ const UpdateInputs = () => {
         </button>
         <button
           className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-sm"
-          onClick={handleValidateEmailAndUsername}
+          onClick={handleUpdateBasicInfo}
         >
           Submit Changes
         </button>

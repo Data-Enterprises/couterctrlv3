@@ -114,6 +114,12 @@ export const baseGroupSlice = createSlice({
       state.bgIdsToAssign = [];
       state.bgIdsToUnassign = [];
     },
+    setActiveBaseGroups: (state, action: PayloadAction<BaseGroup[]>) => {
+      state.activeBaseGroups = action.payload;
+    },
+    setInactiveBaseGroups: (state, action: PayloadAction<BaseGroup[]>) => {
+      state.inactiveBaseGroups = action.payload;
+    },
     resetBaseGroupSlice: () => initialState,
   },
 });
@@ -134,5 +140,7 @@ export const {
   setBgIdsToUnassign,
   resetBgIds,
   resetBaseGroupSlice,
+  setActiveBaseGroups,
+  setInactiveBaseGroups,
 } = baseGroupSlice.actions;
 export default baseGroupSlice.reducer;
