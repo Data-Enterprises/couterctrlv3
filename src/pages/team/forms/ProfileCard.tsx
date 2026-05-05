@@ -5,7 +5,7 @@ import { roles } from "..";
 import { setUserFilterText } from "../../../features/usersSlice";
 import { getBGAssignedToUserSplit } from "../../../api/baseGroups";
 
-import SearchUser from "./SearchUser";
+// import SearchUser from "./SearchUser";
 import { UserCircleIcon } from "@heroicons/react/24/solid";
 import { setAllSelectedBaseGroups } from "../../../features/baseGroupSlice";
 import type { JsonError } from "../../../interfaces";
@@ -94,10 +94,10 @@ const ProfileCard = () => {
   return (
     <div className={`w-full select-none`}>
       <div
-        className={`bg-[rgb(30,45,80)] text-custom-white rounded-lg shadow-lg p-2 text-[12.5px] flex gap-2 mb-4`}
+        className={`bg-[rgb(30,45,80)] text-custom-white rounded-lg shadow-lg p-2 text-[12.5px] grid grid-cols-[17%_auto] items-center mb-4`}
       >
         <UserCircleIcon className="" height={125} width={125} fill="white" />
-        <div className="">
+        <div className="w-full">
           <div className="flex gap-1">
             <div className="font-medium">Name:</div>
             <div>
@@ -112,13 +112,13 @@ const ProfileCard = () => {
             <div className="font-medium">Username:</div>
             <div>{userInfo.username}</div>
           </div>
-          <div className="flex gap-1">
+          <div className="grid grid-cols-[10.5%_auto]">
             <div className="font-medium">Company:</div>
-            <div>{showCompanies()}</div>
+            <div className="text-nowrap truncate">{showCompanies()}</div>
           </div>
-          <div className="flex gap-1">
+          <div className="grid grid-cols-[13%_auto]">
             <div className="font-medium">Base Groups:</div>
-            <div>{showBaseGroups()}</div>
+            <div className="text-nowrap truncate">{showBaseGroups()}</div>
           </div>
           <div className="flex gap-1">
             <div className="font-medium">Role:</div>
@@ -130,9 +130,9 @@ const ProfileCard = () => {
           </div>
         </div>
       </div>
-      {selectedUserForm !== "create" && selectedUserForm !== "user_info" ? (
+      {/* {selectedUserForm !== "create" && selectedUserForm !== "user_info" ? (
         <SearchUser />
-      ) : null}
+      ) : null} */}
     </div>
   );
 };

@@ -19,7 +19,7 @@ import type { JsonError, User, UserLevelJsonResp } from "../../interfaces";
 import { getUserLevels } from "../../api/team";
 import { getAllUsers } from "../../api/user";
 
-import UserControls from "./forms/UserControls";
+import UserControls from "./users/UserControls";
 import MainForms from "./forms/MainForms";
 import StoreControls from "./stores/StoreControls";
 import BaseGroupControls from "./baseGroups/BaseGroupControls";

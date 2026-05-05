@@ -7,81 +7,27 @@ import {
   setSelectedUserId,
   setSelectedUserInfo,
   setUsers,
-  // setSelectedUserInfo,
-  // setAssignBaseGroups,
-  // setSelectedUserId,
-  // setSelectedUserStores,
 } from "../../features/usersSlice";
-// import { getBaseGroupsAssignedToUser } from "../../api/team";
 
 // For the table
-import { AgGridReact } from "ag-grid-react";
-import { theme } from ".";
-import {
-  AllCommunityModule,
-  ModuleRegistry,
-  type ColDef,
-  type ColGroupDef,
-  type RowClickedEvent,
-  // type RowClickedEvent,
-} from "ag-grid-community";
-// import { setSelectedQsUserEmail, setValidUser } from "../../features/qsSlice";
-import Input from "../../components/inputs/Input";
-ModuleRegistry.registerModules([AllCommunityModule]);
+import SearchUser from "./forms/SearchUser";
+import { roles } from ".";
 
 const UserGrid = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const { users, refresh, selectedCompanyId, userLevels } = useAppSelector(
-    (state) => state.users,
-  );
+  const {
+    users,
+    refresh,
+    selectedCompanyId,
+    userLevels,
+    userFilterType,
+    userFilterText,
+  } = useAppSelector((state) => state.users);
   const { companies } = useAppSelector((state) => state.user);
-  // const qs = useAppSelector((state) => state.quicksight);
-  const [text, setText] = useState<string>("");
+  // const [text, setText] = useState<string>("");
   const [filtered, setFiltered] = useState<User[]>([]);
-  const [filterType, setFilterType] = useState<"name" | "email">("name");
-
-  const colDefs: (ColDef<User> | ColGroupDef<User>)[] = [
-    {
-      headerName: "Name",
-      field: "username",
-      flex: 0.5,
-      resizable: false,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
-    },
-    {
-      headerName: "Last Visit",
-      field: "last_visit",
-      flex: 0.5,
-      resizable: false,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
-    },
-    {
-      headerName: "Email",
-      field: "email",
-      flex: 1,
-      resizable: false,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
-    },
-    {
-      headerName: "Level",
-      field: "user_level",
-      flex: 0.72,
-      resizable: false,
-      // headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
-      valueFormatter: (params) => {
-        const found = userLevels.find(
-          (ul) => ul.id === params.data?.user_level,
-        );
-        return found ? found.name : "";
-      },
-    },
-  ];
 
   useEffect(() => {
     if (refresh) {
@@ -89,14 +35,30 @@ const UserGrid = () => {
     }
   }, [refresh]);
 
+  const renderRoleText = (role: number | null) => {
+    const roleName = roles.find((r) => r.value == role);
+    if (roleName) {
+      return roleName.label;
+    }
+    return "";
+  };
+
+  const renderLvlText = (lvl: number) => {
+    const lvlInfo = userLevels.find((l) => l.id === lvl);
+    if (lvlInfo) {
+      return lvlInfo.name;
+    }
+    return "N/A";
+  };
+
   // Filter the table by searching for the username
   useEffect(() => {
-    if (text.trim() === "" && !selectedCompanyId) {
+    if (userFilterText.trim() === "" && !selectedCompanyId) {
       setFiltered(users);
     } else {
       // one or the othe or both
-      const lowerText = text.toLowerCase();
-      const isUsername = filterType === "name";
+      const lowerText = userFilterText.toLowerCase();
+      const isUsername = userFilterType === "name";
 
       const filteredUsers = users.filter((user) => {
         if (!isUsername && user.email !== null) {
@@ -108,7 +70,7 @@ const UserGrid = () => {
       });
       setFiltered(filteredUsers);
     }
-  }, [text, filterType]);
+  }, [userFilterText, userFilterType]);
 
   const getData = () => {
     getAllUsers(context.url, context.token)
@@ -154,70 +116,26 @@ const UserGrid = () => {
       });
   };
 
-  const handleRowClick = (e: RowClickedEvent) => {
-    dispatch(setSelectedUserInfo(e.data));
-    dispatch(setSelectedUserId(e.data.id));
-
-    // Validating if the selected user is a registered QuickSight user
-    // if (qs.qsUsers.includes(e.data.email)) {
-    //   dispatch(setSelectedQsUserEmail(e.data.email));
-    //   dispatch(setValidUser(true));
-    // } else {
-    //   dispatch(setSelectedQsUserEmail(""));
-    //   dispatch(setValidUser(false));
-    // }
-
-    // const filterNulls = (arr: Store[]) => {
-    //   return arr.filter((store) => store.store_name !== null);
-    // };
-
-    // getUserStores(context.url, context.token, selectedUserId)
-    //   .then((resp) => {
-    //     const j = resp.data;
-    //     if (j.error === 0) {
-    //       const stores = {
-    //         assigned: filterNulls(j.assigned_stores),
-    //         unassigned: filterNulls(j.unassigned_stores),
-    //       };
-    //       dispatch(setSelectedUserStores(stores));
-    //     }
-    //   })
-    //   .catch((err: JsonError) => {
-    //     toast.error("Error fetching available stores " + err.message);
-    //   });
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) {
+      return "N/A";
+    }
+    const split = dateStr.split("-");
+    return `${split[1]}/${split[2]}/${split[0]}`;
   };
 
-  const handleFilterTextChange = (x: string) => {
-    setText(x);
+  const handleViewInfoClick = (u: User) => {
+    dispatch(setSelectedUserId(u.id));
+    dispatch(setSelectedUserInfo(u));
   };
 
   return (
     <div
       data-testid="user-grid-container"
-      className="w-full h-full no-scrollbar"
+      className="w-full h-full no-scrollbar space-y-2"
     >
-      <div className="mb-4 flex items-end gap-2">
-        <div className="w-full">
-          <div className="grid grid-cols-2 mb-1.5 shadow-md">
-            <button
-              data-testid="name-filter-btn"
-              className={`${filterType === "name" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200 font-medium text-center rounded-l-lg py-1.5`}
-              onClick={() => setFilterType("name")}
-            >
-              Username
-            </button>
-            <button
-              data-testid="email-filter-btn"
-              className={`${filterType === "email" ? "bg-orange-200" : "bg-custom-white"}  font-medium text-center rounded-r-lg py-1.5`}
-              onClick={() => setFilterType("email")}
-            >
-              Email
-            </button>
-          </div>
-          <Input label="" value={text} setValue={handleFilterTextChange} />
-        </div>
-      </div>
-      <div className="h-[78%]">
+      <SearchUser />
+      {/* <div className="h-[78%]">
         <AgGridReact
           className="no-scrollbar"
           rowData={filtered}
@@ -229,6 +147,43 @@ const UserGrid = () => {
           onRowClicked={handleRowClick}
           rowSelection={"single"}
         />
+      </div> */}
+
+      <div className="text-[12.5px] bg-custom-white rounded-lg shadow-lg py-2">
+        <div className="grid grid-cols-[16%_11%_33%_15%_15%_10%] px-2">
+          <div className="font-medium">Username</div>
+          <div className="font-medium">Last Visit</div>
+          <div className="font-medium">Email</div>
+          <div className="font-medium">User Level</div>
+          <div className="font-medium">User Role</div>
+          <div className="font-medium">Update</div>
+        </div>
+        <div className="grid grid-cols-2 h-[1.5px] px-2 my-1">
+          <div className="bg-gradient-to-r from-[rgb(30,45,80)] to-custom-white"></div>
+          <div className="bg-gradient-to-l from-[rgb(30,45,80)] to-custom-white"></div>
+        </div>
+        <div className="max-h-[calc(100vh-20.5rem)] grid gap-1 overflow-y-auto no-scrollbar">
+          {filtered.map((u, i) => {
+            return (
+              <div
+                key={i}
+                className="grid grid-cols-[16%_11%_33%_15%_15%_10%] px-2"
+              >
+                <div className="select-none">{u.username}</div>
+                <div className="select-none">{formatDate(u.last_visit)}</div>
+                <div className="select-none">{u.email}</div>
+                <div className="select-none">{renderLvlText(u.user_level)}</div>
+                <div className="select-none">{renderRoleText(u.role)}</div>
+                <div
+                  className="bg-[rgb(30,45,80)] text-custom-white text-center py-0.5 rounded-full cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:shadow-md"
+                  onClick={() => handleViewInfoClick(u)}
+                >
+                  View Info
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

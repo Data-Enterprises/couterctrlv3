@@ -53,7 +53,7 @@ const UserForms = () => {
         className={`${selectedUserForm === "delete" ? "bg-orange-200" : ""} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
         onClick={() => handleReset("delete")}
       >
-        Delete
+        Delete User
       </div>
       {/* <div
         data-testid="user-form-update-pw"

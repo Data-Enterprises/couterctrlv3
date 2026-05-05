@@ -7,7 +7,7 @@ import {
 
 import { WarningIcon } from "../../../components/toasts/Icons";
 import UserForm from "./UserForm";
-import ProfileCard from "./ProfileCard";
+import ProfileCard from "../forms/ProfileCard";
 
 const UserControls = () => {
   const dispatch = useAppDispatch();

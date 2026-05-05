@@ -12,12 +12,12 @@ import {
 import type { CompanyBaseGroup, JsonError } from "../../../interfaces";
 
 // Components/Icons
-import DeleteUserForm from "./DeleteUserForm";
-import UpdatePasswordForm from "./UpdatePasswordForm";
-import UserInfo from "./UserInfo";
-import ResetSecurityForm from "./ResetSecurity";
-import UserInputs from "../users/UserInputs";
-import UserCompanyBG from "../users/UserCompanyBG";
+import DeleteUserForm from "../forms/DeleteUserForm";
+import UpdatePasswordForm from "../forms/UpdatePasswordForm";
+import UserInfo from "../forms/UserInfo";
+import ResetSecurityForm from "../forms/ResetSecurity";
+import UserInputs from "./UserInputs";
+import UserCompanyBG from "./UserCompanyBG";
 import { getBaseGroups } from "../../../api/baseGroups";
 
 const UserForm = () => {

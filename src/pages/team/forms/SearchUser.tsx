@@ -6,6 +6,7 @@ import {
   setSelectedUserId,
   setSelectedUserInfo,
   setUserFilterText,
+  setUserFilterType,
 } from "../../../features/usersSlice";
 
 const SearchUser = () => {
@@ -19,10 +20,9 @@ const SearchUser = () => {
     users,
     selectedUserId,
     selectedUserForm,
+    userFilterType,
   } = useAppSelector((state) => state.users);
   const [username, setUsername] = useState<string>("");
-
-  const [filterType, setFilterType] = useState<"name" | "email">("name");
   const [filtered, setFiltered] = useState<User[]>([]);
 
   useEffect(() => {
@@ -58,7 +58,7 @@ const SearchUser = () => {
     } else {
       // one or the othe or both
       const lowerText = userFilterText.toLowerCase();
-      const isUsername = filterType === "name";
+      const isUsername = userFilterType === "name";
 
       const filteredUsers = users.filter((user) => {
         if (!isUsername && user.email !== null) {
@@ -70,7 +70,7 @@ const SearchUser = () => {
       });
       setFiltered(filteredUsers);
     }
-  }, [userFilterText, filterType]);
+  }, [userFilterText, userFilterType]);
 
   const handleFilterTextChange = (x: string) => {
     if (username) {
@@ -117,50 +117,55 @@ const SearchUser = () => {
   };
 
   return (
-    <div className="relative">
-      <div className="grid grid-cols-2 mb-1.5 shadow-md rounded-lg">
+    <div className="relative grid grid-cols-[55%_44%] gap-2 items-end text-[13px] -mt-2">
+      <div className={`w-full relative`}>
+        <div className={`w-full`}>
+          <label className="font-medium pl-0.5">
+            Search {userFilterType === "name" ? "Username" : "Email"} - {filtered.length}
+          </label>
+          <input
+            ref={inputRef}
+            data-testid="search-user-input"
+            value={username ? username : userFilterText}
+            onChange={(e) => handleFilterTextChange(e.currentTarget.value)}
+            className={`basic-input focus:border w-full bg-custom-white py-1.5 text-sm`}
+            onClick={handleInputRefClick}
+            onKeyDown={handleBackSpace}
+          />
+        </div>
+        <div
+          ref={listRef}
+          data-display="closed"
+          className={`data-[display=open]:absolute data-[display=closed]:hidden bg-custom-white w-full max-h-40 overflow-hidden overflow-y-scroll no-scrollbar rounded-lg shadow-lg`}
+          style={{ zIndex: 9999 }}
+        >
+          {filtered.map((u, i) => (
+            <div
+              key={i}
+              data-testid={`search-user-${i}`}
+              className="px-2 py-0.5 hover:bg-blue-200 cursor-pointer transition-all duration-200"
+              onClick={() => handleUserClick(u)}
+            >
+              {u.username}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="flex gap-2">
         <button
           data-testid="username-filter-btn"
-          className={`${filterType === "name" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200 font-medium text-center rounded-l-lg py-1.5`}
-          onClick={() => setFilterType("name")}
+          className={`w-1/2 ${userFilterType === "name" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200 font-medium text-center rounded-full shadow-md py-2`}
+          onClick={() => dispatch(setUserFilterType("name"))}
         >
           Username
         </button>
         <button
           data-testid="email-filter-btn"
-          className={`${filterType === "email" ? "bg-orange-200" : "bg-custom-white"}  font-medium text-center rounded-r-lg py-1.5`}
-          onClick={() => setFilterType("email")}
+          className={`w-1/2 ${userFilterType === "email" ? "bg-orange-200" : "bg-custom-white"}  font-medium text-center rounded-full shadow-md py-2`}
+          onClick={() => dispatch(setUserFilterType("email"))}
         >
           Email
         </button>
-      </div>
-      <div className={`w-full`}>
-        <input
-          ref={inputRef}
-          data-testid="search-user-input"
-          value={username ? username : userFilterText}
-          onChange={(e) => handleFilterTextChange(e.currentTarget.value)}
-          className={`basic-input focus:border w-full bg-custom-white`}
-          onClick={handleInputRefClick}
-          onKeyDown={handleBackSpace}
-        />
-      </div>
-      <div
-        ref={listRef}
-        data-display="closed"
-        className={`data-[display=open]:absolute data-[display=closed]:hidden bg-custom-white w-full max-h-40 overflow-hidden overflow-y-scroll no-scrollbar rounded-lg shadow-lg`}
-        style={{ zIndex: 9999 }}
-      >
-        {filtered.map((u, i) => (
-          <div
-            key={i}
-            data-testid={`search-user-${i}`}
-            className="px-2 py-0.5 hover:bg-blue-200 cursor-pointer transition-all duration-200"
-            onClick={() => handleUserClick(u)}
-          >
-            {u.username}
-          </div>
-        ))}
       </div>
     </div>
   );
