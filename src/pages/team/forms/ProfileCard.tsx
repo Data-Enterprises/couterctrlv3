@@ -13,7 +13,7 @@ import type { JsonError } from "../../../interfaces";
 const ProfileCard = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const { url, token, isDesktop } = useAppSelector((state) => state.app);
+  const { url, token } = useAppSelector((state) => state.app);
   const { companies } = useAppSelector((state) => state.user);
   const {
     userInfo,
@@ -92,13 +92,11 @@ const ProfileCard = () => {
   };
 
   return (
-    <div className={`w-full select-none ${!isDesktop && "mt-4"}`}>
+    <div className={`w-full select-none`}>
       <div
         className={`bg-[rgb(30,45,80)] text-custom-white rounded-lg shadow-lg p-2 text-[12.5px] flex gap-2 mb-4`}
       >
-        {isDesktop && (
-          <UserCircleIcon className="" height={125} width={125} fill="white" />
-        )}
+        <UserCircleIcon className="" height={125} width={125} fill="white" />
         <div className="">
           <div className="flex gap-1">
             <div className="font-medium">Name:</div>
