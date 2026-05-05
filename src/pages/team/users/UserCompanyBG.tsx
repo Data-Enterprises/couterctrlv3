@@ -2,6 +2,7 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getBaseGroups } from "../../../api/baseGroups";
 import {
+  setAllSelectedBaseGroups,
   setBaseGroups,
   setCompany,
   setSelectedBaseGroups,
@@ -14,7 +15,7 @@ const UserCompanyBG = () => {
   const { companies } = useAppSelector((state) => state.user);
   const { url, token } = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
-  const { userCompanyIds } = useAppSelector((state) => state.users);
+  const { userCompanyIds, userInfo } = useAppSelector((state) => state.users);
   const { baseGroups, selectedBaseGroups, company } = useAppSelector(
     (state) => state.baseGroup,
   );
@@ -46,6 +47,33 @@ const UserCompanyBG = () => {
     dispatch(setSelectedBaseGroups(filtered[0]));
   };
 
+  const canSubmit = () => {
+    if (
+      userInfo.confirm_password !== userInfo.password ||
+      userInfo.password.length === 0 ||
+      userInfo.username.length === 0 ||
+      userInfo.email.length === 0 ||
+      userInfo.first_name.length === 0 ||
+      userInfo.last_name.length === 0 ||
+      userInfo.role < 1 ||
+      userInfo.user_level < 1
+    ) {
+      return false;
+    }
+    return true;
+  };
+
+  const handleClearAllCompaniesAndBG = () => {
+    dispatch(setAllSelectedBaseGroups([]));
+  };
+
+  const handleClearBGForSelectedCompany = () => {
+    if (!company) return;
+
+    const filtered = [...selectedBaseGroups].filter((bg) => bg.company !== company.id);
+    dispatch(setAllSelectedBaseGroups(filtered));
+  };
+
   return (
     <div className="text-[13.5px]">
       {/* Headers */}
@@ -69,7 +97,7 @@ const UserCompanyBG = () => {
         ))}
       </div>
       {/* Base Groups */}
-      <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[35vh] overflow-y-auto text-[11.5px] leading-tight">
+      <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[50vh] overflow-y-auto text-[11.5px] leading-tight">
         {baseGroups.map((bg) => {
           const company = user.companies.find((c) => c.company === bg.company);
 
@@ -92,6 +120,27 @@ const UserCompanyBG = () => {
             </div>
           );
         })}
+      </div>
+      <div className="grid grid-cols-3 gap-4 mt-4">
+        <button
+          className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-sm"
+          onClick={handleClearAllCompaniesAndBG}
+        >
+          Clear All
+        </button>
+        <button
+          className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-sm"
+          onClick={handleClearBGForSelectedCompany}
+        >
+          Clear Base Groups
+        </button>
+        <button
+          className={`btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-sm 
+            ${!canSubmit() ? "opacity-50 pointer-events-none" : ""}`}
+          // onClick={handleValidateEmailAndUsername}
+        >
+          Submit
+        </button>
       </div>
     </div>
   );

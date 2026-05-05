@@ -12,7 +12,7 @@ import {
 import type { CompanyBaseGroup, JsonError } from "../../../interfaces";
 
 // Components/Icons
-import { InfoIcon } from "../../../components/toasts/Icons";
+// import { InfoIcon } from "../../../components/toasts/Icons";
 // import UserFormButtons from "./UserFormButtons";
 import DeleteUserForm from "./DeleteUserForm";
 import UpdatePasswordForm from "./UpdatePasswordForm";
@@ -80,8 +80,8 @@ const UserForm = () => {
 
   // Otherwise, we're either creating a new user or updating an existing one
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg mt-4 p-2 space-y-2 relative">
-      <div className="flex gap-2 text-[12px] items-center">
+    <div className="bg-custom-white rounded-lg shadow-lg mt-4 p-2 relative">
+      <div className="flex gap-2 text-[12px] items-center select-none absolute top-2 right-2">
         <div
           className={`
             ${createStep === 1 ? "bg-[rgb(30,45,80)] text-custom-white" : "text-content bg-content/10"} 
@@ -99,12 +99,12 @@ const UserForm = () => {
           Company/Base Groups
         </div>
       </div>
-      <div className="flex items-center gap-1 select-none absolute top-0 right-2">
+      {/* <div className="flex items-center gap-1 select-none absolute top-0 right-2">
         <InfoIcon fill="rgb(30,45,80)" width={15} height={15} />
         <div className="text-[11px] font-medium text-content/70">
           Ensure all fields are valid before submitting
         </div>
-      </div>
+      </div> */}
 
       {/* The inner forms */}
       {createStep === 1 && <UserInputs />}

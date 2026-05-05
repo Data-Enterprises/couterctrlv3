@@ -116,7 +116,18 @@ const UserInputs = () => {
   };
 
   return (
-    <div>
+    <div className="text-[13.5px]">
+      <div className="leading-tight mb-2">
+        <div className="flex gap-1 items-center">
+          <div className="font-medium">Basic Information</div>
+          <div className="text-content/75 text-[11px]">
+            | All fields required
+          </div>
+        </div>
+        <div className="text-content/60 text-[12.5px]">
+          Please ensure username and email are validated
+        </div>
+      </div>
       {/* User Roles */}
       <div className="text-xs font-medium leading-tight pl-0.5 mb-0.5">
         User Role (select one)
@@ -210,7 +221,7 @@ const UserInputs = () => {
           />
         )}
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 mt-4">
         <button
           className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-sm"
           onClick={handleClear}
