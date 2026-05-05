@@ -7,7 +7,14 @@ import {
   setCompany,
   setSelectedBaseGroups,
 } from "../../../features/baseGroupSlice";
-import type { CompanyBaseGroup, JsonError } from "../../../interfaces";
+import type { CompanyBaseGroup, JsonError, Store } from "../../../interfaces";
+import {
+  assignBaseGroupToUser,
+  checkUsername,
+  createUser,
+} from "../../../api/team";
+import { setRefresh, setSelectedUserId, setSelectedUserStores } from "../../../features/usersSlice";
+import { assignUserToCompany, getUserStores } from "../../../api/user";
 
 const UserCompanyBG = () => {
   const toast = useToast();
@@ -70,8 +77,87 @@ const UserCompanyBG = () => {
   const handleClearBGForSelectedCompany = () => {
     if (!company) return;
 
-    const filtered = [...selectedBaseGroups].filter((bg) => bg.company !== company.id);
+    const filtered = [...selectedBaseGroups].filter(
+      (bg) => bg.company !== company.id,
+    );
     dispatch(setAllSelectedBaseGroups(filtered));
+  };
+
+  const getStores = (userid: number) => {
+    const filterNulls = (arr: Store[]) => {
+      return arr.filter((store) => store.store_name !== null);
+    };
+    getUserStores(url, token, userid)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          const stores = {
+            assigned: filterNulls(j.assigned_stores).sort(
+              (a: Store, b: Store) =>
+                parseInt(a.store_number) - parseInt(b.store_number),
+            ),
+            unassigned: filterNulls(j.unassigned_stores).sort(
+              (a: Store, b: Store) =>
+                parseInt(a.store_number) - parseInt(b.store_number),
+            ),
+          };
+          dispatch(setSelectedUserStores(stores));
+          dispatch(setRefresh(true));
+          toast.success(
+            "User updated, you can add or remove stores for the user",
+          );
+        }
+      })
+      .catch((err: JsonError) => {
+        toast.error("Error fetching available stores " + err.message);
+      });
+  };
+
+  const handleSubmit = () => {
+    checkUsername(url, token, userInfo.username)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          createUser(url, token, userInfo)
+            .then((resp) => {
+              const j = resp.data;
+              if (j.error === 0) {
+                const userid = j.new_userid;
+                dispatch(setSelectedUserId(userid));
+                assignUserToCompany(url, token, userid, userCompanyIds)
+                  .then((resp) => {
+                    const j = resp.data;
+                    if (j.error === 0) {
+                      const groupid = [...selectedBaseGroups].map(
+                        (bg) => bg.id,
+                      );
+                      assignBaseGroupToUser(url, token, userid, groupid)
+                        .then((resp) => {
+                          const j = resp.data;
+                          if (j.error === 0) {
+                            getStores(userid);
+                          }
+                        })
+                        .catch((err: JsonError) => toast.error(err.message));
+                    }
+                  })
+                  .catch((err: JsonError) => toast.error(err.message));
+              }
+            })
+            .catch((err: JsonError) => {
+              toast.error("Error creating user " + err.message);
+            });
+        } else {
+          toast.warn(
+            `Error with username check: ${userInfo.username}, ${j.msg}`,
+          );
+        }
+      })
+      .catch((err: JsonError) =>
+        toast.error(
+          `Error with username check: ${userInfo.username}, ${err.message}`,
+        ),
+      );
   };
 
   return (
@@ -137,7 +223,7 @@ const UserCompanyBG = () => {
         <button
           className={`btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-sm 
             ${!canSubmit() ? "opacity-50 pointer-events-none" : ""}`}
-          // onClick={handleValidateEmailAndUsername}
+          onClick={handleSubmit}
         >
           Submit
         </button>

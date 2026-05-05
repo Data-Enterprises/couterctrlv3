@@ -12,8 +12,6 @@ import {
 import type { CompanyBaseGroup, JsonError } from "../../../interfaces";
 
 // Components/Icons
-// import { InfoIcon } from "../../../components/toasts/Icons";
-// import UserFormButtons from "./UserFormButtons";
 import DeleteUserForm from "./DeleteUserForm";
 import UpdatePasswordForm from "./UpdatePasswordForm";
 import UserInfo from "./UserInfo";
@@ -74,10 +72,6 @@ const UserForm = () => {
   if (selectedUserForm === "user_info") return <UserInfo />;
   if (selectedUserForm === "reset_security") return <ResetSecurityForm />;
 
-  // const handleClear = () => {
-  //   dispatch(resetUserInfo());
-  // };
-
   // Otherwise, we're either creating a new user or updating an existing one
   return (
     <div className="bg-custom-white rounded-lg shadow-lg mt-4 p-2 relative">
@@ -99,12 +93,6 @@ const UserForm = () => {
           Company/Base Groups
         </div>
       </div>
-      {/* <div className="flex items-center gap-1 select-none absolute top-0 right-2">
-        <InfoIcon fill="rgb(30,45,80)" width={15} height={15} />
-        <div className="text-[11px] font-medium text-content/70">
-          Ensure all fields are valid before submitting
-        </div>
-      </div> */}
 
       {/* The inner forms */}
       {createStep === 1 && <UserInputs />}
