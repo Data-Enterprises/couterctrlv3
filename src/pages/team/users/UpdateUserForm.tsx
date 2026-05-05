@@ -3,7 +3,7 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 
 import UpdateInputs from "./UpdateInputs";
-import UpdateCompanyBG from "./UpdateUserCompany";
+import UpdateUserCompany from "./UpdateUserCompany";
 import { getBaseGroups } from "../../../api/baseGroups";
 import {
   setActiveBaseGroups,
@@ -97,7 +97,7 @@ const UpdateUserForm = () => {
         </div>
       </div>
       {updateStep === 1 && <UpdateInputs />}
-      {updateStep === 2 && <UpdateCompanyBG />}
+      {updateStep === 2 && <UpdateUserCompany />}
       {updateStep === 3 && <UpdateUserBG />}
       {updateStep === 4 && <UpdateUserStores />}
     </div>

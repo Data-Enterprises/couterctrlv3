@@ -83,7 +83,7 @@ const Assigned = () => {
           value={filterText}
           onChange={handleChange}
         />
-        <div className="max-h-[calc(100vh-14rem)] overflow-y-auto no-scrollbar space-y-2 mt-4">
+        <div className="max-h-[calc(100vh-17.5rem)] overflow-y-auto no-scrollbar space-y-1 mt-2">
           {hasLength()
             ? stores.map((store) => (
                 <div

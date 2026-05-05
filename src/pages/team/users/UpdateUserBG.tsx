@@ -30,7 +30,9 @@ const UpdateUserBG = () => {
     userCompany,
   } = useAppSelector((state) => state.baseGroup);
   const { url, token } = useAppSelector((state) => state.app);
-  const { selectedUserId, users } = useAppSelector((state) => state.users);
+  const { selectedUserId, users, userInfo } = useAppSelector(
+    (state) => state.users,
+  );
 
   const companyBG = (id: number) => {
     if (userCompany && userCompany.company === id) {
@@ -133,6 +135,7 @@ const UpdateUserBG = () => {
 
   return (
     <div>
+      <div className="text-[12px] font-medium">{userInfo.username}'s Companies</div>
       <div className="flex flex-wrap gap-1.5 text-[11.5px] leading-tight mb-1">
         {selectedUserCompanies.map((c) => (
           <div
@@ -145,8 +148,9 @@ const UpdateUserBG = () => {
         ))}
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <div>
-          <div className="space-y-1.5 max-h-[60vh] overflow-y-auto text-[11.5px] leading-tight">
+        <div className="relative h-[68vh]">
+          <div className="font-medium text-[13px] p-0.5">Unassigned</div>
+          <div className="space-y-1.5 pb-2 max-h-[60vh] overflow-y-auto no-scrollbar text-[11.5px] leading-tight">
             {filtered(inactiveBaseGroups, "").map((bg) => {
               return (
                 <div
@@ -168,7 +172,7 @@ const UpdateUserBG = () => {
               );
             })}
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2 absolute w-full bottom-0">
             <button
               className={`${bgIdsToAssign.length === 0 ? "opacity-50 cursor-not-allowed" : ""} btn-themeBlue text-[13px] bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5`}
               onClick={handleAssignClick}
@@ -184,8 +188,9 @@ const UpdateUserBG = () => {
           </div>
         </div>
 
-        <div>
-          <div className="space-y-1.5 max-h-[60vh] overflow-y-auto text-[11.5px] leading-tight">
+        <div className="relative h-[68vh]">
+          <div className="font-medium text-[13px] p-0.5">Assigned</div>
+          <div className="space-y-1.5 pb-2 max-h-[60vh] overflow-y-auto no-scrollbar text-[11.5px] leading-tight">
             {filtered(activeBaseGroups, "").map((bg) => {
               return (
                 <div
@@ -207,7 +212,7 @@ const UpdateUserBG = () => {
               );
             })}
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2 absolute w-full bottom-0">
             <button
               className={`${bgIdsToUnassign.length === 0 ? "opacity-50 cursor-not-allowed" : ""} btn-themeBlue text-[13px] bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5`}
               onClick={handleUnassignClick}

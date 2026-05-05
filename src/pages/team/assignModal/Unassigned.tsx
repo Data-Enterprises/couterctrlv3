@@ -90,7 +90,7 @@ const Unassigned = () => {
           value={filterText}
           onChange={handleChange}
         />
-        <div className="max-h-[calc(100vh-14rem)] overflow-y-auto no-scrollbar space-y-2 mt-4">
+        <div className="max-h-[calc(100vh-17.5rem)] overflow-y-auto no-scrollbar space-y-1 mt-2">
           {hasLength()
             ? stores.map((store) => (
                 <div
@@ -110,7 +110,7 @@ const Unassigned = () => {
               ))
             : null}
         </div>
-        <div className="flex justify-between gap-2 ">
+        <div className="flex justify-between gap-2 mt-2">
           <button
             data-testid="ctrl-assign-stores-btn"
             className="btn-themeGreen w-1/2 px-0 py-1 text-[13px]"
