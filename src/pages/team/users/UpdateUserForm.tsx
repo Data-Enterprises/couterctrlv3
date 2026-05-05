@@ -63,6 +63,14 @@ const UpdateUserForm = () => {
         >
           Stores
         </div>
+        <div
+          className={`
+            ${updateStep === 4 ? "bg-[rgb(30,45,80)] text-custom-white" : "text-content bg-content/10"} 
+            px-4 rounded-full py-0.5 cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white`}
+          onClick={() => setUpdateStep(4)}
+        >
+          Password/Security
+        </div>
       </div>
       {updateStep === 1 && <UpdateInputs />}
       {updateStep === 2 && <UpdateCompanyBG />}

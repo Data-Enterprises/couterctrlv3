@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 
-import { setUserCompanyIds } from "../../../features/usersSlice";
+import {
+  setSelectedUserStores,
+  setUserCompanyIds,
+} from "../../../features/usersSlice";
 import {
   resetSelectedBaseGroups,
+  setAllSelectedBaseGroups,
   setBaseGroups,
   setCompany,
 } from "../../../features/baseGroupSlice";
@@ -12,20 +16,20 @@ import {
 import type { CompanyBaseGroup, JsonError } from "../../../interfaces";
 
 // Components/Icons
-import DeleteUserForm from "../forms/DeleteUserForm";
 import UpdatePasswordForm from "../forms/UpdatePasswordForm";
-import UserInfo from "../forms/UserInfo";
 import ResetSecurityForm from "../forms/ResetSecurity";
 import UserInputs from "./UserInputs";
 import UserCompanyBG from "./UserCompanyBG";
 import { getBaseGroups } from "../../../api/baseGroups";
+import UserGrid from "../UserGrid";
+import DeleteUserGrid from "./DeleteUserGrid";
 
 const UserForm = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const [createStep, setCreateStep] = useState<number>(1);
   const { url, token } = useAppSelector((state) => state.app);
-  const { selectedUserForm, selectedUserId, isDeletingUser } = useAppSelector(
+  const { selectedUserForm, selectedUserId } = useAppSelector(
     (state) => state.users,
   );
   const { selectedBaseGroups } = useAppSelector((state) => state.baseGroup);
@@ -63,13 +67,17 @@ const UserForm = () => {
   useEffect(() => {
     if (selectedUserId === 0) {
       dispatch(resetSelectedBaseGroups());
+      dispatch(setUserCompanyIds([]));
+      dispatch(setCompany(null));
+      dispatch(setAllSelectedBaseGroups([]));
+      dispatch(setSelectedUserStores({ assigned: [], unassigned: [] }));
     }
   }, [selectedUserId]);
 
   // if deleting a user or setting a temp password, check these components
-  if (isDeletingUser) return <DeleteUserForm />;
+  if (selectedUserForm === "delete") return <DeleteUserGrid />;
   if (selectedUserForm === "update_password") return <UpdatePasswordForm />;
-  if (selectedUserForm === "user_info") return <UserInfo />;
+  if (selectedUserForm === "user_info") return <UserGrid />;
   if (selectedUserForm === "reset_security") return <ResetSecurityForm />;
 
   // Otherwise, we're either creating a new user or updating an existing one

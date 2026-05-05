@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
-import { getAllUsers } from "../../api/user";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import { useToast } from "../../components/toasts/hooks/useToast";
-import type { JsonError, User } from "../../interfaces";
+import { getAllUsers } from "../../../api/user";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+import type { JsonError, User } from "../../../interfaces";
 import {
+  setIsDeletingUser,
   setSelectedUserId,
   setSelectedUserInfo,
   setUsers,
-} from "../../features/usersSlice";
+} from "../../../features/usersSlice";
 
 // For the table
-import SearchUser from "./forms/SearchUser";
-import { roles } from ".";
+import SearchUser from "../forms/SearchUser";
+import { roles } from "..";
 
-const UserGrid = () => {
+const DeleteUserGrid = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
@@ -123,9 +124,10 @@ const UserGrid = () => {
     return `${split[1]}/${split[2]}/${split[0]}`;
   };
 
-  const handleViewInfoClick = (u: User) => {
+  const handleDeleteClick = (u: User) => {
     dispatch(setSelectedUserId(u.id));
     dispatch(setSelectedUserInfo(u));
+    dispatch(setIsDeletingUser(true));
   };
 
   const isOutranked = (lvl: number) => {
@@ -166,9 +168,9 @@ const UserGrid = () => {
                 {!isOutranked(u.user_level) ? (
                   <div
                     className="bg-[rgb(30,45,80)] text-[11.5px] select-none text-custom-white text-center py-0.5 rounded-full cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:shadow-md"
-                    onClick={() => handleViewInfoClick(u)}
+                    onClick={() => handleDeleteClick(u)}
                   >
-                    View Info
+                    Delete
                   </div>
                 ) : (
                   <div className="bg-red-600 text-[11.5px] text-custom-white text-center py-0.5 rounded-full select-none pointer-events-none">
@@ -184,4 +186,4 @@ const UserGrid = () => {
   );
 };
 
-export default UserGrid;
+export default DeleteUserGrid;

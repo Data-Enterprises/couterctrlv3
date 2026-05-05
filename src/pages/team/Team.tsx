@@ -37,6 +37,7 @@ import Unassigned from "./assignModal/Unassigned";
 import TeamTablet from "./tabletComps/TeamTablet";
 import { setAllSelectedBaseGroups } from "../../features/baseGroupSlice";
 import UpdateUserForm from "./users/UpdateUserForm";
+import DeleteUserForm from "./users/DeleteUserForm";
 
 const options = [
   { label: "Users", value: 1 },
@@ -192,6 +193,10 @@ const Team = () => {
 
     if (selectedUserForm === "user_info") {
       return <UpdateUserForm />;
+    }
+
+    if (selectedUserForm === "delete") {
+      return <DeleteUserForm />;
     }
   };
 

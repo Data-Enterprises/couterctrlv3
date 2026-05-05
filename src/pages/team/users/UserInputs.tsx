@@ -26,6 +26,7 @@ const UserInputs = () => {
     availableEmailText,
     userLevels,
   } = useAppSelector((state) => state.users);
+  const user = useAppSelector((state) => state.user);
 
   const handleUsername = (x: string) => {
     dispatch(setUserInfo({ key: "username", value: x }));
@@ -152,7 +153,9 @@ const UserInputs = () => {
         {userLevels.map((l, i) => (
           <div
             key={i}
-            className={`px-2 py-0.5 rounded-full ${userInfo.user_level === l.id ? "bg-[rgb(30,45,80)] text-custom-white" : "text-content/85 bg-content/10"} cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white`}
+            className={`${l.id > user.userLevel ? "hidden" : ""} 
+              px-2 py-0.5 rounded-full ${userInfo.user_level === l.id ? "bg-[rgb(30,45,80)] text-custom-white" : "text-content/85 bg-content/10"} 
+              cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white`}
             onClick={() => handleUserLvlSelect(l.id)}
           >
             {l.name}
