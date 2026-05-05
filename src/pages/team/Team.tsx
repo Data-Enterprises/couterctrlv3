@@ -199,7 +199,7 @@ const Team = () => {
             <div className="w-[45%]">
               <div
                 data-testid="ctrl-store-assign"
-                className={`grid grid-cols-2 gap-4 h-[65vh] ${selectedUserStores.unassigned.length || selectedUserStores.assigned.length ? "" : "hidden"}`}
+                className={`flex gap-4 max-h-[calc(100vh-5rem)] overflow-hidden ${selectedUserStores.unassigned.length || selectedUserStores.assigned.length ? "" : "hidden"}`}
               >
                 <Unassigned />
                 <Assigned />

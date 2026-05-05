@@ -2,6 +2,7 @@ import {
   resetUserInfo,
   setSelectedForm,
   setSelectedUserForm,
+  setSelectedUserId,
   type UserFormType,
 } from "../../../features/usersSlice";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
@@ -11,14 +12,12 @@ const UserForms = () => {
   const { selectedUserForm } = useAppSelector((state) => state.users);
 
   const handleReset = (x: UserFormType) => {
+    if (x === "") {
+      dispatch(setSelectedForm(0));
+    }
     dispatch(setSelectedUserForm(x));
     dispatch(resetUserInfo());
-  };
-
-  const handleGoBack = () => {
-    dispatch(setSelectedUserForm(""));
-    dispatch(resetUserInfo());
-    dispatch(setSelectedForm(0));
+    dispatch(setSelectedUserId(0));
   };
 
   return (
@@ -31,7 +30,7 @@ const UserForms = () => {
       <div
         data-testid="user-form-goback"
         className={`hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
-        onClick={handleGoBack}
+        onClick={() => handleReset("")}
       >
         Go Back
       </div>
@@ -40,14 +39,14 @@ const UserForms = () => {
         className={`${selectedUserForm === "create" ? "bg-orange-200" : ""} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
         onClick={() => handleReset("create")}
       >
-        Create
+        New User
       </div>
       <div
         data-testid="user-form-update"
-        className={`${selectedUserForm === "update" ? "bg-orange-200" : ""} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
-        onClick={() => handleReset("update")}
+        className={`${selectedUserForm === "user_info" ? "bg-orange-200" : ""} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
+        onClick={() => handleReset("user_info")}
       >
-        Update
+        User Info
       </div>
       <div
         data-testid="user-form-delete"
@@ -56,7 +55,7 @@ const UserForms = () => {
       >
         Delete
       </div>
-      <div
+      {/* <div
         data-testid="user-form-update-pw"
         className={`${selectedUserForm === "update_password" ? "bg-orange-200" : ""} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
         onClick={() => handleReset("update_password")}
@@ -69,14 +68,14 @@ const UserForms = () => {
         onClick={() => handleReset("reset_security")}
       >
         Security
-      </div>
-      <div
+      </div> */}
+      {/* <div
         data-testid="user-form-info"
         className={`${selectedUserForm === "user_info" ? "bg-orange-200" : ""} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
         onClick={() => handleReset("user_info")}
       >
         Info
-      </div>
+      </div> */}
     </div>
   );
 };
