@@ -1,7 +1,12 @@
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { getBaseGroupsAssignedToUser } from "../../../api/team";
+import {
+  assignBaseGroupToUser,
+  deleteUserBaseGroupLink,
+  getBaseGroupsAssignedToUser,
+} from "../../../api/team";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
+  resetBgIds,
   setBgIdsToAssign,
   setBgIdsToUnassign,
   setUserBaseGroups,
@@ -18,17 +23,17 @@ const UpdateUserBG = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const {
-    company,
     activeBaseGroups,
     inactiveBaseGroups,
     bgIdsToAssign,
     bgIdsToUnassign,
+    userCompany,
   } = useAppSelector((state) => state.baseGroup);
   const { url, token } = useAppSelector((state) => state.app);
   const { selectedUserId, users } = useAppSelector((state) => state.users);
 
   const companyBG = (id: number) => {
-    if (company && company.id === id) {
+    if (userCompany && userCompany.company === id) {
       return "bg-[rgb(30,45,80)] text-custom-white";
     }
     return "text-content/85 bg-content/10";
@@ -73,6 +78,56 @@ const UpdateUserBG = () => {
     );
   };
 
+  const handleSubmitAll = (type: string) => {
+    if (type === "assign_all") {
+      const ids = inactiveBaseGroups.map((bg) => bg.id);
+      assignBaseGroupToUser(url, token, selectedUserId, ids)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            dispatch(resetBgIds());
+            getData(userCompany!);
+          }
+        })
+        .catch((err: JsonError) => toast.error(err.message));
+    } else {
+      // we are unassigning
+      const ids = activeBaseGroups.map((bg) => bg.id);
+      deleteUserBaseGroupLink(url, token, selectedUserId, ids)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            getData(userCompany!);
+          }
+        })
+        .catch((err: JsonError) => toast.error(err.message));
+    }
+  };
+
+  const handleAssignClick = () => {
+    assignBaseGroupToUser(url, token, selectedUserId, bgIdsToAssign)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(resetBgIds());
+          getData(userCompany!);
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+  };
+
+  const handleUnassignClick = () => {
+    deleteUserBaseGroupLink(url, token, selectedUserId, bgIdsToUnassign)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(resetBgIds());
+          getData(userCompany!);
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+  };
+
   const selectedUserCompanies = users.filter((u) => u.id === selectedUserId)[0]
     .companies;
 
@@ -90,50 +145,82 @@ const UpdateUserBG = () => {
         ))}
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-1.5 max-h-[60vh] overflow-y-auto text-[11.5px] leading-tight">
-          {filtered(inactiveBaseGroups, "").map((bg) => {
-            return (
-              <div
-                key={bg.id}
-                className={`rounded-full border border-content/25 relative
+        <div>
+          <div className="space-y-1.5 max-h-[60vh] overflow-y-auto text-[11.5px] leading-tight">
+            {filtered(inactiveBaseGroups, "").map((bg) => {
+              return (
+                <div
+                  key={bg.id}
+                  className={`rounded-full border border-content/25 relative
                 ${bgIdsToAssign.some((b) => b === bg.id) ? "bg-[rgb(30,45,80)]/90 text-custom-white" : "text-content/60 bg-content/5"} 
                 px-2.5 py-2 shadow-md cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white`}
-                onClick={() => handleBGToAssign(bg.id)}
-              >
-                <div className="flex items-start justify-between ">
-                  <div className="font-medium break-words">{bg.name}</div>
-                  <div
-                    className={`absolute right-2 z-10 bg-[rgb(30,45,80)] text-custom-white  px-2 py-[1px] rounded-full`}
-                  >
-                    Assign
+                  onClick={() => handleBGToAssign(bg.id)}
+                >
+                  <div className="flex items-start justify-between ">
+                    <div className="font-medium break-words">{bg.name}</div>
+                    <div
+                      className={`absolute right-2 z-10 bg-[rgb(30,45,80)] text-custom-white  px-2 py-[1px] rounded-full`}
+                    >
+                      Assign
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              className={`${bgIdsToAssign.length === 0 ? "opacity-50 cursor-not-allowed" : ""} btn-themeBlue text-[13px] bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5`}
+              onClick={handleAssignClick}
+            >
+              Assign
+            </button>
+            <button
+              className={`btn-themeBlue text-[13px] bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5`}
+              onClick={() => handleSubmitAll("assign_all")}
+            >
+              Assign All
+            </button>
+          </div>
         </div>
 
-        <div className="space-y-1.5 max-h-[60vh] overflow-y-auto text-[11.5px] leading-tight">
-          {filtered(activeBaseGroups, "").map((bg) => {
-            return (
-              <div
-                key={bg.id}
-                className={`rounded-full border border-content/25 relative
+        <div>
+          <div className="space-y-1.5 max-h-[60vh] overflow-y-auto text-[11.5px] leading-tight">
+            {filtered(activeBaseGroups, "").map((bg) => {
+              return (
+                <div
+                  key={bg.id}
+                  className={`rounded-full border border-content/25 relative
                 ${bgIdsToUnassign.some((b) => b === bg.id) ? "bg-[rgb(30,45,80)]/90 text-custom-white" : "text-content/60 bg-content/5"} 
                 px-2.5 py-2 shadow-md cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white`}
-                onClick={() => handleBGToUnassign(bg.id)}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="font-medium break-words">{bg.name}</div>
-                  <div
-                    className={`absolute right-2 z-10 bg-red-600 text-custom-white px-2 py-[1px] rounded-full`}
-                  >
-                    Unassign
+                  onClick={() => handleBGToUnassign(bg.id)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="font-medium break-words">{bg.name}</div>
+                    <div
+                      className={`absolute right-2 z-10 bg-red-600 text-custom-white px-2 py-[1px] rounded-full`}
+                    >
+                      Unassign
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              className={`${bgIdsToUnassign.length === 0 ? "opacity-50 cursor-not-allowed" : ""} btn-themeBlue text-[13px] bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5`}
+              onClick={handleUnassignClick}
+            >
+              Unassign
+            </button>
+            <button
+              className={`btn-themeBlue text-[13px] bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5`}
+              onClick={() => handleSubmitAll("unassign_all")}
+            >
+              Unassign All
+            </button>
+          </div>
         </div>
       </div>
     </div>
