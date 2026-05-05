@@ -162,7 +162,7 @@ const UserGrid = () => {
           <div className="bg-gradient-to-r from-[rgb(30,45,80)] to-custom-white"></div>
           <div className="bg-gradient-to-l from-[rgb(30,45,80)] to-custom-white"></div>
         </div>
-        <div className="max-h-[calc(100vh-20.5rem)] grid gap-1 overflow-y-auto no-scrollbar">
+        <div className="max-h-[calc(100vh-21rem)] grid gap-1 overflow-y-auto no-scrollbar">
           {filtered.map((u, i) => {
             return (
               <div

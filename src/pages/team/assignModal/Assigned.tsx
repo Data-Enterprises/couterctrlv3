@@ -89,7 +89,7 @@ const Assigned = () => {
                 <div
                   key={store.storeid}
                   data-testid={`assigned-store-${store.storeid}`}
-                  className={`${storesToUnassign.includes(store.storeid) ? "bg-emerald-200" : "bg-custom-white"} flex justify-between rounded-lg shadow p-3 text-[12px] cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
+                  className={`${storesToUnassign.includes(store.storeid) ? "bg-emerald-200" : "bg-custom-white"} flex justify-between rounded-lg shadow px-3 py-1.5 text-[12px] cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
                   onClick={() => handleStoreCardClick(store.storeid)}
                 >
                   <div>
@@ -97,7 +97,7 @@ const Assigned = () => {
                     <div>{store.store_name}</div>
                   </div>
                   <div>
-                    <div className="underline text-[11px] font-medium text-content/60">
+                    <div className="underline text-[10px] font-medium text-content/60">
                       {store.company_name}
                     </div>
                   </div>
@@ -108,14 +108,14 @@ const Assigned = () => {
         <div className="flex justify-between gap-2">
           <button
             data-testid="ctrl-unassign-stores-btn"
-            className="btn-themeGreen w-1/2 px-0 py-1.5 text-sm"
+            className="btn-themeGreen w-1/2 px-0 py-1 text-[13px]"
             onClick={() => handleStoreUnassignment("selected")}
           >
             Unassign
           </button>
           <button
             data-testid="ctrl-unassign-all-stores-btn"
-            className="btn-themeGreen w-1/2 px-0 py-1.5 text-sm"
+            className="btn-themeGreen w-1/2 px-0 py-1 text-[13px]"
             onClick={() => handleStoreUnassignment("all")}
           >
             Unassign All

@@ -36,6 +36,7 @@ import Assigned from "./assignModal/Assigned";
 import Unassigned from "./assignModal/Unassigned";
 import TeamTablet from "./tabletComps/TeamTablet";
 import { setAllSelectedBaseGroups } from "../../features/baseGroupSlice";
+import UpdateUserForm from "./users/UpdateUserForm";
 
 const options = [
   { label: "Users", value: 1 },
@@ -51,7 +52,7 @@ const Team = () => {
     (state) => state.app,
   );
   const companies = useAppSelector((state) => state.user.companies);
-  const { refresh, selectedUserId, selectedForm, selectedUserStores } =
+  const { refresh, selectedUserId, selectedForm, selectedUserStores, selectedUserForm } =
     useAppSelector((state) => state.users);
 
   const { filteredMissingStores } = useAppSelector((state) => state.admin);
@@ -176,6 +177,24 @@ const Team = () => {
     dispatch(setSelectedForm(form));
   };
 
+  const renderSubForm = () => {
+    if (selectedUserForm === "create") {
+      return (
+        <div
+          data-testid="ctrl-store-assign"
+          className={`flex gap-4 max-h-[calc(100vh-5rem)] overflow-hidden ${selectedUserStores.unassigned.length || selectedUserStores.assigned.length ? "" : "hidden"}`}
+        >
+          <Unassigned />
+          <Assigned />
+        </div>
+      );
+    }
+
+    if (selectedUserForm === "user_info") {
+      return <UpdateUserForm />;
+    }
+  };
+
   return (
     <div
       data-testid="team-page"
@@ -197,13 +216,7 @@ const Team = () => {
           </div>
           {selectedForm !== 3 && (
             <div className="w-[45%]">
-              <div
-                data-testid="ctrl-store-assign"
-                className={`flex gap-4 max-h-[calc(100vh-5rem)] overflow-hidden ${selectedUserStores.unassigned.length || selectedUserStores.assigned.length ? "" : "hidden"}`}
-              >
-                <Unassigned />
-                <Assigned />
-              </div>
+              {renderSubForm()}
             </div>
           )}
         </div>
