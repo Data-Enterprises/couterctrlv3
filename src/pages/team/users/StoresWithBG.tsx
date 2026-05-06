@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import {
   setSelectedNewUserStores,
@@ -8,47 +8,86 @@ import {
 const StoresWithBG = () => {
   const dispatch = useAppDispatch();
   const [selectedBG, setSelectedBG] = useState<number>(0);
-  const [filtered, setFiltered] = useState<StoreWithBGID[]>([]);
+  // const [filtered, setFiltered] = useState<StoreWithBGID[]>([]);
   const { companies } = useAppSelector((state) => state.user);
-  // const [selectedStores, setSelectedStores] = useState<StoreWithBGID[]>([]);
+  const [showSelected, setShowSelected] = useState<boolean>(false);
   const { storesWithBGID, selectedBaseGroups, selectedNewUserStores } =
     useAppSelector((state) => state.baseGroup);
 
+
+  // Everytime storesWithBGID has the current selected base group filteredout
+  // reset it to 0 (The "All" option)
   useEffect(() => {
-    if (!storesWithBGID.length || !selectedBaseGroups.length) {
+    if (!storesWithBGID.some((s) => s.base_group === selectedBG)) {
       setSelectedBG(0);
-      setFiltered([]);
-      return;
     }
+  }, [storesWithBGID]);
 
-    console.log("stores with bg id", storesWithBGID);
-    console.log("selected base groups", selectedBaseGroups);
-    console.log("selected bg", selectedBG);
+  // useEffect(() => {
+  //   if (!storesWithBGID.length || !selectedBaseGroups.length) {
+  //     setSelectedBG(0);
+  //     setFiltered([]);
+  //     return;
+  //   }
 
-    // return;
+  //   if (
+  //     selectedBG === 0 ||
+  //     !storesWithBGID.some((b) => b.base_group === selectedBG)
+  //   ) {
+  //     // If no base group is selected, then filter by Selection or just return all...
+  //     const renderSelected = storesWithBGID.filter((s) => {
+  //       if (showSelected) {
+  //         return selectedNewUserStores.some(
+  //           (store) => store.storeid === s.storeid,
+  //         );
+  //       } else {
+  //         return true;
+  //       }
+  //     });
+  //     setFiltered(renderSelected);
+  //   } else {
+  //     const filteredStores = storesWithBGID.filter((s) => {
+  //       const isShowingSelected = showSelected
+  //         ? selectedNewUserStores.some((store) => store.storeid === s.storeid)
+  //         : true;
 
-    if (
-      selectedBG === 0 ||
-      !storesWithBGID.some((b) => b.base_group === selectedBG)
-    ) {
-      setFiltered(storesWithBGID);
-    } else {
-      const filteredStores = storesWithBGID.filter(
-        (s) => s.base_group === selectedBG,
-      );
-      setFiltered(filteredStores);
-    }
-  }, [selectedBG, selectedBaseGroups, storesWithBGID]);
+  //       return isShowingSelected && s.base_group === selectedBG;
+  //     });
+  //     setFiltered(filteredStores);
+  //   }
+  // }, [selectedBG, showSelected]);
 
-  if (!filtered.length || !selectedBaseGroups.length || !storesWithBGID.length)
-    return null;
+  const filtered = useMemo(() => {
+    if (!storesWithBGID.length || !selectedBaseGroups.length) return [];
+
+    const baseFiltered =
+      selectedBG === 0
+        ? storesWithBGID
+        : storesWithBGID.filter((s) => s.base_group === selectedBG);
+
+    return showSelected
+      ? baseFiltered.filter((s) =>
+          selectedNewUserStores.some((store) => store.storeid === s.storeid),
+        )
+      : baseFiltered;
+  }, [
+    storesWithBGID,
+    selectedBaseGroups.length,
+    selectedBG,
+    showSelected,
+    selectedNewUserStores,
+  ]);
+
+  if (!selectedBaseGroups.length || !storesWithBGID.length) return null;
 
   const handleBGSelect = (bgId: number) => {
     setSelectedBG((prev) => (prev === bgId ? 0 : bgId));
   };
 
   const handleStoreSelect = (store: StoreWithBGID) => {
-    const found = selectedNewUserStores.find((s) => s.storeid === store.storeid);
+    const found = selectedNewUserStores.find(
+      (s) => s.storeid === store.storeid,
+    );
     if (found) {
       const filteredSelected = selectedNewUserStores.filter(
         (s) => s.storeid !== store.storeid,
@@ -58,13 +97,6 @@ const StoresWithBG = () => {
       dispatch(setSelectedNewUserStores([...selectedNewUserStores, store]));
     }
   };
-
-  // const textColor = (id: number) => {
-  //   if (selectedNewUserStores.some((s) => s.storeid === id)) {
-  //     return "text-custom-white";
-  //   }
-  //   return "text-content";
-  // };
 
   return (
     <div className="bg-custom-white p-2 rounded-lg shadow-lg space-y-2 select-none">
@@ -90,12 +122,24 @@ const StoresWithBG = () => {
             </div>
           );
         })}
+        <div
+          className={`${selectedNewUserStores.length > 0 ? "" : "hidden"} text-[11px] rounded-full px-2 py-0.5 border border-content/15 cursor-pointer transition-all duration-200
+                hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white shadow ${
+                  showSelected
+                    ? "bg-[rgb(30,45,80)] text-custom-white"
+                    : "bg-content/10"
+                }`}
+          onClick={() => setShowSelected((prev) => !prev)}
+        >
+          <div>Selected</div>
+        </div>
       </div>
 
       <div className="max-h-[calc(100vh-13rem)] pb-2 overflow-y-auto grid grid-cols-2 gap-2 text-[11.5px]">
         {filtered.map((s, i) => {
-          const found =
-            selectedBaseGroups.filter((b) => b.id === s.base_group)[0];
+          const found = selectedBaseGroups.filter(
+            (b) => b.id === s.base_group,
+          )[0];
 
           if (!found) return null;
 
@@ -129,7 +173,5 @@ const StoresWithBG = () => {
     </div>
   );
 };
-
-// const StoreList = (stores: StoreWithBGID[]) => {};
 
 export default StoresWithBG;

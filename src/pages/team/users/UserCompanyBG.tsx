@@ -9,6 +9,7 @@ import {
   setBaseGroups,
   setCompany,
   setSelectedBaseGroups,
+  setSelectedNewUserStores,
   setStoresWithBGID,
 } from "../../../features/baseGroupSlice";
 import type { CompanyBaseGroup, JsonError, Store } from "../../../interfaces";
@@ -100,6 +101,7 @@ const UserCompanyBG = () => {
 
   const handleClearAllCompaniesAndBG = () => {
     dispatch(setAllSelectedBaseGroups([]));
+    dispatch(setSelectedNewUserStores([]));
   };
 
   const handleClearBGForSelectedCompany = () => {
@@ -108,7 +110,28 @@ const UserCompanyBG = () => {
     const filtered = [...selectedBaseGroups].filter(
       (bg) => bg.company !== company.id,
     );
+
+    const filteredSelectedStores = selectedNewUserStores.filter((s) => {
+      const bgForStore = baseGroups.find((bg) => bg.id === s.base_group);
+      if (bgForStore) {
+        return bgForStore.company !== company.id;
+      }
+      return true;
+    });
+
+    const filteredStoresWithBGID = storesWithBGID.filter((s) => {
+      const bgForStore = baseGroups.find((bg) => bg.id === s.base_group);
+      if (bgForStore) {
+        return bgForStore.company !== company.id;
+      }
+      return true;
+    });
+
+    // If toggling off a company, remove all stores with that company's 
+    // base groups => avoids store assignments without a base group/company
     dispatch(setAllSelectedBaseGroups(filtered));
+    dispatch(setSelectedNewUserStores(filteredSelectedStores));
+    dispatch(setStoresWithBGID(filteredStoresWithBGID));
   };
 
   const handleSubmit = () => {
