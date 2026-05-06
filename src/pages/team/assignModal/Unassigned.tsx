@@ -92,9 +92,9 @@ const Unassigned = () => {
         />
         <div className="max-h-[calc(100vh-17.5rem)] overflow-y-auto no-scrollbar space-y-1 mt-2">
           {hasLength()
-            ? stores.map((store) => (
+            ? stores.map((store, i) => (
                 <div
-                  key={store.storeid}
+                  key={i}
                   data-testid={`unassigned-store-${store.storeid}`}
                   className={`${storesToAssign.includes(store.storeid) ? "bg-emerald-200" : "bg-custom-white"} flex justify-between rounded-lg shadow px-3 py-1.5 text-[12px] cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
                   onClick={() => handleStoreCardClick(store.storeid)}

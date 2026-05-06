@@ -15,6 +15,7 @@ import type { JsonError } from "../../../interfaces";
 import UpdateUserStores from "./UpdateUserStores";
 import { getBaseGroupsAssignedToUser } from "../../../api/team";
 import UpdateUserBG from "./UpdateUserBG";
+import UpdateUserSecurity from "./UpdateUserSecurity";
 
 const UpdateUserForm = () => {
   const toast = useToast();
@@ -100,6 +101,7 @@ const UpdateUserForm = () => {
       {updateStep === 2 && <UpdateUserCompany />}
       {updateStep === 3 && <UpdateUserBG />}
       {updateStep === 4 && <UpdateUserStores />}
+      {updateStep === 5 && <UpdateUserSecurity />}
     </div>
   );
 };

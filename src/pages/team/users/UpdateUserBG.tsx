@@ -76,7 +76,7 @@ const UpdateUserBG = () => {
 
   const filtered = (data: BaseGroup[], filter: string) => {
     return data.filter((x) =>
-      x.name.toLowerCase().includes(filter.toLowerCase()),
+      x.name.toLowerCase().includes(filter.toLowerCase()) && x.company === userCompany?.company,
     );
   };
 
@@ -147,7 +147,7 @@ const UpdateUserBG = () => {
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      {userCompany !== null ? <div className="grid grid-cols-2 gap-2">
         <div className="relative h-[68vh]">
           <div className="font-medium text-[13px] p-0.5">Unassigned</div>
           <div className="space-y-1.5 pb-2 max-h-[60vh] overflow-y-auto no-scrollbar text-[11.5px] leading-tight">
@@ -227,7 +227,7 @@ const UpdateUserBG = () => {
             </button>
           </div>
         </div>
-      </div>
+      </div> : null}
     </div>
   );
 };
