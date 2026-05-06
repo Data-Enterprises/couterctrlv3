@@ -4,6 +4,7 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type { JsonError, User } from "../../interfaces";
 import {
+  setSelectedCompanyId,
   setSelectedUserId,
   setSelectedUserInfo,
   setUsers,
@@ -65,11 +66,14 @@ const UserGrid = () => {
         }
 
         const textCheck = user.username.toLowerCase().includes(lowerText);
-        return textCheck;
+        const companyCheck = selectedCompanyId
+          ? user.companies.some((c) => c.company === selectedCompanyId)
+          : true;
+        return textCheck && companyCheck;
       });
       setFiltered(filteredUsers);
     }
-  }, [userFilterText, userFilterType]);
+  }, [userFilterText, userFilterType, selectedCompanyId]);
 
   const getData = () => {
     getAllUsers(context.url, context.token)
@@ -132,12 +136,32 @@ const UserGrid = () => {
     return lvl > userLevel;
   };
 
+  const handleCompanySelect = (companyId: number) => {
+    dispatch(setSelectedUserId(0));
+    if (selectedCompanyId === companyId) {
+      dispatch(setSelectedCompanyId(0));
+    } else {
+      dispatch(setSelectedCompanyId(companyId));
+    }
+  };
+
   return (
     <div
       data-testid="user-grid-container"
       className="w-full h-full no-scrollbar space-y-2"
     >
       <SearchUser />
+      <div className="flex flex-wrap text-[11px] gap-2">
+        {companies.map((c, i) => (
+          <div
+            key={i}
+            className={`px-2 py-0.5 rounded-full text-content ${selectedCompanyId === c.company ? "bg-[rgb(30,45,80)] text-custom-white" : "bg-custom-white"} shadow select-none`}
+            onClick={() => handleCompanySelect(c.company)}
+          >
+            {c.name}
+          </div>
+        ))}
+      </div>
       <div className="text-[12.5px] bg-custom-white rounded-lg shadow-lg py-2">
         <div className="grid grid-cols-[16%_11%_33%_14%_14%_12%] px-2">
           <div className="font-medium">Username</div>
@@ -151,12 +175,12 @@ const UserGrid = () => {
           <div className="bg-gradient-to-r from-[rgb(30,45,80)] to-custom-white"></div>
           <div className="bg-gradient-to-l from-[rgb(30,45,80)] to-custom-white"></div>
         </div>
-        <div className="max-h-[calc(100vh-21rem)] grid gap-1 overflow-y-auto no-scrollbar">
+        <div className="max-h-[calc(100vh-23rem)] grid gap-1 overflow-y-auto no-scrollbar">
           {filtered.map((u, i) => {
             return (
               <div
                 key={i}
-                className="grid grid-cols-[16%_11%_33%_14%_14%_12%] px-2"
+                className="grid grid-cols-[16%_11%_33%_14%_14%_12%] px-2 border-b items-center py-0.5"
               >
                 <div className="select-none">{u.username}</div>
                 <div className="select-none">{formatDate(u.last_visit)}</div>

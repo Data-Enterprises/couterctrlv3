@@ -66,11 +66,14 @@ const SearchUser = () => {
         }
 
         const textCheck = user.username.toLowerCase().includes(lowerText);
-        return textCheck;
+        const companyCheck = selectedCompanyId
+          ? user.companies.some((c) => c.company === selectedCompanyId)
+          : true;
+        return textCheck && companyCheck;
       });
       setFiltered(filteredUsers);
     }
-  }, [userFilterText, userFilterType]);
+  }, [userFilterText, userFilterType, selectedCompanyId]);
 
   const handleFilterTextChange = (x: string) => {
     if (username) {
@@ -121,7 +124,8 @@ const SearchUser = () => {
       <div className={`w-full relative`}>
         <div className={`w-full`}>
           <label className="font-medium pl-0.5">
-            Search {userFilterType === "name" ? "Username" : "Email"} - {filtered.length}
+            Search {userFilterType === "name" ? "Username" : "Email"} -{" "}
+            {filtered.length}
           </label>
           <input
             ref={inputRef}
