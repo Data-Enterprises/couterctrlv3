@@ -84,16 +84,6 @@ const CreateBaseGroup = () => {
 
           const newBGId = j.id;
           dispatch(setSelectedBG(newBGId));
-          // getAllStoresInBaseGroup(url, token, newBGId)
-          //   .then((resp) => {
-          //     const j = resp.data;
-          //     if (j.error === 0) {
-          //       const assigned = j.assigned_stores;
-          //       const unassigned = j.unassigned_stores;
-          //       dispatch(setBGStores({ assigned, unassigned }));
-          //     }
-          //   })
-          //   .catch((err: JsonError) => toast.error(err.message));
         }
       })
       .catch((err: JsonError) => toast.error(err.message));

@@ -36,7 +36,7 @@ const BaseGroupForms = () => {
         className={`${bgOption === "update" ? "bg-orange-200" : ""} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
         onClick={() => dispatch(setBGOption("update"))}
       >
-        Update Base Group
+        Update Name
       </div>
       <div
         data-testid="bg-delete-form-btn"

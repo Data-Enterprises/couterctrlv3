@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { getBaseGroups, updateBaseGroup } from "../../../api/baseGroups";
-import SingleSelect from "../../../components/SingleSelect";
 import { useAppSelector } from "../../../hooks";
 import type {
   CompanyBaseGroup,
@@ -18,7 +17,7 @@ const UpdateBaseGroup = () => {
   const [selectedCompanyId, setSelectedCompanyId] = useState<number>(0);
   const [selectedBgID, setSelectedBgID] = useState<number>(0);
 
-  const { url, token, isDesktop } = useAppSelector((state) => state.app);
+  const { url, token } = useAppSelector((state) => state.app);
   const { companies } = useAppSelector((state) => state.user);
 
   const getData = (company: number) => {
@@ -66,52 +65,69 @@ const UpdateBaseGroup = () => {
     }
   };
 
+  const companyBG = (id: number) => {
+    if (selectedCompanyId === id) {
+      return "bg-[rgb(30,45,80)] text-custom-white";
+    }
+    return "text-content/85 bg-content/10";
+  };
+
   return (
-    <div data-testid="update-bg-form-container" className="bg-custom-white p-4 rounded-lg shadow-lg max-h-[70vh]">
-      <SingleSelect
-        label="Select Company"
-        data={companies}
-        displayKey={"name"}
-        valueKey={"company"}
-        onSelect={handleSelect}
-      />
-
-      {baseGroups.length ? (
-        <div className="text-sm my-4">
-          <div className="font-medium flex justify-between">
-            <div>Select group to update</div>
-          </div>
-          <div className={`select-none rounded-lg p-1 overflow-hidden overflow-y-auto ${isDesktop ? "max-h-[39vh]" : "max-h-[25vh]"}`}>
-            {baseGroups.map((bg, i) => (
-              <div
-                key={bg.id}
-                data-testid={`bg-option-${i}`}
-                className={`${selectedBgID === bg.id && "bg-orange-200"} rounded-full py-1 pl-2 border-b transition-all duration-200 cursor-pointer hover:bg-blue-200`}
-                onClick={() => handleBGSelect(bg.id, bg.name)}
-              >
-                {bg.name}
-              </div>
-            ))}
-          </div>
+    <div data-testid="update-bg-form-container" className="flex gap-2">
+      <div className="bg-custom-white p-2 rounded-lg shadow-lg w-1/2">
+        {/* Companies */}
+        <div className="text-[13px] font-medium mb-0.5">Companies</div>
+        <div className="flex flex-wrap gap-1.5 text-[11.5px] leading-tight mb-1">
+          {companies.map((c) => (
+            <div
+              key={c.id}
+              className={`px-2 py-0.5 rounded-full ${companyBG(c.company)} cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white`}
+              onClick={() => handleSelect(c.company)}
+            >
+              {c.name}
+            </div>
+          ))}
         </div>
-      ) : null}
 
-      {showForm && (
-        <div className="space-y-2">
-          <Input
-            label="Group Name"
-            value={groupName}
-            setValue={handleGroupName}
-          />
-          <button
-            data-testid="submit-update-bg-btn"
-            className={`btn-themeBlue w-full ${!selectedBgID && "opacity-50 pointer-events-none"}`}
-            onClick={handleSubmit}
-          >
-            Submit
-          </button>
-        </div>
-      )}
+        {baseGroups.length ? (
+          <div className="text-[13px] my-4">
+            <div className="font-medium flex justify-between">
+              <div>Select group to update</div>
+            </div>
+            <div
+              className={`select-none rounded-lg p-1 max-h-[45vh] overflow-y-auto`}
+            >
+              {baseGroups.map((bg, i) => (
+                <div
+                  key={bg.id}
+                  data-testid={`bg-option-${i}`}
+                  className={`${selectedBgID === bg.id && "bg-orange-200"} rounded-full py-1 pl-2 border-b transition-all duration-200 cursor-pointer hover:bg-blue-200`}
+                  onClick={() => handleBGSelect(bg.id, bg.name)}
+                >
+                  {bg.name}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {showForm && (
+          <div className="space-y-2">
+            <Input
+              label="Group Name"
+              value={groupName}
+              setValue={handleGroupName}
+            />
+            <button
+              data-testid="submit-update-bg-btn"
+              className={`btn-themeBlue w-full ${!selectedBgID && "opacity-50 pointer-events-none"}`}
+              onClick={handleSubmit}
+            >
+              Submit
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
