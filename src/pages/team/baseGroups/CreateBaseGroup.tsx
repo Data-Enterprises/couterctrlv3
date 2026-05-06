@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppSelector } from "../../../hooks";
 import type {
   CompanyBaseGroup,
   CompanyBGJsonResp,
@@ -8,30 +8,29 @@ import type {
 import {
   getBaseGroups,
   createBaseGroup,
-  getAllStoresInBaseGroup,
+  // getAllStoresInBaseGroup,
 } from "../../../api/baseGroups";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 
 import Input from "../../../components/inputs/Input";
-import { setBGStores, setSelectedBG } from "../../../features/baseGroupSlice";
-import AssignStoresBG from "./AssignStoresBG";
-import { assignBaseGroupToUser } from "../../../api/team";
+// import { setBGStores, setSelectedBG } from "../../../features/baseGroupSlice";
+// import AssignStoresBG from "./AssignStoresBG";
+// import { assignBaseGroupToUser } from "../../../api/team";
 
 const CreateBaseGroup = () => {
   const toast = useToast();
-  const dispatch = useAppDispatch();
+  // const dispatch = useAppDispatch();
 
   const [groupName, setGroupName] = useState<string>("");
   const [baseGroups, setBaseGroups] = useState<CompanyBaseGroup[]>([]);
   const [showForm, setShowForm] = useState<boolean>(false);
   const [showWarning, setShowWarning] = useState<boolean>(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState<number>(0);
-  const [promptUser, setPromptUser] = useState<boolean>(false);
+  // const [promptUser, setPromptUser] = useState<boolean>(false);
 
   const { url, token } = useAppSelector((state) => state.app);
-  const { companies, userid } = useAppSelector((state) => state.user);
-  const { unassignedStoresInBG, assignedStoresInBG, selectedBG } =
-    useAppSelector((state) => state.baseGroup);
+  const { companies } = useAppSelector((state) => state.user);
+  const { selectedBG } = useAppSelector((state) => state.baseGroup);
 
   useEffect(() => {
     if (groupName.length) {
@@ -80,10 +79,10 @@ const CreateBaseGroup = () => {
           toast.success(`Base Group: ${groupName} Created`);
           setGroupName("");
           getData(selectedCompanyId);
-          setPromptUser(true);
+          // setPromptUser(true);
 
-          const newBGId = j.id;
-          dispatch(setSelectedBG(newBGId));
+          // const newBGId = j.id;
+          // dispatch(setSelectedBG(newBGId));
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
@@ -96,35 +95,35 @@ const CreateBaseGroup = () => {
     return "text-content/85 bg-content/10";
   };
 
-  const handlePromptAnswer = (answer: boolean) => {
-    if (!answer) {
-      setPromptUser(false);
-    } else {
-      setPromptUser(false);
-      assignBaseGroupToUser(url, token, userid, [selectedBG])
-        .then((resp) => {
-          const j = resp.data;
-          if (j.error === 0) {
-            getAllStoresInBaseGroup(url, token, selectedBG)
-              .then((resp) => {
-                const j = resp.data;
-                if (j.error === 0) {
-                  const assigned = j.assigned_stores;
-                  const unassigned = j.unassigned_stores;
-                  dispatch(setBGStores({ assigned, unassigned }));
-                }
-              })
-              .catch((err: JsonError) => toast.error(err.message));
-          }
-        })
-        .catch((err: JsonError) => toast.error(err.message));
-    }
-  };
+  // const handlePromptAnswer = (answer: boolean) => {
+  //   if (!answer) {
+  //     setPromptUser(false);
+  //   } else {
+  //     setPromptUser(false);
+  //     assignBaseGroupToUser(url, token, userid, [selectedBG])
+  //       .then((resp) => {
+  //         const j = resp.data;
+  //         if (j.error === 0) {
+  //           getAllStoresInBaseGroup(url, token, selectedBG)
+  //             .then((resp) => {
+  //               const j = resp.data;
+  //               if (j.error === 0) {
+  //                 const assigned = j.assigned_stores;
+  //                 const unassigned = j.unassigned_stores;
+  //                 dispatch(setBGStores({ assigned, unassigned }));
+  //               }
+  //             })
+  //             .catch((err: JsonError) => toast.error(err.message));
+  //         }
+  //       })
+  //       .catch((err: JsonError) => toast.error(err.message));
+  //   }
+  // };
 
-  const handleReset = () => {
-    dispatch(setSelectedBG(0));
-    dispatch(setBGStores({ assigned: [], unassigned: [] }));
-  };
+  // const handleReset = () => {
+  //   dispatch(setSelectedBG(0));
+  //   dispatch(setBGStores({ assigned: [], unassigned: [] }));
+  // };
 
   return (
     <div data-testid="create-bg-form-container" className="flex gap-2">
@@ -184,7 +183,7 @@ const CreateBaseGroup = () => {
                 Submit
               </button>
 
-              {unassignedStoresInBG.length > 0 ||
+              {/* {unassignedStoresInBG.length > 0 ||
               assignedStoresInBG.length > 0 ? (
                 <button
                   className="btn-themeGreen w-full px-0 mt-2 py-1.5"
@@ -192,13 +191,13 @@ const CreateBaseGroup = () => {
                 >
                   Reset Form
                 </button>
-              ) : null}
+              ) : null} */}
             </div>
           )}
         </div>
       </div>
 
-      {unassignedStoresInBG.length > 0 || assignedStoresInBG.length > 0 ? (
+      {/* {unassignedStoresInBG.length > 0 || assignedStoresInBG.length > 0 ? (
         <div className="w-[60%]">
           <AssignStoresBG />
         </div>
@@ -229,7 +228,7 @@ const CreateBaseGroup = () => {
             </div>
           </div>
         </div>
-      ) : null}
+      ) : null} */}
     </div>
   );
 };

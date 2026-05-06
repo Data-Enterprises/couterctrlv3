@@ -6,6 +6,7 @@ import {
   resetUserInfo,
   setAssignBaseGroups,
   setRefresh,
+  setSelectedCompanyId,
   setSelectedForm,
   setSelectedUserForm,
   setSelectedUserId,
@@ -68,6 +69,7 @@ const Team = () => {
       dispatch(setSelectedUserId(0));
       dispatch(setAllSelectedBaseGroups([]));
       dispatch(setStoresWithBGID([]));
+      dispatch(setSelectedCompanyId(0));
     };
   }, []);
 
@@ -82,6 +84,7 @@ const Team = () => {
     dispatch(setSelectedUserId(0));
     dispatch(setAllSelectedBaseGroups([]));
     dispatch(setStoresWithBGID([]));
+    dispatch(setSelectedCompanyId(0));
   }, [selectedForm]);
 
   useEffect(() => {
