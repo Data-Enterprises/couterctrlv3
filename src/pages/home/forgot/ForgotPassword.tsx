@@ -17,7 +17,7 @@ const ForgotPassword = () => {
 
   useEffect(() => {
     if (forgot.index === 0) {
-      setHeight("h-[250px]");
+      setHeight("h-[205px]");
     } else if (forgot.index === 1) {
       setHeight("h-[190px]");
     } else if (forgot.index === 2) {
@@ -32,13 +32,13 @@ const ForgotPassword = () => {
 
   return (
     <Modal
-      modalClassName="ml-0 bg-bkg max-w-md w-full"
+      modalClassName="ml-0 bg-custom-white max-w-md w-full"
       isOpen={context.showForgotPassword}
       onClose={onClose}
     >
       <Carousel
         id={1}
-        className={`bg-bkg ${height} transition-all duration-500`}
+        className={`bg-custom-white ${height} transition-all duration-500`}
         showButtons={false}
         useDynamicIndex={true}
         dynamicIndex={forgot.index}

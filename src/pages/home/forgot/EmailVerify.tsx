@@ -7,8 +7,8 @@ import {
   setUsername,
 } from "../../../features/forgotPasswordSlice";
 import type { JsonError } from "../../../interfaces";
-import TextInput from "../../../components/TextInput";
 import { forgotPWEmailVerify } from "../../../api/password";
+import Input from "../../../components/inputs/Input";
 
 const EmailVerify = () => {
   const toast = useToast();
@@ -30,27 +30,32 @@ const EmailVerify = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
-  return (
-    <div data-testid="email-verify" className="h-[250px] px-2">
-      <div className="text-center font-medium">Verify Username and Email</div>
-      <TextInput
-        query={forgot.username}
-        setText={(text) => dispatch(setUsername(text))}
-        title="Username"
-        isSimple={true}
-        name="forgot-username"
-      />
+  const handleUserNameChange = (text: string) => {
+    dispatch(setUsername(text));
+  };
 
-      <TextInput
-        query={forgot.email}
-        setText={(text) => dispatch(setEmail(text))}
-        title="Email"
-        isSimple={true}
-        name="forgot-email"
+  const handleEmailChange = (text: string) => {
+    dispatch(setEmail(text));
+  };
+
+  return (
+    <div data-testid="email-verify" className="space-y-2">
+      <div className="text-center font-medium underline text-sm">Verify Username and Email</div>
+      <Input
+        label="Username"
+        value={forgot.username}
+        setValue={handleUserNameChange}
+        className="py-1.5"
+      />
+      <Input
+        label="Email"
+        value={forgot.email}
+        setValue={handleEmailChange}
+        className="py-1.5"
       />
       <button
         data-testid="verify-email-button-forgot"
-        className="btn-themeBlue w-full mt-4"
+        className="btn-themeBlue w-full"
         onClick={verifyEmailAndUsername}
       >
         Verify

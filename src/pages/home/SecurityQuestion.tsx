@@ -7,11 +7,11 @@ import {
   getSecurityQuestions,
   setSecurityQuestionAnswer,
 } from "../../api/security";
+import { setSecurityQuestionId } from "../../features/userSlice";
 
 import Modal from "../../components/Modal";
-import TextInput from "../../components/TextInput";
 import SingleSelect from "../../components/SingleSelect";
-import { setSecurityQuestionId } from "../../features/userSlice";
+import Input from "../../components/inputs/Input";
 
 const SecurityQuestion = () => {
   const toast = useToast();
@@ -65,7 +65,7 @@ const SecurityQuestion = () => {
       context.token,
       user.userid,
       questionId,
-      answer
+      answer,
     )
       .then((resp) => {
         const j = resp.data;
@@ -78,7 +78,7 @@ const SecurityQuestion = () => {
       })
       .catch((err: JsonError) => {
         toast.error(
-          "Error setting security question and answer: " + err.message
+          "Error setting security question and answer: " + err.message,
         );
       });
   };
@@ -90,36 +90,34 @@ const SecurityQuestion = () => {
 
   // Else we show the modal to set security question and answer
   return (
-    <Modal isOpen={user.securityQuestionId === 0}>
-      <div className="text-center font-medium">
-        Welcome to CounterCtrl {user.firstName} {user.lastName}!
+    <Modal isOpen={user.securityQuestionId === 0} allowClickOutside={false} modalClassName="bg-custom-white w-[30%] ring ring-content/10">
+      <div className="text-center font-medium underline select-none">
+        Security Question Setup
       </div>
-      <div className="text-center text-sm">
-        Since this is your first time signing in, please select a security
-        question and answer that will be used in case you need to update your
-        password
+      <div className="text-center text-[13px] text-content/60 select-none">
+        Please select a security question and provide an answer. This will be
+        used for identity verification when resetting your password.
       </div>
-      <div className="space-y-4">
+      <div className="space-y-2">
         <SingleSelect
           label="Question"
           data={securityQuestions}
           valueKey={"id"}
           displayKey={"question"}
           onSelect={handleQuestionSelection}
-          defaultQuery={questionId > 0 ? securityQuestions.find((q) => q.id === questionId)?.question : ""}
+          defaultQuery={
+            questionId > 0
+              ? securityQuestions.find((q) => q.id === questionId)?.question
+              : ""
+          }
           canType={false}
+          innerClass="py-1.5"
         />
-        <TextInput
-          title="Answer"
-          query={answer}
-          setText={handleAnswerChange}
-          name="Answer"
-          isSimple={true}
-        />
+        <Input label="Answer" value={answer} setValue={handleAnswerChange} className="py-1.5" />
         <div className="mt-4 flex">
           <button
             data-testid="submit-security-answer"
-            className="btn-themeBlue w-full"
+            className="btn-themeBlue w-full select-none py-1.5"
             onClick={submitAnswer}
           >
             Submit

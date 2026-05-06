@@ -6,26 +6,23 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 import type { JsonError } from "../../interfaces";
 
 import Modal from "../../components/Modal";
-import TextInput from "../../components/TextInput";
+import PasswordInput from "../../components/inputs/PasswordInput";
 
 const ResetPassword = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
-  const [newPassword, setNewPassword] = useState<string>("");
+  const [pw, setPw] = useState<string>("");
+  const [confirmPw, setConfirmPw] = useState<string>("");
   const [closeModal, setCloseModal] = useState<boolean>(false);
 
   useEffect(() => {
     if (closeModal) handleClose();
   }, [closeModal]);
 
-  const handleChange = (e: string) => {
-    setNewPassword(e);
-  };
-
   const handleSubmit = () => {
-    resetPassword(context.url, context.token, user.username, newPassword)
+    resetPassword(context.url, context.token, user.username, pw)
       .then(() => {
         setCloseModal(true);
         toast.success("Password successfully reset");
@@ -44,26 +41,53 @@ const ResetPassword = () => {
     dispatch(setResetPassword(0));
   };
 
+  const canSubmit = () => {
+    return pw.length > 0 && confirmPw.length > 0 && pw === confirmPw;
+  };
+
   return (
-    <Modal isOpen={user.resetPassword === 1} onClose={handleClose}>
-      <div className="text-center font-medium text-orange-500 underline">
-        Password Reset Detected
+    <Modal
+      isOpen={user.resetPassword === 1}
+      onClose={handleClose}
+      modalClassName="w-[37%] rounded-2xl bg-white ring-1 ring-black/5 space-y-2.5"
+      allowClickOutside={false}
+    >
+      <div className=" text-center">
+        <div className="text-base font-semibold text-slate-900 select-none">
+          Password Reset Detected
+        </div>
+        <div className="text-[13.5px] text-content/60 select-none">
+          Please enter your new password and confirm it before submitting.
+        </div>
       </div>
-      <div className="text-center mb-2">Please enter your new password</div>
-      <TextInput
-        title="New Password"
-        name="newPassword"
-        query={newPassword}
-        setText={handleChange}
-        isSimple={true}
-        type="password"
-      />
+
+      <div className=" grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <PasswordInput
+          label="Password"
+          name="password"
+          setText={(val) => setPw(val)}
+          text={pw}
+          leftCompare={pw}
+          rightCompare={confirmPw}
+          className="py-1.5"
+        />
+        <PasswordInput
+          label="Confirm Password"
+          name="confirm_password"
+          setText={(val) => setConfirmPw(val)}
+          text={confirmPw}
+          leftCompare={pw}
+          rightCompare={confirmPw}
+          className="py-1.5"
+        />
+      </div>
+
       <button
-        data-testId="reset-pw-btn"
-        className="btn-themeBlue w-full mt-4"
+        data-testid="reset-pw-btn"
+        className={`btn-themeBlue w-full py-1.5 ${!canSubmit() ? "pointer-events-none opacity-50" : ""}`}
         onClick={handleSubmit}
       >
-        Change Password
+        Set New Password
       </button>
     </Modal>
   );
