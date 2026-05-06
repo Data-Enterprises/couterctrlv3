@@ -3,6 +3,7 @@ import type {
   BaseGroup,
   Company,
   CompanyBaseGroup,
+  Store,
   UserCompany,
 } from "../interfaces";
 
@@ -19,6 +20,9 @@ interface BaseGroupState {
   userCompany: UserCompany | null;
   bgIdsToAssign: number[];
   bgIdsToUnassign: number[];
+  assignedStoresInBG: Store[];
+  unassignedStoresInBG: Store[];
+  selectedBG: number;
 }
 
 const initialState: BaseGroupState = {
@@ -34,6 +38,9 @@ const initialState: BaseGroupState = {
   userCompany: null,
   bgIdsToAssign: [],
   bgIdsToUnassign: [],
+  assignedStoresInBG: [],
+  unassignedStoresInBG: [],
+  selectedBG: 0,
 };
 
 export const baseGroupSlice = createSlice({
@@ -120,6 +127,20 @@ export const baseGroupSlice = createSlice({
     setInactiveBaseGroups: (state, action: PayloadAction<BaseGroup[]>) => {
       state.inactiveBaseGroups = action.payload;
     },
+    setBGStores: (
+      state,
+      action: PayloadAction<{
+        assigned: Store[];
+        unassigned: Store[];
+      }>,
+    ) => {
+      const { assigned, unassigned } = action.payload;
+      state.assignedStoresInBG = assigned;
+      state.unassignedStoresInBG = unassigned;
+    },
+    setSelectedBG: (state, action: PayloadAction<number>) => {
+      state.selectedBG = action.payload;
+    },
     resetBaseGroupSlice: () => initialState,
   },
 });
@@ -142,5 +163,7 @@ export const {
   resetBaseGroupSlice,
   setActiveBaseGroups,
   setInactiveBaseGroups,
+  setBGStores,
+  setSelectedBG,
 } = baseGroupSlice.actions;
 export default baseGroupSlice.reducer;
