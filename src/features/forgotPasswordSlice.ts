@@ -39,9 +39,9 @@ export const forgotPasswordSlice = createSlice({
     setNewPassword(state, action: PayloadAction<string>) {
       state.newPassword = action.payload;
     },
-    // setConfirmNewPassword(state, action: PayloadAction<string>) {
-    //   state.confirmNewPassword = action.payload;
-    // },
+    setConfirmNewPassword(state, action: PayloadAction<string>) {
+      state.confirmNewPassword = action.payload;
+    },
     setIndex(state) {
       state.index += 1;
     },
@@ -55,7 +55,7 @@ export const {
   setQuestion,
   setAnswer,
   setNewPassword,
-  // setConfirmNewPassword,
+  setConfirmNewPassword,
   setIndex,
   resetForgotPasswordSlice,
 } = forgotPasswordSlice.actions;

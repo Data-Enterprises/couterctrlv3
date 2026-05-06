@@ -39,7 +39,7 @@ const EmailVerify = () => {
   };
 
   return (
-    <div data-testid="email-verify" className="space-y-2">
+    <div data-testid="email-verify" className={`space-y-2 ${forgot.index !== 0 && "opacity-0 transition-all duration-400"}`}>
       <div className="text-center font-medium underline text-sm">Verify Username and Email</div>
       <Input
         label="Username"

@@ -14,16 +14,19 @@ const ForgotPassword = () => {
   const context = useAppSelector((state) => state.app);
   const forgot = useAppSelector((state) => state.forgotPassword);
   const [height, setHeight] = useState<string>("h-[250px]");
+  const [width, setWidth] = useState<string>("w-[30%]");
 
   useEffect(() => {
     if (forgot.index === 0) {
       setHeight("h-[205px]");
+      setWidth("w-[25%]")
     } else if (forgot.index === 1) {
-      setHeight("h-[190px]");
+      setHeight("h-[160px]");
     } else if (forgot.index === 2) {
-      setHeight("h-[177px]");
+      setHeight("h-[170px]");
+      setWidth("w-[37%]")
     }
-  }, [forgot.index]);
+  }, [forgot.index, forgot.username]);
 
   const onClose = () => {
     dispatch(setForgotPassword(false));
@@ -32,7 +35,7 @@ const ForgotPassword = () => {
 
   return (
     <Modal
-      modalClassName="ml-0 bg-custom-white max-w-md w-full"
+      modalClassName={`ml-0 bg-custom-white ${width}`}
       isOpen={context.showForgotPassword}
       onClose={onClose}
     >
