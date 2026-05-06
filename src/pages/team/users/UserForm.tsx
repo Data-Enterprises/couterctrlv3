@@ -36,6 +36,10 @@ const UserForm = () => {
   const user = useAppSelector((state) => state.user);
 
   useEffect(() => {
+    setCreateStep(1);
+  }, [selectedUserForm]);
+
+  useEffect(() => {
     if (selectedUserForm === "create") {const selected = [...selectedBaseGroups];
     const newCompanyIds = selected.reduce(
       (acc: number[], curr: CompanyBaseGroup) => {

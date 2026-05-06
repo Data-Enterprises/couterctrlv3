@@ -167,7 +167,7 @@ const DeleteUserGrid = () => {
                 <div className="select-none">{renderRoleText(u.role)}</div>
                 {!isOutranked(u.user_level) ? (
                   <div
-                    className="bg-[rgb(30,45,80)] text-[11.5px] select-none text-custom-white text-center py-0.5 rounded-full cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:shadow-md"
+                    className="bg-red-600 text-[11.5px] select-none text-custom-white text-center py-0.5 rounded-full cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:shadow-md"
                     onClick={() => handleDeleteClick(u)}
                   >
                     Delete

@@ -50,16 +50,17 @@ const ProfileCard = () => {
       const user = users.filter((u) => u.id === selectedUserId)[0];
       const companyNames = [...user.companies].map((c) => c.name);
       return companyNames.join(", ");
+    } else if (selectedUserForm === "create") {
+      const filtered = [...companies].filter((c) =>
+        selectedNewUserStores.some((s) => s.company === c.company),
+      );
+      const companyNames = filtered.map((c) => c.name);
+      if (companyNames.length === 1) {
+        return companyNames.join("");
+      }
+      return companyNames.join(", ");
     }
-
-    const filtered = [...companies].filter((c) =>
-      selectedNewUserStores.some((s) => s.company === c.company),
-    );
-    const companyNames = filtered.map((c) => c.name);
-    if (companyNames.length === 1) {
-      return companyNames.join("");
-    }
-    return companyNames.join(", ");
+    return "";
   };
 
   const showRole = () => {
@@ -80,14 +81,25 @@ const ProfileCard = () => {
   };
 
   const showBaseGroups = () => {
-    if (selectedNewUserStores.length === 0) {
-      return "";
+    if (selectedUserForm === "create") {
+      if (selectedNewUserStores.length === 0) {
+        return "";
+      }
+
+      const names = selectedBaseGroups
+        .filter((bg) =>
+          selectedNewUserStores.some((s) => s.base_group === bg.id),
+        )
+        .map((b) => b.name)
+        .join(", ");
+      return names;
+    } else {
+      if (selectedBaseGroups.length === 0) {
+        return "";
+      }
+      const names = selectedBaseGroups.map((bg) => bg.name).join(", ");
+      return names;
     }
-    const names = selectedBaseGroups
-      .filter((bg) => selectedNewUserStores.some((s) => s.base_group === bg.id))
-      .map((b) => b.name)
-      .join(", ");
-    return names;
   };
 
   return (

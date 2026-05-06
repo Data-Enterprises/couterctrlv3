@@ -170,6 +170,8 @@ const UserCompanyBG = () => {
                                     "User created and assigned to selected companies, base groups, and stores",
                                   );
                                   dispatch(resetUserInfo());
+                                  dispatch(setStoresWithBGID([]));
+                                  dispatch(setSelectedNewUserStores([]));
                                   dispatch(setRefresh(true));
                                 } else {
                                   toast.warn(
