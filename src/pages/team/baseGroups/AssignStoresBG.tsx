@@ -1,21 +1,23 @@
 import { useState } from "react";
-import { useAppSelector } from "../../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type { Store, JsonError } from "../../../interfaces";
 
 import {
   assignStoreToBaseGroup,
+  getAllStoresInBaseGroup,
   unAssignStoreToBaseGroup,
 } from "../../../api/baseGroups";
 import Input from "../../../components/inputs/Input";
+import { setBGStores } from "../../../features/baseGroupSlice";
 
 const AssignStoresBG = () => {
   const toast = useToast();
+  const dispatch = useAppDispatch();
 
   const { url, token } = useAppSelector((state) => state.app);
-  const { assignedStoresInBG, unassignedStoresInBG, selectedBG } = useAppSelector(
-    (state) => state.baseGroup,
-  );
+  const { assignedStoresInBG, unassignedStoresInBG, selectedBG } =
+    useAppSelector((state) => state.baseGroup);
   const [storesToAssign, setStoresToAssign] = useState<number[]>([]);
   const [storesToUnassign, setStoresToUnassign] = useState<number[]>([]);
   const [unassignedFilter, setUnassignedFilter] = useState<string>("");
@@ -49,7 +51,7 @@ const AssignStoresBG = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          // getBgStores(selectedBG);
+          getBgStores(selectedBG);
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
@@ -60,7 +62,7 @@ const AssignStoresBG = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          // getBgStores(selectedBG);
+          getBgStores(selectedBG);
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
@@ -74,7 +76,7 @@ const AssignStoresBG = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          // getBgStores(selectedBG);
+          getBgStores(selectedBG);
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
@@ -88,7 +90,7 @@ const AssignStoresBG = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          // getBgStores(selectedBG);
+          getBgStores(selectedBG);
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
@@ -106,6 +108,17 @@ const AssignStoresBG = () => {
 
   const handleUnassignedFilterText = (x: string) => {
     setUnassignedFilter(x);
+  };
+
+  const getBgStores = (groupid: number) => {
+    getAllStoresInBaseGroup(url, token, groupid)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(setBGStores({ assigned: j.assigned_stores, unassigned: j.unassigned_stores }));
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
   };
 
   return (

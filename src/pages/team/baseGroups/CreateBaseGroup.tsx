@@ -15,6 +15,7 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import Input from "../../../components/inputs/Input";
 import { setBGStores, setSelectedBG } from "../../../features/baseGroupSlice";
 import AssignStoresBG from "./AssignStoresBG";
+import { assignBaseGroupToUser } from "../../../api/team";
 
 const CreateBaseGroup = () => {
   const toast = useToast();
@@ -25,9 +26,12 @@ const CreateBaseGroup = () => {
   const [showForm, setShowForm] = useState<boolean>(false);
   const [showWarning, setShowWarning] = useState<boolean>(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState<number>(0);
+  const [promptUser, setPromptUser] = useState<boolean>(false);
 
   const { url, token } = useAppSelector((state) => state.app);
-  const { companies } = useAppSelector((state) => state.user);
+  const { companies, userid } = useAppSelector((state) => state.user);
+  const { unassignedStoresInBG, assignedStoresInBG, selectedBG } =
+    useAppSelector((state) => state.baseGroup);
 
   useEffect(() => {
     if (groupName.length) {
@@ -76,19 +80,20 @@ const CreateBaseGroup = () => {
           toast.success(`Base Group: ${groupName} Created`);
           setGroupName("");
           getData(selectedCompanyId);
+          setPromptUser(true);
 
           const newBGId = j.id;
           dispatch(setSelectedBG(newBGId));
-          getAllStoresInBaseGroup(url, token, newBGId)
-            .then((resp) => {
-              const j = resp.data;
-              if (j.error === 0) {
-                const assigned = j.assigned_stores;
-                const unassigned = j.unassigned_stores;
-                dispatch(setBGStores({ assigned, unassigned }));
-              }
-            })
-            .catch((err: JsonError) => toast.error(err.message));
+          // getAllStoresInBaseGroup(url, token, newBGId)
+          //   .then((resp) => {
+          //     const j = resp.data;
+          //     if (j.error === 0) {
+          //       const assigned = j.assigned_stores;
+          //       const unassigned = j.unassigned_stores;
+          //       dispatch(setBGStores({ assigned, unassigned }));
+          //     }
+          //   })
+          //   .catch((err: JsonError) => toast.error(err.message));
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
@@ -99,6 +104,31 @@ const CreateBaseGroup = () => {
       return "bg-[rgb(30,45,80)] text-custom-white";
     }
     return "text-content/85 bg-content/10";
+  };
+
+  const handlePromptAnswer = (answer: boolean) => {
+    if (!answer) {
+      setPromptUser(false);
+    } else {
+      setPromptUser(false);
+      assignBaseGroupToUser(url, token, userid, [selectedBG])
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            getAllStoresInBaseGroup(url, token, selectedBG)
+              .then((resp) => {
+                const j = resp.data;
+                if (j.error === 0) {
+                  const assigned = j.assigned_stores;
+                  const unassigned = j.unassigned_stores;
+                  dispatch(setBGStores({ assigned, unassigned }));
+                }
+              })
+              .catch((err: JsonError) => toast.error(err.message));
+          }
+        })
+        .catch((err: JsonError) => toast.error(err.message));
+    }
   };
 
   return (
@@ -163,9 +193,38 @@ const CreateBaseGroup = () => {
         </div>
       </div>
 
-      <div className="w-[60%]">
-        <AssignStoresBG />
-      </div>
+      {unassignedStoresInBG.length > 0 || assignedStoresInBG.length > 0 ? (
+        <div className="w-[60%]">
+          <AssignStoresBG />
+        </div>
+      ) : null}
+
+      {promptUser ? (
+        <div className="text-[13px]">
+          <div className="bg-custom-white p-2 rounded-lg shadow-lg text-center leading-tight space-y-2">
+            <div className="font-medium">
+              Would you like to assign stores to the new group?
+            </div>
+            <div className="text-content/60">
+              By selecting yes, the base group will be assigned to you
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                className="btn-themeOrange py-1.5"
+                onClick={() => handlePromptAnswer(false)}
+              >
+                No
+              </button>
+              <button
+                className="btn-themeBlue py-1.5"
+                onClick={() => handlePromptAnswer(true)}
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };
