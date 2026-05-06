@@ -15,15 +15,11 @@ const ProfileCard = () => {
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
   const { companies } = useAppSelector((state) => state.user);
-  const {
-    userInfo,
-    userCompanyIds,
-    userLevels,
-    selectedUserForm,
-    selectedUserId,
-    users,
-  } = useAppSelector((state) => state.users);
-  const { selectedBaseGroups } = useAppSelector((state) => state.baseGroup);
+  const { userInfo, userLevels, selectedUserForm, selectedUserId, users } =
+    useAppSelector((state) => state.users);
+  const { selectedNewUserStores, selectedBaseGroups } = useAppSelector(
+    (state) => state.baseGroup,
+  );
 
   // This is for selecting users in the update/delete forms and showing their info in the profile card
   // The create form is being handled separately in create user as those companies appear in the
@@ -57,7 +53,7 @@ const ProfileCard = () => {
     }
 
     const filtered = [...companies].filter((c) =>
-      userCompanyIds.includes(c.company),
+      selectedNewUserStores.some((s) => s.company === c.company),
     );
     const companyNames = filtered.map((c) => c.name);
     if (companyNames.length === 1) {
@@ -84,10 +80,13 @@ const ProfileCard = () => {
   };
 
   const showBaseGroups = () => {
-    if (selectedBaseGroups.length === 0) {
+    if (selectedNewUserStores.length === 0) {
       return "";
     }
-    const names = selectedBaseGroups.map((bg) => bg.name).join(", ");
+    const names = selectedBaseGroups
+      .filter((bg) => selectedNewUserStores.some((s) => s.base_group === bg.id))
+      .map((b) => b.name)
+      .join(", ");
     return names;
   };
 
@@ -130,9 +129,6 @@ const ProfileCard = () => {
           </div>
         </div>
       </div>
-      {/* {selectedUserForm !== "create" && selectedUserForm !== "user_info" ? (
-        <SearchUser />
-      ) : null} */}
     </div>
   );
 };

@@ -32,12 +32,11 @@ import {
 } from "../../features/adminSlice";
 import ExportMissingStoresModal from "./admin/ExportMissingStoresModal";
 import { adminMissingSalesColumns } from "./admin";
-import Assigned from "./assignModal/Assigned";
-import Unassigned from "./assignModal/Unassigned";
 import TeamTablet from "./tabletComps/TeamTablet";
-import { setAllSelectedBaseGroups } from "../../features/baseGroupSlice";
+import { setAllSelectedBaseGroups, setStoresWithBGID } from "../../features/baseGroupSlice";
 import UpdateUserForm from "./users/UpdateUserForm";
 import DeleteUserForm from "./users/DeleteUserForm";
+import StoresWithBG from "./users/StoresWithBG";
 
 const options = [
   { label: "Users", value: 1 },
@@ -53,7 +52,7 @@ const Team = () => {
     (state) => state.app,
   );
   const companies = useAppSelector((state) => state.user.companies);
-  const { refresh, selectedUserId, selectedForm, selectedUserStores, selectedUserForm } =
+  const { refresh, selectedUserId, selectedForm, selectedUserForm } =
     useAppSelector((state) => state.users);
 
   const { filteredMissingStores } = useAppSelector((state) => state.admin);
@@ -68,6 +67,7 @@ const Team = () => {
       dispatch(setUserCompanyIds([]));
       dispatch(setSelectedUserId(0));
       dispatch(setAllSelectedBaseGroups([]));
+      dispatch(setStoresWithBGID([]));
     };
   }, []);
 
@@ -81,6 +81,7 @@ const Team = () => {
     dispatch(setUserCompanyIds([]));
     dispatch(setSelectedUserId(0));
     dispatch(setAllSelectedBaseGroups([]));
+    dispatch(setStoresWithBGID([]));
   }, [selectedForm]);
 
   useEffect(() => {
@@ -180,15 +181,7 @@ const Team = () => {
 
   const renderSubForm = () => {
     if (selectedUserForm === "create") {
-      return (
-        <div
-          data-testid="ctrl-store-assign"
-          className={`flex gap-4 max-h-[calc(100vh-5rem)] overflow-hidden ${selectedUserStores.unassigned.length || selectedUserStores.assigned.length ? "" : "hidden"}`}
-        >
-          <Unassigned />
-          <Assigned />
-        </div>
-      );
+      return <StoresWithBG />;
     }
 
     if (selectedUserForm === "user_info") {
@@ -220,9 +213,7 @@ const Team = () => {
             {renderForm()}
           </div>
           {selectedForm !== 3 && (
-            <div className="w-[45%]">
-              {renderSubForm()}
-            </div>
+            <div className="w-[45%]">{renderSubForm()}</div>
           )}
         </div>
       ) : (

@@ -1,20 +1,29 @@
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getBaseGroups } from "../../../api/baseGroups";
+import {
+  getAllStoresInBaseGroup,
+  getBaseGroups,
+} from "../../../api/baseGroups";
 import {
   setAllSelectedBaseGroups,
   setBaseGroups,
   setCompany,
   setSelectedBaseGroups,
+  setStoresWithBGID,
 } from "../../../features/baseGroupSlice";
 import type { CompanyBaseGroup, JsonError, Store } from "../../../interfaces";
 import {
   assignBaseGroupToUser,
+  assignUserToStore,
   checkUsername,
   createUser,
 } from "../../../api/team";
-import { setRefresh, setSelectedUserId, setSelectedUserStores } from "../../../features/usersSlice";
-import { assignUserToCompany, getUserStores } from "../../../api/user";
+import {
+  resetUserInfo,
+  setRefresh,
+  setSelectedUserId,
+} from "../../../features/usersSlice";
+import { assignUserToCompany } from "../../../api/user";
 
 const UserCompanyBG = () => {
   const toast = useToast();
@@ -23,9 +32,13 @@ const UserCompanyBG = () => {
   const { url, token } = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
   const { userCompanyIds, userInfo } = useAppSelector((state) => state.users);
-  const { baseGroups, selectedBaseGroups, company } = useAppSelector(
-    (state) => state.baseGroup,
-  );
+  const {
+    baseGroups,
+    selectedBaseGroups,
+    company,
+    storesWithBGID,
+    selectedNewUserStores,
+  } = useAppSelector((state) => state.baseGroup);
 
   const handleCompanySelect = (x: number) => {
     getBaseGroups(url, token, x)
@@ -52,6 +65,21 @@ const UserCompanyBG = () => {
   const handleBGSelect = (bg: CompanyBaseGroup) => {
     const filtered = [...baseGroups].filter((g) => g.id === bg.id);
     dispatch(setSelectedBaseGroups(filtered[0]));
+    const found = storesWithBGID.find((b) => b.base_group === bg.id);
+    if (!found) {
+      getAllStoresInBaseGroup(url, token, bg.id)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            const withBGID = [...j.assigned_stores].map((s: Store) => {
+              return { ...s, base_group: bg.id };
+            });
+
+            dispatch(setStoresWithBGID([...storesWithBGID, ...withBGID]));
+          }
+        })
+        .catch((err: JsonError) => toast.error(err.message));
+    }
   };
 
   const canSubmit = () => {
@@ -83,36 +111,6 @@ const UserCompanyBG = () => {
     dispatch(setAllSelectedBaseGroups(filtered));
   };
 
-  const getStores = (userid: number) => {
-    const filterNulls = (arr: Store[]) => {
-      return arr.filter((store) => store.store_name !== null);
-    };
-    getUserStores(url, token, userid)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          const stores = {
-            assigned: filterNulls(j.assigned_stores).sort(
-              (a: Store, b: Store) =>
-                parseInt(a.store_number) - parseInt(b.store_number),
-            ),
-            unassigned: filterNulls(j.unassigned_stores).sort(
-              (a: Store, b: Store) =>
-                parseInt(a.store_number) - parseInt(b.store_number),
-            ),
-          };
-          dispatch(setSelectedUserStores(stores));
-          dispatch(setRefresh(true));
-          toast.success(
-            "User updated, you can add or remove stores for the user",
-          );
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error("Error fetching available stores " + err.message);
-      });
-  };
-
   const handleSubmit = () => {
     checkUsername(url, token, userInfo.username)
       .then((resp) => {
@@ -123,19 +121,45 @@ const UserCompanyBG = () => {
               const j = resp.data;
               if (j.error === 0) {
                 const userid = j.new_userid;
+                const companyIds = Array.from(
+                  new Set([...selectedNewUserStores].map((s) => s.company)),
+                );
+                const bgIds = Array.from(
+                  new Set([...selectedNewUserStores].map((s) => s.base_group)),
+                );
                 dispatch(setSelectedUserId(userid));
-                assignUserToCompany(url, token, userid, userCompanyIds)
+                assignUserToCompany(url, token, userid, companyIds)
                   .then((resp) => {
                     const j = resp.data;
                     if (j.error === 0) {
-                      const groupid = [...selectedBaseGroups].map(
-                        (bg) => bg.id,
-                      );
-                      assignBaseGroupToUser(url, token, userid, groupid)
+                      assignBaseGroupToUser(url, token, userid, bgIds)
                         .then((resp) => {
                           const j = resp.data;
                           if (j.error === 0) {
-                            getStores(userid);
+                            const storeIds = selectedNewUserStores.map(
+                              (s) => s.storeid,
+                            );
+                            assignUserToStore(url, token, userid, storeIds)
+                              .then((resp) => {
+                                const j = resp.data;
+                                if (j.error === 0) {
+                                  toast.success(
+                                    "User created and assigned to selected companies, base groups, and stores",
+                                  );
+                                  dispatch(resetUserInfo());
+                                  dispatch(setRefresh(true));
+                                } else {
+                                  toast.warn(
+                                    "Error assigning user to stores " + j.msg,
+                                  );
+                                }
+                              })
+                              .catch((err: JsonError) =>
+                                toast.error(
+                                  "Error assigning user to stores " +
+                                    err.message,
+                                ),
+                              );
                           }
                         })
                         .catch((err: JsonError) => toast.error(err.message));

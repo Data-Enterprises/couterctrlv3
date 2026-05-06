@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { deleteBaseGroup, getBaseGroups } from "../../../api/baseGroups";
-import SingleSelect from "../../../components/SingleSelect";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import type {
   CompanyBaseGroup,
@@ -20,7 +19,7 @@ const DeleteBaseGroup = () => {
   const [selectedBgID, setSelectedBgID] = useState<number>(0);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
-  const { url, token, isDesktop } = useAppSelector((state) => state.app);
+  const { url, token } = useAppSelector((state) => state.app);
   const { companies } = useAppSelector((state) => state.user);
   const { selectedCompanyId } = useAppSelector((state) => state.users);
 

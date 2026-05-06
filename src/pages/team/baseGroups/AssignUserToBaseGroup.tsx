@@ -22,7 +22,6 @@ import {
 } from "../../../features/baseGroupSlice";
 
 import SearchUser from "../forms/SearchUser";
-import SingleSelect from "../../../components/SingleSelect";
 import Input from "../../../components/inputs/Input";
 import { useEffect, useState } from "react";
 import { WarningIcon } from "../../../components/toasts/Icons";
@@ -54,11 +53,11 @@ const AssignUserToBG = () => {
     ? users.filter((u) => u.id === selectedUserId)[0].companies
     : [];
 
-  const handleCompanySelect = (x: string | number) => {
+  const handleCompanySelect = (x: number) => {
     // Getting the base groups for the selected company
     const userCompanies = users.filter((u) => u.id === selectedUserId)[0]
       .companies;
-    const company = userCompanies.filter((c) => c.company === Number(x))[0];
+    const company = userCompanies.filter((c) => c.company === x)[0];
     dispatch(setUserCompany(company));
     getData(company);
   };
@@ -113,7 +112,7 @@ const AssignUserToBG = () => {
             getData(userCompany!);
           }
         })
-        .catch((err: JsonError) => toast.error(err.message));;
+        .catch((err: JsonError) => toast.error(err.message));
     }
   };
 
@@ -168,9 +167,19 @@ const AssignUserToBG = () => {
     dispatch(resetUserInfo());
   };
 
+  const companyBG = (id: number) => {
+    if (userCompany && userCompany.id === id) {
+      return "bg-[rgb(30,45,80)] text-custom-white";
+    }
+    return "text-content/85 bg-content/10";
+  };
+
   if (isOutranked()) {
     return (
-      <div data-testid="bg-assign-outrank-container" className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg">
+      <div
+        data-testid="bg-assign-outrank-container"
+        className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg"
+      >
         <div className="font-medium text-sm flex flex-col items-center">
           <WarningIcon fill="#f97316" height={56} width={56} />
           <div className="mb-2">We're sorry...</div>
@@ -189,15 +198,23 @@ const AssignUserToBG = () => {
   }
 
   return (
-    <div data-testid="bg-assign-form-container" className={`${isDesktop? "" :"max-h-[65vh] overflow-hidden overflow-y-scroll"} space-y-2`}>
+    <div
+      data-testid="bg-assign-form-container"
+      className={`${isDesktop ? "" : "max-h-[65vh] overflow-hidden overflow-y-scroll"} space-y-2`}
+    >
       <SearchUser />
-      <SingleSelect
-        label="Select Company"
-        data={companies}
-        displayKey="name"
-        valueKey="company"
-        onSelect={handleCompanySelect}
-      />
+      <div className="text-[13px] font-medium mb-0.5 pl-1">Companies</div>
+      <div className="flex flex-wrap gap-1.5 text-[11.5px] leading-tight mb-1">
+        {companies.map((c) => (
+          <div
+            key={c.id}
+            className={`px-2 py-0.5 rounded-full ${companyBG(c.company)} cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white`}
+            onClick={() => handleCompanySelect(c.company)}
+          >
+            {c.name}
+          </div>
+        ))}
+      </div>
 
       <div className="grid grid-cols-2 py-2 gap-4 text-sm">
         <div className="bg-custom-white rounded-lg shadow-lg space-y-2 p-2">
@@ -227,7 +244,9 @@ const AssignUserToBG = () => {
               </div>
             ))}
           </div>
-          <div className={`grid ${isDesktop ? "grid-cols-2" : "grid-cols-1"} gap-2`}>
+          <div
+            className={`grid ${isDesktop ? "grid-cols-2" : "grid-cols-1"} gap-2`}
+          >
             <button
               data-testid="bg-assign-form-assign-btn"
               className={`btn-themeGreen ${bgIdsToAssign.length === 0 && "opacity-50 pointer-events-none"}`}
@@ -271,7 +290,9 @@ const AssignUserToBG = () => {
               </div>
             ))}
           </div>
-          <div className={`grid ${isDesktop ? "grid-cols-2" : "grid-cols-1"} gap-2`}>
+          <div
+            className={`grid ${isDesktop ? "grid-cols-2" : "grid-cols-1"} gap-2`}
+          >
             <button
               data-testid="bg-assign-form-unassign-btn"
               className={`btn-themeGreen ${bgIdsToUnassign.length === 0 && "opacity-50 pointer-events-none"}`}

@@ -7,6 +7,8 @@ import type {
   UserCompany,
 } from "../interfaces";
 
+export type StoreWithBGID = Store & { base_group: number };
+
 interface BaseGroupState {
   baseGroups: CompanyBaseGroup[];
   selectedBaseGroups: CompanyBaseGroup[];
@@ -23,6 +25,8 @@ interface BaseGroupState {
   assignedStoresInBG: Store[];
   unassignedStoresInBG: Store[];
   selectedBG: number;
+  storesWithBGID: StoreWithBGID[];
+  selectedNewUserStores: StoreWithBGID[];
 }
 
 const initialState: BaseGroupState = {
@@ -41,6 +45,8 @@ const initialState: BaseGroupState = {
   assignedStoresInBG: [],
   unassignedStoresInBG: [],
   selectedBG: 0,
+  storesWithBGID: [],
+  selectedNewUserStores: [],
 };
 
 export const baseGroupSlice = createSlice({
@@ -72,10 +78,18 @@ export const baseGroupSlice = createSlice({
       const id = action.payload.id;
       const found = state.selectedBaseGroups.find((bg) => bg.id === id);
 
+      // filtering out if toggling off
       if (found) {
         const filtered = state.selectedBaseGroups.filter((bg) => bg.id !== id);
         state.selectedBaseGroups = filtered;
+        state.storesWithBGID = state.storesWithBGID.filter(
+          (s) => s.base_group !== id,
+        );
+        state.selectedNewUserStores = state.selectedNewUserStores.filter(
+          (s) => s.base_group !== id,
+        );
       } else {
+        // toggling on, adding to selected
         state.selectedBaseGroups.push(action.payload);
       }
     },
@@ -95,12 +109,6 @@ export const baseGroupSlice = createSlice({
       state.baseGroups = [];
       state.selectedBaseGroups = [];
     },
-    // setBgsToAssign: (state, action: PayloadAction<number[]>) => {
-    //   state.bgsToAssign = action.payload;
-    // },
-    // setBgsToUnassign: (state, action: PayloadAction<number[]>) => {
-    //   state.bgsToUnassign = action.payload;
-    // },
     setBgIdsToAssign: (state, action: PayloadAction<number>) => {
       const id = action.payload;
       if (state.bgIdsToAssign.includes(id)) {
@@ -127,6 +135,12 @@ export const baseGroupSlice = createSlice({
     setInactiveBaseGroups: (state, action: PayloadAction<BaseGroup[]>) => {
       state.inactiveBaseGroups = action.payload;
     },
+    setSelectedNewUserStores: (
+      state,
+      action: PayloadAction<StoreWithBGID[]>,
+    ) => {
+      state.selectedNewUserStores = action.payload;
+    },
     setBGStores: (
       state,
       action: PayloadAction<{
@@ -140,6 +154,9 @@ export const baseGroupSlice = createSlice({
     },
     setSelectedBG: (state, action: PayloadAction<number>) => {
       state.selectedBG = action.payload;
+    },
+    setStoresWithBGID: (state, action: PayloadAction<StoreWithBGID[]>) => {
+      state.storesWithBGID = action.payload;
     },
     resetBaseGroupSlice: () => initialState,
   },
@@ -165,5 +182,7 @@ export const {
   setInactiveBaseGroups,
   setBGStores,
   setSelectedBG,
+  setStoresWithBGID,
+  setSelectedNewUserStores,
 } = baseGroupSlice.actions;
 export default baseGroupSlice.reducer;
