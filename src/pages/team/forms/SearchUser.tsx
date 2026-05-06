@@ -158,14 +158,14 @@ const SearchUser = () => {
       <div className="flex gap-2">
         <button
           data-testid="username-filter-btn"
-          className={`w-1/2 ${userFilterType === "name" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200 font-medium text-center rounded-full shadow-md py-2`}
+          className={`w-1/2 ${userFilterType === "name" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white font-medium text-center rounded-full shadow-md py-2`}
           onClick={() => dispatch(setUserFilterType("name"))}
         >
           Username
         </button>
         <button
           data-testid="email-filter-btn"
-          className={`w-1/2 ${userFilterType === "email" ? "bg-orange-200" : "bg-custom-white"}  font-medium text-center rounded-full shadow-md py-2`}
+          className={`w-1/2 ${userFilterType === "email" ? "bg-orange-200" : "bg-custom-white"} transiation-all duration-200 font-medium text-center hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white rounded-full shadow-md py-2`}
           onClick={() => dispatch(setUserFilterType("email"))}
         >
           Email
