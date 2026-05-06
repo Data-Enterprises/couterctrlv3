@@ -29,21 +29,21 @@ const BaseGroupForms = () => {
         className={`${bgOption === "create" ? "bg-orange-200" : ""} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
         onClick={() => dispatch(setBGOption("create"))}
       >
-        Create
+        New Base Group
       </div>
       <div
         data-testid="bg-update-form-btn"
         className={`${bgOption === "update" ? "bg-orange-200" : ""} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
         onClick={() => dispatch(setBGOption("update"))}
       >
-        Update
+        Update Base Group
       </div>
       <div
         data-testid="bg-delete-form-btn"
         className={`${bgOption === "delete" ? "bg-orange-200" : ""} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
         onClick={() => dispatch(setBGOption("delete"))}
       >
-        Delete
+        Delete Base Group
       </div>
       <div
         data-testid="bg-assign-form-btn"

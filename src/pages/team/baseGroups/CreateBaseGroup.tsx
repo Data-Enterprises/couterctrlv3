@@ -131,6 +131,11 @@ const CreateBaseGroup = () => {
     }
   };
 
+  const handleReset = () => {
+    dispatch(setSelectedBG(0));
+    dispatch(setBGStores({ assigned: [], unassigned: [] }));
+  };
+
   return (
     <div data-testid="create-bg-form-container" className="flex gap-2">
       <div className="w-[40%]">
@@ -157,7 +162,7 @@ const CreateBaseGroup = () => {
                 {baseGroups.map((bg) => (
                   <div
                     key={bg.id}
-                    className={`py-0.5 px-2 transition-all duration-200`}
+                    className={`py-0.5 px-2 transition-all duration-200 ${selectedBG === bg.id ? "bg-orange-200" : ""} rounded-lg cursor-pointer hover:bg-emerald-200/75`}
                   >
                     {bg.name}
                   </div>
@@ -188,6 +193,16 @@ const CreateBaseGroup = () => {
               >
                 Submit
               </button>
+
+              {unassignedStoresInBG.length > 0 ||
+              assignedStoresInBG.length > 0 ? (
+                <button
+                  className="btn-themeGreen w-full px-0 mt-2 py-1.5"
+                  onClick={handleReset}
+                >
+                  Reset Form
+                </button>
+              ) : null}
             </div>
           )}
         </div>
