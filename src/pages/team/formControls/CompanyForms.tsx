@@ -42,7 +42,7 @@ const CompanyForms = () => {
         className={`${selectedForm === "create" ? "bg-orange-200" : ""} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
         onClick={() => handleFormSelect("create")}
       >
-        Create
+        New Company
       </div>
       <div
         data-testid="update-company-form"

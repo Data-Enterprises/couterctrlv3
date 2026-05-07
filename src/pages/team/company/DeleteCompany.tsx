@@ -46,7 +46,7 @@ const DeleteCompany = () => {
 
   if (isDeleting) {
     return (
-      <div className="bg-custom-white rounded-lg shadow-lg p-4 w-[25vw] text-center">
+      <div className="bg-custom-white rounded-lg shadow-lg p-2 text-[13px] w-[25vw] text-center">
         <div>Are you sure you want to delete</div>
         <div>
           Company = <span className="font-medium">{companyInfo.name}</span>
@@ -73,15 +73,18 @@ const DeleteCompany = () => {
   );
 
   return (
-    <div data-testid="delete-company-form-container" className="bg-custom-white rounded-lg shadow-lg p-4 w-[25vw]">
-      <div className="text-sm">
+    <div
+      data-testid="delete-company-form-container"
+      className="bg-custom-white rounded-lg shadow-lg p-2 w-[25vw]"
+    >
+      <div className="text-[13px]">
         <div className="font-medium">Select company to delete</div>
-        <div className="select-none grid rounded-lg p-1 min-h-20 max-h-32 overflow-hidden overflow-y-auto">
+        <div className="select-none grid rounded-lg p-1 max-h-[45vh] overflow-hidden overflow-y-auto">
           {filteredCompanies.map((c, i) => (
             <div
               key={c.id}
               data-testid={`delete-company-select-${i}`}
-              className={`${selectedCompanyId === c.id && "bg-orange-200"} rounded-full py-1 pl-2 border-b transition-all duration-200 cursor-pointer hover:bg-blue-200`}
+              className={`${selectedCompanyId === c.id && "bg-[rgb(30,45,80)] text-custom-white"} rounded-full py-1 pl-2 border-b transition-all duration-200 cursor-pointer hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white`}
               onClick={() => handleCompanyClick(c.id)}
             >
               {c.name}
@@ -92,11 +95,11 @@ const DeleteCompany = () => {
           label="Company Name"
           value={companyInfo.name}
           setValue={() => {}}
-          className="opacity-50 pointer-events-none"
+          className="opacity-50 pointer-events-none py-1 text-[13px]"
         />
         <button
           data-testid="delete-company-step-one-btn"
-          className={`${selectedCompanyId === 0 && "opacity-50 pointer-events-none"} btn-themeOrange mt-2 w-full`}
+          className={`${selectedCompanyId === 0 && "opacity-50 pointer-events-none"} mt-2 w-full btn-themeOrange bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5`}
           onClick={() => setIsDeleting(true)}
         >
           Delete

@@ -153,7 +153,10 @@ const AssignCompanyToUser = () => {
 
   if (isOutranked()) {
     return (
-      <div data-testid="outranked-message-container" className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg">
+      <div
+        data-testid="outranked-message-container"
+        className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg"
+      >
         <div className="font-medium text-sm flex flex-col items-center">
           <WarningIcon fill="#f97316" height={56} width={56} />
           <div className="mb-2">We're sorry...</div>
@@ -172,11 +175,11 @@ const AssignCompanyToUser = () => {
   }
 
   return (
-    <div>
+    <div className="w-[80%]">
       <SearchUser />
       <div
         data-testid="company-assign-container"
-        className="grid grid-cols-2 gap-4 mt-4 text-sm"
+        className="grid grid-cols-2 gap-2 mt-2"
       >
         <div className="bg-custom-white rounded-lg shadow-lg space-y-2 p-2">
           <Input
@@ -184,20 +187,19 @@ const AssignCompanyToUser = () => {
             value={unassignedFilter}
             setValue={handleUnassignedFilterText}
           />
-          <div className="space-y-2 h-[50vh] max-h-[50vh] overflow-hidden overflow-y-auto no-scrollbar">
+          <div className="space-y-2 h-[50vh] max-h-[50vh] overflow-hidden overflow-y-auto no-scrollbar text-[11.5px]">
             {filtered(userUnassignedCompanies, unassignedFilter).map((c, i) => (
               <div
                 key={c.id}
                 data-testid={`unassigned-company-${i}`}
-                className={`${companiesToAssign.includes(c.company) && "bg-emerald-200"} px-2 py-3 rounded-lg shadow-lg flex justify-between items-center hover:bg-blue-200 cursor-pointer transition-all duration-200`}
+                className={`${companiesToAssign.includes(c.company) ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "text-content/85 bg-content/10"} p-2 rounded-full flex justify-between items-center relative cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white`}
                 onClick={() => handleCompanyToAssign(c.company)}
               >
-                <div>
-                  <div className="font-medium">Company</div>
-                  <div>{c.name}</div>
-                </div>
-                <div className="text-orange-500 font-medium">
-                  Inactive
+                <div className="text-[12px]">{c.name}</div>
+                <div
+                  className={`absolute right-2 z-10 bg-[rgb(30,45,80)] text-custom-white px-2 py-[1px] rounded-full`}
+                >
+                  Assign
                 </div>
               </div>
             ))}
@@ -205,14 +207,14 @@ const AssignCompanyToUser = () => {
           <div className="grid grid-cols-2 gap-2">
             <button
               data-testid="company-assign-btn"
-              className={`btn-themeGreen ${companiesToAssign.length === 0 && "opacity-50 pointer-events-none"}`}
+              className={`btn-themeGreen btn-themeOrange bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-[13px] ${companiesToAssign.length === 0 && "opacity-50 pointer-events-none"}`}
               onClick={() => handleSubmit("assign")}
             >
               Assign
             </button>
             <button
               data-testid="company-assign-all-btn"
-              className="btn-themeGreen"
+              className="btn-themeGreen btn-themeOrange bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-[13px]"
               onClick={() => handleSubmit("assign_all")}
             >
               Assign All
@@ -225,20 +227,19 @@ const AssignCompanyToUser = () => {
             value={assignedFilter}
             setValue={handleAssignedFilterText}
           />
-          <div className="space-y-2 h-[50vh] max-h-[50vh] overflow-hidden overflow-y-auto no-scrollbar">
+          <div className="space-y-2 h-[50vh] max-h-[50vh] overflow-hidden overflow-y-auto no-scrollbar text-[11.5px]">
             {filtered(userAssignedCompanies, assignedFilter).map((c, i) => (
               <div
                 key={c.id}
                 data-testid={`assigned-company-${i}`}
-                className={`${companiesToUnassign.includes(c.company) && "bg-emerald-200"} px-2 py-3 rounded-lg shadow-lg flex justify-between items-center hover:bg-blue-200 cursor-pointer transition-all duration-200`}
+                className={`${companiesToUnassign.includes(c.company) ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "text-content/85 bg-content/10"} p-2 rounded-full flex justify-between items-center relative cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white`}
                 onClick={() => handleCompanyToUnassign(c.company)}
               >
-                <div>
-                  <div className="font-medium">Company</div>
-                  <div>{c.name}</div>
-                </div>
-                <div className="text-emerald-500 font-medium">
-                  Active
+                <div className="text-[12px]">{c.name}</div>
+                <div
+                  className={`absolute right-2 z-10 bg-red-600 text-custom-white px-2 py-[1px] rounded-full`}
+                >
+                  Unassign
                 </div>
               </div>
             ))}
@@ -246,14 +247,14 @@ const AssignCompanyToUser = () => {
           <div className="grid grid-cols-2 gap-2">
             <button
               data-testid="company-unassign-btn"
-              className={`btn-themeGreen ${companiesToUnassign.length === 0 && "opacity-50 pointer-events-none"}`}
+              className={`btn-themeGreen btn-themeOrange bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-[13px] ${companiesToUnassign.length === 0 && "opacity-50 pointer-events-none"}`}
               onClick={() => handleSubmit("unassign")}
             >
               Unassign
             </button>
             <button
               data-testid="company-unassign-all-btn"
-              className="btn-themeGreen"
+              className="btn-themeGreen btn-themeOrange bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-[13px]"
               onClick={() => handleSubmit("unassign_all")}
             >
               Unassign All

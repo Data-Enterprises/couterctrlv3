@@ -61,7 +61,7 @@ const CompanyControls = () => {
     }
   };
 
-  return <div className="">{renderForm()}</div>;
+  return renderForm()
 };
 
 export default CompanyControls;
