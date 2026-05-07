@@ -159,7 +159,7 @@ const UserInfoForm = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[calc(100vh-380px)] overflow-y-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[calc(100vh-305px)] overflow-y-auto">
         {filteredUsers().map((user, i) => (
           <div
             key={i}
