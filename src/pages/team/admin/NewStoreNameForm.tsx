@@ -141,11 +141,10 @@ const NewStoreNameForm = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg p-4 w-[50%] space-y-2">
+    <div className="bg-custom-white rounded-lg shadow-lg p-2 w-[50%] space-y-1.5">
       {/* filters */}
-      <div className="text-[13px] font-medium text-content/60 text-center">
-        ** Ensure the new store name is unique and different from the current
-        name
+      <div className="text-[12px] font-medium text-content/60 text-center">
+        Ensure the new store name is unique from the current name
       </div>
       <div className="grid grid-cols-2 gap-2">
         <SingleSelect
@@ -156,6 +155,7 @@ const NewStoreNameForm = () => {
           valueKey="company"
           onSelect={handleCompanySelect}
           defaultQuery="All"
+          innerClass="py-1 text-[13px]"
         />
         <SingleSelect
           id={2}
@@ -165,6 +165,7 @@ const NewStoreNameForm = () => {
           valueKey="value"
           onSelect={handleAssignedFilterChange}
           defaultQuery="All"
+          innerClass="py-1 text-[13px]"
         />
       </div>
       {/* store list */}
@@ -174,6 +175,7 @@ const NewStoreNameForm = () => {
         data={filteredStores}
         displayKey="store_name"
         valueKey="storeid"
+        innerClass="py-1 text-[13px]"
         onSelect={handleStoreSelect}
         resetQuery={true}
       />
@@ -183,16 +185,17 @@ const NewStoreNameForm = () => {
           label="Selected Store Name"
           value={selectedStoreInfo ? selectedStoreInfo.store_name : ""}
           setValue={() => {}}
-          className="opacity-50 pointer-events-none"
+          className="opacity-50 pointer-events-none py-1 text-[13px]"
         />
         <Input
           label="New Store Name"
           value={newStoreNameText}
           setValue={handleNewNameTextChange}
+          className="py-1 text-[13px]"
         />
         <button
           data-testid="submit-new-store-name-btn"
-          className={`btn-themeBlue w-full ${canSubmit()}`}
+          className={`btn-themeBlue text-[13px] bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 w-full ${canSubmit()}`}
           onClick={handleSubmit}
         >
           Submit

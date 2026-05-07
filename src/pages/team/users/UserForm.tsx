@@ -11,17 +11,16 @@ import {
   setAllSelectedBaseGroups,
   setBaseGroups,
   setCompany,
+  setUserCompany,
 } from "../../../features/baseGroupSlice";
 
 import type { CompanyBaseGroup, JsonError } from "../../../interfaces";
 
 // Components/Icons
-import UpdatePasswordForm from "../forms/UpdatePasswordForm";
-import ResetSecurityForm from "../forms/ResetSecurity";
 import UserInputs from "./UserInputs";
 import UserCompanyBG from "./UserCompanyBG";
 import { getBaseGroups } from "../../../api/baseGroups";
-import UserGrid from "../UserGrid";
+import UserGrid from "../forms/UserGrid";
 import DeleteUserGrid from "./DeleteUserGrid";
 
 const UserForm = () => {
@@ -40,18 +39,20 @@ const UserForm = () => {
   }, [selectedUserForm]);
 
   useEffect(() => {
-    if (selectedUserForm === "create") {const selected = [...selectedBaseGroups];
-    const newCompanyIds = selected.reduce(
-      (acc: number[], curr: CompanyBaseGroup) => {
-        if (!acc.includes(curr.company)) {
-          acc.push(curr.company);
-        }
-        return acc;
-      },
-      [],
-    );
+    if (selectedUserForm === "create") {
+      const selected = [...selectedBaseGroups];
+      const newCompanyIds = selected.reduce(
+        (acc: number[], curr: CompanyBaseGroup) => {
+          if (!acc.includes(curr.company)) {
+            acc.push(curr.company);
+          }
+          return acc;
+        },
+        [],
+      );
 
-    dispatch(setUserCompanyIds(newCompanyIds));}
+      dispatch(setUserCompanyIds(newCompanyIds));
+    }
   }, [selectedBaseGroups]);
 
   useEffect(() => {
@@ -73,6 +74,7 @@ const UserForm = () => {
       dispatch(resetSelectedBaseGroups());
       dispatch(setUserCompanyIds([]));
       dispatch(setCompany(null));
+      dispatch(setUserCompany(null));
       dispatch(setAllSelectedBaseGroups([]));
       dispatch(setSelectedUserStores({ assigned: [], unassigned: [] }));
     }
@@ -80,11 +82,9 @@ const UserForm = () => {
 
   // if deleting a user or setting a temp password, check these components
   if (selectedUserForm === "delete") return <DeleteUserGrid />;
-  if (selectedUserForm === "update_password") return <UpdatePasswordForm />;
   if (selectedUserForm === "user_info") return <UserGrid />;
-  if (selectedUserForm === "reset_security") return <ResetSecurityForm />;
 
-  // Otherwise, we're either creating a new user or updating an existing one
+  // Otherwise, we're either creating a new user
   return (
     <div className="bg-custom-white rounded-lg shadow-lg mt-4 p-2 relative">
       <div className="flex gap-2 text-[12px] items-center select-none absolute top-2 right-2">
