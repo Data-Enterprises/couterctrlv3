@@ -69,6 +69,10 @@ const Assigned = () => {
     return stores.length > 0;
   };
 
+  const maxHeight = context.isTablet
+    ? "max-h-[calc(100vh-34.5rem)]"
+    : "max-h-[calc(100vh-17.5rem)]";
+
   return (
     <div className="w-1/2 text-[13px]">
       <div className="bg-custom-white p-2 rounded-lg shadow-lg">
@@ -83,7 +87,7 @@ const Assigned = () => {
           value={filterText}
           onChange={handleChange}
         />
-        <div className="max-h-[calc(100vh-17.5rem)] overflow-y-auto space-y-1 mt-2">
+        <div className={`${maxHeight} overflow-y-auto space-y-1 mt-2`}>
           {hasLength()
             ? stores.map((store, i) => (
                 <div

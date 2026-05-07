@@ -103,7 +103,7 @@ const UserInfoForm = () => {
       <div className="">
         <div>
           <div className="pl-0.5">Companies</div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2 text-[14px]">
             {user.companies.map((c, i) => (
               <button
                 key={i}
@@ -121,7 +121,7 @@ const UserInfoForm = () => {
         </div>
         <div>
           <div className="pl-0.5">User Levels</div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2 text-[14px]">
             {ctx.userLevels.map((l, i) => (
               <button
                 key={i}

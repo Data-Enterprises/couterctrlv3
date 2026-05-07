@@ -16,6 +16,7 @@ import type { CompanyBaseGroup, JsonError, Store } from "../../../interfaces";
 import {
   assignBaseGroupToUser,
   assignUserToStore,
+  checkEmail,
   checkUsername,
   createUser,
 } from "../../../api/team";
@@ -127,7 +128,7 @@ const UserCompanyBG = () => {
       return true;
     });
 
-    // If toggling off a company, remove all stores with that company's 
+    // If toggling off a company, remove all stores with that company's
     // base groups => avoids store assignments without a base group/company
     dispatch(setAllSelectedBaseGroups(filtered));
     dispatch(setSelectedNewUserStores(filteredSelectedStores));
@@ -139,63 +140,86 @@ const UserCompanyBG = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          createUser(url, token, userInfo)
+          checkEmail(url, token, userInfo.email)
             .then((resp) => {
               const j = resp.data;
               if (j.error === 0) {
-                const userid = j.new_userid;
-                const companyIds = Array.from(
-                  new Set([...selectedNewUserStores].map((s) => s.company)),
-                );
-                const bgIds = Array.from(
-                  new Set([...selectedNewUserStores].map((s) => s.base_group)),
-                );
-                dispatch(setSelectedUserId(userid));
-                assignUserToCompany(url, token, userid, companyIds)
+                createUser(url, token, userInfo)
                   .then((resp) => {
                     const j = resp.data;
                     if (j.error === 0) {
-                      assignBaseGroupToUser(url, token, userid, bgIds)
+                      const userid = j.new_userid;
+                      const companyIds = Array.from(
+                        new Set(
+                          [...selectedNewUserStores].map((s) => s.company),
+                        ),
+                      );
+                      const bgIds = Array.from(
+                        new Set(
+                          [...selectedNewUserStores].map((s) => s.base_group),
+                        ),
+                      );
+                      dispatch(setSelectedUserId(userid));
+                      assignUserToCompany(url, token, userid, companyIds)
                         .then((resp) => {
                           const j = resp.data;
                           if (j.error === 0) {
-                            const storeIds = selectedNewUserStores.map(
-                              (s) => s.storeid,
-                            );
-                            assignUserToStore(url, token, userid, storeIds)
+                            assignBaseGroupToUser(url, token, userid, bgIds)
                               .then((resp) => {
                                 const j = resp.data;
                                 if (j.error === 0) {
-                                  toast.success(
-                                    "User created and assigned to selected companies, base groups, and stores",
+                                  const storeIds = selectedNewUserStores.map(
+                                    (s) => s.storeid,
                                   );
-                                  dispatch(resetUserInfo());
-                                  dispatch(setStoresWithBGID([]));
-                                  dispatch(setSelectedNewUserStores([]));
-                                  dispatch(setRefresh(true));
-                                } else {
-                                  toast.warn(
-                                    "Error assigning user to stores " + j.msg,
-                                  );
+                                  assignUserToStore(
+                                    url,
+                                    token,
+                                    userid,
+                                    storeIds,
+                                  )
+                                    .then((resp) => {
+                                      const j = resp.data;
+                                      if (j.error === 0) {
+                                        toast.success(
+                                          "User created and assigned to selected companies, base groups, and stores",
+                                        );
+                                        dispatch(resetUserInfo());
+                                        dispatch(setStoresWithBGID([]));
+                                        dispatch(setSelectedNewUserStores([]));
+                                        dispatch(setRefresh(true));
+                                      } else {
+                                        toast.warn(
+                                          "Error assigning user to stores " +
+                                            j.msg,
+                                        );
+                                      }
+                                    })
+                                    .catch((err: JsonError) =>
+                                      toast.error(
+                                        "Error assigning user to stores " +
+                                          err.message,
+                                      ),
+                                    );
                                 }
                               })
                               .catch((err: JsonError) =>
-                                toast.error(
-                                  "Error assigning user to stores " +
-                                    err.message,
-                                ),
+                                toast.error(err.message),
                               );
                           }
                         })
                         .catch((err: JsonError) => toast.error(err.message));
                     }
                   })
-                  .catch((err: JsonError) => toast.error(err.message));
+                  .catch((err: JsonError) => {
+                    toast.error("Error creating user " + err.message);
+                  });
+              } else {
+                toast.warn(
+                  `Error with email check: ${userInfo.email}, ${j.msg}`,
+                );
               }
             })
-            .catch((err: JsonError) => {
-              toast.error("Error creating user " + err.message);
-            });
+            .catch((err: JsonError) => toast.error(err.message));
         } else {
           toast.warn(
             `Error with username check: ${userInfo.username}, ${j.msg}`,
