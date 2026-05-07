@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
-import { getAllUsers } from "../../api/user";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import { useToast } from "../../components/toasts/hooks/useToast";
-import type { JsonError, User } from "../../interfaces";
+import { getAllUsers } from "../../../api/user";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+import type { JsonError, User } from "../../../interfaces";
 import {
   setSelectedCompanyId,
   setSelectedUserId,
   setSelectedUserInfo,
   setUsers,
-} from "../../features/usersSlice";
+} from "../../../features/usersSlice";
 
 // For the table
-import SearchUser from "./forms/SearchUser";
-import { roles } from ".";
+import SearchUser from "../forms/SearchUser";
+import { roles } from "..";
 
 const UserGrid = () => {
   const toast = useToast();
