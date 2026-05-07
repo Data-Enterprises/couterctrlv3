@@ -14,14 +14,16 @@ const StoresWithBG = () => {
   const { storesWithBGID, selectedBaseGroups, selectedNewUserStores } =
     useAppSelector((state) => state.baseGroup);
 
-
   // Everytime storesWithBGID has the current selected base group filteredout
   // reset it to 0 (The "All" option)
   useEffect(() => {
     if (!storesWithBGID.some((s) => s.base_group === selectedBG)) {
       setSelectedBG(0);
+      setShowSelected(false);
     }
   }, [storesWithBGID]);
+
+  console.log(showSelected)
 
   // useEffect(() => {
   //   if (!storesWithBGID.length || !selectedBaseGroups.length) {
@@ -58,7 +60,7 @@ const StoresWithBG = () => {
   // }, [selectedBG, showSelected]);
 
   const filtered = useMemo(() => {
-    if (!storesWithBGID.length || !selectedBaseGroups.length) return [];
+    if (!storesWithBGID.length) return [];
 
     const baseFiltered =
       selectedBG === 0
@@ -67,12 +69,11 @@ const StoresWithBG = () => {
 
     return showSelected
       ? baseFiltered.filter((s) =>
-          selectedNewUserStores.some((store) => store.storeid === s.storeid),
+          selectedNewUserStores.some((store) => store.storeid === s.storeid && store.base_group === s.base_group),
         )
       : baseFiltered;
   }, [
     storesWithBGID,
-    selectedBaseGroups.length,
     selectedBG,
     showSelected,
     selectedNewUserStores,
@@ -95,6 +96,17 @@ const StoresWithBG = () => {
       dispatch(setSelectedNewUserStores(filteredSelected));
     } else {
       dispatch(setSelectedNewUserStores([...selectedNewUserStores, store]));
+    }
+  };
+
+  const handleSelectAll = (action: "add" | "remove") => {
+    if (action === "add") {
+      dispatch(setSelectedNewUserStores(filtered));
+    } else {
+      const filteredOut = selectedNewUserStores.filter(
+        (s) => !filtered.some((f) => f.storeid === s.storeid),
+      );
+      dispatch(setSelectedNewUserStores(filteredOut));
     }
   };
 
@@ -123,7 +135,7 @@ const StoresWithBG = () => {
           );
         })}
         <div
-          className={`${selectedNewUserStores.length > 0 ? "" : "hidden"} text-[11px] rounded-full px-2 py-0.5 border border-content/15 cursor-pointer transition-all duration-200
+          className={`text-[11px] rounded-full px-2 py-0.5 border border-content/15 cursor-pointer transition-all duration-200
                 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white shadow ${
                   showSelected
                     ? "bg-[rgb(30,45,80)] text-custom-white"
@@ -136,6 +148,20 @@ const StoresWithBG = () => {
       </div>
 
       <div className="max-h-[calc(100vh-13rem)] pb-2 overflow-y-auto grid grid-cols-2 gap-2 text-[11.5px]">
+        <div className="min-h-[51px] transition-all duration-200 cursor-pointer bg-content/10 rounded-xl px-2 py-2 shadow-md leading-tight grid grid-cols-2 gap-2 items-center">
+          <button
+            className="bg-[rgb(30,45,80)] text-custom-white transition-all duration-200 rounded-lg py-2 font-medium border-2 border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:shadow-md"
+            onClick={() => handleSelectAll("add")}
+          >
+            Add All
+          </button>
+          <button
+            className="bg-red-600 text-custom-white transition-all duration-200 rounded-lg py-2 font-medium border-2 border-red-600 hover:bg-red-600/75 hover:shadow-md"
+            onClick={() => handleSelectAll("remove")}
+          >
+            Remove All
+          </button>
+        </div>
         {filtered.map((s, i) => {
           const found = selectedBaseGroups.filter(
             (b) => b.id === s.base_group,
@@ -147,7 +173,7 @@ const StoresWithBG = () => {
             <div
               key={i}
               className={`transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white cursor-pointer 
-                ${selectedNewUserStores.some((store) => store.storeid === s.storeid) ? "bg-[rgb(30,45,80)] text-custom-white" : "bg-content/10"} 
+                ${selectedNewUserStores.some((store) => store.storeid === s.storeid && store.base_group === s.base_group) ? "bg-[rgb(30,45,80)] text-custom-white" : "bg-content/10"} 
                 rounded-xl px-2 py-1 shadow-md leading-tight`}
               onClick={() => handleStoreSelect(s)}
             >

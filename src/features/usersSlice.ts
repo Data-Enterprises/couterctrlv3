@@ -124,6 +124,16 @@ export const usersSlice = createSlice({
       } else {
         state.userInfo = { ...state.userInfo, [key]: value as string };
       }
+
+      if (state.userInfo.email.length === 0) {
+        state.availableEmailText = "";
+        state.emailTextColor = "";
+      }
+
+      if (state.userInfo.username.length === 0) {
+        state.availableUsernameText = "";
+        state.usernameTextColor = "";
+      }
     },
     setSelectedUserInfo: (state, action: PayloadAction<User>) => {
       const {

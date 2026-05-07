@@ -21,15 +21,21 @@ import {
 import { roles } from "../..";
 import {
   resetUserInfo,
+  setAvailableEmailDetails,
+  setAvailableUsernameDetails,
   setRefresh,
   setSelectedUserId,
   setSelectedUserStores,
   setUserInfo,
 } from "../../../../features/usersSlice";
-import { assignBaseGroupToUser, createUser } from "../../../../api/team";
+import {
+  assignBaseGroupToUser,
+  checkEmail,
+  checkUsername,
+  createUser,
+} from "../../../../api/team";
 import { assignUserToCompany, getUserStores } from "../../../../api/user";
 import AssignStoreCheckModal from "./AssignStoreCheckModal";
-import AssignNewUserStores from "./AssignNewUserStors";
 
 const CreateUserFormTablet = () => {
   const toast = useToast();
@@ -37,8 +43,15 @@ const CreateUserFormTablet = () => {
   const [formStep, setFormStep] = useState<number>(1);
   const [openModal, setOpenModal] = useState<boolean>(false);
   const { url, token } = useAppSelector((state) => state.app);
-  const { userInfo, userLevels, userCompanyIds } =
-    useAppSelector((state) => state.users);
+  const {
+    userInfo,
+    userLevels,
+    userCompanyIds,
+    availableUsernameText,
+    usernameTextColor,
+    emailTextColor,
+    availableEmailText,
+  } = useAppSelector((state) => state.users);
   const user = useAppSelector((state) => state.user);
   const { baseGroups, selectedBaseGroups, company } = useAppSelector(
     (state) => state.baseGroup,
@@ -160,28 +173,58 @@ const CreateUserFormTablet = () => {
       });
   };
 
-  const isFormReady = () => {
-    if (
-      userInfo.password !== userInfo.confirm_password ||
-      !userInfo.password.length ||
-      !userInfo.confirm_password.length ||
-      !userInfo.first_name.length ||
-      !userInfo.last_name.length ||
-      !userInfo.username.length ||
-      !userInfo.email.length ||
-      !userInfo.role ||
-      !userInfo.user_level
-    ) {
-      return false;
-    }
-
-    return true;
-  };
-
   const handleReset = () => {
     dispatch(setAllSelectedBaseGroups([]));
     dispatch(setSelectedUserStores({ assigned: [], unassigned: [] }));
     dispatch(resetUserInfo());
+  };
+
+  const handleValidateClick = () => {
+    checkEmail(url, token, userInfo.email)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(
+            setAvailableEmailDetails({
+              availableEmailText: "- Available",
+              emailTextColor: "text-green-600",
+            }),
+          );
+        } else {
+          dispatch(
+            setAvailableEmailDetails({
+              availableEmailText: "- Unavailable",
+              emailTextColor: "text-red-600",
+            }),
+          );
+        }
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error validating email " + err.message),
+      );
+
+    checkUsername(url, token, userInfo.username)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          dispatch(
+            setAvailableUsernameDetails({
+              availableUsernameText: "- Available",
+              usernameTextColor: "text-green-600",
+            }),
+          );
+        } else {
+          dispatch(
+            setAvailableUsernameDetails({
+              availableUsernameText: "- Unavailable",
+              usernameTextColor: "text-red-600",
+            }),
+          );
+        }
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error validating username " + err.message),
+      );
   };
 
   return (
@@ -195,12 +238,24 @@ const CreateUserFormTablet = () => {
 
       {/* Basic User Info */}
       {formStep === 1 ? (
-        <div className="p-3 bg-custom-white rounded-lg shadow-lg grid grid-cols-2 gap-3">
+        <div className="p-3 bg-custom-white rounded-lg shadow-lg grid grid-cols-2 gap-3 relative">
+          <div className="absolute flex gap-2 right-3 top-3">
+            <div
+              className={`rounded-full px-3 py-0.5 border border-content/25 bg-[rgb(30,45,80)] text-custom-white`}
+            >
+              User Info
+            </div>
+            <div
+              className={`rounded-full px-3 py-0.5 border border-content/25 text-content bg-content/10`}
+              onClick={() => setFormStep(2)}
+            >
+              Company/Base Groups
+            </div>
+          </div>
           <div className="col-span-2 font-medium">
             <div>Basic Info</div>
             <div className="text-[13px] text-content/60">
-              Ensure all fields are valid before proceeding to Company/Base
-              Group Assignments
+              Ensure all fields are valid
             </div>
             <div className="grid grid-cols-2">
               <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
@@ -246,6 +301,24 @@ const CreateUserFormTablet = () => {
             </div>
           </div>
           <Input
+            label="Username"
+            value={userInfo.username}
+            setValue={(val) =>
+              dispatch(setUserInfo({ key: "username", value: val }))
+            }
+            availableText={availableUsernameText}
+            textColor={usernameTextColor}
+          />
+          <Input
+            label="Email"
+            value={userInfo.email}
+            setValue={(val) =>
+              dispatch(setUserInfo({ key: "email", value: val }))
+            }
+            availableText={availableEmailText}
+            textColor={emailTextColor}
+          />
+          <Input
             label="First Name"
             value={userInfo.first_name}
             setValue={(val) =>
@@ -257,20 +330,6 @@ const CreateUserFormTablet = () => {
             value={userInfo.last_name}
             setValue={(val) =>
               dispatch(setUserInfo({ key: "last_name", value: val }))
-            }
-          />
-          <Input
-            label="Username"
-            value={userInfo.username}
-            setValue={(val) =>
-              dispatch(setUserInfo({ key: "username", value: val }))
-            }
-          />
-          <Input
-            label="Email"
-            value={userInfo.email}
-            setValue={(val) =>
-              dispatch(setUserInfo({ key: "email", value: val }))
             }
           />
           <PasswordInput
@@ -293,21 +352,37 @@ const CreateUserFormTablet = () => {
             leftCompare={userInfo.password}
             rightCompare={userInfo.confirm_password}
           />
-          <button className="btn-themeBlue" onClick={handleReset}>
+          <button
+            className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)]"
+            onClick={handleReset}
+          >
             Clear Fields
           </button>
           <button
-            className={`btn-themeBlue ${!isFormReady() ? "opacity-50 pointer-events-none" : ""}`}
-            onClick={() => handleFormStep(2)}
+            className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)]"
+            onClick={handleValidateClick}
           >
-            Next
+            Validate Username/Email
           </button>
         </div>
       ) : null}
 
       {/* Company/Base Group Assignments */}
       {formStep === 2 ? (
-        <div className="p-3 bg-custom-white rounded-lg shadow-lg space-y-3">
+        <div className="p-3 bg-custom-white rounded-lg shadow-lg space-y-3 relative">
+          <div className="absolute flex gap-2 right-3 top-3">
+            <div
+              className={`rounded-full px-3 py-0.5 border border-content/25 text-content bg-content/10`}
+              onClick={() => setFormStep(1)}
+            >
+              User Info
+            </div>
+            <div
+              className={`rounded-full px-3 py-0.5 border border-content/25  bg-[rgb(30,45,80)] text-custom-white`}
+            >
+              Company/Base Groups
+            </div>
+          </div>
           <div>
             <div className="font-medium">Companies and Base Groups</div>
             <div className="text-sm text-content/60">
@@ -368,8 +443,6 @@ const CreateUserFormTablet = () => {
           </div>
         </div>
       ) : null}
-
-      {formStep === 3 ? <AssignNewUserStores /> : null}
     </div>
   );
 };
