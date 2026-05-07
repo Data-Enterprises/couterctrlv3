@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
-import { getBaseGroups } from "../../../../api/baseGroups";
+import {
+  getAllStoresInBaseGroup,
+  getBaseGroups,
+} from "../../../../api/baseGroups";
 import type {
   CompanyBaseGroup,
   JsonError,
@@ -17,6 +20,8 @@ import {
   setBaseGroups,
   setCompany,
   setSelectedBaseGroups,
+  setSelectedNewUserStores,
+  setStoresWithBGID,
 } from "../../../../features/baseGroupSlice";
 import { roles } from "../..";
 import {
@@ -30,18 +35,18 @@ import {
 } from "../../../../features/usersSlice";
 import {
   assignBaseGroupToUser,
+  assignUserToStore,
   checkEmail,
   checkUsername,
   createUser,
 } from "../../../../api/team";
-import { assignUserToCompany, getUserStores } from "../../../../api/user";
-import AssignStoreCheckModal from "./AssignStoreCheckModal";
+import { assignUserToCompany } from "../../../../api/user";
+import StoresWithBG from "./innerForms/StoresWithBG";
 
 const CreateUserFormTablet = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const [formStep, setFormStep] = useState<number>(1);
-  const [openModal, setOpenModal] = useState<boolean>(false);
   const { url, token } = useAppSelector((state) => state.app);
   const {
     userInfo,
@@ -53,9 +58,13 @@ const CreateUserFormTablet = () => {
     availableEmailText,
   } = useAppSelector((state) => state.users);
   const user = useAppSelector((state) => state.user);
-  const { baseGroups, selectedBaseGroups, company } = useAppSelector(
-    (state) => state.baseGroup,
-  );
+  const {
+    baseGroups,
+    selectedBaseGroups,
+    company,
+    storesWithBGID,
+    selectedNewUserStores,
+  } = useAppSelector((state) => state.baseGroup);
 
   useEffect(() => {
     if (formStep === 2) {
@@ -83,94 +92,163 @@ const CreateUserFormTablet = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
-  const handleFormStep = (x: number) => {
-    setFormStep(x);
+  const handleClearAllCompaniesAndBG = () => {
+    dispatch(setAllSelectedBaseGroups([]));
+    dispatch(setSelectedNewUserStores([]));
   };
 
-  const handleBGSelect = (bg: CompanyBaseGroup) => {
-    const filtered = [...baseGroups].filter((g) => g.id === bg.id);
-    dispatch(setSelectedBaseGroups(filtered[0]));
+  const handleClearBGForSelectedCompany = () => {
+    if (!company) return;
+
+    const filtered = [...selectedBaseGroups].filter(
+      (bg) => bg.company !== company.id,
+    );
+
+    const filteredSelectedStores = selectedNewUserStores.filter((s) => {
+      const bgForStore = baseGroups.find((bg) => bg.id === s.base_group);
+      if (bgForStore) {
+        return bgForStore.company !== company.id;
+      }
+      return true;
+    });
+
+    const filteredStoresWithBGID = storesWithBGID.filter((s) => {
+      const bgForStore = baseGroups.find((bg) => bg.id === s.base_group);
+      if (bgForStore) {
+        return bgForStore.company !== company.id;
+      }
+      return true;
+    });
+
+    // If toggling off a company, remove all stores with that company's
+    // base groups => avoids store assignments without a base group/company
+    dispatch(setAllSelectedBaseGroups(filtered));
+    dispatch(setSelectedNewUserStores(filteredSelectedStores));
+    dispatch(setStoresWithBGID(filteredStoresWithBGID));
   };
 
   const companyBG = (id: number) => {
     if (company && company.id === id) {
-      return "bg-blue-200";
+      return "bg-[rgb(30,45,80)] text-custom-white";
     }
     if (userCompanyIds.includes(id)) {
-      return "bg-orange-200";
+      return "bg-[rgb(30,45,80)]/75 text-custom-white";
     }
     return "bg-custom-white";
   };
 
-  const handleSubmit = (isAssigning: boolean) => {
-    createUser(url, token, userInfo)
+  const canSubmit = () => {
+    if (
+      userInfo.confirm_password !== userInfo.password ||
+      userInfo.password.length === 0 ||
+      userInfo.username.length === 0 ||
+      userInfo.email.length === 0 ||
+      userInfo.first_name.length === 0 ||
+      userInfo.last_name.length === 0 ||
+      userInfo.role < 1 ||
+      userInfo.user_level < 1
+    ) {
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = () => {
+    checkUsername(url, token, userInfo.username)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          const userid = j.new_userid;
-          // Assigning the company(ies) to the user with their new user id
-          assignUserToCompany(url, token, userid, userCompanyIds)
+          checkEmail(url, token, userInfo.email)
             .then((resp) => {
               const j = resp.data;
               if (j.error === 0) {
-                const groupid = [...selectedBaseGroups].map((bg) => bg.id);
-
-                // Assigning the base group(s) to the user
-                assignBaseGroupToUser(url, token, userid, groupid)
+                createUser(url, token, userInfo)
                   .then((resp) => {
                     const j = resp.data;
-                    if (j.error === 0 && isAssigning) {
-                      // If we're assigning stores, we move to the next step of the flow which is assigning stores to the user. Otherwise, we can end the flow here with a success message
-                      getStores(userid);
+                    if (j.error === 0) {
+                      const userid = j.new_userid;
+                      const companyIds = Array.from(
+                        new Set(
+                          [...selectedNewUserStores].map((s) => s.company),
+                        ),
+                      );
+                      const bgIds = Array.from(
+                        new Set(
+                          [...selectedNewUserStores].map((s) => s.base_group),
+                        ),
+                      );
                       dispatch(setSelectedUserId(userid));
-                    } else if (j.error === 0 && !isAssigning) {
-                      // If we're not assigning stores, we can just end the flow here
-                      toast.success("User created successfully");
-                      handleReset();
+                      assignUserToCompany(url, token, userid, companyIds)
+                        .then((resp) => {
+                          const j = resp.data;
+                          if (j.error === 0) {
+                            assignBaseGroupToUser(url, token, userid, bgIds)
+                              .then((resp) => {
+                                const j = resp.data;
+                                if (j.error === 0) {
+                                  const storeIds = selectedNewUserStores.map(
+                                    (s) => s.storeid,
+                                  );
+                                  assignUserToStore(
+                                    url,
+                                    token,
+                                    userid,
+                                    storeIds,
+                                  )
+                                    .then((resp) => {
+                                      const j = resp.data;
+                                      if (j.error === 0) {
+                                        toast.success(
+                                          "User created and assigned to selected companies, base groups, and stores",
+                                        );
+                                        dispatch(resetUserInfo());
+                                        dispatch(setStoresWithBGID([]));
+                                        dispatch(setSelectedNewUserStores([]));
+                                        dispatch(setRefresh(true));
+                                      } else {
+                                        toast.warn(
+                                          "Error assigning user to stores " +
+                                            j.msg,
+                                        );
+                                      }
+                                    })
+                                    .catch((err: JsonError) =>
+                                      toast.error(
+                                        "Error assigning user to stores " +
+                                          err.message,
+                                      ),
+                                    );
+                                }
+                              })
+                              .catch((err: JsonError) =>
+                                toast.error(err.message),
+                              );
+                          }
+                        })
+                        .catch((err: JsonError) => toast.error(err.message));
                     }
-                    setOpenModal(false);
                   })
-                  .catch((err: JsonError) => toast.error(err.message));
+                  .catch((err: JsonError) => {
+                    toast.error("Error creating user " + err.message);
+                  });
+              } else {
+                toast.warn("Email unavailable: " + j.msg);
               }
             })
-            .catch((err: JsonError) => toast.error(err.message));
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error("Error creating user " + err.message);
-      });
-  };
-
-  const getStores = (userid: number) => {
-    const filterNulls = (arr: Store[]) => {
-      return arr.filter((store) => store.store_name !== null);
-    };
-
-    getUserStores(url, token, userid)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          const stores = {
-            assigned: filterNulls(j.assigned_stores).sort(
-              (a: Store, b: Store) =>
-                parseInt(a.store_number) - parseInt(b.store_number),
-            ),
-            unassigned: filterNulls(j.unassigned_stores).sort(
-              (a: Store, b: Store) =>
-                parseInt(a.store_number) - parseInt(b.store_number),
-            ),
-          };
-          setFormStep(3);
-          dispatch(setSelectedUserStores(stores));
-          dispatch(setRefresh(true));
-          toast.success(
-            "User created, you can add or remove stores for the user",
+            .catch((err: JsonError) =>
+              toast.error("Error validating email " + err.message),
+            );
+        } else {
+          toast.warn(
+            `Error with username check: ${userInfo.username}, ${j.msg}`,
           );
         }
       })
-      .catch((err: JsonError) => {
-        toast.error("Error fetching available stores " + err.message);
-      });
+      .catch((err: JsonError) =>
+        toast.error(
+          `Error with username check: ${userInfo.username}, ${err.message}`,
+        ),
+      );
   };
 
   const handleReset = () => {
@@ -227,13 +305,28 @@ const CreateUserFormTablet = () => {
       );
   };
 
+  const handleBGSelect = (bg: CompanyBaseGroup) => {
+    const filtered = [...baseGroups].filter((g) => g.id === bg.id);
+    dispatch(setSelectedBaseGroups(filtered[0]));
+    const found = storesWithBGID.find((b) => b.base_group === bg.id);
+    if (!found) {
+      getAllStoresInBaseGroup(url, token, bg.id)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0) {
+            const withBGID = [...j.assigned_stores].map((s: Store) => {
+              return { ...s, base_group: bg.id };
+            });
+
+            dispatch(setStoresWithBGID([...storesWithBGID, ...withBGID]));
+          }
+        })
+        .catch((err: JsonError) => toast.error(err.message));
+    }
+  };
+
   return (
     <div className="space-y-3">
-      <AssignStoreCheckModal
-        isOpen={openModal}
-        onClose={() => handleSubmit(false)}
-        onConfirm={() => handleSubmit(true)}
-      />
       <UserInfoCard />
 
       {/* Basic User Info */}
@@ -378,7 +471,7 @@ const CreateUserFormTablet = () => {
               User Info
             </div>
             <div
-              className={`rounded-full px-3 py-0.5 border border-content/25  bg-[rgb(30,45,80)] text-custom-white`}
+              className={`rounded-full px-3 py-0.5 border border-content/25 bg-[rgb(30,45,80)] text-custom-white`}
             >
               Company/Base Groups
             </div>
@@ -404,7 +497,7 @@ const CreateUserFormTablet = () => {
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-3 gap-3 max-h-[35vh] overflow-y-auto">
+          <div className="grid grid-cols-4 gap-3 max-h-[20vh] overflow-y-auto">
             {baseGroups.map((bg) => {
               const company = user.companies.find(
                 (c) => c.company === bg.company,
@@ -413,15 +506,13 @@ const CreateUserFormTablet = () => {
               return (
                 <div
                   key={bg.id}
-                  className={`rounded-lg border border-content/60 ${selectedBaseGroups.some((b) => b.id === bg.id) ? "bg-orange-200" : "bg-bkg"} px-4 py-3 shadow-sm`}
+                  className={`rounded-lg border border-content/60 ${selectedBaseGroups.some((b) => b.id === bg.id) ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-bkg"} px-3 py-2 shadow-sm`}
                   onClick={() => handleBGSelect(bg)}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="font-medium text-content break-words">
-                        {bg.name}
-                      </div>
-                      <div className="text-sm text-content/60 break-words">
+                      <div className="font-medium break-words">{bg.name}</div>
+                      <div className="text-sm opacity-90 break-words">
                         {company?.name ?? "Unknown company"}
                       </div>
                     </div>
@@ -430,13 +521,27 @@ const CreateUserFormTablet = () => {
               );
             })}
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <button className="btn-themeBlue" onClick={() => handleFormStep(1)}>
-              Prev
+
+          {/* Base Group Stores */}
+          <StoresWithBG />
+          {/* Form/Submit Buttons */}
+          <div className="grid grid-cols-3 gap-4 mt-4">
+            <button
+              className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-sm"
+              onClick={handleClearAllCompaniesAndBG}
+            >
+              Clear All
             </button>
             <button
-              className="btn-themeGreen"
-              onClick={() => setOpenModal(true)}
+              className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-sm"
+              onClick={handleClearBGForSelectedCompany}
+            >
+              Clear Base Groups
+            </button>
+            <button
+              className={`btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-sm 
+            ${!canSubmit() ? "opacity-50 pointer-events-none" : ""}`}
+              onClick={handleSubmit}
             >
               Submit
             </button>
