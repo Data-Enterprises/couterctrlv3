@@ -5,11 +5,7 @@ import {
   setRefresh,
   setSelectedUserStores,
 } from "../../../features/usersSlice";
-import type {
-  JsonError,
-  Store,
-  //  UserCompany
-} from "../../../interfaces";
+import type { JsonError, Store } from "../../../interfaces";
 import Assigned from "../assignModal/Assigned";
 import Unassigned from "../assignModal/Unassigned";
 import { useEffect } from "react";
@@ -19,11 +15,7 @@ const UpdateUserStores = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
-  const {
-    selectedUserId,
-    // userInfo, users
-  } = useAppSelector((state) => state.users);
-  // const { userCompany } = useAppSelector((state) => state.baseGroup);
+  const { selectedUserId } = useAppSelector((state) => state.users);
 
   useEffect(() => {
     if (selectedUserId) {
@@ -59,40 +51,10 @@ const UpdateUserStores = () => {
       });
   };
 
-  // const companyBG = (id: number) => {
-  //   if (userCompany && userCompany.company === id) {
-  //     return "bg-[rgb(30,45,80)] text-custom-white";
-  //   }
-  //   return "text-content/85 bg-content/10";
-  // };
-
-  // const handleCompanySelect = (x: UserCompany) => {
-  //   dispatch(setUserCompany(x));
-  // };
-
-  // const selectedUserCompanies = users.filter((u) => u.id === selectedUserId)[0]
-  //   .companies;
-
   return (
-    <div>
-      {/* <div className="text-[12px] font-medium">
-        {userInfo.username}'s Companies
-      </div> */}
-      {/* <div className="flex flex-wrap gap-1.5 text-[11.5px] leading-tight mb-1">
-        {selectedUserCompanies.map((c) => (
-          <div
-            key={c.id}
-            className={`px-2 py-0.5 rounded-full ${companyBG(c.company)} cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white`}
-            onClick={() => handleCompanySelect(c)}
-          >
-            {c.name}
-          </div>
-        ))}
-      </div> */}
-      <div className="flex gap-2 max-h-[calc(100vh-6.95rem)] overflow-hidden">
-        <Unassigned />
-        <Assigned />
-      </div>
+    <div className="flex gap-2 max-h-[calc(100vh-6.95rem)] overflow-hidden">
+      <Unassigned />
+      <Assigned />
     </div>
   );
 };

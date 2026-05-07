@@ -1,10 +1,20 @@
-import { useAppSelector } from "../../../hooks";
+import { useEffect } from "react";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+
 import StoreInfo from "./StoreInfo";
 import AssignBaseGroup from "./AssignBaseGroup";
 import AssignStoresToUser from "./AssignStoresToUser";
+import { setStoresFormOption } from "../../../features/usersSlice";
 
 const StoreControls = () => {
+  const dispatch = useAppDispatch();
   const { storesOption } = useAppSelector((state) => state.users);
+
+  useEffect(() => {
+    return () => {
+      dispatch(setStoresFormOption(""));
+    };
+  }, []);
 
   const renderForm = () => {
     switch (storesOption) {

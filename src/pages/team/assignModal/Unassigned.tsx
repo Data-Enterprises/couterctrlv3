@@ -90,21 +90,23 @@ const Unassigned = () => {
           value={filterText}
           onChange={handleChange}
         />
-        <div className="max-h-[calc(100vh-17.5rem)] overflow-y-auto no-scrollbar space-y-1 mt-2">
+        <div className="max-h-[calc(100vh-17.5rem)] overflow-y-auto space-y-1 mt-2">
           {hasLength()
             ? stores.map((store, i) => (
                 <div
                   key={i}
                   data-testid={`unassigned-store-${store.storeid}`}
-                  className={`${storesToAssign.includes(store.storeid) ? "bg-emerald-200" : "bg-custom-white"} flex justify-between rounded-lg shadow px-3 py-1.5 text-[12px] cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
+                  className={`${storesToAssign.includes(store.storeid) ? "bg-[rgb(30,45,80)] text-custom-white" : ""} hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white text-[13px] px-2 py-1 rounded-lg shadow-md flex justify-between cursor-pointer transition-all duration-200`}
                   onClick={() => handleStoreCardClick(store.storeid)}
                 >
                   <div>
-                    <div className="font-medium text-content/60">Store:</div>
+                    <div className="font-medium opacity-90">Store:</div>
                     <div>{store.store_name}</div>
                   </div>
                   <div>
-                    <div className="underline text-[10px] font-medium text-content/60">{store.company_name}</div>
+                    <div className="underline text-[10px] font-medium opacity-90">
+                      {store.company_name}
+                    </div>
                   </div>
                 </div>
               ))
@@ -113,14 +115,14 @@ const Unassigned = () => {
         <div className="flex justify-between gap-2 mt-2">
           <button
             data-testid="ctrl-assign-stores-btn"
-            className="btn-themeGreen w-1/2 px-0 py-1 text-[13px]"
+            className={`${storesToAssign.length === 0 ? "opacity-50 pointer-events-none" : ""} btn-themeGreen bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white w-1/2 px-0 py-1 text-[13px]`}
             onClick={() => handleStoreAssignment("selected")}
           >
             Assign
           </button>
           <button
             data-testid="ctrl-assign-all-stores-btn"
-            className="btn-themeGreen w-1/2 px-0 py-1 text-[13px]"
+            className="btn-themeGreen bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white w-1/2 px-0 py-1 text-[13px]"
             onClick={() => handleStoreAssignment("all")}
           >
             Assign All

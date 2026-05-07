@@ -7,12 +7,11 @@ import {
   setSelectedUserStores,
 } from "../../../features/usersSlice";
 
-import Assigned from "../assignModal/Assigned";
-import Unassigned from "../assignModal/Unassigned";
 import { getUserStores } from "../../../api/user";
 import { useEffect } from "react";
 import SearchUser from "../forms/SearchUser";
 import { WarningIcon } from "../../../components/toasts/Icons";
+import UpdateUserStores from "../users/UpdateUserStores";
 
 const AssignStoresToUser = () => {
   const toast = useToast();
@@ -88,10 +87,7 @@ const AssignStoresToUser = () => {
   return (
     <div data-testid="user-store-form-main-container" className="grid gap-4 w-[50%]">
       <SearchUser />
-      <div className="grid grid-cols-2 gap-x-4">
-        <Unassigned />
-        <Assigned />
-      </div>
+      <UpdateUserStores />
     </div>
   );
 };
