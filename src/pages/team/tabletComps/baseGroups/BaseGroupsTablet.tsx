@@ -1,22 +1,27 @@
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import {
+  resetUserInfo,
+  setBGOption,
+  setSelectedUserId,
+} from "../../../../features/usersSlice";
+
 import BGFormOptions from "./BGFormOptions";
-import { resetUserInfo, setBGOption, setSelectedUserId } from "../../../../features/usersSlice";
 import NewBGForm from "./NewBGForm";
 import UpdateBGForm from "./UpdateBGForm";
+import DeleteBGForm from "./DeleteBGForm";
 
 const BaseGroupsTablet = () => {
   const dispatch = useAppDispatch();
   const { bgOption } = useAppSelector((state) => state.users);
 
   useEffect(() => {
-
     return () => {
       dispatch(setBGOption(""));
       dispatch(resetUserInfo());
       dispatch(setSelectedUserId(0));
     };
-  }, [])
+  }, []);
 
   const renderBGForm = () => {
     switch (bgOption) {
@@ -25,7 +30,7 @@ const BaseGroupsTablet = () => {
       case "update":
         return <UpdateBGForm />;
       case "delete":
-        return <div>Delete BG</div>;
+        return <DeleteBGForm />;
       case "assign_to_user":
         return <div>Assign BG to User</div>;
       default:
