@@ -201,7 +201,7 @@ const UserInfoForm = () => {
             <div className="grid font-medium">
               {!isOutranked(user) ? (
                 <button
-                  className={`${ctx.selectedUserForm === "user_info" ? "bg-[rgb(30,45,80)]/95" : "bg-red-600"} text-custom-white py-3 px-0 rounded-2xl shadow`}
+                  className={`${ctx.selectedUserForm === "user_info" ? "bg-[rgb(30,45,80)]/95" : "bg-red-600"} text-custom-white py-2 px-0 rounded-2xl shadow`}
                   onClick={() => handleUserCardBtnClick(user)}
                 >
                   {ctx.selectedUserForm === "user_info"
@@ -209,7 +209,7 @@ const UserInfoForm = () => {
                     : "Delete User"}
                 </button>
               ) : (
-                <div className="bg-[rgb(30,45,80)]/50 text-custom-white py-3 px-0 rounded-2xl shadow text-center">
+                <div className="bg-[rgb(30,45,80)]/50 text-custom-white py-2 px-0 rounded-2xl shadow text-center">
                   You are not authorized to update this user
                 </div>
               )}
