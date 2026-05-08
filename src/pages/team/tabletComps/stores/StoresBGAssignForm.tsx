@@ -240,10 +240,10 @@ const StoresBGAssignForm = () => {
                   }`}
                 >
                   <div className="min-w-0">
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide">
                       Store
                     </div>
-                    <div className="truncate text-[13px] font-semibold text-slate-900">
+                    <div className="truncate text-[13px] font-semibold">
                       {store.store_name}
                     </div>
                   </div>
@@ -300,10 +300,10 @@ const StoresBGAssignForm = () => {
                   }`}
                 >
                   <div className="min-w-0">
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide">
                       Store
                     </div>
-                    <div className="truncate text-[13px] font-semibold text-slate-900">
+                    <div className="truncate text-[13px] font-semibold">
                       {store.store_name}
                     </div>
                   </div>

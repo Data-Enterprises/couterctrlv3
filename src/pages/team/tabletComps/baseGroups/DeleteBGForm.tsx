@@ -157,14 +157,14 @@ const DeleteBGForm = () => {
             <div className="grid grid-cols-2 gap-2 mt-2">
               <button
                 data-testid="bg-delete-step-2-submit-btn"
-                className="btn-themeGreen bg-[rgb(30,45,80)] border-[rgb(30,45,80)] py-1.5 text-[13px]"
+                className="btn-themeOrange bg-red-600 border-red-600 py-1.5 text-[13px]"
                 onClick={handleSubmit}
               >
                 Yes
               </button>
               <button
                 data-testid="bg-delete-step-2-cancel-btn"
-                className="btn-themeOrange bg-red-600 border-red-600 py-1.5 text-[13px]"
+                className="btn-themeGreen bg-[rgb(30,45,80)] border-[rgb(30,45,80)] py-1.5 text-[13px]"
                 onClick={() => setIsDeleting(false)}
               >
                 No

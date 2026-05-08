@@ -105,7 +105,7 @@ const TeamTablet = () => {
         return <AdminTablet />;
       default:
         return (
-          <div className="grid w-1/5 gap-3">
+          <div className="grid w-[17%] gap-3">
             <MainFormOption
               title="Users"
               handleFormSelect={handleMainFormSelect}
