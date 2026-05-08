@@ -12,6 +12,7 @@ import { getAllUsers } from "../../../api/user";
 import { getUserLevels } from "../../../api/team";
 
 import type { JsonError, User, UserLevelJsonResp } from "../../../interfaces";
+import { adminMissingSalesColumns } from "../admin";
 
 // Components
 import MainFormOption from "./MainFormOption";
@@ -20,6 +21,7 @@ import BaseGroupsTablet from "./baseGroups/BaseGroupsTablet";
 import StoresTablet from "./stores/StoresTablet";
 import CompaniesTablet from "./company/CompaniesTablet";
 import AdminTablet from "./admin/AdminTablet";
+import ExportMissingStoresModal from "../admin/ExportMissingStoresModal";
 
 const TeamTablet = () => {
   const toast = useToast();
@@ -27,6 +29,7 @@ const TeamTablet = () => {
   const { url, token } = useAppSelector((state) => state.app);
   const companies = useAppSelector((state) => state.user.companies);
   const { selectedForm, refresh } = useAppSelector((state) => state.users);
+  const { filteredMissingStores } = useAppSelector((state) => state.admin);
 
   useEffect(() => {
     if (refresh) {
@@ -138,6 +141,10 @@ const TeamTablet = () => {
 
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] w-full overflow-hidden p-2 select-none">
+      <ExportMissingStoresModal
+        data={filteredMissingStores}
+        columns={adminMissingSalesColumns}
+      />
       {renderMainForm()}
     </div>
   );
