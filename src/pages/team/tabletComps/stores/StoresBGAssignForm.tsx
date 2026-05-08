@@ -235,8 +235,8 @@ const StoresBGAssignForm = () => {
                   onClick={() => handleStoreClick(store.storeid, "unassigned")}
                   className={`${listItemBase} ${
                     storesToAssign.includes(store.storeid)
-                      ? "border-orange-300 bg-orange-100 shadow-md"
-                      : "border-slate-200 bg-white/80 hover:border-orange-200 hover:bg-orange-50 hover:shadow-md"
+                      ? "bg-[rgb(30,45,80)]/75 text-custom-white shadow-md"
+                      : "bg-custom-white"
                   }`}
                 >
                   <div className="min-w-0">
@@ -295,8 +295,8 @@ const StoresBGAssignForm = () => {
                   onClick={() => handleStoreClick(store.storeid, "assigned")}
                   className={`${listItemBase} ${
                     storesToUnassign.includes(store.storeid)
-                      ? "border-orange-300 bg-orange-100 shadow-md"
-                      : "border-slate-200 bg-white/80 hover:border-orange-200 hover:bg-orange-50 hover:shadow-md"
+                      ? "bg-[rgb(30,45,80)]/75 text-custom-white shadow-md"
+                      : "bg-custom-white"
                   }`}
                 >
                   <div className="min-w-0">
