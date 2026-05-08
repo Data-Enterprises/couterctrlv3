@@ -58,7 +58,7 @@ const UpdatingUserForm = ({ goBack }: UpdatingUserFormProps) => {
           onClick={() => setInnerForm(2)}
         >
           <BuildingOfficeIcon className="w-8 h-8" />
-          <div>Company/Base Groups</div>
+          <div>Company/B. Groups</div>
         </div>
         <div
           className={`flex flex-col items-center justify-center py-2 ${innerForm === 3 ? "bg-[rgb(30,45,80)]/50 text-custom-white" : "bg-custom-white"} rounded-lg shadow-md`}

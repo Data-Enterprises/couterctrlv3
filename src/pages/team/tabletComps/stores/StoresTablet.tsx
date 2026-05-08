@@ -5,8 +5,12 @@ import StoresFormOptions from "./StoresFormOptions";
 import {
   resetUserInfo,
   setSelectedUserId,
+  setSelectedUserStores,
   setStoresFormOption,
 } from "../../../../features/usersSlice";
+import UserStoresUpdate from "../users/innerForms/UserStoresUpdate";
+import SearchUser from "../../forms/SearchUser";
+import StoresInfoTablet from "./StoresInfoTablet";
 
 const StoresTablet = () => {
   const dispatch = useAppDispatch();
@@ -17,15 +21,21 @@ const StoresTablet = () => {
       dispatch(setStoresFormOption(""));
       dispatch(resetUserInfo());
       dispatch(setSelectedUserId(0));
+      dispatch(setSelectedUserStores({ assigned: [], unassigned: [] }));
     };
   }, []);
 
   const renderStoresForm = () => {
     switch (storesOption) {
       case "assign":
-        return <div>Create Store Form</div>;
+        return (
+          <div className="space-y-3">
+            <SearchUser />
+            <UserStoresUpdate />
+          </div>
+        );
       case "info":
-        return <div>Delete Store Form</div>;
+        return <StoresInfoTablet />;
       case "bg_assign":
         return <div>Update Store Form</div>;
       default:
@@ -33,7 +43,7 @@ const StoresTablet = () => {
     }
   };
   return (
-    <div className=" grid grid-cols-[17%_81.8%] gap-3">
+    <div className=" grid grid-cols-[17%_81.6%] gap-3">
       <StoresFormOptions />
       {renderStoresForm()}
     </div>
