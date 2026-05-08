@@ -61,9 +61,9 @@ const StoresInfoTablet = () => {
       </div>
       <div className="max-h-[calc(100vh-10rem)] overflow-y-auto ">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {filtered.map((s) => (
+          {filtered.map((s, i) => (
             <div
-              key={s.storeid}
+              key={i}
               className="rounded-xl bg-custom-white p-3 shadow-md transition-all duration-200"
             >
               <div className="flex items-start justify-between gap-3 mb-2">

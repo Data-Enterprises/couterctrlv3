@@ -10,10 +10,16 @@ import BGFormOptions from "./BGFormOptions";
 import NewBGForm from "./NewBGForm";
 import UpdateBGForm from "./UpdateBGForm";
 import DeleteBGForm from "./DeleteBGForm";
+import UserBGAssignForm from "./UserBGAssignForm";
 
 const BaseGroupsTablet = () => {
   const dispatch = useAppDispatch();
   const { bgOption } = useAppSelector((state) => state.users);
+
+  useEffect(() => {
+    dispatch(resetUserInfo());
+    dispatch(setSelectedUserId(0));
+  }, [bgOption]);
 
   useEffect(() => {
     return () => {
@@ -32,14 +38,14 @@ const BaseGroupsTablet = () => {
       case "delete":
         return <DeleteBGForm />;
       case "assign_to_user":
-        return <div>Assign BG to User</div>;
+        return <UserBGAssignForm />;
       default:
         return null;
     }
   };
 
   return (
-    <div className=" grid grid-cols-[17%_81.8%] gap-3">
+    <div className=" grid grid-cols-[17%_81.6%] gap-3">
       <BGFormOptions />
       {renderBGForm()}
     </div>

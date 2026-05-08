@@ -11,6 +11,7 @@ import {
 import UserStoresUpdate from "../users/innerForms/UserStoresUpdate";
 import SearchUser from "../../forms/SearchUser";
 import StoresInfoTablet from "./StoresInfoTablet";
+import StoresBGAssignForm from "./StoresBGAssignForm";
 
 const StoresTablet = () => {
   const dispatch = useAppDispatch();
@@ -37,7 +38,7 @@ const StoresTablet = () => {
       case "info":
         return <StoresInfoTablet />;
       case "bg_assign":
-        return <div>Update Store Form</div>;
+        return <StoresBGAssignForm />
       default:
         return null;
     }
