@@ -155,16 +155,16 @@ const UserCompanyAssignForm = () => {
     return (
       <div
         data-testid="outranked-message-container"
-        className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg"
+        className="flex justify-center items-center"
       >
-        <div className="font-medium text-sm flex flex-col items-center">
+        <div className="bg-custom-white rounded-lg shadow-lg p-3 font-medium text-sm flex flex-col items-center">
           <WarningIcon fill="#f97316" height={56} width={56} />
           <div className="mb-2">We're sorry...</div>
           <div>You are not authorized to make changes to this user</div>
           <div>Please contact them if assistance is needed</div>
           <button
             data-testid="company-assign-reset-btn"
-            className="btn-themeBlue py-1.5 mt-2"
+            className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] py-1.5 mt-2"
             onClick={() => handleReset()}
           >
             Reset
@@ -174,145 +174,146 @@ const UserCompanyAssignForm = () => {
     );
   }
 
-return (
-  <div className="">
-    <SearchUser />
+  return (
+    <div className="">
+      <SearchUser />
 
-    <div
-      data-testid="company-assign-container"
-      className="mt-2 grid grid-cols-2 gap-3"
-    >
-      <div className="rounded-2xl border border-slate-200/70 bg-gradient-to-br from-white via-slate-50 to-slate-100 p-3 shadow-sm">
-        <div className="mb-2 flex items-center justify-between">
-          <div className="text-[13px] font-semibold text-slate-800">
-            Unassigned
+      <div
+        data-testid="company-assign-container"
+        className="mt-2 grid grid-cols-2 gap-3"
+      >
+        <div className="rounded-2xl border border-slate-200/70 bg-gradient-to-br from-white via-slate-50 to-slate-100 p-3 shadow-sm">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="text-[13px] font-semibold text-slate-800">
+              Unassigned
+            </div>
+            <div className="rounded-full bg-slate-200/70 px-2.5 py-1 text-[11px] font-medium text-slate-700">
+              {filtered(userUnassignedCompanies, unassignedFilter).length}
+            </div>
           </div>
-          <div className="rounded-full bg-slate-200/70 px-2.5 py-1 text-[11px] font-medium text-slate-700">
-            {filtered(userUnassignedCompanies, unassignedFilter).length}
+
+          <Input
+            label="Search companies"
+            value={unassignedFilter}
+            setValue={handleUnassignedFilterText}
+          />
+
+          <div className="mt-3 h-[50vh] max-h-[50vh] space-y-2 overflow-y-auto pr-1 no-scrollbar text-[12px]">
+            {filtered(userUnassignedCompanies, unassignedFilter).map((c, i) => (
+              <button
+                key={c.id}
+                data-testid={`unassigned-company-${i}`}
+                onClick={() => handleCompanyToAssign(c.company)}
+                className={`group relative flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left transition-all duration-200 ${
+                  companiesToAssign.includes(c.company)
+                    ? "bg-[rgb(30,45,80)]/75 text-custom-white shadow-md"
+                    : "bg-custom-white"
+                }`}
+              >
+                <div className="min-w-0">
+                  <div className="text-[10px] font-semibold uppercase tracking-wide">
+                    Company
+                  </div>
+                  <div className="truncate text-[13px] font-semibold">
+                    {c.name}
+                  </div>
+                </div>
+
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-[rgb(30,45,80)] px-2.5 py-1 text-[11px] font-medium text-white shadow-sm">
+                  Assign
+                </div>
+              </button>
+            ))}
           </div>
-        </div>
 
-        <Input
-          label="Search companies"
-          value={unassignedFilter}
-          setValue={handleUnassignedFilterText}
-        />
-
-        <div className="mt-3 h-[50vh] max-h-[50vh] space-y-2 overflow-y-auto pr-1 no-scrollbar text-[12px]">
-          {filtered(userUnassignedCompanies, unassignedFilter).map((c, i) => (
+          <div className="mt-3 grid grid-cols-2 gap-2">
             <button
-              key={c.id}
-              data-testid={`unassigned-company-${i}`}
-              onClick={() => handleCompanyToAssign(c.company)}
-              className={`group relative flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left transition-all duration-200 ${
-                companiesToAssign.includes(c.company)
-                  ? "bg-[rgb(30,45,80)]/75 text-custom-white shadow-md"
-                  : "bg-custom-white"
+              data-testid="company-assign-btn"
+              className={`rounded-xl bg-[rgb(30,45,80)] py-2 text-[13px] font-medium text-white shadow-sm transition-all duration-200 hover:bg-[rgb(30,45,80)]/85 ${
+                companiesToAssign.length === 0 &&
+                "pointer-events-none opacity-50"
               }`}
+              onClick={() => handleSubmit("assign")}
             >
-              <div className="min-w-0">
-                <div className="text-[10px] font-semibold uppercase tracking-wide">
-                  Company
-                </div>
-                <div className="truncate text-[13px] font-semibold">
-                  {c.name}
-                </div>
-              </div>
-
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-[rgb(30,45,80)] px-2.5 py-1 text-[11px] font-medium text-white shadow-sm">
-                Assign
-              </div>
+              Assign
             </button>
-          ))}
-        </div>
-
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <button
-            data-testid="company-assign-btn"
-            className={`rounded-xl bg-[rgb(30,45,80)] py-2 text-[13px] font-medium text-white shadow-sm transition-all duration-200 hover:bg-[rgb(30,45,80)]/85 ${
-              companiesToAssign.length === 0 && "pointer-events-none opacity-50"
-            }`}
-            onClick={() => handleSubmit("assign")}
-          >
-            Assign
-          </button>
-          <button
-            data-testid="company-assign-all-btn"
-            className="rounded-xl border bg-[rgb(30,45,80)] text-custom-white border-[rgb(30,45,80)] py-2 text-[13px] font-medium shadow-sm transition-all duration-200"
-            onClick={() => handleSubmit("assign_all")}
-          >
-            Assign All
-          </button>
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-slate-200/70 bg-gradient-to-br from-white via-slate-50 to-slate-100 p-3 shadow-sm">
-        <div className="mb-2 flex items-center justify-between">
-          <div className="text-[13px] font-semibold text-slate-800">
-            Assigned
-          </div>
-          <div className="rounded-full bg-slate-200/70 px-2.5 py-1 text-[11px] font-medium text-slate-700">
-            {filtered(userAssignedCompanies, assignedFilter).length}
-          </div>
-        </div>
-
-        <Input
-          label="Search companies"
-          value={assignedFilter}
-          setValue={handleAssignedFilterText}
-        />
-
-        <div className="mt-3 h-[50vh] max-h-[50vh] space-y-2 overflow-y-auto pr-1 no-scrollbar text-[12px]">
-          {filtered(userAssignedCompanies, assignedFilter).map((c, i) => (
             <button
-              key={c.id}
-              data-testid={`assigned-company-${i}`}
-              onClick={() => handleCompanyToUnassign(c.company)}
-              className={`group relative flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left transition-all duration-200 ${
-                companiesToUnassign.includes(c.company)
-                  ? "bg-[rgb(30,45,80)]/75 text-custom-white shadow-md"
-                  : "bg-custom-white"
-              }`}
+              data-testid="company-assign-all-btn"
+              className="rounded-xl border bg-[rgb(30,45,80)] text-custom-white border-[rgb(30,45,80)] py-2 text-[13px] font-medium shadow-sm transition-all duration-200"
+              onClick={() => handleSubmit("assign_all")}
             >
-              <div className="min-w-0">
-                <div className="text-[10px] font-semibold uppercase tracking-wide">
-                  Company
-                </div>
-                <div className="truncate text-[13px] font-semibold">
-                  {c.name}
-                </div>
-              </div>
-
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-red-600 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm">
-                Unassign
-              </div>
+              Assign All
             </button>
-          ))}
+          </div>
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <button
-            data-testid="company-unassign-btn"
-            className={`rounded-xl bg-[rgb(30,45,80)] py-2 text-[13px] font-medium text-white shadow-sm transition-all duration-200 hover:bg-[rgb(30,45,80)]/85 ${
-              companiesToUnassign.length === 0 &&
-              "pointer-events-none opacity-50"
-            }`}
-            onClick={() => handleSubmit("unassign")}
-          >
-            Unassign
-          </button>
-          <button
-            data-testid="company-unassign-all-btn"
-            className="rounded-xl border bg-[rgb(30,45,80)] text-custom-white border-[rgb(30,45,80)] py-2 text-[13px] font-medium shadow-sm transition-all duration-200"
-            onClick={() => handleSubmit("unassign_all")}
-          >
-            Unassign All
-          </button>
+        <div className="rounded-2xl border border-slate-200/70 bg-gradient-to-br from-white via-slate-50 to-slate-100 p-3 shadow-sm">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="text-[13px] font-semibold text-slate-800">
+              Assigned
+            </div>
+            <div className="rounded-full bg-slate-200/70 px-2.5 py-1 text-[11px] font-medium text-slate-700">
+              {filtered(userAssignedCompanies, assignedFilter).length}
+            </div>
+          </div>
+
+          <Input
+            label="Search companies"
+            value={assignedFilter}
+            setValue={handleAssignedFilterText}
+          />
+
+          <div className="mt-3 h-[50vh] max-h-[50vh] space-y-2 overflow-y-auto pr-1 no-scrollbar text-[12px]">
+            {filtered(userAssignedCompanies, assignedFilter).map((c, i) => (
+              <button
+                key={c.id}
+                data-testid={`assigned-company-${i}`}
+                onClick={() => handleCompanyToUnassign(c.company)}
+                className={`group relative flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left transition-all duration-200 ${
+                  companiesToUnassign.includes(c.company)
+                    ? "bg-[rgb(30,45,80)]/75 text-custom-white shadow-md"
+                    : "bg-custom-white"
+                }`}
+              >
+                <div className="min-w-0">
+                  <div className="text-[10px] font-semibold uppercase tracking-wide">
+                    Company
+                  </div>
+                  <div className="truncate text-[13px] font-semibold">
+                    {c.name}
+                  </div>
+                </div>
+
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-red-600 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm">
+                  Unassign
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              data-testid="company-unassign-btn"
+              className={`rounded-xl bg-[rgb(30,45,80)] py-2 text-[13px] font-medium text-white shadow-sm transition-all duration-200 hover:bg-[rgb(30,45,80)]/85 ${
+                companiesToUnassign.length === 0 &&
+                "pointer-events-none opacity-50"
+              }`}
+              onClick={() => handleSubmit("unassign")}
+            >
+              Unassign
+            </button>
+            <button
+              data-testid="company-unassign-all-btn"
+              className="rounded-xl border bg-[rgb(30,45,80)] text-custom-white border-[rgb(30,45,80)] py-2 text-[13px] font-medium shadow-sm transition-all duration-200"
+              onClick={() => handleSubmit("unassign_all")}
+            >
+              Unassign All
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default UserCompanyAssignForm;

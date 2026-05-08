@@ -179,9 +179,9 @@ const UserBGAssignForm = () => {
     return (
       <div
         data-testid="bg-assign-outrank-container"
-        className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg"
+        className="flex justify-center items-center"
       >
-        <div className="font-medium text-sm flex flex-col items-center">
+        <div className="bg-custom-white p-3 rounded-lg shadow-lg font-medium text-sm flex flex-col items-center">
           <WarningIcon fill="#f97316" height={56} width={56} />
           <div className="mb-2">We're sorry...</div>
           <div>You are not authorized to make changes to this user</div>

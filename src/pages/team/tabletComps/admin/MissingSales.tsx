@@ -136,14 +136,14 @@ const MissingSales = () => {
 
       {/* To show only when fetching stores */}
       {isLoadingStores ? (
-        <div className="min-w-[47%] max-w-[47%] relative">
+        <div className="min-w-[49%] max-w-[49%] relative">
           <LoadingIndicator message="Fetching missing sales..." />
         </div>
       ) : null}
 
       {/* To show when stores missing sales are fetched */}
       {!isLoadingStores && storesMissingSales.length ? (
-        <div className="min-w-[47%] max-w-[47%] overflow-hidden max-h-[75vh] bg-custom-white p-3 rounded-xl shadow-lg">
+        <div className="min-w-[49%] max-w-[49%] overflow-hidden max-h-[75vh] bg-custom-white p-3 rounded-xl shadow-lg">
           <div className="flex items-center justify-between mb-3">
             <div className="text-[13px] font-semibold ">
               Stores Missing Sales
