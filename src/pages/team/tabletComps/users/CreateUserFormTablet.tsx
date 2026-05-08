@@ -351,8 +351,8 @@ const CreateUserFormTablet = () => {
               Ensure all fields are valid
             </div>
             <div className="grid grid-cols-2">
-              <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
-              <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
+              <div className="bg-gradient-to-r from-content/60 to-custom-white h-[1.5px]"></div>
+              <div className="bg-gradient-to-l from-content/60 to-custom-white h-[1.5px]"></div>
             </div>
           </div>
           <div className="col-span-2">
@@ -362,8 +362,8 @@ const CreateUserFormTablet = () => {
                 <button
                   key={r.value}
                   type="button"
-                  className={`min-h-11 rounded-full border border-content/60 px-4 py-2 text-sm md:text-base transition
-                    ${userInfo.role === r.value ? "bg-orange-200" : "bg-custom-white"}
+                  className={`rounded-full px-2 py-0.5 text-[13px] shadow-md
+                    ${userInfo.role === r.value ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-custom-white border border-content/15"}
                   `}
                   onClick={() =>
                     dispatch(setUserInfo({ key: "role", value: r.value }))
@@ -376,13 +376,13 @@ const CreateUserFormTablet = () => {
           </div>
           <div className="col-span-2">
             <div className="mb-2 font-medium">User Level</div>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap gap-4">
               {userLevels.map((r, i) => (
                 <button
                   key={i}
                   type="button"
-                  className={`min-h-11 rounded-full border border-content/60 px-4 py-1 
-                    ${userInfo.user_level === r.id ? "bg-orange-200" : "bg-custom-white"} 
+                  className={`rounded-full px-2 py-0.5 text-[13px] shadow-sm
+                    ${userInfo.user_level === r.id ? "bg-[rgb(30,45,80)]/75 text-custom-white shadow-md" : "bg-custom-white border border-content/15"} 
                     `}
                   onClick={() =>
                     dispatch(setUserInfo({ key: "user_level", value: r.id }))
@@ -490,7 +490,7 @@ const CreateUserFormTablet = () => {
             {user.companies.map((c, i) => (
               <div
                 key={i}
-                className={`rounded-full shadow-md border border-content/60 px-4 py-1 ${companyBG(c.company)}`}
+                className={`rounded-full shadow-md border border-content/15 px-2 py-0.5 text-[13px] ${companyBG(c.company)}`}
                 onClick={() => handleCompanySelect(c.company)}
               >
                 {c.name}
@@ -511,8 +511,8 @@ const CreateUserFormTablet = () => {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="font-medium break-words">{bg.name}</div>
-                      <div className="text-sm opacity-90 break-words">
+                      <div className="font-medium break-words text-[13.5px]">{bg.name}</div>
+                      <div className="text-[13px] opacity-90 break-words">
                         {company?.name ?? "Unknown company"}
                       </div>
                     </div>

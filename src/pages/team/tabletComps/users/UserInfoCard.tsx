@@ -105,7 +105,7 @@ const UserInfoCard = () => {
   return (
     <div className={`w-full select-none`}>
       <div
-        className={`bg-[rgb(30,45,80)] text-custom-white rounded-lg shadow-lg p-2 text-[12.5px] grid grid-cols-[17%_auto] items-center mb-4`}
+        className={`bg-[rgb(30,45,80)] text-custom-white rounded-lg shadow-lg p-2 text-[12.5px] grid grid-cols-[auto_1fr] items-center mb-4`}
       >
         <UserCircleIcon className="" height={125} width={125} fill="white" />
         <div className="w-full">
