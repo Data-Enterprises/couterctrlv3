@@ -36,28 +36,28 @@ const BGFormOptions = () => {
     <div>
       <div className="grid gap-3">
         <div
-          className={`p-3 bg-custom-white rounded-lg flex flex-col justify-center items-center`}
+          className={`p-3 shadow-md bg-custom-white rounded-lg flex flex-col justify-center items-center`}
           onClick={() => handleInnerNav("")}
         >
           <ArrowLeftIcon className="w-12 h-12" />
           <div>Go Back</div>
         </div>
         <div
-          className={`p-3 transition-all duration-200 ${bgOption === "create" ? "bg-orange-200" : "bg-custom-white"} rounded-lg flex flex-col justify-center items-center`}
+          className={`p-3 shadow-md transition-all duration-200 ${bgOption === "create" ? "bg-orange-200" : "bg-custom-white"} rounded-lg flex flex-col justify-center items-center`}
           onClick={() => handleInnerNav("create")}
         >
           <PlusCircleIcon className="w-12 h-12" />
           <div>New Base Group</div>
         </div>
         <div
-          className={`p-3 transition-all duration-200 ${bgOption === "update" ? "bg-orange-200" : "bg-custom-white"} rounded-lg flex flex-col justify-center items-center`}
+          className={`p-3 shadow-md transition-all duration-200 ${bgOption === "update" ? "bg-orange-200" : "bg-custom-white"} rounded-lg flex flex-col justify-center items-center`}
           onClick={() => handleInnerNav("update")}
         >
           <ArrowPathIcon className="w-12 h-12" />
           <div>Update Name</div>
         </div>
         <div
-          className={`p-3 transition-all duration-200 ${bgOption === "delete" ? "bg-orange-200" : "bg-custom-white"} rounded-lg flex flex-col justify-center items-center`}
+          className={`p-3 shadow-md transition-all duration-200 ${bgOption === "delete" ? "bg-orange-200" : "bg-custom-white"} rounded-lg flex flex-col justify-center items-center`}
           onClick={() => handleInnerNav("delete")}
         >
           <LinkSlashIcon className="w-12 h-12" />

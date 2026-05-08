@@ -63,7 +63,7 @@ const CompaniesTablet = () => {
   };
 
   return (
-    <div className=" grid grid-cols-[17%_81.6%] gap-3">
+    <div className="grid grid-cols-[17.5%_81.1%] gap-3">
       <CompanyFormOptions />
       {renderCompanyForm()}
     </div>

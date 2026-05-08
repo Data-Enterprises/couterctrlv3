@@ -40,11 +40,11 @@ const UsersTablet = () => {
     };
   };
   return (
-    <div className=" grid grid-cols-[17%_81.8%] gap-3">
+    <div className="grid grid-cols-[17.5%_81.1%] gap-3">
       <UserFormOptions />
       {renderUserForm()}
     </div>
-  )
+  );
 };
 
 export default UsersTablet;

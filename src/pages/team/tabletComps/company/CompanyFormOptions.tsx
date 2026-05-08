@@ -38,7 +38,7 @@ const CompanyFormOptions = () => {
       <div className="grid gap-3">
         <div
           data-testid="goback-company-form"
-          className={`p-3 bg-custom-white rounded-lg flex flex-col justify-center items-center`}
+          className={`p-3 shadow-md bg-custom-white rounded-lg flex flex-col justify-center items-center`}
           onClick={handleGoBack}
         >
           <ArrowLeftIcon className="w-12 h-12" />
@@ -46,7 +46,7 @@ const CompanyFormOptions = () => {
         </div>
         <div
           data-testid="create-company-form"
-          className={`p-3 transition-all duration-200 ${selectedForm === "create" ? "bg-orange-200" : "bg-custom-white"} rounded-lg flex flex-col justify-center items-center`}
+          className={`p-3 shadow-md transition-all duration-200 ${selectedForm === "create" ? "bg-orange-200" : "bg-custom-white"} rounded-lg flex flex-col justify-center items-center`}
           onClick={() => handleFormSelect("create")}
         >
           <PlusCircleIcon className="w-12 h-12" />
@@ -54,7 +54,7 @@ const CompanyFormOptions = () => {
         </div>
         <div
           data-testid="update-company-form"
-          className={`p-3 transition-all duration-200 ${selectedForm === "update" ? "bg-orange-200" : "bg-custom-white"} rounded-lg flex flex-col justify-center items-center`}
+          className={`p-3 shadow-md transition-all duration-200 ${selectedForm === "update" ? "bg-orange-200" : "bg-custom-white"} rounded-lg flex flex-col justify-center items-center`}
           onClick={() => handleFormSelect("update")}
         >
           <ArrowPathIcon className="w-12 h-12" />
@@ -62,7 +62,7 @@ const CompanyFormOptions = () => {
         </div>
         <div
           data-testid="delete-company-form"
-          className={`p-3 transition-all duration-200 ${selectedForm === "delete" ? "bg-orange-200" : "bg-custom-white"} rounded-lg flex flex-col justify-center items-center`}
+          className={`p-3 shadow-md transition-all duration-200 ${selectedForm === "delete" ? "bg-orange-200" : "bg-custom-white"} rounded-lg flex flex-col justify-center items-center`}
           onClick={() => handleFormSelect("delete")}
         >
           <LinkSlashIcon className="w-12 h-12" />
@@ -70,7 +70,7 @@ const CompanyFormOptions = () => {
         </div>
         <div
           data-testid="assign-company-to-user-form"
-          className={`p-3 transition-all duration-200 ${selectedForm === "assign_to_user" ? "bg-orange-200" : "bg-custom-white"} rounded-lg flex flex-col justify-center items-center`}
+          className={`p-3 shadow-md transition-all duration-200 ${selectedForm === "assign_to_user" ? "bg-orange-200" : "bg-custom-white"} rounded-lg flex flex-col justify-center items-center`}
           onClick={() => handleFormSelect("assign_to_user")}
         >
           <UserIcon className="w-12 h-12" />
