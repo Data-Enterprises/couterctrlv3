@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import BGFormOptions from "./BGFormOptions";
 import { resetUserInfo, setBGOption, setSelectedUserId } from "../../../../features/usersSlice";
+import NewBGForm from "./NewBGForm";
+import UpdateBGForm from "./UpdateBGForm";
 
 const BaseGroupsTablet = () => {
   const dispatch = useAppDispatch();
@@ -19,9 +21,9 @@ const BaseGroupsTablet = () => {
   const renderBGForm = () => {
     switch (bgOption) {
       case "create":
-        return <div>Create BG</div>;
+        return <NewBGForm />;
       case "update":
-        return <div>Update BG</div>;
+        return <UpdateBGForm />;
       case "delete":
         return <div>Delete BG</div>;
       case "assign_to_user":
