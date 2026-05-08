@@ -55,13 +55,13 @@ const CreateGroup = () => {
           ))}
         </div>
         <div className="relative grid grid-cols-[67%_1fr] gap-3 items-end mt-4">
-        {groupNames.some(
-          (g) => g.toLowerCase() === createInput.trim().toLowerCase(),
-        ) ? (
-          <div className="absolute top-0 -translate-y-[75%] pl-0.5 font-medium text-red-600 text-[12.5px]">
-            User Group already exists. Please use another name
-          </div>
-        ) : null}
+          {groupNames.some(
+            (g) => g.toLowerCase() === createInput.trim().toLowerCase(),
+          ) ? (
+            <div className="absolute top-0 -translate-y-[75%] pl-0.5 font-medium text-red-600 text-[12.5px]">
+              User Group already exists. Please use another name
+            </div>
+          ) : null}
           <Input
             label="Group Name"
             value={createInput}
@@ -69,7 +69,7 @@ const CreateGroup = () => {
           />
           <button
             data-testid="create-usergroup-btn"
-            className={`btn-themeBlue mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
+            className={`bg-[rgb(30,45,80)] text-custom-white py-1.5 rounded-xl border-2 border-[rgb(30,45,80)] mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
             onClick={handleCreate}
           >
             Submit

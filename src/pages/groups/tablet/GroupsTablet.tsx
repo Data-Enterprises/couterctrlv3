@@ -7,6 +7,9 @@ import {
 } from "@heroicons/react/24/solid";
 import type { GroupFormType } from "../../../features/groupSlice";
 import CreateGroup from "./CreateGroup";
+import UpdateGroup from "./UpdateGroup";
+import DeleteGroup from "./DeleteGroup";
+import AssignStoresToGroup from "./AssignStoresToGroup";
 
 interface GroupsTabletProps {
   handleFormSelect: (formType: GroupFormType) => void;
@@ -20,11 +23,11 @@ const GroupsTablet = ({ handleFormSelect }: GroupsTabletProps) => {
       case "create":
         return <CreateGroup />;
       case "update":
-        return <div>Update User Group</div>;
+        return <UpdateGroup />;
       case "delete":
-        return <div>Delete User Group</div>;
+        return <DeleteGroup />;
       case "assign":
-        return <div>Assign User Group</div>;
+        return <AssignStoresToGroup />;
       default:
         return null;
     }
