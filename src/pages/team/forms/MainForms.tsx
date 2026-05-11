@@ -52,7 +52,7 @@ const MainForms = () => {
         <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
         <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
       </div>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col">
         <div
           data-testid="team-users-form"
           className={`${selectedForm === 1 ? "bg-orange-200" : ""} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
