@@ -155,14 +155,14 @@ const DeleteBaseGroup = () => {
           <div className="grid grid-cols-2 gap-2 mt-2">
             <button
               data-testid="bg-delete-step-2-submit-btn"
-              className="btn-themeGreen py-1.5 text-[13px]"
+              className="btn-themeGreen bg-red-600 border-red-600 hover:bg-red-600/75 hover:text-custom-white px-0 py-1.5"
               onClick={handleSubmit}
             >
               Yes
             </button>
             <button
               data-testid="bg-delete-step-2-cancel-btn"
-              className="btn-themeOrange py-1.5 text-[13px]"
+              className="btn-themeOrange bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5"
               onClick={() => setIsDeleting(false)}
             >
               No

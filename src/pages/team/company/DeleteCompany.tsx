@@ -119,14 +119,14 @@ const DeleteCompany = () => {
           <div className="mt-2 grid grid-cols-2 gap-2">
             <button
               data-testid="delete-company-submit-btn"
-              className="btn-themeGreen"
+              className="btn-themeGreen bg-red-600 border-red-600 hover:bg-red-600/75 hover:text-custom-white px-0 py-1.5"
               onClick={handleSubmit}
             >
               Yes
             </button>
             <button
               data-testid="delete-company-reset-stepone-btn"
-              className="btn-themeOrange"
+              className="btn-themeOrange bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5"
               onClick={() => setIsDeleting(false)}
             >
               No
