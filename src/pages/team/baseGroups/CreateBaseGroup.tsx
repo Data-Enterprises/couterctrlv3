@@ -127,7 +127,7 @@ const CreateBaseGroup = () => {
 
   return (
     <div data-testid="create-bg-form-container" className="flex gap-2">
-      <div className="w-[40%]">
+      <div className="w-[55%]">
         <div className="bg-custom-white rounded-lg shadow-lg p-2">
           {/* Companies */}
           <div className="text-[13px] font-medium mb-0.5">Companies</div>
@@ -151,7 +151,7 @@ const CreateBaseGroup = () => {
                 {baseGroups.map((bg) => (
                   <div
                     key={bg.id}
-                    className={`py-0.5 px-2 transition-all duration-200 ${selectedBG === bg.id ? "bg-orange-200" : ""} rounded-lg cursor-pointer hover:bg-emerald-200/75`}
+                    className={`py-0.5 px-2 transition-all duration-200 ${selectedBG === bg.id ? "bg-orange-200" : ""} rounded-lg cursor-default`}
                   >
                     {bg.name}
                   </div>

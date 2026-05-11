@@ -92,8 +92,12 @@ const AssignUserToBG = () => {
 
   const handleSubmitAll = (type: string) => {
     if (type === "assign_all") {
-      const ids = inactiveBaseGroups.map((bg) => bg.id);
-      assignBaseGroupToUser(url, token, selectedUserId, ids)
+      const visibleInColumn = filtered(
+        inactiveBaseGroups,
+        unassignedFilter,
+      ).map((bg) => bg.id);
+
+      assignBaseGroupToUser(url, token, selectedUserId, visibleInColumn)
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
@@ -104,8 +108,10 @@ const AssignUserToBG = () => {
         .catch((err: JsonError) => toast.error(err.message));
     } else {
       // we are unassigning
-      const ids = activeBaseGroups.map((bg) => bg.id);
-      deleteUserBaseGroupLink(url, token, selectedUserId, ids)
+      const visibleInColumn = filtered(activeBaseGroups, assignedFilter).map(
+        (bg) => bg.id,
+      );
+      deleteUserBaseGroupLink(url, token, selectedUserId, visibleInColumn)
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
@@ -178,16 +184,15 @@ const AssignUserToBG = () => {
     return (
       <div
         data-testid="bg-assign-outrank-container"
-        className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg"
+        className="flex justify-center items-center bg-custom-white p-4 rounded-lg shadow-lg w-[55%]"
       >
-        <div className="font-medium text-sm flex flex-col items-center">
+        <div className="font-medium text-[13px] flex flex-col items-center">
           <WarningIcon fill="#f97316" height={56} width={56} />
-          <div className="mb-2">We're sorry...</div>
           <div>You are not authorized to make changes to this user</div>
           <div>Please contact them if assistance is needed</div>
           <button
             data-testid="bg-assign-outrank-reset-btn"
-            className="btn-themeBlue py-1.5 mt-2"
+            className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white py-1 mt-2"
             onClick={() => handleReset()}
           >
             Reset
@@ -208,7 +213,9 @@ const AssignUserToBG = () => {
       >
         Companies
       </div>
-      <div className={` ${companies.length === 0 && "hidden"} flex flex-wrap gap-1.5 text-[11.5px] leading-tight mb-1`}>
+      <div
+        className={` ${companies.length === 0 && "hidden"} flex flex-wrap gap-1.5 text-[11.5px] leading-tight mb-1`}
+      >
         {companies.map((c) => (
           <div
             key={c.id}

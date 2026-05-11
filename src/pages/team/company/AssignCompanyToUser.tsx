@@ -94,12 +94,20 @@ const AssignCompanyToUser = () => {
   const handleSubmit = (type: string) => {
     const assignedIds = userAssignedCompanies.map((c) => c.company);
     let ids: number[] = [];
+    const visibleInUnassigned = filtered(
+      userUnassignedCompanies,
+      unassignedFilter,
+    );
+
+    const visibleInAssigned = filtered(userAssignedCompanies, assignedFilter);
+    const companiesToKeep = [...userAssignedCompanies].filter((c) => !visibleInAssigned.includes(c));
+
     switch (type) {
       case "assign":
         ids = [...companiesToAssign, ...assignedIds];
         break;
       case "assign_all":
-        ids = [...userAssignedCompanies, ...userUnassignedCompanies].map(
+        ids = [...userAssignedCompanies, ...visibleInUnassigned].map(
           (c) => c.company,
         );
         break;
@@ -107,7 +115,7 @@ const AssignCompanyToUser = () => {
         ids = assignedIds.filter((c) => !companiesToUnassign.includes(c));
         break;
       default:
-        ids = [];
+        ids = [...companiesToKeep].map((c) => c.company);
     }
 
     assignUserToCompany(url, token, selectedUserId, ids)
@@ -154,17 +162,16 @@ const AssignCompanyToUser = () => {
   if (isOutranked()) {
     return (
       <div
-        data-testid="outranked-message-container"
-        className="flex justify-center items-center bg-custom-white p-4 mt-4 rounded-lg shadow-lg"
+        data-testid="bg-assign-outrank-container"
+        className="flex justify-center items-center bg-custom-white p-4 rounded-lg shadow-lg w-[55%]"
       >
-        <div className="font-medium text-sm flex flex-col items-center">
+        <div className="font-medium text-[13px] flex flex-col items-center">
           <WarningIcon fill="#f97316" height={56} width={56} />
-          <div className="mb-2">We're sorry...</div>
           <div>You are not authorized to make changes to this user</div>
           <div>Please contact them if assistance is needed</div>
           <button
-            data-testid="company-assign-reset-btn"
-            className="btn-themeBlue py-1.5 mt-2"
+            data-testid="bg-assign-outrank-reset-btn"
+            className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white py-1 mt-2"
             onClick={() => handleReset()}
           >
             Reset

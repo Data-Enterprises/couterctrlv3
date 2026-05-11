@@ -76,7 +76,7 @@ const DeleteBaseGroup = () => {
   return (
     <div
       data-testid="bg-delete-step-1-container"
-      className="bg-custom-white p-2 w-1/2 rounded-lg shadow-lg"
+      className="bg-custom-white p-2 w-[55%] rounded-lg shadow-lg"
     >
       {/* Companies */}
       <div className="text-[13px] font-medium mb-0.5 pl-1">Companies</div>

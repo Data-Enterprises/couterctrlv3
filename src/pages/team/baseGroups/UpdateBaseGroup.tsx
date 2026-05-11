@@ -72,9 +72,14 @@ const UpdateBaseGroup = () => {
     return "text-content/85 bg-content/10";
   };
 
+  const canSubmit = (groupid: number) => {
+    const filtered = baseGroups.filter((bg) => bg.id === groupid)[0];
+    return selectedBgID > 0 && groupName.length > 0 && groupName !== filtered.name;
+  };
+
   return (
     <div data-testid="update-bg-form-container" className="flex gap-2">
-      <div className="bg-custom-white p-2 rounded-lg shadow-lg w-1/2">
+      <div className="bg-custom-white p-2 rounded-lg shadow-lg w-[55%]">
         {/* Companies */}
         <div className="text-[13px] font-medium mb-0.5">Companies</div>
         <div className="flex flex-wrap gap-1.5 text-[11.5px] leading-tight mb-1">
@@ -120,7 +125,7 @@ const UpdateBaseGroup = () => {
             />
             <button
               data-testid="submit-update-bg-btn"
-              className={`btn-themeBlue w-full ${!selectedBgID && "opacity-50 pointer-events-none"}`}
+              className={`btn-themeBlue w-full ${!canSubmit(selectedBgID) && "opacity-50 pointer-events-none"}`}
               onClick={handleSubmit}
             >
               Submit

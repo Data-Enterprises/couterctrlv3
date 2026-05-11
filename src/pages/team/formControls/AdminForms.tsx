@@ -19,7 +19,7 @@ const AdminForms = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg min-w-36 text-sm select-none">
+    <div className="bg-custom-white rounded-lg shadow-lg min-w-36 text-[13px] select-none">
       <div className="font-medium px-2 rounded-t-lg py-0.5">Admin Forms</div>
       <div className="grid grid-cols-2">
         <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
