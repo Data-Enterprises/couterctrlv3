@@ -18,7 +18,7 @@ import SubsCompareModal from "./subsCompare/SubsCompareModal";
 import SalesMobile from "./mobile/SalesMobile";
 import SalesTracker from "./tracker/SalesTracker";
 import WeekCards from "./tracker/WeekCards";
-// import SalesTablet from "./tablet/SalesTablet";
+import SalesTablet from "./tablet/SalesTablet";
 
 // Dispatchers
 import {
@@ -271,7 +271,7 @@ const Sales = () => {
 
   // Just render the mobile or tablet version and cut down on excessive operations
   if (context.isMobile) return <SalesMobile />;
-  // if (context.isTablet) return <SalesTablet />; // commenting this out for publishing until it's ready
+  if (context.isTablet) return <SalesTablet />; // commenting this out for publishing until it's ready
 
   // ///////////////////////////////////////////////////////////////////
 
@@ -342,7 +342,13 @@ const Sales = () => {
 
         {isLoading ? (
           <div className="relative md:min-h-[calc(100vh-4.2rem)] md:max-h-[calc(100vh-4.2rem)]">
-            <LoadingIndicator message={dashboardOption !== "tracker" ? "Loading sales overview" : "Loading sales tracker"} />
+            <LoadingIndicator
+              message={
+                dashboardOption !== "tracker"
+                  ? "Loading sales overview"
+                  : "Loading sales tracker"
+              }
+            />
           </div>
         ) : (
           <>

@@ -44,44 +44,47 @@ const DeleteCompany = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
-  if (isDeleting) {
-    return (
-      <div className="bg-custom-white rounded-lg shadow-lg p-4 w-[25vw] text-center">
-        <div>Are you sure you want to delete</div>
-        <div>
-          Company = <span className="font-medium">{companyInfo.name}</span>
-        </div>
+  // if (isDeleting) {
+  //   return (
+  //     <div className="bg-custom-white rounded-lg shadow-lg p-2 text-[13px] w-[25vw] text-center">
+  //       <div>Are you sure you want to delete</div>
+  //       <div>
+  //         Company = <span className="font-medium">{companyInfo.name}</span>
+  //       </div>
 
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          <button data-testid="delete-company-submit-btn" className="btn-themeGreen" onClick={handleSubmit}>
-            Yes
-          </button>
-          <button
-            data-testid="delete-company-reset-stepone-btn"
-            className="btn-themeOrange"
-            onClick={() => setIsDeleting(false)}
-          >
-            No
-          </button>
-        </div>
-      </div>
-    );
-  }
+  //       <div className="mt-2 grid grid-cols-2 gap-2">
+  //         <button data-testid="delete-company-submit-btn" className="btn-themeGreen" onClick={handleSubmit}>
+  //           Yes
+  //         </button>
+  //         <button
+  //           data-testid="delete-company-reset-stepone-btn"
+  //           className="btn-themeOrange"
+  //           onClick={() => setIsDeleting(false)}
+  //         >
+  //           No
+  //         </button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   const filteredCompanies = [...companies].filter((c) =>
     user.companies.some((uc) => uc.company === c.id),
   );
 
   return (
-    <div data-testid="delete-company-form-container" className="bg-custom-white rounded-lg shadow-lg p-4 w-[25vw]">
-      <div className="text-sm">
+    <div
+      data-testid="delete-company-form-container"
+      className="bg-custom-white rounded-lg shadow-lg p-2 w-[25vw]"
+    >
+      <div className="text-[13px]">
         <div className="font-medium">Select company to delete</div>
-        <div className="select-none grid rounded-lg p-1 min-h-20 max-h-32 overflow-hidden overflow-y-auto">
+        <div className="select-none grid rounded-lg p-1 max-h-[45vh] overflow-hidden overflow-y-auto">
           {filteredCompanies.map((c, i) => (
             <div
               key={c.id}
               data-testid={`delete-company-select-${i}`}
-              className={`${selectedCompanyId === c.id && "bg-orange-200"} rounded-full py-1 pl-2 border-b transition-all duration-200 cursor-pointer hover:bg-blue-200`}
+              className={`${selectedCompanyId === c.id && "bg-[rgb(30,45,80)] text-custom-white"} rounded-full py-1 pl-2 border-b transition-all duration-200 cursor-pointer hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white`}
               onClick={() => handleCompanyClick(c.id)}
             >
               {c.name}
@@ -92,16 +95,45 @@ const DeleteCompany = () => {
           label="Company Name"
           value={companyInfo.name}
           setValue={() => {}}
-          className="opacity-50 pointer-events-none"
+          className="opacity-50 pointer-events-none py-1 text-[13px]"
         />
         <button
           data-testid="delete-company-step-one-btn"
-          className={`${selectedCompanyId === 0 && "opacity-50 pointer-events-none"} btn-themeOrange mt-2 w-full`}
+          className={`${selectedCompanyId === 0 && "opacity-50 pointer-events-none"} mt-2 w-full btn-themeOrange bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5`}
           onClick={() => setIsDeleting(true)}
         >
           Delete
         </button>
       </div>
+      {isDeleting && (
+        <div className="text-[13px] text-center">
+          <div className="h-[1.5px] grid grid-cols-2 mt-2 mb-1">
+            <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
+            <div className="bg-gradient-to-l from-content/60 to-custom-white"></div>
+          </div>
+          <div>Are you sure you want to delete</div>
+          <div>
+            Company = <span className="font-medium">{companyInfo.name}</span>
+          </div>
+
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <button
+              data-testid="delete-company-submit-btn"
+              className="btn-themeGreen bg-red-600 border-red-600 hover:bg-red-600/75 hover:text-custom-white px-0 py-1.5"
+              onClick={handleSubmit}
+            >
+              Yes
+            </button>
+            <button
+              data-testid="delete-company-reset-stepone-btn"
+              className="btn-themeOrange bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5"
+              onClick={() => setIsDeleting(false)}
+            >
+              No
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

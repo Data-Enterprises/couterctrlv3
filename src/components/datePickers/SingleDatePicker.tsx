@@ -5,7 +5,11 @@ import { useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { setSingleDate } from "../../features/searchSlice";
 
-const SingleDatePicker = () => {
+interface SingleDatePickerProps {
+  className?: string;
+}
+
+const SingleDatePicker = ({ className = "" }: SingleDatePickerProps) => {
   const context = useAppSelector((state) => state.app);
   const searchState = useAppSelector((state) => state.search);
   const menuRef = useRef<HTMLButtonElement>(null);
@@ -37,14 +41,14 @@ const SingleDatePicker = () => {
 
   return (
     <Menu data-testid="single-date-picker" as="div" className={styling}>
-      <div className={menuStyle}>
+      <div className={`${menuStyle}`}>
         <label className="md:block flex justify-start md:justify-center pl-1 md:pl-0.5 text-[13px] font-medium">
           Date
         </label>{" "}
         <MenuButton
           data-testid="single-date-menu-button"
           ref={menuRef}
-          className="inline-flex w-full bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 justify-between gap-x-1.5 rounded-md px-3 py-3 text-sm font-semibold  shadow-sm ring-1 ring-inset ring-gray-300 "
+          className={`inline-flex w-full bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 justify-between gap-x-1.5 rounded-md px-3 py-3 text-sm font-semibold  shadow-sm ring-1 ring-inset ring-gray-300 ${className}`}
         >
           {formatDisplay()}
           <ChevronDownIcon

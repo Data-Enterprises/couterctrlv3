@@ -53,7 +53,7 @@ const ExportMissingStoresModal = <T extends Record<string, any>>({
     <Modal
       isOpen={exportMissingStoresModalOpen}
       onClose={handleClose}
-      modalClassName="bg-custom-white w-1/4"
+      modalClassName="bg-custom-white w-1/2 xl:w-1/4"
       className=""
     >
       <div className="">

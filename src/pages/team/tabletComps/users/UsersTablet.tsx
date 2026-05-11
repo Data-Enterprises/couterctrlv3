@@ -31,7 +31,7 @@ const UsersTablet = () => {
     switch (selectedUserForm) {
       case "create":
         return <CreateUserFormTablet />;
-      case "user_info":
+      case "user_info" :
         return <UserInfoForm />;
       case "delete":
         return <UserInfoForm />;
@@ -40,11 +40,11 @@ const UsersTablet = () => {
     };
   };
   return (
-    <div className="space-y-3">
+    <div className="grid grid-cols-[17.5%_81.1%] gap-3">
       <UserFormOptions />
       {renderUserForm()}
     </div>
-  )
+  );
 };
 
 export default UsersTablet;

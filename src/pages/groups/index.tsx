@@ -1,6 +1,7 @@
-import { useAppSelector } from "../../hooks";
+import { useAppSelector, useAppDispatch } from "../../hooks";
 
 export const useGroupCtx = () => {
+  const dispatch = useAppDispatch();
   const { url, token, isDesktop } = useAppSelector((state) => state.app);
   const {userid} = useAppSelector((state) => state.user);
   const {
@@ -13,6 +14,7 @@ export const useGroupCtx = () => {
   } = useAppSelector((state) => state.group);
 
   return {
+    dispatch,
     groups,
     selectedGroup,
     selectedForm,

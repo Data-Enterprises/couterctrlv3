@@ -103,7 +103,7 @@ const UserInfoForm = () => {
       <div className="">
         <div>
           <div className="pl-0.5">Companies</div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2 text-[14px]">
             {user.companies.map((c, i) => (
               <button
                 key={i}
@@ -121,7 +121,7 @@ const UserInfoForm = () => {
         </div>
         <div>
           <div className="pl-0.5">User Levels</div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2 text-[14px]">
             {ctx.userLevels.map((l, i) => (
               <button
                 key={i}
@@ -159,7 +159,7 @@ const UserInfoForm = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[calc(100vh-380px)] overflow-y-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[calc(100vh-305px)] overflow-y-auto">
         {filteredUsers().map((user, i) => (
           <div
             key={i}
@@ -201,7 +201,7 @@ const UserInfoForm = () => {
             <div className="grid font-medium">
               {!isOutranked(user) ? (
                 <button
-                  className={`${ctx.selectedUserForm === "user_info" ? "bg-[rgb(30,45,80)]/95" : "bg-red-600"} text-custom-white py-3 px-0 rounded-2xl shadow`}
+                  className={`${ctx.selectedUserForm === "user_info" ? "bg-[rgb(30,45,80)]/95" : "bg-red-600"} text-custom-white py-2 px-0 rounded-2xl shadow`}
                   onClick={() => handleUserCardBtnClick(user)}
                 >
                   {ctx.selectedUserForm === "user_info"
@@ -209,7 +209,7 @@ const UserInfoForm = () => {
                     : "Delete User"}
                 </button>
               ) : (
-                <div className="bg-[rgb(30,45,80)]/50 text-custom-white py-3 px-0 rounded-2xl shadow text-center">
+                <div className="bg-[rgb(30,45,80)]/50 text-custom-white py-2 px-0 rounded-2xl shadow text-center">
                   You are not authorized to update this user
                 </div>
               )}

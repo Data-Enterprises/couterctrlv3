@@ -6,6 +6,7 @@ import {
   resetUserInfo,
   setAssignBaseGroups,
   setRefresh,
+  setSelectedCompanyId,
   setSelectedForm,
   setSelectedUserForm,
   setSelectedUserId,
@@ -19,7 +20,7 @@ import type { JsonError, User, UserLevelJsonResp } from "../../interfaces";
 import { getUserLevels } from "../../api/team";
 import { getAllUsers } from "../../api/user";
 
-import UserControls from "./forms/UserControls";
+import UserControls from "./users/UserControls";
 import MainForms from "./forms/MainForms";
 import StoreControls from "./stores/StoreControls";
 import BaseGroupControls from "./baseGroups/BaseGroupControls";
@@ -32,10 +33,11 @@ import {
 } from "../../features/adminSlice";
 import ExportMissingStoresModal from "./admin/ExportMissingStoresModal";
 import { adminMissingSalesColumns } from "./admin";
-import Assigned from "./assignModal/Assigned";
-import Unassigned from "./assignModal/Unassigned";
 import TeamTablet from "./tabletComps/TeamTablet";
-import { setAllSelectedBaseGroups } from "../../features/baseGroupSlice";
+import { setAllSelectedBaseGroups, setStoresWithBGID } from "../../features/baseGroupSlice";
+import UpdateUserForm from "./users/UpdateUserForm";
+import DeleteUserForm from "./users/DeleteUserForm";
+import StoresWithBG from "./users/StoresWithBG";
 
 const options = [
   { label: "Users", value: 1 },
@@ -51,7 +53,7 @@ const Team = () => {
     (state) => state.app,
   );
   const companies = useAppSelector((state) => state.user.companies);
-  const { refresh, selectedUserId, selectedForm, selectedUserStores } =
+  const { refresh, selectedUserId, selectedForm, selectedUserForm } =
     useAppSelector((state) => state.users);
 
   const { filteredMissingStores } = useAppSelector((state) => state.admin);
@@ -66,6 +68,8 @@ const Team = () => {
       dispatch(setUserCompanyIds([]));
       dispatch(setSelectedUserId(0));
       dispatch(setAllSelectedBaseGroups([]));
+      dispatch(setStoresWithBGID([]));
+      dispatch(setSelectedCompanyId(0));
     };
   }, []);
 
@@ -79,6 +83,8 @@ const Team = () => {
     dispatch(setUserCompanyIds([]));
     dispatch(setSelectedUserId(0));
     dispatch(setAllSelectedBaseGroups([]));
+    dispatch(setStoresWithBGID([]));
+    dispatch(setSelectedCompanyId(0));
   }, [selectedForm]);
 
   useEffect(() => {
@@ -176,6 +182,20 @@ const Team = () => {
     dispatch(setSelectedForm(form));
   };
 
+  const renderSubForm = () => {
+    if (selectedUserForm === "create") {
+      return <StoresWithBG />;
+    }
+
+    if (selectedUserForm === "user_info") {
+      return <UpdateUserForm />;
+    }
+
+    if (selectedUserForm === "delete") {
+      return <DeleteUserForm />;
+    }
+  };
+
   return (
     <div
       data-testid="team-page"
@@ -196,15 +216,7 @@ const Team = () => {
             {renderForm()}
           </div>
           {selectedForm !== 3 && (
-            <div className="w-[45%]">
-              <div
-                data-testid="ctrl-store-assign"
-                className={`grid grid-cols-2 gap-4 h-[65vh] ${selectedUserStores.unassigned.length || selectedUserStores.assigned.length ? "" : "hidden"}`}
-              >
-                <Unassigned />
-                <Assigned />
-              </div>
-            </div>
+            <div className="w-[45%]">{renderSubForm()}</div>
           )}
         </div>
       ) : (

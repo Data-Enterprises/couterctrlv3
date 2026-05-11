@@ -2,8 +2,8 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { setAnswer, setIndex } from "../../../features/forgotPasswordSlice";
 import type { JsonError } from "../../../interfaces";
-import TextInput from "../../../components/TextInput";
 import { validateSecurityAnswer } from "../../../api/password";
+import Input from "../../../components/inputs/Input";
 
 const SecurityAnswer = () => {
   const toast = useToast();
@@ -26,17 +26,17 @@ const SecurityAnswer = () => {
   };
 
   return (
-    <div data-testid="security-answer-forgot" className="h-[190px] px-2">
-      <div className="font-medium text-center mb-2">
-        Provide your Security Answer
+    <div data-testid="security-answer-forgot" className={`${forgot.index !== 1 && "opacity-0 transition-all duration-400"}`}>
+      <div className="text-sm text-center font-medium">
+        <div>Security Question</div>
+        <div>{forgot.question}</div>
       </div>
-      <div className="text-center mb-2">{forgot.question}</div>
-      <TextInput
-        query={forgot.answer}
-        isSimple={true}
-        title="Answer"
-        name="forgot-question-answer"
-        setText={(text) => dispatch(setAnswer(text))}
+      <Input
+        label="Answer"
+        value={forgot.answer}
+        setValue={(text) => dispatch(setAnswer(text))}
+        className="py-1.5"
+        onKeyDown={verifySecurityAnswer}
       />
       <button
         data-testid="submit-security-answer-button-forgot"

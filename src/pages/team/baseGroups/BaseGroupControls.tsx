@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { resetUserInfo } from "../../../features/usersSlice";
 
@@ -6,24 +6,15 @@ import CreateBaseGroup from "./CreateBaseGroup";
 import UpdateBaseGroup from "./UpdateBaseGroup";
 import DeleteBaseGroup from "./DeleteBaseGroup";
 import AssignUserToBG from "./AssignUserToBaseGroup";
-// import SingleSelect from "../../../components/SingleSelect";
-
-type BaseGroupOption = "create" | "update" | "delete" | "assign_to_user" | "";
-
-// const options = [
-//   { label: "Create", value: "create" },
-//   { label: "Update", value: "update" },
-//   { label: "Delete", value: "delete" },
-//   { label: "Assign/Unassign User to Base Group", value: "assign_to_user" },
-// ];
+import { setBGStores } from "../../../features/baseGroupSlice";
 
 const BaseGroupControls = () => {
   const dispatch = useAppDispatch();
-  const [bgOption, setBgOption] = useState<BaseGroupOption>("");
-  const isDesktop = useAppSelector((state) => state.app.isDesktop);
+  const { bgOption } = useAppSelector((state) => state.users);
 
   useEffect(() => {
     dispatch(resetUserInfo());
+    dispatch(setBGStores({ assigned: [], unassigned: [] }));
   }, [bgOption]);
 
   const renderForm = () => {
@@ -41,58 +32,7 @@ const BaseGroupControls = () => {
     }
   };
 
-  // const handleMobileFormSelect = (val: string | number) => {
-  //   const form = val as BaseGroupOption;
-  //   setBgOption(form);
-  // };
-
-  return (
-    <div className={`${isDesktop ? "space-y-4" : "space-y-2"} w-full`}>
-      {/* {isDesktop ? ( */}
-      <div className="grid grid-cols-4 gap-2 p-4 bg-custom-white rounded-lg shadow-lg">
-        <button
-          data-testid="bg-create-form-btn"
-          className={`${bgOption === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => setBgOption("create")}
-        >
-          Create
-        </button>
-        <button
-          data-testid="bg-update-form-btn"
-          className={`${bgOption === "update" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => setBgOption("update")}
-        >
-          Update
-        </button>
-        <button
-          data-testid="bg-delete-form-btn"
-          className={`${bgOption === "delete" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => setBgOption("delete")}
-        >
-          Delete
-        </button>
-        <button
-          data-testid="bg-assign-form-btn"
-          className={`${bgOption === "assign_to_user" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => setBgOption("assign_to_user")}
-        >
-          Assign/Unassign User
-        </button>
-      </div>
-      {/* // ) : ( */}
-      {/* <SingleSelect 
-      //     label="Base Group Forms"
-      //     data={options}
-      //     displayKey="label"
-      //     valueKey="value"
-      //     onSelect={handleMobileFormSelect}
-      //   />
-      //   null
-      // )}
-      */}
-      {renderForm()}
-    </div>
-  );
+  return <div className={`space-y-4 w-full`}>{renderForm()}</div>;
 };
 
 export default BaseGroupControls;

@@ -4,7 +4,6 @@ import type {
   BaseGroup,
   Store,
   UnassignedStore,
-  Company,
   UserCompany,
   UserLevel,
 } from "../interfaces";
@@ -50,18 +49,18 @@ export type UserFormType =
   | "reset_security"
   | "";
 
-// State for users slice /////////////
+type BaseGroupOption = "create" | "update" | "delete" | "assign_to_user" | "";
+type StoreFormOption = "assign" | "info" | "bg_assign" | "";
+type UserFilterType = "name" | "email";
+
 interface UsersState {
   users: User[];
   userInfo: UserData;
   baseGroups: BaseGroup[];
   refresh: boolean;
   selectedUserId: number;
-  deleteModalOpen: boolean;
-  assignModalOpen: boolean;
   allStores: Store[];
   selectedUserStores: UserStores;
-  allCompanies: Company[];
   companyModalOpen: boolean;
   userCompanyIds: number[];
   baseGroupModalOpen: boolean;
@@ -69,7 +68,6 @@ interface UsersState {
   userLevels: UserLevel[];
   selectedForm: number;
   selectedUserForm: UserFormType;
-  userFormIdx: number;
   isDeletingUser: boolean;
   userFilterText: string;
   alreadyAssignedBgs: BaseGroup[];
@@ -77,6 +75,9 @@ interface UsersState {
   usernameTextColor: string;
   availableEmailText: string;
   emailTextColor: string;
+  bgOption: BaseGroupOption;
+  storesOption: StoreFormOption;
+  userFilterType: UserFilterType;
 }
 
 const initialState: UsersState = {
@@ -85,14 +86,11 @@ const initialState: UsersState = {
   baseGroups: [],
   refresh: true,
   selectedUserId: 0,
-  deleteModalOpen: false,
-  assignModalOpen: false,
   allStores: [],
   selectedUserStores: {
     assigned: [],
     unassigned: [],
   },
-  allCompanies: [],
   companyModalOpen: false,
   userCompanyIds: [],
   baseGroupModalOpen: false,
@@ -100,7 +98,6 @@ const initialState: UsersState = {
   userLevels: [],
   selectedForm: 0,
   selectedUserForm: "",
-  userFormIdx: 0,
   isDeletingUser: false,
   userFilterText: "",
   alreadyAssignedBgs: [],
@@ -108,6 +105,9 @@ const initialState: UsersState = {
   usernameTextColor: "",
   availableEmailText: "",
   emailTextColor: "",
+  bgOption: "",
+  storesOption: "",
+  userFilterType: "name",
 };
 
 export const usersSlice = createSlice({
@@ -123,6 +123,16 @@ export const usersSlice = createSlice({
         state.userInfo = { ...state.userInfo, [key]: value as number };
       } else {
         state.userInfo = { ...state.userInfo, [key]: value as string };
+      }
+
+      if (state.userInfo.email.length === 0) {
+        state.availableEmailText = "";
+        state.emailTextColor = "";
+      }
+
+      if (state.userInfo.username.length === 0) {
+        state.availableUsernameText = "";
+        state.usernameTextColor = "";
       }
     },
     setSelectedUserInfo: (state, action: PayloadAction<User>) => {
@@ -168,12 +178,6 @@ export const usersSlice = createSlice({
     },
     setSelectedUserId: (state, action: PayloadAction<number>) => {
       state.selectedUserId = action.payload;
-    },
-    setDeleteModalOpen: (state, action: PayloadAction<boolean>) => {
-      state.deleteModalOpen = action.payload;
-    },
-    setAssignModalOpen: (state, action: PayloadAction<boolean>) => {
-      state.assignModalOpen = action.payload;
     },
     setSelectedUserStores: (state, action: PayloadAction<UserStores>) => {
       state.selectedUserStores.assigned = action.payload.assigned;
@@ -222,9 +226,6 @@ export const usersSlice = createSlice({
             parseInt(a.store_number) - parseInt(b.store_number),
         );
     },
-    setAllCompanies: (state, action: PayloadAction<Company[]>) => {
-      state.allCompanies = action.payload;
-    },
     setCompanyModalOpen: (state, action: PayloadAction<boolean>) => {
       state.companyModalOpen = action.payload;
     },
@@ -251,15 +252,6 @@ export const usersSlice = createSlice({
     setSelectedUserForm: (state, action: PayloadAction<UserFormType>) => {
       state.selectedUserForm = action.payload;
     },
-    setNextFormIdx: (state) => {
-      state.userFormIdx += 1;
-    },
-    setPrevFormIdx: (state) => {
-      state.userFormIdx -= 1;
-    },
-    resetUserFormIdx: (state) => {
-      state.userFormIdx = 0;
-    },
     setIsDeletingUser: (state, action: PayloadAction<boolean>) => {
       state.isDeletingUser = action.payload;
     },
@@ -268,17 +260,32 @@ export const usersSlice = createSlice({
     },
     setAvailableUsernameDetails: (
       state,
-      action: PayloadAction<{ availableUsernameText: string; usernameTextColor: string }>,
+      action: PayloadAction<{
+        availableUsernameText: string;
+        usernameTextColor: string;
+      }>,
     ) => {
       state.availableUsernameText = action.payload.availableUsernameText;
       state.usernameTextColor = action.payload.usernameTextColor;
     },
     setAvailableEmailDetails: (
       state,
-      action: PayloadAction<{ availableEmailText: string; emailTextColor: string }>,
+      action: PayloadAction<{
+        availableEmailText: string;
+        emailTextColor: string;
+      }>,
     ) => {
       state.availableEmailText = action.payload.availableEmailText;
       state.emailTextColor = action.payload.emailTextColor;
+    },
+    setBGOption: (state, action: PayloadAction<BaseGroupOption>) => {
+      state.bgOption = action.payload;
+    },
+    setStoresFormOption: (state, action: PayloadAction<StoreFormOption>) => {
+      state.storesOption = action.payload;
+    },
+    setUserFilterType: (state, action: PayloadAction<UserFilterType>) => {
+      state.userFilterType = action.payload;
     },
     resetUsersSlice: () => initialState,
   },
@@ -291,14 +298,11 @@ export const {
   resetUserInfo,
   setRefresh,
   setSelectedUserId,
-  setDeleteModalOpen,
-  setAssignModalOpen,
   setSelectedUserStores,
   setRole,
   setStoresAssignedForUser,
   setStoresUnassignedForUser,
   setCompanyModalOpen,
-  setAllCompanies,
   setUserCompanyIds,
   updateUserCompanies,
   setBaseGroupModalOpen,
@@ -307,13 +311,13 @@ export const {
   setAssignBaseGroups,
   setSelectedForm,
   setSelectedUserForm,
-  setNextFormIdx,
-  setPrevFormIdx,
-  resetUserFormIdx,
   setIsDeletingUser,
   setUserFilterText,
   resetUsersSlice,
   setAvailableUsernameDetails,
   setAvailableEmailDetails,
+  setBGOption,
+  setStoresFormOption,
+  setUserFilterType,
 } = usersSlice.actions;
 export default usersSlice.reducer;

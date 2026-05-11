@@ -7,7 +7,7 @@ import {
 
 import { WarningIcon } from "../../../components/toasts/Icons";
 import UserForm from "./UserForm";
-import ProfileCard from "./ProfileCard";
+import ProfileCard from "../forms/ProfileCard";
 
 const UserControls = () => {
   const dispatch = useAppDispatch();
@@ -34,51 +34,6 @@ const UserControls = () => {
 
   return (
     <div className="max-h-[65vh]">
-      <div className="grid grid-cols-6 text-[15px] gap-2 p-4 bg-custom-white rounded-lg shadow-lg mb-4">
-        <button
-          data-testid="user-form-create"
-          className={`${selectedUserForm === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleReset("create")}
-        >
-          Create
-        </button>
-        <button
-          data-testid="user-form-update"
-          className={`${selectedUserForm === "update" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleReset("update")}
-        >
-          Update
-        </button>
-        <button
-          data-testid="user-form-delete"
-          className={`${selectedUserForm === "delete" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleReset("delete")}
-        >
-          Delete
-        </button>
-        <button
-          data-testid="user-form-update-pw"
-          className={`${selectedUserForm === "update_password" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleReset("update_password")}
-        >
-          Password
-        </button>
-        <button
-          data-testid="user-form-update-sq"
-          className={`${selectedUserForm === "reset_security" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleReset("reset_security")}
-        >
-          Security
-        </button>
-        <button
-          data-testid="user-form-info"
-          className={`${selectedUserForm === "user_info" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleReset("user_info")}
-        >
-          Info
-        </button>
-      </div>
-
       {!selectedUserForm ? null : (
         <>
           <ProfileCard />

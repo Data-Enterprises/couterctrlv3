@@ -7,7 +7,7 @@ import {
   ArrowLeftIcon,
   UserCircleIcon,
   UserGroupIcon,
-  LinkSlashIcon
+  LinkSlashIcon,
 } from "@heroicons/react/24/solid";
 
 const UserFormOptions = () => {
@@ -34,34 +34,36 @@ const UserFormOptions = () => {
   };
 
   return (
-    <div className="grid grid-cols-4 gap-3">
-      <div
-        className={`p-3 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center`}
-        onClick={() => handleInnerNav("")}
-      >
-        <ArrowLeftIcon className="w-12 h-12" />
-        <div>Go Back</div>
-      </div>
-      <div
-        className={`p-3 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center ${selectedUserForm === "create" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200`}
-        onClick={() => handleInnerNav("create")}
-      >
-        <UserCircleIcon className="w-12 h-12" />
-        <div>New User</div>
-      </div>
-      <div
-        className={`p-3 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center ${selectedUserForm === "user_info" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200`}
-        onClick={() => handleInnerNav("user_info")}
-      >
-        <UserGroupIcon className="w-12 h-12" />
-        <div>User Info</div>
-      </div>
-      <div
-        className={`p-3 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center ${selectedUserForm === "delete" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200`}
-        onClick={() => handleInnerNav("delete")}
-      >
-        <LinkSlashIcon className="w-12 h-12" />
-        <div>Delete User</div>
+    <div>
+      <div className="grid gap-3">
+        <div
+          className={`p-3 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center`}
+          onClick={() => handleInnerNav("")}
+        >
+          <ArrowLeftIcon className="w-12 h-12" />
+          <div>Go Back</div>
+        </div>
+        <div
+          className={`p-3 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center ${selectedUserForm === "create" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200`}
+          onClick={() => handleInnerNav("create")}
+        >
+          <UserCircleIcon className="w-12 h-12" />
+          <div>New User</div>
+        </div>
+        <div
+          className={`p-3 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center ${selectedUserForm === "user_info" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200`}
+          onClick={() => handleInnerNav("user_info")}
+        >
+          <UserGroupIcon className="w-12 h-12" />
+          <div>User Info</div>
+        </div>
+        <div
+          className={`p-3 bg-custom-white rounded-lg shadow-lg flex flex-col justify-center items-center ${selectedUserForm === "delete" ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200`}
+          onClick={() => handleInnerNav("delete")}
+        >
+          <LinkSlashIcon className="w-12 h-12" />
+          <div>Delete User</div>
+        </div>
       </div>
     </div>
   );

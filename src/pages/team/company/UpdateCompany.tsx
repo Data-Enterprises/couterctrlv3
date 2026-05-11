@@ -72,8 +72,8 @@ const UpdateCompany = () => {
   };
 
   return (
-    <div className="bg-custom-white p-4 rounded-lg shadow-lg w-[40vw]">
-      <div className="grid grid-cols-2 gap-2 items-end">
+    <div className="bg-custom-white p-2 rounded-lg shadow-lg w-[35vw]">
+      <div className="grid grid-cols-2 gap-x-2 gap-y-1 items-end">
         <SingleSelect
           label="Companies"
           data={companies.filter((c) =>
@@ -81,63 +81,63 @@ const UpdateCompany = () => {
           )}
           displayKey="name"
           valueKey="id"
-          innerClass="py-1.5"
+          innerClass="py-1"
           onSelect={handleCompanySelect}
         />
         <Input
-          className="py-1.5"
+          className="py-1"
           label="Name"
           value={name}
           setValue={handleName}
         />
         <Input
-          className="py-1.5"
+          className="py-1"
           label="Address"
           value={address}
           setValue={handleAddress}
         />
         <Input
-          className="py-1.5"
+          className="py-1"
           label="City"
           value={city}
           setValue={handleCity}
         />
         <Input
-          className="py-1.5"
+          className="py-1"
           label="State"
           value={state}
           setValue={handleState}
         />
         <Input
-          className="py-1.5"
+          className="py-1"
           label="Zip"
           value={showZip()}
           setValue={handleZip}
         />
         <Input
-          className="py-1.5"
+          className="py-1"
           label="Phone"
           value={phone}
           setValue={handlePhone}
         />
         <Input
-          className="py-1.5"
+          className="py-1"
           label="Contact Email"
           value={contact_email}
           setValue={handleEmail}
         />
       </div>
-      <div className="grid grid-cols-2 gap-2 mt-4">
+      <div className="grid grid-cols-2 gap-2 mt-2">
         <button
           data-testid="update-company-clear-btn"
-          className="btn-themeBlue"
+          className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-[13px]"
           onClick={() => dispatch(resetCompanyInfo())}
         >
           Clear Fields
         </button>
         <button
           data-testid="update-company-submit-btn"
-          className="btn-themeBlue"
+          className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-[13px]"
           onClick={handleSubmit}
         >
           Update

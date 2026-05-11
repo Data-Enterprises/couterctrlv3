@@ -65,7 +65,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: ["5", "7", "9"],
+    userLevels: ["5", "7", "8", "9"],
     isHovering: false,
   },
   {

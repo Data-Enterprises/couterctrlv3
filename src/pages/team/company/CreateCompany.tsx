@@ -84,66 +84,66 @@ const CreateCompany = () => {
   };
 
   return (
-    <div className="bg-custom-white p-4 rounded-lg shadow-lg w-[40vw]">
+    <div className="bg-custom-white p-2 rounded-lg shadow-lg w-[35vw]">
       {nameAlreadyExists() ? (
         <div className="font-medium text-orange-500 text-center">Company name {name} already exists. Please use a different name.</div>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-x-2 gap-y-1">
         <Input
-          className="py-1.5"
+          className="py-1"
           label="Name"
           value={name}
           setValue={handleName}
         />
         <Input
-          className="py-1.5"
+          className="py-1"
           label="Address"
           value={address}
           setValue={handleAddress}
         />
         <Input
-          className="py-1.5"
+          className="py-1"
           label="City"
           value={city}
           setValue={handleCity}
         />
         <Input
-          className="py-1.5"
+          className="py-1"
           label="State"
           value={state}
           setValue={handleState}
         />
         <Input
-          className="py-1.5"
+          className="py-1"
           label="Zip"
           value={showZip()}
           setValue={handleZip}
         />
         <Input
-          className="py-1.5"
+          className="py-1"
           label="Phone"
           value={phone}
           setValue={handlePhone}
         />
         <Input
-          className="py-1.5"
+          className="py-1"
           label="Contact Email"
           value={contact_email}
           setValue={handleEmail}
         />
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 mt-2">
         <button
           data-testid="clear-create-company-fields-btn"
-          className="btn-themeBlue mt-4"
+          className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-[13px]"
           onClick={() => dispatch(resetCompanyInfo())}
         >
           Clear Fields
         </button>
         <button
           data-testid="create-company-submit-btn"
-          className={`btn-themeBlue mt-4 ${!canSubmit() && "opacity-50 pointer-events-none"}`}
+          className={`btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-[13px] ${!canSubmit() && "opacity-50 pointer-events-none"}`}
           onClick={handleSubmit}
         >
           Create

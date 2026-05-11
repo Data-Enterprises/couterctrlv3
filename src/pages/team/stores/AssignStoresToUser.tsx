@@ -7,12 +7,11 @@ import {
   setSelectedUserStores,
 } from "../../../features/usersSlice";
 
-import Assigned from "../assignModal/Assigned";
-import Unassigned from "../assignModal/Unassigned";
 import { getUserStores } from "../../../api/user";
 import { useEffect } from "react";
 import SearchUser from "../forms/SearchUser";
 import { WarningIcon } from "../../../components/toasts/Icons";
+import UpdateUserStores from "../users/UpdateUserStores";
 
 const AssignStoresToUser = () => {
   const toast = useToast();
@@ -67,15 +66,17 @@ const AssignStoresToUser = () => {
 
   if (isOutranked()) {
     return (
-      <div data-testid="user-store-form-outranked-container" className="flex justify-center items-center bg-custom-white p-4 rounded-lg shadow-lg w-[50%]">
-        <div className="font-medium text-sm flex flex-col items-center">
+      <div
+        data-testid="bg-assign-outrank-container"
+        className="flex justify-center items-center bg-custom-white p-4 rounded-lg shadow-lg w-[28%]"
+      >
+        <div className="font-medium text-[13px] flex flex-col items-center">
           <WarningIcon fill="#f97316" height={56} width={56} />
-          <div className="mb-2">We're sorry...</div>
           <div>You are not authorized to make changes to this user</div>
           <div>Please contact them if assistance is needed</div>
           <button
-            data-testid="user-store-form-outranked-reset-btn"
-            className="btn-themeBlue py-1.5 mt-2"
+            data-testid="bg-assign-outrank-reset-btn"
+            className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white py-1 mt-2"
             onClick={() => handleReset()}
           >
             Reset
@@ -88,10 +89,7 @@ const AssignStoresToUser = () => {
   return (
     <div data-testid="user-store-form-main-container" className="grid gap-4 w-[50%]">
       <SearchUser />
-      <div className="grid grid-cols-2 gap-x-4">
-        <Unassigned />
-        <Assigned />
-      </div>
+      <UpdateUserStores />
     </div>
   );
 };

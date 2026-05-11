@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { deleteBaseGroup, getBaseGroups } from "../../../api/baseGroups";
-import SingleSelect from "../../../components/SingleSelect";
-import { useAppSelector } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import type {
   CompanyBaseGroup,
   CompanyBGJsonResp,
@@ -9,17 +8,20 @@ import type {
 } from "../../../interfaces";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import Input from "../../../components/inputs/Input";
+import { setSelectedCompanyId } from "../../../features/usersSlice";
 
 const DeleteBaseGroup = () => {
   const toast = useToast();
+  const dispatch = useAppDispatch();
   const [groupName, setGroupName] = useState<string>("");
   const [baseGroups, setBaseGroups] = useState<CompanyBaseGroup[]>([]);
   const [showForm, setShowForm] = useState<boolean>(false);
   const [selectedBgID, setSelectedBgID] = useState<number>(0);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
-  const { url, token, isDesktop } = useAppSelector((state) => state.app);
+  const { url, token } = useAppSelector((state) => state.app);
   const { companies } = useAppSelector((state) => state.user);
+  const { selectedCompanyId } = useAppSelector((state) => state.users);
 
   const getData = (company: number) => {
     getBaseGroups(url, token, company)
@@ -33,8 +35,9 @@ const DeleteBaseGroup = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
-  const handleSelect = (id: string | number) => {
-    getData(Number(id));
+  const handleSelect = (id: number) => {
+    dispatch(setSelectedCompanyId(id));
+    getData(id);
   };
 
   const handleSubmit = () => {
@@ -63,62 +66,40 @@ const DeleteBaseGroup = () => {
     }
   };
 
-  if (isDeleting) {
-    return (
-      <div
-        data-testid="bg-delete-step-2-container"
-        className="p-4 bg-custom-white rounded-lg shadow-lg"
-      >
-        <div className="text-center">Are you sure you want to delete</div>
-        <div className="text-center">
-          <span className="pr-1">Base group =</span>
-          <span className="font-medium">
-            {baseGroups.find((bg) => bg.id === selectedBgID)!.name}
-          </span>
-          <span>?</span>
-        </div>
-        <div className="grid grid-cols-2 gap-2 mt-4">
-          <button
-            data-testid="bg-delete-step-2-submit-btn"
-            className="btn-themeGreen"
-            onClick={handleSubmit}
-          >
-            Yes
-          </button>
-          <button
-            data-testid="bg-delete-step-2-cancel-btn"
-
-            className="btn-themeOrange"
-            onClick={() => setIsDeleting(false)}
-          >
-            No
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const companyBG = (id: number) => {
+    if (selectedCompanyId === id) {
+      return "bg-[rgb(30,45,80)] text-custom-white";
+    }
+    return "text-content/85 bg-content/10";
+  };
 
   return (
     <div
       data-testid="bg-delete-step-1-container"
-      className="bg-custom-white p-4 rounded-lg shadow-lg  max-h-[70vh]"
+      className="bg-custom-white p-2 w-[55%] rounded-lg shadow-lg"
     >
-      <SingleSelect
-        label="Select Company"
-        data={companies}
-        displayKey={"name"}
-        valueKey={"company"}
-        onSelect={handleSelect}
-      />
+      {/* Companies */}
+      <div className="text-[13px] font-medium mb-0.5 pl-1">Companies</div>
+      <div className="flex flex-wrap gap-1.5 text-[11.5px] leading-tight mb-1">
+        {companies.map((c) => (
+          <div
+            key={c.id}
+            className={`px-2 py-0.5 rounded-full ${companyBG(c.company)} cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white`}
+            onClick={() => handleSelect(c.company)}
+          >
+            {c.name}
+          </div>
+        ))}
+      </div>
 
       {baseGroups.length ? (
-        <div className="text-sm my-4">
-          <div className="font-medium flex justify-between">
+        <div className="text-[13px] my-4">
+          <div className="font-medium flex justify-between pl-1">
             <div>Select group to delete</div>
           </div>
           <div
             data-testid="bg-list-container"
-            className={`select-none rounded-lg p-1 overflow-hidden overflow-y-auto ${isDesktop ? "max-h-[39vh]" : "max-h-[25vh]"}`}
+            className={`select-none rounded-lg p-1 max-h-[35vh] overflow-y-auto`}
           >
             {baseGroups.map((bg, i) => (
               <div
@@ -145,14 +126,50 @@ const DeleteBaseGroup = () => {
           <div>
             <button
               data-testid="bg-delete-step-1-submit-btn"
-              className={`btn-themeOrange w-full ${!selectedBgID && "opacity-50 pointer-events-none"}`}
+              className={`btn-themeOrange w-full py-1.5 text-[13px] ${!selectedBgID && "opacity-50 pointer-events-none"}`}
               onClick={() => setIsDeleting(true)}
             >
-              Delete
+              Delete Base Group
             </button>
           </div>
         </div>
       )}
+      {isDeleting ? (
+        <div
+          data-testid="bg-delete-step-2-container"
+          className="mt-2 text-[13px]"
+        >
+          <div className="grid grid-cols-2 h-[1.5px] mb-2">
+            <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
+            <div className="bg-gradient-to-l from-content/60 to-custom-white"></div>
+          </div>
+          <div className="text-center">Are you sure you want to delete</div>
+          <div className="text-center">
+            <span className="pr-1">Base group:</span>
+            <span className="font-medium">
+              {baseGroups.find((bg) => bg.id === selectedBgID)!.name}
+            </span>
+            <span>?</span>
+          </div>
+          <div className="text-center text-content/60 font-medium">This action cannot be undone</div>
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <button
+              data-testid="bg-delete-step-2-submit-btn"
+              className="btn-themeGreen bg-red-600 border-red-600 hover:bg-red-600/75 hover:text-custom-white px-0 py-1.5"
+              onClick={handleSubmit}
+            >
+              Yes
+            </button>
+            <button
+              data-testid="bg-delete-step-2-cancel-btn"
+              className="btn-themeOrange bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5"
+              onClick={() => setIsDeleting(false)}
+            >
+              No
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

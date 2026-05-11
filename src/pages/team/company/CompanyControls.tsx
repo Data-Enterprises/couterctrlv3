@@ -7,10 +7,8 @@ import {
   resetCompanyInfo,
   setCompanies,
   setRefreshCompanies,
-  setSelectedCompanyForm,
   setUserAssignedCompanies,
   setUserUnassignedCompanies,
-  type CompanyFormType,
 } from "../../../features/companySlice";
 import type { CompanyJsonResp, JsonError } from "../../../interfaces";
 import CreateCompany from "./CreateCompany";
@@ -31,7 +29,7 @@ const CompanyControls = () => {
     dispatch(resetCompanyInfo());
     dispatch(setUserAssignedCompanies([]));
     dispatch(setUserUnassignedCompanies([]));
-    dispatch(resetUserInfo())
+    dispatch(resetUserInfo());
   }, [selectedForm]);
 
   useEffect(() => {
@@ -48,10 +46,6 @@ const CompanyControls = () => {
     }
   }, [refreshCompanies]);
 
-  const handleFormSelect = (form: CompanyFormType) => {
-    dispatch(setSelectedCompanyForm(form));
-  };
-
   const renderForm = () => {
     switch (selectedForm) {
       case "create":
@@ -67,41 +61,7 @@ const CompanyControls = () => {
     }
   };
 
-  return (
-    <div className="">
-      <div className="bg-custom-white rounded-lg shadow-lg p-4 grid grid-cols-4 gap-2 w-[50vw]">
-        <button
-          data-testid="create-company-form"
-          className={`${selectedForm === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleFormSelect("create")}
-        >
-          Create
-        </button>
-        <button
-          data-testid="update-company-form"
-          className={`${selectedForm === "update" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleFormSelect("update")}
-        >
-          Update
-        </button>
-        <button
-          data-testid="delete-company-form"
-          className={`${selectedForm === "delete" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleFormSelect("delete")}
-        >
-          Delete
-        </button>
-        <button
-          data-testid="assign-company-to-user-form"
-          className={`${selectedForm === "assign_to_user" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-          onClick={() => handleFormSelect("assign_to_user")}
-        >
-          Assign/Unassign User
-        </button>
-      </div>
-      <div className="mt-4">{renderForm()}</div>
-    </div>
-  );
+  return renderForm()
 };
 
 export default CompanyControls;

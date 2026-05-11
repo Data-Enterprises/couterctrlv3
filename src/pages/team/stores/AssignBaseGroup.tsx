@@ -1,7 +1,12 @@
 import { useState } from "react";
-import { useAppSelector } from "../../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import type { Store, JsonError, BaseGroup } from "../../../interfaces";
+import type {
+  Store,
+  JsonError,
+  BaseGroup,
+  UserCompany,
+} from "../../../interfaces";
 
 import {
   assignStoreToBaseGroup,
@@ -9,14 +14,16 @@ import {
   getBGAssignedToUserSplit,
   unAssignStoreToBaseGroup,
 } from "../../../api/baseGroups";
-import SingleSelect from "../../../components/SingleSelect";
 import Input from "../../../components/inputs/Input";
+import { setUserCompany } from "../../../features/baseGroupSlice";
 
 const AssignBaseGroup = () => {
   const toast = useToast();
+  const dispatch = useAppDispatch();
 
   const { url, token } = useAppSelector((state) => state.app);
   const { companies, userid } = useAppSelector((state) => state.user);
+  const { userCompany } = useAppSelector((state) => state.baseGroup);
 
   const [baseGroups, setBaseGroups] = useState<BaseGroup[]>([]);
   const [unassignedBGStores, setUnassignedBGStores] = useState<Store[]>([]);
@@ -28,7 +35,7 @@ const AssignBaseGroup = () => {
   const [unassignedFilter, setUnassignedFilter] = useState<string>("");
   const [assignedFilter, setAssignedFilter] = useState<string>("");
 
-  const handleSelect = (id: string | number) => {
+  const handleCompanySelect = (c: UserCompany) => {
     setBaseGroups([]);
     setShowCols(false);
     setStoresToAssign([]);
@@ -36,7 +43,8 @@ const AssignBaseGroup = () => {
     setSelectedGroupId(0);
     setAssignedBGStores([]);
     setUnassignedBGStores([]);
-    getData(Number(id));
+    dispatch(setUserCompany(c));
+    getData(c.company);
   };
 
   const getData = (company: number) => {
@@ -114,7 +122,9 @@ const AssignBaseGroup = () => {
   };
 
   const handleAssignAll = () => {
-    const ids = filtered(unassignedBGStores, unassignedFilter).map((s) => s.storeid);
+    const ids = filtered(unassignedBGStores, unassignedFilter).map(
+      (s) => s.storeid,
+    );
     assignStoreToBaseGroup(url, token, ids, selectedGroupId)
       .then((resp) => {
         const j = resp.data;
@@ -126,7 +136,9 @@ const AssignBaseGroup = () => {
   };
 
   const handleUnassignAll = () => {
-    const ids = filtered(assignedBGStores, assignedFilter).map((s) => s.storeid);
+    const ids = filtered(assignedBGStores, assignedFilter).map(
+      (s) => s.storeid,
+    );
     unAssignStoreToBaseGroup(url, token, ids, selectedGroupId)
       .then((resp) => {
         const j = resp.data;
@@ -151,118 +163,134 @@ const AssignBaseGroup = () => {
     setUnassignedFilter(x);
   };
 
+  const companyBG = (id: number) => {
+    if (userCompany && userCompany.company === id) {
+      return "bg-[rgb(30,45,80)] text-custom-white";
+    }
+    return "text-content/85 bg-content/10";
+  };
+
   return (
-    <div className="flex gap-4">
-      <div className="bg-custom-white rounded-lg shadow-lg p-4 w-[50%] max-h-[70vh]">
-        <SingleSelect
-          label="Select Company"
-          data={companies}
-          displayKey={"name"}
-          valueKey={"company"}
-          onSelect={handleSelect}
-        />
-        {baseGroups.length ? (
-          <div className="text-sm my-4">
-            <div className="font-medium flex justify-between">
-              <div>Groups</div>
-            </div>
-            <div className="select-none rounded-lg max-h-[54vh] overflow-hidden overflow-y-auto">
-              {baseGroups.map((bg) => (
-                <div
-                  key={bg.id}
-                  className={`${selectedGroupId === bg.id && "bg-orange-200"} hover:bg-blue-200 rounded-full border-b py-1 px-2 transition-all duration-200`}
-                  onClick={() => getBgStores(bg.id)}
-                >
-                  {bg.name}
-                </div>
-              ))}
-            </div>
+    <div className="grid grid-cols-3 gap-2 w-[70%]">
+      <div>
+        <div className="bg-custom-white rounded-lg shadow-lg p-2">
+          <div className="text-[13px] font-medium pl-0.5">Companies</div>
+          <div className="flex flex-wrap gap-1.5 text-[11.5px] leading-tight mb-1">
+            {companies.map((c) => (
+              <div
+                key={c.id}
+                className={`px-2 py-0.5 rounded-full ${companyBG(c.company)} cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white`}
+                onClick={() => handleCompanySelect(c)}
+              >
+                {c.name}
+              </div>
+            ))}
           </div>
-        ) : null}
+          {baseGroups.length ? (
+            <div className="text-[13px] my-4">
+              <div className="font-medium pl-0.5">
+                <div>Groups</div>
+              </div>
+              <div className="select-none rounded-lg max-h-[54vh] overflow-hidden overflow-y-auto">
+                {baseGroups.map((bg) => (
+                  <div
+                    key={bg.id}
+                    className={`${selectedGroupId === bg.id && "bg-orange-200"} hover:bg-blue-200 rounded-full border-b py-1 px-2 transition-all duration-200`}
+                    onClick={() => getBgStores(bg.id)}
+                  >
+                    {bg.name}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
       {showCols && (
-        <div className="flex gap-4 w-[49%] relative">
-          <div className="bg-custom-white p-2 w-[49%] rounded-lg shadow-lg h-[70vh] absolute">
+        <>
+          <div className="bg-custom-white p-2 rounded-lg shadow-lg h-[70vh]">
             <Input
               label={`Unassigned - ${filtered(unassignedBGStores, unassignedFilter).length}`}
               value={unassignedFilter}
               setValue={handleUnassignedFilterText}
             />
-            <div className="space-y-2 my-2 rounded-lg min-h-[79%] max-h-[79%] overflow-hidden overflow-y-scroll no-scrollbar">
+            <div className="space-y-2 my-2 rounded-lg min-h-[81.5%] max-h-[81.5%] overflow-hidden overflow-y-scroll no-scrollbar">
               {filtered(unassignedBGStores, unassignedFilter).map((store) => (
                 <div
                   key={store.storeid}
                   data-testid={`unassigned-store-${store.storeid}`}
-                  className={`${storesToAssign.includes(store.storeid) ? "bg-emerald-200" : "bg-custom-white"} flex items-center justify-between rounded-lg shadow-md p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
+                  className={`${storesToAssign.includes(store.storeid) ? "bg-[rgb(30,45,80)] text-custom-white" : ""} hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white text-[13px] px-2 py-1 rounded-lg shadow-md flex justify-between cursor-pointer transition-all duration-200`}
                   onClick={() => handleStoreClick(store.storeid, "unassigned")}
                 >
                   <div>
-                    <div className="font-medium">Store:</div>
+                    <div className="font-medium opacity-90">Store:</div>
                     <div>{store.store_name}</div>
                   </div>
                   <div>
-                    <div className="font-medium text-right">Company:</div>
-                    <div>{store.company_name}</div>
+                    <div className="underline text-[10px] font-medium opacity-90">
+                      {store.company_name}
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <button
-                className="btn-themeGreen w-full"
+                className={`${storesToAssign.length === 0 && "opacity-50 pointer-events-none"} btn-themeGreen bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1 text-[13px]`}
                 onClick={handleAssignStore}
               >
                 Assign
               </button>
               <button
-                className="btn-themeGreen w-full"
+                className="btn-themeGreen bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1 text-[13px]"
                 onClick={handleAssignAll}
               >
                 Assign All
               </button>
             </div>
           </div>
-          <div className="bg-custom-white p-2 w-[49%] rounded-lg shadow-lg h-[70vh] absolute translate-x-[105%]">
+          <div className="bg-custom-white p-2 rounded-lg shadow-lg h-[70vh]">
             <Input
               label={`Assigned - ${filtered(assignedBGStores, assignedFilter).length}`}
               value={assignedFilter}
               setValue={handleAssignedFilterText}
             />
-            <div className="space-y-2 my-2 rounded-lg min-h-[79%] max-h-[79%] overflow-hidden overflow-y-scroll no-scrollbar">
+            <div className="space-y-2 my-2 rounded-lg min-h-[81.5%] max-h-[81.5%] overflow-hidden overflow-y-scroll no-scrollbar">
               {filtered(assignedBGStores, assignedFilter).map((store) => (
                 <div
                   key={store.storeid}
                   data-testid={`assigned-store-${store.storeid}`}
-                  className={`${storesToUnassign.includes(store.storeid) ? "bg-emerald-200" : "bg-custom-white"} flex items-center justify-between rounded-lg shadow-md p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200`}
+                  className={`${storesToUnassign.includes(store.storeid) ? "bg-[rgb(30,45,80)] text-custom-white" : ""} hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white text-[13px] px-2 py-1 rounded-lg shadow-md flex justify-between cursor-pointer transition-all duration-200`}
                   onClick={() => handleStoreClick(store.storeid, "assigned")}
                 >
                   <div>
-                    <div className="font-medium">Store:</div>
+                    <div className="font-medium opacity-90">Store:</div>
                     <div>{store.store_name}</div>
                   </div>
                   <div>
-                    <div className="font-medium text-right">Company:</div>
-                    <div>{store.company_name}</div>
+                    <div className="underline text-[10px] font-medium opacity-90">
+                      {store.company_name}
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <button
-                className="btn-themeGreen w-full"
+                className={`${storesToUnassign.length === 0 && "opacity-50 pointer-events-none"} btn-themeGreen bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1 text-[13px]`}
                 onClick={handleUnassignStore}
               >
                 Unassign
               </button>
               <button
-                className="btn-themeGreen w-full px-0"
+                className="btn-themeGreen bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1 text-[13px]"
                 onClick={handleUnassignAll}
               >
                 Unassign All
               </button>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

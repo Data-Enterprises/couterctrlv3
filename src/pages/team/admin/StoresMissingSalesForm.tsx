@@ -84,10 +84,10 @@ const StoresMissingSalesForm = () => {
   };
 
   return (
-    <div className="flex gap-4">
+    <div className="flex gap-2">
       <div className="min-w-[50%] max-w-[50%]">
         {/* filters */}
-        <div className="space-y-2 bg-custom-white rounded-lg shadow-lg p-4">
+        <div className="space-y-1.5 bg-custom-white rounded-lg shadow-lg p-2">
           <SingleSelect
             id={1}
             label="Company"
@@ -95,26 +95,27 @@ const StoresMissingSalesForm = () => {
             displayKey="name"
             valueKey="company"
             onSelect={handleCompanySelect}
+            innerClass="py-1.5 text-[13px]"
           />
-          <SingleDatePicker />
+          <SingleDatePicker className="py-1 text-[13px]" />
           <div className="grid grid-cols-2 gap-2">
             <button
               data-testid="no-sales-submit-btn"
-              className={`btn-themeBlue ${canSubmit}`}
+              className={`btn-themeBlue text-[13px] bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 ${canSubmit}`}
               onClick={handleSubmit}
             >
               Submit
             </button>
             <button
               data-testid="export-missing-stores-btn"
-              className={`btn-themeGreen ${canExport}`}
+              className={`btn-themeGreen text-[13px] bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 ${canExport}`}
               onClick={openExportModal}
             >
               Export
             </button>
             <button
               data-testid="refresh-missing-stores-btn"
-              className="btn-themeBlue col-span-2"
+              className="btn-themeBlue text-[13px] bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 col-span-2"
               onClick={handleRefresh}
             >
               Refresh
@@ -137,9 +138,9 @@ const StoresMissingSalesForm = () => {
             label={`Stores - ${filteredMissingStores.length}`}
             value={storeNameFilter}
             setValue={handleFilterChange}
-            className="mb-2"
+            className="mb-2 py-1 text-[13px]"
           />
-          <div className="bg-[rgb(30,45,80)] rounded-t-lg grid grid-cols-[60%_20%_20%] text-custom-white font-medium py-0.5">
+          <div className="bg-[rgb(30,45,80)] rounded-t-lg grid grid-cols-[60%_20%_20%] text-custom-white font-medium py-0.5 text-[13px]">
             <div className="pl-2 border-r">Name</div>
             <div className="pl-2 border-r">Num</div>
             <div className="pl-2">ID</div>
@@ -148,7 +149,7 @@ const StoresMissingSalesForm = () => {
             {filteredMissingStores.map((s) => (
               <div
                 key={s.storeid}
-                className="grid grid-cols-[60%_20%_20%] text-sm odd:bg-custom-white even:bg-[#afb0b3] py-1"
+                className="grid grid-cols-[60%_20%_20%] text-[12px] odd:bg-custom-white even:bg-[#afb0b3] py-1"
               >
                 <div className="pl-2 border-r">{s.store_name}</div>
                 <div className="pl-2 border-r">{s.store_number}</div>
