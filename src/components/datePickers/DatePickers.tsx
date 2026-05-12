@@ -22,9 +22,9 @@ const DatePickers = ({
   };
 
   const pickerStyle =
-    context.isDesktop || context.isTablet
+    context.isDesktop
       ? "flex gap-2"
-      : "grid grid-cols-1 md:grid-cols-2 gap-2";
+      : context.isMobile ? "grid grid-cols-1 md:grid-cols-2 gap-2" : "grid gap-2";
 
   return (
     <div data-testid="date-pickers" className="w-full select-none">
