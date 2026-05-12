@@ -31,6 +31,7 @@ const TransactionsGrid = () => {
   const context = useAppSelector((state) => state.app);
   const cashier = useAppSelector((state) => state.lossPrevention);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
+  // const [page, setPage] = useState<number>(1);
 
   useEffect(() => {
     const selectedCashier = cashier.selectedCashier.cashier_number;
@@ -273,6 +274,10 @@ const TransactionsGrid = () => {
     },
   ];
 
+  // const processPageRows = () => {
+  //   const
+  // };
+
   return (
     <div
       data-testid="cashiers-table"
@@ -286,7 +291,6 @@ const TransactionsGrid = () => {
       />
 
       <div className="max-h-[calc(100%-3rem)] overflow-y-auto">
-        {/* Sticky Header */}
         <div className="bg-bkg sticky top-0 z-10 divide-x divide-content/20 rounded-t-lg shadow-sm">
           <div className="grid grid-cols-[1fr_repeat(4,1fr)_repeat(3,0.8fr)] font-medium text-sm px-3 py-3">
             <div className="font-medium">Trans ID</div>
@@ -327,7 +331,6 @@ const TransactionsGrid = () => {
         </div>
       </div>
 
-      {/* Fixed bottom buttons */}
       <div className="absolute bottom-2 left-3 right-3 flex gap-2 md:gap-3 pointer-events-none md:pointer-events-auto">
         <button
           data-testid="cashiers-table-showall-btn"

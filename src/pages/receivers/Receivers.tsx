@@ -29,12 +29,13 @@ import ExportModal from "./ExportModal";
 import { detailCols } from ".";
 import { useEffect, useState } from "react";
 import ReceiversMobileView from "./mobile/ReceiversMobileView";
+import ReceiversTablet from "./tablet/ReceiversTablet";
 
 const Receivers = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.receivers);
-  const { url, token, isMobile } = useAppSelector((state) => state.app);
+  const { url, token, isMobile, isTablet } = useAppSelector((state) => state.app);
   const { assignedStores } = useAppSelector((state) => state.user);
   const { startDate, endDate } = useAppSelector((state) => state.search);
   const [totalsLine, setTotalsLine] = useState<string>("");
@@ -150,7 +151,7 @@ const Receivers = () => {
         columns={detailCols}
         totalsLine={totalsLine}
       />
-      <div className="w-full h-full grid grid-cols-[16%_84%] gap-4">
+      {!isTablet ? <div className="w-full h-full grid grid-cols-[16%_84%] gap-4">
         <div className="select-none space-y-4">
           <div className="bg-custom-white rounded-lg p-2 shadow-lg">
             <SingleSelect
@@ -188,7 +189,7 @@ const Receivers = () => {
           <ReceiversListGrid />
           <ReceiverDetailsGrid />
         </div>
-      </div>
+      </div> : <ReceiversTablet getData={getReceivers} />}
     </div>
   );
 };

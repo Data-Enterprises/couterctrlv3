@@ -36,7 +36,7 @@ const FiltersModal = () => {
     <Modal
       isOpen={state.filterModalOpen}
       onClose={handleClose}
-      modalClassName="bg-custom-white w-1/5"
+      modalClassName="bg-custom-white w-1/3 xl:w-1/5"
     >
       <div
         data-testid="rec-list-filter-modal"

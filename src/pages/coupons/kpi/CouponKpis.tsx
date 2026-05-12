@@ -22,55 +22,55 @@ const CouponKpis = () => {
     "bg-custom-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center font-medium relative";
 
   return (
-    <div className="grid grid-cols-5 gap-4 cursor-default select-none">
+    <div className="grid grid-cols-5 gap-4 cursor-default select-none text-sm">
       <div className={kpiStyle}>
         <HashtagIcon
-          height={42}
-          width={42}
-          className="absolute left-5"
+          height={38}
+          width={38}
+          className="absolute left-4"
           fill="#3b82f6"
         />
-        <div>Total Coupons</div>
+        <div className="text-content/60">Total Coupons</div>
         <div>{totalCoupons}</div>
       </div>
       <div className={kpiStyle}>
         <CurrencyDollarIcon
-          height={42}
-          width={42}
-          className="absolute left-5"
+          height={38}
+          width={38}
+          className="absolute left-4"
           fill="#3b82f6"
         />
-        <div>Total Amount</div>
+        <div className="text-content/60">Total Amount</div>
         <div>{formatCurrency2(totalAmount)}</div>
       </div>
       <div className={kpiStyle}>
         <CurrencyDollarIcon
-          height={42}
-          width={42}
-          className="absolute left-5"
+          height={38}
+          width={38}
+          className="absolute left-4"
           fill="#3b82f6"
         />
-        <div>Avg Amount</div>
+        <div className="text-content/60">Avg Amount</div>
         <div>{formatCurrency2(avgCpnAmount)}</div>
       </div>
       <div className={kpiStyle}>
         <UsersIcon
-          height={42}
-          width={42}
-          className="absolute left-5"
+          height={38}
+          width={38}
+          className="absolute left-4"
           fill="#3b82f6"
         />
-        <div>Customers</div>
+        <div className="text-content/60">Customers</div>
         <div>{customerIdCount}</div>
       </div>
       <div className={kpiStyle}>
         <ShoppingBagIcon
-          height={42}
-          width={42}
-          className="absolute left-5"
+          height={38}
+          width={38}
+          className="absolute left-4"
           fill="#3b82f6"
         />
-        <div>Sub Depts</div>
+        <div className="text-content/60">Sub Depts</div>
         <div>{subDeptCount}</div>
       </div>
     </div>
