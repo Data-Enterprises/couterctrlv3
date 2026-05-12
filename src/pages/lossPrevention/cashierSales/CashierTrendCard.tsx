@@ -176,7 +176,7 @@ const CashierTrendCard = () => {
           <div className="font-medium">Overall Trend {overallTrendLine()}</div>
         </div>
 
-        <div className="grid grid-cols-2 h-[1.5px]">
+        <div className="grid grid-cols-2 h-[1.5px] px-3">
           <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
           <div className="bg-gradient-to-l from-content/60 to-custom-white"></div>
         </div>
@@ -193,19 +193,19 @@ const CashierTrendCard = () => {
                 )}
               </div>
               <div className="grid grid-cols-2 gap-3 md:gap-4">
-                <div className="text-right md:text-left">
+                <div className="text-right md:text-left bg-custom-white rounded-lg p-2">
                   <div className="text-xs md:text-sm text-content/60 font-medium">
                     Total
                   </div>
-                  <div className="font-bold">
+                  <div className="font-medium text-nowrap truncate">
                     {selectedCashierDetails!.transaction_count}
                   </div>
                 </div>
-                <div className="text-right md:text-left">
+                <div className="text-right md:text-left bg-custom-white rounded-lg p-2">
                   <div className="text-xs md:text-sm text-content/60 font-medium">
                     Trend
                   </div>
-                  <div className="font-bold">
+                  <div className="font-medium text-nowrap truncate">
                     {defaultTrend(selectedCashierDetails!).transaction_count}
                   </div>
                 </div>
@@ -221,19 +221,19 @@ const CashierTrendCard = () => {
                 )}
               </div>
               <div className="grid grid-cols-2 gap-3 md:gap-4">
-                <div className="text-right md:text-left">
+                <div className="text-right md:text-left bg-custom-white rounded-lg p-2">
                   <div className="text-xs md:text-sm text-content/60 font-medium">
                     Total
                   </div>
-                  <div className="font-bold">
+                  <div className="font-medium text-nowrap truncate">
                     {selectedCashierDetails!.total_items}
                   </div>
                 </div>
-                <div className="text-right md:text-left">
+                <div className="text-right md:text-left bg-custom-white rounded-lg p-2">
                   <div className="text-xs md:text-sm text-content/60 font-medium">
                     Trend
                   </div>
-                  <div className="font-bold">
+                  <div className="font-medium text-nowrap truncate">
                     {defaultTrend(selectedCashierDetails!).total_items}
                   </div>
                 </div>
@@ -249,19 +249,19 @@ const CashierTrendCard = () => {
                 )}
               </div>
               <div className="grid grid-cols-2 gap-3 md:gap-4">
-                <div className="text-right md:text-left">
+                <div className="text-right md:text-left bg-custom-white rounded-lg p-2">
                   <div className="text-xs md:text-sm text-content/60 font-medium">
                     Total
                   </div>
-                  <div className="font-bold">
+                  <div className="font-medium text-nowrap truncate">
                     {formatCurrency2(selectedCashierDetails!.amount)}
                   </div>
                 </div>
-                <div className="text-right md:text-left">
+                <div className="text-right md:text-left bg-custom-white rounded-lg p-2">
                   <div className="text-xs md:text-sm text-content/60 font-medium">
                     Trend
                   </div>
-                  <div className="font-bold">
+                  <div className="font-medium text-nowrap truncate">
                     {formatCurrency2(
                       defaultTrend(selectedCashierDetails!).amount,
                     )}
@@ -279,19 +279,19 @@ const CashierTrendCard = () => {
                 )}
               </div>
               <div className="grid grid-cols-2 gap-3 md:gap-4">
-                <div className="text-right md:text-left">
+                <div className="text-right md:text-left bg-custom-white rounded-lg p-2">
                   <div className="text-xs md:text-sm text-content/60 font-medium">
                     Total
                   </div>
-                  <div className="font-bold">
+                  <div className="font-medium text-nowrap truncate">
                     {formatCurrency2(selectedCashierDetails!.average_dollars)}
                   </div>
                 </div>
-                <div className="text-right md:text-left">
+                <div className="text-right md:text-left bg-custom-white rounded-lg p-2">
                   <div className="text-xs md:text-sm text-content/60 font-medium">
                     Trend
                   </div>
-                  <div className="font-bold">
+                  <div className="font-medium text-nowrap truncate">
                     {formatCurrency2(
                       defaultTrend(selectedCashierDetails!).average_dollars,
                     )}
@@ -309,19 +309,19 @@ const CashierTrendCard = () => {
                 )}
               </div>
               <div className="grid grid-cols-2 gap-3 md:gap-4">
-                <div className="text-right md:text-left">
+                <div className="text-right md:text-left bg-custom-white rounded-lg p-2">
                   <div className="text-xs md:text-sm text-content/60 font-medium">
                     Total
                   </div>
-                  <div className="font-bold">
+                  <div className="font-medium text-nowrap truncate">
                     {selectedCashierDetails!.average_qty.toFixed(2)}
                   </div>
                 </div>
-                <div className="text-right md:text-left">
+                <div className="text-right md:text-left bg-custom-white rounded-lg p-2">
                   <div className="text-xs md:text-sm text-content/60 font-medium">
                     Trend
                   </div>
-                  <div className="font-bold">
+                  <div className="font-medium text-nowrap truncate">
                     {defaultTrend(selectedCashierDetails!).average_qty.toFixed(
                       2,
                     )}
@@ -335,19 +335,19 @@ const CashierTrendCard = () => {
                 Cashiers
               </div>
               <div className="grid grid-cols-2 gap-3 md:gap-4">
-                <div className="text-right md:text-left">
+                <div className="text-right md:text-left bg-custom-white rounded-lg p-2">
                   <div className="text-xs md:text-sm text-content/60 font-medium">
                     Total
                   </div>
-                  <div className="font-bold">
+                  <div className="font-medium text-nowrap truncate">
                     {selectedCashierDetails!.cashier_count}
                   </div>
                 </div>
-                <div className="text-right md:text-left">
+                <div className="text-right md:text-left bg-custom-white rounded-lg p-2">
                   <div className="text-xs md:text-sm text-content/60 font-medium">
                     Trend
                   </div>
-                  <div className="font-bold">
+                  <div className="font-medium text-nowrap truncate">
                     {defaultTrend(selectedCashierDetails!).cashier_count}
                   </div>
                 </div>
@@ -365,7 +365,7 @@ const CashierTrendCard = () => {
         <div>{selectedCashierDetails!.store_name}</div>
         <div>{selectedCashierDetails!.sale_type}</div>
       </div>
-      <div className="flex items-center justify-center font-bold">
+      <div className="flex items-center justify-center font-medium text-nowrap truncate">
         Overall Trend {overallTrendLine()}
       </div>
       <div className="grid grid-cols-[43%_28%_34%] pb-2 text-sm h-[75%]">

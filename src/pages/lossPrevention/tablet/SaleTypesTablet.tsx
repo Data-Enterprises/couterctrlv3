@@ -118,7 +118,7 @@ const SaleTypesTablet = () => {
 
   return (
     <div
-      className={`bg-custom-white rounded-lg shadow-lg mt-3 ${
+      className={`bg-custom-white rounded-lg shadow-lg ${
         !cashier.saleTypes.length && "hidden"
       }`}
     >
