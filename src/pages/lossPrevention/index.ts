@@ -70,7 +70,7 @@ export const theme = themeQuartz.withParams({
 
 export const activePanelStyle = (type: string, selected: string) => {
   if (selected === type) {
-    return "bg-emerald-500 text-custom-white font-medium shadow-inner hover:shadow-lg";
+    return "bg-orange-200";
   } else {
     return "bg-custom-white";
   }

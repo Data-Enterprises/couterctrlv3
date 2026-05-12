@@ -22,6 +22,7 @@ const CashierTrendCard = () => {
     selectedSaleType,
     cashierDetailsTrendDirection,
   } = useAppSelector((state) => state.lossPrevention);
+  const isTablet = useAppSelector((state) => state.app.isTablet);
 
   useEffect(() => {
     if (selectedCashierDetails !== null) {
@@ -131,18 +132,232 @@ const CashierTrendCard = () => {
   const overallTrendLine = () => {
     if (cashierDetailsTrendDirection > 0) {
       return (
-        <HandThumbUpIcon className="h-6 w-6 stroke-emerald-500 stroke-2 inline-block ml-1" />
+        <HandThumbUpIcon className="h-5 w-5 stroke-emerald-500 stroke-2 inline-block ml-1" />
       );
     } else if (cashierDetailsTrendDirection < 0) {
       return (
-        <HandThumbDownIcon className="h-6 w-6 stroke-orange-500 stroke-2 inline-block ml-1" />
+        <HandThumbDownIcon className="h-5 w-5 stroke-orange-500 stroke-2 inline-block ml-1" />
       );
     } else {
       return (
-        <ArrowRightIcon className="h-6 w-6 stroke-content stroke-2 inline-block ml-1" />
+        <ArrowRightIcon className="h-5 w-5 stroke-content stroke-2 inline-block ml-1" />
       );
     }
   };
+
+  const individualTrend = (num1: number, num2: number) => {
+    if (num2 === 0) return <div>N/A</div>;
+
+    const trend = findTrendDirection(num1, num2);
+    if (trend > 0) {
+      return (
+        <HandThumbUpIcon className="h-5 w-5 stroke-emerald-500 stroke-2 inline-block ml-1" />
+      );
+    } else if (trend < 0) {
+      return (
+        <HandThumbDownIcon className="h-5 w-5 stroke-orange-500 stroke-2 inline-block ml-1" />
+      );
+    } else {
+      return (
+        <ArrowRightIcon className="h-5 w-5 stroke-content stroke-2 inline-block ml-1" />
+      );
+    }
+  };
+
+  if (isTablet) {
+    return (
+      <div className="bg-custom-white rounded-lg h-full select-none shadow-md overflow-hidden">
+        {/* Header */}
+        <div className="font-medium flex items-center justify-between px-3 py-0.5">
+          <div>
+            {selectedCashierDetails!.store_name} -{" "}
+            {selectedCashierDetails!.sale_type}
+          </div>
+          <div className="font-medium">Overall Trend {overallTrendLine()}</div>
+        </div>
+
+        <div className="grid grid-cols-2 h-[1.5px]">
+          <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
+          <div className="bg-gradient-to-l from-content/60 to-custom-white"></div>
+        </div>
+
+        {/* Metrics blocks */}
+        <div className="overflow-y-auto p-3">
+          <div className="grid grid-cols-3 gap-2">
+            <div className="p-2 bg-bkg rounded-lg shadow-md leading-tight">
+              <div className="font-medium text-sm md:text-sm mb-1 text-content/80 col-span-2 flex justify-between">
+                <div>Transactions</div>
+                {individualTrend(
+                  selectedCashierDetails!.transaction_count,
+                  defaultTrend(selectedCashierDetails!).transaction_count,
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
+                <div className="text-right md:text-left">
+                  <div className="text-xs md:text-sm text-content/60 font-medium">
+                    Total
+                  </div>
+                  <div className="font-bold">
+                    {selectedCashierDetails!.transaction_count}
+                  </div>
+                </div>
+                <div className="text-right md:text-left">
+                  <div className="text-xs md:text-sm text-content/60 font-medium">
+                    Trend
+                  </div>
+                  <div className="font-bold">
+                    {defaultTrend(selectedCashierDetails!).transaction_count}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-2 bg-bkg rounded-lg shadow-md leading-tight">
+              <div className="font-medium text-sm md:text-sm mb-1 text-content/80 col-span-2 flex justify-between">
+                <div>Total Items</div>
+                {individualTrend(
+                  selectedCashierDetails!.total_items,
+                  defaultTrend(selectedCashierDetails!).total_items,
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
+                <div className="text-right md:text-left">
+                  <div className="text-xs md:text-sm text-content/60 font-medium">
+                    Total
+                  </div>
+                  <div className="font-bold">
+                    {selectedCashierDetails!.total_items}
+                  </div>
+                </div>
+                <div className="text-right md:text-left">
+                  <div className="text-xs md:text-sm text-content/60 font-medium">
+                    Trend
+                  </div>
+                  <div className="font-bold">
+                    {defaultTrend(selectedCashierDetails!).total_items}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-2 bg-bkg rounded-lg shadow-md leading-tight">
+              <div className="font-medium text-sm md:text-sm mb-1 text-content/80 col-span-2 flex justify-between">
+                <div>Total Dollars</div>
+                {individualTrend(
+                  selectedCashierDetails!.amount,
+                  defaultTrend(selectedCashierDetails!).amount,
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
+                <div className="text-right md:text-left">
+                  <div className="text-xs md:text-sm text-content/60 font-medium">
+                    Total
+                  </div>
+                  <div className="font-bold">
+                    {formatCurrency2(selectedCashierDetails!.amount)}
+                  </div>
+                </div>
+                <div className="text-right md:text-left">
+                  <div className="text-xs md:text-sm text-content/60 font-medium">
+                    Trend
+                  </div>
+                  <div className="font-bold">
+                    {formatCurrency2(
+                      defaultTrend(selectedCashierDetails!).amount,
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-2 bg-bkg rounded-lg shadow-md leading-tight">
+              <div className="font-medium text-sm md:text-sm mb-2 text-content/80 col-span-2 flex justify-between">
+                <div>Avg Dollars</div>
+                {individualTrend(
+                  selectedCashierDetails!.average_dollars,
+                  defaultTrend(selectedCashierDetails!).average_dollars,
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
+                <div className="text-right md:text-left">
+                  <div className="text-xs md:text-sm text-content/60 font-medium">
+                    Total
+                  </div>
+                  <div className="font-bold">
+                    {formatCurrency2(selectedCashierDetails!.average_dollars)}
+                  </div>
+                </div>
+                <div className="text-right md:text-left">
+                  <div className="text-xs md:text-sm text-content/60 font-medium">
+                    Trend
+                  </div>
+                  <div className="font-bold">
+                    {formatCurrency2(
+                      defaultTrend(selectedCashierDetails!).average_dollars,
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-2 bg-bkg rounded-lg shadow-md leading-tight">
+              <div className="font-medium text-sm md:text-sm mb-2 text-content/80 col-span-2 flex justify-between">
+                <div>Avg Quantity</div>
+                {individualTrend(
+                  selectedCashierDetails!.average_qty,
+                  defaultTrend(selectedCashierDetails!).average_qty,
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
+                <div className="text-right md:text-left">
+                  <div className="text-xs md:text-sm text-content/60 font-medium">
+                    Total
+                  </div>
+                  <div className="font-bold">
+                    {selectedCashierDetails!.average_qty.toFixed(2)}
+                  </div>
+                </div>
+                <div className="text-right md:text-left">
+                  <div className="text-xs md:text-sm text-content/60 font-medium">
+                    Trend
+                  </div>
+                  <div className="font-bold">
+                    {defaultTrend(selectedCashierDetails!).average_qty.toFixed(
+                      2,
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-2 bg-bkg rounded-lg shadow-md leading-tight">
+              <div className="font-medium text-sm mb-2 text-content/80 col-span-2">
+                Cashiers
+              </div>
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
+                <div className="text-right md:text-left">
+                  <div className="text-xs md:text-sm text-content/60 font-medium">
+                    Total
+                  </div>
+                  <div className="font-bold">
+                    {selectedCashierDetails!.cashier_count}
+                  </div>
+                </div>
+                <div className="text-right md:text-left">
+                  <div className="text-xs md:text-sm text-content/60 font-medium">
+                    Trend
+                  </div>
+                  <div className="font-bold">
+                    {defaultTrend(selectedCashierDetails!).cashier_count}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`bg-custom-white rounded-lg h-full select-none`}>

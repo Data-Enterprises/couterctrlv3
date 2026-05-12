@@ -16,6 +16,7 @@ type SelectedCashier = {
 
 export interface LossPreventionState {
   // for raw data and the chunked versions for carousel view
+  loadingCashierDetails: boolean;
   cashierDetails: CashierDetails[];
   selectedCashierDetails: CashierDetails | null;
   selectedCashierDetailsIdx: number;
@@ -56,6 +57,7 @@ export interface LossPreventionState {
 }
 
 const initialState: LossPreventionState = {
+  loadingCashierDetails: false,
   cashierDetails: [],
   selectedCashierDetails: null,
   cashierTrends: [],
@@ -99,6 +101,9 @@ export const lossPreventionSlice = createSlice({
   name: "lossPrevention",
   initialState,
   reducers: {
+    setLoadingCashierDetails: (state, action: PayloadAction<boolean>) => {
+      state.loadingCashierDetails = action.payload;
+    },
     setCashierDetails: (state, action: PayloadAction<CashierDetails[]>) => {
       state.cashierDetails = action.payload;
     },
@@ -264,6 +269,7 @@ export const lossPreventionSlice = createSlice({
 });
 
 export const {
+  setLoadingCashierDetails,
   setCashierDetails,
   setCashierTrends,
   setCashierTransactions,
