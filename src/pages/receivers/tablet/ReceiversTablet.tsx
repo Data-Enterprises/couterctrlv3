@@ -8,6 +8,7 @@ import {
 } from "../../../features/receiversSlice";
 import ReceiverFilters from "./ReceiverFilters";
 import ReceiversGrid from "./ReceiversGrid";
+import ReceiverDetails from "./ReceiverDetails";
 
 interface ReceiversTabletProps {
   getData: () => void;
@@ -70,7 +71,7 @@ const ReceiversTablet = ({ getData }: ReceiversTabletProps) => {
       </div>
 
       {/* Row Two */}
-      <div></div>
+        <ReceiverDetails />
     </div>
   );
 };

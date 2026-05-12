@@ -1,9 +1,6 @@
-import { useRef, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type { JsonError, ReceiverDetailsResponse } from "../../../interfaces";
-import { AgGridReact } from "ag-grid-react";
-import { cols, theme } from "..";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { getReceiverDetails } from "../../../api/receivers";
 import {
@@ -21,43 +18,6 @@ const ReceiversGrid = () => {
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
   const state = useAppSelector((state) => state.receivers);
-  const gridRef = useRef<AgGridReact>(null);
-
-  // Deselect rows when details are cleared => From refresh or filter reset
-  useEffect(() => {
-    if (gridRef.current && gridRef.current.api && state.details.length === 0) {
-      gridRef.current.api.deselectAll();
-    }
-  }, [state.details]);
-
-  const handleGridReady = () => {
-    if (
-      gridRef.current &&
-      gridRef.current.api &&
-      state.details.length &&
-      state.selectedInvoice
-    ) {
-      gridRef.current.api.forEachNode((node) => {
-        if (
-          node.data &&
-          node.data.invoiceid.toString() === state.selectedInvoice
-        ) {
-          node.setSelected(true); // set the row to selected
-
-          // Using setTimeout to ensure the grid finishes rendering the pages before finding the selected row
-          setTimeout(() => {
-            if (gridRef.current && gridRef.current.api) {
-              const api = gridRef.current.api;
-              const pageSize = api.paginationGetPageSize();
-              const rowIndex = node.rowIndex!;
-              const pageNumber = Math.floor(rowIndex / pageSize);
-              api.paginationGoToPage(pageNumber);
-            }
-          }, 100);
-        }
-      });
-    }
-  };
 
   const getSelectedDetails = (invoiceid: number, transDate: string) => {
     dispatch(setIsFetchingDetails(true));
@@ -78,47 +38,85 @@ const ReceiversGrid = () => {
     <>
       {!state.noReceivers ? (
         <div
-          className={` ${
+          className={`${
             state.list.length === 0 && !state.isFetchingList ? "hidden" : ""
           } ${
             state.isFetchingList
               ? "bg-transparent"
               : "bg-custom-white shadow-lg"
-          } rounded-lg p-2`}
+          } rounded-lg p-3`}
         >
           <div
             className={`${
               state.isFetchingList && "hidden"
-            } text-sm font-medium pl-0.5`}
+            } text-sm font-semibold pl-1 pt-1 pb-1`}
           >
-            Select Receiver
+            Select Receiver ({state.listGridData.length})
           </div>
-          <div className="h-[93%]">
+          <div className="text-[13px]">
+            {/* Tablet-optimized 8-column grid */}
+            <div className="grid grid-cols-[10%_10%_10%_10%_17%_16%_9%_18%] font-semibold bg-bkg rounded">
+              <div className="px-2 py-2">Date</div>
+              <div className="px-2 py-2 text-right">Store</div>
+              <div className="px-2 py-2">Trans</div>
+              <div className="px-2 py-2">Ven ID</div>
+              <div className="px-2 py-2">Ven Name</div>
+              <div className="px-2 py-2">Invoice</div>
+              <div className="px-2 py-2 text-right">Items</div>
+              <div className="px-2 py-2">Operator</div>
+            </div>
             {!state.isFetchingList ? (
-              <AgGridReact
-                data-testid="receivers-list-grid"
-                ref={gridRef}
-                rowData={state.listGridData}
-                columnDefs={cols}
-                theme={theme}
-                pagination={true}
-                paginationAutoPageSize={true}
-                onRowClicked={(params) => {
-                  const invoiceDate = formatDate(params.data.invoice_date);
-                  getSelectedDetails(params.data.invoiceid, invoiceDate);
-                }}
-                rowSelection="single"
-                onGridReady={handleGridReady}
-              />
+              <div className="max-h-[40.5vh] overflow-y-auto">
+                {state.listGridData.map((rec, i) => (
+                  <div
+                    key={i}
+                    className="grid grid-cols-[10%_10%_10%_10%_17%_16%_9%_18%] hover:bg-gray-100 active:bg-gray-200"
+                    onClick={() =>
+                      getSelectedDetails(
+                        rec.invoiceid,
+                        formatDate(rec.invoice_date),
+                      )
+                    }
+                  >
+                    <div className="px-2 py-1.5 border-b border-gray-100">
+                      {formatDate(rec.invoice_date)}
+                    </div>
+                    <div className="px-2 py-1.5 border-b border-gray-100 text-right">
+                      {rec.store_number}
+                    </div>
+                    <div className="px-2 py-1.5 border-b border-gray-100">
+                      {rec.invoiceid}
+                    </div>
+                    <div className="px-2 py-1.5 border-b border-gray-100">
+                      {rec.vendorid}
+                    </div>
+                    <div
+                      className="px-2 py-1.5 border-b border-gray-100 truncate"
+                      title={rec.vendor_name}
+                    >
+                      {rec.vendor_name}
+                    </div>
+                    <div className="px-2 py-1.5 border-b border-gray-100">
+                      {rec.reference_number}
+                    </div>
+                    <div className="px-2 py-1.5 border-b border-gray-100 text-right">
+                      {rec.items}
+                    </div>
+                    <div className="px-2 py-1.5 border-b border-gray-100">
+                      {rec.cashier_name}
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
-              <div className="relative w-full h-full">
+              <div className="relative w-full h-[40.5vh]">
                 <LoadingIndicator />
               </div>
             )}
           </div>
         </div>
       ) : (
-        <div className="h-full flex items-center justify-center bg-custom-white rounded-lg w-[60%] shadow-lg">
+        <div className="h-full flex items-center justify-center bg-custom-white rounded-lg w-[60%] shadow-lg text-base">
           No receivers found
         </div>
       )}
