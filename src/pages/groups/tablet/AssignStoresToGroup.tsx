@@ -83,48 +83,49 @@ const AssignStoresToGroup = () => {
   };
 
   return (
-    <div className="p-3 bg-custom-white rounded-xl shadow-lg">
-      <div className="w-full space-y-3">
-        <SingleSelect
-          id={1}
-          label="Select User Group"
-          data={groups}
-          displayKey="group_name"
-          valueKey="id"
-          onSelect={getGroupStores}
-        />
-        <div className="flex flex-col lg:flex-row gap-4 relative">
-          <div className="w-full lg:w-1/2 bg-slate-100 p-3 rounded-lg shadow-md">
-            <Input
-              label={`Unassigned - ${filtered(storesWithGroupStatus, unassignedFilter, 0).length}`}
-              value={unassignedFilter}
-              setValue={handleUnassignedFilterText}
-            />
-            <div className="space-y-2 my-2 rounded-lg max-h-[calc(100vh-17rem)] pb-3 overflow-hidden overflow-y-scroll no-scrollbar">
-              {filtered(storesWithGroupStatus, unassignedFilter, 0).map(
-                (store) => (
-                  <div
-                    key={store.storeid}
-                    data-testid={`unassigned-store-${store.storeid}`}
-                    className="bg-custom-white flex items-start justify-between rounded-lg shadow-md p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200 md:flex-row"
-                    onClick={() =>
-                      handleStoreClick(store.storeid, "unassigned")
-                    }
-                  >
-                    <div className="font-medium space-y-0.5 text-[12px] w-full md:w-auto">
-                      <div>Store {store.store_number}</div>
-                      <div>
-                        {store.storeid} - {store.store_name}
+    <div>
+      <div className="bg-custom-white rounded-lg shadow-md p-3">
+        <div className="w-full space-y-3">
+          <SingleSelect
+            id={1}
+            label="Select User Group"
+            data={groups}
+            displayKey="group_name"
+            valueKey="id"
+            onSelect={getGroupStores}
+          />
+          <div className="flex flex-col lg:flex-row gap-4 relative">
+            <div className="w-full lg:w-1/2 bg-slate-100 p-3 rounded-lg shadow-md">
+              <Input
+                label={`Unassigned - ${filtered(storesWithGroupStatus, unassignedFilter, 0).length}`}
+                value={unassignedFilter}
+                setValue={handleUnassignedFilterText}
+              />
+              <div className="space-y-2 my-2 rounded-lg max-h-[calc(100vh-17rem)] pb-3 overflow-hidden overflow-y-scroll no-scrollbar">
+                {filtered(storesWithGroupStatus, unassignedFilter, 0).map(
+                  (store) => (
+                    <div
+                      key={store.storeid}
+                      data-testid={`unassigned-store-${store.storeid}`}
+                      className="bg-custom-white flex items-start justify-between rounded-lg shadow-md p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200 md:flex-row"
+                      onClick={() =>
+                        handleStoreClick(store.storeid, "unassigned")
+                      }
+                    >
+                      <div className="font-medium space-y-0.5 text-[12px] w-full md:w-auto">
+                        <div>Store {store.store_number}</div>
+                        <div>
+                          {store.storeid} - {store.store_name}
+                        </div>
+                      </div>
+                      <div className="bg-red-600 text-custom-white px-2 py-0.5 rounded-full text-[12px]">
+                        Inactive
                       </div>
                     </div>
-                    <div className="bg-red-600 text-custom-white px-2 py-0.5 rounded-full text-[12px]">
-                      Inactive
-                    </div>
-                  </div>
-                ),
-              )}
-            </div>
-            {/* <div className="grid grid-cols-2 gap-2">
+                  ),
+                )}
+              </div>
+              {/* <div className="grid grid-cols-2 gap-2">
             <button
               className="btn-themeGreen w-full"
               onClick={handleAssignStore}
@@ -135,36 +136,38 @@ const AssignStoresToGroup = () => {
               Assign All
             </button>
           </div> */}
-          </div>
-          <div className="w-full lg:w-1/2 bg-slate-100 p-3 rounded-lg shadow-md">
-            <Input
-              label={`Assigned - ${filtered(storesWithGroupStatus, assignedFilter, 1).length}`}
-              value={assignedFilter}
-              setValue={handleAssignedFilterText}
-            />
-            <div className="space-y-2 my-2 rounded-lg max-h-[calc(100vh-17rem)] pb-3 overflow-hidden overflow-y-scroll no-scrollbar">
-              {filtered(storesWithGroupStatus, assignedFilter, 1).map(
-                (store) => (
-                  <div
-                    key={store.storeid}
-                    data-testid={`assigned-store-${store.storeid}`}
-                    className="bg-custom-white text-[13px] flex items-start justify-between rounded-lg shadow-md p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200 flex-col md:flex-row gap-2 md:gap-0"
-                    onClick={() => handleStoreClick(store.storeid, "assigned")}
-                  >
-                    <div className="font-medium space-y-0.5 text-[12px] w-full md:w-auto">
-                      <div>Store {store.store_number}</div>
-                      <div>
-                        {store.storeid} - {store.store_name}
+            </div>
+            <div className="w-full lg:w-1/2 bg-slate-100 p-3 rounded-lg shadow-md">
+              <Input
+                label={`Assigned - ${filtered(storesWithGroupStatus, assignedFilter, 1).length}`}
+                value={assignedFilter}
+                setValue={handleAssignedFilterText}
+              />
+              <div className="space-y-2 my-2 rounded-lg max-h-[calc(100vh-17rem)] pb-3 overflow-hidden overflow-y-scroll no-scrollbar">
+                {filtered(storesWithGroupStatus, assignedFilter, 1).map(
+                  (store) => (
+                    <div
+                      key={store.storeid}
+                      data-testid={`assigned-store-${store.storeid}`}
+                      className="bg-custom-white text-[13px] flex items-start justify-between rounded-lg shadow-md p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200 flex-col md:flex-row gap-2 md:gap-0"
+                      onClick={() =>
+                        handleStoreClick(store.storeid, "assigned")
+                      }
+                    >
+                      <div className="font-medium space-y-0.5 text-[12px] w-full md:w-auto">
+                        <div>Store {store.store_number}</div>
+                        <div>
+                          {store.storeid} - {store.store_name}
+                        </div>
+                      </div>
+                      <div className="bg-[rgb(30,45,80)] text-custom-white px-2 py-0.5 rounded-full text-[12px]">
+                        Active
                       </div>
                     </div>
-                    <div className="bg-[rgb(30,45,80)] text-custom-white px-2 py-0.5 rounded-full text-[12px]">
-                      Active
-                    </div>
-                  </div>
-                ),
-              )}
-            </div>
-            {/* <div className="grid grid-cols-2 gap-2">
+                  ),
+                )}
+              </div>
+              {/* <div className="grid grid-cols-2 gap-2">
             <button
               className="btn-themeGreen w-full"
               // onClick={handleUnassignStore}
@@ -178,6 +181,7 @@ const AssignStoresToGroup = () => {
               Unassign All
             </button>
           </div> */}
+            </div>
           </div>
         </div>
       </div>

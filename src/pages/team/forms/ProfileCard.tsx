@@ -123,11 +123,11 @@ const ProfileCard = () => {
             <div className="font-medium">Username:</div>
             <div>{userInfo.username}</div>
           </div>
-          <div className="grid grid-cols-[10.5%_auto]">
+          <div className="grid grid-cols-[auto_1fr] gap-1.5">
             <div className="font-medium">Company:</div>
             <div className="text-nowrap truncate">{showCompanies()}</div>
           </div>
-          <div className="grid grid-cols-[13%_auto]">
+          <div className="grid grid-cols-[auto_1fr] gap-1.5">
             <div className="font-medium">Base Groups:</div>
             <div className="text-nowrap truncate">{showBaseGroups()}</div>
           </div>
