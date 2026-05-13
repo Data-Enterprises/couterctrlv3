@@ -160,14 +160,15 @@ const Receivers = () => {
               displayKey={"store_name"}
               valueKey={"storeid"}
               onSelect={setSelectedStore}
+              innerClass="text-[13px] py-1"
             />
-            <DatePickers handleQuery={getReceivers} />
+            <DatePickers handleQuery={getReceivers} btnPadding="py-1" />
             <div className="flex gap-2">
               <button
                 data-testid="rec-page-refresh-btn"
                 className={`${
                   state.list.length === 0 && "opacity-50 pointer-events-none"
-                } btn-themeOrange w-1/2 mt-2 px-0`}
+                } btn-themeOrange w-1/2 mt-2 px-0 py-1 text-[13px]`}
                 onClick={() => dispatch(resetReceiverSlice())}
               >
                 Refresh
@@ -176,7 +177,7 @@ const Receivers = () => {
                 data-testid="receivers-export-btn"
                 className={`${
                   state.details.length === 0 && "opacity-50 pointer-events-none"
-                } btn-themeGreen w-1/2 mt-2 px-0`}
+                } btn-themeGreen w-1/2 mt-2 px-0 py-1 text-[13px]`}
                 onClick={openExportModal}
               >
                 Export

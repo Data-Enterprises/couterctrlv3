@@ -34,7 +34,7 @@ const DatePickers = ({
       </div>
       <div
         data-testid="date-picker-search-btn"
-        className={`btn-themeBlue w-full text-center col-span-2 mt-2 text-[13px] md:text-[16px] ${btnPadding}`}
+        className={`btn-themeBlue w-full text-center col-span-2 mt-2 text-[13px] xl:text-[14px] ${btnPadding}`}
         onClick={handleClick}
         style={{ display: showBtn ? "block" : "none" }}
       >
