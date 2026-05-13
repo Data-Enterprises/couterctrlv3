@@ -12,7 +12,6 @@ import {
 } from "../../../features/groupSlice";
 
 import { deleteGroup } from "../../../api/groups";
-
 import Input from "../../../components/inputs/Input";
 
 const DeleteUserGroup = () => {
@@ -81,20 +80,20 @@ const DeleteUserGroup = () => {
   }
 
   const containerStyle = isDesktop
-    ? "bg-custom-white p-4 rounded-md shadow-md w-[25%]"
-    : "bg-custom-white p-4 rounded-md shadow-md w-full";
+    ? "bg-custom-white p-2 rounded-md shadow-md text-sm"
+    : "bg-custom-white p-4 rounded-md shadow-md w-full text-sm";
 
   return (
     <div className={containerStyle}>
       <div className="font-medium text-sm">
         <div>Select group to delete</div>
       </div>
-      <div className="select-none text-sm grid rounded-lg p-1 max-h-36 overflow-hidden overflow-y-auto">
+      <div className="p-2 bg-bkg/80 rounded-lg grid grid-cols-2 max-h-52 overflow-y-auto select-none text-[13px]">
         {groups.map((g, i) => (
           <div
             key={g.id}
             data-testid={`delete-group-option-${i}`}
-            className={`${selectedGroup.id === g.id && "bg-orange-200"} rounded-full py-1 pl-2 border-b transition-all duration-200 cursor-pointer hover:bg-blue-200`}
+            className={`${selectedGroup.id === g.id ? "bg-orange-200" : ""} px-2 py-0.5 rounded-full transition-all duration-200 cursor-pointer hover:bg-blue-200`}
             onClick={() => handleSelect(g)}
           >
             {g.group_name}
@@ -102,10 +101,10 @@ const DeleteUserGroup = () => {
         ))}
       </div>
       <div>
-        <Input label="Group Name" value={createInput} setValue={() => {}} />
+        <Input label="Group Name" value={createInput} setValue={() => {}} className="py-1 text-[14px]" />
         <button
           data-testid="delete-usergroup-btn"
-          className={`btn-themeOrange mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
+          className={`btn-themeOrange bg-red-600 border-red-600 hover:bg-red-600/75 hover:text-custom-white py-1 text-[13px] mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
           onClick={() => setIsDeleting(true)}
         >
           Delete

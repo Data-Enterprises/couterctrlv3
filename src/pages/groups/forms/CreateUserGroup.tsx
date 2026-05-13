@@ -43,14 +43,14 @@ const CreateUserGroup = () => {
   };
 
   const containerStyle = isDesktop
-    ? "bg-custom-white p-4 rounded-md shadow-md w-[25%]"
-    : "bg-custom-white p-4 rounded-md shadow-md w-full";
+    ? "bg-custom-white p-2 rounded-md shadow-md text-sm"
+    : "bg-custom-white p-4 rounded-md shadow-md w-full text-sm";
 
   return (
     <div data-testid="create-usergroup-form" className={containerStyle}>
       <div className="bg-custom-white text-sm">
         <div className="font-medium">Existing Groups</div>
-        <div className="p-2 bg-bkg/80 rounded-lg grid grid-cols-2 max-h-36 overflow-y-auto select-none">
+        <div className="p-2 bg-bkg/80 rounded-lg grid grid-cols-2 max-h-52 overflow-y-auto select-none text-[13px]">
           {groupNames.map((g, i) => (
             <div
               key={i}
@@ -64,7 +64,7 @@ const CreateUserGroup = () => {
       {groupNames.some(
         (g) => g.toLowerCase() === createInput.trim().toLowerCase(),
       ) ? (
-        <div className="font-medium text-orange-500 text-sm text-center my-2">
+        <div className="font-medium text-orange-500 text-[10.5px]">
           User Group already exists. Please use another name
         </div>
       ) : null}
@@ -72,10 +72,11 @@ const CreateUserGroup = () => {
         label="Group Name"
         value={createInput}
         setValue={handleTextChange}
+        className="py-1 text-[14px]"
       />
       <button
         data-testid="create-usergroup-btn"
-        className={`btn-themeBlue mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
+        className={`btn-themeBlue mt-2 w-full bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white py-1 text-[13px] ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
         onClick={handleCreate}
       >
         Submit

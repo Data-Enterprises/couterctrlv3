@@ -74,16 +74,15 @@ const Groups = () => {
   const handleFormSelect = (formType: GroupFormType) => {
     dispatch(setSelectedForm(formType));
   };
-  
-  if (isTablet) return <GroupsTablet handleFormSelect={handleFormSelect} />
 
+  if (isTablet) return <GroupsTablet handleFormSelect={handleFormSelect} />;
 
   const containerStyle = ctx.isDesktop
-    ? "h-[calc(100vh-3rem)] p-4 space-y-4"
+    ? "h-[calc(100vh-3rem)] p-4 flex gap-4"
     : "w-full h-[calc(100vh-3rem)] p-2 flex flex-col gap-2";
 
   const optionBtnStyle = ctx.isDesktop
-    ? "bg-custom-white rounded-lg shadow-lg p-2 grid grid-cols-4 gap-2 w-[55%]"
+    ? "bg-custom-white rounded-lg shadow-lg min-w-36 text-sm select-none"
     : "bg-custom-white rounded-lg shadow-lg p-2 grid gap-2";
 
   const renderForm = () => {
@@ -109,35 +108,44 @@ const Groups = () => {
   return (
     <div className={containerStyle} data-testid="groups-page">
       {ctx.isDesktop ? (
-        <div className={optionBtnStyle}>
-          <button
-            data-testid="user-group-create-form-btn"
-            className={`${ctx.selectedForm === "create" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-            onClick={() => handleFormSelect("create")}
-          >
-            Create
-          </button>
-          <button
-            data-testid="user-group-update-form-btn"
-            className={`${ctx.selectedForm === "update" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-            onClick={() => handleFormSelect("update")}
-          >
-            Update
-          </button>
-          <button
-            data-testid="user-group-delete-form-btn"
-            className={`${ctx.selectedForm === "delete" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-            onClick={() => handleFormSelect("delete")}
-          >
-            Delete
-          </button>
-          <button
-            data-testid="user-group-assign-form-btn"
-            className={`${ctx.selectedForm === "assign" ? "btn-themeGreen" : "btn-themeBlue"} px-0`}
-            onClick={() => handleFormSelect("assign")}
-          >
-            Assign/Unassign Stores
-          </button>
+        <div>
+          <div className={optionBtnStyle}>
+            <div className="font-medium px-2 rounded-t-lg py-0.5">
+              User Group Forms
+            </div>
+            <div className="grid grid-cols-2">
+              <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
+              <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
+            </div>
+            <div
+              data-testid="user-group-create-form-btn"
+              className={`${ctx.selectedForm === "create" ? "bg-orange-200" : "bg-custom-white"} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
+              onClick={() => handleFormSelect("create")}
+            >
+              Create
+            </div>
+            <div
+              data-testid="user-group-update-form-btn"
+              className={`${ctx.selectedForm === "update" ? "bg-orange-200" : "bg-custom-white"} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
+              onClick={() => handleFormSelect("update")}
+            >
+              Update
+            </div>
+            <div
+              data-testid="user-group-delete-form-btn"
+              className={`${ctx.selectedForm === "delete" ? "bg-orange-200" : "bg-custom-white"} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
+              onClick={() => handleFormSelect("delete")}
+            >
+              Delete
+            </div>
+            <div
+              data-testid="user-group-assign-form-btn"
+              className={`${ctx.selectedForm === "assign" ? "bg-orange-200" : "bg-custom-white"} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2 rounded-b-lg`}
+              onClick={() => handleFormSelect("assign")}
+            >
+              Assign/Unassign Stores
+            </div>
+          </div>
         </div>
       ) : (
         <SingleSelect
@@ -148,7 +156,7 @@ const Groups = () => {
           onSelect={handleMobileFormSelect}
         />
       )}
-      {renderForm()}
+      <div>{renderForm()}</div>
     </div>
   );
 };
