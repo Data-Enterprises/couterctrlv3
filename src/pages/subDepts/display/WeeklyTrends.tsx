@@ -170,34 +170,34 @@ const WeeklyTrends = () => {
 
   return (
     <div
-      className={`${ctx.subDepts.length > 0 ? "" : "opacity-50 pointer-events-none"} grid gap-2 text-sm font-medium select-none bg-custom-white rounded-lg shadow-lg p-2`}
+      className={`${ctx.subDepts.length > 0 ? "" : "opacity-50 pointer-events-none"} grid gap-2 text-[13.5px] font-medium select-none bg-custom-white rounded-lg shadow-lg p-2`}
     >
       <div
-        className={`${ctx.selectedWeek === 1 ? "btn-themeGreen pointer-events-none" : "btn-themeBlue"} text-center py-1.5`}
+        className={`${ctx.selectedWeek === 1 ? "btn-themeGreen pointer-events-none" : "btn-themeBlue"} text-center py-1`}
         onClick={() => handleWeekClick(1)}
       >
         {showWeekRange(1)}
       </div>
       <div
-        className={`${ctx.selectedWeek === 2 ? "btn-themeGreen pointer-events-none" : "btn-themeBlue"} text-center py-1.5`}
+        className={`${ctx.selectedWeek === 2 ? "btn-themeGreen pointer-events-none" : "btn-themeBlue"} text-center py-1`}
         onClick={() => handleWeekClick(2)}
       >
         {showWeekRange(2)}
       </div>
       <div
-        className={`${ctx.selectedWeek === 3 ? "btn-themeGreen pointer-events-none" : "btn-themeBlue"} text-center py-1.5`}
+        className={`${ctx.selectedWeek === 3 ? "btn-themeGreen pointer-events-none" : "btn-themeBlue"} text-center py-1`}
         onClick={() => handleWeekClick(3)}
       >
         {showWeekRange(3)}
       </div>
       <div
-        className={`${ctx.selectedWeek === 4 ? "btn-themeGreen pointer-events-none" : "btn-themeBlue"} text-center py-1.5`}
+        className={`${ctx.selectedWeek === 4 ? "btn-themeGreen pointer-events-none" : "btn-themeBlue"} text-center py-1`}
         onClick={() => handleWeekClick(4)}
       >
         {showWeekRange(4)}
       </div>
       <div
-        className={`${ctx.selectedWeek === 5 ? "btn-themeGreen pointer-events-none" : "btn-themeBlue"} text-center py-1.5`}
+        className={`${ctx.selectedWeek === 5 ? "btn-themeGreen pointer-events-none" : "btn-themeBlue"} text-center py-1`}
         onClick={() => handleWeekClick(5)}
       >
         {showWeekRange(5)}

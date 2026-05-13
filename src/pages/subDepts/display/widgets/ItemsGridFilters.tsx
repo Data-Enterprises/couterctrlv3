@@ -12,7 +12,7 @@ const ItemsGridFilters = () => {
   const sm = useAppSelector((state) => state.subMargin);
 
   const divStyle =
-    "py-2 flex justify-center items-center rounded-lg shadow-md hover:bg-blue-200 transition-all duration-200 cursor-pointer";
+    "py-1 text-sm flex justify-center items-center rounded-lg shadow-md hover:bg-blue-200 transition-all duration-200 cursor-pointer";
 
   const handleClick = (filter: ItemFilterType) => {
     if (filter === "") {
@@ -68,52 +68,58 @@ const ItemsGridFilters = () => {
   };
 
   return (
-    <div className="bg-custom-white shadow-lg rounded-lg">
-      <div className="bg-blue-500 text-custom-white font-medium px-2 py-0.5 rounded-t-lg">
+    <div className="">
+      <div className="bg-custom-white text-[13px] font-medium px-2 py-0.5 rounded-t-lg">
         Item Filters
       </div>
-      <div className="p-2 grid grid-rows-7 h-[93%] gap-3">
-        <div
-          className={`${divStyle} ${sm.upcFilter.length ? "bg-orange-200" : ""}`}
-          onClick={() => handleClick("upc")}
-        >
-          {divText("upc")}
-        </div>
-        <div
-          className={`${divStyle} ${sm.descFilter.length ? "bg-orange-200" : ""}`}
-          onClick={() => handleClick("description")}
-        >
-          {divText("description")}
-        </div>
-        <div
-          className={`${divStyle} ${sm.salesFilter.operator ? "bg-orange-200" : ""}`}
-          onClick={() => handleClick("sales")}
-        >
-          {divText("sales")}
-        </div>
-        <div
-          className={`${divStyle} ${sm.qtyFilter.operator ? "bg-orange-200" : ""}`}
-          onClick={() => handleClick("qty")}
-        >
-          {divText("qty")}
-        </div>
-        <div
-          className={`${divStyle} ${sm.cogsFilter.operator ? "bg-orange-200" : ""}`}
-          onClick={() => handleClick("cogs")}
-        >
-          {divText("cogs")}
-        </div>
-        <div
-          className={`${divStyle} ${sm.marginFilter.operator ? "bg-orange-200" : ""}`}
-          onClick={() => handleClick("margin")}
-        >
-          {divText("margin")}
-        </div>
-        <div
-          className={`${divStyle} ${canRefresh() ? "bg-orange-200" : ""}`}
-          onClick={() => handleClick("")}
-        >
-          {divText("")}
+      <div className="grid grid-cols-2 h-[1.5px]">
+        <div className="bg-gradient-to-r from-blue-200 to-custom-white"></div>
+        <div className="bg-gradient-to-l from-blue-200 to-custom-white"></div>
+      </div>
+      <div className="bg-custom-white text-[13px] rounded-b-lg shadow-lg">
+        <div className="p-2 grid h-[93%] gap-2">
+          <div
+            className={`${divStyle} ${sm.upcFilter.length ? "bg-orange-200" : ""}`}
+            onClick={() => handleClick("upc")}
+          >
+            {divText("upc")}
+          </div>
+          <div
+            className={`${divStyle} ${sm.descFilter.length ? "bg-orange-200" : ""}`}
+            onClick={() => handleClick("description")}
+          >
+            {divText("description")}
+          </div>
+          <div
+            className={`${divStyle} ${sm.salesFilter.operator ? "bg-orange-200" : ""}`}
+            onClick={() => handleClick("sales")}
+          >
+            {divText("sales")}
+          </div>
+          <div
+            className={`${divStyle} ${sm.qtyFilter.operator ? "bg-orange-200" : ""}`}
+            onClick={() => handleClick("qty")}
+          >
+            {divText("qty")}
+          </div>
+          <div
+            className={`${divStyle} ${sm.cogsFilter.operator ? "bg-orange-200" : ""}`}
+            onClick={() => handleClick("cogs")}
+          >
+            {divText("cogs")}
+          </div>
+          <div
+            className={`${divStyle} ${sm.marginFilter.operator ? "bg-orange-200" : ""}`}
+            onClick={() => handleClick("margin")}
+          >
+            {divText("margin")}
+          </div>
+          <div
+            className={`${divStyle} ${canRefresh() ? "bg-orange-200" : ""}`}
+            onClick={() => handleClick("")}
+          >
+            {divText("")}
+          </div>
         </div>
       </div>
     </div>

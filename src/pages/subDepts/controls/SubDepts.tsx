@@ -49,12 +49,13 @@ const SubDepts = ({ height }: SubDeptsProps) => {
         label="Sub Dept"
         value={ctx.subDeptFitlerText}
         setValue={handleFilterTextChange}
+        className="py-1 text-[13px]"
       />
       <div className={`grid grid-cols-2 gap-2 ${height} rounded-lg overflow-hidden overflow-y-auto no-scrollbar`}>
         {filteredSubDepts.map((sub) => (
           <div
             key={sub.id}
-            className={`${ctx.selectedSubDeptId === sub.id ? "bg-orange-200" : "bg-custom-white"} p-2 rounded-lg shadow-lg text-sm text-center hover:bg-blue-200 cursor-pointer transition-all duration-200`}
+            className={`${ctx.selectedSubDeptId === sub.id ? "bg-orange-200" : "bg-custom-white"} p-2 rounded-lg shadow-lg text-[13px] text-center hover:bg-blue-200 cursor-pointer transition-all duration-200`}
             onClick={() => handleSubDeptClick(sub.id)}
           >
             {sub.desc}
