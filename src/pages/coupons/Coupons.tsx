@@ -81,14 +81,14 @@ const Coupons = () => {
         <div>
           <div className="bg-custom-white p-2 rounded-lg shadow-lg">
             <StorePicker />
-            <DatePickers handleQuery={getData} />
+            <DatePickers handleQuery={getData} btnPadding="py-1" />
             <div className="flex gap-2 mt-2">
               <button
                 data-testid="coupons-refresh-btn"
                 className={`${
                   context.coupons.length === 0 &&
                   "opacity-50 pointer-events-none"
-                } btn-themeOrange w-full px-0`}
+                } btn-themeOrange w-full px-0 py-1 text-[13px]`}
                 onClick={() => dispatch(resetCoupons())}
               >
                 Refresh
@@ -98,7 +98,7 @@ const Coupons = () => {
                 className={`${
                   context.coupons.length === 0 &&
                   "opacity-50 pointer-events-none"
-                } btn-themeGreen w-full px-0`}
+                } btn-themeGreen w-full px-0 py-1 text-[13px]`}
                 onClick={() => setIsOpen(true)}
               >
                 Export

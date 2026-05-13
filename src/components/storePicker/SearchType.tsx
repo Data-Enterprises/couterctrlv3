@@ -121,7 +121,7 @@ const SearchType = ({ singleStoreOnly = false }: Props) => {
         <label
           htmlFor="search"
           data-testid="type-label"
-          className="block text-[13px] font-medium "
+          className="block text-[12px] pl-0.5 font-medium "
         >
           Type
         </label>
@@ -137,7 +137,7 @@ const SearchType = ({ singleStoreOnly = false }: Props) => {
               autoComplete="off"
               type="text"
               name="search"
-              className="basic-input bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer focus:border text-sm"
+              className="basic-input bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer focus:border text-[13.5px] py-1"
             />
           </div>
           <div

@@ -79,7 +79,7 @@ const SelectStore = () => {
 
   const styling = "w-full md:px-0";
   const inputStyle =
-    "basic-input focus:border bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer w-full text-sm";
+    "basic-input focus:border bg-custom-white hover:bg-blue-200/50 hover:shadow-inner transition-colors duration-200 cursor-pointer w-full text-[13px] py-1";
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
@@ -108,7 +108,7 @@ const SelectStore = () => {
         <label
           htmlFor="search"
           data-testid="store-label"
-          className="block text-[13px] font-medium "
+          className="block text-[12px] pl-0.5 font-medium "
         >
           Store
         </label>

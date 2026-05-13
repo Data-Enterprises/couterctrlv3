@@ -31,7 +31,7 @@ const CouponKpis = () => {
           fill="#3b82f6"
         />
         <div className="text-content/60">Total Coupons</div>
-        <div>{totalCoupons}</div>
+        <div className="text-[13.5px]">{totalCoupons}</div>
       </div>
       <div className={kpiStyle}>
         <CurrencyDollarIcon
@@ -41,7 +41,7 @@ const CouponKpis = () => {
           fill="#3b82f6"
         />
         <div className="text-content/60">Total Amount</div>
-        <div>{formatCurrency2(totalAmount)}</div>
+        <div className="text-[13.5px]">{formatCurrency2(totalAmount)}</div>
       </div>
       <div className={kpiStyle}>
         <CurrencyDollarIcon
@@ -51,7 +51,7 @@ const CouponKpis = () => {
           fill="#3b82f6"
         />
         <div className="text-content/60">Avg Amount</div>
-        <div>{formatCurrency2(avgCpnAmount)}</div>
+        <div className="text-[13.5px]">{formatCurrency2(avgCpnAmount)}</div>
       </div>
       <div className={kpiStyle}>
         <UsersIcon
@@ -61,7 +61,7 @@ const CouponKpis = () => {
           fill="#3b82f6"
         />
         <div className="text-content/60">Customers</div>
-        <div>{customerIdCount}</div>
+        <div className="text-[13.5px]">{customerIdCount}</div>
       </div>
       <div className={kpiStyle}>
         <ShoppingBagIcon
@@ -71,7 +71,7 @@ const CouponKpis = () => {
           fill="#3b82f6"
         />
         <div className="text-content/60">Sub Depts</div>
-        <div>{subDeptCount}</div>
+        <div className="text-[13.5px]">{subDeptCount}</div>
       </div>
     </div>
   );

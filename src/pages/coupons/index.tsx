@@ -50,8 +50,8 @@ export const theme = themeQuartz.withParams({
   headerTextColor: "#ffffff",
   oddRowBackgroundColor: "#dbeafe",
   rowHoverColor: "#93c5fd",
-  headerFontWeight: "bold",
-  dataFontSize: 13,
+  // headerFontWeight: "bold",
+  dataFontSize: 12,
   selectCellBorder: "transparent",
   rowBorder: "1px solid white",
   // selectedRowBackgroundColor: "#93c5fd",
@@ -60,6 +60,7 @@ export const theme = themeQuartz.withParams({
 
 const defaultOptions = {
   cellClass: "no-outline-on-focus",
+  headerClass: "text-[12.5px] font-medium",
 };
 
 export const cols: (ColDef<CouponItem> | ColGroupDef<CouponItem>)[] = [

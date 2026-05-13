@@ -69,12 +69,16 @@ const CouponGridFilters = () => {
   };
 
   const panelStyle =
-    "py-1.5 rounded-lg text-center shadow-md shadow-content/20 hover:bg-orange-200 cursor-pointer transition-all duration-200";
+    "py-1.5 text-[13.5px] rounded-lg text-center shadow-md shadow-content/20 hover:bg-orange-200 cursor-pointer transition-all duration-200";
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg mt-4">
-      <div className="bg-blue-500 text-custom-white font-medium rounded-t-lg px-2 py-0.5">
+      <div className="font-medium rounded-t-lg px-2 py-0.5">
         Filter By
+      </div>
+      <div className="grid grid-cols-2 h-[1.5px]">
+        <div className="bg-gradient-to-r from-blue-200 to-custom-white"></div>
+        <div className="bg-gradient-to-l from-blue-200 to-custom-white"></div>
       </div>
       <div className="grid grid-row-6 p-2 gap-2">
         {filterOptions.map((option, i) => (

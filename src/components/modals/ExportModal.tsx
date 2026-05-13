@@ -45,28 +45,28 @@ const ExportModal = <T extends Record<string, any>>({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      modalClassName="bg-custom-white w-1/4"
+      modalClassName="bg-custom-white w-1/4 text-sm"
     >
-      <label htmlFor="filename">File Name</label>
+      <label htmlFor="filename" className="underline">File Name</label>
       <input
         data-testid="export-modal-filename-input"
         id="filename"
         type="text"
-        className="basic-input focus:border w-full mb-4 bg-custom-white"
+        className="basic-input focus:border w-full mb-3 bg-custom-white text-sm py-1.5"
         value={fileName}
         onChange={(e) => setFileName(e.target.value)}
       />
       <div className="flex gap-4">
         <button
           data-testid="export-modal-export"
-          className="btn-themeGreen w-full"
+          className="btn-themeGreen w-full text-[13.5px] py-1.5"
           onClick={handleExport}
         >
           Submit
         </button>
         <button
           data-testid="export-modal-cancel"
-          className="btn-themeOrange w-full"
+          className="btn-themeOrange w-full text-[13.5px] py-1.5"
           onClick={handleClose}
         >
           Cancel
