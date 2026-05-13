@@ -179,10 +179,10 @@ const SingleSelect = <T,>({
                 data-testid={`single-select-option-${id}-${idx}`}
                 key={`d-${id}-${idx}`}
                 onClick={() => handleSelect(d)}
-                className="flex hover:bg-panel_active py-0.5 hover:text-custom-white transition-all duration-300 items-center"
+                className="flex hover:bg-panel_active py-0.5 text-[12px] hover:text-custom-white transition-all duration-300 items-center"
                 data-value={d[valueKey]}
               >
-                <div className="grid grid-cols-[14px_1fr] min-h-[27px]">
+                <div className="grid grid-cols-[10px_1fr]">
                   <div className="flex items-center"></div>
                   <div className="flex items-center">
                     {/* {" "} */}

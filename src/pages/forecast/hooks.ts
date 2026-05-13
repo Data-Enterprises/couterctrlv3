@@ -38,9 +38,9 @@ export const useResizeContext = (alt: string) => {
         setInnerHeight("min-h-[82px] max-h-[82px]");
       } else {
         const newHeight =
-          alt === "large" ? "min-h-32 max-h-32" : "min-h-28 max-h-28 mb-3";
+          alt === "large" ? "min-h-40 max-h-40" : "min-h-28 max-h-28 mb-3";
         const newInnerHeight =
-          alt === "large" ? "min-h-32 max-h-32" : "min-h-24 max-h-24";
+          alt === "large" ? "min-h-40 max-h-40" : "min-h-24 max-h-24";
         setHeight(newHeight);
         setInnerHeight(newInnerHeight);
       }
