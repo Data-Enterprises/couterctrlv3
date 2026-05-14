@@ -156,6 +156,13 @@ const ItemHistoryDesktop = () => {
 
       mode = 0;
       let frequency = 0;
+
+      const freqCheck = Object.values(salesMode).every((f) => f === 1);
+      if (freqCheck) {
+        setSalesMode(0);
+        return;
+      }
+
       for (const key in salesMode) {
         if (salesMode[key] > frequency) {
           mode = Number(key);
@@ -247,7 +254,7 @@ const ItemHistoryDesktop = () => {
                 Most Freq.
               </div>
               <div className="font-semibold text-[12px]">
-                {formatCurrency2(salesMode)}
+                {salesMode === 0 ? "N/A" : formatCurrency2(salesMode)}
               </div>
             </div>
           </div>

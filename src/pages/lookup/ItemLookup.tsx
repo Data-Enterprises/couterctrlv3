@@ -81,7 +81,7 @@ const ItemLookup = () => {
     return (
       <div
         id="item-lookup-body"
-        className="p-2 max-h-[calc(100vh-3rem)] overflow-hidden grid grid-cols-[16%_auto] gap-3"
+        className="p-2 h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden grid grid-cols-[16%_auto] gap-3"
       >
         <div className="space-y-2">
           <LookupSearchCard getItemData={getSingleStoreData} />

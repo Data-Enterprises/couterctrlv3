@@ -29,7 +29,7 @@ const ItemDailyDesktop = () => {
           indexBy="sale_date"
           animate={true}
           margin={{
-            top: 0,
+            top: 10,
             right: 0,
             bottom: 44,
             left: 55,
