@@ -23,6 +23,9 @@ import LookupChartsTablet from "./tablet/LookupChartsTablet";
 import ItemHIstoryTablet from "./tablet/ItemHistoryTablet";
 import ItemDailyTablet from "./tablet/ItemDailyTablet";
 import LookupSearchCard from "./desktop/LookupSearchCard";
+import ItemHistoryDesktop from "./desktop/ItemHistoryDesktop";
+import ItemDailyDesktop from "./desktop/ItemDailyDesktop";
+import TotalsSummary from "./desktop/TotalsSummary";
 
 const ItemLookup = () => {
   const toast = useToast();
@@ -78,9 +81,16 @@ const ItemLookup = () => {
     return (
       <div
         id="item-lookup-body"
-        className="p-2 h-[calc(100vh-56px)] overflow-hidden grid grid-cols-[16%_auto]"
+        className="p-2 max-h-[calc(100vh-3rem)] overflow-hidden grid grid-cols-[16%_auto] gap-3"
       >
-        <LookupSearchCard getItemData={getSingleStoreData} />
+        <div className="space-y-2">
+          <LookupSearchCard getItemData={getSingleStoreData} />
+          <TotalsSummary />
+        </div>
+        <div className="grid grid-cols-[45%_auto] gap-3">
+          <ItemDailyDesktop />
+          <ItemHistoryDesktop />
+        </div>
       </div>
     );
   }
@@ -138,7 +148,7 @@ const ItemLookup = () => {
   return (
     <div
       data-testid="item-lookup-body"
-      className="p-2 h-[calc(100vh-56px)] overflow-hidden lg:w-1/4 lg:mx-auto"
+      className="p-2 min-h-[calc(100vh-56px)] max-h-[calc(100vh-56px)] overflow-hidden lg:w-1/4 lg:mx-auto"
     >
       <div className="grid grid-cols-3 gap-2 mb-2">
         <button
