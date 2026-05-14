@@ -193,7 +193,7 @@ const ItemHistoryDesktop = () => {
   if (!item.itemsLoaded) return null;
 
   return (
-    <div className="text-[12px]">
+    <div className="text-[12px] select-none">
       <div className="grid grid-cols-2 gap-x-2 gap-y-3">
         <div className="h-[175px] bg-custom-white px-2 pb-2 pt-0.5 rounded-lg shadow-md">
           <div className="font-semibold text-[12px] text-content">Sales</div>
@@ -313,121 +313,123 @@ const ItemHistoryDesktop = () => {
           </div>
         </div>
 
-        {/* Price and Cost points */}
-        <div className="grid gap-2">
-          {/* Price points */}
-          <div className="bg-custom-white px-2 pb-2 pt-0.5 rounded-lg shadow-md">
-            <div className="font-semibold text-[12px] text-content">
-              Unique Prices - {groupedByPrice.length}
-            </div>
-            <div className="">
-              <div className="grid grid-cols-5 text-content/60 font-medium text-[12px] border-b border-content/60">
-                <div>Price</div>
-                <div>Sales</div>
-                <div>Qty</div>
-                <div>Cost</div>
-                <div>E Cost</div>
+        <div className="col-span-2 grid grid-cols-2 gap-2 p-2 bg-custom-white/75 rounded-lg shadow-md max-h-[calc(100vh-255px)] overflow-y-auto no-scrollbar">
+          {/* Price and Cost points */}
+          <div className="grid gap-2">
+            {/* Price points */}
+            <div className="bg-custom-white px-2 pb-2 pt-0.5 rounded-lg shadow-md">
+              <div className="font-semibold text-[12px] text-content">
+                Unique Prices - {groupedByPrice.length}
               </div>
-              {groupedByPrice.map((g, i) => (
-                <div
-                  key={i}
-                  className="grid grid-cols-5 border-b border-content/25 last:border-none py-0.5"
-                >
-                  <div className="text-[12px]">
-                    {formatCurrency2(g.price)}
-                  </div>
-                  <div className="text-[12px]">
-                    {formatCurrency2(g.total_sales)}
-                  </div>
-                  <div className="text-[12px]">
-                    {formatBigNumber(g.qty, 0)}
-                  </div>
-                  <div className="text-[12px]">
-                    {formatCurrency2(g.casecost)}
-                  </div>
-                  <div className="text-[12px]">
-                    {formatCurrency2(g.extended_cost)}
-                  </div>
+              <div className="">
+                <div className="grid grid-cols-5 text-content/60 font-medium text-[12px] border-b border-content/60">
+                  <div>Price</div>
+                  <div>Sales</div>
+                  <div>Qty</div>
+                  <div>Cost</div>
+                  <div>E Cost</div>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Cost points */}
-          <div className="bg-custom-white px-2 pb-2 pt-0.5 rounded-lg shadow-md">
-            <div className="font-medium text-[12px] text-content">
-              Unique Case Costs - {groupedByCost.length}
-            </div>
-            <div className="">
-              <div className="grid grid-cols-5 text-content/60 font-medium text-[12px] border-b border-content/60">
-                <div>Cost</div>
-                <div>Sales</div>
-                <div>Qty</div>
-                <div>Price</div>
-                <div>E Cost</div>
-              </div>
-              {groupedByCost.map((g, i) => (
-                <div key={i} className="grid grid-cols-5 py-0.5">
-                  <div className="text-[12px]">
-                    {formatCurrency2(g.casecost)}
-                  </div>
-                  <div className="text-[12px]">
-                    {formatCurrency2(g.total_sales)}
-                  </div>
-                  <div className="text-[12px]">
-                    {formatBigNumber(g.qty, 0)}
-                  </div>
-                  <div className="text-[12px]">
-                    {formatCurrency2(g.price)}
-                  </div>
-                  <div className="text-[12px]">
-                    {formatCurrency2(g.extended_cost)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Unique Quantities */}
-        <div className="bg-custom-white px-2 pb-2 pt-0.5 rounded-lg shadow-md">
-          <div className="font-semibold text-[12px] text-content">
-            Unique Qty - {groupedByQty.length}
-          </div>
-          <div className="">
-            <div className="grid grid-cols-5 text-content/60 font-medium text-[12px] border-b border-content/60">
-              <div>Qty</div>
-              <div>Sales</div>
-              <div>Price</div>
-              <div>C Cost</div>
-              <div>E Cost</div>
-            </div>
-            {groupedByQty.map((g, i) => (
-              <div
-                key={i}
-                className="border-b border-content/20 last:border-none"
-              >
-                {g.items.map((item, j) => (
-                  <div key={j} className="grid grid-cols-5 py-0.5">
+                {groupedByPrice.map((g, i) => (
+                  <div
+                    key={i}
+                    className="grid grid-cols-5 border-b border-content/25 last:border-none py-0.5"
+                  >
                     <div className="text-[12px]">
-                      {j === 0 ? formatBigNumber(item.qty, 0) : ""}
+                      {formatCurrency2(g.price)}
                     </div>
                     <div className="text-[12px]">
-                      {formatCurrency2(item.total_sales)}
+                      {formatCurrency2(g.total_sales)}
                     </div>
                     <div className="text-[12px]">
-                      {formatCurrency2(item.price)}
+                      {formatBigNumber(g.qty, 0)}
                     </div>
                     <div className="text-[12px]">
-                      {formatCurrency2(item.casecost)}
+                      {formatCurrency2(g.casecost)}
                     </div>
                     <div className="text-[12px]">
-                      {formatCurrency2(item.extended_cost)}
+                      {formatCurrency2(g.extended_cost)}
                     </div>
                   </div>
                 ))}
               </div>
-            ))}
+            </div>
+
+            {/* Cost points */}
+            <div className="bg-custom-white px-2 pb-2 pt-0.5 rounded-lg shadow-md">
+              <div className="font-medium text-[12px] text-content">
+                Unique Case Costs - {groupedByCost.length}
+              </div>
+              <div className="">
+                <div className="grid grid-cols-5 text-content/60 font-medium text-[12px] border-b border-content/60">
+                  <div>Cost</div>
+                  <div>Sales</div>
+                  <div>Qty</div>
+                  <div>Price</div>
+                  <div>E Cost</div>
+                </div>
+                {groupedByCost.map((g, i) => (
+                  <div key={i} className="grid grid-cols-5 py-0.5">
+                    <div className="text-[12px]">
+                      {formatCurrency2(g.casecost)}
+                    </div>
+                    <div className="text-[12px]">
+                      {formatCurrency2(g.total_sales)}
+                    </div>
+                    <div className="text-[12px]">
+                      {formatBigNumber(g.qty, 0)}
+                    </div>
+                    <div className="text-[12px]">
+                      {formatCurrency2(g.price)}
+                    </div>
+                    <div className="text-[12px]">
+                      {formatCurrency2(g.extended_cost)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Unique Quantities */}
+          <div className="bg-custom-white px-2 pb-2 pt-0.5 rounded-lg shadow-md">
+            <div className="font-semibold text-[12px] text-content">
+              Unique Qty - {groupedByQty.length}
+            </div>
+            <div className="">
+              <div className="grid grid-cols-5 text-content/60 font-medium text-[12px] border-b border-content/60">
+                <div>Qty</div>
+                <div>Sales</div>
+                <div>Price</div>
+                <div>C Cost</div>
+                <div>E Cost</div>
+              </div>
+              {groupedByQty.map((g, i) => (
+                <div
+                  key={i}
+                  className="border-b border-content/20 last:border-none"
+                >
+                  {g.items.map((item, j) => (
+                    <div key={j} className="grid grid-cols-5 py-0.5">
+                      <div className="text-[12px]">
+                        {j === 0 ? formatBigNumber(item.qty, 0) : ""}
+                      </div>
+                      <div className="text-[12px]">
+                        {formatCurrency2(item.total_sales)}
+                      </div>
+                      <div className="text-[12px]">
+                        {formatCurrency2(item.price)}
+                      </div>
+                      <div className="text-[12px]">
+                        {formatCurrency2(item.casecost)}
+                      </div>
+                      <div className="text-[12px]">
+                        {formatCurrency2(item.extended_cost)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -16,7 +16,7 @@ const ItemDailyDesktop = () => {
   };
 
   return (
-    <div className="text-[13px] space-y-3 flex flex-col min-h-0 h-full">
+    <div className="text-[13px] space-y-3 flex flex-col min-h-0 h-full select-none">
       <div className="bg-custom-white pb-2 px-2 rounded-lg shadow-lg h-[175px]">
         <div className="font-medium mt-0.5">Daily History</div>
         <div className="grid grid-cols-2 my-0.5">
