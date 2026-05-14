@@ -53,6 +53,16 @@ const TotalsSummary = () => {
 
   return (
     <div className="bg-custom-white rounded-xl shadow-lg border border-content/10 p-2">
+      <div className="text-[13px] font-semibold text-content">
+        Totals Summary
+      </div>
+
+      {/* Divider */}
+      <div className="grid grid-cols-2 mb-1">
+        <div className="h-[1.5px] bg-gradient-to-r from-content/60 to-custom-white" />
+        <div className="h-[1.5px] bg-gradient-to-l from-content/60 to-custom-white" />
+      </div>
+
       {/* Header metadata */}
       <div className="leading-tight">
         <div className="text-[13px] flex justify-between items-center text-content/60">
@@ -75,38 +85,23 @@ const TotalsSummary = () => {
         </div>
       </div>
 
-      {/* Divider */}
-      <div className="grid grid-cols-2 my-1">
-        <div className="h-[1.5px] bg-gradient-to-r from-content/60 to-custom-white" />
-        <div className="h-[1.5px] bg-gradient-to-l from-content/60 to-custom-white" />
-      </div>
-
       {/* Totals section */}
       <div>
-        <div className="text-[13px] font-semibold text-content text-center mb-1">
-          Totals Summary
-        </div>
         <div className="grid md:grid-cols-3 w-full gap-2">
           <div className="bg-content/5 rounded-md shadow-md px-2 py-1">
-            <div className="text-content/60 text-[11px]">
-              Sales:
-            </div>
+            <div className="text-content/60 text-[11px]">Sales:</div>
             <div className="font-semibold text-[12px]">
               {formatCurrency2(totalSales)}
             </div>
           </div>
           <div className="bg-content/5 rounded-md shadow-md px-2 py-1">
-            <div className="text-content/60 text-[11px]">
-              Qty:
-            </div>
+            <div className="text-content/60 text-[11px]">Qty:</div>
             <div className="font-semibold text-[12px]">
               {formatBigNumber(totalQty, 0)}
             </div>
           </div>
           <div className="bg-content/5 rounded-md shadow-md px-2 py-1">
-            <div className="text-content/60 text-[11px]">
-              Ext Cost:
-            </div>
+            <div className="text-content/60 text-[11px]">Ext Cost:</div>
             <div className="font-semibold text-[12px]">
               {formatCurrency2(totalExtendedCost)}
             </div>
