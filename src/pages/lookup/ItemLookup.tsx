@@ -22,11 +22,14 @@ import ItemDaily from "./ItemDaily";
 import LookupChartsTablet from "./tablet/LookupChartsTablet";
 import ItemHIstoryTablet from "./tablet/ItemHistoryTablet";
 import ItemDailyTablet from "./tablet/ItemDailyTablet";
+import LookupSearchCard from "./desktop/LookupSearchCard";
 
 const ItemLookup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const { url, token, isTablet } = useAppSelector((state) => state.app);
+  const { url, token, isTablet, isDesktop } = useAppSelector(
+    (state) => state.app,
+  );
   const { selectedStore, viewHistory, viewDaily, viewSearch } = useAppSelector(
     (state) => state.item,
   );
@@ -34,7 +37,7 @@ const ItemLookup = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const getSingleStoreData = (upc: string) => {
-    dispatch(reQueryUpc());
+    dispatch(reQueryUpc({ isResettingUpcCode: !isDesktop }));
     dispatch(setError(""));
     setIsLoading(true);
 
@@ -63,13 +66,24 @@ const ItemLookup = () => {
             setError(`We're sorry, that item was not found in your inventory`),
           );
           dispatch(setItemsLoaded(false));
-          dispatch(reQueryUpc());
+          dispatch(reQueryUpc({ isResettingUpcCode: !isDesktop }));
           dispatch(setPause(true));
         }
       })
       .catch((err) => toast.error(err.message))
       .finally(() => setIsLoading(false));
   };
+
+  if (isDesktop) {
+    return (
+      <div
+        id="item-lookup-body"
+        className="p-2 h-[calc(100vh-56px)] overflow-hidden grid grid-cols-[16%_auto]"
+      >
+        <LookupSearchCard getItemData={getSingleStoreData} />
+      </div>
+    );
+  }
 
   const renderView = () => {
     if (viewHistory) return isTablet ? <ItemHIstoryTablet /> : <ItemHIstory />;
@@ -80,11 +94,13 @@ const ItemLookup = () => {
   if (isTablet) {
     return (
       <div
-        id="item-lookup-body"
+        data-testid="item-lookup-body"
         className="p-2 h-[calc(100vh-56px)] grid grid-cols-[30%_69%] gap-3"
       >
         <div>
-          <div className={`grid ${isTablet ? "grid-cols-2" : "grid-cols-3"} gap-2 mb-2`}>
+          <div
+            className={`grid ${isTablet ? "grid-cols-2" : "grid-cols-3"} gap-2 mb-2`}
+          >
             {!isTablet ? (
               <button
                 className={`${viewSearch ? "btn-themeGreen" : "btn-themeBlue"} text-[13px] py-1.5 px-0`}
@@ -121,7 +137,7 @@ const ItemLookup = () => {
 
   return (
     <div
-      id="item-lookup-body"
+      data-testid="item-lookup-body"
       className="p-2 h-[calc(100vh-56px)] overflow-hidden lg:w-1/4 lg:mx-auto"
     >
       <div className="grid grid-cols-3 gap-2 mb-2">

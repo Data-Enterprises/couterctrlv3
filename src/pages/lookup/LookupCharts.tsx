@@ -30,7 +30,7 @@ const LookupCharts = ({ getItemData }: LookupChartsProps) => {
   );
 
   const clear = () => {
-    dispatch(reQueryUpc());
+    dispatch(reQueryUpc({ isResettingUpcCode: true }));
     dispatch(setUpcCode(""));
     dispatch(setError(""));
     dispatch(setILView("search"));
