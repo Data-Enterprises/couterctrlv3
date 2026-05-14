@@ -35,6 +35,7 @@ const MobileDeptDataView = () => {
     dispatch(setScannedItemMobile(null));
     dispatch(setMobileMainView("overview"));
     dispatch(setUpcCode(""));
+    dispatch(setSelectedWeekDay(""));
     if (isResetting) dispatch(setSelectedSubDeptId(0));
   };
 

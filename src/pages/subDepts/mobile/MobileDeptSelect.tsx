@@ -129,7 +129,7 @@ const MobileDeptSelect = () => {
           <div>{ctx.subDepts.length} Sub Depts</div>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2 px-2 pb-2 mt-2 max-h-[calc(100vh-310px)] overflow-y-auto">
+      <div className="grid grid-cols-2 gap-2 px-2 pb-2 mt-2 max-h-[calc(100vh-290px)] overflow-y-auto">
         {ctx.subDepts.map((s, i) => (
           <div
             key={i}
