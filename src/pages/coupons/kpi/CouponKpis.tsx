@@ -9,6 +9,7 @@ import { formatCurrency2 } from "../../../utils";
 
 const CouponKpis = () => {
   const { gridCoupons } = useAppSelector((state) => state.coupons);
+  const { isTablet } = useAppSelector((state) => state.app);
 
   const totalCoupons = gridCoupons.length;
   const totalAmount = gridCoupons.reduce((sum, c) => sum + c.coupon_amount, 0);
@@ -27,7 +28,7 @@ const CouponKpis = () => {
         <HashtagIcon
           height={38}
           width={38}
-          className="absolute left-4"
+          className={`${isTablet ? "hidden" : "absolute left-4"}`}
           fill="#3b82f6"
         />
         <div className="text-content/60">Total Coupons</div>
@@ -37,7 +38,7 @@ const CouponKpis = () => {
         <CurrencyDollarIcon
           height={38}
           width={38}
-          className="absolute left-4"
+          className={`${isTablet ? "hidden" : "absolute left-4"} absolute left-4`}
           fill="#3b82f6"
         />
         <div className="text-content/60">Total Amount</div>
@@ -47,7 +48,7 @@ const CouponKpis = () => {
         <CurrencyDollarIcon
           height={38}
           width={38}
-          className="absolute left-4"
+          className={`${isTablet ? "hidden" : "absolute left-4"} absolute left-4`}
           fill="#3b82f6"
         />
         <div className="text-content/60">Avg Amount</div>
@@ -57,7 +58,7 @@ const CouponKpis = () => {
         <UsersIcon
           height={38}
           width={38}
-          className="absolute left-4"
+          className={`${isTablet ? "hidden" : "absolute left-4"} absolute left-4`}
           fill="#3b82f6"
         />
         <div className="text-content/60">Customers</div>
@@ -67,7 +68,7 @@ const CouponKpis = () => {
         <ShoppingBagIcon
           height={38}
           width={38}
-          className="absolute left-4"
+          className={`${isTablet ? "hidden" : "absolute left-4"} absolute left-4`}
           fill="#3b82f6"
         />
         <div className="text-content/60">Sub Depts</div>

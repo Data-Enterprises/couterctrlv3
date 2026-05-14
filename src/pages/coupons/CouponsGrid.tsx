@@ -14,6 +14,8 @@ import {
   setTransModalOpen,
 } from "../../features/lossPreventionSlice";
 import type { JsonError, TransactionListItem } from "../../interfaces";
+import { formatCurrency2 } from "../../utils";
+import { formatDate } from "../sales/tracker";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const CouponsGrid = () => {
@@ -75,6 +77,77 @@ const CouponsGrid = () => {
         toast.error("Error fetching transactions: " + err.message);
       });
   };
+
+  // if (context.isTablet) {
+  //   return (
+  //     <div className="bg-custom-white p-2 rounded-xl shadow-lg">
+  //       <div className="grid grid-cols-8 font-medium border-b border-content/60">
+  //         <div>Store</div>
+  //         <div>Date</div>
+  //         <div>Trans</div>
+  //         <div>Cpm Amt</div>
+  //         <div>UPC</div>
+  //         <div>Cashier</div>
+  //         <div>Customer ID</div>
+  //         <div>Sub Dept</div>
+  //       </div>
+  //       <div className="max-h-[85vh] overflow-y-auto">
+  //         {context.gridCoupons.map((c, i) => (
+  //           <div
+  //             key={i}
+  //             className="grid grid-cols-8 border-b last:border-0 py-1"
+  //           >
+  //             <div>{c.store_name}</div>
+  //             <div>{formatDate(c.sale_date)}</div>
+  //             <div>{c.sale_id}</div>
+  //             <div className="text-right">{formatCurrency2(c.coupon_amount)}</div>
+  //             <div>{c.product_code}</div>
+  //             <div>{c.cashier_name}</div>
+  //             <div>{c.customer_id}</div>
+  //             <div className="text-right">{c.sub_department}</div>
+  //           </div>
+  //         ))}
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
+  if (context.isTablet) {
+    return (
+      <div className="bg-custom-white p-2 rounded-xl shadow-lg h-[92%] flex flex-col">
+        <div className="grid grid-cols-[1.2fr_1fr_1fr_0.5fr_1.2fr_1fr_1.2fr_0.8fr] gap-2 px-2 pb-1.5 font-semibold border-b border-content/60 sticky top-0 bg-custom-white z-10">
+          <div>Store</div>
+          <div>Date</div>
+          <div>Trans</div>
+          <div className="text-right pr-1">Cpn $</div>
+          <div>UPC</div>
+          <div>Cashier</div>
+          <div>Customer ID</div>
+          <div className="text-right">Sub Dept</div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+          {context.gridCoupons.map((c, i) => (
+            <div
+              key={i}
+              className="grid grid-cols-[1.3fr_1fr_1fr_0.5fr_1.3fr_1.1fr_1.3fr_0.7fr] gap-2 px-2 py-2 text-[13.5px] border-b border-content/20"
+            >
+              <div className="truncate">{c.store_name}</div>
+              <div className="truncate">{formatDate(c.sale_date)}</div>
+              <div className="truncate">{c.sale_id}</div>
+              <div className="text-right tabular-nums pr-1">
+                {formatCurrency2(c.coupon_amount)}
+              </div>
+              <div className="truncate">{c.product_code ? c.product_code.split(".")[0] : ""}</div>
+              <div className="truncate">{c.cashier_name}</div>
+              <div className="truncate">{c.customer_id ? c.customer_id.split(".")[0] : "No Customer"}</div>
+              <div className="truncate text-right">{c.sub_department}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`bg-custom-white w-full h-[87%] rounded-lg shadow-lg p-2`}>

@@ -82,7 +82,7 @@ const Coupons = () => {
           <div className="bg-custom-white p-2 rounded-lg shadow-lg">
             <StorePicker />
             <DatePickers handleQuery={getData} btnPadding="py-1" />
-            <div className="flex gap-2 mt-2">
+            <div className="space-y-2 xl:space-y-0 xl:flex xl:gap-2 mt-2">
               <button
                 data-testid="coupons-refresh-btn"
                 className={`${

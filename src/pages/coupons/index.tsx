@@ -19,7 +19,7 @@ export const useCouponContext = () => {
   const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector(
     (state) => state.search,
   );
-  const { url, token, isMobile } = useAppSelector((state) => state.app);
+  const { url, token, isMobile, isTablet } = useAppSelector((state) => state.app);
 
   return {
     url,
@@ -40,6 +40,7 @@ export const useCouponContext = () => {
     subDeptMobileFilter,
     uniqueDateMobileFilter,
     showSubsMobileFilter,
+    isTablet
   };
 };
 

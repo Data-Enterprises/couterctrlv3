@@ -69,7 +69,7 @@ const CouponGridFilters = () => {
   };
 
   const panelStyle =
-    "py-1.5 text-[13.5px] rounded-lg text-center shadow-md shadow-content/20 hover:bg-orange-200 cursor-pointer transition-all duration-200";
+    "py-1.5 text-[13px] xl:text-[13.5px] rounded-lg text-center shadow-md shadow-content/20 hover:bg-orange-200 cursor-pointer transition-all duration-200";
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg mt-4">
