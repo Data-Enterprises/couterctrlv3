@@ -83,38 +83,44 @@ const CpnCard = ({ c }: CpnCardProps) => {
       className="bg-custom-white rounded-lg shadow-md p-2"
       onClick={() => handleCardClick()}
     >
-      <div className="flex justify-between">
+      <div className="flex justify-between text-[12.5px]">
         <div className="font-medium">{formatDate(c.sale_date)}</div>
         <div className="flex gap-1">
           <div className="text-content/60">Cashier:</div>
           <div className="font-medium">{c.cashier_name}</div>
         </div>
       </div>
-      <div className="text-content/60">
-        <div>{c.product_code}</div>
-        <div>{c.product_description}</div>
+
+      <div className="mb-1 grid grid-cols-2 h-[1.5px]">
+        <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
+        <div className="bg-gradient-to-l from-content/60 to-custom-white"></div>
       </div>
-      <div className="grid grid-cols-3 text-[13.5px]">
-        <div className="flex gap-1">
+
+      <div className="grid grid-cols-3 gap-2 text-[11px]">
+        <div className="bg-bkg rounded-md shadow-md p-1.5">
+          <div className="text-content/60">{c.product_code ? c.product_code : "No UPC Found"}</div>
+          <div className="font-medium">{c.product_description}</div>
+        </div>
+        <div className="bg-bkg rounded-md shadow-md p-1.5">
           <div className="text-content/60">Type:</div>
           <div className="font-medium">{c.coupon_type}</div>
         </div>
-        <div className="flex gap-1">
+        <div className="bg-bkg rounded-md shadow-md p-1.5">
           <div className="text-content/60">Dept:</div>
           <div className="font-medium">{c.sub_department_description}</div>
         </div>
-        <div className="flex gap-1">
+        <div className="bg-bkg rounded-md shadow-md p-1.5">
           <div className="text-content/60">Amount:</div>
           <div className="font-medium">{formatCurrency2(c.coupon_amount)}</div>
         </div>
-        <div className="flex gap-1">
+        <div className="bg-bkg rounded-md shadow-md p-1.5">
           <div className="text-content/60">Trans #:</div>
           <div className="font-medium">{c.sale_id}</div>
         </div>
-        <div className="flex gap-1 col-span-2">
+        <div className="bg-bkg rounded-md shadow-md p-1.5">
           <div className="text-content/60">Cust ID:</div>
           <div className="font-medium">
-            {c.customer_id.split(">")[0] || "N/A"}
+            {c.customer_id.split(".")[0] || "N/A"}
           </div>
         </div>
       </div>
