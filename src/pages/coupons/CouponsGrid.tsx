@@ -130,7 +130,7 @@ const CouponsGrid = () => {
           {context.gridCoupons.map((c, i) => (
             <div
               key={i}
-              className="grid grid-cols-[1.3fr_1fr_1fr_0.5fr_1.3fr_1.1fr_1.3fr_0.7fr] gap-2 px-2 py-2 text-[13.5px] border-b border-content/20"
+              className="grid grid-cols-[1.3fr_1fr_1fr_0.5fr_1.3fr_1.1fr_1.3fr_0.7fr] gap-2 px-2 py-2 text-[13.5px] border-b border-content/20 even:bg-bkg/75"
             >
               <div className="truncate">{c.store_name}</div>
               <div className="truncate">{formatDate(c.sale_date)}</div>

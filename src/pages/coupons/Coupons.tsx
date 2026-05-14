@@ -77,7 +77,7 @@ const Coupons = () => {
         data={context.gridCoupons}
         columns={cols}
       />
-      <div className="grid grid-cols-[17%_auto] p-4 gap-4 w-full h-full text-sm">
+      <div className="grid grid-cols-[17.5%_auto] p-4 gap-4 w-full h-full text-sm">
         <div>
           <div className="bg-custom-white p-2 rounded-lg shadow-lg">
             <StorePicker />
