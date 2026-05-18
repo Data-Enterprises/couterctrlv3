@@ -59,15 +59,15 @@ const DeleteGroup = () => {
   return (
     <div>
       <div className="bg-custom-white p-3 rounded-xl shadow-md w-full">
-        <div className="font-medium text-sm">
+        <div className="font-medium md:text-sm">
           <div>Select group to delete</div>
         </div>
-        <div className="text-sm p-3 bg-bkg rounded-lg grid grid-cols-3 gap-2 max-h-[50vh] shadow overflow-y-auto select-none">
+        <div className="md:text-sm p-3 bg-bkg rounded-lg grid grid-cols-3 gap-2 max-h-[50vh] shadow overflow-y-auto select-none">
           {groups.map((g, i) => (
             <div
               key={g.id}
               data-testid={`delete-group-option-${i}`}
-              className={`${selectedGroup.id === g.id ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-custom-white"} rounded-full px-2 py-1 shadow-md border-b transition-all duration-200 cursor-pointer hover:bg-blue-200`}
+              className={`${selectedGroup.id === g.id ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-custom-white"} rounded-full text-center py-1 shadow-md border-b transition-all duration-200 cursor-pointer hover:bg-blue-200`}
               onClick={() => handleSelect(g)}
             >
               {g.group_name}
@@ -75,10 +75,10 @@ const DeleteGroup = () => {
           ))}
         </div>
         <div className="relative grid grid-cols-[67%_1fr] gap-3 items-end mt-4">
-          <Input label="Group Name" value={createInput} setValue={() => {}} />
+          <Input label="Group Name" value={createInput} setValue={() => {}} className="py-1" />
           <button
             data-testid="delete-usergroup-btn"
-            className={`bg-red-600 text-custom-white py-1.5 rounded-xl border-2 border-red-600 mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
+            className={`bg-red-600 text-custom-white py-2 rounded-xl border-2 border-red-600 mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
             onClick={() => setIsDeleting(true)}
           >
             Delete

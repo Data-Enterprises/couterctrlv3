@@ -23,6 +23,7 @@ import UserGroupAssign from "./forms/UserGroupAssign";
 import { useGroupCtx } from ".";
 import SingleSelect from "../../components/SingleSelect";
 import GroupsTablet from "./tablet/GroupsTablet";
+import GroupsMobile from "./mobile/GroupsMobile";
 
 const options = [
   { label: "Create", id: "create" },
@@ -35,7 +36,7 @@ const Groups = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const ctx = useGroupCtx();
-  const { isTablet } = useAppSelector((state) => state.app);
+  const { isTablet, isMobile } = useAppSelector((state) => state.app);
 
   useEffect(() => {
     return () => {
@@ -76,6 +77,7 @@ const Groups = () => {
   };
 
   if (isTablet) return <GroupsTablet handleFormSelect={handleFormSelect} />;
+  if (isMobile) return <GroupsMobile handleFormSelect={handleFormSelect} />;
 
   const containerStyle = ctx.isDesktop
     ? "h-[calc(100vh-3rem)] p-4 flex gap-4"

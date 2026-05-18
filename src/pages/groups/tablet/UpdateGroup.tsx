@@ -55,15 +55,15 @@ const UpdateGroup = () => {
   return (
     <div>
       <div className="bg-custom-white p-3 rounded-xl shadow-md w-full">
-        <div className="font-medium text-sm">
+        <div className="font-medium md:text-sm">
           <div>Select group to update</div>
         </div>
-        <div className="text-sm p-3 bg-bkg rounded-lg grid grid-cols-3 gap-2 max-h-[50vh] shadow overflow-y-auto select-none">
+        <div className="md:text-sm p-3 bg-bkg rounded-lg grid grid-cols-3 gap-2 max-h-[50vh] shadow overflow-y-auto select-none">
           {groups.map((g, i) => (
             <div
               key={g.id}
               data-testid={`update-group-option-${i}`}
-              className={`${selectedGroup.id === g.id ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-custom-white"} rounded-full px-2 py-1 shadow-md border-b transition-all duration-200 cursor-pointer hover:bg-blue-200`}
+              className={`${selectedGroup.id === g.id ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-custom-white"} rounded-full text-center py-1 shadow-md border-b transition-all duration-200 cursor-pointer hover:bg-blue-200`}
               onClick={() => handleSelect(g)}
             >
               {g.group_name}
@@ -75,11 +75,11 @@ const UpdateGroup = () => {
             label="Group Name"
             value={createInput}
             setValue={setText}
-            className="py-1.5"
+            className="py-1"
           />
           <button
             data-testid="create-usergroup-btn"
-            className={`bg-[rgb(30,45,80)] text-custom-white py-1.5 rounded-xl border-2 border-[rgb(30,45,80)] mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
+            className={`bg-[rgb(30,45,80)] text-custom-white py-2 rounded-xl border-2 border-[rgb(30,45,80)] mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
             onClick={handleUpdate}
           >
             Submit
