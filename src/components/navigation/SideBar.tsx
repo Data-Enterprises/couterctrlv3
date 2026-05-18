@@ -131,7 +131,7 @@ const SideBar = () => {
   };
 
   const slidingStyle =
-    "data-[open=true]:w-[165px] md:data-[open=true]:w-[200px] data-[open=false]:w-0 md:data-[open=false]:w-12 transition-all duration-300 data-[open=true]:shadow-[0px_2px_4px_rgba(0,0,0,0.2)] data-[open=false]:shadow-[0px_3px_3px_rgba(0,0,0,0.2)]";
+    "data-[open=true]:w-[130px] md:data-[open=true]:w-[200px] data-[open=false]:w-0 md:data-[open=false]:w-12 transition-all duration-300 data-[open=true]:shadow-[0px_2px_4px_rgba(0,0,0,0.2)] data-[open=false]:shadow-[0px_3px_3px_rgba(0,0,0,0.2)]";
 
   // experimenting with this for mobile icon sizing
   const mobileIconStyle = () => {
@@ -139,8 +139,8 @@ const SideBar = () => {
       return "h-7 w-7";
     } else {
       return !nav.isNavOpen
-        ? "opacity-0 h-7 w-7 transition-all duration-200 ml-0"
-        : "opacity-100 h-7 w-7 transition-all duration-200 ml-2";
+        ? "opacity-0 h-6 w-6 transition-all duration-200 ml-0"
+        : "opacity-100 h-6 w-6 transition-all duration-200 ml-1";
     }
   };
 
@@ -178,7 +178,7 @@ const SideBar = () => {
       ref={ref}
       data-testid="side-bar"
       data-open={nav.isNavOpen}
-      className={`bg-bkg absolute top-12 left-0 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] flex flex-col justify-between border-t 
+      className={`bg-bkg absolute text-sm top-12 left-0 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] flex flex-col justify-between border-t 
         ${slidingStyle} ${context.isMobile && !nav.isNavOpen ? "pointer-events-none" : ""}`}
       style={styleObj()}
     >
@@ -214,12 +214,12 @@ const SideBar = () => {
             onMouseEnter={() => handleHover(item.name, true, idx)}
             onMouseLeave={() => handleHover(item.name, false, idx)}
           >
-            <div className="flex w-full items-center md:pl-2 py-2 gap-2 hover:bg-blue-200 transition-all duration-100">
+            <div className="flex w-full items-center md:pl-2 py-2 gap-1 md:gap-2 hover:bg-blue-200 transition-all duration-100">
               <div className="flex-shrink-0 flex items-center justify-center">
                 <item.icon className={mobileIconStyle()} />
               </div>
               <div
-                className={`font-medium text-sm ${
+                className={`font-medium text-[11.5px] md:text-sm ${
                   nav.isNavOpen
                     ? "w-full opacity-100"
                     : "w-0 opacity-0 pointer-events-none"
@@ -286,7 +286,7 @@ const SideBar = () => {
         </div>
         <div
           data-testid="signout-btn"
-          className="flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200 relative"
+          className="flex w-full items-center pl-0.5 md:pl-2 py-2 gap-1 md:gap-2 hover:bg-blue-200 transition-all duration-200 relative"
           onClick={handleSignOut}
           onMouseEnter={() =>
             handleBottomNavHover("signout", true, navigation.length + 1)
@@ -299,7 +299,7 @@ const SideBar = () => {
             <SignOutIcon className={mobileIconStyle()} />
           </div>
           <div
-            className={`font-medium text-sm ${
+            className={`font-medium text-[11.5px] md:text-sm ${
               nav.isNavOpen
                 ? "w-full opacity-100"
                 : "w-0 opacity-0 pointer-events-none"
@@ -311,7 +311,7 @@ const SideBar = () => {
             id={`tooltip-${navigation.length + 1}`}
             className={`${
               bottomNav.signout && !nav.isNavOpen
-                ? "absolute text-nowrap text-sm shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
+                ? "absolute text-nowrap text-[11.5px] md:text-sm shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
                 : "hidden"
             }`}
             style={{ zIndex: 2500 }}

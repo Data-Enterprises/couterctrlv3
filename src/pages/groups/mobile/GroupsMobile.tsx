@@ -37,32 +37,32 @@ const GroupsMobile = ({ handleFormSelect }: GroupsTabletProps) => {
     <div className="space-y-3 min-h-[calc(100vh-3rem)] text-[10px]">
       <div className="grid grid-cols-4">
         <div
-          className={`py-1 transition-all duration-200 flex flex-col items-center justify-center border-r border-content/15 ${ctx.selectedForm === "create" ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-custom-white"}`}
+          className={`py-2 transition-all duration-200 flex gap-2 items-center justify-center border-r border-content/15 ${ctx.selectedForm === "create" ? "text-orange-500" : "text-content"} bg-custom-white`}
           onClick={() => handleFormSelect("create")}
         >
           <PlusCircleIcon className="w-6 h-6" />
-          <div>Create</div>
+          <div className="text-content">Create</div>
         </div>
         <div
-          className={`py-1 transition-all duration-200 flex flex-col items-center justify-center border-r border-content/15 ${ctx.selectedForm === "update" ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-custom-white"}`}
+          className={`py-2 transition-all duration-200 flex gap-2 items-center justify-center border-r border-content/15 ${ctx.selectedForm === "update" ? "text-orange-500" : "text-content"} bg-custom-white`}
           onClick={() => handleFormSelect("update")}
         >
           <ArrowPathIcon className="w-6 h-6" />
-          <div>Update</div>
+          <div className="text-content">Update</div>
         </div>
         <div
-          className={`py-1 transition-all duration-200 flex flex-col items-center justify-center border-r border-content/15 ${ctx.selectedForm === "delete" ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-custom-white"}`}
+          className={`py-2 transition-all duration-200 flex gap-2 items-center justify-center border-r border-content/15 ${ctx.selectedForm === "delete" ? "text-orange-500" : "text-content"} bg-custom-white`}
           onClick={() => handleFormSelect("delete")}
         >
           <LinkSlashIcon className="w-6 h-6" />
-          <div>Delete</div>
+          <div className="text-content">Delete</div>
         </div>
         <div
-          className={`py-1 transition-all duration-200 flex flex-col items-center justify-center ${ctx.selectedForm === "assign" ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-custom-white"}`}
+          className={`py-2 transition-all duration-200 flex gap-2 items-center justify-center ${ctx.selectedForm === "assign" ? "text-orange-500" : "text-content"} bg-custom-white`}
           onClick={() => handleFormSelect("assign")}
         >
           <BuildingStorefrontIcon className="w-6 h-6" />
-          <div>Assign</div>
+          <div className="text-content">Assign</div>
         </div>
       </div>
       <div className="px-3">{renderForm()}</div>
