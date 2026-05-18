@@ -9,8 +9,9 @@ import { formatCurrency2 } from "../../../utils";
 
 const UniqueCashiersMobile = () => {
   const dispatch = useAppDispatch();
-  const { cashiers, selectedCashier, fetchingCashierTransactions } =
+  const { cashiers, selectedCashier, fetchingCashierTransactions, selectedStoreId } =
     useAppSelector((state) => state.lossPrevention);
+  const assignedStores = useAppSelector((state) => state.user.assignedStores);
 
   const handleCashierClick = (e: UniqueCashier) => {
     const cashier_number = e.cashier_number;
@@ -27,6 +28,8 @@ const UniqueCashiersMobile = () => {
     dispatch(setSelectedCashier({ cashier_number, store_number }));
   };
 
+  const storeName= assignedStores.find((s) => s.storeid === selectedStoreId)?.store_name || "";
+
   return (
     <div className="p-2">
       {cashiers.length && !fetchingCashierTransactions ? (
@@ -34,7 +37,10 @@ const UniqueCashiersMobile = () => {
           data-testid="unique-cashiers-table"
           className="bg-custom-white rounded-lg shadow-lg px-2 pb-2 leading-tight"
         >
-          <div className="py-1 font-medium text-[11px]">Cashiers ({cashiers.length})</div>
+          <div className="py-1 font-medium text-[11px] flex justify-between items-center">
+            <div>Cashiers ({cashiers.length})</div>
+            <div>{storeName}</div>
+          </div>
 
           <div className="grid grid-cols-2 h-[1.5px] mb-2">
             <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>

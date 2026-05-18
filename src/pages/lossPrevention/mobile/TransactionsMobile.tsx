@@ -31,7 +31,6 @@ const TransactionsMobile = () => {
   const context = useAppSelector((state) => state.app);
   const cashier = useAppSelector((state) => state.lossPrevention);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
-  // const [page, setPage] = useState<number>(1);
 
   useEffect(() => {
     const selectedCashier = cashier.selectedCashier.cashier_number;
@@ -274,10 +273,6 @@ const TransactionsMobile = () => {
     },
   ];
 
-  // const processPageRows = () => {
-  //   const
-  // };
-
   return (
     <div
       data-testid="cashiers-table"
@@ -292,13 +287,11 @@ const TransactionsMobile = () => {
 
       <div className="">
         <div className="bg-bkg sticky top-0 z-10 divide-x divide-content/20 rounded-t-lg shadow-sm">
-          <div className="grid grid-cols-[1fr_repeat(2,1.2fr)_0.6fr_repeat(3,0.8fr)] font-medium text-[11.5px] px-3 py-1">
+          <div className="grid grid-cols-[1fr_repeat(2,1.2fr)_1fr_0.5fr_0.8fr] font-medium text-[11.5px] px-3 py-1">
             <div className="font-medium">Trans ID</div>
             <div>Date</div>
             <div>Type</div>
-            <div className="text-right pr-1.5">Store</div>
             <div>Cashier</div>
-            {/* <div className="text-right">Cashier #</div> */}
             <div className="text-right">Qty</div>
             <div className="text-right">Sales</div>
           </div>
@@ -309,7 +302,7 @@ const TransactionsMobile = () => {
           {filteredOverviews.map((fo, i) => (
             <div
               key={i}
-              className="grid grid-cols-[1fr_repeat(2,1.2fr)_0.6fr_repeat(3,0.8fr)] px-3 py-1 text-[10px] last:rounded-b-lg"
+              className="grid grid-cols-[1fr_repeat(2,1.2fr)_1fr_0.5fr_0.8fr] px-3 py-1 text-[10px] last:rounded-b-lg"
               onClick={() => handleTransIDClick(fo)}
             >
               <div className="font-medium underline cursor-pointer truncate pr-2">
@@ -317,11 +310,7 @@ const TransactionsMobile = () => {
               </div>
               <div className="truncate">{formatDate(fo.sale_date)}</div>
               <div className="truncate">{fo.sale_type}</div>
-              <div className="truncate text-right pr-1.5">
-                {fo.store_number}
-              </div>
               <div className="truncate">{fo.cashier_name}</div>
-              {/* <div className="truncate text-right">{fo.cashier_number}</div> */}
               <div className="text-right font-medium">
                 {formatBigNumber(fo.qty, 0)}
               </div>
