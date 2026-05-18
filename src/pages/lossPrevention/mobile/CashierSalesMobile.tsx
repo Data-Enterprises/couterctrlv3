@@ -235,7 +235,10 @@ const CashierSalesMobile = () => {
   return (
     <div className="space-y-3 text-[12px]">
       <div className="bg-custom-white p-2 rounded-xl shadow-md leading-tight">
-        <div className="font-medium mb-1 text-[11px]">Stores</div>
+        <div className="font-medium mb-1 text-[11px] flex justify-between items-center">
+          <div>Stores</div>
+          <div>{lp.selectedSaleType}</div>
+        </div>
         <div className="grid grid-cols-2 h-[1.5px] mb-1.5">
           <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
           <div className="bg-gradient-to-l from-content/60 to-custom-white"></div>
@@ -244,7 +247,7 @@ const CashierSalesMobile = () => {
           {lp.cashierDetails.map((d, i) => (
             <div
               key={i}
-              className={`transition-all duration-200 ${lp.selectedStoreId === d.storeid ? "bg-orange-200" : "bg-bkg"} rounded-full shadow-md px-3 py-1.5`}
+              className={`transition-all duration-200 ${lp.selectedStoreId === d.storeid ? "bg-orange-200" : "bg-bkg"} rounded-full shadow-md px-3 mb-1 py-1.5`}
               onClick={() => handleStoreClicked(d.storeid)}
             >
               {d.store_name}

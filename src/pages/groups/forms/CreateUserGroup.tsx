@@ -72,7 +72,7 @@ const CreateUserGroup = () => {
         label="Group Name"
         value={createInput}
         setValue={handleTextChange}
-        className="py-1 text-[14px]"
+        className="py-1 text-[12px]"
       />
       <button
         data-testid="create-usergroup-btn"

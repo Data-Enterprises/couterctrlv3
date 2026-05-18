@@ -131,7 +131,7 @@ const MobileTrendCard = () => {
           {selectedCashierDetails!.store_name} -{" "}
           {selectedCashierDetails!.sale_type}
         </div>
-        <div className="font-medium">Overall Trend {overallTrendLine()}</div>
+        <div className="font-medium">Overall {overallTrendLine()}</div>
       </div>
 
       <div className="grid grid-cols-2 h-[1.5px] px-2">

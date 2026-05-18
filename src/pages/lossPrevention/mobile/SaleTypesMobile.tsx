@@ -24,6 +24,7 @@ const SaleTypesMobile = () => {
   const params = useApiContext();
   const dispatch = useAppDispatch();
   const cashier = useAppSelector((state) => state.lossPrevention);
+  const { startDate, endDate } = useAppSelector((state) => state.search);
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const submitDescription = (description: string) => {
@@ -127,8 +128,9 @@ const SaleTypesMobile = () => {
         onClose={() => setIsOpen(false)}
         handleSubmit={submitDescription}
       />
-      <div className="rounded-t-lg text-[11px] px-2 py-0.5 font-medium">
-        Select Exception
+      <div className="rounded-t-lg text-[11px] px-2 py-0.5 font-medium flex justify-between items-center">
+        <div>Select Exception</div>
+        <div>{startDate} - {endDate}</div>
       </div>
       <div className="grid grid-cols-2 h-[1.5px] mx-2">
         <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
