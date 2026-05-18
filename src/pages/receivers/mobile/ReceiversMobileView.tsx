@@ -26,7 +26,7 @@ const ReceiversMobileView = ({
             displayKey={"store_name"}
             valueKey={"storeid"}
             onSelect={setSelectedStore}
-            innerClass="py-1"
+            innerClass="py-1 text-[13px]"
           />
           <DatePickers handleQuery={getReceivers} />
         </div>

@@ -1,3 +1,4 @@
+import { ArrowPathIcon, DocumentCheckIcon } from "@heroicons/react/24/solid";
 import { reQuery, setRecMobileStage } from "../../../features/receiversSlice";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
@@ -16,16 +17,25 @@ const ReceiverDetailsMobile = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-auto text-sm">
-      <div className="grid grid-cols-2 gap-2 p-2">
-        <button className="btn-themeBlue px-0" onClick={handleRefreshClick}>
-          Refresh
-        </button>
-        <button className="btn-themeBlue px-0" onClick={handleReceiversClick}>
-          Invoices
-        </button>
+    <div className="min-h-[calc(100vh-3rem)] text-[12px] max-h-[calc(100vh-3rem)] overflow-y-auto">
+      <div className="grid grid-cols-2">
+        <div
+          className="bg-custom-white flex gap-2 justify-center items-center py-2 border-r border-content/15"
+          onClick={handleRefreshClick}
+        >
+          <ArrowPathIcon className="w-6 h-6 transition-all duration-200" />
+          <div className="text-content/60">Refresh</div>
+        </div>
+        <div
+          className="bg-custom-white flex gap-2 justify-center items-center py-2"
+          onClick={handleReceiversClick}
+        >
+          <DocumentCheckIcon className="w-6 h-6 transition-all duration-200" />
+          <div className="text-content/60">
+            Received
+          </div>
+        </div>
       </div>
-      <div className="font-medium px-2 underline">Totals</div>
       <div className="p-2 space-y-2">
         <div>
           <div className="bg-custom-white rounded-lg shadow-md p-2 grid grid-cols-3">

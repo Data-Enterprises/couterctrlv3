@@ -86,7 +86,9 @@ const VendorSelect = () => {
     }
   };
 
-  const storeName = assignedStores.find((s) => s.storeid === state.storeid)?.store_name;
+  const storeName = assignedStores.find(
+    (s) => s.storeid === state.storeid,
+  )?.store_name;
 
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden text-[12px]">
@@ -167,11 +169,11 @@ const VendorSelect = () => {
           ))}
         </div>
       ) : (
-        <div className="flex flex-col gap-2 p-2 text-[12px] max-h-[calc(100vh-12.3rem)] overflow-y-auto">
+        <div className="grid grid-cols-2 gap-2 px-2 pb-2 text-[11px] max-h-[calc(100vh-12.3rem)] overflow-y-auto">
           {state.filteredListDataMobile.map((rec, i) => (
             <div
               key={i}
-              className="bg-custom-white rounded-lg shadow-md p-2 flex justify-between"
+              className="bg-custom-white rounded-lg shadow-md px-2 py-1"
               onClick={() =>
                 handleTransactionSelect(
                   rec.invoice_date,
@@ -181,23 +183,24 @@ const VendorSelect = () => {
                 )
               }
             >
-              <div>
-                <div className="flex gap-1">
-                  <div>Date</div>
-                  <div>{formatDate(rec.invoice_date)}</div>
-                </div>
-                <div className="flex gap-1">
-                  <div>Trans #</div>
+              <div className="font-medium">
+                <div>{formatDate(rec.invoice_date)}</div>
+              </div>
+              <div className="grid grid-cols-2 h-[1.5px] text-[12px] mb-1">
+                <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
+                <div className="bg-gradient-to-l from-content/60 to-custom-white"></div>
+              </div>
+              <div className="bg-slate-100 p-1 rounded-md shadow-md">
+                <div className="flex justify-between leading-tight">
+                  <div className="text-content/60">Trans #:</div>
                   <div>{rec.invoiceid}</div>
                 </div>
-              </div>
-              <div className="text-right">
-                <div className="flex gap-1">
-                  <div>Operator</div>
+                <div className="flex justify-between leading-tight">
+                  <div className="text-content/60">Operator:</div>
                   <div>{rec.cashier_name}</div>
                 </div>
-                <div className="flex gap-1 justify-end">
-                  <div>Invoice</div>
+                <div className="flex justify-between leading-tight">
+                  <div className="text-content/60">Invoice:</div>
                   <div>{rec.reference_number}</div>
                 </div>
               </div>
