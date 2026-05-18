@@ -216,7 +216,7 @@ const Transaction = ({ trans }: TransactionProps) => {
       <div className="absolute right-2 top-2 flex gap-2">
         <button
           data-testid="cashier-trans-modal-email-btn"
-          className="btn-themeGreen px-4 py-0.5"
+          className="btn-themeGreen px-4 text-[12px] md:text-sm py-0.5"
           onClick={handleEmailClick}
         >
           Email
@@ -224,7 +224,7 @@ const Transaction = ({ trans }: TransactionProps) => {
         {context.isDesktop && (
           <button
             data-testid="cashier-trans-modal-export-btn"
-            className="btn-themeBlue px-4 py-0.5"
+            className="btn-themeBlue px-4 text-[12px] md:text-sm py-0.5"
             onClick={handleExportClick}
           >
             Export
@@ -312,7 +312,7 @@ const Transaction = ({ trans }: TransactionProps) => {
           );
         })}
       </div>
-      <div className="mt-2 text-[13px] font-medium">
+      <div className="mt-2 text-[13px] font-medium leading-tight">
         <div className="flex gap-1">
           <div>Net Sales:</div>
           <div>{formatCurrency2(netSales)}</div>

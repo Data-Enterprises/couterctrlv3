@@ -1,9 +1,4 @@
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-
-import DatePickers from "../../../components/datePickers/DatePickers";
-import StorePicker from "../../../components/storePicker/StorePicker";
-import SaleTypesMobile from "./SaleTypesMobile";
-import CashierSalesMobile from "./CashierSalesMobile";
 import {
   reQuery,
   setCashierDetails,
@@ -12,6 +7,13 @@ import {
   setSelectedStoreId,
   setViewTransactionsMobile,
 } from "../../../features/lossPreventionSlice";
+
+import DatePickers from "../../../components/datePickers/DatePickers";
+import StorePicker from "../../../components/storePicker/StorePicker";
+import SaleTypesMobile from "./SaleTypesMobile";
+import CashierSalesMobile from "./CashierSalesMobile";
+
+import TransactionModal from "../TransactionModal";
 import UniqueCashiersMobile from "./UniqueCashiersMobile";
 import TransactionsMobile from "./TransactionsMobile";
 
@@ -39,6 +41,7 @@ const LpMobile = ({ getSaleTypes }: LpMobileProps) => {
   if (saleTypes.length > 0) {
     return (
       <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden overflow-y-auto no-scrollbar">
+        <TransactionModal />
         {/* Inner nav => once sale types are fetched */}
         <div className="w-full px-2 pt-2">
           <button
