@@ -8,6 +8,7 @@ import {
   setRecMobileStage,
   setSelectedInvoice,
   setSelectedOperator,
+  setSelectedTransNum,
   setSelectedVendor,
   setTotals,
   setVendorView,
@@ -41,10 +42,12 @@ const VendorSelect = () => {
     invoiceid: number,
     cashier_name: string,
     cashier_number: number,
+    trasnaction_num: string,
   ) => {
     const formattedDate = formatDate(date).split(", ")[1];
     dispatch(setSelectedOperator({ cashier_name, cashier_number }));
     dispatch(setIsFetchingDetails(true));
+    dispatch(setSelectedTransNum(trasnaction_num));
     dispatch(setSelectedInvoice(invoiceid.toString()));
     getReceiverDetails(url, token, state.storeid, invoiceid, formattedDate)
       .then((resp) => {
@@ -180,6 +183,7 @@ const VendorSelect = () => {
                   rec.invoiceid,
                   rec.cashier_name,
                   rec.cashier_number,
+                  rec.reference_number,
                 )
               }
             >

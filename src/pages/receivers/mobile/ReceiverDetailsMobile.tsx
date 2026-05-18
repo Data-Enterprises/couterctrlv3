@@ -87,14 +87,26 @@ const ReceiverDetailsMobile = () => {
           </div>
         </div>
         <div className="px-2 pt-1 pb-2 bg-custom-white rounded-lg shadow-lg text-[12px]">
-          <div className="font-medium">Items</div>
+          <div className="flex justify-between">
+            <div className="flex gap-1">
+              <div className="text-content/60">Invoice #:</div>
+              <div className="font-medium">{state.selectedInvoice}</div>
+            </div>
+            <div className="flex gap-1">
+              <div className="text-content/60">Trans #:</div>
+              <div className="font-medium">{state.selectedTransNum}</div>
+            </div>
+          </div>
           <div className="grid grid-cols-2 h-[1.5px] mb-1.5">
             <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
             <div className="bg-gradient-to-l from-content/60 to-custom-white"></div>
           </div>
           <div className="space-y-2 min-h-[62.5vh] max-h-[62.5vh] overflow-y-auto text-[11px]">
             {details.map((d, i) => (
-              <div key={i} className="bg-blue-200/50 rounded-md shadow-md px-2 pt-1 pb-2">
+              <div
+                key={i}
+                className="bg-blue-200/50 rounded-md shadow-md px-2 pt-1 pb-2"
+              >
                 <div className="flex justify-between font-medium">
                   <div>{d.product_code}</div>
                   <div>{d.product_description}</div>
@@ -114,45 +126,31 @@ const ReceiverDetailsMobile = () => {
                   </div>
                   <div className="flex justify-between bg-custom-white rounded-md shadow py-1 px-2">
                     <div className="text-content/60">U Cost:</div>
-                    <div className="">
-                      {formatCurrency2(d.ucost)}
-                    </div>
+                    <div className="">{formatCurrency2(d.ucost)}</div>
                   </div>
                   <div className="flex justify-between bg-custom-white rounded-md shadow py-1 px-2">
                     <div className="text-content/60">E. Cost:</div>
-                    <div className="">
-                      {formatCurrency2(d.ext_cost)}
-                    </div>
+                    <div className="">{formatCurrency2(d.ext_cost)}</div>
                   </div>
                   <div className="flex justify-between bg-custom-white rounded-md shadow py-1 px-2">
                     <div className="text-content/60">Retail:</div>
-                    <div className="">
-                      {formatCurrency2(d.retail)}
-                    </div>
+                    <div className="">{formatCurrency2(d.retail)}</div>
                   </div>
                   <div className="flex justify-between bg-custom-white rounded-md shadow py-1 px-2">
                     <div className="text-content/60">E. Retail:</div>
-                    <div className="">
-                      {formatCurrency2(d.ext_retail)}
-                    </div>
+                    <div className="">{formatCurrency2(d.ext_retail)}</div>
                   </div>
                   <div className="flex justify-between bg-custom-white rounded-md shadow py-1 px-2">
                     <div className="text-content/60">GM:</div>
-                    <div className="">
-                      {formatBigNumber(d.gm, 2)}
-                    </div>
+                    <div className="">{formatBigNumber(d.gm, 2)}</div>
                   </div>
                   <div className="flex justify-between bg-custom-white rounded-md shadow py-1 px-2">
                     <div className="text-content/60">Free:</div>
-                    <div className="">
-                      {formatBigNumber(d.free, 0)}
-                    </div>
+                    <div className="">{formatBigNumber(d.free, 0)}</div>
                   </div>
                   <div className="flex justify-between bg-custom-white rounded-md shadow py-1 px-2">
                     <div className="text-content/60">Return:</div>
-                    <div className="">
-                      {formatBigNumber(d.return, 0)}
-                    </div>
+                    <div className="">{formatBigNumber(d.return, 0)}</div>
                   </div>
                 </div>
               </div>
