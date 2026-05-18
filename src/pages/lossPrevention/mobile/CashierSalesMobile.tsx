@@ -235,7 +235,11 @@ const CashierSalesMobile = () => {
   return (
     <div className="space-y-3 text-[12px]">
       <div className="bg-custom-white p-2 rounded-xl shadow-md leading-tight">
-        <div className="font-medium mb-1">Stores</div>
+        <div className="font-medium mb-1 text-[11px]">Stores</div>
+        <div className="grid grid-cols-2 h-[1.5px] mb-1.5">
+          <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
+          <div className="bg-gradient-to-l from-content/60 to-custom-white"></div>
+        </div>
         <div className="flex flex-wrap gap-2 max-h-[9rem] text-[10px] overflow-y-auto">
           {lp.cashierDetails.map((d, i) => (
             <div

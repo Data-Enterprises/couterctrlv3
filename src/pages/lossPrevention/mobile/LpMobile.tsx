@@ -4,7 +4,6 @@ import DatePickers from "../../../components/datePickers/DatePickers";
 import StorePicker from "../../../components/storePicker/StorePicker";
 import SaleTypesMobile from "./SaleTypesMobile";
 import CashierSalesMobile from "./CashierSalesMobile";
-import TransactionsGrid from "../tablet/TransactionsGrid";
 import { reQuery, setSaleTypes, setSelectedStoreId } from "../../../features/lossPreventionSlice";
 
 interface LpMobileProps {
