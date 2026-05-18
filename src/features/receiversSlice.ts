@@ -205,6 +205,7 @@ export const receiversSlice = createSlice({
       state.detailsDate = "";
       state.reducedVendors = [];
       state.selectedVendor = null;
+      state.vendorView = 1;
     },
     setRecMobileStage: (state, action: PayloadAction<RecMobileStage>) => {
       state.recMobileStage = action.payload;

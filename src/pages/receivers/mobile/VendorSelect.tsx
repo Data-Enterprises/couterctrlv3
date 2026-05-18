@@ -24,6 +24,7 @@ const VendorSelect = () => {
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
   const state = useAppSelector((state) => state.receivers);
+  const { assignedStores } = useAppSelector((state) => state.user);
 
   const handleRefresh = () => {
     dispatch(reQuery());
@@ -85,6 +86,8 @@ const VendorSelect = () => {
     }
   };
 
+  const storeName = assignedStores.find((s) => s.storeid === state.storeid)?.store_name;
+
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden text-[12px]">
       <div className="grid grid-cols-2 mb-3">
@@ -100,32 +103,42 @@ const VendorSelect = () => {
           onClick={handleVendorsClick}
         >
           <DocumentCheckIcon className="w-6 h-6 transition-all duration-200" />
-          <div className="text-content/60">{state.vendorView === 1 ? "Received" : "Vendors"}</div>
+          <div className="text-content/60">
+            {state.vendorView === 1 ? "Received" : "Vendors"}
+          </div>
         </div>
       </div>
-      <div className="bg-custom-white rounded-lg p-2 mx-2 mb-2 shadow-md">
-        <div className="font-medium underline text-center">
-          {state.selectedVendor
-            ? state.selectedVendor?.vendor_name
-            : "All Vendors "}
+      <div className="bg-custom-white rounded-lg px-2 pb-2 mx-2 mb-3 shadow-md">
+        <div className="flex justify-between font-medium text-[12px]">
+          <div className="">
+            {state.selectedVendor
+              ? state.selectedVendor?.vendor_name
+              : "All Vendors "}
+          </div>
+          <div className="">{storeName}</div>
         </div>
-        <div className="flex justify-between px-1 text-[12px]">
-          <div className="flex gap-1">
+        <div className="grid grid-cols-2 h-[1.5px]">
+          <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
+          <div className="bg-gradient-to-l from-content/60 to-custom-white"></div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 px-1 text-[12px] mt-2">
+          <div className="flex flex-col py-1 leading-tight justify-center items-center rounded-md bg-slate-100 shadow-md">
             <div className="text-content/60">Vendors:</div>
             <div className="font-medium">{totalVendors}</div>
           </div>
-          <div className="flex gap-1">
+          <div className="flex flex-col py-1 leading-tight justify-center items-center rounded-md bg-slate-100 shadow-md">
             <div className="text-content/60">Cashiers:</div>
             <div className="font-medium">{totalCashiers}</div>
           </div>
-          <div className="flex gap-1">
+          <div className="flex flex-col py-1 leading-tight justify-center items-center rounded-md bg-slate-100 shadow-md">
             <div className="text-content/60">Items:</div>
             <div className="font-medium">{totalItems}</div>
           </div>
         </div>
       </div>
       {state.vendorView === 1 ? (
-        <div className="px-2 pb-2 grid grid-cols-2 gap-2 max-h-[calc(100vh-10.5rem)] rounded-lg overflow-y-auto">
+        <div className="px-2 pb-2 grid grid-cols-2 gap-2 max-h-[calc(100vh-12.3rem)] rounded-lg overflow-y-auto">
           {state.reducedVendors.map((v, i) => (
             <div
               key={i}
@@ -136,7 +149,7 @@ const VendorSelect = () => {
                 <div className="text-nowrap truncate">{v.vendor_name}</div>
                 <div className="">{v.vendorid}</div>
               </div>
-              <div className="grid grid-cols-2 h-[1.5px]">
+              <div className="grid grid-cols-2 h-[1.5px] text-[12px]">
                 <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
                 <div className="bg-gradient-to-l from-content/60 to-custom-white"></div>
               </div>
@@ -154,7 +167,7 @@ const VendorSelect = () => {
           ))}
         </div>
       ) : (
-        <div className="flex flex-col gap-2 p-2 text-sm max-h-[calc(100vh-11.1rem)] overflow-y-auto">
+        <div className="flex flex-col gap-2 p-2 text-[12px] max-h-[calc(100vh-12.3rem)] overflow-y-auto">
           {state.filteredListDataMobile.map((rec, i) => (
             <div
               key={i}
@@ -170,21 +183,21 @@ const VendorSelect = () => {
             >
               <div>
                 <div className="flex gap-1">
-                  <div className="font-medium underline">Date:</div>
+                  <div>Date</div>
                   <div>{formatDate(rec.invoice_date)}</div>
                 </div>
                 <div className="flex gap-1">
-                  <div className="font-medium underline">Trans #:</div>
+                  <div>Trans #</div>
                   <div>{rec.invoiceid}</div>
                 </div>
               </div>
               <div className="text-right">
                 <div className="flex gap-1">
-                  <div className="font-medium underline">Operator:</div>
+                  <div>Operator</div>
                   <div>{rec.cashier_name}</div>
                 </div>
                 <div className="flex gap-1 justify-end">
-                  <div className="font-medium underline">Invoice:</div>
+                  <div>Invoice</div>
                   <div>{rec.reference_number}</div>
                 </div>
               </div>
