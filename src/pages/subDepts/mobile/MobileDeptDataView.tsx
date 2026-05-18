@@ -26,6 +26,13 @@ import TotalsHeader from "./TotalsHeader";
 import { setUpcCode } from "../../../features/itemScanSlice";
 import DayTotalsHeader from "./DayTotalsHeader";
 
+import {
+  ArrowPathIcon,
+  ShoppingCartIcon,
+  BuildingStorefrontIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/solid";
+
 const MobileDeptDataView = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
@@ -118,7 +125,8 @@ const MobileDeptDataView = () => {
   if (!ctx.margins.length && !ctx.loadingMargins) return null;
 
   if (ctx.loadingMargins) {
-    const deptName = ctx.subDepts.find((d) => d.id === ctx.selectedSubDeptId)?.desc || "";
+    const deptName =
+      ctx.subDepts.find((d) => d.id === ctx.selectedSubDeptId)?.desc || "";
     return (
       <div className="relative h-[calc(100vh-3rem)]">
         <LoadingIndicator message={`Loading ${deptName}`} className="" />
@@ -129,25 +137,34 @@ const MobileDeptDataView = () => {
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-y-auto">
       <ItemHistoryModal />
-      <div className="w-full p-2 grid grid-cols-3 gap-2">
-        <button
-          className="btn-themeBlue py-1.5 px-0 text-[13px]"
+      <div className="w-full pb-2 grid grid-cols-3">
+        <div
+          className="bg-custom-white py-2 px-0 text-[12px] flex gap-2 justify-center items-center border-r border-content/15"
           onClick={() => handleMainView(true)}
         >
-          Sub Depts
-        </button>
-        <button
-          className={`${!ctx.viewDaily ? "btn-themeGreen" : "btn-themeBlue"} py-1.5 px-0 text-[13px]`}
+          <BuildingStorefrontIcon className="w-6 h-6 transition-all duration-200" />
+          <div className="text-content/60">Sub Depts</div>
+        </div>
+        <div
+          className={`${!ctx.viewDaily ? "text-orange-500" : "text-content/60"} bg-custom-white py-2 flex gap-2 justify-center items-center px-0 text-[12px] border-r border-content/15`}
           onClick={handleScanView}
         >
-          Search
-        </button>
-        <button
-          className={`${ctx.viewDaily ? "btn-themeGreen" : "btn-themeBlue"} py-1.5 px-0 text-[13px]`}
+          <MagnifyingGlassIcon className="w-6 h-6 transition-all duration-200" />
+          <div className="text-content/60">Search</div>
+        </div>
+        <div
+          className={`${ctx.viewDaily ? "text-orange-500" : "text-content/60"} bg-custom-white py-2 flex gap-2 justify-center items-center px-0 text-[12px]`}
           onClick={() => handleMainView(false)}
         >
-          {ctx.mobileMainView === "overview" ? "View Daily" : "Go Back"}
-        </button>
+          {ctx.mobileMainView === "overview" ? (
+            <ShoppingCartIcon className="w-6 h-6 transition-all duration-200" />
+          ) : (
+            <ArrowPathIcon className="w-6 h-6 transition-all duration-200" />
+          )}
+          <div className="text-content/60">
+            {ctx.mobileMainView === "overview" ? "View Daily" : "Go Back"}
+          </div>
+        </div>
       </div>
 
       {/* Overview and Items views */}
