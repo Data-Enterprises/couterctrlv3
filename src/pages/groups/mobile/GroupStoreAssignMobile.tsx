@@ -83,9 +83,9 @@ const GroupStoreAssignMobile = () => {
   };
 
   return (
-    <div>
-      <div className="bg-custom-white rounded-lg shadow-md p-3">
-        <div className="w-full space-y-3">
+    <div className="leading-tight">
+      <div className="bg-custom-white rounded-lg shadow-md px-1.5 py-2">
+        <div className="w-full space-y-1.5">
           <SingleSelect
             id={1}
             label="Select User Group"
@@ -95,64 +95,67 @@ const GroupStoreAssignMobile = () => {
             onSelect={getGroupStores}
             innerClass="py-1"
           />
-          <div className="flex flex-col lg:flex-row gap-4 relative">
-            <div className="w-full lg:w-1/2 bg-slate-100 p-3 rounded-lg shadow-md">
+
+          <div className="grid grid-cols-2 gap-2">
+            <div className="w-full text-[9.5px]">
               <Input
+                className="py-1"
                 label={`Unassigned - ${filtered(storesWithGroupStatus, unassignedFilter, 0).length}`}
                 value={unassignedFilter}
                 setValue={handleUnassignedFilterText}
               />
-              <div className="space-y-2 my-2 rounded-lg max-h-[calc(100vh-17rem)] pb-3 overflow-hidden overflow-y-scroll no-scrollbar">
+              <div className="space-y-2 my-2 leading-tight rounded-lg max-h-[calc(100vh-17rem)] pb-2 overflow-hidden overflow-y-scroll no-scrollbar">
                 {filtered(storesWithGroupStatus, unassignedFilter, 0).map(
                   (store) => (
                     <div
                       key={store.storeid}
                       data-testid={`unassigned-store-${store.storeid}`}
-                      className="bg-custom-white flex items-start justify-between rounded-lg shadow-md p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200 md:flex-row"
+                      className="bg-slate-100 flex items-start justify-between rounded-lg shadow-md p-1.5 cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200 md:flex-row"
                       onClick={() =>
                         handleStoreClick(store.storeid, "unassigned")
                       }
                     >
-                      <div className="font-medium space-y-0.5 text-[12px] w-full md:w-auto">
+                      <div className="font-medium space-y-0.5 w-full md:w-auto">
                         <div>Store {store.store_number}</div>
                         <div>
                           {store.storeid} - {store.store_name}
                         </div>
                       </div>
-                      <div className="bg-red-600 text-custom-white px-2 py-0.5 rounded-full text-[12px]">
+                      {/* <div className="bg-red-600 text-custom-white px-2 py-0.5 rounded-full">
                         Inactive
-                      </div>
+                      </div> */}
                     </div>
                   ),
                 )}
               </div>
             </div>
-            <div className="w-full lg:w-1/2 bg-slate-100 p-3 rounded-lg shadow-md">
+            <div className="w-full text-[9.5px]">
               <Input
+                className="py-1"
                 label={`Assigned - ${filtered(storesWithGroupStatus, assignedFilter, 1).length}`}
                 value={assignedFilter}
                 setValue={handleAssignedFilterText}
               />
-              <div className="space-y-2 my-2 rounded-lg max-h-[calc(100vh-17rem)] pb-3 overflow-hidden overflow-y-scroll no-scrollbar">
+              <div className="space-y-2 my-2 leading-tight rounded-lg max-h-[calc(100vh-17rem)] pb-2 overflow-hidden overflow-y-scroll no-scrollbar">
                 {filtered(storesWithGroupStatus, assignedFilter, 1).map(
                   (store) => (
                     <div
                       key={store.storeid}
                       data-testid={`assigned-store-${store.storeid}`}
-                      className="bg-custom-white text-[13px] flex items-start justify-between rounded-lg shadow-md p-3 text-sm cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200 flex-col md:flex-row gap-2 md:gap-0"
+                      className="bg-slate-100 text-[9.5px] flex items-start justify-between rounded-lg shadow-md p-1.5 cursor-pointer hover:bg-blue-200/50 hover:shadow-inner transition-all duration-200 flex-col md:flex-row gap-2 md:gap-0"
                       onClick={() =>
                         handleStoreClick(store.storeid, "assigned")
                       }
                     >
-                      <div className="font-medium space-y-0.5 text-[12px] w-full md:w-auto">
+                      <div className="font-medium space-y-0.5 w-full md:w-auto">
                         <div>Store {store.store_number}</div>
                         <div>
                           {store.storeid} - {store.store_name}
                         </div>
                       </div>
-                      <div className="bg-[rgb(30,45,80)] text-custom-white px-2 py-0.5 rounded-full text-[12px]">
+                      {/* <div className="bg-[rgb(30,45,80)] text-custom-white px-2 py-0.5 rounded-full">
                         Active
-                      </div>
+                      </div> */}
                     </div>
                   ),
                 )}
