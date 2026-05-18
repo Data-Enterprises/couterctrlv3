@@ -140,11 +140,11 @@ const VendorSelect = () => {
         </div>
       </div>
       {state.vendorView === 1 ? (
-        <div className="px-2 pb-2 grid grid-cols-2 gap-2 max-h-[calc(100vh-12.3rem)] rounded-lg overflow-y-auto">
+        <div className="bg-custom-white mx-2 px-2 mb-2 pt-2 pb-2 grid grid-cols-2 gap-2 max-h-[calc(100vh-12.3rem)] rounded-lg overflow-y-auto">
           {state.reducedVendors.map((v, i) => (
             <div
               key={i}
-              className="bg-custom-white rounded-lg shadow-md text-[11px] leading-tight"
+              className="bg-blue-200/50 rounded-lg shadow-md text-[11px] leading-tight"
               onClick={() => handleVendorSelect(v)}
             >
               <div className="font-medium rounded-t-lg px-2 py-0.5 flex justify-between">
@@ -156,11 +156,11 @@ const VendorSelect = () => {
                 <div className="bg-gradient-to-l from-content/60 to-custom-white"></div>
               </div>
               <div className="px-2 py-1.5 grid grid-cols-2 gap-3 text-[10.5px]">
-                <div className="py-1 flex flex-col justify-center items-center rounded-md bg-slate-100 shadow-md">
+                <div className="py-1 flex flex-col justify-center items-center rounded-md bg-custom-white shadow-md">
                   <div>Items</div>
                   <div>{v.items}</div>
                 </div>
-                <div className="py-1 flex flex-col justify-center items-center rounded-md bg-slate-100 shadow-md">
+                <div className="py-1 flex flex-col justify-center items-center rounded-md bg-custom-white shadow-md">
                   <div>Operators</div>
                   <div>{v.cashiers.length}</div>
                 </div>
@@ -169,11 +169,11 @@ const VendorSelect = () => {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2 px-2 pb-2 text-[11px] max-h-[calc(100vh-12.3rem)] overflow-y-auto">
+        <div className="bg-custom-white grid grid-cols-2 gap-2 mx-2 px-2 pt-2 rounded-lg shadow-lg pb-2 text-[11px] max-h-[calc(100vh-12.3rem)] overflow-y-auto">
           {state.filteredListDataMobile.map((rec, i) => (
             <div
               key={i}
-              className="bg-custom-white rounded-lg shadow-md px-2 py-1"
+              className="bg-blue-200/50 rounded-lg shadow-md px-2 py-1"
               onClick={() =>
                 handleTransactionSelect(
                   rec.invoice_date,
@@ -190,7 +190,7 @@ const VendorSelect = () => {
                 <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
                 <div className="bg-gradient-to-l from-content/60 to-custom-white"></div>
               </div>
-              <div className="bg-slate-100 p-1 rounded-md shadow-md">
+              <div className="bg-custom-white p-1 rounded-md shadow-md">
                 <div className="flex justify-between leading-tight">
                   <div className="text-content/60">Trans #:</div>
                   <div>{rec.invoiceid}</div>
