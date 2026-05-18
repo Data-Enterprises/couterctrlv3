@@ -72,7 +72,7 @@ export const activePanelStyle = (type: string, selected: string) => {
   if (selected === type) {
     return "bg-orange-200";
   } else {
-    return "bg-custom-white";
+    return "bg-bkg";
   }
 };
 
