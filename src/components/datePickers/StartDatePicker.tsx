@@ -41,7 +41,7 @@ const StartDatePicker = () => {
   return (
     <Menu data-testid="start-date-picker" as="div" className={styling}>
       <div className={menuStyle}>
-        <label className="md:block flex justify-start md:justify-center pl-1 md:pl-0 text-[13px] md:text-[13px] font-medium ">
+        <label className="md:block flex justify-start md:justify-center pl-1 md:pl-0 text-[11px] md:text-[13px] font-medium ">
           Start Date
         </label>
         <MenuButton

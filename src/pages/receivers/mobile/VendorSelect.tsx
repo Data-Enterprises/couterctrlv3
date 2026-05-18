@@ -17,6 +17,8 @@ import {
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import type { JsonError, ReceiverDetailsResponse } from "../../../interfaces";
 
+import { ArrowPathIcon, DocumentCheckIcon } from "@heroicons/react/24/solid";
+
 const VendorSelect = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
@@ -65,47 +67,49 @@ const VendorSelect = () => {
     : state.reducedVendors.reduce((acc, v) => acc + v.cashiers.length, 0);
   const totalVendors = state.selectedVendor ? 1 : state.reducedVendors.length;
 
-  const handleAllVendorsClick = () => {
-    dispatch(setSelectedVendor(null));
-    dispatch(setViewAllVendors(true));
-    dispatch(setVendorView(2));
-  };
-
   const handleVendorSelect = (v: ReducedVendor) => {
     dispatch(setSelectedVendor(v));
     dispatch(setViewAllVendors(false));
     dispatch(setVendorView(2));
   };
 
-  const handleGoBackClick = () => {
-    dispatch(setSelectedVendor(null));
-    dispatch(setViewAllVendors(false));
-    dispatch(setVendorView(1));
+  const handleVendorsClick = () => {
+    if (state.vendorView === 1) {
+      dispatch(setSelectedVendor(null));
+      dispatch(setViewAllVendors(true));
+      dispatch(setVendorView(2));
+    } else {
+      dispatch(setSelectedVendor(null));
+      dispatch(setViewAllVendors(false));
+      dispatch(setVendorView(1));
+    }
   };
 
   return (
-    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden text-sm">
-      <div className="grid grid-cols-2 gap-2 p-2">
-        <button className="btn-themeBlue px-0" onClick={handleRefresh}>
-          Refresh
-        </button>
-        <button
-          className={`btn-themeBlue px-0 ${state.vendorView === 1 && "opacity-50 pointer-events-none"}`}
-          onClick={handleGoBackClick}
+    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden text-[12px]">
+      <div className="grid grid-cols-2 mb-3">
+        <div
+          className="bg-custom-white flex gap-2 justify-center items-center py-2 border-r border-content/15"
+          onClick={handleRefresh}
         >
-          Vendors
-        </button>
+          <ArrowPathIcon className="w-6 h-6 transition-all duration-200" />
+          <div className="text-content/60">Refresh</div>
+        </div>
+        <div
+          className="bg-custom-white flex gap-2 justify-center items-center py-2"
+          onClick={handleVendorsClick}
+        >
+          <DocumentCheckIcon className="w-6 h-6 transition-all duration-200" />
+          <div className="text-content/60">{state.vendorView === 1 ? "Received" : "Vendors"}</div>
+        </div>
       </div>
       <div className="bg-custom-white rounded-lg p-2 mx-2 mb-2 shadow-md">
-        <div
-          className="font-medium underline text-center"
-          onClick={handleAllVendorsClick}
-        >
+        <div className="font-medium underline text-center">
           {state.selectedVendor
             ? state.selectedVendor?.vendor_name
             : "All Vendors "}
         </div>
-        <div className="flex justify-between px-1 text-[13.5px]">
+        <div className="flex justify-between px-1 text-[12px]">
           <div className="flex gap-1">
             <div className="text-content/60">Vendors:</div>
             <div className="font-medium">{totalVendors}</div>
@@ -121,21 +125,30 @@ const VendorSelect = () => {
         </div>
       </div>
       {state.vendorView === 1 ? (
-        <div className="px-2 pb-2 grid grid-cols-2 gap-2 max-h-[calc(100vh-11.3rem)] rounded-lg overflow-y-auto">
+        <div className="px-2 pb-2 grid grid-cols-2 gap-2 max-h-[calc(100vh-10.5rem)] rounded-lg overflow-y-auto">
           {state.reducedVendors.map((v, i) => (
             <div
               key={i}
-              className="bg-custom-white rounded-lg shadow-md text-sm"
+              className="bg-custom-white rounded-lg shadow-md text-[11px] leading-tight"
               onClick={() => handleVendorSelect(v)}
             >
-              <div className="bg-blue-500 text-custom-white font-medium rounded-t-lg px-2 py-0.5 flex justify-between">
+              <div className="font-medium rounded-t-lg px-2 py-0.5 flex justify-between">
                 <div className="text-nowrap truncate">{v.vendor_name}</div>
+                <div className="">{v.vendorid}</div>
               </div>
-              <div className="p-2">
-                <div>Store: {v.store_number}</div>
-                <div className="">ID: {v.vendorid}</div>
-                <div>Total Items: {v.items}</div>
-                <div>Total Cashiers: {v.cashiers.length}</div>
+              <div className="grid grid-cols-2 h-[1.5px]">
+                <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
+                <div className="bg-gradient-to-l from-content/60 to-custom-white"></div>
+              </div>
+              <div className="px-2 py-1.5 grid grid-cols-2 gap-3 text-[10.5px]">
+                <div className="py-1 flex flex-col justify-center items-center rounded-md bg-slate-100 shadow-md">
+                  <div>Items</div>
+                  <div>{v.items}</div>
+                </div>
+                <div className="py-1 flex flex-col justify-center items-center rounded-md bg-slate-100 shadow-md">
+                  <div>Operators</div>
+                  <div>{v.cashiers.length}</div>
+                </div>
               </div>
             </div>
           ))}
