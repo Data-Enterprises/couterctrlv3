@@ -54,6 +54,7 @@ export interface LossPreventionState {
   pageText: string;
   searchString: string;
   transactionLoadingMessage: string;
+  viewTransactionsMobile: boolean;
 }
 
 const initialState: LossPreventionState = {
@@ -95,6 +96,7 @@ const initialState: LossPreventionState = {
   selectedCashierDetailsIdx: -1,
   cashierDetailsTrendDirection: 0,
   transactionLoadingMessage: "",
+  viewTransactionsMobile: false,
 };
 
 export const lossPreventionSlice = createSlice({
@@ -254,12 +256,18 @@ export const lossPreventionSlice = createSlice({
       state.cashierDetailsTrendDirection = 0;
       state.transOverviews = [];
       state.transactionLoadingMessage = "";
+      if (state.viewTransactionsMobile) {
+        state.viewTransactionsMobile = false;
+      }
     },
     setTransOverviews: (
       state,
       action: PayloadAction<TransactionOverview[]>,
     ) => {
       state.transOverviews = action.payload;
+    },
+    setViewTransactionsMobile: (state, action: PayloadAction<boolean>) => {
+      state.viewTransactionsMobile = action.payload;
     },
     setCashierDetailsTrendDirection: (state, action: PayloadAction<number>) => {
       state.cashierDetailsTrendDirection = action.payload;
@@ -308,5 +316,6 @@ export const {
   setCashierTableQtyThreshComp,
   setTotalQtyFilter,
   setTransactionLoadingMessage,
+  setViewTransactionsMobile,
 } = lossPreventionSlice.actions;
 export default lossPreventionSlice.reducer;

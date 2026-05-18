@@ -56,7 +56,7 @@ const Modal = ({
     >
       <div
         ref={modalRef}
-        className={`ml-12 p-2 ${modalClassName} rounded-xl shadow-xl`}
+        className={`md:ml-12 mx-4 md:mx-0 p-2 ${modalClassName} rounded-xl shadow-xl`}
       >
         {children}
       </div>

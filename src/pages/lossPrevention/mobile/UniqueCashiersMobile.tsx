@@ -28,40 +28,40 @@ const UniqueCashiersMobile = () => {
   };
 
   return (
-    <>
+    <div className="p-2">
       {cashiers.length && !fetchingCashierTransactions ? (
         <div
           data-testid="unique-cashiers-table"
-          className="bg-custom-white rounded-lg shadow-lg px-3 pb-3 leading-tight"
+          className="bg-custom-white rounded-lg shadow-lg px-2 pb-2 leading-tight"
         >
-          <div className="py-1 font-medium">Cashiers ({cashiers.length})</div>
+          <div className="py-1 font-medium text-[11px]">Cashiers ({cashiers.length})</div>
 
           <div className="grid grid-cols-2 h-[1.5px] mb-2">
             <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
             <div className="bg-gradient-to-l from-content/60 to-custom-white"></div>
           </div>
 
-          <div className="overflow-y-auto max-h-[250px]">
+          <div className="overflow-y-auto max-h-[150px]">
             <div className="min-w-full divide-y divide-content/20">
               {/* Header */}
-              <div className="grid grid-cols-[2fr_1fr_1fr_1fr] bg-bkg sticky top-0 z-10 py-3 px-4 font-medium rounded-lg shadow-sm">
-                <div className="text-sm">
+              <div className="grid grid-cols-[2fr_1fr_1fr_1fr] bg-bkg sticky top-0 z-10 py-1 px-3 font-medium rounded-lg shadow-sm text-[11px]">
+                <div className="">
                   Cashier
                 </div>
-                <div className="text-right text-sm">
+                <div className="text-right ">
                   Transactions
                 </div>
-                <div className="text-right text-sm">
+                <div className="text-right ">
                   Sales
                 </div>
-                <div className="text-right text-sm">Store #</div>
+                <div className="text-right ">Store #</div>
               </div>
 
               {/* Rows */}
               {cashiers.map((c, i) => (
                 <div
                   key={i}
-                  className={`grid grid-cols-[2fr_1fr_1fr_1fr] py-3 px-4 hover:bg-blue-50/50 transition-colors duration-200 cursor-pointer border-b border-content/10 last:border-b-0 ${
+                  className={`grid grid-cols-[2fr_1fr_1fr_1fr] text-[10px] py-1 px-3 hover:bg-blue-50/50 transition-colors duration-200 cursor-pointer border-b border-content/10 last:border-b-0 ${
                     c.cashier_number === selectedCashier.cashier_number &&
                     c.store_number === selectedCashier.store_number
                       ? "bg-blue-50/80 ring-2 ring-blue-300 ring-inset shadow-md"
@@ -69,13 +69,13 @@ const UniqueCashiersMobile = () => {
                   }`}
                   onClick={() => handleCashierClick(c)}
                 >
-                  <div className="font-semibold text-sm truncate">
+                  <div className="font-semibold truncate">
                     {c.cashier_name}
                   </div>
-                  <div className="text-sm font-semibold text-right">
+                  <div className="font-semibold text-right">
                     {c.transaction_count}
                   </div>
-                  <div className="text-sm font-semibold text-right">
+                  <div className="font-semibold text-right">
                     {formatCurrency2(c.total_sales)}
                   </div>
                   <div className="font-semibold text-right">
@@ -87,7 +87,7 @@ const UniqueCashiersMobile = () => {
           </div>
         </div>
       ) : null}
-    </>
+    </div>
   );
 };
 

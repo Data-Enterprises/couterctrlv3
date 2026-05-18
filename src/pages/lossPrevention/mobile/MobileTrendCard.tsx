@@ -7,7 +7,7 @@ import {
   HandThumbUpIcon,
   HandThumbDownIcon,
 } from "@heroicons/react/24/outline";
-import { setCashierDetailsTrendDirection } from "../../../features/lossPreventionSlice";
+import { setCashierDetailsTrendDirection, setViewTransactionsMobile } from "../../../features/lossPreventionSlice";
 import { useEffect } from "react";
 import { defaultCashierTrend, findTrendDirection } from "../cashierSales";
 
@@ -119,6 +119,10 @@ const MobileTrendCard = () => {
     }
   };
 
+  const handleViewChange = () => {
+    dispatch(setViewTransactionsMobile(true));
+  };
+
   return (
     <div className="bg-custom-white rounded-lg h-full select-none shadow-md overflow-hidden">
       {/* Header */}
@@ -138,16 +142,16 @@ const MobileTrendCard = () => {
       {/* Metrics blocks */}
       <div className="overflow-y-auto p-2 text-[11px]">
         <div className="grid grid-cols-2 gap-2">
-          <div className="p-2 bg-blue-200/50 rounded-lg shadow-md leading-tight">
-            <div className="font-medium mb-0.5 text-content/80 col-span-2 flex justify-between">
+          <div className="p-1.5 bg-blue-200/50 rounded-lg shadow-md leading-tight">
+            <div className="font-medium mb-1 text-content/80 col-span-2 flex justify-between items-start">
               <div>Transactions</div>
               {individualTrend(
                 selectedCashierDetails!.transaction_count,
                 defaultTrend(selectedCashierDetails!).transaction_count,
               )}
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="text-center bg-custom-white rounded-lg p-2">
+            <div className="grid grid-cols-2 gap-1.5">
+              <div className="text-center bg-custom-white rounded-lg p-1.5">
                 <div className="text-content/60 font-medium">
                   Total
                 </div>
@@ -155,7 +159,7 @@ const MobileTrendCard = () => {
                   {selectedCashierDetails!.transaction_count}
                 </div>
               </div>
-              <div className="text-center bg-custom-white rounded-lg p-2">
+              <div className="text-center bg-custom-white rounded-lg p-1.5">
                 <div className="text-content/60 font-medium">
                   Trend
                 </div>
@@ -166,16 +170,16 @@ const MobileTrendCard = () => {
             </div>
           </div>
 
-          <div className="p-2 bg-blue-200/50 rounded-lg shadow-md leading-tight">
-            <div className="font-medium mb-0.5 text-content/80 col-span-2 flex justify-between">
+          <div className="p-1.5 bg-blue-200/50 rounded-lg shadow-md leading-tight">
+            <div className="font-medium mb-1 text-content/80 col-span-2 flex justify-between items-start">
               <div>Total Items</div>
               {individualTrend(
                 selectedCashierDetails!.total_items,
                 defaultTrend(selectedCashierDetails!).total_items,
               )}
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="text-center bg-custom-white rounded-lg p-2">
+            <div className="grid grid-cols-2 gap-1.5">
+              <div className="text-center bg-custom-white rounded-lg p-1.5">
                 <div className="text-content/60 font-medium">
                   Total
                 </div>
@@ -183,7 +187,7 @@ const MobileTrendCard = () => {
                   {selectedCashierDetails!.total_items}
                 </div>
               </div>
-              <div className="text-center bg-custom-white rounded-lg p-2">
+              <div className="text-center bg-custom-white rounded-lg p-1.5">
                 <div className="text-content/60 font-medium">
                   Trend
                 </div>
@@ -194,16 +198,16 @@ const MobileTrendCard = () => {
             </div>
           </div>
 
-          <div className="p-2 bg-blue-200/50 rounded-lg shadow-md leading-tight">
-            <div className="font-medium mb-0.5 text-content/80 col-span-2 flex justify-between">
+          <div className="p-1.5 bg-blue-200/50 rounded-lg shadow-md leading-tight">
+            <div className="font-medium mb-1 text-content/80 col-span-2 flex justify-between items-start">
               <div>Total Dollars</div>
               {individualTrend(
                 selectedCashierDetails!.amount,
                 defaultTrend(selectedCashierDetails!).amount,
               )}
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="text-center bg-custom-white rounded-lg p-2">
+            <div className="grid grid-cols-2 gap-1.5">
+              <div className="text-center bg-custom-white rounded-lg p-1.5">
                 <div className="text-content/60 font-medium">
                   Total
                 </div>
@@ -211,7 +215,7 @@ const MobileTrendCard = () => {
                   {formatCurrency2(selectedCashierDetails!.amount)}
                 </div>
               </div>
-              <div className="text-center bg-custom-white rounded-lg p-2">
+              <div className="text-center bg-custom-white rounded-lg p-1.5">
                 <div className="text-content/60 font-medium">
                   Trend
                 </div>
@@ -224,16 +228,16 @@ const MobileTrendCard = () => {
             </div>
           </div>
 
-          <div className="p-2 bg-blue-200/50 rounded-lg shadow-md leading-tight">
-            <div className="font-medium mb-0.5 text-content/80 col-span-2 flex justify-between">
+          <div className="p-1.5 bg-blue-200/50 rounded-lg shadow-md leading-tight">
+            <div className="font-medium mb-1 text-content/80 col-span-2 flex justify-between items-start">
               <div>Avg Dollars</div>
               {individualTrend(
                 selectedCashierDetails!.average_dollars,
                 defaultTrend(selectedCashierDetails!).average_dollars,
               )}
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="text-center bg-custom-white rounded-lg p-2">
+            <div className="grid grid-cols-2 gap-1.5">
+              <div className="text-center bg-custom-white rounded-lg p-1.5">
                 <div className="text-content/60 font-medium">
                   Total
                 </div>
@@ -241,7 +245,7 @@ const MobileTrendCard = () => {
                   {formatCurrency2(selectedCashierDetails!.average_dollars)}
                 </div>
               </div>
-              <div className="text-center bg-custom-white rounded-lg p-2">
+              <div className="text-center bg-custom-white rounded-lg p-1.5">
                 <div className="text-content/60 font-medium">
                   Trend
                 </div>
@@ -254,16 +258,16 @@ const MobileTrendCard = () => {
             </div>
           </div>
 
-          <div className="p-2 bg-blue-200/50 rounded-lg shadow-md leading-tight">
-            <div className="font-medium mb-2 text-content/80 col-span-2 flex justify-between">
+          <div className="p-1.5 bg-blue-200/50 rounded-lg shadow-md leading-tight">
+            <div className="font-medium mb-1 text-content/80 col-span-2 flex justify-between items-start">
               <div>Avg Quantity</div>
               {individualTrend(
                 selectedCashierDetails!.average_qty,
                 defaultTrend(selectedCashierDetails!).average_qty,
               )}
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="text-center bg-custom-white rounded-lg p-2">
+            <div className="grid grid-cols-2 gap-1.5">
+              <div className="text-center bg-custom-white rounded-lg p-1.5">
                 <div className="text-content/60 font-medium">
                   Total
                 </div>
@@ -271,7 +275,7 @@ const MobileTrendCard = () => {
                   {selectedCashierDetails!.average_qty.toFixed(2)}
                 </div>
               </div>
-              <div className="text-center bg-custom-white rounded-lg p-2">
+              <div className="text-center bg-custom-white rounded-lg p-1.5">
                 <div className="text-content/60 font-medium">
                   Trend
                 </div>
@@ -282,12 +286,12 @@ const MobileTrendCard = () => {
             </div>
           </div>
 
-          <div className="p-2 bg-blue-200/50 rounded-lg shadow-md leading-tight">
+          <div className="p-1.5 bg-blue-200/50 rounded-lg shadow-md leading-tight">
             <div className="font-medium mb-2 text-content/80 col-span-2">
               Cashiers
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="text-center bg-custom-white rounded-lg p-2">
+            <div className="grid grid-cols-2 gap-1.5">
+              <div className="text-center bg-custom-white rounded-lg p-1.5">
                 <div className="text-content/60 font-medium">
                   Total
                 </div>
@@ -295,7 +299,7 @@ const MobileTrendCard = () => {
                   {selectedCashierDetails!.cashier_count}
                 </div>
               </div>
-              <div className="text-center bg-custom-white rounded-lg p-2">
+              <div className="text-center bg-custom-white rounded-lg p-1.5">
                 <div className="text-content/60 font-medium">
                   Trend
                 </div>
@@ -307,7 +311,7 @@ const MobileTrendCard = () => {
           </div>
         </div>
 
-        <button className="btn-themeBlue text-[13px] px-0 w-full py-1 mt-2">View Transactions</button>
+        <button className="btn-themeBlue text-[13px] px-0 w-full py-1 mt-2" onClick={handleViewChange}>View Transactions</button>
       </div>
     </div>
   );

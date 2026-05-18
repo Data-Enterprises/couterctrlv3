@@ -4,7 +4,16 @@ import DatePickers from "../../../components/datePickers/DatePickers";
 import StorePicker from "../../../components/storePicker/StorePicker";
 import SaleTypesMobile from "./SaleTypesMobile";
 import CashierSalesMobile from "./CashierSalesMobile";
-import { reQuery, setSaleTypes, setSelectedStoreId } from "../../../features/lossPreventionSlice";
+import {
+  reQuery,
+  setCashierDetails,
+  setSaleTypes,
+  setSelectedSaleType,
+  setSelectedStoreId,
+  setViewTransactionsMobile,
+} from "../../../features/lossPreventionSlice";
+import UniqueCashiersMobile from "./UniqueCashiersMobile";
+import TransactionsMobile from "./TransactionsMobile";
 
 interface LpMobileProps {
   getSaleTypes: () => void;
@@ -12,13 +21,19 @@ interface LpMobileProps {
 
 const LpMobile = ({ getSaleTypes }: LpMobileProps) => {
   const dispatch = useAppDispatch();
-  const { saleTypes, cashierDetails } = useAppSelector(
+  const { saleTypes, cashierDetails, viewTransactionsMobile } = useAppSelector(
     (state) => state.lossPrevention,
   );
 
   const handleGoBack = () => {
+    if (viewTransactionsMobile) {
+      dispatch(setViewTransactionsMobile(false));
+      return;
+    }
     dispatch(reQuery());
     dispatch(setSaleTypes([]));
+    dispatch(setSelectedSaleType(""));
+    dispatch(setCashierDetails([]));
     dispatch(setSelectedStoreId(0));
   };
   if (saleTypes.length > 0) {
@@ -33,10 +48,17 @@ const LpMobile = ({ getSaleTypes }: LpMobileProps) => {
             Go Back
           </button>
         </div>
-        <div className="p-2 space-y-2">
-          <SaleTypesMobile />
-          {cashierDetails.length > 0 && <CashierSalesMobile />}
-        </div>
+        {viewTransactionsMobile ? (
+          <div>
+            <UniqueCashiersMobile />
+            <TransactionsMobile />
+          </div>
+        ) : (
+          <div className="p-2 space-y-2">
+            <SaleTypesMobile />
+            {cashierDetails.length > 0 && <CashierSalesMobile />}
+          </div>
+        )}
       </div>
     );
   }
