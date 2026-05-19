@@ -215,7 +215,7 @@ const Login = () => {
                   </div>
                 ) : null}
 
-                <div className="relative bg-red-200">
+                <div className="relative">
                   <button
                     data-testid="sign-in"
                     onClick={handleSubmit}
