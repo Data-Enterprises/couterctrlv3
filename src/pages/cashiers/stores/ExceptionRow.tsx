@@ -245,7 +245,7 @@ const ExceptionRow = ({
 
   return (
     <div
-      className={`grid grid-cols-[26%_24%_18%_15%_19%] text-[12.5px] py-0.5 ${bgColor} hover:bg-orange-200 transtion-all duration-200 cursor-pointer`}
+      className={`grid grid-cols-[26%_24%_18%_15%_19%] text-[12px] py-0.5 ${bgColor} hover:bg-orange-200 transtion-all duration-200 cursor-pointer`}
       onClick={handleTransactionCall}
     >
       <div className="font-medium text-content/60">{type}</div>

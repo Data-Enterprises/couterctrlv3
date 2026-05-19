@@ -298,14 +298,14 @@ const Orders = () => {
               {ctx.availableOrderTypes.map((t, i) => (
                 <div
                   key={i}
-                  className={`${ctx.typeFilterArr.includes(t) ? "bg-orange-200" : ""} mb-1 text-[12px] text-center shadow-md rounded-full bg-bkg cursor-pointer hover:bg-orange-200 transition-all duration-200`}
+                  className={`${ctx.typeFilterArr.includes(t) ? "bg-orange-200" : ""} mb-1 text-[10px] text-center shadow-md rounded-full bg-bkg cursor-pointer hover:bg-orange-200 transition-all duration-200`}
                   onClick={() => handleOrderTypeBtnClick(t)}
                 >
                   {t} {count(t)}
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-[1.6fr_1.1fr_0.9fr_0.9fr] text-[13px] px-2 border-b border-content">
+            <div className="grid grid-cols-[1.6fr_1.1fr_0.9fr_0.9fr] text-[12px] px-2 border-b border-content">
               <div className="font-medium">Date</div>
               <div className="font-medium">Type</div>
               <div className="font-medium">Count</div>
