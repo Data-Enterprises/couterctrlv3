@@ -14,6 +14,8 @@ import {
 } from "../../features/itemLookupSlice";
 import "./scanner.css";
 
+import { MagnifyingGlassIcon, DocumentCheckIcon, CalendarDaysIcon } from "@heroicons/react/24/solid";
+
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import { setError } from "../../features/itemScanSlice";
 import LookupCharts from "./LookupCharts";
@@ -148,35 +150,40 @@ const ItemLookup = () => {
   return (
     <div
       data-testid="item-lookup-body"
-      className="p-2 min-h-[calc(100vh-56px)] max-h-[calc(100vh-56px)] overflow-hidden lg:w-1/4 lg:mx-auto"
+      className="min-h-[calc(100vh-56px)] max-h-[calc(100vh-56px)] overflow-hidden"
     >
-      <div className="grid grid-cols-3 gap-2 mb-2">
-        <button
-          className={`${viewSearch ? "btn-themeGreen" : "btn-themeBlue"} text-[13px] py-1.5 px-0`}
+      <div className="grid grid-cols-3">
+        <div
+          className={`${viewSearch ? "text-orange-500" : "text-content/60"} bg-custom-white border-r border-content/15 flex justify-center items-center gap-1 text-[12px] py-1.5 px-0`}
           onClick={() => dispatch(setILView("search"))}
         >
-          Search
-        </button>
-        <button
-          className={`${viewHistory ? "btn-themeGreen" : "btn-themeBlue"} text-[13px] py-1.5 px-0`}
+          <MagnifyingGlassIcon className="w-6 h-6 transition-all duration-200" />
+          <div className="text-content/60">Search</div>
+        </div>
+        <div
+          className={`${viewHistory ? "text-orange-500" : "text-content/60"} bg-custom-white border-r border-content/15 flex justify-center items-center gap-1 text-[12px] py-1.5 px-0`}
           onClick={() => dispatch(setILView("history"))}
         >
-          Overview
-        </button>
-        <button
-          className={`${viewDaily ? "btn-themeGreen" : "btn-themeBlue"} text-[13px] py-1.5 px-0`}
+          <DocumentCheckIcon className="w-6 h-6 transition-all duration-200" />
+          <div className="text-content/60">Overview</div>
+        </div>
+        <div
+          className={`${viewDaily ? "text-orange-500" : "text-content/60"} bg-custom-white flex justify-center items-center gap-1 text-[12px] py-1.5 px-0`}
           onClick={() => dispatch(setILView("daily"))}
         >
-          Daily
-        </button>
+          <CalendarDaysIcon className="w-6 h-6 transition-all duration-200" />
+          <div className="text-content/60">Daily</div>
+        </div>
       </div>
       <div className={`${isLoading ? "block z-50 " : "hidden z-0"}`}>
         <LoadingIndicator message={`Looking up item: ${upcCode}`} />
       </div>
-      {renderView()}
-      {error.length > 0 ? (
-        <div className="text-content mt-8 text-center">{error}</div>
-      ) : null}
+      <div className="p-2">
+        {renderView()}
+        {error.length > 0 ? (
+          <div className="text-content mt-8 text-center">{error}</div>
+        ) : null}
+      </div>
     </div>
   );
 };

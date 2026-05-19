@@ -209,7 +209,7 @@ const ItemHIstory = () => {
 
   if (!item.itemsLoaded) {
     return (
-      <div className="bg-custom-white h-[130.2px] flex justify-center items-center text-content/60 font-medium rounded-lg shadow-md text-sm mt-2">
+      <div className="bg-custom-white h-[100px] flex justify-center items-center text-content/60 font-medium rounded-lg shadow-md text-[13px] md:text-sm md:mt-2">
         <div>Please search for an item to view its history data</div>
       </div>
     );
