@@ -36,10 +36,12 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
       {
         id: formatDate(item.sale_date),
         value: item.total_sales - item.total_tax,
+        storeid: item.storeid,
       },
       {
         id: formatDate(ly.date),
         value: sales,
+        storeid: item.storeid,
       },
     ];
   });
@@ -61,9 +63,14 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
     });
   };
 
-  const activePieBg = (id: string) => {
+  const activePieBg = (data: PieData) => {
     if (ctx.selectedStore.storeid > 0) {
-      if (id === formatDate(ctx.selectedStore.sale_date)) {
+      if (
+        data.id === formatDate(ctx.selectedStore.sale_date) &&
+        (ctx.selectedStore.storeid
+          ? data.storeid === ctx.selectedStore.storeid
+          : true)
+      ) {
         return "bg-orange-200";
       }
       return "bg-custom-white";
@@ -75,7 +82,7 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
   return (
     <>
       <div className="bg-custom-white rounded-lg shadow-md px-2 py-0.5">
-        <div className="flex justify-between font-medium">
+        <div className="text-[12px] flex justify-between font-medium">
           <div>Weekly Sales</div>
           <div>{displayName}</div>
         </div>
@@ -83,11 +90,7 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
           <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
           <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
         </div>
-        <div className="font-medium mb-2 mt-1">
-          {pieChartData[pieChartData.length - 1][0].id} -{" "}
-          {pieChartData[0][0].id}
-        </div>
-        <div className="grid grid-cols-[31.5%_68.5%]">
+        <div className="grid grid-cols-[31.5%_68.5%] mt-1.5">
           <div className="text-[11px]">
             {[...ctx.salesViewWeekly].reverse().map((item, i) => (
               <div key={i} className="flex items-center">
@@ -149,7 +152,7 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
             return (
               <div
                 key={i}
-                className={`${activePieBg(pieData[0].id)} rounded-lg shadow-md p-1.5`}
+                className={`${activePieBg(pieData[0])} rounded-lg shadow-md p-1.5`}
               >
                 <div className="flex justify-between mb-1.5 font-medium">
                   <div className="flex gap-1 items-center">

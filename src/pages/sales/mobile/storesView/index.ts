@@ -18,10 +18,10 @@ export const defaultAggCoupons: AggCoupons = {
 };
 
 export const pieData: PieData[] = [
-  { id: "Digital Coupons", value: 0 },
-  { id: "E. In-Store Coupons", value: 0 },
-  { id: "E. Store Coupons", value: 0 },
-  { id: "Store Coupons", value: 0 },
+  { id: "Digital Coupons", value: 0 , storeid: 0},
+  { id: "E. In-Store Coupons", value: 0 , storeid: 0},
+  { id: "E. Store Coupons", value: 0 , storeid: 0},
+  { id: "Store Coupons", value: 0 , storeid: 0},
 ];
 
 export const sortOptions = [
