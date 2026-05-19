@@ -43,6 +43,17 @@ const StoresView = () => {
       { ...defaultAggTotals },
     );
 
+    if (ctx.selectedStore.sale_date.length) {
+      // find that sales panel => total sales - total tax => yyyy-mm-dd
+      const panel = ctx.salesPanels.find(
+        (sp) =>
+          sp.sale_date.split("T")[0] ===
+            ctx.selectedStore.sale_date.split("T")[0] &&
+          sp.storeid === ctx.selectedStore.storeid,
+      );
+      totals.total_tax = panel ? panel.total_tax : 0;
+    }
+
     const formatSales = () => {
       if (ctx.selectedStore.sale_date.length) {
         // find that sales panel => total sales - total tax => yyyy-mm-dd

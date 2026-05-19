@@ -56,6 +56,7 @@ const SalesViewHourly = ({ displayName }: SalesViewHourlyProps) => {
   }, []);
 
   const formatDate = (dateStr: string) => {
+    if (!dateStr) return "No Data For Last Year";
     const split = dateStr.split("T")[0].split("-");
     return `${split[1]}/${split[2]}/${split[0]}`;
   };

@@ -3,6 +3,7 @@ import { ResponsiveBar } from "@nivo/bar";
 import { ResponsivePie } from "@nivo/pie";
 import { formatCurrency2, sameWeekDayLastYear } from "../../../../utils";
 import type { PieData } from "..";
+import type { WeeklySale } from "../../../../interfaces";
 
 const colors = [
   "#00CC55",
@@ -26,25 +27,40 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
     return `${split[1]}/${split[2]}/${split[0]}`;
   };
 
-  const pieChartData: PieData[][] = [...ctx.weeklySales].map((item) => {
-    const ly = sameWeekDayLastYear(item.sale_date);
-    const found = ctx.weeklySalesLastYear.find(
-      (s) => s.sale_date.split("T")[0] === ly.date,
-    );
-    const sales = found ? found.total_sales - found.total_tax : 0;
-    return [
-      {
-        id: formatDate(item.sale_date),
-        value: item.total_sales - item.total_tax,
-        storeid: item.storeid,
-      },
-      {
-        id: formatDate(ly.date),
-        value: sales,
-        storeid: item.storeid,
-      },
-    ];
-  });
+  // This will grab just the single date from WeeklySales or return all depending on Daily vs Weekly Sales
+  const filteredWeeklyByView = (data: WeeklySale[]) => {
+    if (ctx.dashboardOption === "weekly") {
+      return data;
+    } else {
+      // in Daily
+      return data.filter((d) => {
+        return formatDate(d.sale_date) === formatDate(ctx.endDate);
+      });
+    }
+  };
+
+  const pieChartData: PieData[][] = filteredWeeklyByView(ctx.weeklySales).map(
+    (item) => {
+      const ly = sameWeekDayLastYear(item.sale_date);
+      const found = ctx.weeklySalesLastYear.find(
+        (s) =>
+          s.sale_date.split("T")[0] === ly.date && s.storeid === item.storeid,
+      );
+      const sales = found ? found.total_sales - found.total_tax : 0;
+      return [
+        {
+          id: formatDate(item.sale_date),
+          value: item.total_sales - item.total_tax,
+          storeid: item.storeid,
+        },
+        {
+          id: formatDate(ly.date),
+          value: sales,
+          storeid: item.storeid,
+        },
+      ];
+    },
+  );
 
   const formatId = (id: string) => {
     return id.split("/").slice(0, 2).join("/");
@@ -79,10 +95,15 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
     return "bg-custom-white";
   };
 
+  const findStoreName = (storeid: number) => {
+    const found = ctx.assignedStores.find((s) => s.storeid === storeid);
+    return found ? found.store_name : "All Stores";
+  };
+
   return (
     <>
       <div className="bg-custom-white rounded-lg shadow-md px-2 py-0.5">
-        <div className="text-[12px] flex justify-between font-medium">
+        <div className="text-[11px] flex justify-between font-medium">
           <div>Weekly Sales</div>
           <div>{displayName}</div>
         </div>
@@ -91,8 +112,8 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
           <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
         </div>
         <div className="grid grid-cols-[31.5%_68.5%] mt-1.5">
-          <div className="text-[11px]">
-            {[...ctx.salesViewWeekly].reverse().map((item, i) => (
+          <div className="text-[10px]">
+            {[...ctx.salesViewWeekly].map((item, i) => (
               <div key={i} className="flex items-center">
                 <div className="w-[30%]">{dow(item.id)}:</div>
                 <div className="font-medium">{formatCurrency2(item.value)}</div>
@@ -146,29 +167,20 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
           </div>
         </div>
       </div>
-      <div className="text-[11px]">
+      <div className="text-[10px]">
         <div className="h-full grid grid-cols-2 gap-2 mt-2">
           {[...pieChartData].map((pieData, i) => {
             return (
               <div
                 key={i}
-                className={`${activePieBg(pieData[0])} rounded-lg shadow-md p-1.5`}
+                className={`${activePieBg(pieData[0])} rounded-lg shadow-md px-1.5 pb-1.5 py-0.5`}
               >
-                <div className="flex justify-between mb-1.5 font-medium">
-                  <div className="flex gap-1 items-center">
-                    <div
-                      className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: colors[0] }}
-                    ></div>
-                    <div className="text-content/60">{pieData[0].id}</div>
-                  </div>
-                  <div className="flex gap-1 items-center">
-                    <div
-                      className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: colors[1] }}
-                    ></div>
-                    <div className="text-content/60">{pieData[1].id}</div>
-                  </div>
+                <div className="flex justify-between font-medium">
+                  <div>{findStoreName(pieData[0].storeid)}</div>
+                </div>
+                <div className="grid grid-cols-2 h-[1.5px] mb-1">
+                  <div className="bg-gradient-to-r from-blue-200 to-custom-white"></div>
+                  <div className="bg-gradient-to-l from-blue-200 to-custom-white"></div>
                 </div>
                 {/* <div key={i} className="mb-2 rounded-lg shadow-md p-1.5"> */}
                 <div className="h-[80px] relative">
@@ -198,25 +210,13 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
                 </div>
 
                 {/* Values with dates */}
-                <div className="flex justify-between mt-1 text-center">
-                  <div className="font-medium text-[11px]">
-                    {/* <div className="flex gap-1 items-center">
-                      <div
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: colors[0] }}
-                      ></div>
-                      <div>{pieData[0].id}</div>
-                    </div> */}
+                <div className="flex justify-between mt-1 leading-tight">
+                  <div className="font-medium text-[10px]">
+                    <div className="text-content/60">{pieData[0].id}</div>
                     <div>{formatCurrency2(pieData[0].value)}</div>
                   </div>
-                  <div className="font-medium text-[11px]">
-                    {/* <div className="flex gap-1 items-center">
-                      <div
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: colors[1] }}
-                      ></div>
-                      <div>{pieData[1].id}</div>
-                    </div> */}
+                  <div className="font-medium text-[10px] text-right">
+                    <div className="text-content/60">{pieData[1].id}</div>
                     <div>{formatCurrency2(pieData[1].value)}</div>
                   </div>
                 </div>

@@ -224,11 +224,12 @@ const SalesMobile = () => {
               new Date(b.sale_date).getTime() - new Date(a.sale_date).getTime(),
           );
           if (ctx.dashboardOption === "daily") {
-            const found = sorted.find(
+            const filtered = sorted.filter(
               (s) => formatDate(s.sale_date) === formatDate(start),
             );
-            if (found) {
-              ctx.dispatch(setMobileSalesPanels([found]));
+            
+            if (filtered.length > 0) {
+              ctx.dispatch(setMobileSalesPanels(filtered));
             } else {
               setNoPanelsFound(true);
             }
