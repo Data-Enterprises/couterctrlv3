@@ -133,7 +133,7 @@ const VendorSelect = () => {
             <div className="font-medium">{totalVendors}</div>
           </div>
           <div className="flex flex-col py-1 leading-tight justify-center items-center rounded-md bg-slate-100 shadow-md">
-            <div className="text-content/60">Cashiers:</div>
+            <div className="text-content/60">Operators:</div>
             <div className="font-medium">{totalCashiers}</div>
           </div>
           <div className="flex flex-col py-1 leading-tight justify-center items-center rounded-md bg-slate-100 shadow-md">
