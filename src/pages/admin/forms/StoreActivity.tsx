@@ -91,7 +91,7 @@ const StoreActivity = () => {
       <ExportModal
         isOpen={openExportModal}
         onClose={() => setOpenExportModal(false)}
-        data={context.companyStoresActivity}
+        data={context.filteredStoresActivity}
         columns={storeActivityColumns}
       />
       <div className="text-[12px] font-medium leading-snug">
@@ -146,7 +146,7 @@ const StoreActivity = () => {
         <div className="text-[12.5px] shadow-md mt-2 rounded-lg">
           <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 items-end mb-2">
             <Input
-              label={`Search Stores -${context.filteredStoresActivity.length}`}
+              label={`Search Stores - ${context.filteredStoresActivity.length}`}
               value={context.storeNameFilter}
               setValue={handleStoreNameFilter}
               className="py-0.5 text-[13px]"
