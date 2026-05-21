@@ -50,7 +50,7 @@ const Input = ({
 
   return (
     <div className={`${width}`}>
-      <div className="flex justify-between text-[11px] md:text-[13px] items-end pr-1.5">
+      <div className="flex justify-between text-[11px] md:text-[13px] items-end pr-1.5 leading-tight">
         <div>
           <label className="font-medium pl-0.5">{label}</label>
           <span className={`text-[10px] ml-1 ${textColor}`}>{availableText}</span>
