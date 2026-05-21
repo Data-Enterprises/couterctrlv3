@@ -4,8 +4,10 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   resetCompanyForm,
   setCompanyStoresActivity,
+  setFilteredCompanyStoresActivity,
   setIsLoadingStoreActivity,
   setSelectedCompanyForm,
+  setStoreNameFilter,
 } from "../../../features/adminSlice";
 import { getAllStoreActivity } from "../../../api/admin";
 import type { JsonError, StoreActivityJsonResp } from "../../../interfaces";
@@ -17,6 +19,7 @@ import "./forms.css";
 import ExportModal from "../../../components/modals/ExportModal";
 import { useState } from "react";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+import Input from "../../../components/inputs/Input";
 
 const StoreActivity = () => {
   const toast = useToast();
@@ -27,6 +30,10 @@ const StoreActivity = () => {
 
   const handleCompanySelect = (x: number) => {
     const form = context.companies.find((comp) => comp.id === Number(x));
+    dispatch(resetCompanyForm());
+    dispatch(setStoreNameFilter(""));
+    dispatch(setFilteredCompanyStoresActivity([]));
+    dispatch(setCompanyStoresActivity([]));
     dispatch(setSelectedCompanyForm(form!));
   };
 
@@ -59,6 +66,24 @@ const StoreActivity = () => {
   const handleReset = () => {
     dispatch(resetCompanyForm());
     dispatch(setCompanyStoresActivity([]));
+    dispatch(setStoreNameFilter(""));
+  };
+
+  const handleMissingClick = () => {
+    const missingStores = context.companyStoresActivity.filter(
+      (s) => s.inactive_or_missing_days > 0,
+    );
+    dispatch(setFilteredCompanyStoresActivity(missingStores));
+  };
+
+  const handleAllClick = () => {
+    dispatch(setFilteredCompanyStoresActivity(context.companyStoresActivity));
+  };
+
+  const handleStoreNameFilter = (val: string) => {
+    dispatch(setStoreNameFilter(val));
+    const filtered = context.companyStoresActivity.filter((s) => s.store_name.toLowerCase().includes(val.toLowerCase()));
+    dispatch(setFilteredCompanyStoresActivity(filtered));
   };
 
   return (
@@ -91,19 +116,19 @@ const StoreActivity = () => {
         <DatePickers showBtn={false} />
         <div className="grid grid-cols-3 gap-2">
           <button
-            className={`${context.companyForm.id === 0 ? "opacity-50 pointer-events-none" : ""} btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-[13px]`}
+            className={`${context.companyForm.id === 0 ? "opacity-50 pointer-events-none" : ""} btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1 text-[13px]`}
             onClick={fetchStoreActivity}
           >
             Search
           </button>
           <button
-            className={`${context.companyStoresActivity.length === 0 ? "opacity-50 pointer-events-none" : ""} btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-[13px]`}
+            className={`${context.companyStoresActivity.length === 0 ? "opacity-50 pointer-events-none" : ""} btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1 text-[13px]`}
             onClick={() => setOpenExportModal(true)}
           >
             Export
           </button>
           <button
-            className={`${context.companyStoresActivity.length === 0 ? "opacity-50 pointer-events-none" : ""} btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-[13px]`}
+            className={`${context.companyStoresActivity.length === 0 ? "opacity-50 pointer-events-none" : ""} btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1 text-[13px]`}
             onClick={handleReset}
           >
             Reset
@@ -118,7 +143,27 @@ const StoreActivity = () => {
       ) : null}
 
       {context.companyStoresActivity.length > 0 && (
-        <div className="text-[12.5px] shadow-md mt-4 rounded-lg">
+        <div className="text-[12.5px] shadow-md mt-2 rounded-lg">
+          <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 items-end mb-2">
+            <Input
+              label={`Search Stores -${context.filteredStoresActivity.length}`}
+              value={context.storeNameFilter}
+              setValue={handleStoreNameFilter}
+              className="py-0.5 text-[13px]"
+            />
+            <button
+              className="btn-themeBlue w-full px-0 py-1 text-[12.5px] bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white"
+              onClick={handleMissingClick}
+            >
+              View All Missing
+            </button>
+            <button
+              className="btn-themeBlue w-full px-0 py-1 text-[12.5px] bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white"
+              onClick={handleAllClick}
+            >
+              View All
+            </button>
+          </div>
           <div className="select-none grid grid-cols-[0.6fr_1.8fr_0.8fr_0.8fr_1fr] pb-1 bg-[rgb(30,45,80)]/10 font-semibold px-2 rounded-t-lg">
             <div>ID</div>
             <div>Store Name</div>
@@ -139,8 +184,8 @@ const StoreActivity = () => {
             </div>
           </div>
 
-          <div className="max-h-[calc(100vh-350px)] overflow-y-auto text-[12px] leading-snug company-stores-scroll rounded-b-lg overflow-hidden px-2 cursor-default">
-            {context.companyStoresActivity.map((s, i) => (
+          <div className="max-h-[calc(100vh-390px)] overflow-y-auto text-[12px] leading-snug company-stores-scroll rounded-b-lg overflow-hidden px-2 cursor-default">
+            {context.filteredStoresActivity.map((s, i) => (
               <div
                 key={i}
                 className="grid grid-cols-[0.6fr_1.8fr_0.8fr_0.8fr_1fr] border-b last:border-none border-b-[rgb(30,45,80)]/50 py-1"
