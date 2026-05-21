@@ -4,13 +4,19 @@ import { useAdminContext } from "./hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
 // reducers
-import { resetCompanyForm, setAdminForm, setCompanies } from "../../features/adminSlice";
+import {
+  resetCompanyForm,
+  setAdminForm,
+  setCompanies,
+} from "../../features/adminSlice";
 
 // api
 import { getCompanies } from "../../api/company";
 import type { CompanyJsonResp, JsonError } from "../../interfaces";
 import CreateComp from "./forms/CreateComp";
 import UpdateComp from "./forms/UpdateComp";
+import DeleteComp from "./forms/DeleteComp";
+import StoreActivity from "./forms/StoreActivity";
 
 const AdminPage = () => {
   const toast = useToast();
@@ -72,9 +78,9 @@ const AdminPage = () => {
       case "update":
         return <UpdateComp />;
       case "delete":
-        return <div>Delete</div>;
+        return <DeleteComp />;
       case "store_activity":
-        return <div>Store Activity</div>;
+        return <StoreActivity />;
       default:
         return null;
     }
