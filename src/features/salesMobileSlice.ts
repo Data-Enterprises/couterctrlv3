@@ -409,6 +409,7 @@ const salesMobileSlice = createSlice({
             acc.push({
               id: formatDate(curr.sale_date),
               value: curr.total_sales - curr.total_tax,
+              storeid: curr.storeid,
             });
           }
           return acc;
@@ -440,6 +441,7 @@ const salesMobileSlice = createSlice({
             acc.push({
               id: formatDate(curr.sale_date),
               value: curr.total_sales - curr.total_tax,
+              storeid: curr.storeid,
             });
           }
           return acc;

@@ -60,7 +60,7 @@ const KpiContainer = () => {
           if (found) {
             found.value += 1;
           } else {
-            acc.push({ id: o.order_type, value: 1 });
+            acc.push({ id: o.order_type, value: 1, storeid: o.storeid });
           }
           return acc;
         }, [])
@@ -72,7 +72,7 @@ const KpiContainer = () => {
           if (found) {
             found.value += 1;
           } else {
-            acc.push({ id: o.vendor_name, value: 1 });
+            acc.push({ id: o.vendor_name, value: 1, storeid: o.storeid });
           }
           return acc;
         }, [])
@@ -84,7 +84,7 @@ const KpiContainer = () => {
           if (found) {
             found.value += 1;
           } else {
-            acc.push({ id: o.category_description, value: 1 });
+            acc.push({ id: o.category_description, value: 1, storeid: o.storeid });
           }
           return acc;
         }, [])
@@ -104,7 +104,7 @@ const KpiContainer = () => {
         orderTypes.forEach((type) => {
           const found = result.find((r) => r.id === type);
           if (!found) {
-            result.push({ id: type, value: 0 });
+            result.push({ id: type, value: 0, storeid: 0 });
           }
         });
         return result;
