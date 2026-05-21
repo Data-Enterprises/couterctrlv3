@@ -134,16 +134,16 @@ const FiltersModal = () => {
     <Modal
       isOpen={filterModalOpen}
       onClose={handleClose}
-      modalClassName="bg-custom-white w-1/5"
+      modalClassName="bg-custom-white w-1/3 xl:w-1/5"
     >
       <div
         data-testid="cashier-table-filter-modal"
-        className="font-medium text-center text-lg"
+        className="font-medium text-center"
       >
         Set {filterType} Filter
       </div>
       {renderFilter()}
-      <div className="flex gap-4">
+      <div className="flex gap-4 text-sm">
         <button
           data-testid="cashier-table-filter-modal-submit-btn"
           className="btn-themeGreen w-full"

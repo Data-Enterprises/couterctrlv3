@@ -19,7 +19,7 @@ export const useCouponContext = () => {
   const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector(
     (state) => state.search,
   );
-  const { url, token, isMobile } = useAppSelector((state) => state.app);
+  const { url, token, isMobile, isTablet } = useAppSelector((state) => state.app);
 
   return {
     url,
@@ -40,6 +40,7 @@ export const useCouponContext = () => {
     subDeptMobileFilter,
     uniqueDateMobileFilter,
     showSubsMobileFilter,
+    isTablet
   };
 };
 
@@ -50,8 +51,8 @@ export const theme = themeQuartz.withParams({
   headerTextColor: "#ffffff",
   oddRowBackgroundColor: "#dbeafe",
   rowHoverColor: "#93c5fd",
-  headerFontWeight: "bold",
-  dataFontSize: 13,
+  // headerFontWeight: "bold",
+  dataFontSize: 12,
   selectCellBorder: "transparent",
   rowBorder: "1px solid white",
   // selectedRowBackgroundColor: "#93c5fd",
@@ -60,6 +61,7 @@ export const theme = themeQuartz.withParams({
 
 const defaultOptions = {
   cellClass: "no-outline-on-focus",
+  headerClass: "text-[12.5px] font-medium",
 };
 
 export const cols: (ColDef<CouponItem> | ColGroupDef<CouponItem>)[] = [

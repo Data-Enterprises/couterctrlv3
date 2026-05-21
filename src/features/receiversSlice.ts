@@ -41,6 +41,7 @@ interface ReceiversState {
   filterType: FilterType;
   noReceivers: boolean;
   selectedInvoice: string;
+  selectedTransNum: string;
   recMobileStage: RecMobileStage;
   selectedOperator: Operator | null;
   operatorsList: Operator[];
@@ -79,6 +80,7 @@ export const initialState: ReceiversState = {
   selectedVendor: null,
   viewAllVendors: false,
   vendorView: 1,
+  selectedTransNum: "",
 };
 
 export const receiversSlice = createSlice({
@@ -198,6 +200,7 @@ export const receiversSlice = createSlice({
       state.totals = [];
       state.noReceivers = false;
       state.selectedInvoice = "";
+      state.selectedTransNum = "";
       state.recMobileStage = 1;
       state.selectedOperator = null;
       state.operatorsList = [];
@@ -205,6 +208,10 @@ export const receiversSlice = createSlice({
       state.detailsDate = "";
       state.reducedVendors = [];
       state.selectedVendor = null;
+      state.vendorView = 1;
+    },
+    setSelectedTransNum: (state, action: PayloadAction<string>) => {
+      state.selectedTransNum = action.payload;
     },
     setRecMobileStage: (state, action: PayloadAction<RecMobileStage>) => {
       state.recMobileStage = action.payload;
@@ -263,6 +270,7 @@ export const {
   setReducedVendors,
   setSelectedVendor,
   setViewAllVendors,
+  setSelectedTransNum,
   setVendorView,
 } = receiversSlice.actions;
 export default receiversSlice.reducer;

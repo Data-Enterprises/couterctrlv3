@@ -1,13 +1,6 @@
 import { useAppSelector } from "../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../utils";
 
-// const sortOptions = [
-//   { label: "Sale Date", value: "sale_date" },
-//   { label: "Price", value: "price" },
-//   { label: "Case Cost", value: "casecost" },
-//   { label: "Extended Cost", value: "extended_cost" },
-// ];
-
 const ItemDaily = () => {
   const { itemLookupHistory, itemsLoaded, selectedStore } = useAppSelector(
     (state) => state.item,
@@ -17,7 +10,7 @@ const ItemDaily = () => {
 
   if (!itemsLoaded) {
     return (
-      <div className="bg-custom-white h-[130.2px] flex justify-center items-center text-content/60 font-medium rounded-lg shadow-md text-sm mt-2">
+      <div className="bg-custom-white h-[100px] flex justify-center items-center text-content/60 font-medium rounded-lg shadow-md text-[13px] md:text-sm md:mt-2">
         <div>Please search for an item to view its daily data</div>
       </div>
     );

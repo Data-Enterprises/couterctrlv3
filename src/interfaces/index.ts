@@ -891,6 +891,23 @@ export type StaticUserData = {
   confirm_password: string;
 };
 
+export type StoreWithActivity = {
+  storeid: number;
+  store_name: string;
+  start_date: string;
+  end_date: string;
+  total_days_in_range: number;
+  active_days: number;
+  inactive_or_missing_days: number;
+}
+
+export interface StoreActivityJsonResp {
+  error: number;
+  success: boolean;
+  msg: string;
+  stores: StoreWithActivity[];
+}
+
 /////////////////////////
 // Margin Maze Interfaces
 /////////////////////////

@@ -158,13 +158,22 @@ const itemLookupSlice = createSlice({
     setPause: (state, action: PayloadAction<boolean>) => {
       state.pause = action.payload;
     },
-    setILView: (state, action: PayloadAction<"search" | "history" | "daily">) => {
+    setILView: (
+      state,
+      action: PayloadAction<"search" | "history" | "daily">,
+    ) => {
       state.viewSearch = action.payload === "search";
       state.viewHistory = action.payload === "history";
       state.viewDaily = action.payload === "daily";
     },
-    reQueryUpc: (state) => {
-      state.upcCode = "";
+    reQueryUpc: (
+      state,
+      action: PayloadAction<{ isResettingUpcCode: boolean }>,
+    ) => {
+      const { isResettingUpcCode } = action.payload;
+      if (isResettingUpcCode) {
+        state.upcCode = "";
+      }
       state.mode = "Sales";
       state.topStoreSales = null;
       state.lowestStoreSales = null;

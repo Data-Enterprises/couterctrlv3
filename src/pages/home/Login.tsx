@@ -215,7 +215,7 @@ const Login = () => {
                   </div>
                 ) : null}
 
-                <div className="relative bg-red-200">
+                <div className="relative">
                   <button
                     data-testid="sign-in"
                     onClick={handleSubmit}
@@ -236,7 +236,7 @@ const Login = () => {
         </div>
         {/* TODO: Update this before pushing to publish */}
         <div className="absolute bottom-1 left-0 text-sm pl-2 select-none">
-          Last Updated 5/11/2026 @ 4:40 PM CST
+          Last Updated 5/21/2026 @ 4:30 PM CST
         </div>
       </div>
       <div className="relative hidden w-0 flex-1 lg:block">

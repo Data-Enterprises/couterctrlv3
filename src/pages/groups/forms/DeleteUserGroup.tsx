@@ -12,7 +12,6 @@ import {
 } from "../../../features/groupSlice";
 
 import { deleteGroup } from "../../../api/groups";
-
 import Input from "../../../components/inputs/Input";
 
 const DeleteUserGroup = () => {
@@ -51,50 +50,27 @@ const DeleteUserGroup = () => {
     return createInput.trim() !== "" && selectedGroup.id > 0;
   };
 
-  if (isDeleting) {
-    const cleanup = () => {
-      dispatch(setSelectedGroup({ id: 0, group_name: "", userid: 0 }));
-      dispatch(setCreateInput(""));
-      setIsDeleting(false);
-    };
-
-    return (
-      <div
-        className={`p-4 bg-custom-white rounded-lg shadow-lg ${isDesktop ? "w-[25%]" : "w-full"}`}
-      >
-        <div className="text-center">Are you sure you want to delete</div>
-        <div className="text-center">
-          <span className="pr-1">Base group =</span>
-          <span className="font-medium">{selectedGroup.group_name}</span>
-          <span>?</span>
-        </div>
-        <div className="grid grid-cols-2 gap-2 mt-4">
-          <button className="btn-themeGreen" data-testid="delete-submit-btn" onClick={handleDelete}>
-            Yes
-          </button>
-          <button className="btn-themeOrange" data-testid="delete-cancel-btn" onClick={cleanup}>
-            No
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const cleanup = () => {
+    dispatch(setSelectedGroup({ id: 0, group_name: "", userid: 0 }));
+    dispatch(setCreateInput(""));
+    setIsDeleting(false);
+  };
 
   const containerStyle = isDesktop
-    ? "bg-custom-white p-4 rounded-md shadow-md w-[25%]"
-    : "bg-custom-white p-4 rounded-md shadow-md w-full";
+    ? "bg-custom-white p-2 rounded-md shadow-md text-sm"
+    : "bg-custom-white p-4 rounded-md shadow-md w-full text-sm";
 
   return (
     <div className={containerStyle}>
       <div className="font-medium text-sm">
         <div>Select group to delete</div>
       </div>
-      <div className="select-none text-sm grid rounded-lg p-1 max-h-36 overflow-hidden overflow-y-auto">
+      <div className="p-2 bg-bkg/80 rounded-lg grid grid-cols-2 max-h-52 overflow-y-auto select-none text-[13px]">
         {groups.map((g, i) => (
           <div
             key={g.id}
             data-testid={`delete-group-option-${i}`}
-            className={`${selectedGroup.id === g.id && "bg-orange-200"} rounded-full py-1 pl-2 border-b transition-all duration-200 cursor-pointer hover:bg-blue-200`}
+            className={`${selectedGroup.id === g.id ? "bg-orange-200" : ""} px-2 py-0.5 rounded-full transition-all duration-200 cursor-pointer hover:bg-blue-200`}
             onClick={() => handleSelect(g)}
           >
             {g.group_name}
@@ -102,15 +78,53 @@ const DeleteUserGroup = () => {
         ))}
       </div>
       <div>
-        <Input label="Group Name" value={createInput} setValue={() => {}} />
+        <Input
+          label="Group Name"
+          value={createInput}
+          setValue={() => {}}
+          className="py-1 text-[14px]"
+        />
         <button
           data-testid="delete-usergroup-btn"
-          className={`btn-themeOrange mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
+          className={`btn-themeOrange bg-red-600 border-red-600 hover:bg-red-600/75 hover:text-custom-white py-1 text-[13px] mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
           onClick={() => setIsDeleting(true)}
         >
           Delete
         </button>
       </div>
+      {isDeleting ? (
+        <div className="text-[13px]">
+          <div className="grid grid-cols-2 h-[1.5px] my-1.5">
+            <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
+            <div className="bg-gradient-to-l from-content/60 to-custom-white"></div>
+          </div>
+          <div className="text-center">Are you sure you want to delete</div>
+          <div className="text-center">
+            <span className="pr-1">Base group =</span>
+            <span className="font-medium">{selectedGroup.group_name}</span>
+            <span>?</span>
+          </div>
+          <div className="text-content/60 text-center">
+            Be advised, this action cannot be undone
+          </div>
+          <div className="grid grid-cols-2 gap-2 mt-4">
+            <button
+              className="btn-themeGreen bg-red-600 border-red-600 hover:bg-red-600/75 hover:text-custom-white py-1 px-0"
+              data-testid="delete-submit-btn"
+              onClick={handleDelete}
+            >
+              Yes
+            </button>
+            <button
+              className="btn-themeOrange bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white py-1 px-0"
+              data-testid="delete-cancel-btn"
+              onClick={cleanup}
+            >
+              No
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

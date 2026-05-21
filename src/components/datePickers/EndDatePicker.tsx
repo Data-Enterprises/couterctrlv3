@@ -40,7 +40,7 @@ const EndDatePicker = () => {
   return (
     <Menu data-testid="end-date-picker" as="div" className={styling}>
       <div className={menuStyle}>
-        <label className="md:block flex justify-start md:justify-center pl-1 md:pl-0 text-[13px] md:text-[13px] font-medium ">
+        <label className="md:block flex justify-start md:justify-center pl-1 md:pl-0 text-[11px] md:text-[13px] font-medium ">
           End Date
         </label>{" "}
         <MenuButton

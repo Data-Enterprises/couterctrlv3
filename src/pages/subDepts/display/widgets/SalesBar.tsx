@@ -48,9 +48,13 @@ const SalesBar = ({ barData }: SalesBarProps) => {
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg">
-      <div className="bg-blue-500 text-custom-white font-medium text-sm px-2 py-0.5 rounded-t-lg flex justify-between items-center">
+      <div className="font-medium text-[13px] px-2 py-0.5 rounded-t-lg flex justify-between items-center">
         <div>Daily Sales</div>
         <div>{showWeekRange()}</div>
+      </div>
+      <div className="grid grid-cols-2 h-[1.5px]">
+        <div className="bg-gradient-to-r from-blue-200 to-custom-white"></div>
+        <div className="bg-gradient-to-l from-blue-200 to-custom-white"></div>
       </div>
       <ResponsiveBar
         data={barData as unknown as BarDatum[]}

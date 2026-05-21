@@ -103,7 +103,7 @@ const SelectGroup = () => {
         <label
           htmlFor="group-search"
           data-testid="store-label"
-          className="block text-[13px] font-medium "
+          className="block text-[12px] pl-0.5 font-medium "
         >
           Group
         </label>
@@ -120,7 +120,7 @@ const SelectGroup = () => {
               autoComplete="off"
               type="text"
               name="group-search"
-              className={`${inputStyle} text-sm select-none`}
+              className={`${inputStyle} text-[13px] py-1 select-none`}
             />
             <div className="absolute top-2 right-2 cursor-pointer">
               <ChevronUpDownIcon className="fill-content" />

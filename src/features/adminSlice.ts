@@ -4,6 +4,7 @@ import type {
   CompanyBaseGroup,
   MissingStore,
   Store,
+  StoreWithActivity,
   User,
   UserCompany,
 } from "../interfaces";
@@ -28,6 +29,7 @@ export const allCompFilter: UserCompany = {
 };
 
 export type AdminFormType = "store_name" | "store_missing_sales" | "";
+export type AdminForm = "" | "create" | "update" | "delete" | "store_activity";
 
 interface AdminState {
   companies: Company[];
@@ -50,6 +52,10 @@ interface AdminState {
   selectedStoreInfo: Store | null;
   selectedCompanyIdFilter: number;
   exportMissingStoresModalOpen: boolean;
+  adminForm: AdminForm;
+  companyStoresActivity: StoreWithActivity[];
+  filteredStoresActivity: StoreWithActivity[];
+  isLoadingStoreActivity: boolean;
 }
 
 const initialState: AdminState = {
@@ -73,6 +79,10 @@ const initialState: AdminState = {
   exportMissingStoresModalOpen: false,
   filteredMissingStores: [],
   storeNameFilter: "",
+  adminForm: "",
+  companyStoresActivity: [],
+  isLoadingStoreActivity: false,
+  filteredStoresActivity: [],
 };
 
 const adminSlice = createSlice({
@@ -176,6 +186,25 @@ const adminSlice = createSlice({
         s.store_name.toLowerCase().includes(action.payload.toLowerCase()),
       );
     },
+    setAdminForm: (state, action: PayloadAction<AdminForm>) => {
+      state.adminForm = action.payload;
+    },
+    setCompanyStoresActivity: (
+      state,
+      action: PayloadAction<StoreWithActivity[]>,
+    ) => {
+      state.companyStoresActivity = action.payload;
+      state.filteredStoresActivity = action.payload;
+    },
+    setFilteredCompanyStoresActivity: (
+      state,
+      action: PayloadAction<StoreWithActivity[]>,
+    ) => {
+      state.filteredStoresActivity = action.payload;
+    },
+    setIsLoadingStoreActivity: (state, action: PayloadAction<boolean>) => {
+      state.isLoadingStoreActivity = action.payload;
+    },
     resetAdminState: () => initialState,
   },
 });
@@ -200,5 +229,9 @@ export const {
   setStoreNameFilter,
   resetCompanyForm,
   resetAdminState,
+  setAdminForm,
+  setCompanyStoresActivity,
+  setIsLoadingStoreActivity,
+  setFilteredCompanyStoresActivity,
 } = adminSlice.actions;
 export default adminSlice.reducer;

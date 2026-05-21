@@ -31,7 +31,7 @@ const useHeight = () => {
         if (containerHeight > 842) {
           setHeight("max-h-[31vh]");
         } else {
-          setHeight("max-h-[22vh]");
+          setHeight("max-h-[21vh]");
         }
       }
     };
@@ -130,25 +130,25 @@ const SubMarginControls = () => {
           valueKey="storeid"
           onSelect={handleStoreSelect}
           defaultQuery={`${ctx.searchValue > 0 ? findStoreName() : ""}`}
-          innerClass="text-sm"
-          listClass="text-sm"
+          innerClass="text-[13px] py-1"
+          listClass="text-[13px]"
         />
         <SingleDatePicker />
         <button
-          className="btn-themeBlue px-0 w-full mt-2"
+          className="btn-themeBlue px-0 w-full mt-2 text-[13px] py-1"
           onClick={handleSubDeptSearch}
         >
           Search
         </button>
         <div className="mt-2 grid grid-cols-2 gap-2">
           <button
-            className={`btn-themeBlue px-0 ${resetBtnActive()}`}
+            className={`btn-themeBlue px-0 w-full text-[13px] py-1 ${resetBtnActive()}`}
             onClick={() => dispatch(requerySubDeptMargins())}
           >
             Reset
           </button>
           <button
-            className={`btn-themeGreen px-0 ${exportBtnActive()}`}
+            className={`btn-themeGreen px-0 w-full text-[13px] py-1 ${exportBtnActive()}`}
             onClick={openExport}
           >
             Export

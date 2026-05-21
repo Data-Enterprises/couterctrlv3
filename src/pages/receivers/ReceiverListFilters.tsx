@@ -63,16 +63,20 @@ const RecevierListFilters = () => {
   };
 
   const panelStyle =
-    "py-1.5 rounded-lg text-center shadow-md shadow-content/20 hover:bg-orange-200 cursor-pointer transition-all duration-200";
+    "py-1.5 text-[13.5px] rounded-lg text-center shadow-md shadow-content/20 hover:bg-orange-200 cursor-pointer transition-all duration-200";
 
   return (
     <div
       className={`${
         state.list.length === 0 && "hidden"
-      } bg-custom-white rounded-lg shadow-lg`}
+      } bg-custom-white rounded-lg shadow-lg text-sm`}
     >
-      <div className="bg-blue-500 text-custom-white font-medium rounded-t-lg px-2 py-0.5">
+      <div className="font-medium rounded-t-lg px-2 py-0.5">
         Filter By
+      </div>
+      <div className="grid grid-cols-2 h-[1.5px]">
+        <div className="bg-gradient-to-r from-blue-200 to-custom-white"></div>
+        <div className="bg-gradient-to-l from-blue-200 to-custom-white"></div>
       </div>
       <div className="bg-custom-white p-2 rounded-b-lg space-y-2">
         {filterOptions.map((option, i) => (

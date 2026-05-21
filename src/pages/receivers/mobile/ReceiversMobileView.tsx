@@ -19,13 +19,14 @@ const ReceiversMobileView = ({
   if (recMobileStage === 1) {
     return (
       <div className="w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-2 overflow-hidden">
-        <div className="bg-custom-white rounded-lg p-2 shadow-lg">
+        <div className="bg-custom-white rounded-lg p-2 shadow-lg space-y-1">
           <SingleSelect
             label={"Select Store"}
             data={assignedStores}
             displayKey={"store_name"}
             valueKey={"storeid"}
             onSelect={setSelectedStore}
+            innerClass="py-1 text-[13px]"
           />
           <DatePickers handleQuery={getReceivers} />
         </div>

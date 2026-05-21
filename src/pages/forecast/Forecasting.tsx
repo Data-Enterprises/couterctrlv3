@@ -201,7 +201,7 @@ const Forecasting = () => {
     >
       <ForecastModal />
       <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 gap-2 grid grid-cols-[18%_11%_70%] overflow-hidden">
-        <div className="grid grid-rows-[37%_35%_24%] gap-4">
+        <div className="grid grid-rows-[37%_35%_24%] gap-2">
           <div className="bg-custom-white rounded-lg shadow-lg p-2">
             <div className="flex gap-2">
               <SingleSelect
@@ -213,6 +213,7 @@ const Forecasting = () => {
                 defaultQuery="Stores"
                 id={1}
                 className="w-1/2"
+                innerClass="py-1 text-[13px]"
               />
               {context.radioId === 1 ? (
                 <SingleSelect
@@ -225,6 +226,7 @@ const Forecasting = () => {
                   resetQuery={true}
                   id={2}
                   className="w-1/2"
+                  innerClass="py-1 text-[13px]"
                 />
               ) : (
                 <SingleSelect
@@ -236,6 +238,7 @@ const Forecasting = () => {
                   resetQuery={true}
                   id={2}
                   className="w-1/2"
+                  innerClass="py-1 text-[13px]"
                 />
               )}
             </div>
@@ -247,7 +250,7 @@ const Forecasting = () => {
               context="large"
             />
           </div>
-          <div className="bg-custom-white rounded-lg shadow-lg px-2">
+          <div className="bg-custom-white rounded-lg shadow-lg px-2 text-[13px]">
             <div className="bg-blue-500 text-custom-white -mx-2 py-0.5 px-4 rounded-t-lg font-medium flex justify-between">
               <div>
                 UPCs <span className="text-sm">(comma separated)</span>
@@ -281,7 +284,7 @@ const Forecasting = () => {
               </button>
             </div>
             <div
-              className={`bg-bkg shadow rounded-lg text-xs ${height} mb-2`}
+              className={`bg-bkg shadow rounded-lg text-xs ${height} flex mb-2`}
             >
               <div
                 className={`grid grid-cols-3 ${scrollHeight} overflow-hidden overflow-y-scroll no-scrollbar`}

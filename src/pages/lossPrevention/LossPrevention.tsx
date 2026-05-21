@@ -20,6 +20,8 @@ import CashierSales from "./cashierSales/CashierSales";
 import SaleTypes from "./SaleTypes";
 import CashiersTableFilters from "./filters/CashiersTableFilters";
 import MobileTrendCards from "./cashierSales/MobileTrendCards";
+import LPTablet from "./tablet/LPTablet";
+import LpMobile from "./mobile/LpMobile";
 
 const LossPrevention = () => {
   const toast = useToast();
@@ -57,6 +59,14 @@ const LossPrevention = () => {
         toast.error("Error fetching sale types: " + err.message),
       );
   };
+
+  if (context.isMobile) {
+    return <LpMobile getSaleTypes={getSaleTypesData} />;
+  }
+
+  if (context.isTablet) {
+    return <LPTablet getSaleTypes={getSaleTypesData} />;
+  }
 
   // Styles for mobile and desktop
   const pageContainer = context.isDesktop

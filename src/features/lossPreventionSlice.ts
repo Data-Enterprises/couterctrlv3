@@ -16,6 +16,7 @@ type SelectedCashier = {
 
 export interface LossPreventionState {
   // for raw data and the chunked versions for carousel view
+  loadingCashierDetails: boolean;
   cashierDetails: CashierDetails[];
   selectedCashierDetails: CashierDetails | null;
   selectedCashierDetailsIdx: number;
@@ -53,9 +54,11 @@ export interface LossPreventionState {
   pageText: string;
   searchString: string;
   transactionLoadingMessage: string;
+  viewTransactionsMobile: boolean;
 }
 
 const initialState: LossPreventionState = {
+  loadingCashierDetails: false,
   cashierDetails: [],
   selectedCashierDetails: null,
   cashierTrends: [],
@@ -93,12 +96,16 @@ const initialState: LossPreventionState = {
   selectedCashierDetailsIdx: -1,
   cashierDetailsTrendDirection: 0,
   transactionLoadingMessage: "",
+  viewTransactionsMobile: false,
 };
 
 export const lossPreventionSlice = createSlice({
   name: "lossPrevention",
   initialState,
   reducers: {
+    setLoadingCashierDetails: (state, action: PayloadAction<boolean>) => {
+      state.loadingCashierDetails = action.payload;
+    },
     setCashierDetails: (state, action: PayloadAction<CashierDetails[]>) => {
       state.cashierDetails = action.payload;
     },
@@ -249,12 +256,18 @@ export const lossPreventionSlice = createSlice({
       state.cashierDetailsTrendDirection = 0;
       state.transOverviews = [];
       state.transactionLoadingMessage = "";
+      if (state.viewTransactionsMobile) {
+        state.viewTransactionsMobile = false;
+      }
     },
     setTransOverviews: (
       state,
       action: PayloadAction<TransactionOverview[]>,
     ) => {
       state.transOverviews = action.payload;
+    },
+    setViewTransactionsMobile: (state, action: PayloadAction<boolean>) => {
+      state.viewTransactionsMobile = action.payload;
     },
     setCashierDetailsTrendDirection: (state, action: PayloadAction<number>) => {
       state.cashierDetailsTrendDirection = action.payload;
@@ -264,6 +277,7 @@ export const lossPreventionSlice = createSlice({
 });
 
 export const {
+  setLoadingCashierDetails,
   setCashierDetails,
   setCashierTrends,
   setCashierTransactions,
@@ -302,5 +316,6 @@ export const {
   setCashierTableQtyThreshComp,
   setTotalQtyFilter,
   setTransactionLoadingMessage,
+  setViewTransactionsMobile,
 } = lossPreventionSlice.actions;
 export default lossPreventionSlice.reducer;

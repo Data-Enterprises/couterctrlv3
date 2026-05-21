@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { useMobileSalesCtx } from "../hooks";
 import type { AggTotals, AggCoupons } from "../../../../interfaces";
 import type { PieData } from "..";
-import { defaultAggCoupons, defaultAggTotals, pieData, sortOptions } from ".";
+import { defaultAggCoupons, defaultAggTotals, sortOptions } from ".";
 import {
   setSPSort,
   type PanelSortOption,
@@ -14,27 +14,20 @@ import { ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
 
 const StoresView = () => {
   const ctx = useMobileSalesCtx();
-  const [aggTotals, setAggTotals] = useState<AggTotals>(defaultAggTotals);
-  const [_, setAggCoupons] = useState<AggCoupons>(defaultAggCoupons);
-  const [couponPieData, setCouponPieData] = useState<PieData[]>(pieData);
-
-  useEffect(() => {
+  const aggTotals = useMemo(() => {
     if (
       !ctx.hourlySales.length ||
       !ctx.salesPanels.length ||
       !ctx.subSales.length
     )
-      return;
-
-    setAggCoupons(defaultAggCoupons);
-    setAggTotals(defaultAggTotals);
-    setCouponPieData(pieData);
+      return defaultAggTotals;
 
     const filtered =
       ctx.selectedStore.sale_date.length > 0
         ? [...ctx.hourlySales].filter((hs) => {
             return ctx.selectedStore.sale_date
-              ? hs.sale_date.split("T")[0] === ctx.selectedStore.sale_date.split("T")[0]
+              ? hs.sale_date.split("T")[0] ===
+                  ctx.selectedStore.sale_date.split("T")[0]
               : true;
           })
         : [...ctx.hourlySales];
@@ -50,11 +43,25 @@ const StoresView = () => {
       { ...defaultAggTotals },
     );
 
+    if (ctx.selectedStore.sale_date.length) {
+      // find that sales panel => total sales - total tax => yyyy-mm-dd
+      const panel = ctx.salesPanels.find(
+        (sp) =>
+          sp.sale_date.split("T")[0] ===
+            ctx.selectedStore.sale_date.split("T")[0] &&
+          sp.storeid === ctx.selectedStore.storeid,
+      );
+      totals.total_tax = panel ? panel.total_tax : 0;
+    }
+
     const formatSales = () => {
       if (ctx.selectedStore.sale_date.length) {
         // find that sales panel => total sales - total tax => yyyy-mm-dd
         const panel = ctx.salesPanels.find(
-          (sp) => sp.sale_date.split("T")[0] === ctx.selectedStore.sale_date.split("T")[0],
+          (sp) =>
+            sp.sale_date.split("T")[0] ===
+              ctx.selectedStore.sale_date.split("T")[0] &&
+            sp.storeid === ctx.selectedStore.storeid,
         );
 
         return panel!.total_sales - panel!.total_tax;
@@ -69,14 +76,19 @@ const StoresView = () => {
 
     totals.total_sales = formatSales();
     totals.avg_basket_amount = totals.total_sales / totals.transactions;
+    return totals;
+  }, [ctx.hourlySales, ctx.salesPanels, ctx.selectedStore]);
 
-    setAggTotals(totals);
-
+  const couponPieData = useMemo(() => {
     const subs = ctx.selectedStore.sale_date.length
-      ? [...ctx.subSales].filter(
-          (ss) => ss.sale_date.split("T")[0] === ctx.selectedStore.sale_date.split("T")[0],
+      ? [...ctx.subSales].filter((ss) =>
+          ss.sale_date.split("T")[0] ===
+            ctx.selectedStore.sale_date.split("T")[0] && ss.storeid
+            ? ss.storeid === ctx.selectedStore.storeid
+            : true,
         )
       : ctx.subSales;
+
     const cpns = subs.reduce(
       (acc: AggCoupons, val) => {
         acc.digital_coupons += val.digital_coupons;
@@ -89,14 +101,30 @@ const StoresView = () => {
     );
 
     const pieValues: PieData[] = [
-      { id: "Digital Coupons", value: cpns.digital_coupons },
-      { id: "E. In-Store Coupons", value: cpns.elec_instore_coupons },
-      { id: "E. Store Coupons", value: cpns.elect_store_coupons },
-      { id: "Store Coupons", value: cpns.store_coupon },
+      {
+        id: "Digital Coupons",
+        value: cpns.digital_coupons,
+        storeid: ctx.selectedStore.storeid ? ctx.selectedStore.storeid : 0,
+      },
+      {
+        id: "E. In-Store Coupons",
+        value: cpns.elec_instore_coupons,
+        storeid: ctx.selectedStore.storeid ? ctx.selectedStore.storeid : 0,
+      },
+      {
+        id: "E. Store Coupons",
+        value: cpns.elect_store_coupons,
+        storeid: ctx.selectedStore.storeid ? ctx.selectedStore.storeid : 0,
+      },
+      {
+        id: "Store Coupons",
+        value: cpns.store_coupon,
+        storeid: ctx.selectedStore.storeid ? ctx.selectedStore.storeid : 0,
+      },
     ];
-    setAggCoupons(cpns);
-    setCouponPieData(pieValues);
-  }, [ctx.hourlySales, ctx.salesPanels, ctx.selectedStore, ctx.subSales]);
+
+    return pieValues;
+  }, [ctx.subSales]);
 
   const currentPanelsList = () => {
     if (ctx.panelSortOption === "") return ctx.salesPanels;

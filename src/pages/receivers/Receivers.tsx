@@ -29,12 +29,13 @@ import ExportModal from "./ExportModal";
 import { detailCols } from ".";
 import { useEffect, useState } from "react";
 import ReceiversMobileView from "./mobile/ReceiversMobileView";
+import ReceiversTablet from "./tablet/ReceiversTablet";
 
 const Receivers = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.receivers);
-  const { url, token, isMobile } = useAppSelector((state) => state.app);
+  const { url, token, isMobile, isTablet } = useAppSelector((state) => state.app);
   const { assignedStores } = useAppSelector((state) => state.user);
   const { startDate, endDate } = useAppSelector((state) => state.search);
   const [totalsLine, setTotalsLine] = useState<string>("");
@@ -150,7 +151,7 @@ const Receivers = () => {
         columns={detailCols}
         totalsLine={totalsLine}
       />
-      <div className="w-full h-full grid grid-cols-[16%_84%] gap-4">
+      {!isTablet ? <div className="w-full h-full grid grid-cols-[16%_84%] gap-4">
         <div className="select-none space-y-4">
           <div className="bg-custom-white rounded-lg p-2 shadow-lg">
             <SingleSelect
@@ -159,14 +160,15 @@ const Receivers = () => {
               displayKey={"store_name"}
               valueKey={"storeid"}
               onSelect={setSelectedStore}
+              innerClass="text-[13px] py-1"
             />
-            <DatePickers handleQuery={getReceivers} />
+            <DatePickers handleQuery={getReceivers} btnPadding="py-1" />
             <div className="flex gap-2">
               <button
                 data-testid="rec-page-refresh-btn"
                 className={`${
                   state.list.length === 0 && "opacity-50 pointer-events-none"
-                } btn-themeOrange w-1/2 mt-2 px-0`}
+                } btn-themeOrange w-1/2 mt-2 px-0 py-1 text-[13px]`}
                 onClick={() => dispatch(resetReceiverSlice())}
               >
                 Refresh
@@ -175,7 +177,7 @@ const Receivers = () => {
                 data-testid="receivers-export-btn"
                 className={`${
                   state.details.length === 0 && "opacity-50 pointer-events-none"
-                } btn-themeGreen w-1/2 mt-2 px-0`}
+                } btn-themeGreen w-1/2 mt-2 px-0 py-1 text-[13px]`}
                 onClick={openExportModal}
               >
                 Export
@@ -188,7 +190,7 @@ const Receivers = () => {
           <ReceiversListGrid />
           <ReceiverDetailsGrid />
         </div>
-      </div>
+      </div> : <ReceiversTablet getData={getReceivers} />}
     </div>
   );
 };

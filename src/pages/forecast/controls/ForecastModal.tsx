@@ -58,9 +58,9 @@ const ForecastModal = () => {
     for (const key in option) {
       if (key === selection) {
         // Toggle the selected option
-        test[key as keyof ExportOption] = 1
+        test[key as keyof ExportOption] = 1;
       } else {
-        test[key as keyof ExportOption] = 0
+        test[key as keyof ExportOption] = 0;
       }
     }
     setOption(test);
@@ -87,7 +87,7 @@ const ForecastModal = () => {
       modalClassName="bg-custom-white w-1/4"
     >
       <div className="flex justify-center gap-4 select-none mb-2">
-        {sims.length && (
+        {sims.length ? (
           <CheckBox
             value={option.initial === 1}
             label="Initial"
@@ -96,19 +96,20 @@ const ForecastModal = () => {
             onChange={() => handleChange("initial")}
             className="cursor-pointer"
           />
-        )}
-        {sims.length &&
-          sims.map(([sim, _], i) => (
-            <CheckBox
-              key={sim}
-              value={option[sim as keyof ExportOption] === 1}
-              label={label(sim)}
-              id={i + 2}
-              idExtension={`${sim}-updated-history`}
-              onChange={() => handleChange(sim)}
-              className="cursor-pointer"
-            />
-          ))}
+        ) : null}
+        {sims.length
+          ? sims.map(([sim, _], i) => (
+              <CheckBox
+                key={sim}
+                value={option[sim as keyof ExportOption] === 1}
+                label={label(sim)}
+                id={i + 2}
+                idExtension={`${sim}-updated-history`}
+                onChange={() => handleChange(sim)}
+                className="cursor-pointer"
+              />
+            ))
+          : null}
       </div>
       <div>
         <label className="font-medium text-sm pl-0.5" htmlFor="filename">

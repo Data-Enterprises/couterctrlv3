@@ -207,7 +207,7 @@ const SubsView = () => {
           <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
         </div>
 
-        <div className="max-h-[180px] overflow-y-auto text-[11px]">
+        <div className="max-h-[180px] overflow-y-auto text-[10px]">
           {subs.map((s, i) => (
             <div
               key={i}
@@ -239,7 +239,7 @@ const SubsView = () => {
           <div className="bg-gradient-to-l from-orange-200 to-blue-200 h-[1.5px]"></div>
         </div>
 
-        <div className="flex justify-between items-center text-[11.5px] mt-1">
+        <div className="flex justify-between items-center text-[11px] mt-1">
           <div className="flex items-center gap-1">
             <div className="text-content/60">Last Week</div>
             {trendIcon(weekTrend, "this")}
@@ -251,72 +251,6 @@ const SubsView = () => {
         </div>
 
         <div className="grid gap-3 py-1 text-[11px]">
-          <MobileSubTrendCard sub={tw} row={1} dates={twDateRange} />
-          <MobileSubTrendCard sub={lw} row={2} dates={lwDateRange} />
-          <MobileSubTrendCard sub={ly} row={3} dates={lyDateRange} />
-        </div>
-      </div>
-    </div>
-  );
-
-  // Once we have both data sets, show the comparisons (final step)
-  return (
-    <div className="p-2 space-y-2 max-h-[calc(100vh-6rem)] overflow-y-auto">
-      <div className="bg-custom-white rounded-lg shadow-lg">
-        <div className="grid grid-cols-[30%_1fr_1fr_0.5fr] px-2 py-0.5 text-content/60 font-medium">
-          <div>Sub Dept</div>
-          <div>This Yr $</div>
-          <div>Last Yr $</div>
-          <div>Qty</div>
-        </div>
-        <div className="grid grid-cols-2 mb-1">
-          <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
-          <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
-        </div>
-        <div className="max-h-[180px] overflow-y-auto">
-          {subs.map((s, i) => (
-            <div
-              key={i}
-              className={`${selectedRow(s.sub_department)} transition-all duration-200 px-2 py-1`}
-              onClick={() => handleRowClick(s.sub_department)}
-            >
-              <div></div>
-              <div className="grid grid-cols-[30%_1fr_1fr_0.5fr]">
-                <div>{s.sub_department_description}</div>
-                <div>
-                  <div>{formatCurrency2(s.total_sales - s.total_tax)}</div>
-                </div>
-                <div>
-                  <div>{formatCurrency2(s.lastYrSales)}</div>
-                </div>
-                <div>
-                  <div>{formatBigNumber(s.qty, 0)}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="bg-custom-white rounded-lg px-2 py-1 shadow-lg text-[13.5px]">
-        <div className="font-medium grid grid-cols-3">
-          <div className="">{sub} Trends</div>
-        </div>
-        <div className="grid grid-cols-2">
-          <div className="bg-gradient-to-r from-emerald-200 from-[20%] to-blue-200 h-[1.5px]"></div>
-          <div className="bg-gradient-to-l from-orange-200 from-[20%] to-blue-200 h-[1.5px]"></div>
-        </div>
-
-        <div className="flex justify-between text-[12.5px]">
-          <div className="flex gap-1">
-            <div className="text-content/60">Last Week</div>
-            <div>{trendIcon(weekTrend, "this")}</div>
-          </div>
-          <div className="flex gap-1">
-            <div className="text-content/60">Last Year</div>
-            <div>{trendIcon(yearTrend, "last")}</div>
-          </div>
-        </div>
-        <div className="grid gap-4 text-[11px] py-1">
           <MobileSubTrendCard sub={tw} row={1} dates={twDateRange} />
           <MobileSubTrendCard sub={lw} row={2} dates={lwDateRange} />
           <MobileSubTrendCard sub={ly} row={3} dates={lyDateRange} />

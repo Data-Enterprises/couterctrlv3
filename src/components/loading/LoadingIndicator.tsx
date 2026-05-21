@@ -10,8 +10,8 @@ const LoadingIndicator = ({
   className = "",
 }: Props) => {
   return (
-    <div data-testid="loading-indicator" className={`loading-indicator ${className}`}>
-      <span className="absolute mt-6 text-center w-full text-sm font-medium">{message}</span>
+    <div data-testid="loading-indicator" className={`loading-indicator text-[12px] ${className}`}>
+      <span className="absolute mt-6 text-center w-full font-medium">{message}</span>
     </div>
   );
 };

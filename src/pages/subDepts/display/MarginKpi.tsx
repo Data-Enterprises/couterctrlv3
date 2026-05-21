@@ -135,7 +135,7 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
 
   return (
     <div
-      className={`relative w-1/6 flex flex-col gap-1 justify-center items-center bg-custom-white px-2 py-4 rounded-lg shadow-lg ${highlightStyle()} ${hoverStyle()}`}
+      className={`relative text-[13.5px] w-1/6 flex flex-col gap-1 justify-center items-center bg-custom-white py-4 rounded-lg shadow-lg ${highlightStyle()} ${hoverStyle()}`}
       onClick={handleCostClick}
     >
       <div className="text-content/50">{title}</div>

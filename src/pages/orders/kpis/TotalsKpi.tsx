@@ -16,7 +16,7 @@ const TotalsKpi = ({ summary }: TotalsKpiProps) => {
           </div>
         </div>
         <div className="bg-custom-white rounded-lg shadow-lg px-2 flex flex-col justify-center items-center">
-          <div className="text-content/60">COGS</div>
+          <div className="text-content/60">Total Cost</div>
           <div className="font-medium text-[12.5px]">
             {formatCurrency2(summary.cost)}
           </div>

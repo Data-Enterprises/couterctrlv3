@@ -3,12 +3,6 @@ import SalesViewHourly from "./SalesViewHourly";
 import SalesViewTopTen from "./SalesViewTopTen";
 import SalesViewWeekly from "./SalesViewWeekly";
 
-/**
- * THE SCROLL FLOW:
- *
- * General overview => Granular
- * weekly => hourly => top ten
- */
 const SalesView = () => {
   const ctx = useMobileSalesCtx();
 

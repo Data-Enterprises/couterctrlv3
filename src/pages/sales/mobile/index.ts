@@ -63,4 +63,5 @@ export const aggCoupons = (data: SubSale[]): AggCoupons => {
 export type PieData = {
   id: string;
   value: number;
+  storeid: number;
 };

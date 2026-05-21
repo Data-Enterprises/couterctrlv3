@@ -1,11 +1,20 @@
-import { getHourly, getTopTen, getWeekly } from "../../../../api/sales";
+import {
+  getHourly,
+  getSubs,
+  getTopTen,
+  getWeekly,
+} from "../../../../api/sales";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import {
   setHourlyKey,
+  setMobileSubSales,
+  setMobileSubSalesWk2,
+  setMobileSubSalesWk3,
   setSalesViewHourly,
   setSalesViewHourlyLastYear,
   setSalesViewWeekly,
   setSelectedStore,
+  setSelectedSubDept,
   setSortedSalesViewTopTen,
 } from "../../../../features/salesMobileSlice";
 import type { JsonError, WeeklySale } from "../../../../interfaces";
@@ -125,6 +134,63 @@ const StoreRow = ({ panel }: StoreRowProps) => {
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
+
+    getSubs(
+      ctx.url,
+      ctx.token,
+      date,
+      date,
+      0,
+      panel.storeid,
+      1,
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          ctx.dispatch(setSelectedSubDept(j.subs[0].sub_department));
+          ctx.dispatch(setMobileSubSales(j.subs));
+
+          // Get last week
+          const wk2EndDate = new Date(startDate);
+          const wk2Date = setDates(wk2EndDate, 1);
+
+          getSubs(
+            ctx.url,
+            ctx.token,
+            wk2Date,  
+            wk2Date,
+            0,
+            panel.storeid,
+            1,
+          )
+            .then((resp) => {
+              const j = resp.data;
+              if (j.error === 0) {
+                ctx.dispatch(setMobileSubSalesWk2(j.subs));
+              }
+            })
+            .catch((err: JsonError) => toast.error(err.message));
+
+          // Then fetch last year
+          getSubs(
+            ctx.url,
+            ctx.token,
+            lyWkEnd,
+            lyWkEnd,
+            0,
+            panel.storeid,
+            1,
+          )
+            .then((resp) => {
+              const j = resp.data;
+              if (j.error === 0) {
+                ctx.dispatch(setMobileSubSalesWk3(j.subs));
+              }
+            })
+            .catch((err: JsonError) => toast.error(err.message));
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
   };
 
   const bgStyle =
@@ -157,17 +223,23 @@ const StoreRow = ({ panel }: StoreRowProps) => {
 
         <div className="min-w-0">
           <div className="text-content/60 text-[10px]">Tax</div>
-          <div className="font-medium text-[10.5px]">{formatCurrency2(panel.total_tax)}</div>
+          <div className="font-medium text-[10.5px]">
+            {formatCurrency2(panel.total_tax)}
+          </div>
         </div>
 
         <div className="min-w-0">
           <div className="text-content/60 text-[10px]">Qty</div>
-          <div className="font-medium text-[10.5px]">{formatBigNumber(panel.qty, 0)}</div>
+          <div className="font-medium text-[10.5px]">
+            {formatBigNumber(panel.qty, 0)}
+          </div>
         </div>
 
         <div className="min-w-0">
           <div className="text-content/60 text-[10px]">Weight</div>
-          <div className="font-medium text-[10.5px]">{formatWeight(panel.weight)}</div>
+          <div className="font-medium text-[10.5px]">
+            {formatWeight(panel.weight)}
+          </div>
         </div>
       </div>
     </div>

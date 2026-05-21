@@ -64,7 +64,7 @@ const CouponsGridMobile = () => {
       <TransactionModal />
       <div className="p-2">
         <button
-          className="btn-themeBlue w-full"
+          className="btn-themeBlue py-1 px-0 text-[13px] w-full"
           onClick={() => dispatch(resetCoupons())}
         >
           Refresh
@@ -77,6 +77,8 @@ const CouponsGridMobile = () => {
           valueKey="value"
           displayKey="label"
           onSelect={handleDateSelect}
+          innerClass="text-[13px] py-1"
+          className="text-[13px]"
         />
         <Modal
           isOpen={ctx.showSubsMobileFilter}
@@ -113,18 +115,16 @@ const CouponsGridMobile = () => {
             <div>it will show all sub departments</div>
           </div>
         </Modal>
-        {ctx.showSubsMobileFilter ? null : (
-          <div>
-            <button
-              className="btn-themeBlue px-0 w-full"
-              onClick={() => dispatch(setShowSubsMobileFilter(true))}
-            >
-              Sub Depts
-            </button>
-          </div>
-        )}
+        <div>
+          <button
+            className="btn-themeBlue px-0 w-full text-[13px] py-1"
+            onClick={() => dispatch(setShowSubsMobileFilter(true))}
+          >
+            Sub Depts
+          </button>
+        </div>
       </div>
-      <div className="p-2 space-y-2 max-h-[calc(100vh-14.5rem)] overflow-y-auto text-sm">
+      <div className="p-2 space-y-2 max-h-[calc(100vh-14.5rem)] overflow-y-auto text-[13px]">
         {ctx.gridCoupons.map((c, i) => (
           <CpnCard key={i} c={c} />
         ))}

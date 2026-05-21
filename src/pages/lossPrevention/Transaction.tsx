@@ -216,7 +216,7 @@ const Transaction = ({ trans }: TransactionProps) => {
       <div className="absolute right-2 top-2 flex gap-2">
         <button
           data-testid="cashier-trans-modal-email-btn"
-          className="btn-themeGreen px-4 py-0.5"
+          className="btn-themeGreen px-4 text-[12px] md:text-sm py-0.5"
           onClick={handleEmailClick}
         >
           Email
@@ -224,14 +224,14 @@ const Transaction = ({ trans }: TransactionProps) => {
         {context.isDesktop && (
           <button
             data-testid="cashier-trans-modal-export-btn"
-            className="btn-themeBlue px-4 py-0.5"
+            className="btn-themeBlue px-4 text-[12px] md:text-sm py-0.5"
             onClick={handleExportClick}
           >
             Export
           </button>
         )}
       </div>
-      <div className="pb-2 border-b border-content text-sm">
+      <div className="pb-2 border-b border-content text-[13px] leading-tight">
         <div className="flex gap-1">
           <div className="font-medium">Store Name:</div>
           <div>{trans[0].store_name}</div>
@@ -262,21 +262,21 @@ const Transaction = ({ trans }: TransactionProps) => {
         </div>
       </div>
       <div>
-        <div className="my-2 text-lg font-medium">Line Items</div>
+        <div className="mt-2 font-medium">Line Items</div>
         {/* Line Items */}
         {trans.map((item, i) => {
           if (context.isMobile) {
             return (
               <div
                 key={i}
-                className="text-[13px] mt-1.5 border-b border-content/30 mb-2"
+                className="text-[10px] my-1 pb-0.5 border-b border-content/30"
               >
-                <div className="">
+                <div className="flex justify-between">
                   <div>{item.product_code}</div>
-                  <div>{item.product_description}</div>
                 </div>
-                <div className="grid grid-cols-[1fr_1fr_1fr_1fr]">
-                  <div>{item.qty}</div>
+                <div className="grid grid-cols-[1.9fr_0.6fr_1fr_0.8fr_0.7fr]">
+                  <div className="text-nowrap truncate">{item.product_description}</div>
+                  <div className="text-right pr-4">{item.qty}</div>
                   <div>
                     {formatCurrency2(
                       cashier.selectedSaleType === "Description"
@@ -285,7 +285,7 @@ const Transaction = ({ trans }: TransactionProps) => {
                     )}
                   </div>
                   <div>{renderStamps(item)}</div>
-                  <div>{item.sale_type}</div>
+                  <div className="text-right">{item.sale_type}</div>
                 </div>
               </div>
             );
@@ -312,7 +312,7 @@ const Transaction = ({ trans }: TransactionProps) => {
           );
         })}
       </div>
-      <div className="mt-2 text-sm font-medium">
+      <div className="mt-2 text-[13px] font-medium leading-tight">
         <div className="flex gap-1">
           <div>Net Sales:</div>
           <div>{formatCurrency2(netSales)}</div>

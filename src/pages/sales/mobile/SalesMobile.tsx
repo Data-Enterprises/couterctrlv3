@@ -52,7 +52,7 @@ const SalesMobile = () => {
       setNoPanelsFound(false);
       ctx.dispatch(setView("tracker"));
     }
-  }, [ctx.thisYrSubTrackerMobile])
+  }, [ctx.thisYrSubTrackerMobile]);
 
   useEffect(() => {
     if (ctx.salesPanels.length > 0) {
@@ -60,6 +60,76 @@ const SalesMobile = () => {
       ctx.dispatch(setView("stores"));
     }
   }, [ctx.salesPanels]);
+
+  useEffect(() => {
+    if (ctx.selectedStore.storeid) return;
+
+    const endDateLY = sameWeekDayLastYear(ctx.endDate);
+    const lyDate = new Date(endDateLY.date);
+    const lyWkEnd = setDates(lyDate);
+    const lyWkStart = setDates(lyDate, 6);
+    const start = ctx.dashboardOption === "daily" ? ctx.endDate : ctx.startDate;
+
+    getSubs(
+      ctx.url,
+      ctx.token,
+      start,
+      ctx.endDate,
+      ctx.useGroups,
+      ctx.searchValue,
+      ctx.singleStore,
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          ctx.dispatch(setSelectedSubDept(j.subs[0].sub_department));
+          ctx.dispatch(setMobileSubSales(j.subs));
+
+          // Get last week
+          const wk2EndDate = new Date(ctx.endDate);
+          const wk2End = setDates(wk2EndDate, 7);
+          const wk2Start = setDates(wk2EndDate, 13);
+          const startTwo = ctx.dashboardOption === "daily" ? wk2End : wk2Start;
+
+          getSubs(
+            ctx.url,
+            ctx.token,
+            startTwo,
+            wk2End,
+            ctx.useGroups,
+            ctx.searchValue,
+            ctx.singleStore,
+          )
+            .then((resp) => {
+              const j = resp.data;
+              if (j.error === 0) {
+                ctx.dispatch(setMobileSubSalesWk2(j.subs));
+              }
+            })
+            .catch((err: JsonError) => toast.error(err.message));
+
+          const lyStart = ctx.dashboardOption === "daily" ? lyWkEnd : lyWkStart;
+          // Then fetch last year
+          getSubs(
+            ctx.url,
+            ctx.token,
+            lyStart,
+            lyWkEnd,
+            ctx.useGroups,
+            ctx.searchValue,
+            ctx.singleStore,
+          )
+            .then((resp) => {
+              const j = resp.data;
+              if (j.error === 0) {
+                ctx.dispatch(setMobileSubSalesWk3(j.subs));
+              }
+            })
+            .catch((err: JsonError) => toast.error(err.message));
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+  }, [ctx.selectedStore, ctx.startDate]);
 
   const getSalesPanels = () => {
     ctx.dispatch(resetMobileSalesState());
@@ -135,7 +205,7 @@ const SalesMobile = () => {
             .catch((err: JsonError) => toast.error(err.message));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err: JsonError) => toast.error(err.message));
 
     getWeekly(
       ctx.url,
@@ -154,11 +224,12 @@ const SalesMobile = () => {
               new Date(b.sale_date).getTime() - new Date(a.sale_date).getTime(),
           );
           if (ctx.dashboardOption === "daily") {
-            const found = sorted.find(
+            const filtered = sorted.filter(
               (s) => formatDate(s.sale_date) === formatDate(start),
             );
-            if (found) {
-              ctx.dispatch(setMobileSalesPanels([found]));
+            
+            if (filtered.length > 0) {
+              ctx.dispatch(setMobileSalesPanels(filtered));
             } else {
               setNoPanelsFound(true);
             }

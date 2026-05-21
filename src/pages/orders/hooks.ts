@@ -2,8 +2,10 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 
 export const useOrdersCtx = () => {
   const dispatch = useAppDispatch();
-  const { url, token } = useAppSelector((state) => state.app);
-  const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector((state) => state.search);
+  const { url, token, isTablet } = useAppSelector((state) => state.app);
+  const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector(
+    (state) => state.search,
+  );
   const { assignedStores, userid } = useAppSelector((state) => state.user);
   const {
     availableOrders,
@@ -53,5 +55,6 @@ export const useOrdersCtx = () => {
     userid,
     filteredAvailableOrders,
     typeFilterArr,
+    isTablet,
   };
 };

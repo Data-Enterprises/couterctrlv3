@@ -30,12 +30,12 @@ const ReceiverDetailsGrid = () => {
         state.isFetchingDetails ? "bg-transparent" : "bg-custom-white shadow-lg"
       } rounded-lg w-[99%] overflow-hidden pr-4`}
     >
-      <div className="relative w-full h-full p-4">
+      <div className="relative w-full h-full p-2">
         {state.details.length > 0 && !state.isFetchingDetails ? (
           <div>
             <div
               ref={topRef}
-              className="w-full mx-2 font-medium border-content border-b-2 grid grid-cols-[4%_10%_28%_6%_6%_6%_6%_6%_8%_6%_6%_6%]"
+              className="w-full text-sm mx-2 font-medium border-content border-b-2 grid grid-cols-[4%_10%_28%_6%_6%_6%_6%_6%_8%_6%_6%_6%]"
             >
               <div>Line</div>
               <div>UPC</div>
@@ -57,7 +57,7 @@ const ReceiverDetailsGrid = () => {
               {state.details.map((item, i) => (
                 <div
                   key={i}
-                  className="w-full mx-2 text-sm grid grid-cols-[4%_10%_28%_6%_6%_6%_6%_6%_8%_6%_6%_6%]"
+                  className="w-full mx-2 text-[13.5px] grid grid-cols-[4%_10%_28%_6%_6%_6%_6%_6%_8%_6%_6%_6%]"
                 >
                   <div>{item.line_number}</div>
                   <div>{item.product_code}</div>
@@ -76,7 +76,7 @@ const ReceiverDetailsGrid = () => {
             </div>
             <div
               ref={bottomRef}
-              className="absolute bottom-0 w-full h-12 bg-custom-white flex pr-3"
+              className="absolute bottom-0 w-full h-14 bg-custom-white flex"
             >
               {state.totals.map((item, i) => (
                 <div

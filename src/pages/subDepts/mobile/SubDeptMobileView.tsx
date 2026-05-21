@@ -72,7 +72,7 @@ const SubDeptMobileView = () => {
 
   return (
     <div className="max-h-[calc(100vh-3rem)] min-h-[calc(100vh-3rem)] overflow-hidden">
-      <div className="bg-custom-white m-2 p-2 rounded-lg shadow-lg h-[193px]">
+      <div className="bg-custom-white m-2 p-2 rounded-lg shadow-lg h-[182px]">
         <SingleSelect
           label="Store"
           data={ctx.assignedStores}
@@ -80,12 +80,12 @@ const SubDeptMobileView = () => {
           valueKey="storeid"
           onSelect={handleStoreSelect}
           defaultQuery={`${ctx.searchValue > 0 ? findStoreName() : ""}`}
-          innerClass="text-sm"
-          listClass="text-sm"
+          innerClass="text-[13px]"
+          listClass="text-[13px]"
         />
         <SingleDatePicker />
         <button
-          className="btn-themeBlue px-0 w-full mt-2"
+          className="btn-themeBlue px-0 w-full mt-2 text-[13px] py-1"
           onClick={handleSubDeptSearch}
         >
           Search

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { useAppSelector } from "../../hooks";
+import { useAppDispatch, useAppSelector } from "../../hooks";
+import { setCompanyForm } from "../../features/adminSlice";
 
 export const useAdminContext = () => {
   const { url, token } = useAppSelector((state) => state.app);
@@ -16,6 +17,11 @@ export const useAdminContext = () => {
     dropdownCompanies,
     companyForm,
     refresh,
+    adminForm,
+    companyStoresActivity,
+    filteredStoresActivity,
+    isLoadingStoreActivity,
+    storeNameFilter,
   } = useAppSelector((state) => state.admin);
 
   return {
@@ -33,6 +39,11 @@ export const useAdminContext = () => {
     url,
     userNameFilter,
     users,
+    adminForm,
+    companyStoresActivity,
+    isLoadingStoreActivity,
+    filteredStoresActivity,
+    storeNameFilter,
   };
 };
 
@@ -59,4 +70,46 @@ export const useControlsScrollHeight = () => {
   }, [scrollRef, containerRef]);
 
   return { scrollRef, containerRef, height };
+};
+
+export const useAdminFormActions = () => {
+  const dispatch = useAppDispatch();
+
+  const setName = (x: string) => {
+    dispatch(setCompanyForm({ key: "name", val: x }));
+  };
+
+  const setAddress = (x: string) => {
+    dispatch(setCompanyForm({ key: "address", val: x }));
+  };
+
+  const setCity = (x: string) => {
+    dispatch(setCompanyForm({ key: "city", val: x }));
+  };
+
+  const setState = (x: string) => {
+    dispatch(setCompanyForm({ key: "state", val: x }));
+  };
+
+  const setZip = (x: string) => {
+    dispatch(setCompanyForm({ key: "zip", val: Number(x) }));
+  };
+
+  const setPhone = (x: string) => {
+    dispatch(setCompanyForm({ key: "phone", val: x }));
+  };
+
+  const setContactEmail = (x: string) => {
+    dispatch(setCompanyForm({ key: "contact_email", val: x }));
+  };
+
+  return {
+    setName,
+    setAddress,
+    setCity,
+    setState,
+    setZip,
+    setPhone,
+    setContactEmail,
+  };
 };

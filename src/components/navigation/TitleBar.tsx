@@ -34,14 +34,14 @@ const TitleBar = () => {
       <div
         className={`shadow shadow-content/10 ${welcomeWidth} flex justify-between`}
       >
-        <div className="ml-4 flex items-center justify-between font-medium w-full relative">
+        <div className="ml-4 text-[12px] md:text-sm flex items-center justify-between font-medium w-full relative">
           <div>Welcome {user.firstName}</div>
         </div>
         <div className="flex items-center h-full">
           <BellIcon className="h-6 w-6 m-2 cursor-pointer hover:text-accent1 transition-colors" />
           {context.isDesktop && (
             <div className="flex items-center px-6 ml-4 border-l-2 relative">
-              <div className="text-sm font-medium">{user.username}</div>
+              <div className="text-[12px] md:text-sm font-medium">{user.username}</div>
               <ChevronDownIcon
                 id="dev-chevron"
                 className={`h-4 w-4 m-2 cursor-pointer hover:text-accent1 transition-colors`}

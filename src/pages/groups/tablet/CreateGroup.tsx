@@ -42,13 +42,13 @@ const CreateGroup = () => {
 
   return (
     <div data-testid="create-usergroup-form">
-      <div className="bg-custom-white rounded-xl shadow-lg text-sm p-3">
+      <div className="bg-custom-white rounded-xl shadow-lg md:text-sm p-3">
         <div className="font-medium">Existing Groups</div>
         <div className="p-3 bg-bkg rounded-lg grid grid-cols-3 gap-2 max-h-[50vh] shadow overflow-y-auto select-none">
           {groupNames.map((g, i) => (
             <div
               key={i}
-              className={`${createInput.trim().toLowerCase() === g.toLowerCase() ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-custom-white"} px-2 py-1 shadow-md rounded-full`}
+              className={`${createInput.trim().toLowerCase() === g.toLowerCase() ? "bg-[rgb(30,45,80)]/75 text-custom-white" : "bg-custom-white"} text-center py-1 shadow-md rounded-full`}
             >
               {g}
             </div>
@@ -66,10 +66,11 @@ const CreateGroup = () => {
             label="Group Name"
             value={createInput}
             setValue={handleTextChange}
+            className="py-1"
           />
           <button
             data-testid="create-usergroup-btn"
-            className={`bg-[rgb(30,45,80)] text-custom-white py-1.5 rounded-xl border-2 border-[rgb(30,45,80)] mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
+            className={`bg-[rgb(30,45,80)] text-custom-white py-2 rounded-xl border-2 border-[rgb(30,45,80)] mt-2 w-full ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
             onClick={handleCreate}
           >
             Submit

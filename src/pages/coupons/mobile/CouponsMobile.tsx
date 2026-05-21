@@ -71,7 +71,7 @@ const CouponsMobile = () => {
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
       <div className="m-2 p-2 bg-custom-white rounded-lg shadow-lg">
         <StorePicker />
-        <DatePickers handleQuery={getData} />
+        <DatePickers handleQuery={getData} btnPadding="py-1" />
       </div>
       {ctx.noCouponsFound ? (
         <div className="bg-orange-200 m-2 p-4 rounded-lg shadow-lg">
