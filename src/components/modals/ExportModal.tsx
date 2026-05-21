@@ -33,6 +33,8 @@ const ExportModal = <T extends Record<string, any>>({
       `${fileName}_${formatDate(new Date().toISOString())}.csv`,
     );
 
+    toast.success("Export successful");
+
     handleClose();
   };
 

@@ -39,6 +39,7 @@ const DeleteComp = () => {
         if (j.error === 0) {
           dispatch(setRefresh(true));
           handleReset();
+          toast.success("Company deleted successfully");
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
