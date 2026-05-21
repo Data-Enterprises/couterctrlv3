@@ -36,6 +36,26 @@ const CreateComp = () => {
     return name.toLowerCase() === context.companyForm.name.toLowerCase();
   };
 
+  const { address, city, contact_email, state, zip, phone } =
+    context.companyForm;
+
+  const canSubmit =
+    address !== "" &&
+    city !== "" &&
+    contact_email !== "" &&
+    state !== "" &&
+    zip !== 0 &&
+    phone !== "" &&
+    !alreadyExists;
+
+  const canClear =
+    address !== "" ||
+    city !== "" ||
+    contact_email !== "" ||
+    state !== "" ||
+    zip !== 0 ||
+    phone !== "";
+
   return (
     <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm min-w-[570px] max-w-[570px]">
       <div className="text-[12px] font-medium leading-snug">
@@ -111,13 +131,13 @@ const CreateComp = () => {
         />
         <div className="grid grid-cols-2 items-end gap-2">
           <button
-            className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white py-1.5 text-[13px] px-0"
+            className={`${!canSubmit ? "opacity-50 pointer-events-none" : ""} btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white py-1.5 text-[13px] px-0`}
             onClick={handleCreateComp}
           >
             Submit
           </button>
           <button
-            className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-[13px]"
+            className={`${!canClear ? "opacity-50 pointer-events-none" : ""} btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-[13px]`}
             onClick={handleReset}
           >
             Reset Fields

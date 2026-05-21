@@ -18,7 +18,13 @@ const UpdateComp = () => {
 
   const handleCompanySelect = (x: number) => {
     const form = context.companies.find((comp) => comp.id === Number(x));
-    dispatch(setSelectedCompanyForm(form!));
+    if (form) {
+      if (context.companyForm.id === form.id) {
+        dispatch(resetCompanyForm());
+      } else {
+        dispatch(setSelectedCompanyForm(form));
+      }
+    }
   };
 
   const handleReset = () => {
@@ -40,6 +46,24 @@ const UpdateComp = () => {
   const isSelected = (id: number) => {
     return id === context.companyForm.id;
   };
+
+  const canSubmit =
+    context.companyForm.id > 0 &&
+    context.companyForm.address !== "" &&
+    context.companyForm.city !== "" &&
+    context.companyForm.contact_email !== "" &&
+    context.companyForm.state !== "" &&
+    context.companyForm.zip !== 0 &&
+    context.companyForm.phone !== "";
+
+  const canClear =
+    context.companyForm.id > 0 ||
+    context.companyForm.address !== "" ||
+    context.companyForm.city !== "" ||
+    context.companyForm.contact_email !== "" ||
+    context.companyForm.state !== "" ||
+    context.companyForm.zip !== 0 ||
+    context.companyForm.phone !== "";
 
   return (
     <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm min-w-[570px] max-w-[570px]">
@@ -110,24 +134,18 @@ const UpdateComp = () => {
         />
         <div className="grid grid-cols-2 items-end gap-2">
           <button
-            className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white py-1.5 text-[13px] px-0"
+            className={`${!canSubmit ? "opacity-50 pointer-events-none" : ""} btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white py-1.5 text-[13px] px-0`}
             onClick={handleUpdateComp}
           >
             Submit
           </button>
           <button
-            className="btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-[13px]"
+            className={`${!canClear ? "opacity-50 pointer-events-none" : ""} btn-themeBlue bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white px-0 py-1.5 text-[13px]`}
             onClick={handleReset}
           >
             Reset Fields
           </button>
         </div>
-        {/* <button
-            className={`btn-themeOrange py-1.5 px-0 w-1/2 ${context.companyForm.id < 1 && "opacity-50 pointer-events-none"}`}
-            onClick={openDeleteCompanyModal}
-          >
-            Delete
-          </button> */}
       </div>
     </div>
   );

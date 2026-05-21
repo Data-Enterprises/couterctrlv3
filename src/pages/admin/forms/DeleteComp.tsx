@@ -19,7 +19,13 @@ const DeleteComp = () => {
 
   const handleCompanySelect = (x: number) => {
     const form = context.companies.find((comp) => comp.id === Number(x));
-    dispatch(setSelectedCompanyForm(form!));
+    if (form) {
+      if (context.companyForm.id === form.id) {
+        dispatch(resetCompanyForm());
+      } else {
+        dispatch(setSelectedCompanyForm(form));
+      }
+    }
   };
 
   const handleReset = () => {
@@ -116,7 +122,7 @@ const DeleteComp = () => {
         />
         <div className="grid items-end gap-2">
           <button
-            className="btn-themeBlue bg-red-600 border-red-600 hover:bg-red-600/75 hover:text-custom-white py-1.5 text-[13px] px-0"
+            className={`${context.companyForm.id === 0 ? "opacity-50 pointer-events-none" : ""} btn-themeBlue bg-red-600 border-red-600 hover:bg-red-600/75 hover:text-custom-white py-1.5 text-[13px] px-0`}
             onClick={() => dispatch(setDeleteCompanyModalOpen(true))}
           >
             Delete
