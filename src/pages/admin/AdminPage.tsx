@@ -40,37 +40,6 @@ const AdminPage = () => {
     }
   }, [context.refresh]);
 
-  // const handleFormSelect = (x: string | number) => {
-  //   const form = context.companies.find((comp) => comp.id === Number(x));
-  //   dispatch(setSelectedCompanyForm(form!));
-  // };
-
-  // const handleCreateOrUpdateCompany = () => {
-  //   const isCreating = context.companyForm.id === 0;
-
-  //   if (isCreating) {
-  //     createCompany(context.url, context.token, context.companyForm)
-  //       .then((resp) => {
-  //         const j = resp.data;
-  //         if (j.error === 0) {
-  //           dispatch(setRefresh(true));
-  //           handleReset();
-  //         }
-  //       })
-  //       .catch((err: JsonError) => toast.error(err.message));
-  //   } else {
-  //     updateCompany(context.url, context.token, context.companyForm)
-  //       .then((resp) => {
-  //         const j = resp.data;
-  //         if (j.error === 0) {
-  //           dispatch(setRefresh(true));
-  //           handleReset();
-  //         }
-  //       })
-  //       .catch((err: JsonError) => toast.error(err.message));
-  //   }
-  // };
-
   const renderSelectedForm = () => {
     switch (context.adminForm) {
       case "create":

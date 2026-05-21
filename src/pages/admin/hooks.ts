@@ -18,6 +18,8 @@ export const useAdminContext = () => {
     companyForm,
     refresh,
     adminForm,
+    companyStoresActivity,
+    isLoadingStoreActivity,
   } = useAppSelector((state) => state.admin);
 
   return {
@@ -36,6 +38,8 @@ export const useAdminContext = () => {
     userNameFilter,
     users,
     adminForm,
+    companyStoresActivity,
+    isLoadingStoreActivity,
   };
 };
 

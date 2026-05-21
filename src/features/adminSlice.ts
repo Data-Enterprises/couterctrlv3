@@ -4,6 +4,7 @@ import type {
   CompanyBaseGroup,
   MissingStore,
   Store,
+  StoreWithActivity,
   User,
   UserCompany,
 } from "../interfaces";
@@ -52,6 +53,8 @@ interface AdminState {
   selectedCompanyIdFilter: number;
   exportMissingStoresModalOpen: boolean;
   adminForm: AdminForm;
+  companyStoresActivity: StoreWithActivity[];
+  isLoadingStoreActivity: boolean;
 }
 
 const initialState: AdminState = {
@@ -76,6 +79,8 @@ const initialState: AdminState = {
   filteredMissingStores: [],
   storeNameFilter: "",
   adminForm: "",
+  companyStoresActivity: [],
+  isLoadingStoreActivity: false,
 };
 
 const adminSlice = createSlice({
@@ -182,6 +187,15 @@ const adminSlice = createSlice({
     setAdminForm: (state, action: PayloadAction<AdminForm>) => {
       state.adminForm = action.payload;
     },
+    setCompanyStoresActivity: (
+      state,
+      action: PayloadAction<StoreWithActivity[]>,
+    ) => {
+      state.companyStoresActivity = action.payload;
+    },
+    setIsLoadingStoreActivity: (state, action: PayloadAction<boolean>) => {
+      state.isLoadingStoreActivity = action.payload;
+    },
     resetAdminState: () => initialState,
   },
 });
@@ -207,5 +221,7 @@ export const {
   resetCompanyForm,
   resetAdminState,
   setAdminForm,
+  setCompanyStoresActivity,
+  setIsLoadingStoreActivity,
 } = adminSlice.actions;
 export default adminSlice.reducer;
