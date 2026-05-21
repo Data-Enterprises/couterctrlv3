@@ -42,3 +42,26 @@ export const getStoresMissingSales = async (
   });
   return json;
 };
+
+export const getAllStoreActivity = async (
+  url: string,
+  token: string,
+  startdate: string,
+  enddate: string,
+  companies: number,
+) => {
+  const json = await axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "company/allActivityStores",
+    params: {
+      startdate,
+      enddate,
+      companies,
+    },
+  });
+  return json;
+};

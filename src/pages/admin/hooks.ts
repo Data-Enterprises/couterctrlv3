@@ -16,6 +16,7 @@ export const useAdminContext = () => {
     dropdownCompanies,
     companyForm,
     refresh,
+    adminForm,
   } = useAppSelector((state) => state.admin);
 
   return {
@@ -33,6 +34,7 @@ export const useAdminContext = () => {
     url,
     userNameFilter,
     users,
+    adminForm,
   };
 };
 

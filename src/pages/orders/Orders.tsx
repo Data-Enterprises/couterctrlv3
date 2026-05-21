@@ -34,7 +34,7 @@ import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import AllOrdersGrid from "./AllOrdersGrid";
 import KpiContainer from "./kpis/KpiContainer";
 import ExportModal from "../../components/modals/ExportModal";
-// import OrdersTablet from "./tablet/OrdersTablet";
+import OrdersTablet from "./tablet/OrdersTablet";
 
 const Orders = () => {
   const ctx = useOrdersCtx();
@@ -257,15 +257,13 @@ const Orders = () => {
     }, 0);
   };
 
-  // if (ctx.isTablet)
-  //   return (
-  //     <OrdersTablet
-  //       handleSearch={handleSearch}
-  //       handleExportBtnClick={handleExportBtnClick}
-  //       handleOrderTypeBtnClick={handleOrderTypeBtnClick}
-  //       handleRowClick={handleRowClick}
-  //     />
-  //   );
+  if (ctx.isTablet)
+    return (
+      <OrdersTablet
+        handleSearch={handleSearch}
+        handleExportBtnClick={handleExportBtnClick}
+      />
+    );
 
   return (
     <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden p-4 grid grid-cols-[16%_1fr] gap-2">

@@ -1,38 +1,20 @@
 import { useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "../../hooks";
+import { useAppDispatch } from "../../hooks";
 import { useAdminContext } from "./hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 
 // reducers
-import {
-  setCompanies,
-  setUsers,
-  setRefresh,
-  setCompanyForm,
-  setSelectedCompanyForm,
-  resetCompanyForm,
-  setDeleteCompanyModalOpen,
-} from "../../features/adminSlice";
+import { setAdminForm, setCompanies } from "../../features/adminSlice";
 
 // api
-import { createCompany, getCompanies, updateCompany } from "../../api/company";
-import { getAllUsers } from "../../api/user";
-import type {
-  CompanyJsonResp,
-  JsonError,
-  UsersJsonResp,
-} from "../../interfaces";
-import SingleSelect from "../../components/SingleSelect";
-import Input from "../../components/inputs/Input";
-import DeleteCompanyModal from "./components/DeleteCompanyModal";
-
-// components
+import { getCompanies } from "../../api/company";
+import type { CompanyJsonResp, JsonError } from "../../interfaces";
+import CreateComp from "./forms/CreateComp";
 
 const AdminPage = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAdminContext();
-  const { userLevel } = useAppSelector((state) => state.user);
 
   useEffect(() => {
     if (context.refresh) {
@@ -44,95 +26,95 @@ const AdminPage = () => {
           }
         })
         .catch((err: JsonError) => toast.error(err.message));
-
-      getAllUsers(context.url, context.token)
-        .then((resp) => {
-          const j: UsersJsonResp = resp.data;
-          if (j.error === 0) {
-            dispatch(setUsers(j.users));
-          }
-        })
-        .catch((err: JsonError) => toast.error(err.message))
-        .finally(() => dispatch(setRefresh(false)));
     }
   }, [context.refresh]);
 
-  // Dispatch functions for Company CRUD operations
-  const setName = (x: string) => {
-    dispatch(setCompanyForm({ key: "name", val: x }));
-  };
+  // const handleFormSelect = (x: string | number) => {
+  //   const form = context.companies.find((comp) => comp.id === Number(x));
+  //   dispatch(setSelectedCompanyForm(form!));
+  // };
 
-  const setAddress = (x: string) => {
-    dispatch(setCompanyForm({ key: "address", val: x }));
-  };
+  // const handleCreateOrUpdateCompany = () => {
+  //   const isCreating = context.companyForm.id === 0;
 
-  const setCity = (x: string) => {
-    dispatch(setCompanyForm({ key: "city", val: x }));
-  };
+  //   if (isCreating) {
+  //     createCompany(context.url, context.token, context.companyForm)
+  //       .then((resp) => {
+  //         const j = resp.data;
+  //         if (j.error === 0) {
+  //           dispatch(setRefresh(true));
+  //           handleReset();
+  //         }
+  //       })
+  //       .catch((err: JsonError) => toast.error(err.message));
+  //   } else {
+  //     updateCompany(context.url, context.token, context.companyForm)
+  //       .then((resp) => {
+  //         const j = resp.data;
+  //         if (j.error === 0) {
+  //           dispatch(setRefresh(true));
+  //           handleReset();
+  //         }
+  //       })
+  //       .catch((err: JsonError) => toast.error(err.message));
+  //   }
+  // };
 
-  const setState = (x: string) => {
-    dispatch(setCompanyForm({ key: "state", val: x }));
-  };
-
-  const setZip = (x: string) => {
-    dispatch(setCompanyForm({ key: "zip", val: Number(x) }));
-  };
-
-  const setPhone = (x: string) => {
-    dispatch(setCompanyForm({ key: "phone", val: x }));
-  };
-
-  const setContactEmail = (x: string) => {
-    dispatch(setCompanyForm({ key: "contact_email", val: x }));
-  };
-
-  const handleFormSelect = (x: string | number) => {
-    const form = context.companies.find((comp) => comp.id === Number(x));
-    dispatch(setSelectedCompanyForm(form!));
-  };
-
-  const handleReset = () => {
-    dispatch(resetCompanyForm());
-  };
-
-  const handleCreateOrUpdateCompany = () => {
-    const isCreating = context.companyForm.id === 0;
-
-    if (isCreating) {
-      createCompany(context.url, context.token, context.companyForm)
-        .then((resp) => {
-          const j = resp.data;
-          if (j.error === 0) {
-            dispatch(setRefresh(true));
-            handleReset();
-          }
-        })
-        .catch((err: JsonError) => toast.error(err.message));
-    } else {
-      updateCompany(context.url, context.token, context.companyForm)
-        .then((resp) => {
-          const j = resp.data;
-          if (j.error === 0) {
-            dispatch(setRefresh(true));
-            handleReset();
-          }
-        })
-        .catch((err: JsonError) => toast.error(err.message));
+  const renderSelectedForm = () => {
+    switch (context.adminForm) {
+      case "create":
+        return <CreateComp />;
+      case "update":
+        return <div>Update</div>;
+      case "delete":
+        return <div>Delete</div>;
+      case "store_activity":
+        return <div>Store Activity</div>;
+      default:
+        return null;
     }
   };
 
-  const openDeleteCompanyModal = () => {
-    dispatch(setDeleteCompanyModalOpen(true));
-  };
-
-  // END Company CRUD/dispatch operations
-
   return (
-    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden p-4">
-      <DeleteCompanyModal />
-      {/* Company Form Card */}
-      <div
-        className={`${userLevel === 9 ? "bg-custom-white p-4 w-[30%] rounded-lg shadow-lg" : "hidden"}`}
+    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-4 text-sm">
+      <div className="min-w-[178px] max-w-[178px]">
+        <div className="bg-custom-white rounded-lg shadow-lg py-1">
+          <div className="font-medium px-2">Company Forms</div>
+          <div className="grid grid-cols-2 h-[1.5px] mt-0.5">
+            <div className="bg-gradient-to-r from-blue-200 to-custom-white"></div>
+            <div className="bg-gradient-to-l from-blue-200 to-custom-white"></div>
+          </div>
+          <div className="grid">
+            <div
+              className="py-1 transition-all duration-200 cursor-pointer hover:bg-blue-200 px-2"
+              onClick={() => dispatch(setAdminForm("create"))}
+            >
+              Create
+            </div>
+            <div
+              className="py-1 transition-all duration-200 cursor-pointer hover:bg-blue-200 px-2"
+              onClick={() => dispatch(setAdminForm("update"))}
+            >
+              Update
+            </div>
+            <div
+              className="py-1 transition-all duration-200 cursor-pointer hover:bg-blue-200 px-2"
+              onClick={() => dispatch(setAdminForm("delete"))}
+            >
+              Delete
+            </div>
+            <div
+              className="py-1 transition-all duration-200 cursor-pointer hover:bg-blue-200 px-2"
+              onClick={() => dispatch(setAdminForm("store_activity"))}
+            >
+              Store Activity
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>{renderSelectedForm()}</div>
+      {/* <div
+        className="bg-custom-white p-2 rounded-lg shadow-lg"
       >
         <div className="grid grid-cols-2 gap-x-2">
           <div className="flex items-end gap-2 col-span-2">
@@ -203,7 +185,7 @@ const AdminPage = () => {
             </button>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

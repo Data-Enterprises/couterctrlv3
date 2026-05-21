@@ -28,6 +28,7 @@ export const allCompFilter: UserCompany = {
 };
 
 export type AdminFormType = "store_name" | "store_missing_sales" | "";
+export type AdminForm = "" | "create" | "update" | "delete" | "store_activity";
 
 interface AdminState {
   companies: Company[];
@@ -50,6 +51,7 @@ interface AdminState {
   selectedStoreInfo: Store | null;
   selectedCompanyIdFilter: number;
   exportMissingStoresModalOpen: boolean;
+  adminForm: AdminForm;
 }
 
 const initialState: AdminState = {
@@ -73,6 +75,7 @@ const initialState: AdminState = {
   exportMissingStoresModalOpen: false,
   filteredMissingStores: [],
   storeNameFilter: "",
+  adminForm: "",
 };
 
 const adminSlice = createSlice({
@@ -176,6 +179,9 @@ const adminSlice = createSlice({
         s.store_name.toLowerCase().includes(action.payload.toLowerCase()),
       );
     },
+    setAdminForm: (state, action: PayloadAction<AdminForm>) => {
+      state.adminForm = action.payload;
+    },
     resetAdminState: () => initialState,
   },
 });
@@ -200,5 +206,6 @@ export const {
   setStoreNameFilter,
   resetCompanyForm,
   resetAdminState,
+  setAdminForm,
 } = adminSlice.actions;
 export default adminSlice.reducer;
