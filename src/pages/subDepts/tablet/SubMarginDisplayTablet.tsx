@@ -6,13 +6,12 @@ import { gpm } from "../../../functions";
 import { calculateCogs } from "..";
 
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
-import KpiContainer from "../display/KpiContainer";
-import ItemsGrid from "../display/widgets/ItemsGrid";
-import ItemsGridFilters from "../display/widgets/ItemsGridFilters";
 import SubDeptCostGrid from "../display/widgets/SubDeptCostGrid";
 import CostGridFilters from "../display/widgets/CostGridFilters";
 import AllWeeksTrend from "../display/allWeeks/AllWeeksTrend";
-import DayCardOverView from "./DayCardOverview";
+import ItemsGridTablet from "./ItemsGridTablet";
+import TotalsHeader from "./TotalsHeader";
+import DayCardOverview from "./DayCardOverview";
 
 const SubMarginDisplayTablet = () => {
   const {
@@ -20,6 +19,7 @@ const SubMarginDisplayTablet = () => {
     loadingMargins,
     selectedWeek,
     subDeptGridView,
+    viewTabletCards,
   } = useSubMarginCtx();
 
   const dates = useMemo(() => {
@@ -51,7 +51,14 @@ const SubMarginDisplayTablet = () => {
 
       const cogs = dateMargins.reduce(
         (acc, curr) =>
-          acc + calculateCogs(curr.net_cost, curr.cost, curr.case_size, curr.qty, curr.weight),
+          acc +
+          calculateCogs(
+            curr.net_cost,
+            curr.cost,
+            curr.case_size,
+            curr.qty,
+            curr.weight,
+          ),
         0,
       );
 
@@ -83,12 +90,7 @@ const SubMarginDisplayTablet = () => {
 
   const renderGrid = () => {
     if (subDeptGridView === "item") {
-      return (
-        <div className="grid grid-cols-[18%_81.5%] gap-2">
-          <ItemsGridFilters />
-          <ItemsGrid />
-        </div>
-      );
+      return <ItemsGridTablet />;
     } else if (subDeptGridView === "cost") {
       return (
         <div className="grid grid-cols-[18%_81.5%] gap-2">
@@ -103,11 +105,36 @@ const SubMarginDisplayTablet = () => {
 
   return (
     <div className="space-y-2">
-      <KpiContainer />
       {selectedWeek < 5 ? (
-        <div className="space-y-3 max-h-[120vh] overflow-y-auto p-2">
-          <DayCardOverView gridData={barData} />
-          {renderGrid()}
+        <div className="space-y-3 max-h-[calc(100vh-9.5rem)] overflow-y-auto p-2">
+          <TotalsHeader data={barData} />
+          <div className="bg-custom-white rounded-xl border border-slate-200/70 shadow-md p-2">
+            <div className="grid grid-cols-3 gap-3">
+              <button className="btn-themeBlue py-1 text-[13px] px-0 bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white">
+                View Daily
+              </button>
+              <button className="btn-themeBlue py-1 text-[13px] px-0 bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white">
+                View Items
+              </button>
+              <button className="btn-themeBlue py-1 text-[13px] px-0 bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white">
+                View Costs
+              </button>
+            </div>
+          </div>
+          {viewTabletCards ? (
+            <div className="grid grid-cols-2 gap-3">
+              {barData.map((d, i) => (
+                <DayCardOverview
+                  key={i}
+                  data={d}
+                  handleCardClick={() => {}}
+                  selectedWeekDay=""
+                />
+              ))}
+            </div>
+          ) : (
+            renderGrid()
+          )}
         </div>
       ) : (
         <AllWeeksTrend />

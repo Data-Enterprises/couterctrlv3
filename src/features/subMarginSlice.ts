@@ -96,6 +96,7 @@ interface SubMarginState {
   viewDaily: boolean;
   upcSearch: string;
   mSort: MSort;
+  viewTabletCards: boolean;
 }
 
 const initialState: SubMarginState = {
@@ -154,6 +155,7 @@ const initialState: SubMarginState = {
     margin: "",
     reset: "",
   },
+  viewTabletCards: true,
 };
 
 const subMarginSlice = createSlice({
@@ -414,6 +416,9 @@ const subMarginSlice = createSlice({
         reset: "",
       };
     },
+    setViewTabletCards: (state, action: PayloadAction<boolean>) => {
+      state.viewTabletCards = action.payload;
+    },
     resetSubMarginState: () => initialState,
   },
 });
@@ -463,5 +468,6 @@ export const {
   setUpcSearch,
   setMobileSort,
   resetMobileSort,
+  setViewTabletCards,
 } = subMarginSlice.actions;
 export default subMarginSlice.reducer;
