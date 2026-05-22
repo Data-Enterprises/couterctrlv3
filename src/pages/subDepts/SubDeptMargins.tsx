@@ -21,6 +21,7 @@ import { setMenuPosition } from "../../features/ctxMenuSlice";
 import type { Handlers } from "../../interfaces";
 import { smOptions } from "../upc/utils";
 import SubDeptMobileView from "./mobile/SubDeptMobileView";
+import SubMarginControlsTablet from "./tablet/SubMarginControlsTablet";
 
 const SubDeptMargins = () => {
   const ctx = useSubMarginCtx();
@@ -90,6 +91,30 @@ const SubDeptMargins = () => {
   };
 
   if (ctx.isMobile) return <SubDeptMobileView />;
+
+  if (ctx.isTablet) {
+    return (
+      <div className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] grid grid-cols-[24%_auto] gap-2 p-3">
+        <ExportModal
+          isOpen={sm.openExportModal}
+          columns={itemCols}
+          data={sm.filteredItemGridData}
+          onClose={handleClose}
+        />
+        <ExportModal
+          isOpen={sm.openCostExportModal}
+          columns={costCols}
+          data={sm.filteredCostGridData}
+          onClose={handleClose}
+        />
+        <ItemFilterModal />
+        <SubMarginControlsTablet />
+        {!ctx.loadingMargins && !ctx.margins.length ? null : (
+          <SubMarginDisplay />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] grid grid-cols-[18%_82%] gap-2 p-4">

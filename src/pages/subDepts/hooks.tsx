@@ -3,7 +3,7 @@ import { setDates } from ".";
 import { useAppSelector } from "../../hooks";
 
 export const useSubMarginCtx = () => {
-  const { url, token, isMobile } = useAppSelector((state) => state.app);
+  const { url, token, isMobile, isTablet } = useAppSelector((state) => state.app);
   const { type, singleDate, lastGroup, lastStore } = useAppSelector(
     (state) => state.search,
   );
@@ -87,6 +87,7 @@ export const useSubMarginCtx = () => {
     searchedItemMobile,
     upcSearch,
     mSort,
+    isTablet,
   };
 };
 
