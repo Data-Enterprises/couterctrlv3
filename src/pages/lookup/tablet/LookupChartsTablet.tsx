@@ -150,7 +150,6 @@ const LookupChartsTablet = ({ getItemData }: LookupChartsProps) => {
           innerClass="text-sm py-1.5"
           listClass="text-sm"
         />
-        {/* <DatePickers showBtn={false} /> */}
         <UpcScanner handleScan={scanItem} onClear={clear} />
       </div>
       {itemsLoaded ? (
