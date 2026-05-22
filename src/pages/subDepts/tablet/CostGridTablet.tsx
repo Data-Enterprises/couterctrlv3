@@ -106,13 +106,16 @@ const CostGridTablet = () => {
       <div className="mt-3 rounded-xl overflow-hidden border border-slate-200/70">
         <div className="grid grid-cols-[0.9fr_2.1fr_0.7fr_1fr_0.6fr_0.7fr] bg-slate-100/90 px-2 py-2 text-[12.5px] font-semibold uppercase tracking-wide text-slate-500">
           {costCols.map((col, i) => (
-            <div key={i} className={`truncate ${textPos(col.headerName as string)}`}>
+            <div
+              key={i}
+              className={`truncate ${textPos(col.headerName as string)}`}
+            >
               {col.headerName}
             </div>
           ))}
         </div>
 
-        <div className="divide-y divide-slate-200/80 bg-custom-white max-h-[200px] overflow-y-auto">
+        <div className="divide-y divide-slate-200/80 bg-custom-white max-h-[calc(100vh-28rem)] overflow-y-auto">
           {sm.filteredCostGridData.map((data, i) => (
             <div
               key={i}

@@ -170,7 +170,7 @@ const ItemsGridTablet = () => {
           ))}
         </div>
 
-        <div className="divide-y divide-slate-200/80 bg-custom-white max-h-[200px] overflow-y-auto">
+        <div className="divide-y divide-slate-200/80 bg-custom-white max-h-[calc(100vh-28rem)] overflow-y-auto">
           {gridData.map((data, i) => (
             <div
               key={i}

@@ -152,7 +152,6 @@ const SubMarginDisplayTablet = () => {
         },
         [],
       );
-      console.log(marginCosts);
 
       dispatch(setSubDeptCost(marginCosts));
     }
@@ -163,7 +162,7 @@ const SubMarginDisplayTablet = () => {
   return (
     <div className="space-y-2">
       {selectedWeek < 5 ? (
-        <div className="space-y-3 max-h-[calc(100vh-9.5rem)] overflow-y-auto p-2">
+        <div className="space-y-3 p-2">
           <TotalsHeader data={barData} />
           <div className="bg-custom-white rounded-xl border border-slate-200/70 shadow-md p-2">
             <div className="grid grid-cols-3 gap-3">
