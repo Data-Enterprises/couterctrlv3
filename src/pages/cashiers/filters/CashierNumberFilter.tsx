@@ -103,7 +103,7 @@ const CashierNumberFilter = () => {
   };
 
   return (
-    <div className="text-sm">
+    <div className="text-[13px]">
       <div className="grid grid-cols-3 gap-2 mb-4">
         {exceptions.map((exc) => (
           <div
@@ -115,7 +115,7 @@ const CashierNumberFilter = () => {
           </div>
         ))}
       </div>
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-2">
         <CheckBox
           label="Greater Than"
           id={1}

@@ -95,9 +95,13 @@ const TransFilters = () => {
   if (!ctx.transList.length) return null;
 
   return (
-    <div className="shadow-lg">
-      <div className="bg-blue-500 text-custom-white rounded-t-lg py-0.5 px-2 font-medium">
+    <div className="shadow-lg bg-custom-white rounded-lg text-[13px]">
+      <div className="rounded-t-lg py-0.5 px-2 font-medium">
         Filter By
+      </div>
+      <div className="grid grid-cols-2 h-[1.5px]">
+        <div className="bg-gradient-to-r from-blue-200 to-custom-white"></div>
+        <div className="bg-gradient-to-l from-blue-200 to-custom-white"></div>
       </div>
       <div className="bg-custom-white grid p-2 gap-2 rounded-b-lg">
         <button

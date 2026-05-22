@@ -5,7 +5,7 @@ import {
   ModuleRegistry,
   type CellClickedEvent,
 } from "ag-grid-community";
-import { cols, theme } from ".";
+import { cols, formatDate, theme } from ".";
 import {
   setExportModalOpen,
   setNoTransactions,
@@ -16,6 +16,7 @@ import { getCashierTransaction } from "../../../api/lossPrevention";
 import type { JsonError, TransactionListItem } from "../../../interfaces";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+import { formatBigNumber, formatCurrency2 } from "../../../utils";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -118,10 +119,81 @@ const TransactionsView = () => {
     );
   }
 
+  if (ctx.isTablet) {
+    return (
+      <div className="h-full w-full rounded-xl bg-custom-white p-3 shadow-lg">
+        <div className=" flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-content/75">Transactions</h2>
+          <p className="text-sm text-content/50">
+            Tap a transaction ID to drill into details.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 h-[1.5px] mb-2">
+          <div className="bg-gradient-to-r from-[rgb(30,45,80)]/75 to-custom-white"></div>
+          <div className="bg-gradient-to-l from-[rgb(30,45,80)]/75 to-custom-white"></div>
+        </div>
+
+        <div className="rounded-xl border border-slate-200">
+          <div className="grid grid-cols-[1fr_1.1fr_1.2fr_0.8fr_1.3fr_0.8fr_0.7fr_1.1fr] gap-3 bg-bkg/85 px-3 py-2 text-[12.5px] font-semibold text-content/75">
+            {cols.map((col, i) => (
+              <div key={i} className={i >= cols.length - 2 ? "text-right" : ""}>
+                {col.headerName}
+              </div>
+            ))}
+          </div>
+
+          {/* Scrollable */}
+          <div className="divide-y divide-content/35 bg-custom-white max-h-[calc(100vh-11rem)] overflow-y-auto">
+            {ctx.filteredTransOverviews.map((fto, i) => (
+              <div
+                key={i}
+                className="grid grid-cols-[1fr_1.1fr_1.2fr_0.8fr_1.3fr_0.8fr_0.7fr_1.1fr] gap-3 px-3 py-2.5 text-sm text-content/75 transition-colors even:bg-bkg/75"
+              >
+                <div className="min-w-0">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleCellClicked({
+                        colDef: { field: "transaction_id" },
+                        data: fto,
+                      } as CellClickedEvent)
+                    }
+                    className="text-nowrap truncate font-semibold underline text-[rgb(30,45,80)]"
+                  >
+                    {fto.transaction_id}
+                  </button>
+                </div>
+
+                <div className="whitespace-nowrap">
+                  {formatDate(fto.sale_date)}
+                </div>
+
+                <div className="truncate">{fto.sale_type}</div>
+
+                <div>{fto.store_number}</div>
+
+                <div className="truncate">{fto.cashier_name}</div>
+
+                <div>{fto.cashier_number}</div>
+
+                <div className="text-right tabular-nums">
+                  {formatBigNumber(fto.qty, 0)}
+                </div>
+
+                <div className="text-right tabular-nums font-medium text-slate-900">
+                  {formatCurrency2(fto.total_sales)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={`bg-custom-white h-full w-full space-y-2 p-2 rounded-lg shadow-lg`}
-    >
+    <div className="bg-custom-white h-full w-full space-y-2 p-2 rounded-lg shadow-lg">
       <div className="h-[94%]">
         <AgGridReact
           rowData={ctx.filteredTransOverviews}

@@ -2,7 +2,7 @@ import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
 import type { TransactionListItem, TransactionOverview } from "../../../interfaces";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 
-const formatDate = (date: string) => {
+export const formatDate = (date: string) => {
   const split = date.split("T")[0].split("-");
   return `${split[1]}/${split[2]}/${split[0]}`;
 };

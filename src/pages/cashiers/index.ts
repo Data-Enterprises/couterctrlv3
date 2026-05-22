@@ -2,7 +2,9 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 
 export const useCashierCtx = () => {
   const dispatch = useAppDispatch();
-  const { url, miktoUrl, apiKey, token, isMobile } = useAppSelector((state) => state.app);
+  const { url, miktoUrl, apiKey, token, isMobile, isTablet } = useAppSelector(
+    (state) => state.app,
+  );
   const {
     storeCards,
     cashierCards,
@@ -113,5 +115,6 @@ export const useCashierCtx = () => {
     transTotalQtyFilter,
     transactionLoadingMessage,
     isMobile,
+    isTablet,
   };
 };
