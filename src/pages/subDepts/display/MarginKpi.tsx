@@ -79,6 +79,7 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
     if (
       title === "Cost" &&
       ctx.subDeptGridView === "cost" &&
+      !ctx.isTablet &&
       ctx.selectedWeek < 5
     ) {
       return "bg-orange-200";
@@ -86,6 +87,7 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
     if (
       title === "Unique Items" &&
       ctx.subDeptGridView === "item" &&
+      !ctx.isTablet &&
       ctx.selectedWeek < 5
     ) {
       return "bg-orange-200";
@@ -109,6 +111,7 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
         : "Shows data for the unique items sold";
     if (
       (title === "Cost" || title === "Unique Items") &&
+      !ctx.isTablet &&
       ctx.selectedWeek < 5
     ) {
       return (
@@ -133,9 +136,11 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
     return null;
   };
 
+  const layout = ctx.isTablet ? "w-full py-3" : "w-1/6 py-4"
+
   return (
     <div
-      className={`relative text-[13.5px] w-1/6 flex flex-col gap-1 justify-center items-center bg-custom-white py-4 rounded-lg shadow-lg ${highlightStyle()} ${hoverStyle()}`}
+      className={`relative text-[13.5px] ${layout} flex flex-col gap-1 justify-center items-center bg-custom-white rounded-lg shadow-lg ${highlightStyle()} ${hoverStyle()}`}
       onClick={handleCostClick}
     >
       <div className="text-content/50">{title}</div>

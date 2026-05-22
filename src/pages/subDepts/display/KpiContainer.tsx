@@ -79,8 +79,10 @@ const KpiContainer = () => {
     ),
   };
 
+  const layout = ctx.isTablet ? "grid grid-cols-3 gap-3" : "flex justify-between items-start gap-2"
+
   return (
-    <div className="flex justify-between items-start w-full gap-2 text-sm font-medium select-none px-2">
+    <div className={`${layout} w-full text-[13px] xl:text-sm font-medium select-none px-2`}>
       <SubDeptMarginKpi data={kpiData.total_sales} title="Sales" />
       <SubDeptMarginKpi data={kpiData.total_cogs} title="Cost" />
       <SubDeptMarginKpi data={kpiData.gpm} title="Margin" />

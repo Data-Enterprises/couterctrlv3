@@ -22,6 +22,7 @@ import type { Handlers } from "../../interfaces";
 import { smOptions } from "../upc/utils";
 import SubDeptMobileView from "./mobile/SubDeptMobileView";
 import SubMarginControlsTablet from "./tablet/SubMarginControlsTablet";
+import SubMarginDisplayTablet from "./tablet/SubMarginDisplayTablet";
 
 const SubDeptMargins = () => {
   const ctx = useSubMarginCtx();
@@ -110,7 +111,7 @@ const SubDeptMargins = () => {
         <ItemFilterModal />
         <SubMarginControlsTablet />
         {!ctx.loadingMargins && !ctx.margins.length ? null : (
-          <SubMarginDisplay />
+          <SubMarginDisplayTablet />
         )}
       </div>
     );

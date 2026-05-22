@@ -125,7 +125,6 @@ const SubMarginControlsTablet = () => {
         </div>
       </div>
       <SubDeptsTablet />
-      {/* {ctx.selectedSubDeptId > 0 && <WeeklyTrends />} */}
       {ctx.selectedSubDeptId > 0 ? <WeeklyTrendsTablet /> : null}
     </div>
   );
