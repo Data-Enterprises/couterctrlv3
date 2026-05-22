@@ -45,10 +45,11 @@ const CostGridTablet = () => {
 
       const filteredData = [...sm.subDeptCost].filter((item) => {
         const dateMatch = date.length ? date === item.date : true;
-        const upcMatch = upc ? item.product_code.includes(upc) : true;
-        const descMatch = desc
+        const upcMatch = upc.length ? item.product_code.includes(upc) : true;
+        const descMatch = desc.length
           ? item.description.toLowerCase().includes(desc.toLowerCase())
           : true;
+
         const unitCostMatch = unitCost.value
           ? handleOperator(
               unitCost.value,
@@ -56,13 +57,13 @@ const CostGridTablet = () => {
               item.calculated_cost,
             )
           : true;
-        const qtyMatch = qty.value
+        const qtyMatch = qty.operator.length
           ? handleOperator(qty.value, qty.operator, item.qty)
           : true;
-        const cogsMatch = cogs.value
+        const cogsMatch = cogs.operator.length
           ? handleOperator(cogs.value, cogs.operator, item.total_cost)
           : true;
-        const caseCostMatch = caseCost.value
+        const caseCostMatch = caseCost.operator.length
           ? handleOperator(caseCost.value, caseCost.operator, item.cost)
           : true;
 
@@ -90,13 +91,22 @@ const CostGridTablet = () => {
     sm.unitCostFilter,
   ]);
 
+  const textPos = (header: string) => {
+    if (
+      header.toLowerCase() !== "upc" &&
+      header.toLowerCase() !== "description"
+    )
+      return "text-right";
+    return "text-left";
+  };
+
   return (
     <div className="rounded-2xl border border-slate-200/70 bg-white/95 p-3 shadow-sm text-sm">
       <CostGridFiltersTablet />
       <div className="mt-3 rounded-xl overflow-hidden border border-slate-200/70">
-        <div className="grid grid-cols-[1fr_2.4fr_0.9fr_0.6fr_0.6fr_0.8fr_0.9fr_0.8fr] bg-slate-100/90 px-2 py-2 text-[12.5px] font-semibold uppercase tracking-wide text-slate-500">
+        <div className="grid grid-cols-[0.9fr_2.1fr_0.7fr_1fr_0.6fr_0.7fr] bg-slate-100/90 px-2 py-2 text-[12.5px] font-semibold uppercase tracking-wide text-slate-500">
           {costCols.map((col, i) => (
-            <div key={i} className={`truncate`}>
+            <div key={i} className={`truncate ${textPos(col.headerName as string)}`}>
               {col.headerName}
             </div>
           ))}
@@ -106,7 +116,7 @@ const CostGridTablet = () => {
           {sm.filteredCostGridData.map((data, i) => (
             <div
               key={i}
-              className="grid grid-cols-[1fr_2.4fr_0.9fr_0.6fr_0.6fr_0.8fr_0.9fr_0.8fr] items-center px-2 py-1.5 text-[12.2px] text-slate-700 odd:bg-white even:bg-slate-50/80 hover:bg-sky-50/70 transition-colors duration-150"
+              className="grid grid-cols-[0.9fr_2.1fr_0.7fr_1fr_0.6fr_0.7fr] items-center px-2 py-1.5 text-[12.2px] text-slate-700 odd:bg-white even:bg-slate-50/80 hover:bg-sky-50/70 transition-colors duration-150"
             >
               <div className="font-medium text-slate-900 truncate">
                 {data.product_code}

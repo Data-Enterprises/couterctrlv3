@@ -1,19 +1,23 @@
 import { useMemo } from "react";
 import { useSubMarginCtx } from "../hooks";
 import { useAppDispatch } from "../../../hooks";
+import {
+  setSubDeptCost,
+  setSubDeptGridView,
+  setViewTabletCards,
+} from "../../../features/subMarginSlice";
 
 import { formatDate, type BarData } from "../display/widgets";
 import { gpm } from "../../../functions";
 import { calculateCogs } from "..";
 
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
-import SubDeptCostGrid from "../display/widgets/SubDeptCostGrid";
-import CostGridFilters from "../display/widgets/CostGridFilters";
 import AllWeeksTrend from "../display/allWeeks/AllWeeksTrend";
 import ItemsGridTablet from "./ItemsGridTablet";
 import TotalsHeader from "./TotalsHeader";
 import DayCardOverview from "./DayCardOverview";
-import { setViewTabletCards } from "../../../features/subMarginSlice";
+import CostGridTablet from "./CostGridTablet";
+import type { SubDeptCost } from "../../../interfaces";
 
 const SubMarginDisplayTablet = () => {
   const dispatch = useAppDispatch();
@@ -96,12 +100,7 @@ const SubMarginDisplayTablet = () => {
     if (subDeptGridView === "item") {
       return <ItemsGridTablet />;
     } else if (subDeptGridView === "cost") {
-      return (
-        <div className="grid grid-cols-[18%_81.5%] gap-2">
-          <CostGridFilters />
-          <SubDeptCostGrid />
-        </div>
-      );
+      return <CostGridTablet />;
     }
 
     return null;
@@ -109,6 +108,56 @@ const SubMarginDisplayTablet = () => {
 
   const handleDailyBtnClick = () => {
     dispatch(setViewTabletCards(!viewTabletCards));
+  };
+
+  const handleGridViewChange = (view: "item" | "cost") => {
+    if (view === "cost") {
+      const formatDate = (dte: string) => {
+        const split = dte.split("T")[0].split("-");
+        return `${split[1]}/${split[2]}/${split[0]}`;
+      };
+
+      const marginCosts: SubDeptCost[] = margins.reduce(
+        (acc: SubDeptCost[], curr) => {
+          const found = acc.find(
+            (item) => item.product_code === curr.product_code,
+          );
+          if (!found) {
+            acc.push({
+              date: formatDate(curr.sale_date),
+              product_code: curr.product_code,
+              description: curr.product_description,
+              calculated_cost: curr.calculated_cost,
+              cost: curr.cost,
+              qty: curr.qty,
+              total_cost: calculateCogs(
+                curr.net_cost,
+                curr.cost,
+                curr.case_size,
+                curr.qty,
+                curr.weight,
+              ),
+            });
+          } else {
+            found.qty += curr.qty;
+            found.total_cost += calculateCogs(
+              curr.net_cost,
+              curr.cost,
+              curr.case_size,
+              curr.qty,
+              curr.weight,
+            );
+          }
+          return acc;
+        },
+        [],
+      );
+      console.log(marginCosts);
+
+      dispatch(setSubDeptCost(marginCosts));
+    }
+    dispatch(setViewTabletCards(false));
+    dispatch(setSubDeptGridView(view));
   };
 
   return (
@@ -124,10 +173,16 @@ const SubMarginDisplayTablet = () => {
               >
                 View Daily
               </button>
-              <button className="btn-themeBlue py-1 text-[13px] px-0 bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white">
+              <button
+                className="btn-themeBlue py-1 text-[13px] px-0 bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white"
+                onClick={() => handleGridViewChange("item")}
+              >
                 View Items
               </button>
-              <button className="btn-themeBlue py-1 text-[13px] px-0 bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white">
+              <button
+                className="btn-themeBlue py-1 text-[13px] px-0 bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white"
+                onClick={() => handleGridViewChange("cost")}
+              >
                 View Costs
               </button>
             </div>

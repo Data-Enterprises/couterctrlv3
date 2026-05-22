@@ -12,7 +12,7 @@ const CostGridFiltersTablet = () => {
   const sm = useAppSelector((state) => state.subMargin);
 
   const divStyle =
-    "py-2 flex justify-center items-center rounded-lg shadow-md hover:bg-blue-200 transition-all duration-200 cursor-pointer";
+    "bg-bkg/75 py-1.5 text-[11px] text-center rounded-full shadow-md transition-all duration-200";
 
   const canRefresh = () => {
     if (
@@ -76,50 +76,48 @@ const CostGridFiltersTablet = () => {
         <div className="bg-gradient-to-r from-[rgb(30,45,80)] to-custom-white"></div>
         <div className="bg-gradient-to-l from-[rgb(30,45,80)] to-custom-white"></div>
       </div>
-      <div className="bg-custom-white text-[13px] rounded-b-lg shadow-lg">
-        <div className="grid grid-cols-7 gap-3 mt-1.5">
-          <div
-            className={`${divStyle} ${sm.upcFilter.length ? "bg-orange-200" : ""}`}
-            onClick={() => handleClick("upc")}
-          >
-            {divText("upc")}
-          </div>
-          <div
-            className={`${divStyle} ${sm.descFilter.length ? "bg-orange-200" : ""}`}
-            onClick={() => handleClick("description")}
-          >
-            {divText("description")}
-          </div>
-          <div
-            className={`${divStyle} ${sm.unitCostFilter.operator ? "bg-orange-200" : ""}`}
-            onClick={() => handleClick("unitCost")}
-          >
-            {divText("unitCost")}
-          </div>
-          <div
-            className={`${divStyle} ${sm.caseCostFilter.operator ? "bg-orange-200" : ""}`}
-            onClick={() => handleClick("caseCost")}
-          >
-            {divText("caseCost")}
-          </div>
-          <div
-            className={`${divStyle} ${sm.qtyFilter.operator ? "bg-orange-200" : ""}`}
-            onClick={() => handleClick("qty")}
-          >
-            {divText("qty")}
-          </div>
-          <div
-            className={`${divStyle} ${sm.cogsFilter.operator ? "bg-orange-200" : ""}`}
-            onClick={() => handleClick("cogs")}
-          >
-            {divText("cogs")}
-          </div>
-          <div
-            className={`${divStyle} ${canRefresh() ? "bg-orange-200" : ""}`}
-            onClick={() => handleClick("")}
-          >
-            {divText("")}
-          </div>
+      <div className="grid grid-cols-7 gap-3 mt-1.5">
+        <div
+          className={`${divStyle} ${sm.upcFilter.length ? "bg-orange-200" : ""}`}
+          onClick={() => handleClick("upc")}
+        >
+          {divText("upc")}
+        </div>
+        <div
+          className={`${divStyle} ${sm.descFilter.length ? "bg-orange-200" : ""}`}
+          onClick={() => handleClick("description")}
+        >
+          {divText("description")}
+        </div>
+        <div
+          className={`${divStyle} ${sm.unitCostFilter.operator ? "bg-orange-200" : ""}`}
+          onClick={() => handleClick("unitCost")}
+        >
+          {divText("unitCost")}
+        </div>
+        <div
+          className={`${divStyle} ${sm.caseCostFilter.operator ? "bg-orange-200" : ""}`}
+          onClick={() => handleClick("caseCost")}
+        >
+          {divText("caseCost")}
+        </div>
+        <div
+          className={`${divStyle} ${sm.qtyFilter.operator ? "bg-orange-200" : ""}`}
+          onClick={() => handleClick("qty")}
+        >
+          {divText("qty")}
+        </div>
+        <div
+          className={`${divStyle} ${sm.cogsFilter.operator ? "bg-orange-200" : ""}`}
+          onClick={() => handleClick("cogs")}
+        >
+          {divText("cogs")}
+        </div>
+        <div
+          className={`${divStyle} ${canRefresh() ? "bg-orange-200" : ""}`}
+          onClick={() => handleClick("")}
+        >
+          {divText("")}
         </div>
       </div>
     </div>
