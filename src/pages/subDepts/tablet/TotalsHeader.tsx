@@ -46,57 +46,62 @@ const TotalsHeader = ({ data }: TotalsHeaderProps) => {
   return (
     <div className="bg-custom-white text-sm rounded-xl border border-slate-200/70 shadow-md px-3 py-1.5 transition-all duration-200">
       <div
-        className={`mb-1 font-medium ${totals.date === selectedWeekDay ? "text-custom-white" : "text-slate-500"}`}
+        className={`font-medium text-slate-500`}
       >
         {totals.date}
       </div>
 
+      <div className="grid grid-cols-2 h-[1.5px] mb-1.5">
+        <div className="bg-gradient-to-r from-[rgb(30,45,80)] to-custom-white"></div>
+        <div className="bg-gradient-to-l from-[rgb(30,45,80)] to-custom-white"></div>
+      </div>
+
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 text-slate-700">
         <div
-          className={`flex flex-col py-1.5 transition-all duration-200 ${totals.date === selectedWeekDay ? "bg-custom-white" : "bg-bkg"} rounded-md leading-snug items-center justify-between`}
+          className={`flex flex-col py-1.5 transition-all duration-200 bg-bkg rounded-md leading-snug items-center justify-between`}
         >
           <span>Sales</span>
-          <span className="font-semibold text-slate-900">
+          <span className="font-semibold text-content/95">
             {formatCurrency2(totals.sales)}
           </span>
         </div>
         <div
-          className={`flex flex-col py-1.5 transition-all duration-200 ${totals.date === selectedWeekDay ? "bg-custom-white" : "bg-bkg"} rounded-md leading-snug items-center justify-between`}
+          className={`flex flex-col py-1.5 transition-all duration-200 bg-bkg rounded-md shadow-md leading-snug items-center justify-between`}
         >
           <span>Net</span>
-          <span className="font-semibold text-slate-900">
+          <span className="font-semibold text-content/95">
             {formatCurrency2(totals.net)}
           </span>
         </div>
         <div
-          className={`flex flex-col py-1.5 transition-all duration-200 ${totals.date === selectedWeekDay ? "bg-custom-white" : "bg-bkg"} rounded-md leading-snug items-center justify-between`}
+          className={`flex flex-col py-1.5 transition-all duration-200 bg-bkg rounded-md shadow-md leading-snug items-center justify-between`}
         >
           <span>Qty</span>
-          <span className="font-semibold text-slate-900">
+          <span className="font-semibold text-content/95">
             {formatBigNumber(totals.qty, 0)}
           </span>
         </div>
         <div
-          className={`flex flex-col py-1.5 transition-all duration-200 ${totals.date === selectedWeekDay ? "bg-custom-white" : "bg-bkg"} rounded-md leading-snug items-center justify-between`}
+          className={`flex flex-col py-1.5 transition-all duration-200 bg-bkg rounded-md shadow-md leading-snug items-center justify-between`}
         >
           <span>Tax</span>
-          <span className="font-semibold text-slate-900">
+          <span className="font-semibold text-content/95">
             {formatCurrency2(totals.tax)}
           </span>
         </div>
         <div
-          className={`flex flex-col py-1.5 transition-all duration-200 ${totals.date === selectedWeekDay ? "bg-custom-white" : "bg-bkg"} rounded-md leading-snug items-center justify-between`}
+          className={`flex flex-col py-1.5 transition-all duration-200 bg-bkg rounded-md shadow-md leading-snug items-center justify-between`}
         >
           <span>COGS</span>
-          <span className="font-semibold text-slate-900">
+          <span className="font-semibold text-content/95">
             {formatCurrency2(totals.cogs)}
           </span>
         </div>
         <div
-          className={`flex flex-col py-1.5 transition-all duration-200 ${totals.date === selectedWeekDay ? "bg-custom-white" : "bg-bkg"} rounded-md leading-snug items-center justify-between`}
+          className={`flex flex-col py-1.5 transition-all duration-200 bg-bkg rounded-md shadow-md leading-snug items-center justify-between`}
         >
           <span>GPM</span>
-          <span className="font-semibold text-slate-900">{totals.gpm}</span>
+          <span className="font-semibold text-content/95">{totals.gpm}</span>
         </div>
       </div>
     </div>

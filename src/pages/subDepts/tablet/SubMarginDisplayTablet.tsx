@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useSubMarginCtx } from "../hooks";
+import { useAppDispatch } from "../../../hooks";
 
 import { formatDate, type BarData } from "../display/widgets";
 import { gpm } from "../../../functions";
@@ -12,14 +13,17 @@ import AllWeeksTrend from "../display/allWeeks/AllWeeksTrend";
 import ItemsGridTablet from "./ItemsGridTablet";
 import TotalsHeader from "./TotalsHeader";
 import DayCardOverview from "./DayCardOverview";
+import { setViewTabletCards } from "../../../features/subMarginSlice";
 
 const SubMarginDisplayTablet = () => {
+  const dispatch = useAppDispatch();
   const {
     margins,
     loadingMargins,
     selectedWeek,
     subDeptGridView,
     viewTabletCards,
+    selectedWeekDay,
   } = useSubMarginCtx();
 
   const dates = useMemo(() => {
@@ -103,6 +107,10 @@ const SubMarginDisplayTablet = () => {
     return null;
   };
 
+  const handleDailyBtnClick = () => {
+    dispatch(setViewTabletCards(!viewTabletCards));
+  };
+
   return (
     <div className="space-y-2">
       {selectedWeek < 5 ? (
@@ -110,7 +118,10 @@ const SubMarginDisplayTablet = () => {
           <TotalsHeader data={barData} />
           <div className="bg-custom-white rounded-xl border border-slate-200/70 shadow-md p-2">
             <div className="grid grid-cols-3 gap-3">
-              <button className="btn-themeBlue py-1 text-[13px] px-0 bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white">
+              <button
+                className="btn-themeBlue py-1 text-[13px] px-0 bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white"
+                onClick={handleDailyBtnClick}
+              >
                 View Daily
               </button>
               <button className="btn-themeBlue py-1 text-[13px] px-0 bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white">
@@ -127,8 +138,7 @@ const SubMarginDisplayTablet = () => {
                 <DayCardOverview
                   key={i}
                   data={d}
-                  handleCardClick={() => {}}
-                  selectedWeekDay=""
+                  selectedWeekDay={selectedWeekDay}
                 />
               ))}
             </div>

@@ -3,6 +3,7 @@ import { useAppDispatch } from "../../../hooks";
 import {
   setLoadingMargins,
   setSelectedWeek,
+  setViewTabletCards,
   setWeekTrendMargins,
   type MarginWeek,
 } from "../../../features/subMarginSlice";
@@ -24,6 +25,7 @@ const WeeklyTrendsTablet = () => {
   const dispatch = useAppDispatch();
 
   const handleWeekClick = (week: MarginWeek) => {
+    dispatch(setViewTabletCards(true));
     dispatch(setLoadingMargins(true));
     dispatch(setSelectedWeek(week));
 

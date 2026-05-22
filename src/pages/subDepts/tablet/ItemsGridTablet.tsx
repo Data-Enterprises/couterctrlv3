@@ -138,6 +138,7 @@ const ItemsGridTablet = () => {
       ...item,
       margin: ((item.total_sales - item.cogs) / item.total_sales) * 100 || 0,
     }));
+    
     dispatch(setItemGridData(newData));
     dispatch(setFilteredItemGridData(newData));
     setGridData(newData);
