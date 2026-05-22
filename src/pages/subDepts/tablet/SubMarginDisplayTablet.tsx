@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useSubMarginCtx, useHeight } from "../hooks";
+import { useSubMarginCtx } from "../hooks";
 
 import { formatDate, type BarData } from "../display/widgets";
 import { gpm } from "../../../functions";
@@ -7,13 +7,12 @@ import { calculateCogs } from "..";
 
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import KpiContainer from "../display/KpiContainer";
-import SalesGrid from "../display/widgets/SalesGrid";
-import SalesBar from "../display/widgets/SalesBar";
 import ItemsGrid from "../display/widgets/ItemsGrid";
 import ItemsGridFilters from "../display/widgets/ItemsGridFilters";
 import SubDeptCostGrid from "../display/widgets/SubDeptCostGrid";
 import CostGridFilters from "../display/widgets/CostGridFilters";
 import AllWeeksTrend from "../display/allWeeks/AllWeeksTrend";
+import DayCardOverView from "./DayCardOverview";
 
 const SubMarginDisplayTablet = () => {
   const {
@@ -22,7 +21,6 @@ const SubMarginDisplayTablet = () => {
     selectedWeek,
     subDeptGridView,
   } = useSubMarginCtx();
-  const height = useHeight();
 
   const dates = useMemo(() => {
     const result = Array.from(
@@ -107,14 +105,8 @@ const SubMarginDisplayTablet = () => {
     <div className="space-y-2">
       <KpiContainer />
       {selectedWeek < 5 ? (
-        <div
-          className={`grid grid-rows-[32.6%_67.4%] ${height} gap-2 overflow-hidden p-2`}
-        >
-          <div className="grid grid-cols-[34%_65.5%] gap-2">
-            <SalesBar barData={barData} />
-            <SalesGrid gridData={barData.slice().reverse()} />
-          </div>
-
+        <div className="space-y-3 max-h-[120vh] overflow-y-auto p-2">
+          <DayCardOverView gridData={barData} />
           {renderGrid()}
         </div>
       ) : (

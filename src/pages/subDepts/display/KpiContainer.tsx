@@ -79,7 +79,7 @@ const KpiContainer = () => {
     ),
   };
 
-  const layout = ctx.isTablet ? "grid grid-cols-3 gap-3" : "flex justify-between items-start gap-2"
+  const layout = ctx.isTablet ? "grid grid-cols-6 leading-tight gap-3" : "flex justify-between items-start gap-2"
 
   return (
     <div className={`${layout} w-full text-[13px] xl:text-sm font-medium select-none px-2`}>
