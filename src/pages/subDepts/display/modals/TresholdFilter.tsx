@@ -119,7 +119,7 @@ const ThresholdFilter = ({ label, type, handleClose }: ThresholdFilter) => {
 
   return (
     <div className="space-y-2">
-      <div className="flex justify-between select-none">
+      <div className="flex justify-between select-none text-sm">
         <CheckBox
           id={1}
           label="Greater Than"

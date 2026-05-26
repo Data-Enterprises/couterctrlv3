@@ -12,12 +12,12 @@ import { gpm } from "../../../functions";
 import { calculateCogs } from "..";
 
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
-import AllWeeksTrend from "../display/allWeeks/AllWeeksTrend";
 import ItemsGridTablet from "./ItemsGridTablet";
 import TotalsHeader from "./TotalsHeader";
 import DayCardOverview from "./DayCardOverview";
 import CostGridTablet from "./CostGridTablet";
 import type { SubDeptCost } from "../../../interfaces";
+import AllWeeksTablet from "./AllWeeksTablet";
 
 const SubMarginDisplayTablet = () => {
   const dispatch = useAppDispatch();
@@ -107,7 +107,7 @@ const SubMarginDisplayTablet = () => {
   };
 
   const handleDailyBtnClick = () => {
-    dispatch(setViewTabletCards(!viewTabletCards));
+    dispatch(setViewTabletCards(true));
   };
 
   const handleGridViewChange = (view: "item" | "cost") => {
@@ -167,19 +167,19 @@ const SubMarginDisplayTablet = () => {
           <div className="bg-custom-white rounded-xl border border-slate-200/70 shadow-md p-2">
             <div className="grid grid-cols-3 gap-3">
               <button
-                className="btn-themeBlue py-1 text-[13px] px-0 bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white"
+                className={`btn-themeBlue py-1 text-[13px] px-0 ${viewTabletCards ? "bg-orange-200 border-orange-200 text-content" : "bg-[rgb(30,45,80)] border-[rgb(30,45,80)]"}`}
                 onClick={handleDailyBtnClick}
               >
                 View Daily
               </button>
               <button
-                className="btn-themeBlue py-1 text-[13px] px-0 bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white"
+                className={`btn-themeBlue py-1 text-[13px] px-0 ${!viewTabletCards && subDeptGridView === "item" ? "bg-orange-200 border-orange-200 text-content" : "bg-[rgb(30,45,80)] border-[rgb(30,45,80)]"}`}
                 onClick={() => handleGridViewChange("item")}
               >
                 View Items
               </button>
               <button
-                className="btn-themeBlue py-1 text-[13px] px-0 bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white"
+                className={`btn-themeBlue py-1 text-[13px] px-0 ${!viewTabletCards && subDeptGridView === "cost" ? "bg-orange-200 border-orange-200 text-content" : "bg-[rgb(30,45,80)] border-[rgb(30,45,80)]"}`}
                 onClick={() => handleGridViewChange("cost")}
               >
                 View Costs
@@ -201,7 +201,7 @@ const SubMarginDisplayTablet = () => {
           )}
         </div>
       ) : (
-        <AllWeeksTrend />
+        <AllWeeksTablet />
       )}
     </div>
   );
