@@ -40,6 +40,7 @@ import {
 } from "../../features/upcUploadSlice";
 import ForecastCarousel from "./carousel/ForecastCarousel";
 import { formatRowData } from ".";
+import ForecastTablet from "./tablet/ForecastTablet";
 
 const options = [
   { label: "Stores", id: 1 },
@@ -54,14 +55,6 @@ const Forecasting = () => {
   const [_, setFile] = useState<File | null>(null);
   const [filteredData, setFilteredData] = useState<Store[] | Group[]>([]);
   const { upcs, upcText } = useAppSelector((state) => state.upcs);
-
-  useEffect(() => {
-    return () => {
-      // if (context.forecastResults.length === 0 || !file) {
-      //   dispatch(setUpcFileName(""));
-      // }
-    };
-  }, []);
 
   useEffect(() => {
     // On mount, if radioId is 0, set to 1 (Stores)
@@ -193,6 +186,20 @@ const Forecasting = () => {
   const handleRemoveUpc = (upc: string) => {
     dispatch(removeSingleUpc(upc));
   };
+
+  if (context.isTablet)
+    return (
+      <ForecastTablet
+        handleSelectChange={handleSelectChange}
+        filteredData={filteredData}
+        handleSearch={handleSearch}
+        handleSelectClick={handleSelectClick}
+        handleTextChange={handleTextChange}
+        handleAddUpc={handleAddUpc}
+        handleRemoveUpc={handleRemoveUpc}
+        setFile={setFile}
+      />
+    );
 
   return (
     <div
