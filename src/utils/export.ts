@@ -1,4 +1,4 @@
-import type { ColDef } from "ag-grid-community";
+type ExportCol<T> = { headerName: string; field: keyof T | string };
 
 const save = (uri: string, filename: string) => {
   const link = document.createElement("a");
@@ -18,7 +18,7 @@ export const csv = (headers: string, data: string, filename: string) => {
 export const handleCsv = <T extends Record<string, any>>(
   data: T[],
   filename: string,
-  headers: ColDef<T>[],
+  headers: ExportCol<T>[],
   totalsLine: string = ""
 ) => {
   let body = "";
@@ -47,7 +47,7 @@ export const handleCsv = <T extends Record<string, any>>(
 
 export const exportData = <T extends Record<string, any>>(
   data: T[],
-  headers: ColDef<T>[],
+  headers: ExportCol<T>[],
   fileName: string,
   totalsLine: string = ""
 ) => {

@@ -133,12 +133,12 @@ const SaveSimModal = ({ isOpen, onClose }: SaveSimModalProps) => {
       onClose={handleClose}
       modalClassName="bg-custom-white w-[350px]"
     >
-      <Input value={simName} setValue={setSimName} label="Simulation Name" />
-      <div className="flex gap-2 mt-2">
-        <button data-testid="save-sim-submit" className="btn-themeBlue w-1/2" onClick={handleSave}>
+      <Input value={simName} setValue={setSimName} label="Simulation Name" className="py-1 text-[13.5px]" />
+      <div className="grid grid-cols-2 gap-2 mt-2">
+        <button data-testid="save-sim-submit" className="btn-themeBlue py-1 text-[13px]" onClick={handleSave}>
           Submit
         </button>
-        <button className="btn-themeOrange w-1/2" onClick={handleClose}>
+        <button className="btn-themeOrange py-1 text-[13px]" onClick={handleClose}>
           Cancel
         </button>
       </div>

@@ -269,6 +269,21 @@ body {
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
   }
+
+  .thin-scrollbar {
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: #93c5fd transparent; /* Firefox: thumb track */
+  }
+  .thin-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .thin-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .thin-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #93c5fd;
+    border-radius: 9999px;
+  }
 }
 
 .toast-error {

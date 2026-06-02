@@ -14,15 +14,15 @@ import {
 } from "../../../features/forecastSlice";
 import { clearUpcs } from "../../../features/upcUploadSlice";
 
-const ForecastControls = () => {
+const ForecastControls = ({ onSettingsClick }: { onSettingsClick?: () => void }) => {
   const [filtered, setFiltered] = useState<ForecastItem[]>([]);
   const [filterText, setFilterText] = useState<string>("");
-  const [upcDisplay, setUpcDisplay] = useState<"code" | "desc">("code");
+  // const [upcDisplay, setUpcDisplay] = useState<"code" | "desc">("code");
   const [showDisplay, setShowDisplay] = useState<"all" | "selected" | "stores">(
-    "all"
+    "all",
   );
   const dispatch = useAppDispatch();
-  const { height, topRef } = useScrollHeight();
+  const { topRef } = useScrollHeight();
   const state = useAppSelector((state) => state.forecast);
   const search = useAppSelector((state) => state.search);
 
@@ -46,7 +46,7 @@ const ForecastControls = () => {
       const filtered = state.items.filter(
         (item) =>
           item.description.toLowerCase().includes(filterText.toLowerCase()) ||
-          item.upc.toLowerCase().includes(filterText.toLowerCase())
+          item.upc.toLowerCase().includes(filterText.toLowerCase()),
       );
       setFiltered(filtered);
     }
@@ -66,24 +66,13 @@ const ForecastControls = () => {
     dispatch(setRowData(row!));
   };
 
-  const upcStyle = (upc: string) => {
-    const found = state.singlePriceResults.find((item) => item.upc === upc);
-    if (found) {
-      // style one
-      return "bg-orange-300 px-2 py-1";
-    } else {
-      return "even:bg-blue-200 px-2 py-1 text-xs font-medium hover:bg-blue-100 transition-all duration-200 cursor-pointer";
-    }
-  };
+  const upcStyle = (selected: boolean) =>
+    `flex items-center justify-between px-2 py-1 text-xs font-medium border-b border-gray-100 hover:bg-blue-50 transition-colors cursor-pointer ${
+      selected ? "bg-blue-50 border-l-2 border-blue-500" : ""
+    }`;
 
-  const isSinglePriced = (upc: string) => {
-    const found = state.singlePriceResults.find((item) => item.upc === upc);
-    if (found) {
-      return true;
-    } else {
-      return false;
-    }
-  };
+  const isSinglePriced = (upc: string) =>
+    state.singlePriceResults.some((item) => item.upc === upc);
 
   return (
     <>
@@ -94,111 +83,115 @@ const ForecastControls = () => {
             state.items.length === 0 ? "hidden" : "animate-windowIn"
           } bg-custom-white rounded-lg shadow-lg text-sm select-none`}
         >
-          <div
-            ref={topRef}
-            className="flex flex-col gap-2 rounded-t-lg px-2 pt-3 pb-2"
-          >
-            <div className="font-medium text-center rounded-t-lg">
-              {search.startDate} - {search.endDate}
+          <div ref={topRef}>
+            <div className="bg-blue-500 text-white text-[13px] font-medium px-3 py-1 rounded-t-lg">
+              90 Day · Ending {search.endDate}
             </div>
-            <div className="flex flex-col gap-2">
-              <button
-                data-testid="forecast-controls-reset-btn"
-                className="py-1 btn-themeBlue"
-                onClick={handleResetClick}
-              >
-                Reset
-              </button>
-              <button
-                data-testid="forecast-controls-export-btn"
-                className="py-1 btn-themeGreen"
-                onClick={handleExportBtnClick}
-              >
-                Export Csv
-              </button>
-            </div>
-            <div className="flex flex-col gap-2">
-              <RadioBox
-                value={showDisplay === "all"}
-                label={`Show All - ${state.items.length}`}
-                onChange={() => handleDisplay("all")}
-                id={1}
-              />
-              <RadioBox
-                value={showDisplay === "selected"}
-                label={`Show Selected - ${state.selectedUpcs.length}`}
-                onChange={() => handleDisplay("selected")}
-                id={2}
-              />
-              <RadioBox
+            <div className="flex flex-col gap-1 p-2">
+              <div className="flex flex-col gap-2">
+                <button
+                  data-testid="forecast-controls-reset-btn"
+                  className="py-1 btn-themeBlue text-[13px]"
+                  onClick={handleResetClick}
+                >
+                  Reset
+                </button>
+                <button
+                  data-testid="forecast-controls-settings-btn"
+                  className="py-1 btn-themeBlue text-[13px]"
+                  onClick={onSettingsClick}
+                >
+                  ⚙ Settings
+                </button>
+                <button
+                  data-testid="forecast-controls-export-btn"
+                  className="py-1 btn-themeBlue text-[13px]"
+                  onClick={handleExportBtnClick}
+                >
+                  Export Csv
+                </button>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <RadioBox
+                  value={showDisplay === "all"}
+                  label={`Show All - ${state.items.length}`}
+                  onChange={() => handleDisplay("all")}
+                  id={1}
+                />
+                <RadioBox
+                  value={showDisplay === "selected"}
+                  label={`Show Selected - ${state.selectedUpcs.length}`}
+                  onChange={() => handleDisplay("selected")}
+                  id={2}
+                />
+                {/* <RadioBox
                 value={showDisplay === "stores"}
                 label={`Show Stores - ${state.selectedStores.length}`}
                 onChange={() => handleDisplay("stores")}
                 id={3}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <button
-                data-testid="forecast-select-all-btn"
-                className="py-1 btn-themeGreen"
-                onClick={handleSelectAll}
-              >
-                Select All
-              </button>
-              <button
-                data-testid="forecast-deselect-all-btn"
-                className="py-1 btn-themeOrange"
-                onClick={handleDeselectAll}
-              >
-                Deselect All
-              </button>
-              <button
+              /> */}
+              </div>
+              <div className="flex flex-col gap-1">
+                <button
+                  data-testid="forecast-select-all-btn"
+                  className="py-1 btn-themeGreen text-[13px]"
+                  onClick={handleSelectAll}
+                >
+                  Select All
+                </button>
+                <button
+                  data-testid="forecast-deselect-all-btn"
+                  className="py-1 btn-themeOrange text-[13px]"
+                  onClick={handleDeselectAll}
+                >
+                  Deselect All
+                </button>
+                {/* <button
                 data-testid="forecast-toggle-display-btn"
-                className="py-1 btn-themeBlue"
+                className="py-1 btn-themeBlue text-[13px]"
                 onClick={() =>
                   setUpcDisplay(upcDisplay === "code" ? "desc" : "code")
                 }
               >
                 {upcDisplay === "code" ? "Show Desc" : "Show UPC"}
-              </button>
-            </div>
-            <div>
-              <input
-                data-testid="forecast-controls-filter-input"
-                type="text"
-                className="basic-input focus:border bg-custom-white py-1 w-full"
-                value={filterText}
-                onChange={(e) => setFilterText(e.currentTarget.value)}
-              />
+              </button> */}
+              </div>
+              <div>
+                <input
+                  data-testid="forecast-controls-filter-input"
+                  type="text"
+                  className="basic-input focus:border bg-custom-white py-1 text-[13px] w-full"
+                  value={filterText}
+                  onChange={(e) => setFilterText(e.currentTarget.value)}
+                />
+              </div>
             </div>
           </div>
 
           <div
             data-testid="upc-controls-list"
-            className="bg-custom-white rounded-b-lg overflow-y-scroll no-scrollbar"
-            style={{ height: height || 500 }}
+            className="bg-custom-white rounded-b-lg overflow-y-scroll no-scrollbar min-h-[300px] max-h-[300px]"
+            // style={{ height: height || 500 }}
           >
             {showDisplay === "all" &&
               filtered.map((item, i) => (
                 <div
                   key={i}
-                  className={`${upcStyle(item.upc)}`}
+                  className={upcStyle(state.selectedUpcs.includes(item.upc))}
                   onClick={() => handleUpcSelect(item.upc)}
                 >
-                  {!isSinglePriced(item.upc) ? (
-                    <CheckBox
-                      id={i}
-                      label={
-                        upcDisplay === "code" ? item.upc : item.description
-                      }
-                      value={state.selectedUpcs.includes(item.upc)}
-                    />
-                  ) : (
-                    <div className="">
-                      <div className="line-through truncate overflow-hidden whitespace-nowrap">
-                        {upcDisplay === "code" ? item.upc : item.description}
-                      </div>
-                    </div>
+                  <CheckBox
+                    id={i}
+                    // label={
+                    //   upcDisplay === "code" ? item.upc : item.description
+                    // }
+                    label={item.upc}
+                    value={state.selectedUpcs.includes(item.upc)}
+                  />
+                  {isSinglePriced(item.upc) && (
+                    <span className="ml-1 text-[10px] text-gray-400 font-normal">
+                      (1pt)
+                    </span>
                   )}
                 </div>
               ))}
@@ -209,14 +202,15 @@ const ForecastControls = () => {
                   <div
                     key={i}
                     data-testid={`selected-upc-${i}`}
-                    className={`${upcStyle(item.upc)}`}
+                    className={upcStyle(true)}
                     onClick={() => dispatch(setSelectedUpcs(item.upc))}
                   >
                     <CheckBox
                       id={i}
-                      label={
-                        upcDisplay === "code" ? item.upc : item.description
-                      }
+                      // label={
+                      //   upcDisplay === "code" ? item.upc : item.description
+                      // }
+                      label={item.upc}
                       value={state.selectedUpcs.includes(item.upc)}
                     />
                   </div>
@@ -227,9 +221,9 @@ const ForecastControls = () => {
                 return (
                   <div
                     key={i}
-                    className={`even:bg-blue-200 px-2 py-1 font-medium hover:bg-blue-100 transition-all duration-200 cursor-pointer`}
+                    className="text-[11px] leading-tight px-2 py-1 border-b border-gray-100 hover:bg-blue-50 transition-colors cursor-pointer"
                   >
-                    {store.store_number} - {store.store_name}
+                    {store.store_name}
                   </div>
                 );
               })}

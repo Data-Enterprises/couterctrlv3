@@ -12,20 +12,10 @@ import {
   setSingleForecastResults,
 } from "../../../features/forecastSlice";
 import { useAppDispatch } from "../../../hooks";
-
-import { AgGridReact } from "ag-grid-react";
-import { formatRowData, theme } from "..";
-import {
-  AllCommunityModule,
-  ModuleRegistry,
-  type ColDef,
-  type ColGroupDef,
-  type RowClickedEvent,
-} from "ag-grid-community";
+import { formatRowData, formatSinglePriceRowData, useScrollHeight } from "..";
 import { useForecastContext } from "../hooks";
 import type { JsonError, PriceHistoryFromListResp } from "../../../interfaces";
 import { getHistoryFromList } from "../../../api/priceSim";
-ModuleRegistry.registerModules([AllCommunityModule]);
 
 type TableData = {
   date: string;
@@ -37,17 +27,7 @@ const FileGrid = () => {
   const dispatch = useAppDispatch();
   const context = useForecastContext();
   const [tableData, setTableData] = useState<TableData[]>([]);
-
-  const colDefs: (ColDef<TableData> | ColGroupDef<TableData>)[] = [
-    {
-      headerName: "Select UPC List",
-      field: "name",
-      valueFormatter: (params) =>
-        `${params.data?.date.split("/").join("_")}_${params.data?.name}`,
-      flex: 1,
-      resizable: false,
-    },
-  ];
+  const { topRef } = useScrollHeight();
 
   const getFileNames = () => {
     getBucketList(context.url, context.token)
@@ -60,68 +40,41 @@ const FileGrid = () => {
               const split = file.split("_");
               const date = `${split[1]}/${split[2]}/${split[3]}`;
               const display = file.split("_").slice(4).join("_");
-
-              return {
-                date: date,
-                name: display,
-              };
+              return { date, name: display };
             })
-            .sort((a, b) => {
-              const dateA = new Date(a.date);
-              const dateB = new Date(b.date);
-              return dateB.getTime() - dateA.getTime();
-            });
-
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
           setTableData(data);
         }
       })
-      .catch((err) => {
-        toast.error(err.message);
-      });
+      .catch((err) => toast.error(err.message));
   };
 
   useEffect(() => {
     getFileNames();
   }, [context.forecastResults]);
 
-  const onRowClicked = (event: RowClickedEvent<TableData>) => {
+  const handleRowClick = (item: TableData) => {
     dispatch(setIsLoading(true));
     dispatch(reQuery());
 
-    const fileDate = event.data!.date.replace(/\//g, "_");
-    const fileName = `${context.userid}_${fileDate}_${event.data!.name}`;
+    const fileDate = item.date.replace(/\//g, "_");
+    const fileName = `${context.userid}_${fileDate}_${item.name}`;
 
-    // Insert the fixed price_history_from_list call here => after it can take in a file name
-    getHistoryFromList(
-      context.url,
-      context.token,
-      context.storeids,
-      context.endDate,
-      "",
-      fileName,
-    )
+    getHistoryFromList(context.url, context.token, context.storeids, context.endDate, "", fileName)
       .then((resp) => {
         const j: PriceHistoryFromListResp = resp.data;
         if (j.error === 0 && j.results.length > 0) {
-          // Set the upc items for the controls
-          const upcItems = j.results.map((item) => ({
-            upc: item.upc,
-            description: item.description,
-          }));
+          const upcItems = j.results.map((item) => ({ upc: item.upc, description: item.description }));
           dispatch(setItems(upcItems));
-
-          // set the raw data => needed to grab the prices and figure out the forecast values
           dispatch(setForecastResults(j.results));
 
-          const singlePrices = j.results.filter(
-            (item) => item.price_history.length === 1,
-          );
-          const multiPrices = j.results.filter(
-            (item) => item.price_history.length > 1,
-          );
+          const singlePrices = j.results.filter((item) => item.price_history.length === 1);
+          const multiPrices = j.results.filter((item) => item.price_history.length > 1);
 
-          // set the row data
-          const rowData = formatRowData(multiPrices);
+          const rowData = [
+            ...formatRowData(multiPrices),
+            ...formatSinglePriceRowData(singlePrices),
+          ];
           dispatch(setInitialRowData(rowData));
           dispatch(setSingleForecastResults(singlePrices));
         } else {
@@ -133,13 +86,27 @@ const FileGrid = () => {
   };
 
   return (
-    <div className="bg-custom-white rounded-lg shadow-lg z-0 h-full">
-      <AgGridReact
-        rowData={tableData}
-        columnDefs={colDefs}
-        theme={theme}
-        onRowClicked={onRowClicked}
-      />
+    <div className="bg-custom-white rounded-lg shadow-lg overflow-hidden">
+      <div ref={topRef} className="bg-blue-500 text-white text-xs font-medium px-3 py-1 rounded-t-lg">
+        Select UPC List
+      </div>
+      <div className="overflow-y-auto thin-scrollbar" style={{ maxHeight: 250 }}>
+        {tableData.length === 0 ? (
+          <div className="flex items-center justify-center h-full text-xs text-gray-400">
+            No saved lists
+          </div>
+        ) : (
+          tableData.map((item, i) => (
+            <div
+              key={i}
+              className="px-3 py-1.5 text-xs cursor-pointer hover:bg-blue-50 border-b border-gray-100 even:bg-blue-50/40 truncate"
+              onClick={() => handleRowClick(item)}
+            >
+              {item.date.split("/").join("_")}_{item.name}
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 };

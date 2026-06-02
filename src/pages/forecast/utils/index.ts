@@ -1,3 +1,28 @@
+import type { PriceHistory } from "../../../interfaces";
+
+export const estimateDaysActive = (history: PriceHistory[], price: number) => {
+  const hollowPoint: PriceHistory = {
+    days_active: 0,
+    price: price.toString(),
+    qty: 0,
+    sale_dates: [],
+  };
+  const copy = [...history, hollowPoint].sort(
+    (a, b) => parseFloat(a.price) - parseFloat(b.price)
+  );
+  const idx = copy.findIndex((ph) => parseFloat(ph.price) === price);
+
+  if (idx === 0) {
+    return copy[1].days_active;
+  } else if (idx === copy.length - 1) {
+    return copy[copy.length - 2].days_active;
+  } else {
+    const p1 = copy[idx - 1].days_active;
+    const p2 = copy[idx + 1].days_active;
+    return Math.round((p1 + p2) / 2);
+  }
+};
+
 export const fitLinearDemand = (pricesWithQty: number[][]) => {
   // Grab the prices and qtys into separate arrays
   const prices = pricesWithQty.map((pq) => pq[0]);

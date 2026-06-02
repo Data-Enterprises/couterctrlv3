@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 
-// Components
 import { useToast } from "../../components/toasts/hooks/useToast";
-import FileInput from "./controls/FileInput";
-import SingleSelect from "../../components/SingleSelect";
+// import SingleSelect from "../../components/SingleSelect";
 import { getStoresAssignedToUserGroup } from "../../api/groups";
 import type {
   JsonError,
   Store,
   PriceHistoryFromListResp,
 } from "../../interfaces";
-import type { Group } from "../../features/groupSlice";
+import type { Group, StoreWithGroupStatus } from "../../features/groupSlice";
 import {
   reQuery,
   setIsLoading,
@@ -24,40 +22,37 @@ import {
   setNoResults,
 } from "../../features/forecastSlice";
 import { useForecastContext, useResizeContext } from "./hooks";
-import SelectedStoreList from "../upc/components/SelectedStoreList";
 import ForecastControls from "./controls/ForecastControls";
-import FileGrid from "./grids/FileGrid";
 import OutlierGrid from "./grids/OutlierGrid";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import ForecastModal from "./controls/ForecastModal";
-import DatePickers from "../../components/datePickers/DatePickers";
 import { getHistoryFromList } from "../../api/priceSim";
 import {
   removeSingleUpc,
-  // setUpcFileName,
   setUpcs,
   setUpcText,
 } from "../../features/upcUploadSlice";
 import ForecastCarousel from "./carousel/ForecastCarousel";
-import { formatRowData } from ".";
+import { formatRowData, formatSinglePriceRowData } from ".";
 import ForecastTablet from "./tablet/ForecastTablet";
-
-const options = [
-  { label: "Stores", id: 1 },
-  { label: "Group", id: 2 },
-];
+import ForecastSetupWizard from "./controls/ForecastSetupWizard";
+import ForecastSettingsModal from "./controls/ForecastSettingsModal";
 
 const Forecasting = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useForecastContext();
-  const { height, scrollHeight } = useResizeContext("");
+  useResizeContext("");
   const [_, setFile] = useState<File | null>(null);
   const [filteredData, setFilteredData] = useState<Store[] | Group[]>([]);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [showItemsPanel, setShowItemsPanel] = useState(true);
   const { upcs, upcText } = useAppSelector((state) => state.upcs);
+  const { initialRowData, isLoading, noResults } = useAppSelector(
+    (state) => state.forecast,
+  );
 
   useEffect(() => {
-    // On mount, if radioId is 0, set to 1 (Stores)
     if (context.radioId === 0) {
       dispatch(setRadioId(1));
       setFilteredData(context.assignedStores);
@@ -78,6 +73,8 @@ const Forecasting = () => {
       return;
     }
 
+    if (settingsOpen) setSettingsOpen(false);
+    
     dispatch(setIsLoading(true));
     dispatch(reQuery());
 
@@ -91,25 +88,22 @@ const Forecasting = () => {
       .then((resp) => {
         const j: PriceHistoryFromListResp = resp.data;
         if (j.error === 0 && j.results.length > 0) {
-          // Set the upc items for the controls
           const upcItems = j.results.map((item) => ({
             upc: item.upc,
             description: item.description,
           }));
           dispatch(setItems(upcItems));
-
-          // set the raw data => needed to grab the prices and figure out the forecast values
           dispatch(setForecastResults(j.results));
-
           const singlePrices = j.results.filter(
             (item) => item.price_history.length === 1,
           );
           const multiPrices = j.results.filter(
             (item) => item.price_history.length > 1,
           );
-
-          // set the row data
-          const rowData = formatRowData(multiPrices);
+          const rowData = [
+            ...formatRowData(multiPrices),
+            ...formatSinglePriceRowData(singlePrices),
+          ];
           dispatch(setInitialRowData(rowData));
           dispatch(setSingleForecastResults(singlePrices));
         } else {
@@ -121,17 +115,13 @@ const Forecasting = () => {
   };
 
   const handleSelectChange = (id: string | number) => {
-    dispatch(setSelectedStores([])); // Clear selected stores on new selection
+    dispatch(setSelectedStores([]));
     dispatch(setRadioId(id as number));
-    if (id === 1) {
-      setFilteredData(context.assignedStores);
-    } else if (id === 2) {
-      setFilteredData(context.groups);
-    }
+    if (id === 1) setFilteredData(context.assignedStores);
+    else if (id === 2) setFilteredData(context.groups);
   };
 
   const handleSelectClick = (id: string | number) => {
-    // Store
     if (context.radioId === 1) {
       const store = filteredData.find(
         (item): item is Store => "storeid" in item && item.storeid === id,
@@ -140,15 +130,15 @@ const Forecasting = () => {
         (s) => s.storeid === id,
       );
       if (existingStore) {
-        const copy = [...context.selectedStores].filter(
-          (s) => s.storeid !== id,
+        dispatch(
+          setSelectedStores(
+            [...context.selectedStores].filter((s) => s.storeid !== id),
+          ),
         );
-        dispatch(setSelectedStores(copy));
       } else if (store) {
         dispatch(setSelectedStores([...context.selectedStores, store]));
       }
     } else if (context.radioId === 2) {
-      // Group
       getStoresAssignedToUserGroup(
         context.url,
         context.token,
@@ -156,8 +146,9 @@ const Forecasting = () => {
         Number(id),
       )
         .then((resp) => {
-          const j = resp.data;
-          const filtered = [...j.stores].filter((store) => store.active === 1);
+          const filtered = [...resp.data.stores].filter(
+            (s: StoreWithGroupStatus) => s.active === 1,
+          );
           dispatch(setSelectedStores(filtered));
         })
         .catch((err: JsonError) => toast.error(err.message));
@@ -169,14 +160,11 @@ const Forecasting = () => {
       dispatch(setUpcs([]));
       return;
     }
-    const newUpcs = upc.split(",").map((u) => u.trim());
-    dispatch(setUpcs(newUpcs));
+    dispatch(setUpcs(upc.split(",").map((u) => u.trim())));
   };
 
   const handleEnterDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleAddUpc(e.currentTarget.value);
-    }
+    if (e.key === "Enter") handleAddUpc(e.currentTarget.value);
   };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -185,6 +173,26 @@ const Forecasting = () => {
 
   const handleRemoveUpc = (upc: string) => {
     dispatch(removeSingleUpc(upc));
+  };
+
+  const wizardProps = {
+    radioId: context.radioId,
+    filteredData,
+    selectedStores: context.selectedStores,
+    storeids: context.storeids,
+    upcs,
+    upcText,
+    isLoading,
+    noResults,
+    endDate: context.endDate,
+    onSelectChange: handleSelectChange,
+    onSelectClick: handleSelectClick,
+    onTextChange: handleTextChange,
+    onAddUpc: handleAddUpc,
+    onRemoveUpc: handleRemoveUpc,
+    onEnterDown: handleEnterDown,
+    onSearch: handleSearch,
+    setFile,
   };
 
   if (context.isTablet)
@@ -201,140 +209,48 @@ const Forecasting = () => {
       />
     );
 
+  const hasData = initialRowData.length > 0;
+
   return (
     <div
       data-testid="forecast-page"
-      className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] relative w-full"
+      className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] relative w-full overflow-hidden"
     >
       <ForecastModal />
-      <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 gap-2 grid grid-cols-[18%_11%_70%] overflow-hidden">
-        <div className="grid grid-rows-[37%_35%_24%] gap-2">
-          <div className="bg-custom-white rounded-lg shadow-lg p-2">
-            <div className="flex gap-2">
-              <SingleSelect
-                data={options}
-                label="Store or Group"
-                displayKey="label"
-                valueKey="id"
-                onSelect={handleSelectChange}
-                defaultQuery="Stores"
-                id={1}
-                className="w-1/2"
-                innerClass="py-1 text-[13px]"
-              />
-              {context.radioId === 1 ? (
-                <SingleSelect
-                  label="Stores"
-                  data={filteredData as Store[]}
-                  displayKey={"store_name" as keyof Store}
-                  valueKey={"storeid" as keyof Store}
-                  onSelect={handleSelectClick}
-                  keepOpen={true}
-                  resetQuery={true}
-                  id={2}
-                  className="w-1/2"
-                  innerClass="py-1 text-[13px]"
-                />
-              ) : (
-                <SingleSelect
-                  label="Groups"
-                  data={filteredData as Group[]}
-                  valueKey={"id" as keyof Group}
-                  displayKey={"group_name" as keyof Group}
-                  onSelect={handleSelectClick}
-                  resetQuery={true}
-                  id={2}
-                  className="w-1/2"
-                  innerClass="py-1 text-[13px]"
-                />
-              )}
-            </div>
-            <DatePickers showBtn={false} />
-            <SelectedStoreList
-              selectedStores={context.selectedStores}
-              radioId={context.radioId}
-              className=""
-              context="large"
-            />
-          </div>
-          <div className="bg-custom-white rounded-lg shadow-lg px-2 text-[13px]">
-            <div className="bg-blue-500 text-custom-white -mx-2 py-0.5 px-4 rounded-t-lg font-medium flex justify-between">
-              <div>
-                UPCs <span className="text-sm">(comma separated)</span>
-              </div>
-              <div className={`${upcs.length === 0 && "hidden"}`}>
-                {upcs.length}
-              </div>
-            </div>
-            <input
-              type="text"
-              data-testid="forecast-upc-input"
-              className="basic-input focus:border bg-custom-white py-1 mt-2"
-              value={upcText}
-              onChange={handleTextChange}
-              onKeyDown={handleEnterDown}
-            />
-            <div className="flex py-2 gap-2">
-              <button
-                data-testid="forecast-add-upc-btn"
-                className="btn-themeBlue py-1 border px-0 w-1/2"
-                onClick={() => handleAddUpc(upcText)}
-              >
-                Add
-              </button>
-              <button
-                data-testid="forecast-clear-upc-btn"
-                className="btn-themeBlue py-1 border px-0 w-1/2"
-                onClick={() => handleAddUpc("")}
-              >
-                Clear
-              </button>
-            </div>
-            <div
-              className={`bg-bkg shadow rounded-lg text-xs ${height} flex mb-2`}
-            >
-              <div
-                className={`grid grid-cols-3 ${scrollHeight} overflow-hidden overflow-y-scroll no-scrollbar`}
-              >
-                {upcs.map((u, i) => (
-                  <div
-                    key={i}
-                    data-testid={`forecast-upc-item-${u}-${i}`}
-                    className="px-2 py-0.5 font-medium hover:text-blue-500  transition-all duration-200 cursor-pointer"
-                    onClick={() => handleRemoveUpc(u)}
-                  >
-                    {u}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <FileInput
-                page="forecast"
-                fileExt={[".csv"]}
-                setFile={setFile}
-                className="w-full"
-              />
-              <button
-                data-testid="forecast-search-btn"
-                className="btn-themeBlue"
-                onClick={handleSearch}
-              >
-                Search
-              </button>
-            </div>
-          </div>
-          <FileGrid />
-        </div>
-        <div className="relative">
-          <ForecastControls />
-          {context.isLoading && <LoadingIndicator className="ml-2" />}
-        </div>
+      <ForecastSettingsModal
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        {...wizardProps}
+      />
 
-        <div className="grid grid-rows-[24%_76%] mb-2 gap-2 relative">
-          <ForecastCarousel />
-          <OutlierGrid />
-        </div>
+      <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 gap-2 overflow-hidden">
+        {hasData ? (
+          // ── Data loaded: full-width grid view ──
+          <div className="flex flex-col flex-1 min-h-0 gap-2">
+            <ForecastCarousel
+              onItemsToggle={() => setShowItemsPanel((p) => !p)}
+              showItemsPanel={showItemsPanel}
+            />
+            <div
+              className={`flex-1 min-h-0 grid gap-2 overflow-hidden ${
+                showItemsPanel ? "grid-cols-[auto_1fr]" : ""
+              }`}
+            >
+              {showItemsPanel && (
+                <div className="relative w-44">
+                  <ForecastControls
+                    onSettingsClick={() => setSettingsOpen(true)}
+                  />
+                  {context.isLoading && <LoadingIndicator className="ml-2" />}
+                </div>
+              )}
+              <OutlierGrid />
+            </div>
+          </div>
+        ) : (
+          // ── No data: guided setup wizard ──
+          <ForecastSetupWizard {...wizardProps} />
+        )}
       </div>
     </div>
   );

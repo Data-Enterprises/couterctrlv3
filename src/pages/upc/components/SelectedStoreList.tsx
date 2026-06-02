@@ -19,7 +19,7 @@ const SelectedStoreList = ({
   const { height } = useResizeContext(context);
   return (
     <div className={`${className} w-full`}>
-      <h3 className="text-sm text-content/70 font-medium">
+      <h3 className="text-[12px] text-content/70 font-medium">
         Selected {radioId === 1 ? "Stores" : "Group"}
       </h3>
       <div
@@ -27,7 +27,7 @@ const SelectedStoreList = ({
       >
         <ul className={`grid ${gridCols} gap-1`}>
           {selectedStores.map((store) => (
-            <li key={store.storeid} className="w-full text-xs font-medium">
+            <li key={store.storeid} className="w-full text-[11px] leading-tight font-medium">
               {store.store_name}
             </li>
           ))}

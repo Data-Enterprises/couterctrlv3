@@ -43,11 +43,18 @@ const ForecastModal = () => {
     }
 
     let data: ForecastOutlierRow[] = [];
-    if (option.initial === 1) data = state.initialRowData;
+    // state.initialData will not have any notes attached
+    // if (option.initial === 1) data = state.initialRowData;
+    if (option.initial === 1) data = state.initialRowData.map((row) => ({
+      ...row,
+      notes: state.rowData.find((r) => r.upc === row.upc)?.notes || "",
+    }));
     if (option.sim1 === 1) data = state.simOneRowData;
     if (option.sim2 === 1) data = state.simTwoRowData;
     if (option.sim3 === 1) data = state.simThreeRowData;
     if (option.sim4 === 1) data = state.simFourRowData;
+
+    console.log("Exporting data:", data);
 
     exportData(data, exportHeaders, `${title}.csv`);
     handleClose();
