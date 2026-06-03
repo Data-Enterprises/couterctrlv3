@@ -4,13 +4,16 @@ import {
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import type { SortingState } from "@tanstack/react-table";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import {
   setCalcNow,
   setBatchAdDaysRows,
   setBatchPriceRows,
+  setBatchNotesRows,
 } from "../../../features/forecastSlice";
 
 import type { ForecastOutlierRow } from "../../../features/forecastSlice";
@@ -62,6 +65,8 @@ const OutlierGrid = () => {
   const [filterText, setFilterText] = useState("");
   const [batchAdDays, setBatchAdDays] = useState("");
   const [batchPrice, setBatchPrice] = useState("");
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [batchNotes, setBatchNotes] = useState("");
 
   const filteredData = useMemo(
     () =>
@@ -82,12 +87,15 @@ const OutlierGrid = () => {
       dispatch(setBatchAdDaysRows({ upcs, adDays: days }));
     if (!isNaN(price) && price > 0)
       dispatch(setBatchPriceRows({ upcs, price }));
+    if (batchNotes.trim())
+      dispatch(setBatchNotesRows({ upcs, notes: batchNotes.trim() }));
   };
 
   const columns = useMemo(
     () => [
       columnHelper.display({
         id: "calcNow",
+        enableSorting: false,
         header: "Notes",
         cell: ({ row }) => (
           <NotesCell
@@ -129,12 +137,14 @@ const OutlierGrid = () => {
         cell: ({ getValue }) => <div className="text-right">{getValue()}</div>,
       }),
       columnHelper.accessor("daysActive", {
+        enableSorting: false,
         header: "Days Active",
         cell: ({ getValue }) => (
           <div className="text-right">{getValue()}/90</div>
         ),
       }),
       columnHelper.accessor("daysAtPrice", {
+        enableSorting: false,
         header: "At Price",
         cell: ({ row }) => (
           <div className="text-right">
@@ -143,10 +153,12 @@ const OutlierGrid = () => {
         ),
       }),
       columnHelper.accessor("forecastWindow", {
+        enableSorting: false,
         header: "Forecast",
         cell: ({ getValue }) => <div className="text-right">{getValue()}</div>,
       }),
       columnHelper.accessor("adDays", {
+        enableSorting: false,
         header: "Ad Days",
         cell: ({ getValue }) => (
           <div className="text-right">
@@ -155,6 +167,7 @@ const OutlierGrid = () => {
         ),
       }),
       columnHelper.accessor("fcstPrice", {
+        enableSorting: false,
         header: "Fcst Price",
         cell: ({ getValue }) => (
           <div className="text-right">{formatCurrency2(getValue())}</div>
@@ -183,7 +196,10 @@ const OutlierGrid = () => {
   const table = useReactTable({
     data: filteredData,
     columns,
+    state: { sorting },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getRowId: (row) => row.upc,
     initialState: { pagination: { pageSize: 15 } },
@@ -222,6 +238,7 @@ const OutlierGrid = () => {
               if (e.target.value === "") {
                 setBatchAdDays("");
                 setBatchPrice("");
+                setBatchNotes("");
               }
             }}
             className="basic-input text-xs py-0.5 px-1.5 flex-1"
@@ -260,9 +277,16 @@ const OutlierGrid = () => {
             onChange={(e) => setBatchPrice(e.target.value)}
             className="basic-input text-xs py-0.5 px-1.5 w-16"
           />
+          <input
+            type="text"
+            placeholder="Note"
+            value={batchNotes}
+            onChange={(e) => setBatchNotes(e.target.value)}
+            className="basic-input text-xs py-0.5 px-1.5 w-24"
+          />
           <button
             onClick={handleSetBatch}
-            disabled={!filterText || (!batchAdDays && !batchPrice)}
+            disabled={!filterText || (!batchAdDays && !batchPrice && !batchNotes.trim())}
             className="text-xs px-2 py-0.5 btn-themeBlue disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Set Batch
@@ -283,12 +307,26 @@ const OutlierGrid = () => {
               {table.getHeaderGroups()[0].headers.map((header) => (
                 <th
                   key={header.id}
-                  className="px-1.5 text-left font-medium border-r border-blue-400 last:border-r-0 whitespace-nowrap overflow-hidden text-ellipsis"
+                  className={`px-1.5 text-left font-medium border-r border-blue-400 last:border-r-0 whitespace-nowrap overflow-hidden text-ellipsis${header.column.getCanSort() ? " cursor-pointer select-none" : ""}`}
+                  onClick={
+                    header.column.getCanSort()
+                      ? header.column.getToggleSortingHandler()
+                      : undefined
+                  }
                 >
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext(),
-                  )}
+                  <span className="inline-flex items-center gap-0.5">
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
+                    {header.column.getCanSort() && (
+                      <span className="opacity-50 text-[9px]">
+                        {{ asc: "▲", desc: "▼" }[
+                          header.column.getIsSorted() as string
+                        ] ?? "⇅"}
+                      </span>
+                    )}
+                  </span>
                 </th>
               ))}
             </tr>

@@ -765,6 +765,22 @@ export const forecastSlice = createSlice({
         else if (sim === "sim4") state.simFourRowData = state.rowData;
       }
     },
+    setBatchNotesRows: (
+      state,
+      action: PayloadAction<{ upcs: string[]; notes: string }>
+    ) => {
+      const { upcs, notes } = action.payload;
+      state.rowData.forEach((row) => {
+        if (!row.singlePrice && upcs.includes(row.upc)) {
+          row.notes = notes;
+        }
+      });
+      const sim = state.selectedSim;
+      if (sim === "sim1") state.simOneRowData = state.rowData;
+      else if (sim === "sim2") state.simTwoRowData = state.rowData;
+      else if (sim === "sim3") state.simThreeRowData = state.rowData;
+      else if (sim === "sim4") state.simFourRowData = state.rowData;
+    },
     setNoResults: (state, action: PayloadAction<boolean>) => {
       state.noResults = action.payload;
     },
@@ -809,6 +825,7 @@ export const {
   updateGlobalAdDaysRows,
   setBatchAdDaysRows,
   setBatchPriceRows,
+  setBatchNotesRows,
   resetSimulations,
   setCalcNow,
   setItemNotes,
