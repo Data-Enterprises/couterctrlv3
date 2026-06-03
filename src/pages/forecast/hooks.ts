@@ -35,8 +35,14 @@ export const useResizeContext = (alt: string) => {
   useEffect(() => {
     const calcHeight = () => {
       if (alt === "") {
-        setHeight("min-h-20");
-        setInnerHeight("min-h-20");
+        // setHeight("min-h-40 max-h-40");
+        // setInnerHeight("min-h-40 max-h-40");
+
+        // setHeight("min-h-20");
+        // setInnerHeight("min-h-20");
+
+        setHeight("min-h-8 max-h-44");
+        setInnerHeight("min-h-8 max-h-44");
         return;
       }
       if (window.innerWidth < 1537) {

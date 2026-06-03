@@ -96,7 +96,7 @@ const ForecastSetupWizard = (props: WizardProps) => {
 
           {/* ── Step 1 ── */}
           {step === 1 && (
-            <div className="flex flex-col gap-3 h-full" style={{ minHeight: "375px" }}>
+            <div className="flex flex-col gap-3 h-full" style={{ minHeight: "350px" }}>
               <div className="text-[13px] font-medium text-gray-600">
                 Select the store or store group to forecast for, and confirm the date range.
               </div>
@@ -146,6 +146,7 @@ const ForecastSetupWizard = (props: WizardProps) => {
                   radioId={radioId}
                   className="h-full overflow-y-auto thin-scrollbar"
                   context=""
+                  ulContainerClass="grid grid-cols-4 gap-y-2"
                 />
               </div>
             </div>
