@@ -80,25 +80,34 @@ const ForecastSetupWizard = (props: WizardProps) => {
 
   return (
     <div className="flex flex-col items-center justify-center flex-1 min-h-0 py-4">
-      <div className="bg-custom-white rounded-xl shadow-lg w-full max-w-2xl flex flex-col overflow-hidden" style={{ maxHeight: "calc(100vh - 5rem)" }}>
-
+      <div
+        className="bg-custom-white rounded-xl shadow-lg w-full max-w-2xl flex flex-col overflow-hidden"
+        style={{ maxHeight: "calc(100vh - 5rem)" }}
+      >
         {/* Stepper */}
         <div className="flex items-center justify-center gap-8 px-8 py-4 border-b border-gray-100 shrink-0">
           {stepLabel(1, "Store / Group")}
-          <div className={`flex-1 h-0.5 max-w-16 ${step1Done ? "bg-green-400" : "bg-gray-200"}`} />
+          <div
+            className={`flex-1 h-0.5 max-w-16 ${step1Done ? "bg-green-400" : "bg-gray-200"}`}
+          />
           {stepLabel(2, "UPC Source")}
-          <div className={`flex-1 h-0.5 max-w-16 ${step2Done ? "bg-green-400" : "bg-gray-200"}`} />
+          <div
+            className={`flex-1 h-0.5 max-w-16 ${step2Done ? "bg-green-400" : "bg-gray-200"}`}
+          />
           {stepLabel(3, "Review & Search")}
         </div>
 
         {/* Step content */}
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar p-5">
-
+        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-5 py-2">
           {/* ── Step 1 ── */}
           {step === 1 && (
-            <div className="flex flex-col gap-3 h-full" style={{ minHeight: "350px" }}>
+            <div
+              className="flex flex-col gap-3 h-full"
+              style={{ minHeight: "365px" }}
+            >
               <div className="text-[13px] font-medium text-gray-600">
-                Select the store or store group to forecast for, and confirm the date range.
+                Select the store or store group to forecast for, and confirm the
+                date range.
               </div>
               <div className="flex gap-2">
                 <SingleSelect
@@ -145,6 +154,7 @@ const ForecastSetupWizard = (props: WizardProps) => {
                   selectedStores={selectedStores}
                   radioId={radioId}
                   className="h-full overflow-y-auto thin-scrollbar"
+                  // className={`${selectedStores.length === 0 ? "hidden" : "h-full overflow-y-auto thin-scrollbar"}`}
                   context=""
                   ulContainerClass="grid grid-cols-4 gap-y-2"
                 />
@@ -156,7 +166,8 @@ const ForecastSetupWizard = (props: WizardProps) => {
           {step === 2 && (
             <div className="flex flex-col gap-3">
               <div className="text-[13px] font-medium text-gray-600">
-                Add the UPCs you want to forecast. Paste them, upload a CSV, or load a saved list.
+                Add the UPCs you want to forecast. Paste them, upload a CSV, or
+                load a saved list.
               </div>
 
               {/* Tab switcher */}
@@ -171,7 +182,11 @@ const ForecastSetupWizard = (props: WizardProps) => {
                         : "border-transparent text-gray-400 hover:text-gray-600"
                     }`}
                   >
-                    {tab === "paste" ? "Paste UPCs" : tab === "upload" ? "Upload CSV" : "Saved List"}
+                    {tab === "paste"
+                      ? "Paste UPCs"
+                      : tab === "upload"
+                        ? "Upload CSV"
+                        : "Saved List"}
                   </button>
                 ))}
               </div>
@@ -188,8 +203,18 @@ const ForecastSetupWizard = (props: WizardProps) => {
                     onKeyDown={onEnterDown}
                   />
                   <div className="flex gap-2">
-                    <button className="btn-themeBlue py-1 w-1/2 text-[13px]" onClick={() => onAddUpc(upcText)}>Add</button>
-                    <button className="btn-themeBlue py-1 w-1/2 text-[13px]" onClick={() => onAddUpc("")}>Clear</button>
+                    <button
+                      className="btn-themeBlue py-1 w-1/2 text-[13px]"
+                      onClick={() => onAddUpc(upcText)}
+                    >
+                      Add
+                    </button>
+                    <button
+                      className="btn-themeBlue py-1 w-1/2 text-[13px]"
+                      onClick={() => onAddUpc("")}
+                    >
+                      Clear
+                    </button>
                   </div>
                   {upcs.length > 0 && (
                     <div className="bg-bkg rounded-lg p-2 grid grid-cols-3 gap-1 max-h-40 overflow-y-auto thin-scrollbar">
@@ -209,17 +234,29 @@ const ForecastSetupWizard = (props: WizardProps) => {
 
               {upcTab === "upload" && (
                 <div className="flex flex-col gap-2">
-                  <div className="text-xs text-gray-400">Upload a CSV file with one UPC per line.</div>
-                  <FileInput page="forecast" fileExt={[".csv"]} setFile={setFile} className="w-full" labelClassName="h-10 text-[13px]" />
+                  <div className="text-xs text-gray-400">
+                    Upload a CSV file with one UPC per line.
+                  </div>
+                  <FileInput
+                    page="forecast"
+                    fileExt={[".csv"]}
+                    setFile={setFile}
+                    className="w-full"
+                    labelClassName="h-10 text-[13px]"
+                  />
                   {upcs.length > 0 && (
-                    <div className="text-xs text-green-600 font-medium">{upcs.length} UPCs loaded from file.</div>
+                    <div className="text-xs text-green-600 font-medium">
+                      {upcs.length} UPCs loaded from file.
+                    </div>
                   )}
                 </div>
               )}
 
               {upcTab === "saved" && (
                 <div className="flex flex-col gap-1">
-                  <div className="text-xs text-gray-400 mb-1">Click a saved list to load it directly.</div>
+                  <div className="text-xs text-gray-400 mb-1">
+                    Click a saved list to load it directly.
+                  </div>
                   <div style={{ height: "220px" }}>
                     <FileGrid />
                   </div>
@@ -230,28 +267,42 @@ const ForecastSetupWizard = (props: WizardProps) => {
 
           {/* ── Step 3 ── */}
           {step === 3 && (
-            <div className="flex flex-col items-center gap-4 py-4">
+            <div className="flex flex-col items-center gap-4 py-5">
               {isLoading ? (
-                <div className="flex flex-col items-center gap-3">
-                  <LoadingIndicator className="" />
-                  <div className="text-[13px] text-gray-500">Running forecast…</div>
+                <div className="flex flex-col items-center gap-3 relative py-4">
+                  <LoadingIndicator
+                    className="leading-tight-mt-1.5"
+                    message="Running forecast…"
+                  />
+                  {/* <div className="text-[13px] text-gray-500">Running forecast…</div> */}
                 </div>
               ) : noResults ? (
                 <div className="flex flex-col items-center gap-3">
                   <div className="text-4xl">🔍</div>
-                  <div className="text-sm font-medium text-gray-600">No results found</div>
-                  <div className="text-xs text-gray-400">Try adjusting your UPCs or date range.</div>
-                  <button className="btn-themeBlue py-1.5 px-6 text-[13px]" onClick={() => setStep(2)}>
+                  <div className="text-sm font-medium text-gray-600">
+                    No results found
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    Try adjusting your UPCs or date range.
+                  </div>
+                  <button
+                    className="btn-themeBlue py-1.5 px-6 text-[13px]"
+                    onClick={() => setStep(2)}
+                  >
                     ← Adjust UPCs
                   </button>
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-4 w-full max-w-sm">
-                  <div className="text-base font-medium text-gray-700">Ready to run</div>
+                  <div className="text-base font-medium text-gray-700">
+                    Ready to run
+                  </div>
                   <div className="bg-bkg rounded-lg p-4 w-full text-[13px] space-y-1.5">
                     <div className="flex justify-between">
                       <span className="text-gray-500">Stores</span>
-                      <span className="font-medium">{selectedStores.length}</span>
+                      <span className="font-medium">
+                        {selectedStores.length}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">UPCs</span>
@@ -262,13 +313,6 @@ const ForecastSetupWizard = (props: WizardProps) => {
                       <span className="font-medium">{endDate}</span>
                     </div>
                   </div>
-                  <button
-                    className={`btn-themeGreen py-2 px-10 text-[14px] font-medium w-full ${!step1Done || !step2Done ? "opacity-40 pointer-events-none" : ""}`}
-                    onClick={onSearch}
-                    disabled={!step1Done || !step2Done}
-                  >
-                    Run Forecast
-                  </button>
                 </div>
               )}
             </div>
@@ -299,7 +343,9 @@ const ForecastSetupWizard = (props: WizardProps) => {
             ) : (
               <button
                 className={`btn-themeGreen py-1 px-4 text-[13px] ${
-                  !step1Done || !step2Done ? "opacity-40 pointer-events-none" : ""
+                  !step1Done || !step2Done
+                    ? "opacity-40 pointer-events-none"
+                    : ""
                 }`}
                 onClick={onSearch}
               >

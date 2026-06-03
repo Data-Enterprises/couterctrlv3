@@ -25,6 +25,23 @@ const ForecastControls = ({ onSettingsClick }: { onSettingsClick?: () => void })
   const { topRef } = useScrollHeight();
   const state = useAppSelector((state) => state.forecast);
   const search = useAppSelector((state) => state.search);
+  const [maxH, setMaxH] = useState<string>(
+    window.innerWidth <= 1536
+      ? "min-h-[300px] max-h-[300px]"
+      : "min-h-[410px] max-h-[410px]",
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 1536) {
+        setMaxH("min-h-[300px] max-h-[300px]");
+      } else {
+        setMaxH("min-h-[410px] max-h-[410px]");
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleResetClick = () => {
     dispatch(reset());
@@ -101,7 +118,8 @@ const ForecastControls = ({ onSettingsClick }: { onSettingsClick?: () => void })
                   className="py-1 btn-themeBlue text-[13px]"
                   onClick={onSettingsClick}
                 >
-                  ⚙ Settings
+                  {/* Settings */}
+                  Edit Search
                 </button>
                 <button
                   data-testid="forecast-controls-export-btn"
@@ -170,7 +188,7 @@ const ForecastControls = ({ onSettingsClick }: { onSettingsClick?: () => void })
 
           <div
             data-testid="upc-controls-list"
-            className="bg-custom-white rounded-b-lg overflow-y-scroll no-scrollbar min-h-[300px] max-h-[300px]"
+            className={`bg-custom-white rounded-b-lg overflow-y-scroll no-scrollbar ${maxH}`}
             // style={{ height: height || 500 }}
           >
             {showDisplay === "all" &&
