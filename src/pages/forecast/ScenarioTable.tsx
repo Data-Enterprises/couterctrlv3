@@ -71,7 +71,9 @@ const ScenarioTable = ({
 
   const historicalPrices = pricesWithQty.map((pq) => pq[0]);
   const allPrices = [
-    ...historicalPrices.map((p) => buildRow(p, false)),
+    ...historicalPrices
+      .filter((p) => !customPrices.some((cp) => Math.abs(cp - p) < 0.001))
+      .map((p) => buildRow(p, false)),
     ...customPrices.map((p) => buildRow(p, true)),
   ].sort((a, b) => a.price - b.price);
 

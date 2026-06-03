@@ -39,7 +39,7 @@ const CalcModal = () => {
   useEffect(() => {
     if (selectedRow) {
       if (lastUpcRef.current !== selectedRow.upc) {
-        setCustomPrices([]);
+        setCustomPrices([selectedRow.fcstPrice]);
         lastUpcRef.current = selectedRow.upc;
       }
       setNewPrice(selectedRow.fcstPrice.toString());

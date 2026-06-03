@@ -563,6 +563,111 @@ export const forecastSlice = createSlice({
       else if (sim === "sim4") state.simFourRowData = globalRows;
       state.rowData = globalRows;
     },
+    setBatchAdDaysRows: (
+      state,
+      action: PayloadAction<{ upcs: string[]; adDays: number }>
+    ) => {
+      const { upcs, adDays } = action.payload;
+      if (isNaN(adDays) || adDays <= 0) return;
+
+      const updated = state.rowData.map((row) => {
+        if (row.singlePrice || !upcs.includes(row.upc)) return row;
+
+        const prices = state.forecastResults.find((item) => item.upc === row.upc);
+        const upcPrices = prices!.price_history.map((ph) => [
+          parseFloat(ph.price),
+          ph.qty,
+        ]);
+        const fcstQty = calcFcstQty(upcPrices, row.fcstPrice);
+        const overallUnits = upcPrices.reduce((acc, curr) => acc + curr[1], 0);
+        const units = forecastUnits(
+          row.fcstPrice,
+          overallUnits,
+          fcstQty,
+          row.daysActive,
+          90,
+          row.daysAtPrice,
+          row.forecastWindow,
+          upcPrices,
+          adDays
+        );
+        const regRetail = state.forecastResults.find(
+          (item) => item.upc === row.upc
+        )!.regular_retail_price;
+
+        return {
+          ...row,
+          adDays,
+          adFcst: units,
+          fcstTotal: row.fcstPrice * units,
+          markdownDollars: (regRetail - row.fcstPrice) * units,
+        };
+      });
+
+      const sim = state.selectedSim;
+      if (sim === "sim1") state.simOneRowData = updated;
+      else if (sim === "sim2") state.simTwoRowData = updated;
+      else if (sim === "sim3") state.simThreeRowData = updated;
+      else if (sim === "sim4") state.simFourRowData = updated;
+      state.rowData = updated;
+    },
+    setBatchPriceRows: (
+      state,
+      action: PayloadAction<{ upcs: string[]; price: number }>
+    ) => {
+      const { upcs, price } = action.payload;
+
+      const updated = state.rowData.map((row) => {
+        if (row.singlePrice || !upcs.includes(row.upc)) return row;
+
+        const upc = row.upc;
+        const prices = state.forecastResults.find((item) => item.upc === upc);
+        const upcPrices = prices!.price_history.map((ph) => [
+          parseFloat(ph.price),
+          ph.qty,
+        ]);
+        const priceHistory = prices?.price_history;
+        const daysActive =
+          priceHistory!.find((ph) => parseFloat(ph.price) === price)
+            ?.days_active || estimateDaysActive(priceHistory!, price);
+        const fcstQty = calcFcstQty(upcPrices, price);
+        const overallUnits = upcPrices.reduce((acc, curr) => acc + curr[1], 0);
+        const units = forecastUnits(
+          price,
+          overallUnits,
+          fcstQty,
+          row.daysActive,
+          90,
+          daysActive,
+          row.forecastWindow,
+          upcPrices,
+          row.adDays
+        );
+        const regRetail = state.forecastResults.find(
+          (item) => item.upc === upc
+        )!.regular_retail_price;
+        const existingPrice = prices!.price_history.find(
+          (ph) => parseFloat(ph.price) === price
+        );
+
+        return {
+          ...row,
+          fcstPrice: price,
+          adFcst: units,
+          qtySold: existingPrice ? existingPrice.qty : 0,
+          fcstTotal: price * units,
+          markdownDollars: (regRetail - price) * units,
+          daysAtPrice: daysActive,
+        };
+      });
+
+      const sim = state.selectedSim;
+      if (sim === "sim1") state.simOneRowData = updated;
+      else if (sim === "sim2") state.simTwoRowData = updated;
+      else if (sim === "sim3") state.simThreeRowData = updated;
+      else if (sim === "sim4") state.simFourRowData = updated;
+      state.rowData = updated;
+    },
     // setReplayData: (state, action: PayloadAction<{ past: SimReplayItem[]; future: SimReplayItem[] }>) => {
     //   state.simReplayPast = action.payload.past;
     //   state.simReplayFuture = action.payload.future;
@@ -702,6 +807,8 @@ export const {
   updateGlobalFcstRows,
   setGlobalAdDays,
   updateGlobalAdDaysRows,
+  setBatchAdDaysRows,
+  setBatchPriceRows,
   resetSimulations,
   setCalcNow,
   setItemNotes,

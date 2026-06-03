@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   createColumnHelper,
   flexRender,
@@ -7,7 +7,11 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { setCalcNow } from "../../../features/forecastSlice";
+import {
+  setCalcNow,
+  setBatchAdDaysRows,
+  setBatchPriceRows,
+} from "../../../features/forecastSlice";
 
 import type { ForecastOutlierRow } from "../../../features/forecastSlice";
 import { formatCurrency2 } from "../../../utils";
@@ -53,6 +57,32 @@ const columnHelper = createColumnHelper<ForecastOutlierRow>();
 
 const OutlierGrid = () => {
   const state = useAppSelector((state) => state.forecast);
+  const dispatch = useAppDispatch();
+
+  const [filterText, setFilterText] = useState("");
+  const [batchAdDays, setBatchAdDays] = useState("");
+  const [batchPrice, setBatchPrice] = useState("");
+
+  const filteredData = useMemo(
+    () =>
+      filterText
+        ? state.rowData.filter((r) =>
+            r.description.toLowerCase().includes(filterText.toLowerCase()),
+          )
+        : state.rowData,
+    [filterText, state.rowData],
+  );
+
+  const handleSetBatch = () => {
+    const upcs = filteredData.filter((r) => !r.singlePrice).map((r) => r.upc);
+    if (!upcs.length) return;
+    const days = parseInt(batchAdDays);
+    const price = parseFloat(batchPrice);
+    if (!isNaN(days) && days > 0)
+      dispatch(setBatchAdDaysRows({ upcs, adDays: days }));
+    if (!isNaN(price) && price > 0)
+      dispatch(setBatchPriceRows({ upcs, price }));
+  };
 
   const columns = useMemo(
     () => [
@@ -81,7 +111,9 @@ const OutlierGrid = () => {
             <div className="truncate flex items-center gap-1">
               <span className="truncate">{getValue()}</span>
               {row.original.singlePrice && (
-                <span className="shrink-0 text-[9px] bg-yellow-200 text-yellow-700 rounded px-0.5 font-medium">1pt</span>
+                <span className="shrink-0 text-[9px] bg-yellow-200 text-yellow-700 rounded px-0.5 font-medium">
+                  1pt
+                </span>
               )}
             </div>
             {row.original.notes && (
@@ -94,9 +126,7 @@ const OutlierGrid = () => {
       }),
       columnHelper.accessor("qtySold", {
         header: "Qty Sold",
-        cell: ({ getValue }) => (
-          <div className="text-right">{getValue()}</div>
-        ),
+        cell: ({ getValue }) => <div className="text-right">{getValue()}</div>,
       }),
       columnHelper.accessor("daysActive", {
         header: "Days Active",
@@ -114,14 +144,14 @@ const OutlierGrid = () => {
       }),
       columnHelper.accessor("forecastWindow", {
         header: "Forecast",
-        cell: ({ getValue }) => (
-          <div className="text-right">{getValue()}</div>
-        ),
+        cell: ({ getValue }) => <div className="text-right">{getValue()}</div>,
       }),
       columnHelper.accessor("adDays", {
         header: "Ad Days",
         cell: ({ getValue }) => (
-          <div className="text-right">{getValue() === 0 ? "—" : getValue()}</div>
+          <div className="text-right">
+            {getValue() === 0 ? "—" : getValue()}
+          </div>
         ),
       }),
       columnHelper.accessor("fcstPrice", {
@@ -132,9 +162,7 @@ const OutlierGrid = () => {
       }),
       columnHelper.accessor("adFcst", {
         header: "Ad Fcst",
-        cell: ({ getValue }) => (
-          <div className="text-right">{getValue()}</div>
-        ),
+        cell: ({ getValue }) => <div className="text-right">{getValue()}</div>,
       }),
       columnHelper.accessor("fcstTotal", {
         header: "Fcst Total",
@@ -149,11 +177,11 @@ const OutlierGrid = () => {
         ),
       }),
     ],
-    []
+    [],
   );
 
   const table = useReactTable({
-    data: state.rowData,
+    data: filteredData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -161,7 +189,7 @@ const OutlierGrid = () => {
     initialState: { pagination: { pageSize: 15 } },
   });
 
-  // Reset to first page when the row set changes
+  // Reset to first page when the underlying row set changes
   useEffect(() => {
     table.setPageIndex(0);
   }, [state.rowData.length]);
@@ -169,13 +197,78 @@ const OutlierGrid = () => {
   if (state.initialRowData.length === 0) return null;
 
   const { pageIndex, pageSize } = table.getState().pagination;
-  const totalRows = state.rowData.length;
+  const totalRows = filteredData.length;
   const firstRow = totalRows === 0 ? 0 : pageIndex * pageSize + 1;
   const lastRow = Math.min((pageIndex + 1) * pageSize, totalRows);
 
   return (
-    <div className="animate-windowIn bg-custom-white rounded-lg shadow-lg flex flex-col overflow-hidden" style={{ maxHeight: "calc(100vh - 13.2rem)" }}>
+    <div
+      className="animate-windowIn bg-custom-white rounded-lg shadow-lg flex flex-col overflow-hidden"
+      style={{ maxHeight: "calc(100vh - 13.2rem)" }}
+    >
       <CalcModal />
+
+      {/* Filter + batch setter toolbar */}
+      <div className="flex items-center gap-2 px-2 py-1 border-b border-gray-100 shrink-0 flex-wrap">
+        <div className="flex items-center gap-1 flex-1 min-w-[180px]">
+          <input
+            type="text"
+            placeholder="Filter by description..."
+            value={filterText}
+            onChange={(e) => {
+              setFilterText(e.target.value);
+              table.setPageIndex(0);
+              // This may need to get taken out
+              if (e.target.value === "") {
+                setBatchAdDays("");
+                setBatchPrice("");
+              }
+            }}
+            className="basic-input text-xs py-0.5 px-1.5 flex-1"
+          />
+          {filterText && (
+            <>
+              <button
+                onClick={() => setFilterText("")}
+                className="text-gray-400 hover:text-gray-600 px-1 text-xs"
+              >
+                ✕
+              </button>
+              <span className="text-[11px] text-gray-400 shrink-0">
+                {filteredData.length} items
+              </span>
+            </>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          <input
+            type="number"
+            min={1}
+            step={1}
+            max={7}
+            placeholder="Ad Days"
+            value={batchAdDays}
+            onChange={(e) => setBatchAdDays(e.target.value)}
+            className="basic-input text-xs py-0.5 px-1.5 w-16"
+          />
+          <input
+            type="number"
+            placeholder="Price"
+            min={0.01}
+            step={0.01}
+            value={batchPrice}
+            onChange={(e) => setBatchPrice(e.target.value)}
+            className="basic-input text-xs py-0.5 px-1.5 w-16"
+          />
+          <button
+            onClick={handleSetBatch}
+            disabled={!filterText || (!batchAdDays && !batchPrice)}
+            className="text-xs px-2 py-0.5 btn-themeBlue disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            Set Batch
+          </button>
+        </div>
+      </div>
 
       {/* Scrollable table body */}
       <div className="overflow-y-auto flex-1 thin-scrollbar">
@@ -194,7 +287,7 @@ const OutlierGrid = () => {
                 >
                   {flexRender(
                     header.column.columnDef.header,
-                    header.getContext()
+                    header.getContext(),
                   )}
                 </th>
               ))}
@@ -208,13 +301,16 @@ const OutlierGrid = () => {
                   row.original.singlePrice
                     ? "bg-yellow-50"
                     : i % 2 === 0
-                    ? "bg-custom-white"
-                    : "bg-blue-50"
+                      ? "bg-custom-white"
+                      : "bg-blue-50"
                 }`}
-                style={{ height: "30px", }}
+                style={{ height: "30px" }}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-1.5 overflow-hidden text-[11px]">
+                  <td
+                    key={cell.id}
+                    className="px-1.5 overflow-hidden text-[11px]"
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
@@ -234,7 +330,9 @@ const OutlierGrid = () => {
             onChange={(e) => table.setPageSize(Number(e.target.value))}
           >
             {[10, 15, 25, 50].map((n) => (
-              <option key={n} value={n}>{n}</option>
+              <option key={n} value={n}>
+                {n}
+              </option>
             ))}
           </select>
         </div>
