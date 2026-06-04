@@ -38,8 +38,16 @@ const CalcModal = () => {
 
   useEffect(() => {
     if (selectedRow) {
+      const result = forecastResults.find((r) => r.upc === selectedRow.upc);
+      const history = result?.price_history ?? [];
+
       if (lastUpcRef.current !== selectedRow.upc) {
-        setCustomPrices([selectedRow.fcstPrice]);
+        // Only seed as a custom price if fcstPrice isn't already a real history entry
+        // (AD list items have their ad price injected into price_history directly)
+        const inHistory = history.some(
+          (p) => parseFloat(p.price) === selectedRow.fcstPrice,
+        );
+        setCustomPrices(inHistory ? [] : [selectedRow.fcstPrice]);
         lastUpcRef.current = selectedRow.upc;
       }
       setNewPrice(selectedRow.fcstPrice.toString());
@@ -47,9 +55,6 @@ const CalcModal = () => {
       setNewCost("0.00");
       setCostText("0.00");
       setNoteText(selectedRow.notes ?? "");
-
-      const result = forecastResults.find((r) => r.upc === selectedRow.upc);
-      const history = result?.price_history ?? [];
       const upcPrices = history.map((p) => [parseFloat(p.price), p.qty]);
       const units = result?.qty ?? 0;
 
@@ -167,7 +172,7 @@ const CalcModal = () => {
             </div>
           </div>
           <div className="grid grid-cols-[1fr_2fr] gap-4 p-2">
-            <div>
+            <div className="max-h-[70vh] overflow-y-auto thin-scrollbar">
               <div className="mb-2">
                 <div className="flex items-center justify-between mb-0.5">
                   <label className="font-medium underline text-xs pl-0.5">
@@ -295,6 +300,64 @@ const CalcModal = () => {
                   </div>
                 </div>
               </div>
+
+              {selectedRow.adListData && (
+                <div className="mt-2 border-2 border-blue-300 rounded-lg bg-blue-50 text-[12px]">
+                  <div className="bg-blue-500 text-white rounded-t-md px-2 py-0.5 font-medium text-[12px]">
+                    AD List Info
+                  </div>
+                  <div className="p-2 flex flex-col gap-1.5">
+                    {selectedRow.adListData.featureDescription && (
+                      <div className="font-medium text-blue-800">
+                        {selectedRow.adListData.featureDescription}
+                        {selectedRow.adListData.pageName && (
+                          <span className="ml-2 text-gray-400 font-normal">({selectedRow.adListData.pageName})</span>
+                        )}
+                      </div>
+                    )}
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+                      {selectedRow.adListData.pack && (
+                        <div className="flex justify-between"><span className="text-gray-500">Pack/Size:</span><span className="font-medium">{selectedRow.adListData.pack} / {selectedRow.adListData.size}</span></div>
+                      )}
+                      <div className="flex justify-between gap-1">
+                        <span className="text-gray-500">Ad Retail:</span>
+                        <span className="font-medium text-green-700">
+                          {selectedRow.adListData.adCount > 1
+                            ? `${selectedRow.adListData.adCount}/$${selectedRow.adListData.adRetail.toFixed(2)} ($${selectedRow.adListData.unitAdRetail.toFixed(2)}/ea)`
+                            : `$${selectedRow.adListData.adRetail.toFixed(2)}`}
+                        </span>
+                      </div>
+                      <div className="flex justify-between"><span className="text-gray-500">Reg Retail:</span><span className="font-medium">${selectedRow.adListData.regularRetail.toFixed(2)}</span></div>
+                    </div>
+                    <div className="border-t border-blue-200 pt-1 grid grid-cols-3 gap-x-2 gap-y-0.5">
+                      <div className="flex justify-between col-span-1"><span className="text-gray-500">Cost:</span><span className="font-medium">${selectedRow.adListData.cost.toFixed(2)}</span></div>
+                      <div className="flex justify-between col-span-1"><span className="text-gray-500">+Frt:</span><span className="font-medium">${selectedRow.adListData.costPlusFrt.toFixed(2)}</span></div>
+                      <div className="flex justify-between col-span-1"><span className="text-gray-500">Net:</span><span className="font-medium text-blue-700">${selectedRow.adListData.netUnitCost.toFixed(2)}</span></div>
+                    </div>
+                    <div className="border-t border-blue-200 pt-1 grid grid-cols-2 gap-x-2 gap-y-0.5">
+                      <div className="flex justify-between"><span className="text-gray-500">AMAP:</span><span className="font-medium">${selectedRow.adListData.amap.toFixed(2)}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">EBA:</span><span className="font-medium">${selectedRow.adListData.eba.toFixed(2)}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">DSD OI:</span><span className="font-medium">${selectedRow.adListData.dsdOI.toFixed(2)}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">EDLC BB:</span><span className="font-medium">${selectedRow.adListData.edlcBB.toFixed(2)}</span></div>
+                    </div>
+                    {(selectedRow.adListData.mvmt > 0 || selectedRow.adListData.tprDates) && (
+                      <div className="border-t border-blue-200 pt-1 grid grid-cols-2 gap-x-2 gap-y-0.5">
+                        {selectedRow.adListData.mvmt > 0 && (
+                          <div className="flex justify-between"><span className="text-gray-500">Mvmt:</span><span className="font-medium">{selectedRow.adListData.mvmt}</span></div>
+                        )}
+                        {selectedRow.adListData.tprDates && (
+                          <div className="col-span-2 text-gray-500 text-[11px]">{selectedRow.adListData.tprDates}</div>
+                        )}
+                      </div>
+                    )}
+                    {selectedRow.adListData.featureNotes && (
+                      <div className="border-t border-blue-200 pt-1 text-[11px] text-gray-600 italic">
+                        {selectedRow.adListData.featureNotes}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
             <div
               className="flex flex-col min-h-0"

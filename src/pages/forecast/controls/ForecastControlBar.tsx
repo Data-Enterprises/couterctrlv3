@@ -95,21 +95,14 @@ const ForecastControlBar = ({
             Reset Grid
           </button>
           <button
-            data-testid="reset-sim-btn"
-            className="btn-themeOrange py-1 px-0 text-[12px] flex-1"
-            onClick={() => dispatch(resetSimulations())}
-          >
-            Reset Sims
-          </button>
-        </div>
-        <div className="grid grid-cols-2 gap-1">
-          <button
             data-testid="save-new-sim-btn"
             className={`btn-themeGreen py-1 px-0 text-[12px] ${simsFull ? "opacity-50 pointer-events-none" : ""}`}
             onClick={onSave}
           >
             Save Sim
           </button>
+        </div>
+        <div className="grid grid-cols-2 gap-1">
           <button
             data-testid="items-toggle-btn"
             className={`py-1 px-0 text-[12px] rounded-lg border-2 transition-all ${
@@ -120,6 +113,13 @@ const ForecastControlBar = ({
             onClick={onItemsToggle}
           >
             Items ☰
+          </button>
+          <button
+            data-testid="reset-sim-btn"
+            className="btn-themeOrange py-1 px-0 text-[12px] flex-1"
+            onClick={() => dispatch(resetSimulations())}
+          >
+            Reset Sims
           </button>
         </div>
       </div>

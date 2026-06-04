@@ -12,6 +12,7 @@ import {
   setSingleForecastResults,
 } from "../../../features/forecastSlice";
 import { useAppDispatch } from "../../../hooks";
+import { clearAdListData } from "../../../features/adListSlice";
 import { formatRowData, formatSinglePriceRowData, useScrollHeight } from "..";
 import { useForecastContext } from "../hooks";
 import type { JsonError, PriceHistoryFromListResp } from "../../../interfaces";
@@ -56,6 +57,7 @@ const FileGrid = () => {
   const handleRowClick = (item: TableData) => {
     dispatch(setIsLoading(true));
     dispatch(reQuery());
+    dispatch(clearAdListData());
 
     const fileDate = item.date.replace(/\//g, "_");
     const fileName = `${context.userid}_${fileDate}_${item.name}`;

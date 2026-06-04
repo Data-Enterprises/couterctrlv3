@@ -4,6 +4,7 @@ import DatePickers from "../../../components/datePickers/DatePickers";
 import SelectedStoreList from "../../upc/components/SelectedStoreList";
 import FileInput from "./FileInput";
 import FileGrid from "../grids/FileGrid";
+import AdListInput from "./AdListInput";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import type { Store } from "../../../interfaces";
 import type { Group } from "../../../features/groupSlice";
@@ -34,7 +35,7 @@ export interface WizardProps {
 }
 
 type Step = 1 | 2 | 3;
-type UpcTab = "paste" | "upload" | "saved";
+type UpcTab = "paste" | "upload" | "saved" | "adlist";
 
 const ForecastSetupWizard = (props: WizardProps) => {
   const {
@@ -172,7 +173,7 @@ const ForecastSetupWizard = (props: WizardProps) => {
 
               {/* Tab switcher */}
               <div className="flex border-b border-gray-200">
-                {(["paste", "upload", "saved"] as UpcTab[]).map((tab) => (
+                {(["paste", "upload", "saved", "adlist"] as UpcTab[]).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setUpcTab(tab)}
@@ -186,7 +187,9 @@ const ForecastSetupWizard = (props: WizardProps) => {
                       ? "Paste UPCs"
                       : tab === "upload"
                         ? "Upload CSV"
-                        : "Saved List"}
+                        : tab === "saved"
+                          ? "Saved List"
+                          : "AD List"}
                   </button>
                 ))}
               </div>
@@ -260,6 +263,17 @@ const ForecastSetupWizard = (props: WizardProps) => {
                   <div style={{ height: "220px" }}>
                     <FileGrid />
                   </div>
+                </div>
+              )}
+
+              {upcTab === "adlist" && (
+                <div className="flex flex-col gap-2">
+                  <AdListInput />
+                  {upcs.length > 0 && (
+                    <div className="text-xs text-green-600 font-medium">
+                      {upcs.length} UPCs loaded from AD list.
+                    </div>
+                  )}
                 </div>
               )}
             </div>

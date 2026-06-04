@@ -13,6 +13,7 @@ import {
   resetRows,
 } from "../../../features/forecastSlice";
 import { clearUpcs } from "../../../features/upcUploadSlice";
+import { clearAdListData } from "../../../features/adListSlice";
 
 const ForecastControls = ({ onSettingsClick }: { onSettingsClick?: () => void }) => {
   const [filtered, setFiltered] = useState<ForecastItem[]>([]);
@@ -46,6 +47,7 @@ const ForecastControls = ({ onSettingsClick }: { onSettingsClick?: () => void })
   const handleResetClick = () => {
     dispatch(reset());
     dispatch(clearUpcs());
+    dispatch(clearAdListData());
   };
 
   const handleDisplay = (value: "all" | "selected" | "stores") => {

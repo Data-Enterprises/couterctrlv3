@@ -1,9 +1,10 @@
 import { useRef, useEffect } from "react";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { setUpcs } from "../../../features/upcUploadSlice";
+import { setUpcs, clearUpcs } from "../../../features/upcUploadSlice";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { setFileName, setUploadedUpcs } from "../../../features/upcSlice";
 import { setUpcFileName } from "../../../features/upcUploadSlice";
+import { clearAdListData } from "../../../features/adListSlice";
 
 interface FileInputProps {
   fileExt: string[];
@@ -40,7 +41,9 @@ const FileInput = ({
       if (page === "upc") {
         dispatch(setFileName(event.target.files[0].name));
       } else {
-        // page === "forecast"
+        // page === "forecast" — replace any existing UPCs (including prior AD list UPCs)
+        dispatch(clearUpcs());
+        dispatch(clearAdListData());
         dispatch(setUpcFileName(event.target.files[0].name));
       }
       setFile(event.target.files[0]);

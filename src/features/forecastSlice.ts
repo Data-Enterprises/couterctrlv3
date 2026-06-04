@@ -31,6 +31,28 @@ export interface HistoryData {
   futureForecastTotal: number;
 }
 
+export interface AdListData {
+  pageName: string;
+  featureDescription: string;
+  pack: string;
+  size: string;
+  cost: number;
+  costPlusFrt: number;
+  amap: number;
+  eba: number;
+  dsdOI: number;
+  edlcBB: number;
+  netUnitCost: number;
+  adCount: number;
+  adRetail: number;
+  unitAdRetail: number;
+  regularRetail: number;
+  mvmt: number;
+  grossProfit: number;
+  featureNotes: string;
+  tprDates: string;
+}
+
 export type ForecastOutlierRow = {
   upc: string;
   description: string;
@@ -46,6 +68,7 @@ export type ForecastOutlierRow = {
   markdownDollars: number;
   singlePrice?: boolean;
   notes?: string;
+  adListData?: AdListData;
 };
 
 export interface SimBtns {
@@ -64,6 +87,8 @@ export interface SimTitles {
 
 interface ForecastState {
   isLoading: boolean;
+  isLoadingMore: boolean;
+  notFoundUpcs: string[];
   selectedStores: Store[];
   storeids: string;
   radioId: number;
@@ -95,6 +120,8 @@ interface ForecastState {
 
 const initialState: ForecastState = {
   isLoading: false,
+  isLoadingMore: false,
+  notFoundUpcs: [],
   selectedStores: [],
   singlePriceResults: [],
   storeids: "", // needed for backend API calls
@@ -173,6 +200,31 @@ export const forecastSlice = createSlice({
     setInitialRowData: (state, action: PayloadAction<ForecastOutlierRow[]>) => {
       state.initialRowData = action.payload;
       state.noResults = false;
+    },
+    setIsLoadingMore: (state, action: PayloadAction<boolean>) => {
+      state.isLoadingMore = action.payload;
+    },
+    setNotFoundUpcs: (state, action: PayloadAction<string[]>) => {
+      state.notFoundUpcs = action.payload;
+    },
+    appendNotFoundUpcs: (state, action: PayloadAction<string[]>) => {
+      state.notFoundUpcs = [...state.notFoundUpcs, ...action.payload];
+    },
+    appendBatchResults: (
+      state,
+      action: PayloadAction<{
+        rows: ForecastOutlierRow[];
+        results: PriceHistoryResult[];
+        singleResults: PriceHistoryResult[];
+        items: ForecastItem[];
+      }>,
+    ) => {
+      const { rows, results, singleResults, items } = action.payload;
+      state.initialRowData = [...state.initialRowData, ...rows];
+      state.forecastResults = [...state.forecastResults, ...results];
+      state.singlePriceResults = [...state.singlePriceResults, ...singleResults];
+      state.items = [...state.items, ...items];
+      state.isLoadingMore = false;
     },
     setRowData: (state, action: PayloadAction<ForecastOutlierRow>) => {
       const upc = action.payload.upc;
@@ -696,6 +748,7 @@ export const forecastSlice = createSlice({
       state.singlePriceResults = [];
       state.forecastResults = [];
       state.noResults = false;
+      state.notFoundUpcs = [];
     },
     reset: (state) => {
       state.selectedUpc = "";
@@ -834,5 +887,9 @@ export const {
   setSimTitle,
   setSimList,
   resetForecastSlice,
+  setIsLoadingMore,
+  appendBatchResults,
+  setNotFoundUpcs,
+  appendNotFoundUpcs,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;
