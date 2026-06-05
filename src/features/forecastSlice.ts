@@ -3,7 +3,6 @@ import type {
   Store,
   ForecastItem,
   PriceHistoryResult,
-  PriceHistory,
   SimListItem,
   SimReplayItem,
 } from "../interfaces";

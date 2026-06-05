@@ -1,4 +1,19 @@
+import { themeQuartz } from "ag-grid-community";
 import { useRef, useState, useEffect } from "react";
+
+export const theme = themeQuartz.withParams({
+  headerHeight: 26,
+  rowHeight: 26,
+  headerBackgroundColor: "#3b82f6",
+  headerTextColor: "#ffffff",
+  oddRowBackgroundColor: "#dbeafe",
+  rowHoverColor: "#93c5fd",
+  headerFontWeight: "bold",
+  dataFontSize: 13,
+  selectCellBorder: "transparent",
+  rowBorder: "1px solid white",
+  selectedRowBackgroundColor: "#fed7aa",
+});
 import { useAppSelector } from "../../hooks";
 import type { ForecastOutlierRow } from "../../features/forecastSlice";
 import type { PriceHistoryResult } from "../../interfaces";
