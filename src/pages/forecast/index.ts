@@ -1,4 +1,3 @@
-import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
 import { useRef, useState, useEffect } from "react";
 import { useAppSelector } from "../../hooks";
 import type { ForecastOutlierRow } from "../../features/forecastSlice";
@@ -31,39 +30,7 @@ export const useScrollHeight = () => {
   return { height, topRef };
 };
 
-export const theme = themeQuartz.withParams({
-  headerHeight: 26,
-  rowHeight: 26,
-  headerBackgroundColor: "#3b82f6",
-  headerTextColor: "#ffffff",
-  oddRowBackgroundColor: "#bfdbfe",
-  rowHoverColor: "#93c5fd",
-  headerFontWeight: "bold",
-  dataFontSize: 13,
-  selectCellBorder: "transparent",
-  rowBorder: "1px solid white",
-  // selectedRowBackgroundColor: "#93c5fd",
-  selectedRowBackgroundColor: "#fed7aa",
-});
-
-export const themeTwo = themeQuartz.withParams({
-  headerHeight: 26,
-  rowHeight: 26,
-  headerBackgroundColor: "#3b82f6",
-  headerTextColor: "#ffffff",
-  oddRowBackgroundColor: "#bfdbfe",
-  rowHoverColor: "#93c5fd",
-  headerFontWeight: "bold",
-  dataFontSize: 13,
-  selectCellBorder: "transparent",
-  rowBorder: "1px solid white",
-  // selectedRowBackgroundColor: "#93c5fd",
-});
-
-export const exportHeaders: (
-  | ColDef<ForecastOutlierRow>
-  | ColGroupDef<ForecastOutlierRow>
-)[] = [
+export const exportHeaders: { headerName: string; field: keyof ForecastOutlierRow | string }[] = [
   { headerName: "UPC", field: "upc" },
   { headerName: "Description", field: "description" },
   { headerName: "Qty Sold", field: "qtySold" },
@@ -75,6 +42,7 @@ export const exportHeaders: (
   { headerName: "Ad Forecast", field: "adFcst" },
   { headerName: "Forecast Total", field: "fcstTotal" },
   { headerName: "Markdown Dollars", field: "markdownDollars" },
+  { headerName: "Notes", field: "notes" },
 ];
 
 export const formatRowData = (data: PriceHistoryResult[]) => {
@@ -118,6 +86,39 @@ export const formatRowData = (data: PriceHistoryResult[]) => {
       forecastWindow: 7,
       adDays: 0, // this show as "" for 0 until user input
       markdownDollars: markdownDollars,
+    };
+  });
+};
+
+export const formatSinglePriceRowData = (data: PriceHistoryResult[]) => {
+  return data.map((item) => {
+    const ph = item.price_history[0];
+    const price = parseFloat(ph.price);
+    const units = forecastUnits(
+      price,
+      ph.qty,
+      ph.qty,
+      item.days_active,
+      90,
+      ph.days_active,
+      7,
+      [[price, ph.qty]]
+    );
+    const markdownDollars = (item.regular_retail_price - price) * units;
+    return {
+      upc: item.upc,
+      description: item.description,
+      qtySold: ph.qty,
+      daysActive: item.days_active,
+      daysAtPrice: ph.days_active,
+      calcNow: 0 as 0 | 1,
+      adFcst: units,
+      fcstPrice: price,
+      fcstTotal: price * units,
+      forecastWindow: 7,
+      adDays: 0,
+      markdownDollars,
+      singlePrice: true as const,
     };
   });
 };

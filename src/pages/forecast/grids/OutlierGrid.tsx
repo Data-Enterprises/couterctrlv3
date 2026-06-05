@@ -1,319 +1,495 @@
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { AgGridReact } from "ag-grid-react";
-import { theme } from "..";
+import { useEffect, useMemo, useState } from "react";
 import {
-  AllCommunityModule,
-  ModuleRegistry,
-  type ColDef,
-  type ColGroupDef,
-  TooltipModule,
-} from "ag-grid-community";
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import type { SortingState } from "@tanstack/react-table";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
+import {
+  setCalcNow,
+  setBatchAdDaysRows,
+  setBatchPriceRows,
+  setBatchNotesRows,
+} from "../../../features/forecastSlice";
 
-import {
-  loadSimRowData,
-  reloadRowData,
-  resetSimulations,
-  setGlobalFcstPrice,
-  setNewRowAdDaysValue,
-  setNewRowPriceValue,
-  setSelectedSim,
-  updateGlobalFcstRows,
-} from "../../../features/forecastSlice";
-ModuleRegistry.registerModules([AllCommunityModule, TooltipModule]);
-import type {
-  ForecastOutlierRow,
-  SimBtns,
-} from "../../../features/forecastSlice";
+import type { ForecastOutlierRow } from "../../../features/forecastSlice";
 import { formatCurrency2 } from "../../../utils";
-import CalcNowCheckbox from "../../priceSimulator/grid/CheckBoxCell";
 import CalcModal from "../CalcModal";
-import SaveSimModal from "../SaveSimModal";
-import { useState } from "react";
-// import ReplayModal from "../ReplayModal";
+
+const NotesCell = ({
+  upc,
+  calcNow,
+  notes,
+  disabled,
+}: {
+  upc: string;
+  calcNow: 0 | 1;
+  notes?: string;
+  disabled?: boolean;
+}) => {
+  const dispatch = useAppDispatch();
+  return (
+    <label
+      className={`flex items-center justify-center gap-1 select-none h-full ${disabled ? "opacity-30" : "cursor-pointer"}`}
+      title={notes || ""}
+    >
+      <input
+        type="checkbox"
+        data-testid={`calc-now-checkbox-${upc}`}
+        checked={calcNow === 1}
+        disabled={disabled}
+        onChange={() =>
+          dispatch(setCalcNow({ upc, calcNow: calcNow === 1 ? 0 : 1 }))
+        }
+        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+      />
+    </label>
+  );
+};
+
+// ── Column widths as proportional units (sum = 100) ──────────────────────────
+const COL_SIZES = [8, 8, 17, 7, 8, 8, 7, 6, 7, 6, 7, 7];
+
+const columnHelper = createColumnHelper<ForecastOutlierRow>();
+
+// ── Main component ────────────────────────────────────────────────────────────
 
 const OutlierGrid = () => {
-  const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.forecast);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  // const [replayModalOpen, setReplayModalOpen] = useState<boolean>(false);
+  const dispatch = useAppDispatch();
 
-  const colDefs: (
-    | ColDef<ForecastOutlierRow>
-    | ColGroupDef<ForecastOutlierRow>
-  )[] = [
-    {
-      headerName: "Calc Now",
-      field: "calcNow",
-      flex: 0.8,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus flex justify-center items-center",
-      cellRenderer: CalcNowCheckbox, // Use the custom component
-      cellRendererSelector: undefined, // Ensure it always uses your renderer
-    },
-    {
-      headerName: "UPC",
-      field: "upc",
-      flex: 0.8,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
-      headerTooltip: "UPC",
-    },
-    {
-      headerName: "Description",
-      field: "description",
-      flex: 1.7,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus",
-      headerTooltip: "Description",
-    },
-    {
-      headerName: "Qty Sold",
-      field: "qtySold",
-      flex: 0.7,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus text-right",
-      headerTooltip: "Quantity Sold",
-    },
-    {
-      headerName: "Days Active",
-      field: "daysActive",
-      flex: 0.8,
-      headerStyle: { borderRight: "1px solid white" },
-      cellClass: "no-outline-on-focus text-right",
-      valueFormatter: (params) => `${params.value}/90`,
-      headerTooltip: "Days Active",
-    },
-    {
-      headerName: "At Price",
-      field: "daysAtPrice",
-      flex: 0.8,
-      cellClass: "no-outline-on-focus text-right",
-      headerStyle: { borderRight: "1px solid white" },
-      valueFormatter: (params) => `${params.value}/${params.data!.daysActive}`,
-      headerTooltip: "At Price",
-    },
-    {
-      headerName: "Forecast",
-      field: "forecastWindow",
-      flex: 0.7,
-      cellClass: "no-outline-on-focus text-right",
-      headerStyle: { borderRight: "1px solid white" },
-      headerTooltip: "Forecast",
-    },
-    {
-      // Future forecasted qty
-      headerName: "Ad Days",
-      field: "adDays",
-      flex: 0.6,
-      cellClass: "no-outline-on-focus text-right border border-content",
-      headerStyle: { borderRight: "1px solid white" },
-      headerTooltip: "Ad Days",
-      valueFormatter: (params) => (params.value === 0 ? "" : params.value),
-      editable: true,
-      valueSetter: (params) => {
-        const upc = params.data.upc;
-        const newAdDays = parseInt(params.newValue);
-        if (!isNaN(newAdDays)) {
-          dispatch(setNewRowAdDaysValue({ upc, newAdDays }));
-        }
+  const [filterText, setFilterText] = useState("");
+  const [batchAdDays, setBatchAdDays] = useState("");
+  const [batchPrice, setBatchPrice] = useState("");
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [batchNotes, setBatchNotes] = useState("");
+  const [notFoundOpen, setNotFoundOpen] = useState(false);
+  const adListRows = useAppSelector((s) => s.adList.rows);
 
-        return !isNaN(newAdDays);
-      },
-    },
-    {
-      headerName: "Fcst Price",
-      field: "fcstPrice",
-      flex: 0.7,
-      cellClass: "no-outline-on-focus text-right border border-content",
-      headerStyle: { borderRight: "1px solid white" },
-      headerTooltip: "Forecast Price",
-      valueFormatter: (params) => formatCurrency2(params.value),
-      editable: true,
-      valueSetter: (params) => {
-        const upc = params.data.upc;
-        const newPrice = parseFloat(params.newValue);
-        if (!isNaN(newPrice)) {
-          dispatch(setNewRowPriceValue({ upc, newPrice }));
-        }
-        return !isNaN(newPrice);
-      },
-    },
-    {
-      // Future forecasted qty
-      headerName: "Ad Fcst",
-      field: "adFcst",
-      flex: 0.6,
-      cellClass: "no-outline-on-focus text-right",
-      headerStyle: { borderRight: "1px solid white" },
-      headerTooltip: "Ad Forecast",
-    },
-    {
-      headerName: "Fcst Total",
-      field: "fcstTotal",
-      flex: 0.7,
-      cellClass: "no-outline-on-focus text-right",
-      valueFormatter: (params) => formatCurrency2(params.value),
-      headerStyle: { borderRight: "1px solid white" },
-      headerTooltip: "Forecast Total",
-    },
-    {
-      headerName: "Markdown $",
-      field: "markdownDollars",
-      flex: 0.7,
-      cellClass: "no-outline-on-focus text-right",
-      valueFormatter: (params) => formatCurrency2(params.value),
-      headerTooltip: "Markdown Dollars",
-    },
-  ];
+  const filteredData = useMemo(
+    () =>
+      filterText
+        ? state.rowData.filter((r) =>
+            r.description.toLowerCase().includes(filterText.toLowerCase()),
+          )
+        : state.rowData,
+    [filterText, state.rowData],
+  );
 
-  const simBtnClassName = (sim: keyof SimBtns) => {
-    if (state.simBtns[sim] === 0) {
-      return "btn-themeBlue opacity-50 cursor-not-allowed pointer-events-none";
-    }
-
-    if (state.selectedSim === sim) {
-      return "btn-themeGreen";
-    }
-
-    return "btn-themeBlue";
+  const handleSetBatch = () => {
+    const upcs = filteredData.filter((r) => !r.singlePrice).map((r) => r.upc);
+    if (!upcs.length) return;
+    const days = parseInt(batchAdDays);
+    const price = parseFloat(batchPrice);
+    if (!isNaN(days) && days > 0)
+      dispatch(setBatchAdDaysRows({ upcs, adDays: days }));
+    if (!isNaN(price) && price > 0)
+      dispatch(setBatchPriceRows({ upcs, price }));
+    if (batchNotes.trim())
+      dispatch(setBatchNotesRows({ upcs, notes: batchNotes.trim() }));
   };
 
-  const renderTitle = () => {
-    const sim = state.selectedSim;
-    if (sim) {
-      return state.simTitles[sim as keyof SimBtns];
-    }
-    return "Next 7 Day Forecast";
-  };
+  const columns = useMemo(
+    () => [
+      columnHelper.display({
+        id: "calcNow",
+        enableSorting: false,
+        header: "Notes",
+        cell: ({ row }) => (
+          <NotesCell
+            upc={row.original.upc}
+            calcNow={row.original.calcNow}
+            notes={row.original.notes}
+            disabled={row.original.singlePrice}
+          />
+        ),
+      }),
+      columnHelper.accessor("upc", {
+        header: "UPC",
+        cell: ({ getValue }) => (
+          <div className="text-right truncate">{getValue()}</div>
+        ),
+      }),
+      columnHelper.accessor("description", {
+        header: "Description/Notes",
+        cell: ({ row, getValue }) => (
+          <div className="flex flex-col min-w-0">
+            <div className="truncate flex items-center gap-1">
+              <span className="truncate">{getValue()}</span>
+              {row.original.adListData && (
+                <span className="shrink-0 text-[9px] bg-blue-500 text-white rounded px-0.5 font-medium">
+                  AD
+                </span>
+              )}
+              {row.original.singlePrice && (
+                <span className="shrink-0 text-[9px] bg-yellow-200 text-yellow-700 rounded px-0.5 font-medium">
+                  1pt
+                </span>
+              )}
+            </div>
+            {row.original.notes && (
+              <div className="truncate text-[10px] text-blue-500 italic leading-tight">
+                {row.original.notes}
+              </div>
+            )}
+          </div>
+        ),
+      }),
+      columnHelper.accessor("qtySold", {
+        header: "Qty Sold",
+        cell: ({ getValue }) => <div className="text-right">{getValue()}</div>,
+      }),
+      columnHelper.accessor("daysActive", {
+        enableSorting: false,
+        header: "Days Active",
+        cell: ({ getValue }) => (
+          <div className="text-right">{getValue()}/90</div>
+        ),
+      }),
+      columnHelper.accessor("daysAtPrice", {
+        enableSorting: false,
+        header: "At Price",
+        cell: ({ row }) => (
+          <div className="text-right">
+            {row.original.daysAtPrice}/{row.original.daysActive}
+          </div>
+        ),
+      }),
+      columnHelper.accessor("forecastWindow", {
+        enableSorting: false,
+        header: "Forecast",
+        cell: ({ getValue }) => <div className="text-right">{getValue()}</div>,
+      }),
+      columnHelper.accessor("adDays", {
+        enableSorting: false,
+        header: "Ad Days",
+        cell: ({ getValue }) => (
+          <div className="text-right">
+            {getValue() === 0 ? "—" : getValue()}
+          </div>
+        ),
+      }),
+      columnHelper.accessor("fcstPrice", {
+        enableSorting: false,
+        header: "Fcst Price",
+        cell: ({ getValue }) => (
+          <div className="text-right">{formatCurrency2(getValue())}</div>
+        ),
+      }),
+      columnHelper.accessor("adFcst", {
+        header: "Ad Fcst",
+        cell: ({ getValue }) => <div className="text-right">{getValue()}</div>,
+      }),
+      columnHelper.accessor("fcstTotal", {
+        header: "Fcst Total",
+        cell: ({ getValue }) => (
+          <div className="text-right">{formatCurrency2(getValue())}</div>
+        ),
+      }),
+      columnHelper.accessor("markdownDollars", {
+        header: "Markdown $",
+        cell: ({ getValue }) => (
+          <div className="text-right">{formatCurrency2(getValue())}</div>
+        ),
+      }),
+    ],
+    [],
+  );
 
-  const openSaveSimModal = () => {
-    setIsOpen(true);
-  };
+  const table = useReactTable({
+    data: filteredData,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getRowId: (row) => row.upc,
+    initialState: { pagination: { pageSize: 25 } },
+  });
 
-  const loadSimulationRows = (sim: string) => {
-    dispatch(setSelectedSim(sim as keyof SimBtns));
-    dispatch(loadSimRowData(sim as keyof SimBtns));
-  };
+  // Reset to first page when the underlying row set changes
+  useEffect(() => {
+    table.setPageIndex(0);
+  }, [state.rowData.length]);
 
-  const simsFull = () => {
-    for (const sim in state.simBtns) {
-      if (state.simBtns[sim as keyof SimBtns] === 0) {
-        return false;
-      }
-    }
-    return true;
-  };
+  if (state.initialRowData.length === 0) return null;
+
+  const { pageIndex, pageSize } = table.getState().pagination;
+  const totalRows = filteredData.length;
+  const firstRow = totalRows === 0 ? 0 : pageIndex * pageSize + 1;
+  const lastRow = Math.min((pageIndex + 1) * pageSize, totalRows);
 
   return (
     <div
-      className={`${
-        state.initialRowData.length > 0
-          ? "animate-windowIn p-2 bg-custom-white rounded-lg shadow-lg relative"
-          : "hidden"
-      }`}
+      className="animate-windowIn bg-custom-white rounded-lg shadow-lg flex flex-col overflow-hidden"
+      style={{ maxHeight: "calc(100vh - 13.2rem)" }}
     >
       <CalcModal />
-      <SaveSimModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
-      {/* <ReplayModal
-        isOpen={replayModalOpen}
-        onClose={() => setReplayModalOpen(false)}
-      /> */}
-      <div className="absolute -translate-y-[70px] right-2 flex items-end justify-between w-full gap-2">
-        <div className="pl-4 flex items-end gap-2">
-          <div>
-            <label
-              htmlFor="global-price"
-              className="pl-0.5 text-sm font-medium"
-            >
-              Global Price
-            </label>
-            <input
-              id="global-price"
-              data-testid="global-price-input"
-              type="text"
-              className="basic-input focus:border py-1 bg-custom-white w-24"
-              value={state.globalFcstPrice === "" ? "" : state.globalFcstPrice}
-              onChange={(e) => {
-                dispatch(setGlobalFcstPrice(e.currentTarget.value));
-              }}
-            />
-          </div>
-          <button
-            data-testid="set-global-price-btn"
-            className="btn-themeBlue py-0.5"
-            onClick={() => dispatch(updateGlobalFcstRows())}
-          >
-            Set
-          </button>
+
+      {/* Filter + batch setter toolbar */}
+      <div className="flex items-center gap-2 px-2 py-1 border-b border-gray-100 shrink-0 flex-wrap">
+        {/* Badge legend */}
+        <div className="flex items-center gap-2 shrink-0 cursor-default select-none">
+          <span className="flex items-center gap-1 text-[10px] text-gray-500">
+            <span className="text-[9px] bg-blue-500 text-white rounded px-0.5 font-medium">
+              AD
+            </span>
+            AD list item
+          </span>
+          <span className="flex items-center gap-1 text-[10px] text-gray-500">
+            <span className="text-[9px] bg-yellow-200 text-yellow-700 rounded px-0.5 font-medium">
+              1pt
+            </span>
+            Single price point
+          </span>
         </div>
-        <div className="flex gap-2">
+        <div className="w-px h-4 bg-gray-200 shrink-0" />
+        <div className="flex items-center gap-1 flex-1 min-w-[180px]">
+          <input
+            type="text"
+            placeholder="Filter by description..."
+            value={filterText}
+            onChange={(e) => {
+              setFilterText(e.target.value);
+              table.setPageIndex(0);
+              // This may need to get taken out
+              if (e.target.value === "") {
+                setBatchAdDays("");
+                setBatchPrice("");
+                setBatchNotes("");
+              }
+            }}
+            className="basic-input text-xs py-0.5 px-1.5 flex-1"
+          />
+          {filterText && (
+            <>
+              <button
+                onClick={() => {
+                  setFilterText("");
+                  setBatchAdDays("");
+                  setBatchPrice("");
+                  setBatchNotes("");
+                }}
+                className="text-gray-400 hover:text-gray-600 px-1 text-xs"
+              >
+                ✕
+              </button>
+              <span className="text-[11px] text-gray-400 shrink-0">
+                {filteredData.length} items
+              </span>
+            </>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          <input
+            type="number"
+            min={1}
+            step={1}
+            max={7}
+            placeholder="Ad Days"
+            value={batchAdDays}
+            onChange={(e) => setBatchAdDays(e.target.value)}
+            className="basic-input text-xs py-0.5 px-1.5 w-16"
+          />
+          <input
+            type="number"
+            placeholder="Price"
+            min={0.01}
+            step={0.01}
+            value={batchPrice}
+            onChange={(e) => setBatchPrice(e.target.value)}
+            className="basic-input text-xs py-0.5 px-1.5 w-16"
+          />
+          <input
+            type="text"
+            placeholder="Note"
+            value={batchNotes}
+            onChange={(e) => setBatchNotes(e.target.value)}
+            className="basic-input text-xs py-0.5 px-1.5 w-24"
+          />
           <button
-            data-testid="sim1-btn"
-            className={`py-0.5 ${simBtnClassName("sim1")}`}
-            onClick={() => loadSimulationRows("sim1")}
+            onClick={handleSetBatch}
+            disabled={
+              !filterText || (!batchAdDays && !batchPrice && !batchNotes.trim())
+            }
+            className="text-xs px-2 py-0.5 btn-themeBlue disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            Sim 1
-          </button>
-          <button
-            data-testid="sim2-btn"
-            className={`py-0.5 ${simBtnClassName("sim2")}`}
-            onClick={() => loadSimulationRows("sim2")}
-          >
-            Sim 2
-          </button>
-          <button
-            data-testid="sim3-btn"
-            className={`py-0.5 ${simBtnClassName("sim3")}`}
-            onClick={() => loadSimulationRows("sim3")}
-          >
-            Sim 3
-          </button>
-          <button
-            data-testid="sim4-btn"
-            className={`py-0.5 ${simBtnClassName("sim4")}`}
-            onClick={() => loadSimulationRows("sim4")}
-          >
-            Sim 4
-          </button>
-          <button
-            data-testid="reload-sim-btn"
-            className={`btn-themeBlue py-0.5`}
-            onClick={() => dispatch(reloadRowData())}
-          >
-            Reload
-          </button>
-          <button
-            data-testid="reset-sim-btn"
-            className={`btn-themeOrange py-0.5`}
-            onClick={() => dispatch(resetSimulations())}
-          >
-            Reset
+            Set Batch
           </button>
         </div>
       </div>
-      <div className="flex justify-between">
-        <div className="text-lg font-medium underline px-1">
-          {renderTitle()}
+
+      {/* Batch 2 loading indicator */}
+      {state.isLoadingMore && (
+        <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 border-b border-blue-100 shrink-0">
+          <div className="w-3 h-3 rounded-full border-2 border-blue-400 border-t-transparent animate-spin shrink-0" />
+          <span className="text-[11px] text-blue-600 font-medium">
+            Loading more items…
+          </span>
         </div>
-        <button
-          data-testid="save-new-sim-btn"
-          className={`${
-            simsFull() && "opacity-50 pointer-events-none"
-          } btn-themeGreen py-0 mb-1`}
-          onClick={openSaveSimModal}
-        >
-          Save New Sim
-        </button>
+      )}
+
+      {/* Not-found banner */}
+      {state.notFoundUpcs.length > 0 && !state.isLoadingMore && (
+        <div className="shrink-0 border-b border-amber-200 relative">
+          <button
+            className="w-full flex items-center justify-between px-3 py-1 bg-amber-50 hover:bg-amber-100 transition-colors text-left"
+            onClick={() => setNotFoundOpen((o) => !o)}
+          >
+            <span className="text-[11px] text-amber-700 font-medium">
+              ⚠ {state.notFoundUpcs.length} item
+              {state.notFoundUpcs.length !== 1 ? "s" : ""} from the AD list had
+              no sales history at the selected stores
+            </span>
+            <span className="text-[10px] text-amber-500 ml-2 shrink-0">
+              {notFoundOpen ? "▲ hide" : "▼ show"}
+            </span>
+          </button>
+          {notFoundOpen && (
+            <div className="absolute left-0 right-0 top-full z-20 max-h-96 overflow-y-auto thin-scrollbar bg-amber-50 border border-amber-200 shadow-lg rounded-b-md px-3 pb-2">
+              <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-0.5 pt-1">
+                {state.notFoundUpcs.map((upc) => {
+                  const ad = adListRows[upc];
+                  return (
+                    <div key={upc} className="contents">
+                      <span className="text-[11px] text-gray-500 font-mono">
+                        {upc}
+                      </span>
+                      <span className="text-[11px] text-gray-600 truncate">
+                        {ad?.featureDescription || ad?.pageName || "—"}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Scrollable table body */}
+      <div className="overflow-y-auto flex-1 thin-scrollbar">
+        <table className="w-full text-xs border-collapse table-fixed">
+          <colgroup>
+            {COL_SIZES.map((s, i) => (
+              <col key={i} style={{ width: `${s}%` }} />
+            ))}
+          </colgroup>
+          <thead className="sticky top-0 z-10">
+            <tr className="bg-blue-500 text-white" style={{ height: "22px" }}>
+              {table.getHeaderGroups()[0].headers.map((header) => (
+                <th
+                  key={header.id}
+                  className={`px-1.5 text-left font-medium border-r border-blue-400 last:border-r-0 whitespace-nowrap overflow-hidden text-ellipsis${header.column.getCanSort() ? " cursor-pointer select-none" : ""}`}
+                  onClick={
+                    header.column.getCanSort()
+                      ? header.column.getToggleSortingHandler()
+                      : undefined
+                  }
+                >
+                  <span className="inline-flex items-center gap-0.5">
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
+                    {header.column.getCanSort() && (
+                      <span className="opacity-50 text-[9px]">
+                        {{ asc: "▲", desc: "▼" }[
+                          header.column.getIsSorted() as string
+                        ] ?? "⇅"}
+                      </span>
+                    )}
+                  </span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map((row, i) => (
+              <tr
+                key={row.id}
+                className={`border-b border-gray-100 transition-colors hover:bg-blue-50 ${
+                  row.original.singlePrice
+                    ? "bg-yellow-50"
+                    : i % 2 === 0
+                      ? "bg-custom-white"
+                      : "bg-blue-50"
+                }`}
+                style={{ height: "30px" }}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <td
+                    key={cell.id}
+                    className="px-1.5 overflow-hidden text-[11px]"
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-      <div className="h-[94%] shadow rounded-lg z-0">
-        <AgGridReact
-          rowData={state.rowData}
-          columnDefs={colDefs}
-          theme={theme}
-          pagination={true}
-          // onRowClicked={onRowClicked}
-          paginationAutoPageSize={true}
-        />
+
+      {/* Pagination bar */}
+      <div className="flex items-center justify-between px-3 py-1 border-t border-gray-100 text-xs text-gray-600 shrink-0">
+        <div className="flex items-center gap-1">
+          <span>Rows per page:</span>
+          <select
+            className="border border-gray-200 rounded px-1 py-0.5 bg-custom-white text-xs"
+            value={pageSize}
+            onChange={(e) => table.setPageSize(Number(e.target.value))}
+          >
+            {[10, 15, 25, 50].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <span className="text-gray-500">
+          {firstRow}–{lastRow} of {totalRows}
+        </span>
+
+        <div className="flex items-center gap-1">
+          <button
+            className="px-2 py-0.5 rounded border border-gray-200 hover:bg-blue-50 disabled:opacity-30 disabled:cursor-not-allowed"
+            onClick={() => table.setPageIndex(0)}
+            disabled={!table.getCanPreviousPage()}
+          >
+            «
+          </button>
+          <button
+            className="px-2 py-0.5 rounded border border-gray-200 hover:bg-blue-50 disabled:opacity-30 disabled:cursor-not-allowed"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            ‹
+          </button>
+          <span className="px-2">
+            {pageIndex + 1} / {table.getPageCount() || 1}
+          </span>
+          <button
+            className="px-2 py-0.5 rounded border border-gray-200 hover:bg-blue-50 disabled:opacity-30 disabled:cursor-not-allowed"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            ›
+          </button>
+          <button
+            className="px-2 py-0.5 rounded border border-gray-200 hover:bg-blue-50 disabled:opacity-30 disabled:cursor-not-allowed"
+            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+            disabled={!table.getCanNextPage()}
+          >
+            »
+          </button>
+        </div>
       </div>
     </div>
   );

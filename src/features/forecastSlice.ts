@@ -7,36 +7,7 @@ import type {
   SimListItem,
   SimReplayItem,
 } from "../interfaces";
-import { calcFcstQty, forecastUnits } from "../pages/forecast/utils";
-
-const estimateDaysActive = (history: PriceHistory[], price: number) => {
-  // price history and newPrice
-  const hollowPoint: PriceHistory = {
-    days_active: 0,
-    price: price.toString(),
-    qty: 0,
-    sale_dates: [],
-  };
-  const copy = [...history, hollowPoint].sort(
-    (a, b) => parseFloat(a.price) - parseFloat(b.price)
-  );
-  const idx = copy.findIndex((ph) => parseFloat(ph.price) === price);
-
-  // below
-  if (idx === 0) {
-    return copy[1].days_active;
-    // above
-  } else if (idx === copy.length - 1) {
-    return copy[copy.length - 2].days_active;
-  } else {
-    // middle
-    const p1 = copy[idx - 1].days_active;
-    const p2 = copy[idx + 1].days_active;
-
-    const newP = (p1 + p2) / 2;
-    return Math.round(newP);
-  }
-};
+import { calcFcstQty, estimateDaysActive, forecastUnits } from "../pages/forecast/utils";
 
 export interface SelectedHistory {
   upc: string;
@@ -60,6 +31,28 @@ export interface HistoryData {
   futureForecastTotal: number;
 }
 
+export interface AdListData {
+  pageName: string;
+  featureDescription: string;
+  pack: string;
+  size: string;
+  cost: number;
+  costPlusFrt: number;
+  amap: number;
+  eba: number;
+  dsdOI: number;
+  edlcBB: number;
+  netUnitCost: number;
+  adCount: number;
+  adRetail: number;
+  unitAdRetail: number;
+  regularRetail: number;
+  mvmt: number;
+  grossProfit: number;
+  featureNotes: string;
+  tprDates: string;
+}
+
 export type ForecastOutlierRow = {
   upc: string;
   description: string;
@@ -73,6 +66,9 @@ export type ForecastOutlierRow = {
   daysAtPrice: number;
   adDays: number;
   markdownDollars: number;
+  singlePrice?: boolean;
+  notes?: string;
+  adListData?: AdListData;
 };
 
 export interface SimBtns {
@@ -91,6 +87,8 @@ export interface SimTitles {
 
 interface ForecastState {
   isLoading: boolean;
+  isLoadingMore: boolean;
+  notFoundUpcs: string[];
   selectedStores: Store[];
   storeids: string;
   radioId: number;
@@ -112,6 +110,7 @@ interface ForecastState {
   simTitles: SimTitles;
   selectedSim: "sim1" | "sim2" | "sim3" | "sim4" | "";
   globalFcstPrice: string;
+  globalAdDays: string;
   selectedRow?: ForecastOutlierRow | null;
   noResults: boolean;
   simList: SimListItem[];
@@ -121,6 +120,8 @@ interface ForecastState {
 
 const initialState: ForecastState = {
   isLoading: false,
+  isLoadingMore: false,
+  notFoundUpcs: [],
   selectedStores: [],
   singlePriceResults: [],
   storeids: "", // needed for backend API calls
@@ -147,6 +148,7 @@ const initialState: ForecastState = {
   },
   selectedSim: "",
   globalFcstPrice: "",
+  globalAdDays: "",
   noResults: false,
   simList: [],
   simReplayPast: [],
@@ -199,6 +201,31 @@ export const forecastSlice = createSlice({
       state.initialRowData = action.payload;
       state.noResults = false;
     },
+    setIsLoadingMore: (state, action: PayloadAction<boolean>) => {
+      state.isLoadingMore = action.payload;
+    },
+    setNotFoundUpcs: (state, action: PayloadAction<string[]>) => {
+      state.notFoundUpcs = action.payload;
+    },
+    appendNotFoundUpcs: (state, action: PayloadAction<string[]>) => {
+      state.notFoundUpcs = [...state.notFoundUpcs, ...action.payload];
+    },
+    appendBatchResults: (
+      state,
+      action: PayloadAction<{
+        rows: ForecastOutlierRow[];
+        results: PriceHistoryResult[];
+        singleResults: PriceHistoryResult[];
+        items: ForecastItem[];
+      }>,
+    ) => {
+      const { rows, results, singleResults, items } = action.payload;
+      state.initialRowData = [...state.initialRowData, ...rows];
+      state.forecastResults = [...state.forecastResults, ...results];
+      state.singlePriceResults = [...state.singlePriceResults, ...singleResults];
+      state.items = [...state.items, ...items];
+      state.isLoadingMore = false;
+    },
     setRowData: (state, action: PayloadAction<ForecastOutlierRow>) => {
       const upc = action.payload.upc;
       const row = state.rowData.find((r) => r.upc === upc);
@@ -225,10 +252,7 @@ export const forecastSlice = createSlice({
       const currentRows = state.rowData;
       initialRows.forEach((initRow) => {
         const exists = currentRows.find((r) => r.upc === initRow.upc);
-        const isSinglePriced = state.singlePriceResults.find(
-          (item) => item.upc === initRow.upc
-        );
-        if (!exists && !isSinglePriced) {
+        if (!exists) {
           state.rowData.push(initRow);
         }
       });
@@ -289,6 +313,7 @@ export const forecastSlice = createSlice({
       state.selectedSim = "";
       state.selectedUpcs = [];
       state.globalFcstPrice = "";
+      state.globalAdDays = "";
     },
     resetSimulations: (state) => {
       state.simOneRowData = [];
@@ -304,6 +329,7 @@ export const forecastSlice = createSlice({
         sim4: "Forecast Simulation 4",
       };
       state.globalFcstPrice = "";
+      state.globalAdDays = "";
     },
     setForecastResults: (
       state,
@@ -331,6 +357,30 @@ export const forecastSlice = createSlice({
       ]);
 
       if (row) {
+        const regRetail = state.forecastResults.find(
+          (item) => item.upc === upc
+        )!.regular_retail_price;
+
+        if (row.singlePrice) {
+          // Single-price: use the known data point directly — no demand curve needed
+          const ph = prices!.price_history[0];
+          const units = forecastUnits(
+            row.fcstPrice, ph.qty, ph.qty,
+            row.daysActive, 90, ph.days_active,
+            row.forecastWindow, upcPrices, newAdDays
+          );
+          row.adDays = newAdDays;
+          row.adFcst = units;
+          row.fcstTotal = row.fcstPrice * units;
+          row.markdownDollars = (regRetail - row.fcstPrice) * units;
+          const sim = state.selectedSim;
+          if (sim === "sim1") state.simOneRowData = state.rowData;
+          else if (sim === "sim2") state.simTwoRowData = state.rowData;
+          else if (sim === "sim3") state.simThreeRowData = state.rowData;
+          else if (sim === "sim4") state.simFourRowData = state.rowData;
+          return;
+        }
+
         // Finding the qty over last 90 days at the current fcstPrice
         // or just predicting if data point doesn't exist
         const fcstQty = calcFcstQty(upcPrices, row.fcstPrice); //90 days
@@ -347,10 +397,6 @@ export const forecastSlice = createSlice({
           upcPrices, // all prices with qty recorded for the item
           newAdDays // from user input => the sale date range
         );
-
-        const regRetail = state.forecastResults.find(
-          (item) => item.upc === upc
-        )!.regular_retail_price;
 
         // The directly updated cell
         row.adDays = newAdDays;
@@ -388,6 +434,8 @@ export const forecastSlice = createSlice({
 
       // only change => fcstPrice, fcstQty, fcstDollars, markdownDollars, lift
       if (row) {
+        if (row.singlePrice) return; // price is fixed for single-price items
+
         // Finding the qty over last 90 days at the current fcstPrice
         // or just predicting if data point doesn't exist
         const fcstQty = calcFcstQty(upcPrices, newPrice);
@@ -447,10 +495,15 @@ export const forecastSlice = createSlice({
     setGlobalFcstPrice: (state, action: PayloadAction<string>) => {
       state.globalFcstPrice = action.payload;
     },
+    setGlobalAdDays: (state, action: PayloadAction<string>) => {
+      state.globalAdDays = action.payload;
+    },
     updateGlobalFcstRows: (state) => {
       const price = parseFloat(state.globalFcstPrice);
 
       const globalRows = state.rowData.map((row) => {
+        if (row.singlePrice) return row; // price is fixed — skip global price for single-price items
+
         const upc = row.upc;
         const prices = state.forecastResults.find(
           (item) => item.upc === row.upc
@@ -513,6 +566,160 @@ export const forecastSlice = createSlice({
       }
       state.rowData = globalRows;
     },
+    updateGlobalAdDaysRows: (state) => {
+      const adDays = parseInt(state.globalAdDays);
+      if (isNaN(adDays) || adDays <= 0) return;
+
+      const globalRows = state.rowData.map((row) => {
+        if (row.singlePrice) return row;
+
+        const upc = row.upc;
+        const prices = state.forecastResults.find((item) => item.upc === upc);
+        const upcPrices = prices!.price_history.map((ph) => [
+          parseFloat(ph.price),
+          ph.qty,
+        ]);
+
+        const fcstQty = calcFcstQty(upcPrices, row.fcstPrice);
+        const overallUnits = upcPrices.reduce((acc, curr) => acc + curr[1], 0);
+
+        const units = forecastUnits(
+          row.fcstPrice,
+          overallUnits,
+          fcstQty,
+          row.daysActive,
+          90,
+          row.daysAtPrice,
+          row.forecastWindow,
+          upcPrices,
+          adDays
+        );
+
+        const regRetail = state.forecastResults.find(
+          (item) => item.upc === upc
+        )!.regular_retail_price;
+
+        return {
+          ...row,
+          adDays,
+          adFcst: units,
+          fcstTotal: row.fcstPrice * units,
+          markdownDollars: (regRetail - row.fcstPrice) * units,
+        };
+      });
+
+      const sim = state.selectedSim;
+      if (sim === "sim1") state.simOneRowData = globalRows;
+      else if (sim === "sim2") state.simTwoRowData = globalRows;
+      else if (sim === "sim3") state.simThreeRowData = globalRows;
+      else if (sim === "sim4") state.simFourRowData = globalRows;
+      state.rowData = globalRows;
+    },
+    setBatchAdDaysRows: (
+      state,
+      action: PayloadAction<{ upcs: string[]; adDays: number }>
+    ) => {
+      const { upcs, adDays } = action.payload;
+      if (isNaN(adDays) || adDays <= 0) return;
+
+      const updated = state.rowData.map((row) => {
+        if (row.singlePrice || !upcs.includes(row.upc)) return row;
+
+        const prices = state.forecastResults.find((item) => item.upc === row.upc);
+        const upcPrices = prices!.price_history.map((ph) => [
+          parseFloat(ph.price),
+          ph.qty,
+        ]);
+        const fcstQty = calcFcstQty(upcPrices, row.fcstPrice);
+        const overallUnits = upcPrices.reduce((acc, curr) => acc + curr[1], 0);
+        const units = forecastUnits(
+          row.fcstPrice,
+          overallUnits,
+          fcstQty,
+          row.daysActive,
+          90,
+          row.daysAtPrice,
+          row.forecastWindow,
+          upcPrices,
+          adDays
+        );
+        const regRetail = state.forecastResults.find(
+          (item) => item.upc === row.upc
+        )!.regular_retail_price;
+
+        return {
+          ...row,
+          adDays,
+          adFcst: units,
+          fcstTotal: row.fcstPrice * units,
+          markdownDollars: (regRetail - row.fcstPrice) * units,
+        };
+      });
+
+      const sim = state.selectedSim;
+      if (sim === "sim1") state.simOneRowData = updated;
+      else if (sim === "sim2") state.simTwoRowData = updated;
+      else if (sim === "sim3") state.simThreeRowData = updated;
+      else if (sim === "sim4") state.simFourRowData = updated;
+      state.rowData = updated;
+    },
+    setBatchPriceRows: (
+      state,
+      action: PayloadAction<{ upcs: string[]; price: number }>
+    ) => {
+      const { upcs, price } = action.payload;
+
+      const updated = state.rowData.map((row) => {
+        if (row.singlePrice || !upcs.includes(row.upc)) return row;
+
+        const upc = row.upc;
+        const prices = state.forecastResults.find((item) => item.upc === upc);
+        const upcPrices = prices!.price_history.map((ph) => [
+          parseFloat(ph.price),
+          ph.qty,
+        ]);
+        const priceHistory = prices?.price_history;
+        const daysActive =
+          priceHistory!.find((ph) => parseFloat(ph.price) === price)
+            ?.days_active || estimateDaysActive(priceHistory!, price);
+        const fcstQty = calcFcstQty(upcPrices, price);
+        const overallUnits = upcPrices.reduce((acc, curr) => acc + curr[1], 0);
+        const units = forecastUnits(
+          price,
+          overallUnits,
+          fcstQty,
+          row.daysActive,
+          90,
+          daysActive,
+          row.forecastWindow,
+          upcPrices,
+          row.adDays
+        );
+        const regRetail = state.forecastResults.find(
+          (item) => item.upc === upc
+        )!.regular_retail_price;
+        const existingPrice = prices!.price_history.find(
+          (ph) => parseFloat(ph.price) === price
+        );
+
+        return {
+          ...row,
+          fcstPrice: price,
+          adFcst: units,
+          qtySold: existingPrice ? existingPrice.qty : 0,
+          fcstTotal: price * units,
+          markdownDollars: (regRetail - price) * units,
+          daysAtPrice: daysActive,
+        };
+      });
+
+      const sim = state.selectedSim;
+      if (sim === "sim1") state.simOneRowData = updated;
+      else if (sim === "sim2") state.simTwoRowData = updated;
+      else if (sim === "sim3") state.simThreeRowData = updated;
+      else if (sim === "sim4") state.simFourRowData = updated;
+      state.rowData = updated;
+    },
     // setReplayData: (state, action: PayloadAction<{ past: SimReplayItem[]; future: SimReplayItem[] }>) => {
     //   state.simReplayPast = action.payload.past;
     //   state.simReplayFuture = action.payload.future;
@@ -537,9 +744,11 @@ export const forecastSlice = createSlice({
       };
       state.selectedSim = "";
       state.globalFcstPrice = "";
+      state.globalAdDays = "";
       state.singlePriceResults = [];
       state.forecastResults = [];
       state.noResults = false;
+      state.notFoundUpcs = [];
     },
     reset: (state) => {
       state.selectedUpc = "";
@@ -564,10 +773,10 @@ export const forecastSlice = createSlice({
       };
       state.selectedSim = "";
       state.globalFcstPrice = "";
+      state.globalAdDays = "";
       state.singlePriceResults = [];
       state.forecastResults = [];
       state.noResults = false;
-      
     },
     setExportModalOpen: (state, action: PayloadAction<boolean>) => {
       state.exportModalOpen = action.payload;
@@ -593,6 +802,37 @@ export const forecastSlice = createSlice({
           return { ...row, calcNow: 0 };
         }
       });
+    },
+    setItemNotes: (
+      state,
+      action: PayloadAction<{ upc: string; notes: string }>
+    ) => {
+      const { upc, notes } = action.payload;
+      const row = state.rowData.find((r) => r.upc === upc);
+      if (row) {
+        row.notes = notes;
+        const sim = state.selectedSim;
+        if (sim === "sim1") state.simOneRowData = state.rowData;
+        else if (sim === "sim2") state.simTwoRowData = state.rowData;
+        else if (sim === "sim3") state.simThreeRowData = state.rowData;
+        else if (sim === "sim4") state.simFourRowData = state.rowData;
+      }
+    },
+    setBatchNotesRows: (
+      state,
+      action: PayloadAction<{ upcs: string[]; notes: string }>
+    ) => {
+      const { upcs, notes } = action.payload;
+      state.rowData.forEach((row) => {
+        if (!row.singlePrice && upcs.includes(row.upc)) {
+          row.notes = notes;
+        }
+      });
+      const sim = state.selectedSim;
+      if (sim === "sim1") state.simOneRowData = state.rowData;
+      else if (sim === "sim2") state.simTwoRowData = state.rowData;
+      else if (sim === "sim3") state.simThreeRowData = state.rowData;
+      else if (sim === "sim4") state.simFourRowData = state.rowData;
     },
     setNoResults: (state, action: PayloadAction<boolean>) => {
       state.noResults = action.payload;
@@ -634,12 +874,22 @@ export const {
   resetRows,
   setGlobalFcstPrice,
   updateGlobalFcstRows,
+  setGlobalAdDays,
+  updateGlobalAdDaysRows,
+  setBatchAdDaysRows,
+  setBatchPriceRows,
+  setBatchNotesRows,
   resetSimulations,
   setCalcNow,
+  setItemNotes,
   setSingleForecastResults,
   setNoResults,
   setSimTitle,
   setSimList,
   resetForecastSlice,
+  setIsLoadingMore,
+  appendBatchResults,
+  setNotFoundUpcs,
+  appendNotFoundUpcs,
 } = forecastSlice.actions;
 export default forecastSlice.reducer;

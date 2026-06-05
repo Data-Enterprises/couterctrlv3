@@ -20,15 +20,15 @@ const ViewToggle = () => {
   }
 
   return (
-    <div className="select-none">
-      <div className="text-[13px] bg-custom-white font-medium rounded-t-lg py-0.5 px-2">
+    <div className="select-none text-[13px]">
+      <div className="bg-custom-white font-medium rounded-t-lg py-0.5 px-2">
         <div>Select View</div>
         <div className="grid grid-cols-2 h-[1.5px]">
           <div className="bg-gradient-to-r from-blue-200 to-custom-white"></div>
           <div className="bg-gradient-to-l from-blue-200 to-custom-white"></div>
         </div>
       </div>
-      <div className="grid gap-2 p-2 bg-custom-white rounded-b-lg shadow-lg text-sm">
+      <div className="grid gap-2 p-2 bg-custom-white rounded-b-lg shadow-lg">
         <button
           className={`${!ctx.storeCards.length && "hidden"} ${activeStyle("stores")} py-1 rounded-lg shadow-md transition-all duration-200 hover:shadow-inner`}
           onClick={() => handleToggle("stores")}

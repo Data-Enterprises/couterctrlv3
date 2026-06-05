@@ -103,7 +103,7 @@ const TransFilterModal = () => {
       )}
       {ctx.selectedTransFilter === "total_sales" && (
         <div>
-          <div className="flex gap-2 justify-between">
+          <div className="flex gap-2 justify-between mb-2">
             <CheckBox
               id={1}
               label="Greater Than"
@@ -157,7 +157,7 @@ const TransFilterModal = () => {
 
       {ctx.selectedTransFilter === "total_qty" && (
         <div>
-          <div className="flex gap-2 justify-between">
+          <div className="flex gap-2 justify-between mb-2">
             <CheckBox
               id={1}
               label="Greater Than"

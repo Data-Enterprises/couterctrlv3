@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 
-// Components
 import { useToast } from "../../components/toasts/hooks/useToast";
-import FileInput from "./controls/FileInput";
-import SingleSelect from "../../components/SingleSelect";
+// import SingleSelect from "../../components/SingleSelect";
 import { getStoresAssignedToUserGroup } from "../../api/groups";
 import type {
   JsonError,
   Store,
   PriceHistoryFromListResp,
 } from "../../interfaces";
-import type { Group } from "../../features/groupSlice";
+import type { Group, StoreWithGroupStatus } from "../../features/groupSlice";
 import {
   reQuery,
   setIsLoading,
@@ -22,49 +20,46 @@ import {
   setForecastResults,
   setSingleForecastResults,
   setNoResults,
+  setIsLoadingMore,
+  appendBatchResults,
+  setNotFoundUpcs,
+  appendNotFoundUpcs,
 } from "../../features/forecastSlice";
 import { useForecastContext, useResizeContext } from "./hooks";
-import SelectedStoreList from "../upc/components/SelectedStoreList";
 import ForecastControls from "./controls/ForecastControls";
-import FileGrid from "./grids/FileGrid";
 import OutlierGrid from "./grids/OutlierGrid";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import ForecastModal from "./controls/ForecastModal";
-import DatePickers from "../../components/datePickers/DatePickers";
 import { getHistoryFromList } from "../../api/priceSim";
 import {
   removeSingleUpc,
-  // setUpcFileName,
   setUpcs,
   setUpcText,
 } from "../../features/upcUploadSlice";
 import ForecastCarousel from "./carousel/ForecastCarousel";
-import { formatRowData } from ".";
-
-const options = [
-  { label: "Stores", id: 1 },
-  { label: "Group", id: 2 },
-];
+import { formatRowData, formatSinglePriceRowData } from ".";
+import { fitLinearDemand, predictQty, forecastUnits, estimateDaysActive } from "./utils";
+import ForecastTablet from "./tablet/ForecastTablet";
+import ForecastSetupWizard from "./controls/ForecastSetupWizard";
+import ForecastSettingsModal from "./controls/ForecastSettingsModal";
+import type { AdListData } from "../../features/forecastSlice";
 
 const Forecasting = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useForecastContext();
-  const { height, scrollHeight } = useResizeContext("");
+  useResizeContext("");
   const [_, setFile] = useState<File | null>(null);
   const [filteredData, setFilteredData] = useState<Store[] | Group[]>([]);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [showItemsPanel, setShowItemsPanel] = useState(true);
   const { upcs, upcText } = useAppSelector((state) => state.upcs);
+  const adListRows = useAppSelector((state) => state.adList.rows);
+  const { initialRowData, isLoading, noResults } = useAppSelector(
+    (state) => state.forecast,
+  );
 
   useEffect(() => {
-    return () => {
-      // if (context.forecastResults.length === 0 || !file) {
-      //   dispatch(setUpcFileName(""));
-      // }
-    };
-  }, []);
-
-  useEffect(() => {
-    // On mount, if radioId is 0, set to 1 (Stores)
     if (context.radioId === 0) {
       dispatch(setRadioId(1));
       setFilteredData(context.assignedStores);
@@ -74,6 +69,123 @@ const Forecasting = () => {
       setFilteredData(context.groups);
     }
   }, [context.radioId]);
+
+  const BATCH_SIZE = 500;
+
+  const enrichRows = (results: PriceHistoryFromListResp["results"]) => {
+    // Build a fast lookup from upc → full API result for ad-price recalculation
+    const resultsByUpc = new Map(results.map((r) => [r.upc, r]));
+
+    // For AD list items, inject the ad price as a real price_history entry so
+    // CalcModal treats it as native history rather than a custom price row.
+    const enrichedResults = results.map((result) => {
+      const ad = adListRows[result.upc];
+      if (!ad) return result;
+
+      const adPrice = ad.unitAdRetail;
+      const alreadyPresent = result.price_history.some(
+        (p) => parseFloat(p.price) === adPrice,
+      );
+      if (alreadyPresent) return result;
+
+      const prices = result.price_history
+        .map((p) => [parseFloat(p.price), p.qty] as [number, number])
+        .sort((a, b) => b[1] - a[1]);
+
+      const linear = fitLinearDemand(prices);
+      const rawPredicted = prices.length >= 3
+        ? predictQty(adPrice, linear, prices)
+        : linear.intercept + linear.slope * adPrice;
+      const safePredicted = isFinite(rawPredicted) && !isNaN(rawPredicted)
+        ? rawPredicted
+        : prices[0][1];
+      const predictedQty = Math.max(0, Math.round(safePredicted));
+      const estimatedDays = Math.max(1, estimateDaysActive(result.price_history, adPrice));
+
+      return {
+        ...result,
+        price_history: [
+          ...result.price_history,
+          {
+            price: adPrice.toFixed(2),
+            qty: predictedQty,
+            days_active: estimatedDays,
+            sale_dates: [] as string[],
+          },
+        ],
+      };
+    });
+
+    // Update the lookup map to use enriched results
+    enrichedResults.forEach((r) => resultsByUpc.set(r.upc, r));
+
+    const singlePrices = enrichedResults.filter((item) => item.price_history.length === 1);
+    const multiPrices = enrichedResults.filter((item) => item.price_history.length > 1);
+    const rawRows = [
+      ...formatRowData(multiPrices),
+      ...formatSinglePriceRowData(singlePrices),
+    ];
+
+    const rows = rawRows.map((row) => {
+      const ad = adListRows[row.upc];
+      if (!ad) return row;
+
+      const { upc: _upc, ...adListData } = ad as { upc: string } & AdListData;
+      const adPrice = ad.unitAdRetail;
+      const result = resultsByUpc.get(row.upc);
+
+      // Recalculate all metrics at the ad price using the enriched history
+      if (result && result.price_history.length > 0) {
+        const prices = result.price_history
+          .map((p) => [parseFloat(p.price), p.qty] as [number, number])
+          .sort((a, b) => b[1] - a[1]);
+
+        const linear = fitLinearDemand(prices);
+
+        const rawPredicted = prices.length >= 3
+          ? predictQty(adPrice, linear, prices)
+          : linear.intercept + linear.slope * adPrice;
+        const safePredicted = isFinite(rawPredicted) && !isNaN(rawPredicted)
+          ? rawPredicted
+          : prices[0][1]; // fall back to highest-volume historical qty
+        const predictedQty = Math.max(0, Math.round(safePredicted));
+
+        // Guard against 0: forecastUnits divides by sellingDaysAtPrice internally
+        const estimatedDays = Math.max(1, estimateDaysActive(result.price_history, adPrice));
+
+        const rawUnits = forecastUnits(
+          adPrice,
+          result.qty,
+          predictedQty,
+          result.days_active,
+          90,
+          estimatedDays,
+          7,
+          prices,
+        );
+        const units = isFinite(rawUnits) && !isNaN(rawUnits) ? rawUnits : 0;
+
+        const regularRetail = ad.regularRetail || result.regular_retail_price;
+        const markdownDollars = (regularRetail - adPrice) * units;
+
+        return {
+          ...row,
+          fcstPrice: adPrice,
+          qtySold: predictedQty,
+          daysAtPrice: estimatedDays,
+          adFcst: units,
+          fcstTotal: adPrice * units,
+          markdownDollars,
+          adListData,
+        };
+      }
+
+      // Fallback: just override the price (missing history)
+      return { ...row, fcstPrice: adPrice, adListData };
+    });
+
+    return { rows, singlePrices, enrichedResults };
+  };
 
   const handleSearch = () => {
     if (context.storeids.length === 0) {
@@ -85,60 +197,81 @@ const Forecasting = () => {
       return;
     }
 
+    if (settingsOpen) setSettingsOpen(false);
     dispatch(setIsLoading(true));
     dispatch(reQuery());
+
+    const batch1 = upcs.slice(0, BATCH_SIZE);
+    const batch2 = upcs.slice(BATCH_SIZE);
 
     getHistoryFromList(
       context.url,
       context.token,
       context.storeids,
       context.endDate,
-      upcs.join(","),
+      batch1.join(","),
     )
       .then((resp) => {
         const j: PriceHistoryFromListResp = resp.data;
         if (j.error === 0 && j.results.length > 0) {
-          // Set the upc items for the controls
-          const upcItems = j.results.map((item) => ({
-            upc: item.upc,
-            description: item.description,
-          }));
+          const { rows, singlePrices, enrichedResults } = enrichRows(j.results);
+          const returnedSet = new Set(j.results.map((r) => r.upc));
+          const upcItems = enrichedResults.map((item) => ({ upc: item.upc, description: item.description }));
           dispatch(setItems(upcItems));
-
-          // set the raw data => needed to grab the prices and figure out the forecast values
-          dispatch(setForecastResults(j.results));
-
-          const singlePrices = j.results.filter(
-            (item) => item.price_history.length === 1,
-          );
-          const multiPrices = j.results.filter(
-            (item) => item.price_history.length > 1,
-          );
-
-          // set the row data
-          const rowData = formatRowData(multiPrices);
-          dispatch(setInitialRowData(rowData));
+          dispatch(setForecastResults(enrichedResults));
           dispatch(setSingleForecastResults(singlePrices));
+          dispatch(setInitialRowData(rows));
+          dispatch(setNotFoundUpcs(batch1.filter((u) => !returnedSet.has(u))));
         } else {
           dispatch(setNoResults(true));
+          dispatch(setNotFoundUpcs(batch1));
         }
+
+        if (batch2.length === 0) return;
+
+        dispatch(setIsLoadingMore(true));
+        getHistoryFromList(
+          context.url,
+          context.token,
+          context.storeids,
+          context.endDate,
+          batch2.join(","),
+        )
+          .then((resp2) => {
+            const j2: PriceHistoryFromListResp = resp2.data;
+            if (j2.error === 0 && j2.results.length > 0) {
+              const { rows: rows2, singlePrices: single2, enrichedResults: enriched2 } = enrichRows(j2.results);
+              const returned2 = new Set(j2.results.map((r) => r.upc));
+              const items2 = enriched2.map((item) => ({ upc: item.upc, description: item.description }));
+              dispatch(appendBatchResults({
+                rows: rows2,
+                results: enriched2,
+                singleResults: single2,
+                items: items2,
+              }));
+              dispatch(appendNotFoundUpcs(batch2.filter((u) => !returned2.has(u))));
+            } else {
+              dispatch(setIsLoadingMore(false));
+              dispatch(appendNotFoundUpcs(batch2));
+            }
+          })
+          .catch(() => {
+            dispatch(setIsLoadingMore(false));
+            toast.warn("Some items could not be loaded — partial results shown.");
+          });
       })
       .catch((err: JsonError) => toast.error(err.message))
       .finally(() => dispatch(setIsLoading(false)));
   };
 
   const handleSelectChange = (id: string | number) => {
-    dispatch(setSelectedStores([])); // Clear selected stores on new selection
+    dispatch(setSelectedStores([]));
     dispatch(setRadioId(id as number));
-    if (id === 1) {
-      setFilteredData(context.assignedStores);
-    } else if (id === 2) {
-      setFilteredData(context.groups);
-    }
+    if (id === 1) setFilteredData(context.assignedStores);
+    else if (id === 2) setFilteredData(context.groups);
   };
 
   const handleSelectClick = (id: string | number) => {
-    // Store
     if (context.radioId === 1) {
       const store = filteredData.find(
         (item): item is Store => "storeid" in item && item.storeid === id,
@@ -147,15 +280,15 @@ const Forecasting = () => {
         (s) => s.storeid === id,
       );
       if (existingStore) {
-        const copy = [...context.selectedStores].filter(
-          (s) => s.storeid !== id,
+        dispatch(
+          setSelectedStores(
+            [...context.selectedStores].filter((s) => s.storeid !== id),
+          ),
         );
-        dispatch(setSelectedStores(copy));
       } else if (store) {
         dispatch(setSelectedStores([...context.selectedStores, store]));
       }
     } else if (context.radioId === 2) {
-      // Group
       getStoresAssignedToUserGroup(
         context.url,
         context.token,
@@ -163,8 +296,9 @@ const Forecasting = () => {
         Number(id),
       )
         .then((resp) => {
-          const j = resp.data;
-          const filtered = [...j.stores].filter((store) => store.active === 1);
+          const filtered = [...resp.data.stores].filter(
+            (s: StoreWithGroupStatus) => s.active === 1,
+          );
           dispatch(setSelectedStores(filtered));
         })
         .catch((err: JsonError) => toast.error(err.message));
@@ -176,14 +310,11 @@ const Forecasting = () => {
       dispatch(setUpcs([]));
       return;
     }
-    const newUpcs = upc.split(",").map((u) => u.trim());
-    dispatch(setUpcs(newUpcs));
+    dispatch(setUpcs(upc.split(",").map((u) => u.trim())));
   };
 
   const handleEnterDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleAddUpc(e.currentTarget.value);
-    }
+    if (e.key === "Enter") handleAddUpc(e.currentTarget.value);
   };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -194,140 +325,82 @@ const Forecasting = () => {
     dispatch(removeSingleUpc(upc));
   };
 
+  const wizardProps = {
+    radioId: context.radioId,
+    filteredData,
+    selectedStores: context.selectedStores,
+    storeids: context.storeids,
+    upcs,
+    upcText,
+    isLoading,
+    noResults,
+    endDate: context.endDate,
+    onSelectChange: handleSelectChange,
+    onSelectClick: handleSelectClick,
+    onTextChange: handleTextChange,
+    onAddUpc: handleAddUpc,
+    onRemoveUpc: handleRemoveUpc,
+    onEnterDown: handleEnterDown,
+    onSearch: handleSearch,
+    setFile,
+  };
+
+  if (context.isTablet)
+    return (
+      <ForecastTablet
+        handleSelectChange={handleSelectChange}
+        filteredData={filteredData}
+        handleSearch={handleSearch}
+        handleSelectClick={handleSelectClick}
+        handleTextChange={handleTextChange}
+        handleAddUpc={handleAddUpc}
+        handleRemoveUpc={handleRemoveUpc}
+        setFile={setFile}
+      />
+    );
+
+  const hasData = initialRowData.length > 0;
+
   return (
     <div
       data-testid="forecast-page"
-      className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] relative w-full"
+      className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] relative w-full overflow-hidden"
     >
       <ForecastModal />
-      <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 gap-2 grid grid-cols-[18%_11%_70%] overflow-hidden">
-        <div className="grid grid-rows-[37%_35%_24%] gap-2">
-          <div className="bg-custom-white rounded-lg shadow-lg p-2">
-            <div className="flex gap-2">
-              <SingleSelect
-                data={options}
-                label="Store or Group"
-                displayKey="label"
-                valueKey="id"
-                onSelect={handleSelectChange}
-                defaultQuery="Stores"
-                id={1}
-                className="w-1/2"
-                innerClass="py-1 text-[13px]"
-              />
-              {context.radioId === 1 ? (
-                <SingleSelect
-                  label="Stores"
-                  data={filteredData as Store[]}
-                  displayKey={"store_name" as keyof Store}
-                  valueKey={"storeid" as keyof Store}
-                  onSelect={handleSelectClick}
-                  keepOpen={true}
-                  resetQuery={true}
-                  id={2}
-                  className="w-1/2"
-                  innerClass="py-1 text-[13px]"
-                />
-              ) : (
-                <SingleSelect
-                  label="Groups"
-                  data={filteredData as Group[]}
-                  valueKey={"id" as keyof Group}
-                  displayKey={"group_name" as keyof Group}
-                  onSelect={handleSelectClick}
-                  resetQuery={true}
-                  id={2}
-                  className="w-1/2"
-                  innerClass="py-1 text-[13px]"
-                />
-              )}
-            </div>
-            <DatePickers showBtn={false} />
-            <SelectedStoreList
-              selectedStores={context.selectedStores}
-              radioId={context.radioId}
-              className=""
-              context="large"
-            />
-          </div>
-          <div className="bg-custom-white rounded-lg shadow-lg px-2 text-[13px]">
-            <div className="bg-blue-500 text-custom-white -mx-2 py-0.5 px-4 rounded-t-lg font-medium flex justify-between">
-              <div>
-                UPCs <span className="text-sm">(comma separated)</span>
-              </div>
-              <div className={`${upcs.length === 0 && "hidden"}`}>
-                {upcs.length}
-              </div>
-            </div>
-            <input
-              type="text"
-              data-testid="forecast-upc-input"
-              className="basic-input focus:border bg-custom-white py-1 mt-2"
-              value={upcText}
-              onChange={handleTextChange}
-              onKeyDown={handleEnterDown}
-            />
-            <div className="flex py-2 gap-2">
-              <button
-                data-testid="forecast-add-upc-btn"
-                className="btn-themeBlue py-1 border px-0 w-1/2"
-                onClick={() => handleAddUpc(upcText)}
-              >
-                Add
-              </button>
-              <button
-                data-testid="forecast-clear-upc-btn"
-                className="btn-themeBlue py-1 border px-0 w-1/2"
-                onClick={() => handleAddUpc("")}
-              >
-                Clear
-              </button>
-            </div>
-            <div
-              className={`bg-bkg shadow rounded-lg text-xs ${height} flex mb-2`}
-            >
-              <div
-                className={`grid grid-cols-3 ${scrollHeight} overflow-hidden overflow-y-scroll no-scrollbar`}
-              >
-                {upcs.map((u, i) => (
-                  <div
-                    key={i}
-                    data-testid={`forecast-upc-item-${u}-${i}`}
-                    className="px-2 py-0.5 font-medium hover:text-blue-500  transition-all duration-200 cursor-pointer"
-                    onClick={() => handleRemoveUpc(u)}
-                  >
-                    {u}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <FileInput
-                page="forecast"
-                fileExt={[".csv"]}
-                setFile={setFile}
-                className="w-full"
-              />
-              <button
-                data-testid="forecast-search-btn"
-                className="btn-themeBlue"
-                onClick={handleSearch}
-              >
-                Search
-              </button>
-            </div>
-          </div>
-          <FileGrid />
-        </div>
-        <div className="relative">
-          <ForecastControls />
-          {context.isLoading && <LoadingIndicator className="ml-2" />}
-        </div>
+      <ForecastSettingsModal
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        {...wizardProps}
+      />
 
-        <div className="grid grid-rows-[24%_76%] mb-2 gap-2 relative">
-          <ForecastCarousel />
-          <OutlierGrid />
-        </div>
+      <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] p-4 gap-2 overflow-hidden">
+        {hasData ? (
+          // ── Data loaded: full-width grid view ──
+          <div className="flex flex-col flex-1 min-h-0 gap-2">
+            <ForecastCarousel
+              onItemsToggle={() => setShowItemsPanel((p) => !p)}
+              showItemsPanel={showItemsPanel}
+            />
+            <div
+              className={`flex-1 min-h-0 grid gap-2 overflow-hidden ${
+                showItemsPanel ? "grid-cols-[auto_1fr]" : ""
+              }`}
+            >
+              {showItemsPanel && (
+                <div className="relative w-44">
+                  <ForecastControls
+                    onSettingsClick={() => setSettingsOpen(true)}
+                  />
+                  {context.isLoading && <LoadingIndicator className="ml-2" />}
+                </div>
+              )}
+              <OutlierGrid />
+            </div>
+          </div>
+        ) : (
+          // ── No data: guided setup wizard ──
+          <ForecastSetupWizard {...wizardProps} />
+        )}
       </div>
     </div>
   );

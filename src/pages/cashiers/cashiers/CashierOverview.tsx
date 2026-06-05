@@ -29,7 +29,7 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
     }
   };
   return (
-    <div className="bg-custom-white p-2 rounded-lg shadow-lg text-sm h-[345px] cursor-default">
+    <div className="bg-custom-white p-2 rounded-lg shadow-lg text-[13px] xl:text-sm max-h-[345px] cursor-default">
       <div className="flex justify-between items-center border-b border-content/60">
         <div className="font-medium text-[12px]">
           {cashier.cashier_number} - {cashier.cashier_name}
@@ -69,7 +69,7 @@ const CashierOverview = ({ cashier }: CashierCardProps) => {
         </div>
       </div>
 
-      <div className="grid grid-rows-9 mt-1 text-[12px]">
+      <div className="grid grid-rows-9 mt-1 text-[10.5px] xl:text-[12px]">
         <div className="grid grid-cols-[26%_24%_18%_15%_19%] border-b border-content/60 font-medium cursor-default">
           <div>Exception</div>
           <div>Sales</div>

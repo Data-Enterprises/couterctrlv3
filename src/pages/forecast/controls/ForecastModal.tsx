@@ -10,18 +10,28 @@ import { useState } from "react";
 import Modal from "../../../components/Modal";
 import CheckBox from "../../../components/inputs/CheckBox";
 
+const notFoundHeaders = [
+  { headerName: "UPC", field: "upc" },
+  { headerName: "Description", field: "description" },
+  { headerName: "Page Name", field: "pageName" },
+  { headerName: "Feature Description", field: "featureDescription" },
+  { headerName: "Feature Notes", field: "featureNotes" },
+];
+
 interface ExportOption {
   initial: number;
   sim1: number;
   sim2: number;
   sim3: number;
   sim4: number;
+  notFound: number;
 }
 
 const ForecastModal = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const state = useAppSelector((state) => state.forecast);
+  const adListRows = useAppSelector((s) => s.adList.rows);
 
   const [option, setOption] = useState<ExportOption>({
     initial: 1,
@@ -29,6 +39,7 @@ const ForecastModal = () => {
     sim2: 0,
     sim3: 0,
     sim4: 0,
+    notFound: 0,
   });
 
   const [title, setTitle] = useState<string>("");
@@ -42,8 +53,27 @@ const ForecastModal = () => {
       return;
     }
 
+    if (option.notFound === 1) {
+      const notFoundData = state.notFoundUpcs.map((upc) => {
+        const ad = adListRows[upc];
+        return {
+          upc,
+          description: ad?.featureDescription || "",
+          pageName: ad?.pageName || "",
+          featureDescription: ad?.featureDescription || "",
+          featureNotes: ad?.featureNotes || "",
+        };
+      });
+      exportData(notFoundData, notFoundHeaders, `${title}_not_found.csv`);
+      handleClose();
+      return;
+    }
+
     let data: ForecastOutlierRow[] = [];
-    if (option.initial === 1) data = state.initialRowData;
+    if (option.initial === 1) data = state.initialRowData.map((row) => ({
+      ...row,
+      notes: state.rowData.find((r) => r.upc === row.upc)?.notes || "",
+    }));
     if (option.sim1 === 1) data = state.simOneRowData;
     if (option.sim2 === 1) data = state.simTwoRowData;
     if (option.sim3 === 1) data = state.simThreeRowData;
@@ -86,7 +116,7 @@ const ForecastModal = () => {
       onClose={handleClose}
       modalClassName="bg-custom-white w-1/4"
     >
-      <div className="flex justify-center gap-4 select-none mb-2">
+      <div className="flex justify-center gap-4 select-none mb-2 flex-wrap">
         {sims.length ? (
           <CheckBox
             value={option.initial === 1}
@@ -110,6 +140,16 @@ const ForecastModal = () => {
               />
             ))
           : null}
+        {state.notFoundUpcs.length > 0 && (
+          <CheckBox
+            value={option.notFound === 1}
+            label={`Not Found (${state.notFoundUpcs.length})`}
+            id={10}
+            idExtension="not-found-upcs"
+            onChange={() => handleChange("notFound")}
+            className="cursor-pointer"
+          />
+        )}
       </div>
       <div>
         <label className="font-medium text-sm pl-0.5" htmlFor="filename">

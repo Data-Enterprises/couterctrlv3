@@ -81,17 +81,17 @@ const CashierFiltersModal = () => {
     <Modal
       isOpen={ctx.cashierFilterModalOpen}
       onClose={() => handleClose()}
-      modalClassName="bg-custom-white min-w-1/4 space-y-4"
+      modalClassName="bg-custom-white min-w-1/4 w-[35%] xl:w-[26%] space-y-4"
     >
       {renderFilter()}
       <div className="grid grid-cols-3 gap-2">
-        <button className="btn-themeGreen" onClick={handleSubmit}>
+        <button className="btn-themeGreen px-0 py-1.5 text-[13px]" onClick={handleSubmit}>
           Submit
         </button>
-        <button className="btn-themeBlue" onClick={() => handleClose(true)}>
+        <button className="btn-themeBlue px-0 py-1.5 text-[13px]" onClick={() => handleClose(true)}>
           Clear
         </button>
-        <button className="btn-themeOrange" onClick={() => handleClose()}>
+        <button className="btn-themeOrange px-0 py-1.5 text-[13px]" onClick={() => handleClose()}>
           Cancel
         </button>
       </div>

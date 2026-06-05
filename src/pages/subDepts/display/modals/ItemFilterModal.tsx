@@ -69,7 +69,7 @@ const ItemFilterModal = () => {
     <Modal
       isOpen={subMargin.filterModalOpen}
       onClose={handleClose}
-      modalClassName="bg-custom-white w-1/4"
+      modalClassName="bg-custom-white w-[35%] xl:w-1/4"
     >
       {renderForm()}
     </Modal>

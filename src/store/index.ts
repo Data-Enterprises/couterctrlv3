@@ -30,6 +30,7 @@ import cashiersReducer from '../features/cashiersSlice.ts';
 import itemScanReducer from "../features/itemScanSlice.ts";
 import mobileSalesReducer from "../features/salesMobileSlice.ts";
 import ordersReducer from '../features/ordersSlice.ts';
+import adListReducer from '../features/adListSlice';
 
 export const setupStore = () =>
   configureStore({
@@ -64,6 +65,7 @@ export const setupStore = () =>
       itemScan: itemScanReducer,
       salesMobile: mobileSalesReducer,
       orders: ordersReducer,
+      adList: adListReducer,
     },
   });
 
