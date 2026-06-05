@@ -29,9 +29,16 @@ const ExportModal = <T extends Record<string, any>>({
       return;
     }
 
+    const exportCols = columns
+      .filter(
+        (col): col is ColDef<T> & { headerName: string } =>
+          typeof col.headerName === "string",
+      )
+      .map((col) => ({ headerName: col.headerName, field: col.field ?? "" }));
+
     exportData(
       data,
-      columns,
+      exportCols,
       `${fileName}_${formatDate(new Date().toISOString())}.csv`,
       totalsLine
     );
