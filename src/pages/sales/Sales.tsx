@@ -12,7 +12,7 @@ import TopTen from "./charts/TopTen";
 import HourlyGrid from "./charts/HourlyGrid";
 import SubDeptGrid from "./charts/SubDeptGrid";
 import SubDeptComps from "./charts/SubDeptComps";
-import SubDeptDistribution from "./charts/SubDeptDistribution";
+// import SubDeptDistribution from "./charts/SubDeptDistribution";
 import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import SubsCompareModal from "./subsCompare/SubsCompareModal";
@@ -61,7 +61,7 @@ const Sales = () => {
   const search = useAppSelector((state) => state.search);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [noPanelsFound, setNoPanelsFound] = useState<boolean>(false);
-  const [subView, setSubView] = useState<"grid" | "dist">("grid");
+  // const [subView, setSubView] = useState<"grid" | "dist">("grid");
   const {
     hourlySales,
     weeklySales,
@@ -366,7 +366,8 @@ const Sales = () => {
                       </div>
                       <div className="grid gap-2 h-full grid-rows-[220px_1fr]">
                         <SubDeptComps />
-                        <div className="flex flex-col gap-1 h-full min-h-0">
+                        <SubDeptGrid />
+                        {/* <div className="flex flex-col gap-1 h-full min-h-0">
                           <div className="flex gap-1 shrink-0">
                             <button
                               className={`px-3 py-0.5 text-xs rounded ${subView === "grid" ? "btn-themeBlue" : "bg-custom-white text-gray-500 border border-gray-200"}`}
@@ -384,7 +385,7 @@ const Sales = () => {
                           <div className="flex-1 min-h-0 overflow-hidden">
                             {subView === "grid" ? <SubDeptGrid /> : <SubDeptDistribution />}
                           </div>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
                   </div>
