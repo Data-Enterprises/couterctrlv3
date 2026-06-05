@@ -31,39 +31,43 @@ const AdListInput = () => {
         const data = new Uint8Array(ev.target!.result as ArrayBuffer);
         const wb = XLSX.read(data, { type: "array" });
         const ws = wb.Sheets[wb.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "" });
+        const json = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, {
+          defval: "",
+        });
 
-        const rows: AdListRow[] = json.map((r) => {
-          const adCount = Math.max(num(r["Ad Count"]), 1);
-          const adRetail = num(r["Ad Retail"]);
-          return {
-            upc: str(r["UPC"]),
-            pageName: str(r["Page Name"]),
-            featureDescription: str(r["Feature Description"]),
-            pack: str(r["Pack"]),
-            size: str(r["Size"]),
-            cost: num(r["COST"]),
-            costPlusFrt: num(r["COST+FRT"]),
-            amap: num(r["AMAP"]),
-            eba: num(r["EBA"]),
-            dsdOI: num(r["DSD OI"]),
-            edlcBB: num(r["EDLC BB"]),
-            netUnitCost: num(r["Net Unit Cost"]),
-            adCount,
-            adRetail,
-            unitAdRetail: adRetail / adCount,
-            regularRetail: num(r["Regular Retail"]),
-            mvmt: num(r["Mvmt"]),
-            grossProfit: num(r["Gross Profit"]),
-            featureNotes: str(r["Feature Notes"]),
-            tprDates: str(r["TPR Dates"]),
-          };
-        }).filter((r) => r.upc !== "");
+        const rows: AdListRow[] = json
+          .map((r) => {
+            const adCount = Math.max(num(r["Ad Count"]), 1);
+            const adRetail = num(r["Ad Retail"]);
+            return {
+              upc: str(r["UPC"]),
+              pageName: str(r["Page Name"]),
+              featureDescription: str(r["Feature Description"]),
+              pack: str(r["Pack"]),
+              size: str(r["Size"]),
+              cost: num(r["COST"]),
+              costPlusFrt: num(r["COST+FRT"]),
+              amap: num(r["AMAP"]),
+              eba: num(r["EBA"]),
+              dsdOI: num(r["DSD OI"]),
+              edlcBB: num(r["EDLC BB"]),
+              netUnitCost: num(r["Net Unit Cost"]),
+              adCount,
+              adRetail,
+              unitAdRetail: adRetail / adCount,
+              regularRetail: num(r["Regular Retail"]),
+              mvmt: num(r["Mvmt"]),
+              grossProfit: num(r["Gross Profit"]),
+              featureNotes: str(r["Feature Notes"]),
+              tprDates: str(r["TPR Dates"]),
+            };
+          })
+          .filter((r) => r.upc !== "");
 
         const upcs = rows.map((r) => r.upc);
         dispatch(setAdListData({ rows, fileName: file.name }));
         dispatch(setUpcs(upcs));
-        setLabel(`${file.name} — ${rows.length} items`);
+        setLabel(`${file.name}`);
       } catch {
         toast.error("Failed to parse AD list file");
       }
@@ -74,11 +78,13 @@ const AdListInput = () => {
   return (
     <div className="flex flex-col gap-2">
       <p className="text-xs text-gray-500 text-center">
-        Upload the weekly AD list Excel file. UPCs will be extracted and Ad Retail prices will be
-        pre-loaded as forecast prices.
+        Upload the weekly AD list Excel file. UPCs will be extracted and Ad
+        Retail prices will be pre-loaded as forecast prices.
       </p>
       <label className="btn-themeBlue text-[13px] h-10 w-full relative cursor-pointer">
-        <div className="absolute left-0 w-full text-center truncate px-2">{label}</div>
+        <div className="absolute left-0 w-full text-center truncate px-2">
+          {label}
+        </div>
         <input
           type="file"
           accept=".xlsx,.xls"
