@@ -88,13 +88,13 @@ const CalcModal = () => {
   };
 
   const handleTextChange = (e: string) => {
-    if (!isNaN(Number(e))) {
+    if (/^\d*\.?\d*$/.test(e)) {
       setPriceText(e);
     }
   };
 
   const handleCostChange = (e: string) => {
-    if (!isNaN(Number(e))) {
+    if (/^\d*\.?\d*$/.test(e)) {
       setCostText(e);
     }
   };
@@ -150,6 +150,11 @@ const CalcModal = () => {
   const liveAdDays =
     rowData.find((r) => r.upc === selectedRow?.upc)?.adDays ??
     selectedRow?.adDays ??
+    0;
+
+  const liveFcstPrice =
+    rowData.find((r) => r.upc === selectedRow?.upc)?.fcstPrice ??
+    selectedRow?.fcstPrice ??
     0;
 
   return (
@@ -453,6 +458,7 @@ const CalcModal = () => {
                 selectedRow={selectedRow}
                 overallUnits={overallUnits}
                 liveAdDays={liveAdDays}
+                liveFcstPrice={liveFcstPrice}
                 customPrices={customPrices}
                 onApply={handleApply}
                 onAddCustomPrice={(p) =>

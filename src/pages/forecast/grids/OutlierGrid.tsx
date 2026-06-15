@@ -193,7 +193,7 @@ const OutlierGrid = () => {
       columnHelper.accessor("markdownDollars", {
         header: "Markdown $",
         cell: ({ getValue }) => (
-          <div className="text-right">{formatCurrency2(getValue())}</div>
+          <div className="text-right">{formatCurrency2(Math.max(0, getValue()))}</div>
         ),
       }),
     ],

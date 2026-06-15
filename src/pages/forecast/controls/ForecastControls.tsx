@@ -103,7 +103,7 @@ const ForecastControls = ({ onSettingsClick }: { onSettingsClick?: () => void })
           } bg-custom-white rounded-lg shadow-lg text-sm select-none`}
         >
           <div ref={topRef}>
-            <div className="bg-blue-500 text-white text-[13px] font-medium px-3 py-1 rounded-t-lg">
+            <div className="bg-blue-500 text-custom-white text-[12.5px] text-center font-medium py-1 rounded-t-lg">
               90 Day · Ending {search.endDate}
             </div>
             <div className="flex flex-col gap-1 p-2">

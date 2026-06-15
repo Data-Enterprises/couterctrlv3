@@ -21,6 +21,7 @@ interface ScenarioTableProps {
   selectedRow: ForecastOutlierRow;
   overallUnits: number;
   liveAdDays: number;
+  liveFcstPrice: number;
   customPrices: number[];
   onApply: (price: number) => void;
   onAddCustomPrice: (price: number) => void;
@@ -34,6 +35,7 @@ const ScenarioTable = ({
   selectedRow,
   overallUnits,
   liveAdDays,
+  liveFcstPrice,
   customPrices,
   onApply,
   onAddCustomPrice,
@@ -120,13 +122,13 @@ const ScenarioTable = ({
           <tbody>
             {allPrices.map((row) => {
               const isActive =
-                Math.abs(row.price - selectedRow.fcstPrice) < 0.001;
+                Math.abs(row.price - liveFcstPrice) < 0.001;
               return (
                 <tr
                   key={row.price}
                   className={
                     isActive
-                      ? "ring-2 ring-green-500 bg-blue-200"
+                      ? "bg-blue-200"
                       : row.isCustom
                         ? "bg-white border-b border-gray-100"
                         : "bg-blue-50 border-b border-blue-100"
@@ -149,10 +151,8 @@ const ScenarioTable = ({
                   <td className="px-1.5 py-0.5 text-right">
                     {formatCurrency2(row.revenue)}
                   </td>
-                  <td
-                    className={`px-1.5 py-0.5 text-right ${row.markdown < 0 ? "text-red-500" : ""}`}
-                  >
-                    {formatCurrency2(row.markdown)}
+                  <td className="px-1.5 py-0.5 text-right">
+                    {formatCurrency2(Math.max(0, row.markdown))}
                   </td>
                   <td className="px-1.5 py-0.5 text-center">
                     <button
