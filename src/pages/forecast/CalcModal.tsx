@@ -88,13 +88,13 @@ const CalcModal = () => {
   };
 
   const handleTextChange = (e: string) => {
-    if (!isNaN(Number(e))) {
+    if (/^\d*\.?\d*$/.test(e)) {
       setPriceText(e);
     }
   };
 
   const handleCostChange = (e: string) => {
-    if (!isNaN(Number(e))) {
+    if (/^\d*\.?\d*$/.test(e)) {
       setCostText(e);
     }
   };
