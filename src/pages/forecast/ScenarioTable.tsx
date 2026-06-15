@@ -151,10 +151,8 @@ const ScenarioTable = ({
                   <td className="px-1.5 py-0.5 text-right">
                     {formatCurrency2(row.revenue)}
                   </td>
-                  <td
-                    className={`px-1.5 py-0.5 text-right ${row.markdown < 0 ? "text-red-500" : ""}`}
-                  >
-                    {formatCurrency2(row.markdown)}
+                  <td className="px-1.5 py-0.5 text-right">
+                    {formatCurrency2(Math.max(0, row.markdown))}
                   </td>
                   <td className="px-1.5 py-0.5 text-center">
                     <button
