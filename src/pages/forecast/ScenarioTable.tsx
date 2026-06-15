@@ -21,6 +21,7 @@ interface ScenarioTableProps {
   selectedRow: ForecastOutlierRow;
   overallUnits: number;
   liveAdDays: number;
+  liveFcstPrice: number;
   customPrices: number[];
   onApply: (price: number) => void;
   onAddCustomPrice: (price: number) => void;
@@ -34,6 +35,7 @@ const ScenarioTable = ({
   selectedRow,
   overallUnits,
   liveAdDays,
+  liveFcstPrice,
   customPrices,
   onApply,
   onAddCustomPrice,
@@ -120,13 +122,13 @@ const ScenarioTable = ({
           <tbody>
             {allPrices.map((row) => {
               const isActive =
-                Math.abs(row.price - selectedRow.fcstPrice) < 0.001;
+                Math.abs(row.price - liveFcstPrice) < 0.001;
               return (
                 <tr
                   key={row.price}
                   className={
                     isActive
-                      ? "ring-2 ring-green-500 bg-blue-200"
+                      ? "bg-blue-200"
                       : row.isCustom
                         ? "bg-white border-b border-gray-100"
                         : "bg-blue-50 border-b border-blue-100"

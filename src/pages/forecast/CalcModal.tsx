@@ -152,6 +152,11 @@ const CalcModal = () => {
     selectedRow?.adDays ??
     0;
 
+  const liveFcstPrice =
+    rowData.find((r) => r.upc === selectedRow?.upc)?.fcstPrice ??
+    selectedRow?.fcstPrice ??
+    0;
+
   return (
     <Modal
       isOpen={open}
@@ -453,6 +458,7 @@ const CalcModal = () => {
                 selectedRow={selectedRow}
                 overallUnits={overallUnits}
                 liveAdDays={liveAdDays}
+                liveFcstPrice={liveFcstPrice}
                 customPrices={customPrices}
                 onApply={handleApply}
                 onAddCustomPrice={(p) =>
