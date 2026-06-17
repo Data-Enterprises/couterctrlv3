@@ -24,6 +24,7 @@ export type StoreSelection = {
   start: string;
   end: string;
   mode: "weekly" | "daily";
+  days: DayDot[];
 };
 
 interface LedgerRowProps {
@@ -34,16 +35,13 @@ interface LedgerRowProps {
 
 const dayCellColor = (twNet: number, lyNet: number) => {
   if (!lyNet) return "bg-gray-100 text-gray-400";
-  const pct = ((twNet - lyNet) / lyNet) * 100;
-  if (pct > 2) return "bg-emerald-100 text-emerald-700";
-  if (pct < -2) return "bg-red-100 text-red-600";
-  return "bg-amber-100 text-amber-700";
+  return twNet >= lyNet
+    ? "bg-emerald-100 text-emerald-700"
+    : "bg-red-100 text-red-600";
 };
 
 const statusDot = (vsLYPct: number) => {
-  if (vsLYPct > 2) return "bg-emerald-500";
-  if (vsLYPct < -2) return "bg-red-500";
-  return "bg-amber-400";
+  return vsLYPct >= 0 ? "bg-emerald-500" : "bg-red-500";
 };
 
 const formatPct = (pct: number) => {
@@ -52,7 +50,7 @@ const formatPct = (pct: number) => {
 };
 
 const LedgerRow = ({ row, rank, onClick }: LedgerRowProps) => {
-  const isNegative = row.vsLYPct < -2;
+  const isNegative = row.vsLYPct < 0;
 
   const sortedDays = [...row.days].sort((a, b) =>
     a.sale_date.localeCompare(b.sale_date),
@@ -61,19 +59,19 @@ const LedgerRow = ({ row, rank, onClick }: LedgerRowProps) => {
   const weekEnd = sortedDays[sortedDays.length - 1]?.sale_date.split("T")[0] ?? "";
 
   const handleRowClick = () => {
-    onClick({ storeId: row.storeid, storeName: row.store_name, start: weekStart, end: weekEnd, mode: "weekly" });
+    onClick({ storeId: row.storeid, storeName: row.store_name, start: weekStart, end: weekEnd, mode: "weekly", days: sortedDays });
   };
 
   const handleDayClick = (e: React.MouseEvent, sale_date: string) => {
     e.stopPropagation();
     const day = sale_date.split("T")[0];
-    onClick({ storeId: row.storeid, storeName: row.store_name, start: day, end: day, mode: "daily" });
+    onClick({ storeId: row.storeid, storeName: row.store_name, start: day, end: day, mode: "daily", days: sortedDays });
   };
 
   return (
     <tr
       onClick={handleRowClick}
-      className={`border-b border-gray-50 last:border-0 cursor-pointer transition-colors hover:bg-blue-50 ${
+      className={`border-b border-gray-200 last:border-0 cursor-pointer transition-colors hover:bg-blue-50 ${
         isNegative ? "bg-red-50" : ""
       }`}
     >
