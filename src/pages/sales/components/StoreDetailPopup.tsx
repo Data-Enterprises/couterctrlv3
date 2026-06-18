@@ -254,6 +254,8 @@ const StoreDetailPopup = ({ selection, onClose }: StoreDetailPopupProps) => {
             twDateLabel={twDateLabel}
             lwDateLabel={lwDateLabel}
             lyDateLabel={lyDateLabel}
+            storeId={selection.storeId}
+            selectedDate={selectedDate}
           />
         ) : (
           <PopupHourlyView

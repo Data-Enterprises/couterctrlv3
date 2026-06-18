@@ -1,12 +1,14 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAppSelector } from "../../../hooks";
-import { formatCurrency2 } from "../../../utils";
+import { formatCurrency2, addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../utils";
+import { getSubMargins } from "../../../api/subMargins";
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
   CheckCircleIcon,
 } from "@heroicons/react/20/solid";
 import type { Severity } from "./LedgerRow";
+import type { SubDeptMargin } from "../../../interfaces";
 
 const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
 
@@ -33,6 +35,37 @@ type DeptRow = {
 };
 
 type SevFilter = "all" | "critical" | "watch" | "healthy";
+
+type Top10Item = {
+  productCode: string;
+  desc: string;
+  tyNet: number;
+  tyQty: number;
+  lwNet: number | null;
+  lwQty: number | null;
+  lyNet: number | null;
+  lyQty: number | null;
+};
+
+const aggregateByCode = (
+  items: SubDeptMargin[],
+): Map<string, { desc: string; net: number; qty: number }> => {
+  const map = new Map<string, { desc: string; net: number; qty: number }>();
+  for (const item of items) {
+    const existing = map.get(item.product_code);
+    if (existing) {
+      existing.net += item.total_sales - item.total_tax;
+      existing.qty += item.qty;
+    } else {
+      map.set(item.product_code, {
+        desc: item.product_description,
+        net: item.total_sales - item.total_tax,
+        qty: item.qty,
+      });
+    }
+  }
+  return map;
+};
 
 const THRESHOLD = 9;
 
@@ -100,12 +133,95 @@ interface PopupSubDeptListProps {
   twDateLabel: string;
   lwDateLabel: string;
   lyDateLabel: string;
+  storeId: number;
+  selectedDate: string | null;
 }
 
-const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel }: PopupSubDeptListProps) => {
+const PopupSubDeptList = ({
+  twDateLabel,
+  lwDateLabel,
+  lyDateLabel,
+  storeId,
+  selectedDate,
+}: PopupSubDeptListProps) => {
   const { subSales, subSalesWk2, subSalesWk3 } = useAppSelector((state) => state.sales);
+  const context = useAppSelector((state) => state.app);
+  const search = useAppSelector((state) => state.search);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
+  const [top10, setTop10] = useState<Top10Item[]>([]);
+  const [itemsLoading, setItemsLoading] = useState(false);
+
+  useEffect(() => {
+    if (selectedId === null) {
+      setTop10([]);
+      return;
+    }
+
+    const twEnd = formatGoliathDate(search.singleDate);
+    const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
+    const lwStart = addDays(search.singleDate, -13).toISOString().split("T")[0];
+    const lwEnd = addDays(search.singleDate, -7).toISOString().split("T")[0];
+    const lyStart = sameWeekDayLastYear(twStart).date;
+    const lyEnd = sameWeekDayLastYear(twEnd).date;
+
+    const tyStart = selectedDate ?? twStart;
+    const tyEnd = selectedDate ?? twEnd;
+    const lwDayStart = selectedDate
+      ? addDays(new Date(selectedDate), -7).toISOString().split("T")[0]
+      : lwStart;
+    const lwDayEnd = selectedDate
+      ? addDays(new Date(selectedDate), -7).toISOString().split("T")[0]
+      : lwEnd;
+    const lyDayStart = selectedDate ? sameWeekDayLastYear(selectedDate).date : lyStart;
+    const lyDayEnd = selectedDate ? sameWeekDayLastYear(selectedDate).date : lyEnd;
+
+    let cancelled = false;
+    const fetch = async () => {
+      setItemsLoading(true);
+      try {
+        const [tyResp, lwResp, lyResp] = await Promise.all([
+          getSubMargins(context.url, context.token, selectedId, tyStart, tyEnd, 0, storeId, 1),
+          getSubMargins(context.url, context.token, selectedId, lwDayStart, lwDayEnd, 0, storeId, 1),
+          getSubMargins(context.url, context.token, selectedId, lyDayStart, lyDayEnd, 0, storeId, 1),
+        ]);
+        if (cancelled) return;
+
+        const tyItems: SubDeptMargin[] = tyResp.data?.error === 0 ? tyResp.data.subs : [];
+        const lwItems: SubDeptMargin[] = lwResp.data?.error === 0 ? lwResp.data.subs : [];
+        const lyItems: SubDeptMargin[] = lyResp.data?.error === 0 ? lyResp.data.subs : [];
+
+        const tyMap = aggregateByCode(tyItems);
+        const lwMap = aggregateByCode(lwItems);
+        const lyMap = aggregateByCode(lyItems);
+
+        const sorted = [...tyMap.entries()].sort((a, b) => b[1].qty - a[1].qty).slice(0, 10);
+
+        const items: Top10Item[] = sorted.map(([code, ty]) => {
+          const lw = lwMap.get(code) ?? null;
+          const ly = lyMap.get(code) ?? null;
+          return {
+            productCode: code,
+            desc: ty.desc,
+            tyNet: ty.net,
+            tyQty: ty.qty,
+            lwNet: lw?.net ?? null,
+            lwQty: lw?.qty ?? null,
+            lyNet: ly?.net ?? null,
+            lyQty: ly?.qty ?? null,
+          };
+        });
+
+        setTop10(items);
+      } finally {
+        if (!cancelled) setItemsLoading(false);
+      }
+    };
+    fetch();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedId, selectedDate, search.singleDate, context.url, context.token, storeId]);
 
   const rows = useMemo((): DeptRow[] => {
     const buildMap = (src: typeof subSales) =>
@@ -239,14 +355,14 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel }: PopupSubDep
 
   if (!rows.length) {
     return (
-      <div className="flex items-center justify-center h-32 text-content/30 text-sm">
+      <div className="flex items-center justify-center h-32 text-content/40 text-sm">
         No sub department data
       </div>
     );
   }
 
   const chipClass = (active: boolean, sev?: Severity) => {
-    if (!active) return "bg-white border border-gray-200 text-content/50 hover:border-gray-400";
+    if (!active) return "bg-white border border-gray-200 text-content/60 hover:border-gray-400";
     if (!sev) return "bg-[#1e2a4a] border-[#1e2a4a] text-white";
     const activeMap: Record<Severity, string> = {
       critical: "bg-red-600 border-red-600 text-white",
@@ -264,27 +380,27 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel }: PopupSubDep
         <div className="flex flex-wrap gap-1 p-2 border-b border-gray-100 bg-gray-50">
           <button
             onClick={() => setSevFilter("all")}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium transition-colors border ${chipClass(sevFilter === "all")}`}
+            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(sevFilter === "all")}`}
           >
             All ({rows.length})
           </button>
           <button
             onClick={() => setSevFilter("critical")}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium transition-colors border ${chipClass(sevFilter === "critical", "critical")}`}
+            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(sevFilter === "critical", "critical")}`}
           >
             <ExclamationTriangleIcon className="w-2.5 h-2.5" />
             Crit ({critCount})
           </button>
           <button
             onClick={() => setSevFilter("watch")}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium transition-colors border ${chipClass(sevFilter === "watch", "watch")}`}
+            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(sevFilter === "watch", "watch")}`}
           >
             <ExclamationCircleIcon className="w-2.5 h-2.5" />
             Watch ({watchCount})
           </button>
           <button
             onClick={() => setSevFilter("healthy")}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium transition-colors border ${chipClass(sevFilter === "healthy", "healthy")}`}
+            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(sevFilter === "healthy", "healthy")}`}
           >
             <CheckCircleIcon className="w-2.5 h-2.5" />
             OK ({healthyCount})
@@ -292,7 +408,7 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel }: PopupSubDep
         </div>
 
         {/* Column header */}
-        <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-100 text-[9px] font-medium text-content/40 uppercase tracking-wide">
+        <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-100 text-[10px] font-medium text-content/50 uppercase tracking-wide">
           Sub departments
         </div>
 
@@ -311,14 +427,14 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel }: PopupSubDep
               >
                 <SeverityBadge severity={sev} />
                 <span
-                  className={`text-[11px] font-medium flex-1 truncate ${
+                  className={`text-[12px] font-medium flex-1 truncate ${
                     isSel ? "text-white" : "text-content"
                   }`}
                 >
                   {r.desc}
                 </span>
                 <span
-                  className={`text-[11px] font-semibold flex-shrink-0 ${
+                  className={`text-[12px] font-semibold flex-shrink-0 ${
                     isSel
                       ? r.vsLYPct >= 0
                         ? "text-emerald-300"
@@ -342,16 +458,16 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel }: PopupSubDep
           <>
             {/* Panel header */}
             <div className="px-4 py-2 border-b border-gray-100 bg-gray-50 flex items-baseline gap-2">
-              <span className="text-[12px] font-semibold text-content">{selected.desc}</span>
-              <span className="text-[9px] text-content/30 italic">{twDateLabel}</span>
+              <span className="text-[13px] font-semibold text-content">{selected.desc}</span>
+              <span className="text-[10px] text-content/40 italic">{twDateLabel}</span>
             </div>
 
             {/* Metrics */}
             <div className="px-4 py-1 flex-1 overflow-y-auto thin-scrollbar">
               {/* TY net */}
               <div className="flex items-center justify-between py-2.5 border-b border-gray-100">
-                <span className="text-[11px] text-content/70">TY net sales</span>
-                <span className="text-[12px] font-semibold text-content">
+                <span className="text-[12px] text-content/80">TY net sales</span>
+                <span className="text-[13px] font-semibold text-content">
                   {formatCurrency2(selected.tw)}
                 </span>
               </div>
@@ -359,15 +475,15 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel }: PopupSubDep
               {/* ↳ vs LW */}
               <div className="flex items-start justify-between py-2 pl-3 border-b border-gray-50">
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-content/50">↳ vs last week</span>
-                  <span className="text-[8px] text-content/30 italic">{lwDateLabel}</span>
+                  <span className="text-[11px] text-content/60">↳ vs last week</span>
+                  <span className="text-[9px] text-content/40 italic">{lwDateLabel}</span>
                 </div>
                 <div className="flex flex-col items-end gap-0.5">
-                  <span className="text-[10px] text-content/60">
+                  <span className="text-[11px] text-content/75">
                     {selected.hasLW ? formatCurrency2(selected.lw) : "—"}
                   </span>
                   <span
-                    className={`text-[10px] font-semibold ${
+                    className={`text-[11px] font-semibold ${
                       selected.vsLWPct >= 0 ? "text-emerald-600" : "text-red-500"
                     }`}
                   >
@@ -379,15 +495,15 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel }: PopupSubDep
               {/* ↳ vs LY */}
               <div className="flex items-start justify-between py-2 pl-3 border-b border-gray-100">
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-content/50">↳ vs last year</span>
-                  <span className="text-[8px] text-content/30 italic">{lyDateLabel}</span>
+                  <span className="text-[11px] text-content/60">↳ vs last year</span>
+                  <span className="text-[9px] text-content/40 italic">{lyDateLabel}</span>
                 </div>
                 <div className="flex flex-col items-end gap-0.5">
-                  <span className="text-[10px] text-content/60">
+                  <span className="text-[11px] text-content/75">
                     {selected.hasLY ? formatCurrency2(selected.ly) : "—"}
                   </span>
                   <span
-                    className={`text-[10px] font-semibold ${
+                    className={`text-[11px] font-semibold ${
                       selected.vsLYPct >= 0 ? "text-emerald-600" : "text-red-500"
                     }`}
                   >
@@ -398,14 +514,14 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel }: PopupSubDep
 
               {/* Units sold */}
               <div className="flex items-center justify-between py-2.5 border-b border-gray-100">
-                <span className="text-[11px] text-content/70">Units sold</span>
+                <span className="text-[12px] text-content/80">Units sold</span>
                 <div className="flex flex-col items-end gap-0.5">
-                  <span className="text-[11px] font-medium text-content">
+                  <span className="text-[12px] font-medium text-content">
                     {selected.qty.toLocaleString()}
                   </span>
                   {selected.lyQty > 0 && (
                     <span
-                      className={`text-[10px] ${
+                      className={`text-[11px] ${
                         selected.qty >= selected.lyQty ? "text-emerald-600" : "text-red-500"
                       }`}
                     >
@@ -415,10 +531,110 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel }: PopupSubDep
                 </div>
               </div>
 
+              {/* Top 10 Items */}
+              <div className="border-b border-gray-100">
+                <div className="flex items-center justify-between py-2.5 border-b border-gray-100">
+                  <span className="text-[12px] text-content/80">Top 10 items</span>
+                  <span className="text-[10px] text-content/40 italic">by qty · {twDateLabel}</span>
+                </div>
+                {itemsLoading ? (
+                  <div className="py-2 text-[11px] text-content/40 italic">Loading…</div>
+                ) : top10.length === 0 ? (
+                  <div className="py-2 text-[11px] text-content/30 italic">No data</div>
+                ) : (
+                  top10.map((item, i) => {
+                    const lwPct =
+                      item.lwNet !== null && item.lwNet > 0
+                        ? ((item.tyNet - item.lwNet) / item.lwNet) * 100
+                        : null;
+                    const lyPct =
+                      item.lyNet !== null && item.lyNet > 0
+                        ? ((item.tyNet - item.lyNet) / item.lyNet) * 100
+                        : null;
+                    return (
+                      <div key={item.productCode}>
+                        {/* Item parent row — same style as TY net sales */}
+                        <div className="flex items-center justify-between py-2.5 border-b border-gray-50">
+                          <span className="text-[12px] text-content/80 truncate pr-2">
+                            {i + 1}. {item.desc}
+                          </span>
+                          <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+                            <span className="text-[13px] font-semibold text-content">
+                              {formatCurrency2(item.tyNet)}
+                            </span>
+                            <span className="text-[10px] text-content/50">
+                              {item.tyQty.toLocaleString()} units
+                            </span>
+                          </div>
+                        </div>
+                        {/* ↳ vs LW — same style as existing child rows */}
+                        <div className="flex items-start justify-between py-2 pl-3 border-b border-gray-50">
+                          <div className="flex flex-col">
+                            <span className="text-[11px] text-content/60">↳ vs last week</span>
+                            <span className="text-[9px] text-content/40 italic">{lwDateLabel}</span>
+                          </div>
+                          <div className="flex flex-col items-end gap-0.5">
+                            {item.lwNet !== null ? (
+                              <>
+                                <span className="text-[11px] text-content/75">
+                                  {formatCurrency2(item.lwNet)}
+                                </span>
+                                <span
+                                  className={`text-[11px] font-semibold ${
+                                    lwPct === null
+                                      ? "text-content/25"
+                                      : lwPct >= 0
+                                      ? "text-emerald-600"
+                                      : "text-red-500"
+                                  }`}
+                                >
+                                  {lwPct !== null ? formatPct(lwPct) : "—"}
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-[10px] text-content/30 italic">no data</span>
+                            )}
+                          </div>
+                        </div>
+                        {/* ↳ vs LY — same style as existing child rows */}
+                        <div className="flex items-start justify-between py-2 pl-3 border-b border-gray-100">
+                          <div className="flex flex-col">
+                            <span className="text-[11px] text-content/60">↳ vs last year</span>
+                            <span className="text-[9px] text-content/40 italic">{lyDateLabel}</span>
+                          </div>
+                          <div className="flex flex-col items-end gap-0.5">
+                            {item.lyNet !== null ? (
+                              <>
+                                <span className="text-[11px] text-content/75">
+                                  {formatCurrency2(item.lyNet)}
+                                </span>
+                                <span
+                                  className={`text-[11px] font-semibold ${
+                                    lyPct === null
+                                      ? "text-content/25"
+                                      : lyPct >= 0
+                                      ? "text-emerald-600"
+                                      : "text-red-500"
+                                  }`}
+                                >
+                                  {lyPct !== null ? formatPct(lyPct) : "—"}
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-[10px] text-content/30 italic">no data</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
               {/* Coupons */}
               {(selected.digital > 0 || selected.elecInstore > 0 || selected.elecStore > 0 || selected.storeCpn > 0) && (
                 <div className="py-2 border-b border-gray-100">
-                  <div className="text-[9px] font-medium uppercase tracking-wide text-content/30 mb-1.5">
+                  <div className="text-[10px] font-medium uppercase tracking-wide text-content/40 mb-1.5">
                     Coupons
                   </div>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1">
@@ -431,13 +647,13 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel }: PopupSubDep
                       const pct = ly > 0 ? ((tw - ly) / ly) * 100 : null;
                       return (
                         <div key={label} className="flex items-baseline gap-1.5">
-                          <span className="text-[9px] text-content/40">{label}</span>
-                          <span className="text-[10px] font-medium text-content/70">
+                          <span className="text-[10px] text-content/50">{label}</span>
+                          <span className="text-[11px] font-medium text-content/80">
                             {formatCurrency2(tw)}
                           </span>
                           {pct !== null && (
                             <span
-                              className={`text-[9px] font-medium ${
+                              className={`text-[10px] font-medium ${
                                 pct >= 0 ? "text-emerald-600" : "text-red-500"
                               }`}
                             >
@@ -473,7 +689,7 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel }: PopupSubDep
                   <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
                 )}
                 <span
-                  className={`text-[10px] leading-relaxed ${
+                  className={`text-[11px] leading-relaxed ${
                     cta.severity === "critical"
                       ? "text-orange-900"
                       : cta.severity === "watch"
@@ -487,7 +703,7 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel }: PopupSubDep
             )}
           </>
         ) : (
-          <div className="flex items-center justify-center h-full text-[11px] text-content/20">
+          <div className="flex items-center justify-center h-full text-[12px] text-content/30">
             Select a sub department
           </div>
         )}
