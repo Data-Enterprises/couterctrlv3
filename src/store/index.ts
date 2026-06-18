@@ -31,6 +31,7 @@ import itemScanReducer from "../features/itemScanSlice.ts";
 import mobileSalesReducer from "../features/salesMobileSlice.ts";
 import ordersReducer from '../features/ordersSlice.ts';
 import adListReducer from '../features/adListSlice';
+import salesLedgerReducer from '../features/salesLedgerSlice';
 
 export const setupStore = () =>
   configureStore({
@@ -66,6 +67,7 @@ export const setupStore = () =>
       salesMobile: mobileSalesReducer,
       orders: ordersReducer,
       adList: adListReducer,
+      salesLedger: salesLedgerReducer,
     },
   });
 

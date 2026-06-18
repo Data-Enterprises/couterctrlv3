@@ -16,7 +16,7 @@ import SubDeptComps from "./charts/SubDeptComps";
 import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import SubsCompareModal from "./subsCompare/SubsCompareModal";
-import SalesMobile from "./mobile/SalesMobile";
+import SalesLedgerMobile from "./mobile/SalesLedgerMobile";
 import SalesTracker from "./tracker/SalesTracker";
 import WeekCards from "./tracker/WeekCards";
 import SalesTablet from "./tablet/SalesTablet";
@@ -272,7 +272,7 @@ const Sales = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
-  if (context.isMobile) return <SalesMobile />;
+  if (context.isMobile) return <SalesLedgerMobile />;
   if (context.isTablet) return <SalesTablet />;
 
   return <SalesLedger />;

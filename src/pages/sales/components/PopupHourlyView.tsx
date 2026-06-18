@@ -200,7 +200,7 @@ const PopupHourlyView = ({ twDateLabel, lwDateLabel, lyDateLabel }: PopupHourlyV
   return (
     <div className="flex h-full">
       {/* Left panel */}
-      <div className="flex flex-col border-r border-gray-100" style={{ width: "40%" }}>
+      <div className="flex flex-col border-r border-gray-100" style={{ width: "36%" }}>
         {/* Filter chips */}
         <div className="flex flex-wrap gap-1 p-2 border-b border-gray-100 bg-gray-50">
           <button

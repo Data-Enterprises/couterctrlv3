@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { getWeekly, getHourly } from "../../api/sales";
 import { addDays, formatGoliathDate, sameWeekDayLastYear, formatCurrency2 } from "../../utils";
@@ -12,6 +11,11 @@ import {
   setHourlySalesLastYear,
   reQuery,
 } from "../../features/salesSlice";
+import {
+  setHasSearched,
+  setLedgerLoading,
+  setLedgerSelection,
+} from "../../features/salesLedgerSlice";
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
@@ -181,7 +185,7 @@ const TierColumn = ({
             >
               <div className="flex-1 min-w-0">
                 <div className="text-[9px] text-content/40 leading-none mb-0.5">{row.store_number}</div>
-                <div className="text-[12px] font-medium text-content truncate">{row.store_name}</div>
+                <div className="text-[11px] font-medium text-content truncate">{row.store_name}</div>
               </div>
               <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
                 {row.hasLY && (
@@ -222,15 +226,12 @@ const SalesLedger = () => {
     hourlySalesLastWeek = [],
     hourlySalesLastYear = [],
   } = useAppSelector((state) => state.sales);
-
-  const [loading, setLoading] = useState(false);
-  const [selection, setSelection] = useState<StoreSelection | null>(null);
-  const [hasSearched, setHasSearched] = useState(false);
+  const { hasSearched, selection, ledgerLoading: loading } = useAppSelector((state) => state.salesLedger);
 
   const resetToEntry = () => {
     dispatch(reQuery());
-    setHasSearched(false);
-    setSelection(null);
+    dispatch(setHasSearched(false));
+    dispatch(setLedgerSelection(null));
   };
 
   const getDateRanges = () => {
@@ -251,8 +252,8 @@ const SalesLedger = () => {
 
     const { twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd } = getDateRanges();
 
-    setLoading(true);
-    setHasSearched(true);
+    dispatch(setLedgerLoading(true));
+    dispatch(setHasSearched(true));
     dispatch(reQuery());
     try {
       const [twResp, lwResp, lyResp, hourlyResp, lwHourlyResp, lyHourlyResp] = await Promise.all([
@@ -270,7 +271,7 @@ const SalesLedger = () => {
       if (lwHourlyResp.data.error === 0) dispatch(setHourlySalesLastWeek(lwHourlyResp.data.subs));
       if (lyHourlyResp.data.error === 0) dispatch(setHourlySalesLastYear(lyHourlyResp.data.subs));
     } finally {
-      setLoading(false);
+      dispatch(setLedgerLoading(false));
     }
   };
 
@@ -314,7 +315,7 @@ const SalesLedger = () => {
       ) : (
         <div className="flex gap-4 h-[calc(100vh-6rem)]">
           {/* Left: store list */}
-          <div className="flex-shrink-0 flex flex-col" style={{ width: 820 }}>
+          <div className="flex-1 flex flex-col min-w-0">
             {/* Navy header */}
             <div className="bg-[#1e2a4a] rounded-t-xl px-4 py-3 flex items-start justify-between">
               <div>
@@ -381,16 +382,16 @@ const SalesLedger = () => {
 
             {/* Three columns — flex-1 so they fill remaining height */}
             <div className="flex-1 overflow-hidden bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100 grid grid-cols-3 divide-x divide-gray-100">
-              <TierColumn severity="critical" rows={criticalRows} onSelect={setSelection} />
-              <TierColumn severity="watch" rows={watchRows} onSelect={setSelection} />
-              <TierColumn severity="healthy" rows={healthyRows} onSelect={setSelection} />
+              <TierColumn severity="critical" rows={criticalRows} onSelect={(s) => dispatch(setLedgerSelection(s))} />
+              <TierColumn severity="watch" rows={watchRows} onSelect={(s) => dispatch(setLedgerSelection(s))} />
+              <TierColumn severity="healthy" rows={healthyRows} onSelect={(s) => dispatch(setLedgerSelection(s))} />
             </div>
           </div>
 
           {/* Right: report panel */}
           <div className="flex-1 min-w-0">
             {selection !== null ? (
-              <StoreDetailPopup selection={selection} onClose={() => setSelection(null)} />
+              <StoreDetailPopup selection={selection} onClose={() => dispatch(setLedgerSelection(null))} />
             ) : (
               <div className="h-full flex flex-col items-center justify-center gap-2 bg-custom-white/60 rounded-xl border border-dashed border-gray-200">
                 <div className="text-content/20 text-[13px] font-medium">No store selected</div>
