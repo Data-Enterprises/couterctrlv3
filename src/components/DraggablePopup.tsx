@@ -3,7 +3,7 @@ import { XMarkIcon } from "@heroicons/react/20/solid";
 
 interface DraggablePopupProps {
   title: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   onClose: () => void;
   children: ReactNode;
   initialX?: number;
@@ -71,7 +71,7 @@ const DraggablePopup = ({
         <div>
           <p className="text-white text-sm font-semibold leading-tight">{title}</p>
           {subtitle && (
-            <p className="text-white/50 text-[11px] mt-0.5">{subtitle}</p>
+            <div className="mt-1">{subtitle}</div>
           )}
         </div>
         <button

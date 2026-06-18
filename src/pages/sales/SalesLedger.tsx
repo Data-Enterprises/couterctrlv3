@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { getWeekly, getHourly } from "../../api/sales";
-import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../utils";
+import { addDays, formatGoliathDate, sameWeekDayLastYear, formatCurrency2 } from "../../utils";
 import type { WeeklySale } from "../../interfaces";
 import {
   setWeeklySales,
@@ -12,12 +12,47 @@ import {
   setHourlySalesLastYear,
   reQuery,
 } from "../../features/salesSlice";
+import {
+  ExclamationTriangleIcon,
+  ExclamationCircleIcon,
+  CheckCircleIcon,
+  ChevronRightIcon,
+} from "@heroicons/react/20/solid";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import LedgerEntryCard from "./components/LedgerEntryCard";
-import LedgerHeroBar from "./components/LedgerHeroBar";
-import LedgerFilterChips, { type FilterMode } from "./components/LedgerFilterChips";
-import LedgerRow, { type LedgerRowData, type StoreSelection } from "./components/LedgerRow";
 import StoreDetailPopup from "./components/StoreDetailPopup";
+import { type LedgerRowData, type StoreSelection } from "./components/LedgerRow";
+
+const SEVERITY_RANK = { critical: 0, watch: 1, healthy: 2 } as const;
+
+type SeverityKey = "critical" | "watch" | "healthy";
+
+const SEVERITY_CONFIG = {
+  critical: {
+    Icon: ExclamationTriangleIcon,
+    iconColor: "#ef4444",
+    badgeBg: "#fee2e2",
+    headerBg: "bg-red-50",
+    label: "Critical",
+    sub: "down > 9%",
+  },
+  watch: {
+    Icon: ExclamationCircleIcon,
+    iconColor: "#f59e0b",
+    badgeBg: "#fef3c7",
+    headerBg: "bg-amber-50",
+    label: "Watch",
+    sub: "down 0–9%",
+  },
+  healthy: {
+    Icon: CheckCircleIcon,
+    iconColor: "#10b981",
+    badgeBg: "#d1fae5",
+    headerBg: "bg-emerald-50",
+    label: "Healthy",
+    sub: "at or above",
+  },
+} as const;
 
 const buildLedgerRows = (
   twData: WeeklySale[],
@@ -36,17 +71,32 @@ const buildLedgerRows = (
       const twTotal = twRows.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
       const lwTotal = lwRows.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
       const lyTotal = lyRows.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
+      const hasLW = lwTotal > 0;
+      const hasLY = lyTotal > 0;
       const vsLYDollar = twTotal - lyTotal;
-      const vsLYPct = lyTotal ? (vsLYDollar / lyTotal) * 100 : 0;
+      const vsLYPct = hasLY ? (vsLYDollar / lyTotal) * 100 : 0;
+      const vsLWPct = hasLW ? ((twTotal - lwTotal) / lwTotal) * 100 : 0;
+
+      const THRESHOLD = 9;
+      const severity: LedgerRowData["severity"] = (() => {
+        const pct = hasLY ? vsLYPct : hasLW ? vsLWPct : 0;
+        if (pct < -THRESHOLD) return "critical";
+        if (pct < 0) return "watch";
+        return "healthy";
+      })();
 
       const days = twRows
         .sort((a, b) => a.sale_date.localeCompare(b.sale_date))
         .map((r) => {
-          const lyDate = sameWeekDayLastYear(r.sale_date.split("T")[0]).date;
+          const twDate = r.sale_date.split("T")[0];
+          const lwDate = addDays(new Date(twDate), -7).toISOString().split("T")[0];
+          const lyDate = sameWeekDayLastYear(twDate).date;
+          const lwRow = lwRows.find((l) => l.sale_date.startsWith(lwDate));
           const lyRow = lyRows.find((l) => l.sale_date.startsWith(lyDate));
           return {
             sale_date: r.sale_date,
             twNet: r.total_sales - r.total_tax,
+            lwNet: lwRow ? lwRow.total_sales - lwRow.total_tax : 0,
             lyNet: lyRow ? lyRow.total_sales - lyRow.total_tax : 0,
           };
         });
@@ -58,12 +108,106 @@ const buildLedgerRows = (
         twTotal,
         lwTotal,
         lyTotal,
+        vsLWPct,
         vsLYPct,
         vsLYDollar,
+        hasLW,
+        hasLY,
+        severity,
         days,
       };
     })
-    .sort((a, b) => b.vsLYPct - a.vsLYPct);
+    .sort((a, b) => {
+      const rankDiff = SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity];
+      if (rankDiff !== 0) return rankDiff;
+      const aPct = a.hasLY ? a.vsLYPct : a.vsLWPct;
+      const bPct = b.hasLY ? b.vsLYPct : b.vsLWPct;
+      return aPct - bPct;
+    });
+};
+
+const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
+
+const TierColumn = ({
+  severity,
+  rows,
+  onSelect,
+}: {
+  severity: SeverityKey;
+  rows: LedgerRowData[];
+  onSelect: (selection: StoreSelection) => void;
+}) => {
+  const cfg = SEVERITY_CONFIG[severity];
+
+  const handleClick = (row: LedgerRowData) => {
+    const sorted = [...row.days].sort((a, b) => a.sale_date.localeCompare(b.sale_date));
+    const weekStart = sorted[0]?.sale_date.split("T")[0] ?? "";
+    const weekEnd = sorted[sorted.length - 1]?.sale_date.split("T")[0] ?? "";
+    onSelect({
+      storeId: row.storeid,
+      storeName: row.store_name,
+      storeNumber: row.store_number,
+      start: weekStart,
+      end: weekEnd,
+      mode: "weekly",
+      days: sorted,
+    });
+  };
+
+  return (
+    <div className="flex flex-col min-h-0">
+      <div className={`flex items-center gap-2 px-3 py-2.5 border-b border-gray-100 ${cfg.headerBg}`}>
+        <div
+          className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0"
+          style={{ background: cfg.badgeBg }}
+        >
+          <cfg.Icon className="w-3 h-3" style={{ color: cfg.iconColor }} />
+        </div>
+        <span className="text-[11px] font-semibold text-content flex-1">{cfg.label}</span>
+        <span className="text-[10px] text-content/40">{rows.length}</span>
+      </div>
+
+      <div className="overflow-y-auto thin-scrollbar" style={{ maxHeight: "calc(100vh - 18rem)" }}>
+        {rows.length === 0 ? (
+          <div className="flex items-center justify-center py-8 text-[11px] text-content/20">
+            None this week
+          </div>
+        ) : (
+          rows.map((row) => (
+            <button
+              key={row.storeid}
+              onClick={() => handleClick(row)}
+              className="flex items-center w-full px-3 py-2.5 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors gap-2 text-left"
+            >
+              <div className="flex-1 min-w-0">
+                <div className="text-[9px] text-content/40 leading-none mb-0.5">{row.store_number}</div>
+                <div className="text-[12px] font-medium text-content truncate">{row.store_name}</div>
+              </div>
+              <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+                {row.hasLY && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-[8px] text-content/30 font-medium">LY</span>
+                    <span className={`text-[11px] font-bold ${row.vsLYPct >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                      {formatPct(row.vsLYPct)}
+                    </span>
+                  </div>
+                )}
+                {row.hasLW && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-[8px] text-content/30 font-medium">LW</span>
+                    <span className={`text-[11px] font-medium ${row.vsLWPct >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                      {formatPct(row.vsLWPct)}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <ChevronRightIcon className="w-4 h-4 text-content/20 flex-shrink-0" />
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  );
 };
 
 const SalesLedger = () => {
@@ -80,7 +224,6 @@ const SalesLedger = () => {
   } = useAppSelector((state) => state.sales);
 
   const [loading, setLoading] = useState(false);
-  const [filter, setFilter] = useState<FilterMode>("all");
   const [selection, setSelection] = useState<StoreSelection | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
 
@@ -88,7 +231,6 @@ const SalesLedger = () => {
     dispatch(reQuery());
     setHasSearched(false);
     setSelection(null);
-    setFilter("all");
   };
 
   const getDateRanges = () => {
@@ -134,28 +276,13 @@ const SalesLedger = () => {
 
   const ledgerRows = buildLedgerRows(weeklySales, weeklySalesLastWeek, weeklySalesLastYear);
 
-  const filtered = ledgerRows.filter((r) => {
-    if (filter === "attention") return r.vsLYPct < 0;
-    if (filter === "above") return r.vsLYPct >= 0;
-    return true;
-  });
+  const criticalRows = ledgerRows.filter((r) => r.severity === "critical");
+  const watchRows = ledgerRows.filter((r) => r.severity === "watch");
+  const healthyRows = ledgerRows.filter((r) => r.severity === "healthy");
 
   const heroTWTotal = ledgerRows.reduce((acc, r) => acc + r.twTotal, 0);
   const heroLYTotal = ledgerRows.reduce((acc, r) => acc + r.lyTotal, 0);
   const heroVsLYPct = heroLYTotal ? ((heroTWTotal - heroLYTotal) / heroLYTotal) * 100 : 0;
-  const attentionCount = ledgerRows.filter((r) => r.vsLYPct < 0).length;
-
-  const totalTransactions = hourlySales.reduce((acc, r) => acc + r.transactions, 0);
-  const totalNetSales = hourlySales.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
-  const avgBasket = totalTransactions > 0 ? totalNetSales / totalTransactions : 0;
-
-  const lwTransactions = hourlySalesLastWeek.reduce((acc, r) => acc + r.transactions, 0);
-  const lwNetSales = hourlySalesLastWeek.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
-  const lwAvgBasket = lwTransactions > 0 ? lwNetSales / lwTransactions : 0;
-
-  const lyTransactions = hourlySalesLastYear.reduce((acc, r) => acc + r.transactions, 0);
-  const lyNetSales = hourlySalesLastYear.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
-  const lyAvgBasket = lyTransactions > 0 ? lyNetSales / lyTransactions : 0;
 
   const weekLabel = (() => {
     const { twStart, twEnd } = getDateRanges();
@@ -163,7 +290,7 @@ const SalesLedger = () => {
     const end = new Date(twEnd + "T12:00:00");
     const fmt = (d: Date) =>
       `${d.toLocaleString("default", { month: "short" })} ${d.getDate()}`;
-    return `Week of ${fmt(start)}–${fmt(end)}, ${end.getFullYear()}`;
+    return `${fmt(start)} – ${fmt(end)}, ${end.getFullYear()}`;
   })();
 
   if (!hasSearched) {
@@ -185,80 +312,95 @@ const SalesLedger = () => {
           No data found for this period.
         </div>
       ) : (
-        <div className="w-1/2 mx-auto">
-          <LedgerHeroBar
-            weekLabel={weekLabel}
-            twTotal={heroTWTotal}
-            vsLYPct={heroVsLYPct}
-            attentionCount={attentionCount}
-            totalTransactions={totalTransactions}
-            lwTransactions={lwTransactions}
-            lyTransactions={lyTransactions}
-            avgBasket={avgBasket}
-            lwAvgBasket={lwAvgBasket}
-            lyAvgBasket={lyAvgBasket}
-            onReset={resetToEntry}
-          />
+        <div className="flex gap-4 h-[calc(100vh-6rem)]">
+          {/* Left: store list */}
+          <div className="flex-shrink-0 flex flex-col" style={{ width: 820 }}>
+            {/* Navy header */}
+            <div className="bg-[#1e2a4a] rounded-t-xl px-4 py-3 flex items-start justify-between">
+              <div>
+                <button
+                  onClick={resetToEntry}
+                  className="text-white font-semibold text-[13px] hover:text-white/80 transition-colors text-left"
+                >
+                  District Weekly Performance
+                </button>
+                <div className="text-white/40 text-[10px] mt-0.5">{weekLabel}</div>
+              </div>
+              <div className="flex gap-5">
+                <div className="text-right">
+                  <div className="text-white/40 text-[8px] uppercase tracking-wide font-medium">
+                    Total Net
+                  </div>
+                  <div className="text-white font-semibold text-[13px]">
+                    {formatCurrency2(heroTWTotal)}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-white/40 text-[8px] uppercase tracking-wide font-medium">
+                    vs LY
+                  </div>
+                  <div
+                    className={`font-semibold text-[13px] ${
+                      heroVsLYPct >= 0 ? "text-emerald-300" : "text-red-300"
+                    }`}
+                  >
+                    {formatPct(heroVsLYPct)}
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          <LedgerFilterChips
-            filter={filter}
-            totalCount={ledgerRows.length}
-            attentionCount={attentionCount}
-            onChange={setFilter}
-          />
+            {/* Tier summary strip */}
+            <div className="bg-custom-white border-x border-gray-100 grid grid-cols-3 divide-x divide-gray-100">
+              {(["critical", "watch", "healthy"] as const).map((sev) => {
+                const cfg = SEVERITY_CONFIG[sev];
+                const count =
+                  sev === "critical"
+                    ? criticalRows.length
+                    : sev === "watch"
+                    ? watchRows.length
+                    : healthyRows.length;
+                return (
+                  <div key={sev} className="flex items-center gap-2 px-3 py-2.5">
+                    <div
+                      className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0"
+                      style={{ background: cfg.badgeBg }}
+                    >
+                      <cfg.Icon className="w-3 h-3" style={{ color: cfg.iconColor }} />
+                    </div>
+                    <div>
+                      <div className="text-[8px] font-medium text-content/40 uppercase tracking-wide">
+                        {cfg.label}
+                      </div>
+                      <div className="text-[18px] font-bold text-content leading-tight">{count}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
-          <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden">
-            <table className="w-full text-sm table-fixed">
-              <colgroup>
-                <col className="w-10" />
-                <col className="w-[15rem]" />
-                <col className="w-28" />
-                <col className="w-28" />
-                <col className="w-28" />
-                <col className="w-12" />
-              </colgroup>
-              <thead>
-                <tr className="border-b border-gray-100 text-content/40 text-[11px] uppercase tracking-wide">
-                  <th className="text-left px-4 py-2">#</th>
-                  <th className="text-left px-4 py-2">Store</th>
-                  <th className="text-right px-4 py-2">TW Sales</th>
-                  <th className="text-right px-4 py-2">LW Sales</th>
-                  <th className="text-right px-4 py-2">LY Sales</th>
-                  <th className="text-center px-4 py-2">Status</th>
-                </tr>
-              </thead>
-            </table>
-            <div className="overflow-y-auto thin-scrollbar max-h-[calc(100vh-20rem)]">
-              <table className="w-full text-sm table-fixed">
-                <colgroup>
-                  <col className="w-10" />
-                  <col className="w-[15rem]" />
-                  <col className="w-28" />
-                  <col className="w-28" />
-                  <col className="w-28" />
-                  <col className="w-12" />
-                </colgroup>
-                <tbody>
-                  {filtered.map((row, i) => (
-                    <LedgerRow
-                      key={row.storeid}
-                      row={row}
-                      rank={i + 1}
-                      onClick={setSelection}
-                    />
-                  ))}
-                </tbody>
-              </table>
+            {/* Three columns — flex-1 so they fill remaining height */}
+            <div className="flex-1 overflow-hidden bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100 grid grid-cols-3 divide-x divide-gray-100">
+              <TierColumn severity="critical" rows={criticalRows} onSelect={setSelection} />
+              <TierColumn severity="watch" rows={watchRows} onSelect={setSelection} />
+              <TierColumn severity="healthy" rows={healthyRows} onSelect={setSelection} />
             </div>
           </div>
-        </div>
-      )}
 
-      {selection !== null && (
-        <StoreDetailPopup
-          selection={selection}
-          onClose={() => setSelection(null)}
-        />
+          {/* Right: report panel */}
+          <div className="flex-1 min-w-0">
+            {selection !== null ? (
+              <StoreDetailPopup selection={selection} onClose={() => setSelection(null)} />
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center gap-2 bg-custom-white/60 rounded-xl border border-dashed border-gray-200">
+                <div className="text-content/20 text-[13px] font-medium">No store selected</div>
+                <div className="text-content/15 text-[11px]">
+                  Select a store from the list to view its weekly report
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
