@@ -1,4 +1,6 @@
-import { useAppSelector } from "../../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { navigateToList, setHasSearched } from "../../../features/salesLedgerSlice";
+import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import StorePicker from "../../../components/storePicker/StorePicker";
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
 
@@ -8,7 +10,9 @@ interface LedgerEntryScreenProps {
 }
 
 const LedgerEntryScreen = ({ onSearch, loading }: LedgerEntryScreenProps) => {
+  const dispatch = useAppDispatch();
   const search = useAppSelector((s) => s.search);
+  const hasData = useAppSelector((s) => s.sales.weeklySales.length > 0);
   const hasSelection = search.type === "Store" ? search.lastStore > 0 : search.lastGroup > 0;
 
   return (
@@ -27,6 +31,16 @@ const LedgerEntryScreen = ({ onSearch, loading }: LedgerEntryScreenProps) => {
         >
           {loading ? "Loading…" : "Load stores"}
         </button>
+        {hasData && (
+          <button
+            onClick={() => { dispatch(setHasSearched(true)); dispatch(navigateToList()); }}
+            className="w-full py-3 flex items-center justify-center gap-1.5 transition-opacity"
+            style={{ background: "rgba(30,42,74,0.07)", borderRadius: 12 }}
+          >
+            <ArrowLeftIcon className="w-4 h-4 text-[#1e2a4a]" />
+            <span className="text-[#1e2a4a] font-semibold text-[14px] underline underline-offset-2">Back to results</span>
+          </button>
+        )}
       </div>
     </div>
   );

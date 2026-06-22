@@ -272,7 +272,7 @@ body {
 
   .thin-scrollbar {
     scrollbar-width: thin; /* Firefox */
-    scrollbar-color: #93c5fd transparent; /* Firefox: thumb track */
+    scrollbar-color: #d1d5db transparent; /* Firefox: thumb track */
   }
   .thin-scrollbar::-webkit-scrollbar {
     width: 4px;
@@ -281,7 +281,7 @@ body {
     background: transparent;
   }
   .thin-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #93c5fd;
+    background-color: #d1d5db;
     border-radius: 9999px;
   }
 }

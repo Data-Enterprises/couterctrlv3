@@ -3,6 +3,7 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { setThreshold } from "../../../features/salesLedgerSlice";
 import { formatCurrency2 } from "../../../utils";
 import { formatPct } from "./tierColumnUtils";
+import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 
 interface LedgerHeaderProps {
   weekLabel: string;
@@ -12,9 +13,10 @@ interface LedgerHeaderProps {
   hasLY: boolean;
   hasLW: boolean;
   onNewSearch: () => void;
+  onOpenSearch: () => void;
 }
 
-const LedgerHeader = ({ weekLabel, twTotal, vsLYPct, vsLWPct, hasLY, hasLW, onNewSearch }: LedgerHeaderProps) => {
+const LedgerHeader = ({ weekLabel, twTotal, vsLYPct, vsLWPct, hasLY, hasLW, onNewSearch: _onNewSearch, onOpenSearch }: LedgerHeaderProps) => {
   const dispatch = useAppDispatch();
   const threshold = useAppSelector((s) => s.salesLedger.threshold);
   const [inputVal, setInputVal] = useState(String(threshold));
@@ -24,11 +26,13 @@ const LedgerHeader = ({ weekLabel, twTotal, vsLYPct, vsLWPct, hasLY, hasLW, onNe
       {/* Top row: title + date | grading note | legend */}
       <div className="flex items-center gap-3 min-h-[24px]">
         <button
-          onClick={onNewSearch}
-          className="text-white font-medium text-[13px] hover:text-white/80 transition-colors text-left flex-shrink-0"
+          onClick={onOpenSearch}
+          className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors flex-shrink-0"
+          aria-label="New search"
         >
-          Weekly performance
+          <MagnifyingGlassIcon className="w-3.5 h-3.5" />
         </button>
+        <span className="text-white font-medium text-[13px] flex-shrink-0">Weekly performance</span>
         <span className="text-white/35 text-[11px] flex-shrink-0">{weekLabel}</span>
 
         <div className="flex-1" />

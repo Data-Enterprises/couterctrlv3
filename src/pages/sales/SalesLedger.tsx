@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { getWeekly, getHourly } from "../../api/sales";
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../utils";
@@ -115,6 +116,8 @@ const SalesLedger = () => {
   const { hasSearched, selection, ledgerLoading: loading, threshold } = useAppSelector((state) => state.salesLedger);
   const { assignedStores } = useAppSelector((state) => state.user);
 
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+
   const resetToEntry = () => {
     dispatch(reQuery());
     dispatch(setHasSearched(false));
@@ -159,6 +162,7 @@ const SalesLedger = () => {
       if (lyHourlyResp.data.error === 0) dispatch(setHourlySalesLastYear(lyHourlyResp.data.subs));
     } finally {
       dispatch(setLedgerLoading(false));
+      setSearchModalOpen(false);
     }
   };
 
@@ -213,6 +217,7 @@ const SalesLedger = () => {
               hasLY={heroLYTotal > 0}
               hasLW={heroLWTotal > 0}
               onNewSearch={resetToEntry}
+              onOpenSearch={() => setSearchModalOpen(true)}
             />
 
             {/* Tier summary strip */}
@@ -255,6 +260,18 @@ const SalesLedger = () => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Search modal */}
+      {searchModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={(e) => { if (e.target === e.currentTarget) setSearchModalOpen(false); }}
+        >
+          <div className="w-full max-w-sm mx-4">
+            <LedgerEntryCard onSearch={fetchLedger} loading={loading} />
           </div>
         </div>
       )}

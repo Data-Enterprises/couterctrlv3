@@ -21,6 +21,9 @@ import {
   setLedgerTab,
   setLedgerSelectedDate,
   setReportSevFilter,
+  setSubDeptThreshold,
+  setHourlyThreshold,
+  setItemThreshold,
   openSheet,
   closeSheet,
   navigateToList,
@@ -78,7 +81,16 @@ const LedgerStoreReport = () => {
     openSheetType,
     openSheetId,
     threshold,
+    subDeptThreshold,
+    hourlyThreshold,
+    itemThreshold,
   } = useAppSelector((s) => s.salesLedger);
+
+  const activeThreshold = tab === "subdept" ? subDeptThreshold : hourlyThreshold;
+  const [tabThresholdInput, setTabThresholdInput] = useState(String(activeThreshold));
+  const [itemThresholdInput, setItemThresholdInput] = useState(String(itemThreshold));
+
+  useEffect(() => { setTabThresholdInput(String(activeThreshold)); }, [tab]);
 
   // ── Date ranges ─────────────────────────────────────────────────────────────
   const twEnd = formatGoliathDate(search.singleDate);
@@ -348,13 +360,13 @@ const LedgerStoreReport = () => {
       })
       .sort((a, b) => {
         const rd =
-          SEVERITY_RANK[deptSeverity(a)] - SEVERITY_RANK[deptSeverity(b)];
+          SEVERITY_RANK[deptSeverity(a, subDeptThreshold)] - SEVERITY_RANK[deptSeverity(b, subDeptThreshold)];
         return rd !== 0
           ? rd
           : (a.hasLY ? a.vsLYPct : a.vsLWPct) -
               (b.hasLY ? b.vsLYPct : b.vsLWPct);
       });
-  }, [rawSubs, rawLWSubs, rawLYSubs, selectedDate]);
+  }, [rawSubs, rawLWSubs, rawLYSubs, selectedDate, subDeptThreshold]);
 
   const hours = useMemo((): HourRow[] => {
     const lwDay = selectedDate
@@ -398,13 +410,13 @@ const LedgerStoreReport = () => {
       })
       .sort((a, b) => {
         const rd =
-          SEVERITY_RANK[hourSeverity(a)] - SEVERITY_RANK[hourSeverity(b)];
+          SEVERITY_RANK[hourSeverity(a, hourlyThreshold)] - SEVERITY_RANK[hourSeverity(b, hourlyThreshold)];
         return rd !== 0
           ? rd
           : (a.hasLY ? a.vsLYPct : a.vsLWPct) -
               (b.hasLY ? b.vsLYPct : b.vsLWPct);
       });
-  }, [rawHourly, rawLWHourly, rawLYHourly, selectedDate]);
+  }, [rawHourly, rawLWHourly, rawLYHourly, selectedDate, hourlyThreshold]);
 
   // ── Sheet row resolution ──────────────────────────────────────────────────────
   const sheetDept =
@@ -417,9 +429,9 @@ const LedgerStoreReport = () => {
       : null;
   const sheetRow = sheetDept ?? sheetHour;
   const sheetSev: Severity | null = sheetDept
-    ? deptSeverity(sheetDept)
+    ? deptSeverity(sheetDept, subDeptThreshold)
     : sheetHour
-      ? hourSeverity(sheetHour)
+      ? hourSeverity(sheetHour, hourlyThreshold)
       : null;
 
   const sheetTW = sheetRow?.tw ?? 0;
@@ -453,7 +465,7 @@ const LedgerStoreReport = () => {
   const signalItems =
     tab === "subdept"
       ? depts.map((r) => ({
-          sev: deptSeverity(r),
+          sev: deptSeverity(r, subDeptThreshold),
           label: r.desc,
           tw: r.tw,
           qty: r.qty,
@@ -464,7 +476,7 @@ const LedgerStoreReport = () => {
           onClick: () => dispatch(openSheet({ type: "subdept", id: r.id })),
         }))
       : hours.map((r) => ({
-          sev: hourSeverity(r),
+          sev: hourSeverity(r, hourlyThreshold),
           label: `${ampm(r.hour)} – ${ampm(r.hour + 1 <= 23 ? r.hour + 1 : 0)}`,
           tw: r.tw,
           qty: r.qty,
@@ -486,9 +498,9 @@ const LedgerStoreReport = () => {
     healthy: signalItems.filter((i) => i.sev === "healthy").length,
   };
 
-  const pillClass = (pct: number | null) => {
+  const pillClass = (pct: number | null, t = activeThreshold) => {
     if (pct === null) return "bg-gray-100 text-gray-500";
-    if (pct < -threshold) return "bg-red-100 text-red-800";
+    if (pct < -t) return "bg-red-100 text-red-800";
     if (pct < 0) return "bg-amber-100 text-amber-800";
     return "bg-emerald-100 text-emerald-800";
   };
@@ -507,9 +519,7 @@ const LedgerStoreReport = () => {
             <ChevronLeftIcon className="w-5 h-5" />
           </button>
           <div>
-            <div className="text-white font-semibold text-[15px]">
-              {selection.storeNumber} · {selection.storeName}
-            </div>
+            <div className="text-white font-semibold text-[15px]">{selection.storeName}</div>
             <div className="text-white/65 text-[11px]">Weekly Sales Report</div>
           </div>
         </div>
@@ -655,8 +665,8 @@ const LedgerStoreReport = () => {
           })}
         </div>
 
-        {/* Tabs */}
-        <div className="flex bg-white border-b border-gray-100 flex-shrink-0">
+        {/* Tabs + threshold */}
+        <div className="flex items-center bg-white border-b border-gray-100 flex-shrink-0 px-3">
           {(["subdept", "hourly"] as const).map((t) => (
             <button
               key={t}
@@ -664,11 +674,33 @@ const LedgerStoreReport = () => {
                 dispatch(setLedgerTab(t));
                 dispatch(closeSheet());
               }}
-              className={`flex-1 py-2.5 text-[13px] font-medium border-b-2 transition-colors ${tab === t ? "border-[#1e2a4a] text-content" : "border-transparent text-content/70"}`}
+              className={`py-2.5 px-3 text-[13px] font-medium border-b-2 transition-colors ${tab === t ? "border-[#1e2a4a] text-content" : "border-transparent text-content/70"}`}
             >
               {t === "subdept" ? "Sub dept" : "Hourly"}
             </button>
           ))}
+          <div className="flex-1" />
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-content/45">Threshold</span>
+            <input
+              type="number"
+              min={1}
+              max={99}
+              value={tabThresholdInput}
+              onChange={(e) => {
+                setTabThresholdInput(e.target.value);
+                const v = parseInt(e.target.value, 10);
+                if (!isNaN(v) && v >= 1 && v <= 99)
+                  dispatch(tab === "subdept" ? setSubDeptThreshold(v) : setHourlyThreshold(v));
+              }}
+              onBlur={() => {
+                const v = parseInt(tabThresholdInput, 10);
+                if (isNaN(v) || v < 1 || v > 99) setTabThresholdInput(String(activeThreshold));
+              }}
+              className="w-9 text-center text-[11px] bg-gray-50 border border-gray-200 rounded px-1 py-px focus:outline-none focus:border-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <span className="text-[10px] text-content/45">%</span>
+          </div>
         </div>
 
         {/* Signal filter chips */}
@@ -854,7 +886,7 @@ const LedgerStoreReport = () => {
                 const lwQtyPct = item.lwQty !== null && item.lwQty > 0
                   ? ((item.tyQty - item.lwQty) / item.lwQty) * 100 : null;
                 const pct = lyQtyPct ?? lwQtyPct ?? 0;
-                if (pct < -threshold) return "critical";
+                if (pct < -itemThreshold) return "critical";
                 if (pct < 0) return "watch";
                 return "healthy";
               };
@@ -871,9 +903,28 @@ const LedgerStoreReport = () => {
 
               return (
                 <>
-                  <div className="flex items-center justify-between px-4 py-2 bg-gray-100 border-b border-gray-100 border-t border-t-gray-100">
+                  <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 border-b border-gray-100 border-t border-t-gray-100">
                     <span className="text-[10px] font-medium uppercase tracking-wide text-content/70">Items</span>
                     <span className="text-[9px] italic text-content/55">{twDateLabel} · {top10.length} items</span>
+                    <div className="flex-1" />
+                    <span className="text-[10px] text-content/45">Threshold</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={99}
+                      value={itemThresholdInput}
+                      onChange={(e) => {
+                        setItemThresholdInput(e.target.value);
+                        const v = parseInt(e.target.value, 10);
+                        if (!isNaN(v) && v >= 1 && v <= 99) dispatch(setItemThreshold(v));
+                      }}
+                      onBlur={() => {
+                        const v = parseInt(itemThresholdInput, 10);
+                        if (isNaN(v) || v < 1 || v > 99) setItemThresholdInput(String(itemThreshold));
+                      }}
+                      className="w-9 text-center text-[10px] bg-white border border-gray-200 rounded px-1 py-px focus:outline-none focus:border-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <span className="text-[10px] text-content/45">%</span>
                   </div>
                   {/* Item filter chips — sticky so items scroll beneath */}
                   <div className="flex gap-2 px-4 py-2 bg-white border-b border-gray-100 sticky top-0 z-10">
@@ -933,7 +984,7 @@ const LedgerStoreReport = () => {
                                         <div className="text-[8px] text-content/45 uppercase tracking-wide">LW</div>
                                         <div className="flex items-baseline gap-1 mt-0.5">
                                           <span className="text-[10px] font-semibold text-content">{item.lwNet !== null ? formatCurrency2(item.lwNet) : "—"}</span>
-                                          {lwNetPct !== null && <span className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lwNetPct)}`}>{formatPct(lwNetPct)}</span>}
+                                          {lwNetPct !== null && <span className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lwNetPct, itemThreshold)}`}>{formatPct(lwNetPct)}</span>}
                                         </div>
                                         {item.lwQty !== null && <div className="text-[9px] text-content/60 mt-0.5">{item.lwQty.toLocaleString()} u</div>}
                                         {item.lwWeight !== null && item.lwWeight > 0 && <div className="text-[9px] text-content/50 mt-0.5">{item.lwWeight.toFixed(2)} lb</div>}
@@ -942,7 +993,7 @@ const LedgerStoreReport = () => {
                                         <div className="text-[8px] text-content/45 uppercase tracking-wide">LY</div>
                                         <div className="flex items-baseline gap-1 mt-0.5">
                                           <span className="text-[10px] font-semibold text-content">{item.lyNet !== null ? formatCurrency2(item.lyNet) : "—"}</span>
-                                          {lyNetPct !== null && <span className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lyNetPct)}`}>{formatPct(lyNetPct)}</span>}
+                                          {lyNetPct !== null && <span className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lyNetPct, itemThreshold)}`}>{formatPct(lyNetPct)}</span>}
                                         </div>
                                         {item.lyQty !== null && <div className="text-[9px] text-content/60 mt-0.5">{item.lyQty.toLocaleString()} u</div>}
                                         {item.lyWeight !== null && item.lyWeight > 0 && <div className="text-[9px] text-content/50 mt-0.5">{item.lyWeight.toFixed(2)} lb</div>}

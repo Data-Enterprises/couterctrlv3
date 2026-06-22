@@ -1,11 +1,13 @@
 ﻿import { useMemo } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { buildLedgerRows, fmtDate, formatPct } from "../shared/ledgerUtils";
-import { setListSevFilter, navigateToReport, setHasSearched } from "../../../features/salesLedgerSlice";
+import { useState } from "react";
+import { setListSevFilter, navigateToReport, setHasSearched, setThreshold } from "../../../features/salesLedgerSlice";
 import type { SevFilter } from "../../../features/salesLedgerSlice";
 import type { LedgerRowData } from "../components/LedgerRow";
 import type { Severity } from "../components/LedgerRow";
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../utils";
+import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import SevChips from "./components/SevChips";
 import StoreRow from "./components/StoreRow";
 
@@ -14,6 +16,7 @@ const LedgerStoreList = () => {
   const search = useAppSelector((s) => s.search);
   const { weeklySales, weeklySalesLastWeek, weeklySalesLastYear } = useAppSelector((s) => s.sales);
   const { listSevFilter, threshold } = useAppSelector((s) => s.salesLedger);
+  const [thresholdInput, setThresholdInput] = useState(String(threshold));
   const { assignedStores } = useAppSelector((s) => s.user);
 
   const twEnd = formatGoliathDate(search.singleDate);
@@ -58,20 +61,39 @@ const LedgerStoreList = () => {
             <div className="text-white font-semibold text-[15px]">Weekly performance</div>
             <div className="text-white/65 text-[11px] mt-0.5">{weekLabel}</div>
           </div>
-          <button onClick={() => dispatch(setHasSearched(false))} className="flex items-center gap-1 mt-0.5 flex-shrink-0">
-            <i className="ti ti-refresh" style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }} aria-hidden="true" />
-            <span className="text-[10px] text-white/50">New search</span>
+          <button
+            onClick={() => dispatch(setHasSearched(false))}
+            aria-label="New search"
+            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-white/25 text-white/65 hover:text-white hover:border-white/45 transition-colors"
+          >
+            <MagnifyingGlassIcon className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex items-end justify-between gap-3 mt-1">
-          <div />
-          <div className="flex flex-col items-end gap-1 flex-shrink-0">
-            <div className="text-white/45 text-[9px]">Graded against LY, LW fallback</div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-red-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">Critical &gt;9%</span></div>
-              <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">Watch ≤9%</span></div>
-              <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">Healthy</span></div>
-            </div>
+        <div className="flex items-center justify-between gap-3 mt-2">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-red-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">Critical &gt;{threshold}%</span></div>
+            <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">Watch ≤{threshold}%</span></div>
+            <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">Healthy</span></div>
+          </div>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <span className="text-[9px] text-white/45">Threshold</span>
+            <input
+              type="number"
+              min={1}
+              max={99}
+              value={thresholdInput}
+              onChange={(e) => {
+                setThresholdInput(e.target.value);
+                const v = parseInt(e.target.value, 10);
+                if (!isNaN(v) && v >= 1 && v <= 99) dispatch(setThreshold(v));
+              }}
+              onBlur={() => {
+                const v = parseInt(thresholdInput, 10);
+                if (isNaN(v) || v < 1 || v > 99) setThresholdInput(String(threshold));
+              }}
+              className="w-9 text-center text-[10px] bg-white/10 text-white border border-white/20 rounded px-1 py-px focus:outline-none focus:border-white/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <span className="text-[9px] text-white/45">%</span>
           </div>
         </div>
       </div>

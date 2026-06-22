@@ -10,6 +10,7 @@ import {
 } from "@heroicons/react/20/solid";
 import type { Severity } from "./LedgerRow";
 import type { SubDeptMargin } from "../../../interfaces";
+import { SEVERITY_CONFIG } from "./tierColumnUtils";
 
 const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
 
@@ -369,8 +370,8 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel, storeId, sele
               <button
                 key={r.id}
                 onClick={() => setSelectedId(isSel ? null : r.id)}
-                className={`w-full px-3 py-2 border-b border-gray-100 last:border-0 gap-2 text-left transition-colors ${isSel ? "bg-gray-100" : "hover:bg-gray-50"}`}
-                style={isSel ? { boxShadow: "inset 4px 0 0 rgba(30, 42, 74, 0.5)" } : undefined}
+                className={`w-full px-3 py-2 border-b border-gray-100 last:border-0 gap-2 text-left transition-colors ${isSel ? "bg-white" : "hover:bg-gray-50"}`}
+                style={isSel ? { boxShadow: `inset 0 0 8px ${SEVERITY_CONFIG[sev].shadowColor}` } : undefined}
               >
                 <div className="flex items-center gap-2">
                   <SeverityBadge severity={sev} />
