@@ -1,6 +1,6 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { getWeekly, getHourly } from "../../api/sales";
-import { addDays, formatGoliathDate, sameWeekDayLastYear, formatCurrency2 } from "../../utils";
+import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../utils";
 import type { WeeklySale, Store } from "../../interfaces";
 import {
   setWeeklySales,
@@ -15,13 +15,13 @@ import {
   setHasSearched,
   setLedgerLoading,
   setLedgerSelection,
-  setThreshold,
 } from "../../features/salesLedgerSlice";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import LedgerEntryCard from "./components/LedgerEntryCard";
 import StoreDetailPopup from "./components/StoreDetailPopup";
 import TierColumn from "./components/TierColumn";
-import { SEVERITY_CONFIG, formatPct } from "./components/tierColumnUtils";
+import LedgerHeader from "./components/LedgerHeader";
+import { SEVERITY_CONFIG } from "./components/tierColumnUtils";
 import { type LedgerRowData } from "./components/LedgerRow";
 
 const SEVERITY_RANK = { critical: 0, watch: 1, healthy: 2 } as const;
@@ -170,7 +170,9 @@ const SalesLedger = () => {
 
   const heroTWTotal = ledgerRows.reduce((acc, r) => acc + r.twTotal, 0);
   const heroLYTotal = ledgerRows.reduce((acc, r) => acc + r.lyTotal, 0);
+  const heroLWTotal = ledgerRows.reduce((acc, r) => acc + r.lwTotal, 0);
   const heroVsLYPct = heroLYTotal ? ((heroTWTotal - heroLYTotal) / heroLYTotal) * 100 : 0;
+  const heroVsLWPct = heroLWTotal ? ((heroTWTotal - heroLWTotal) / heroLWTotal) * 100 : 0;
 
   const weekLabel = (() => {
     const { twStart, twEnd } = getDateRanges();
@@ -202,72 +204,16 @@ const SalesLedger = () => {
       ) : (
         <div className="flex gap-4 h-[calc(100vh-5rem)]">
           {/* Left: store list */}
-          <div className="flex-1 flex flex-col min-w-0 shadow-lg">
-            {/* Navy header */}
-            <div className="bg-[#1e2a4a] rounded-t-xl px-4 py-3 flex items-end justify-between">
-              <div>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={resetToEntry}
-                    className="text-white font-semibold text-[13px] hover:text-white/80 transition-colors text-left"
-                  >
-                    Weekly Performance
-                  </button>
-                  {/* <button onClick={resetToEntry} className="flex items-center gap-1 mb-0.5">
-                    <i className="ti ti-refresh" style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }} aria-hidden="true" />
-                    <span className="text-[10px] text-white/50">New search</span>
-                  </button> */}
-                </div>
-                <div className="text-white/40 text-[10px] mt-0.5">{weekLabel}</div>
-              </div>
-              <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-4">
-                <div className="text-white/50 text-[9px]">Graded against LY, LW fallback</div>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-red-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">Critical &gt;9%</span></div>
-                  <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">Watch ≤9%</span></div>
-                  <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">Healthy</span></div>
-                </div>
-              </div>
-              <div className="flex gap-5">
-                <div className="text-right">
-                  <div className="text-white/40 text-[8px] uppercase tracking-wide font-medium">
-                    Total Net
-                  </div>
-                  <div className="text-white font-semibold text-[13px]">
-                    {formatCurrency2(heroTWTotal)}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-white/40 text-[8px] uppercase tracking-wide font-medium">
-                    vs LY
-                  </div>
-                  <div
-                    className={`font-semibold text-[13px] ${
-                      heroVsLYPct >= 0 ? "text-emerald-300" : "text-red-300"
-                    }`}
-                  >
-                    {formatPct(heroVsLYPct)}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-white/40 text-[8px] uppercase tracking-wide font-medium mb-1">Threshold</div>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      min={1}
-                      max={99}
-                      value={threshold}
-                      onChange={(e) => {
-                        const v = parseInt(e.target.value, 10);
-                        if (!isNaN(v) && v >= 1 && v <= 99) dispatch(setThreshold(v));
-                      }}
-                      className="w-12 text-center text-[12px] font-semibold bg-white/10 text-white rounded px-1.5 py-0.5 border border-white/20 focus:outline-none focus:border-white/50"
-                    />
-                    <span className="text-white/50 text-[11px]">%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="flex flex-col min-w-0 shadow-lg" style={{ flexBasis: "48%", flexShrink: 0 }}>
+            <LedgerHeader
+              weekLabel={weekLabel}
+              twTotal={heroTWTotal}
+              vsLYPct={heroVsLYPct}
+              vsLWPct={heroVsLWPct}
+              hasLY={heroLYTotal > 0}
+              hasLW={heroLWTotal > 0}
+              onNewSearch={resetToEntry}
+            />
 
             {/* Tier summary strip */}
             <div className="border-x border-gray-100 grid grid-cols-3 divide-x divide-gray-100">
@@ -298,7 +244,7 @@ const SalesLedger = () => {
           </div>
 
           {/* Right: report panel */}
-          <div className="flex-1 min-w-0 shadow-lg">
+          <div className="flex-1 min-w-0 shadow-lg" style={{ flexBasis: "52%" }}>
             {selection !== null ? (
               <StoreDetailPopup selection={selection} onClose={() => dispatch(setLedgerSelection(null))} />
             ) : (

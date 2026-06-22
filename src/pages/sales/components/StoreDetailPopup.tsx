@@ -17,6 +17,8 @@ import {
   setRawHourly,
   setRawLWHourly,
   setRawLYHourly,
+  setSubDeptThreshold,
+  setHourlyThreshold,
 } from "../../../features/salesLedgerSlice";
 import { addDays, formatGoliathDate, sameWeekDayLastYear, formatCurrency2 } from "../../../utils";
 import { XMarkIcon } from "@heroicons/react/20/solid";
@@ -40,7 +42,13 @@ const StoreDetailPopup = ({ selection, onClose }: StoreDetailPopupProps) => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const { tab, selectedDate, rawSubs, rawLWSubs, rawLYSubs, rawHourly, rawLWHourly, rawLYHourly } = useAppSelector((state) => state.salesLedger);
+  const { tab, selectedDate, rawSubs, rawLWSubs, rawLYSubs, rawHourly, rawLWHourly, rawLYHourly, subDeptThreshold, hourlyThreshold } = useAppSelector((state) => state.salesLedger);
+
+  const activeThreshold = tab === "subdept" ? subDeptThreshold : hourlyThreshold;
+  const [thresholdInput, setThresholdInput] = useState(String(activeThreshold));
+
+  // Sync input value when tab switches
+  useEffect(() => { setThresholdInput(String(activeThreshold)); }, [tab]);
 
   const [loading, setLoading] = useState(false);
 
@@ -143,7 +151,7 @@ const StoreDetailPopup = ({ selection, onClose }: StoreDetailPopupProps) => {
       <div className="flex items-start justify-between leading-tight px-4 py-3 bg-[#1e2a4a] flex-shrink-0">
         <div>
           <p className="text-white text-[13px] font-semibold leading-tight">
-            {selection.storeNumber} · {selection.storeName}
+            {selection.storeName}
           </p>
           <span className="text-white/60 text-[10px]">Weekly Sales Report · {staticTwDate}</span>
         </div>
@@ -188,8 +196,8 @@ const StoreDetailPopup = ({ selection, onClose }: StoreDetailPopupProps) => {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-100 px-3 flex-shrink-0">
+      {/* Tabs + threshold */}
+      <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
         {(["subdept", "hourly"] as PopupTab[]).map((t) => (
           <button
             key={t}
@@ -203,6 +211,28 @@ const StoreDetailPopup = ({ selection, onClose }: StoreDetailPopupProps) => {
             {t === "subdept" ? "Sub dept" : "Hourly"}
           </button>
         ))}
+        <div className="flex-1" />
+        <div className="flex items-center gap-1.5 py-1">
+          <span className="text-[10px] text-content/45">Threshold</span>
+          <input
+            type="number"
+            min={1}
+            max={99}
+            value={thresholdInput}
+            onChange={(e) => {
+              setThresholdInput(e.target.value);
+              const v = parseInt(e.target.value, 10);
+              if (!isNaN(v) && v >= 1 && v <= 99)
+                dispatch(tab === "subdept" ? setSubDeptThreshold(v) : setHourlyThreshold(v));
+            }}
+            onBlur={() => {
+              const v = parseInt(thresholdInput, 10);
+              if (isNaN(v) || v < 1 || v > 99) setThresholdInput(String(activeThreshold));
+            }}
+            className="w-10 text-center text-[11px] bg-gray-50 border border-gray-200 rounded px-1 py-px focus:outline-none focus:border-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+          <span className="text-[10px] text-content/45">%</span>
+        </div>
       </div>
 
       {/* Day strip */}

@@ -46,6 +46,9 @@ interface SalesLedgerState {
 
   // Grading
   threshold: number;
+  subDeptThreshold: number;
+  hourlyThreshold: number;
+  itemThreshold: number;
 
   // Mobile-specific
   screen: "list" | "report";
@@ -71,6 +74,9 @@ const initialState: SalesLedgerState = {
   rawLYHourly: [],
   top10: [],
   threshold: 9,
+  subDeptThreshold: 9,
+  hourlyThreshold: 9,
+  itemThreshold: 9,
   screen: "list",
   listSevFilter: "all",
   reportSevFilter: "all",
@@ -130,6 +136,15 @@ const salesLedgerSlice = createSlice({
     setThreshold(state, action: PayloadAction<number>) {
       state.threshold = action.payload;
     },
+    setSubDeptThreshold(state, action: PayloadAction<number>) {
+      state.subDeptThreshold = action.payload;
+    },
+    setHourlyThreshold(state, action: PayloadAction<number>) {
+      state.hourlyThreshold = action.payload;
+    },
+    setItemThreshold(state, action: PayloadAction<number>) {
+      state.itemThreshold = action.payload;
+    },
     setListSevFilter(state, action: PayloadAction<SevFilter>) {
       state.listSevFilter = action.payload;
     },
@@ -188,6 +203,9 @@ export const {
   setTop10,
   setScreen,
   setThreshold,
+  setSubDeptThreshold,
+  setHourlyThreshold,
+  setItemThreshold,
   setListSevFilter,
   setReportSevFilter,
   openSheet,
