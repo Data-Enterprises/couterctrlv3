@@ -80,7 +80,6 @@ const LedgerStoreReport = () => {
     reportSevFilter,
     openSheetType,
     openSheetId,
-    threshold,
     subDeptThreshold,
     hourlyThreshold,
     itemThreshold,
