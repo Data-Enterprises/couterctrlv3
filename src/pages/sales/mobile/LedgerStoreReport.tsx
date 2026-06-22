@@ -52,7 +52,6 @@ import {
   CheckCircleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  XMarkIcon,
 } from "@heroicons/react/20/solid";
 import BottomSheet from "../../../components/BottomSheet";
 import SevBadge from "./components/SevBadge";
@@ -85,11 +84,18 @@ const LedgerStoreReport = () => {
     itemThreshold,
   } = useAppSelector((s) => s.salesLedger);
 
-  const activeThreshold = tab === "subdept" ? subDeptThreshold : hourlyThreshold;
-  const [tabThresholdInput, setTabThresholdInput] = useState(String(activeThreshold));
-  const [itemThresholdInput, setItemThresholdInput] = useState(String(itemThreshold));
+  const activeThreshold =
+    tab === "subdept" ? subDeptThreshold : hourlyThreshold;
+  const [tabThresholdInput, setTabThresholdInput] = useState(
+    String(activeThreshold),
+  );
+  const [itemThresholdInput, setItemThresholdInput] = useState(
+    String(itemThreshold),
+  );
 
-  useEffect(() => { setTabThresholdInput(String(activeThreshold)); }, [tab]);
+  useEffect(() => {
+    setTabThresholdInput(String(activeThreshold));
+  }, [tab]);
 
   // ── Date ranges ─────────────────────────────────────────────────────────────
   const twEnd = formatGoliathDate(search.singleDate);
@@ -209,7 +215,9 @@ const LedgerStoreReport = () => {
   }, [selection?.storeId]);
 
   // Reset item filter when a new sheet opens
-  useEffect(() => { setItemSevFilter("all"); }, [openSheetId]);
+  useEffect(() => {
+    setItemSevFilter("all");
+  }, [openSheetId]);
 
   // ── Fetch top 10 items ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -276,8 +284,7 @@ const LedgerStoreReport = () => {
         const tyMap = aggByCode(tyItems);
         const lwMap = aggByCode(lwItems);
         const lyMap = aggByCode(lyItems);
-        const sorted = [...tyMap.entries()]
-          .sort((a, b) => b[1].qty - a[1].qty);
+        const sorted = [...tyMap.entries()].sort((a, b) => b[1].qty - a[1].qty);
         dispatch(
           setTop10(
             sorted.map(([code, ty]) => {
@@ -359,7 +366,8 @@ const LedgerStoreReport = () => {
       })
       .sort((a, b) => {
         const rd =
-          SEVERITY_RANK[deptSeverity(a, subDeptThreshold)] - SEVERITY_RANK[deptSeverity(b, subDeptThreshold)];
+          SEVERITY_RANK[deptSeverity(a, subDeptThreshold)] -
+          SEVERITY_RANK[deptSeverity(b, subDeptThreshold)];
         return rd !== 0
           ? rd
           : (a.hasLY ? a.vsLYPct : a.vsLWPct) -
@@ -409,7 +417,8 @@ const LedgerStoreReport = () => {
       })
       .sort((a, b) => {
         const rd =
-          SEVERITY_RANK[hourSeverity(a, hourlyThreshold)] - SEVERITY_RANK[hourSeverity(b, hourlyThreshold)];
+          SEVERITY_RANK[hourSeverity(a, hourlyThreshold)] -
+          SEVERITY_RANK[hourSeverity(b, hourlyThreshold)];
         return rd !== 0
           ? rd
           : (a.hasLY ? a.vsLYPct : a.vsLWPct) -
@@ -518,7 +527,9 @@ const LedgerStoreReport = () => {
             <ChevronLeftIcon className="w-5 h-5" />
           </button>
           <div>
-            <div className="text-white font-semibold text-[15px]">{selection.storeName}</div>
+            <div className="text-white font-semibold text-[15px]">
+              {selection.storeName}
+            </div>
             <div className="text-white/65 text-[11px]">Weekly Sales Report</div>
           </div>
         </div>
@@ -690,11 +701,16 @@ const LedgerStoreReport = () => {
                 setTabThresholdInput(e.target.value);
                 const v = parseInt(e.target.value, 10);
                 if (!isNaN(v) && v >= 1 && v <= 99)
-                  dispatch(tab === "subdept" ? setSubDeptThreshold(v) : setHourlyThreshold(v));
+                  dispatch(
+                    tab === "subdept"
+                      ? setSubDeptThreshold(v)
+                      : setHourlyThreshold(v),
+                  );
               }}
               onBlur={() => {
                 const v = parseInt(tabThresholdInput, 10);
-                if (isNaN(v) || v < 1 || v > 99) setTabThresholdInput(String(activeThreshold));
+                if (isNaN(v) || v < 1 || v > 99)
+                  setTabThresholdInput(String(activeThreshold));
               }}
               className="w-9 text-center text-[11px] bg-gray-50 border border-gray-200 rounded px-1 py-px focus:outline-none focus:border-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
@@ -728,20 +744,30 @@ const LedgerStoreReport = () => {
               >
                 <div className="flex items-center gap-2.5">
                   <SevBadge sev={item.sev} />
-                  <span className="flex-1 text-[12px] font-medium text-content truncate">{item.label}</span>
+                  <span className="flex-1 text-[12px] font-medium text-content truncate">
+                    {item.label}
+                  </span>
                   <div className="flex items-baseline gap-2 flex-shrink-0">
-                    <span className="text-[12px] font-semibold text-content">{formatCurrency2(item.tw)}</span>
-                    <span className="text-[11px] text-content/60">{item.qty.toLocaleString()} u</span>
+                    <span className="text-[12px] font-semibold text-content">
+                      {formatCurrency2(item.tw)}
+                    </span>
+                    <span className="text-[11px] text-content/60">
+                      {item.qty.toLocaleString()} u
+                    </span>
                   </div>
                   <ChevronRightIcon className="w-4 h-4 text-content/45 flex-shrink-0" />
                 </div>
                 <div className="flex gap-2 mt-1.5 justify-end">
                   {item.hasLW && (
-                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${pillClass(item.vsLWPct)}`}>
+                    <span
+                      className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${pillClass(item.vsLWPct)}`}
+                    >
                       LW {formatPct(item.vsLWPct)}
                     </span>
                   )}
-                  <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${pillClass(item.hasLY ? item.vsLYPct : null)}`}>
+                  <span
+                    className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${pillClass(item.hasLY ? item.vsLYPct : null)}`}
+                  >
                     LY {item.hasLY ? formatPct(item.vsLYPct) : "—"}
                   </span>
                 </div>
@@ -757,8 +783,6 @@ const LedgerStoreReport = () => {
           onClose={() => dispatch(closeSheet())}
           closeRef={sheetCloseRef}
         >
-
-
           {/* Sheet header */}
           <div className="flex items-start justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
             <div>
@@ -792,12 +816,6 @@ const LedgerStoreReport = () => {
                 )}
                 {sheetSev.charAt(0).toUpperCase() + sheetSev.slice(1)}
               </div>
-              <button
-                onClick={() => sheetCloseRef.current?.()}
-                className="text-content/55 p-0.5"
-              >
-                <XMarkIcon className="w-4 h-4" />
-              </button>
             </div>
           </div>
 
@@ -806,37 +824,87 @@ const LedgerStoreReport = () => {
             {/* 3-col KPI strip: TY / LW / LY — units below $ in each col */}
             {(() => {
               const tyQty = sheetRow.qty;
-              const lwQty = sheetDept ? sheetDept.lwQty : sheetHour ? sheetHour.lwQty : 0;
-              const lyQty = sheetDept ? sheetDept.lyQty : sheetHour ? sheetHour.lyQty : 0;
+              const lwQty = sheetDept
+                ? sheetDept.lwQty
+                : sheetHour
+                  ? sheetHour.lwQty
+                  : 0;
+              const lyQty = sheetDept
+                ? sheetDept.lyQty
+                : sheetHour
+                  ? sheetHour.lyQty
+                  : 0;
               return (
                 <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100">
                   <div className="px-3 py-2.5">
-                    <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">TY</div>
-                    <div className="text-[8px] italic text-content/55 mt-0.5">{twDateLabel}</div>
-                    <div className="text-[12px] font-semibold text-content mt-0.5">{formatCurrency2(sheetTW)}</div>
-                    <div className="text-[10px] text-content/60 mt-0.5">{tyQty.toLocaleString()} u</div>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+                        TY
+                      </span>
+                      <span className="text-[8px] italic text-content/45">
+                        {twDateLabel}
+                      </span>
+                    </div>
+                    <div className="text-[12px] font-semibold text-content mt-0.5">
+                      {formatCurrency2(sheetTW)}
+                    </div>
+                    <div className="text-[10px] text-content/60 mt-0.5">
+                      {tyQty.toLocaleString()} u
+                    </div>
                   </div>
                   <div className="px-3 py-2.5">
-                    <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">LW</div>
-                    <div className="text-[8px] italic text-content/55 mt-0.5">{lwDateLabel}</div>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+                        LW
+                      </span>
+                      <span className="text-[8px] italic text-content/45">
+                        {lwDateLabel}
+                      </span>
+                    </div>
                     <div className="flex items-baseline gap-1.5 mt-0.5">
-                      <span className="text-[12px] font-semibold text-content">{sheetHasLW ? formatCurrency2(sheetLW) : "—"}</span>
+                      <span className="text-[12px] font-semibold text-content">
+                        {sheetHasLW ? formatCurrency2(sheetLW) : "—"}
+                      </span>
                       {sheetVsLW !== null && (
-                        <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${pillClass(sheetVsLW)}`}>{formatPct(sheetVsLW)}</span>
+                        <span
+                          className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${pillClass(sheetVsLW)}`}
+                        >
+                          {formatPct(sheetVsLW)}
+                        </span>
                       )}
                     </div>
-                    {lwQty > 0 && <div className="text-[10px] text-content/60 mt-0.5">{lwQty.toLocaleString()} u</div>}
+                    {lwQty > 0 && (
+                      <div className="text-[10px] text-content/60 mt-0.5">
+                        {lwQty.toLocaleString()} u
+                      </div>
+                    )}
                   </div>
                   <div className="px-3 py-2.5">
-                    <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">LY</div>
-                    <div className="text-[8px] italic text-content/55 mt-0.5">{lyDateLabel}</div>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+                        LY
+                      </span>
+                      <span className="text-[8px] italic text-content/45">
+                        {lyDateLabel}
+                      </span>
+                    </div>
                     <div className="flex items-baseline gap-1.5 mt-0.5">
-                      <span className="text-[12px] font-semibold text-content">{sheetHasLY ? formatCurrency2(sheetLY) : "—"}</span>
+                      <span className="text-[12px] font-semibold text-content">
+                        {sheetHasLY ? formatCurrency2(sheetLY) : "—"}
+                      </span>
                       {sheetVsLY !== null && (
-                        <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${pillClass(sheetVsLY)}`}>{formatPct(sheetVsLY)}</span>
+                        <span
+                          className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${pillClass(sheetVsLY)}`}
+                        >
+                          {formatPct(sheetVsLY)}
+                        </span>
                       )}
                     </div>
-                    {lyQty > 0 && <div className="text-[10px] text-content/60 mt-0.5">{lyQty.toLocaleString()} u</div>}
+                    {lyQty > 0 && (
+                      <div className="text-[10px] text-content/60 mt-0.5">
+                        {lyQty.toLocaleString()} u
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -845,24 +913,44 @@ const LedgerStoreReport = () => {
               <>
                 {/* Transactions — TY + LW pill + LY pill */}
                 {(() => {
-                  const lwTransPct = sheetHour.lwTrans > 0 ? ((sheetHour.trans - sheetHour.lwTrans) / sheetHour.lwTrans) * 100 : null;
-                  const lyTransPct = sheetHour.lyTrans > 0 ? ((sheetHour.trans - sheetHour.lyTrans) / sheetHour.lyTrans) * 100 : null;
+                  const lwTransPct =
+                    sheetHour.lwTrans > 0
+                      ? ((sheetHour.trans - sheetHour.lwTrans) /
+                          sheetHour.lwTrans) *
+                        100
+                      : null;
+                  const lyTransPct =
+                    sheetHour.lyTrans > 0
+                      ? ((sheetHour.trans - sheetHour.lyTrans) /
+                          sheetHour.lyTrans) *
+                        100
+                      : null;
                   return (
                     <div className="px-4 py-3 border-b border-gray-100">
                       <div className="flex items-center justify-between">
-                        <span className="text-[12px] text-content/90">Transactions</span>
-                        <span className="text-[13px] font-semibold text-content">{sheetHour.trans.toLocaleString()}</span>
+                        <span className="text-[12px] text-content/90">
+                          Transactions
+                        </span>
+                        <span className="text-[13px] font-semibold text-content">
+                          {sheetHour.trans.toLocaleString()}
+                        </span>
                       </div>
                       {(lwTransPct !== null || lyTransPct !== null) && (
                         <div className="flex items-center gap-2 mt-1.5 justify-end">
                           {lwTransPct !== null && (
-                            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${pillClass(lwTransPct)}`}>
-                              LW {sheetHour.lwTrans.toLocaleString()} {formatPct(lwTransPct)}
+                            <span
+                              className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${pillClass(lwTransPct)}`}
+                            >
+                              LW {sheetHour.lwTrans.toLocaleString()}{" "}
+                              {formatPct(lwTransPct)}
                             </span>
                           )}
                           {lyTransPct !== null && (
-                            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${pillClass(lyTransPct)}`}>
-                              LY {sheetHour.lyTrans.toLocaleString()} {formatPct(lyTransPct)}
+                            <span
+                              className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${pillClass(lyTransPct)}`}
+                            >
+                              LY {sheetHour.lyTrans.toLocaleString()}{" "}
+                              {formatPct(lyTransPct)}
                             </span>
                           )}
                         </div>
@@ -872,144 +960,255 @@ const LedgerStoreReport = () => {
                 })()}
                 {sheetHour.trans > 0 && (
                   <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                    <span className="text-[12px] text-content/90">Avg basket</span>
-                    <span className="text-[13px] font-medium text-content">{formatCurrency2(sheetTW / sheetHour.trans)}</span>
+                    <span className="text-[12px] text-content/90">
+                      Avg basket
+                    </span>
+                    <span className="text-[13px] font-medium text-content">
+                      {formatCurrency2(sheetTW / sheetHour.trans)}
+                    </span>
                   </div>
                 )}
               </>
             )}
-            {openSheetType === "subdept" && (() => {
-              const itemSeverity = (item: typeof top10[0]): Severity => {
-                const lyQtyPct = item.lyQty !== null && item.lyQty > 0
-                  ? ((item.tyQty - item.lyQty) / item.lyQty) * 100 : null;
-                const lwQtyPct = item.lwQty !== null && item.lwQty > 0
-                  ? ((item.tyQty - item.lwQty) / item.lwQty) * 100 : null;
-                const pct = lyQtyPct ?? lwQtyPct ?? 0;
-                if (pct < -itemThreshold) return "critical";
-                if (pct < 0) return "watch";
-                return "healthy";
-              };
-              const itemsWithSev = top10.map((item) => ({ ...item, sev: itemSeverity(item) }));
-              const itemCounts: Record<SevFilter, number> = {
-                all: itemsWithSev.length,
-                critical: itemsWithSev.filter((i) => i.sev === "critical").length,
-                watch: itemsWithSev.filter((i) => i.sev === "watch").length,
-                healthy: itemsWithSev.filter((i) => i.sev === "healthy").length,
-              };
-              const filteredItems = itemSevFilter === "all"
-                ? itemsWithSev
-                : itemsWithSev.filter((i) => i.sev === itemSevFilter);
+            {openSheetType === "subdept" &&
+              (() => {
+                const itemSeverity = (item: (typeof top10)[0]): Severity => {
+                  const lyQtyPct =
+                    item.lyQty !== null && item.lyQty > 0
+                      ? ((item.tyQty - item.lyQty) / item.lyQty) * 100
+                      : null;
+                  const lwQtyPct =
+                    item.lwQty !== null && item.lwQty > 0
+                      ? ((item.tyQty - item.lwQty) / item.lwQty) * 100
+                      : null;
+                  const pct = lyQtyPct ?? lwQtyPct ?? 0;
+                  if (pct < -itemThreshold) return "critical";
+                  if (pct < 0) return "watch";
+                  return "healthy";
+                };
+                const itemsWithSev = top10.map((item) => ({
+                  ...item,
+                  sev: itemSeverity(item),
+                }));
+                const itemCounts: Record<SevFilter, number> = {
+                  all: itemsWithSev.length,
+                  critical: itemsWithSev.filter((i) => i.sev === "critical")
+                    .length,
+                  watch: itemsWithSev.filter((i) => i.sev === "watch").length,
+                  healthy: itemsWithSev.filter((i) => i.sev === "healthy")
+                    .length,
+                };
+                const filteredItems =
+                  itemSevFilter === "all"
+                    ? itemsWithSev
+                    : itemsWithSev.filter((i) => i.sev === itemSevFilter);
 
-              return (
-                <>
-                  <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 border-b border-gray-100 border-t border-t-gray-100">
-                    <span className="text-[10px] font-medium uppercase tracking-wide text-content/70">Items</span>
-                    <span className="text-[9px] italic text-content/55">{twDateLabel} · {top10.length} items</span>
-                    <div className="flex-1" />
-                    <span className="text-[10px] text-content/45">Threshold</span>
-                    <input
-                      type="number"
-                      min={1}
-                      max={99}
-                      value={itemThresholdInput}
-                      onChange={(e) => {
-                        setItemThresholdInput(e.target.value);
-                        const v = parseInt(e.target.value, 10);
-                        if (!isNaN(v) && v >= 1 && v <= 99) dispatch(setItemThreshold(v));
-                      }}
-                      onBlur={() => {
-                        const v = parseInt(itemThresholdInput, 10);
-                        if (isNaN(v) || v < 1 || v > 99) setItemThresholdInput(String(itemThreshold));
-                      }}
-                      className="w-9 text-center text-[10px] bg-white border border-gray-200 rounded px-1 py-px focus:outline-none focus:border-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <span className="text-[10px] text-content/45">%</span>
-                  </div>
-                  {/* Item filter chips — sticky so items scroll beneath */}
-                  <div className="flex gap-2 px-4 py-2 bg-white border-b border-gray-100 sticky top-0 z-10">
-                    {(["all", "critical", "watch", "healthy"] as SevFilter[]).map((f) => {
-                      const label = f === "all" ? `All (${itemCounts.all})` : f === "critical" ? `Crit (${itemCounts.critical})` : f === "watch" ? `Watch (${itemCounts.watch})` : `OK (${itemCounts.healthy})`;
-                      const active = itemSevFilter === f;
-                      const colorClass = active
-                        ? f === "all" ? "bg-[#1e2a4a] text-white border-[#1e2a4a]"
-                          : f === "critical" ? "bg-red-100 text-red-800 border-red-200"
-                          : f === "watch" ? "bg-amber-100 text-amber-800 border-amber-200"
-                          : "bg-emerald-100 text-emerald-800 border-emerald-200"
-                        : "bg-white text-content/70 border-gray-200";
-                      return (
-                        <button
-                          key={f}
-                          onClick={() => setItemSevFilter(f)}
-                          className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full border ${colorClass}`}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {top10Loading ? (
-                    <div className="px-4 py-3 text-[11px] text-content/70 italic">Loading…</div>
-                  ) : filteredItems.length === 0 ? (
-                    <div className="px-4 py-3 text-[11px] text-content/55 italic">No data</div>
-                  ) : (
-                    (["critical", "watch", "healthy"] as Severity[]).map((sev) => {
-                      const group = filteredItems.filter((i) => i.sev === sev);
-                      if (!group.length) return null;
-                      return (
-                        <div key={sev}>
-                          {group.map((item) => {
-                            const lwNetPct = item.lwNet !== null && item.lwNet > 0
-                              ? ((item.tyNet - item.lwNet) / item.lwNet) * 100 : null;
-                            const lyNetPct = item.lyNet !== null && item.lyNet > 0
-                              ? ((item.tyNet - item.lyNet) / item.lyNet) * 100 : null;
-                            return (
-                              <div key={item.productCode} className="px-4 py-2.5 border-b border-gray-100">
-                                <div className="flex items-start gap-2">
-                                  <SevBadge sev={item.sev} />
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex items-baseline justify-between gap-2">
-                                      <span className="text-[12px] font-medium text-content truncate" style={{ maxWidth: "55%" }}>{item.desc}</span>
-                                      <span className="text-[9px] text-content/45 flex-shrink-0">{item.upc}</span>
-                                    </div>
-                                    {/* TW / LW / LY: net sales + qty + weight per period */}
-                                    <div className="grid grid-cols-3 divide-x divide-gray-100 border border-gray-100 rounded mt-1.5">
-                                      <div className="px-2 py-1.5">
-                                        <div className="text-[8px] text-content/45 uppercase tracking-wide">TW</div>
-                                        <div className="text-[10px] font-semibold text-content mt-0.5">{formatCurrency2(item.tyNet)}</div>
-                                        <div className="text-[9px] text-content/60 mt-0.5">{item.tyQty.toLocaleString()} u</div>
-                                        {item.tyWeight > 0 && <div className="text-[9px] text-content/50 mt-0.5">{item.tyWeight.toFixed(2)} lb</div>}
-                                      </div>
-                                      <div className="px-2 py-1.5">
-                                        <div className="text-[8px] text-content/45 uppercase tracking-wide">LW</div>
-                                        <div className="flex items-baseline gap-1 mt-0.5">
-                                          <span className="text-[10px] font-semibold text-content">{item.lwNet !== null ? formatCurrency2(item.lwNet) : "—"}</span>
-                                          {lwNetPct !== null && <span className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lwNetPct, itemThreshold)}`}>{formatPct(lwNetPct)}</span>}
+                return (
+                  <>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 border-b border-gray-100 border-t border-t-gray-100">
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-content/70">
+                        Items
+                      </span>
+                      <span className="text-[9px] italic text-content/55">
+                        {twDateLabel} · {top10.length} items
+                      </span>
+                      <div className="flex-1" />
+                      <span className="text-[10px] text-content/45">
+                        Threshold
+                      </span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={99}
+                        value={itemThresholdInput}
+                        onChange={(e) => {
+                          setItemThresholdInput(e.target.value);
+                          const v = parseInt(e.target.value, 10);
+                          if (!isNaN(v) && v >= 1 && v <= 99)
+                            dispatch(setItemThreshold(v));
+                        }}
+                        onBlur={() => {
+                          const v = parseInt(itemThresholdInput, 10);
+                          if (isNaN(v) || v < 1 || v > 99)
+                            setItemThresholdInput(String(itemThreshold));
+                        }}
+                        className="w-9 text-center text-[10px] bg-white border border-gray-200 rounded px-1 py-px focus:outline-none focus:border-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                      <span className="text-[10px] text-content/45">%</span>
+                    </div>
+                    {/* Item filter chips — sticky so items scroll beneath */}
+                    <div className="flex gap-2 px-4 py-2 bg-white border-b border-gray-100 sticky top-0 z-10">
+                      {(
+                        ["all", "critical", "watch", "healthy"] as SevFilter[]
+                      ).map((f) => {
+                        const label =
+                          f === "all"
+                            ? `All (${itemCounts.all})`
+                            : f === "critical"
+                              ? `Crit (${itemCounts.critical})`
+                              : f === "watch"
+                                ? `Watch (${itemCounts.watch})`
+                                : `OK (${itemCounts.healthy})`;
+                        const active = itemSevFilter === f;
+                        const colorClass = active
+                          ? f === "all"
+                            ? "bg-[#1e2a4a] text-white border-[#1e2a4a]"
+                            : f === "critical"
+                              ? "bg-red-100 text-red-800 border-red-200"
+                              : f === "watch"
+                                ? "bg-amber-100 text-amber-800 border-amber-200"
+                                : "bg-emerald-100 text-emerald-800 border-emerald-200"
+                          : "bg-white text-content/70 border-gray-200";
+                        return (
+                          <button
+                            key={f}
+                            onClick={() => setItemSevFilter(f)}
+                            className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full border ${colorClass}`}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {top10Loading ? (
+                      <div className="px-4 py-3 text-[11px] text-content/70 italic">
+                        Loading…
+                      </div>
+                    ) : filteredItems.length === 0 ? (
+                      <div className="px-4 py-3 text-[11px] text-content/55 italic">
+                        No data
+                      </div>
+                    ) : (
+                      (["critical", "watch", "healthy"] as Severity[]).map(
+                        (sev) => {
+                          const group = filteredItems.filter(
+                            (i) => i.sev === sev,
+                          );
+                          if (!group.length) return null;
+                          return (
+                            <div key={sev}>
+                              {group.map((item) => {
+                                const lwNetPct =
+                                  item.lwNet !== null && item.lwNet > 0
+                                    ? ((item.tyNet - item.lwNet) / item.lwNet) *
+                                      100
+                                    : null;
+                                const lyNetPct =
+                                  item.lyNet !== null && item.lyNet > 0
+                                    ? ((item.tyNet - item.lyNet) / item.lyNet) *
+                                      100
+                                    : null;
+                                return (
+                                  <div
+                                    key={item.productCode}
+                                    className="px-4 py-2.5 border-b border-gray-100"
+                                  >
+                                    <div className="flex items-start gap-2">
+                                      <SevBadge sev={item.sev} />
+                                      <div className="min-w-0 flex-1">
+                                        <div className="flex items-baseline justify-between gap-2">
+                                          <span
+                                            className="text-[12px] font-medium text-content truncate"
+                                            style={{ maxWidth: "55%" }}
+                                          >
+                                            {item.desc}
+                                          </span>
+                                          <span className="text-[9px] text-content/45 flex-shrink-0">
+                                            {item.upc}
+                                          </span>
                                         </div>
-                                        {item.lwQty !== null && <div className="text-[9px] text-content/60 mt-0.5">{item.lwQty.toLocaleString()} u</div>}
-                                        {item.lwWeight !== null && item.lwWeight > 0 && <div className="text-[9px] text-content/50 mt-0.5">{item.lwWeight.toFixed(2)} lb</div>}
-                                      </div>
-                                      <div className="px-2 py-1.5">
-                                        <div className="text-[8px] text-content/45 uppercase tracking-wide">LY</div>
-                                        <div className="flex items-baseline gap-1 mt-0.5">
-                                          <span className="text-[10px] font-semibold text-content">{item.lyNet !== null ? formatCurrency2(item.lyNet) : "—"}</span>
-                                          {lyNetPct !== null && <span className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lyNetPct, itemThreshold)}`}>{formatPct(lyNetPct)}</span>}
+                                        {/* TW / LW / LY: net sales + qty + weight per period */}
+                                        <div className="grid grid-cols-3 divide-x divide-gray-100 border border-gray-100 rounded mt-1.5">
+                                          <div className="px-2 py-1.5">
+                                            <div className="text-[8px] text-content/45 uppercase tracking-wide">
+                                              TW
+                                            </div>
+                                            <div className="text-[10px] font-semibold text-content mt-0.5">
+                                              {formatCurrency2(item.tyNet)}
+                                            </div>
+                                            <div className="text-[9px] text-content/60 mt-0.5">
+                                              {item.tyQty.toLocaleString()} u
+                                            </div>
+                                            {item.tyWeight > 0 && (
+                                              <div className="text-[9px] text-content/50 mt-0.5">
+                                                {item.tyWeight.toFixed(2)} lb
+                                              </div>
+                                            )}
+                                          </div>
+                                          <div className="px-2 py-1.5">
+                                            <div className="text-[8px] text-content/45 uppercase tracking-wide">
+                                              LW
+                                            </div>
+                                            <div className="flex items-baseline gap-1 mt-0.5">
+                                              <span className="text-[10px] font-semibold text-content">
+                                                {item.lwNet !== null
+                                                  ? formatCurrency2(item.lwNet)
+                                                  : "—"}
+                                              </span>
+                                              {lwNetPct !== null && (
+                                                <span
+                                                  className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lwNetPct, itemThreshold)}`}
+                                                >
+                                                  {formatPct(lwNetPct)}
+                                                </span>
+                                              )}
+                                            </div>
+                                            {item.lwQty !== null && (
+                                              <div className="text-[9px] text-content/60 mt-0.5">
+                                                {item.lwQty.toLocaleString()} u
+                                              </div>
+                                            )}
+                                            {item.lwWeight !== null &&
+                                              item.lwWeight > 0 && (
+                                                <div className="text-[9px] text-content/50 mt-0.5">
+                                                  {item.lwWeight.toFixed(2)} lb
+                                                </div>
+                                              )}
+                                          </div>
+                                          <div className="px-2 py-1.5">
+                                            <div className="text-[8px] text-content/45 uppercase tracking-wide">
+                                              LY
+                                            </div>
+                                            <div className="flex items-baseline gap-1 mt-0.5">
+                                              <span className="text-[10px] font-semibold text-content">
+                                                {item.lyNet !== null
+                                                  ? formatCurrency2(item.lyNet)
+                                                  : "—"}
+                                              </span>
+                                              {lyNetPct !== null && (
+                                                <span
+                                                  className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lyNetPct, itemThreshold)}`}
+                                                >
+                                                  {formatPct(lyNetPct)}
+                                                </span>
+                                              )}
+                                            </div>
+                                            {item.lyQty !== null && (
+                                              <div className="text-[9px] text-content/60 mt-0.5">
+                                                {item.lyQty.toLocaleString()} u
+                                              </div>
+                                            )}
+                                            {item.lyWeight !== null &&
+                                              item.lyWeight > 0 && (
+                                                <div className="text-[9px] text-content/50 mt-0.5">
+                                                  {item.lyWeight.toFixed(2)} lb
+                                                </div>
+                                              )}
+                                          </div>
                                         </div>
-                                        {item.lyQty !== null && <div className="text-[9px] text-content/60 mt-0.5">{item.lyQty.toLocaleString()} u</div>}
-                                        {item.lyWeight !== null && item.lyWeight > 0 && <div className="text-[9px] text-content/50 mt-0.5">{item.lyWeight.toFixed(2)} lb</div>}
                                       </div>
                                     </div>
                                   </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      );
-                    })
-                  )}
-                </>
-              );
-            })()}
+                                );
+                              })}
+                            </div>
+                          );
+                        },
+                      )
+                    )}
+                  </>
+                );
+              })()}
           </div>
         </BottomSheet>
       )}
