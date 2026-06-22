@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { getSubs, getHourly } from "../../../api/sales";
 import {
@@ -52,12 +52,12 @@ const StoreDetailPopup = ({ selection, onClose }: StoreDetailPopupProps) => {
   const lyEnd = sameWeekDayLastYear(twEnd).date;
 
   const twYear = new Date(twEnd + "T12:00:00").getFullYear();
-  const lyYear = new Date(lyEnd + "T12:00:00").getFullYear();
+  // const lyYear = new Date(lyEnd + "T12:00:00").getFullYear();
 
   // Static range strings
   const staticTwDate = `${fmtDate(twStart)} – ${fmtDate(twEnd)}, ${twYear}`;
-  const staticLwDate = `${fmtDate(lwStart)} – ${fmtDate(lwEnd)}, ${twYear}`;
-  const staticLyDate = `${fmtDate(lyStart)} – ${fmtDate(lyEnd)}, ${lyYear}`;
+  // const staticLwDate = `${fmtDate(lwStart)} – ${fmtDate(lwEnd)}, ${twYear}`;
+  // const staticLyDate = `${fmtDate(lyStart)} – ${fmtDate(lyEnd)}, ${lyYear}`;
 
   // Dynamic date labels — update when a day is selected
   const twDateLabel = selectedDate
@@ -80,6 +80,14 @@ const StoreDetailPopup = ({ selection, onClose }: StoreDetailPopupProps) => {
   const headerVsLYPct = headerLyTotal > 0 ? ((headerTwTotal - headerLyTotal) / headerLyTotal) * 100 : null;
 
   const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
+
+  const THRESHOLD = 9;
+  const pillClass = (pct: number | null) => {
+    if (pct === null) return "bg-gray-100 text-gray-500";
+    if (pct < -THRESHOLD) return "bg-red-100 text-red-800";
+    if (pct < 0) return "bg-amber-100 text-amber-800";
+    return "bg-emerald-100 text-emerald-800";
+  };
 
   useEffect(() => {
     const fetch = async () => {
@@ -132,7 +140,7 @@ const StoreDetailPopup = ({ selection, onClose }: StoreDetailPopupProps) => {
   return (
     <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
       {/* Navy title bar */}
-      <div className="flex items-start justify-between px-4 py-3 bg-[#1e2a4a] flex-shrink-0">
+      <div className="flex items-start justify-between leading-tight px-4 py-3 bg-[#1e2a4a] flex-shrink-0">
         <div>
           <p className="text-white text-[13px] font-semibold leading-tight">
             {selection.storeNumber} · {selection.storeName}
@@ -150,29 +158,29 @@ const StoreDetailPopup = ({ selection, onClose }: StoreDetailPopupProps) => {
       {/* KPI metric strip — values and date labels update with day selection */}
       <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
         <div className="px-4 py-2.5">
-          <div className="text-[9px] font-medium uppercase tracking-wide text-content/65">TY Net Sales</div>
-          <div className="text-[8px] text-content/50 italic mb-0.5">{twDateLabel}</div>
+          <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">TY Net Sales</div>
+          <div className="text-[8px] text-content/55 italic mb-0.5">{twDateLabel}</div>
           <div className="text-[13px] font-semibold text-content">{formatCurrency2(headerTwTotal)}</div>
         </div>
         <div className="px-4 py-2.5">
-          <div className="text-[9px] font-medium uppercase tracking-wide text-content/65">vs Last Week</div>
-          <div className="text-[8px] text-content/50 italic mb-0.5">{lwDateLabel}</div>
+          <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">vs Last Week</div>
+          <div className="text-[8px] text-content/55 italic mb-0.5">{lwDateLabel}</div>
           <div className="flex items-baseline gap-2">
             <span className="text-[13px] font-semibold text-content">{formatCurrency2(headerLwTotal)}</span>
             {headerVsLWPct !== null && (
-              <span className={`text-[11px] font-semibold ${headerVsLWPct >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${pillClass(headerVsLWPct)}`}>
                 {formatPct(headerVsLWPct)}
               </span>
             )}
           </div>
         </div>
         <div className="px-4 py-2.5">
-          <div className="text-[9px] font-medium uppercase tracking-wide text-content/65">vs Last Year</div>
-          <div className="text-[8px] text-content/50 italic mb-0.5">{lyDateLabel}</div>
+          <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">vs Last Year</div>
+          <div className="text-[8px] text-content/55 italic mb-0.5">{lyDateLabel}</div>
           <div className="flex items-baseline gap-2">
             <span className="text-[13px] font-semibold text-content">{formatCurrency2(headerLyTotal)}</span>
             {headerVsLYPct !== null && (
-              <span className={`text-[11px] font-semibold ${headerVsLYPct >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${pillClass(headerVsLYPct)}`}>
                 {formatPct(headerVsLYPct)}
               </span>
             )}
@@ -189,7 +197,7 @@ const StoreDetailPopup = ({ selection, onClose }: StoreDetailPopupProps) => {
             className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors ${
               tab === t
                 ? "border-[#1e2a4a] text-content"
-                : "border-transparent text-content/65 hover:text-content/80"
+                : "border-transparent text-content/70 hover:text-content/80"
             }`}
           >
             {t === "subdept" ? "Sub dept" : "Hourly"}

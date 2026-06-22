@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+﻿import { useState, useMemo, useEffect } from "react";
 import { useAppSelector } from "../../../hooks";
 import { formatCurrency2, addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../utils";
 import { getSubMargins } from "../../../api/subMargins";
@@ -12,6 +12,13 @@ import type { SubDeptMargin } from "../../../interfaces";
 
 const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
 
+const pillClass = (pct: number | null, threshold: number) => {
+  if (pct === null) return "bg-gray-100 text-gray-500";
+  if (pct < -threshold) return "bg-red-100 text-red-800";
+  if (pct < 0) return "bg-amber-100 text-amber-800";
+  return "bg-emerald-100 text-emerald-800";
+};
+
 type DeptRow = {
   id: number;
   desc: string;
@@ -23,6 +30,7 @@ type DeptRow = {
   vsLWPct: number;
   vsLYPct: number;
   qty: number;
+  lwQty: number;
   lyQty: number;
   digital: number;
   lyDigital: number;
@@ -38,40 +46,55 @@ type SevFilter = "all" | "critical" | "watch" | "healthy";
 
 type Top10Item = {
   productCode: string;
+  upc: string;
   desc: string;
   tyNet: number;
   tyQty: number;
+  tyWeight: number;
   lwNet: number | null;
   lwQty: number | null;
+  lwWeight: number | null;
   lyNet: number | null;
   lyQty: number | null;
+  lyWeight: number | null;
 };
 
 const aggregateByCode = (
   items: SubDeptMargin[],
-): Map<string, { desc: string; net: number; qty: number }> => {
-  const map = new Map<string, { desc: string; net: number; qty: number }>();
+): Map<string, { desc: string; net: number; qty: number; weight: number }> => {
+  const map = new Map<string, { desc: string; net: number; qty: number; weight: number }>();
   for (const item of items) {
-    const existing = map.get(item.product_code);
-    if (existing) {
-      existing.net += item.total_sales - item.total_tax;
-      existing.qty += item.qty;
+    const ex = map.get(item.product_code);
+    if (ex) {
+      ex.net += item.total_sales - item.total_tax;
+      ex.qty += item.qty;
+      ex.weight += item.weight;
     } else {
       map.set(item.product_code, {
         desc: item.product_description,
         net: item.total_sales - item.total_tax,
         qty: item.qty,
+        weight: item.weight,
       });
     }
   }
   return map;
 };
 
-const THRESHOLD = 9;
-
-const deptSeverity = (r: DeptRow): Severity => {
+const deptSeverity = (r: DeptRow, threshold: number): Severity => {
   const pct = r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0;
-  if (pct < -THRESHOLD) return "critical";
+  if (pct < -threshold) return "critical";
+  if (pct < 0) return "watch";
+  return "healthy";
+};
+
+const itemSeverity = (item: Top10Item, threshold: number): Severity => {
+  const lyQtyPct = item.lyQty !== null && item.lyQty > 0
+    ? ((item.tyQty - item.lyQty) / item.lyQty) * 100 : null;
+  const lwQtyPct = item.lwQty !== null && item.lwQty > 0
+    ? ((item.tyQty - item.lwQty) / item.lwQty) * 100 : null;
+  const pct = lyQtyPct ?? lwQtyPct ?? 0;
+  if (pct < -threshold) return "critical";
   if (pct < 0) return "watch";
   return "healthy";
 };
@@ -81,52 +104,55 @@ const BADGE_BG: Record<Severity, string> = {
   watch: "#fef3c7",
   healthy: "#d1fae5",
 };
-
 const BADGE_COLOR: Record<Severity, string> = {
   critical: "#ef4444",
   watch: "#f59e0b",
   healthy: "#10b981",
 };
 
-const SeverityBadge = ({ severity }: { severity: Severity }) => {
-  const bg = BADGE_BG[severity];
-  const color = BADGE_COLOR[severity];
-  return (
-    <div
-      className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0"
-      style={{ background: bg }}
-    >
-      {severity === "critical" && <ExclamationTriangleIcon className="w-3 h-3" style={{ color }} />}
-      {severity === "watch" && <ExclamationCircleIcon className="w-3 h-3" style={{ color }} />}
-      {severity === "healthy" && <CheckCircleIcon className="w-3 h-3" style={{ color }} />}
-    </div>
-  );
-};
+const SeverityBadge = ({ severity }: { severity: Severity }) => (
+  <div
+    className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0"
+    style={{ background: BADGE_BG[severity] }}
+  >
+    {severity === "critical" && <ExclamationTriangleIcon className="w-3 h-3" style={{ color: BADGE_COLOR[severity] }} />}
+    {severity === "watch" && <ExclamationCircleIcon className="w-3 h-3" style={{ color: BADGE_COLOR[severity] }} />}
+    {severity === "healthy" && <CheckCircleIcon className="w-3 h-3" style={{ color: BADGE_COLOR[severity] }} />}
+  </div>
+);
 
-const getCta = (row: DeptRow): { text: string; severity: Severity } => {
-  const sev = deptSeverity(row);
+const getCta = (row: DeptRow, threshold: number): { text: string; severity: Severity } => {
+  const sev = deptSeverity(row, threshold);
+  const primaryPeriod = row.hasLY ? "LY" : "LW";
+  const primaryPct = row.hasLY ? row.vsLYPct : row.vsLWPct;
+  const pctStr = `${Math.abs(primaryPct).toFixed(1)}%`;
+
   if (sev === "critical") {
+    const secondaryNote = row.hasLY && row.hasLW
+      ? row.vsLWPct < 0
+        ? ` LW also down ${Math.abs(row.vsLWPct).toFixed(1)}% — trend is consistent.`
+        : ` LW is up ${row.vsLWPct.toFixed(1)}% — decline may be seasonal vs last year.`
+      : "";
     return {
       severity: "critical",
-      text: `Down vs both periods — ${Math.abs(row.vsLYPct) > Math.abs(row.vsLWPct) ? "LY gap is larger" : "LW gap is larger"}. Check receiving, shrink, and pricing.`,
+      text: `Down ${pctStr} vs ${primaryPeriod} — exceeds the 9% threshold.${secondaryNote} Check receiving, shrink, and pricing.`,
     };
   }
   if (sev === "watch") {
-    if (row.hasLY && row.vsLYPct < 0) {
-      return {
-        severity: "watch",
-        text: `Below last year but recovering vs last week. Watch this trend — could be seasonal or a category shift.`,
-      };
-    }
+    const secondaryNote = row.hasLY && row.hasLW
+      ? row.vsLWPct >= 0
+        ? ` Recovering vs LW — may be stabilizing.`
+        : ` LW also soft — monitor for a second consecutive week.`
+      : "";
     return {
       severity: "watch",
-      text: `Softness vs last week despite holding vs last year. Recent dip — monitor for a second week before escalating.`,
+      text: `Down ${pctStr} vs ${primaryPeriod} — within the watch band.${secondaryNote}`,
     };
   }
-  return {
-    severity: "healthy",
-    text: `Ahead of both comparison periods. Contribution holding strong.`,
-  };
+  const secondaryHealthNote = row.hasLY && row.hasLW
+    ? row.vsLWPct < 0 ? ` LW is softer — watch for a developing trend.` : ` LW also positive.`
+    : "";
+  return { severity: "healthy", text: `At or above ${primaryPeriod}.${secondaryHealthNote} Contribution holding strong.` };
 };
 
 interface PopupSubDeptListProps {
@@ -137,26 +163,21 @@ interface PopupSubDeptListProps {
   selectedDate: string | null;
 }
 
-const PopupSubDeptList = ({
-  twDateLabel,
-  lwDateLabel,
-  lyDateLabel,
-  storeId,
-  selectedDate,
-}: PopupSubDeptListProps) => {
+const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel, storeId, selectedDate }: PopupSubDeptListProps) => {
   const { subSales, subSalesWk2, subSalesWk3 } = useAppSelector((state) => state.sales);
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
+  const threshold = useAppSelector((state) => state.salesLedger.threshold);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
-  const [top10, setTop10] = useState<Top10Item[]>([]);
+  const [itemSevFilter, setItemSevFilter] = useState<SevFilter>("all");
+  const [items, setItems] = useState<Top10Item[]>([]);
   const [itemsLoading, setItemsLoading] = useState(false);
 
+  useEffect(() => { setItemSevFilter("all"); }, [selectedId]);
+
   useEffect(() => {
-    if (selectedId === null) {
-      setTop10([]);
-      return;
-    }
+    if (selectedId === null) { setItems([]); return; }
 
     const twEnd = formatGoliathDate(search.singleDate);
     const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
@@ -167,12 +188,8 @@ const PopupSubDeptList = ({
 
     const tyStart = selectedDate ?? twStart;
     const tyEnd = selectedDate ?? twEnd;
-    const lwDayStart = selectedDate
-      ? addDays(new Date(selectedDate), -7).toISOString().split("T")[0]
-      : lwStart;
-    const lwDayEnd = selectedDate
-      ? addDays(new Date(selectedDate), -7).toISOString().split("T")[0]
-      : lwEnd;
+    const lwDayStart = selectedDate ? addDays(new Date(selectedDate), -7).toISOString().split("T")[0] : lwStart;
+    const lwDayEnd = selectedDate ? addDays(new Date(selectedDate), -7).toISOString().split("T")[0] : lwEnd;
     const lyDayStart = selectedDate ? sameWeekDayLastYear(selectedDate).date : lyStart;
     const lyDayEnd = selectedDate ? sameWeekDayLastYear(selectedDate).date : lyEnd;
 
@@ -195,60 +212,39 @@ const PopupSubDeptList = ({
         const lwMap = aggregateByCode(lwItems);
         const lyMap = aggregateByCode(lyItems);
 
-        const sorted = [...tyMap.entries()].sort((a, b) => b[1].qty - a[1].qty).slice(0, 10);
+        const sorted = [...tyMap.entries()].sort((a, b) => b[1].qty - a[1].qty);
 
-        const items: Top10Item[] = sorted.map(([code, ty]) => {
+        setItems(sorted.map(([code, ty]) => {
           const lw = lwMap.get(code) ?? null;
           const ly = lyMap.get(code) ?? null;
           return {
             productCode: code,
+            upc: code,
             desc: ty.desc,
             tyNet: ty.net,
             tyQty: ty.qty,
+            tyWeight: ty.weight,
             lwNet: lw?.net ?? null,
             lwQty: lw?.qty ?? null,
+            lwWeight: lw?.weight ?? null,
             lyNet: ly?.net ?? null,
             lyQty: ly?.qty ?? null,
+            lyWeight: ly?.weight ?? null,
           };
-        });
-
-        setTop10(items);
+        }));
       } finally {
         if (!cancelled) setItemsLoading(false);
       }
     };
     fetch();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [selectedId, selectedDate, search.singleDate, context.url, context.token, storeId]);
 
   const rows = useMemo((): DeptRow[] => {
     const buildMap = (src: typeof subSales) =>
       src.reduce(
-        (
-          acc: Record<
-            number,
-            {
-              net: number;
-              qty: number;
-              digital: number;
-              elecInstore: number;
-              elecStore: number;
-              storeCpn: number;
-            }
-          >,
-          s,
-        ) => {
-          if (!acc[s.sub_department])
-            acc[s.sub_department] = {
-              net: 0,
-              qty: 0,
-              digital: 0,
-              elecInstore: 0,
-              elecStore: 0,
-              storeCpn: 0,
-            };
+        (acc: Record<number, { net: number; qty: number; digital: number; elecInstore: number; elecStore: number; storeCpn: number }>, s) => {
+          if (!acc[s.sub_department]) acc[s.sub_department] = { net: 0, qty: 0, digital: 0, elecInstore: 0, elecStore: 0, storeCpn: 0 };
           acc[s.sub_department].net += s.total_sales - s.total_tax;
           acc[s.sub_department].qty += s.qty;
           acc[s.sub_department].digital += s.digital_coupons;
@@ -264,31 +260,9 @@ const PopupSubDeptList = ({
     const lyMap = buildMap(subSalesWk3);
 
     const twMap = subSales.reduce(
-      (
-        acc: Record<
-          number,
-          {
-            desc: string;
-            net: number;
-            qty: number;
-            digital: number;
-            elecInstore: number;
-            elecStore: number;
-            storeCpn: number;
-          }
-        >,
-        s,
-      ) => {
+      (acc: Record<number, { desc: string; net: number; qty: number; digital: number; elecInstore: number; elecStore: number; storeCpn: number }>, s) => {
         if (!acc[s.sub_department]) {
-          acc[s.sub_department] = {
-            desc: s.sub_department_description,
-            net: 0,
-            qty: 0,
-            digital: 0,
-            elecInstore: 0,
-            elecStore: 0,
-            storeCpn: 0,
-          };
+          acc[s.sub_department] = { desc: s.sub_department_description, net: 0, qty: 0, digital: 0, elecInstore: 0, elecStore: 0, storeCpn: 0 };
         }
         acc[s.sub_department].net += s.total_sales - s.total_tax;
         acc[s.sub_department].qty += s.qty;
@@ -318,6 +292,7 @@ const PopupSubDeptList = ({
           vsLWPct: lwNet ? ((r.net - lwNet) / lwNet) * 100 : 0,
           vsLYPct: lyNet ? ((r.net - lyNet) / lyNet) * 100 : 0,
           qty: r.qty,
+          lwQty: lw?.qty ?? 0,
           lyQty: ly?.qty ?? 0,
           digital: r.digital,
           lyDigital: ly?.digital ?? 0,
@@ -331,121 +306,81 @@ const PopupSubDeptList = ({
       })
       .sort((a, b) => {
         const rank = { critical: 0, watch: 1, healthy: 2 } as const;
-        const rankDiff = rank[deptSeverity(a)] - rank[deptSeverity(b)];
+        const rankDiff = rank[deptSeverity(a, threshold)] - rank[deptSeverity(b, threshold)];
         if (rankDiff !== 0) return rankDiff;
-        const aPct = a.hasLY ? a.vsLYPct : a.vsLWPct;
-        const bPct = b.hasLY ? b.vsLYPct : b.vsLWPct;
-        return aPct - bPct;
+        return (a.hasLY ? a.vsLYPct : a.vsLWPct) - (b.hasLY ? b.vsLYPct : b.vsLWPct);
       });
   }, [subSales, subSalesWk2, subSalesWk3]);
 
-  const critCount = rows.filter((r) => deptSeverity(r) === "critical").length;
-  const watchCount = rows.filter((r) => deptSeverity(r) === "watch").length;
-  const healthyCount = rows.filter((r) => deptSeverity(r) === "healthy").length;
+  const critCount = rows.filter((r) => deptSeverity(r, threshold) === "critical").length;
+  const watchCount = rows.filter((r) => deptSeverity(r, threshold) === "watch").length;
+  const healthyCount = rows.filter((r) => deptSeverity(r, threshold) === "healthy").length;
 
-  const visible = rows.filter((r) => {
-    if (sevFilter === "critical") return deptSeverity(r) === "critical";
-    if (sevFilter === "watch") return deptSeverity(r) === "watch";
-    if (sevFilter === "healthy") return deptSeverity(r) === "healthy";
-    return true;
-  });
-
+  const visible = sevFilter === "all" ? rows : rows.filter((r) => deptSeverity(r, threshold) === sevFilter);
   const selected = selectedId !== null ? rows.find((r) => r.id === selectedId) ?? null : null;
-  const cta = selected ? getCta(selected) : null;
+  const cta = selected ? getCta(selected, threshold) : null;
+
+  const itemsWithSev = items.map((item) => ({ ...item, sev: itemSeverity(item, threshold) }));
+  const itemCounts: Record<SevFilter, number> = {
+    all: itemsWithSev.length,
+    critical: itemsWithSev.filter((i) => i.sev === "critical").length,
+    watch: itemsWithSev.filter((i) => i.sev === "watch").length,
+    healthy: itemsWithSev.filter((i) => i.sev === "healthy").length,
+  };
+  const visibleItems = itemSevFilter === "all" ? itemsWithSev : itemsWithSev.filter((i) => i.sev === itemSevFilter);
 
   if (!rows.length) {
-    return (
-      <div className="flex items-center justify-center h-32 text-content/40 text-sm">
-        No sub department data
-      </div>
-    );
+    return <div className="flex items-center justify-center h-32 text-content/45 text-sm">No sub department data</div>;
   }
 
   const chipClass = (active: boolean, sev?: Severity) => {
-    if (!active) return "bg-white border border-gray-200 text-content/60 hover:border-gray-400";
+    if (!active) return "bg-white border border-gray-200 text-content/65 hover:border-gray-400";
     if (!sev) return "bg-[#1e2a4a] border-[#1e2a4a] text-white";
-    const activeMap: Record<Severity, string> = {
+    const m: Record<Severity, string> = {
       critical: "bg-red-600 border-red-600 text-white",
       watch: "bg-amber-500 border-amber-500 text-white",
       healthy: "bg-emerald-600 border-emerald-600 text-white",
     };
-    return activeMap[sev];
+    return m[sev];
   };
 
   return (
     <div className="flex h-full">
-      {/* Left panel */}
-      <div className="flex flex-col border-r border-gray-100" style={{ width: "36%" }}>
+      {/* Left panel — signal list */}
+      <div className="flex flex-col border-r border-gray-100" style={{ width: "40%" }}>
         {/* Filter chips */}
-        <div className="flex flex-wrap gap-1 p-2 border-b border-gray-100 bg-gray-50">
-          <button
-            onClick={() => setSevFilter("all")}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(sevFilter === "all")}`}
-          >
-            All ({rows.length})
-          </button>
-          <button
-            onClick={() => setSevFilter("critical")}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(sevFilter === "critical", "critical")}`}
-          >
-            <ExclamationTriangleIcon className="w-2.5 h-2.5" />
-            Crit ({critCount})
-          </button>
-          <button
-            onClick={() => setSevFilter("watch")}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(sevFilter === "watch", "watch")}`}
-          >
-            <ExclamationCircleIcon className="w-2.5 h-2.5" />
-            Watch ({watchCount})
-          </button>
-          <button
-            onClick={() => setSevFilter("healthy")}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(sevFilter === "healthy", "healthy")}`}
-          >
-            <CheckCircleIcon className="w-2.5 h-2.5" />
-            OK ({healthyCount})
-          </button>
+        <div className="flex flex-wrap gap-1 p-2 border-b border-gray-100 bg-gray-100">
+          <button onClick={() => setSevFilter("all")} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(sevFilter === "all")}`}>All ({rows.length})</button>
+          <button onClick={() => setSevFilter("critical")} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(sevFilter === "critical", "critical")}`}><ExclamationTriangleIcon className="w-2.5 h-2.5" />Crit ({critCount})</button>
+          <button onClick={() => setSevFilter("watch")} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(sevFilter === "watch", "watch")}`}><ExclamationCircleIcon className="w-2.5 h-2.5" />Watch ({watchCount})</button>
+          <button onClick={() => setSevFilter("healthy")} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(sevFilter === "healthy", "healthy")}`}><CheckCircleIcon className="w-2.5 h-2.5" />OK ({healthyCount})</button>
         </div>
 
-        {/* Column header */}
-        <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-100 text-[10px] font-medium text-content/50 uppercase tracking-wide">
-          Sub departments
-        </div>
-
-        {/* Signal list */}
         <div className="overflow-y-auto thin-scrollbar flex-1">
           {visible.map((r) => {
-            const sev = deptSeverity(r);
+            const sev = deptSeverity(r, threshold);
             const isSel = selectedId === r.id;
             return (
               <button
                 key={r.id}
                 onClick={() => setSelectedId(isSel ? null : r.id)}
-                className={`flex items-center w-full px-3 py-2 border-b border-gray-100 last:border-0 gap-2 text-left transition-colors ${
-                  isSel ? "bg-[#1e2a4a]" : "hover:bg-gray-50"
-                }`}
+                className={`w-full px-3 py-2 border-b border-gray-100 last:border-0 gap-2 text-left transition-colors ${isSel ? "bg-gray-100" : "hover:bg-gray-50"}`}
+                style={isSel ? { boxShadow: "inset 4px 0 0 rgba(30, 42, 74, 0.5)" } : undefined}
               >
-                <SeverityBadge severity={sev} />
-                <span
-                  className={`text-[12px] font-medium flex-1 truncate ${
-                    isSel ? "text-white" : "text-content"
-                  }`}
-                >
-                  {r.desc}
-                </span>
-                <span
-                  className={`text-[12px] font-semibold flex-shrink-0 ${
-                    isSel
-                      ? r.vsLYPct >= 0
-                        ? "text-emerald-300"
-                        : "text-red-300"
-                      : r.vsLYPct >= 0
-                      ? "text-emerald-600"
-                      : "text-red-500"
-                  }`}
-                >
-                  {r.hasLY ? formatPct(r.vsLYPct) : "—"}
-                </span>
+                <div className="flex items-center gap-2">
+                  <SeverityBadge severity={sev} />
+                  <span className="text-[12px] font-medium flex-1 truncate text-content">{r.desc}</span>
+                  <div className="flex items-baseline gap-1.5 flex-shrink-0">
+                    <span className="text-[12px] font-semibold text-content">{formatCurrency2(r.tw)}</span>
+                    <span className={`text-[10px] ${isSel ? "text-content/65" : "text-content/60"}`}>{r.qty.toLocaleString()} u</span>
+                  </div>
+                </div>
+                <div className="flex gap-1.5 mt-1 justify-end">
+                  {r.hasLW && (
+                    <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${pillClass(r.vsLWPct, threshold)}`}>LW {formatPct(r.vsLWPct)}</span>
+                  )}
+                  <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${pillClass(r.hasLY ? r.vsLYPct : null, threshold)}`}>LY {r.hasLY ? formatPct(r.vsLYPct) : "—"}</span>
+                </div>
               </button>
             );
           })}
@@ -457,172 +392,110 @@ const PopupSubDeptList = ({
         {selected ? (
           <>
             {/* Panel header */}
-            <div className="px-4 py-2 border-b border-gray-100 bg-gray-50 flex items-baseline gap-2">
+            <div className="px-4 py-2 border-b border-gray-100 bg-gray-100 flex items-baseline gap-2">
               <span className="text-[13px] font-semibold text-content">{selected.desc}</span>
-              <span className="text-[10px] text-content/40 italic">{twDateLabel}</span>
+              <span className="text-[10px] text-content/45 italic">{twDateLabel}</span>
             </div>
 
-            {/* Metrics */}
-            <div className="px-4 py-1 flex-1 overflow-y-auto thin-scrollbar">
-              {/* TY net */}
-              <div className="flex items-center justify-between py-2.5 border-b border-gray-100">
-                <span className="text-[12px] text-content/80">TY net sales</span>
-                <span className="text-[13px] font-semibold text-content">
-                  {formatCurrency2(selected.tw)}
-                </span>
-              </div>
-
-              {/* ↳ vs LW */}
-              <div className="flex items-start justify-between py-2 pl-3 border-b border-gray-50">
-                <div className="flex flex-col">
-                  <span className="text-[11px] text-content/60">↳ vs last week</span>
-                  <span className="text-[9px] text-content/40 italic">{lwDateLabel}</span>
+            <div className="flex-1 overflow-y-auto thin-scrollbar">
+              {/* 3-col KPI grid: TY / LW / LY */}
+              <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100">
+                <div className="px-4 py-3">
+                  <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">TY</div>
+                  <div className="text-[8px] italic text-content/55 mt-0.5">{twDateLabel}</div>
+                  <div className="text-[13px] font-semibold text-content mt-0.5">{formatCurrency2(selected.tw)}</div>
+                  <div className="text-[11px] text-content/60 mt-0.5">{selected.qty.toLocaleString()} u</div>
                 </div>
-                <div className="flex flex-col items-end gap-0.5">
-                  <span className="text-[11px] text-content/75">
-                    {selected.hasLW ? formatCurrency2(selected.lw) : "—"}
-                  </span>
-                  <span
-                    className={`text-[11px] font-semibold ${
-                      selected.vsLWPct >= 0 ? "text-emerald-600" : "text-red-500"
-                    }`}
-                  >
-                    {selected.hasLW ? formatPct(selected.vsLWPct) : "—"}
-                  </span>
+                <div className="px-4 py-3">
+                  <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">LW</div>
+                  <div className="text-[8px] italic text-content/55 mt-0.5">{lwDateLabel}</div>
+                  <div className="flex items-baseline gap-1.5 mt-0.5">
+                    <span className="text-[13px] font-semibold text-content">{selected.hasLW ? formatCurrency2(selected.lw) : "—"}</span>
+                    {selected.hasLW && <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${pillClass(selected.vsLWPct, threshold)}`}>{formatPct(selected.vsLWPct)}</span>}
+                  </div>
+                  {selected.lwQty > 0 && <div className="text-[11px] text-content/60 mt-0.5">{selected.lwQty.toLocaleString()} u</div>}
                 </div>
-              </div>
-
-              {/* ↳ vs LY */}
-              <div className="flex items-start justify-between py-2 pl-3 border-b border-gray-100">
-                <div className="flex flex-col">
-                  <span className="text-[11px] text-content/60">↳ vs last year</span>
-                  <span className="text-[9px] text-content/40 italic">{lyDateLabel}</span>
-                </div>
-                <div className="flex flex-col items-end gap-0.5">
-                  <span className="text-[11px] text-content/75">
-                    {selected.hasLY ? formatCurrency2(selected.ly) : "—"}
-                  </span>
-                  <span
-                    className={`text-[11px] font-semibold ${
-                      selected.vsLYPct >= 0 ? "text-emerald-600" : "text-red-500"
-                    }`}
-                  >
-                    {selected.hasLY ? formatPct(selected.vsLYPct) : "—"}
-                  </span>
+                <div className="px-4 py-3">
+                  <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">LY</div>
+                  <div className="text-[8px] italic text-content/55 mt-0.5">{lyDateLabel}</div>
+                  <div className="flex items-baseline gap-1.5 mt-0.5">
+                    <span className="text-[13px] font-semibold text-content">{selected.hasLY ? formatCurrency2(selected.ly) : "—"}</span>
+                    {selected.hasLY && <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${pillClass(selected.vsLYPct, threshold)}`}>{formatPct(selected.vsLYPct)}</span>}
+                  </div>
+                  {selected.lyQty > 0 && <div className="text-[11px] text-content/60 mt-0.5">{selected.lyQty.toLocaleString()} u</div>}
                 </div>
               </div>
 
-              {/* Units sold */}
-              <div className="flex items-center justify-between py-2.5 border-b border-gray-100">
-                <span className="text-[12px] text-content/80">Units sold</span>
-                <div className="flex flex-col items-end gap-0.5">
-                  <span className="text-[12px] font-medium text-content">
-                    {selected.qty.toLocaleString()}
-                  </span>
-                  {selected.lyQty > 0 && (
-                    <span
-                      className={`text-[11px] ${
-                        selected.qty >= selected.lyQty ? "text-emerald-600" : "text-red-500"
-                      }`}
-                    >
-                      {formatPct(((selected.qty - selected.lyQty) / selected.lyQty) * 100)} vs LY
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Top 10 Items */}
+              {/* Items section */}
               <div className="border-b border-gray-100">
-                <div className="flex items-center justify-between py-2.5 border-b border-gray-100">
-                  <span className="text-[12px] text-content/80">Top 10 items</span>
-                  <span className="text-[10px] text-content/40 italic">by qty · {twDateLabel}</span>
+                {/* Items header */}
+                <div className="flex items-center justify-between px-4 py-2 bg-gray-100 border-b border-gray-100">
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-content/55">Items</span>
+                  <span className="text-[9px] italic text-content/45">{twDateLabel} · {items.length} items</span>
                 </div>
-                {itemsLoading ? (
-                  <div className="py-2 text-[11px] text-content/40 italic">Loading…</div>
-                ) : top10.length === 0 ? (
-                  <div className="py-2 text-[11px] text-content/30 italic">No data</div>
-                ) : (
-                  top10.map((item, i) => {
-                    const lwPct =
-                      item.lwNet !== null && item.lwNet > 0
-                        ? ((item.tyNet - item.lwNet) / item.lwNet) * 100
-                        : null;
-                    const lyPct =
-                      item.lyNet !== null && item.lyNet > 0
-                        ? ((item.tyNet - item.lyNet) / item.lyNet) * 100
-                        : null;
+
+                {/* Item filter chips — sticky */}
+                <div className="flex gap-1.5 px-3 py-2 bg-white border-b border-gray-100 sticky top-0 z-10">
+                  {(["all", "critical", "watch", "healthy"] as SevFilter[]).map((f) => {
+                    const label = f === "all" ? `All (${itemCounts.all})` : f === "critical" ? `Crit (${itemCounts.critical})` : f === "watch" ? `Watch (${itemCounts.watch})` : `OK (${itemCounts.healthy})`;
+                    const active = itemSevFilter === f;
+                    const cls = active
+                      ? f === "all" ? "bg-[#1e2a4a] text-white border-[#1e2a4a]"
+                        : f === "critical" ? "bg-red-100 text-red-800 border-red-200"
+                        : f === "watch" ? "bg-amber-100 text-amber-800 border-amber-200"
+                        : "bg-emerald-100 text-emerald-800 border-emerald-200"
+                      : "bg-white text-content/70 border-gray-200";
                     return (
-                      <div key={item.productCode}>
-                        {/* Item parent row — same style as TY net sales */}
-                        <div className="flex items-center justify-between py-2.5 border-b border-gray-50">
-                          <span className="text-[12px] text-content/80 truncate pr-2">
-                            {i + 1}. {item.desc}
-                          </span>
-                          <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
-                            <span className="text-[13px] font-semibold text-content">
-                              {formatCurrency2(item.tyNet)}
-                            </span>
-                            <span className="text-[10px] text-content/50">
-                              {item.tyQty.toLocaleString()} units
-                            </span>
-                          </div>
-                        </div>
-                        {/* ↳ vs LW — same style as existing child rows */}
-                        <div className="flex items-start justify-between py-2 pl-3 border-b border-gray-50">
-                          <div className="flex flex-col">
-                            <span className="text-[11px] text-content/60">↳ vs last week</span>
-                            <span className="text-[9px] text-content/40 italic">{lwDateLabel}</span>
-                          </div>
-                          <div className="flex flex-col items-end gap-0.5">
-                            {item.lwNet !== null ? (
-                              <>
-                                <span className="text-[11px] text-content/75">
-                                  {formatCurrency2(item.lwNet)}
-                                </span>
-                                <span
-                                  className={`text-[11px] font-semibold ${
-                                    lwPct === null
-                                      ? "text-content/25"
-                                      : lwPct >= 0
-                                      ? "text-emerald-600"
-                                      : "text-red-500"
-                                  }`}
-                                >
-                                  {lwPct !== null ? formatPct(lwPct) : "—"}
-                                </span>
-                              </>
-                            ) : (
-                              <span className="text-[10px] text-content/30 italic">no data</span>
-                            )}
-                          </div>
-                        </div>
-                        {/* ↳ vs LY — same style as existing child rows */}
-                        <div className="flex items-start justify-between py-2 pl-3 border-b border-gray-100">
-                          <div className="flex flex-col">
-                            <span className="text-[11px] text-content/60">↳ vs last year</span>
-                            <span className="text-[9px] text-content/40 italic">{lyDateLabel}</span>
-                          </div>
-                          <div className="flex flex-col items-end gap-0.5">
-                            {item.lyNet !== null ? (
-                              <>
-                                <span className="text-[11px] text-content/75">
-                                  {formatCurrency2(item.lyNet)}
-                                </span>
-                                <span
-                                  className={`text-[11px] font-semibold ${
-                                    lyPct === null
-                                      ? "text-content/25"
-                                      : lyPct >= 0
-                                      ? "text-emerald-600"
-                                      : "text-red-500"
-                                  }`}
-                                >
-                                  {lyPct !== null ? formatPct(lyPct) : "—"}
-                                </span>
-                              </>
-                            ) : (
-                              <span className="text-[10px] text-content/30 italic">no data</span>
-                            )}
+                      <button key={f} onClick={() => setItemSevFilter(f)} className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${cls}`}>{label}</button>
+                    );
+                  })}
+                </div>
+
+                {itemsLoading ? (
+                  <div className="px-4 py-3 text-[11px] text-content/45 italic">Loading…</div>
+                ) : visibleItems.length === 0 ? (
+                  <div className="px-4 py-3 text-[11px] text-content/35 italic">No data</div>
+                ) : (
+                  visibleItems.map((item) => {
+                    const lwNetPct = item.lwNet !== null && item.lwNet > 0
+                      ? ((item.tyNet - item.lwNet) / item.lwNet) * 100 : null;
+                    const lyNetPct = item.lyNet !== null && item.lyNet > 0
+                      ? ((item.tyNet - item.lyNet) / item.lyNet) * 100 : null;
+                    return (
+                      <div key={item.productCode} className="px-3 py-2.5 border-b border-gray-100">
+                        <div className="flex items-start gap-2">
+                          <SeverityBadge severity={item.sev} />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-baseline justify-between gap-2">
+                              <span className="text-[12px] font-medium text-content truncate" style={{ maxWidth: "55%" }}>{item.desc}</span>
+                              <span className="text-[9px] text-content/45 flex-shrink-0">{item.upc}</span>
+                            </div>
+                            <div className="grid grid-cols-3 divide-x divide-gray-100 border border-gray-100 rounded mt-1.5">
+                              <div className="px-2 py-1.5">
+                                <div className="text-[8px] text-content/45 uppercase tracking-wide">TW</div>
+                                <div className="text-[11px] font-semibold text-content mt-0.5">{formatCurrency2(item.tyNet)}</div>
+                                <div className="text-[10px] text-content/60 mt-0.5">{item.tyQty.toLocaleString()} u</div>
+                                {item.tyWeight > 0 && <div className="text-[10px] text-content/50 mt-0.5">{item.tyWeight.toFixed(2)} lb</div>}
+                              </div>
+                              <div className="px-2 py-1.5">
+                                <div className="text-[8px] text-content/45 uppercase tracking-wide">LW</div>
+                                <div className="flex items-baseline gap-1 mt-0.5">
+                                  <span className="text-[11px] font-semibold text-content">{item.lwNet !== null ? formatCurrency2(item.lwNet) : "—"}</span>
+                                  {lwNetPct !== null && <span className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lwNetPct, threshold)}`}>{formatPct(lwNetPct)}</span>}
+                                </div>
+                                {item.lwQty !== null && <div className="text-[10px] text-content/60 mt-0.5">{item.lwQty.toLocaleString()} u</div>}
+                                {item.lwWeight !== null && item.lwWeight > 0 && <div className="text-[10px] text-content/50 mt-0.5">{item.lwWeight.toFixed(2)} lb</div>}
+                              </div>
+                              <div className="px-2 py-1.5">
+                                <div className="text-[8px] text-content/45 uppercase tracking-wide">LY</div>
+                                <div className="flex items-baseline gap-1 mt-0.5">
+                                  <span className="text-[11px] font-semibold text-content">{item.lyNet !== null ? formatCurrency2(item.lyNet) : "—"}</span>
+                                  {lyNetPct !== null && <span className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lyNetPct, threshold)}`}>{formatPct(lyNetPct)}</span>}
+                                </div>
+                                {item.lyQty !== null && <div className="text-[10px] text-content/60 mt-0.5">{item.lyQty.toLocaleString()} u</div>}
+                                {item.lyWeight !== null && item.lyWeight > 0 && <div className="text-[10px] text-content/50 mt-0.5">{item.lyWeight.toFixed(2)} lb</div>}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -633,10 +506,8 @@ const PopupSubDeptList = ({
 
               {/* Coupons */}
               {(selected.digital > 0 || selected.elecInstore > 0 || selected.elecStore > 0 || selected.storeCpn > 0) && (
-                <div className="py-2 border-b border-gray-100">
-                  <div className="text-[10px] font-medium uppercase tracking-wide text-content/40 mb-1.5">
-                    Coupons
-                  </div>
+                <div className="py-2 px-4 border-b border-gray-100">
+                  <div className="text-[10px] font-medium uppercase tracking-wide text-content/45 mb-1.5">Coupons</div>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                     {[
                       { label: "Digital", tw: selected.digital, ly: selected.lyDigital },
@@ -647,19 +518,9 @@ const PopupSubDeptList = ({
                       const pct = ly > 0 ? ((tw - ly) / ly) * 100 : null;
                       return (
                         <div key={label} className="flex items-baseline gap-1.5">
-                          <span className="text-[10px] text-content/50">{label}</span>
-                          <span className="text-[11px] font-medium text-content/80">
-                            {formatCurrency2(tw)}
-                          </span>
-                          {pct !== null && (
-                            <span
-                              className={`text-[10px] font-medium ${
-                                pct >= 0 ? "text-emerald-600" : "text-red-500"
-                              }`}
-                            >
-                              {formatPct(pct)}
-                            </span>
-                          )}
+                          <span className="text-[10px] text-content/55">{label}</span>
+                          <span className="text-[11px] font-medium text-content/80">{formatCurrency2(tw)}</span>
+                          {pct !== null && <span className={`text-[10px] font-medium ${pct >= 0 ? "text-emerald-600" : "text-red-500"}`}>{formatPct(pct)}</span>}
                         </div>
                       );
                     })}
@@ -670,42 +531,16 @@ const PopupSubDeptList = ({
 
             {/* CTA insight strip */}
             {cta && (
-              <div
-                className={`mx-3 mb-3 mt-1 rounded-md p-2.5 flex items-start gap-2 ${
-                  cta.severity === "critical"
-                    ? "bg-orange-50 border border-orange-200"
-                    : cta.severity === "watch"
-                    ? "bg-amber-50 border border-amber-200"
-                    : "bg-emerald-50 border border-emerald-200"
-                }`}
-              >
-                {cta.severity === "critical" && (
-                  <ExclamationTriangleIcon className="w-3.5 h-3.5 text-orange-600 flex-shrink-0 mt-0.5" />
-                )}
-                {cta.severity === "watch" && (
-                  <ExclamationCircleIcon className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
-                )}
-                {cta.severity === "healthy" && (
-                  <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                )}
-                <span
-                  className={`text-[11px] leading-relaxed ${
-                    cta.severity === "critical"
-                      ? "text-orange-900"
-                      : cta.severity === "watch"
-                      ? "text-amber-900"
-                      : "text-emerald-900"
-                  }`}
-                >
-                  {cta.text}
-                </span>
+              <div className={`mx-3 mb-3 mt-1 rounded-md p-2.5 flex items-start gap-2 ${cta.severity === "critical" ? "bg-orange-50 border border-orange-200" : cta.severity === "watch" ? "bg-amber-50 border border-amber-200" : "bg-emerald-50 border border-emerald-200"}`}>
+                {cta.severity === "critical" && <ExclamationTriangleIcon className="w-3.5 h-3.5 text-orange-600 flex-shrink-0 mt-0.5" />}
+                {cta.severity === "watch" && <ExclamationCircleIcon className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />}
+                {cta.severity === "healthy" && <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />}
+                <span className={`text-[11px] leading-relaxed ${cta.severity === "critical" ? "text-orange-900" : cta.severity === "watch" ? "text-amber-900" : "text-emerald-900"}`}>{cta.text}</span>
               </div>
             )}
           </>
         ) : (
-          <div className="flex items-center justify-center h-full text-[12px] text-content/30">
-            Select a sub department
-          </div>
+          <div className="flex items-center justify-center h-full text-[12px] text-content/35">Select a sub department</div>
         )}
       </div>
     </div>

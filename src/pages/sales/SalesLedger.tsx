@@ -1,7 +1,7 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { getWeekly, getHourly } from "../../api/sales";
 import { addDays, formatGoliathDate, sameWeekDayLastYear, formatCurrency2 } from "../../utils";
-import type { WeeklySale } from "../../interfaces";
+import type { WeeklySale, Store } from "../../interfaces";
 import {
   setWeeklySales,
   setWeeklySalesLastWeek,
@@ -15,53 +15,23 @@ import {
   setHasSearched,
   setLedgerLoading,
   setLedgerSelection,
+  setThreshold,
 } from "../../features/salesLedgerSlice";
-import {
-  ExclamationTriangleIcon,
-  ExclamationCircleIcon,
-  CheckCircleIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/20/solid";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import LedgerEntryCard from "./components/LedgerEntryCard";
 import StoreDetailPopup from "./components/StoreDetailPopup";
-import { type LedgerRowData, type StoreSelection } from "./components/LedgerRow";
+import TierColumn from "./components/TierColumn";
+import { SEVERITY_CONFIG, formatPct } from "./components/tierColumnUtils";
+import { type LedgerRowData } from "./components/LedgerRow";
 
 const SEVERITY_RANK = { critical: 0, watch: 1, healthy: 2 } as const;
-
-type SeverityKey = "critical" | "watch" | "healthy";
-
-const SEVERITY_CONFIG = {
-  critical: {
-    Icon: ExclamationTriangleIcon,
-    iconColor: "#ef4444",
-    badgeBg: "#fee2e2",
-    headerBg: "bg-red-50",
-    label: "Critical",
-    sub: "down > 9%",
-  },
-  watch: {
-    Icon: ExclamationCircleIcon,
-    iconColor: "#f59e0b",
-    badgeBg: "#fef3c7",
-    headerBg: "bg-amber-50",
-    label: "Watch",
-    sub: "down 0–9%",
-  },
-  healthy: {
-    Icon: CheckCircleIcon,
-    iconColor: "#10b981",
-    badgeBg: "#d1fae5",
-    headerBg: "bg-emerald-50",
-    label: "Healthy",
-    sub: "at or above",
-  },
-} as const;
 
 const buildLedgerRows = (
   twData: WeeklySale[],
   lwData: WeeklySale[],
   lyData: WeeklySale[],
+  assignedStores: Store[],
+  threshold: number,
 ): LedgerRowData[] => {
   const storeIds = [...new Set(twData.map((d) => d.storeid))];
 
@@ -71,6 +41,7 @@ const buildLedgerRows = (
       const lwRows = lwData.filter((d) => d.storeid === id);
       const lyRows = lyData.filter((d) => d.storeid === id);
       const ref = twRows[0];
+      const assigned = assignedStores.find((s) => s.storeid === id);
 
       const twTotal = twRows.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
       const lwTotal = lwRows.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
@@ -81,10 +52,9 @@ const buildLedgerRows = (
       const vsLYPct = hasLY ? (vsLYDollar / lyTotal) * 100 : 0;
       const vsLWPct = hasLW ? ((twTotal - lwTotal) / lwTotal) * 100 : 0;
 
-      const THRESHOLD = 9;
       const severity: LedgerRowData["severity"] = (() => {
         const pct = hasLY ? vsLYPct : hasLW ? vsLWPct : 0;
-        if (pct < -THRESHOLD) return "critical";
+        if (pct < -threshold) return "critical";
         if (pct < 0) return "watch";
         return "healthy";
       })();
@@ -107,8 +77,8 @@ const buildLedgerRows = (
 
       return {
         storeid: id,
-        store_name: ref.store_name,
-        store_number: ref.store_number,
+        store_name: assigned?.store_name ?? ref.store_name,
+        store_number: assigned?.store_number ?? ref.store_number,
         twTotal,
         lwTotal,
         lyTotal,
@@ -130,90 +100,6 @@ const buildLedgerRows = (
     });
 };
 
-const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
-
-const TierColumn = ({
-  severity,
-  rows,
-  onSelect,
-}: {
-  severity: SeverityKey;
-  rows: LedgerRowData[];
-  onSelect: (selection: StoreSelection) => void;
-}) => {
-  const cfg = SEVERITY_CONFIG[severity];
-
-  const handleClick = (row: LedgerRowData) => {
-    const sorted = [...row.days].sort((a, b) => a.sale_date.localeCompare(b.sale_date));
-    const weekStart = sorted[0]?.sale_date.split("T")[0] ?? "";
-    const weekEnd = sorted[sorted.length - 1]?.sale_date.split("T")[0] ?? "";
-    onSelect({
-      storeId: row.storeid,
-      storeName: row.store_name,
-      storeNumber: row.store_number,
-      start: weekStart,
-      end: weekEnd,
-      mode: "weekly",
-      days: sorted,
-    });
-  };
-
-  return (
-    <div className="flex flex-col min-h-0">
-      <div className={`flex items-center gap-2 px-3 py-2.5 border-b border-gray-100 ${cfg.headerBg}`}>
-        <div
-          className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0"
-          style={{ background: cfg.badgeBg }}
-        >
-          <cfg.Icon className="w-3 h-3" style={{ color: cfg.iconColor }} />
-        </div>
-        <span className="text-[11px] font-semibold text-content flex-1">{cfg.label}</span>
-        <span className="text-[10px] text-content/40">{rows.length}</span>
-      </div>
-
-      <div className="overflow-y-auto thin-scrollbar" style={{ maxHeight: "calc(100vh - 18rem)" }}>
-        {rows.length === 0 ? (
-          <div className="flex items-center justify-center py-8 text-[11px] text-content/20">
-            None this week
-          </div>
-        ) : (
-          rows.map((row) => (
-            <button
-              key={row.storeid}
-              onClick={() => handleClick(row)}
-              className="flex items-center w-full px-3 py-2.5 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors gap-2 text-left"
-            >
-              <div className="flex-1 min-w-0">
-                <div className="text-[9px] text-content/40 leading-none mb-0.5">{row.store_number}</div>
-                <div className="text-[11px] font-medium text-content truncate">{row.store_name}</div>
-              </div>
-              <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
-                {row.hasLY && (
-                  <div className="flex items-center gap-1">
-                    <span className="text-[8px] text-content/30 font-medium">LY</span>
-                    <span className={`text-[11px] font-bold ${row.vsLYPct >= 0 ? "text-emerald-600" : "text-red-500"}`}>
-                      {formatPct(row.vsLYPct)}
-                    </span>
-                  </div>
-                )}
-                {row.hasLW && (
-                  <div className="flex items-center gap-1">
-                    <span className="text-[8px] text-content/30 font-medium">LW</span>
-                    <span className={`text-[11px] font-medium ${row.vsLWPct >= 0 ? "text-emerald-600" : "text-red-500"}`}>
-                      {formatPct(row.vsLWPct)}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <ChevronRightIcon className="w-4 h-4 text-content/20 flex-shrink-0" />
-            </button>
-          ))
-        )}
-      </div>
-    </div>
-  );
-};
-
 const SalesLedger = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
@@ -222,11 +108,12 @@ const SalesLedger = () => {
     weeklySales = [],
     weeklySalesLastWeek = [],
     weeklySalesLastYear = [],
-    hourlySales = [],
-    hourlySalesLastWeek = [],
-    hourlySalesLastYear = [],
+    // hourlySales = [],
+    // hourlySalesLastWeek = [],
+    // hourlySalesLastYear = [],
   } = useAppSelector((state) => state.sales);
-  const { hasSearched, selection, ledgerLoading: loading } = useAppSelector((state) => state.salesLedger);
+  const { hasSearched, selection, ledgerLoading: loading, threshold } = useAppSelector((state) => state.salesLedger);
+  const { assignedStores } = useAppSelector((state) => state.user);
 
   const resetToEntry = () => {
     dispatch(reQuery());
@@ -275,7 +162,7 @@ const SalesLedger = () => {
     }
   };
 
-  const ledgerRows = buildLedgerRows(weeklySales, weeklySalesLastWeek, weeklySalesLastYear);
+  const ledgerRows = buildLedgerRows(weeklySales, weeklySalesLastWeek, weeklySalesLastYear, assignedStores, threshold);
 
   const criticalRows = ledgerRows.filter((r) => r.severity === "critical");
   const watchRows = ledgerRows.filter((r) => r.severity === "watch");
@@ -313,19 +200,33 @@ const SalesLedger = () => {
           No data found for this period.
         </div>
       ) : (
-        <div className="flex gap-4 h-[calc(100vh-6rem)]">
+        <div className="flex gap-4 h-[calc(100vh-5rem)]">
           {/* Left: store list */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col min-w-0 shadow-lg">
             {/* Navy header */}
-            <div className="bg-[#1e2a4a] rounded-t-xl px-4 py-3 flex items-start justify-between">
+            <div className="bg-[#1e2a4a] rounded-t-xl px-4 py-3 flex items-end justify-between">
               <div>
-                <button
-                  onClick={resetToEntry}
-                  className="text-white font-semibold text-[13px] hover:text-white/80 transition-colors text-left"
-                >
-                  District Weekly Performance
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={resetToEntry}
+                    className="text-white font-semibold text-[13px] hover:text-white/80 transition-colors text-left"
+                  >
+                    Weekly Performance
+                  </button>
+                  {/* <button onClick={resetToEntry} className="flex items-center gap-1 mb-0.5">
+                    <i className="ti ti-refresh" style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }} aria-hidden="true" />
+                    <span className="text-[10px] text-white/50">New search</span>
+                  </button> */}
+                </div>
                 <div className="text-white/40 text-[10px] mt-0.5">{weekLabel}</div>
+              </div>
+              <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-4">
+                <div className="text-white/50 text-[9px]">Graded against LY, LW fallback</div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-red-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">Critical &gt;9%</span></div>
+                  <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">Watch ≤9%</span></div>
+                  <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">Healthy</span></div>
+                </div>
               </div>
               <div className="flex gap-5">
                 <div className="text-right">
@@ -348,11 +249,28 @@ const SalesLedger = () => {
                     {formatPct(heroVsLYPct)}
                   </div>
                 </div>
+                <div className="text-right">
+                  <div className="text-white/40 text-[8px] uppercase tracking-wide font-medium mb-1">Threshold</div>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={1}
+                      max={99}
+                      value={threshold}
+                      onChange={(e) => {
+                        const v = parseInt(e.target.value, 10);
+                        if (!isNaN(v) && v >= 1 && v <= 99) dispatch(setThreshold(v));
+                      }}
+                      className="w-12 text-center text-[12px] font-semibold bg-white/10 text-white rounded px-1.5 py-0.5 border border-white/20 focus:outline-none focus:border-white/50"
+                    />
+                    <span className="text-white/50 text-[11px]">%</span>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Tier summary strip */}
-            <div className="bg-custom-white border-x border-gray-100 grid grid-cols-3 divide-x divide-gray-100">
+            <div className="border-x border-gray-100 grid grid-cols-3 divide-x divide-gray-100">
               {(["critical", "watch", "healthy"] as const).map((sev) => {
                 const cfg = SEVERITY_CONFIG[sev];
                 const count =
@@ -362,19 +280,10 @@ const SalesLedger = () => {
                     ? watchRows.length
                     : healthyRows.length;
                 return (
-                  <div key={sev} className="flex items-center gap-2 px-3 py-2.5">
-                    <div
-                      className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0"
-                      style={{ background: cfg.badgeBg }}
-                    >
-                      <cfg.Icon className="w-3 h-3" style={{ color: cfg.iconColor }} />
-                    </div>
-                    <div>
-                      <div className="text-[8px] font-medium text-content/40 uppercase tracking-wide">
-                        {cfg.label}
-                      </div>
-                      <div className="text-[18px] font-bold text-content leading-tight">{count}</div>
-                    </div>
+                  <div key={sev} className={`flex items-center justify-between gap-4 px-6 py-3 ${cfg.headerBg}`}>
+                    <cfg.Icon className="w-6 h-6 flex-shrink-0" style={{ color: cfg.iconColor }} />
+                    <span className="text-[15px] font-medium text-content/60">{cfg.label}</span>
+                    <span className="text-[15px] font-semibold text-content leading-none">{count}</span>
                   </div>
                 );
               })}
@@ -382,14 +291,14 @@ const SalesLedger = () => {
 
             {/* Three columns — flex-1 so they fill remaining height */}
             <div className="flex-1 overflow-hidden bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100 grid grid-cols-3 divide-x divide-gray-100">
-              <TierColumn severity="critical" rows={criticalRows} onSelect={(s) => dispatch(setLedgerSelection(s))} />
-              <TierColumn severity="watch" rows={watchRows} onSelect={(s) => dispatch(setLedgerSelection(s))} />
-              <TierColumn severity="healthy" rows={healthyRows} onSelect={(s) => dispatch(setLedgerSelection(s))} />
+              <TierColumn severity="critical" rows={criticalRows} onSelect={(s) => dispatch(setLedgerSelection(s))} selectedStoreId={selection?.storeId} />
+              <TierColumn severity="watch" rows={watchRows} onSelect={(s) => dispatch(setLedgerSelection(s))} selectedStoreId={selection?.storeId} />
+              <TierColumn severity="healthy" rows={healthyRows} onSelect={(s) => dispatch(setLedgerSelection(s))} selectedStoreId={selection?.storeId} />
             </div>
           </div>
 
           {/* Right: report panel */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 shadow-lg">
             {selection !== null ? (
               <StoreDetailPopup selection={selection} onClose={() => dispatch(setLedgerSelection(null))} />
             ) : (

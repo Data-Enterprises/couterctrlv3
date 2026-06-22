@@ -8,13 +8,17 @@ export type OpenSheetType = "subdept" | "hourly" | null;
 
 export type Top10Item = {
   productCode: string;
+  upc: string;
   desc: string;
   tyNet: number;
   tyQty: number;
+  tyWeight: number;
   lwNet: number | null;
   lwQty: number | null;
+  lwWeight: number | null;
   lyNet: number | null;
   lyQty: number | null;
+  lyWeight: number | null;
 };
 
 interface SalesLedgerState {
@@ -40,6 +44,9 @@ interface SalesLedgerState {
   // Top 10
   top10: Top10Item[];
 
+  // Grading
+  threshold: number;
+
   // Mobile-specific
   screen: "list" | "report";
   listSevFilter: SevFilter;
@@ -63,6 +70,7 @@ const initialState: SalesLedgerState = {
   rawLWHourly: [],
   rawLYHourly: [],
   top10: [],
+  threshold: 9,
   screen: "list",
   listSevFilter: "all",
   reportSevFilter: "all",
@@ -118,6 +126,9 @@ const salesLedgerSlice = createSlice({
     },
     setScreen(state, action: PayloadAction<"list" | "report">) {
       state.screen = action.payload;
+    },
+    setThreshold(state, action: PayloadAction<number>) {
+      state.threshold = action.payload;
     },
     setListSevFilter(state, action: PayloadAction<SevFilter>) {
       state.listSevFilter = action.payload;
@@ -176,6 +187,7 @@ export const {
   setRawLYHourly,
   setTop10,
   setScreen,
+  setThreshold,
   setListSevFilter,
   setReportSevFilter,
   openSheet,
