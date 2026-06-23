@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useOrdersCtx } from "./hooks";
-import { useToast } from "../../components/toasts/hooks/useToast";
-import { getAllOrders, getAvailableOrders } from "../../api/orders";
-import { getStoresAssignedToUserGroup } from "../../api/groups";
+import { useEffect, useState } from "react";
+import { useOrdersCtx } from "../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+import { getAllOrders, getAvailableOrders } from "../../../api/orders";
+import { getStoresAssignedToUserGroup } from "../../../api/groups";
 import {
   setAllOrders,
   setAvailableOrders,
@@ -15,21 +15,30 @@ import {
   setUniqueSubs,
   type GroupedOrderCard,
   type UniqueSub,
-} from "../../features/ordersSlice";
-import type { AllOrderResp, AvailableOrderResp, JsonError, Store } from "../../interfaces";
-import { getCogs, getERet, ordersCols } from ".";
-import { formatGoliathDate } from "../../utils";
+} from "../../../features/ordersSlice";
+import type { AllOrderResp, AvailableOrderResp, JsonError, Store } from "../../../interfaces";
+import { getCogs, getERet, ordersCols } from "..";
+import { formatGoliathDate } from "../../../utils";
+import SearchCard from "../../../components/SearchCard";
+import ExportModal from "../../../components/modals/ExportModal";
+import BottomSheet from "../../../components/BottomSheet";
+import OrdersAvailableScreen from "./OrdersAvailableScreen";
+import OrdersListScreen from "./OrdersListScreen";
+import OrdersLineItemsScreen from "./OrdersLineItemsScreen";
 
-import SearchCard from "../../components/SearchCard";
-import ExportModal from "../../components/modals/ExportModal";
-import AvailableOrdersPanel from "./components/AvailableOrdersPanel";
-import OrderReportPanel from "./components/OrderReportPanel";
-import OrdersMobile from "./mobile/OrdersMobile";
+type MobileStep = "available" | "list";
 
-const Orders = () => {
+const OrdersMobile = () => {
   const ctx = useOrdersCtx();
   const toast = useToast();
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [step, setStep] = useState<MobileStep>("available");
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
 
   const handleSearch = () => {
     if (ctx.type === "Group") {
@@ -55,6 +64,7 @@ const Orders = () => {
     ctx.dispatch(setAllOrders([]));
     ctx.dispatch(setSelectedOrderKey(null));
     ctx.dispatch(setSelectedOrderId(null));
+    setStep("available");
 
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
@@ -66,7 +76,6 @@ const Orders = () => {
         if (j.error === 0) {
           ctx.dispatch(setAvailableOrders(j.orders));
 
-          // Group by order_type → order_date → stores (frequency = appearances per type+date+store)
           const typeMap = new Map<string, Map<string, Map<number, number>>>();
           for (const o of j.orders) {
             if (!typeMap.has(o.order_type)) typeMap.set(o.order_type, new Map());
@@ -81,16 +90,12 @@ const Orders = () => {
             .map(([order_type, dateMap]) => ({
               order_type,
               dates: Array.from(dateMap.entries())
-                .sort(([a], [b]) => b.localeCompare(a)) // most recent first
+                .sort(([a], [b]) => b.localeCompare(a))
                 .map(([order_date, storeMap]) => ({
                   order_date,
                   stores: Array.from(storeMap.entries()).map(([storeid, frequency]) => {
                     const assigned = ctx.assignedStores.find((s) => s.storeid === storeid);
-                    return {
-                      storeid,
-                      store_name: assigned?.store_name ?? String(storeid),
-                      frequency,
-                    };
+                    return { storeid, store_name: assigned?.store_name ?? String(storeid), frequency };
                   }),
                 })),
             }));
@@ -136,13 +141,26 @@ const Orders = () => {
 
           ctx.dispatch(setUniqueSubs(uniqueSubs));
           ctx.dispatch(setAllOrders(ordersWERet));
+
+          // Auto-advance to list; if single order open the sheet immediately
+          const filtered = ordersWERet.filter((o) => o.order_type === order_type);
+          const ids = Array.from(new Set(filtered.map((o) => o.order_id)));
+          if (ids.length === 1) {
+            ctx.dispatch(setSelectedOrderId(ids[0]));
+            setSheetOpen(true);
+          } else {
+            setStep("list");
+          }
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
       .finally(() => ctx.dispatch(setLoadingAllOrders(false)));
   };
 
-  if (ctx.isMobile) return <OrdersMobile />;
+  const handleSelectOrderId = (id: number) => {
+    ctx.dispatch(setSelectedOrderId(id));
+    setSheetOpen(true);
+  };
 
   const hasData = ctx.groupedAvailableOrders.length > 0;
 
@@ -159,7 +177,7 @@ const Orders = () => {
   }
 
   return (
-    <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-3">
+    <div className="h-[calc(100vh-3rem)] overflow-hidden flex flex-col bg-custom-white">
       <ExportModal
         isOpen={ctx.ordersExportModalOpen}
         data={ctx.selectedOrderId !== null ? ctx.allOrders.filter((o) => o.order_id === ctx.selectedOrderId) : []}
@@ -167,25 +185,41 @@ const Orders = () => {
         onClose={() => ctx.dispatch(setOrdersExportModalOpen(false))}
       />
 
-      <AvailableOrdersPanel
-        cards={ctx.groupedAvailableOrders}
-        selectedKey={ctx.selectedOrderKey}
-        loading={ctx.loadingAvailableOrders}
-        onSelectStore={handleSelectStore}
-        onOpenSearch={() => setSearchModalOpen(true)}
-        startDate={ctx.startDate}
-        endDate={ctx.endDate}
-      />
+      {step === "available" && (
+        <OrdersAvailableScreen
+          cards={ctx.groupedAvailableOrders}
+          selectedKey={ctx.selectedOrderKey}
+          loading={ctx.loadingAvailableOrders}
+          startDate={ctx.startDate}
+          endDate={ctx.endDate}
+          onSelectStore={handleSelectStore}
+          onOpenSearch={() => setSearchModalOpen(true)}
+        />
+      )}
 
-      <OrderReportPanel
-        orders={ctx.allOrders}
-        loading={ctx.loadingAllOrders}
-        selectedKey={ctx.selectedOrderKey}
-        selectedOrderId={ctx.selectedOrderId}
-        assignedStores={ctx.assignedStores}
-        onSelectOrderId={(id) => ctx.dispatch(setSelectedOrderId(id))}
-        onExport={() => ctx.dispatch(setOrdersExportModalOpen(true))}
-      />
+      {step === "list" && ctx.selectedOrderKey && (
+        <OrdersListScreen
+          orders={ctx.allOrders}
+          loading={ctx.loadingAllOrders}
+          selectedKey={ctx.selectedOrderKey}
+          assignedStores={ctx.assignedStores}
+          onBack={() => setStep("available")}
+          onSelectOrderId={handleSelectOrderId}
+        />
+      )}
+
+      {sheetOpen && ctx.selectedOrderKey && ctx.selectedOrderId !== null && (
+        <BottomSheet onClose={() => { setSheetOpen(false); ctx.dispatch(setSelectedOrderId(null)); }}>
+          <OrdersLineItemsScreen
+            orders={ctx.allOrders}
+            selectedKey={ctx.selectedOrderKey}
+            selectedOrderId={ctx.selectedOrderId}
+            assignedStores={ctx.assignedStores}
+            onExport={() => ctx.dispatch(setOrdersExportModalOpen(true))}
+          />
+        </BottomSheet>
+      )}
+
       {searchModalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
@@ -206,4 +240,4 @@ const Orders = () => {
   );
 };
 
-export default Orders;
+export default OrdersMobile;

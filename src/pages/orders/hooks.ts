@@ -2,13 +2,16 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 
 export const useOrdersCtx = () => {
   const dispatch = useAppDispatch();
-  const { url, token, isTablet } = useAppSelector((state) => state.app);
+  const { url, token, isTablet, isMobile } = useAppSelector((state) => state.app);
   const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector(
     (state) => state.search,
   );
   const { assignedStores, userid } = useAppSelector((state) => state.user);
   const {
     availableOrders,
+    groupedAvailableOrders,
+    selectedOrderKey,
+    selectedOrderId,
     allOrders,
     orderTypeFilter,
     subDeptFilter,
@@ -31,6 +34,9 @@ export const useOrdersCtx = () => {
     dispatch,
     assignedStores,
     availableOrders,
+    groupedAvailableOrders,
+    selectedOrderKey,
+    selectedOrderId,
     availableOrderTypes,
     allOrders,
     endDate,
@@ -56,5 +62,6 @@ export const useOrdersCtx = () => {
     filteredAvailableOrders,
     typeFilterArr,
     isTablet,
+    isMobile,
   };
 };

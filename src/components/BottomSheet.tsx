@@ -70,7 +70,7 @@ const BottomSheet = ({ children, onClose, closeRef }: BottomSheetProps) => {
       <div className="absolute inset-0 bg-black/35" onClick={slideDown} />
       <div
         ref={sheetRef}
-        className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[85vh] flex flex-col"
+        className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[92vh] flex flex-col"
       >
         {/* Drag handle — only this zone triggers swipe-to-close */}
         <div

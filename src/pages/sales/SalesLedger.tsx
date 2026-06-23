@@ -189,7 +189,7 @@ const SalesLedger = () => {
 
   if (!hasSearched) {
     return (
-      <div className="w-full min-h-[calc(100vh-3rem)] p-4">
+      <div className="w-full min-h-[calc(100vh-3rem)] overflow-hidden p-4">
         <LedgerEntryCard onSearch={fetchLedger} loading={loading} />
       </div>
     );

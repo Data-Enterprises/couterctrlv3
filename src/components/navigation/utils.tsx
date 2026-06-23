@@ -172,7 +172,7 @@ export const navigation: Navigation[] = [
     name: "Orders",
     href: "orders",
     icon: DocumentCheckIcon,
-    mobile: false,
+    mobile: true,
     children: [],
     childOpen: false,
     userLevels: ["*"],
