@@ -88,84 +88,90 @@ const salesLedgerSlice = createSlice({
   name: "salesLedger",
   initialState,
   reducers: {
-    setHasSearched(state, action: PayloadAction<boolean>) {
+    setHasSearched: (state, action: PayloadAction<boolean>) => {
       state.hasSearched = action.payload;
     },
-    setLedgerSelection(state, action: PayloadAction<StoreSelection | null>) {
+    setLedgerSelection: (
+      state,
+      action: PayloadAction<StoreSelection | null>,
+    ) => {
       state.selection = action.payload;
     },
-    setLedgerTab(state, action: PayloadAction<LedgerTab>) {
+    setLedgerTab: (state, action: PayloadAction<LedgerTab>) => {
       state.tab = action.payload;
     },
-    setLedgerSelectedDate(state, action: PayloadAction<string | null>) {
+    setLedgerSelectedDate: (state, action: PayloadAction<string | null>) => {
       state.selectedDate = action.payload;
     },
-    setLedgerLoading(state, action: PayloadAction<boolean>) {
+    setLedgerLoading: (state, action: PayloadAction<boolean>) => {
       state.ledgerLoading = action.payload;
     },
-    setReportLoading(state, action: PayloadAction<boolean>) {
+    setReportLoading: (state, action: PayloadAction<boolean>) => {
       state.reportLoading = action.payload;
     },
-    setTop10Loading(state, action: PayloadAction<boolean>) {
+    setTop10Loading: (state, action: PayloadAction<boolean>) => {
       state.top10Loading = action.payload;
     },
-    setRawSubs(state, action: PayloadAction<SubSale[]>) {
+    setRawSubs: (state, action: PayloadAction<SubSale[]>) => {
       state.rawSubs = action.payload;
     },
-    setRawLWSubs(state, action: PayloadAction<SubSale[]>) {
+    setRawLWSubs: (state, action: PayloadAction<SubSale[]>) => {
       state.rawLWSubs = action.payload;
     },
-    setRawLYSubs(state, action: PayloadAction<SubSale[]>) {
+    setRawLYSubs: (state, action: PayloadAction<SubSale[]>) => {
       state.rawLYSubs = action.payload;
     },
-    setRawHourly(state, action: PayloadAction<HourlySale[]>) {
+    setRawHourly: (state, action: PayloadAction<HourlySale[]>) => {
       state.rawHourly = action.payload;
     },
-    setRawLWHourly(state, action: PayloadAction<HourlySale[]>) {
+    setRawLWHourly: (state, action: PayloadAction<HourlySale[]>) => {
       state.rawLWHourly = action.payload;
     },
-    setRawLYHourly(state, action: PayloadAction<HourlySale[]>) {
+    setRawLYHourly: (state, action: PayloadAction<HourlySale[]>) => {
       state.rawLYHourly = action.payload;
     },
-    setTop10(state, action: PayloadAction<Top10Item[]>) {
+    setTop10: (state, action: PayloadAction<Top10Item[]>) => {
       state.top10 = action.payload;
     },
-    setScreen(state, action: PayloadAction<"list" | "report">) {
+    setScreen: (state, action: PayloadAction<"list" | "report">) => {
       state.screen = action.payload;
     },
-    setThreshold(state, action: PayloadAction<number>) {
+    setThreshold: (state, action: PayloadAction<number>) => {
       state.threshold = action.payload;
     },
-    setSubDeptThreshold(state, action: PayloadAction<number>) {
+    setSubDeptThreshold: (state, action: PayloadAction<number>) => {
       state.subDeptThreshold = action.payload;
     },
-    setHourlyThreshold(state, action: PayloadAction<number>) {
+    setHourlyThreshold: (state, action: PayloadAction<number>) => {
       state.hourlyThreshold = action.payload;
     },
-    setItemThreshold(state, action: PayloadAction<number>) {
+    setItemThreshold: (state, action: PayloadAction<number>) => {
       state.itemThreshold = action.payload;
     },
-    setListSevFilter(state, action: PayloadAction<SevFilter>) {
+    setListSevFilter: (state, action: PayloadAction<SevFilter>) => {
       state.listSevFilter = action.payload;
     },
-    setReportSevFilter(state, action: PayloadAction<SevFilter>) {
+    setReportSevFilter: (state, action: PayloadAction<SevFilter>) => {
       state.reportSevFilter = action.payload;
     },
-    openSheet(state, action: PayloadAction<{ type: "subdept" | "hourly"; id: number }>) {
+    openSheet: (
+      state,
+      action: PayloadAction<{ type: "subdept" | "hourly"; id: number }>,
+    ) => {
       state.openSheetType = action.payload.type;
       state.openSheetId = action.payload.id;
       state.top10 = [];
     },
-    closeSheet(state) {
+    closeSheet: (state) => {
       state.openSheetType = null;
       state.openSheetId = null;
       state.top10 = [];
     },
-    resetLedger(state) {
+    resetLedger: (state) => {
       Object.assign(state, initialState);
     },
     // Navigate to store report (mobile)
-    navigateToReport(state, action: PayloadAction<StoreSelection>) {
+    navigateToReport: (state, action: PayloadAction<StoreSelection>) => {
       state.selection = action.payload;
       state.screen = "report";
       state.selectedDate = null;

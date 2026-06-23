@@ -24,6 +24,7 @@ import { resetForecastSlice } from "../../features/forecastSlice";
 import { resetUpcsSlice } from "../../features/upcUploadSlice";
 import { resetReceiverSlice } from "../../features/receiversSlice";
 import { resetCouponsSlice } from "../../features/couponSlice";
+import { resetLedger } from "../../features/salesLedgerSlice";
 
 import { Cog6ToothIcon } from "@heroicons/react/16/solid";
 import SignOutIcon from "../../svgs/SignOutIcon";
@@ -106,6 +107,7 @@ const SideBar = () => {
     dispatch(resetCashierSlice());
     dispatch(resetForgotPasswordSlice());
     dispatch(resetOrdersState());
+    dispatch(resetLedger());
   };
 
   const handleHover = (itemName: string, isHovering: boolean, idx: number) => {
