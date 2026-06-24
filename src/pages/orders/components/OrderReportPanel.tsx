@@ -168,9 +168,10 @@ const OrderReportPanel = ({
           <div className="divide-y divide-gray-50">
             {uniqueOrderIds.map((orderId) => {
               const items = subFilteredOrders.filter((o) => o.order_id === orderId);
+              const allItems = filteredOrders.filter((o) => o.order_id === orderId);
               const eRet = items.reduce((s, o) => s + (o.e_ret ?? 0), 0);
               const status = items[0]?.status ?? "";
-              const subDepts = Array.from(new Set(items.map((o) => o.sub_department_description).filter(Boolean)));
+              const subDepts = Array.from(new Set(allItems.map((o) => o.sub_department_description).filter(Boolean)));
               return (
                 <button
                   key={orderId}
