@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useApiContext } from "../../hooks";
@@ -49,6 +49,12 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
   const cashier = useAppSelector((s) => s.lossPrevention);
   const [loading, setLoading] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (cashier.saleTypes.length > 0 && !cashier.selectedSaleType && cashier.cashierDetails.length === 0) {
+      handleSaleTypeSelect(cashier.saleTypes[0].sale_type);
+    }
+  }, [cashier.saleTypes]);
   // const [descModalOpen, setDescModalOpen] = useState(false);
 
   const handleSaleTypeSelect = (saleType: string) => {
