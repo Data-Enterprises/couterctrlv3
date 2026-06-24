@@ -1,29 +1,32 @@
-import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { setThreshold } from "../../../features/salesLedgerSlice";
-import { formatCurrency2 } from "../../../utils";
+import { setThreshold, setGradingMetric, type GradingMetric } from "../../../features/salesLedgerSlice";
+import { formatCurrency2, formatBigNumber } from "../../../utils";
 import { formatPct } from "./tierColumnUtils";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 
 interface LedgerHeaderProps {
   weekLabel: string;
   twTotal: number;
+  twQty: number;
   vsLYPct: number;
   vsLWPct: number;
   hasLY: boolean;
   hasLW: boolean;
   onNewSearch: () => void;
   onOpenSearch: () => void;
+  gradingMetric: GradingMetric;
 }
 
-const LedgerHeader = ({ weekLabel, twTotal, vsLYPct, vsLWPct, hasLY, hasLW, onNewSearch: _onNewSearch, onOpenSearch }: LedgerHeaderProps) => {
+const LedgerHeader = ({ weekLabel, twTotal, twQty, vsLYPct, vsLWPct, hasLY, hasLW, onNewSearch: _onNewSearch, onOpenSearch, gradingMetric }: LedgerHeaderProps) => {
   const dispatch = useAppDispatch();
   const threshold = useAppSelector((s) => s.salesLedger.threshold);
-  const [inputVal, setInputVal] = useState(String(threshold));
+
+  const isQty = gradingMetric === "qty";
 
   return (
     <div className="bg-[#1e2a4a] rounded-t-xl px-4 py-2.5">
-      {/* Top row: title + date | grading note | legend */}
+      {/* Row 1: title + date | grading toggle + threshold */}
       <div className="flex items-center gap-3 min-h-[24px]">
         <button
           onClick={onOpenSearch}
@@ -37,28 +40,44 @@ const LedgerHeader = ({ weekLabel, twTotal, vsLYPct, vsLWPct, hasLY, hasLW, onNe
 
         <div className="flex-1" />
 
-        {/* Legend */}
-        <div className="flex items-center gap-2.5 flex-shrink-0">
-          <div className="flex items-center gap-1">
-            <div className="w-[7px] h-[7px] rounded-[2px] bg-red-300 flex-shrink-0" />
-            <span className="text-[10px] text-white/45">Critical &gt;{threshold}% down</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" />
-            <span className="text-[10px] text-white/45">Watch 0–{threshold}% down</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-300 flex-shrink-0" />
-            <span className="text-[10px] text-white/45">Healthy</span>
-          </div>
+        {/* Grading metric toggle */}
+        <div className="flex items-center flex-shrink-0 rounded overflow-hidden" style={{ height: 22 }}>
+          {(["sales", "qty"] as GradingMetric[]).map((m) => (
+            <button
+              key={m}
+              onClick={() => dispatch(setGradingMetric(m))}
+              className="px-2.5 text-[10px] font-medium transition-colors h-full capitalize"
+              style={{
+                background: gradingMetric === m ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.07)",
+                color: gradingMetric === m ? "#fff" : "rgba(255,255,255,0.4)",
+              }}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+
+        {/* Threshold */}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <span className="text-[10px] text-white/45 uppercase tracking-wide">Threshold</span>
+          <ThresholdFilter
+            value={threshold}
+            onChange={(v) => dispatch(setThreshold(v))}
+            suffix="%"
+            showOp={false}
+            inputWidth={40}
+            variant="dark"
+          />
         </div>
       </div>
 
-      {/* Bottom row: metrics + threshold */}
-      <div className="flex items-center gap-4">
+      {/* Row 2: grade metrics + legend */}
+      <div className="flex items-center gap-4 mt-1">
         <div className="flex items-baseline gap-1.5">
-          <span className="text-[10px] text-white/45 uppercase tracking-wide">Net</span>
-          <span className="text-[13px] font-medium text-white">{formatCurrency2(twTotal)}</span>
+          <span className="text-[10px] text-white/45 uppercase tracking-wide">{isQty ? "Units" : "Net"}</span>
+          <span className="text-[13px] font-medium text-white">
+            {isQty ? formatBigNumber(twQty, 0) : formatCurrency2(twTotal)}
+          </span>
         </div>
         {hasLY && (
           <div className="flex items-baseline gap-1.5">
@@ -79,27 +98,23 @@ const LedgerHeader = ({ weekLabel, twTotal, vsLYPct, vsLWPct, hasLY, hasLW, onNe
 
         <div className="flex-1" />
 
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          <span className="text-[10px] text-white/45 uppercase tracking-wide">Threshold</span>
-          <input
-            type="number"
-            min={1}
-            max={99}
-            value={inputVal}
-            onChange={(e) => {
-              setInputVal(e.target.value);
-              const v = parseInt(e.target.value, 10);
-              if (!isNaN(v) && v >= 1 && v <= 99) dispatch(setThreshold(v));
-            }}
-            onBlur={() => {
-              const v = parseInt(inputVal, 10);
-              if (isNaN(v) || v < 1 || v > 99) setInputVal(String(threshold));
-            }}
-            className="w-11 text-center text-[12px] font-medium bg-white/10 text-white rounded px-1.5 py-0.5 border border-white/20 focus:outline-none focus:border-white/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-          />
-          <span className="text-[10px] text-white/45 uppercase tracking-wide">%</span>
+        {/* Legend */}
+        <div className="flex items-center gap-2.5 flex-shrink-0">
+          <div className="flex items-center gap-1">
+            <div className="w-[7px] h-[7px] rounded-[2px] bg-red-300 flex-shrink-0" />
+            <span className="text-[9px] text-white/35">{threshold ? `Critical >${threshold.amount}% down` : "Critical"}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" />
+            <span className="text-[9px] text-white/35">{threshold ? `Watch 0–${threshold.amount}% down` : "Watch"}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-300 flex-shrink-0" />
+            <span className="text-[9px] text-white/35">Healthy</span>
+          </div>
         </div>
       </div>
+
     </div>
   );
 };

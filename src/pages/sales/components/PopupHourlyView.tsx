@@ -1,11 +1,12 @@
 ﻿import { useState, useMemo } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { setHourlyThreshold } from "../../../features/salesLedgerSlice";
 import { formatCurrency2 } from "../../../utils";
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
   CheckCircleIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
 } from "@heroicons/react/20/solid";
 import type { Severity } from "./LedgerRow";
 import { SEVERITY_CONFIG } from "./tierColumnUtils";
@@ -168,9 +169,9 @@ const PopupHourlyView = ({
     useAppSelector((s) => s.sales);
   const threshold = useAppSelector((s) => s.salesLedger.hourlyThreshold);
   const dispatch = useAppDispatch();
-  const [thresholdInput, setThresholdInput] = useState(String(threshold));
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
+  const [ctaOpen, setCtaOpen] = useState(false);
 
   const hours = useMemo((): HourRow[] => {
     const buildMap = (src: typeof hourlySales) =>
@@ -562,23 +563,22 @@ const PopupHourlyView = ({
 
             {/* CTA insight strip */}
             {cta && (
-              <div
-                className={`mx-3 mb-3 mt-1 rounded-md p-2.5 flex items-start gap-2 ${cta.severity === "critical" ? "bg-orange-50 border border-orange-200" : cta.severity === "watch" ? "bg-amber-50 border border-amber-200" : "bg-emerald-50 border border-emerald-200"}`}
-              >
-                {cta.severity === "critical" && (
-                  <ExclamationTriangleIcon className="w-3.5 h-3.5 text-orange-600 flex-shrink-0 mt-0.5" />
-                )}
-                {cta.severity === "watch" && (
-                  <ExclamationCircleIcon className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
-                )}
-                {cta.severity === "healthy" && (
-                  <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                )}
-                <span
-                  className={`text-[11px] leading-relaxed ${cta.severity === "critical" ? "text-orange-900" : cta.severity === "watch" ? "text-amber-900" : "text-emerald-900"}`}
+              <div className={`mx-3 mb-3 mt-1 rounded-md overflow-hidden ${cta.severity === "critical" ? "border border-orange-200" : cta.severity === "watch" ? "border border-amber-200" : "border border-emerald-200"}`}>
+                <button
+                  onClick={() => setCtaOpen((v) => !v)}
+                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 ${cta.severity === "critical" ? "bg-orange-50 hover:bg-orange-100" : cta.severity === "watch" ? "bg-amber-50 hover:bg-amber-100" : "bg-emerald-50 hover:bg-emerald-100"} transition-colors`}
                 >
-                  {cta.text}
-                </span>
+                  {cta.severity === "critical" && <ExclamationTriangleIcon className="w-3.5 h-3.5 text-orange-600 flex-shrink-0" />}
+                  {cta.severity === "watch" && <ExclamationCircleIcon className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />}
+                  {cta.severity === "healthy" && <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />}
+                  <span className={`text-[10px] font-medium flex-1 text-left ${cta.severity === "critical" ? "text-orange-800" : cta.severity === "watch" ? "text-amber-800" : "text-emerald-800"}`}>Insight</span>
+                  {ctaOpen ? <ChevronUpIcon className="w-3 h-3 text-content/40" /> : <ChevronDownIcon className="w-3 h-3 text-content/40" />}
+                </button>
+                {ctaOpen && (
+                  <div className={`px-2.5 py-2 ${cta.severity === "critical" ? "bg-orange-50" : cta.severity === "watch" ? "bg-amber-50" : "bg-emerald-50"}`}>
+                    <span className={`text-[11px] leading-relaxed ${cta.severity === "critical" ? "text-orange-900" : cta.severity === "watch" ? "text-amber-900" : "text-emerald-900"}`}>{cta.text}</span>
+                  </div>
+                )}
               </div>
             )}
           </>

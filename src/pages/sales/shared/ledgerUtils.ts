@@ -1,6 +1,7 @@
 import { addDays, sameWeekDayLastYear } from "../../../utils";
 import type { WeeklySale, SubSale, HourlySale, SubDeptMargin, Store } from "../../../interfaces";
 import type { LedgerRowData, Severity } from "../components/LedgerRow";
+import type { GradingMetric } from "../../../features/salesLedgerSlice";
 
 export const SEVERITY_RANK = { critical: 0, watch: 1, healthy: 2 } as const;
 
@@ -86,7 +87,8 @@ export const buildLedgerRows = (
   lw: WeeklySale[],
   ly: WeeklySale[],
   assignedStores: Store[] = [],
-  threshold = 9,
+  threshold: number | null = 9,
+  gradingMetric: GradingMetric = "sales",
 ): LedgerRowData[] => {
   const storeIds = [...new Set(tw.map((d) => d.storeid))];
   return storeIds
@@ -99,12 +101,19 @@ export const buildLedgerRows = (
       const twTotal = twRows.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
       const lwTotal = lwRows.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
       const lyTotal = lyRows.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
+      const twQty = twRows.reduce((acc, r) => acc + r.qty, 0);
+      const lwQty = lwRows.reduce((acc, r) => acc + r.qty, 0);
+      const lyQty = lyRows.reduce((acc, r) => acc + r.qty, 0);
+      const gradeTW = gradingMetric === "qty" ? twQty : twTotal;
+      const gradeLW = gradingMetric === "qty" ? lwQty : lwTotal;
+      const gradeLY = gradingMetric === "qty" ? lyQty : lyTotal;
       const hasLW = lwTotal > 0;
       const hasLY = lyTotal > 0;
       const vsLYDollar = twTotal - lyTotal;
-      const vsLYPct = hasLY ? (vsLYDollar / lyTotal) * 100 : 0;
-      const vsLWPct = hasLW ? ((twTotal - lwTotal) / lwTotal) * 100 : 0;
+      const vsLYPct = hasLY ? ((gradeTW - gradeLY) / gradeLY) * 100 : 0;
+      const vsLWPct = hasLW ? ((gradeTW - gradeLW) / gradeLW) * 100 : 0;
       const severity: LedgerRowData["severity"] = (() => {
+        if (threshold === null) return "healthy";
         const pct = hasLY ? vsLYPct : hasLW ? vsLWPct : 0;
         if (pct < -threshold) return "critical";
         if (pct < 0) return "watch";
@@ -127,7 +136,7 @@ export const buildLedgerRows = (
         });
       return {
         storeid: id, store_name: assigned?.store_name ?? ref.store_name, store_number: assigned?.store_number ?? ref.store_number,
-        twTotal, lwTotal, lyTotal, vsLWPct, vsLYPct, vsLYDollar, hasLW, hasLY, severity, days,
+        twTotal, lwTotal, lyTotal, twQty, lwQty, lyQty, vsLWPct, vsLYPct, vsLYDollar, hasLW, hasLY, severity, days,
       };
     })
     .sort((a, b) => {

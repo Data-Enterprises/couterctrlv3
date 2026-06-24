@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import { MagnifyingGlassIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import type { GroupedOrderCard, SelectedOrderKey } from "../../../features/ordersSlice";
 import FilterBar from "../../../components/filters/FilterBar";
 import TextFilter from "../../../components/filters/TextFilter";
@@ -32,6 +32,14 @@ const AvailableOrdersPanel = ({
   const [activeType, setActiveType] = useState("all");
   const [storeFilter, setStoreFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
+  const [openTypes, setOpenTypes] = useState<Set<string>>(new Set());
+  const [openDates, setOpenDates] = useState<Set<string>>(new Set());
+
+  const toggleType = (type: string) =>
+    setOpenTypes((prev) => { const s = new Set(prev); s.has(type) ? s.delete(type) : s.add(type); return s; });
+
+  const toggleDate = (key: string) =>
+    setOpenDates((prev) => { const s = new Set(prev); s.has(key) ? s.delete(key) : s.add(key); return s; });
 
   const isSelected = (order_date: string, order_type: string, storeid: number) =>
     selectedKey?.order_date === order_date &&
@@ -95,7 +103,7 @@ const AvailableOrdersPanel = ({
       {cards.length > 0 && (
         <div className="flex border-b border-gray-100 flex-shrink-0">
           <button
-            onClick={() => { setActiveType("all"); setDateFilter(""); }}
+            onClick={() => { setActiveType("all"); setDateFilter(""); setOpenTypes(new Set()); setOpenDates(new Set()); }}
             className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
               activeType === "all"
                 ? "border-[#1e2a4a] text-[#1e2a4a]"
@@ -107,7 +115,7 @@ const AvailableOrdersPanel = ({
           {cards.map((card) => (
             <button
               key={card.order_type}
-              onClick={() => { setActiveType(card.order_type); setDateFilter(""); }}
+              onClick={() => { setActiveType(card.order_type); setDateFilter(""); setOpenTypes(new Set()); setOpenDates(new Set()); }}
               className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
                 activeType === card.order_type
                   ? "border-[#1e2a4a] text-[#1e2a4a]"
@@ -152,52 +160,75 @@ const AvailableOrdersPanel = ({
           </div>
         )}
 
-        {visibleCards.map((card) => (
-          <div key={card.order_type} className="rounded-lg border border-gray-100">
-            {/* Order type header — only shown in "All" tab */}
-            {activeType === "all" && (
-              <div className="bg-[#1e2a4a]/5 px-3 py-2 border-b border-gray-100">
-                <span className="text-[11px] font-semibold text-[#1e2a4a] uppercase tracking-wide">
-                  {card.order_type}
-                </span>
-              </div>
-            )}
-
-            {/* Dates */}
-            {card.dates.map((dateGroup) => (
-              <div key={dateGroup.order_date}>
-                <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-100">
-                  <span className="text-[10px] font-medium text-content/65">
-                    {fmtDate(dateGroup.order_date)}
+        {visibleCards.map((card) => {
+          const typeOpen = activeType !== "all" || openTypes.has(card.order_type) || !!dateFilter || !!storeFilter;
+          return (
+            <div key={card.order_type} className="rounded-lg border border-gray-100">
+              {/* Order type header — collapsible in "All" tab */}
+              {activeType === "all" && (
+                <button
+                  onClick={() => toggleType(card.order_type)}
+                  className="w-full flex items-center gap-2 bg-[#1e2a4a]/5 hover:bg-[#1e2a4a]/10 pl-3 pr-3 py-2 transition-colors"
+                >
+                  <ChevronRightIcon
+                    className="w-3 h-3 text-[#1e2a4a]/60 flex-shrink-0 transition-transform"
+                    style={{ transform: typeOpen ? "rotate(90deg)" : "rotate(0deg)" }}
+                  />
+                  <span className="text-[11px] font-semibold text-[#1e2a4a] uppercase tracking-wide flex-1 text-left">
+                    {card.order_type}
                   </span>
-                </div>
+                  <span className="text-[10px] text-[#1e2a4a]/55">{card.dates.reduce((n, d) => n + d.stores.length, 0)}</span>
+                </button>
+              )}
 
-                <div className="divide-y divide-gray-100">
-                  {dateGroup.stores.map((store) => {
-                    const sel = isSelected(dateGroup.order_date, card.order_type, store.storeid);
-                    return (
-                      <button
-                        key={store.storeid}
-                        onClick={() => onSelectStore(dateGroup.order_date, card.order_type, store.storeid)}
-                        style={sel ? { boxShadow: "inset 0 0 8px rgba(30,42,74,0.18)" } : undefined}
-                        className={`w-full flex items-center justify-between px-3 py-2 text-left transition-colors ${
-                          sel ? "bg-white" : "hover:bg-gray-50"
-                        }`}
-                      >
-                        <span className="text-[12px] font-medium text-content">{store.store_name}</span>
-                        {store.frequency > 1 && (
-                          <span className="text-[10px] text-content/65 bg-gray-100 rounded-full px-2 py-0.5 flex-shrink-0">
-                            {store.frequency} orders
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        ))}
+              {/* Dates — collapsible, closed by default */}
+              {typeOpen && card.dates.map((dateGroup) => {
+                const dateKey = `${card.order_type}::${dateGroup.order_date}`;
+                const dateOpen = openDates.has(dateKey) || !!dateFilter || !!storeFilter;
+                return (
+                  <div key={dateGroup.order_date} className="border-t border-gray-100 first:border-t-0">
+                    <button
+                      onClick={() => toggleDate(dateKey)}
+                      className="w-full flex items-center gap-2 pl-6 pr-3 py-1.5 bg-gray-50 hover:bg-gray-100 transition-colors"
+                    >
+                      <ChevronRightIcon
+                        className="w-3 h-3 text-content/40 flex-shrink-0 transition-transform"
+                        style={{ transform: dateOpen ? "rotate(90deg)" : "rotate(0deg)" }}
+                      />
+                      <span className="text-[10px] font-medium text-content/65 flex-1 text-left">
+                        {fmtDate(dateGroup.order_date)}
+                      </span>
+                      <span className="text-[10px] text-content/55">{dateGroup.stores.length}</span>
+                    </button>
+
+                    {dateOpen && (
+                      <div className="divide-y divide-gray-100">
+                        {dateGroup.stores.map((store) => {
+                          const sel = isSelected(dateGroup.order_date, card.order_type, store.storeid);
+                          return (
+                            <button
+                              key={store.storeid}
+                              onClick={() => onSelectStore(dateGroup.order_date, card.order_type, store.storeid)}
+                              style={sel ? { boxShadow: "inset 0 0 8px rgba(30,42,74,0.18)" } : undefined}
+                              className={`w-full flex items-center justify-between pl-9 pr-3 py-2 text-left transition-colors ${
+                                sel ? "bg-white" : "hover:bg-gray-50"
+                              }`}
+                            >
+                              <span className="text-[10px] font-medium text-content">{store.store_name}</span>
+                              <span className="text-[10px] text-content/75 bg-gray-100 rounded-full px-2 py-0.5 flex-shrink-0">
+                                {store.frequency} {store.frequency === 1 ? "order" : "orders"}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

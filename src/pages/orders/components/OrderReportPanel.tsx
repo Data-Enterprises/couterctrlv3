@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
+import SelectFilter from "../../../components/filters/SelectFilter";
 import { ArrowDownTrayIcon, ArrowLeftIcon } from "@heroicons/react/20/solid";
 import type { AllOrder } from "../../../interfaces";
 import type { SelectedOrderKey } from "../../../features/ordersSlice";
@@ -41,6 +42,8 @@ const OrderReportPanel = ({
   onSelectOrderId,
   onExport,
 }: Props) => {
+  const [subDeptFilter, setSubDeptFilter] = useState<string>("");
+
   const storeName = selectedKey
     ? (assignedStores.find((s) => s.storeid === selectedKey.storeid)?.store_name ?? `Store ${selectedKey.storeid}`)
     : null;
@@ -50,21 +53,29 @@ const OrderReportPanel = ({
     ? orders.filter((o) => o.order_type === selectedKey.order_type)
     : orders;
 
-  const uniqueOrderIds = Array.from(new Set(filteredOrders.map((o) => o.order_id))).sort((a, b) => a - b);
+  const allSubDepts = useMemo(() =>
+    Array.from(new Set(filteredOrders.map((o) => o.sub_department_description).filter(Boolean))).sort(),
+  [filteredOrders]);
+
+  const subFilteredOrders = subDeptFilter
+    ? filteredOrders.filter((o) => o.sub_department_description === subDeptFilter)
+    : filteredOrders;
+
+  const uniqueOrderIds = Array.from(new Set(subFilteredOrders.map((o) => o.order_id))).sort((a, b) => a - b);
 
   const orderItems = selectedOrderId !== null
     ? [...filteredOrders.filter((o) => o.order_id === selectedOrderId)].sort((a, b) => a.line_number - b.line_number)
     : [];
 
-  const totalExtRetail = filteredOrders.reduce((s, o) => s + (o.e_ret ?? 0), 0);
-  const totalCost = filteredOrders.reduce((s, o) => s + (o.cogs ?? 0), 0);
+  const totalExtRetail = subFilteredOrders.reduce((s, o) => s + (o.e_ret ?? 0), 0);
+  const totalCost = subFilteredOrders.reduce((s, o) => s + (o.cogs ?? 0), 0);
 
   const selectedExtRetail = orderItems.reduce((s, o) => s + (o.e_ret ?? 0), 0);
   const selectedCost = orderItems.reduce((s, o) => s + (o.cogs ?? 0), 0);
 
   // Auto-select when there's exactly one order
   useEffect(() => {
-    if (!loading && selectedOrderId === null && uniqueOrderIds.length === 1) {
+    if (!loading && selectedOrderId === null && uniqueOrderIds.length === 1 && !subDeptFilter) {
       onSelectOrderId(uniqueOrderIds[0]);
     }
   }, [uniqueOrderIds, loading]);
@@ -79,7 +90,7 @@ const OrderReportPanel = ({
             <div className="flex items-center gap-2">
               {selectedOrderId !== null && (
                 <button
-                  onClick={() => onSelectOrderId(null)}
+                  onClick={() => { onSelectOrderId(null); setSubDeptFilter(""); }}
                   className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors flex-shrink-0"
                   aria-label="Back to orders"
                 >
@@ -134,32 +145,59 @@ const OrderReportPanel = ({
       {selectedKey && !loading && selectedOrderId === null && uniqueOrderIds.length > 0 && (
         <div className="flex-1 overflow-y-auto thin-scrollbar flex flex-col">
           <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 flex-shrink-0">
-            <span className="text-[9px] font-bold uppercase tracking-wide text-content/50">Orders</span>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <span className="text-[9px] font-bold uppercase tracking-wide text-content/50 flex-shrink-0">Orders</span>
+              {allSubDepts.length > 0 && (
+                <SelectFilter
+                  options={allSubDepts.map((sd) => ({ value: sd, label: sd }))}
+                  value={subDeptFilter}
+                  onChange={setSubDeptFilter}
+                  placeholder="All sub depts"
+                  className="w-[140px]"
+                />
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
               <Chip label="Orders" value={String(uniqueOrderIds.length)} />
               <Chip label="Items" value={String(filteredOrders.length)} />
               <Chip label="Ext retail" value={formatCurrency2(totalExtRetail)} />
               <Chip label="Cost" value={formatCurrency2(totalCost)} />
             </div>
           </div>
+
           <div className="divide-y divide-gray-50">
             {uniqueOrderIds.map((orderId) => {
-              const items = filteredOrders.filter((o) => o.order_id === orderId);
+              const items = subFilteredOrders.filter((o) => o.order_id === orderId);
               const eRet = items.reduce((s, o) => s + (o.e_ret ?? 0), 0);
               const status = items[0]?.status ?? "";
+              const subDepts = Array.from(new Set(items.map((o) => o.sub_department_description).filter(Boolean)));
               return (
                 <button
                   key={orderId}
                   onClick={() => onSelectOrderId(orderId)}
-                  className="w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-gray-50 transition-colors"
+                  className="w-full flex items-start justify-between px-4 py-2.5 text-left hover:bg-gray-50 transition-colors"
                 >
-                  <div>
-                    <div className="text-[12px] font-semibold text-[#1e2a4a]">Order #{orderId}</div>
-                    <div className="text-[10px] text-content/60 mt-0.5">
-                      {items.length} items{status ? ` · ${status}` : ""}
+                  <div className="min-w-0 flex-1 pr-3">
+                    <div className="text-[12px] font-semibold text-[#1e2a4a]">
+                      Order #{orderId}{status ? <span className="text-content/50 font-normal"> · {status}</span> : ""}
                     </div>
+                    {subDepts.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {subDepts.map((sd) => (
+                          <span key={sd} className="text-[9px] text-content/60 bg-gray-100 rounded px-1.5 py-0.5">
+                            {sd}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <div className="text-[11px] font-semibold text-content">{formatCurrency2(eRet)}</div>
+                  <div className="flex-shrink-0 text-right">
+                    <div className="flex items-baseline gap-1 justify-end">
+                      <span className="text-[9px] text-content/50">Ext retail</span>
+                      <span className="text-[12px] font-semibold text-content">{formatCurrency2(eRet)}</span>
+                    </div>
+                    <div className="text-[10px] text-content/50 mt-0.5">{items.length} items</div>
+                  </div>
                 </button>
               );
             })}

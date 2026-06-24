@@ -26,6 +26,7 @@ import PopupDaySidebar from "./PopupDaySidebar";
 import PopupSubDeptList from "./PopupSubDeptList";
 import PopupHourlyView from "./PopupHourlyView";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import type { StoreSelection } from "./LedgerRow";
 
 interface StoreDetailPopupProps {
@@ -45,10 +46,6 @@ const StoreDetailPopup = ({ selection, onClose }: StoreDetailPopupProps) => {
   const { tab, selectedDate, rawSubs, rawLWSubs, rawLYSubs, rawHourly, rawLWHourly, rawLYHourly, subDeptThreshold, hourlyThreshold } = useAppSelector((state) => state.salesLedger);
 
   const activeThreshold = tab === "subdept" ? subDeptThreshold : hourlyThreshold;
-  const [thresholdInput, setThresholdInput] = useState(String(activeThreshold));
-
-  // Sync input value when tab switches
-  useEffect(() => { setThresholdInput(String(activeThreshold)); }, [tab]);
 
   const [loading, setLoading] = useState(false);
 
@@ -214,24 +211,15 @@ const StoreDetailPopup = ({ selection, onClose }: StoreDetailPopupProps) => {
         <div className="flex-1" />
         <div className="flex items-center gap-1.5 py-1">
           <span className="text-[10px] text-content/45">Threshold</span>
-          <input
-            type="number"
-            min={1}
-            max={99}
-            value={thresholdInput}
-            onChange={(e) => {
-              setThresholdInput(e.target.value);
-              const v = parseInt(e.target.value, 10);
-              if (!isNaN(v) && v >= 1 && v <= 99)
-                dispatch(tab === "subdept" ? setSubDeptThreshold(v) : setHourlyThreshold(v));
+          <ThresholdFilter
+            value={{ op: "gt", amount: activeThreshold }}
+            onChange={(v) => {
+              if (v) dispatch(tab === "subdept" ? setSubDeptThreshold(v.amount) : setHourlyThreshold(v.amount));
             }}
-            onBlur={() => {
-              const v = parseInt(thresholdInput, 10);
-              if (isNaN(v) || v < 1 || v > 99) setThresholdInput(String(activeThreshold));
-            }}
-            className="w-10 text-center text-[11px] bg-gray-50 border border-gray-200 rounded px-1 py-px focus:outline-none focus:border-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            showOp={false}
+            suffix="%"
+            inputWidth={40}
           />
-          <span className="text-[10px] text-content/45">%</span>
         </div>
       </div>
 

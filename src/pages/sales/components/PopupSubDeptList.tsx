@@ -1,12 +1,15 @@
 ﻿import { useState, useMemo, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { setSubDeptThreshold, setItemThreshold } from "../../../features/salesLedgerSlice";
+import { setItemThreshold } from "../../../features/salesLedgerSlice";
+import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import { formatCurrency2, addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../utils";
 import { getSubMargins } from "../../../api/subMargins";
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
   CheckCircleIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
 } from "@heroicons/react/20/solid";
 import type { Severity } from "./LedgerRow";
 import type { SubDeptMargin } from "../../../interfaces";
@@ -172,10 +175,9 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel, storeId, sele
   const threshold = useAppSelector((state) => state.salesLedger.subDeptThreshold);
   const itemThreshold = useAppSelector((state) => state.salesLedger.itemThreshold);
   const dispatch = useAppDispatch();
-  const [thresholdInput, setThresholdInput] = useState(String(threshold));
-  const [itemThresholdInput, setItemThresholdInput] = useState(String(itemThreshold));
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
+  const [ctaOpen, setCtaOpen] = useState(false);
   const [_, setItemSevFilter] = useState<SevFilter>("all");
   const [items, setItems] = useState<Top10Item[]>([]);
   const [itemsLoading, setItemsLoading] = useState(false);
@@ -443,23 +445,13 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel, storeId, sele
                   <span className="text-[9px] italic text-content/45">{twDateLabel} · {items.length} items</span>
                   <div className="flex-1" />
                   <span className="text-[10px] text-content/45">Threshold</span>
-                  <input
-                    type="number"
-                    min={1}
-                    max={99}
-                    value={itemThresholdInput}
-                    onChange={(e) => {
-                      setItemThresholdInput(e.target.value);
-                      const v = parseInt(e.target.value, 10);
-                      if (!isNaN(v) && v >= 1 && v <= 99) dispatch(setItemThreshold(v));
-                    }}
-                    onBlur={() => {
-                      const v = parseInt(itemThresholdInput, 10);
-                      if (isNaN(v) || v < 1 || v > 99) setItemThresholdInput(String(itemThreshold));
-                    }}
-                    className="w-10 text-center text-[10px] bg-white border border-gray-200 rounded px-1 py-px focus:outline-none focus:border-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  <ThresholdFilter
+                    value={{ op: "gt", amount: itemThreshold }}
+                    onChange={(v) => { if (v) dispatch(setItemThreshold(v.amount)); }}
+                    showOp={false}
+                    suffix="%"
+                    inputWidth={40}
                   />
-                  <span className="text-[10px] text-content/45">%</span>
                 </div>
 
                 {itemsLoading ? (
@@ -542,11 +534,22 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel, storeId, sele
 
             {/* CTA insight strip */}
             {cta && (
-              <div className={`mx-3 mb-3 mt-1 rounded-md p-2.5 flex items-start gap-2 ${cta.severity === "critical" ? "bg-orange-50 border border-orange-200" : cta.severity === "watch" ? "bg-amber-50 border border-amber-200" : "bg-emerald-50 border border-emerald-200"}`}>
-                {cta.severity === "critical" && <ExclamationTriangleIcon className="w-3.5 h-3.5 text-orange-600 flex-shrink-0 mt-0.5" />}
-                {cta.severity === "watch" && <ExclamationCircleIcon className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />}
-                {cta.severity === "healthy" && <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />}
-                <span className={`text-[11px] leading-relaxed ${cta.severity === "critical" ? "text-orange-900" : cta.severity === "watch" ? "text-amber-900" : "text-emerald-900"}`}>{cta.text}</span>
+              <div className={`mx-3 mb-3 mt-1 rounded-md overflow-hidden ${cta.severity === "critical" ? "border border-orange-200" : cta.severity === "watch" ? "border border-amber-200" : "border border-emerald-200"}`}>
+                <button
+                  onClick={() => setCtaOpen((v) => !v)}
+                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 ${cta.severity === "critical" ? "bg-orange-50 hover:bg-orange-100" : cta.severity === "watch" ? "bg-amber-50 hover:bg-amber-100" : "bg-emerald-50 hover:bg-emerald-100"} transition-colors`}
+                >
+                  {cta.severity === "critical" && <ExclamationTriangleIcon className="w-3.5 h-3.5 text-orange-600 flex-shrink-0" />}
+                  {cta.severity === "watch" && <ExclamationCircleIcon className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />}
+                  {cta.severity === "healthy" && <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />}
+                  <span className={`text-[10px] font-medium flex-1 text-left ${cta.severity === "critical" ? "text-orange-800" : cta.severity === "watch" ? "text-amber-800" : "text-emerald-800"}`}>Insight</span>
+                  {ctaOpen ? <ChevronUpIcon className="w-3 h-3 text-content/40" /> : <ChevronDownIcon className="w-3 h-3 text-content/40" />}
+                </button>
+                {ctaOpen && (
+                  <div className={`px-2.5 py-2 ${cta.severity === "critical" ? "bg-orange-50" : cta.severity === "watch" ? "bg-amber-50" : "bg-emerald-50"}`}>
+                    <span className={`text-[11px] leading-relaxed ${cta.severity === "critical" ? "text-orange-900" : cta.severity === "watch" ? "text-amber-900" : "text-emerald-900"}`}>{cta.text}</span>
+                  </div>
+                )}
               </div>
             )}
           </>

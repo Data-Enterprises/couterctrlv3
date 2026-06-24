@@ -1,13 +1,11 @@
 import {
-  setCashierTableQtyThreshComp,
-  setCashierTableThreshComp,
+  setSalesThreshold,
+  setQtyThreshold,
   setDescFilter,
   setFilterModalOpen,
   setFilterType,
   setSaleDateFilter,
   setSelectedPriceTypes,
-  setTotalQtyFilter,
-  setTotalSalesFilter,
   setTransIdFilter,
   setUpcFilter,
 } from "../../../features/lossPreventionSlice";
@@ -33,31 +31,14 @@ const CashiersTableFilters = () => {
   const activePanelStyle = (option: string) => {
     // Grabbing the filters
     const saleDate = cashier.saleDateFilter;
-    const totalSales = cashier.totalSalesFilter;
-    const threshold = cashier.cashierTableThreshComp;
-    const qtyThreshold = cashier.cashierTableQtyThreshComp;
-    const totalQty = cashier.totalQtyFilter;
     const transId = cashier.transIdFilter;
 
     // Declaring the active style and applying it to the matching conditions
     const style = "bg-orange-500 text-white font-semibold shadow-inner";
     let result = false;
     if (option === "Sale Date" && saleDate) result = true;
-
-    if (
-      option === "Total Sales" &&
-      totalSales !== 0 &&
-      (threshold.gt || threshold.lt)
-    )
-      result = true;
-
-    if (
-      option === "Total Qty" &&
-      totalQty !== 0 &&
-      (qtyThreshold.gt || qtyThreshold.lt)
-    )
-      result = true;
-
+    if (option === "Total Sales" && cashier.salesThreshold) result = true;
+    if (option === "Total Qty" && cashier.qtyThreshold) result = true;
     if (option === "Transaction ID" && transId) result = true;
     return result ? style : "";
   };
@@ -66,26 +47,11 @@ const CashiersTableFilters = () => {
     if (type === "Sale Date") {
       return cashier.saleDateFilter ? `${cashier.saleDateFilter}` : "Sale Date";
     } else if (type === "Total Sales") {
-      const thresh = cashier.cashierTableThreshComp.gt
-        ? "Over"
-        : cashier.cashierTableThreshComp.lt
-          ? "Under"
-          : "";
-
-      // This might change, but if no threshold is selected, just show "Total Sales"
-      return thresh.length > 0
-        ? `${thresh} ${formatCurrency2(cashier.totalSalesFilter)}`
-        : "Total Sales";
+      const s = cashier.salesThreshold;
+      return s ? `${s.op === "gt" ? "Over" : s.op === "lt" ? "Under" : "="} ${formatCurrency2(s.amount)}` : "Total Sales";
     } else if (type === "Total Qty") {
-      const thresh = cashier.cashierTableQtyThreshComp.gt
-        ? "Over"
-        : cashier.cashierTableQtyThreshComp.lt
-          ? "Under"
-          : "";
-
-      return thresh.length > 0
-        ? `${thresh} ${cashier.totalQtyFilter}`
-        : "Total Qty";
+      const q = cashier.qtyThreshold;
+      return q ? `${q.op === "gt" ? "Over" : q.op === "lt" ? "Under" : "="} ${q.amount}` : "Total Qty";
     } else if (type === "Transaction ID") {
       return cashier.transIdFilter
         ? `${cashier.transIdFilter}`
@@ -97,10 +63,8 @@ const CashiersTableFilters = () => {
 
   const setFilterModal = (type: string) => {
     if (type === "Refresh") {
-      dispatch(setCashierTableThreshComp({ gt: false, lt: false }));
-      dispatch(setCashierTableQtyThreshComp({ gt: false, lt: false }));
-      dispatch(setTotalQtyFilter(0));
-      dispatch(setTotalSalesFilter(0));
+      dispatch(setSalesThreshold(null));
+      dispatch(setQtyThreshold(null));
       dispatch(setTransIdFilter(""));
       dispatch(setSaleDateFilter(""));
       dispatch(setFilterType(""));

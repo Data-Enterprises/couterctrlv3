@@ -1,79 +1,61 @@
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import {
-  reQuery,
-  setCashierDetails,
-  setSaleTypes,
-  setSelectedSaleType,
-  setSelectedStoreId,
-  setViewTransactionsMobile,
-} from "../../../features/lossPreventionSlice";
-
-import DatePickers from "../../../components/datePickers/DatePickers";
-import StorePicker from "../../../components/storePicker/StorePicker";
-import SaleTypesMobile from "./SaleTypesMobile";
-import CashierSalesMobile from "./CashierSalesMobile";
-
-import TransactionModal from "../TransactionModal";
-import UniqueCashiersMobile from "./UniqueCashiersMobile";
+import { useState } from "react";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { resetCashierSlice, setViewTransactionsMobile } from "../../../features/lossPreventionSlice";
+import SearchCard from "../../../components/SearchCard";
+import StoreListMobile from "./StoreListMobile";
 import TransactionsMobile from "./TransactionsMobile";
 
-interface LpMobileProps {
+interface Props {
   getSaleTypes: () => void;
 }
 
-const LpMobile = ({ getSaleTypes }: LpMobileProps) => {
+const LpMobile = ({ getSaleTypes }: Props) => {
   const dispatch = useAppDispatch();
-  const { saleTypes, cashierDetails, viewTransactionsMobile } = useAppSelector(
-    (state) => state.lossPrevention,
-  );
+  const { saleTypes, viewTransactionsMobile } = useAppSelector((state) => state.lossPrevention);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
 
-  const handleGoBack = () => {
-    if (viewTransactionsMobile) {
-      dispatch(setViewTransactionsMobile(false));
-      return;
-    }
-    dispatch(reQuery());
-    dispatch(setSaleTypes([]));
-    dispatch(setSelectedSaleType(""));
-    dispatch(setCashierDetails([]));
-    dispatch(setSelectedStoreId(0));
-  };
-  if (saleTypes.length > 0) {
+  if (!saleTypes.length) {
     return (
-      <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden overflow-y-auto no-scrollbar">
-        <TransactionModal />
-        {/* Inner nav => once sale types are fetched */}
-        <div className="w-full px-2 pt-2">
-          <button
-            className="btn-themeBlue w-full px-0 py-1 text-[13px]"
-            onClick={handleGoBack}
-          >
-            Go Back
-          </button>
-        </div>
-        {viewTransactionsMobile ? (
-          <div>
-            <UniqueCashiersMobile />
-            <TransactionsMobile />
-          </div>
-        ) : (
-          <div className="p-2 space-y-2">
-            <SaleTypesMobile />
-            {cashierDetails.length > 0 && <CashierSalesMobile />}
-          </div>
-        )}
-      </div>
+      <SearchCard
+        title="Loss prevention"
+        description="Select a store or group and date range to view exception activity."
+        buttonLabel="Load exceptions"
+        onSearch={getSaleTypes}
+        loading={false}
+      />
     );
   }
 
   return (
-    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden overflow-y-auto no-scrollbar p-2">
-      <div className="space-y-2">
-        <div className="bg-custom-white px-2 py-2.5 rounded-lg shadow-lg space-y-1">
-          <StorePicker />
-          <DatePickers handleQuery={getSaleTypes} />
+    <div className="h-[calc(100vh-3rem)] overflow-hidden flex flex-col bg-custom-white">
+      {viewTransactionsMobile ? (
+        <TransactionsMobile
+          onBack={() => dispatch(setViewTransactionsMobile(false))}
+          onOpenSearch={() => setSearchModalOpen(true)}
+        />
+      ) : (
+        <StoreListMobile
+          onBack={() => dispatch(resetCashierSlice())}
+          onOpenSearch={() => setSearchModalOpen(true)}
+        />
+      )}
+
+      {searchModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => setSearchModalOpen(false)}
+        >
+          <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
+            <SearchCard
+              title="Loss prevention"
+              description="Select a store or group and date range to view exception activity."
+              buttonLabel="Load exceptions"
+              onSearch={() => { setSearchModalOpen(false); dispatch(resetCashierSlice()); getSaleTypes(); }}
+              loading={false}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

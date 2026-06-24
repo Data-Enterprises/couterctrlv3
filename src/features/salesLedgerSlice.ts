@@ -1,6 +1,9 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { SubSale, HourlySale } from "../interfaces";
 import type { StoreSelection } from "../pages/sales/components/LedgerRow";
+import type { ThresholdValue } from "../components/filters/ThresholdFilter";
+
+export type GradingMetric = "sales" | "qty";
 
 export type LedgerTab = "subdept" | "hourly";
 export type SevFilter = "all" | "critical" | "watch" | "healthy";
@@ -45,7 +48,8 @@ interface SalesLedgerState {
   top10: Top10Item[];
 
   // Grading
-  threshold: number;
+  gradingMetric: GradingMetric;
+  threshold: ThresholdValue | null;
   subDeptThreshold: number;
   hourlyThreshold: number;
   itemThreshold: number;
@@ -73,7 +77,8 @@ const initialState: SalesLedgerState = {
   rawLWHourly: [],
   rawLYHourly: [],
   top10: [],
-  threshold: 9,
+  gradingMetric: "sales" as GradingMetric,
+  threshold: { op: "gt", amount: 9 } as ThresholdValue,
   subDeptThreshold: 9,
   hourlyThreshold: 9,
   itemThreshold: 9,
@@ -136,7 +141,10 @@ const salesLedgerSlice = createSlice({
     setScreen: (state, action: PayloadAction<"list" | "report">) => {
       state.screen = action.payload;
     },
-    setThreshold: (state, action: PayloadAction<number>) => {
+    setGradingMetric: (state, action: PayloadAction<GradingMetric>) => {
+      state.gradingMetric = action.payload;
+    },
+    setThreshold: (state, action: PayloadAction<ThresholdValue | null>) => {
       state.threshold = action.payload;
     },
     setSubDeptThreshold: (state, action: PayloadAction<number>) => {
@@ -193,6 +201,7 @@ const salesLedgerSlice = createSlice({
 });
 
 export const {
+  setGradingMetric,
   setHasSearched,
   setLedgerSelection,
   setLedgerTab,

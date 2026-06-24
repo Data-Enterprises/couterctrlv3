@@ -4,15 +4,13 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 import {
   // setUpcFilter,
   // setDescFilter,
-  setTotalSalesFilter,
-  setCashierTableThreshComp,
+  setSalesThreshold,
   setFilterModalOpen,
   setFilterType,
   setSaleDateFilter,
   // setSelectedPriceTypes,
   setTransIdFilter,
-  setTotalQtyFilter,
-  setCashierTableQtyThreshComp,
+  setQtyThreshold,
 } from "../../../features/lossPreventionSlice";
 
 // Modal and filter components
@@ -115,12 +113,10 @@ const FiltersModal = () => {
       //   dispatch(setSelectedPriceTypes(priceTypes));
       //   break;
       case "Total Sales":
-        dispatch(setCashierTableThreshComp(threshComp));
-        dispatch(setTotalSalesFilter(parseFloat(threshold)));
+        dispatch(setSalesThreshold(threshold ? { op: threshComp.gt ? "gt" : "lt", amount: parseFloat(threshold) } : null));
         break;
       case "Total Qty":
-        dispatch(setCashierTableQtyThreshComp(threshComp));
-        dispatch(setTotalQtyFilter(parseFloat(threshold)));
+        dispatch(setQtyThreshold(threshold ? { op: threshComp.gt ? "gt" : "lt", amount: parseFloat(threshold) } : null));
         break;
       case "Transaction ID":
         dispatch(setTransIdFilter(text));

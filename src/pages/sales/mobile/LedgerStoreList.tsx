@@ -1,9 +1,9 @@
 ﻿import { useMemo } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { buildLedgerRows, fmtDate, formatPct } from "../shared/ledgerUtils";
-import { useState } from "react";
 import { setListSevFilter, navigateToReport, setHasSearched, setThreshold } from "../../../features/salesLedgerSlice";
 import type { SevFilter } from "../../../features/salesLedgerSlice";
+import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import type { LedgerRowData } from "../components/LedgerRow";
 import type { Severity } from "../components/LedgerRow";
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../utils";
@@ -15,8 +15,7 @@ const LedgerStoreList = () => {
   const dispatch = useAppDispatch();
   const search = useAppSelector((s) => s.search);
   const { weeklySales, weeklySalesLastWeek, weeklySalesLastYear } = useAppSelector((s) => s.sales);
-  const { listSevFilter, threshold } = useAppSelector((s) => s.salesLedger);
-  const [thresholdInput, setThresholdInput] = useState(String(threshold));
+  const { listSevFilter, threshold, gradingMetric } = useAppSelector((s) => s.salesLedger);
   const { assignedStores } = useAppSelector((s) => s.user);
 
   const twEnd = formatGoliathDate(search.singleDate);
@@ -24,8 +23,8 @@ const LedgerStoreList = () => {
   const weekLabel = `${fmtDate(twStart)} – ${fmtDate(twEnd)}, ${new Date(twEnd + "T12:00:00").getFullYear()}`;
 
   const ledgerRows = useMemo(
-    () => buildLedgerRows(weeklySales, weeklySalesLastWeek, weeklySalesLastYear, assignedStores, threshold),
-    [weeklySales, weeklySalesLastWeek, weeklySalesLastYear, assignedStores, threshold],
+    () => buildLedgerRows(weeklySales, weeklySalesLastWeek, weeklySalesLastYear, assignedStores, threshold?.amount ?? null, gradingMetric),
+    [weeklySales, weeklySalesLastWeek, weeklySalesLastYear, assignedStores, threshold, gradingMetric],
   );
 
   const filtered = listSevFilter === "all" ? ledgerRows : ledgerRows.filter((r) => r.severity === listSevFilter);
@@ -71,29 +70,20 @@ const LedgerStoreList = () => {
         </div>
         <div className="flex items-center justify-between gap-3 mt-2">
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-red-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">Critical &gt;{threshold}%</span></div>
-            <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">Watch ≤{threshold}%</span></div>
+            <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-red-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">{threshold ? `Critical >${threshold.amount}%` : "Critical"}</span></div>
+            <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">{threshold ? `Watch ≤${threshold.amount}%` : "Watch"}</span></div>
             <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">Healthy</span></div>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <span className="text-[9px] text-white/45">Threshold</span>
-            <input
-              type="number"
-              min={1}
-              max={99}
-              value={thresholdInput}
-              onChange={(e) => {
-                setThresholdInput(e.target.value);
-                const v = parseInt(e.target.value, 10);
-                if (!isNaN(v) && v >= 1 && v <= 99) dispatch(setThreshold(v));
-              }}
-              onBlur={() => {
-                const v = parseInt(thresholdInput, 10);
-                if (isNaN(v) || v < 1 || v > 99) setThresholdInput(String(threshold));
-              }}
-              className="w-9 text-center text-[10px] bg-white/10 text-white border border-white/20 rounded px-1 py-px focus:outline-none focus:border-white/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            <ThresholdFilter
+              value={threshold}
+              onChange={(v) => dispatch(setThreshold(v))}
+              suffix="%"
+              showOp={false}
+              inputWidth={40}
+              variant="dark"
             />
-            <span className="text-[9px] text-white/45">%</span>
           </div>
         </div>
       </div>

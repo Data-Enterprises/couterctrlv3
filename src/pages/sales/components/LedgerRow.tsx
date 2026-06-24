@@ -17,6 +17,9 @@ export type LedgerRowData = {
   twTotal: number;
   lwTotal: number;
   lyTotal: number;
+  twQty: number;
+  lwQty: number;
+  lyQty: number;
   vsLWPct: number;
   vsLYPct: number;
   vsLYDollar: number;

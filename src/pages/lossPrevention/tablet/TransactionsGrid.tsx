@@ -36,74 +36,34 @@ const TransactionsGrid = () => {
   useEffect(() => {
     const selectedCashier = cashier.selectedCashier.cashier_number;
     const saleDate = cashier.saleDateFilter;
-    const totalSales = cashier.totalSalesFilter;
-    const threshold = cashier.cashierTableThreshComp;
     const transId = cashier.transIdFilter.toLowerCase();
-    const qtyThreshold = cashier.cashierTableQtyThreshComp;
-    const totalQty = cashier.totalQtyFilter;
+    const sales = cashier.salesThreshold;
+    const qty = cashier.qtyThreshold;
 
-    if (
-      !selectedCashier &&
-      !saleDate &&
-      totalSales === 0 &&
-      !threshold.gt &&
-      !threshold.lt &&
-      !transId &&
-      !qtyThreshold.gt &&
-      !qtyThreshold.lt &&
-      totalQty === 0
-    ) {
-      // No filters applied, show all data
+    if (!selectedCashier && !saleDate && !transId && !sales && !qty) {
       setFiltered(cashier.transList);
       setFilteredOverviews(cashier.transOverviews);
       return;
     }
 
-    const currentFiltered = () => {
-      const result = cashier.transOverviews.filter((item) => {
-        const matchCashier = selectedCashier
-          ? item.cashier_number === selectedCashier
-          : true;
-        const matchesDate = formatDate(item.sale_date).includes(saleDate);
-        const matchesTotalSales = () => {
-          if (threshold.gt) {
-            return item.total_sales > totalSales;
-          } else if (threshold.lt) {
-            return item.total_sales < totalSales;
-          } else {
-            return true;
-          }
-        };
-
-        const matchesTotalQty = () => {
-          if (qtyThreshold.gt) {
-            return item.qty! > totalQty;
-          } else if (qtyThreshold.lt) {
-            return item.qty! < totalQty;
-          } else {
-            return true;
-          }
-        };
-
-        const matchesTransId =
-          item.transaction_id !== null
-            ? item.transaction_id.toLowerCase().includes(transId.toLowerCase())
-            : true;
-
-        // Then return all of these filters values
-        return (
-          matchCashier &&
-          matchesDate &&
-          matchesTotalSales() &&
-          matchesTotalQty() &&
-          matchesTransId
-        );
-      });
-      return result;
-    };
-
-    // Updating available price types and sale IDs based on the new filtered data
-    const newFilteredTransactions = currentFiltered();
+    const newFilteredTransactions = cashier.transOverviews.filter((item) => {
+      const matchCashier = selectedCashier ? item.cashier_number === selectedCashier : true;
+      const matchesDate = formatDate(item.sale_date).includes(saleDate);
+      const matchesTransId = item.transaction_id !== null
+        ? item.transaction_id.toLowerCase().includes(transId)
+        : true;
+      const matchesSales = sales
+        ? sales.op === "gt" ? item.total_sales > sales.amount
+        : sales.op === "lt" ? item.total_sales < sales.amount
+        : item.total_sales === sales.amount
+        : true;
+      const matchesQty = qty
+        ? qty.op === "gt" ? (item.qty ?? 0) > qty.amount
+        : qty.op === "lt" ? (item.qty ?? 0) < qty.amount
+        : (item.qty ?? 0) === qty.amount
+        : true;
+      return matchCashier && matchesDate && matchesTransId && matchesSales && matchesQty;
+    });
 
     const transIds = newFilteredTransactions.map((item) => item.transaction_id);
     const newFilteredItems = [...cashier.transList].filter((item) =>
@@ -115,9 +75,9 @@ const TransactionsGrid = () => {
     cashier.transList,
     cashier.selectedCashier,
     cashier.saleDateFilter,
-    cashier.totalSalesFilter,
+    cashier.salesThreshold,
     cashier.transIdFilter,
-    cashier.totalQtyFilter,
+    cashier.qtyThreshold,
   ]);
 
   const handleTransIDClick = (e: TransactionOverview) => {

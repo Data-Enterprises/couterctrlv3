@@ -16,6 +16,7 @@ import {
   setHasSearched,
   setLedgerLoading,
   setLedgerSelection,
+  type GradingMetric,
 } from "../../features/salesLedgerSlice";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import LedgerEntryCard from "./components/LedgerEntryCard";
@@ -32,7 +33,8 @@ const buildLedgerRows = (
   lwData: WeeklySale[],
   lyData: WeeklySale[],
   assignedStores: Store[],
-  threshold: number,
+  threshold: number | null,
+  gradingMetric: GradingMetric,
 ): LedgerRowData[] => {
   const storeIds = [...new Set(twData.map((d) => d.storeid))];
 
@@ -47,13 +49,22 @@ const buildLedgerRows = (
       const twTotal = twRows.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
       const lwTotal = lwRows.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
       const lyTotal = lyRows.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
+      const twQty = twRows.reduce((acc, r) => acc + r.qty, 0);
+      const lwQty = lwRows.reduce((acc, r) => acc + r.qty, 0);
+      const lyQty = lyRows.reduce((acc, r) => acc + r.qty, 0);
+
+      const gradeTW = gradingMetric === "qty" ? twQty : twTotal;
+      const gradeLW = gradingMetric === "qty" ? lwQty : lwTotal;
+      const gradeLY = gradingMetric === "qty" ? lyQty : lyTotal;
+
       const hasLW = lwTotal > 0;
       const hasLY = lyTotal > 0;
       const vsLYDollar = twTotal - lyTotal;
-      const vsLYPct = hasLY ? (vsLYDollar / lyTotal) * 100 : 0;
-      const vsLWPct = hasLW ? ((twTotal - lwTotal) / lwTotal) * 100 : 0;
+      const vsLYPct = hasLY ? ((gradeTW - gradeLY) / gradeLY) * 100 : 0;
+      const vsLWPct = hasLW ? ((gradeTW - gradeLW) / gradeLW) * 100 : 0;
 
       const severity: LedgerRowData["severity"] = (() => {
+        if (threshold === null) return "healthy";
         const pct = hasLY ? vsLYPct : hasLW ? vsLWPct : 0;
         if (pct < -threshold) return "critical";
         if (pct < 0) return "watch";
@@ -83,6 +94,9 @@ const buildLedgerRows = (
         twTotal,
         lwTotal,
         lyTotal,
+        twQty,
+        lwQty,
+        lyQty,
         vsLWPct,
         vsLYPct,
         vsLYDollar,
@@ -113,7 +127,7 @@ const SalesLedger = () => {
     // hourlySalesLastWeek = [],
     // hourlySalesLastYear = [],
   } = useAppSelector((state) => state.sales);
-  const { hasSearched, selection, ledgerLoading: loading, threshold } = useAppSelector((state) => state.salesLedger);
+  const { hasSearched, selection, ledgerLoading: loading, threshold, gradingMetric } = useAppSelector((state) => state.salesLedger);
   const { assignedStores } = useAppSelector((state) => state.user);
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -166,7 +180,7 @@ const SalesLedger = () => {
     }
   };
 
-  const ledgerRows = buildLedgerRows(weeklySales, weeklySalesLastWeek, weeklySalesLastYear, assignedStores, threshold);
+  const ledgerRows = buildLedgerRows(weeklySales, weeklySalesLastWeek, weeklySalesLastYear, assignedStores, threshold?.amount ?? null, gradingMetric);
 
   const criticalRows = ledgerRows.filter((r) => r.severity === "critical");
   const watchRows = ledgerRows.filter((r) => r.severity === "watch");
@@ -175,8 +189,14 @@ const SalesLedger = () => {
   const heroTWTotal = ledgerRows.reduce((acc, r) => acc + r.twTotal, 0);
   const heroLYTotal = ledgerRows.reduce((acc, r) => acc + r.lyTotal, 0);
   const heroLWTotal = ledgerRows.reduce((acc, r) => acc + r.lwTotal, 0);
-  const heroVsLYPct = heroLYTotal ? ((heroTWTotal - heroLYTotal) / heroLYTotal) * 100 : 0;
-  const heroVsLWPct = heroLWTotal ? ((heroTWTotal - heroLWTotal) / heroLWTotal) * 100 : 0;
+  const heroTWQty = ledgerRows.reduce((acc, r) => acc + r.twQty, 0);
+  const heroLYQty = ledgerRows.reduce((acc, r) => acc + r.lyQty, 0);
+  const heroLWQty = ledgerRows.reduce((acc, r) => acc + r.lwQty, 0);
+  const heroGradeTW = gradingMetric === "qty" ? heroTWQty : heroTWTotal;
+  const heroGradeLY = gradingMetric === "qty" ? heroLYQty : heroLYTotal;
+  const heroGradeLW = gradingMetric === "qty" ? heroLWQty : heroLWTotal;
+  const heroVsLYPct = heroGradeLY ? ((heroGradeTW - heroGradeLY) / heroGradeLY) * 100 : 0;
+  const heroVsLWPct = heroGradeLW ? ((heroGradeTW - heroGradeLW) / heroGradeLW) * 100 : 0;
 
   const weekLabel = (() => {
     const { twStart, twEnd } = getDateRanges();
@@ -212,12 +232,14 @@ const SalesLedger = () => {
             <LedgerHeader
               weekLabel={weekLabel}
               twTotal={heroTWTotal}
+              twQty={heroTWQty}
               vsLYPct={heroVsLYPct}
               vsLWPct={heroVsLWPct}
-              hasLY={heroLYTotal > 0}
-              hasLW={heroLWTotal > 0}
+              hasLY={heroGradeLY > 0}
+              hasLW={heroGradeLW > 0}
               onNewSearch={resetToEntry}
               onOpenSearch={() => setSearchModalOpen(true)}
+              gradingMetric={gradingMetric}
             />
 
             {/* Tier summary strip */}
@@ -242,9 +264,9 @@ const SalesLedger = () => {
 
             {/* Three columns — flex-1 so they fill remaining height */}
             <div className="flex-1 overflow-hidden bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100 grid grid-cols-3 divide-x divide-gray-100">
-              <TierColumn severity="critical" rows={criticalRows} onSelect={(s) => dispatch(setLedgerSelection(s))} selectedStoreId={selection?.storeId} />
-              <TierColumn severity="watch" rows={watchRows} onSelect={(s) => dispatch(setLedgerSelection(s))} selectedStoreId={selection?.storeId} />
-              <TierColumn severity="healthy" rows={healthyRows} onSelect={(s) => dispatch(setLedgerSelection(s))} selectedStoreId={selection?.storeId} />
+              <TierColumn severity="critical" rows={criticalRows} onSelect={(s) => dispatch(setLedgerSelection(s))} selectedStoreId={selection?.storeId} gradingMetric={gradingMetric} />
+              <TierColumn severity="watch" rows={watchRows} onSelect={(s) => dispatch(setLedgerSelection(s))} selectedStoreId={selection?.storeId} gradingMetric={gradingMetric} />
+              <TierColumn severity="healthy" rows={healthyRows} onSelect={(s) => dispatch(setLedgerSelection(s))} selectedStoreId={selection?.storeId} gradingMetric={gradingMetric} />
             </div>
           </div>
 
@@ -268,9 +290,9 @@ const SalesLedger = () => {
       {searchModalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={(e) => { if (e.target === e.currentTarget) setSearchModalOpen(false); }}
+          onClick={() => setSearchModalOpen(false)}
         >
-          <div className="w-full max-w-sm mx-4">
+          <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
             <LedgerEntryCard onSearch={fetchLedger} loading={loading} />
           </div>
         </div>
