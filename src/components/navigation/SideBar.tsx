@@ -43,6 +43,7 @@ const SideBar = () => {
     settings: boolean;
     signout: boolean;
   }>({ settings: false, signout: false });
+  const [tooltip, setTooltip] = useState<{ label: string; x: number; y: number } | null>(null);
 
   // make api call to set the user prefs when navigating to a new page
   useEffect(() => {
@@ -176,6 +177,7 @@ const SideBar = () => {
   };
 
   return (
+    <>
     <div
       ref={ref}
       data-testid="side-bar"
@@ -208,15 +210,17 @@ const SideBar = () => {
                 item.userLevels.includes("*")
                   ? "flex"
                   : "hidden"
-              } ${
-                isActive ? "bg-panel_active/75 text-custom-white" : ""
-              } relative`
+              } relative group`
             }
+            style={({ isActive }) => ({
+              background: isActive ? "#1e2a4a" : undefined,
+              color: isActive ? "#fff" : undefined,
+            })}
             onClick={() => handleNavClick(item)}
-            onMouseEnter={() => handleHover(item.name, true, idx)}
-            onMouseLeave={() => handleHover(item.name, false, idx)}
+            onMouseMove={(e) => { if (!nav.isNavOpen && !context.isMobile) setTooltip({ label: item.name, x: e.clientX, y: e.clientY }); }}
+            onMouseLeave={() => setTooltip(null)}
           >
-            <div className="flex w-full items-center md:pl-2 py-2 gap-1 md:gap-2 hover:bg-blue-200 transition-all duration-100">
+            <div className="flex w-full items-center md:pl-2 py-2 gap-1 md:gap-2 transition-all duration-100 hover:bg-[rgba(30,42,74,0.5)] hover:text-white">
               <div className="flex-shrink-0 flex items-center justify-center">
                 <item.icon className={mobileIconStyle()} />
               </div>
@@ -230,17 +234,6 @@ const SideBar = () => {
                 {item.name}
               </div>
             </div>
-            <div
-              id={`tooltip-${idx}`}
-              className={`${
-                item.isHovering && !nav.isNavOpen && !context.isMobile
-                  ? "absolute text-nowrap text-sm shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
-                  : "hidden"
-              }`}
-              style={{ zIndex: 9999 }}
-            >
-              {item.name}
-            </div>
           </NavLink>
         ))}
       </div>
@@ -251,16 +244,12 @@ const SideBar = () => {
           data-testid="nav-settings"
           className={`${
             context.isDesktop || context.isTablet ? "" : "hidden"
-          } flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200 relative`}
+          } group flex w-full items-center pl-2 py-2 gap-3 hover:bg-[rgba(30,42,74,0.5)] hover:text-white transition-all duration-200 relative`}
           onClick={() => {
             navigate("settings");
           }}
-          onMouseEnter={() =>
-            handleBottomNavHover("settings", true, navigation.length)
-          }
-          onMouseLeave={() =>
-            handleBottomNavHover("settings", false, navigation.length)
-          }
+          onMouseMove={(e) => { if (!nav.isNavOpen) setTooltip({ label: "Settings", x: e.clientX, y: e.clientY }); }}
+          onMouseLeave={() => setTooltip(null)}
         >
           <div className="flex-shrink-0 flex items-center justify-center">
             <Cog6ToothIcon className={mobileIconStyle()} />
@@ -274,28 +263,13 @@ const SideBar = () => {
           >
             Settings
           </div>
-          <div
-            id={`tooltip-${navigation.length}`}
-            className={`${
-              bottomNav.settings && !nav.isNavOpen
-                ? "absolute text-nowrap text-sm shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
-                : "hidden"
-            }`}
-            style={{ zIndex: 9999 }}
-          >
-            Settings
-          </div>
         </div>
         <div
           data-testid="signout-btn"
-          className="flex w-full items-center pl-0.5 md:pl-2 py-2 gap-1 md:gap-2 hover:bg-blue-200 transition-all duration-200 relative"
+          className="group flex w-full items-center pl-0.5 md:pl-2 py-2 gap-1 md:gap-2 hover:bg-[rgba(30,42,74,0.5)] hover:text-white transition-all duration-200 relative"
           onClick={handleSignOut}
-          onMouseEnter={() =>
-            handleBottomNavHover("signout", true, navigation.length + 1)
-          }
-          onMouseLeave={() =>
-            handleBottomNavHover("signout", false, navigation.length + 1)
-          }
+          onMouseMove={(e) => { if (!nav.isNavOpen) setTooltip({ label: "Sign Out", x: e.clientX, y: e.clientY }); }}
+          onMouseLeave={() => setTooltip(null)}
         >
           <div className="flex-shrink-0 flex items-center justify-center">
             <SignOutIcon className={mobileIconStyle()} />
@@ -309,20 +283,26 @@ const SideBar = () => {
           >
             Sign Out
           </div>
-          <div
-            id={`tooltip-${navigation.length + 1}`}
-            className={`${
-              bottomNav.signout && !nav.isNavOpen
-                ? "absolute text-nowrap text-[11.5px] md:text-sm shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
-                : "hidden"
-            }`}
-            style={{ zIndex: 2500 }}
-          >
-            Sign Out
-          </div>
         </div>
       </div>
     </div>
+
+    {/* Global cursor-following tooltip */}
+    {tooltip && (
+      <div
+        className="fixed text-nowrap text-[11px] font-medium text-white rounded-md px-2.5 py-1.5 pointer-events-none"
+        style={{
+          zIndex: 99999,
+          background: "#1e2a4a",
+          left: tooltip.x + 14,
+          top: tooltip.y + 14,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
+        }}
+      >
+        {tooltip.label}
+      </div>
+    )}
+    </>
   );
 };
 

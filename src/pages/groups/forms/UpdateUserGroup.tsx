@@ -6,17 +6,16 @@ import {
   setSelectedGroup,
   type Group,
 } from "../../../features/groupSlice";
-import Input from "../../../components/inputs/Input";
 import type { JsonError } from "../../../interfaces";
 import { updateGroup } from "../../../api/groups";
 import { useGroupCtx } from "..";
+import { CheckIcon } from "@heroicons/react/20/solid";
 
 const UpdateUserGroup = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const { url, token, userid, groups, selectedGroup, createInput } =
-    useGroupCtx();
-    const { isDesktop } = useAppSelector((state) => state.app);
+  const { url, token, userid, groups, selectedGroup, createInput } = useGroupCtx();
+  const { isDesktop } = useAppSelector((state) => state.app);
 
   const groupNames = groups.map((g) => g.group_name);
 
@@ -39,55 +38,98 @@ const UpdateUserGroup = () => {
       .catch((err: JsonError) => toast.error(err.message));
   };
 
-  const canSubmit = () => {
+  const canSubmit =
+    createInput.trim() !== "" &&
+    selectedGroup.id > 0 &&
+    !groupNames.some((g) => g.toLowerCase() === createInput.trim().toLowerCase());
+
+  if (!isDesktop) {
     return (
-      createInput.trim() !== "" &&
-      selectedGroup.id > 0 &&
-      !groupNames.some(
-        (g) => g.toLowerCase() === createInput.trim().toLowerCase(),
-      )
-    );
-  };
-
-  const setText = (x: string) => {
-    dispatch(setCreateInput(x));
-  };
-
-  
-  const containerStyle = isDesktop
-    ? "bg-custom-white p-2 rounded-md shadow-md text-sm"
-    : "bg-custom-white p-4 rounded-md shadow-md w-full text-sm";
-
-  return (
-    <div className={containerStyle}>
-      <div className="font-medium text-sm">
-        <div>Select group to update</div>
-      </div>
-      <div className="p-2 bg-bkg/80 rounded-lg grid grid-cols-2 max-h-52 overflow-y-auto select-none text-[13px]">
-        {groups.map((g, i) => (
-          <div
-            key={g.id}
-            data-testid={`update-group-option-${i}`}
-            className={`${selectedGroup.id === g.id ? "bg-orange-200" : ""} px-2 py-0.5 rounded-full transition-all duration-200 cursor-pointer hover:bg-blue-200`}
-            onClick={() => handleSelect(g)}
-          >
-            {g.group_name}
-          </div>
-        ))}
-      </div>
-      <div>
-        <Input
-          label="Group Name"
+      <div className="bg-custom-white p-4 rounded-md shadow-md w-full text-sm">
+        <div className="font-medium mb-2">Select group to update</div>
+        <div className="p-2 bg-bkg/80 rounded-lg grid grid-cols-2 max-h-52 overflow-y-auto select-none text-[13px] mb-2">
+          {groups.map((g, i) => (
+            <div
+              key={g.id}
+              data-testid={`update-group-option-${i}`}
+              className={`${selectedGroup.id === g.id ? "bg-orange-200" : ""} px-2 py-0.5 rounded-full transition-all duration-200 cursor-pointer hover:bg-blue-200`}
+              onClick={() => handleSelect(g)}
+            >
+              {g.group_name}
+            </div>
+          ))}
+        </div>
+        <input
           value={createInput}
-          className="py-1 text-[14px]"
-          setValue={setText}
+          onChange={(e) => dispatch(setCreateInput(e.target.value))}
+          placeholder="New name"
+          className="basic-input w-full py-1 text-[14px] mb-2"
         />
         <button
           data-testid="create-usergroup-btn"
-          className={`btn-themeBlue mt-2 w-full bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white py-1 text-[13px] ${canSubmit() ? "" : "opacity-50 pointer-events-none"}`}
+          className={`btn-themeBlue mt-1 w-full bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white py-1 text-[13px] ${canSubmit ? "" : "opacity-50 pointer-events-none"}`}
           onClick={handleUpdate}
         >
           Submit
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white" style={{ width: 280 }}>
+      <div className="flex-shrink-0 px-3 py-1.5" style={{ background: "#1e2a4a" }}>
+        <span className="text-[13px] font-semibold text-white">Rename group</span>
+      </div>
+
+      <div className="flex flex-col gap-3 p-3">
+        <div>
+          <div className="text-[9px] font-semibold uppercase tracking-wide text-content/40 mb-1.5">Select group</div>
+          <div className="flex flex-col rounded-lg border border-gray-100 overflow-hidden max-h-48 overflow-y-auto thin-scrollbar">
+            {groups.map((g, i) => {
+              const isSel = selectedGroup.id === g.id;
+              return (
+                <button
+                  key={g.id}
+                  data-testid={`update-group-option-${i}`}
+                  onClick={() => handleSelect(g)}
+                  className="flex items-center justify-between px-3 py-2 text-[11px] border-b border-gray-100 last:border-b-0 text-left transition-colors"
+                  style={{
+                    background: isSel ? "#1e2a4a" : "var(--color-background-primary)",
+                    color: isSel ? "#fff" : "var(--color-text-primary)",
+                  }}
+                >
+                  <span>{g.group_name}</span>
+                  {isSel && (
+                    <span className="flex items-center justify-center w-[14px] h-[14px] rounded-[3px] border border-white/30 flex-shrink-0">
+                      <CheckIcon className="w-2.5 h-2.5 text-white" />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-0.5">
+          <label className="text-[9px] font-semibold uppercase tracking-wide text-content/40">New name</label>
+          <input
+            value={createInput}
+            onChange={(e) => dispatch(setCreateInput(e.target.value))}
+            onKeyDown={(e) => e.key === "Enter" && canSubmit && handleUpdate()}
+            placeholder="Enter new name…"
+            className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-[11px] text-content bg-custom-white"
+            style={{ outline: "none" }}
+          />
+        </div>
+
+        <button
+          data-testid="create-usergroup-btn"
+          onClick={handleUpdate}
+          className={`w-full text-[11px] font-semibold text-white rounded-lg px-4 py-1.5 transition-colors ${canSubmit ? "hover:opacity-90" : "opacity-40 pointer-events-none"}`}
+          style={{ background: "#1e2a4a" }}
+        >
+          Save changes
         </button>
       </div>
     </div>

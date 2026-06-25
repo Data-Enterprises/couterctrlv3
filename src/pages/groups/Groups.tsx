@@ -21,15 +21,21 @@ import UpdateUserGroup from "./forms/UpdateUserGroup";
 import DeleteUserGroup from "./forms/DeleteUserGroup";
 import UserGroupAssign from "./forms/UserGroupAssign";
 import { useGroupCtx } from ".";
-import SingleSelect from "../../components/SingleSelect";
 import GroupsTablet from "./tablet/GroupsTablet";
 import GroupsMobile from "./mobile/GroupsMobile";
 
-const options = [
-  { label: "Create", id: "create" },
-  { label: "Update", id: "update" },
-  { label: "Delete", id: "delete" },
-  { label: "Assign/Unassign Stores", id: "assign" },
+import {
+  PlusCircleIcon,
+  PencilIcon,
+  TrashIcon,
+  BuildingStorefrontIcon,
+} from "@heroicons/react/24/solid";
+
+const NAV_ITEMS: { id: GroupFormType; label: string; Icon: React.ElementType }[] = [
+  { id: "create", label: "New", Icon: PlusCircleIcon },
+  { id: "update", label: "Rename", Icon: PencilIcon },
+  { id: "delete", label: "Delete", Icon: TrashIcon },
+  { id: "assign", label: "Assign", Icon: BuildingStorefrontIcon },
 ];
 
 const Groups = () => {
@@ -79,86 +85,46 @@ const Groups = () => {
   if (isTablet) return <GroupsTablet handleFormSelect={handleFormSelect} />;
   if (isMobile) return <GroupsMobile handleFormSelect={handleFormSelect} />;
 
-  const containerStyle = ctx.isDesktop
-    ? "h-[calc(100vh-3rem)] p-4 flex gap-4"
-    : "w-full h-[calc(100vh-3rem)] p-2 flex flex-col gap-2";
-
-  const optionBtnStyle = ctx.isDesktop
-    ? "bg-custom-white rounded-lg shadow-lg min-w-36 text-sm select-none"
-    : "bg-custom-white rounded-lg shadow-lg p-2 grid gap-2";
-
   const renderForm = () => {
     switch (ctx.selectedForm) {
-      case "create":
-        return <CreateUserGroup />;
-      case "update":
-        return <UpdateUserGroup />;
-      case "delete":
-        return <DeleteUserGroup />;
-      case "assign":
-        return <UserGroupAssign />;
-      default:
-        return null;
+      case "create": return <CreateUserGroup />;
+      case "update": return <UpdateUserGroup />;
+      case "delete": return <DeleteUserGroup />;
+      case "assign": return <UserGroupAssign />;
+      default: return null;
     }
   };
 
-  const handleMobileFormSelect = (id: string | number) => {
-    const val: GroupFormType = id.toString() as GroupFormType;
-    dispatch(setSelectedForm(val));
-  };
-
   return (
-    <div className={containerStyle} data-testid="groups-page">
-      {ctx.isDesktop ? (
-        <div>
-          <div className={optionBtnStyle}>
-            <div className="font-medium px-2 rounded-t-lg py-0.5">
-              User Group Forms
-            </div>
-            <div className="grid grid-cols-2">
-              <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
-              <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
-            </div>
-            <div
-              data-testid="user-group-create-form-btn"
-              className={`${ctx.selectedForm === "create" ? "bg-orange-200" : "bg-custom-white"} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
-              onClick={() => handleFormSelect("create")}
+    <div className="h-[calc(100vh-3rem)] p-4 flex gap-3" data-testid="groups-page">
+      {/* Side nav */}
+      <div className="flex flex-col gap-2 flex-shrink-0">
+        {NAV_ITEMS.map(({ id, label, Icon }) => {
+          const active = ctx.selectedForm === id;
+          return (
+            <button
+              key={id}
+              data-testid={`user-group-${id}-form-btn`}
+              onClick={() => handleFormSelect(id)}
+              className="flex flex-col items-center justify-center gap-1.5 w-[68px] py-3 rounded-xl transition-colors select-none"
+              style={{
+                background: active ? "#1e2a4a" : "#ffffff",
+                border: "none",
+                color: active ? "#fff" : "rgba(30,42,74,0.4)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+              }}
             >
-              Create
-            </div>
-            <div
-              data-testid="user-group-update-form-btn"
-              className={`${ctx.selectedForm === "update" ? "bg-orange-200" : "bg-custom-white"} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
-              onClick={() => handleFormSelect("update")}
-            >
-              Update
-            </div>
-            <div
-              data-testid="user-group-delete-form-btn"
-              className={`${ctx.selectedForm === "delete" ? "bg-orange-200" : "bg-custom-white"} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
-              onClick={() => handleFormSelect("delete")}
-            >
-              Delete
-            </div>
-            <div
-              data-testid="user-group-assign-form-btn"
-              className={`${ctx.selectedForm === "assign" ? "bg-orange-200" : "bg-custom-white"} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2 rounded-b-lg`}
-              onClick={() => handleFormSelect("assign")}
-            >
-              Assign/Unassign Stores
-            </div>
-          </div>
-        </div>
-      ) : (
-        <SingleSelect
-          label="Forms"
-          data={options}
-          displayKey="label"
-          valueKey="id"
-          onSelect={handleMobileFormSelect}
-        />
-      )}
-      <div>{renderForm()}</div>
+              <Icon className="w-5 h-5" />
+              <span className="text-[10px] font-medium leading-tight">{label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Form panel */}
+      <div className="flex flex-col">
+        {renderForm()}
+      </div>
     </div>
   );
 };
