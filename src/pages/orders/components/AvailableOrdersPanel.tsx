@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
-import { MagnifyingGlassIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import { MagnifyingGlassIcon, ChevronRightIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import type { GroupedOrderCard, SelectedOrderKey } from "../../../features/ordersSlice";
 import FilterBar from "../../../components/filters/FilterBar";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import TextFilter from "../../../components/filters/TextFilter";
 import SelectFilter, { type SelectFilterOption } from "../../../components/filters/SelectFilter";
 
@@ -29,6 +30,12 @@ const AvailableOrdersPanel = ({
   onSelectStore,
   onOpenSearch,
 }: Props) => {
+  const fmtRangePart = (mdy: string, withYear = false) => {
+    const [m, d, y] = mdy.split("/");
+    return withYear ? `${+m}/${+d}/${y}` : `${+m}/${+d}`;
+  };
+  const dateLabel = `${fmtRangePart(startDate)} – ${fmtRangePart(endDate, true)}`;
+  const [legendHover, setLegendHover] = useState(false);
   const [activeType, setActiveType] = useState("all");
   const [storeFilter, setStoreFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
@@ -78,17 +85,33 @@ const AvailableOrdersPanel = ({
   return (
     <div
       className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white"
-      style={{ flexBasis: "36%", minWidth: 0 }}
+      style={{ flexBasis: "27%", minWidth: 0 }}
     >
       {/* Header */}
-      <div className="bg-[#1e2a4a] px-4 py-2.5 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-white font-medium text-[13px]">Available orders</div>
-            <div className="text-white/60 text-[10px] mt-0.5">
-              {startDate} – {endDate}
-            </div>
-          </div>
+      <div className="bg-[#1e2a4a] px-3 pt-1 pb-2.5 flex-shrink-0 flex flex-col gap-0">
+        {/* Row 1: title + date | totals */}
+        <div className="flex items-end gap-3 min-h-[26px]">
+          <span className="text-white font-medium text-[13px] flex-shrink-0">Available Orders</span>
+          <span className="text-white/45 text-[10px] flex-shrink-0">{dateLabel}</span>
+          <div className="flex-1" />
+          {cards.length > 0 && (
+            <>
+              <div className="flex items-baseline gap-1 flex-shrink-0">
+                <span className="text-[10px] uppercase tracking-wide text-white/45">Types</span>
+                <span className="text-[13px] font-medium text-white">{cards.length}</span>
+              </div>
+              <div className="w-px h-4 bg-white/15 flex-shrink-0" />
+              <div className="flex items-baseline gap-1 flex-shrink-0">
+                <span className="text-[10px] uppercase tracking-wide text-white/45">Orders</span>
+                <span className="text-[13px] font-medium text-white">
+                  {cards.reduce((acc, c) => acc + c.dates.reduce((a, d) => a + d.stores.length, 0), 0)}
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+        {/* Row 2: search + legend */}
+        <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-white/[0.08]">
           <button
             onClick={onOpenSearch}
             aria-label="New search"
@@ -96,6 +119,27 @@ const AvailableOrdersPanel = ({
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
+          <div className="flex-1" />
+          <div className="relative flex-shrink-0" onMouseEnter={() => setLegendHover(true)} onMouseLeave={() => setLegendHover(false)}>
+            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/50 hover:text-white hover:border-white/40 transition-colors">
+              <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
+            </button>
+            {legendHover && (
+              <div className="absolute right-0 top-full mt-1.5 z-50 bg-[#1e2a4a] border border-white/15 rounded-lg shadow-lg px-3 py-2.5 flex flex-col gap-2" style={{ minWidth: 220 }}>
+                {[
+                  { color: "#60a5fa", label: "Types", desc: "Distinct order types (e.g. DAM, DMG, INV, PER)" },
+                  { color: "#a78bfa", label: "Orders", desc: "Total store-level order entries, not individual line items" },
+                ].map(({ color, label, desc }) => (
+                  <div key={label} className="flex items-start gap-2">
+                    <div className="w-[7px] h-[7px] rounded-full flex-shrink-0 mt-[3px]" style={{ background: color }} />
+                    <span className="text-[11px] text-white/70 leading-snug">
+                      <span className="text-white font-medium">{label}</span> — {desc}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -148,11 +192,7 @@ const AvailableOrdersPanel = ({
 
       {/* Cards list */}
       <div className="flex-1 overflow-y-auto thin-scrollbar p-3 flex flex-col gap-3">
-        {loading && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/60">
-            Loading orders…
-          </div>
-        )}
+        {loading && <div className="flex-1 relative"><LoadingIndicator message="Loading orders" /></div>}
 
         {!loading && cards.length === 0 && (
           <div className="flex items-center justify-center py-16 text-[12px] text-content/60">

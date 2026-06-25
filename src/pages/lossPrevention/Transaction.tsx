@@ -1,15 +1,16 @@
+import { forwardRef, useImperativeHandle } from "react";
 import type { TransactionListItem } from "../../interfaces";
 import { formatCurrency2 } from "../../utils";
 import { exportData } from "../../utils/export";
 import { useAppSelector } from "../../hooks";
 import { emailTransaction } from "../../api/lossPrevention";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 
-const chipStyle = {
-  background: "rgba(30,42,74,0.06)",
-  boxShadow: "inset 0 1px 2px rgba(30,42,74,0.08)",
-};
+
+export interface TransactionHandle {
+  email: () => void;
+  export: () => void;
+}
 
 interface TransactionProps {
   trans: TransactionListItem[];
@@ -29,7 +30,7 @@ const renderStamps = (item: TransactionListItem) => {
   return stamps.join(" · ") || null;
 };
 
-const Transaction = ({ trans }: TransactionProps) => {
+const Transaction = forwardRef<TransactionHandle, TransactionProps>(({ trans }, ref) => {
   const toast = useToast();
   const context = useAppSelector((s) => s.app);
   const { selectedSaleType } = useAppSelector((s) => s.lossPrevention);
@@ -108,49 +109,41 @@ const Transaction = ({ trans }: TransactionProps) => {
       .catch(() => toast.error("Error emailing transaction"));
   };
 
+  useImperativeHandle(ref, () => ({
+    email: handleEmail,
+    export: handleExport,
+  }));
+
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      {/* Sub-header */}
-      <div className="flex-shrink-0 px-4 pt-2.5 pb-3 border-b border-gray-100">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <div>
-            <div className="text-[13px] font-medium text-[#1e2a4a]">{first.cashier_name}</div>
-            <div className="text-[11px] text-content/70 mt-0.5">#{saleId} · {fmtDate}</div>
+      {/* KPI strip: Trans ID / Date / Time / Cashier / Terminal */}
+      <div className="flex-shrink-0 grid divide-x divide-gray-100 border-b border-gray-100 bg-white" style={{ gridTemplateColumns: "0.97fr 1.15fr 0.97fr 0.97fr 0.97fr 0.97fr" }}>
+        {[
+          { label: "Trans ID",    value: `#${saleId}` },
+          { label: "Date",        value: fmtDate },
+          { label: "Start Time",  value: fmtTime(first.sale_start_time) },
+          { label: "End Time",    value: fmtTime(first.sale_end_time) },
+          { label: "Cashier",     value: `#${first.cashier_number}` },
+          { label: "Terminal",    value: first.terminal },
+        ].map(({ label, value }) => (
+          <div key={label} className="px-3 py-2">
+            <div className="text-[8px] font-bold uppercase tracking-wide text-content/40">{label}</div>
+            <div className="text-[11px] font-medium text-[#1e2a4a] mt-0.5">{value}</div>
           </div>
-          <div className="flex gap-1.5 flex-shrink-0">
-            <button onClick={handleEmail} className="flex items-center gap-1 text-[11px] font-medium bg-[#1e2a4a] text-white rounded-md px-2.5 py-1.5">
-              Email
-            </button>
-            <button onClick={handleExport} className="flex items-center gap-1.5 text-[11px] font-medium bg-[#1e2a4a] text-white rounded-md px-2.5 py-1.5">
-              <ArrowDownTrayIcon className="w-3 h-3" />
-              CSV
-            </button>
+        ))}
+      </div>
+
+      {/* Column headers */}
+      <div className="flex-shrink-0 grid gap-1 px-4 py-1.5 bg-gray-100 border-b border-gray-100" style={{ gridTemplateColumns: "80px 1fr 28px 62px 55px" }}>
+        {["UPC", "Description", "Qty", "Net", "Type"].map((h, i) => (
+          <div key={h} className="text-[9px] font-bold uppercase tracking-wide text-content/40" style={{ textAlign: i >= 2 ? "right" : "left" }}>
+            {h}
           </div>
-        </div>
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {[
-            { label: "Time",     value: timeStr },
-            { label: "Cashier",  value: `#${first.cashier_number}` },
-            { label: "Terminal", value: first.terminal },
-          ].map(({ label, value }) => (
-            <div key={label} className="flex items-baseline gap-1 rounded px-1.5 py-0.5" style={chipStyle}>
-              <span className="text-[10px] text-content/60">{label}</span>
-              <span className="text-[11px] font-semibold text-content">{value}</span>
-            </div>
-          ))}
-        </div>
+        ))}
       </div>
 
       {/* Line items + sticky totals */}
       <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-4 pt-3 relative">
-        {/* Column headers */}
-        <div className="grid gap-1 pb-1.5 border-b border-gray-100 mb-1" style={{ gridTemplateColumns: "80px 1fr 28px 62px 55px" }}>
-          {["UPC", "Description", "Qty", "Net", "Type"].map((h, i) => (
-            <div key={h} className="text-[9px] font-semibold uppercase tracking-wide text-content/55" style={{ textAlign: i >= 2 ? "right" : "left" }}>
-              {h}
-            </div>
-          ))}
-        </div>
         {/* Rows */}
         {trans.map((item, i) => {
           const isVoid = item.sale_type.toLowerCase().includes("void");
@@ -212,6 +205,8 @@ const Transaction = ({ trans }: TransactionProps) => {
       </div>
     </div>
   );
-};
+});
+
+Transaction.displayName = "Transaction";
 
 export default Transaction;

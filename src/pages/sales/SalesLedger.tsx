@@ -19,11 +19,12 @@ import {
   type GradingMetric,
 } from "../../features/salesLedgerSlice";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
+import EmptyPrompt from "../../components/EmptyPrompt";
+import TierStrip from "../../components/TierStrip";
 import LedgerEntryCard from "./components/LedgerEntryCard";
 import StoreDetailPopup from "./components/StoreDetailPopup";
 import TierColumn from "./components/TierColumn";
 import LedgerHeader from "./components/LedgerHeader";
-import { SEVERITY_CONFIG } from "./components/tierColumnUtils";
 import { type LedgerRowData } from "./components/LedgerRow";
 
 const SEVERITY_RANK = { critical: 0, watch: 1, healthy: 2 } as const;
@@ -202,9 +203,8 @@ const SalesLedger = () => {
     const { twStart, twEnd } = getDateRanges();
     const start = new Date(twStart + "T12:00:00");
     const end = new Date(twEnd + "T12:00:00");
-    const fmt = (d: Date) =>
-      `${d.toLocaleString("default", { month: "short" })} ${d.getDate()}`;
-    return `${fmt(start)} – ${fmt(end)}, ${end.getFullYear()}`;
+    const fmtD = (d: Date) => `${d.getMonth() + 1}/${d.getDate()}`;
+    return `${fmtD(start)} – ${fmtD(end)}/${end.getFullYear()}`;
   })();
 
   if (!hasSearched) {
@@ -228,7 +228,7 @@ const SalesLedger = () => {
       ) : (
         <div className="flex gap-4 h-[calc(100vh-5rem)]">
           {/* Left: store list */}
-          <div className="flex flex-col min-w-0 shadow-lg" style={{ flexBasis: "48%", flexShrink: 0 }}>
+          <div className="flex flex-col min-w-0 shadow-lg" style={{ flexBasis: "46%", flexShrink: 0 }}>
             <LedgerHeader
               weekLabel={weekLabel}
               twTotal={heroTWTotal}
@@ -243,24 +243,12 @@ const SalesLedger = () => {
             />
 
             {/* Tier summary strip */}
-            <div className="border-x border-gray-100 grid grid-cols-3 divide-x divide-gray-100">
-              {(["critical", "watch", "healthy"] as const).map((sev) => {
-                const cfg = SEVERITY_CONFIG[sev];
-                const count =
-                  sev === "critical"
-                    ? criticalRows.length
-                    : sev === "watch"
-                    ? watchRows.length
-                    : healthyRows.length;
-                return (
-                  <div key={sev} className={`flex items-center justify-between gap-4 px-6 py-3 ${cfg.headerBg}`}>
-                    <cfg.Icon className="w-6 h-6 flex-shrink-0" style={{ color: cfg.iconColor }} />
-                    <span className="text-[15px] font-medium text-content/60">{cfg.label}</span>
-                    <span className="text-[15px] font-semibold text-content leading-none">{count}</span>
-                  </div>
-                );
-              })}
-            </div>
+            <TierStrip
+              critical={criticalRows.length}
+              watch={watchRows.length}
+              healthy={healthyRows.length}
+              className="border-x border-gray-100"
+            />
 
             {/* Three columns — flex-1 so they fill remaining height */}
             <div className="flex-1 overflow-hidden bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100 grid grid-cols-3 divide-x divide-gray-100">
@@ -275,12 +263,7 @@ const SalesLedger = () => {
             {selection !== null ? (
               <StoreDetailPopup selection={selection} onClose={() => dispatch(setLedgerSelection(null))} />
             ) : (
-              <div className="h-full flex flex-col items-center justify-center gap-2 bg-custom-white/60 rounded-xl border border-dashed border-gray-200">
-                <div className="text-content/20 text-[13px] font-medium">No store selected</div>
-                <div className="text-content/15 text-[11px]">
-                  Select a store from the list to view its weekly report
-                </div>
-              </div>
+              <EmptyPrompt title="No store selected" description="Select a store from the list to view its weekly report" />
             )}
           </div>
         </div>

@@ -51,15 +51,15 @@ export const buildCashierStats = (
     const existing = map.get(o.cashier_number);
     if (existing) {
       existing.trans += 1;
-      existing.qty   += o.qty ?? 0;
+      existing.qty += o.qty ?? 0;
       existing.sales += o.total_sales;
     } else {
       map.set(o.cashier_number, {
         cashier_number: o.cashier_number,
-        cashier_name:   o.cashier_name,
-        store_number:   o.store_number,
+        cashier_name: o.cashier_name,
+        store_number: o.store_number,
         trans: 1,
-        qty:   o.qty ?? 0,
+        qty: o.qty ?? 0,
         sales: o.total_sales,
       });
     }
@@ -70,10 +70,10 @@ export const buildCashierStats = (
     if (!map.has(c.cashier_number)) {
       map.set(c.cashier_number, {
         cashier_number: c.cashier_number,
-        cashier_name:   c.cashier_name,
-        store_number:   c.store_number,
+        cashier_name: c.cashier_name,
+        store_number: c.store_number,
         trans: c.transaction_count,
-        qty:   0,
+        qty: 0,
         sales: c.total_sales,
       });
     }
@@ -88,39 +88,57 @@ export const computePeerAverages = (stats: RawCashierStats[]): PeerAverages => {
   if (stats.length === 0) return { trans: 0, qty: 0, sales: 0, avgTicket: 0 };
 
   const n = stats.length;
-  const trans    = stats.reduce((s, c) => s + c.trans, 0) / n;
-  const qty      = stats.reduce((s, c) => s + c.qty,   0) / n;
-  const sales    = stats.reduce((s, c) => s + c.sales, 0) / n;
-  const avgTicket = stats.reduce((s, c) => s + (c.trans > 0 ? c.sales / c.trans : 0), 0) / n;
+  const trans = stats.reduce((s, c) => s + c.trans, 0) / n;
+  const qty = stats.reduce((s, c) => s + c.qty, 0) / n;
+  const sales = stats.reduce((s, c) => s + c.sales, 0) / n;
+  const avgTicket =
+    stats.reduce((s, c) => s + (c.trans > 0 ? c.sales / c.trans : 0), 0) / n;
 
   return { trans, qty, sales, avgTicket };
 };
 
-// ── Step 3: grade one cashier against peer averages ─────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-const makeMetric = (value: number, avg: number): CashierMetric => {
-  const pct    = avg !== 0 ? ((value - avg) / avg) * 100 : 0;
-  const isPass = value < avg;
+const isNoSaleType = (saleType: string) =>
+  saleType.toLowerCase().replace(/[^a-z]/g, "") === "nosale";
+
+// ── Step 3: grade one cashier against peer averages ──────────────────────────
+
+/**
+ * useAbs: compare |value| vs |avg| — required for dollar metrics on refund
+ * types where both sides are negative.
+ */
+const makeMetric = (value: number, avg: number, useAbs = false): CashierMetric => {
+  const v = useAbs ? Math.abs(value) : value;
+  const a = useAbs ? Math.abs(avg)   : avg;
+  const pct    = a !== 0 ? ((v - a) / a) * 100 : 0;
+  const isPass = v <= a;
   return { value, avg, pct, isPass };
 };
 
 export const gradeCashier = (
   stats: RawCashierStats,
   avgs: PeerAverages,
+  saleType: string,
 ): CashierGrade => {
+  const noSale = isNoSaleType(saleType);
   const cashierAvgTicket = stats.trans > 0 ? stats.sales / stats.trans : 0;
 
-  const trans     = makeMetric(stats.trans,          avgs.trans);
-  const qty       = makeMetric(stats.qty,            avgs.qty);
-  const sales     = makeMetric(stats.sales,          avgs.sales);
-  const avgTicket = makeMetric(cashierAvgTicket,     avgs.avgTicket);
+  const trans     = makeMetric(stats.trans,      avgs.trans);
+  // qty can be negative for Refunded; use abs so -65 doesn't falsely beat -22
+  const qty       = makeMetric(stats.qty,        avgs.qty,       !noSale);
+  const sales     = makeMetric(stats.sales,      avgs.sales,     !noSale);
+  const avgTicket = makeMetric(cashierAvgTicket, avgs.avgTicket, !noSale);
 
-  const passes = [trans, qty, sales, avgTicket].filter((m) => m.isPass).length;
+  // No Sale grades only trans + qty (matches store grading)
+  const gradedMetrics = noSale ? [trans, qty] : [trans, qty, sales, avgTicket];
+  const passes = gradedMetrics.filter((m) => m.isPass).length;
 
-  const severity: CashierSeverity =
-    passes >= 3 ? "ok" :
-    passes === 2 ? "watch" :
-    "critical";
+  // No Sale:  2=OK, 1=Watch, 0=Critical  (2-metric scale)
+  // Standard: 3+=OK, 2=Watch, 0-1=Critical
+  const severity: CashierSeverity = noSale
+    ? passes === 2 ? "ok" : passes === 1 ? "watch" : "critical"
+    : passes >= 3  ? "ok" : passes === 2 ? "watch" : "critical";
 
   return {
     cashier_number: stats.cashier_number,
@@ -135,17 +153,18 @@ export const gradeCashier = (
   };
 };
 
-// ── Convenience: grade all cashiers, sorted Critical → Watch → OK ───────────
+// ── Convenience: grade all cashiers, sorted Critical → Watch → OK ────────────
 
 const SEVERITY_RANK: Record<CashierSeverity, number> = { critical: 0, watch: 1, ok: 2 };
 
 export const gradeAllCashiers = (
   transOverviews: TransactionOverview[],
   cashiers: UniqueCashier[],
+  saleType: string,
 ): CashierGrade[] => {
   const stats = buildCashierStats(transOverviews, cashiers);
   const avgs  = computePeerAverages(stats);
   return stats
-    .map((s) => gradeCashier(s, avgs))
+    .map((s) => gradeCashier(s, avgs, saleType))
     .sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity]);
 };

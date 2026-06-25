@@ -283,7 +283,7 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
   }
 
   return (
-    <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-3">
+    <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-4">
       {/* <DescModal open={descModalOpen} onClose={() => setDescModalOpen(false)} handleSubmit={handleDescriptionSubmit} /> */}
       <LPStorePanel
         loading={loading}

@@ -5,13 +5,17 @@ interface Props {
   className?: string;
 }
 
-const LoadingIndicator = ({
-  message = "Loading...",
-  className = "",
-}: Props) => {
+const LoadingIndicator = ({ message = "Loading...", className = "" }: Props) => {
   return (
-    <div data-testid="loading-indicator" className={`loading-indicator text-[12px] ${className}`}>
-      <span className="absolute mt-5 text-center w-full font-medium">{message}</span>
+    <div data-testid="loading-indicator" className={`loading-indicator ${className}`}>
+      <div className="loading-pill">
+        <span className="loading-pill-text">{message}</span>
+        <div className="loading-dots">
+          <div className="loading-dot" />
+          <div className="loading-dot" />
+          <div className="loading-dot" />
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,3 +1,10 @@
+import type { Store } from "../interfaces";
+
+export const getStoreName = (assignedStores: Store[], storeid: number, fallback?: string): string => {
+  const match = assignedStores.find((s) => s.storeid === storeid);
+  return match?.store_name ?? fallback ?? String(storeid);
+};
+
 export const formatDate = (date: string) => {
   const dte = new Date(date);
   const month = dte.getMonth() + 1;
