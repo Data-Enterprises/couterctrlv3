@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { ArrowLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import { ChevronLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { formatDate, reduceTransactions } from "..";
+import { gradeAllCashiers } from "../gradingUtils";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getCashierTransaction } from "../../../api/lossPrevention";
 import {
@@ -35,13 +36,6 @@ const meetsThreshold = (value: number, threshold: ThresholdValue | null): boolea
   return value === threshold.amount;
 };
 
-const pctDelta = (current: number, trend: number): { pct: number; up: boolean } | null => {
-  const a = Math.abs(current);
-  const b = Math.abs(trend);
-  if (b === 0) return null;
-  const pct = ((a - b) / b) * 100;
-  return { pct: Math.abs(pct), up: pct > 0 };
-};
 
 const TransactionsMobile = ({ onBack, onOpenSearch }: Props) => {
   const toast = useToast();
@@ -54,22 +48,29 @@ const TransactionsMobile = ({ onBack, onOpenSearch }: Props) => {
   const [selectedOverview, setSelectedOverview] = useState<TransactionOverview | null>(null);
   const [loadingReceipt, setLoadingReceipt] = useState(false);
   const [dateFilter, setDateFilter] = useState("");
-  const [qtyThreshold, setQtyThreshold] = useState<ThresholdValue | null>(null);
-  const [salesThreshold, setSalesThreshold] = useState<ThresholdValue | null>(null);
+  // const [qtyThreshold, setQtyThreshold] = useState<ThresholdValue | null>(null);
+  // const [salesThreshold, setSalesThreshold] = useState<ThresholdValue | null>(null);
+  type SortCol = "date" | "qty" | "total";
+  type SortDir = "desc" | "asc" | "none";
+  const [sortCol, setSortCol] = useState<SortCol | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("none");
   const receiptCloseRef = useRef<(() => void) | null>(null);
 
   const storeName = assignedStores.find((s) => s.storeid === lp.selectedStoreId)?.store_name ?? "";
 
-  // detail/trend for the 5 KPI strip — use first entry (we narrowed to selected store before navigating)
-  const detail = lp.cashierDetails[0] ?? null;
-  const trend  = lp.cashierTrends[0] ?? null;
+  const grades = useMemo(
+    () => gradeAllCashiers(lp.transOverviews, lp.cashiers, lp.selectedSaleType),
+    [lp.transOverviews, lp.cashiers, lp.selectedSaleType],
+  );
 
-  const kpiMetrics = detail ? [
-    { label: "Trans",    current: detail.transaction_count, trendVal: trend?.transaction_count,  fmt: (v: number) => String(v),   isGood: (c: number, t: number) => c < t },
-    { label: "Items",    current: detail.total_items,       trendVal: trend?.total_items,         fmt: (v: number) => String(v),   isGood: (c: number, t: number) => c < t },
-    { label: "Total",    current: detail.amount,            trendVal: trend?.amount,              fmt: formatCurrency2,             isGood: (c: number, t: number) => Math.abs(c) < Math.abs(t) },
-    { label: "Avg $",    current: detail.average_dollars,   trendVal: trend?.average_dollars,     fmt: formatCurrency2,             isGood: (c: number, t: number) => Math.abs(c) < Math.abs(t) },
-  ] : null;
+  const cashierGrade = grades.find((g) => g.cashier_number === lp.selectedCashier.cashier_number) ?? null;
+
+  const peerAvgs = grades.length > 0 ? {
+    trans:     grades[0].trans.avg,
+    qty:       grades[0].qty.avg,
+    sales:     grades[0].sales.avg,
+    avgTicket: grades[0].avgTicket.avg,
+  } : null;
 
   // filter logic (preserving original LP slice filter fields)
   useEffect(() => {
@@ -98,12 +99,22 @@ const TransactionsMobile = ({ onBack, onOpenSearch }: Props) => {
     return Array.from(dates).sort((a, b) => b.localeCompare(a)).map((d) => ({ value: d, label: fmtDate(d) }));
   }, [filteredOverviews]);
 
-  const visible = useMemo(() => filteredOverviews.filter((ov) => {
-    if (dateFilter && ov.sale_date.split("T")[0] !== dateFilter) return false;
-    if (!meetsThreshold(ov.qty ?? 0, qtyThreshold)) return false;
-    if (!meetsThreshold(ov.total_sales, salesThreshold)) return false;
-    return true;
-  }), [filteredOverviews, dateFilter, qtyThreshold, salesThreshold]);
+  const visible = useMemo(() => {
+    const filtered = filteredOverviews.filter((ov) => {
+      if (dateFilter && ov.sale_date.split("T")[0] !== dateFilter) return false;
+      // if (!meetsThreshold(ov.qty ?? 0, qtyThreshold)) return false;
+      // if (!meetsThreshold(ov.total_sales, salesThreshold)) return false;
+      return true;
+    });
+    if (!sortCol || sortDir === "none") return filtered;
+    return [...filtered].sort((a, b) => {
+      let av = 0, bv = 0;
+      if (sortCol === "date") { av = new Date(a.sale_date).getTime(); bv = new Date(b.sale_date).getTime(); }
+      if (sortCol === "qty")  { av = a.qty ?? 0; bv = b.qty ?? 0; }
+      if (sortCol === "total") { av = a.total_sales; bv = b.total_sales; }
+      return sortDir === "desc" ? bv - av : av - bv;
+    });
+  }, [filteredOverviews, dateFilter, sortCol, sortDir]);
 
   const receipt = lp.transactionDrillDown[0] ?? null;
 
@@ -130,78 +141,79 @@ const TransactionsMobile = ({ onBack, onOpenSearch }: Props) => {
     dispatch(setTransactionDrillDown([]));
   };
 
-  const title = lp.selectedSaleType;
+  const cashierName = lp.cashiers.find((c) => c.cashier_number === lp.selectedCashier.cashier_number)?.cashier_name ?? "";
+  const noSale = lp.selectedSaleType.toLowerCase().replace(/[^a-z]/g, "") === "nosale";
 
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="bg-[#1e2a4a] px-4 py-2.5 flex-shrink-0">
-        <div className="relative flex items-center justify-center mb-2">
-          <button
-            onClick={onBack}
-            className="absolute left-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors"
-          >
-            <ArrowLeftIcon className="w-3.5 h-3.5" />
-          </button>
-          <div className="text-center px-8">
-            <div className="text-white font-medium text-[13px]">{title} Transactions</div>
-            {storeName && <div className="text-white/60 text-[10px] mt-0.5">{storeName}</div>}
-          </div>
-          <button
-            onClick={onOpenSearch}
-            className="absolute right-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors"
-          >
-            <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-          </button>
+      <div className="bg-[#1e2a4a] px-4 pt-3 pb-4 flex items-start gap-3 flex-shrink-0">
+        <button onClick={onBack} className="text-white/75 mt-0.5 flex-shrink-0">
+          <ChevronLeftIcon className="w-5 h-5" />
+        </button>
+        <div className="min-w-0 flex-1">
+          <div className="text-white font-semibold text-[15px] truncate">{cashierName} <span className="text-white/45 font-normal text-[12px]">#{lp.selectedCashier.cashier_number}</span> <span className="text-white/50 font-normal text-[11px]">— {lp.selectedSaleType} Activity</span></div>
+          {storeName && <div className="text-white/45 text-[10px] mt-0.5">{storeName}</div>}
         </div>
+      </div>
 
-        {/* 4 KPI tiles */}
-        {kpiMetrics ? (
-          <div className="grid grid-cols-4 gap-1">
-            {kpiMetrics.map(({ label, current, trendVal, fmt, isGood }) => {
-              const delta = trendVal != null ? pctDelta(current, trendVal) : null;
-              const good = delta && isGood ? isGood(current, trendVal!) : null;
-              const deltaColor = good ? "#34d399" : "#f87171";
-              return (
-                <div key={label} className="rounded px-2 py-1.5" style={{ background: "rgba(255,255,255,0.08)" }}>
-                  <div className="flex items-start justify-between gap-1 mb-0.5">
-                    <span className="text-[8px] text-white/50">{label}</span>
-                    {delta ? (
-                      <span className="text-[7px] font-medium flex-shrink-0" style={{ color: deltaColor }}>
-                        {delta.up ? "▲" : "▼"}{delta.pct.toFixed(1)}%
-                      </span>
-                    ) : (
-                      <span className="text-[7px] text-white/20">–</span>
-                    )}
-                  </div>
-                  <div className="text-[11px] font-medium text-white truncate">{fmt(current)}</div>
-                  {trendVal != null ? (
-                    <div className="text-[7px] text-white/35 mt-0.5">vs {fmt(trendVal)}</div>
-                  ) : (
-                    <div className="text-[7px] text-white/20 mt-0.5">–</div>
-                  )}
-                </div>
-              );
-            })}
+      {/* Cashier Totals strip */}
+      {cashierGrade && (
+        <>
+          <div className="flex-shrink-0 px-3 py-[9px] bg-gray-100 border-b border-gray-200 flex items-center justify-between">
+            <span className="text-[9px] font-semibold uppercase tracking-wide text-content/50">Cashier Totals</span>
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1"><div className="w-[6px] h-[6px] rounded-[2px] bg-emerald-400 flex-shrink-0" /><span className="text-[9px] font-semibold uppercase tracking-wide text-content/50">below avg</span></div>
+              <div className="flex items-center gap-1"><div className="w-[6px] h-[6px] rounded-[2px] bg-red-400 flex-shrink-0" /><span className="text-[9px] font-semibold uppercase tracking-wide text-content/50">above avg</span></div>
+            </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-1">
+          <div className="flex-shrink-0 grid divide-x divide-gray-100 bg-white border-b border-gray-100"
+            style={{ gridTemplateColumns: noSale ? "repeat(2, 1fr)" : "repeat(4, 1fr)" }}
+          >
             {[
-              { label: "Trans", value: visible.length.toLocaleString() },
-              { label: "Qty",   value: visible.reduce((s, o) => s + (o.qty ?? 0), 0).toLocaleString() },
-              { label: "Total", value: formatCurrency2(visible.reduce((s, o) => s + o.total_sales, 0)) },
-            ].map(({ label, value }) => (
-              <div key={label} className="rounded px-2 py-1.5" style={{ background: "rgba(255,255,255,0.08)" }}>
-                <div className="text-[10px] text-white/50">{label}</div>
-                <div className="text-[12px] font-medium text-white mt-0.5 truncate">{value}</div>
+              { label: "Trans",      value: cashierGrade.trans.value.toLocaleString(),               pct: cashierGrade.trans.pct },
+              { label: "Items",      value: cashierGrade.qty.value.toLocaleString(),                 pct: cashierGrade.qty.pct },
+              ...(!noSale ? [
+                { label: "Total",      value: formatCurrency2(Math.abs(cashierGrade.sales.value)),     pct: cashierGrade.sales.pct },
+                { label: "Avg ticket", value: formatCurrency2(Math.abs(cashierGrade.avgTicket.value)), pct: cashierGrade.avgTicket.pct },
+              ] : []),
+            ].map(({ label, value, pct }) => (
+              <div key={label} className="px-3 py-2">
+                <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">{label}</div>
+                <div className="text-[12px] font-semibold text-content mt-0.5">{value}</div>
+                <span
+                  className="inline-flex items-center gap-0.5 text-[7.5px] font-bold px-1.5 py-0.5 rounded mt-1"
+                  style={pct > 0
+                    ? { background: "rgba(220,38,38,0.09)", color: "#dc2626" }
+                    : { background: "rgba(22,163,74,0.09)", color: "#16a34a" }}
+                >
+                  {pct > 0 ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}% avg
+                </span>
               </div>
             ))}
           </div>
-        )}
-      </div>
+        </>
+      )}
 
-      {/* Filters — 2×2 even grid */}
-      <div className="flex-shrink-0 border-b border-gray-100 bg-white px-3 py-2 grid grid-cols-2 gap-2">
+      {/* Store Averages strip */}
+      {peerAvgs && (
+        <>
+          <div className="flex-shrink-0 px-3 py-[9px] bg-gray-100 border-b border-gray-200 flex items-center">
+            <span className="text-[9px] font-semibold uppercase tracking-wide text-content/50">Store Averages</span>
+          </div>
+          <div className="flex-shrink-0 grid divide-x divide-gray-100 bg-white border-b border-gray-100"
+            style={{ gridTemplateColumns: noSale ? "repeat(2, 1fr)" : "repeat(4, 1fr)" }}
+          >
+            <div className="px-3 py-2"><div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Trans</div><div className="text-[12px] font-semibold text-content mt-0.5">{Math.round(peerAvgs.trans).toLocaleString()}</div></div>
+            <div className="px-3 py-2"><div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Items</div><div className="text-[12px] font-semibold text-content mt-0.5">{Math.round(peerAvgs.qty).toLocaleString()}</div></div>
+            {!noSale && <div className="px-3 py-2"><div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Total</div><div className="text-[12px] font-semibold text-content mt-0.5">{formatCurrency2(Math.abs(peerAvgs.sales))}</div></div>}
+            {!noSale && <div className="px-3 py-2"><div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Avg ticket</div><div className="text-[12px] font-semibold text-content mt-0.5">{formatCurrency2(Math.abs(peerAvgs.avgTicket))}</div></div>}
+          </div>
+        </>
+      )}
+
+      {/* Filters — commented out for mobile drill-down flow */}
+      {/* <div className="flex-shrink-0 border-b border-gray-100 bg-white px-3 py-2 grid grid-cols-2 gap-2">
         <SelectFilter options={dateOptions} value={dateFilter} onChange={setDateFilter} placeholder="All dates" className="w-full" />
         <SelectFilter
           options={lp.cashiers.map((c) => ({ value: String(c.cashier_number), label: `${c.cashier_name} (${c.transaction_count})` }))}
@@ -220,13 +232,29 @@ const TransactionsMobile = ({ onBack, onOpenSearch }: Props) => {
         />
         <ThresholdFilter value={salesThreshold} onChange={setSalesThreshold} prefix="$" showOp showClear placeholder="Sales" stretch className="w-full" />
         <ThresholdFilter value={qtyThreshold} onChange={setQtyThreshold} suffix="qty" showOp showClear placeholder="Qty" stretch className="w-full" />
-      </div>
+      </div> */}
 
-      {/* Column headers */}
+      {/* Column headers — Date, Qty, Total are sortable */}
       <div className="flex-shrink-0 grid px-4 py-2 bg-gray-50 border-b border-gray-100" style={{ gridTemplateColumns: "1fr 0.6fr 0.55fr 0.7fr" }}>
-        {["Trans ID", "Date", "Qty", "Total"].map((h, i) => (
-          <div key={h} className="text-[9px] font-semibold uppercase tracking-wide text-content/45" style={{ textAlign: i > 0 ? "right" : "left" }}>{h}</div>
-        ))}
+        <div className="text-[9px] font-semibold uppercase tracking-wide text-content/45">Trans ID</div>
+        {(["date", "qty", "total"] as SortCol[]).map((col, i) => {
+          const label = col === "date" ? "Date" : col === "qty" ? "Items" : "Total";
+          const isActive = sortCol === col && sortDir !== "none";
+          const arrow = isActive ? (sortDir === "desc" ? " ▼" : " ▲") : "";
+          return (
+            <button
+              key={col}
+              onClick={() => {
+                if (sortCol !== col) { setSortCol(col); setSortDir("desc"); }
+                else if (sortDir === "desc") setSortDir("asc");
+                else if (sortDir === "asc") { setSortDir("none"); setSortCol(null); }
+              }}
+              className={`text-[9px] font-semibold uppercase tracking-wide text-right ${isActive ? "text-[#1e2a4a]" : "text-content/45"}`}
+            >
+              {label}{arrow}
+            </button>
+          );
+        })}
       </div>
 
       {/* Rows */}

@@ -117,21 +117,37 @@ const Transaction = forwardRef<TransactionHandle, TransactionProps>(({ trans }, 
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {/* KPI strip: Trans ID / Date / Time / Cashier / Terminal */}
-      <div className="flex-shrink-0 grid divide-x divide-gray-100 border-b border-gray-100 bg-white" style={{ gridTemplateColumns: "0.97fr 1.15fr 0.97fr 0.97fr 0.97fr 0.97fr" }}>
-        {[
-          { label: "Trans ID",    value: `#${saleId}` },
-          { label: "Date",        value: fmtDate },
-          { label: "Start Time",  value: fmtTime(first.sale_start_time) },
-          { label: "End Time",    value: fmtTime(first.sale_end_time) },
-          { label: "Cashier",     value: `#${first.cashier_number}` },
-          { label: "Terminal",    value: first.terminal },
-        ].map(({ label, value }) => (
-          <div key={label} className="px-3 py-2">
-            <div className="text-[8px] font-bold uppercase tracking-wide text-content/40">{label}</div>
-            <div className="text-[11px] font-medium text-[#1e2a4a] mt-0.5">{value}</div>
-          </div>
-        ))}
-      </div>
+      {context.isMobile ? (
+        <div className="flex-shrink-0 grid divide-x divide-gray-100 border-b border-gray-100 bg-white" style={{ gridTemplateColumns: "1fr 1.15fr 1.6fr 1fr" }}>
+          {[
+            { label: "Trans ID", value: `#${saleId}` },
+            { label: "Date",     value: fmtDate },
+            { label: "Time",     value: `${fmtTime(first.sale_start_time)} – ${fmtTime(first.sale_end_time)}` },
+            { label: "Terminal", value: first.terminal },
+          ].map(({ label, value }) => (
+            <div key={label} className="px-3 py-2">
+              <div className="text-[8px] font-bold uppercase tracking-wide text-content/40">{label}</div>
+              <div className="text-[11px] font-medium text-[#1e2a4a] mt-0.5">{value}</div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex-shrink-0 grid divide-x divide-gray-100 border-b border-gray-100 bg-white" style={{ gridTemplateColumns: "0.97fr 1.15fr 0.97fr 0.97fr 0.97fr 0.97fr" }}>
+          {[
+            { label: "Trans ID",   value: `#${saleId}` },
+            { label: "Date",       value: fmtDate },
+            { label: "Start Time", value: fmtTime(first.sale_start_time) },
+            { label: "End Time",   value: fmtTime(first.sale_end_time) },
+            { label: "Cashier",    value: `#${first.cashier_number}` },
+            { label: "Terminal",   value: first.terminal },
+          ].map(({ label, value }) => (
+            <div key={label} className="px-3 py-2">
+              <div className="text-[8px] font-bold uppercase tracking-wide text-content/40">{label}</div>
+              <div className="text-[11px] font-medium text-[#1e2a4a] mt-0.5">{value}</div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Column headers */}
       <div className="flex-shrink-0 grid gap-1 px-4 py-1.5 bg-gray-100 border-b border-gray-100" style={{ gridTemplateColumns: "80px 1fr 28px 62px 55px" }}>

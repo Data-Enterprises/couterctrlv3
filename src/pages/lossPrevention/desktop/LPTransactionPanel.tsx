@@ -412,7 +412,7 @@ const LPTransactionPanel = ({ onTransactionClick, onShowAll }: Props) => {
                       className="sticky top-0 z-10 grid border-b border-gray-100 bg-gray-100"
                       style={{ gridTemplateColumns: "1fr 0.42fr 0.42fr 0.58fr" }}
                     >
-                      {(["Cashier", "Trans", "Qty", "Sales"] as const).map((h, i) => (
+                      {(["Cashier", "Trans", "Items", "Total"] as const).map((h, i) => (
                         <div
                           key={h}
                           className={`px-2 py-1.5 text-[8px] font-bold uppercase tracking-wide text-content/35 ${i > 0 ? "text-right" : ""}`}
@@ -561,7 +561,7 @@ const LPTransactionPanel = ({ onTransactionClick, onShowAll }: Props) => {
                           </div>
                           <div className="px-3 py-2 flex justify-end">
                             <ColFilter
-                              label="Qty" active={!!appliedQty} appliedDisplay={fmtThreshold(appliedQty)} align="right"
+                              label="Items" active={!!appliedQty} appliedDisplay={fmtThreshold(appliedQty)} align="right"
                               onApply={() => setAppliedQty(draftQty)}
                               onClear={() => { setAppliedQty(null); setDraftQty(null); }}
                             >
@@ -570,7 +570,7 @@ const LPTransactionPanel = ({ onTransactionClick, onShowAll }: Props) => {
                           </div>
                           <div className="px-3 py-2 flex justify-end">
                             <ColFilter
-                              label="Sales" active={!!appliedSales} appliedDisplay={fmtThreshold(appliedSales, "$")} align="right"
+                              label="Total" active={!!appliedSales} appliedDisplay={fmtThreshold(appliedSales, "$")} align="right"
                               onApply={() => setAppliedSales(draftSales)}
                               onClear={() => { setAppliedSales(null); setDraftSales(null); }}
                             >

@@ -85,44 +85,51 @@ const Groups = () => {
   if (isTablet) return <GroupsTablet handleFormSelect={handleFormSelect} />;
   if (isMobile) return <GroupsMobile handleFormSelect={handleFormSelect} />;
 
+  const cardWidth = ctx.selectedForm === "assign" ? 560 : 420;
+
   const renderForm = () => {
     switch (ctx.selectedForm) {
-      case "create": return <CreateUserGroup />;
-      case "update": return <UpdateUserGroup />;
-      case "delete": return <DeleteUserGroup />;
-      case "assign": return <UserGroupAssign />;
-      default: return null;
+      case "create": return <CreateUserGroup bare />;
+      case "update": return <UpdateUserGroup bare />;
+      case "delete": return <DeleteUserGroup bare />;
+      case "assign": return <UserGroupAssign bare />;
+      default: return (
+        <div className="p-8 text-[11px] text-content/35 text-center">Select an action above</div>
+      );
     }
   };
 
   return (
-    <div className="h-[calc(100vh-3rem)] p-4 flex gap-3" data-testid="groups-page">
-      {/* Side nav */}
-      <div className="flex flex-col gap-2 flex-shrink-0">
-        {NAV_ITEMS.map(({ id, label, Icon }) => {
-          const active = ctx.selectedForm === id;
-          return (
-            <button
-              key={id}
-              data-testid={`user-group-${id}-form-btn`}
-              onClick={() => handleFormSelect(id)}
-              className="flex flex-col items-center justify-center gap-1.5 w-[68px] py-3 rounded-xl transition-colors select-none"
-              style={{
-                background: active ? "#1e2a4a" : "#ffffff",
-                border: "none",
-                color: active ? "#fff" : "rgba(30,42,74,0.4)",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
-              }}
-            >
-              <Icon className="w-5 h-5" />
-              <span className="text-[10px] font-medium leading-tight">{label}</span>
-            </button>
-          );
-        })}
-      </div>
+    <div className="h-[calc(100vh-3rem)] p-4 flex items-center justify-center" data-testid="groups-page">
+      <div
+        className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white"
+        style={{ width: cardWidth, transition: "width 200ms ease" }}
+      >
+        {/* Unified navy header with tabs */}
+        <div className="flex-shrink-0 px-3 pt-1 pb-2.5 flex items-center justify-between gap-4" style={{ background: "#1e2a4a" }}>
+          <span className="text-[13px] font-semibold text-white">Groups</span>
+          <div className="flex gap-1">
+            {NAV_ITEMS.map(({ id, label, Icon }) => {
+              const active = ctx.selectedForm === id;
+              return (
+                <button
+                  key={id}
+                  data-testid={`user-group-${id}-form-btn`}
+                  onClick={() => handleFormSelect(id)}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors select-none"
+                  style={{
+                    background: active ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.07)",
+                    color: active ? "#fff" : "rgba(255,255,255,0.45)",
+                  }}
+                >
+                  <Icon className="w-3 h-3" />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-      {/* Form panel */}
-      <div className="flex flex-col">
         {renderForm()}
       </div>
     </div>

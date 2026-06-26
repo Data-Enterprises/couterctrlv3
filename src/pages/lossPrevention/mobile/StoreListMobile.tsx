@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useApiContext } from "../../hooks";
@@ -17,42 +17,68 @@ import {
   setTransactionLoadingMessage,
   setTransList,
   setTransOverviews,
-  setViewTransactionsMobile,
   toggleNoTransMsg,
 } from "../../../features/lossPreventionSlice";
 import type { JsonError, TransactionListItem, TransactionOverview, UniqueCashier } from "../../../interfaces";
 import { formatCurrency2, formatGoliathDate } from "../../../utils";
 import SevChips from "../../sales/mobile/components/SevChips";
+import SevBadge from "../../sales/mobile/components/SevBadge";
 import type { SevFilter } from "../../../features/salesLedgerSlice";
 import type { CashierDetails, CashierTrend } from "../../../interfaces";
 import SelectFilter from "../../../components/filters/SelectFilter";
-import SevBadge from "../../sales/mobile/components/SevBadge";
 
 interface Props {
-  onBack: () => void;
   onOpenSearch: () => void;
+  onStoreSelected: () => void;
 }
 
-const chipStyle = {
-  background: "rgba(30,42,74,0.06)",
-  boxShadow: "inset 0 1px 2px rgba(30,42,74,0.08)",
-};
+const isNoSale = (saleType: string) =>
+  saleType.toLowerCase().replace(/[^a-z]/g, "") === "nosale";
 
-
-const getStoreSev = (detail: CashierDetails, trend: CashierTrend | undefined): "critical" | "watch" | "healthy" => {
-  if (!trend) return "watch";
-  let score = 0;
-  if (detail.transaction_count < trend.transaction_count) score++;
-  if (detail.total_items < trend.total_items) score++;
-  if (Math.abs(detail.amount) < Math.abs(trend.amount)) score++;
-  if (score >= 2) return "healthy";
-  if (score === 1) return "watch";
+const getStoreSev = (
+  detail: CashierDetails,
+  trend: CashierTrend | undefined,
+  saleType: string,
+): "critical" | "watch" | "healthy" => {
+  if (!trend) return "critical";
+  if (isNoSale(saleType)) {
+    const score = [
+      detail.transaction_count <= trend.transaction_count,
+      detail.total_items <= trend.total_items,
+    ].filter(Boolean).length;
+    if (score === 2) return "healthy";
+    if (score === 1) return "watch";
+    return "critical";
+  }
+  const score = [
+    detail.transaction_count <= trend.transaction_count,
+    detail.total_items <= trend.total_items,
+    Math.abs(detail.amount) <= Math.abs(trend.amount),
+    Math.abs(detail.average_dollars) <= Math.abs(trend.average_dollars),
+  ].filter(Boolean).length;
+  if (score >= 3) return "healthy";
+  if (score === 2) return "watch";
   return "critical";
 };
 
-const sevToFilter = (sev: "critical" | "watch" | "healthy"): SevFilter => sev;
+const MetricChip = ({
+  label, value, isPass,
+}: { label: string; value: string; isPass: boolean | null }) => (
+  <div
+    className={`flex items-baseline gap-1 rounded px-1.5 py-0.5 ${
+      isPass === null
+        ? "bg-gray-200 text-gray-500"
+        : isPass
+        ? "bg-emerald-400 text-white"
+        : "bg-red-400 text-white"
+    }`}
+  >
+    <span className="text-[9px] opacity-80">{label}</span>
+    <span className="text-[10px] font-semibold">{value}</span>
+  </div>
+);
 
-const StoreListMobile = ({ onBack, onOpenSearch }: Props) => {
+const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const params = useApiContext();
@@ -65,9 +91,7 @@ const StoreListMobile = ({ onBack, onOpenSearch }: Props) => {
     dispatch(reQuery());
     dispatch(setSelectedSaleType(saleType));
     dispatch(setLoadingCashierDetails(true));
-    // const type = saleType === "Description" ? "description" : saleType;
-    const type = saleType;
-    getCashierDetails(params.url, params.token, params.start, params.end, params.useGroups, params.searchValue, params.singleStore, [type])
+    getCashierDetails(params.url, params.token, params.start, params.end, params.useGroups, params.searchValue, params.singleStore, [saleType])
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
@@ -93,16 +117,14 @@ const StoreListMobile = ({ onBack, onOpenSearch }: Props) => {
   const handleStoreClick = (storeid: number) => {
     if (lp.fetchingCashierTransactions) return;
     dispatch(reQuery());
-    dispatch(setSelectedSaleType(lp.selectedSaleType));
-    dispatch(setTransactionLoadingMessage("Loading cashiers…"));
     dispatch(setSelectedStoreId(storeid));
+    dispatch(setTransactionLoadingMessage("Loading cashiers…"));
     dispatch(setFetchingCashierTransactions(true));
     dispatch(setTransList([]));
 
-    // const saleType = lp.selectedSaleType === "Description" ? "description" : lp.selectedSaleType;
     const saleType = lp.selectedSaleType;
     const start = formatGoliathDate(search.startDate);
-    const end = formatGoliathDate(search.endDate);
+    const end   = formatGoliathDate(search.endDate);
 
     getCashierTable(params.url, params.token, start, end, 0, storeid, 1, [saleType], 1, lp.searchString)
       .then((resp) => {
@@ -170,13 +192,7 @@ const StoreListMobile = ({ onBack, onOpenSearch }: Props) => {
 
           dispatch(setTransOverviews(overviews));
           dispatch(setTransList(formatted));
-
-          const detail = lp.cashierDetails.find((d) => d.storeid === lp.selectedStoreId);
-          const trend = lp.cashierTrends.find((t) => t.storeid === lp.selectedStoreId);
-          if (detail) dispatch(setCashierDetails([detail]));
-          if (trend) dispatch(setCashierTrends([trend]));
-
-          dispatch(setViewTransactionsMobile(true));
+          onStoreSelected();
         }
       })
       .catch((err: JsonError) => toast.error("Error fetching transactions: " + err.message))
@@ -186,10 +202,10 @@ const StoreListMobile = ({ onBack, onOpenSearch }: Props) => {
   const storesWithSev = useMemo(() => {
     return lp.cashierDetails.map((d) => {
       const trend = lp.cashierTrends.find((t) => t.storeid === d.storeid);
-      const sev = getStoreSev(d, trend);
-      return { ...d, sev };
+      const sev = getStoreSev(d, trend, lp.selectedSaleType);
+      return { ...d, sev, trend };
     });
-  }, [lp.cashierDetails, lp.cashierTrends]);
+  }, [lp.cashierDetails, lp.cashierTrends, lp.selectedSaleType]);
 
   const sevCounts = useMemo(() => ({
     all:      storesWithSev.length,
@@ -203,51 +219,35 @@ const StoreListMobile = ({ onBack, onOpenSearch }: Props) => {
     return storesWithSev.filter((s) => s.sev === sevFilter);
   }, [storesWithSev, sevFilter]);
 
-  const totalSales  = visible.reduce((s, d) => s + d.amount, 0);
-  const totalTrans  = visible.reduce((s, d) => s + d.transaction_count, 0);
-
-  const startDate = search.startDate;
-  const endDate   = search.endDate;
+  const noSale = isNoSale(lp.selectedSaleType);
+  const fmtMDY = (mdy: string) => new Date(mdy).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const weekLabel = `${fmtMDY(search.startDate)} – ${fmtMDY(search.endDate)}, ${search.endDate.split("/")[2]}`;
 
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="bg-[#1e2a4a] px-4 py-2.5 flex-shrink-0">
-        <div className="relative flex items-center justify-center mb-2">
-          <button
-            onClick={onBack}
-            className="absolute left-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors"
-            aria-label="Back to search"
-          >
-            <ArrowLeftIcon className="w-3.5 h-3.5" />
-          </button>
-          <div className="text-center px-8">
-            <div className="text-white font-medium text-[13px]">Loss prevention</div>
-            <div className="text-white/60 text-[10px] mt-0.5">{startDate} – {endDate}</div>
+      <div className="bg-[#1e2a4a] px-4 pt-3 pb-4 flex-shrink-0">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-white font-semibold text-[15px]">Loss prevention</div>
+            <div className="text-white/65 text-[11px] mt-0.5">{weekLabel}</div>
           </div>
           <button
             onClick={onOpenSearch}
             aria-label="New search"
-            className="absolute right-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors"
+            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-white/25 text-white/65 hover:text-white hover:border-white/45 transition-colors"
           >
-            <MagnifyingGlassIcon className="w-3.5 h-3.5" />
+            <MagnifyingGlassIcon className="w-4 h-4" />
           </button>
         </div>
-        <div className="grid grid-cols-3 gap-1">
-          {[
-            { label: "Total",  value: formatCurrency2(totalSales) },
-            { label: "Trans",  value: totalTrans.toLocaleString() },
-            { label: "Stores", value: visible.length.toLocaleString() },
-          ].map(({ label, value }) => (
-            <div key={label} className="rounded px-2 py-1.5" style={{ background: "rgba(255,255,255,0.08)" }}>
-              <div className="text-[10px] text-white/50">{label}</div>
-              <div className="text-[12px] font-medium text-white mt-0.5 truncate">{value}</div>
-            </div>
-          ))}
+        <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-red-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">{noSale ? "Critical 0/2" : "Critical ≤1/4"}</span></div>
+          <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">{noSale ? "Watch 1/2" : "Watch 2/4"}</span></div>
+          <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">{noSale ? "Healthy 2/2" : "Healthy ≥3/4"}</span></div>
         </div>
       </div>
 
-      {/* Exception dropdown */}
+      {/* Exception type selector */}
       <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 bg-white">
         <SelectFilter
           options={lp.saleTypes.filter((st) => st.sale_type !== "Description").map((st) => ({ value: st.sale_type, label: st.sale_type }))}
@@ -258,7 +258,7 @@ const StoreListMobile = ({ onBack, onOpenSearch }: Props) => {
         />
       </div>
 
-      {/* SevChips */}
+      {/* Sev filter chips */}
       <SevChips active={sevFilter} counts={sevCounts} onChange={setSevFilter} />
 
       {/* Store list */}
@@ -269,34 +269,38 @@ const StoreListMobile = ({ onBack, onOpenSearch }: Props) => {
         {!lp.loadingCashierDetails && lp.noTransMsg && (
           <div className="flex items-center justify-center py-16 text-[12px] text-content/70">No exceptions found.</div>
         )}
-        {!lp.loadingCashierDetails && !lp.noTransMsg && visible.map((d, i) => {
+        {!lp.loadingCashierDetails && !lp.noTransMsg && visible.map((d) => {
           const storeName = assignedStores.find((s) => s.storeid === d.storeid)?.store_name ?? d.store_name;
           const isLoading = lp.fetchingCashierTransactions && lp.selectedStoreId === d.storeid;
+          const t = d.trend;
+
+          const gradedMetrics = [
+            { label: "Trans", value: d.transaction_count.toLocaleString(), isPass: t ? d.transaction_count <= t.transaction_count : null },
+            { label: "Items", value: d.total_items.toLocaleString(), isPass: t ? d.total_items <= t.total_items : null },
+            ...(!noSale ? [
+              { label: "Total", value: formatCurrency2(Math.abs(d.amount)), isPass: t ? Math.abs(d.amount) <= Math.abs(t.amount) : null },
+              { label: "Avg $", value: formatCurrency2(Math.abs(d.average_dollars)), isPass: t ? Math.abs(d.average_dollars) <= Math.abs(t.average_dollars) : null },
+            ] : []),
+          ];
+
           return (
             <button
-              key={i}
+              key={d.storeid}
               onClick={() => handleStoreClick(d.storeid)}
               disabled={lp.fetchingCashierTransactions}
               className="w-full px-4 py-3 border-b border-gray-100 text-left hover:bg-gray-50 active:bg-gray-100 transition-colors"
             >
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="text-[13px] font-medium text-content truncate pr-2">{storeName}</div>
+              <div className="flex items-center gap-2.5 mb-2">
                 {isLoading ? (
-                  <span className="text-[10px] text-content/40">Loading…</span>
+                  <div className="w-[22px] h-[22px] flex-shrink-0" />
                 ) : (
                   <SevBadge sev={d.sev} />
                 )}
+                <div className="text-[13px] font-medium text-content truncate">{storeName}</div>
               </div>
-              <div className="flex items-center gap-1.5">
-                {[
-                  { label: "Total", value: formatCurrency2(d.amount) },
-                  { label: "Trans", value: d.transaction_count.toLocaleString() },
-                  { label: "Cashiers", value: d.cashier_count.toLocaleString() },
-                ].map(({ label, value }) => (
-                  <div key={label} className="flex items-baseline gap-1 rounded px-1.5 py-0.5" style={chipStyle}>
-                    <span className="text-[9px] text-content/50">{label}</span>
-                    <span className="text-[10px] font-semibold text-content">{value}</span>
-                  </div>
+              <div className="flex items-center gap-1 flex-wrap pl-[30px]">
+                {gradedMetrics.map(({ label, value, isPass }) => (
+                  <MetricChip key={label} label={label} value={value} isPass={isPass} />
                 ))}
               </div>
             </button>

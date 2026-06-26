@@ -91,7 +91,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
         showPct: false,
       },
       {
-        label: "Sales",
+        label: "Total",
         current: Math.abs(detail.amount),
         trend: trend ? Math.abs(trend.amount) : null,
         fmt: (v: number) => formatCurrency2(v),

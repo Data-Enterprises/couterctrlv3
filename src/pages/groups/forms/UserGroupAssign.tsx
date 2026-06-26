@@ -16,7 +16,7 @@ import {
 } from "../../../api/groups";
 import SelectFilter from "../../../components/filters/SelectFilter";
 
-const UserGroupAssign = () => {
+const UserGroupAssign = ({ bare }: { bare?: boolean }) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token, userid, groups, selectedGroup, storesWithGroupStatus } = useGroupCtx();
@@ -103,107 +103,107 @@ const UserGroupAssign = () => {
     );
   }
 
+  const body = (
+    <div className="flex flex-col gap-3 p-3">
+      <div className="flex flex-col gap-0.5">
+        <label className="text-[9px] font-semibold uppercase tracking-wide text-content/40">Group</label>
+        <SelectFilter
+          options={groups.map((g) => ({ value: String(g.id), label: g.group_name }))}
+          value={selectedGroup.id ? String(selectedGroup.id) : ""}
+          onChange={(v) => v && getGroupStores(Number(v))}
+          placeholder="Select a group…"
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] font-semibold uppercase tracking-wide text-content/40">Unassigned</span>
+            <span className="text-[10px] text-content/35">{unassigned.length}</span>
+          </div>
+          <input
+            value={unassignedFilter}
+            onChange={(e) => setUnassignedFilter(e.target.value)}
+            placeholder="Filter stores…"
+            className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-[11px] text-content bg-custom-white"
+            style={{ outline: "none" }}
+          />
+          <div className="flex flex-col gap-1 max-h-96 overflow-y-auto thin-scrollbar">
+            {unassigned.length === 0 ? (
+              <div className="text-[10px] text-content/35 text-center py-4">
+                {selectedGroup.id > 0 ? "All stores assigned" : "Select a group first"}
+              </div>
+            ) : unassigned.map((store) => (
+              <button
+                key={store.storeid}
+                data-testid={`unassigned-store-${store.storeid}`}
+                onClick={() => handleStoreClick(store.storeid, "unassigned")}
+                className="flex items-center justify-between px-2.5 py-2 rounded-lg border border-gray-100 bg-custom-white hover:bg-gray-50 transition-colors text-left"
+              >
+                <div>
+                  <div className="text-[10px] font-medium text-content">Store {store.store_number}</div>
+                  <div className="text-[9px] text-content/50">{store.store_name}</div>
+                </div>
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full border flex-shrink-0" style={{ background: "#fef2f2", color: "#dc2626", borderColor: "#fca5a5" }}>
+                  Unassigned
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] font-semibold uppercase tracking-wide text-content/40">Assigned</span>
+            <span className="text-[10px] text-content/35">{assigned.length}</span>
+          </div>
+          <input
+            value={assignedFilter}
+            onChange={(e) => setAssignedFilter(e.target.value)}
+            placeholder="Filter stores…"
+            className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-[11px] text-content bg-custom-white"
+            style={{ outline: "none" }}
+          />
+          <div className="flex flex-col gap-1 max-h-96 overflow-y-auto thin-scrollbar">
+            {assigned.length === 0 ? (
+              <div className="text-[10px] text-content/35 text-center py-4">
+                {selectedGroup.id > 0 ? "No stores assigned" : "Select a group first"}
+              </div>
+            ) : assigned.map((store) => (
+              <button
+                key={store.storeid}
+                data-testid={`assigned-store-${store.storeid}`}
+                onClick={() => handleStoreClick(store.storeid, "assigned")}
+                className="flex items-center justify-between px-2.5 py-2 rounded-lg border border-gray-100 bg-custom-white hover:bg-gray-50 transition-colors text-left"
+              >
+                <div>
+                  <div className="text-[10px] font-medium text-content">Store {store.store_number}</div>
+                  <div className="text-[9px] text-content/50">{store.store_name}</div>
+                </div>
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full border flex-shrink-0" style={{ background: "#f0fdf4", color: "#16a34a", borderColor: "#86efac" }}>
+                  Assigned
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="text-[10px] text-content/35 text-center">Click a store to move it between columns</div>
+    </div>
+  );
+
+  if (bare) return body;
+
   return (
     <div className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white" style={{ minWidth: 560 }}>
-      {/* Navy header */}
-      <div className="flex-shrink-0 px-3 py-1.5 flex items-end gap-3" style={{ background: "#1e2a4a" }}>
+      <div className="flex-shrink-0 px-3 pt-1 pb-2.5 flex items-end gap-3" style={{ background: "#1e2a4a" }}>
         <span className="text-[13px] font-semibold text-white">Assign stores</span>
         {selectedGroup.id > 0 && (
           <span className="text-[10px] text-white/40">{selectedGroup.group_name}</span>
         )}
       </div>
-
-      <div className="flex flex-col gap-3 p-3">
-        {/* Group selector */}
-        <div className="flex flex-col gap-0.5">
-          <label className="text-[9px] font-semibold uppercase tracking-wide text-content/40">Group</label>
-          <SelectFilter
-            options={groups.map((g) => ({ value: String(g.id), label: g.group_name }))}
-            value={selectedGroup.id ? String(selectedGroup.id) : ""}
-            onChange={(v) => v && getGroupStores(Number(v))}
-            placeholder="Select a group…"
-          />
-        </div>
-
-        {/* Two columns */}
-        <div className="grid grid-cols-2 gap-3">
-          {/* Unassigned */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[9px] font-semibold uppercase tracking-wide text-content/40">Unassigned</span>
-              <span className="text-[10px] text-content/35">{unassigned.length}</span>
-            </div>
-            <input
-              value={unassignedFilter}
-              onChange={(e) => setUnassignedFilter(e.target.value)}
-              placeholder="Filter stores…"
-              className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-[11px] text-content bg-custom-white"
-              style={{ outline: "none" }}
-            />
-            <div className="flex flex-col gap-1 max-h-64 overflow-y-auto thin-scrollbar">
-              {unassigned.length === 0 ? (
-                <div className="text-[10px] text-content/35 text-center py-4">
-                  {selectedGroup.id > 0 ? "All stores assigned" : "Select a group first"}
-                </div>
-              ) : unassigned.map((store) => (
-                <button
-                  key={store.storeid}
-                  data-testid={`unassigned-store-${store.storeid}`}
-                  onClick={() => handleStoreClick(store.storeid, "unassigned")}
-                  className="flex items-center justify-between px-2.5 py-2 rounded-lg border border-gray-100 bg-custom-white hover:bg-gray-50 transition-colors text-left"
-                >
-                  <div>
-                    <div className="text-[10px] font-medium text-content">Store {store.store_number}</div>
-                    <div className="text-[9px] text-content/50">{store.store_name}</div>
-                  </div>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full border flex-shrink-0" style={{ background: "#fef2f2", color: "#dc2626", borderColor: "#fca5a5" }}>
-                    Unassigned
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Assigned */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[9px] font-semibold uppercase tracking-wide text-content/40">Assigned</span>
-              <span className="text-[10px] text-content/35">{assigned.length}</span>
-            </div>
-            <input
-              value={assignedFilter}
-              onChange={(e) => setAssignedFilter(e.target.value)}
-              placeholder="Filter stores…"
-              className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-[11px] text-content bg-custom-white"
-              style={{ outline: "none" }}
-            />
-            <div className="flex flex-col gap-1 max-h-64 overflow-y-auto thin-scrollbar">
-              {assigned.length === 0 ? (
-                <div className="text-[10px] text-content/35 text-center py-4">
-                  {selectedGroup.id > 0 ? "No stores assigned" : "Select a group first"}
-                </div>
-              ) : assigned.map((store) => (
-                <button
-                  key={store.storeid}
-                  data-testid={`assigned-store-${store.storeid}`}
-                  onClick={() => handleStoreClick(store.storeid, "assigned")}
-                  className="flex items-center justify-between px-2.5 py-2 rounded-lg border border-gray-100 bg-custom-white hover:bg-gray-50 transition-colors text-left"
-                >
-                  <div>
-                    <div className="text-[10px] font-medium text-content">Store {store.store_number}</div>
-                    <div className="text-[9px] text-content/50">{store.store_name}</div>
-                  </div>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full border flex-shrink-0" style={{ background: "#f0fdf4", color: "#16a34a", borderColor: "#86efac" }}>
-                    Assigned
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="text-[10px] text-content/35 text-center">Click a store to move it between columns</div>
-      </div>
+      {body}
     </div>
   );
 };

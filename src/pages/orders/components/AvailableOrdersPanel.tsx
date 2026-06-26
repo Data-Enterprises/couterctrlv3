@@ -1,6 +1,9 @@
 import { useState, useMemo } from "react";
 import { MagnifyingGlassIcon, ChevronRightIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import type { GroupedOrderCard, SelectedOrderKey } from "../../../features/ordersSlice";
+import type { Group } from "../../../features/groupSlice";
+import type { Store } from "../../../interfaces";
+import type { SEARCH_TYPE } from "../../../features/searchSlice";
 import FilterBar from "../../../components/filters/FilterBar";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import TextFilter from "../../../components/filters/TextFilter";
@@ -14,6 +17,11 @@ interface Props {
   endDate: string;
   onSelectStore: (order_date: string, order_type: string, storeid: number) => void;
   onOpenSearch: () => void;
+  onReset: () => void;
+  type?: SEARCH_TYPE;
+  selectedGroup?: Group | null;
+  selectedStore?: Store | null;
+  groupStores?: Store[];
 }
 
 const fmtDate = (iso: string) => {
@@ -29,6 +37,11 @@ const AvailableOrdersPanel = ({
   endDate,
   onSelectStore,
   onOpenSearch,
+  onReset,
+  type,
+  selectedGroup,
+  selectedStore,
+  groupStores = [],
 }: Props) => {
   const fmtRangePart = (mdy: string, withYear = false) => {
     const [m, d, y] = mdy.split("/");
@@ -41,6 +54,8 @@ const AvailableOrdersPanel = ({
   const [dateFilter, setDateFilter] = useState("");
   const [openTypes, setOpenTypes] = useState<Set<string>>(new Set());
   const [openDates, setOpenDates] = useState<Set<string>>(new Set());
+
+  const resetIfSelected = () => { if (selectedKey) onReset(); };
 
   const toggleType = (type: string) =>
     setOpenTypes((prev) => { const s = new Set(prev); s.has(type) ? s.delete(type) : s.add(type); return s; });
@@ -110,7 +125,7 @@ const AvailableOrdersPanel = ({
             </>
           )}
         </div>
-        {/* Row 2: search + legend */}
+        {/* Row 2: search + group name + legend */}
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-white/[0.08]">
           <button
             onClick={onOpenSearch}
@@ -119,6 +134,17 @@ const AvailableOrdersPanel = ({
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
+          {type === "Group" && selectedGroup?.group_name && (
+            <div className="flex flex-col leading-tight truncate">
+              <span className="text-[11px] font-medium text-white/70 truncate">{selectedGroup.group_name}</span>
+              {groupStores.length > 0 && (
+                <span className="text-[9px] text-white/40">{groupStores.length} stores</span>
+              )}
+            </div>
+          )}
+          {type === "Store" && selectedStore?.store_name && (
+            <span className="text-[11px] font-medium text-white/70 truncate">{selectedStore.store_name}</span>
+          )}
           <div className="flex-1" />
           <div className="relative flex-shrink-0" onMouseEnter={() => setLegendHover(true)} onMouseLeave={() => setLegendHover(false)}>
             <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/50 hover:text-white hover:border-white/40 transition-colors">
@@ -137,6 +163,22 @@ const AvailableOrdersPanel = ({
                     </span>
                   </div>
                 ))}
+                {groupStores.length > 0 && (
+                  <>
+                    <div className="h-px bg-white/10" />
+                    <div className="text-[9px] font-semibold uppercase tracking-wide text-white/35">
+                      {selectedGroup?.group_name ?? "Group"} stores
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      {groupStores.map((s) => (
+                        <div key={s.storeid} className="flex items-center gap-1.5">
+                          <span className="text-white/30 text-[10px]">·</span>
+                          <span className="text-[10px] text-white/90">{s.store_name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -147,7 +189,7 @@ const AvailableOrdersPanel = ({
       {cards.length > 0 && (
         <div className="flex border-b border-gray-100 flex-shrink-0">
           <button
-            onClick={() => { setActiveType("all"); setDateFilter(""); setOpenTypes(new Set()); setOpenDates(new Set()); }}
+            onClick={() => { resetIfSelected(); setActiveType("all"); setDateFilter(""); setOpenTypes(new Set()); setOpenDates(new Set()); }}
             className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
               activeType === "all"
                 ? "border-[#1e2a4a] text-[#1e2a4a]"
@@ -159,7 +201,7 @@ const AvailableOrdersPanel = ({
           {cards.map((card) => (
             <button
               key={card.order_type}
-              onClick={() => { setActiveType(card.order_type); setDateFilter(""); setOpenTypes(new Set()); setOpenDates(new Set()); }}
+              onClick={() => { resetIfSelected(); setActiveType(card.order_type); setDateFilter(""); setOpenTypes(new Set()); setOpenDates(new Set()); }}
               className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
                 activeType === card.order_type
                   ? "border-[#1e2a4a] text-[#1e2a4a]"
@@ -177,13 +219,13 @@ const AvailableOrdersPanel = ({
         <FilterBar>
           <TextFilter
             value={storeFilter}
-            onChange={setStoreFilter}
+            onChange={(v) => { resetIfSelected(); setStoreFilter(v); }}
             placeholder="Filter by store name or number…"
           />
           <SelectFilter
             options={dateOptions}
             value={dateFilter}
-            onChange={setDateFilter}
+            onChange={(v) => { resetIfSelected(); setDateFilter(v); }}
             placeholder="All dates"
             className="w-[30%]"
           />
@@ -249,7 +291,7 @@ const AvailableOrdersPanel = ({
                             <button
                               key={store.storeid}
                               onClick={() => onSelectStore(dateGroup.order_date, card.order_type, store.storeid)}
-                              style={sel ? { boxShadow: "inset 0 0 8px rgba(30,42,74,0.18)" } : undefined}
+                              style={sel ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
                               className={`w-full flex items-center justify-between pl-9 pr-3 py-2 text-left transition-colors ${
                                 sel ? "bg-white" : "hover:bg-gray-50"
                               }`}

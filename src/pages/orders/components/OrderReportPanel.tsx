@@ -196,7 +196,7 @@ const OrderReportPanel = ({
                       key={orderId}
                       onClick={() => onSelectOrderId(orderId)}
                       className={`w-full flex gap-2 items-start px-2.5 py-2 border-b border-gray-100 text-left transition-colors ${isSel ? "bg-white" : "hover:bg-gray-50"}`}
-                      style={isSel ? { boxShadow: "inset 0 0 8px rgba(30,42,74,0.15)" } : undefined}
+                      style={isSel ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
                     >
                       <div className="flex flex-col gap-1 flex-1 min-w-0">
                         <div className="flex items-baseline justify-between gap-2">

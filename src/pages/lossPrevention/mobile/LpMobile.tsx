@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { resetCashierSlice, setViewTransactionsMobile } from "../../../features/lossPreventionSlice";
+import { useAppDispatch } from "../../../hooks";
+import { useAppSelector } from "../../../hooks";
+import { resetCashierSlice } from "../../../features/lossPreventionSlice";
 import SearchCard from "../../../components/SearchCard";
 import StoreListMobile from "./StoreListMobile";
+import CashierListMobile from "./CashierListMobile";
 import TransactionsMobile from "./TransactionsMobile";
+
+type Screen = "stores" | "cashiers" | "transactions";
 
 interface Props {
   getSaleTypes: () => void;
@@ -11,7 +15,8 @@ interface Props {
 
 const LpMobile = ({ getSaleTypes }: Props) => {
   const dispatch = useAppDispatch();
-  const { saleTypes, viewTransactionsMobile } = useAppSelector((state) => state.lossPrevention);
+  const { saleTypes } = useAppSelector((state) => state.lossPrevention);
+  const [screen, setScreen] = useState<Screen>("stores");
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   if (!saleTypes.length) {
@@ -28,15 +33,20 @@ const LpMobile = ({ getSaleTypes }: Props) => {
 
   return (
     <div className="h-[calc(100vh-3rem)] overflow-hidden flex flex-col bg-custom-white">
-      {viewTransactionsMobile ? (
+      {screen === "transactions" ? (
         <TransactionsMobile
-          onBack={() => dispatch(setViewTransactionsMobile(false))}
+          onBack={() => setScreen("cashiers")}
           onOpenSearch={() => setSearchModalOpen(true)}
+        />
+      ) : screen === "cashiers" ? (
+        <CashierListMobile
+          onBack={() => setScreen("stores")}
+          onSelectCashier={() => setScreen("transactions")}
         />
       ) : (
         <StoreListMobile
-          onBack={() => dispatch(resetCashierSlice())}
           onOpenSearch={() => setSearchModalOpen(true)}
+          onStoreSelected={() => setScreen("cashiers")}
         />
       )}
 
@@ -50,7 +60,12 @@ const LpMobile = ({ getSaleTypes }: Props) => {
               title="Loss prevention"
               description="Select a store or group and date range to view exception activity."
               buttonLabel="Load exceptions"
-              onSearch={() => { setSearchModalOpen(false); dispatch(resetCashierSlice()); getSaleTypes(); }}
+              onSearch={() => {
+                setSearchModalOpen(false);
+                setScreen("stores");
+                dispatch(resetCashierSlice());
+                getSaleTypes();
+              }}
               loading={false}
             />
           </div>

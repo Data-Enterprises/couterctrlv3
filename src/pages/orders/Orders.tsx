@@ -16,6 +16,7 @@ import {
   type GroupedOrderCard,
   type UniqueSub,
 } from "../../features/ordersSlice";
+import { setSelectedGroupStores } from "../../features/userSlice";
 import type { AllOrderResp, AvailableOrderResp, JsonError, Store } from "../../interfaces";
 import { getCogs, getERet, ordersCols } from ".";
 import { formatGoliathDate } from "../../utils";
@@ -37,9 +38,9 @@ const Orders = () => {
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
-            const storeids: number[] = j.stores
-              .filter((s: any) => s.active)
-              .map((s: Store) => s.storeid);
+            const activeStores = j.stores.filter((s: any) => s.active);
+            ctx.dispatch(setSelectedGroupStores(activeStores));
+            const storeids: number[] = activeStores.map((s: Store) => s.storeid);
             fetchAvailable(storeids);
           }
         })
@@ -173,8 +174,17 @@ const Orders = () => {
         loading={ctx.loadingAvailableOrders}
         onSelectStore={handleSelectStore}
         onOpenSearch={() => setSearchModalOpen(true)}
+        onReset={() => {
+          ctx.dispatch(setSelectedOrderKey(null));
+          ctx.dispatch(setSelectedOrderId(null));
+          ctx.dispatch(setAllOrders([]));
+        }}
         startDate={ctx.startDate}
         endDate={ctx.endDate}
+        type={ctx.type}
+        selectedGroup={ctx.selectedGroup}
+        selectedStore={ctx.selectedStore}
+        groupStores={ctx.selectedGroupStores}
       />
 
       <OrderReportPanel
