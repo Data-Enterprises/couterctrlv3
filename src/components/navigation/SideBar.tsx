@@ -240,7 +240,7 @@ const SideBar = () => {
 
       {/* Settings and Sign Out */}
       <div className="select-none cursor-pointer">
-        <div
+        {/* <div
           data-testid="nav-settings"
           className={`${
             context.isDesktop || context.isTablet ? "" : "hidden"
@@ -263,7 +263,7 @@ const SideBar = () => {
           >
             Settings
           </div>
-        </div>
+        </div> */}
         <div
           data-testid="signout-btn"
           className="group flex w-full items-center pl-0.5 md:pl-2 py-2 gap-1 md:gap-2 hover:bg-[rgba(30,42,74,0.5)] hover:text-white transition-all duration-200 relative"

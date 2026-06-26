@@ -1,4 +1,6 @@
-import { ArrowLeftIcon } from "@heroicons/react/20/solid";
+import { useState, useMemo } from "react";
+import { ChevronLeftIcon } from "@heroicons/react/20/solid";
+import SelectFilter from "../../../components/filters/SelectFilter";
 import type { AllOrder } from "../../../interfaces";
 import type { SelectedOrderKey } from "../../../features/ordersSlice";
 import type { Store } from "../../../interfaces";
@@ -10,7 +12,7 @@ interface Props {
   selectedKey: SelectedOrderKey;
   assignedStores: Store[];
   onBack: () => void;
-  onSelectOrderId: (id: number) => void;
+  onSelectOrderId: (id: number | null) => void;
 }
 
 const fmtDate = (iso: string) => {
@@ -23,7 +25,28 @@ const chipStyle = {
   boxShadow: "inset 0 1px 2px rgba(30,42,74,0.08)",
 };
 
+const MAX_CHIPS = 3;
+
+const SubDeptChips = ({ subDepts }: { subDepts: string[] }) => {
+  const visible = subDepts.slice(0, MAX_CHIPS);
+  const overflow = subDepts.slice(MAX_CHIPS);
+  return (
+    <div className="flex flex-wrap gap-1 items-center mt-1.5">
+      {visible.map((sd) => (
+        <span key={sd} className="text-[8px] bg-gray-100 text-content/70 rounded px-1.5 py-0.5">{sd}</span>
+      ))}
+      {overflow.length > 0 && (
+        <span className="text-[8px] font-semibold bg-[#1e2a4a]/[0.07] text-content/70 rounded px-1.5 py-0.5">
+          +{overflow.length} more
+        </span>
+      )}
+    </div>
+  );
+};
+
 const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, onBack, onSelectOrderId }: Props) => {
+  const [subDeptFilter, setSubDeptFilter] = useState("");
+
   const storeName = selectedKey
     ? (assignedStores.find((s) => s.storeid === selectedKey.storeid)?.store_name ?? `Store ${selectedKey.storeid}`)
     : "";
@@ -32,42 +55,53 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, onBack
     ? orders.filter((o) => o.order_type === selectedKey.order_type)
     : orders;
 
-  const uniqueOrderIds = Array.from(new Set(filteredOrders.map((o) => o.order_id))).sort((a, b) => a - b);
-  const totalExtRetail = filteredOrders.reduce((s, o) => s + (o.e_ret ?? 0), 0);
+  const allSubDepts = useMemo(() =>
+    Array.from(new Set(filteredOrders.map((o) => o.sub_department_description).filter(Boolean))).sort(),
+  [filteredOrders]);
+
+  const subFilteredOrders = subDeptFilter
+    ? filteredOrders.filter((o) => o.sub_department_description === subDeptFilter)
+    : filteredOrders;
+
+  const uniqueOrderIds = Array.from(new Set(subFilteredOrders.map((o) => o.order_id))).sort((a, b) => a - b);
+  const totalExtRetail = subFilteredOrders.reduce((s, o) => s + (o.e_ret ?? 0), 0);
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="bg-[#1e2a4a] px-4 py-2.5 flex-shrink-0">
-        <div className="flex items-center gap-2 mb-1">
-          <button
-            onClick={onBack}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors flex-shrink-0"
-            aria-label="Back to available orders"
-          >
-            <ArrowLeftIcon className="w-3.5 h-3.5" />
-          </button>
-          <span className="text-white/60 text-[10px]">Available orders</span>
-        </div>
-        <div className="text-white font-medium text-[13px]">
-          {storeName} — {selectedKey?.order_type}
-        </div>
-        <div className="text-white/60 text-[10px] mt-0.5">
-          {selectedKey ? fmtDate(selectedKey.order_date) : ""}
+      {/* Header — matches Sales/LP mobile */}
+      <div className="bg-[#1e2a4a] px-4 pt-3 pb-4 flex items-start gap-3 flex-shrink-0">
+        <button onClick={onBack} className="text-white/75 mt-0.5 flex-shrink-0">
+          <ChevronLeftIcon className="w-5 h-5" />
+        </button>
+        <div className="min-w-0 flex-1">
+          <div className="text-white font-semibold text-[15px] truncate">
+            {storeName} <span className="text-white/45 font-normal text-[12px]">— {selectedKey?.order_type}</span>
+          </div>
+          <div className="text-white/65 text-[11px] mt-0.5">
+            {selectedKey ? fmtDate(selectedKey.order_date) : ""}
+          </div>
         </div>
       </div>
 
-      {/* Sub-header chips */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-white flex-shrink-0">
-        <span className="text-[9px] font-bold uppercase tracking-wide text-content/60">Orders</span>
-        <div className="flex items-center gap-1.5">
+      {/* Sub-header chips + sub dept filter */}
+      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-white flex-shrink-0 gap-2">
+        {allSubDepts.length > 0 && (
+          <SelectFilter
+            options={allSubDepts.map((sd) => ({ value: sd, label: sd }))}
+            value={subDeptFilter}
+            onChange={(v) => { setSubDeptFilter(v); onSelectOrderId(null); }}
+            placeholder="All sub depts"
+            className="flex-1 min-w-0"
+          />
+        )}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
           <div className="flex items-baseline gap-1 rounded px-1.5 py-0.5" style={chipStyle}>
             <span className="text-[8.5px] text-content/60">Orders</span>
             <span className="text-[10px] font-semibold text-content">{uniqueOrderIds.length}</span>
           </div>
           <div className="flex items-baseline gap-1 rounded px-1.5 py-0.5" style={chipStyle}>
             <span className="text-[8.5px] text-content/60">Items</span>
-            <span className="text-[10px] font-semibold text-content">{filteredOrders.length}</span>
+            <span className="text-[10px] font-semibold text-content">{subFilteredOrders.length}</span>
           </div>
           <div className="flex items-baseline gap-1 rounded px-1.5 py-0.5" style={chipStyle}>
             <span className="text-[8.5px] text-content/60">Retail</span>
@@ -82,22 +116,25 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, onBack
           <div className="flex items-center justify-center py-16 text-[12px] text-content/70">Loading orders…</div>
         )}
         {!loading && uniqueOrderIds.map((orderId) => {
-          const items = filteredOrders.filter((o) => o.order_id === orderId);
+          const items = subFilteredOrders.filter((o) => o.order_id === orderId);
           const eRet = items.reduce((s, o) => s + (o.e_ret ?? 0), 0);
           const status = items[0]?.status ?? "";
+          const subDepts = Array.from(new Set(items.map((o) => o.sub_department_description).filter(Boolean))).sort();
           return (
             <button
               key={orderId}
               onClick={() => onSelectOrderId(orderId)}
-              className="w-full flex items-center justify-between px-4 py-3.5 border-b border-gray-100 text-left hover:bg-gray-50 active:bg-gray-100 transition-colors"
+              className="w-full px-4 py-3 border-b border-gray-100 text-left hover:bg-gray-50 active:bg-gray-100 transition-colors"
             >
-              <div>
-                <div className="text-[13px] font-semibold text-[#1e2a4a]">Order #{orderId}</div>
-                <div className="text-[11px] text-content/70 mt-0.5">
-                  {items.length} items{status ? ` · ${status}` : ""}
-                </div>
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-[13px] font-semibold text-[#1e2a4a]">#{orderId}</span>
+                {status && <span className="text-[9px] italic text-content/55 flex-shrink-0">{status}</span>}
               </div>
-              <div className="text-[10px] text-content/65">{formatCurrency2(eRet)} retail</div>
+              <div className="flex items-baseline justify-between gap-2 mt-0.5">
+                <span className="text-[11px] font-semibold text-[#1e2a4a]">{formatCurrency2(eRet)}</span>
+                <span className="text-[10px] text-content/70 flex-shrink-0">{items.length} items</span>
+              </div>
+              <SubDeptChips subDepts={subDepts} />
             </button>
           );
         })}

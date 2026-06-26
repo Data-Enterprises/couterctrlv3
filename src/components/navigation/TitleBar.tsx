@@ -38,7 +38,7 @@ const TitleBar = () => {
           <div>Welcome {user.firstName}</div>
         </div>
         <div className="flex items-center h-full">
-          <BellIcon className="h-6 w-6 m-2 cursor-pointer hover:text-accent1 transition-colors" />
+          {/* <BellIcon className="h-6 w-6 m-2 cursor-pointer hover:text-accent1 transition-colors" /> */}
           {context.isDesktop && (
             <div className="flex items-center px-6 ml-4 border-l-2 relative">
               <div className="text-[12px] md:text-sm font-medium">{user.username}</div>

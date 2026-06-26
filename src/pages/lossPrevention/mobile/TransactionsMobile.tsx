@@ -14,7 +14,7 @@ import {
 import type { JsonError, TransactionListItem, TransactionOverview } from "../../../interfaces";
 import { formatCurrency2 } from "../../../utils";
 import BottomSheet from "../../../components/BottomSheet";
-import Transaction from "../Transaction";
+import Transaction, { type TransactionHandle } from "../Transaction";
 import SelectFilter from "../../../components/filters/SelectFilter";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import type { ThresholdValue } from "../../../components/filters/ThresholdFilter";
@@ -55,6 +55,7 @@ const TransactionsMobile = ({ onBack, onOpenSearch }: Props) => {
   const [sortCol, setSortCol] = useState<SortCol | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("none");
   const receiptCloseRef = useRef<(() => void) | null>(null);
+  const transactionRef = useRef<TransactionHandle>(null);
 
   const storeName = assignedStores.find((s) => s.storeid === lp.selectedStoreId)?.store_name ?? "";
 
@@ -289,7 +290,23 @@ const TransactionsMobile = ({ onBack, onOpenSearch }: Props) => {
             ) : !receipt ? (
               <div className="flex items-center justify-center py-16 text-[12px] text-content/70">No line items found.</div>
             ) : (
-              <Transaction trans={receipt} />
+              <>
+                <div className="flex-shrink-0 flex items-center justify-end gap-1.5 px-4 py-2 border-b border-gray-100 bg-white">
+                  <button
+                    onClick={() => transactionRef.current?.email()}
+                    className="flex items-center gap-1 text-[10px] font-medium bg-[#1e2a4a] text-white rounded px-2 py-1"
+                  >
+                    Email
+                  </button>
+                  <button
+                    onClick={() => transactionRef.current?.export()}
+                    className="flex items-center gap-1 text-[10px] font-medium bg-[#1e2a4a] text-white rounded px-2 py-1"
+                  >
+                    CSV
+                  </button>
+                </div>
+                <Transaction ref={transactionRef} trans={receipt} />
+              </>
             )}
           </div>
         </BottomSheet>

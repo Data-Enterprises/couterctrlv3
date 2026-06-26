@@ -157,9 +157,9 @@ const OrdersMobile = () => {
       .finally(() => ctx.dispatch(setLoadingAllOrders(false)));
   };
 
-  const handleSelectOrderId = (id: number) => {
+  const handleSelectOrderId = (id: number | null) => {
     ctx.dispatch(setSelectedOrderId(id));
-    setSheetOpen(true);
+    if (id !== null) setSheetOpen(true);
   };
 
   const hasData = ctx.groupedAvailableOrders.length > 0;

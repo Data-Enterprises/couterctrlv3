@@ -45,7 +45,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: ["*"],
+    userLevels: ["9"],
     isHovering: false,
   },
   {
@@ -95,7 +95,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: ["*"],
+    userLevels: ["9"],
     isHovering: false,
   },
   {
@@ -105,7 +105,7 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userLevels: ["*"],
+    userLevels: ["9"],
     isHovering: false,
   },
   {
@@ -115,7 +115,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: ["*"],
+    userLevels: ["9"],
     isHovering: false,
   },
   {
@@ -135,7 +135,7 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userLevels: ["*"],
+    userLevels: ["9"],
     isHovering: false,
   },
   {
@@ -145,7 +145,7 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userLevels: ["*"],
+    userLevels: ["9"],
     isHovering: false,
   },
   {
@@ -155,7 +155,7 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userLevels: ["*"],
+    userLevels: ["9"],
     isHovering: false,
   },
   {
@@ -165,7 +165,7 @@ export const navigation: Navigation[] = [
     mobile: true,
     children: [],
     childOpen: false,
-    userLevels: ["*"],
+    userLevels: ["9"],
     isHovering: false,
   },
   {

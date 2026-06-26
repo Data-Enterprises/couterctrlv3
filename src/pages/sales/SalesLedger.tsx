@@ -47,9 +47,18 @@ const buildLedgerRows = (
       const ref = twRows[0];
       const assigned = assignedStores.find((s) => s.storeid === id);
 
-      const twTotal = twRows.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
-      const lwTotal = lwRows.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
-      const lyTotal = lyRows.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
+      const twTotal = twRows.reduce(
+        (acc, r) => acc + (r.total_sales - r.total_tax),
+        0,
+      );
+      const lwTotal = lwRows.reduce(
+        (acc, r) => acc + (r.total_sales - r.total_tax),
+        0,
+      );
+      const lyTotal = lyRows.reduce(
+        (acc, r) => acc + (r.total_sales - r.total_tax),
+        0,
+      );
       const twQty = twRows.reduce((acc, r) => acc + r.qty, 0);
       const lwQty = lwRows.reduce((acc, r) => acc + r.qty, 0);
       const lyQty = lyRows.reduce((acc, r) => acc + r.qty, 0);
@@ -76,7 +85,9 @@ const buildLedgerRows = (
         .sort((a, b) => a.sale_date.localeCompare(b.sale_date))
         .map((r) => {
           const twDate = r.sale_date.split("T")[0];
-          const lwDate = addDays(new Date(twDate), -7).toISOString().split("T")[0];
+          const lwDate = addDays(new Date(twDate), -7)
+            .toISOString()
+            .split("T")[0];
           const lyDate = sameWeekDayLastYear(twDate).date;
           const lwRow = lwRows.find((l) => l.sale_date.startsWith(lwDate));
           const lyRow = lyRows.find((l) => l.sale_date.startsWith(lyDate));
@@ -128,7 +139,13 @@ const SalesLedger = () => {
     // hourlySalesLastWeek = [],
     // hourlySalesLastYear = [],
   } = useAppSelector((state) => state.sales);
-  const { hasSearched, selection, ledgerLoading: loading, threshold, gradingMetric } = useAppSelector((state) => state.salesLedger);
+  const {
+    hasSearched,
+    selection,
+    ledgerLoading: loading,
+    threshold,
+    gradingMetric,
+  } = useAppSelector((state) => state.salesLedger);
   const { assignedStores } = useAppSelector((state) => state.user);
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -161,27 +178,88 @@ const SalesLedger = () => {
     dispatch(setHasSearched(true));
     dispatch(reQuery());
     try {
-      const [twResp, lwResp, lyResp, hourlyResp, lwHourlyResp, lyHourlyResp] = await Promise.all([
-        getWeekly(context.url, context.token, twStart, twEnd, useGroups, searchValue, singleStore),
-        getWeekly(context.url, context.token, lwStart, lwEnd, useGroups, searchValue, singleStore),
-        getWeekly(context.url, context.token, lyStart, lyEnd, useGroups, searchValue, singleStore),
-        getHourly(context.url, context.token, twStart, twEnd, useGroups, searchValue, singleStore),
-        getHourly(context.url, context.token, lwStart, lwEnd, useGroups, searchValue, singleStore),
-        getHourly(context.url, context.token, lyStart, lyEnd, useGroups, searchValue, singleStore),
-      ]);
+      const [twResp, lwResp, lyResp, hourlyResp, lwHourlyResp, lyHourlyResp] =
+        await Promise.all([
+          getWeekly(
+            context.url,
+            context.token,
+            twStart,
+            twEnd,
+            useGroups,
+            searchValue,
+            singleStore,
+          ),
+          getWeekly(
+            context.url,
+            context.token,
+            lwStart,
+            lwEnd,
+            useGroups,
+            searchValue,
+            singleStore,
+          ),
+          getWeekly(
+            context.url,
+            context.token,
+            lyStart,
+            lyEnd,
+            useGroups,
+            searchValue,
+            singleStore,
+          ),
+          getHourly(
+            context.url,
+            context.token,
+            twStart,
+            twEnd,
+            useGroups,
+            searchValue,
+            singleStore,
+          ),
+          getHourly(
+            context.url,
+            context.token,
+            lwStart,
+            lwEnd,
+            useGroups,
+            searchValue,
+            singleStore,
+          ),
+          getHourly(
+            context.url,
+            context.token,
+            lyStart,
+            lyEnd,
+            useGroups,
+            searchValue,
+            singleStore,
+          ),
+        ]);
       if (twResp.data.error === 0) dispatch(setWeeklySales(twResp.data.sales));
-      if (lwResp.data.error === 0) dispatch(setWeeklySalesLastWeek(lwResp.data.sales));
-      if (lyResp.data.error === 0) dispatch(setWeeklySalesLastYear(lyResp.data.sales));
-      if (hourlyResp.data.error === 0) dispatch(setHourlySales(hourlyResp.data.subs));
-      if (lwHourlyResp.data.error === 0) dispatch(setHourlySalesLastWeek(lwHourlyResp.data.subs));
-      if (lyHourlyResp.data.error === 0) dispatch(setHourlySalesLastYear(lyHourlyResp.data.subs));
+      if (lwResp.data.error === 0)
+        dispatch(setWeeklySalesLastWeek(lwResp.data.sales));
+      if (lyResp.data.error === 0)
+        dispatch(setWeeklySalesLastYear(lyResp.data.sales));
+      if (hourlyResp.data.error === 0)
+        dispatch(setHourlySales(hourlyResp.data.subs));
+      if (lwHourlyResp.data.error === 0)
+        dispatch(setHourlySalesLastWeek(lwHourlyResp.data.subs));
+      if (lyHourlyResp.data.error === 0)
+        dispatch(setHourlySalesLastYear(lyHourlyResp.data.subs));
     } finally {
       dispatch(setLedgerLoading(false));
       setSearchModalOpen(false);
     }
   };
 
-  const ledgerRows = buildLedgerRows(weeklySales, weeklySalesLastWeek, weeklySalesLastYear, assignedStores, threshold?.amount ?? null, gradingMetric);
+  const ledgerRows = buildLedgerRows(
+    weeklySales,
+    weeklySalesLastWeek,
+    weeklySalesLastYear,
+    assignedStores,
+    threshold?.amount ?? null,
+    gradingMetric,
+  );
 
   const criticalRows = ledgerRows.filter((r) => r.severity === "critical");
   const watchRows = ledgerRows.filter((r) => r.severity === "watch");
@@ -196,8 +274,12 @@ const SalesLedger = () => {
   const heroGradeTW = gradingMetric === "qty" ? heroTWQty : heroTWTotal;
   const heroGradeLY = gradingMetric === "qty" ? heroLYQty : heroLYTotal;
   const heroGradeLW = gradingMetric === "qty" ? heroLWQty : heroLWTotal;
-  const heroVsLYPct = heroGradeLY ? ((heroGradeTW - heroGradeLY) / heroGradeLY) * 100 : 0;
-  const heroVsLWPct = heroGradeLW ? ((heroGradeTW - heroGradeLW) / heroGradeLW) * 100 : 0;
+  const heroVsLYPct = heroGradeLY
+    ? ((heroGradeTW - heroGradeLY) / heroGradeLY) * 100
+    : 0;
+  const heroVsLWPct = heroGradeLW
+    ? ((heroGradeTW - heroGradeLW) / heroGradeLW) * 100
+    : 0;
 
   const weekLabel = (() => {
     const { twStart, twEnd } = getDateRanges();
@@ -228,7 +310,10 @@ const SalesLedger = () => {
       ) : (
         <div className="flex gap-4 h-[calc(100vh-5rem)]">
           {/* Left: store list */}
-          <div className="flex flex-col min-w-0 shadow-lg" style={{ flexBasis: "46%", flexShrink: 0 }}>
+          <div
+            className="flex flex-col min-w-0 shadow-lg"
+            style={{ flexBasis: "46%", flexShrink: 0 }}
+          >
             <LedgerHeader
               weekLabel={weekLabel}
               twTotal={heroTWTotal}
@@ -252,18 +337,45 @@ const SalesLedger = () => {
 
             {/* Three columns — flex-1 so they fill remaining height */}
             <div className="flex-1 overflow-hidden bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100 grid grid-cols-3 divide-x divide-gray-100">
-              <TierColumn severity="critical" rows={criticalRows} onSelect={(s) => dispatch(setLedgerSelection(s))} selectedStoreId={selection?.storeId} gradingMetric={gradingMetric} />
-              <TierColumn severity="watch" rows={watchRows} onSelect={(s) => dispatch(setLedgerSelection(s))} selectedStoreId={selection?.storeId} gradingMetric={gradingMetric} />
-              <TierColumn severity="healthy" rows={healthyRows} onSelect={(s) => dispatch(setLedgerSelection(s))} selectedStoreId={selection?.storeId} gradingMetric={gradingMetric} />
+              <TierColumn
+                severity="critical"
+                rows={criticalRows}
+                onSelect={(s) => dispatch(setLedgerSelection(s))}
+                selectedStoreId={selection?.storeId}
+                gradingMetric={gradingMetric}
+              />
+              <TierColumn
+                severity="watch"
+                rows={watchRows}
+                onSelect={(s) => dispatch(setLedgerSelection(s))}
+                selectedStoreId={selection?.storeId}
+                gradingMetric={gradingMetric}
+              />
+              <TierColumn
+                severity="healthy"
+                rows={healthyRows}
+                onSelect={(s) => dispatch(setLedgerSelection(s))}
+                selectedStoreId={selection?.storeId}
+                gradingMetric={gradingMetric}
+              />
             </div>
           </div>
 
           {/* Right: report panel */}
-          <div className="flex-1 min-w-0 shadow-lg" style={{ flexBasis: "52%" }}>
+          <div
+            className="flex-1 min-w-0 shadow-lg"
+            style={{ flexBasis: "52%" }}
+          >
             {selection !== null ? (
-              <StoreDetailPopup selection={selection} onClose={() => dispatch(setLedgerSelection(null))} />
+              <StoreDetailPopup
+                selection={selection}
+                onClose={() => dispatch(setLedgerSelection(null))}
+              />
             ) : (
-              <EmptyPrompt title="No store selected" description="Select a store from the list to view its weekly report" />
+              <EmptyPrompt
+                title="No store selected"
+                description="Select a store from the list to view its weekly report"
+              />
             )}
           </div>
         </div>
@@ -275,7 +387,10 @@ const SalesLedger = () => {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
           onClick={() => setSearchModalOpen(false)}
         >
-          <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="w-full max-w-sm mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             <LedgerEntryCard onSearch={fetchLedger} loading={loading} />
           </div>
         </div>
