@@ -196,7 +196,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: ["9999"],
+    userLevels: ["9999", "22"],
     isHovering: false,
   },
 ];
