@@ -18,9 +18,9 @@ export interface SearchState {
 
 export const initialState: SearchState = {
   type: "Store",
-  startDate: formatDate(addDays(new Date(), -1).toString()),
-  endDate: formatDate(new Date().toString()),
-  singleDate: formatDate(new Date().toString()),
+  startDate: formatDate(addDays(new Date(), -2).toString()),
+  endDate: formatDate(addDays(new Date(), -1).toString()),
+  singleDate: formatDate(addDays(new Date(), -1).toString()),
   lastStore: 0,
   lastGroup: 0,
   selectedStore: {

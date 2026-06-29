@@ -40,7 +40,9 @@ const CouponListPanel = ({ selectedKey, onSelect, sortMetric, onSortMetric, onOp
     state.coupons.forEach((c) => {
       const id = String(c.storeid);
       const cur = map.get(id) ?? {
-        name: assignedStores.find((s) => s.storeid === c.storeid)?.store_name ?? storeName ?? id,
+        name: assignedStores.find((s) => s.storeid === Number(c.storeid))?.store_name
+          ?? groupStores.find((s) => s.storeid === Number(c.storeid))?.store_name
+          ?? storeName ?? id,
         count: 0,
         total: 0,
       };
@@ -48,8 +50,8 @@ const CouponListPanel = ({ selectedKey, onSelect, sortMetric, onSortMetric, onOp
     });
     return Array.from(map.entries())
       .map(([id, { name, count, total }]) => ({ key: id, label: name, count, total }))
-      .sort((a, b) => b.total - a.total);
-  }, [state.coupons, assignedStores, storeName]);
+      .sort((a, b) => sortMetric === "qty" ? b.count - a.count : b.total - a.total);
+  }, [state.coupons, assignedStores, storeName, sortMetric]);
 
   const filtered = query
     ? storeItems.filter((i) => i.label.toLowerCase().includes(query.toLowerCase()))

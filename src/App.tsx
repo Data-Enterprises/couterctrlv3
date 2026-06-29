@@ -71,7 +71,7 @@ const App = () => {
   }, []);
 
   const containerStyle = context.isMobile
-    ? "h-full bg-bkg"
+    ? "h-full bg-bkg pb-14"
     : "w-full";
 
   return (

@@ -10,23 +10,9 @@ import {
   setIsFetching,
   setNoCouponsFound,
   setCoupons,
-  setPriorCoupons,
-  setLyCoupons,
-  setIsComparisonFetching,
 } from "../../features/couponSlice";
 import type { CouponsResponse, JsonError } from "../../interfaces";
 import { formatGoliathDate } from "../../utils";
-
-const parseMDY = (mdy: string) => {
-  const [m, d, y] = mdy.split("/");
-  return new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
-};
-const toGoliath = (d: Date) => {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-};
 
 import SearchCard from "../../components/SearchCard";
 import StorePicker from "../../components/storePicker/StorePicker";
@@ -66,30 +52,11 @@ const Coupons = () => {
     const start = formatGoliathDate(context.startDate);
     const end = formatGoliathDate(context.endDate);
 
-    const startD = parseMDY(context.startDate);
-    const endD = parseMDY(context.endDate);
-    const rangeDays = Math.round((endD.getTime() - startD.getTime()) / 86400000) + 1;
-    const ppEnd = new Date(startD.getTime() - 86400000);
-    const ppStart = new Date(ppEnd.getTime() - (rangeDays - 1) * 86400000);
-    const lyStart = new Date(startD); lyStart.setFullYear(lyStart.getFullYear() - 1);
-    const lyEnd = new Date(endD); lyEnd.setFullYear(lyEnd.getFullYear() - 1);
-
     getCoupons(context.url, context.token, start, end, useGroups, singleStore, searchValue)
       .then((resp) => {
         const j: CouponsResponse = resp.data;
         if (j.error === 0 && j.records.length > 0) {
           dispatch(setCoupons(j.records));
-          dispatch(setIsComparisonFetching(true));
-          Promise.all([
-            getCoupons(context.url, context.token, toGoliath(ppStart), toGoliath(ppEnd), useGroups, singleStore, searchValue),
-            getCoupons(context.url, context.token, toGoliath(lyStart), toGoliath(lyEnd), useGroups, singleStore, searchValue),
-          ]).then(([ppResp, lyResp]) => {
-            dispatch(setPriorCoupons(ppResp.data.error === 0 ? ppResp.data.records : []));
-            dispatch(setLyCoupons(lyResp.data.error === 0 ? lyResp.data.records : []));
-          }).catch(() => {
-            dispatch(setPriorCoupons([]));
-            dispatch(setLyCoupons([]));
-          }).finally(() => dispatch(setIsComparisonFetching(false)));
         } else {
           dispatch(setNoCouponsFound(true));
         }

@@ -38,14 +38,15 @@ const downloadCsv = (content: string, filename: string) => {
 };
 
 const buildPresetCsv = (rows: CouponItem[], label: string) => {
-  const headers = ["Store #", "Date", "Trans", "Cpn Type", "Cpn Amt", "UPC", "Description", "Cashier #", "Cashier", "Customer ID", "Sub Dept"];
+  const headers = ["Store #", "Store", "Date", "Trans", "Cpn Type", "Cpn Amt", "UPC", "Description", "Cashier #", "Cashier", "Customer ID", "Sub Dept"];
   const data = rows.map((r) => [
     r.store_number,
+    r.store_name,
     r.sale_date.split("T")[0],
     r.sale_id,
     r.coupon_type,
     fmtNum(r.coupon_amount),
-    r.product_code ? r.product_code.split(".")[0] : "",
+    r.product_code ? String(Math.round(Number(r.product_code))) : "",
     r.product_description,
     r.cashier_number,
     r.cashier_name,
@@ -114,6 +115,32 @@ const CouponsExportModal = ({ onClose, title, subtitle, rows }: CouponsExportMod
     ["qty",           { fn: "sum", enabled: false }],
   ]));
 
+  // Unique stores derived from rows
+  const uniqueStores = useMemo(() => {
+    const map = new Map<string, { name: string; number: string }>();
+    rows.forEach((r) => {
+      if (!map.has(r.store_number)) map.set(r.store_number, { name: r.store_name ?? r.store_number, number: r.store_number });
+    });
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [rows]);
+
+  const isMultiStore = uniqueStores.length > 1;
+
+  // Selected stores (default = all)
+  const [selectedStores, setSelectedStores] = useState<Set<string>>(() => new Set(rows.map((r) => r.store_number)));
+
+  const toggleStore = (num: string) =>
+    setSelectedStores((prev) => { const n = new Set(prev); n.has(num) ? n.delete(num) : n.add(num); return n; });
+
+  const allSelected = selectedStores.size === uniqueStores.length;
+  const noneSelected = selectedStores.size === 0;
+
+  // Rows filtered by selected stores
+  const filteredRows = useMemo(
+    () => isMultiStore ? rows.filter((r) => selectedStores.has(r.store_number)) : rows,
+    [rows, selectedStores, isMultiStore],
+  );
+
   const toggleGroupBy = (key: string) =>
     setGroupBy((prev) => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n; });
 
@@ -123,7 +150,7 @@ const CouponsExportModal = ({ onClose, title, subtitle, rows }: CouponsExportMod
   const setMetricFn = (key: string, fn: AggFn) =>
     setMetrics((prev) => { const n = new Map(prev); const c = n.get(key)!; n.set(key, { ...c, fn }); return n; });
 
-  const flatRows = useMemo<AggRow[]>(() => rows.map((r) => ({ ...r } as unknown as AggRow)), [rows]);
+  const flatRows = useMemo<AggRow[]>(() => filteredRows.map((r) => ({ ...r } as unknown as AggRow)), [filteredRows]);
 
   const { aggRows, columns } = useMemo(() => {
     const activeDims = DIMS.filter((d) => groupBy.has(d.key));
@@ -156,7 +183,7 @@ const CouponsExportModal = ({ onClose, title, subtitle, rows }: CouponsExportMod
   const handlePresetDownload = () => {
     const label = `${title} — ${subtitle}`;
     const safeName = title.replace(/[^a-z0-9]/gi, "_");
-    downloadCsv(buildPresetCsv(rows, label), `${safeName}.csv`);
+    downloadCsv(buildPresetCsv(filteredRows, label), `${safeName}.csv`);
     onClose();
   };
 
@@ -168,6 +195,28 @@ const CouponsExportModal = ({ onClose, title, subtitle, rows }: CouponsExportMod
     downloadCsv(rowsToCsv(headers, data), `${safeName}_custom.csv`);
     onClose();
   };
+
+  const StoreFilter = () => (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45">Stores</p>
+        <div className="flex gap-1.5">
+          <button onClick={() => setSelectedStores(new Set(uniqueStores.map((s) => s.number)))} disabled={allSelected} className="text-[9px] text-[#1e2a4a]/50 hover:text-[#1e2a4a] disabled:opacity-30 transition-colors">All</button>
+          <span className="text-[9px] text-content/30">·</span>
+          <button onClick={() => setSelectedStores(new Set())} disabled={noneSelected} className="text-[9px] text-[#1e2a4a]/50 hover:text-[#1e2a4a] disabled:opacity-30 transition-colors">None</button>
+        </div>
+      </div>
+      <div className="space-y-1.5 max-h-36 overflow-y-auto thin-scrollbar pr-1">
+        {uniqueStores.map((s) => (
+          <label key={s.number} className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={selectedStores.has(s.number)} onChange={() => toggleStore(s.number)} className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0" />
+            <span className="text-[12px] text-content truncate">{s.name}</span>
+            <span className="text-[10px] text-content/40 flex-shrink-0">#{s.number}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
@@ -202,21 +251,28 @@ const CouponsExportModal = ({ onClose, title, subtitle, rows }: CouponsExportMod
         {/* PRESETS */}
         {mode === "presets" && (
           <>
-            <div className="px-4 pt-4 pb-2 space-y-3">
-              <p className="text-[11px] text-content/50 uppercase tracking-wide font-medium">Select data to include</p>
-              <label className="flex items-start gap-3 cursor-pointer group">
-                <input type="checkbox" checked readOnly className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] flex-shrink-0" />
-                <div>
-                  <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">Coupon Records</p>
-                  <p className="text-[11px] text-content/50 mt-0.5">{rows.length} rows · {title}</p>
-                </div>
-              </label>
+            <div className="px-4 pt-4 pb-2 space-y-4">
+              {isMultiStore && <StoreFilter />}
+              <div>
+                {!isMultiStore && <p className="text-[11px] text-content/50 uppercase tracking-wide font-medium mb-3">Select data to include</p>}
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input type="checkbox" checked readOnly className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] flex-shrink-0" />
+                  <div>
+                    <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">Coupon Records</p>
+                    <p className="text-[11px] text-content/50 mt-0.5">
+                      {filteredRows.length} rows
+                      {isMultiStore && selectedStores.size < uniqueStores.length ? ` · ${selectedStores.size} of ${uniqueStores.length} stores` : ""}
+                      {" · "}{title}
+                    </p>
+                  </div>
+                </label>
+              </div>
             </div>
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-2">
               <button onClick={onClose} className="text-[12px] text-content/50 hover:text-content transition-colors">Cancel</button>
               <button
                 onClick={handlePresetDownload}
-                disabled={rows.length === 0}
+                disabled={filteredRows.length === 0}
                 className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
@@ -229,9 +285,10 @@ const CouponsExportModal = ({ onClose, title, subtitle, rows }: CouponsExportMod
         {/* CUSTOM */}
         {mode === "custom" && (
           <>
-            <div className="grid grid-cols-[200px_1fr] divide-x divide-gray-100 min-h-[360px] max-h-[calc(100vh-220px)]">
+            <div className="grid grid-cols-[220px_1fr] divide-x divide-gray-100 min-h-[360px] max-h-[calc(100vh-220px)]">
               {/* Config */}
               <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
+                {isMultiStore && <StoreFilter />}
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">Group By</p>
                   <div className="space-y-1.5">
@@ -261,7 +318,10 @@ const CouponsExportModal = ({ onClose, title, subtitle, rows }: CouponsExportMod
                     })}
                   </div>
                 </div>
-                <p className="text-[10px] text-content/35 italic leading-relaxed">Working on {rows.length} rows · {title}</p>
+                <p className="text-[10px] text-content/35 italic leading-relaxed">
+                  {filteredRows.length} rows
+                  {isMultiStore && selectedStores.size < uniqueStores.length ? ` · ${selectedStores.size}/${uniqueStores.length} stores` : ""}
+                </p>
               </div>
 
               {/* Preview */}
