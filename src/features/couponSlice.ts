@@ -17,6 +17,9 @@ export type UniqueCpnDate = {
 
 interface CouponState {
   coupons: CouponItem[];
+  priorCoupons: CouponItem[];
+  lyCoupons: CouponItem[];
+  isComparisonFetching: boolean;
   gridCoupons: CouponItem[];
   storeNum: string;
   cpnAmount: number;
@@ -40,6 +43,9 @@ interface CouponState {
 
 const initialState: CouponState = {
   coupons: [],
+  priorCoupons: [],
+  lyCoupons: [],
+  isComparisonFetching: false,
   gridCoupons: [],
   storeNum: "",
   cpnAmount: 0,
@@ -68,6 +74,15 @@ const couponSlice = createSlice({
     setCoupons: (state, action: PayloadAction<CouponItem[]>) => {
       state.coupons = action.payload;
       state.gridCoupons = action.payload;
+    },
+    setPriorCoupons: (state, action: PayloadAction<CouponItem[]>) => {
+      state.priorCoupons = action.payload;
+    },
+    setLyCoupons: (state, action: PayloadAction<CouponItem[]>) => {
+      state.lyCoupons = action.payload;
+    },
+    setIsComparisonFetching: (state, action: PayloadAction<boolean>) => {
+      state.isComparisonFetching = action.payload;
     },
     setFilter: (
       state,
@@ -191,6 +206,9 @@ const couponSlice = createSlice({
     },
     resetCoupons: (state) => {
       state.coupons = [];
+      state.priorCoupons = [];
+      state.lyCoupons = [];
+      state.isComparisonFetching = false;
       state.gridCoupons = [];
       state.storeNum = "";
       state.cpnAmount = 0;
@@ -242,6 +260,9 @@ const couponSlice = createSlice({
 
 export const {
   setCoupons,
+  setPriorCoupons,
+  setLyCoupons,
+  setIsComparisonFetching,
   resetCoupons,
   setFilter,
   applyFilters,

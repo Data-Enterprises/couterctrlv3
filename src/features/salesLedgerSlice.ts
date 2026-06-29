@@ -178,6 +178,22 @@ const salesLedgerSlice = createSlice({
     resetLedger: (state) => {
       Object.assign(state, initialState);
     },
+    reQueryLedger: (state) => {
+      state.selection = null;
+      state.selectedDate = null;
+      state.rawSubs = [];
+      state.rawLWSubs = [];
+      state.rawLYSubs = [];
+      state.rawHourly = [];
+      state.rawLWHourly = [];
+      state.rawLYHourly = [];
+      state.top10 = [];
+      state.screen = "list";
+      state.listSevFilter = "all";
+      state.reportSevFilter = "all";
+      state.openSheetType = null;
+      state.openSheetId = null;
+    },
     // Navigate to store report (mobile)
     navigateToReport: (state, action: PayloadAction<StoreSelection>) => {
       state.selection = action.payload;
@@ -226,6 +242,7 @@ export const {
   openSheet,
   closeSheet,
   resetLedger,
+  reQueryLedger,
   navigateToReport,
   navigateToList,
 } = salesLedgerSlice.actions;

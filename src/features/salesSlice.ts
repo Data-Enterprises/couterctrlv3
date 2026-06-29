@@ -287,6 +287,24 @@ export const salesSlice = createSlice({
     setWeeksBack: (state, action: PayloadAction<string>) => {
       state.weeksBack = action.payload;
     },
+    concatWeeklySales: (state, action: PayloadAction<WeeklySale[]>) => {
+      state.weeklySales = state.weeklySales.concat(action.payload);
+    },
+    concatWeeklySalesLastWeek: (state, action: PayloadAction<WeeklySale[]>) => {
+      state.weeklySalesLastWeek = state.weeklySalesLastWeek.concat(action.payload);
+    },
+    concatWeeklySalesLastYear: (state, action: PayloadAction<WeeklySale[]>) => {
+      state.weeklySalesLastYear = state.weeklySalesLastYear.concat(action.payload);
+    },
+    concatHourlySales: (state, action: PayloadAction<HourlySale[]>) => {
+      state.hourlySales = state.hourlySales.concat(action.payload);
+    },
+    concatHourlySalesLastWeek: (state, action: PayloadAction<HourlySale[]>) => {
+      state.hourlySalesLastWeek = state.hourlySalesLastWeek.concat(action.payload);
+    },
+    concatHourlySalesLastYear: (state, action: PayloadAction<HourlySale[]>) => {
+      state.hourlySalesLastYear = state.hourlySalesLastYear.concat(action.payload);
+    },
     concatTYSubTracker: (state, action: PayloadAction<SubSale[]>) => {
       state.thisYrSubTracker = state.thisYrSubTracker.concat(action.payload);
     },
@@ -390,6 +408,12 @@ export const {
   setHourlySalesLastYear,
   setMainView,
   setWeeksBack,
+  concatWeeklySales,
+  concatWeeklySalesLastWeek,
+  concatWeeklySalesLastYear,
+  concatHourlySales,
+  concatHourlySalesLastWeek,
+  concatHourlySalesLastYear,
   concatTYSubTracker,
   concatLYSubTracker,
   setLoadingTYTrackerData,

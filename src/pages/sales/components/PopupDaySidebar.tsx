@@ -14,9 +14,16 @@ const PopupDaySidebar = ({ days, selectedDate, onSelect }: PopupDaySidebarProps)
   const sorted = [...days].sort((a, b) => a.sale_date.localeCompare(b.sale_date));
 
   const weekTw = sorted.reduce((acc, d) => acc + d.twNet, 0);
+  const weekLw = sorted.reduce((acc, d) => acc + d.lwNet, 0);
   const weekLy = sorted.reduce((acc, d) => acc + d.lyNet, 0);
   const weekHasLY = weekLy > 0;
-  const weekVsLYPct = weekHasLY ? ((weekTw - weekLy) / weekLy) * 100 : 0;
+  const weekHasLW = weekLw > 0;
+  const weekDisplayPct = weekHasLY
+    ? ((weekTw - weekLy) / weekLy) * 100
+    : weekHasLW
+    ? ((weekTw - weekLw) / weekLw) * 100
+    : null;
+  const weekSuffix = weekHasLY ? "LY" : weekHasLW ? "LW" : null;
 
   const firstDate = sorted[0]?.sale_date.split("T")[0] ?? "";
   const lastDate = sorted[sorted.length - 1]?.sale_date.split("T")[0] ?? "";
@@ -36,8 +43,8 @@ const PopupDaySidebar = ({ days, selectedDate, onSelect }: PopupDaySidebarProps)
       >
         <div className="text-[10px] font-bold text-content">All week</div>
         <div className="text-[8px] mt-0.5 text-content/35">{weekRange}</div>
-        <div className={`text-[10px] font-semibold mt-0.5 ${weekVsLYPct >= 0 ? "text-emerald-600" : "text-red-500"}`}>
-          {fmtPct(weekVsLYPct)} LY
+        <div className={`text-[10px] font-semibold mt-0.5 ${weekDisplayPct === null ? "text-content/25" : weekDisplayPct < 0 ? "text-red-500" : "text-emerald-600"}`}>
+          {weekDisplayPct !== null ? `${fmtPct(weekDisplayPct)} ${weekSuffix}` : "—"}
         </div>
       </button>
 
@@ -48,9 +55,13 @@ const PopupDaySidebar = ({ days, selectedDate, onSelect }: PopupDaySidebarProps)
         const dayLabel = date.toLocaleDateString("en-US", { weekday: "short" });
         const calLabel = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
         const isSelected = selectedDate === dateStr;
-        const vsLYPct = d.lyNet > 0 ? ((d.twNet - d.lyNet) / d.lyNet) * 100 : 0;
         const hasLY = d.lyNet > 0;
-        const isNeg = vsLYPct < 0;
+        const hasLW = d.lwNet > 0;
+        const vsLYPct = hasLY ? ((d.twNet - d.lyNet) / d.lyNet) * 100 : null;
+        const vsLWPct = hasLW ? ((d.twNet - d.lwNet) / d.lwNet) * 100 : null;
+        const displayPct = vsLYPct ?? vsLWPct;
+        const displaySuffix = hasLY ? "LY" : hasLW ? "LW" : null;
+        const isNeg = displayPct !== null && displayPct < 0;
 
         return (
           <button
@@ -63,8 +74,8 @@ const PopupDaySidebar = ({ days, selectedDate, onSelect }: PopupDaySidebarProps)
           >
             <div className="text-[10px] font-semibold text-content">{dayLabel}</div>
             <div className="text-[8px] mt-0.5 text-content/35">{calLabel}</div>
-            <div className={`text-[9px] font-semibold mt-0.5 ${!hasLY ? "text-content/25" : isNeg ? "text-red-500" : "text-emerald-600"}`}>
-              {hasLY ? fmtPct(vsLYPct) : "—"}
+            <div className={`text-[9px] font-semibold mt-0.5 ${displayPct === null ? "text-content/25" : isNeg ? "text-red-500" : "text-emerald-600"}`}>
+              {displayPct !== null ? `${fmtPct(displayPct)} ${displaySuffix}` : "—"}
             </div>
           </button>
         );

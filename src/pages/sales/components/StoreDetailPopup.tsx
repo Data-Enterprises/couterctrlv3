@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { getSubs, getHourly } from "../../../api/sales";
+import SalesExportModal from "./SalesExportModal";
 import {
   setSubSales,
   setHourlySales,
@@ -21,7 +22,7 @@ import {
   setHourlyThreshold,
 } from "../../../features/salesLedgerSlice";
 import { addDays, formatGoliathDate, sameWeekDayLastYear, formatCurrency2 } from "../../../utils";
-import { XMarkIcon } from "@heroicons/react/20/solid";
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import PopupDaySidebar from "./PopupDaySidebar";
 import PopupSubDeptList from "./PopupSubDeptList";
 import PopupHourlyView from "./PopupHourlyView";
@@ -39,7 +40,7 @@ type PopupTab = "subdept" | "hourly";
 const fmtDate = (d: string) =>
   new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
-const StoreDetailPopup = ({ selection, onClose }: StoreDetailPopupProps) => {
+const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
@@ -48,6 +49,7 @@ const StoreDetailPopup = ({ selection, onClose }: StoreDetailPopupProps) => {
   const activeThreshold = tab === "subdept" ? subDeptThreshold : hourlyThreshold;
 
   const [loading, setLoading] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
   const twEnd = formatGoliathDate(search.singleDate);
@@ -107,12 +109,12 @@ const StoreDetailPopup = ({ selection, onClose }: StoreDetailPopupProps) => {
             getHourly(context.url, context.token, lwStart, lwEnd, 0, selection.storeId, 1),
             getHourly(context.url, context.token, lyStart, lyEnd, 0, selection.storeId, 1),
           ]);
-        if (subsResp.data.error === 0) dispatch(setRawSubs(subsResp.data.subs));
-        if (lwSubsResp.data.error === 0) dispatch(setRawLWSubs(lwSubsResp.data.subs));
-        if (lySubsResp.data.error === 0) dispatch(setRawLYSubs(lySubsResp.data.subs));
-        if (hourlyResp.data.error === 0) dispatch(setRawHourly(hourlyResp.data.subs));
-        if (lwHourlyResp.data.error === 0) dispatch(setRawLWHourly(lwHourlyResp.data.subs));
-        if (lyHourlyResp.data.error === 0) dispatch(setRawLYHourly(lyHourlyResp.data.subs));
+        dispatch(setRawSubs(subsResp.data.error === 0 ? subsResp.data.subs : []));
+        dispatch(setRawLWSubs(lwSubsResp.data.error === 0 ? lwSubsResp.data.subs : []));
+        dispatch(setRawLYSubs(lySubsResp.data.error === 0 ? lySubsResp.data.subs : []));
+        dispatch(setRawHourly(hourlyResp.data.error === 0 ? hourlyResp.data.subs : []));
+        dispatch(setRawLWHourly(lwHourlyResp.data.error === 0 ? lwHourlyResp.data.subs : []));
+        dispatch(setRawLYHourly(lyHourlyResp.data.error === 0 ? lyHourlyResp.data.subs : []));
       } finally {
         setLoading(false);
       }
@@ -152,13 +154,33 @@ const StoreDetailPopup = ({ selection, onClose }: StoreDetailPopupProps) => {
           </p>
           <span className="text-white/60 text-[10px]">Weekly Sales Report · {staticTwDate}</span>
         </div>
-        <button
-          onClick={onClose}
-          className="text-white/60 hover:text-white transition-colors mt-0.5"
-        >
-          <XMarkIcon className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-2 mt-0.5">
+          {!loading && (rawSubs.length > 0 || rawHourly.length > 0) && (
+            <button
+              onClick={() => setExportOpen(true)}
+              title="Export CSV"
+              className="text-white/60 hover:text-white transition-colors"
+            >
+              <ArrowDownTrayIcon className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
+
+      {exportOpen && (
+        <SalesExportModal
+          onClose={() => setExportOpen(false)}
+          storeName={selection.storeName}
+          dateLabel={staticTwDate}
+          rawSubs={rawSubs}
+          rawLWSubs={rawLWSubs}
+          rawLYSubs={rawLYSubs}
+          rawHourly={rawHourly}
+          rawLWHourly={rawLWHourly}
+          rawLYHourly={rawLYHourly}
+          days={selection.days}
+        />
+      )}
 
       {/* KPI metric strip — values and date labels update with day selection */}
       <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">

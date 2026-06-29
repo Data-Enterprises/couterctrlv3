@@ -1,58 +1,95 @@
 import { useState } from "react";
-import { useAppDispatch } from "../../hooks";
+import { useAppDispatch, useAppSelector } from "../../hooks";
 import { getCoupons } from "../../api/coupons";
+import { getStoresAssignedToUserGroup } from "../../api/groups";
+import { setSelectedGroupStores } from "../../features/userSlice";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { useCouponContext, cols } from ".";
+import { useCouponContext } from ".";
 import {
   resetCoupons,
   setIsFetching,
   setNoCouponsFound,
+  setCoupons,
+  setPriorCoupons,
+  setLyCoupons,
+  setIsComparisonFetching,
 } from "../../features/couponSlice";
 import type { CouponsResponse, JsonError } from "../../interfaces";
-import { setCoupons } from "../../features/couponSlice";
 import { formatGoliathDate } from "../../utils";
 
-// components
+const parseMDY = (mdy: string) => {
+  const [m, d, y] = mdy.split("/");
+  return new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+};
+const toGoliath = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
+import SearchCard from "../../components/SearchCard";
 import StorePicker from "../../components/storePicker/StorePicker";
 import DatePickers from "../../components/datePickers/DatePickers";
-import CouponsGrid from "./CouponsGrid";
-import CouponGridFilters from "./CouponGridFilters";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import TransactionModal from "../lossPrevention/TransactionModal";
-import FiltersModal from "./filters/FiltersModal";
-import ExportModal from "../../components/modals/ExportModal";
-import CouponKpis from "./kpi/CouponKpis";
 import CouponsMobile from "./mobile/CouponsMobile";
+import CouponListPanel from "./CouponListPanel";
+import CouponDetailPanel from "./CouponDetailPanel";
 
 const Coupons = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useCouponContext();
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const { url, token } = useAppSelector((s) => s.app);
+  const { userid } = useAppSelector((s) => s.user);
+  const [selectedKey, setSelectedKey] = useState("");
+  const [sortMetric, setSortMetric] = useState<"amount" | "qty">("amount");
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   const getData = () => {
+    setSelectedKey("");
     dispatch(setCoupons([]));
+    if (context.type === "Group") {
+      getStoresAssignedToUserGroup(url, token, userid, context.lastGroup)
+        .then((resp) => {
+          if (resp.data.error === 0) {
+            dispatch(setSelectedGroupStores(resp.data.stores.filter((s: any) => s.active)));
+          }
+        })
+        .catch(() => {});
+    }
     dispatch(setIsFetching(true));
     const useGroups = context.type === "Group" ? 1 : 0;
     const singleStore = context.type === "Store" ? 1 : 0;
-    const searchValue =
-      context.type === "Group" ? context.lastGroup : context.lastStore;
+    const searchValue = context.type === "Group" ? context.lastGroup : context.lastStore;
     const start = formatGoliathDate(context.startDate);
     const end = formatGoliathDate(context.endDate);
 
-    getCoupons(
-      context.url,
-      context.token,
-      start,
-      end,
-      useGroups,
-      singleStore,
-      searchValue,
-    )
+    const startD = parseMDY(context.startDate);
+    const endD = parseMDY(context.endDate);
+    const rangeDays = Math.round((endD.getTime() - startD.getTime()) / 86400000) + 1;
+    const ppEnd = new Date(startD.getTime() - 86400000);
+    const ppStart = new Date(ppEnd.getTime() - (rangeDays - 1) * 86400000);
+    const lyStart = new Date(startD); lyStart.setFullYear(lyStart.getFullYear() - 1);
+    const lyEnd = new Date(endD); lyEnd.setFullYear(lyEnd.getFullYear() - 1);
+
+    getCoupons(context.url, context.token, start, end, useGroups, singleStore, searchValue)
       .then((resp) => {
         const j: CouponsResponse = resp.data;
         if (j.error === 0 && j.records.length > 0) {
           dispatch(setCoupons(j.records));
+          dispatch(setIsComparisonFetching(true));
+          Promise.all([
+            getCoupons(context.url, context.token, toGoliath(ppStart), toGoliath(ppEnd), useGroups, singleStore, searchValue),
+            getCoupons(context.url, context.token, toGoliath(lyStart), toGoliath(lyEnd), useGroups, singleStore, searchValue),
+          ]).then(([ppResp, lyResp]) => {
+            dispatch(setPriorCoupons(ppResp.data.error === 0 ? ppResp.data.records : []));
+            dispatch(setLyCoupons(lyResp.data.error === 0 ? lyResp.data.records : []));
+          }).catch(() => {
+            dispatch(setPriorCoupons([]));
+            dispatch(setLyCoupons([]));
+          }).finally(() => dispatch(setIsComparisonFetching(false)));
         } else {
           dispatch(setNoCouponsFound(true));
         }
@@ -63,73 +100,85 @@ const Coupons = () => {
 
   if (context.isMobile) return <CouponsMobile />;
 
-  const showGrid = context.coupons.length > 0 && !context.isFetching;
-  const showLoading = context.coupons.length === 0 && context.isFetching;
-  const noCoupons = context.noCouponsFound;
-
-  return (
-    <div className="w-full h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
-      <TransactionModal />
-      <FiltersModal />
-      <ExportModal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        data={context.gridCoupons}
-        columns={cols}
-      />
-      <div className="grid grid-cols-[17.5%_auto] p-4 gap-4 w-full h-full text-sm">
-        <div>
-          <div className="bg-custom-white p-2 rounded-lg shadow-lg">
-            <StorePicker />
-            <DatePickers handleQuery={getData} btnPadding="py-1" />
-            <div className="space-y-2 xl:space-y-0 xl:flex xl:gap-2 mt-2">
-              <button
-                data-testid="coupons-refresh-btn"
-                className={`${
-                  context.coupons.length === 0 &&
-                  "opacity-50 pointer-events-none"
-                } btn-themeOrange w-full px-0 py-1 text-[13px]`}
-                onClick={() => dispatch(resetCoupons())}
-              >
-                Refresh
-              </button>
-              <button
-                data-testid="coupons-export-btn"
-                className={`${
-                  context.coupons.length === 0 &&
-                  "opacity-50 pointer-events-none"
-                } btn-themeGreen w-full px-0 py-1 text-[13px]`}
-                onClick={() => setIsOpen(true)}
-              >
-                Export
-              </button>
-            </div>
-          </div>
-          {showGrid && <CouponGridFilters />}
-        </div>
-
-        {showGrid && (
-          <div className="space-y-4 max-h-[calc(100vh-5rem)] ">
-            <CouponKpis />
-            <CouponsGrid />
-          </div>
-        )}
-
-        {noCoupons && (
-          <div
-            data-testid="no-coupons"
-            className="h-full flex items-center justify-center bg-custom-white rounded-lg shadow-lg"
-          >
-            No coupons found
-          </div>
-        )}
-
-        {showLoading && (
-          <div className="w-full h-full relative">
-            <LoadingIndicator message="Loading coupons..." />
-          </div>
-        )}
+  // Loading
+  if (context.isFetching) {
+    return (
+      <div className="w-full h-[calc(100vh-3rem)] relative">
+        <LoadingIndicator message="Loading coupons..." />
       </div>
+    );
+  }
+
+  // No coupons found
+  if (context.noCouponsFound) {
+    return (
+      <div className="h-[calc(100vh-3rem)] flex items-center justify-center">
+        <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3">
+          <div>
+            <h2 className="text-base font-semibold text-content">No coupons found</h2>
+            <p className="text-[12px] text-content/50 mt-1">No coupon activity matched the selected store and date range.</p>
+          </div>
+          <button
+            onClick={() => dispatch(resetCoupons())}
+            className="w-full py-2 text-sm font-semibold text-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors"
+          >
+            Search again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Initial search card
+  if (context.coupons.length === 0) {
+    return (
+      <div className="h-[calc(100vh-3rem)] flex items-center justify-center mx-4 pb-12">
+        <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3">
+          <div>
+            <h2 className="text-base font-semibold text-content">Coupons</h2>
+            <p className="text-[12px] text-content/50 mt-1">Select a store and date range to load coupon activity.</p>
+          </div>
+          <StorePicker />
+          <DatePickers showBtn={false} handleQuery={getData} />
+          <button
+            onClick={getData}
+            className="w-full py-2 text-sm font-semibold text-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none"
+          >
+            Load Coupons
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Two-panel layout
+  return (
+    <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-4">
+      <TransactionModal />
+      {searchModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => setSearchModalOpen(false)}
+        >
+          <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
+            <SearchCard
+              title="Coupons"
+              description="Select a store or group and date range to load coupon activity."
+              buttonLabel="Load Coupons"
+              onSearch={() => { setSearchModalOpen(false); getData(); }}
+              loading={context.isFetching}
+            />
+          </div>
+        </div>
+      )}
+      <CouponListPanel
+        selectedKey={selectedKey}
+        onSelect={setSelectedKey}
+        sortMetric={sortMetric}
+        onSortMetric={setSortMetric}
+        onOpenSearch={() => setSearchModalOpen(true)}
+      />
+      <CouponDetailPanel selectedKey={selectedKey} sortMetric={sortMetric} />
     </div>
   );
 };

@@ -7,6 +7,7 @@ import type { AllOrder } from "../../../interfaces";
 import type { SelectedOrderKey } from "../../../features/ordersSlice";
 import type { Store } from "../../../interfaces";
 import { formatCurrency2 } from "../../../utils";
+import OrdersExportModal from "./OrdersExportModal";
 
 interface Props {
   orders: AllOrder[];
@@ -83,6 +84,7 @@ const OrderReportPanel = ({
   onExport,
 }: Props) => {
   const [subDeptFilter, setSubDeptFilter] = useState<string>("");
+  const [exportOpen, setExportOpen] = useState(false);
 
   const storeName = selectedKey
     ? (assignedStores.find((s) => s.storeid === selectedKey.storeid)?.store_name ?? `Store ${selectedKey.storeid}`)
@@ -116,6 +118,18 @@ const OrderReportPanel = ({
   return (
     <div className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white" style={{ flex: 1, minWidth: 0 }}>
 
+      {exportOpen && selectedKey && (
+        <OrdersExportModal
+          onClose={() => setExportOpen(false)}
+          storeName={storeName ?? ""}
+          orderType={selectedKey.order_type}
+          orderDate={selectedKey.order_date}
+          allOrders={filteredOrders}
+          selectedOrderItems={orderItems}
+          selectedOrderId={selectedOrderId}
+        />
+      )}
+
       {/* Header */}
       <div className="bg-[#1e2a4a] px-3 pt-1 pb-2 flex-shrink-0 flex flex-col gap-0">
         {/* Row 1 */}
@@ -129,6 +143,15 @@ const OrderReportPanel = ({
             <span className="text-white font-medium text-[13px]">Order Report</span>
           )}
           <div className="flex-1" />
+          {selectedKey && !loading && filteredOrders.length > 0 && (
+            <button
+              onClick={() => setExportOpen(true)}
+              title="Export CSV"
+              className="text-white/60 hover:text-white transition-colors flex-shrink-0"
+            >
+              <ArrowDownTrayIcon className="w-4 h-4" />
+            </button>
+          )}
           {selectedKey && !loading && (
             <>
               <div className="flex items-baseline gap-1 flex-shrink-0">
@@ -228,13 +251,6 @@ const OrderReportPanel = ({
                   <Chip label="Items" value={String(orderItems.length)} />
                   <Chip label="Ext retail" value={formatCurrency2(selectedExtRetail)} />
                   <Chip label="Cost" value={formatCurrency2(selectedCost)} />
-                  <button
-                    onClick={onExport}
-                    className="flex items-center gap-1 text-[10px] font-semibold bg-[#1e2a4a] text-white rounded px-2 py-1 hover:bg-[#2a3a5c] transition-colors flex-shrink-0"
-                  >
-                    <ArrowDownTrayIcon className="w-3 h-3" />
-                    CSV
-                  </button>
                 </div>
                 <div className="flex-1 overflow-auto thin-scrollbar">
                   <table className="w-full border-collapse text-[11px]">

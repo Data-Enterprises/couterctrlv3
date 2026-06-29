@@ -4,7 +4,9 @@ import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
   CheckCircleIcon,
+  ArrowDownTrayIcon,
 } from "@heroicons/react/20/solid";
+import LPExportModal from "./LPExportModal";
 import { useAppSelector, useAppDispatch, useStoreName } from "../../../hooks";
 import {
   setSaleDateFilter,
@@ -207,8 +209,10 @@ interface Props {
 const LPTransactionPanel = ({ onTransactionClick, onShowAll }: Props) => {
   const dispatch = useAppDispatch();
   const cashier  = useAppSelector((s) => s.lossPrevention);
+  const search   = useAppSelector((s) => s.search);
 
   const [selectedOverview, setSelectedOverview] = useState<TransactionOverview | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
   const transactionRef = useRef<TransactionHandle>(null);
   const [cashierSevFilter, setCashierSevFilter] = useState<CashierSeverity | "all">("all");
   const [draftTransId, setDraftTransId]         = useState("");
@@ -357,17 +361,39 @@ const LPTransactionPanel = ({ onTransactionClick, onShowAll }: Props) => {
       ) : (
         <div className="flex flex-col flex-1 min-h-0 rounded-xl overflow-hidden bg-custom-white">
           {/* Navy header */}
-          <div className="flex-shrink-0 px-4 py-[11px]" style={{ background: "#1e2a4a" }}>
-            <div className="text-[13px] font-semibold text-white">
-              {storeName}
-              <span className="ml-2 text-[11px] font-normal" style={{ color: "rgba(255,255,255,0.55)" }}>
-                — {selectedSaleType}
-              </span>
+          <div className="flex-shrink-0 px-4 py-[11px] flex items-start justify-between" style={{ background: "#1e2a4a" }}>
+            <div>
+              <div className="text-[13px] font-semibold text-white">
+                {storeName}
+                <span className="ml-2 text-[11px] font-normal" style={{ color: "rgba(255,255,255,0.55)" }}>
+                  — {selectedSaleType}
+                </span>
+              </div>
+              <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>
+                {detail?.cashier_count} cashiers · {detail?.transaction_count} transactions
+              </div>
             </div>
-            <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>
-              {detail?.cashier_count} cashiers · {detail?.transaction_count} transactions
-            </div>
+            {transOverviews.length > 0 && !fetchingCashierTransactions && (
+              <button
+                onClick={() => setExportOpen(true)}
+                title="Export CSV"
+                className="text-white/60 hover:text-white transition-colors mt-0.5"
+              >
+                <ArrowDownTrayIcon className="w-4 h-4" />
+              </button>
+            )}
           </div>
+
+          {exportOpen && (
+            <LPExportModal
+              onClose={() => setExportOpen(false)}
+              storeName={storeName}
+              saleType={selectedSaleType}
+              dateRange={`${fmtDate(search.startDate)}–${fmtDate(search.endDate)}`}
+              transactions={filteredOverviews}
+              cashierGrades={cashierGrades}
+            />
+          )}
 
           {/* Store KPI strip — always visible */}
           {kpiMetrics && (

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { getWeekly, getHourly } from "../../api/sales";
+import { getStoresAssignedToUserGroup } from "../../api/groups";
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../utils";
 import type { WeeklySale, Store } from "../../interfaces";
 import {
@@ -10,12 +11,19 @@ import {
   setHourlySales,
   setHourlySalesLastWeek,
   setHourlySalesLastYear,
+  concatWeeklySales,
+  concatWeeklySalesLastWeek,
+  concatWeeklySalesLastYear,
+  concatHourlySales,
+  concatHourlySalesLastWeek,
+  concatHourlySalesLastYear,
   reQuery,
 } from "../../features/salesSlice";
 import {
   setHasSearched,
   setLedgerLoading,
   setLedgerSelection,
+  reQueryLedger,
   type GradingMetric,
 } from "../../features/salesLedgerSlice";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
@@ -130,6 +138,7 @@ const buildLedgerRows = (
 const SalesLedger = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
+  const { userid } = useAppSelector((state) => state.user);
   const search = useAppSelector((state) => state.search);
   const {
     weeklySales = [],
@@ -167,9 +176,10 @@ const SalesLedger = () => {
   };
 
   const fetchLedger = async () => {
-    const useGroups = search.type === "Group" ? 1 : 0;
-    const singleStore = search.type === "Store" ? 1 : 0;
-    const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
+    const isGroup = search.type === "Group";
+    const useGroups = isGroup ? 1 : 0;
+    const singleStore = isGroup ? 0 : 1;
+    const searchValue = isGroup ? search.lastGroup : search.lastStore;
     if (!searchValue) return;
 
     const { twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd } = getDateRanges();
@@ -177,78 +187,64 @@ const SalesLedger = () => {
     dispatch(setLedgerLoading(true));
     dispatch(setHasSearched(true));
     dispatch(reQuery());
+    dispatch(reQueryLedger());
+    setSearchModalOpen(false);
+
+    // Large group path: >30 stores → per-store calls, collect progressively
+    if (isGroup) {
+      try {
+        const groupResp = await getStoresAssignedToUserGroup(context.url, context.token, userid, search.lastGroup);
+        const stores: Store[] = groupResp.data.error === 0
+          ? groupResp.data.stores.filter((s: any) => s.active)
+          : [];
+
+        if (stores.length > 30) {
+          await Promise.allSettled(
+            stores.map((store) =>
+              Promise.all([
+                getWeekly(context.url, context.token, twStart, twEnd, 0, store.storeid, 1),
+                getWeekly(context.url, context.token, lwStart, lwEnd, 0, store.storeid, 1),
+                getWeekly(context.url, context.token, lyStart, lyEnd, 0, store.storeid, 1),
+                getHourly(context.url, context.token, twStart, twEnd, 0, store.storeid, 1),
+                getHourly(context.url, context.token, lwStart, lwEnd, 0, store.storeid, 1),
+                getHourly(context.url, context.token, lyStart, lyEnd, 0, store.storeid, 1),
+              ]).then(([tw, lw, ly, h, lh, lhy]) => {
+                if (tw.data.error === 0)  dispatch(concatWeeklySales(tw.data.sales));
+                if (lw.data.error === 0)  dispatch(concatWeeklySalesLastWeek(lw.data.sales));
+                if (ly.data.error === 0)  dispatch(concatWeeklySalesLastYear(ly.data.sales));
+                if (h.data.error === 0)   dispatch(concatHourlySales(h.data.subs));
+                if (lh.data.error === 0)  dispatch(concatHourlySalesLastWeek(lh.data.subs));
+                if (lhy.data.error === 0) dispatch(concatHourlySalesLastYear(lhy.data.subs));
+              }).catch(() => {})
+            )
+          );
+          dispatch(setLedgerLoading(false));
+          return;
+        }
+      } catch {
+        // fall through to standard call
+      }
+    }
+
+    // Standard path: single store or small group
     try {
       const [twResp, lwResp, lyResp, hourlyResp, lwHourlyResp, lyHourlyResp] =
         await Promise.all([
-          getWeekly(
-            context.url,
-            context.token,
-            twStart,
-            twEnd,
-            useGroups,
-            searchValue,
-            singleStore,
-          ),
-          getWeekly(
-            context.url,
-            context.token,
-            lwStart,
-            lwEnd,
-            useGroups,
-            searchValue,
-            singleStore,
-          ),
-          getWeekly(
-            context.url,
-            context.token,
-            lyStart,
-            lyEnd,
-            useGroups,
-            searchValue,
-            singleStore,
-          ),
-          getHourly(
-            context.url,
-            context.token,
-            twStart,
-            twEnd,
-            useGroups,
-            searchValue,
-            singleStore,
-          ),
-          getHourly(
-            context.url,
-            context.token,
-            lwStart,
-            lwEnd,
-            useGroups,
-            searchValue,
-            singleStore,
-          ),
-          getHourly(
-            context.url,
-            context.token,
-            lyStart,
-            lyEnd,
-            useGroups,
-            searchValue,
-            singleStore,
-          ),
+          getWeekly(context.url, context.token, twStart, twEnd, useGroups, searchValue, singleStore),
+          getWeekly(context.url, context.token, lwStart, lwEnd, useGroups, searchValue, singleStore),
+          getWeekly(context.url, context.token, lyStart, lyEnd, useGroups, searchValue, singleStore),
+          getHourly(context.url, context.token, twStart, twEnd, useGroups, searchValue, singleStore),
+          getHourly(context.url, context.token, lwStart, lwEnd, useGroups, searchValue, singleStore),
+          getHourly(context.url, context.token, lyStart, lyEnd, useGroups, searchValue, singleStore),
         ]);
-      if (twResp.data.error === 0) dispatch(setWeeklySales(twResp.data.sales));
-      if (lwResp.data.error === 0)
-        dispatch(setWeeklySalesLastWeek(lwResp.data.sales));
-      if (lyResp.data.error === 0)
-        dispatch(setWeeklySalesLastYear(lyResp.data.sales));
-      if (hourlyResp.data.error === 0)
-        dispatch(setHourlySales(hourlyResp.data.subs));
-      if (lwHourlyResp.data.error === 0)
-        dispatch(setHourlySalesLastWeek(lwHourlyResp.data.subs));
-      if (lyHourlyResp.data.error === 0)
-        dispatch(setHourlySalesLastYear(lyHourlyResp.data.subs));
+      if (twResp.data.error === 0)       dispatch(setWeeklySales(twResp.data.sales));
+      if (lwResp.data.error === 0)       dispatch(setWeeklySalesLastWeek(lwResp.data.sales));
+      if (lyResp.data.error === 0)       dispatch(setWeeklySalesLastYear(lyResp.data.sales));
+      if (hourlyResp.data.error === 0)   dispatch(setHourlySales(hourlyResp.data.subs));
+      if (lwHourlyResp.data.error === 0) dispatch(setHourlySalesLastWeek(lwHourlyResp.data.subs));
+      if (lyHourlyResp.data.error === 0) dispatch(setHourlySalesLastYear(lyHourlyResp.data.subs));
     } finally {
       dispatch(setLedgerLoading(false));
-      setSearchModalOpen(false);
     }
   };
 
