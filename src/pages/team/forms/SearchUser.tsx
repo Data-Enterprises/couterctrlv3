@@ -29,9 +29,6 @@ const SearchUser = () => {
     setUsername("");
   }, [selectedUserForm]);
 
-  useEffect(() => {
-    dispatch(setUserFilterText(""));
-  }, [selectedUserId]);
 
   const handleClickOutside = (e: MouseEvent) => {
     if (inputRef.current && listRef.current) {
@@ -89,12 +86,6 @@ const SearchUser = () => {
   const handleUserClick = (e: User) => {
     // Setting the username to display in the input
     setUsername(e.username);
-    // Setting the filter text to the username
-    // This is to ensure that the input displays the username
-    // But also if the user highlights the text or just starts typing
-    // Then handleFilterTextChange will be triggered and the filter will work as expected
-    // while not resetting the text to an empty string or the username
-    dispatch(setUserFilterText(e.username));
     dispatch(setSelectedUserInfo(e));
 
     if (inputRef.current && listRef.current) {
@@ -105,9 +96,6 @@ const SearchUser = () => {
   };
 
   const handleInputRefClick = () => {
-    if (username) {
-      dispatch(setUserFilterText(username));
-    }
     if (inputRef.current && listRef.current) {
       listRef.current.setAttribute("data-display", "open");
     }

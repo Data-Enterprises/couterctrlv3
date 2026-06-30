@@ -73,7 +73,7 @@ const UserGrid = () => {
       });
       setFiltered(filteredUsers);
     }
-  }, [userFilterText, userFilterType, selectedCompanyId]);
+  }, [userFilterText, userFilterType, selectedCompanyId, users]);
 
   const getData = () => {
     getAllUsers(context.url, context.token)
@@ -107,10 +107,8 @@ const UserGrid = () => {
           if (isDcrUser) {
             // aka Stephn/Tommy/Mike
             dispatch(setUsers(j.users));
-            setFiltered(j.users);
           } else {
             dispatch(setUsers(filtered));
-            setFiltered(filtered);
           }
         }
       })
