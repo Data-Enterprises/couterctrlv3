@@ -1,5 +1,5 @@
 import logo from "../../assets/dcr_counterctrl-favicon_32.png";
-import { BellIcon, ChevronDownIcon } from "@heroicons/react/16/solid";
+import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { setIsNavOpen } from "../../features/navSlice";
 import { toggleDevMode } from "../../features/appSlice";
@@ -53,7 +53,6 @@ const TitleBarLegacy = () => {
               </span>
             </button>
           )}
-          <BellIcon className="h-6 w-6 m-2 cursor-pointer hover:text-accent1 transition-colors" />
           {context.isDesktop && (
             <div className="flex items-center px-6 ml-4 border-l-2 relative">
               <div className="text-[12px] md:text-sm font-medium">{user.username}</div>

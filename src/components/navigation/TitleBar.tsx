@@ -254,7 +254,7 @@ const TitleBar = () => {
             {visibleCategories.map((cat) => {
               const isActive = activeCategory?.name === cat.name;
               const isOpen = openCategory === cat.name;
-              const visiblePages = cat.pages.filter((p) => canSee(p.userLevels));
+              const visiblePages = cat.pages.filter((p) => canSee(p.userLevels) && p.mobile);
               return (
                 <div
                   key={cat.name}
@@ -341,7 +341,7 @@ const TitleBar = () => {
           {openCategory && (() => {
             const cat = visibleCategories.find((c) => c.name === openCategory);
             if (!cat) return null;
-            const visiblePages = cat.pages.filter((p) => canSee(p.userLevels));
+            const visiblePages = cat.pages.filter((p) => canSee(p.userLevels) && p.mobile);
             return (
               <NavSheet
                 key={cat.name}

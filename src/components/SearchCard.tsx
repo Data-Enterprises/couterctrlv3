@@ -12,6 +12,7 @@ interface SearchCardProps {
   loading: boolean;
   onBack?: () => void;
   backLabel?: string;
+  top?: boolean;
 }
 
 const SearchCard = ({
@@ -23,9 +24,10 @@ const SearchCard = ({
   loading,
   onBack,
   backLabel = "Back to results",
+  top = false,
 }: SearchCardProps) => {
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-3rem)] overflow-hidden mx-4 pb-12 md:pb-8">
+    <div className={top ? "mx-4 pt-4 pb-2" : "flex items-center justify-center min-h-[calc(100vh-3rem)] overflow-hidden mx-4 pb-12 md:pb-8"}>
       <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3">
         <div>
           <h2 className="text-base font-semibold text-content">{title}</h2>

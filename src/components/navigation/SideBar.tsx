@@ -58,7 +58,7 @@ const SideBar = () => {
 
   useEffect(() => {
     if (context.isMobile) {
-      const filteredNav = navigation.filter((item) => item.mobile);
+      const filteredNav = navigation.filter((item) => item.mobile && item.name !== "Cashiers");
       setNavItems(filteredNav);
       const found = filteredNav.find((item) => item.href === nav.lastRoute);
       if (!found) {

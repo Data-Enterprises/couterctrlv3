@@ -11,7 +11,7 @@ import {
   setHasSearched,
   setLedgerLoading,
 } from "../../../features/salesLedgerSlice";
-import LedgerEntryScreen from "./LedgerEntryScreen";
+import SearchCard from "../../../components/SearchCard";
 import LedgerStoreList from "./LedgerStoreList";
 import LedgerStoreReport from "./LedgerStoreReport";
 
@@ -59,16 +59,22 @@ const SalesLedgerMobile = () => {
     }
   };
 
-  if (!hasSearched || screen === "list") {
-    return (
-      <>
-        {!hasSearched && <LedgerEntryScreen onSearch={fetchLedger} loading={ledgerLoading} />}
-        {hasSearched && screen === "list" && <LedgerStoreList />}
-      </>
-    );
-  }
+  if (screen === "report") return <LedgerStoreReport />;
 
-  return <LedgerStoreReport />;
+  return (
+    <div className="flex flex-col h-[calc(100dvh-3rem)] overflow-hidden">
+      <SearchCard
+        top
+        title="Weekly Performance"
+        description="Select a store or group and end date."
+        buttonLabel="Load stores"
+        singleDate
+        onSearch={fetchLedger}
+        loading={ledgerLoading}
+      />
+      {hasSearched && <div className="flex-1 overflow-hidden"><LedgerStoreList /></div>}
+    </div>
+  );
 };
 
 export default SalesLedgerMobile;
