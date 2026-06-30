@@ -31,6 +31,7 @@ export interface UserState {
   securityQuestionId: number;
   assignedStores: Store[];
   unassignedStores: Store[];
+  selectedGroupStores: Store[];
   refreshStores: boolean;
 }
 
@@ -50,6 +51,7 @@ export const initialState: UserState = {
   securityQuestionId: 0,
   assignedStores: [],
   unassignedStores: [],
+  selectedGroupStores: [],
   refreshStores: false,
 };
 
@@ -99,6 +101,9 @@ export const userSlice = createSlice({
     setUnassignedStores: (state, action: PayloadAction<Store[]>) => {
       state.unassignedStores = action.payload;
     },
+    setSelectedGroupStores: (state, action: PayloadAction<Store[]>) => {
+      state.selectedGroupStores = action.payload;
+    },
     setCompanies: (state, action: PayloadAction<UserCompany[]>) => {
       state.companies = action.payload;
     },
@@ -126,6 +131,7 @@ export const {
   setRefreshStores,
   setUnassignedStores,
   setCompanies,
+  setSelectedGroupStores,
   resetUserSlice,
 } = userSlice.actions;
 

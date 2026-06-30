@@ -41,7 +41,6 @@
     "react-router": "^7.9.5",
     "tailwind-rounded-out": "^1.0.1",
     "tw-elements": "^2.0.0",
-    "vite-plugin-istanbul": "^7.2.0",
     "xlsx": "^0.18.5",
     "zxcvbn": "^4.4.2"
   },

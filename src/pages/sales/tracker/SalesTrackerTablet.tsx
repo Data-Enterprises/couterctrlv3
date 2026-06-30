@@ -1,22 +1,20 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import { chunkData } from ".";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import { sameWeekDayLastYear } from "../../../utils";
 import type { SubSale } from "../../../interfaces";
-import {
-  setTyReducedTotals,
-  setUniqueSubs,
-  type SubTracker,
-  type WeekTotal,
-} from "../../../features/salesSlice";
+import { useSalesActions } from "../hooks/useSalesActions";
+import type { SubTracker, WeekTotal } from "../../../features/salesSlice";
 
 import SalesTrackerKpisTablet from "./SalesTrackerKpisTablet";
 import TotalsGridTablet from "../tablet/TotalsGridTablet";
 
 const SalesTrackerTablet = () => {
   const dispatch = useAppDispatch();
-  const sales = useAppSelector((state) => state.sales);
+  const actions = useSalesActions();
+  const sales = useSalesState();
 
   useEffect(() => {
     if (sales.thisYrSubTracker.length > 0) {
@@ -33,7 +31,7 @@ const SalesTrackerTablet = () => {
         },
         [],
       );
-      dispatch(setUniqueSubs(uniqueSubs));
+      dispatch(actions.setUniqueSubs(uniqueSubs));
 
       const calcTotals = () => {
         const thisYear = sales.tyCollapsedSubSales.flat();
@@ -112,7 +110,7 @@ const SalesTrackerTablet = () => {
         return grouped;
       };
 
-      dispatch(setTyReducedTotals(calcTotals()));
+      dispatch(actions.setTyReducedTotals(calcTotals()));
     }
   }, [sales.tyCollapsedSubSales, sales.lyCollapsedSubSales]);
 

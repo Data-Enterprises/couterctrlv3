@@ -1,220 +1,210 @@
-import { AgGridReact } from "ag-grid-react";
+import { useState } from "react";
 import { useCashierCtx } from "..";
 import {
-  AllCommunityModule,
-  ModuleRegistry,
-  type CellClickedEvent,
-} from "ag-grid-community";
-import { cols, formatDate, theme } from ".";
-import {
-  setExportModalOpen,
   setNoTransactions,
   setTransDrillDown,
   setTransModalOpen,
 } from "../../../features/cashiersSlice";
 import { getCashierTransaction } from "../../../api/lossPrevention";
-import type { JsonError, TransactionListItem } from "../../../interfaces";
+import type { JsonError, TransactionListItem, TransactionOverview } from "../../../interfaces";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+import Transaction from "./Transaction";
 
-ModuleRegistry.registerModules([AllCommunityModule]);
+interface Props {
+  onBack: () => void;
+}
 
-const TransactionsView = () => {
+const fmtDate = (date: string) => {
+  const [y, m, d] = date.split("T")[0].split("-");
+  return `${m}/${d}/${y}`;
+};
+
+const TransactionsView = ({ onBack }: Props) => {
   const ctx = useCashierCtx();
   const toast = useToast();
+  const [selectedOverview, setSelectedOverview] = useState<TransactionOverview | null>(null);
+  const [loadingReceipt, setLoadingReceipt] = useState(false);
 
-  const handleCellClicked = (event: CellClickedEvent) => {
-    if (event.colDef.field === "transaction_id") {
-      const saleId = event.data.sale_id;
-      const saleDate = event.data.sale_date.split("T")[0];
-      const storeid = event.data.storeid;
-      ctx.dispatch(setTransDrillDown([]));
-      ctx.dispatch(setTransModalOpen(true));
-      getCashierTransaction(ctx.url, ctx.token, saleDate, saleId, storeid)
-        .then((resp) => {
-          const j = resp.data;
-          if (j.error === 0 && j.transaction.length > 0) {
-            const transactions: TransactionListItem[] = [...j.transaction].map(
-              (item) => ({
-                ...item,
-                transaction_id: item.sale_id.split("-")[1],
-                qty: item.qty ? item.qty : 0,
-              }),
+  const transDrillDown = ctx.transDrillDown;
+  const noTransactions = ctx.noTransactions;
+
+const fetchReceipt = (overview: TransactionOverview) => {
+    setSelectedOverview(overview);
+    setLoadingReceipt(true);
+    ctx.dispatch(setTransDrillDown([]));
+    ctx.dispatch(setNoTransactions(false));
+
+
+    const saleDate = overview.sale_date.split("T")[0];
+    getCashierTransaction(ctx.url, ctx.token, saleDate, overview.sale_id, overview.storeid)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0 && j.transaction.length > 0) {
+          const transactions: TransactionListItem[] = [...j.transaction].map((item) => ({
+            ...item,
+            transaction_id: item.sale_id.split("-")[1],
+            qty: item.qty ?? 0,
+          }));
+          const reduced = transactions.reduce((acc: TransactionListItem[], curr) => {
+            const found = acc.find(
+              (item) =>
+                item.storeid === curr.storeid &&
+                item.sale_type === curr.sale_type &&
+                item.product_code === curr.product_code &&
+                item.product_description === curr.product_description,
             );
-            const reducedTransactions: TransactionListItem[] =
-              transactions.reduce((acc: TransactionListItem[], curr) => {
-                const found = acc.find(
-                  (item) =>
-                    item.storeid === curr.storeid &&
-                    item.sale_type === curr.sale_type &&
-                    item.product_code === curr.product_code &&
-                    item.product_description === curr.product_description,
-                );
-                if (found) {
-                  found.qty! += curr.qty!;
-                  found.total_sales += curr.total_sales;
-                  found.net_sales += curr.net_sales;
-                  found.total_rounded_tax += curr.total_rounded_tax;
-                } else {
-                  acc.push({ ...curr, qty: curr.qty });
-                }
-                return acc;
-              }, []);
-            ctx.dispatch(setNoTransactions(false));
-            ctx.dispatch(setTransDrillDown([reducedTransactions]));
-          } else {
-            ctx.dispatch(setNoTransactions(true));
-          }
-        })
-        .catch((err: JsonError) => {
-          ctx.dispatch(setTransModalOpen(false));
-          toast.error("Error fetching transactions: " + err.message);
-        });
-    }
-  };
-
-  const handleShowAll = () => {
-    const chunked: TransactionListItem[][] = [];
-    let result: TransactionListItem[] = [];
-    [...ctx.transList].forEach((item, i) => {
-      // if starting a new chunk or every item shares the same sale_id
-      if (
-        result.length === 0 ||
-        result.every((res) => res.sale_id === item.sale_id)
-      ) {
-        result.push(item);
-
-        // if at the end, then push the final chunk otherwise, it gets left out
-        if (i === ctx.transList.length - 1) {
-          chunked.push(result);
+            if (found) {
+              found.qty! += curr.qty!;
+              found.total_sales += curr.total_sales;
+              found.net_sales += curr.net_sales;
+              found.total_rounded_tax += curr.total_rounded_tax;
+            } else {
+              acc.push({ ...curr });
+            }
+            return acc;
+          }, []);
+          ctx.dispatch(setTransDrillDown([reduced]));
+          ctx.dispatch(setNoTransactions(false));
+        } else {
+          ctx.dispatch(setNoTransactions(true));
         }
-      } else {
-        // if this new sale_id is different, push the current chunk and start a new one
-        chunked.push(result);
-        result = [];
-        result.push(item);
-      }
-    });
-
-    ctx.dispatch(setTransDrillDown(chunked));
-    ctx.dispatch(setTransModalOpen(true));
+      })
+      .catch((err: JsonError) => {
+        ctx.dispatch(setTransModalOpen(false));
+        toast.error("Error fetching transaction: " + err.message);
+      })
+      .finally(() => setLoadingReceipt(false));
   };
 
-  if (ctx.noRowsFound) {
-    return (
-      <div className="h-full w-full flex items-center justify-center rounded-lg shadow-lg">
-        <p className="text-content/60 font-medium bg-custom-white px-4 py-8 rounded-lg shadow-lg">
-          No transactions found for the selected date range.
-        </p>
-      </div>
-    );
-  }
-
-  if (ctx.fetchingTransactions) {
-    return (
-      <div className="relative h-full w-full flex items-center justify-center rounded-lg shadow-lg">
-        <LoadingIndicator message={ctx.transactionLoadingMessage} />
-      </div>
-    );
-  }
-
-  if (ctx.isTablet) {
-    return (
-      <div className="h-full w-full rounded-xl bg-custom-white p-3 shadow-lg">
-        <div className=" flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-content/75">Transactions</h2>
-          <p className="text-sm text-content/50">
-            Tap a transaction ID to drill into details.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 h-[1.5px] mb-2">
-          <div className="bg-gradient-to-r from-[rgb(30,45,80)]/75 to-custom-white"></div>
-          <div className="bg-gradient-to-l from-[rgb(30,45,80)]/75 to-custom-white"></div>
-        </div>
-
-        <div className="rounded-xl border border-slate-200">
-          <div className="grid grid-cols-[1fr_1.1fr_1.2fr_0.8fr_1.3fr_0.8fr_0.7fr_1.1fr] gap-3 bg-bkg/85 px-3 py-2 text-[12.5px] font-semibold text-content/75">
-            {cols.map((col, i) => (
-              <div key={i} className={i >= cols.length - 2 ? "text-right" : ""}>
-                {col.headerName}
-              </div>
-            ))}
-          </div>
-
-          {/* Scrollable */}
-          <div className="divide-y divide-content/35 bg-custom-white max-h-[calc(100vh-11rem)] overflow-y-auto">
-            {ctx.filteredTransOverviews.map((fto, i) => (
-              <div
-                key={i}
-                className="grid grid-cols-[1fr_1.1fr_1.2fr_0.8fr_1.3fr_0.8fr_0.7fr_1.1fr] gap-3 px-3 py-2.5 text-sm text-content/75 transition-colors even:bg-bkg/75"
-              >
-                <div className="min-w-0">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleCellClicked({
-                        colDef: { field: "transaction_id" },
-                        data: fto,
-                      } as CellClickedEvent)
-                    }
-                    className="text-nowrap truncate font-semibold underline text-[rgb(30,45,80)]"
-                  >
-                    {fto.transaction_id}
-                  </button>
-                </div>
-
-                <div className="whitespace-nowrap">
-                  {formatDate(fto.sale_date)}
-                </div>
-
-                <div className="truncate">{fto.sale_type}</div>
-
-                <div>{fto.store_number}</div>
-
-                <div className="truncate">{fto.cashier_name}</div>
-
-                <div>{fto.cashier_number}</div>
-
-                <div className="text-right tabular-nums">
-                  {formatBigNumber(fto.qty, 0)}
-                </div>
-
-                <div className="text-right tabular-nums font-medium text-slate-900">
-                  {formatCurrency2(fto.total_sales)}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const overviews = ctx.filteredTransOverviews;
+  const receipt = transDrillDown[0];
 
   return (
-    <div className="bg-custom-white h-full w-full space-y-2 p-2 rounded-lg shadow-lg">
-      <div className="h-[94%]">
-        <AgGridReact
-          rowData={ctx.filteredTransOverviews}
-          columnDefs={cols}
-          onCellClicked={handleCellClicked}
-          theme={theme}
-          pagination={true}
-          paginationAutoPageSize={true}
-        />
-      </div>
-      <div className="flex gap-2">
-        <button className="btn-themeGreen py-1" onClick={handleShowAll}>
-          Show All
-        </button>
+    <div className="flex flex-col h-full min-h-0">
+      {/* Header — always visible */}
+      <div className="flex-shrink-0 flex items-center justify-between px-4 py-2.5" style={{ background: "#1e2a4a" }}>
+        <div>
+          <div className="text-[13px] font-medium text-white">{ctx.selectedSaleType}</div>
+          <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+            {overviews.length} transactions
+          </div>
+        </div>
         <button
-          className="btn-themeGreen py-1"
-          onClick={() => ctx.dispatch(setExportModalOpen(true))}
+          onClick={onBack}
+          className="text-[10px] px-2.5 py-1 rounded text-white/70 hover:text-white transition-colors"
+          style={{ border: "0.5px solid rgba(255,255,255,0.2)" }}
         >
-          Export
+          ← Back
         </button>
       </div>
+
+      {/* Body */}
+      {ctx.fetchingTransactions ? (
+        <div className="flex-1 relative">
+          <LoadingIndicator message={ctx.transactionLoadingMessage} />
+        </div>
+      ) : ctx.noRowsFound ? (
+        <div className="flex-1 flex items-center justify-center text-[13px] font-medium text-content/30">
+          No transactions found for this date range
+        </div>
+      ) : selectedOverview ? (
+        <div className="flex flex-1 min-h-0">
+          {/* Collapsed list (130px) */}
+          <div className="flex-shrink-0 flex flex-col border-r border-gray-100" style={{ width: 130 }}>
+            <button
+              onClick={() => setSelectedOverview(null)}
+              className="flex-shrink-0 flex items-center gap-1 px-2.5 py-2 text-[9px] font-medium border-b border-gray-100 hover:bg-gray-50 transition-colors"
+              style={{ color: "#1e2a4a" }}
+            >
+              ← Go Back
+            </button>
+            <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+              {overviews.map((ov) => {
+                const isSelected = ov.transaction_id === selectedOverview.transaction_id;
+                return (
+                  <button
+                    key={ov.transaction_id}
+                    onClick={() => fetchReceipt(ov)}
+                    className="w-full text-left px-2.5 py-2 border-b border-gray-50 hover:bg-gray-50 transition-colors"
+                    style={{
+                      borderLeft: isSelected ? "2.5px solid #1e2a4a" : "2.5px solid transparent",
+                      background: isSelected ? "rgba(30,42,74,0.04)" : undefined,
+                    }}
+                  >
+                    <div className="text-[10px] font-semibold truncate" style={{ color: isSelected ? "#1e2a4a" : "rgba(30,42,74,0.55)" }}>
+                      {ov.transaction_id}
+                    </div>
+                    <div className="text-[8.5px] text-content/55 truncate mt-0.5">{ov.cashier_name}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Receipt pane */}
+          <div className="flex-1 min-w-0 flex flex-col min-h-0">
+            {loadingReceipt ? (
+              <div className="flex-1 relative">
+                <LoadingIndicator message="Loading receipt…" />
+              </div>
+            ) : noTransactions ? (
+              <div className="flex-1 flex items-center justify-center text-[12px] text-content/40">
+                No line items found for this transaction
+              </div>
+            ) : receipt ? (
+              <Transaction trans={receipt} />
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-[12px] text-content/40">
+                Loading…
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Table column headers */}
+          <div
+            className="flex-shrink-0 grid px-4 py-2 bg-gray-50 border-b border-gray-100"
+            style={{ gridTemplateColumns: "1fr 0.7fr 1.2fr 0.6fr 0.6fr 0.7fr" }}
+          >
+            {["Trans ID", "Date", "Cashier", "Store", "Qty", "Total"].map((h, i) => (
+              <div
+                key={h}
+                className="text-[9px] font-semibold uppercase tracking-wide text-content/45"
+                style={{ textAlign: i >= 4 ? "right" : "left" }}
+              >
+                {h}
+              </div>
+            ))}
+          </div>
+
+          {/* Rows */}
+          <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+            {overviews.map((ov, i) => (
+              <div
+                key={ov.transaction_id}
+                className="grid px-4 py-2.5 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer items-center"
+                style={{
+                  gridTemplateColumns: "1fr 0.7fr 1.2fr 0.6fr 0.6fr 0.7fr",
+                  background: i % 2 === 1 ? "rgba(30,42,74,0.015)" : undefined,
+                }}
+                onClick={() => fetchReceipt(ov)}
+              >
+                <div className="text-[10px] font-semibold underline truncate" style={{ color: "#1e2a4a", textUnderlineOffset: 2 }}>
+                  #{ov.transaction_id}
+                </div>
+                <div className="text-[10px] text-content/70">{fmtDate(ov.sale_date)}</div>
+                <div className="text-[10px] text-content/70 truncate">{ov.cashier_name}</div>
+                <div className="text-[10px] text-content/70">{ov.store_number}</div>
+                <div className="text-[10px] text-content/70 text-right">{formatBigNumber(ov.qty, 0)}</div>
+                <div className="text-[10px] font-medium text-content text-right">{formatCurrency2(ov.total_sales)}</div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };

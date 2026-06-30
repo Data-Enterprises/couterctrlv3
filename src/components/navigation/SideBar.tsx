@@ -7,27 +7,28 @@ import type { JsonError } from "../../interfaces";
 import { setUserPrefs } from "../../api/user";
 
 // Reducers for navigation and slice resetters for logout
-import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
-import { resetAppSlice } from "../../features/appSlice";
-import { resetUserSlice } from "../../features/userSlice";
-import { resetSalesSlice } from "../../features/salesSlice";
-import { resetStoreSlice } from "../../features/storeSlice";
-import { resetGroupState } from "../../features/groupSlice";
-import { resetUsersSlice } from "../../features/usersSlice";
-import { resetUpcState } from "../../features/upcSlice";
-import { resetSearchSlice } from "../../features/searchSlice";
-import { resetForgotPasswordSlice } from "../../features/forgotPasswordSlice";
-import { resetCashierSlice } from "../../features/lossPreventionSlice";
-import { resetLookupSlice } from "../../features/itemLookupSlice";
-import { resetQsSlice } from "../../features/qsSlice";
-import { resetForecastSlice } from "../../features/forecastSlice";
-import { resetUpcsSlice } from "../../features/upcUploadSlice";
-import { resetReceiverSlice } from "../../features/receiversSlice";
-import { resetCouponsSlice } from "../../features/couponSlice";
+import { setIsNavOpen, setLastRoute } from "../../features/navSlice";
+// import { resetAppSlice } from "../../features/appSlice";
+// import { resetUserSlice } from "../../features/userSlice";
+// import { resetSalesSlice } from "../../features/salesSlice";
+// import { resetStoreSlice } from "../../features/storeSlice";
+// import { resetGroupState } from "../../features/groupSlice";
+// import { resetUsersSlice } from "../../features/usersSlice";
+// import { resetUpcState } from "../../features/upcSlice";
+// import { resetSearchSlice } from "../../features/searchSlice";
+// import { resetForgotPasswordSlice } from "../../features/forgotPasswordSlice";
+// import { resetCashierSlice } from "../../features/lossPreventionSlice";
+// import { resetLookupSlice } from "../../features/itemLookupSlice";
+// import { resetQsSlice } from "../../features/qsSlice";
+// import { resetForecastSlice } from "../../features/forecastSlice";
+// import { resetUpcsSlice } from "../../features/upcUploadSlice";
+// import { resetReceiverSlice } from "../../features/receiversSlice";
+// import { resetCouponsSlice } from "../../features/couponSlice";
+// import { resetLedger } from "../../features/salesLedgerSlice";
 
-import { Cog6ToothIcon } from "@heroicons/react/16/solid";
-import SignOutIcon from "../../svgs/SignOutIcon";
-import { resetOrdersState } from "../../features/ordersSlice";
+// import { Cog6ToothIcon } from "@heroicons/react/16/solid";
+// import SignOutIcon from "../../svgs/SignOutIcon";
+// import { resetOrdersState } from "../../features/ordersSlice";
 
 const SideBar = () => {
   const toast = useToast();
@@ -38,10 +39,11 @@ const SideBar = () => {
   const user = useAppSelector((state) => state.user);
   const nav = useAppSelector((state) => state.nav);
   const [navItems, setNavItems] = useState<Navigation[]>(navigation);
-  const [bottomNav, setBottomNav] = useState<{
-    settings: boolean;
-    signout: boolean;
-  }>({ settings: false, signout: false });
+  // const [bottomNav, setBottomNav] = useState<{
+  //   settings: boolean;
+  //   signout: boolean;
+  // }>({ settings: false, signout: false });
+  const [tooltip, setTooltip] = useState<{ label: string; x: number; y: number } | null>(null);
 
   // make api call to set the user prefs when navigating to a new page
   useEffect(() => {
@@ -56,7 +58,7 @@ const SideBar = () => {
 
   useEffect(() => {
     if (context.isMobile) {
-      const filteredNav = navigation.filter((item) => item.mobile);
+      const filteredNav = navigation.filter((item) => item.mobile && item.name !== "Cashiers");
       setNavItems(filteredNav);
       const found = filteredNav.find((item) => item.href === nav.lastRoute);
       if (!found) {
@@ -83,52 +85,53 @@ const SideBar = () => {
     dispatch(setIsNavOpen(false));
   };
 
-  const handleSignOut = () => {
-    navigate("/");
-    // Then handle state resets
-    dispatch(resetGroupState());
-    dispatch(resetUserSlice());
-    dispatch(resetUsersSlice());
-    dispatch(resetSalesSlice());
-    dispatch(resetStoreSlice());
-    dispatch(resetUserSlice());
-    dispatch(resetNav());
-    dispatch(resetSalesSlice());
-    dispatch(resetUpcState());
-    dispatch(resetAppSlice());
-    dispatch(resetSearchSlice());
-    dispatch(resetForecastSlice());
-    dispatch(resetUpcsSlice());
-    dispatch(resetReceiverSlice());
-    dispatch(resetCouponsSlice());
-    dispatch(resetQsSlice());
-    dispatch(resetLookupSlice());
-    dispatch(resetCashierSlice());
-    dispatch(resetForgotPasswordSlice());
-    dispatch(resetOrdersState());
-  };
+  // const handleSignOut = () => {
+  //   navigate("/");
+  //   // Then handle state resets
+  //   dispatch(resetGroupState());
+  //   dispatch(resetUserSlice());
+  //   dispatch(resetUsersSlice());
+  //   dispatch(resetSalesSlice());
+  //   dispatch(resetStoreSlice());
+  //   dispatch(resetUserSlice());
+  //   dispatch(resetNav());
+  //   dispatch(resetSalesSlice());
+  //   dispatch(resetUpcState());
+  //   dispatch(resetAppSlice());
+  //   dispatch(resetSearchSlice());
+  //   dispatch(resetForecastSlice());
+  //   dispatch(resetUpcsSlice());
+  //   dispatch(resetReceiverSlice());
+  //   dispatch(resetCouponsSlice());
+  //   dispatch(resetQsSlice());
+  //   dispatch(resetLookupSlice());
+  //   dispatch(resetCashierSlice());
+  //   dispatch(resetForgotPasswordSlice());
+  //   dispatch(resetOrdersState());
+  //   dispatch(resetLedger());
+  // };
 
-  const handleHover = (itemName: string, isHovering: boolean, idx: number) => {
-    const item = navItems.find((navItem) => navItem.name === itemName);
-    if (item) {
-      item.isHovering = isHovering;
-      setNavItems([...navItems]);
+  // const handleHover = (itemName: string, isHovering: boolean, idx: number) => {
+  //   const item = navItems.find((navItem) => navItem.name === itemName);
+  //   if (item) {
+  //     item.isHovering = isHovering;
+  //     setNavItems([...navItems]);
 
-      // Find the mouse position to adjust the tooltip if needed in the future
-      const mousePosition = { x: 0, y: 0 };
-      document.addEventListener(
-        "mousemove",
-        (e) => {
-          mousePosition.x = e.clientX;
-          mousePosition.y = e.clientY;
-        },
-        { once: true },
-      );
-      const tooltip = document.getElementById(`tooltip-${idx}`);
-      tooltip!.style.left = `${mousePosition.x}px`;
-      tooltip!.style.top = `${mousePosition.y}px`;
-    }
-  };
+  //     // Find the mouse position to adjust the tooltip if needed in the future
+  //     const mousePosition = { x: 0, y: 0 };
+  //     document.addEventListener(
+  //       "mousemove",
+  //       (e) => {
+  //         mousePosition.x = e.clientX;
+  //         mousePosition.y = e.clientY;
+  //       },
+  //       { once: true },
+  //     );
+  //     const tooltip = document.getElementById(`tooltip-${idx}`);
+  //     tooltip!.style.left = `${mousePosition.x}px`;
+  //     tooltip!.style.top = `${mousePosition.y}px`;
+  //   }
+  // };
 
   const slidingStyle =
     "data-[open=true]:w-[130px] md:data-[open=true]:w-[200px] data-[open=false]:w-0 md:data-[open=false]:w-12 transition-all duration-300 data-[open=true]:shadow-[0px_2px_4px_rgba(0,0,0,0.2)] data-[open=false]:shadow-[0px_3px_3px_rgba(0,0,0,0.2)]";
@@ -151,29 +154,30 @@ const SideBar = () => {
     return {};
   };
 
-  const handleBottomNavHover = (
-    navItem: "settings" | "signout",
-    isHovering: boolean,
-    idx: number,
-  ) => {
-    setBottomNav((prev) => ({ ...prev, [navItem]: isHovering }));
+  // const handleBottomNavHover = (
+  //   navItem: "settings" | "signout",
+  //   isHovering: boolean,
+  //   idx: number,
+  // ) => {
+  //   setBottomNav((prev) => ({ ...prev, [navItem]: isHovering }));
 
-    // Find the mouse position to adjust the tooltip if needed in the future
-    const mousePosition = { x: 0, y: 0 };
-    document.addEventListener(
-      "mousemove",
-      (e) => {
-        mousePosition.x = e.clientX;
-        mousePosition.y = e.clientY;
-      },
-      { once: true },
-    );
-    const tooltip = document.getElementById(`tooltip-${idx}`);
-    tooltip!.style.left = `${mousePosition.x}px`;
-    tooltip!.style.top = `${mousePosition.y}px`;
-  };
+  //   // Find the mouse position to adjust the tooltip if needed in the future
+  //   const mousePosition = { x: 0, y: 0 };
+  //   document.addEventListener(
+  //     "mousemove",
+  //     (e) => {
+  //       mousePosition.x = e.clientX;
+  //       mousePosition.y = e.clientY;
+  //     },
+  //     { once: true },
+  //   );
+  //   const tooltip = document.getElementById(`tooltip-${idx}`);
+  //   tooltip!.style.left = `${mousePosition.x}px`;
+  //   tooltip!.style.top = `${mousePosition.y}px`;
+  // };
 
   return (
+    <>
     <div
       ref={ref}
       data-testid="side-bar"
@@ -194,27 +198,29 @@ const SideBar = () => {
 
       {/* NavLinks => working, but will need modifications when nav children are introduced */}
       <div>
-        {navItems.map((item: Navigation, idx) => (
+        {navItems.map((item: Navigation) => (
           <NavLink
             data-testid={`nav-${item.href}`}
             to={item.href}
             key={item.name}
             draggable={false}
-            className={({ isActive }) =>
+            className={() =>
               `${
                 item.userLevels.includes(user.userLevel.toString()) ||
                 item.userLevels.includes("*")
                   ? "flex"
                   : "hidden"
-              } ${
-                isActive ? "bg-panel_active/75 text-custom-white" : ""
-              } relative`
+              } relative group`
             }
+            style={({ isActive }) => ({
+              background: isActive ? "#1e2a4a" : undefined,
+              color: isActive ? "#fff" : undefined,
+            })}
             onClick={() => handleNavClick(item)}
-            onMouseEnter={() => handleHover(item.name, true, idx)}
-            onMouseLeave={() => handleHover(item.name, false, idx)}
+            onMouseMove={(e) => { if (!nav.isNavOpen && !context.isMobile) setTooltip({ label: item.name, x: e.clientX, y: e.clientY }); }}
+            onMouseLeave={() => setTooltip(null)}
           >
-            <div className="flex w-full items-center md:pl-2 py-2 gap-1 md:gap-2 hover:bg-blue-200 transition-all duration-100">
+            <div className="flex w-full items-center md:pl-2 py-2 gap-1 md:gap-2 transition-all duration-100 hover:bg-[rgba(30,42,74,0.5)] hover:text-white">
               <div className="flex-shrink-0 flex items-center justify-center">
                 <item.icon className={mobileIconStyle()} />
               </div>
@@ -228,37 +234,22 @@ const SideBar = () => {
                 {item.name}
               </div>
             </div>
-            <div
-              id={`tooltip-${idx}`}
-              className={`${
-                item.isHovering && !nav.isNavOpen && !context.isMobile
-                  ? "absolute text-nowrap text-sm shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
-                  : "hidden"
-              }`}
-              style={{ zIndex: 9999 }}
-            >
-              {item.name}
-            </div>
           </NavLink>
         ))}
       </div>
 
       {/* Settings and Sign Out */}
       <div className="select-none cursor-pointer">
-        <div
+        {/* <div
           data-testid="nav-settings"
           className={`${
             context.isDesktop || context.isTablet ? "" : "hidden"
-          } flex w-full items-center pl-2 py-2 gap-3 hover:bg-blue-200 transition-all duration-200 relative`}
+          } group flex w-full items-center pl-2 py-2 gap-3 hover:bg-[rgba(30,42,74,0.5)] hover:text-white transition-all duration-200 relative`}
           onClick={() => {
             navigate("settings");
           }}
-          onMouseEnter={() =>
-            handleBottomNavHover("settings", true, navigation.length)
-          }
-          onMouseLeave={() =>
-            handleBottomNavHover("settings", false, navigation.length)
-          }
+          onMouseMove={(e) => { if (!nav.isNavOpen) setTooltip({ label: "Settings", x: e.clientX, y: e.clientY }); }}
+          onMouseLeave={() => setTooltip(null)}
         >
           <div className="flex-shrink-0 flex items-center justify-center">
             <Cog6ToothIcon className={mobileIconStyle()} />
@@ -272,28 +263,13 @@ const SideBar = () => {
           >
             Settings
           </div>
-          <div
-            id={`tooltip-${navigation.length}`}
-            className={`${
-              bottomNav.settings && !nav.isNavOpen
-                ? "absolute text-nowrap text-sm shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
-                : "hidden"
-            }`}
-            style={{ zIndex: 9999 }}
-          >
-            Settings
-          </div>
-        </div>
-        <div
+        </div> */}
+        {/* <div
           data-testid="signout-btn"
-          className="flex w-full items-center pl-0.5 md:pl-2 py-2 gap-1 md:gap-2 hover:bg-blue-200 transition-all duration-200 relative"
+          className="group flex w-full items-center pl-0.5 md:pl-2 py-2 gap-1 md:gap-2 hover:bg-[rgba(30,42,74,0.5)] hover:text-white transition-all duration-200 relative"
           onClick={handleSignOut}
-          onMouseEnter={() =>
-            handleBottomNavHover("signout", true, navigation.length + 1)
-          }
-          onMouseLeave={() =>
-            handleBottomNavHover("signout", false, navigation.length + 1)
-          }
+          onMouseMove={(e) => { if (!nav.isNavOpen) setTooltip({ label: "Sign Out", x: e.clientX, y: e.clientY }); }}
+          onMouseLeave={() => setTooltip(null)}
         >
           <div className="flex-shrink-0 flex items-center justify-center">
             <SignOutIcon className={mobileIconStyle()} />
@@ -307,20 +283,26 @@ const SideBar = () => {
           >
             Sign Out
           </div>
-          <div
-            id={`tooltip-${navigation.length + 1}`}
-            className={`${
-              bottomNav.signout && !nav.isNavOpen
-                ? "absolute text-nowrap text-[11.5px] md:text-sm shadow-[1px_2px_2px] shadow-content/30 left-12 h-full flex justify-center items-center bg-blue-200 font-medium min-w-32 x-2 rounded-r-lg transition-all duration-200"
-                : "hidden"
-            }`}
-            style={{ zIndex: 2500 }}
-          >
-            Sign Out
-          </div>
-        </div>
+        </div> */}
       </div>
     </div>
+
+    {/* Global cursor-following tooltip */}
+    {tooltip && (
+      <div
+        className="fixed text-nowrap text-[11px] font-medium text-white rounded-md px-2.5 py-1.5 pointer-events-none"
+        style={{
+          zIndex: 99999,
+          background: "#1e2a4a",
+          left: tooltip.x + 14,
+          top: tooltip.y + 14,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
+        }}
+      >
+        {tooltip.label}
+      </div>
+    )}
+    </>
   );
 };
 

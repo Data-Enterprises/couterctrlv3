@@ -1,9 +1,8 @@
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useSalesState } from "../hooks/useSalesState";
+import { useAppDispatch } from "../../../hooks";
 import { formatCurrency2 } from "../../../utils";
-import {
-  setSalesTrackerSelectedSubDept,
-  type WeekTotal,
-} from "../../../features/salesSlice";
+import { useSalesActions } from "../hooks/useSalesActions";
+import type { WeekTotal } from "../../../features/salesSlice";
 import { changeTextColor } from ".";
 import TotalsGridLvlTwo from "./TotalsGridLvlTwo";
 
@@ -30,10 +29,9 @@ const TotalsGridLvlOne = ({
   subId,
   isLast,
 }: TotalsGridLvlOneProps) => {
-  const { salesTrackerSelectedSubDept } = useAppSelector(
-    (state) => state.sales,
-  );
+  const { salesTrackerSelectedSubDept } = useSalesState();
   const dispatch = useAppDispatch();
+  const actions = useSalesActions();
   const calcTotals = (data: WeekTotal[][]) => {
     const tyTotalSales = data.reduce((acc, weekGroup) => {
       return (
@@ -71,7 +69,7 @@ const TotalsGridLvlOne = ({
 
   const handleRowClick = () => {
     if (subId !== undefined) {
-      dispatch(setSalesTrackerSelectedSubDept(subId));
+      dispatch(actions.setSalesTrackerSelectedSubDept(subId));
     }
   };
 

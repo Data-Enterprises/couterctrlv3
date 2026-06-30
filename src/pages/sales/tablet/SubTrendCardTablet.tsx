@@ -1,4 +1,4 @@
-import { useAppSelector } from "../../../hooks";
+import { useSalesState } from "../hooks/useSalesState";
 import { couponSalePct } from "../../../functions";
 import {
   formatBigNumber,
@@ -50,9 +50,7 @@ const SubTrendCardTablet = ({
   datesRight,
   sub,
 }: SubTrendCardTabletProps) => {
-  const selectedSalesPanel = useAppSelector(
-    (state) => state.sales.selectedSalesPanel,
-  );
+  const { selectedSalesPanel } = useSalesState();
   const left = toneMap[leftTone];
   const right = toneMap[rightTone];
 

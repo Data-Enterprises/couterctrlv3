@@ -1,10 +1,11 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { ResponsiveBar, type BarDatum } from "@nivo/bar";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { cpu, gpm, ppu, rpu } from "../../../functions";
 import { QuestionMarkCircleIcon } from "@heroicons/react/16/solid";
-import { setSelectedItem } from "../../../features/salesSlice";
+import { useSalesActions } from "../hooks/useSalesActions";
 import SingleSelect from "../../../components/SingleSelect";
 
 interface TopTenGroupItem {
@@ -24,12 +25,11 @@ type ShowTooltip = {
 
 const TopTen = () => {
   const dispatch = useAppDispatch();
+  const actions = useSalesActions();
   const [topTen, setTopTen] = useState<TopTenGroupItem[]>([]);
   const [selectedTopTenItem, setSelectedTopTenItem] =
     useState<TopTenGroupItem | null>(null);
-  const { topTenItems, selectedSalesPanel } = useAppSelector(
-    (state) => state.sales,
-  );
+  const { topTenItems, selectedSalesPanel } = useSalesState();
   const isMobile = useAppSelector((state) => state.app.isMobile);
 
   const [tooltip, setTooltip] = useState<ShowTooltip>({
@@ -106,7 +106,7 @@ const TopTen = () => {
   }));
 
   const handleSelect = (upc: string | number) => {
-    dispatch(setSelectedItem(upc as string));
+    dispatch(actions.setSelectedItem(upc as string));
     setSelectedTopTenItem(
       topTen.find((item) => item.product_code === (upc as string)) || null,
     );
@@ -170,7 +170,7 @@ const TopTen = () => {
             }
             onClick={(d) => {
               const upc = d.index === 9 ? "" : (d.indexValue as string);
-              dispatch(setSelectedItem(upc));
+              dispatch(actions.setSelectedItem(upc));
               setSelectedTopTenItem(
                 topTen.find((item) => item.product_code === d.indexValue) ||
                   null,

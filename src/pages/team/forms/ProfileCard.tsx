@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { roles } from "..";
-import { setUserFilterText } from "../../../features/usersSlice";
 import { getBGAssignedToUserSplit } from "../../../api/baseGroups";
 
 // import SearchUser from "./SearchUser";
@@ -38,9 +37,6 @@ const ProfileCard = () => {
     }
   }, [selectedUserId]);
 
-  useEffect(() => {
-    dispatch(setUserFilterText(""));
-  }, [selectedUserForm]);
 
   const showCompanies = () => {
     if (selectedUserForm !== "create" && selectedUserId > 0) {

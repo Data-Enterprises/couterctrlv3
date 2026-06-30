@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { useAppSelector } from "../../../hooks";
+import { useSalesState } from "../hooks/useSalesState";
 import { formatBigNumber } from "../../../utils";
 import type { SubSale } from "../../../interfaces";
 
@@ -10,7 +10,7 @@ type GroupedRow = {
 };
 
 const SubDeptDistribution = () => {
-  const { subSales, selectedSalesPanel } = useAppSelector((s) => s.sales);
+  const { subSales, selectedSalesPanel } = useSalesState();
 
   const rows = useMemo(() => {
     const grouped = [...subSales].reduce((acc: GroupedRow[], curr: SubSale) => {

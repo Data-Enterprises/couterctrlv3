@@ -573,8 +573,8 @@ describe("LossPrevention Page", () => {
 
     await waitFor(() => {
       const state = initialStore.getState().lossPrevention;
-      expect(state.totalQtyFilter).toBe(4);
-      expect(state.cashierTableQtyThreshComp.lt).toBe(true);
+      expect(state.qtyThreshold?.amount).toBe(4);
+      expect(state.qtyThreshold?.op).toBe("lt");
     });
   });
 
@@ -624,8 +624,8 @@ describe("LossPrevention Page", () => {
 
     await waitFor(() => {
       const state = initialStore.getState().lossPrevention;
-      expect(state.totalQtyFilter).toBe(4);
-      expect(state.cashierTableQtyThreshComp.gt).toBe(true);
+      expect(state.qtyThreshold?.amount).toBe(4);
+      expect(state.qtyThreshold?.op).toBe("gt");
     });
   });
 
@@ -677,8 +677,8 @@ describe("LossPrevention Page", () => {
 
     await waitFor(() => {
       const state = initialStore.getState().lossPrevention;
-      expect(state.totalSalesFilter).toBe(5);
-      expect(state.cashierTableThreshComp.lt).toBe(true);
+      expect(state.salesThreshold?.amount).toBe(5);
+      expect(state.salesThreshold?.op).toBe("lt");
     });
   });
 
@@ -730,8 +730,8 @@ describe("LossPrevention Page", () => {
 
     await waitFor(() => {
       const state = initialStore.getState().lossPrevention;
-      expect(state.totalSalesFilter).toBe(5);
-      expect(state.cashierTableThreshComp.gt).toBe(true);
+      expect(state.salesThreshold?.amount).toBe(5);
+      expect(state.salesThreshold?.op).toBe("gt");
     });
   });
 

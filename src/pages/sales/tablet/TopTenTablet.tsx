@@ -1,8 +1,9 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useState, useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { cpu, gpm, ppu, rpu } from "../../../functions";
-import { setSelectedItem } from "../../../features/salesSlice";
+import { useSalesActions } from "../hooks/useSalesActions";
 
 interface TopTenGroupItem {
   product_code: string;
@@ -14,12 +15,11 @@ interface TopTenGroupItem {
 
 const TopTenTablet = () => {
   const dispatch = useAppDispatch();
+  const actions = useSalesActions();
   const [topTen, setTopTen] = useState<TopTenGroupItem[]>([]);
   const [selectedTopTenItem, setSelectedTopTenItem] =
     useState<TopTenGroupItem | null>(null);
-  const { topTenItems, selectedSalesPanel } = useAppSelector(
-    (state) => state.sales,
-  );
+  const { topTenItems, selectedSalesPanel } = useSalesState();
 
   useEffect(() => {
     const p = selectedSalesPanel;
@@ -56,7 +56,7 @@ const TopTenTablet = () => {
   }, [topTenItems, selectedSalesPanel]);
 
   const handleSelect = (upc: string | number) => {
-    dispatch(setSelectedItem(upc as string));
+    dispatch(actions.setSelectedItem(upc as string));
     setSelectedTopTenItem(
       topTen.find((item) => item.product_code === (upc as string)) || null,
     );

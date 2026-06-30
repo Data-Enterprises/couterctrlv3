@@ -54,7 +54,7 @@ const ExportModal = <T extends Record<string, any>>({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      modalClassName="bg-custom-white w-1/4 text-sm"
+      modalClassName="bg-custom-white md:w-1/4 text-sm"
     >
       <label htmlFor="filename" className="underline">File Name</label>
       <input

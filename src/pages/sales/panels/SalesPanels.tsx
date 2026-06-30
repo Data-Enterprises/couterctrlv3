@@ -1,3 +1,5 @@
+import { useSalesState } from "../hooks/useSalesState";
+import { useSalesActions } from "../hooks/useSalesActions";
 import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import type {
@@ -5,21 +7,6 @@ import type {
   SelectedSalesPanel,
   WeeklySale,
 } from "../../../interfaces";
-import {
-  finishQuery,
-  reQuery,
-  setHourlySales,
-  setHourlySalesLastYear,
-  setLeftSubCompare,
-  setPeriodSubSales,
-  setRefreshOverviewData,
-  setRightSubCompare,
-  setSelectedSalesPanel,
-  setSubSales,
-  setTopTenItems,
-  setWeeklySales,
-  setWeeklySalesLastYear,
-} from "../../../features/salesSlice";
 import { getHourly, getSubs, getTopTen, getWeekly } from "../../../api/sales";
 import {
   addDays,
@@ -36,14 +23,15 @@ const SalesPanels = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const sales = useAppSelector((state) => state.sales);
+  const sales = useSalesState();
+  const actions = useSalesActions();
   const search = useAppSelector((state) => state.search);
 
   // on mount, fetch the data once
   useEffect(() => {
     if (sales.salesPanels.length && sales.refreshOverviewData) {
       handleDataFetch(null);
-      dispatch(setRefreshOverviewData(false));
+      dispatch(actions.setRefreshOverviewData(false));
     }
   }, [sales.salesPanels, sales.refreshOverviewData]);
 
@@ -67,15 +55,15 @@ const SalesPanels = () => {
     ).then((resp) => {
       const j = resp.data;
       if (j.error === 0 && j.subs.length > 0) {
-        dispatch(setPeriodSubSales({ subs: j.subs, period }));
+        dispatch(actions.setPeriodSubSales({ subs: j.subs, period }));
       }
     });
   };
 
   const handleDataFetch = async (p: SelectedSalesPanel | null) => {
-    dispatch(reQuery());
-    dispatch(setLeftSubCompare(null));
-    dispatch(setRightSubCompare(null));
+    dispatch(actions.reQuery());
+    dispatch(actions.setLeftSubCompare(null));
+    dispatch(actions.setRightSubCompare(null));
 
     // const p = sales.selectedSalesPanel;
     const start =
@@ -117,7 +105,7 @@ const SalesPanels = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          dispatch(setWeeklySales(j.sales));
+          dispatch(actions.setWeeklySales(j.sales));
 
           // Then fetch last year
           const endDateLY = sameWeekDayLastYear(weeklyEnd);
@@ -136,13 +124,13 @@ const SalesPanels = () => {
             .then((resp) => {
               const j = resp.data;
               if (j.error === 0) {
-                dispatch(setWeeklySalesLastYear(j.sales));
+                dispatch(actions.setWeeklySalesLastYear(j.sales));
               }
             })
             .catch((err: JsonError) => toast.error(err.message));
         }
       })
-      .then(() => dispatch(finishQuery("weekly")))
+      .then(() => dispatch(actions.finishQuery("weekly")))
       .catch((err: JsonError) =>
         toast.error("Error fetching weekly data: " + err.message),
       );
@@ -158,8 +146,8 @@ const SalesPanels = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          dispatch(setTopTenItems(j.items));
-          dispatch(finishQuery("top ten"));
+          dispatch(actions.setTopTenItems(j.items));
+          dispatch(actions.finishQuery("top ten"));
         }
       })
       .catch((err: JsonError) => {
@@ -179,7 +167,7 @@ const SalesPanels = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          dispatch(setHourlySales(j.subs));
+          dispatch(actions.setHourlySales(j.subs));
           // Then fetch last year
           const endDateLY = sameWeekDayLastYear(weeklyEnd);
           const lyDate = new Date(endDateLY.date);
@@ -197,13 +185,13 @@ const SalesPanels = () => {
             .then((resp) => {
               const j = resp.data;
               if (j.error === 0) {
-                dispatch(setHourlySalesLastYear(j.subs));
+                dispatch(actions.setHourlySalesLastYear(j.subs));
               }
             })
             .catch((err: JsonError) => toast.error(err.message));
         }
       })
-      .then(() => dispatch(finishQuery("hourly")))
+      .then(() => dispatch(actions.finishQuery("hourly")))
       .catch((err: JsonError) =>
         toast.error("Error fetching hourly data: " + err.message),
       );
@@ -220,7 +208,7 @@ const SalesPanels = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          dispatch(setSubSales(j.subs));
+          dispatch(actions.setSubSales(j.subs));
           // Last week
           const lastWkDate = new Date(weeklyEnd);
           const lastWeekEnd = setDates(lastWkDate, 7);
@@ -235,11 +223,11 @@ const SalesPanels = () => {
           getSubsData(p ? lyWkEnd : lyWkStart, lyWkEnd, 3);
         }
       })
-      // .then(() => dispatch(finishQuery("subs")))
+      // .then(() => dispatch(actions.finishQuery("subs")))
       .catch((err: JsonError) =>
         toast.error("Error fetching subs data: " + err.message),
       )
-      .finally(() => dispatch(finishQuery("subs")));
+      .finally(() => dispatch(actions.finishQuery("subs")));
   };
 
   const handlePanelClick = (
@@ -255,11 +243,11 @@ const SalesPanels = () => {
       store_name: panel.store_name,
     };
     if (!comparePanels(panel, sales.selectedSalesPanel)) {
-      dispatch(setSelectedSalesPanel(newSelection));
+      dispatch(actions.setSelectedSalesPanel(newSelection));
       handleDataFetch(newSelection);
     } else {
       dispatch(
-        setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
+        actions.setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
       );
       handleDataFetch(null);
     }

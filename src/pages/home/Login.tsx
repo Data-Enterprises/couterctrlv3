@@ -12,6 +12,8 @@ import {
   setToken,
   setForgotPassword,
   setFetchingCredentials,
+  setProdToken,
+  setDevToken,
 } from "../../features/appSlice";
 import {
   setUsername,
@@ -75,6 +77,7 @@ const Login = () => {
         const j = resp.data;
         if (j.error == 0) {
           dispatch(setToken(j.access_token));
+          dispatch(setProdToken(j.access_token));
           dispatch(setFirstName(j.first_name));
           dispatch(setLastName(j.last_name));
           dispatch(setEmail(j.email));
@@ -84,6 +87,15 @@ const Login = () => {
           dispatch(setSecurityQuestionId(j.security_question_id));
           dispatch(setCompanies(j.companies));
           setUseImpersonation(0);
+          if (j.role === 9) {
+            login(import.meta.env.VITE_API_URL_DEV, state.username, state.password, 0)
+              .then((devResp) => {
+                if (devResp.data.error === 0) {
+                  dispatch(setDevToken(devResp.data.access_token));
+                }
+              })
+              .catch(() => { /* dev login failure is non-fatal */ });
+          }
         } else {
           dispatch(setFetchingCredentials(false));
           toast.warn(
@@ -182,10 +194,8 @@ const Login = () => {
 
                   <div
                     data-testid="login-forgot-password"
-                    className="text-sm/6 select-none"
-                    onClick={() => {
-                      dispatch(setForgotPassword(true));
-                    }}
+                    className="text-right text-sm/6 select-none"
+                    onClick={() => dispatch(setForgotPassword(true))}
                   >
                     <a
                       href="#"
@@ -225,9 +235,10 @@ const Login = () => {
                     Sign in
                   </button>
                   {context.fetchingCredentials ? (
-                    <div className="absolute bottom-0 top-16 ml-44 lg:ml-48">
-                      <LoadingIndicator message="Fetching credentials..." />
-                    </div>
+                    <LoadingIndicator
+                      message="Verifying credentials..."
+                      className="mt-16"
+                    />
                   ) : null}
                 </div>
               </div>
@@ -236,7 +247,7 @@ const Login = () => {
         </div>
         {/* TODO: Update this before pushing to publish */}
         <div className="absolute bottom-1 left-0 text-sm pl-2 select-none">
-          Last Updated 6/15/2026 @ 12:33 PM CST
+          Last Updated 6/30/2026 @ 4:32 PM CST
         </div>
       </div>
       <div className="relative hidden w-0 flex-1 lg:block">

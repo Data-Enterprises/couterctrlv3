@@ -1,79 +1,60 @@
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import {
-  reQuery,
-  setCashierDetails,
-  setSaleTypes,
-  setSelectedSaleType,
-  setSelectedStoreId,
-  setViewTransactionsMobile,
-} from "../../../features/lossPreventionSlice";
-
-import DatePickers from "../../../components/datePickers/DatePickers";
-import StorePicker from "../../../components/storePicker/StorePicker";
-import SaleTypesMobile from "./SaleTypesMobile";
-import CashierSalesMobile from "./CashierSalesMobile";
-
-import TransactionModal from "../TransactionModal";
-import UniqueCashiersMobile from "./UniqueCashiersMobile";
+import { useState } from "react";
+import { useAppDispatch } from "../../../hooks";
+import { useAppSelector } from "../../../hooks";
+import { resetCashierSlice } from "../../../features/lossPreventionSlice";
+import SearchCard from "../../../components/SearchCard";
+import StoreListMobile from "./StoreListMobile";
+import CashierListMobile from "./CashierListMobile";
 import TransactionsMobile from "./TransactionsMobile";
 
-interface LpMobileProps {
+type Screen = "stores" | "cashiers" | "transactions";
+
+interface Props {
   getSaleTypes: () => void;
 }
 
-const LpMobile = ({ getSaleTypes }: LpMobileProps) => {
+const LpMobile = ({ getSaleTypes }: Props) => {
   const dispatch = useAppDispatch();
-  const { saleTypes, cashierDetails, viewTransactionsMobile } = useAppSelector(
-    (state) => state.lossPrevention,
-  );
+  const { saleTypes } = useAppSelector((state) => state.lossPrevention);
+  const [screen, setScreen] = useState<Screen>("stores");
 
-  const handleGoBack = () => {
-    if (viewTransactionsMobile) {
-      dispatch(setViewTransactionsMobile(false));
-      return;
-    }
-    dispatch(reQuery());
-    dispatch(setSaleTypes([]));
-    dispatch(setSelectedSaleType(""));
-    dispatch(setCashierDetails([]));
-    dispatch(setSelectedStoreId(0));
+  const handleSearch = () => {
+    setScreen("stores");
+    dispatch(resetCashierSlice());
+    getSaleTypes();
   };
-  if (saleTypes.length > 0) {
-    return (
-      <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden overflow-y-auto no-scrollbar">
-        <TransactionModal />
-        {/* Inner nav => once sale types are fetched */}
-        <div className="w-full px-2 pt-2">
-          <button
-            className="btn-themeBlue w-full px-0 py-1 text-[13px]"
-            onClick={handleGoBack}
-          >
-            Go Back
-          </button>
-        </div>
-        {viewTransactionsMobile ? (
-          <div>
-            <UniqueCashiersMobile />
-            <TransactionsMobile />
-          </div>
-        ) : (
-          <div className="p-2 space-y-2">
-            <SaleTypesMobile />
-            {cashierDetails.length > 0 && <CashierSalesMobile />}
-          </div>
-        )}
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden overflow-y-auto no-scrollbar p-2">
-      <div className="space-y-2">
-        <div className="bg-custom-white px-2 py-2.5 rounded-lg shadow-lg space-y-1">
-          <StorePicker />
-          <DatePickers handleQuery={getSaleTypes} />
+    <div className="h-[calc(100dvh-3rem)] overflow-hidden flex flex-col bg-custom-white">
+      <SearchCard
+        top
+        title="Loss prevention"
+        description="Select a store and date to view exception activity."
+        buttonLabel="Load exceptions"
+        singleDate
+        onSearch={handleSearch}
+        loading={false}
+      />
+      {saleTypes.length > 0 && (
+        <div className="flex-1 overflow-hidden">
+          {screen === "transactions" ? (
+            <TransactionsMobile
+              onBack={() => setScreen("cashiers")}
+              onOpenSearch={() => {}}
+            />
+          ) : screen === "cashiers" ? (
+            <CashierListMobile
+              onBack={() => setScreen("stores")}
+              onSelectCashier={() => setScreen("transactions")}
+            />
+          ) : (
+            <StoreListMobile
+              onOpenSearch={() => {}}
+              onStoreSelected={() => setScreen("cashiers")}
+            />
+          )}
         </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import {
@@ -8,7 +9,7 @@ import {
 } from "../../../utils";
 import { reduceSubs, type TopSub } from ".";
 import { netSalesPct, promoLeakage, velocity } from "../../../functions";
-import { setTopSubDept } from "../../../features/salesSlice";
+import { useSalesActions } from "../hooks/useSalesActions";
 import { FlagIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 
 const tooltips = {
@@ -22,12 +23,12 @@ interface Props {
 
 const TopSubDept = ({ inReport }: Props) => {
   const dispatch = useAppDispatch();
+  const actions = useSalesActions();
   const [tooltip, setTooltip] = useState<typeof tooltips>(tooltips);
   const [topSub, setTopSub] = useState<TopSub | null>(null);
   const [title, setTitle] = useState<string>("Top Sub Dept");
   const search = useAppSelector((state) => state.search);
-  const { subSales, selectedSalesPanel, topSubDept, selectedSubDept } =
-    useAppSelector((state) => state.sales);
+  const { subSales, selectedSalesPanel, topSubDept, selectedSubDept } = useSalesState();
 
   useEffect(() => {
     if (subSales.length === 0) {
@@ -73,7 +74,7 @@ const TopSubDept = ({ inReport }: Props) => {
         store_coupon: sub.store_coupon,
         total_tax: sub.total_tax,
       };
-      dispatch(setTopSubDept(newTopSub));
+      dispatch(actions.setTopSubDept(newTopSub));
     }
   }, [subSales, selectedSalesPanel, selectedSubDept]);
 

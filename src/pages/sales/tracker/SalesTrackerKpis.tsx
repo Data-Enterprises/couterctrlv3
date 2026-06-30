@@ -1,6 +1,8 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { setTrackerKpis, type TrackerKpis } from "../../../features/salesSlice";
+import { useAppDispatch } from "../../../hooks";
+import { useSalesActions } from "../hooks/useSalesActions";
+import type { TrackerKpis } from "../../../features/salesSlice";
 import { formatDate } from ".";
 import { formatCurrency2 } from "../../../utils";
 import {
@@ -10,7 +12,8 @@ import {
 
 const SalesTrackerKpis = () => {
   const dispatch = useAppDispatch();
-  const sales = useAppSelector((state) => state.sales);
+  const actions = useSalesActions();
+  const sales = useSalesState();
 
   useEffect(() => {
     if (sales.tyReducedTotals.length > 0) {
@@ -52,7 +55,7 @@ const SalesTrackerKpis = () => {
           dollarChange,
           dateRange,
         };
-        dispatch(setTrackerKpis(result));
+        dispatch(actions.setTrackerKpis(result));
       };
       calcTotals();
     }

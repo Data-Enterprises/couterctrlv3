@@ -59,10 +59,12 @@ interface SalesState {
   salesPanels: WeeklySale[];
   selectedSalesPanel: SelectedSalesPanel;
   weeklySales: WeeklySale[];
+  weeklySalesLastWeek: WeeklySale[];
   weeklySalesLastYear: WeeklySale[];
   panelsLoading: boolean;
   windowVisible: WindowVisible;
   hourlySales: HourlySale[];
+  hourlySalesLastWeek: HourlySale[];
   hourlySalesLastYear: HourlySale[];
   subSales: SubSale[];
   subSalesWk1: SubSale[];
@@ -109,10 +111,12 @@ const initialState: SalesState = {
   salesPanels: [],
   selectedSalesPanel: defaultSelectedPanel,
   weeklySales: [],
+  weeklySalesLastWeek: [],
   weeklySalesLastYear: [],
   panelsLoading: false,
   windowVisible: defaultWindowVisible,
   hourlySales: [],
+  hourlySalesLastWeek: [],
   hourlySalesLastYear: [],
   subSales: [],
   subSalesWk1: [],
@@ -177,6 +181,9 @@ export const salesSlice = createSlice({
     setWeeklySales: (state, action: PayloadAction<WeeklySale[]>) => {
       state.weeklySales = action.payload;
     },
+    setWeeklySalesLastWeek: (state, action: PayloadAction<WeeklySale[]>) => {
+      state.weeklySalesLastWeek = action.payload;
+    },
     setWeeklySalesLastYear: (state, action: PayloadAction<WeeklySale[]>) => {
       state.weeklySalesLastYear = action.payload;
     },
@@ -185,6 +192,9 @@ export const salesSlice = createSlice({
     },
     setHourlySales: (state, action: PayloadAction<HourlySale[]>) => {
       state.hourlySales = action.payload;
+    },
+    setHourlySalesLastWeek: (state, action: PayloadAction<HourlySale[]>) => {
+      state.hourlySalesLastWeek = action.payload;
     },
     setHourlySalesLastYear: (state, action: PayloadAction<HourlySale[]>) => {
       state.hourlySalesLastYear = action.payload;
@@ -233,8 +243,10 @@ export const salesSlice = createSlice({
       state.topSubDept = null;
       state.selectedItem = "";
       state.weeklySales = [];
+      state.weeklySalesLastWeek = [];
       state.weeklySalesLastYear = [];
       state.hourlySales = [];
+      state.hourlySalesLastWeek = [];
       state.hourlySalesLastYear = [];
       state.subSales = [];
       state.subSalesWk2 = [];
@@ -274,6 +286,24 @@ export const salesSlice = createSlice({
     },
     setWeeksBack: (state, action: PayloadAction<string>) => {
       state.weeksBack = action.payload;
+    },
+    concatWeeklySales: (state, action: PayloadAction<WeeklySale[]>) => {
+      state.weeklySales = state.weeklySales.concat(action.payload);
+    },
+    concatWeeklySalesLastWeek: (state, action: PayloadAction<WeeklySale[]>) => {
+      state.weeklySalesLastWeek = state.weeklySalesLastWeek.concat(action.payload);
+    },
+    concatWeeklySalesLastYear: (state, action: PayloadAction<WeeklySale[]>) => {
+      state.weeklySalesLastYear = state.weeklySalesLastYear.concat(action.payload);
+    },
+    concatHourlySales: (state, action: PayloadAction<HourlySale[]>) => {
+      state.hourlySales = state.hourlySales.concat(action.payload);
+    },
+    concatHourlySalesLastWeek: (state, action: PayloadAction<HourlySale[]>) => {
+      state.hourlySalesLastWeek = state.hourlySalesLastWeek.concat(action.payload);
+    },
+    concatHourlySalesLastYear: (state, action: PayloadAction<HourlySale[]>) => {
+      state.hourlySalesLastYear = state.hourlySalesLastYear.concat(action.payload);
     },
     concatTYSubTracker: (state, action: PayloadAction<SubSale[]>) => {
       state.thisYrSubTracker = state.thisYrSubTracker.concat(action.payload);
@@ -372,10 +402,18 @@ export const {
   setRightSubCompare,
   resetCompareSubs,
   resetSalesSlice,
+  setWeeklySalesLastWeek,
   setWeeklySalesLastYear,
+  setHourlySalesLastWeek,
   setHourlySalesLastYear,
   setMainView,
   setWeeksBack,
+  concatWeeklySales,
+  concatWeeklySalesLastWeek,
+  concatWeeklySalesLastYear,
+  concatHourlySales,
+  concatHourlySalesLastWeek,
+  concatHourlySalesLastYear,
   concatTYSubTracker,
   concatLYSubTracker,
   setLoadingTYTrackerData,

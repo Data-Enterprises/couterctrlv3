@@ -1,16 +1,16 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useState, useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import type { TopSub } from "../components";
 import type { SubGridRow } from "../../../interfaces";
-import { setSelectedSubDept } from "../../../features/salesSlice";
+import { useSalesActions } from "../hooks/useSalesActions";
 import { formatCurrency2, formatBigNumber } from "../../../utils";
 import { couponSalePct } from "../../../functions";
 
 const SubDeptGridTablet = () => {
   const dispatch = useAppDispatch();
-  const { subSales, selectedSubDept, subSalesWk3 } = useAppSelector(
-    (state) => state.sales,
-  );
+  const actions = useSalesActions();
+  const { subSales, selectedSubDept, subSalesWk3 } = useSalesState();
   const [groupSubs, setGroupSubs] = useState<SubGridRow[]>([]);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ const SubDeptGridTablet = () => {
         store_coupon: topSub.store_coupon,
         total_tax: topSub.total_tax,
       };
-      dispatch(setSelectedSubDept(selected));
+      dispatch(actions.setSelectedSubDept(selected));
     }
   }, [groupSubs]);
 
@@ -84,7 +84,7 @@ const SubDeptGridTablet = () => {
       store_coupon: d.store_coupon,
       total_tax: d.total_tax,
     };
-    dispatch(setSelectedSubDept(selected));
+    dispatch(actions.setSelectedSubDept(selected));
   };
 
   return (

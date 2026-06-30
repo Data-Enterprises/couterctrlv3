@@ -1,13 +1,14 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useState } from "react";
 import { type WeekTotal } from "../../../features/salesSlice";
-import { useAppSelector } from "../../../hooks";
+// import { useAppSelector } from "../../../hooks";
 import TotalsGridLvlOne from "./TotalsGridLvlOne";
 import { addDays } from "../../../utils";
 import { chunkData } from ".";
 
 const TotalsGrid = () => {
   const [isHovering, setIsHovering] = useState<boolean>(false);
-  const sales = useAppSelector((state) => state.sales);
+  const sales = useSalesState();
 
   if (sales.tyReducedTotals.length === 0) {
     return null;

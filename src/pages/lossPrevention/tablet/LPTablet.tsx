@@ -1,6 +1,6 @@
 import { useAppSelector } from "../../../hooks";
 
-import DatePickers from "../../../components/datePickers/DatePickers";
+import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
 import StorePicker from "../../../components/storePicker/StorePicker";
 import CashierSalesTablet from "./CashierSalesTablet";
 import SaleTypesTablet from "./SaleTypesTablet";
@@ -31,7 +31,13 @@ const LPTablet = ({ getSaleTypes }: LPTabletProps) => {
       <div className="space-y-3">
         <div className="bg-custom-white p-2 rounded-lg shadow-lg space-y-1 md:space-y-0">
           <StorePicker />
-          <DatePickers handleQuery={getSaleTypes} />
+          <SingleDatePicker />
+          <button
+            onClick={getSaleTypes}
+            className="w-full py-2 text-sm font-semibold text-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors"
+          >
+            Load exceptions
+          </button>
         </div>
         <SaleTypesTablet />
         <TransactionFilters />

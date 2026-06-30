@@ -8,7 +8,10 @@ import {
   CurrencyDollarIcon,
   KeyIcon,
   MagnifyingGlassCircleIcon,
-  DocumentCheckIcon
+  DocumentCheckIcon,
+  ChartBarSquareIcon,
+  CircleStackIcon,
+  Cog6ToothIcon,
 } from "@heroicons/react/16/solid";
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
@@ -45,7 +48,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: ["*"],
+    userLevels: ["9"],
     isHovering: false,
   },
   {
@@ -125,7 +128,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: ["9"],
+    userLevels: ["*"],
     isHovering: false,
   },
   {
@@ -162,7 +165,7 @@ export const navigation: Navigation[] = [
     name: "Cashiers",
     href: "cashiers",
     icon: MagnifyingGlassCircleIcon,
-    mobile: false,
+    mobile: true,
     children: [],
     childOpen: false,
     userLevels: ["*"],
@@ -172,7 +175,7 @@ export const navigation: Navigation[] = [
     name: "Orders",
     href: "orders",
     icon: DocumentCheckIcon,
-    mobile: false,
+    mobile: true,
     children: [],
     childOpen: false,
     userLevels: ["*"],
@@ -196,7 +199,51 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: ["9999"],
+    userLevels: ["9999", "22"],
     isHovering: false,
+  },
+];
+
+export type NavCategory = {
+  name: string;
+  icon: typeof UsersIcon | any;
+  pages: Navigation[];
+};
+
+export const categories: NavCategory[] = [
+  {
+    name: "Performance",
+    icon: ArrowTrendingUpIcon,
+    pages: [
+      { name: "Sales",            href: "sales",           icon: SalesIconV2,   mobile: true,  children: [], childOpen: false, userLevels: ["*"],              isHovering: false },
+      { name: "Loss Prevention",  href: "loss-prevention", icon: CashierIcon,   mobile: true,  children: [], childOpen: false, userLevels: ["*"],              isHovering: false },
+    ],
+  },
+  {
+    name: "Analytics",
+    icon: ChartBarSquareIcon,
+    pages: [
+      { name: "Forecasting",      href: "forecasting",     icon: ArrowTrendingUpIcon,  mobile: false, children: [], childOpen: false, userLevels: ["9"],      isHovering: false },
+      { name: "Sub Dept Margins", href: "sub-dept-margins",icon: CurrencyDollarIcon,   mobile: false, children: [], childOpen: false, userLevels: ["9"],      isHovering: false },
+    ],
+  },
+  {
+    name: "Data",
+    icon: CircleStackIcon,
+    pages: [
+      { name: "Orders",           href: "orders",          icon: DocumentCheckIcon,       mobile: true,  children: [], childOpen: false, userLevels: ["*"],   isHovering: false },
+      { name: "Receivers",        href: "receivers",       icon: ClipboardDocumentCheckIcon, mobile: true, children: [], childOpen: false, userLevels: ["9"], isHovering: false },
+      { name: "Coupons",          href: "coupons",         icon: CouponIcon,              mobile: true,  children: [], childOpen: false, userLevels: ["9"],   isHovering: false },
+      { name: "Upc List",         href: "upc-upload",      icon: UpcListIcon,             mobile: false, children: [], childOpen: false, userLevels: ["9"],   isHovering: false },
+    ],
+  },
+  {
+    name: "Config",
+    icon: Cog6ToothIcon,
+    pages: [
+      { name: "User Groups",      href: "groups",          icon: GroupsIcon,    mobile: true,  children: [], childOpen: false, userLevels: ["*"],              isHovering: false },
+      { name: "Team",             href: "team",            icon: UsersIcon,     mobile: false, children: [], childOpen: false, userLevels: ["5", "7", "8", "9"], isHovering: false },
+      { name: "Admin",            href: "admin",           icon: KeyIcon,       mobile: false, children: [], childOpen: false, userLevels: ["9"],              isHovering: false },
+    ],
   },
 ];

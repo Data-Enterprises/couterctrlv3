@@ -7,8 +7,7 @@ import { useToast } from "./components/toasts/hooks/useToast";
 // Components
 import { Outlet } from "react-router";
 import Login from "./pages/home/Login";
-import SideBar from "./components/navigation/SideBar";
-import TitleBar from "./components/navigation/TitleBar";
+import { NavSwitch } from "./DevPages";
 import UserDataLoader from "./components/UserDataLoader";
 import SecurityQuestion from "./pages/home/SecurityQuestion";
 import ResetPassword from "./pages/home/ResetPassword";
@@ -71,11 +70,10 @@ const App = () => {
     navigate("/");
   }, []);
 
-  const containerStyle = context.isDesktop
-    ? "ml-12 min-w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)]"
-    : context.isMobile
-      ? "h-full bg-bkg"
-      // Tablet
+  const containerStyle = context.isMobile
+    ? context.devMode ? "h-full bg-bkg pb-14" : "h-full bg-bkg"
+    : context.devMode
+      ? "w-full"
       : "ml-12 min-w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)]";
 
   return (
@@ -85,16 +83,11 @@ const App = () => {
     >
       <UserDataLoader />
       {context.loggedIn ? (
-        <div className="max-h-screen max-w-screen">
-          <TitleBar />
-          <SideBar />
+        <div className="max-h-screen max-w-screen overflow-hidden">
+          <NavSwitch />
           <div
             data-testid="outlet-container"
-            className={`${containerStyle} bg-bkg ${
-              nav.isNavOpen
-                ? "opacity-20 pointer-events-none"
-                : "bg-content/5 opacity-100"
-            } transition-all duration-300`}
+            className={`${containerStyle} bg-bkg ${!context.devMode && nav.isNavOpen ? "opacity-20 pointer-events-none" : "opacity-100"} transition-all duration-300`}
           >
             {/* ResetPassword and SecurityQuestion are only modals that render when the user is prompted, otherwise they are hidden */}
             <ResetPassword />

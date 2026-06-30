@@ -1,18 +1,15 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import type { SubSale } from "../../../interfaces";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
-import {
-  setLyCollapsedSubSales,
-  setLyWeekCards,
-  setTyCollapsedSubSales,
-  setTyWeekCards,
-} from "../../../features/salesSlice";
+import { useSalesActions } from "../hooks/useSalesActions";
 import { chunkData } from ".";
 
 const WeekCards = () => {
   const dispatch = useAppDispatch();
-  const sales = useAppSelector((state) => state.sales);
+  const actions = useSalesActions();
+  const sales = useSalesState();
   const { lastGroup } = useAppSelector((state) => state.search);
   const { groups } = useAppSelector((state) => state.group);
 
@@ -98,11 +95,11 @@ const WeekCards = () => {
 
         // dispatch the reduces sales/collapsed sales to the store
         if (whichYear === "ty") {
-          dispatch(setTyWeekCards(result));
-          dispatch(setTyCollapsedSubSales(collapsedSales));
+          dispatch(actions.setTyWeekCards(result));
+          dispatch(actions.setTyCollapsedSubSales(collapsedSales));
         } else {
-          dispatch(setLyWeekCards(result));
-          dispatch(setLyCollapsedSubSales(collapsedSales));
+          dispatch(actions.setLyWeekCards(result));
+          dispatch(actions.setLyCollapsedSubSales(collapsedSales));
         }
 
         return result;

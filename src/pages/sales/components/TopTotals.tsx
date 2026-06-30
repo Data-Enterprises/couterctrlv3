@@ -1,9 +1,9 @@
-import { useAppSelector } from "../../../hooks";
+import { useSalesState } from "../hooks/useSalesState";
 import { sameWeekDayLastYear } from "../../../utils";
 import TopTotalsKpi from "./TopTotalsKpi";
 
 const TopTotals = () => {
-  const sales = useAppSelector((state) => state.sales);
+  const sales = useSalesState();
 
   if (!sales.weeklySales.length && !sales.hourlySales.length) return null;
 

@@ -1,26 +1,46 @@
 .loading-indicator {
-  width: 170px;
-  height: 20px;
-  border-radius: 20px;
-  color: #3b82f6;
-  border: 2px solid;
   position: absolute;
-  left: 49%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  background: rgba(30,42,74,0.04);
+  backdrop-filter: blur(1px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 9999;
 }
-.loading-indicator::before {
-  content: "";
-  position: absolute;
-  margin: 2px;
-  inset: 0 100% 0 0;
-  border-radius: inherit;
-  background: currentColor;
-  animation: l6 3s infinite;
+
+.loading-pill {
+  background: #1e2a4a;
+  border-radius: 20px;
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-@keyframes l6 {
-  100% {
-    inset: 0;
-  }
+
+.loading-pill-text {
+  color: white;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.loading-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.loading-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.6);
+  animation: loading-bounce 0.8s ease-in-out infinite;
+}
+
+.loading-dot:nth-child(2) { animation-delay: 0.15s; }
+.loading-dot:nth-child(3) { animation-delay: 0.30s; }
+
+@keyframes loading-bounce {
+  0%, 100% { opacity: 0.3; transform: translateY(0); }
+  50%       { opacity: 1;   transform: translateY(-2px); }
 }

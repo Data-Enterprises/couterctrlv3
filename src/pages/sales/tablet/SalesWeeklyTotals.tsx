@@ -1,10 +1,10 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useEffect, useState } from "react";
-import { useAppSelector } from "../../../hooks";
 import { formatDateSimple, sameWeekDayLastYear } from "../../../utils";
 import ComparisonCard from "./ComparisonCard";
 
 const SalesWeeklyTotals = () => {
-  const sales = useAppSelector((state) => state.sales);
+  const sales = useSalesState();
   const [dateRange, setDateRange] = useState<string>("");
 
   useEffect(() => {

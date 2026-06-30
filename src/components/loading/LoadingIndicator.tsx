@@ -1,19 +1,15 @@
-import "./loadingIndicator.css";
+import { useAppSelector } from "../../hooks";
+import LoadingIndicatorDev from "./LoadingIndicatorDev";
+import LoadingIndicatorLegacy from "./LoadingIndicatorLegacy";
 
 interface Props {
   message?: string;
   className?: string;
 }
 
-const LoadingIndicator = ({
-  message = "Loading...",
-  className = "",
-}: Props) => {
-  return (
-    <div data-testid="loading-indicator" className={`loading-indicator text-[12px] ${className}`}>
-      <span className="absolute mt-5 text-center w-full font-medium">{message}</span>
-    </div>
-  );
+const LoadingIndicator = (props: Props) => {
+  const devMode = useAppSelector((s) => s.app.devMode);
+  return devMode ? <LoadingIndicatorDev {...props} /> : <LoadingIndicatorLegacy {...props} />;
 };
 
 export default LoadingIndicator;

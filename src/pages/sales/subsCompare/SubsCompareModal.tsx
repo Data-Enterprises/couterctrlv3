@@ -1,21 +1,23 @@
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useSalesState } from "../hooks/useSalesState";
+import { useAppDispatch } from "../../../hooks";
 
 import Modal from "../../../components/Modal";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
-import { resetCompareSubs } from "../../../features/salesSlice";
+import { useSalesActions } from "../hooks/useSalesActions";
 import CompareCard from "./CompareCard";
 import CompareSummary from "./CompareSummary";
 
 const SubsCompareModal = () => {
   const dispatch = useAppDispatch();
+  const actions = useSalesActions();
   const {
     compareSubsLeftCompare,
     compareSubsModalOpen,
     compareSubsRightCompare,
-  } = useAppSelector((state) => state.sales);
+  } = useSalesState();
 
   const handleClose = () => {
-    dispatch(resetCompareSubs());
+    dispatch(actions.resetCompareSubs());
   };
 
   return (

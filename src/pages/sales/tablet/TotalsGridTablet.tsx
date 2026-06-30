@@ -1,9 +1,10 @@
+import { useSalesState } from "../hooks/useSalesState";
 import type { WeekTotal } from "../../../features/salesSlice";
-import { useAppSelector } from "../../../hooks";
+// import { useAppSelector } from "../../../hooks";
 import TotalsGridLvlOneTablet from "./TotalsGridLvlOneTablet";
 
 const TotalsGridTablet = () => {
-  const sales = useAppSelector((state) => state.sales);
+  const sales = useSalesState();
 
   if (sales.tyReducedTotals.length === 0) {
     return null;

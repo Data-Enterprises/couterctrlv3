@@ -1,4 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { ThresholdValue } from "../components/filters/ThresholdFilter";
 import type {
   CashierDetails,
   CashierTransaction,
@@ -22,26 +23,26 @@ export interface LossPreventionState {
   selectedCashierDetailsIdx: number;
   cashierDetailsTrendDirection: number;
   cashierTrends: CashierTrend[];
+  baselineDetails: CashierDetails[];
   cashiers: UniqueCashier[];
   selectedCashier: SelectedCashier;
   cashierTransactions: CashierTransaction[];
   transOverviews: TransactionOverview[];
+  baselineOverviews: TransactionOverview[];
   transList: TransactionListItem[];
   transactionDrillDown: TransactionListItem[][];
   saleTypes: SaleType[];
   selectedSaleType: string;
   selectedSaleIds: string[];
   cashierSaleIds: string[];
-  cashierTableQtyThreshComp: { gt: boolean; lt: boolean };
-  cashierTableThreshComp: { gt: boolean; lt: boolean };
+  salesThreshold: ThresholdValue | null;
+  qtyThreshold: ThresholdValue | null;
   transModalOpen: boolean;
   filterModalOpen: boolean;
   filterType: string;
   saleDateFilter: string;
   upcFilter: string;
   descFilter: string;
-  totalSalesFilter: number;
-  totalQtyFilter: number;
   availablePriceTypes: string[];
   selectedPriceTypes: string[];
   fetchingCashierTransactions: boolean;
@@ -62,25 +63,25 @@ const initialState: LossPreventionState = {
   cashierDetails: [],
   selectedCashierDetails: null,
   cashierTrends: [],
+  baselineDetails: [],
   cashierTransactions: [],
   saleTypes: [],
   selectedSaleType: "",
   transModalOpen: false,
   cashiers: [],
   transOverviews: [],
+  baselineOverviews: [],
   selectedCashier: { cashier_number: 0, store_number: "" },
   selectedSaleIds: [],
   transList: [],
   cashierSaleIds: [],
-  cashierTableThreshComp: { gt: false, lt: false },
-  cashierTableQtyThreshComp: { gt: false, lt: false },
+  salesThreshold: null,
+  qtyThreshold: null,
   filterModalOpen: false,
   filterType: "",
   saleDateFilter: "",
   upcFilter: "",
   descFilter: "",
-  totalSalesFilter: 0,
-  totalQtyFilter: 0,
   availablePriceTypes: [],
   selectedPriceTypes: [],
   fetchingCashierTransactions: false,
@@ -111,6 +112,9 @@ export const lossPreventionSlice = createSlice({
     },
     setCashierTrends: (state, action: PayloadAction<CashierTrend[]>) => {
       state.cashierTrends = action.payload;
+    },
+    setBaselineDetails: (state, action: PayloadAction<CashierDetails[]>) => {
+      state.baselineDetails = action.payload;
     },
     setCashierTransactions: (
       state,
@@ -155,23 +159,11 @@ export const lossPreventionSlice = createSlice({
     setTransIdFilter: (state, action: PayloadAction<string>) => {
       state.transIdFilter = action.payload;
     },
-    setTotalSalesFilter: (state, action: PayloadAction<number>) => {
-      state.totalSalesFilter = action.payload;
+    setSalesThreshold: (state, action: PayloadAction<ThresholdValue | null>) => {
+      state.salesThreshold = action.payload;
     },
-    setCashierTableThreshComp: (
-      state,
-      action: PayloadAction<{ gt: boolean; lt: boolean }>,
-    ) => {
-      state.cashierTableThreshComp = action.payload;
-    },
-    setTotalQtyFilter: (state, action: PayloadAction<number>) => {
-      state.totalQtyFilter = action.payload;
-    },
-    setCashierTableQtyThreshComp: (
-      state,
-      action: PayloadAction<{ gt: boolean; lt: boolean }>,
-    ) => {
-      state.cashierTableQtyThreshComp = action.payload;
+    setQtyThreshold: (state, action: PayloadAction<ThresholdValue | null>) => {
+      state.qtyThreshold = action.payload;
     },
     setFilterModalOpen: (state, action: PayloadAction<boolean>) => {
       state.filterModalOpen = action.payload;
@@ -255,6 +247,7 @@ export const lossPreventionSlice = createSlice({
       state.selectedCashier = { cashier_number: 0, store_number: "" };
       state.cashierDetailsTrendDirection = 0;
       state.transOverviews = [];
+      state.baselineOverviews = [];
       state.transactionLoadingMessage = "";
       if (state.viewTransactionsMobile) {
         state.viewTransactionsMobile = false;
@@ -265,6 +258,12 @@ export const lossPreventionSlice = createSlice({
       action: PayloadAction<TransactionOverview[]>,
     ) => {
       state.transOverviews = action.payload;
+    },
+    setBaselineOverviews: (
+      state,
+      action: PayloadAction<TransactionOverview[]>,
+    ) => {
+      state.baselineOverviews = action.payload;
     },
     setViewTransactionsMobile: (state, action: PayloadAction<boolean>) => {
       state.viewTransactionsMobile = action.payload;
@@ -292,10 +291,10 @@ export const {
   setSaleDateFilter,
   setUpcFilter,
   setDescFilter,
-  setCashierTableThreshComp,
+  setSalesThreshold,
+  setQtyThreshold,
   setFilterModalOpen,
   setFilterType,
-  setTotalSalesFilter,
   // setAvailablePriceTypes,
   setSelectedPriceTypes,
   setFetchingCashierTransactions,
@@ -311,10 +310,10 @@ export const {
   setSearchString,
   reQuery,
   setTransOverviews,
+  setBaselineOverviews,
+  setBaselineDetails,
   setSelectedCashierDetails,
   setCashierDetailsTrendDirection,
-  setCashierTableQtyThreshComp,
-  setTotalQtyFilter,
   setTransactionLoadingMessage,
   setViewTransactionsMobile,
 } = lossPreventionSlice.actions;

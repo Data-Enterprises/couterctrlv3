@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import {
   formatCurrency2,
@@ -13,13 +14,7 @@ import type {
 import { getDateLayout } from "../utils";
 import { getSubsComp } from "../../../api/sales";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import {
-  setCompareSubsLeftCompareData,
-  setCompareSubsModalOpen,
-  setCompareSubsRightCompareData,
-  setLeftSubCompare,
-  setRightSubCompare,
-} from "../../../features/salesSlice";
+import { useSalesActions } from "../hooks/useSalesActions";
 
 interface SalesPanelProps {
   panel: WeeklySale;
@@ -33,13 +28,14 @@ interface SalesPanelProps {
 const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
+  const actions = useSalesActions();
   const context = useAppSelector((state) => state.app);
   const {
     selectedSalesPanel,
     leftSubCompare,
     rightSubCompare,
     compareSubsLeftCompare,
-  } = useAppSelector((state) => state.sales);
+  } = useSalesState();
 
   const border = (panel: WeeklySale, selected: SelectedSalesPanel) => {
     const date = panel.sale_date.split("T")[0];
@@ -63,10 +59,10 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
     // set the left compare panel
     let compareSide: "left" | "right" = "left";
     if (!leftSubCompare) {
-      dispatch(setLeftSubCompare(panel));
+      dispatch(actions.setLeftSubCompare(panel));
     } else {
       compareSide = "right";
-      dispatch(setRightSubCompare(panel));
+      dispatch(actions.setRightSubCompare(panel));
     }
 
     const date = formatGoliathDate(panel.sale_date);
@@ -78,7 +74,7 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
             const sortedLeft = [...j.subs].sort(
               (a, b) => a.sub_department - b.sub_department,
             );
-            dispatch(setCompareSubsLeftCompareData(sortedLeft));
+            dispatch(actions.setCompareSubsLeftCompareData(sortedLeft));
           } else {
             const subs: SubSale[] = [...j.subs];
             const leftSide = [...compareSubsLeftCompare];
@@ -143,9 +139,9 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
             const rightSorted = rightSide.sort(
               (a, b) => a.sub_department - b.sub_department,
             );
-            dispatch(setCompareSubsLeftCompareData(leftSorted));
-            dispatch(setCompareSubsRightCompareData(rightSorted));
-            dispatch(setCompareSubsModalOpen(true));
+            dispatch(actions.setCompareSubsLeftCompareData(leftSorted));
+            dispatch(actions.setCompareSubsRightCompareData(rightSorted));
+            dispatch(actions.setCompareSubsModalOpen(true));
           }
         }
       })

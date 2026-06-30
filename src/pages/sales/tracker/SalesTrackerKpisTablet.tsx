@@ -1,6 +1,8 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { setTrackerKpis, type TrackerKpis } from "../../../features/salesSlice";
+import { useAppDispatch } from "../../../hooks";
+import { useSalesActions } from "../hooks/useSalesActions";
+import type { TrackerKpis } from "../../../features/salesSlice";
 import { formatDate } from ".";
 import { formatCurrency2 } from "../../../utils";
 import {
@@ -11,7 +13,8 @@ import {
 
 const SalesTrackerKpisTablet = () => {
   const dispatch = useAppDispatch();
-  const sales = useAppSelector((state) => state.sales);
+  const actions = useSalesActions();
+  const sales = useSalesState();
 
   useEffect(() => {
     if (sales.tyReducedTotals.length > 0) {
@@ -48,7 +51,7 @@ const SalesTrackerKpisTablet = () => {
           dateRange,
         };
         console.log("Result Object:", result);
-        dispatch(setTrackerKpis(result));
+        dispatch(actions.setTrackerKpis(result));
       };
       calcTotals();
     }
@@ -74,61 +77,61 @@ const SalesTrackerKpisTablet = () => {
     return null;
   };
 
-return (
-  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 mb-2 font-medium">
-    <div className="rounded-2xl bg-custom-white p-4 shadow-lg ring-1 ring-slate-200/70 md:col-span-2 xl:col-span-1">
-      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-        Date Range
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 mb-2 font-medium">
+      <div className="rounded-2xl bg-custom-white p-4 shadow-lg ring-1 ring-slate-200/70 md:col-span-2 xl:col-span-1">
+        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Date Range
+        </div>
+        <div className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-800">
+          <CalendarIcon className="h-5 w-5 shrink-0 text-slate-500 stroke-2" />
+          <span className="truncate">{sales.trackerKpis.dateRange}</span>
+        </div>
       </div>
-      <div className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-800">
-        <CalendarIcon className="h-5 w-5 shrink-0 text-slate-500 stroke-2" />
-        <span className="truncate">{sales.trackerKpis.dateRange}</span>
-      </div>
-    </div>
 
-    <div className="rounded-2xl bg-custom-white p-4 shadow-lg ring-1 ring-slate-200/70">
-      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-        Total Sales This Year
+      <div className="rounded-2xl bg-custom-white p-4 shadow-lg ring-1 ring-slate-200/70">
+        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Total Sales This Year
+        </div>
+        <div className="mt-2 text-lg font-semibold tabular-nums text-slate-800">
+          {formatCurrency2(sales.trackerKpis.tyTotalSales)}
+        </div>
       </div>
-      <div className="mt-2 text-lg font-semibold tabular-nums text-slate-800">
-        {formatCurrency2(sales.trackerKpis.tyTotalSales)}
-      </div>
-    </div>
 
-    <div className="rounded-2xl bg-custom-white p-4 shadow-lg ring-1 ring-slate-200/70">
-      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-        Total Sales Last Year
+      <div className="rounded-2xl bg-custom-white p-4 shadow-lg ring-1 ring-slate-200/70">
+        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Total Sales Last Year
+        </div>
+        <div className="mt-2 text-lg font-semibold tabular-nums text-slate-800">
+          {formatCurrency2(sales.trackerKpis.lyTotalSales)}
+        </div>
       </div>
-      <div className="mt-2 text-lg font-semibold tabular-nums text-slate-800">
-        {formatCurrency2(sales.trackerKpis.lyTotalSales)}
-      </div>
-    </div>
 
-    <div className="rounded-2xl bg-custom-white p-4 shadow-lg ring-1 ring-slate-200/70">
-      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-        Total Sales $ Change
+      <div className="rounded-2xl bg-custom-white p-4 shadow-lg ring-1 ring-slate-200/70">
+        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Total Sales $ Change
+        </div>
+        <div
+          className={`mt-2 flex items-center gap-2 text-lg font-semibold tabular-nums ${textColorClass(sales.trackerKpis.dollarChange)}`}
+        >
+          {renderIcon(sales.trackerKpis.dollarChange)}
+          {formatCurrency2(sales.trackerKpis.dollarChange)}
+        </div>
       </div>
-      <div
-        className={`mt-2 flex items-center gap-2 text-lg font-semibold tabular-nums ${textColorClass(sales.trackerKpis.dollarChange)}`}
-      >
-        {renderIcon(sales.trackerKpis.dollarChange)}
-        {formatCurrency2(sales.trackerKpis.dollarChange)}
-      </div>
-    </div>
 
-    <div className="rounded-2xl bg-custom-white p-4 shadow-lg ring-1 ring-slate-200/70">
-      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-        Total Sales % Change
-      </div>
-      <div
-        className={`mt-2 flex items-center gap-2 text-lg font-semibold tabular-nums ${textColorClass(sales.trackerKpis.percentChange)}`}
-      >
-        {renderIcon(sales.trackerKpis.percentChange)}
-        {sales.trackerKpis.percentChange.toFixed(2)}%
+      <div className="rounded-2xl bg-custom-white p-4 shadow-lg ring-1 ring-slate-200/70">
+        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Total Sales % Change
+        </div>
+        <div
+          className={`mt-2 flex items-center gap-2 text-lg font-semibold tabular-nums ${textColorClass(sales.trackerKpis.percentChange)}`}
+        >
+          {renderIcon(sales.trackerKpis.percentChange)}
+          {sales.trackerKpis.percentChange.toFixed(2)}%
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default SalesTrackerKpisTablet;
