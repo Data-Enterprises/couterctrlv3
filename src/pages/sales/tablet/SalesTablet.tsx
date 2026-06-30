@@ -8,23 +8,7 @@ import Input from "../../../components/inputs/Input";
 import StorePicker from "../../../components/storePicker/StorePicker";
 import SalesPanels from "../panels/SalesPanels";
 import WeekCards from "../tracker/WeekCards";
-import {
-  clearLYSubTracker,
-  clearTYSubTracker,
-  concatLYSubTracker,
-  concatTYSubTracker,
-  reQuery,
-  setLeftSubCompare,
-  setLoadingLYTrackerData,
-  setLoadingTYTrackerData,
-  setMainView,
-  setPanelsLoading,
-  setRefreshOverviewData,
-  setRightSubCompare,
-  setSalesPanels,
-  setSelectedSalesPanel,
-  setWeeksBack,
-} from "../../../features/salesSlice";
+import { useSalesActions } from "../hooks/useSalesActions";
 import type { JsonError } from "../../../interfaces";
 import { getSubs, getWeekly } from "../../../api/sales";
 import { getWeeksBackDate } from "../utils";
@@ -46,21 +30,22 @@ import SalesTrackerTablet from "../tracker/SalesTrackerTablet";
 const SalesTablet = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
+  const actions = useSalesActions();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
   const { queryChecker, salesPanels, mainView, weeksBack } = useSalesState();
 
   const getSalesPanels = async () => {
     if (mainView === "tracker") {
-      dispatch(setMainView("overview"));
+      dispatch(actions.setMainView("overview"));
       return;
     }
-    dispatch(reQuery());
-    dispatch(setRefreshOverviewData(true));
-    dispatch(setLeftSubCompare(null));
-    dispatch(setRightSubCompare(null));
+    dispatch(actions.reQuery());
+    dispatch(actions.setRefreshOverviewData(true));
+    dispatch(actions.setLeftSubCompare(null));
+    dispatch(actions.setRightSubCompare(null));
     dispatch(
-      setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
+      actions.setSelectedSalesPanel({ sale_date: "", storeid: 0, store_name: "" }),
     );
 
     const start = addDays(search.singleDate, -6).toISOString().split("T")[0];
@@ -70,7 +55,7 @@ const SalesTablet = () => {
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 
     // Loading states
-    dispatch(setPanelsLoading(true));
+    dispatch(actions.setPanelsLoading(true));
 
     await getWeekly(
       context.url,
@@ -88,14 +73,14 @@ const SalesTablet = () => {
             (a, b) =>
               new Date(b.sale_date).getTime() - new Date(a.sale_date).getTime(),
           );
-          dispatch(setSalesPanels(sorted));
+          dispatch(actions.setSalesPanels(sorted));
         }
       })
       .catch((err: JsonError) => {
         toast.error("Error getting Sales Two Dates data: " + err.message);
       })
       .finally(() => {
-        dispatch(setPanelsLoading(false));
+        dispatch(actions.setPanelsLoading(false));
       });
   };
 
@@ -129,7 +114,7 @@ const SalesTablet = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          dispatch(concatTYSubTracker(j.subs));
+          dispatch(actions.concatTYSubTracker(j.subs));
           if (j.total_pages > 1) {
             const pages: { page: number; fetched: boolean }[] = [];
             for (let page = 2; page <= j.total_pages; page++) {
@@ -152,18 +137,18 @@ const SalesTablet = () => {
                 .then((resp) => {
                   const j = resp.data;
                   if (j.error === 0) {
-                    dispatch(concatTYSubTracker(j.subs));
+                    dispatch(actions.concatTYSubTracker(j.subs));
                     pages.find((p) => p.page === page)!.fetched = true;
 
                     if (pages.every((p) => p.fetched)) {
-                      dispatch(setLoadingTYTrackerData(false));
+                      dispatch(actions.setLoadingTYTrackerData(false));
                     }
                   }
                 })
                 .catch((err: JsonError) => toast.error(err.message));
             }
           } else {
-            dispatch(setLoadingTYTrackerData(false));
+            dispatch(actions.setLoadingTYTrackerData(false));
           }
         }
       })
@@ -185,7 +170,7 @@ const SalesTablet = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          dispatch(concatLYSubTracker(j.subs));
+          dispatch(actions.concatLYSubTracker(j.subs));
           if (j.total_pages > 1) {
             const pages: { page: number; fetched: boolean }[] = [];
             for (let page = 2; page <= j.total_pages; page++) {
@@ -208,18 +193,18 @@ const SalesTablet = () => {
                 .then((resp) => {
                   const j = resp.data;
                   if (j.error === 0) {
-                    dispatch(concatLYSubTracker(j.subs));
+                    dispatch(actions.concatLYSubTracker(j.subs));
                     pages.find((p) => p.page === page)!.fetched = true;
 
                     if (pages.every((p) => p.fetched)) {
-                      dispatch(setLoadingLYTrackerData(false));
+                      dispatch(actions.setLoadingLYTrackerData(false));
                     }
                   }
                 })
                 .catch((err: JsonError) => toast.error(err.message));
             }
           } else {
-            dispatch(setLoadingLYTrackerData(false));
+            dispatch(actions.setLoadingLYTrackerData(false));
           }
         }
       })
@@ -229,16 +214,16 @@ const SalesTablet = () => {
   const handleWeeksBackChange = (value: string) => {
     const num = Number(value);
     if (!isNaN(num) && num >= 0) {
-      dispatch(setWeeksBack(value));
+      dispatch(actions.setWeeksBack(value));
     }
   };
 
   const handleTrackerBtnClick = () => {
-    dispatch(setMainView("tracker"));
-    dispatch(clearTYSubTracker());
-    dispatch(clearLYSubTracker());
-    dispatch(setLoadingTYTrackerData(true));
-    dispatch(setLoadingLYTrackerData(true));
+    dispatch(actions.setMainView("tracker"));
+    dispatch(actions.clearTYSubTracker());
+    dispatch(actions.clearLYSubTracker());
+    dispatch(actions.setLoadingTYTrackerData(true));
+    dispatch(actions.setLoadingLYTrackerData(true));
     // Getting the Subs Data for the tracker
     getSubsTracker();
   };

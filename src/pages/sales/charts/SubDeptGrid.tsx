@@ -11,12 +11,13 @@ import {
   type RowClickedEvent,
 } from "ag-grid-community";
 import type { SubGridRow } from "../../../interfaces";
-import { setSelectedSubDept } from "../../../features/salesSlice";
+import { useSalesActions } from "../hooks/useSalesActions";
 import SingleSelect from "../../../components/SingleSelect";
 
 const SubDeptGrid = () => {
   const gridRef = useRef<AgGridReact<SubGridRow>>(null);
   const dispatch = useAppDispatch();
+  const actions = useSalesActions();
   const {
     subSales,
     selectedSubDept,
@@ -45,7 +46,7 @@ const SubDeptGrid = () => {
         store_coupon: topSub.store_coupon,
         total_tax: topSub.total_tax,
       };
-      dispatch(setSelectedSubDept(selected));
+      dispatch(actions.setSelectedSubDept(selected));
     }
   }, [groupSubs]);
 
@@ -100,7 +101,7 @@ const SubDeptGrid = () => {
       store_coupon: d.data!.store_coupon,
       total_tax: d.data!.total_tax,
     };
-    dispatch(setSelectedSubDept(selected));
+    dispatch(actions.setSelectedSubDept(selected));
   };
 
   const handleSelect = (subDept: string | number) => {
@@ -117,7 +118,7 @@ const SubDeptGrid = () => {
       store_coupon: d!.store_coupon,
       total_tax: d!.total_tax,
     };
-    dispatch(setSelectedSubDept(selected));
+    dispatch(actions.setSelectedSubDept(selected));
   };
 
   if (isMobile)
