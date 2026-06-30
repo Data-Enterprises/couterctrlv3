@@ -24,6 +24,8 @@ import {
   setTransList,
   setTransModalOpen,
   setTransOverviews,
+  setBaselineOverviews,
+  setBaselineDetails,
   setTransactionDrillDown,
   setTransactionLoadingMessage,
   toggleNoTransMsg,
@@ -74,7 +76,7 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
 
     getCashierDetails(
       params.url, params.token,
-      params.start, params.end,
+      params.lpStart, params.lpEnd,
       params.useGroups, params.searchValue, params.singleStore,
       [saleType],
     )
@@ -92,6 +94,9 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
       })
       .catch((err: JsonError) => toast.error(err.message))
       .finally(() => setLoading(false));
+    getCashierDetails(params.url, params.token, params.lpBaseStart, params.lpBaseEnd, params.useGroups, params.searchValue, params.singleStore, [saleType])
+      .then((r) => { if (r.data.error === 0) dispatch(setBaselineDetails(r.data.sales)); })
+      .catch(() => {});
   };
 
   // Description submit handler — commented out until further notice
@@ -165,13 +170,13 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
                 store_number: curr.store_number,
                 cashier_name: curr.cashier_name,
                 cashier_number: curr.cashier_number,
-                qty: curr.qty ?? 0,
+                qty: 1,
                 total_sales: curr.total_sales,
                 sale_id: curr.sale_id,
                 storeid: curr.storeid,
               });
             } else {
-              found.qty += curr.qty ?? 0;
+              found.qty += 1;
               found.total_sales += curr.total_sales;
             }
             return acc;
@@ -200,8 +205,16 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
 
     // const saleType = cashier.selectedSaleType === "Description" ? "description" : cashier.selectedSaleType;
     const saleType = cashier.selectedSaleType;
-    const start = formatGoliathDate(search.startDate);
-    const end = formatGoliathDate(search.endDate);
+    const [sm, sd, sy] = search.singleDate.split("/").map(Number);
+    const endD      = new Date(sy, sm - 1, sd);
+    const startD    = new Date(endD);   startD.setDate(startD.getDate() - 6);
+    const baseEndD  = new Date(endD);   baseEndD.setDate(baseEndD.getDate() - 7);
+    const baseStartD = new Date(endD);  baseStartD.setDate(baseStartD.getDate() - 20);
+    const fmt = (d: Date) => formatGoliathDate(`${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`);
+    const start     = fmt(startD);
+    const end       = fmt(endD);
+    const baseStart = fmt(baseStartD);
+    const baseEnd   = fmt(baseEndD);
 
     getCashierTable(url, token, start, end, 0, detail.storeid, 1, [saleType], 1, cashier.searchString)
       .then((resp) => {
@@ -237,6 +250,36 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
+
+    // Baseline fetch — prior 2 weeks, used for cashier grading
+    getCashierTable(url, token, baseStart, baseEnd, 0, detail.storeid, 1, [saleType], 1, cashier.searchString)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          const baseTrans = j.transactions.filter((t: any) => t.sale_type === saleType);
+          const fetchPages = j.total_pages > 1
+            ? Array.from({ length: j.total_pages - 1 }, (_, i) =>
+                getCashierTable(url, token, baseStart, baseEnd, 0, detail.storeid, 1, [saleType], i + 2, cashier.searchString)
+                  .then((r) => r.data.error === 0 ? r.data.transactions.filter((t: any) => t.sale_type === saleType) : [])
+              )
+            : [];
+          Promise.all(fetchPages).then((pages) => {
+            pages.forEach((p) => baseTrans.push(...p));
+            const overviews: TransactionOverview[] = baseTrans.reduce((acc: TransactionOverview[], curr: any) => {
+              const found = acc.find((o) => o.transaction_id === curr.sale_id.split("-")[1]);
+              if (!found) {
+                acc.push({ transaction_id: curr.sale_id.split("-")[1], sale_date: curr.sale_date.split("T")[0], sale_type: curr.sale_type, store_number: curr.store_number, cashier_name: curr.cashier_name, cashier_number: curr.cashier_number, qty: 1, total_sales: curr.total_sales, sale_id: curr.sale_id, storeid: curr.storeid });
+              } else {
+                found.qty += 1;
+                found.total_sales += curr.total_sales;
+              }
+              return acc;
+            }, []);
+            dispatch(setBaselineOverviews(overviews));
+          });
+        }
+      })
+      .catch(() => { /* baseline failure is non-fatal */ });
   };
 
   const handleTransactionClick = (overview: TransactionOverview) => {
@@ -272,8 +315,9 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
         <div className="w-full max-w-sm mx-4">
           <SearchCard
             title="Loss Prevention"
-            description="Select a store or group and date range to find exception activity."
+            description="Select a store and date to find exception activity."
             buttonLabel="Load exceptions"
+            singleDate={true}
             onSearch={getSaleTypes}
             loading={false}
           />
@@ -303,8 +347,9 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
           <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
             <SearchCard
               title="Loss Prevention"
-              description="Select a store or group and date range to find exception activity."
+              description="Select a store and date to find exception activity."
               buttonLabel="Load exceptions"
+              singleDate={true}
               onSearch={() => { setSearchModalOpen(false); dispatch(resetCashierSlice()); getSaleTypes(); }}
               loading={false}
             />

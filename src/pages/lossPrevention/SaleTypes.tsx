@@ -5,6 +5,7 @@ import {
   setSelectedSaleType,
   setCashierDetails,
   setCashierTrends,
+  setBaselineDetails,
   resetCashierSlice,
   setSaleTypes,
   toggleNoTransMsg,
@@ -43,8 +44,8 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
     getCashierDetails(
       params.url,
       params.token,
-      params.start,
-      params.end,
+      params.lpStart,
+      params.lpEnd,
       params.useGroups,
       params.searchValue,
       params.singleStore,
@@ -66,6 +67,9 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
         toast.error("Error fetching cashier details: " + err.message),
       )
       .finally(() => setLoading(false));
+    getCashierDetails(params.url, params.token, params.lpBaseStart, params.lpBaseEnd, params.useGroups, params.searchValue, params.singleStore, ["description"], description)
+      .then((r) => { if (r.data.error === 0) dispatch(setBaselineDetails(r.data.sales)); })
+      .catch(() => {});
   };
 
   const handlePanelClick = (saleType: string) => {
@@ -91,8 +95,8 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
     getCashierDetails(
       params.url,
       params.token,
-      params.start,
-      params.end,
+      params.lpStart,
+      params.lpEnd,
       params.useGroups,
       params.searchValue,
       params.singleStore,
@@ -117,6 +121,9 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
         toast.error("Error fetching cashier details: " + err.message),
       )
       .finally(() => setLoading(false));
+    getCashierDetails(params.url, params.token, params.lpBaseStart, params.lpBaseEnd, params.useGroups, params.searchValue, params.singleStore, [saleType])
+      .then((r) => { if (r.data.error === 0) dispatch(setBaselineDetails(r.data.sales)); })
+      .catch(() => {});
   };
 
   return (

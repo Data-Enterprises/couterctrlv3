@@ -23,10 +23,12 @@ export interface LossPreventionState {
   selectedCashierDetailsIdx: number;
   cashierDetailsTrendDirection: number;
   cashierTrends: CashierTrend[];
+  baselineDetails: CashierDetails[];
   cashiers: UniqueCashier[];
   selectedCashier: SelectedCashier;
   cashierTransactions: CashierTransaction[];
   transOverviews: TransactionOverview[];
+  baselineOverviews: TransactionOverview[];
   transList: TransactionListItem[];
   transactionDrillDown: TransactionListItem[][];
   saleTypes: SaleType[];
@@ -61,12 +63,14 @@ const initialState: LossPreventionState = {
   cashierDetails: [],
   selectedCashierDetails: null,
   cashierTrends: [],
+  baselineDetails: [],
   cashierTransactions: [],
   saleTypes: [],
   selectedSaleType: "",
   transModalOpen: false,
   cashiers: [],
   transOverviews: [],
+  baselineOverviews: [],
   selectedCashier: { cashier_number: 0, store_number: "" },
   selectedSaleIds: [],
   transList: [],
@@ -108,6 +112,9 @@ export const lossPreventionSlice = createSlice({
     },
     setCashierTrends: (state, action: PayloadAction<CashierTrend[]>) => {
       state.cashierTrends = action.payload;
+    },
+    setBaselineDetails: (state, action: PayloadAction<CashierDetails[]>) => {
+      state.baselineDetails = action.payload;
     },
     setCashierTransactions: (
       state,
@@ -240,6 +247,7 @@ export const lossPreventionSlice = createSlice({
       state.selectedCashier = { cashier_number: 0, store_number: "" };
       state.cashierDetailsTrendDirection = 0;
       state.transOverviews = [];
+      state.baselineOverviews = [];
       state.transactionLoadingMessage = "";
       if (state.viewTransactionsMobile) {
         state.viewTransactionsMobile = false;
@@ -250,6 +258,12 @@ export const lossPreventionSlice = createSlice({
       action: PayloadAction<TransactionOverview[]>,
     ) => {
       state.transOverviews = action.payload;
+    },
+    setBaselineOverviews: (
+      state,
+      action: PayloadAction<TransactionOverview[]>,
+    ) => {
+      state.baselineOverviews = action.payload;
     },
     setViewTransactionsMobile: (state, action: PayloadAction<boolean>) => {
       state.viewTransactionsMobile = action.payload;
@@ -296,6 +310,8 @@ export const {
   setSearchString,
   reQuery,
   setTransOverviews,
+  setBaselineOverviews,
+  setBaselineDetails,
   setSelectedCashierDetails,
   setCashierDetailsTrendDirection,
   setTransactionLoadingMessage,

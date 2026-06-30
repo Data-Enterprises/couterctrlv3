@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { ArrowDownTrayIcon, ArrowLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import { ArrowDownTrayIcon, ArrowLeftIcon, MagnifyingGlassIcon, ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
 import { useAppSelector, useAppDispatch, useStoreName } from "../../hooks";
 import { formatCurrency2, formatDate } from "../../utils";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
@@ -136,15 +136,12 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
   const [draftProduct,  setDraftProduct]  = useState("");
   const [draftUpc,      setDraftUpc]      = useState("");
   const [draftSubDept,  setDraftSubDept]  = useState("");
-  const [draftDate,     setDraftDate]     = useState("");
-  const [draftCashier,  setDraftCashier]  = useState("");
   const [draftAmount,   setDraftAmount]   = useState<ThresholdValue | null>(null);
+  const [expandedCoupons, setExpandedCoupons] = useState<Set<string>>(new Set());
   // Applied (live) filter state
   const [appliedProduct,  setAppliedProduct]  = useState("");
   const [appliedUpc,      setAppliedUpc]      = useState("");
   const [appliedSubDept,  setAppliedSubDept]  = useState("");
-  const [appliedDate,     setAppliedDate]     = useState("");
-  const [appliedCashier,  setAppliedCashier]  = useState("");
   const [appliedAmount,   setAppliedAmount]   = useState<ThresholdValue | null>(null);
   const selectedStoreName = isGroup && selectedKey
     ? (assignedStores.find((s) => s.storeid === Number(selectedKey))?.store_name ?? selectedKey)
@@ -174,9 +171,8 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
     setDraftProduct(""); setAppliedProduct("");
     setDraftUpc(""); setAppliedUpc("");
     setDraftSubDept(""); setAppliedSubDept("");
-    setDraftDate(""); setAppliedDate("");
-    setDraftCashier(""); setAppliedCashier("");
     setDraftAmount(null); setAppliedAmount(null);
+    setExpandedCoupons(new Set());
     dispatch(setTransactionDrillDown([]));
   }, [selectedSection]);
 
@@ -222,11 +218,6 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
   }, [visibleRows, selectedSection, groupedSections]);
 
   // Unique values for select filters
-  const uniqueDates = useMemo(() => {
-    const dates = Array.from(new Set(gridRows.map((r: any) => r.sale_date.split("T")[0]))).sort().reverse() as string[];
-    return dates.map((d) => ({ label: formatDate(d), value: d }));
-  }, [gridRows]);
-
   const uniqueSubDeptOptions = useMemo(() => {
     const depts = Array.from(new Set(gridRows.map((r: any) => r.sub_department_description as string))).sort();
     return depts.map((d) => ({ label: d, value: d }));
@@ -238,8 +229,6 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
       if (appliedProduct && !r.product_description.toLowerCase().includes(appliedProduct.toLowerCase())) return false;
       if (appliedUpc && !String(r.product_code != null ? Math.round(Number(r.product_code)) : "").includes(appliedUpc)) return false;
       if (appliedSubDept && r.sub_department_description !== appliedSubDept) return false;
-      if (appliedDate && !r.sale_date.startsWith(appliedDate)) return false;
-      if (appliedCashier && !r.cashier_name.toLowerCase().includes(appliedCashier.toLowerCase())) return false;
       if (appliedAmount) {
         const amt = r.coupon_amount;
         if (appliedAmount.op === "gt" && !(amt > appliedAmount.amount)) return false;
@@ -248,7 +237,40 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
       }
       return true;
     });
-  }, [gridRows, appliedProduct, appliedUpc, appliedSubDept, appliedDate, appliedCashier, appliedAmount]);
+  }, [gridRows, appliedProduct, appliedUpc, appliedSubDept, appliedAmount]);
+
+  // Aggregated coupon rows for the grid (grouped by UPC/product)
+  const aggCouponRows = useMemo(() => {
+    type AggUse = { sale_id: string; sale_date: string; cashier_name: string; storeid: number; store_number: string; terminal: string; count: number; amount: number; row: any };
+    type AggRow = { product_code: string; product_description: string; sub_department_description: string; count: number; total: number; uses: AggUse[] };
+    const map = new Map<string, AggRow>();
+    filteredGridRows.forEach((r: any) => {
+      const key = r.product_code != null ? String(Math.round(Number(r.product_code))) : r.product_description;
+      if (!map.has(key)) {
+        map.set(key, { product_code: key, product_description: r.product_description, sub_department_description: r.sub_department_description, count: 0, total: 0, uses: [] });
+      }
+      const agg = map.get(key)!;
+      agg.count++;
+      agg.total += r.coupon_amount;
+      const existing = agg.uses.find((u) => u.sale_id === r.sale_id);
+      if (existing) {
+        existing.count++;
+        existing.amount += r.coupon_amount;
+      } else {
+        agg.uses.push({ sale_id: r.sale_id, sale_date: r.sale_date, cashier_name: r.cashier_name, storeid: r.storeid, store_number: r.store_number, terminal: r.terminal, count: 1, amount: r.coupon_amount, row: r });
+      }
+    });
+    const rows = Array.from(map.values());
+    return sortMetric === "qty" ? rows.sort((a, b) => b.count - a.count) : rows.sort((a, b) => b.total - a.total);
+  }, [filteredGridRows, sortMetric]);
+
+  const toggleCoupon = (key: string) => {
+    setExpandedCoupons((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  };
 
   // Top KPI strip — scoped to selected store (or all stores if none selected)
   const totalCoupons   = visibleRows.length;
@@ -582,14 +604,14 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
               <>
                 {gridRows.length === 0 ? (
                   <div className="flex-1 flex items-center justify-center">
-                    <span className="text-[12px] text-content/50">{selectedSection ? "No coupons to display" : "Select a group"}</span>
+                    <span className="text-[12px] text-content/50">{selectedSection ? "No coupons to display" : "Select a group to drill down"}</span>
                   </div>
                 ) : (
                   <div className="flex-1 overflow-auto thin-scrollbar">
                     <table className="w-full border-collapse text-[11px]">
                       <thead>
                         <tr className="sticky top-0 bg-gray-100 border-b border-gray-100 z-10">
-                          <th className="px-3 py-2 text-left" style={{ overflow: "visible" }}>
+                          <th className="px-3 py-2 text-left w-32" style={{ overflow: "visible" }}>
                             <ColFilter label="UPC" active={!!appliedUpc} appliedDisplay={appliedUpc}
                               onApply={() => setAppliedUpc(draftUpc)}
                               onClear={() => { setAppliedUpc(""); setDraftUpc(""); }}>
@@ -610,24 +632,11 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
                               <SelectFilter options={uniqueSubDeptOptions} value={draftSubDept} onChange={setDraftSubDept} placeholder="All sub depts" className="w-full" />
                             </ColFilter>
                           </th>
-                          <th className="px-3 py-2 text-left" style={{ overflow: "visible" }}>
-                            <ColFilter label="Date" active={!!appliedDate} appliedDisplay={appliedDate ? formatDate(appliedDate) : undefined}
-                              onApply={() => setAppliedDate(draftDate)}
-                              onClear={() => { setAppliedDate(""); setDraftDate(""); }}>
-                              <SelectFilter options={uniqueDates} value={draftDate} onChange={setDraftDate} placeholder="All dates" className="w-full" />
-                            </ColFilter>
-                          </th>
-                          <th className="px-3 py-2 text-left" style={{ overflow: "visible" }}>
-                            <ColFilter label="Cashier" active={!!appliedCashier} appliedDisplay={appliedCashier}
-                              onApply={() => setAppliedCashier(draftCashier)}
-                              onClear={() => { setAppliedCashier(""); setDraftCashier(""); }}>
-                              <input autoFocus style={{ width: "100%", fontSize: 11, border: "1px solid rgba(30,42,74,0.15)", borderRadius: 4, padding: "4px 7px", outline: "none", color: "var(--color-text-primary)", background: "rgba(30,42,74,0.03)" }} placeholder="Search cashier…" value={draftCashier} onChange={(e) => setDraftCashier(e.target.value)} />
-                            </ColFilter>
-                          </th>
-                          <th className="px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-left whitespace-nowrap">Trans ID</th>
-                          {isGroup && <th className="px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-left">Store</th>}
-                          <th className="px-3 py-2 text-right" style={{ overflow: "visible" }}>
-                            <ColFilter label="Amount" active={!!appliedAmount} appliedDisplay={fmtThreshold(appliedAmount, "$")} align="right"
+                          <th className="px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-right whitespace-nowrap" style={{ width: "8%" }}>Trans</th>
+                          {isGroup && <th className="px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-left w-14">Store</th>}
+                          <th className="px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-right w-12">Count</th>
+                          <th className="px-3 py-2 text-right w-24" style={{ overflow: "visible" }}>
+                            <ColFilter label="Total" active={!!appliedAmount} appliedDisplay={fmtThreshold(appliedAmount, "$")} align="right"
                               onApply={() => setAppliedAmount(draftAmount)}
                               onClear={() => { setAppliedAmount(null); setDraftAmount(null); }}>
                               <ThresholdFilter value={draftAmount} onChange={setDraftAmount} prefix="$" placeholder="Amount" showOp showClear stretch className="w-full" />
@@ -636,24 +645,65 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-50">
-                        {filteredGridRows.map((row: any, i: number) => (
-                          <tr
-                            key={`${row.sale_id}-${i}`}
-                            className="cursor-pointer hover:bg-gray-50 transition-colors"
-                            onClick={() => handleRowClick(row)}
-                          >
-                            <td className="px-3 py-2 text-content/50 whitespace-nowrap tabular-nums">{row.product_code != null ? String(Math.round(Number(row.product_code))) : "—"}</td>
-                            <td className="px-3 py-2 text-content font-medium truncate max-w-0" style={{ maxWidth: 180 }}>{row.product_description}</td>
-                            <td className="px-3 py-2 text-content/60 whitespace-nowrap">{row.sub_department_description}</td>
-                            <td className="px-3 py-2 text-content/60 whitespace-nowrap">{formatDate(row.sale_date.split("T")[0])}</td>
-                            <td className="px-3 py-2 text-content/60 whitespace-nowrap">{row.cashier_name}</td>
-                            <td className="px-3 py-2 text-content/50 whitespace-nowrap tabular-nums">{row.sale_id}</td>
-                            {isGroup && <td className="px-3 py-2 text-content/60 whitespace-nowrap">{row.store_number}</td>}
-                            <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">{formatCurrency2(row.coupon_amount)}</td>
-                          </tr>
-                        ))}
-                        {filteredGridRows.length === 0 && (
-                          <tr><td colSpan={isGroup ? 8 : 7} className="px-3 py-6 text-center text-[11px] text-content/40">No results match the current filters</td></tr>
+                        {aggCouponRows.map((agg) => {
+                          const isExp = expandedCoupons.has(agg.product_code);
+                          const colCount = isGroup ? 7 : 6;
+                          return (
+                            <>
+                              <tr
+                                key={agg.product_code}
+                                className="cursor-pointer hover:bg-gray-50 transition-colors"
+                                onClick={() => toggleCoupon(agg.product_code)}
+                              >
+                                <td className="px-3 py-2 whitespace-nowrap tabular-nums">
+                                  <div className="flex items-center gap-1.5">
+                                    {isExp
+                                      ? <ChevronDownIcon className="w-3 h-3 text-content/30 flex-shrink-0" />
+                                      : <ChevronRightIcon className="w-3 h-3 text-content/30 flex-shrink-0" />
+                                    }
+                                    <span className="text-content/50">{agg.product_code || "—"}</span>
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2 text-content font-medium truncate max-w-0" style={{ maxWidth: 180 }}>{agg.product_description}</td>
+                                <td className="px-3 py-2 text-content/60 whitespace-nowrap">{agg.sub_department_description}</td>
+                                <td className="px-3 py-2 text-right tabular-nums text-content/60">{agg.uses.length}</td>
+                                {isGroup && <td className="px-3 py-2 text-content/40 text-[10px] whitespace-nowrap">{agg.uses.length > 0 ? `${new Set(agg.uses.map(u => u.store_number)).size} stores` : "—"}</td>}
+                                <td className="px-3 py-2 text-right tabular-nums text-content/60">{agg.count}</td>
+                                <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">{formatCurrency2(agg.total)}</td>
+                              </tr>
+                              {isExp && (
+                                <>
+                                  <tr className="bg-gray-100/70">
+                                    <td className="pl-8 pr-3 py-1" />
+                                    <td className="px-3 py-1 text-[8px] font-semibold uppercase tracking-wide text-content/40">Cashier</td>
+                                    <td className="px-3 py-1 text-[8px] font-semibold uppercase tracking-wide text-content/40">Date</td>
+                                    <td className="px-3 py-1 text-[8px] font-semibold uppercase tracking-wide text-content/40">Trans ID</td>
+                                    {isGroup && <td className="px-3 py-1 text-[8px] font-semibold uppercase tracking-wide text-content/40">Store</td>}
+                                    <td className="px-3 py-1 text-[8px] font-semibold uppercase tracking-wide text-content/40 text-right">Qty</td>
+                                    <td className="px-3 py-1 text-[8px] font-semibold uppercase tracking-wide text-content/40 text-right">Amount</td>
+                                  </tr>
+                                  {agg.uses.map((use) => (
+                                    <tr
+                                      key={use.sale_id}
+                                      className="bg-gray-50/60 cursor-pointer hover:bg-blue-50/40 transition-colors"
+                                      onClick={(e) => { e.stopPropagation(); handleRowClick(use.row); }}
+                                    >
+                                      <td className="pl-8 pr-3 py-1.5" />
+                                      <td className="px-3 py-1.5 text-[10px] text-content/60 truncate max-w-0" style={{ maxWidth: 180 }}>{use.cashier_name}</td>
+                                      <td className="px-3 py-1.5 text-[10px] text-content/50 whitespace-nowrap">{formatDate(use.sale_date.split("T")[0])}</td>
+                                      <td className="px-3 py-1.5 text-[10px] text-content/40 whitespace-nowrap tabular-nums">{use.sale_id}</td>
+                                      {isGroup && <td className="px-3 py-1.5 text-[10px] text-content/50 whitespace-nowrap">{use.store_number}</td>}
+                                      <td className="px-3 py-1.5 text-right tabular-nums text-[10px] text-content/60">{use.count}</td>
+                                      <td className="px-3 py-1.5 text-right tabular-nums text-[10px] font-semibold text-content">{formatCurrency2(use.amount)}</td>
+                                    </tr>
+                                  ))}
+                                </>
+                              )}
+                            </>
+                          );
+                        })}
+                        {aggCouponRows.length === 0 && (
+                          <tr><td colSpan={isGroup ? 7 : 6} className="px-3 py-6 text-center text-[11px] text-content/40">No results match the current filters</td></tr>
                         )}
                       </tbody>
                     </table>

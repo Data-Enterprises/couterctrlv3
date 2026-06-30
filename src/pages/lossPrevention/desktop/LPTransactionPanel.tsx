@@ -69,10 +69,13 @@ const SEV_ICON: Record<CashierSeverity, React.ReactNode> = {
 
 // ── Shared strip cell ─────────────────────────────────────────────────────────
 
-const StripCell = ({ label, value, badge }: { label: string; value: string; badge: React.ReactNode }) => (
+const StripCell = ({ label, value, baselineValue, badge }: { label: string; value: string; baselineValue?: string; badge: React.ReactNode }) => (
   <div className="px-3.5 py-[11px] bg-white">
     <div className="text-[8px] font-bold uppercase tracking-[.07em] text-content/40 mb-1">{label}</div>
     <div className="text-[15px] font-bold text-[#1e2a4a] leading-none">{value}</div>
+    {baselineValue !== undefined && (
+      <div className="text-[9px] text-content/40 mt-1">Baseline/wk <span className="text-content/60 font-medium">{baselineValue}</span></div>
+    )}
     <div className="mt-1.5">{badge}</div>
   </div>
 );
@@ -92,14 +95,15 @@ const TrendBadge = ({ current, trend, useAbs = false }: { current: number; trend
         ? { background: "rgba(220,38,38,0.09)", color: "#dc2626" }
         : { background: "rgba(22,163,74,0.09)",  color: "#16a34a" }}
     >
-      {isUp ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}% trend
+      {isUp ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}% vs baseline
     </span>
   );
 };
 
 // ── Cashier breakdown badge ("avg") ──────────────────────────────────────────
 
-const AvgBadge = ({ pct }: { pct: number }) => {
+const AvgBadge = ({ pct, avg }: { pct: number; avg: number }) => {
+  if (avg === 0) return null;
   const isUp = pct > 0;
   return (
     <span
@@ -108,7 +112,7 @@ const AvgBadge = ({ pct }: { pct: number }) => {
         ? { background: "rgba(220,38,38,0.09)", color: "#dc2626" }
         : { background: "rgba(22,163,74,0.09)",  color: "#16a34a" }}
     >
-      {isUp ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}% avg
+      {isUp ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}% vs baseline
     </span>
   );
 };
@@ -223,23 +227,23 @@ const LPTransactionPanel = ({ onTransactionClick, onShowAll }: Props) => {
   const [appliedSales,   setAppliedSales]       = useState<ThresholdValue | null>(null);
 
   const {
-    selectedStoreId, cashierDetails, cashierTrends, selectedSaleType,
+    selectedStoreId, cashierDetails, selectedSaleType,
     transOverviews, transList, cashiers, selectedCashier,
     fetchingCashierTransactions, transactionLoadingMessage,
     saleDateFilter, transactionDrillDown,
   } = cashier;
 
-  const detail = cashierDetails.find((d) => d.storeid === selectedStoreId) ?? null;
-  const trend  = cashierTrends.find((t)  => t.storeid === selectedStoreId) ?? null;
-  const storeName = useStoreName(selectedStoreId ?? 0, detail?.store_name);
+  const detail         = cashierDetails.find((d) => d.storeid === selectedStoreId) ?? null;
+  const baselineDetail = cashier.baselineDetails.find((b) => b.storeid === selectedStoreId) ?? null;
+  const storeName      = useStoreName(selectedStoreId ?? 0, detail?.store_name);
 
   // ── Graded cashier list ───────────────────────────────────────────────────
 
   const isNoDollar = selectedSaleType.toLowerCase().replace(/[^a-z]/g, "") === "nosale";
 
   const cashierGrades = useMemo(
-    () => gradeAllCashiers(transOverviews, cashiers, selectedSaleType),
-    [transOverviews, cashiers, selectedSaleType],
+    () => gradeAllCashiers(transOverviews, cashier.baselineOverviews, cashiers, selectedSaleType),
+    [transOverviews, cashier.baselineOverviews, cashiers, selectedSaleType],
   );
 
   const selectedGrade = cashierGrades.find(
@@ -323,19 +327,24 @@ const LPTransactionPanel = ({ onTransactionClick, onShowAll }: Props) => {
 
   // ── Strip data ────────────────────────────────────────────────────────────
 
-  const kpiMetrics = detail && trend ? [
-    { label: "Transactions", value: String(detail.transaction_count),        current: detail.transaction_count,  trendVal: trend.transaction_count,  useAbs: false          },
-    { label: "Items",        value: String(detail.total_items),              current: detail.total_items,        trendVal: trend.total_items,        useAbs: false          },
-    { label: "Total",        value: formatCurrency2(detail.amount),          current: detail.amount,             trendVal: trend.amount,             useAbs: !isNoDollar    },
-    { label: "Avg ticket",   value: formatCurrency2(detail.average_dollars), current: detail.average_dollars,    trendVal: trend.average_dollars,    useAbs: !isNoDollar    },
+  const bTrans  = baselineDetail ? baselineDetail.transaction_count / 2 : null;
+  const bItems  = baselineDetail ? baselineDetail.total_items / 2 : null;
+  const bAmount = baselineDetail ? Math.abs(baselineDetail.amount) / 2 : null;
+  const bAvg    = baselineDetail ? Math.abs(baselineDetail.average_dollars) : null;
+
+  const kpiMetrics = detail ? [
+    { label: "Transactions", value: String(detail.transaction_count),        baselineStr: bTrans  !== null ? String(Math.round(bTrans))    : undefined, current: detail.transaction_count,  trendVal: bTrans  ?? 0, useAbs: false       },
+    { label: "Items",        value: String(detail.total_items),              baselineStr: bItems  !== null ? String(Math.round(bItems))    : undefined, current: detail.total_items,        trendVal: bItems  ?? 0, useAbs: false       },
+    { label: "Total",        value: formatCurrency2(detail.amount),          baselineStr: bAmount !== null ? formatCurrency2(bAmount)      : undefined, current: detail.amount,             trendVal: bAmount ?? 0, useAbs: !isNoDollar },
+    { label: "Avg ticket",   value: formatCurrency2(detail.average_dollars), baselineStr: bAvg    !== null ? formatCurrency2(bAvg)         : undefined, current: detail.average_dollars,    trendVal: bAvg    ?? 0, useAbs: !isNoDollar },
   ] : null;
 
   const scoreMetrics = selectedGrade ? [
-    { label: "Transactions", value: String(selectedGrade.trans.value),              pct: selectedGrade.trans.pct  },
-    { label: "Items",        value: String(selectedGrade.qty.value),                pct: selectedGrade.qty.pct    },
+    { label: "Transactions", value: String(selectedGrade.trans.value),              baselineStr: selectedGrade.trans.avg > 0     ? String(Math.round(selectedGrade.trans.avg))              : undefined, pct: selectedGrade.trans.pct,    avg: selectedGrade.trans.avg    },
+    { label: "Items",        value: String(selectedGrade.qty.value),                baselineStr: selectedGrade.qty.avg > 0       ? String(Math.round(selectedGrade.qty.avg))                : undefined, pct: selectedGrade.qty.pct,      avg: selectedGrade.qty.avg      },
     ...(!isNoDollar ? [
-      { label: "Total",      value: formatCurrency2(selectedGrade.sales.value),     pct: selectedGrade.sales.pct      },
-      { label: "Avg ticket", value: formatCurrency2(selectedGrade.avgTicket.value), pct: selectedGrade.avgTicket.pct  },
+      { label: "Total",      value: formatCurrency2(selectedGrade.sales.value),     baselineStr: selectedGrade.sales.avg !== 0     ? formatCurrency2(Math.abs(selectedGrade.sales.avg))     : undefined, pct: selectedGrade.sales.pct,    avg: selectedGrade.sales.avg    },
+      { label: "Avg ticket", value: formatCurrency2(selectedGrade.avgTicket.value), baselineStr: selectedGrade.avgTicket.avg !== 0 ? formatCurrency2(Math.abs(selectedGrade.avgTicket.avg)) : undefined, pct: selectedGrade.avgTicket.pct, avg: selectedGrade.avgTicket.avg },
     ] : []),
   ] : null;
 
@@ -403,6 +412,7 @@ const LPTransactionPanel = ({ onTransactionClick, onShowAll }: Props) => {
                   key={m.label}
                   label={m.label}
                   value={m.value}
+                  baselineValue={m.baselineStr}
                   badge={<TrendBadge current={m.current} trend={m.trendVal} useAbs={m.useAbs} />}
                 />
               ))}
@@ -507,7 +517,7 @@ const LPTransactionPanel = ({ onTransactionClick, onShowAll }: Props) => {
                   </div>
                   <div className={`flex-shrink-0 grid divide-x divide-gray-100 border-b border-gray-100 ${isNoDollar ? "grid-cols-2" : "grid-cols-4"}`}>
                     {scoreMetrics.map((m) => (
-                      <StripCell key={m.label} label={m.label} value={m.value} badge={<AvgBadge pct={m.pct} />} />
+                      <StripCell key={m.label} label={m.label} value={m.value} baselineValue={m.baselineStr} badge={<AvgBadge pct={m.pct} />} />
                     ))}
                   </div>
                 </>

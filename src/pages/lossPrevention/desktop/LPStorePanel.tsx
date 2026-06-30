@@ -5,7 +5,7 @@ import TierColumn from "../../../components/TierColumn";
 
 import { formatCurrency2, formatBigNumber } from "../../../utils";
 import { useAppSelector, useStoreName } from "../../../hooks";
-import type { CashierDetails, CashierTrend } from "../../../interfaces";
+import type { CashierDetails } from "../../../interfaces";
 
 type Severity = "critical" | "watch" | "healthy";
 
@@ -18,14 +18,19 @@ const SHADOW_COLOR: Record<Severity, string> = {
 const isNoDollarType = (saleType: string) =>
   saleType.toLowerCase().replace(/[^a-z]/g, "") === "nosale";
 
-const storeSeverity = (detail: CashierDetails, trends: CashierTrend[], saleType: string): Severity => {
-  const trend = trends.find((t) => t.storeid === detail.storeid);
-  if (!trend) return "critical";
+const storeSeverity = (detail: CashierDetails, baselineDetails: CashierDetails[], saleType: string): Severity => {
+  const b = baselineDetails.find((x) => x.storeid === detail.storeid);
+  if (!b) return "healthy"; // no baseline = can't grade
+
+  const bTrans  = b.transaction_count / 2;
+  const bItems  = b.total_items / 2;
+  const bAmount = Math.abs(b.amount) / 2;
+  const bAvg    = Math.abs(b.average_dollars);
 
   if (isNoDollarType(saleType)) {
     const score = [
-      detail.transaction_count <= trend.transaction_count,
-      detail.total_items       <= trend.total_items,
+      detail.transaction_count <= bTrans,
+      detail.total_items       <= bItems,
     ].filter(Boolean).length;
     if (score === 2) return "healthy";
     if (score === 1) return "watch";
@@ -33,10 +38,10 @@ const storeSeverity = (detail: CashierDetails, trends: CashierTrend[], saleType:
   }
 
   const score = [
-    detail.transaction_count         <= trend.transaction_count,
-    detail.total_items               <= trend.total_items,
-    Math.abs(detail.amount)          <= Math.abs(trend.amount),
-    Math.abs(detail.average_dollars) <= Math.abs(trend.average_dollars),
+    detail.transaction_count         <= bTrans,
+    detail.total_items               <= bItems,
+    Math.abs(detail.amount)          <= bAmount,
+    Math.abs(detail.average_dollars) <= bAvg,
   ].filter(Boolean).length;
   if (score >= 3) return "healthy";
   if (score === 2) return "watch";
@@ -58,7 +63,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
   const [legendHover, setLegendHover] = useState(false);
 
   const {
-    saleTypes, selectedSaleType, cashierDetails, cashierTrends,
+    saleTypes, selectedSaleType, cashierDetails, baselineDetails,
     selectedStoreId,
   } = cashier;
 
@@ -72,36 +77,36 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
   const totalTrans  = cashierDetails.reduce((acc, d) => acc + d.transaction_count, 0);
   const totalItems  = cashierDetails.reduce((acc, d) => acc + d.total_items, 0);
 
-  const criticalStores = cashierDetails.filter((d) => storeSeverity(d, cashierTrends, selectedSaleType) === "critical");
-  const watchStores    = cashierDetails.filter((d) => storeSeverity(d, cashierTrends, selectedSaleType) === "watch");
-  const healthyStores  = cashierDetails.filter((d) => storeSeverity(d, cashierTrends, selectedSaleType) === "healthy");
+  const criticalStores = cashierDetails.filter((d) => storeSeverity(d, baselineDetails, selectedSaleType) === "critical");
+  const watchStores    = cashierDetails.filter((d) => storeSeverity(d, baselineDetails, selectedSaleType) === "watch");
+  const healthyStores  = cashierDetails.filter((d) => storeSeverity(d, baselineDetails, selectedSaleType) === "healthy");
 
   const StoreRow = ({ detail }: { detail: CashierDetails }) => {
-    const sev = storeSeverity(detail, cashierTrends, selectedSaleType);
+    const sev = storeSeverity(detail, baselineDetails, selectedSaleType);
     const isSel = detail.storeid === selectedStoreId;
-    const trend = cashierTrends.find((t) => t.storeid === detail.storeid);
+    const b = baselineDetails.find((x) => x.storeid === detail.storeid);
     const storeName = useStoreName(detail.storeid, detail.store_name);
 
     const metrics = [
       {
         label: "Cashiers",
         current: detail.cashier_count,
-        trend: trend ? trend.cashier_count : null,
-        fmt: (v: number) => String(v),
+        trend: b ? b.cashier_count / 2 : null,
+        fmt: (v: number) => String(Math.round(v)),
         showPct: false,
       },
       {
         label: "Total",
         current: Math.abs(detail.amount),
-        trend: trend ? Math.abs(trend.amount) : null,
+        trend: b ? Math.abs(b.amount) / 2 : null,
         fmt: (v: number) => formatCurrency2(v),
         showPct: true,
       },
       {
         label: "Trans",
         current: detail.transaction_count,
-        trend: trend ? trend.transaction_count : null,
-        fmt: (v: number) => String(v),
+        trend: b ? b.transaction_count / 2 : null,
+        fmt: (v: number) => String(Math.round(v)),
         showPct: true,
       },
     ];

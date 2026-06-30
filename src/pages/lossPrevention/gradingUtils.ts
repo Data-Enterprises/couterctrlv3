@@ -7,7 +7,7 @@ export interface CashierMetric {
   avg: number;
   /** (value - avg) / avg * 100 — display only, not used for pass/fail */
   pct: number;
-  /** true when value < avg (below = good for LP exceptions) */
+  /** true when value ≤ baseline (below = good for LP exceptions) */
   isPass: boolean;
 }
 
@@ -21,6 +21,8 @@ export interface CashierGrade {
   avgTicket: CashierMetric;
   passes: number;
   severity: CashierSeverity;
+  /** false when cashier had no activity in the baseline period — grade is unreliable */
+  hasBaseline: boolean;
 }
 
 export interface PeerAverages {
@@ -82,27 +84,22 @@ export const buildCashierStats = (
   return Array.from(map.values());
 };
 
-// ── Step 2: mean of each metric across all cashiers ─────────────────────────
+// ── Kept for display/context use (peer comparison on UI) ────────────────────
 
 export const computePeerAverages = (stats: RawCashierStats[]): PeerAverages => {
   if (stats.length === 0) return { trans: 0, qty: 0, sales: 0, avgTicket: 0 };
-
   const n = stats.length;
-  const trans = stats.reduce((s, c) => s + c.trans, 0) / n;
-  const qty = stats.reduce((s, c) => s + c.qty, 0) / n;
-  const sales = stats.reduce((s, c) => s + c.sales, 0) / n;
-  const avgTicket =
-    stats.reduce((s, c) => s + (c.trans > 0 ? c.sales / c.trans : 0), 0) / n;
-
+  const trans     = stats.reduce((s, c) => s + c.trans, 0) / n;
+  const qty       = stats.reduce((s, c) => s + c.qty, 0) / n;
+  const sales     = stats.reduce((s, c) => s + c.sales, 0) / n;
+  const avgTicket = stats.reduce((s, c) => s + (c.trans > 0 ? c.sales / c.trans : 0), 0) / n;
   return { trans, qty, sales, avgTicket };
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 const isNoSaleType = (saleType: string) =>
   saleType.toLowerCase().replace(/[^a-z]/g, "") === "nosale";
-
-// ── Step 3: grade one cashier against peer averages ──────────────────────────
 
 /**
  * useAbs: compare |value| vs |avg| — required for dollar metrics on refund
@@ -116,40 +113,52 @@ const makeMetric = (value: number, avg: number, useAbs = false): CashierMetric =
   return { value, avg, pct, isPass };
 };
 
+// ── Step 3: grade one cashier against their own baseline ─────────────────────
+
 export const gradeCashier = (
-  stats: RawCashierStats,
-  avgs: PeerAverages,
+  currentStats: RawCashierStats,
+  baselineStats: RawCashierStats | null,
+  baselineWeeks: number,
   saleType: string,
 ): CashierGrade => {
-  const noSale = isNoSaleType(saleType);
-  const cashierAvgTicket = stats.trans > 0 ? stats.sales / stats.trans : 0;
+  const noSale     = isNoSaleType(saleType);
+  const hasBaseline = baselineStats !== null && baselineStats.trans > 0;
 
-  const trans     = makeMetric(stats.trans,      avgs.trans);
-  // qty can be negative for Refunded; use abs so -65 doesn't falsely beat -22
-  const qty       = makeMetric(stats.qty,        avgs.qty,       !noSale);
-  const sales     = makeMetric(stats.sales,      avgs.sales,     !noSale);
-  const avgTicket = makeMetric(cashierAvgTicket, avgs.avgTicket, !noSale);
+  // Normalize baseline to per-week so it's on the same scale as the 1-week current period
+  const bTrans     = hasBaseline ? baselineStats!.trans / baselineWeeks : 0;
+  const bQty       = hasBaseline ? baselineStats!.qty / baselineWeeks   : 0;
+  const bSales     = hasBaseline ? baselineStats!.sales / baselineWeeks : 0;
+  const bAvgTicket = hasBaseline ? baselineStats!.sales / baselineStats!.trans : 0;
 
-  // No Sale grades only trans + qty (matches store grading)
+  const currentAvgTicket = currentStats.trans > 0 ? currentStats.sales / currentStats.trans : 0;
+
+  const trans     = makeMetric(currentStats.trans,  bTrans,     false);
+  const qty       = makeMetric(currentStats.qty,    bQty,       !noSale);
+  const sales     = makeMetric(currentStats.sales,  bSales,     !noSale);
+  const avgTicket = makeMetric(currentAvgTicket,    bAvgTicket, !noSale);
+
+  // No Sale grades only trans + qty (2-metric scale)
   const gradedMetrics = noSale ? [trans, qty] : [trans, qty, sales, avgTicket];
   const passes = gradedMetrics.filter((m) => m.isPass).length;
 
-  // No Sale:  2=OK, 1=Watch, 0=Critical  (2-metric scale)
-  // Standard: 3+=OK, 2=Watch, 0-1=Critical
-  const severity: CashierSeverity = noSale
+  // No baseline → can't grade fairly, default to ok
+  const severity: CashierSeverity = !hasBaseline
+    ? "ok"
+    : noSale
     ? passes === 2 ? "ok" : passes === 1 ? "watch" : "critical"
     : passes >= 3  ? "ok" : passes === 2 ? "watch" : "critical";
 
   return {
-    cashier_number: stats.cashier_number,
-    cashier_name:   stats.cashier_name,
-    store_number:   stats.store_number,
+    cashier_number: currentStats.cashier_number,
+    cashier_name:   currentStats.cashier_name,
+    store_number:   currentStats.store_number,
     trans,
     qty,
     sales,
     avgTicket,
     passes,
     severity,
+    hasBaseline,
   };
 };
 
@@ -157,14 +166,21 @@ export const gradeCashier = (
 
 const SEVERITY_RANK: Record<CashierSeverity, number> = { critical: 0, watch: 1, ok: 2 };
 
+/**
+ * currentOverviews: 7-day window (singleDate - 6 → singleDate)
+ * baselineOverviews: prior 2-week window (singleDate - 20 → singleDate - 7)
+ */
 export const gradeAllCashiers = (
-  transOverviews: TransactionOverview[],
+  currentOverviews: TransactionOverview[],
+  baselineOverviews: TransactionOverview[],
   cashiers: UniqueCashier[],
   saleType: string,
 ): CashierGrade[] => {
-  const stats = buildCashierStats(transOverviews, cashiers);
-  const avgs  = computePeerAverages(stats);
-  return stats
-    .map((s) => gradeCashier(s, avgs, saleType))
+  const currentStats  = buildCashierStats(currentOverviews, cashiers);
+  const baselineStats = buildCashierStats(baselineOverviews, []);
+  const baselineMap   = new Map(baselineStats.map((s) => [s.cashier_number, s]));
+
+  return currentStats
+    .map((s) => gradeCashier(s, baselineMap.get(s.cashier_number) ?? null, 2, saleType))
     .sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity]);
 };

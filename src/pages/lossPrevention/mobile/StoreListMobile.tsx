@@ -6,6 +6,7 @@ import { useApiContext } from "../../hooks";
 import { getCashierDetails, getCashierTable, getTransactionList } from "../../../api/lossPrevention";
 import {
   reQuery,
+  setBaselineOverviews,
   setCashierDetails,
   setCashiers,
   setCashierTrends,
@@ -20,7 +21,7 @@ import {
   toggleNoTransMsg,
 } from "../../../features/lossPreventionSlice";
 import type { JsonError, TransactionListItem, TransactionOverview, UniqueCashier } from "../../../interfaces";
-import { formatCurrency2, formatGoliathDate } from "../../../utils";
+import { formatCurrency2 } from "../../../utils";
 import SevChips from "../../sales/mobile/components/SevChips";
 import SevBadge from "../../sales/mobile/components/SevBadge";
 import type { SevFilter } from "../../../features/salesLedgerSlice";
@@ -37,24 +38,29 @@ const isNoSale = (saleType: string) =>
 
 const getStoreSev = (
   detail: CashierDetails,
-  trend: CashierTrend | undefined,
+  baseline: CashierDetails | undefined,
   saleType: string,
 ): "critical" | "watch" | "healthy" => {
-  if (!trend) return "critical";
+  if (!baseline) return "healthy"; // no baseline = can't grade
+  // baseline covers 2 weeks; normalize to 1-week to match current period
+  const bTrans = baseline.transaction_count / 2;
+  const bItems = baseline.total_items / 2;
+  const bAmount = Math.abs(baseline.amount) / 2;
+  const bAvg = Math.abs(baseline.average_dollars);
   if (isNoSale(saleType)) {
     const score = [
-      detail.transaction_count <= trend.transaction_count,
-      detail.total_items <= trend.total_items,
+      detail.transaction_count <= bTrans,
+      detail.total_items <= bItems,
     ].filter(Boolean).length;
     if (score === 2) return "healthy";
     if (score === 1) return "watch";
     return "critical";
   }
   const score = [
-    detail.transaction_count <= trend.transaction_count,
-    detail.total_items <= trend.total_items,
-    Math.abs(detail.amount) <= Math.abs(trend.amount),
-    Math.abs(detail.average_dollars) <= Math.abs(trend.average_dollars),
+    detail.transaction_count <= bTrans,
+    detail.total_items <= bItems,
+    Math.abs(detail.amount) <= bAmount,
+    Math.abs(detail.average_dollars) <= bAvg,
   ].filter(Boolean).length;
   if (score >= 3) return "healthy";
   if (score === 2) return "watch";
@@ -91,7 +97,7 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
     dispatch(reQuery());
     dispatch(setSelectedSaleType(saleType));
     dispatch(setLoadingCashierDetails(true));
-    getCashierDetails(params.url, params.token, params.start, params.end, params.useGroups, params.searchValue, params.singleStore, [saleType])
+    getCashierDetails(params.url, params.token, params.lpStart, params.lpEnd, params.useGroups, params.searchValue, params.singleStore, [saleType])
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
@@ -102,6 +108,9 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
       })
       .catch((err: JsonError) => toast.error("Error fetching store details: " + err.message))
       .finally(() => dispatch(setLoadingCashierDetails(false)));
+    getCashierDetails(params.url, params.token, params.lpBaseStart, params.lpBaseEnd, params.useGroups, params.searchValue, params.singleStore, [saleType])
+      .then((r) => { if (r.data.error === 0) dispatch(setBaselineDetails(r.data.sales)); })
+      .catch(() => {});
   };
 
   useEffect(() => {
@@ -123,8 +132,16 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
     dispatch(setTransList([]));
 
     const saleType = lp.selectedSaleType;
-    const start = formatGoliathDate(search.startDate);
-    const end   = formatGoliathDate(search.endDate);
+    const [sm, sd, sy] = search.singleDate.split("/").map(Number);
+    const endD       = new Date(sy, sm - 1, sd);
+    const startD     = new Date(sy, sm - 1, sd - 6);
+    const baseEndD   = new Date(sy, sm - 1, sd - 7);
+    const baseStartD = new Date(sy, sm - 1, sd - 20);
+    const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const start     = fmt(startD);
+    const end       = fmt(endD);
+    const baseStart = fmt(baseStartD);
+    const baseEnd   = fmt(baseEndD);
 
     getCashierTable(params.url, params.token, start, end, 0, storeid, 1, [saleType], 1, lp.searchString)
       .then((resp) => {
@@ -157,6 +174,37 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
+
+    // Baseline fetch — prior 2 weeks for cashier grading
+    getCashierTable(params.url, params.token, baseStart, baseEnd, 0, storeid, 1, [saleType], 1, lp.searchString)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          const baseTrans = j.transactions.filter((t: any) => t.sale_type === saleType);
+          const fetchPages = j.total_pages > 1
+            ? Array.from({ length: j.total_pages - 1 }, (_, i) =>
+                getCashierTable(params.url, params.token, baseStart, baseEnd, 0, storeid, 1, [saleType], i + 2, lp.searchString)
+                  .then((r) => r.data.error === 0 ? r.data.transactions.filter((t: any) => t.sale_type === saleType) : [])
+              )
+            : [];
+          Promise.all(fetchPages).then((pages) => {
+            pages.forEach((p) => baseTrans.push(...p));
+            const overviews: TransactionOverview[] = baseTrans.reduce((acc: TransactionOverview[], curr: any) => {
+              const txId = curr.sale_id.split("-")[1];
+              const found = acc.find((o) => o.transaction_id === txId);
+              if (!found) {
+                acc.push({ transaction_id: txId, sale_date: curr.sale_date.split("T")[0], sale_type: curr.sale_type, store_number: curr.store_number, cashier_name: curr.cashier_name, cashier_number: curr.cashier_number, qty: 1, total_sales: curr.total_sales, sale_id: curr.sale_id, storeid: curr.storeid });
+              } else {
+                found.qty += 1;
+                found.total_sales += curr.total_sales;
+              }
+              return acc;
+            }, []);
+            dispatch(setBaselineOverviews(overviews));
+          });
+        }
+      })
+      .catch(() => { /* baseline failure is non-fatal */ });
   };
 
   const fetchTransactions = (saleIds: string[], saleType: string) => {
@@ -182,9 +230,9 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
           const overviews: TransactionOverview[] = formatted.reduce((acc: TransactionOverview[], curr) => {
             const found = acc.find((item) => item.transaction_id === curr.transaction_id);
             if (!found) {
-              acc.push({ transaction_id: curr.transaction_id, sale_date: curr.sale_date, sale_type: curr.sale_type, store_number: curr.store_number, cashier_name: curr.cashier_name, cashier_number: curr.cashier_number, qty: curr.qty ?? 0, total_sales: curr.total_sales, sale_id: curr.sale_id, storeid: curr.storeid });
+              acc.push({ transaction_id: curr.transaction_id, sale_date: curr.sale_date, sale_type: curr.sale_type, store_number: curr.store_number, cashier_name: curr.cashier_name, cashier_number: curr.cashier_number, qty: 1, total_sales: curr.total_sales, sale_id: curr.sale_id, storeid: curr.storeid });
             } else {
-              found.qty += curr.qty ?? 0;
+              found.qty += 1;
               found.total_sales += curr.total_sales;
             }
             return acc;
@@ -202,10 +250,11 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
   const storesWithSev = useMemo(() => {
     return lp.cashierDetails.map((d) => {
       const trend = lp.cashierTrends.find((t) => t.storeid === d.storeid);
-      const sev = getStoreSev(d, trend, lp.selectedSaleType);
-      return { ...d, sev, trend };
+      const baseline = lp.baselineDetails.find((b) => b.storeid === d.storeid);
+      const sev = getStoreSev(d, baseline, lp.selectedSaleType);
+      return { ...d, sev, trend, baseline };
     });
-  }, [lp.cashierDetails, lp.cashierTrends, lp.selectedSaleType]);
+  }, [lp.cashierDetails, lp.cashierTrends, lp.baselineDetails, lp.selectedSaleType]);
 
   const sevCounts = useMemo(() => ({
     all:      storesWithSev.length,
@@ -272,14 +321,18 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
         {!lp.loadingCashierDetails && !lp.noTransMsg && visible.map((d) => {
           const storeName = assignedStores.find((s) => s.storeid === d.storeid)?.store_name ?? d.store_name;
           const isLoading = lp.fetchingCashierTransactions && lp.selectedStoreId === d.storeid;
-          const t = d.trend;
+          const b = d.baseline;
+          const bTrans  = b ? b.transaction_count / 2 : null;
+          const bItems  = b ? b.total_items / 2 : null;
+          const bAmount = b ? Math.abs(b.amount) / 2 : null;
+          const bAvg    = b ? Math.abs(b.average_dollars) : null;
 
           const gradedMetrics = [
-            { label: "Trans", value: d.transaction_count.toLocaleString(), isPass: t ? d.transaction_count <= t.transaction_count : null },
-            { label: "Items", value: d.total_items.toLocaleString(), isPass: t ? d.total_items <= t.total_items : null },
+            { label: "Trans", value: d.transaction_count.toLocaleString(), isPass: bTrans !== null ? d.transaction_count <= bTrans : null },
+            { label: "Items", value: d.total_items.toLocaleString(), isPass: bItems !== null ? d.total_items <= bItems : null },
             ...(!noSale ? [
-              { label: "Total", value: formatCurrency2(Math.abs(d.amount)), isPass: t ? Math.abs(d.amount) <= Math.abs(t.amount) : null },
-              { label: "Avg $", value: formatCurrency2(Math.abs(d.average_dollars)), isPass: t ? Math.abs(d.average_dollars) <= Math.abs(t.average_dollars) : null },
+              { label: "Total", value: formatCurrency2(Math.abs(d.amount)), isPass: bAmount !== null ? Math.abs(d.amount) <= bAmount : null },
+              { label: "Avg $", value: formatCurrency2(Math.abs(d.average_dollars)), isPass: bAvg !== null ? Math.abs(d.average_dollars) <= bAvg : null },
             ] : []),
           ];
 

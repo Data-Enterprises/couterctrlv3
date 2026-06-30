@@ -21,21 +21,15 @@ import UpdateUserGroup from "./forms/UpdateUserGroup";
 import DeleteUserGroup from "./forms/DeleteUserGroup";
 import UserGroupAssign from "./forms/UserGroupAssign";
 import { useGroupCtx } from ".";
+import SingleSelect from "../../components/SingleSelect";
 import GroupsTablet from "./tablet/GroupsTablet";
 import GroupsMobile from "./mobile/GroupsMobile";
 
-import {
-  PlusCircleIcon,
-  PencilIcon,
-  TrashIcon,
-  BuildingStorefrontIcon,
-} from "@heroicons/react/24/solid";
-
-const NAV_ITEMS: { id: GroupFormType; label: string; Icon: React.ElementType }[] = [
-  { id: "create", label: "New", Icon: PlusCircleIcon },
-  { id: "update", label: "Rename", Icon: PencilIcon },
-  { id: "delete", label: "Delete", Icon: TrashIcon },
-  { id: "assign", label: "Assign", Icon: BuildingStorefrontIcon },
+const options = [
+  { label: "Create", id: "create" },
+  { label: "Update", id: "update" },
+  { label: "Delete", id: "delete" },
+  { label: "Assign/Unassign Stores", id: "assign" },
 ];
 
 const Groups = () => {
@@ -85,53 +79,86 @@ const Groups = () => {
   if (isTablet) return <GroupsTablet handleFormSelect={handleFormSelect} />;
   if (isMobile) return <GroupsMobile handleFormSelect={handleFormSelect} />;
 
-  const cardWidth = ctx.selectedForm === "assign" ? 560 : 420;
+  const containerStyle = ctx.isDesktop
+    ? "h-[calc(100vh-3rem)] p-4 flex gap-4"
+    : "w-full h-[calc(100vh-3rem)] p-2 flex flex-col gap-2";
+
+  const optionBtnStyle = ctx.isDesktop
+    ? "bg-custom-white rounded-lg shadow-lg min-w-36 text-sm select-none"
+    : "bg-custom-white rounded-lg shadow-lg p-2 grid gap-2";
 
   const renderForm = () => {
     switch (ctx.selectedForm) {
-      case "create": return <CreateUserGroup bare />;
-      case "update": return <UpdateUserGroup bare />;
-      case "delete": return <DeleteUserGroup bare />;
-      case "assign": return <UserGroupAssign bare />;
-      default: return (
-        <div className="p-8 text-[11px] text-content/35 text-center">Select an action above</div>
-      );
+      case "create":
+        return <CreateUserGroup />;
+      case "update":
+        return <UpdateUserGroup />;
+      case "delete":
+        return <DeleteUserGroup />;
+      case "assign":
+        return <UserGroupAssign />;
+      default:
+        return null;
     }
   };
 
+  const handleMobileFormSelect = (id: string | number) => {
+    const val: GroupFormType = id.toString() as GroupFormType;
+    dispatch(setSelectedForm(val));
+  };
+
   return (
-    <div className="h-[calc(100vh-3rem)] p-4 flex items-center justify-center" data-testid="groups-page">
-      <div
-        className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white"
-        style={{ width: cardWidth, transition: "width 200ms ease" }}
-      >
-        {/* Unified navy header with tabs */}
-        <div className="flex-shrink-0 px-3 pt-1 pb-2.5 flex items-center justify-between gap-4" style={{ background: "#1e2a4a" }}>
-          <span className="text-[13px] font-semibold text-white">Groups</span>
-          <div className="flex gap-1">
-            {NAV_ITEMS.map(({ id, label, Icon }) => {
-              const active = ctx.selectedForm === id;
-              return (
-                <button
-                  key={id}
-                  data-testid={`user-group-${id}-form-btn`}
-                  onClick={() => handleFormSelect(id)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors select-none"
-                  style={{
-                    background: active ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.07)",
-                    color: active ? "#fff" : "rgba(255,255,255,0.45)",
-                  }}
-                >
-                  <Icon className="w-3 h-3" />
-                  {label}
-                </button>
-              );
-            })}
+    <div className={containerStyle} data-testid="groups-page">
+      {ctx.isDesktop ? (
+        <div>
+          <div className={optionBtnStyle}>
+            <div className="font-medium px-2 rounded-t-lg py-0.5">
+              User Group Forms
+            </div>
+            <div className="grid grid-cols-2">
+              <div className="bg-gradient-to-r from-blue-200 to-custom-white h-[1.5px]"></div>
+              <div className="bg-gradient-to-l from-blue-200 to-custom-white h-[1.5px]"></div>
+            </div>
+            <div
+              data-testid="user-group-create-form-btn"
+              className={`${ctx.selectedForm === "create" ? "bg-orange-200" : "bg-custom-white"} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
+              onClick={() => handleFormSelect("create")}
+            >
+              Create
+            </div>
+            <div
+              data-testid="user-group-update-form-btn"
+              className={`${ctx.selectedForm === "update" ? "bg-orange-200" : "bg-custom-white"} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
+              onClick={() => handleFormSelect("update")}
+            >
+              Update
+            </div>
+            <div
+              data-testid="user-group-delete-form-btn"
+              className={`${ctx.selectedForm === "delete" ? "bg-orange-200" : "bg-custom-white"} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2`}
+              onClick={() => handleFormSelect("delete")}
+            >
+              Delete
+            </div>
+            <div
+              data-testid="user-group-assign-form-btn"
+              className={`${ctx.selectedForm === "assign" ? "bg-orange-200" : "bg-custom-white"} hover:cursor-pointer hover: hover:bg-blue-200 transition-all duration-200 py-1 px-2 rounded-b-lg`}
+              onClick={() => handleFormSelect("assign")}
+            >
+              Assign/Unassign Stores
+            </div>
           </div>
         </div>
-
-        {renderForm()}
-      </div>
+      ) : (
+        <SingleSelect
+          label="Forms"
+          data={options}
+          displayKey="label"
+          valueKey="id"
+          onSelect={handleMobileFormSelect}
+        />
+      )}
+      <div>{renderForm()}</div>
     </div>
   );
 };

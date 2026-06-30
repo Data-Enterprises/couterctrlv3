@@ -274,12 +274,12 @@ const TitleBar = () => {
                   </button>
 
                   <div
-                    className={`absolute left-0 top-full z-50 pt-1 transition-all duration-150 ${
+                    className={`absolute left-0 top-full z-50 transition-all duration-150 ${
                       isOpen ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-1 pointer-events-none"
                     }`}
                     style={{ minWidth: 170 }}
                   >
-                    <div className="bg-white border border-gray-200 rounded-md overflow-hidden" style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+                    <div className="mt-1 bg-white border border-gray-200 rounded-md overflow-hidden" style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
                       {visiblePages.map((page) => (
                         <NavLink
                           key={page.href}

@@ -60,8 +60,8 @@ const TransactionsMobile = ({ onBack, onOpenSearch }: Props) => {
   const storeName = assignedStores.find((s) => s.storeid === lp.selectedStoreId)?.store_name ?? "";
 
   const grades = useMemo(
-    () => gradeAllCashiers(lp.transOverviews, lp.cashiers, lp.selectedSaleType),
-    [lp.transOverviews, lp.cashiers, lp.selectedSaleType],
+    () => gradeAllCashiers(lp.transOverviews, lp.baselineOverviews, lp.cashiers, lp.selectedSaleType),
+    [lp.transOverviews, lp.baselineOverviews, lp.cashiers, lp.selectedSaleType],
   );
 
   const cashierGrade = grades.find((g) => g.cashier_number === lp.selectedCashier.cashier_number) ?? null;

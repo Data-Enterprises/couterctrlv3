@@ -1,7 +1,6 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { getSaleTypes } from "../../api/lossPrevention";
-import { formatGoliathDate } from "../../utils";
 import { resetCashierSlice, setSaleTypes } from "../../features/lossPreventionSlice";
 import type { JsonError } from "../../interfaces";
 import LPTablet from "./tablet/LPTablet";
@@ -19,6 +18,11 @@ const LossPrevention = () => {
     if (cashier.saleTypes.length > 0) {
       dispatch(resetCashierSlice());
     }
+    const [sm, sd, sy] = search.singleDate.split("/").map(Number);
+    const end   = new Date(sy, sm - 1, sd);
+    const start = new Date(sy, sm - 1, sd - 6);
+    const fmt   = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
     const useGroups = search.type === "Group" ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
     const searchValue =
@@ -26,8 +30,8 @@ const LossPrevention = () => {
     getSaleTypes(
       context.url,
       context.token,
-      formatGoliathDate(search.startDate),
-      formatGoliathDate(search.endDate),
+      fmt(start),
+      fmt(end),
       useGroups,
       searchValue,
       singleStore,

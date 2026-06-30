@@ -14,6 +14,18 @@ export const useApiContext = () => {
   const start = formatGoliathDate(search.startDate);
   const end = formatGoliathDate(search.endDate);
 
+  const [sm, sd, sy] = search.singleDate.split("/").map(Number);
+  const lpEndD      = new Date(sy, sm - 1, sd);
+  const lpStartD    = new Date(sy, sm - 1, sd - 6);
+  const lpBaseEndD  = new Date(sy, sm - 1, sd - 7);
+  const lpBaseStartD = new Date(sy, sm - 1, sd - 20);
+  const padFmt = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const lpStart     = padFmt(lpStartD);
+  const lpEnd       = padFmt(lpEndD);
+  const lpBaseStart = padFmt(lpBaseStartD);
+  const lpBaseEnd   = padFmt(lpBaseEndD);
+
   return {
     url,
     token,
@@ -22,6 +34,10 @@ export const useApiContext = () => {
     searchValue,
     start,
     end,
+    lpStart,
+    lpEnd,
+    lpBaseStart,
+    lpBaseEnd,
   };
 };
 

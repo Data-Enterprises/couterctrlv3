@@ -54,8 +54,8 @@ const CashierListMobile = ({ onBack, onSelectCashier }: Props) => {
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
 
   const grades = useMemo(
-    () => gradeAllCashiers(lp.transOverviews, lp.cashiers, lp.selectedSaleType),
-    [lp.transOverviews, lp.cashiers, lp.selectedSaleType],
+    () => gradeAllCashiers(lp.transOverviews, lp.baselineOverviews, lp.cashiers, lp.selectedSaleType),
+    [lp.transOverviews, lp.baselineOverviews, lp.cashiers, lp.selectedSaleType],
   );
 
   const noSale = lp.selectedSaleType.toLowerCase().replace(/[^a-z]/g, "") === "nosale";

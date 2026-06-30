@@ -23,8 +23,9 @@ const LpMobile = ({ getSaleTypes }: Props) => {
     return (
       <SearchCard
         title="Loss prevention"
-        description="Select a store or group and date range to view exception activity."
+        description="Select a store and date to view exception activity."
         buttonLabel="Load exceptions"
+        singleDate={true}
         onSearch={getSaleTypes}
         loading={false}
       />
