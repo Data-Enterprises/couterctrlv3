@@ -175,7 +175,7 @@ const Login = () => {
                   </div>
                 </div>
 
-                {/* <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <input
                       id="remember-me"
@@ -191,7 +191,21 @@ const Login = () => {
                       Remember me
                     </label>
                   </div>
-                </div> */}
+
+                  <div
+                    data-testid="login-forgot-password"
+                    className="text-right text-sm/6 select-none"
+                    onClick={() => dispatch(setForgotPassword(true))}
+                  >
+                    <a
+                      href="#"
+                      className="font-semibold text-accent-1 transition-all duration-600"
+                      draggable={false}
+                    >
+                      Forgot password?
+                    </a>
+                  </div>
+                </div>
 
                 {useImpersonation ? (
                   <div className="row justify-content-center">
@@ -210,20 +224,6 @@ const Login = () => {
                     </div>
                   </div>
                 ) : null}
-
-                <div
-                  data-testid="login-forgot-password"
-                  className="text-right text-sm/6 select-none"
-                  onClick={() => dispatch(setForgotPassword(true))}
-                >
-                  <a
-                    href="#"
-                    className="font-semibold text-accent-1 transition-all duration-600"
-                    draggable={false}
-                  >
-                    Forgot password?
-                  </a>
-                </div>
 
                 <div className="relative">
                   <button

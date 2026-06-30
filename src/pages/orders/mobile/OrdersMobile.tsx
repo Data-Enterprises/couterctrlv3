@@ -31,7 +31,6 @@ type MobileStep = "available" | "list";
 const OrdersMobile = () => {
   const ctx = useOrdersCtx();
   const toast = useToast();
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [step, setStep] = useState<MobileStep>("available");
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -164,20 +163,8 @@ const OrdersMobile = () => {
 
   const hasData = ctx.groupedAvailableOrders.length > 0;
 
-  if (!hasData && !ctx.loadingAvailableOrders) {
-    return (
-      <SearchCard
-        title="Orders"
-        description="Select a store or group and date range to find available orders."
-        buttonLabel="Find orders"
-        onSearch={handleSearch}
-        loading={ctx.loadingAvailableOrders}
-      />
-    );
-  }
-
   return (
-    <div className="h-[calc(100vh-3rem)] overflow-hidden flex flex-col bg-custom-white">
+    <div className="h-[calc(100dvh-3rem)] overflow-hidden flex flex-col bg-custom-white">
       <ExportModal
         isOpen={ctx.ordersExportModalOpen}
         data={ctx.selectedOrderId !== null ? ctx.allOrders.filter((o) => o.order_id === ctx.selectedOrderId) : []}
@@ -185,27 +172,40 @@ const OrdersMobile = () => {
         onClose={() => ctx.dispatch(setOrdersExportModalOpen(false))}
       />
 
-      {step === "available" && (
-        <OrdersAvailableScreen
-          cards={ctx.groupedAvailableOrders}
-          selectedKey={ctx.selectedOrderKey}
-          loading={ctx.loadingAvailableOrders}
-          startDate={ctx.startDate}
-          endDate={ctx.endDate}
-          onSelectStore={handleSelectStore}
-          onOpenSearch={() => setSearchModalOpen(true)}
-        />
-      )}
+      <SearchCard
+        top
+        title="Orders"
+        description="Select a store or group and date range to find available orders."
+        buttonLabel="Find orders"
+        onSearch={handleSearch}
+        loading={ctx.loadingAvailableOrders}
+      />
 
-      {step === "list" && ctx.selectedOrderKey && (
-        <OrdersListScreen
-          orders={ctx.allOrders}
-          loading={ctx.loadingAllOrders}
-          selectedKey={ctx.selectedOrderKey}
-          assignedStores={ctx.assignedStores}
-          onBack={() => setStep("available")}
-          onSelectOrderId={handleSelectOrderId}
-        />
+      {(hasData || ctx.loadingAvailableOrders) && (
+        <div className="flex-1 overflow-hidden">
+          {step === "available" && (
+            <OrdersAvailableScreen
+              cards={ctx.groupedAvailableOrders}
+              selectedKey={ctx.selectedOrderKey}
+              loading={ctx.loadingAvailableOrders}
+              startDate={ctx.startDate}
+              endDate={ctx.endDate}
+              onSelectStore={handleSelectStore}
+              onOpenSearch={() => {}}
+            />
+          )}
+
+          {step === "list" && ctx.selectedOrderKey && (
+            <OrdersListScreen
+              orders={ctx.allOrders}
+              loading={ctx.loadingAllOrders}
+              selectedKey={ctx.selectedOrderKey}
+              assignedStores={ctx.assignedStores}
+              onBack={() => setStep("available")}
+              onSelectOrderId={handleSelectOrderId}
+            />
+          )}
+        </div>
       )}
 
       {sheetOpen && ctx.selectedOrderKey && ctx.selectedOrderId !== null && (
@@ -218,23 +218,6 @@ const OrdersMobile = () => {
             onExport={() => ctx.dispatch(setOrdersExportModalOpen(true))}
           />
         </BottomSheet>
-      )}
-
-      {searchModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setSearchModalOpen(false)}
-        >
-          <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            <SearchCard
-              title="Orders"
-              description="Select a store or group and date range to find available orders."
-              buttonLabel="Find orders"
-              onSearch={() => { setSearchModalOpen(false); handleSearch(); }}
-              loading={ctx.loadingAvailableOrders}
-            />
-          </div>
-        </div>
       )}
     </div>
   );
