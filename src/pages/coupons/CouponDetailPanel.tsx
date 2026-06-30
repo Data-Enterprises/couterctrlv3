@@ -647,7 +647,6 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
                       <tbody className="divide-y divide-gray-50">
                         {aggCouponRows.map((agg) => {
                           const isExp = expandedCoupons.has(agg.product_code);
-                          const colCount = isGroup ? 7 : 6;
                           return (
                             <>
                               <tr

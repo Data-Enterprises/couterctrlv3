@@ -54,7 +54,7 @@ const LpMobileLegacy = ({ getSaleTypes }: LpMobileProps) => {
         {viewTransactionsMobile ? (
           <div>
             <UniqueCashiersMobile />
-            <TransactionsMobile />
+            <TransactionsMobile onBack={() => {}} onOpenSearch={() => {}} />
           </div>
         ) : (
           <div className="p-2 space-y-2">

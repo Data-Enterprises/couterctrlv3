@@ -5,7 +5,6 @@ import {
   formatBigNumber,
   sameWeekDayLastYear,
 } from "../../../utils";
-import { useAppSelector } from "../../../hooks";
 
 interface TrendRowProps {
   sub: TopSub;

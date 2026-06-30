@@ -1,5 +1,4 @@
 import { useSalesState } from "../hooks/useSalesState";
-import { useAppSelector } from "../../../hooks";
 import type { SubSale } from "../../../interfaces";
 import type { TopSub } from "../components";
 import SubTrendCardTablet from "./SubTrendCardTablet";

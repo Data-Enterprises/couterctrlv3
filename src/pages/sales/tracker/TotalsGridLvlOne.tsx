@@ -1,5 +1,5 @@
 import { useSalesState } from "../hooks/useSalesState";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import { formatCurrency2 } from "../../../utils";
 import {
   setSalesTrackerSelectedSubDept,

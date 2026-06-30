@@ -81,7 +81,6 @@ const OrderReportPanel = ({
   selectedOrderId,
   assignedStores,
   onSelectOrderId,
-  onExport,
 }: Props) => {
   const [subDeptFilter, setSubDeptFilter] = useState<string>("");
   const [exportOpen, setExportOpen] = useState(false);

@@ -1,5 +1,4 @@
 import { useSalesState } from "../hooks/useSalesState";
-import { useAppSelector } from "../../../hooks";
 import { formatCurrency2 } from "../../../utils";
 import SummaryRow from "./SummaryRow";
 

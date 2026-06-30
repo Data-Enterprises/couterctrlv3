@@ -1,7 +1,7 @@
 import { useSalesState } from "../hooks/useSalesState";
 import { useState } from "react";
 import { type WeekTotal } from "../../../features/salesSlice";
-import { useAppSelector } from "../../../hooks";
+// import { useAppSelector } from "../../../hooks";
 import TotalsGridLvlOne from "./TotalsGridLvlOne";
 import { addDays } from "../../../utils";
 import { chunkData } from ".";

@@ -210,7 +210,7 @@ interface Props {
   onShowAll: (filtered: TransactionListItem[]) => void;
 }
 
-const LPTransactionPanel = ({ onTransactionClick, onShowAll }: Props) => {
+const LPTransactionPanel = ({ onTransactionClick }: Props) => {
   const dispatch = useAppDispatch();
   const cashier  = useAppSelector((s) => s.lossPrevention);
   const search   = useAppSelector((s) => s.search);
@@ -228,7 +228,7 @@ const LPTransactionPanel = ({ onTransactionClick, onShowAll }: Props) => {
 
   const {
     selectedStoreId, cashierDetails, selectedSaleType,
-    transOverviews, transList, cashiers, selectedCashier,
+    transOverviews, cashiers, selectedCashier,
     fetchingCashierTransactions, transactionLoadingMessage,
     saleDateFilter, transactionDrillDown,
   } = cashier;
@@ -517,7 +517,7 @@ const LPTransactionPanel = ({ onTransactionClick, onShowAll }: Props) => {
                   </div>
                   <div className={`flex-shrink-0 grid divide-x divide-gray-100 border-b border-gray-100 ${isNoDollar ? "grid-cols-2" : "grid-cols-4"}`}>
                     {scoreMetrics.map((m) => (
-                      <StripCell key={m.label} label={m.label} value={m.value} baselineValue={m.baselineStr} badge={<AvgBadge pct={m.pct} />} />
+                      <StripCell key={m.label} label={m.label} value={m.value} baselineValue={m.baselineStr} badge={<AvgBadge pct={m.pct} avg={m.avg} />} />
                     ))}
                   </div>
                 </>

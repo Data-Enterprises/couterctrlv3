@@ -1,5 +1,5 @@
 import { useSalesState } from "../hooks/useSalesState";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 
 import Modal from "../../../components/Modal";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";

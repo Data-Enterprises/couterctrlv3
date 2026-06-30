@@ -1,5 +1,5 @@
 ﻿import { useState, useMemo } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppSelector } from "../../../hooks";
 import { formatCurrency2 } from "../../../utils";
 import {
   ExclamationTriangleIcon,
@@ -168,7 +168,6 @@ const PopupHourlyView = ({
   const { hourlySales, hourlySalesLastWeek, hourlySalesLastYear } =
     useAppSelector((s) => s.sales);
   const threshold = useAppSelector((s) => s.salesLedger.hourlyThreshold);
-  const dispatch = useAppDispatch();
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [ctaOpen, setCtaOpen] = useState(false);

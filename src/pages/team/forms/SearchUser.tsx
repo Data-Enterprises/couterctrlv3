@@ -18,7 +18,7 @@ const SearchUser = () => {
     userFilterText,
     selectedCompanyId,
     users,
-    selectedUserId,
+    // selectedUserId,
     selectedUserForm,
     userFilterType,
   } = useAppSelector((state) => state.users);

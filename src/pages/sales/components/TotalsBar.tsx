@@ -1,6 +1,5 @@
 import { useSalesState } from "../hooks/useSalesState";
 import { useEffect, useState } from "react";
-import { useAppSelector } from "../../../hooks";
 import type { WeeklySale } from "../../../interfaces";
 import { colors, rgbaColor } from "../utils";
 import { ResponsiveBar } from "@nivo/bar";

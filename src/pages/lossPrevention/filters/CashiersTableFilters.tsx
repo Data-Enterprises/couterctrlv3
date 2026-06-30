@@ -71,7 +71,6 @@ const CashiersTableFilters = () => {
       dispatch(setUpcFilter(""));
       dispatch(setDescFilter(""));
       dispatch(setSelectedPriceTypes([]));
-      dispatch(setTotalSalesFilter(0));
       dispatch(setTransIdFilter(""));
       return;
     }

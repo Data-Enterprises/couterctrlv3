@@ -1,6 +1,6 @@
 import { useSalesState } from "../hooks/useSalesState";
 import { useState, useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { cpu, gpm, ppu, rpu } from "../../../functions";
 import { setSelectedItem } from "../../../features/salesSlice";

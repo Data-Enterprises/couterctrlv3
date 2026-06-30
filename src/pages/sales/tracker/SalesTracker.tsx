@@ -1,6 +1,6 @@
 import { useSalesState } from "../hooks/useSalesState";
 import { useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import { chunkData } from ".";
 import { sameWeekDayLastYear } from "../../../utils";
 import type { SubSale } from "../../../interfaces";

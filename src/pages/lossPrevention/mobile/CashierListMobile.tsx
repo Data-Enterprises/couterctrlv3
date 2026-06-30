@@ -49,7 +49,6 @@ const KpiCell = ({ label, value, pct, last }: { label: string; value: string; pc
 const CashierListMobile = ({ onBack, onSelectCashier }: Props) => {
   const dispatch = useAppDispatch();
   const lp = useAppSelector((state) => state.lossPrevention);
-  const search = useAppSelector((state) => state.search);
   const assignedStores = useAppSelector((state) => state.user.assignedStores);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
 

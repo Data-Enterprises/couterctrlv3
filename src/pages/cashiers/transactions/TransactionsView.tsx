@@ -8,7 +8,7 @@ import {
 import { getCashierTransaction } from "../../../api/lossPrevention";
 import type { JsonError, TransactionListItem, TransactionOverview } from "../../../interfaces";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { formatBigNumber, formatCurrency2, formatGoliathDate } from "../../../utils";
+import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import Transaction from "./Transaction";
 

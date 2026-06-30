@@ -6,6 +6,7 @@ import { useApiContext } from "../../hooks";
 import { getCashierDetails, getCashierTable, getTransactionList } from "../../../api/lossPrevention";
 import {
   reQuery,
+  setBaselineDetails,
   setBaselineOverviews,
   setCashierDetails,
   setCashiers,
@@ -25,7 +26,7 @@ import { formatCurrency2 } from "../../../utils";
 import SevChips from "../../sales/mobile/components/SevChips";
 import SevBadge from "../../sales/mobile/components/SevBadge";
 import type { SevFilter } from "../../../features/salesLedgerSlice";
-import type { CashierDetails, CashierTrend } from "../../../interfaces";
+import type { CashierDetails } from "../../../interfaces";
 import SelectFilter from "../../../components/filters/SelectFilter";
 
 interface Props {

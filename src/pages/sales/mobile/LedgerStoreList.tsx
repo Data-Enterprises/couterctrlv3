@@ -1,12 +1,11 @@
 ﻿import { useMemo } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { buildLedgerRows, fmtDate, formatPct } from "../shared/ledgerUtils";
+import { buildLedgerRows, fmtDate } from "../shared/ledgerUtils";
 import { setListSevFilter, navigateToReport, setHasSearched, setThreshold } from "../../../features/salesLedgerSlice";
 import type { SevFilter } from "../../../features/salesLedgerSlice";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import type { LedgerRowData } from "../components/LedgerRow";
-import type { Severity } from "../components/LedgerRow";
-import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../utils";
+import { addDays, formatGoliathDate } from "../../../utils";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import SevChips from "./components/SevChips";
 import StoreRow from "./components/StoreRow";

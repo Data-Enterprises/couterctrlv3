@@ -46,16 +46,6 @@ interface LedgerRowProps {
 
 const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
 
-const TrendDot = ({ pct, hasData, label }: { pct: number; hasData: boolean; label: string }) => (
-  <div className="flex flex-col items-center gap-[1px]">
-    <div
-      className={`w-2 h-2 rounded-full ${
-        !hasData ? "bg-gray-200" : pct >= 0 ? "bg-emerald-400" : "bg-red-500"
-      }`}
-    />
-    <span className="text-[7px] font-medium text-content/30 uppercase">{label}</span>
-  </div>
-);
 
 const SeverityIcon = ({ severity }: { severity: Severity }) => {
   if (severity === "critical")

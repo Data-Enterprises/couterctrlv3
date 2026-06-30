@@ -6,10 +6,8 @@ interface LedgerHeroBarProps {
   vsLYPct: number;
   attentionCount: number;
   totalTransactions: number;
-  lwTransactions: number;
   lyTransactions: number;
   avgBasket: number;
-  lwAvgBasket: number;
   lyAvgBasket: number;
   onReset: () => void;
 }
@@ -25,10 +23,8 @@ const LedgerHeroBar = ({
   vsLYPct,
   attentionCount,
   totalTransactions,
-  lwTransactions,
   lyTransactions,
   avgBasket,
-  lwAvgBasket,
   lyAvgBasket,
   onReset,
 }: LedgerHeroBarProps) => {

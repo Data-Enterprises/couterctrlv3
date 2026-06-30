@@ -1,5 +1,4 @@
 import { useSalesState } from "../hooks/useSalesState";
-import { useAppSelector } from "../../../hooks";
 import { couponSalePct } from "../../../functions";
 import {
   formatBigNumber,

@@ -1,6 +1,5 @@
 import { useSalesState } from "../hooks/useSalesState";
 import { useState, useEffect } from "react";
-import { useAppSelector } from "../../../hooks";
 import { formatDateSimple, sameWeekDayLastYear } from "../../../utils";
 import MetricCard from "./MetricCard";
 

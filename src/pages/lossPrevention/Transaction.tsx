@@ -39,7 +39,6 @@ const Transaction = forwardRef<TransactionHandle, TransactionProps>(({ trans }, 
   const saleId = first.sale_id.split("-")[1];
   const rawDate = first.sale_date.split("T")[0];
   const fmtDate = new Date(rawDate + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  const timeStr = `${fmtTime(first.sale_start_time)} – ${fmtTime(first.sale_end_time)}`;
 
   // ── Totals (unchanged calculation logic) ─────────────────────────────────
   let totalSales = 0;

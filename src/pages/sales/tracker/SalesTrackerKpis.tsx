@@ -1,6 +1,6 @@
 import { useSalesState } from "../hooks/useSalesState";
 import { useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import { setTrackerKpis, type TrackerKpis } from "../../../features/salesSlice";
 import { formatDate } from ".";
 import { formatCurrency2 } from "../../../utils";

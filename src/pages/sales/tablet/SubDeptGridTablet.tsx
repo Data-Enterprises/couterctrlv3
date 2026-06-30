@@ -1,6 +1,6 @@
 import { useSalesState } from "../hooks/useSalesState";
 import { useState, useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import type { TopSub } from "../components";
 import type { SubGridRow } from "../../../interfaces";
 import { setSelectedSubDept } from "../../../features/salesSlice";

@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { ChevronLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import { ChevronLeftIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { formatDate, reduceTransactions } from "..";
 import { gradeAllCashiers } from "../gradingUtils";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getCashierTransaction } from "../../../api/lossPrevention";
 import {
-  setCashierSaleIds,
-  setSelectedCashier,
+  // setCashierSaleIds,
+  // setSelectedCashier,
   setTransactionDrillDown,
   setTransModalOpen,
 } from "../../../features/lossPreventionSlice";
@@ -15,9 +15,9 @@ import type { JsonError, TransactionListItem, TransactionOverview } from "../../
 import { formatCurrency2 } from "../../../utils";
 import BottomSheet from "../../../components/BottomSheet";
 import Transaction, { type TransactionHandle } from "../Transaction";
-import SelectFilter from "../../../components/filters/SelectFilter";
-import ThresholdFilter from "../../../components/filters/ThresholdFilter";
-import type { ThresholdValue } from "../../../components/filters/ThresholdFilter";
+// import SelectFilter from "../../../components/filters/SelectFilter";
+// import ThresholdFilter from "../../../components/filters/ThresholdFilter";
+// import type { ThresholdValue } from "../../../components/filters/ThresholdFilter";
 
 interface Props {
   onBack: () => void;
@@ -29,15 +29,15 @@ const fmtDate = (date: string) => {
   return `${m}/${d}/${y}`;
 };
 
-const meetsThreshold = (value: number, threshold: ThresholdValue | null): boolean => {
-  if (!threshold) return true;
-  if (threshold.op === "gt") return value > threshold.amount;
-  if (threshold.op === "lt") return value < threshold.amount;
-  return value === threshold.amount;
-};
+// const meetsThreshold = (value: number, threshold: ThresholdValue | null): boolean => {
+//   if (!threshold) return true;
+//   if (threshold.op === "gt") return value > threshold.amount;
+//   if (threshold.op === "lt") return value < threshold.amount;
+//   return value === threshold.amount;
+// };
 
 
-const TransactionsMobile = ({ onBack, onOpenSearch }: Props) => {
+const TransactionsMobile = ({ onBack }: Props) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
@@ -47,7 +47,7 @@ const TransactionsMobile = ({ onBack, onOpenSearch }: Props) => {
   const [filteredOverviews, setFilteredOverviews] = useState<TransactionOverview[]>([]);
   const [selectedOverview, setSelectedOverview] = useState<TransactionOverview | null>(null);
   const [loadingReceipt, setLoadingReceipt] = useState(false);
-  const [dateFilter, setDateFilter] = useState("");
+  const [dateFilter, _] = useState("");
   // const [qtyThreshold, setQtyThreshold] = useState<ThresholdValue | null>(null);
   // const [salesThreshold, setSalesThreshold] = useState<ThresholdValue | null>(null);
   type SortCol = "date" | "qty" | "total";
@@ -95,10 +95,10 @@ const TransactionsMobile = ({ onBack, onOpenSearch }: Props) => {
     }));
   }, [lp.transOverviews, lp.selectedCashier, lp.saleDateFilter, lp.salesThreshold, lp.transIdFilter, lp.qtyThreshold]);
 
-  const dateOptions = useMemo(() => {
-    const dates = new Set(filteredOverviews.map((o) => o.sale_date.split("T")[0]));
-    return Array.from(dates).sort((a, b) => b.localeCompare(a)).map((d) => ({ value: d, label: fmtDate(d) }));
-  }, [filteredOverviews]);
+  // const dateOptions = useMemo(() => {
+  //   const dates = new Set(filteredOverviews.map((o) => o.sale_date.split("T")[0]));
+  //   return Array.from(dates).sort((a, b) => b.localeCompare(a)).map((d) => ({ value: d, label: fmtDate(d) }));
+  // }, [filteredOverviews]);
 
   const visible = useMemo(() => {
     const filtered = filteredOverviews.filter((ov) => {
@@ -238,7 +238,7 @@ const TransactionsMobile = ({ onBack, onOpenSearch }: Props) => {
       {/* Column headers — Date, Qty, Total are sortable */}
       <div className="flex-shrink-0 grid px-4 py-2 bg-gray-50 border-b border-gray-100" style={{ gridTemplateColumns: "1fr 0.6fr 0.55fr 0.7fr" }}>
         <div className="text-[9px] font-semibold uppercase tracking-wide text-content/45">Trans ID</div>
-        {(["date", "qty", "total"] as SortCol[]).map((col, i) => {
+        {(["date", "qty", "total"] as SortCol[]).map((col) => {
           const label = col === "date" ? "Date" : col === "qty" ? "Items" : "Total";
           const isActive = sortCol === col && sortDir !== "none";
           const arrow = isActive ? (sortDir === "desc" ? " ▼" : " ▲") : "";

@@ -1,5 +1,4 @@
 import { ArrowLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import { useCashierCtx } from "..";
 import type { CashierCard } from "../../../interfaces";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import ExceptionRow from "../stores/ExceptionRow";
@@ -18,7 +17,6 @@ const riskConfig = {
 } as const;
 
 const CashierOverviewMobile = ({ cashier, onBack, onOpenSearch }: Props) => {
-  const ctx = useCashierCtx();
   const risk = cashier.risk_tier as keyof typeof riskConfig;
   const rc = riskConfig[risk] ?? riskConfig["High"];
 

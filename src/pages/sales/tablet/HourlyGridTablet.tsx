@@ -6,7 +6,6 @@ import {
   sameWeekDayLastYear,
 } from "../../../utils";
 import type { HourlyTotal } from "../components";
-import { useAppSelector } from "../../../hooks";
 
 const HourlyGridTablet = () => {
   const [hour, setHour] = useState<number>(0);
