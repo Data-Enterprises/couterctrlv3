@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import type { TopSub } from "../components";
@@ -8,9 +9,7 @@ import { couponSalePct } from "../../../functions";
 
 const SubDeptGridTablet = () => {
   const dispatch = useAppDispatch();
-  const { subSales, selectedSubDept, subSalesWk3 } = useAppSelector(
-    (state) => state.sales,
-  );
+  const { subSales, selectedSubDept, subSalesWk3 } = useSalesState();
   const [groupSubs, setGroupSubs] = useState<SubGridRow[]>([]);
 
   useEffect(() => {

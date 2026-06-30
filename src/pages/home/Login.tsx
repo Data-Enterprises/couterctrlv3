@@ -12,6 +12,8 @@ import {
   setToken,
   setForgotPassword,
   setFetchingCredentials,
+  setProdToken,
+  setDevToken,
 } from "../../features/appSlice";
 import {
   setUsername,
@@ -75,6 +77,7 @@ const Login = () => {
         const j = resp.data;
         if (j.error == 0) {
           dispatch(setToken(j.access_token));
+          dispatch(setProdToken(j.access_token));
           dispatch(setFirstName(j.first_name));
           dispatch(setLastName(j.last_name));
           dispatch(setEmail(j.email));
@@ -84,6 +87,15 @@ const Login = () => {
           dispatch(setSecurityQuestionId(j.security_question_id));
           dispatch(setCompanies(j.companies));
           setUseImpersonation(0);
+          if (j.role === 9) {
+            login(import.meta.env.VITE_API_URL_DEV, state.username, state.password, 0)
+              .then((devResp) => {
+                if (devResp.data.error === 0) {
+                  dispatch(setDevToken(devResp.data.access_token));
+                }
+              })
+              .catch(() => { /* dev login failure is non-fatal */ });
+          }
         } else {
           dispatch(setFetchingCredentials(false));
           toast.warn(
@@ -199,23 +211,6 @@ const Login = () => {
                   </div>
                 ) : null}
 
-                <div className="relative">
-                  <button
-                    data-testid="sign-in"
-                    onClick={handleSubmit}
-                    type="submit"
-                    className="w-full py-2 px-8 rounded-lg bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 text-white font-semibold transition-colors duration-200 cursor-pointer select-none"
-                  >
-                    Sign in
-                  </button>
-                  {context.fetchingCredentials ? (
-                    <LoadingIndicator
-                      message="Verifying credentials..."
-                      className="mt-16"
-                    />
-                  ) : null}
-                </div>
-
                 <div
                   data-testid="login-forgot-password"
                   className="text-right text-sm/6 select-none"
@@ -228,6 +223,23 @@ const Login = () => {
                   >
                     Forgot password?
                   </a>
+                </div>
+
+                <div className="relative">
+                  <button
+                    data-testid="sign-in"
+                    onClick={handleSubmit}
+                    type="submit"
+                    className="w-full btn-themeBlue"
+                  >
+                    Sign in
+                  </button>
+                  {context.fetchingCredentials ? (
+                    <LoadingIndicator
+                      message="Verifying credentials..."
+                      className="mt-16"
+                    />
+                  ) : null}
                 </div>
               </div>
             </div>

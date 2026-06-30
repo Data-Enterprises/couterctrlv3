@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import type { TopSub } from "../components";
 import {
   formatCurrency2,
@@ -12,7 +13,7 @@ interface TrendRowProps {
   dates: string;
 }
 const SubTrendCard = ({ sub, row, dates }: TrendRowProps) => {
-  const { selectedSalesPanel } = useAppSelector((state) => state.sales);
+  const { selectedSalesPanel } = useSalesState();
   const borderColor =
     row === 1
       ? "border-emerald-200"

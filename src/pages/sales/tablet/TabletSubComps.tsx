@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useAppSelector } from "../../../hooks";
 import type { SubSale } from "../../../interfaces";
 import type { TopSub } from "../components";
@@ -17,7 +18,7 @@ const defaultSub: TopSub = {
 };
 
 const TabletSubComps = () => {
-  const sales = useAppSelector((state) => state.sales);
+  const sales = useSalesState();
 
   const formatCardData = (cardData: SubSale[]) => {
     if (!sales.selectedSubDept) return defaultSub;

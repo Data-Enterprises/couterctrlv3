@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import {
@@ -26,8 +27,7 @@ const TopSubDept = ({ inReport }: Props) => {
   const [topSub, setTopSub] = useState<TopSub | null>(null);
   const [title, setTitle] = useState<string>("Top Sub Dept");
   const search = useAppSelector((state) => state.search);
-  const { subSales, selectedSalesPanel, topSubDept, selectedSubDept } =
-    useAppSelector((state) => state.sales);
+  const { subSales, selectedSalesPanel, topSubDept, selectedSubDept } = useSalesState();
 
   useEffect(() => {
     if (subSales.length === 0) {

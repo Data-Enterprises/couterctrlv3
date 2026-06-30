@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useAppSelector } from "../../../hooks";
 import type { SubSale } from "../../../interfaces";
 import { formatCurrency2 } from "../../../utils";
@@ -22,7 +23,7 @@ const defaultSub: TopSub = {
 };
 
 const SubDeptComps = () => {
-  const sales = useAppSelector((state) => state.sales);
+  const sales = useSalesState();
   const isMobile = useAppSelector((state) => state.app.isMobile);
 
   const formatCardData = (cardData: SubSale[]) => {

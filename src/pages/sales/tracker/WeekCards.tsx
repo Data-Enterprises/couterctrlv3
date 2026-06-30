@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import type { SubSale } from "../../../interfaces";
@@ -12,7 +13,7 @@ import { chunkData } from ".";
 
 const WeekCards = () => {
   const dispatch = useAppDispatch();
-  const sales = useAppSelector((state) => state.sales);
+  const sales = useSalesState();
   const { lastGroup } = useAppSelector((state) => state.search);
   const { groups } = useAppSelector((state) => state.group);
 

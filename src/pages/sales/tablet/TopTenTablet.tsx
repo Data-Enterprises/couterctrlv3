@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
@@ -17,9 +18,7 @@ const TopTenTablet = () => {
   const [topTen, setTopTen] = useState<TopTenGroupItem[]>([]);
   const [selectedTopTenItem, setSelectedTopTenItem] =
     useState<TopTenGroupItem | null>(null);
-  const { topTenItems, selectedSalesPanel } = useAppSelector(
-    (state) => state.sales,
-  );
+  const { topTenItems, selectedSalesPanel } = useSalesState();
 
   useEffect(() => {
     const p = selectedSalesPanel;

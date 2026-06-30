@@ -15,11 +15,14 @@ interface AppState {
   isTablet: boolean;
   isDesktop: boolean;
   fetchingCredentials: boolean;
+  devMode: boolean;
+  prodToken: string;
+  devToken: string;
 }
 
 export const initialState: AppState = {
   // Check the build/deploy commands in package.json if changes are needed
-  url: import.meta.env.VITE_API_URL,
+  url: import.meta.env.VITE_API_URL_PROD,
   miktoUrl: import.meta.env.VITE_MIKTO_API_URL,
   // url: "https://y9v6viv36h.execute-api.us-east-1.amazonaws.com/Prod/",
   // miktoUrl: "https://goliathai.casa/",
@@ -35,6 +38,9 @@ export const initialState: AppState = {
   isTablet: false,
   isDesktop: true,
   fetchingCredentials: false,
+  devMode: false,
+  prodToken: "",
+  devToken: "",
 };
 
 export const appSlice = createSlice({
@@ -62,6 +68,17 @@ export const appSlice = createSlice({
     setFetchingCredentials: (state, action: PayloadAction<boolean>) => {
       state.fetchingCredentials = action.payload;
     },
+    setDevToken: (state, action: PayloadAction<string>) => {
+      state.devToken = action.payload;
+    },
+    setProdToken: (state, action: PayloadAction<string>) => {
+      state.prodToken = action.payload;
+    },
+    toggleDevMode: (state) => {
+      state.devMode = !state.devMode;
+      state.url   = state.devMode ? import.meta.env.VITE_API_URL_DEV  : import.meta.env.VITE_API_URL_PROD;
+      state.token = state.devMode ? state.devToken : state.prodToken;
+    },
     resetAppSlice: () => initialState,
   },
 });
@@ -74,7 +91,11 @@ export const {
   setIsTablet,
   setIsDesktop,
   setFetchingCredentials,
+  setDevToken,
+  setProdToken,
+  toggleDevMode,
   resetAppSlice,
 } = appSlice.actions;
 
 export default appSlice.reducer;
+

@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { ResponsiveBar, type BarDatum } from "@nivo/bar";
@@ -27,9 +28,7 @@ const TopTen = () => {
   const [topTen, setTopTen] = useState<TopTenGroupItem[]>([]);
   const [selectedTopTenItem, setSelectedTopTenItem] =
     useState<TopTenGroupItem | null>(null);
-  const { topTenItems, selectedSalesPanel } = useAppSelector(
-    (state) => state.sales,
-  );
+  const { topTenItems, selectedSalesPanel } = useSalesState();
   const isMobile = useAppSelector((state) => state.app.isMobile);
 
   const [tooltip, setTooltip] = useState<ShowTooltip>({

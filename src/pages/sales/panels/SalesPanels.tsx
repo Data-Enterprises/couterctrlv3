@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import type {
@@ -36,7 +37,7 @@ const SalesPanels = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const sales = useAppSelector((state) => state.sales);
+  const sales = useSalesState();
   const search = useAppSelector((state) => state.search);
 
   // on mount, fetch the data once

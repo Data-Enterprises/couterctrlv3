@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { chunkData } from ".";
@@ -16,7 +17,7 @@ import TotalsGridTablet from "../tablet/TotalsGridTablet";
 
 const SalesTrackerTablet = () => {
   const dispatch = useAppDispatch();
-  const sales = useAppSelector((state) => state.sales);
+  const sales = useSalesState();
 
   useEffect(() => {
     if (sales.thisYrSubTracker.length > 0) {

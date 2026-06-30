@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { setTrackerKpis, type TrackerKpis } from "../../../features/salesSlice";
@@ -10,7 +11,7 @@ import {
 
 const SalesTrackerKpis = () => {
   const dispatch = useAppDispatch();
-  const sales = useAppSelector((state) => state.sales);
+  const sales = useSalesState();
 
   useEffect(() => {
     if (sales.tyReducedTotals.length > 0) {

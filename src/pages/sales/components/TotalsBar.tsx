@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useEffect, useState } from "react";
 import { useAppSelector } from "../../../hooks";
 import type { WeeklySale } from "../../../interfaces";
@@ -15,7 +16,7 @@ type PieData = {
 const TotalsBar = () => {
   const [barData, setBarData] = useState<any[]>([]);
   const [dateRange, setDateRange] = useState<string>("");
-  const state = useAppSelector((state) => state.sales);
+  const state = useSalesState();
 
   const formatBarData = (data: WeeklySale[]): PieData[] => {
     if (data.length === 0) return [];

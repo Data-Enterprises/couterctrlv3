@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 
@@ -47,9 +48,7 @@ const SalesTablet = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const { queryChecker, salesPanels, mainView, weeksBack } = useAppSelector(
-    (state) => state.sales,
-  );
+  const { queryChecker, salesPanels, mainView, weeksBack } = useSalesState();
 
   const getSalesPanels = async () => {
     if (mainView === "tracker") {

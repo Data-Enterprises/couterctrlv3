@@ -7,7 +7,7 @@ import { useToast } from "./components/toasts/hooks/useToast";
 // Components
 import { Outlet } from "react-router";
 import Login from "./pages/home/Login";
-import TitleBar from "./components/navigation/TitleBar";
+import { NavSwitch } from "./DevPages";
 import UserDataLoader from "./components/UserDataLoader";
 import SecurityQuestion from "./pages/home/SecurityQuestion";
 import ResetPassword from "./pages/home/ResetPassword";
@@ -72,7 +72,9 @@ const App = () => {
 
   const containerStyle = context.isMobile
     ? "h-full bg-bkg pb-14"
-    : "w-full";
+    : context.devMode
+      ? "w-full"
+      : "ml-12 min-w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)]";
 
   return (
     <div
@@ -82,7 +84,7 @@ const App = () => {
       <UserDataLoader />
       {context.loggedIn ? (
         <div className="max-h-screen max-w-screen overflow-hidden">
-          <TitleBar />
+          <NavSwitch />
           <div
             data-testid="outlet-container"
             className={`${containerStyle} bg-bkg`}

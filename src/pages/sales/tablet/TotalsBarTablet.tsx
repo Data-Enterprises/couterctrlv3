@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useState, useEffect } from "react";
 import { useAppSelector } from "../../../hooks";
 import { formatDateSimple, sameWeekDayLastYear } from "../../../utils";
@@ -12,7 +13,7 @@ type CompareData = {
 const TotalsBarTablet = () => {
   const [barData, setBarData] = useState<CompareData[]>([]);
   const [dateRange, setDateRange] = useState<string>("");
-  const state = useAppSelector((state) => state.sales);
+  const state = useSalesState();
 
   useEffect(() => {
     const data =

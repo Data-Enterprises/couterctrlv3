@@ -1,3 +1,4 @@
+import { useSalesState } from "./hooks/useSalesState";
 import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { getWeekly, getHourly } from "../../api/sales";
@@ -147,7 +148,7 @@ const SalesLedger = () => {
     // hourlySales = [],
     // hourlySalesLastWeek = [],
     // hourlySalesLastYear = [],
-  } = useAppSelector((state) => state.sales);
+  } = useSalesState();
   const {
     hasSearched,
     selection,

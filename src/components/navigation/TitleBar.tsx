@@ -5,9 +5,10 @@ import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { categories } from "./utils";
 import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
-import { resetAppSlice } from "../../features/appSlice";
+import { resetAppSlice, toggleDevMode } from "../../features/appSlice";
 import { resetUserSlice } from "../../features/userSlice";
 import { resetSalesSlice } from "../../features/salesSlice";
+import { resetSalesLegacySlice } from "../../features/salesLegacySlice";
 import { resetStoreSlice } from "../../features/storeSlice";
 import { resetGroupState } from "../../features/groupSlice";
 import { resetUsersSlice } from "../../features/usersSlice";
@@ -164,10 +165,10 @@ const TitleBar = () => {
     dispatch(resetUserSlice());
     dispatch(resetUsersSlice());
     dispatch(resetSalesSlice());
+    dispatch(resetSalesLegacySlice());
     dispatch(resetStoreSlice());
     dispatch(resetUserSlice());
     dispatch(resetNav());
-    dispatch(resetSalesSlice());
     dispatch(resetUpcState());
     dispatch(resetAppSlice());
     dispatch(resetSearchSlice());
@@ -310,6 +311,24 @@ const TitleBar = () => {
         )}
 
         <div className="flex-1" />
+
+        {/* DEV/PROD toggle — programmer only */}
+        {user.role === 9 && (
+          <div className="flex items-center px-3 border-r border-white/10">
+            <button
+              onClick={() => dispatch(toggleDevMode())}
+              className="flex items-center gap-0 rounded-full overflow-hidden border border-white/20 text-[10px] font-bold select-none"
+              title={context.devMode ? "Switch to PROD" : "Switch to DEV"}
+            >
+              <span className={`px-2.5 py-1 transition-colors ${!context.devMode ? "bg-white text-[#1e2a4a]" : "text-white/40"}`}>
+                PROD
+              </span>
+              <span className={`px-2.5 py-1 transition-colors ${context.devMode ? "bg-emerald-500 text-white" : "text-white/40"}`}>
+                DEV
+              </span>
+            </button>
+          </div>
+        )}
 
         {/* Avatar — always visible */}
         <AvatarDropdown />

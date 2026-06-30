@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { formatCurrency2 } from "../../../utils";
 import {
@@ -30,9 +31,7 @@ const TotalsGridLvlOne = ({
   subId,
   isLast,
 }: TotalsGridLvlOneProps) => {
-  const { salesTrackerSelectedSubDept } = useAppSelector(
-    (state) => state.sales,
-  );
+  const { salesTrackerSelectedSubDept } = useSalesState();
   const dispatch = useAppDispatch();
   const calcTotals = (data: WeekTotal[][]) => {
     const tyTotalSales = data.reduce((acc, weekGroup) => {

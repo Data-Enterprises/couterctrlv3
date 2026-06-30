@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useState, useEffect } from "react";
 import { useAppSelector } from "../../../hooks";
 import { type HourlyTotal } from "../components";
@@ -19,7 +20,7 @@ const HourlyGrid = () => {
     selectedSalesPanel,
     hourlySalesLastYear,
     dashboardOption,
-  } = useAppSelector((state) => state.sales);
+  } = useSalesState();
   const { isTablet } = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
   const [barIndex, setBarIndex] = useState<string>("date");

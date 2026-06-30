@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useAppSelector } from "../../../hooks";
 import { formatCurrency2 } from "../../../utils";
 import SummaryRow from "./SummaryRow";
@@ -13,7 +14,7 @@ const CompareSummary = () => {
     compareSubsRightCompare,
     leftSubCompare,
     rightSubCompare,
-  } = useAppSelector((state) => state.sales);
+  } = useSalesState();
 
   const formatDate = (date: string) => {
     const [year, month, day] = date.split("T")[0].split("-");

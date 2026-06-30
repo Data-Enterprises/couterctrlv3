@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useState, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useSubCols } from "../components";
@@ -22,7 +23,7 @@ const SubDeptGrid = () => {
     selectedSalesPanel,
     subSalesWk3,
     topSubDept,
-  } = useAppSelector((state) => state.sales);
+  } = useSalesState();
   const { isMobile, isTablet } = useAppSelector((state) => state.app);
   const [groupSubs, setGroupSubs] = useState<SubGridRow[]>([]);
   const { subCols } = useSubCols();

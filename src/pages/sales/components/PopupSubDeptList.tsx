@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 ﻿import { useState, useMemo, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { setItemThreshold } from "../../../features/salesLedgerSlice";
@@ -169,7 +170,7 @@ interface PopupSubDeptListProps {
 }
 
 const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel, storeId, selectedDate }: PopupSubDeptListProps) => {
-  const { subSales, subSalesWk2, subSalesWk3 } = useAppSelector((state) => state.sales);
+  const { subSales, subSalesWk2, subSalesWk3 } = useSalesState();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
   const threshold = useAppSelector((state) => state.salesLedger.subDeptThreshold);

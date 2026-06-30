@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useEffect, useState } from "react";
 import {
   formatBigNumber,
@@ -15,8 +16,7 @@ const HourlyGridTablet = () => {
   // const [dates, setDates] = useState<string[]>([]);
   const [barData, setBarData] = useState<any[]>([]);
   const [_, setLyData] = useState<any[]>([]);
-  const { hourlySales, selectedSalesPanel, hourlySalesLastYear } =
-    useAppSelector((state) => state.sales);
+  const { hourlySales, selectedSalesPanel, hourlySalesLastYear } = useSalesState();
 
   // useEffect(() => {
   //   if (barData.length) {

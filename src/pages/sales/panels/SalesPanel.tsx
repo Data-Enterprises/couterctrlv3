@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import {
   formatCurrency2,
@@ -39,7 +40,7 @@ const SalesPanel = ({ panel, handlePanelClick, id }: SalesPanelProps) => {
     leftSubCompare,
     rightSubCompare,
     compareSubsLeftCompare,
-  } = useAppSelector((state) => state.sales);
+  } = useSalesState();
 
   const border = (panel: WeeklySale, selected: SelectedSalesPanel) => {
     const date = panel.sale_date.split("T")[0];

@@ -1,9 +1,10 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useAppSelector } from "../../../hooks";
 import { sameWeekDayLastYear } from "../../../utils";
 import TopTotalsKpi from "./TopTotalsKpi";
 
 const TopCoupons = () => {
-  const sales = useAppSelector((state) => state.sales);
+  const sales = useSalesState();
 
   const aggFunc = (thisYear: boolean = true) => {
     const data = thisYear ? [...sales.subSales] : [...sales.subSalesWk3];

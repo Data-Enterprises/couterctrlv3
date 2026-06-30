@@ -1,3 +1,4 @@
+import { useSalesState } from "../hooks/useSalesState";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 
 import Modal from "../../../components/Modal";
@@ -12,7 +13,7 @@ const SubsCompareModal = () => {
     compareSubsLeftCompare,
     compareSubsModalOpen,
     compareSubsRightCompare,
-  } = useAppSelector((state) => state.sales);
+  } = useSalesState();
 
   const handleClose = () => {
     dispatch(resetCompareSubs());
