@@ -21,7 +21,7 @@ import SaleTypes from "./SaleTypes";
 import CashiersTableFilters from "./filters/CashiersTableFilters";
 import MobileTrendCards from "./cashierSales/MobileTrendCards";
 import LPTablet from "./tablet/LPTablet";
-import LpMobile from "./mobile/LpMobile";
+import LpMobile from "./mobile/LpMobileLegacy";
 
 const LossPreventionLegacy = () => {
   const toast = useToast();

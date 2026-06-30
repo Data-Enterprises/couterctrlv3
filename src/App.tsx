@@ -71,7 +71,7 @@ const App = () => {
   }, []);
 
   const containerStyle = context.isMobile
-    ? "h-full bg-bkg pb-14"
+    ? context.devMode ? "h-full bg-bkg pb-14" : "h-full bg-bkg"
     : context.devMode
       ? "w-full"
       : "ml-12 min-w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)]";
@@ -87,7 +87,7 @@ const App = () => {
           <NavSwitch />
           <div
             data-testid="outlet-container"
-            className={`${containerStyle} bg-bkg`}
+            className={`${containerStyle} bg-bkg ${!context.devMode && nav.isNavOpen ? "opacity-20 pointer-events-none" : "opacity-100"} transition-all duration-300`}
           >
             {/* ResetPassword and SecurityQuestion are only modals that render when the user is prompted, otherwise they are hidden */}
             <ResetPassword />
