@@ -24,6 +24,5 @@ coverage
 *.sln
 *.sw?
 
-
 .env.production
 .env.development
