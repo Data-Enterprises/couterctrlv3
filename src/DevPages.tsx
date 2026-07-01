@@ -1,4 +1,6 @@
 import { useAppSelector } from "./hooks";
+import Cashiers from "./pages/cashiers/Cashiers.tsx";
+import CashiersLegacy from "./pages/cashiers/CashiersLegacy.tsx";
 import Sales from "./pages/sales/Sales.tsx";
 import SalesLegacy from "./pages/sales/SalesLegacy.tsx";
 import LossPrevention from "./pages/lossPrevention/LossPrevention.tsx";
@@ -22,6 +24,11 @@ export const NavSwitch = () => {
       <SideBarLegacy />
     </>
   );
+};
+
+export const CashiersPage = () => {
+  const devMode = useAppSelector((s) => s.app.devMode);
+  return devMode ? <Cashiers /> : <CashiersLegacy />;
 };
 
 export const SalesPage = () => {

@@ -1,19 +1,21 @@
 import { ArrowPathIcon, DocumentCheckIcon } from "@heroicons/react/24/solid";
-import { reQuery, setRecMobileStage } from "../../../features/receiversSlice";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
+import { useReceiversState } from "../hooks/useReceiversState";
+import { useReceiversActions } from "../hooks/useReceiversActions";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 const ReceiverDetailsMobile = () => {
   const dispatch = useAppDispatch();
-  const state = useAppSelector((state) => state.receivers);
+  const state = useReceiversState();
+  const actions = useReceiversActions();
   const details = state.details;
   const totals = state.totals[0];
 
   const handleRefreshClick = () => {
-    dispatch(reQuery());
+    dispatch(actions.reQuery());
   };
 
   const handleReceiversClick = () => {
-    dispatch(setRecMobileStage(2));
+    dispatch(actions.setRecMobileStage(2));
   };
 
   return (

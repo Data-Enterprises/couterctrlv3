@@ -3,12 +3,8 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import type { JsonError, ReceiverDetailsResponse } from "../../../interfaces";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { getReceiverDetails } from "../../../api/receivers";
-import {
-  setIsFetchingDetails,
-  setReceiverDetails,
-  setSelectedInvoice,
-  setTotals,
-} from "../../../features/receiversSlice";
+import { useReceiversState } from "../hooks/useReceiversState";
+import { useReceiversActions } from "../hooks/useReceiversActions";
 import { formatDate } from "../../../utils";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -17,21 +13,22 @@ const ReceiversGrid = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
-  const state = useAppSelector((state) => state.receivers);
+  const state = useReceiversState();
+  const actions = useReceiversActions();
 
   const getSelectedDetails = (invoiceid: number, transDate: string) => {
-    dispatch(setIsFetchingDetails(true));
-    dispatch(setSelectedInvoice(invoiceid.toString()));
+    dispatch(actions.setIsFetchingDetails(true));
+    dispatch(actions.setSelectedInvoice(invoiceid.toString()));
     getReceiverDetails(url, token, state.storeid, invoiceid, transDate)
       .then((resp) => {
         const j: ReceiverDetailsResponse = resp.data;
         if (j.error == 0) {
-          dispatch(setReceiverDetails(j.records));
-          dispatch(setTotals(j.totals));
+          dispatch(actions.setReceiverDetails(j.records));
+          dispatch(actions.setTotals(j.totals));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setIsFetchingDetails(false)));
+      .finally(() => dispatch(actions.setIsFetchingDetails(false)));
   };
 
   return (

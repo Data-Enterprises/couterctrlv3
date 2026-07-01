@@ -11,7 +11,7 @@ import {
   setReceiverDetails,
   setSelectedInvoice,
   setTotals,
-} from "../../features/receiversSlice";
+} from "../../features/receiversLegacySlice";
 import { formatDate } from "../../utils";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -20,7 +20,7 @@ const ReceiversListGrid = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
-  const state = useAppSelector((state) => state.receivers);
+  const state = useAppSelector((state) => state.receiversLegacy);
   const gridRef = useRef<AgGridReact>(null);
 
   // Deselect rows when details are cleared => From refresh or filter reset

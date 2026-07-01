@@ -3,10 +3,7 @@ import type { ItemLookupHistory } from "../../../features/itemLookupSlice";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { useSubMarginCtx } from "../hooks";
 import { useAppDispatch } from "../../../hooks";
-import {
-  setScannedItemHistory,
-  setScannedItemMobile,
-} from "../../../features/subMarginSlice";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
 import { setUpcCode } from "../../../features/itemScanSlice";
 import { useParams } from "../hooks";
 
@@ -30,6 +27,7 @@ interface ItemHistoryStaticProps {
 const ItemHistoryStatic = ({ showClose = true }: ItemHistoryStaticProps) => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const { start, end } = useParams();
   const [groupedByPrice, setGroupedByPrice] = useState<GroupedData[]>([]);
   const [groupedByCost, setGroupedByCost] = useState<GroupedData[]>([]);
@@ -219,8 +217,8 @@ const ItemHistoryStatic = ({ showClose = true }: ItemHistoryStaticProps) => {
   }, [ctx.scannedItemHistory]);
 
   const handleClose = () => {
-    dispatch(setScannedItemMobile(null));
-    dispatch(setScannedItemHistory([]));
+    dispatch(actions.setScannedItemMobile(null));
+    dispatch(actions.setScannedItemHistory([]));
     dispatch(setUpcCode(ctx.upcSearch));
   };
 

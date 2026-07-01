@@ -1,23 +1,19 @@
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 import Modal from "../../../../components/Modal";
-import {
-  setFilterModalOpen,
-  setFilterTextInput,
-  setItemFilterType,
-  setThreshOperator,
-} from "../../../../features/subMarginSlice";
+import { useSubMarginActions } from "../../hooks/useSubMarginActions";
 import TextFilter from "./TextFilter";
 import ThresholdFilter from "./TresholdFilter";
 
 const ItemFilterModal = () => {
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const subMargin = useAppSelector((state) => state.subMargin);
 
   const handleClose = () => {
-    dispatch(setFilterModalOpen(false));
-    dispatch(setItemFilterType(""));
-    dispatch(setFilterTextInput(""));
-    dispatch(setThreshOperator(""));
+    dispatch(actions.setFilterModalOpen(false));
+    dispatch(actions.setItemFilterType(""));
+    dispatch(actions.setFilterTextInput(""));
+    dispatch(actions.setThreshOperator(""));
   };
 
   const renderForm = () => {

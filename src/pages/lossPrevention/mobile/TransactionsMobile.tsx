@@ -5,12 +5,8 @@ import { formatDate, reduceTransactions } from "..";
 import { gradeAllCashiers } from "../gradingUtils";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getCashierTransaction } from "../../../api/lossPrevention";
-import {
-  // setCashierSaleIds,
-  // setSelectedCashier,
-  setTransactionDrillDown,
-  setTransModalOpen,
-} from "../../../features/lossPreventionSlice";
+import { useLPState } from "../hooks/useLPState";
+import { useLPActions } from "../hooks/useLPActions";
 import type { JsonError, TransactionListItem, TransactionOverview } from "../../../interfaces";
 import { formatCurrency2 } from "../../../utils";
 import BottomSheet from "../../../components/BottomSheet";
@@ -41,7 +37,8 @@ const TransactionsMobile = ({ onBack }: Props) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const lp = useAppSelector((state) => state.lossPrevention);
+  const lp = useLPState();
+  const actions = useLPActions();
   const assignedStores = useAppSelector((state) => state.user.assignedStores);
 
   const [filteredOverviews, setFilteredOverviews] = useState<TransactionOverview[]>([]);
@@ -123,23 +120,23 @@ const TransactionsMobile = ({ onBack }: Props) => {
   const handleRowTap = (ov: TransactionOverview) => {
     setSelectedOverview(ov);
     setLoadingReceipt(true);
-    dispatch(setTransactionDrillDown([]));
+    dispatch(actions.setTransactionDrillDown([]));
     const saleDate = ov.sale_date.split("T")[0];
     getCashierTransaction(context.url, context.token, saleDate, ov.sale_id, ov.storeid)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0 && j.transaction.length > 0) {
           const transactions: TransactionListItem[] = j.transaction.map((item: any) => ({ ...item, transaction_id: item.sale_id.split("-")[1], qty: item.qty ?? 0 }));
-          dispatch(setTransactionDrillDown([reduceTransactions(transactions)]));
+          dispatch(actions.setTransactionDrillDown([reduceTransactions(transactions)]));
         }
       })
-      .catch((err: JsonError) => { dispatch(setTransModalOpen(false)); toast.error("Error fetching transaction: " + err.message); })
+      .catch((err: JsonError) => { dispatch(actions.setTransModalOpen(false)); toast.error("Error fetching transaction: " + err.message); })
       .finally(() => setLoadingReceipt(false));
   };
 
   const handleCloseReceipt = () => {
     setSelectedOverview(null);
-    dispatch(setTransactionDrillDown([]));
+    dispatch(actions.setTransactionDrillDown([]));
   };
 
   const cashierName = lp.cashiers.find((c) => c.cashier_number === lp.selectedCashier.cashier_number)?.cashier_name ?? "";

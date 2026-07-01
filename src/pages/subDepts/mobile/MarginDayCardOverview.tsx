@@ -1,8 +1,5 @@
-import {
-  setMobileMainView,
-  setSelectedWeekDay,
-} from "../../../features/subMarginSlice";
 import { useAppDispatch } from "../../../hooks";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import type { BarData } from "../display/widgets";
 
@@ -12,10 +9,11 @@ interface MarginDayCardOverviewProps {
 
 const MarginDayCardOverview = ({ margin }: MarginDayCardOverviewProps) => {
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
 
   const handleCardClick = (date: string) => {
-    dispatch(setSelectedWeekDay(date));
-    dispatch(setMobileMainView("items"));
+    dispatch(actions.setSelectedWeekDay(date));
+    dispatch(actions.setMobileMainView("items"));
   };
 
   const dayOfWeek = new Date(margin.date).toLocaleDateString("en-US", {

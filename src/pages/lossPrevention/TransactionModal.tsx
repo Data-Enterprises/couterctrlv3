@@ -1,12 +1,14 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { setTransModalOpen } from "../../features/lossPreventionSlice";
+import { useLPState } from "./hooks/useLPState";
+import { useLPActions } from "./hooks/useLPActions";
 import Modal from "../../components/Modal";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import Transaction from "./Transaction";
 
 const TransactionModal = () => {
   const dispatch = useAppDispatch();
-  const lp = useAppSelector((state) => state.lossPrevention);
+  const lp = useLPState();
+  const actions = useLPActions();
   const {isMobile, isTablet} = useAppSelector((state) => state.app);
 
   return (
@@ -14,7 +16,7 @@ const TransactionModal = () => {
       isOpen={lp.transModalOpen}
       className={`${isMobile ? "-ml-12 px-2" : ''}`}
       modalClassName={`bg-custom-white ${isMobile ? "w-[90%] ml-12 translate-x-2" : isTablet ? "w-[80%]" : "w-[38%]"} relative no-scrollbar max-h-[80vh] overflow-y-auto p-2 rounded-lg shadow-lg`}
-      onClose={() => dispatch(setTransModalOpen(false))}
+      onClose={() => dispatch(actions.setTransModalOpen(false))}
     >
       {lp.noRowsReturned && (
         <div className="w-full h-full flex items-center justify-center">

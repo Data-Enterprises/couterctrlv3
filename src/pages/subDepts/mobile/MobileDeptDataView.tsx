@@ -3,16 +3,7 @@ import { useSubMarginCtx } from "../hooks";
 
 import { formatSubDate, reduceItemData } from ".";
 import { calculateCogs } from "..";
-import {
-  setItemDataFilteredMobile,
-  setItemDataMobile,
-  setMobileMainView,
-  setProcessMobileItemData,
-  setScannedItemMobile,
-  setSelectedSubDeptId,
-  setSelectedWeekDay,
-  setViewDaily,
-} from "../../../features/subMarginSlice";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
 import { gpm } from "../../../functions";
 import { useAppDispatch } from "../../../hooks";
 import type { BarData } from "../display/widgets";
@@ -36,21 +27,22 @@ import {
 const MobileDeptDataView = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
 
   const handleMainView = (isResetting: boolean) => {
-    if (!ctx.viewDaily) dispatch(setViewDaily(true));
-    dispatch(setScannedItemMobile(null));
-    dispatch(setMobileMainView("overview"));
+    if (!ctx.viewDaily) dispatch(actions.setViewDaily(true));
+    dispatch(actions.setScannedItemMobile(null));
+    dispatch(actions.setMobileMainView("overview"));
     dispatch(setUpcCode(""));
-    dispatch(setSelectedWeekDay(""));
-    if (isResetting) dispatch(setSelectedSubDeptId(0));
+    dispatch(actions.setSelectedWeekDay(""));
+    if (isResetting) dispatch(actions.setSelectedSubDeptId(0));
   };
 
   const handleScanView = () => {
-    dispatch(setViewDaily(false));
-    dispatch(setMobileMainView("overview"));
+    dispatch(actions.setViewDaily(false));
+    dispatch(actions.setMobileMainView("overview"));
     dispatch(setUpcCode(""));
-    dispatch(setSelectedWeekDay(""));
+    dispatch(actions.setSelectedWeekDay(""));
   };
 
   useEffect(() => {
@@ -61,9 +53,9 @@ const MobileDeptDataView = () => {
         margin: ((item.total_sales - item.cogs) / item.total_sales) * 100 || 0,
       }));
 
-      dispatch(setItemDataMobile(newData));
-      dispatch(setItemDataFilteredMobile(newData));
-      dispatch(setProcessMobileItemData(false));
+      dispatch(actions.setItemDataMobile(newData));
+      dispatch(actions.setItemDataFilteredMobile(newData));
+      dispatch(actions.setProcessMobileItemData(false));
     }
   }, [ctx.processMobileItemData, ctx.margins]);
 

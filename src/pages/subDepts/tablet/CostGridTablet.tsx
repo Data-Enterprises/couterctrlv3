@@ -5,15 +5,14 @@ import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 import { costCols } from "../display/widgets";
-import {
-  setFilteredCostGridData,
-  type ThreshOperator,
-} from "../../../features/subMarginSlice";
+import { type ThreshOperator } from "../../../features/subMarginSlice";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import CostGridFiltersTablet from "./CostGridFiltersTablet";
 
 const CostGridTablet = () => {
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const sm = useAppSelector((state) => state.subMargin);
 
   useEffect(() => {
@@ -78,7 +77,7 @@ const CostGridTablet = () => {
         );
       });
 
-      dispatch(setFilteredCostGridData(filteredData));
+      dispatch(actions.setFilteredCostGridData(filteredData));
     }
   }, [
     sm.subDeptGridView,

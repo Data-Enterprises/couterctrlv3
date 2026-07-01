@@ -7,9 +7,9 @@ import {
   resetCoupons,
   setIsFetching,
   setNoCouponsFound,
-} from "../../features/couponSlice";
+} from "../../features/couponLegacySlice";
 import type { CouponsResponse, JsonError } from "../../interfaces";
-import { setCoupons } from "../../features/couponSlice";
+import { setCoupons } from "../../features/couponLegacySlice";
 import { formatGoliathDate } from "../../utils";
 
 // components

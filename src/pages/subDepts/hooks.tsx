@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { setDates } from ".";
 import { useAppSelector } from "../../hooks";
+import { useSubMarginState } from "./hooks/useSubMarginState";
 
 export const useSubMarginCtx = () => {
   const { url, token, isMobile, isTablet } = useAppSelector((state) => state.app);
@@ -15,6 +16,10 @@ export const useSubMarginCtx = () => {
     weekTwoMargins,
     weekThreeMargins,
     weekFourMargins,
+    weekOneMarginsLY,
+    weekTwoMarginsLY,
+    weekThreeMarginsLY,
+    weekFourMarginsLY,
     filteredMargins,
     subDeptFitlerText,
     loadingMargins,
@@ -42,7 +47,7 @@ export const useSubMarginCtx = () => {
     upcSearch,
     mSort,
     viewTabletCards,
-  } = useAppSelector((state) => state.subMargin);
+  } = useSubMarginState();
 
   const { assignedStores } = useAppSelector((state) => state.user);
 
@@ -71,6 +76,10 @@ export const useSubMarginCtx = () => {
     weekTwoMargins,
     weekThreeMargins,
     weekFourMargins,
+    weekOneMarginsLY,
+    weekTwoMarginsLY,
+    weekThreeMarginsLY,
+    weekFourMarginsLY,
     filteredCostGridData,
     filteredItemGridData,
     itemGridData,

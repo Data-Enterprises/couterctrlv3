@@ -1,10 +1,5 @@
 import { useCashierCtx } from "..";
-import {
-  setExceptionQtyTypes,
-  setExceptionSalesTypes,
-  setTotalQtyFilter,
-  setTotalSalesFilter,
-} from "../../../features/cashiersSlice";
+import { useCashiersActions } from "../hooks/useCashiersActions";
 import type { ExceptionType } from "../../../interfaces";
 
 import CheckBox from "../../../components/inputs/CheckBox";
@@ -23,6 +18,7 @@ const exceptions: ExceptionType[] = [
 
 const CashierNumberFilter = () => {
   const ctx = useCashierCtx();
+  const actions = useCashiersActions();
 
   const reduxValueToSet =
     ctx.cashierFilterType === "total_sales"
@@ -32,9 +28,9 @@ const CashierNumberFilter = () => {
   const dispatchToUse = () => {
     switch (ctx.cashierFilterType) {
       case "total_sales":
-        return setTotalSalesFilter;
+        return actions.setTotalSalesFilter;
       default:
-        return setTotalQtyFilter;
+        return actions.setTotalQtyFilter;
     }
   };
 
@@ -82,13 +78,13 @@ const CashierNumberFilter = () => {
       const types = ctx.exceptionSalesTypes.includes(exc)
         ? ctx.exceptionSalesTypes.filter((e) => e !== exc)
         : [...ctx.exceptionSalesTypes, exc];
-      ctx.dispatch(setExceptionSalesTypes(types));
+      ctx.dispatch(actions.setExceptionSalesTypes(types));
     } else {
       // looking at qty
       const types = ctx.exceptionQtyTypes.includes(exc)
         ? ctx.exceptionQtyTypes.filter((e) => e !== exc)
         : [...ctx.exceptionQtyTypes, exc];
-      ctx.dispatch(setExceptionQtyTypes(types));
+      ctx.dispatch(actions.setExceptionQtyTypes(types));
     }
   };
 

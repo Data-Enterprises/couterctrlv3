@@ -6,7 +6,7 @@ import {
   setOrdersExportModalOpen,
   // setSubIdsFilter,
   // setTypeFilterArr,
-} from "../../../features/ordersSlice";
+} from "../../../features/ordersLegacySlice";
 // import type { AvailableOrder } from "../../../interfaces";
 
 import DatePickers from "../../../components/datePickers/DatePickers";

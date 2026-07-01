@@ -1,0 +1,222 @@
+﻿import { AgGridReact } from "ag-grid-react";
+import { useCashierCtx } from "..";
+import {
+  AllCommunityModule,
+  ModuleRegistry,
+  type CellClickedEvent,
+} from "ag-grid-community";
+import { cols, formatDate, theme } from ".";
+import {
+  setExportModalOpen,
+  setNoTransactions,
+  setTransDrillDown,
+  setTransModalOpen,
+} from "../../../../features/cashiersLegacySlice";
+import { getCashierTransaction } from "../../../../api/lossPrevention";
+import type { JsonError, TransactionListItem } from "../../../../interfaces";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import LoadingIndicator from "../../../../components/loading/LoadingIndicator";
+import { formatBigNumber, formatCurrency2 } from "../../../../utils";
+
+ModuleRegistry.registerModules([AllCommunityModule]);
+
+const TransactionsView = () => {
+  const ctx = useCashierCtx();
+  const toast = useToast();
+
+  const handleCellClicked = (event: CellClickedEvent) => {
+    if (event.colDef.field === "transaction_id") {
+      const saleId = event.data.sale_id;
+      const saleDate = event.data.sale_date.split("T")[0];
+      const storeid = event.data.storeid;
+      ctx.dispatch(setTransDrillDown([]));
+      ctx.dispatch(setTransModalOpen(true));
+      getCashierTransaction(ctx.url, ctx.token, saleDate, saleId, storeid)
+        .then((resp) => {
+          const j = resp.data;
+          if (j.error === 0 && j.transaction.length > 0) {
+            const transactions: TransactionListItem[] = [...j.transaction].map(
+              (item) => ({
+                ...item,
+                transaction_id: item.sale_id.split("-")[1],
+                qty: item.qty ? item.qty : 0,
+              }),
+            );
+            const reducedTransactions: TransactionListItem[] =
+              transactions.reduce((acc: TransactionListItem[], curr) => {
+                const found = acc.find(
+                  (item) =>
+                    item.storeid === curr.storeid &&
+                    item.sale_type === curr.sale_type &&
+                    item.product_code === curr.product_code &&
+                    item.product_description === curr.product_description,
+                );
+                if (found) {
+                  found.qty! += curr.qty!;
+                  found.total_sales += curr.total_sales;
+                  found.net_sales += curr.net_sales;
+                  found.total_rounded_tax += curr.total_rounded_tax;
+                } else {
+                  acc.push({ ...curr, qty: curr.qty });
+                }
+                return acc;
+              }, []);
+            ctx.dispatch(setNoTransactions(false));
+            ctx.dispatch(setTransDrillDown([reducedTransactions]));
+          } else {
+            ctx.dispatch(setNoTransactions(true));
+          }
+        })
+        .catch((err: JsonError) => {
+          ctx.dispatch(setTransModalOpen(false));
+          toast.error("Error fetching transactions: " + err.message);
+        });
+    }
+  };
+
+  const handleShowAll = () => {
+    const chunked: TransactionListItem[][] = [];
+    let result: TransactionListItem[] = [];
+    [...ctx.transList].forEach((item, i) => {
+      // if starting a new chunk or every item shares the same sale_id
+      if (
+        result.length === 0 ||
+        result.every((res) => res.sale_id === item.sale_id)
+      ) {
+        result.push(item);
+
+        // if at the end, then push the final chunk otherwise, it gets left out
+        if (i === ctx.transList.length - 1) {
+          chunked.push(result);
+        }
+      } else {
+        // if this new sale_id is different, push the current chunk and start a new one
+        chunked.push(result);
+        result = [];
+        result.push(item);
+      }
+    });
+
+    ctx.dispatch(setTransDrillDown(chunked));
+    ctx.dispatch(setTransModalOpen(true));
+  };
+
+  if (ctx.noRowsFound) {
+    return (
+      <div className="h-full w-full flex items-center justify-center rounded-lg shadow-lg">
+        <p className="text-content/60 font-medium bg-custom-white px-4 py-8 rounded-lg shadow-lg">
+          No transactions found for the selected date range.
+        </p>
+      </div>
+    );
+  }
+
+  if (ctx.fetchingTransactions) {
+    return (
+      <div className="relative h-full w-full flex items-center justify-center rounded-lg shadow-lg">
+        <LoadingIndicator message={ctx.transactionLoadingMessage} />
+      </div>
+    );
+  }
+
+  if (ctx.isTablet) {
+    return (
+      <div className="h-full w-full rounded-xl bg-custom-white p-3 shadow-lg">
+        <div className=" flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-content/75">Transactions</h2>
+          <p className="text-sm text-content/50">
+            Tap a transaction ID to drill into details.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 h-[1.5px] mb-2">
+          <div className="bg-gradient-to-r from-[rgb(30,45,80)]/75 to-custom-white"></div>
+          <div className="bg-gradient-to-l from-[rgb(30,45,80)]/75 to-custom-white"></div>
+        </div>
+
+        <div className="rounded-xl border border-slate-200">
+          <div className="grid grid-cols-[1fr_1.1fr_1.2fr_0.8fr_1.3fr_0.8fr_0.7fr_1.1fr] gap-3 bg-bkg/85 px-3 py-2 text-[12.5px] font-semibold text-content/75">
+            {cols.map((col, i) => (
+              <div key={i} className={i >= cols.length - 2 ? "text-right" : ""}>
+                {col.headerName}
+              </div>
+            ))}
+          </div>
+
+          {/* Scrollable */}
+          <div className="divide-y divide-content/35 bg-custom-white max-h-[calc(100vh-11rem)] overflow-y-auto">
+            {ctx.filteredTransOverviews.map((fto, i) => (
+              <div
+                key={i}
+                className="grid grid-cols-[1fr_1.1fr_1.2fr_0.8fr_1.3fr_0.8fr_0.7fr_1.1fr] gap-3 px-3 py-2.5 text-sm text-content/75 transition-colors even:bg-bkg/75"
+              >
+                <div className="min-w-0">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleCellClicked({
+                        colDef: { field: "transaction_id" },
+                        data: fto,
+                      } as CellClickedEvent)
+                    }
+                    className="text-nowrap truncate font-semibold underline text-[rgb(30,45,80)]"
+                  >
+                    {fto.transaction_id}
+                  </button>
+                </div>
+
+                <div className="whitespace-nowrap">
+                  {formatDate(fto.sale_date)}
+                </div>
+
+                <div className="truncate">{fto.sale_type}</div>
+
+                <div>{fto.store_number}</div>
+
+                <div className="truncate">{fto.cashier_name}</div>
+
+                <div>{fto.cashier_number}</div>
+
+                <div className="text-right tabular-nums">
+                  {formatBigNumber(fto.qty, 0)}
+                </div>
+
+                <div className="text-right tabular-nums font-medium text-slate-900">
+                  {formatCurrency2(fto.total_sales)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-custom-white h-full w-full space-y-2 p-2 rounded-lg shadow-lg">
+      <div className="h-[94%]">
+        <AgGridReact
+          rowData={ctx.filteredTransOverviews}
+          columnDefs={cols}
+          onCellClicked={handleCellClicked}
+          theme={theme}
+          pagination={true}
+          paginationAutoPageSize={true}
+        />
+      </div>
+      <div className="flex gap-2">
+        <button className="btn-themeGreen py-1" onClick={handleShowAll}>
+          Show All
+        </button>
+        <button
+          className="btn-themeGreen py-1"
+          onClick={() => ctx.dispatch(setExportModalOpen(true))}
+        >
+          Export
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default TransactionsView;

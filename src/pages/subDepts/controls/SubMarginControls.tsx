@@ -5,14 +5,7 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getSubDepts } from "../../../api/subMargins";
 
 import type { JsonError, SubDept, SubSalesJsonResp } from "../../../interfaces";
-import {
-  requerySubDeptMargins,
-  setLoadingSubDepts,
-  setOpenCostExportModal,
-  setOpenExportModal,
-  setSearchValue,
-  setSubDepts,
-} from "../../../features/subMarginSlice";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
 
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
 import SubDepts from "./SubDepts";
@@ -51,13 +44,14 @@ const useHeight = () => {
 const SubMarginControls = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const ctx = useSubMarginCtx();
   const params = useParams();
   const { containerRef, height } = useHeight();
 
   const handleSubDeptSearch = () => {
-    dispatch(requerySubDeptMargins());
-    dispatch(setLoadingSubDepts(true));
+    dispatch(actions.requerySubDeptMargins());
+    dispatch(actions.setLoadingSubDepts(true));
     getSubDepts(
       ctx.url,
       ctx.token,
@@ -82,11 +76,11 @@ const SubMarginControls = () => {
             }, [])
             .sort((a, b) => a.id - b.id);
 
-          dispatch(setSubDepts(subDepts));
+          dispatch(actions.setSubDepts(subDepts));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setLoadingSubDepts(false)));
+      .finally(() => dispatch(actions.setLoadingSubDepts(false)));
   };
 
   const resetBtnActive = () => {
@@ -104,7 +98,7 @@ const SubMarginControls = () => {
   };
 
   const handleStoreSelect = (id: string | number) => {
-    dispatch(setSearchValue(Number(id)));
+    dispatch(actions.setSearchValue(Number(id)));
   };
 
   const findStoreName = () => {
@@ -114,9 +108,9 @@ const SubMarginControls = () => {
 
   const openExport = () => {
     if (ctx.subDeptGridView === "item") {
-      dispatch(setOpenExportModal(true));
+      dispatch(actions.setOpenExportModal(true));
     } else if (ctx.subDeptGridView === "cost") {
-      dispatch(setOpenCostExportModal(true));
+      dispatch(actions.setOpenCostExportModal(true));
     }
   };
 
@@ -143,7 +137,7 @@ const SubMarginControls = () => {
         <div className="mt-2 grid grid-cols-2 gap-2">
           <button
             className={`btn-themeBlue px-0 w-full text-[13px] py-1 ${resetBtnActive()}`}
-            onClick={() => dispatch(requerySubDeptMargins())}
+            onClick={() => dispatch(actions.requerySubDeptMargins())}
           >
             Reset
           </button>

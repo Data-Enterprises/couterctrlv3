@@ -1,20 +1,15 @@
 import { useCouponContext } from "..";
 import Modal from "../../../components/Modal";
 import SingleSelect from "../../../components/SingleSelect";
-import {
-  resetCoupons,
-  setGridCoupons,
-  setShowSubsMobileFilter,
-  setSubDeptMobileFilter,
-  setUniqueDateMobileFilter,
-} from "../../../features/couponSlice";
 import { useAppDispatch } from "../../../hooks";
+import { useCouponActions } from "../hooks/useCouponActions";
 import TransactionModal from "../../lossPrevention/TransactionModal";
 import CpnCard from "./CpnCard";
 
 const CouponsGridMobile = () => {
   const ctx = useCouponContext();
   const dispatch = useAppDispatch();
+  const actions = useCouponActions();
 
   const handleFilter = () => {
     const dateFilter = new Date(ctx.uniqueDateMobileFilter);
@@ -32,8 +27,8 @@ const CouponsGridMobile = () => {
       return dateCheck && subDeptCheck;
     });
 
-    dispatch(setGridCoupons(filtered));
-    dispatch(setShowSubsMobileFilter(false));
+    dispatch(actions.setGridCoupons(filtered));
+    dispatch(actions.setShowSubsMobileFilter(false));
   };
 
   const handleDateSelect = (value: string | number) => {
@@ -51,12 +46,12 @@ const CouponsGridMobile = () => {
       return dateCheck && subDeptCheck;
     });
 
-    dispatch(setGridCoupons(filtered));
-    dispatch(setUniqueDateMobileFilter(value as string));
+    dispatch(actions.setGridCoupons(filtered));
+    dispatch(actions.setUniqueDateMobileFilter(value as string));
   };
 
   const handleDeselectAll = () => {
-    dispatch(setSubDeptMobileFilter(""));
+    dispatch(actions.setSubDeptMobileFilter(""));
   };
 
   return (
@@ -65,7 +60,7 @@ const CouponsGridMobile = () => {
       <div className="p-2">
         <button
           className="btn-themeBlue py-1 px-0 text-[13px] w-full"
-          onClick={() => dispatch(resetCoupons())}
+          onClick={() => dispatch(actions.resetCoupons())}
         >
           Refresh
         </button>
@@ -82,7 +77,7 @@ const CouponsGridMobile = () => {
         />
         <Modal
           isOpen={ctx.showSubsMobileFilter}
-          onClose={() => dispatch(setShowSubsMobileFilter(false))}
+          onClose={() => dispatch(actions.setShowSubsMobileFilter(false))}
           className="-ml-12 px-2"
         >
           <div className="grid grid-cols-3 gap-2 text-[13px] max-h-[75vh] overflow-y-auto">
@@ -90,7 +85,7 @@ const CouponsGridMobile = () => {
               <div
                 key={i}
                 className={`py-1 rounded-full shadow-md text-center ${ctx.subDeptMobileFilter.includes(sd) ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200`}
-                onClick={() => dispatch(setSubDeptMobileFilter(sd))}
+                onClick={() => dispatch(actions.setSubDeptMobileFilter(sd))}
               >
                 {sd}
               </div>
@@ -118,7 +113,7 @@ const CouponsGridMobile = () => {
         <div>
           <button
             className="btn-themeBlue px-0 w-full text-[13px] py-1"
-            onClick={() => dispatch(setShowSubsMobileFilter(true))}
+            onClick={() => dispatch(actions.setShowSubsMobileFilter(true))}
           >
             Sub Depts
           </button>

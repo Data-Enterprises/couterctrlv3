@@ -3,10 +3,8 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { formatDate, chunkSales, reduceTransactions } from "..";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getCashierTransaction } from "../../../api/lossPrevention";
-import {
-  setTransactionDrillDown,
-  setTransModalOpen,
-} from "../../../features/lossPreventionSlice";
+import { useLPState } from "../hooks/useLPState";
+import { useLPActions } from "../hooks/useLPActions";
 import type {
   JsonError,
   TransactionListItem,
@@ -29,7 +27,8 @@ const TransactionsGrid = () => {
     TransactionOverview[]
   >([]);
   const context = useAppSelector((state) => state.app);
-  const cashier = useAppSelector((state) => state.lossPrevention);
+  const cashier = useLPState();
+  const actions = useLPActions();
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   // const [page, setPage] = useState<number>(1);
 
@@ -84,8 +83,8 @@ const TransactionsGrid = () => {
     const saleId = e.sale_id;
     const saleDate = e.sale_date.split("T")[0];
     const storeid = e.storeid;
-    dispatch(setTransactionDrillDown([]));
-    dispatch(setTransModalOpen(true));
+    dispatch(actions.setTransactionDrillDown([]));
+    dispatch(actions.setTransModalOpen(true));
     getCashierTransaction(context.url, context.token, saleDate, saleId, storeid)
       .then((resp) => {
         const j = resp.data;
@@ -99,19 +98,19 @@ const TransactionsGrid = () => {
           );
           const reducedTransactions: TransactionListItem[] =
             reduceTransactions(transactions);
-          dispatch(setTransactionDrillDown([reducedTransactions]));
+          dispatch(actions.setTransactionDrillDown([reducedTransactions]));
         }
       })
       .catch((err: JsonError) => {
-        dispatch(setTransModalOpen(false));
+        dispatch(actions.setTransModalOpen(false));
         toast.error("Error fetching transactions: " + err.message);
       });
   };
 
   const handleShowAll = () => {
     const chunked: TransactionListItem[][] = chunkSales(filtered);
-    dispatch(setTransactionDrillDown(chunked));
-    dispatch(setTransModalOpen(true));
+    dispatch(actions.setTransactionDrillDown(chunked));
+    dispatch(actions.setTransModalOpen(true));
   };
 
   const colDefs: (

@@ -1,12 +1,7 @@
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import {
-  resetFilters,
-  setFilterModalOpen,
-  setFilterType,
-  setReceiverDetails,
-  setSelectedInvoice,
-  type FilterType,
-} from "../../../features/receiversSlice";
+import { useAppDispatch } from "../../../hooks";
+import { type FilterType } from "../../../features/receiversSlice";
+import { useReceiversState } from "../hooks/useReceiversState";
+import { useReceiversActions } from "../hooks/useReceiversActions";
 
 const filterOptions: (FilterType | "Refresh")[] = [
   "VendorID",
@@ -18,7 +13,8 @@ const filterOptions: (FilterType | "Refresh")[] = [
 
 const ReceiverFilters = () => {
   const dispatch = useAppDispatch();
-  const state = useAppSelector((state) => state.receivers);
+  const state = useReceiversState();
+  const actions = useReceiversActions();
 
   const renderFilterText = (type: FilterType) => {
     if (type === "InvoiceID") {
@@ -38,12 +34,12 @@ const ReceiverFilters = () => {
 
   const setFilterModal = (option: FilterType | "Refresh") => {
     if (option === "Refresh") {
-      dispatch(resetFilters());
-      dispatch(setReceiverDetails([]));
-      dispatch(setSelectedInvoice(""));
+      dispatch(actions.resetFilters());
+      dispatch(actions.setReceiverDetails([]));
+      dispatch(actions.setSelectedInvoice(""));
     } else {
-      dispatch(setFilterModalOpen(true));
-      dispatch(setFilterType(option));
+      dispatch(actions.setFilterModalOpen(true));
+      dispatch(actions.setFilterType(option));
     }
   };
 

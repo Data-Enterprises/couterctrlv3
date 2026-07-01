@@ -17,7 +17,7 @@ import {
   setTypeFilterArr,
   setUniqueSubs,
   type UniqueSub,
-} from "../../features/ordersSlice";
+} from "../../features/ordersLegacySlice";
 import type {
   AllOrderResp,
   AvailableOrder,

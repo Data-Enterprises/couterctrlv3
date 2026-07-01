@@ -1,8 +1,7 @@
 import Modal from "../../../components/Modal";
 import { useState, useEffect } from "react";
-// import { setItemDataFilteredMobile, setItemHistoryModalOpen } from "../../../features/subMarginSlice";
-import { setItemHistoryModalOpen } from "../../../features/subMarginSlice";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { useSubMarginCtx } from "../hooks";
 import type { ItemLookupHistory } from "../../../features/itemLookupSlice";
@@ -25,6 +24,7 @@ type QtyGrouped = {
 const ItemHistoryModal = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const { upcCode } = useAppSelector((state) => state.itemScan);
 
   const [upc, setUpc] = useState<string>("");
@@ -52,7 +52,7 @@ const ItemHistoryModal = () => {
   const handleClose = () => {
     // dispatch(setUpcCode(""));
     // dispatch(setItemDataFilteredMobile(ctx.itemDataMobile));
-    dispatch(setItemHistoryModalOpen(false));
+    dispatch(actions.setItemHistoryModalOpen(false));
   };
 
   const formatDate = (dateStr: string) => {

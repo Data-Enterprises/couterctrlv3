@@ -1,19 +1,14 @@
 import { useEffect } from "react";
 import { useCashierCtx } from "..";
-import {
-  resetAllTransFilters,
-  setFilteredTransList,
-  setFilteredTransOverviews,
-  setSelectedTransFilter,
-  setTransFilterModalOpen,
-} from "../../../features/cashiersSlice";
+import { useCashiersActions } from "../hooks/useCashiersActions";
 
 const TransFilters = () => {
   const ctx = useCashierCtx();
+  const actions = useCashiersActions();
 
   const handleClick = (filter: string) => {
-    ctx.dispatch(setSelectedTransFilter(filter));
-    ctx.dispatch(setTransFilterModalOpen(true));
+    ctx.dispatch(actions.setSelectedTransFilter(filter));
+    ctx.dispatch(actions.setTransFilterModalOpen(true));
   };
 
   useEffect(() => {
@@ -47,7 +42,7 @@ const TransFilters = () => {
           matchesTotalSales
         );
       });
-      ctx.dispatch(setFilteredTransOverviews(filtered));
+      ctx.dispatch(actions.setFilteredTransOverviews(filtered));
     }
   }, [
     ctx.applyTransFilters,
@@ -87,9 +82,9 @@ const TransFilters = () => {
   };
 
   const handleRefresh = () => {
-    ctx.dispatch(resetAllTransFilters());
-    ctx.dispatch(setFilteredTransList(ctx.transList));
-    ctx.dispatch(setFilteredTransOverviews(ctx.transOverviews));
+    ctx.dispatch(actions.resetAllTransFilters());
+    ctx.dispatch(actions.setFilteredTransList(ctx.transList));
+    ctx.dispatch(actions.setFilteredTransOverviews(ctx.transOverviews));
   };
 
   if (!ctx.transList.length) return null;

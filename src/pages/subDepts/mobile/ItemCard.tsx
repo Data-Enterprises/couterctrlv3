@@ -1,7 +1,7 @@
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { useAppDispatch } from "../../../hooks";
 import type { ItemRowMobile } from "../display/widgets";
-import { setScannedItemMobile } from "../../../features/subMarginSlice";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
 import { setUpcCode } from "../../../features/itemScanSlice";
 
 interface MarginCardProps {
@@ -10,9 +10,10 @@ interface MarginCardProps {
 }
 const ItemCard = ({ item, handleClick }: MarginCardProps) => {
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const onItemClick = () => {
     dispatch(setUpcCode(item.product_code));
-    dispatch(setScannedItemMobile(item));
+    dispatch(actions.setScannedItemMobile(item));
     handleClick(item.product_code);
   };
 

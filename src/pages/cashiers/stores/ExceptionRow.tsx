@@ -7,15 +7,7 @@ import {
 } from "../../../api/lossPrevention";
 import type { ExceptionType, JsonError, TransactionListItem, TransactionOverview } from "../../../interfaces";
 import { formatBigNumber, formatCurrency2, formatGoliathDate } from "../../../utils";
-import {
-  setDataView,
-  setFetchingTransactions,
-  setNoRowsFound,
-  setSelectedSaleType,
-  setTransactionLoadingMessage,
-  setTransList,
-  setTransOverviews,
-} from "../../../features/cashiersSlice";
+import { useCashiersActions } from "../hooks/useCashiersActions";
 
 interface Props {
   type: ExceptionType;
@@ -32,26 +24,27 @@ const ExceptionRow = ({ type, col2, col3, col4, col5, storeid, cashierNumber = 0
   const ctx = useCashierCtx();
   const toast = useToast();
   const dispatch = useAppDispatch();
+  const actions = useCashiersActions();
 
   const handleTransactionCall = () => {
-    dispatch(setTransList([]));
-    dispatch(setTransactionLoadingMessage("Loading cashiers…"));
-    dispatch(setDataView("transactions"));
-    dispatch(setNoRowsFound(false));
-    dispatch(setSelectedSaleType(type));
-    dispatch(setFetchingTransactions(true));
+    dispatch(actions.setTransList([]));
+    dispatch(actions.setTransactionLoadingMessage("Loading cashiers…"));
+    dispatch(actions.setDataView("transactions"));
+    dispatch(actions.setNoRowsFound(false));
+    dispatch(actions.setSelectedSaleType(type));
+    dispatch(actions.setFetchingTransactions(true));
 
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
 
     const processTransactions = (allTrans: any[]) => {
       const saleIds = Array.from(new Set(allTrans.map((t) => t.sale_id)));
-      dispatch(setTransactionLoadingMessage("Loading transactions…"));
+      dispatch(actions.setTransactionLoadingMessage("Loading transactions…"));
       getTransactionList(ctx.url, ctx.token, saleIds, 1, type)
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
-            if (!j.transactions.length) { dispatch(setNoRowsFound(true)); return; }
+            if (!j.transactions.length) { dispatch(actions.setNoRowsFound(true)); return; }
             const formatted = [...j.transactions].map((item) => ({
               ...item,
               transaction_id: item.sale_id.split("-")[1],
@@ -80,14 +73,14 @@ const ExceptionRow = ({ type, col2, col3, col4, col5, storeid, cashierNumber = 0
               }
               return acc;
             }, []);
-            dispatch(setTransList(filtered));
-            dispatch(setTransOverviews(overviews));
+            dispatch(actions.setTransList(filtered));
+            dispatch(actions.setTransOverviews(overviews));
           }
         })
         .catch((err: JsonError) => toast.error(err.message))
         .finally(() => {
-          dispatch(setFetchingTransactions(false));
-          dispatch(setTransactionLoadingMessage(""));
+          dispatch(actions.setFetchingTransactions(false));
+          dispatch(actions.setTransactionLoadingMessage(""));
         });
     };
 
@@ -118,7 +111,7 @@ const ExceptionRow = ({ type, col2, col3, col4, col5, storeid, cashierNumber = 0
             processTransactions(allTrans);
           }
         } else {
-          dispatch(setNoRowsFound(true));
+          dispatch(actions.setNoRowsFound(true));
         }
       })
       .catch((err: JsonError) => toast.error(err.message));

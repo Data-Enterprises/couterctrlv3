@@ -1,11 +1,7 @@
 import { useSubMarginCtx, useParams } from "../hooks";
 import { useAppDispatch } from "../../../hooks";
-import {
-  setLoadingMargins,
-  setSelectedWeek,
-  setWeekTrendMargins,
-  type MarginWeek,
-} from "../../../features/subMarginSlice";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
+import type { MarginWeek } from "../../../features/subMarginSlice";
 
 import { setDates } from "..";
 import type {
@@ -22,10 +18,11 @@ const WeeklyTrends = () => {
   const ctx = useSubMarginCtx();
   const params = useParams();
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
 
   const handleWeekClick = (week: MarginWeek) => {
-    dispatch(setLoadingMargins(true));
-    dispatch(setSelectedWeek(week));
+    dispatch(actions.setLoadingMargins(true));
+    dispatch(actions.setSelectedWeek(week));
 
     // Starting pointfor the dates
     let end = params.end;
@@ -127,7 +124,7 @@ const WeeklyTrends = () => {
 
                     // If all pages have been fetched, we can set the margins for the week
                     if (pages.every((p) => p.fetched)) {
-                      dispatch(setWeekTrendMargins({ data: marginData, week }));
+                      dispatch(actions.setWeekTrendMargins({ data: marginData, week }));
                     }
                   }
                 })
@@ -135,7 +132,7 @@ const WeeklyTrends = () => {
             }
           } else {
             // If we only have one page of data total, we can just set the margins for the week
-            dispatch(setWeekTrendMargins({ data: marginData, week }));
+            dispatch(actions.setWeekTrendMargins({ data: marginData, week }));
           }
         }
       })

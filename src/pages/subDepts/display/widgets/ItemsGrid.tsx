@@ -7,11 +7,8 @@ import { AgGridReact } from "ag-grid-react";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
 import { theme, itemCols, type ItemRow } from ".";
-import {
-  setFilteredItemGridData,
-  setItemGridData,
-  type ThreshOperator,
-} from "../../../../features/subMarginSlice";
+import { useSubMarginActions } from "../../hooks/useSubMarginActions";
+import type { ThreshOperator } from "../../../../features/subMarginSlice";
 import {
   setMenuPosition,
   setSMClipboardText,
@@ -20,6 +17,7 @@ import {
 const ItemsGrid = () => {
   const gridRef = useRef<AgGridReact>(null);
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const { margins, selectedWeekDay } = useSubMarginCtx();
   const sm = useAppSelector((state) => state.subMargin);
   const [gridData, setGridData] = useState<ItemRow[]>([]);
@@ -79,7 +77,7 @@ const ItemsGrid = () => {
         );
       });
       setGridData(filteredData);
-      dispatch(setFilteredItemGridData(filteredData));
+      dispatch(actions.setFilteredItemGridData(filteredData));
     }
   }, [
     sm.upcFilter,
@@ -142,8 +140,8 @@ const ItemsGrid = () => {
       ...item,
       margin: ((item.total_sales - item.cogs) / item.total_sales) * 100 || 0,
     }));
-    dispatch(setItemGridData(newData));
-    dispatch(setFilteredItemGridData(newData));
+    dispatch(actions.setItemGridData(newData));
+    dispatch(actions.setFilteredItemGridData(newData));
     setGridData(newData);
   }, [selectedWeekDay]);
 

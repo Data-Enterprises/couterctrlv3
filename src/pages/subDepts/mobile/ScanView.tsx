@@ -2,13 +2,8 @@ import { useEffect, useState } from "react";
 import { getItemLookupSingleStore } from "../../../api/itemLookup";
 import UpcScanner from "../../../components/scanner/UpcScanner";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import {
-  setFetchingItemHistory,
-  setScannedItemMobile,
-  setScannedItemHistory,
-  setSelectedWeekDay,
-} from "../../../features/subMarginSlice";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
 import type { JsonError } from "../../../interfaces";
 import { useSubMarginCtx } from "../hooks";
 import ItemCardSingle from "./ItemCardSingle";
@@ -26,6 +21,7 @@ const ScanView = ({ dates }: ScanViewProps) => {
   const ctx = useSubMarginCtx();
   const toast = useToast();
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const scan = useAppSelector((state) => state.itemScan);
   const [msg, setMsg] = useState<string>("");
   const [activeDates, setActiveDates] = useState<string[]>([]);
@@ -71,16 +67,16 @@ const ScanView = ({ dates }: ScanViewProps) => {
       return;
     }
 
-    dispatch(setScannedItemMobile(item));
-    dispatch(setScannedItemHistory([]));
-    dispatch(setFetchingItemHistory(true));
+    dispatch(actions.setScannedItemMobile(item));
+    dispatch(actions.setScannedItemHistory([]));
+    dispatch(actions.setFetchingItemHistory(true));
     
     // 7 be default since this whole module is going one week back
     getItemLookupSingleStore(ctx.url, ctx.token, upc, ctx.searchValue, 7)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          dispatch(setScannedItemHistory(j.history));
+          dispatch(actions.setScannedItemHistory(j.history));
         } else {
           const warningMsg = j.msg
             .toString()
@@ -90,14 +86,14 @@ const ScanView = ({ dates }: ScanViewProps) => {
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setFetchingItemHistory(false)));
+      .finally(() => dispatch(actions.setFetchingItemHistory(false)));
   };
 
   const clear = () => {
-    dispatch(setScannedItemMobile(null));
-    dispatch(setScannedItemHistory([]));
+    dispatch(actions.setScannedItemMobile(null));
+    dispatch(actions.setScannedItemHistory([]));
     dispatch(setUpcCode(""));
-    dispatch(setSelectedWeekDay(""));
+    dispatch(actions.setSelectedWeekDay(""));
     setMsg("");
   };
 
@@ -116,11 +112,11 @@ const ScanView = ({ dates }: ScanViewProps) => {
     if (dteStr === "") {
       dispatch(setSelectedWeekDay(""));
     } else {
-      dispatch(setSelectedWeekDay(weekDay));
+      dispatch(actions.setSelectedWeekDay(weekDay));
     }
 
     // Otherwise, we are clicking on an actual date
-    dispatch(setSelectedWeekDay(weekDay));
+    dispatch(actions.setSelectedWeekDay(weekDay));
 
     const upc = scan.upcCode;
     const filtered = ctx.margins.filter((margin) => {
@@ -172,7 +168,7 @@ const ScanView = ({ dates }: ScanViewProps) => {
 
     // console.log("filtered", filtered);
     // console.log("reduced", reduced);
-    dispatch(setScannedItemMobile(reduced));
+    dispatch(actions.setScannedItemMobile(reduced));
   };
 
   const activeDateStyle = (d: string) => {

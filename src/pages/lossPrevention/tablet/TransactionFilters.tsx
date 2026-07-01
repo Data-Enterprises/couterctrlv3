@@ -1,15 +1,6 @@
-import {
-  setSalesThreshold,
-  setQtyThreshold,
-  setDescFilter,
-  setFilterModalOpen,
-  setFilterType,
-  setSaleDateFilter,
-  setSelectedPriceTypes,
-  setTransIdFilter,
-  setUpcFilter,
-} from "../../../features/lossPreventionSlice";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
+import { useLPState } from "../hooks/useLPState";
+import { useLPActions } from "../hooks/useLPActions";
 import { formatCurrency2 } from "../../../utils";
 import FiltersModal from "../filters/FiltersModal";
 
@@ -23,7 +14,8 @@ const filterOptions = [
 
 const TransactionFilters = () => {
   const dispatch = useAppDispatch();
-  const cashier = useAppSelector((state) => state.lossPrevention);
+  const cashier = useLPState();
+  const actions = useLPActions();
 
   const panelStyle =
     "py-1.5 rounded-lg text-center shadow-md shadow-content/20 hover:bg-orange-200 cursor-pointer transition-all duration-200";
@@ -56,19 +48,19 @@ const TransactionFilters = () => {
 
   const setFilterModal = (type: string) => {
     if (type === "Refresh") {
-      dispatch(setSalesThreshold(null));
-      dispatch(setQtyThreshold(null));
-      dispatch(setTransIdFilter(""));
-      dispatch(setSaleDateFilter(""));
-      dispatch(setFilterType(""));
-      dispatch(setUpcFilter(""));
-      dispatch(setDescFilter(""));
-      dispatch(setSelectedPriceTypes([]));
+      dispatch(actions.setSalesThreshold(null));
+      dispatch(actions.setQtyThreshold(null));
+      dispatch(actions.setTransIdFilter(""));
+      dispatch(actions.setSaleDateFilter(""));
+      dispatch(actions.setFilterType(""));
+      dispatch(actions.setUpcFilter(""));
+      dispatch(actions.setDescFilter(""));
+      dispatch(actions.setSelectedPriceTypes([]));
       return;
     }
 
-    dispatch(setFilterModalOpen(true));
-    dispatch(setFilterType(type));
+    dispatch(actions.setFilterModalOpen(true));
+    dispatch(actions.setFilterType(type));
   };
 
   return (

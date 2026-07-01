@@ -1,21 +1,14 @@
 import { useCashierCtx } from "..";
 import Modal from "../../../components/Modal";
-import {
-  setTransCashNameFilter,
-  setTransDateFilter,
-  setTransTotalSalesFilter,
-  defaultNumberFilter,
-  setTransFilterModalOpen,
-  setSelectedTransFilter,
-  setApplyTransFilters,
-  setTransTotalQtyFilter,
-} from "../../../features/cashiersSlice";
+import { defaultNumberFilter } from "../../../features/cashiersSlice";
+import { useCashiersActions } from "../hooks/useCashiersActions";
 import Input from "../../../components/inputs/Input";
 import CheckBox from "../../../components/inputs/CheckBox";
 import { useState } from "react";
 
 const TransFilterModal = () => {
   const ctx = useCashierCtx();
+  const actions = useCashiersActions();
   const [date, setDate] = useState<string>(ctx.transDateFilter);
   const [cashierName, setCashierName] = useState<string>(
     ctx.transCashNameFilter,
@@ -29,27 +22,27 @@ const TransFilterModal = () => {
       // reset all filters
       if (ctx.selectedTransFilter === "date") {
         setDate("");
-        ctx.dispatch(setTransDateFilter(""));
+        ctx.dispatch(actions.setTransDateFilter(""));
       } else if (ctx.selectedTransFilter === "cashier_name") {
         setCashierName("");
-        ctx.dispatch(setTransCashNameFilter(""));
+        ctx.dispatch(actions.setTransCashNameFilter(""));
       } else if (ctx.selectedTransFilter === "total_sales") {
         setTotalValue("");
-        ctx.dispatch(setTransTotalSalesFilter(defaultNumberFilter));
+        ctx.dispatch(actions.setTransTotalSalesFilter(defaultNumberFilter));
       } else {
         setTotalValue("");
-        ctx.dispatch(setTransTotalQtyFilter(defaultNumberFilter));
+        ctx.dispatch(actions.setTransTotalQtyFilter(defaultNumberFilter));
       }
     }
 
-    ctx.dispatch(setTransFilterModalOpen(false));
-    ctx.dispatch(setSelectedTransFilter(""));
+    ctx.dispatch(actions.setTransFilterModalOpen(false));
+    ctx.dispatch(actions.setSelectedTransFilter(""));
   };
 
   const handleSubmit = () => {
     if (ctx.selectedTransFilter === "total_sales") {
       ctx.dispatch(
-        setTransTotalSalesFilter({
+        actions.setTransTotalSalesFilter({
           operator: ctx.transTotalSalesFilter.operator,
           value: !isNaN(parseFloat(totalValue)) ? parseFloat(totalValue) : 0,
         }),
@@ -58,7 +51,7 @@ const TransFilterModal = () => {
 
     if (ctx.selectedTransFilter === "total_qty") {
       ctx.dispatch(
-        setTransTotalQtyFilter({
+        actions.setTransTotalQtyFilter({
           operator: ctx.transTotalQtyFilter.operator,
           value: !isNaN(parseFloat(totalValue)) ? parseFloat(totalValue) : 0,
         }),
@@ -66,14 +59,14 @@ const TransFilterModal = () => {
     }
 
     if (ctx.selectedTransFilter === "date") {
-      ctx.dispatch(setTransDateFilter(date));
+      ctx.dispatch(actions.setTransDateFilter(date));
     }
 
     if (ctx.selectedTransFilter === "cashier_name") {
-      ctx.dispatch(setTransCashNameFilter(cashierName));
+      ctx.dispatch(actions.setTransCashNameFilter(cashierName));
     }
 
-    ctx.dispatch(setApplyTransFilters(true));
+    ctx.dispatch(actions.setApplyTransFilters(true));
     handleClose(false);
   };
 
@@ -111,7 +104,7 @@ const TransFilterModal = () => {
               isBool={true}
               onChange={() =>
                 ctx.dispatch(
-                  setTransTotalSalesFilter({
+                  actions.setTransTotalSalesFilter({
                     ...ctx.transTotalSalesFilter,
                     operator: ">",
                   }),
@@ -125,7 +118,7 @@ const TransFilterModal = () => {
               isBool={true}
               onChange={() =>
                 ctx.dispatch(
-                  setTransTotalSalesFilter({
+                  actions.setTransTotalSalesFilter({
                     ...ctx.transTotalSalesFilter,
                     operator: "=",
                   }),
@@ -139,7 +132,7 @@ const TransFilterModal = () => {
               isBool={true}
               onChange={() =>
                 ctx.dispatch(
-                  setTransTotalSalesFilter({
+                  actions.setTransTotalSalesFilter({
                     ...ctx.transTotalSalesFilter,
                     operator: "<",
                   }),
@@ -165,7 +158,7 @@ const TransFilterModal = () => {
               isBool={true}
               onChange={() =>
                 ctx.dispatch(
-                  setTransTotalQtyFilter({
+                  actions.setTransTotalQtyFilter({
                     ...ctx.transTotalQtyFilter,
                     operator: ">",
                   }),
@@ -179,7 +172,7 @@ const TransFilterModal = () => {
               isBool={true}
               onChange={() =>
                 ctx.dispatch(
-                  setTransTotalQtyFilter({
+                  actions.setTransTotalQtyFilter({
                     ...ctx.transTotalQtyFilter,
                     operator: "=",
                   }),
@@ -193,7 +186,7 @@ const TransFilterModal = () => {
               isBool={true}
               onChange={() =>
                 ctx.dispatch(
-                  setTransTotalQtyFilter({
+                  actions.setTransTotalQtyFilter({
                     ...ctx.transTotalQtyFilter,
                     operator: "<",
                   }),

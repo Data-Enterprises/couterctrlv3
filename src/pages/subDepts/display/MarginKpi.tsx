@@ -1,10 +1,7 @@
 import type { SubDeptCost } from "../../../interfaces";
 import { useAppDispatch } from "../../../hooks";
 import { useSubMarginCtx } from "../hooks";
-import {
-  setSubDeptCost,
-  setSubDeptGridView,
-} from "../../../features/subMarginSlice";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
 import { calculateCogs } from "..";
 
 import { QuestionMarkCircleIcon } from "@heroicons/react/16/solid";
@@ -18,6 +15,7 @@ interface MarginKpiProps {
 const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const [showTooltip, setShowTooltip] = useState<boolean>(false);
 
   const handleCostClick = () => {
@@ -65,13 +63,13 @@ const SubDeptMarginKpi = ({ data, title }: MarginKpiProps) => {
         [],
       );
 
-      dispatch(setSubDeptCost(margins));
+      dispatch(actions.setSubDeptCost(margins));
       dispatch(
-        setSubDeptGridView(ctx.subDeptGridView === "cost" ? "item" : "cost"),
+        actions.setSubDeptGridView(ctx.subDeptGridView === "cost" ? "item" : "cost"),
       );
     }
     if (title === "Unique Items") {
-      dispatch(setSubDeptGridView("item"));
+      dispatch(actions.setSubDeptGridView("item"));
     }
   };
 

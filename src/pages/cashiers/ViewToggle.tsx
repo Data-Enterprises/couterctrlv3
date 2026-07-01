@@ -1,8 +1,9 @@
 import { useCashierCtx } from ".";
-import { setDataView } from "../../features/cashiersSlice";
+import { useCashiersActions } from "./hooks/useCashiersActions";
 
 const ViewToggle = () => {
   const ctx = useCashierCtx();
+  const actions = useCashiersActions();
 
   const activeStyle = (view: string) => {
     if (ctx.dataView === view) {
@@ -12,7 +13,7 @@ const ViewToggle = () => {
   };
 
   const handleToggle = (view: "stores" | "cashiers" | "transactions") => {
-    ctx.dispatch(setDataView(view));
+    ctx.dispatch(actions.setDataView(view));
   };
 
   if (!ctx.transList.length && !ctx.storeCards.length && !ctx.cashierCards.length) {

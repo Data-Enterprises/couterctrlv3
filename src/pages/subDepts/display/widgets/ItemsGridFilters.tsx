@@ -1,14 +1,11 @@
-import {
-  resetFilters,
-  setFilterModalOpen,
-  setItemFilterType,
-  type ItemFilterType,
-} from "../../../../features/subMarginSlice";
+import { useSubMarginActions } from "../../hooks/useSubMarginActions";
+import type { ItemFilterType } from "../../../../features/subMarginSlice";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../../utils";
 
 const ItemsGridFilters = () => {
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const sm = useAppSelector((state) => state.subMargin);
 
   const divStyle =
@@ -16,11 +13,11 @@ const ItemsGridFilters = () => {
 
   const handleClick = (filter: ItemFilterType) => {
     if (filter === "") {
-      dispatch(setItemFilterType(""));
-      dispatch(resetFilters());
+      dispatch(actions.setItemFilterType(""));
+      dispatch(actions.resetFilters());
     } else {
-      dispatch(setItemFilterType(filter));
-      dispatch(setFilterModalOpen(true));
+      dispatch(actions.setItemFilterType(filter));
+      dispatch(actions.setFilterModalOpen(true));
     }
   };
 

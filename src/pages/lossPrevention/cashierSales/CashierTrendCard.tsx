@@ -9,7 +9,8 @@ import {
   HandThumbUpIcon,
   HandThumbDownIcon,
 } from "@heroicons/react/24/outline";
-import { setCashierDetailsTrendDirection } from "../../../features/lossPreventionSlice";
+import { useLPState } from "../hooks/useLPState";
+import { useLPActions } from "../hooks/useLPActions";
 import { useEffect } from "react";
 import { defaultCashierTrend, findTrendDirection } from ".";
 
@@ -21,7 +22,8 @@ const CashierTrendCard = () => {
     selectedCashierDetailsIdx,
     selectedSaleType,
     cashierDetailsTrendDirection,
-  } = useAppSelector((state) => state.lossPrevention);
+  } = useLPState();
+  const actions = useLPActions();
   const isTablet = useAppSelector((state) => state.app.isTablet);
 
   useEffect(() => {
@@ -67,7 +69,7 @@ const CashierTrendCard = () => {
         );
 
         // max = 5, min =-5 => this is used in the overallTrendLine to determine which icon to show
-        dispatch(setCashierDetailsTrendDirection(trendDirection));
+        dispatch(actions.setCashierDetailsTrendDirection(trendDirection));
       }
     }
   }, [selectedCashierDetails]);

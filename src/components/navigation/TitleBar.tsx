@@ -254,7 +254,7 @@ const TitleBar = () => {
             {visibleCategories.map((cat) => {
               const isActive = activeCategory?.name === cat.name;
               const isOpen = openCategory === cat.name;
-              const visiblePages = cat.pages.filter((p) => canSee(p.userLevels) && p.mobile);
+              const visiblePages = cat.pages.filter((p) => canSee(p.userLevels) && p.isVisible);
               return (
                 <div
                   key={cat.name}

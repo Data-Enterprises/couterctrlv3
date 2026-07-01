@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { setThresh } from "../../../features/couponSlice";
+import { setThresh } from "../../../features/couponLegacySlice";
 import CheckBox from "../../../components/inputs/CheckBox";
 
 interface AmountFilterProps {
@@ -8,7 +8,7 @@ interface AmountFilterProps {
 }
 
 const AmountFilter = ({ text, setText }: AmountFilterProps) => {
-  const state = useAppSelector((state) => state.coupons);
+  const state = useAppSelector((state) => state.couponLegacy);
   const dispatch = useAppDispatch();
   const handleChange = (n: number) => {
     let thresh: "less" | "greater" | "equal" = "equal";

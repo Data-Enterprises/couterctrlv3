@@ -1,26 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useApiContext } from "../../hooks";
 import { getCashierDetails, getCashierTable, getTransactionList } from "../../../api/lossPrevention";
-import {
-  reQuery,
-  setBaselineDetails,
-  setBaselineOverviews,
-  setCashierDetails,
-  setCashiers,
-  setCashierTrends,
-  setFetchingCashierTransactions,
-  setLoadingCashierDetails,
-  setSelectedSaleIds,
-  setSelectedSaleType,
-  setSelectedStoreId,
-  setTransactionLoadingMessage,
-  setTransList,
-  setTransOverviews,
-  toggleNoTransMsg,
-} from "../../../features/lossPreventionSlice";
+import { useLPState } from "../hooks/useLPState";
+import { useLPActions } from "../hooks/useLPActions";
 import type { JsonError, TransactionListItem, TransactionOverview, UniqueCashier } from "../../../interfaces";
 import { formatCurrency2 } from "../../../utils";
 import SevChips from "../../sales/mobile/components/SevChips";
@@ -89,28 +74,29 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const params = useApiContext();
-  const lp = useAppSelector((state) => state.lossPrevention);
+  const lp = useLPState();
+  const actions = useLPActions();
   const search = useAppSelector((state) => state.search);
   const assignedStores = useAppSelector((state) => state.user.assignedStores);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
 
   const fetchDetails = (saleType: string) => {
-    dispatch(reQuery());
-    dispatch(setSelectedSaleType(saleType));
-    dispatch(setLoadingCashierDetails(true));
+    dispatch(actions.reQuery());
+    dispatch(actions.setSelectedSaleType(saleType));
+    dispatch(actions.setLoadingCashierDetails(true));
     getCashierDetails(params.url, params.token, params.lpStart, params.lpEnd, params.useGroups, params.searchValue, params.singleStore, [saleType])
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          dispatch(toggleNoTransMsg(j.sales.length === 0));
-          dispatch(setCashierDetails(j.sales));
-          dispatch(setCashierTrends(j.trend));
+          dispatch(actions.toggleNoTransMsg(j.sales.length === 0));
+          dispatch(actions.setCashierDetails(j.sales));
+          dispatch(actions.setCashierTrends(j.trend));
         }
       })
       .catch((err: JsonError) => toast.error("Error fetching store details: " + err.message))
-      .finally(() => dispatch(setLoadingCashierDetails(false)));
+      .finally(() => dispatch(actions.setLoadingCashierDetails(false)));
     getCashierDetails(params.url, params.token, params.lpBaseStart, params.lpBaseEnd, params.useGroups, params.searchValue, params.singleStore, [saleType])
-      .then((r) => { if (r.data.error === 0) dispatch(setBaselineDetails(r.data.sales)); })
+      .then((r) => { if (r.data.error === 0) dispatch(actions.setBaselineDetails(r.data.sales)); })
       .catch(() => {});
   };
 
@@ -126,11 +112,11 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
 
   const handleStoreClick = (storeid: number) => {
     if (lp.fetchingCashierTransactions) return;
-    dispatch(reQuery());
-    dispatch(setSelectedStoreId(storeid));
-    dispatch(setTransactionLoadingMessage("Loading cashiers…"));
-    dispatch(setFetchingCashierTransactions(true));
-    dispatch(setTransList([]));
+    dispatch(actions.reQuery());
+    dispatch(actions.setSelectedStoreId(storeid));
+    dispatch(actions.setTransactionLoadingMessage("Loading cashiers…"));
+    dispatch(actions.setFetchingCashierTransactions(true));
+    dispatch(actions.setTransList([]));
 
     const saleType = lp.selectedSaleType;
     const [sm, sd, sy] = search.singleDate.split("/").map(Number);
@@ -152,7 +138,7 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
           const allTrans = transactions.filter((item: any) => item.sale_type === saleType);
 
           const doFetch = (saleIds: string[]) => {
-            dispatch(setSelectedSaleIds(saleIds));
+            dispatch(actions.setSelectedSaleIds(saleIds));
             fetchTransactions(saleIds, saleType);
           };
 
@@ -201,7 +187,7 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
               }
               return acc;
             }, []);
-            dispatch(setBaselineOverviews(overviews));
+            dispatch(actions.setBaselineOverviews(overviews));
           });
         }
       })
@@ -209,7 +195,7 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
   };
 
   const fetchTransactions = (saleIds: string[], saleType: string) => {
-    dispatch(setTransactionLoadingMessage("Loading transactions…"));
+    dispatch(actions.setTransactionLoadingMessage("Loading transactions…"));
     getTransactionList(params.url, params.token, saleIds, 1, saleType, lp.searchString)
       .then((resp) => {
         const j = resp.data;
@@ -225,7 +211,7 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
             }
             return acc;
           }, []);
-          dispatch(setCashiers(uniqueCashiers));
+          dispatch(actions.setCashiers(uniqueCashiers));
 
           const formatted: TransactionListItem[] = newTrans.map((item) => ({ ...item, transaction_id: item.sale_id.split("-")[1], sale_date: item.sale_date.split("T")[0], qty: item.qty ?? 0 }));
           const overviews: TransactionOverview[] = formatted.reduce((acc: TransactionOverview[], curr) => {
@@ -239,13 +225,13 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
             return acc;
           }, []);
 
-          dispatch(setTransOverviews(overviews));
-          dispatch(setTransList(formatted));
+          dispatch(actions.setTransOverviews(overviews));
+          dispatch(actions.setTransList(formatted));
           onStoreSelected();
         }
       })
       .catch((err: JsonError) => toast.error("Error fetching transactions: " + err.message))
-      .finally(() => { dispatch(setFetchingCashierTransactions(false)); dispatch(setTransactionLoadingMessage("")); });
+      .finally(() => { dispatch(actions.setFetchingCashierTransactions(false)); dispatch(actions.setTransactionLoadingMessage("")); });
   };
 
   const storesWithSev = useMemo(() => {

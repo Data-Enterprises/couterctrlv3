@@ -4,7 +4,7 @@ import {
   setFilterModalOpen,
   setFilterType,
   type FilterType,
-} from "../../features/couponSlice";
+} from "../../features/couponLegacySlice";
 
 const filterOptions: (FilterType | "Refresh")[] = [
   "Store",
@@ -18,7 +18,7 @@ const filterOptions: (FilterType | "Refresh")[] = [
 
 const CouponGridFilters = () => {
   const dispatch = useAppDispatch();
-  const state = useAppSelector((state) => state.coupons);
+  const state = useAppSelector((state) => state.couponLegacy);
 
   const activePanelStyle = (option: string) => {
     const storeNum = state.storeNum;

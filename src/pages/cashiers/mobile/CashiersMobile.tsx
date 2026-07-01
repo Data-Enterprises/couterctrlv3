@@ -4,18 +4,7 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import { formatGoliathDate } from "../../../utils";
 import { getStoreCards, getCashierCards } from "../../../api/cashiers";
 import type { CashierCard, CashierCardResp, JsonError, StoreCard, StoreCardResp } from "../../../interfaces";
-import {
-  reQueryStepOne,
-  reQueryStepTwo,
-  setCashierCards,
-  setCashierFilterType,
-  setDataView,
-  setLoadingCashiers,
-  setLoadingStores,
-  setNoStoresFound,
-  setSelectedStoreCard,
-  setStoreCards,
-} from "../../../features/cashiersSlice";
+import { useCashiersActions } from "../hooks/useCashiersActions";
 import SearchCard from "../../../components/SearchCard";
 import StoresMobile from "./StoresMobile";
 import StoreOverviewMobile from "./StoreOverviewMobile";
@@ -26,14 +15,15 @@ import TransactionsMobileScreen from "./TransactionsMobileScreen";
 const CashiersMobile = () => {
   const toast = useToast();
   const ctx = useCashierCtx();
+  const actions = useCashiersActions();
   const [selectedStore, setSelectedStore] = useState<StoreCard | null>(null);
   const [selectedCashier, setSelectedCashier] = useState<CashierCard | null>(null);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   const getSCards = () => {
-    ctx.dispatch(reQueryStepOne());
-    ctx.dispatch(setLoadingStores(true));
-    ctx.dispatch(setDataView("stores"));
+    ctx.dispatch(actions.reQueryStepOne());
+    ctx.dispatch(actions.setLoadingStores(true));
+    ctx.dispatch(actions.setDataView("stores"));
     setSelectedStore(null);
     setSelectedCashier(null);
 
@@ -47,28 +37,28 @@ const CashiersMobile = () => {
       .then((resp) => {
         const j: StoreCardResp = resp.data;
         if (j.error === 0) {
-          ctx.dispatch(setNoStoresFound(j.stores.length === 0));
-          ctx.dispatch(setStoreCards(j.stores));
+          ctx.dispatch(actions.setNoStoresFound(j.stores.length === 0));
+          ctx.dispatch(actions.setStoreCards(j.stores));
         }
       })
       .catch((err: JsonError) => {
         toast.error(err.message);
-        ctx.dispatch(setDataView(""));
+        ctx.dispatch(actions.setDataView(""));
       })
-      .finally(() => ctx.dispatch(setLoadingStores(false)));
+      .finally(() => ctx.dispatch(actions.setLoadingStores(false)));
   };
 
   const handleStoreSelect = (store: StoreCard) => {
-    ctx.dispatch(setSelectedStoreCard(store.storeid));
+    ctx.dispatch(actions.setSelectedStoreCard(store.storeid));
     setSelectedStore(store);
   };
 
   const handleViewCashiers = (store: StoreCard) => {
-    ctx.dispatch(setCashierFilterType(""));
-    ctx.dispatch(setSelectedStoreCard(store.storeid));
-    ctx.dispatch(reQueryStepTwo());
-    ctx.dispatch(setLoadingCashiers(true));
-    ctx.dispatch(setDataView("cashiers"));
+    ctx.dispatch(actions.setCashierFilterType(""));
+    ctx.dispatch(actions.setSelectedStoreCard(store.storeid));
+    ctx.dispatch(actions.reQueryStepTwo());
+    ctx.dispatch(actions.setLoadingCashiers(true));
+    ctx.dispatch(actions.setDataView("cashiers"));
     setSelectedCashier(null);
 
     const start = formatGoliathDate(ctx.startDate);
@@ -76,17 +66,17 @@ const CashiersMobile = () => {
     getCashierCards(ctx.miktoUrl, ctx.userid, start, end, 0, store.storeid, 1, ctx.apiKey)
       .then((resp) => {
         const j: CashierCardResp = resp.data;
-        if (j.error === 0) ctx.dispatch(setCashierCards(j.stores));
+        if (j.error === 0) ctx.dispatch(actions.setCashierCards(j.stores));
       })
       .catch((err: JsonError) => {
-        ctx.dispatch(setDataView("stores"));
+        ctx.dispatch(actions.setDataView("stores"));
         toast.error("Error fetching cashiers: " + err.message);
       })
-      .finally(() => ctx.dispatch(setLoadingCashiers(false)));
+      .finally(() => ctx.dispatch(actions.setLoadingCashiers(false)));
   };
 
   const handleBackToStoreDetail = () => {
-    ctx.dispatch(setDataView("stores"));
+    ctx.dispatch(actions.setDataView("stores"));
     setSelectedCashier(null);
   };
 
@@ -110,7 +100,7 @@ const CashiersMobile = () => {
       {/* Transactions screen */}
       {ctx.dataView === "transactions" ? (
         <TransactionsMobileScreen
-          onBack={() => ctx.dispatch(setDataView(selectedCashier ? "cashiers" : "stores"))}
+          onBack={() => ctx.dispatch(actions.setDataView(selectedCashier ? "cashiers" : "stores"))}
           onOpenSearch={() => setSearchModalOpen(true)}
           cashierName={selectedCashier?.cashier_name}
           storeName={selectedStore?.store_name}

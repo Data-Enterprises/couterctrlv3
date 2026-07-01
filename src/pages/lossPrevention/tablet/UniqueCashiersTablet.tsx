@@ -1,16 +1,14 @@
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import {
-  setCashierSaleIds,
-  setSelectedCashier,
-} from "../../../features/lossPreventionSlice";
+import { useAppDispatch } from "../../../hooks";
+import { useLPState } from "../hooks/useLPState";
+import { useLPActions } from "../hooks/useLPActions";
 
 import type { UniqueCashier } from "../../../interfaces";
 import { formatCurrency2 } from "../../../utils";
 
 const UniqueCashiersTablet = () => {
   const dispatch = useAppDispatch();
-  const { cashiers, selectedCashier, fetchingCashierTransactions } =
-    useAppSelector((state) => state.lossPrevention);
+  const { cashiers, selectedCashier, fetchingCashierTransactions } = useLPState();
+  const actions = useLPActions();
 
   const handleCashierClick = (e: UniqueCashier) => {
     const cashier_number = e.cashier_number;
@@ -20,11 +18,11 @@ const UniqueCashiersTablet = () => {
       cashier_number === selectedCashier.cashier_number &&
       store_number === selectedCashier.store_number
     ) {
-      dispatch(setCashierSaleIds([]));
-      dispatch(setSelectedCashier({ cashier_number: 0, store_number: "" }));
+      dispatch(actions.setCashierSaleIds([]));
+      dispatch(actions.setSelectedCashier({ cashier_number: 0, store_number: "" }));
       return;
     }
-    dispatch(setSelectedCashier({ cashier_number, store_number }));
+    dispatch(actions.setSelectedCashier({ cashier_number, store_number }));
   };
 
   return (

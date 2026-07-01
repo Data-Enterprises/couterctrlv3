@@ -9,7 +9,7 @@ import { ToastProvider } from "./components/toasts/ToastProvider.tsx";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
 import App from "./App.tsx";
 import Home from "./pages/home/Home.tsx";
-import { SalesPage, LossPreventionPage, OrdersPage, CouponsPage, ReceiversPage } from "./DevPages.tsx";
+import { SalesPage, LossPreventionPage, OrdersPage, CouponsPage, ReceiversPage, CashiersPage } from "./DevPages.tsx";
 import Team from "./pages/team/Team.tsx";
 import Groups from "./pages/groups/Groups.tsx";
 import Settings from "./pages/settings/Settings.tsx";
@@ -19,7 +19,6 @@ import Forecasting from "./pages/forecast/Forecasting.tsx";
 import Dashboard from "./pages/quicksight/Dashboard.tsx";
 import AdminPage from "./pages/admin/AdminPage.tsx";
 import SubDeptMargins from "./pages/subDepts/SubDeptMargins.tsx";
-import Cashiers from "./pages/cashiers/Cashiers.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -43,7 +42,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="coupons" element={<CouponsPage />} />
                 <Route path="admin" element={<AdminPage />} />
                 <Route path="sub-dept-margins" element={<SubDeptMargins />} />
-                <Route path="cashiers" element={<Cashiers />} />
+                <Route path="cashiers" element={<CashiersPage />} />
                 <Route path="orders" element={<OrdersPage />} />
               </Route>
             </Routes>

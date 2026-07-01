@@ -1,0 +1,276 @@
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type {
+  ReceiverListItem,
+  ReceiverDetailsItem,
+  ReceiverDetailsTotals,
+} from "../interfaces";
+
+export type FilterType =
+  | "VendorID"
+  | "VendorName"
+  | "InvoiceID"
+  | "TransactionID"
+  | "";
+
+export type ReducedVendor = {
+  vendorid: string;
+  vendor_name: string;
+  items: number;
+  cashiers: number[];
+  store_number: string;
+};
+
+export type RecMobileStage = 1 | 2 | 3;
+export type Operator = { cashier_name: string; cashier_number: number };
+
+interface ReceiversState {
+  storeid: number;
+  list: ReceiverListItem[];
+  listGridData: ReceiverListItem[];
+  details: ReceiverDetailsItem[];
+  vendorIdFilter: string;
+  vendorNameFilter: string;
+  invoiceIdFilter: string;
+  transIDFilter: string;
+  filterListGrid: boolean;
+  totals: ReceiverDetailsTotals[];
+  isFetchingList: boolean;
+  isFetchingDetails: boolean;
+  isExportModalOpen: boolean;
+  filterModalOpen: boolean;
+  filterType: FilterType;
+  noReceivers: boolean;
+  selectedInvoice: string;
+  selectedTransNum: string;
+  recMobileStage: RecMobileStage;
+  selectedOperator: Operator | null;
+  operatorsList: Operator[];
+  filteredListDataMobile: ReceiverListItem[];
+  detailsDate: string;
+  reducedVendors: ReducedVendor[];
+  selectedVendor: ReducedVendor | null;
+  viewAllVendors: boolean;
+  vendorView: RecMobileStage;
+}
+
+export const initialState: ReceiversState = {
+  storeid: 0,
+  list: [],
+  details: [],
+  vendorIdFilter: "",
+  vendorNameFilter: "",
+  invoiceIdFilter: "",
+  transIDFilter: "",
+  filterListGrid: false,
+  totals: [],
+  isFetchingList: false,
+  isFetchingDetails: false,
+  isExportModalOpen: false,
+  listGridData: [],
+  filterModalOpen: false,
+  filterType: "",
+  noReceivers: false,
+  selectedInvoice: "",
+  recMobileStage: 1,
+  selectedOperator: null,
+  operatorsList: [],
+  filteredListDataMobile: [],
+  detailsDate: "",
+  reducedVendors: [],
+  selectedVendor: null,
+  viewAllVendors: false,
+  vendorView: 1,
+  selectedTransNum: "",
+};
+
+export const receiversSlice = createSlice({
+  name: "receiversLegacy",
+  initialState,
+  reducers: {
+    setStoreId: (state, action: PayloadAction<number>) => {
+      state.storeid = action.payload;
+    },
+    setReceiversList: (state, action: PayloadAction<ReceiverListItem[]>) => {
+      state.list = action.payload;
+    },
+    setReceiverDetails: (
+      state,
+      action: PayloadAction<ReceiverDetailsItem[]>,
+    ) => {
+      state.details = action.payload;
+    },
+    setFilter: (
+      state,
+      action: PayloadAction<{ type: FilterType; value: string }>,
+    ) => {
+      const { type, value } = action.payload;
+      switch (type) {
+        case "VendorID":
+          state.vendorIdFilter = value;
+          break;
+        case "VendorName":
+          state.vendorNameFilter = value;
+          break;
+        case "InvoiceID":
+          state.invoiceIdFilter = value;
+          break;
+        case "TransactionID":
+          state.transIDFilter = value;
+          break;
+      }
+    },
+    setTotals: (state, action: PayloadAction<ReceiverDetailsTotals[]>) => {
+      state.totals = action.payload;
+    },
+    applyFilters: (state) => {
+      const filteredData = state.list.filter((item) => {
+        // The properties needed from each individual item to apply the filters to
+        const vId = item.vendorid.toString().toLowerCase();
+        const vName = item.vendor_name.toLowerCase();
+        const invId = item.invoiceid.toString();
+        const transId = item.reference_number.toLowerCase();
+
+        // Using the filters in the state to check for matches,
+        // if the filter has no value, then it's not being used, so we consider it a match by default
+        const vIdMatch = state.vendorIdFilter.length
+          ? vId.includes(state.vendorIdFilter.toLowerCase())
+          : true;
+
+        const vNameMatch = state.vendorNameFilter.length
+          ? vName.includes(state.vendorNameFilter.toLowerCase())
+          : true;
+
+        const invIdMatch = state.invoiceIdFilter.length
+          ? transId.includes(state.invoiceIdFilter.toLowerCase())
+          : true;
+
+        const transIdMatch = state.transIDFilter.length
+          ? invId.includes(state.transIDFilter.toLowerCase())
+          : true;
+
+        return vIdMatch && vNameMatch && invIdMatch && transIdMatch;
+      });
+      state.listGridData = filteredData;
+    },
+    setListGridData: (state, action: PayloadAction<ReceiverListItem[]>) => {
+      state.listGridData = action.payload;
+    },
+    setIsFetchingList: (state, action: PayloadAction<boolean>) => {
+      state.isFetchingList = action.payload;
+    },
+    setIsFetchingDetails: (state, action: PayloadAction<boolean>) => {
+      state.isFetchingDetails = action.payload;
+    },
+    setIsExportModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.isExportModalOpen = action.payload;
+    },
+    setFilterModalOpen: (state, action: PayloadAction<boolean>) => {
+      state.filterModalOpen = action.payload;
+    },
+    setFilterType: (state, action: PayloadAction<FilterType>) => {
+      state.filterType = action.payload;
+    },
+    setNoReceivers: (state, action: PayloadAction<boolean>) => {
+      state.noReceivers = action.payload;
+    },
+    setSelectedInvoice: (state, action: PayloadAction<string>) => {
+      state.selectedInvoice = action.payload;
+    },
+    setDetailsDate: (state, action: PayloadAction<string>) => {
+      state.detailsDate = action.payload;
+    },
+    resetFilters: (state) => {
+      state.vendorIdFilter = "";
+      state.vendorNameFilter = "";
+      state.invoiceIdFilter = "";
+      state.transIDFilter = "";
+      state.listGridData = state.list;
+      state.selectedInvoice = "";
+      state.detailsDate = "";
+    },
+    reQuery: (state) => {
+      state.list = [];
+      state.listGridData = [];
+      state.details = [];
+      state.vendorIdFilter = "";
+      state.vendorNameFilter = "";
+      state.invoiceIdFilter = "";
+      state.transIDFilter = "";
+      state.filterListGrid = false;
+      state.totals = [];
+      state.noReceivers = false;
+      state.selectedInvoice = "";
+      state.selectedTransNum = "";
+      state.recMobileStage = 1;
+      state.selectedOperator = null;
+      state.operatorsList = [];
+      state.filteredListDataMobile = [];
+      state.detailsDate = "";
+      state.reducedVendors = [];
+      state.selectedVendor = null;
+      state.vendorView = 1;
+    },
+    setSelectedTransNum: (state, action: PayloadAction<string>) => {
+      state.selectedTransNum = action.payload;
+    },
+    setRecMobileStage: (state, action: PayloadAction<RecMobileStage>) => {
+      state.recMobileStage = action.payload;
+    },
+    setSelectedOperator: (state, action: PayloadAction<Operator>) => {
+      state.selectedOperator = action.payload;
+    },
+    setOperatorsList: (state, action: PayloadAction<Operator[]>) => {
+      state.operatorsList = action.payload;
+    },
+    setReducedVendors: (state, action: PayloadAction<ReducedVendor[]>) => {
+      state.reducedVendors = action.payload;
+    },
+    setSelectedVendor: (state, action: PayloadAction<ReducedVendor | null>) => {
+      state.selectedVendor = action.payload;
+      if (action.payload !== null) {
+        state.filteredListDataMobile = state.list.filter(
+          (item) => item.vendorid === action.payload!.vendorid,
+        );
+      } else {
+        state.filteredListDataMobile = state.list;
+      }
+    },
+    setViewAllVendors: (state, action: PayloadAction<boolean>) => {
+      state.viewAllVendors = action.payload;
+    },
+    setVendorView: (state, action: PayloadAction<RecMobileStage>) => {
+      state.vendorView = action.payload;
+    },
+    resetReceiverSlice: () => initialState,
+  },
+});
+
+export const {
+  setStoreId,
+  setReceiversList,
+  setReceiverDetails,
+  setIsFetchingList,
+  setIsFetchingDetails,
+  setIsExportModalOpen,
+  reQuery,
+  setTotals,
+  setListGridData,
+  resetReceiverSlice,
+  applyFilters,
+  setFilter,
+  setFilterType,
+  setFilterModalOpen,
+  resetFilters,
+  setRecMobileStage,
+  setSelectedInvoice,
+  setNoReceivers,
+  setSelectedOperator,
+  setOperatorsList,
+  setDetailsDate,
+  setReducedVendors,
+  setSelectedVendor,
+  setViewAllVendors,
+  setSelectedTransNum,
+  setVendorView,
+} = receiversSlice.actions;
+export default receiversSlice.reducer;

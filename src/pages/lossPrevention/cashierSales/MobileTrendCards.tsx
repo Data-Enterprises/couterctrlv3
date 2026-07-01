@@ -1,10 +1,10 @@
-import { useAppSelector } from "../../../hooks";
+import { useLPState } from "../hooks/useLPState";
 import CashierTrendCardMobile from "./CashierTrendCardMobile";
 
 
 
 const MobileTrendCards = () => {
-  const cashier = useAppSelector((state) => state.lossPrevention);
+  const cashier = useLPState();
   return (
     <div className="grid gap-4">
       {cashier.cashierDetails.map((s, idx) => (

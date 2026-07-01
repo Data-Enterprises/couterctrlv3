@@ -1,21 +1,9 @@
 import { getReceiverDetails } from "../../../api/receivers";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import {
-  reQuery,
-  setDetailsDate,
-  setIsFetchingDetails,
-  setReceiverDetails,
-  setRecMobileStage,
-  setSelectedInvoice,
-  setSelectedOperator,
-  setSelectedTransNum,
-  setSelectedVendor,
-  setTotals,
-  setVendorView,
-  setViewAllVendors,
-  type ReducedVendor,
-} from "../../../features/receiversSlice";
+import { type ReducedVendor } from "../../../features/receiversSlice";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useReceiversState } from "../hooks/useReceiversState";
+import { useReceiversActions } from "../hooks/useReceiversActions";
 import type { JsonError, ReceiverDetailsResponse } from "../../../interfaces";
 
 import { ArrowPathIcon, DocumentCheckIcon } from "@heroicons/react/24/solid";
@@ -24,11 +12,12 @@ const VendorSelect = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
-  const state = useAppSelector((state) => state.receivers);
+  const state = useReceiversState();
+  const actions = useReceiversActions();
   const { assignedStores } = useAppSelector((state) => state.user);
 
   const handleRefresh = () => {
-    dispatch(reQuery());
+    dispatch(actions.reQuery());
   };
 
   const formatDate = (dateStr: string) => {
@@ -45,22 +34,22 @@ const VendorSelect = () => {
     trasnaction_num: string,
   ) => {
     const formattedDate = formatDate(date).split(", ")[1];
-    dispatch(setSelectedOperator({ cashier_name, cashier_number }));
-    dispatch(setIsFetchingDetails(true));
-    dispatch(setSelectedTransNum(trasnaction_num));
-    dispatch(setSelectedInvoice(invoiceid.toString()));
+    dispatch(actions.setSelectedOperator({ cashier_name, cashier_number }));
+    dispatch(actions.setIsFetchingDetails(true));
+    dispatch(actions.setSelectedTransNum(trasnaction_num));
+    dispatch(actions.setSelectedInvoice(invoiceid.toString()));
     getReceiverDetails(url, token, state.storeid, invoiceid, formattedDate)
       .then((resp) => {
         const j: ReceiverDetailsResponse = resp.data;
         if (j.error == 0) {
-          dispatch(setReceiverDetails(j.records));
-          dispatch(setTotals(j.totals));
-          dispatch(setRecMobileStage(3));
-          dispatch(setDetailsDate(formattedDate));
+          dispatch(actions.setReceiverDetails(j.records));
+          dispatch(actions.setTotals(j.totals));
+          dispatch(actions.setRecMobileStage(3));
+          dispatch(actions.setDetailsDate(formattedDate));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setIsFetchingDetails(false)));
+      .finally(() => dispatch(actions.setIsFetchingDetails(false)));
   };
 
   const totalItems = state.selectedVendor
@@ -72,20 +61,20 @@ const VendorSelect = () => {
   const totalVendors = state.selectedVendor ? 1 : state.reducedVendors.length;
 
   const handleVendorSelect = (v: ReducedVendor) => {
-    dispatch(setSelectedVendor(v));
-    dispatch(setViewAllVendors(false));
-    dispatch(setVendorView(2));
+    dispatch(actions.setSelectedVendor(v));
+    dispatch(actions.setViewAllVendors(false));
+    dispatch(actions.setVendorView(2));
   };
 
   const handleVendorsClick = () => {
     if (state.vendorView === 1) {
-      dispatch(setSelectedVendor(null));
-      dispatch(setViewAllVendors(true));
-      dispatch(setVendorView(2));
+      dispatch(actions.setSelectedVendor(null));
+      dispatch(actions.setViewAllVendors(true));
+      dispatch(actions.setVendorView(2));
     } else {
-      dispatch(setSelectedVendor(null));
-      dispatch(setViewAllVendors(false));
-      dispatch(setVendorView(1));
+      dispatch(actions.setSelectedVendor(null));
+      dispatch(actions.setViewAllVendors(false));
+      dispatch(actions.setVendorView(1));
     }
   };
 

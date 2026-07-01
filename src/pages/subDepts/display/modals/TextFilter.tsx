@@ -1,11 +1,7 @@
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import Input from "../../../../components/inputs/Input";
-import {
-  setDescFilter,
-  setFilterTextInput,
-  setUpcFilter,
-  type ItemFilterType,
-} from "../../../../features/subMarginSlice";
+import { useSubMarginActions } from "../../hooks/useSubMarginActions";
+import type { ItemFilterType } from "../../../../features/subMarginSlice";
 
 interface TextFilterProps {
   // define any props you need here
@@ -15,17 +11,18 @@ interface TextFilterProps {
 }
 const TextFilter = ({ label, type, handleClose }: TextFilterProps) => {
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const { filterTextInput } = useAppSelector((state) => state.subMargin);
 
   const handleInputChange = (x: string) => {
-    dispatch(setFilterTextInput(x));
+    dispatch(actions.setFilterTextInput(x));
   };
 
   const handleSubmit = () => {
     if (type === "upc") {
-      dispatch(setUpcFilter(filterTextInput));
+      dispatch(actions.setUpcFilter(filterTextInput));
     } else {
-      dispatch(setDescFilter(filterTextInput));
+      dispatch(actions.setDescFilter(filterTextInput));
     }
     handleClose();
   };

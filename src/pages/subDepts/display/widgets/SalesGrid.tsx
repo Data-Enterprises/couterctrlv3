@@ -10,7 +10,7 @@ import {
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 import { type BarData, cols, theme } from ".";
-import { setSelectedWeekDay } from "../../../../features/subMarginSlice";
+import { useSubMarginActions } from "../../hooks/useSubMarginActions";
 
 interface SalesGridProps {
   gridData: BarData[];
@@ -20,13 +20,14 @@ const SalesGrid = ({ gridData }: SalesGridProps) => {
   const gridRef = useRef<AgGridReact>(null);
   const { selectedWeekDay } = useSubMarginCtx();
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const sm = useAppSelector((state) => state.subMargin);
 
   const handleRowClick = (event: RowClickedEvent) => {
     if (event.data.date !== selectedWeekDay) {
-      dispatch(setSelectedWeekDay(event.data.date));
+      dispatch(actions.setSelectedWeekDay(event.data.date));
     } else {
-      dispatch(setSelectedWeekDay(""));
+      dispatch(actions.setSelectedWeekDay(""));
     }
   };
 
