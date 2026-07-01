@@ -1,5 +1,5 @@
-import { useCashierCtx } from ".";
-import { setDataView } from "../../../features/cashiersSlice";
+﻿import { useCashierCtx } from ".";
+import { setDataView } from "../../../features/cashiersLegacySlice";
 
 const ViewToggle = () => {
   const ctx = useCashierCtx();

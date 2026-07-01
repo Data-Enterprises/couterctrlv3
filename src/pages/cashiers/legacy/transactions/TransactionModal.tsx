@@ -6,7 +6,7 @@ import Transaction from "./Transaction";
 
 const TransactionModal = () => {
   const dispatch = useAppDispatch();
-  const cashier = useAppSelector((state) => state.cashier);
+  const cashier = useAppSelector((state) => state.cashierLegacy);
 
   return (
     <Modal
