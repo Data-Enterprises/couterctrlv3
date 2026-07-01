@@ -6,14 +6,14 @@ import {
   setFilter,
   setFilterType,
   setFilterModalOpen,
-} from "../../../features/receiversSlice";
+} from "../../../features/receiversLegacySlice";
 import TextFilter from "../../coupons/filters/TextFilter";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 
 const FiltersModal = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const state = useAppSelector((state) => state.receivers);
+  const state = useAppSelector((state) => state.receiversLegacy);
   const [text, setText] = useState<string>("");
 
   const handleClose = () => {

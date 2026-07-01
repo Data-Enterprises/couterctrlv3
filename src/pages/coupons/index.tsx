@@ -4,6 +4,7 @@ import type { CouponItem } from "../../interfaces";
 import { formatCurrency2, formatDate } from "../../utils";
 
 export const useCouponContext = () => {
+  const devMode = useAppSelector((state) => state.app.devMode);
   const {
     coupons,
     isFetching,
@@ -15,7 +16,7 @@ export const useCouponContext = () => {
     subDeptMobileFilter,
     uniqueDateMobileFilter,
     showSubsMobileFilter,
-  } = useAppSelector((state) => state.coupons);
+  } = useAppSelector((state) => devMode ? state.coupons : state.couponLegacy);
   const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector(
     (state) => state.search,
   );

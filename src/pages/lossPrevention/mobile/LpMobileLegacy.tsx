@@ -6,14 +6,14 @@ import {
   setSelectedSaleType,
   setSelectedStoreId,
   setViewTransactionsMobile,
-} from "../../../features/lossPreventionSlice";
+} from "../../../features/lossPreventionLegacySlice";
 
 import DatePickers from "../../../components/datePickers/DatePickers";
 import StorePicker from "../../../components/storePicker/StorePicker";
 import SaleTypesMobile from "./SaleTypesMobile";
 import CashierSalesMobile from "./CashierSalesMobile";
 
-import TransactionModal from "../TransactionModal";
+import TransactionModalLegacy from "../TransactionModalLegacy";
 import UniqueCashiersMobile from "./UniqueCashiersMobile";
 import TransactionsMobile from "./TransactionsMobile";
 
@@ -24,7 +24,7 @@ interface LpMobileProps {
 const LpMobileLegacy = ({ getSaleTypes }: LpMobileProps) => {
   const dispatch = useAppDispatch();
   const { saleTypes, cashierDetails, viewTransactionsMobile } = useAppSelector(
-    (state) => state.lossPrevention,
+    (state) => state.lossPreventionLegacy,
   );
 
   const handleGoBack = () => {
@@ -41,7 +41,7 @@ const LpMobileLegacy = ({ getSaleTypes }: LpMobileProps) => {
   if (saleTypes.length > 0) {
     return (
       <div className="min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden overflow-y-auto no-scrollbar">
-        <TransactionModal />
+        <TransactionModalLegacy />
         {/* Inner nav => once sale types are fetched */}
         <div className="w-full px-2 pt-2">
           <button

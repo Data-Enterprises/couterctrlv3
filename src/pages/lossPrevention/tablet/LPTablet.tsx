@@ -1,4 +1,4 @@
-import { useAppSelector } from "../../../hooks";
+import { useLPState } from "../hooks/useLPState";
 
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
 import StorePicker from "../../../components/storePicker/StorePicker";
@@ -15,7 +15,7 @@ interface LPTabletProps {
 }
 
 const LPTablet = ({ getSaleTypes }: LPTabletProps) => {
-  const lp = useAppSelector((state) => state.lossPrevention);
+  const lp = useLPState();
 
   const msg =
     lp.selectedSaleType === "Description"

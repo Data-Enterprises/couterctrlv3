@@ -8,7 +8,7 @@ import {
 import { formatCurrency2 } from "../../../utils";
 
 const CouponKpis = () => {
-  const { gridCoupons } = useAppSelector((state) => state.coupons);
+  const { gridCoupons } = useAppSelector((state) => state.couponLegacy);
   const { isTablet } = useAppSelector((state) => state.app);
 
   const totalCoupons = gridCoupons.length;

@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { ChevronLeftIcon } from "@heroicons/react/20/solid";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { setSelectedCashier } from "../../../features/lossPreventionSlice";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useLPState } from "../hooks/useLPState";
+import { useLPActions } from "../hooks/useLPActions";
 import { gradeAllCashiers } from "../gradingUtils";
 import type { CashierSeverity } from "../gradingUtils";
 import { formatCurrency2 } from "../../../utils";
@@ -48,7 +49,8 @@ const KpiCell = ({ label, value, pct, last }: { label: string; value: string; pc
 
 const CashierListMobile = ({ onBack, onSelectCashier }: Props) => {
   const dispatch = useAppDispatch();
-  const lp = useAppSelector((state) => state.lossPrevention);
+  const lp = useLPState();
+  const actions = useLPActions();
   const assignedStores = useAppSelector((state) => state.user.assignedStores);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
 
@@ -91,7 +93,7 @@ const CashierListMobile = ({ onBack, onSelectCashier }: Props) => {
   }, [grades, sevFilter]);
 
   const handleCashierClick = (cashier_number: number, store_number: string) => {
-    dispatch(setSelectedCashier({ cashier_number, store_number }));
+    dispatch(actions.setSelectedCashier({ cashier_number, store_number }));
     onSelectCashier();
   };
 

@@ -1,4 +1,5 @@
 import { useAppSelector } from "../../../hooks";
+import { useLPState } from "../hooks/useLPState";
 import { formatCurrency2 } from "../../../utils";
 import type { CashierDetails, CashierTrend } from "../../../interfaces";
 
@@ -19,7 +20,7 @@ interface CashierTrendCardProps {
 
 const CashierTrendCardMobile = ({ s, idx }: CashierTrendCardProps) => {
   const context = useAppSelector((state) => state.app);
-  const cashier = useAppSelector((state) => state.lossPrevention);
+  const cashier = useLPState();
 
   const renderOverallTrend = () => {
     const trends = cashier.cashierTrends;

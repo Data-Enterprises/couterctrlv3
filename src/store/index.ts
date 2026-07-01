@@ -10,6 +10,7 @@ import storeReducer from "../features/storeSlice";
 import usersReducer from "../features/usersSlice";
 import forgotPasswordReducer from "../features/forgotPasswordSlice";
 import lossPreventionReducer from "../features/lossPreventionSlice.ts";
+import lossPreventionLegacyReducer from "../features/lossPreventionLegacySlice";
 import upcReducer from "../features/upcSlice";
 import itemLookupReducer from "../features/itemLookupSlice";
 import trendModalReducer from "../features/trendModalSlice";
@@ -21,6 +22,7 @@ import priceSimReducer from "../features/priceSimSlice";
 import upcUploadReducer from "../features/upcUploadSlice";
 import receiversReducer from "../features/receiversSlice";
 import couponReducer from "../features/couponSlice";
+import couponLegacyReducer from "../features/couponLegacySlice";
 import reportBuilderReducer from "../features/reportBuilderSlice";
 import adminReducer from "../features/adminSlice.ts";
 import baseGroupReducer from "../features/baseGroupSlice.ts";
@@ -30,6 +32,8 @@ import cashiersReducer from '../features/cashiersSlice.ts';
 import itemScanReducer from "../features/itemScanSlice.ts";
 import mobileSalesReducer from "../features/salesMobileSlice.ts";
 import ordersReducer from '../features/ordersSlice.ts';
+import receiversLegacyReducer from '../features/receiversLegacySlice';
+import ordersLegacyReducer from '../features/ordersLegacySlice';
 import adListReducer from '../features/adListSlice';
 import salesLedgerReducer from '../features/salesLedgerSlice';
 import salesLegacyReducer from '../features/salesLegacySlice';
@@ -47,6 +51,7 @@ export const setupStore = () =>
       users: usersReducer,
       forgotPassword: forgotPasswordReducer,
       lossPrevention: lossPreventionReducer,
+      lossPreventionLegacy: lossPreventionLegacyReducer,
       upc: upcReducer,
       item: itemLookupReducer,
       trendModal: trendModalReducer,
@@ -57,7 +62,9 @@ export const setupStore = () =>
       priceSim: priceSimReducer,
       upcs: upcUploadReducer,
       receivers: receiversReducer,
+      receiversLegacy: receiversLegacyReducer,
       coupons: couponReducer,
+      couponLegacy: couponLegacyReducer,
       reportBuilder: reportBuilderReducer,
       admin: adminReducer,
       baseGroup: baseGroupReducer,
@@ -67,6 +74,7 @@ export const setupStore = () =>
       itemScan: itemScanReducer,
       salesMobile: mobileSalesReducer,
       orders: ordersReducer,
+      ordersLegacy: ordersLegacyReducer,
       adList: adListReducer,
       salesLedger: salesLedgerReducer,
       salesLegacy: salesLegacyReducer,

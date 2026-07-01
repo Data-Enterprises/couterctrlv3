@@ -1,6 +1,6 @@
 import { useOrdersCtx } from "./hooks";
 import { theme, ordersCols } from ".";
-import { setSubIdsFilter } from "../../features/ordersSlice";
+import { setSubIdsFilter } from "../../features/ordersLegacySlice";
 
 import { AgGridReact } from "ag-grid-react";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";

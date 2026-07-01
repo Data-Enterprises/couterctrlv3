@@ -1,13 +1,13 @@
-import { useAppSelector } from "../../hooks";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { formatBigNumber, formatCurrency2 } from "../../utils";
 import { useEffect, useRef, useState } from "react";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
+import { useReceiversState } from "./hooks/useReceiversState";
 
 const ReceiverDetailsGrid = () => {
-  const state = useAppSelector((state) => state.receivers);
+  const state = useReceiversState();
   const topRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number>(0);

@@ -17,7 +17,7 @@ import {
   setStoreId,
   // type Operator,
   type ReducedVendor,
-} from "../../features/receiversSlice";
+} from "../../features/receiversLegacySlice";
 
 import DatePickers from "../../components/datePickers/DatePickers";
 import SingleSelect from "../../components/SingleSelect";
@@ -34,7 +34,7 @@ import ReceiversTablet from "./tablet/ReceiversTablet";
 const ReceiversLegacy = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const state = useAppSelector((state) => state.receivers);
+  const state = useAppSelector((state) => state.receiversLegacy);
   const { url, token, isMobile, isTablet } = useAppSelector((state) => state.app);
   const { assignedStores } = useAppSelector((state) => state.user);
   const { startDate, endDate } = useAppSelector((state) => state.search);

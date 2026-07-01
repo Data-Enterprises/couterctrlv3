@@ -1,4 +1,4 @@
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import { formatCurrency2 } from "../../../utils";
 import type { CashierDetails } from "../../../interfaces";
 
@@ -7,7 +7,8 @@ import {
   HandThumbUpIcon,
   HandThumbDownIcon,
 } from "@heroicons/react/24/outline";
-import { setCashierDetailsTrendDirection, setViewTransactionsMobile } from "../../../features/lossPreventionSlice";
+import { useLPState } from "../hooks/useLPState";
+import { useLPActions } from "../hooks/useLPActions";
 import { useEffect } from "react";
 import { defaultCashierTrend, findTrendDirection } from "../cashierSales";
 
@@ -18,7 +19,8 @@ const MobileTrendCard = () => {
     selectedCashierDetails,
     selectedSaleType,
     cashierDetailsTrendDirection,
-  } = useAppSelector((state) => state.lossPrevention);
+  } = useLPState();
+  const actions = useLPActions();
 
   useEffect(() => {
     if (selectedCashierDetails !== null) {
@@ -63,7 +65,7 @@ const MobileTrendCard = () => {
         );
 
         // max = 5, min =-5 => this is used in the overallTrendLine to determine which icon to show
-        dispatch(setCashierDetailsTrendDirection(trendDirection));
+        dispatch(actions.setCashierDetailsTrendDirection(trendDirection));
       }
     }
   }, [selectedCashierDetails]);
@@ -120,7 +122,7 @@ const MobileTrendCard = () => {
   };
 
   const handleViewChange = () => {
-    dispatch(setViewTransactionsMobile(true));
+    dispatch(actions.setViewTransactionsMobile(true));
   };
 
   return (

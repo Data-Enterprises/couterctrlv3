@@ -1,6 +1,7 @@
 import Modal from "../../../components/Modal";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { setSearchString } from "../../../features/lossPreventionSlice";
+import { useAppDispatch } from "../../../hooks";
+import { useLPState } from "../hooks/useLPState";
+import { useLPActions } from "../hooks/useLPActions";
 
 interface DescModalProps {
   open: boolean;
@@ -9,8 +10,9 @@ interface DescModalProps {
 }
 
 const DescModal = ({ open, onClose, handleSubmit }: DescModalProps) => {
-  const cashier = useAppSelector((state) => state.lossPrevention);
+  const cashier = useLPState();
   const dispatch = useAppDispatch();
+  const actions = useLPActions();
 
   const handleClose = () => {
     onClose();
@@ -31,7 +33,7 @@ const DescModal = ({ open, onClose, handleSubmit }: DescModalProps) => {
           id="desc-input"
           className="basic-input focus:border bg-custom-white"
           value={cashier.searchString}
-          onChange={(e) => dispatch(setSearchString(e.target.value))}
+          onChange={(e) => dispatch(actions.setSearchString(e.target.value))}
         />
       </div>
       <div className="flex mt-4 gap-2">

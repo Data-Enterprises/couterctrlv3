@@ -4,7 +4,7 @@ import {
   setOrderFilters,
   setSubIdsFilter,
   setTypeFilterArr,
-} from "../../../features/ordersSlice";
+} from "../../../features/ordersLegacySlice";
 import { useOrdersCtx } from "../hooks";
 
 const OrdersGridFilters = () => {

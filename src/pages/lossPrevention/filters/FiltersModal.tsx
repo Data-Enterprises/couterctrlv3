@@ -1,17 +1,7 @@
 import { useState } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-// The respective filter setters
-import {
-  // setUpcFilter,
-  // setDescFilter,
-  setSalesThreshold,
-  setFilterModalOpen,
-  setFilterType,
-  setSaleDateFilter,
-  // setSelectedPriceTypes,
-  setTransIdFilter,
-  setQtyThreshold,
-} from "../../../features/lossPreventionSlice";
+import { useAppDispatch } from "../../../hooks";
+import { useLPState } from "../hooks/useLPState";
+import { useLPActions } from "../hooks/useLPActions";
 
 // Modal and filter components
 import Modal from "../../../components/Modal";
@@ -21,11 +11,10 @@ import TotalSalesFilter from "./TotalSalesFilter";
 
 const FiltersModal = () => {
   const dispatch = useAppDispatch();
-  const { filterType, filterModalOpen, 
-    // availablePriceTypes 
-  } = useAppSelector(
-    (state) => state.lossPrevention,
-  );
+  const { filterType, filterModalOpen,
+    // availablePriceTypes
+  } = useLPState();
+  const actions = useLPActions();
   const [text, setText] = useState<string>("");
   const [threshold, setThreshold] = useState<string>("");
   // const [priceTypes, setPriceTypes] = useState<string[]>([]);
@@ -35,10 +24,10 @@ const FiltersModal = () => {
   });
 
   const handleClose = () => {
-    dispatch(setFilterModalOpen(false));
+    dispatch(actions.setFilterModalOpen(false));
     setText("");
     setThreshold("");
-    dispatch(setFilterType(""));
+    dispatch(actions.setFilterType(""));
     // setPriceTypes([]);
   };
 
@@ -101,25 +90,25 @@ const FiltersModal = () => {
   const handleSubmit = () => {
     switch (filterType) {
       case "Sale Date":
-        dispatch(setSaleDateFilter(text));
+        dispatch(actions.setSaleDateFilter(text));
         break;
       // case "UPC":
-      //   dispatch(setUpcFilter(text));
+      //   dispatch(actions.setUpcFilter(text));
       //   break;
       // case "Description":
-      //   dispatch(setDescFilter(text));
+      //   dispatch(actions.setDescFilter(text));
       //   break;
       // case "Price Type":
-      //   dispatch(setSelectedPriceTypes(priceTypes));
+      //   dispatch(actions.setSelectedPriceTypes(priceTypes));
       //   break;
       case "Total Sales":
-        dispatch(setSalesThreshold(threshold ? { op: threshComp.gt ? "gt" : "lt", amount: parseFloat(threshold) } : null));
+        dispatch(actions.setSalesThreshold(threshold ? { op: threshComp.gt ? "gt" : "lt", amount: parseFloat(threshold) } : null));
         break;
       case "Total Qty":
-        dispatch(setQtyThreshold(threshold ? { op: threshComp.gt ? "gt" : "lt", amount: parseFloat(threshold) } : null));
+        dispatch(actions.setQtyThreshold(threshold ? { op: threshComp.gt ? "gt" : "lt", amount: parseFloat(threshold) } : null));
         break;
       case "Transaction ID":
-        dispatch(setTransIdFilter(text));
+        dispatch(actions.setTransIdFilter(text));
         break;
     }
 

@@ -7,13 +7,13 @@ import { formatGoliathDate } from "../../utils";
 import {
   resetCashierSlice,
   setSaleTypes,
-} from "../../features/lossPreventionSlice";
+} from "../../features/lossPreventionLegacySlice";
 import type { JsonError } from "../../interfaces";
 
 import DatePickers from "../../components/datePickers/DatePickers";
 import StorePicker from "../../components/storePicker/StorePicker";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import TransactionModal from "./TransactionModal";
+import TransactionModalLegacy from "./TransactionModalLegacy";
 import CashiersTable from "./CashiersTable";
 import UniqueCashiersTable from "./UniqueCashiersTable";
 import CashierSales from "./cashierSales/CashierSales";
@@ -28,7 +28,7 @@ const LossPreventionLegacy = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const cashier = useAppSelector((state) => state.lossPrevention);
+  const cashier = useAppSelector((state) => state.lossPreventionLegacy);
   const [loading, setLoading] = useState<boolean>(false);
 
   const getSaleTypesData = () => {
@@ -84,7 +84,7 @@ const LossPreventionLegacy = () => {
 
   return (
     <div data-testid="cashiers-page" className={pageContainer}>
-      <TransactionModal />
+      <TransactionModalLegacy />
       <div className={leftContainer}>
         <div className="bg-custom-white px-2 py-2.5 rounded-lg shadow-lg space-y-1 md:space-y-0">
           <StorePicker />

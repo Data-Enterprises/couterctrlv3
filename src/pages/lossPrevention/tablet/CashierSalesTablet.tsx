@@ -12,17 +12,8 @@ import type {
   TransactionOverview,
   UniqueCashier,
 } from "../../../interfaces";
-import {
-  reQuery,
-  setCashiers,
-  setFetchingCashierTransactions,
-  setSelectedCashierDetails,
-  setSelectedSaleIds,
-  setSelectedStoreId,
-  setTransactionLoadingMessage,
-  setTransList,
-  setTransOverviews,
-} from "../../../features/lossPreventionSlice";
+import { useLPState } from "../hooks/useLPState";
+import { useLPActions } from "../hooks/useLPActions";
 import { formatGoliathDate } from "../../../utils";
 import { useEffect } from "react";
 import CashierTrendCard from "../cashierSales/CashierTrendCard";
@@ -32,32 +23,33 @@ const CashierSalesTablet = () => {
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const lp = useAppSelector((state) => state.lossPrevention);
+  const lp = useLPState();
+  const actions = useLPActions();
 
   useEffect(() => {
     if (!lp.selectedStoreId) {
       // here we're either fetching new exceptions
       // or data for a different exception type that we already have
       // therefore we need to reset this to null
-      dispatch(setSelectedCashierDetails(null));
+      dispatch(actions.setSelectedCashierDetails(null));
     } else {
       // find the trend here and its index => pass both into the card
       // => card will take care of the rest
       const details = lp.cashierDetails.filter(
         (d) => d.storeid === lp.selectedStoreId,
       )[0];
-      dispatch(setSelectedCashierDetails(details));
+      dispatch(actions.setSelectedCashierDetails(details));
     }
   }, [lp.selectedStoreId]);
 
   const handleStoreClicked = (storeid: number) => {
     if (lp.selectedStoreId === storeid) return;
 
-    dispatch(reQuery());
-    dispatch(setTransactionLoadingMessage("Loading Cashiers..."));
-    dispatch(setSelectedStoreId(storeid));
-    dispatch(setFetchingCashierTransactions(true));
-    dispatch(setTransList([]));
+    dispatch(actions.reQuery());
+    dispatch(actions.setTransactionLoadingMessage("Loading Cashiers..."));
+    dispatch(actions.setSelectedStoreId(storeid));
+    dispatch(actions.setFetchingCashierTransactions(true));
+    dispatch(actions.setTransList([]));
     const saleType =
       lp.selectedSaleType === "Description"
         ? "description"
@@ -126,7 +118,7 @@ const CashierSalesTablet = () => {
             const saleIds = Array.from(
               new Set(transactions.map((item) => item.sale_id)),
             );
-            dispatch(setSelectedSaleIds(saleIds));
+            dispatch(actions.setSelectedSaleIds(saleIds));
             fetchTransactions(saleIds, saleType);
           }
         }
@@ -135,7 +127,7 @@ const CashierSalesTablet = () => {
   };
 
   const fetchTransactions = (saleIds: string[], saleType: string) => {
-    dispatch(setTransactionLoadingMessage("Loading Transactions..."));
+    dispatch(actions.setTransactionLoadingMessage("Loading Transactions..."));
     getTransactionList(url, token, saleIds, 1, saleType, lp.searchString)
       .then((resp) => {
         const j = resp.data;
@@ -171,7 +163,7 @@ const CashierSalesTablet = () => {
           );
 
           // Everything below is going inside the then block of the cashier_table call
-          dispatch(setCashiers(uniqueCashiers));
+          dispatch(actions.setCashiers(uniqueCashiers));
           const formatted: TransactionListItem[] = [...j.transactions].map(
             (item) => {
               const transactionId = item.sale_id.split("-")[1];
@@ -211,16 +203,16 @@ const CashierSalesTablet = () => {
             },
             [],
           );
-          dispatch(setTransOverviews(overviews));
-          dispatch(setTransList(formatted));
+          dispatch(actions.setTransOverviews(overviews));
+          dispatch(actions.setTransList(formatted));
         }
       })
       .catch((err: JsonError) =>
         toast.error("Error fetching transactions: " + err.message),
       )
       .finally(() => {
-        dispatch(setFetchingCashierTransactions(false));
-        dispatch(setTransactionLoadingMessage(""));
+        dispatch(actions.setFetchingCashierTransactions(false));
+        dispatch(actions.setTransactionLoadingMessage(""));
       });
   };
 

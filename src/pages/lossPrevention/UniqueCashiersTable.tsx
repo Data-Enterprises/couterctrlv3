@@ -1,8 +1,6 @@
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import {
-  setCashierSaleIds,
-  setSelectedCashier,
-} from "../../features/lossPreventionSlice";
+import { useAppDispatch } from "../../hooks";
+import { useLPState } from "./hooks/useLPState";
+import { useLPActions } from "./hooks/useLPActions";
 
 import { AgGridReact } from "ag-grid-react";
 import { cashierColDefs, theme } from ".";
@@ -15,8 +13,8 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 const UniqueCashiersTable = () => {
   const dispatch = useAppDispatch();
-  const { cashiers, selectedCashier, fetchingCashierTransactions } =
-    useAppSelector((state) => state.lossPrevention);
+  const { cashiers, selectedCashier, fetchingCashierTransactions } = useLPState();
+  const actions = useLPActions();
 
   const onRowClicked = (e: RowClickedEvent) => {
     const cashier_number = e.data.cashier_number;
@@ -26,12 +24,12 @@ const UniqueCashiersTable = () => {
       cashier_number === selectedCashier.cashier_number &&
       store_number === selectedCashier.store_number
     ) {
-      dispatch(setCashierSaleIds([]));
-      dispatch(setSelectedCashier({ cashier_number: 0, store_number: "" }));
+      dispatch(actions.setCashierSaleIds([]));
+      dispatch(actions.setSelectedCashier({ cashier_number: 0, store_number: "" }));
       e.api.deselectAll();
       return;
     }
-    dispatch(setSelectedCashier({ cashier_number, store_number }));
+    dispatch(actions.setSelectedCashier({ cashier_number, store_number }));
   };
 
   return (

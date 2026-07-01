@@ -4,15 +4,8 @@ import { getCoupons } from "../../../api/coupons";
 import DatePickers from "../../../components/datePickers/DatePickers";
 import StorePicker from "../../../components/storePicker/StorePicker";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import {
-  setCouponMobileStage,
-  setCoupons,
-  setIsFetching,
-  setNoCouponsFound,
-  setUniqueCpnDates,
-  setUniqueSubDepts,
-} from "../../../features/couponSlice";
 import { useAppDispatch } from "../../../hooks";
+import { useCouponActions } from "../hooks/useCouponActions";
 import type { CouponsResponse, JsonError } from "../../../interfaces";
 import { formatGoliathDate } from "../../../utils";
 import CouponsGridMobile from "./CouponsGridMobile";
@@ -21,9 +14,10 @@ const CouponsMobile = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const ctx = useCouponContext();
+  const actions = useCouponActions();
   const getData = () => {
-    dispatch(setCoupons([]));
-    dispatch(setIsFetching(true));
+    dispatch(actions.setCoupons([]));
+    dispatch(actions.setIsFetching(true));
     const useGroups = ctx.type === "Group" ? 1 : 0;
     const singleStore = ctx.type === "Store" ? 1 : 0;
     const searchValue = ctx.type === "Group" ? ctx.lastGroup : ctx.lastStore;
@@ -42,8 +36,8 @@ const CouponsMobile = () => {
       .then((resp) => {
         const j: CouponsResponse = resp.data;
         if (j.error === 0 && j.records.length > 0) {
-          dispatch(setCoupons(j.records));
-          dispatch(setCouponMobileStage(1));
+          dispatch(actions.setCoupons(j.records));
+          dispatch(actions.setCouponMobileStage(1));
           const uniqueDates = Array.from(
             new Set(j.records.map((r) => r.sale_date)),
           )
@@ -55,14 +49,14 @@ const CouponsMobile = () => {
           ).sort((a, b) => a.localeCompare(b));
 
           // Replace with dispatch actions to help filter the coupons
-          dispatch(setUniqueCpnDates(uniqueDates));
-          dispatch(setUniqueSubDepts(uniqueSubDepts));
+          dispatch(actions.setUniqueCpnDates(uniqueDates));
+          dispatch(actions.setUniqueSubDepts(uniqueSubDepts));
         } else {
-          dispatch(setNoCouponsFound(true));
+          dispatch(actions.setNoCouponsFound(true));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setIsFetching(false)));
+      .finally(() => dispatch(actions.setIsFetching(false)));
   };
 
   if (ctx.couponMobileStage === 1) return <CouponsGridMobile />;

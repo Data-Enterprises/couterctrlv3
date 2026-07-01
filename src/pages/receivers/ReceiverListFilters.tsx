@@ -6,7 +6,7 @@ import {
   setReceiverDetails,
   setSelectedInvoice,
   type FilterType,
-} from "../../features/receiversSlice";
+} from "../../features/receiversLegacySlice";
 
 const filterOptions: (FilterType | "Refresh")[] = [
   "VendorID",
@@ -18,7 +18,7 @@ const filterOptions: (FilterType | "Refresh")[] = [
 
 const RecevierListFilters = () => {
   const dispatch = useAppDispatch();
-  const state = useAppSelector((state) => state.receivers);
+  const state = useAppSelector((state) => state.receiversLegacy);
 
   const renderFilterText = (type: FilterType) => {
     if (type === "InvoiceID") {

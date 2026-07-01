@@ -6,7 +6,7 @@ import {
   setFilter,
   setFilterModalOpen,
   setFilterType,
-} from "../../../features/couponSlice";
+} from "../../../features/couponLegacySlice";
 import TextFilter from "./TextFilter";
 import AmountFilter from "./AmountFilter";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -14,7 +14,7 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 const FiltersModal = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const state = useAppSelector((state) => state.coupons);
+  const state = useAppSelector((state) => state.couponLegacy);
   const [text, setText] = useState<string>("");
 
   const handleClose = () => {

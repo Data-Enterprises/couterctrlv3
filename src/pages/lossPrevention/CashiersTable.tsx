@@ -8,10 +8,8 @@ import {
 } from ".";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { getCashierTransaction } from "../../api/lossPrevention";
-import {
-  setTransactionDrillDown,
-  setTransModalOpen,
-} from "../../features/lossPreventionSlice";
+import { useLPState } from "./hooks/useLPState";
+import { useLPActions } from "./hooks/useLPActions";
 import type {
   JsonError,
   TransactionListItem,
@@ -39,7 +37,8 @@ const CashiersTable = () => {
     TransactionOverview[]
   >([]);
   const context = useAppSelector((state) => state.app);
-  const cashier = useAppSelector((state) => state.lossPrevention);
+  const cashier = useLPState();
+  const actions = useLPActions();
   const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
@@ -95,8 +94,8 @@ const CashiersTable = () => {
       const saleId = e.data.sale_id;
       const saleDate = e.data.sale_date.split("T")[0];
       const storeid = e.data.storeid;
-      dispatch(setTransactionDrillDown([]));
-      dispatch(setTransModalOpen(true));
+      dispatch(actions.setTransactionDrillDown([]));
+      dispatch(actions.setTransModalOpen(true));
       getCashierTransaction(
         context.url,
         context.token,
@@ -116,11 +115,11 @@ const CashiersTable = () => {
             );
             const reducedTransactions: TransactionListItem[] =
               reduceTransactions(transactions);
-            dispatch(setTransactionDrillDown([reducedTransactions]));
+            dispatch(actions.setTransactionDrillDown([reducedTransactions]));
           }
         })
         .catch((err: JsonError) => {
-          dispatch(setTransModalOpen(false));
+          dispatch(actions.setTransModalOpen(false));
           toast.error("Error fetching transactions: " + err.message);
         });
     }
@@ -128,8 +127,8 @@ const CashiersTable = () => {
 
   const handleShowAll = () => {
     const chunked: TransactionListItem[][] = chunkSales(filtered);
-    dispatch(setTransactionDrillDown(chunked));
-    dispatch(setTransModalOpen(true));
+    dispatch(actions.setTransactionDrillDown(chunked));
+    dispatch(actions.setTransModalOpen(true));
   };
 
   const overviewCols: (

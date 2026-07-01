@@ -1,22 +1,20 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { useLPState } from "./hooks/useLPState";
-import { useLPActions } from "./hooks/useLPActions";
+import { setTransModalOpen } from "../../features/lossPreventionLegacySlice";
 import Modal from "../../components/Modal";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import Transaction from "./Transaction";
+import TransactionLegacy from "./TransactionLegacy";
 
-const TransactionModal = () => {
+const TransactionModalLegacy = () => {
   const dispatch = useAppDispatch();
-  const lp = useLPState();
-  const actions = useLPActions();
-  const {isMobile, isTablet} = useAppSelector((state) => state.app);
+  const lp = useAppSelector((state) => state.lossPreventionLegacy);
+  const { isMobile, isTablet } = useAppSelector((state) => state.app);
 
   return (
     <Modal
       isOpen={lp.transModalOpen}
-      className={`${isMobile ? "-ml-12 px-2" : ''}`}
+      className={`${isMobile ? "-ml-12 px-2" : ""}`}
       modalClassName={`bg-custom-white ${isMobile ? "w-[90%] ml-12 translate-x-2" : isTablet ? "w-[80%]" : "w-[38%]"} relative no-scrollbar max-h-[80vh] overflow-y-auto p-2 rounded-lg shadow-lg`}
-      onClose={() => dispatch(actions.setTransModalOpen(false))}
+      onClose={() => dispatch(setTransModalOpen(false))}
     >
       {lp.noRowsReturned && (
         <div className="w-full h-full flex items-center justify-center">
@@ -32,7 +30,7 @@ const TransactionModal = () => {
       ) : (
         <div data-testid="trans-modal" className="space-y-4">
           {lp.transactionDrillDown.map((transaction, i) => (
-            <Transaction key={i} trans={transaction} />
+            <TransactionLegacy key={i} trans={transaction} />
           ))}
         </div>
       )}
@@ -40,4 +38,4 @@ const TransactionModal = () => {
   );
 };
 
-export default TransactionModal;
+export default TransactionModalLegacy;

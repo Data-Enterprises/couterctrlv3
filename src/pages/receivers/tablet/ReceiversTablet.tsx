@@ -1,11 +1,8 @@
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import DatePickers from "../../../components/datePickers/DatePickers";
 import SingleSelect from "../../../components/SingleSelect";
-import {
-  resetReceiverSlice,
-  setIsExportModalOpen,
-  setStoreId,
-} from "../../../features/receiversSlice";
+import { useReceiversState } from "../hooks/useReceiversState";
+import { useReceiversActions } from "../hooks/useReceiversActions";
 import ReceiverFilters from "./ReceiverFilters";
 import ReceiversGrid from "./ReceiversGrid";
 import ReceiverDetails from "./ReceiverDetails";
@@ -16,15 +13,16 @@ interface ReceiversTabletProps {
 
 const ReceiversTablet = ({ getData }: ReceiversTabletProps) => {
   const dispatch = useAppDispatch();
-  const state = useAppSelector((state) => state.receivers);
+  const state = useReceiversState();
+  const actions = useReceiversActions();
   const { assignedStores } = useAppSelector((state) => state.user);
 
   const setSelectedStore = (storeid: string | number) => {
-    dispatch(setStoreId(storeid as number));
+    dispatch(actions.setStoreId(storeid as number));
   };
 
   const openExportModal = () => {
-    dispatch(setIsExportModalOpen(true));
+    dispatch(actions.setIsExportModalOpen(true));
   };
 
   return (
@@ -48,7 +46,7 @@ const ReceiversTablet = ({ getData }: ReceiversTabletProps) => {
                 className={`${
                   state.list.length === 0 && "opacity-50 pointer-events-none"
                 } btn-themeOrange mt-2 px-0`}
-                onClick={() => dispatch(resetReceiverSlice())}
+                onClick={() => dispatch(actions.resetReceiverSlice())}
               >
                 Refresh
               </button>

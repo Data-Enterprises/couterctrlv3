@@ -1,18 +1,8 @@
-import { useAppSelector, useAppDispatch } from "../../hooks";
+import { useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { getCashierDetails } from "../../api/lossPrevention";
-import {
-  setSelectedSaleType,
-  setCashierDetails,
-  setCashierTrends,
-  setBaselineDetails,
-  resetCashierSlice,
-  setSaleTypes,
-  toggleNoTransMsg,
-  reQuery,
-  setSearchString,
-  setSelectedStoreId,
-} from "../../features/lossPreventionSlice";
+import { useLPState } from "./hooks/useLPState";
+import { useLPActions } from "./hooks/useLPActions";
 import type { JsonError } from "../../interfaces";
 import { activePanelStyle } from ".";
 import { useApiContext } from "../hooks";
@@ -27,18 +17,19 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
   const toast = useToast();
   const params = useApiContext();
   const dispatch = useAppDispatch();
-  const cashier = useAppSelector((state) => state.lossPrevention);
+  const cashier = useLPState();
+  const actions = useLPActions();
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const submitDescription = (description: string) => {
     // Doing this to reset when looking for a different sale type
     const panels = cashier.saleTypes;
-    dispatch(resetCashierSlice());
-    dispatch(setSaleTypes(panels));
-    dispatch(setSearchString(description));
+    dispatch(actions.resetCashierSlice());
+    dispatch(actions.setSaleTypes(panels));
+    dispatch(actions.setSearchString(description));
 
     // Setting this to handle selected css styling and show the loading indicator
-    dispatch(setSelectedSaleType("Description"));
+    dispatch(actions.setSelectedSaleType("Description"));
     setLoading(true);
     setIsOpen(false);
     getCashierDetails(
@@ -55,12 +46,12 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0 && j.sales.length > 0) {
-          dispatch(toggleNoTransMsg(false));
+          dispatch(actions.toggleNoTransMsg(false));
           // The chunked sales and trends are being set in the dispatches
-          dispatch(setCashierDetails(j.sales));
-          dispatch(setCashierTrends(j.trend));
+          dispatch(actions.setCashierDetails(j.sales));
+          dispatch(actions.setCashierTrends(j.trend));
         } else {
-          dispatch(toggleNoTransMsg(true));
+          dispatch(actions.toggleNoTransMsg(true));
         }
       })
       .catch((err: JsonError) =>
@@ -68,7 +59,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
       )
       .finally(() => setLoading(false));
     getCashierDetails(params.url, params.token, params.lpBaseStart, params.lpBaseEnd, params.useGroups, params.searchValue, params.singleStore, ["description"], description)
-      .then((r) => { if (r.data.error === 0) dispatch(setBaselineDetails(r.data.sales)); })
+      .then((r) => { if (r.data.error === 0) dispatch(actions.setBaselineDetails(r.data.sales)); })
       .catch(() => {});
   };
 
@@ -80,15 +71,15 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
     // Doing this to reset when looking for a different sale type
     const panels = cashier.saleTypes;
     const selectedSaleType = cashier.selectedSaleType;
-    dispatch(setSelectedStoreId(0));
-    dispatch(setCashierTrends([]));
-    dispatch(setCashierDetails([]));
-    dispatch(reQuery());
-    dispatch(setSaleTypes(panels));
-    dispatch(setSelectedSaleType(selectedSaleType));
+    dispatch(actions.setSelectedStoreId(0));
+    dispatch(actions.setCashierTrends([]));
+    dispatch(actions.setCashierDetails([]));
+    dispatch(actions.reQuery());
+    dispatch(actions.setSaleTypes(panels));
+    dispatch(actions.setSelectedSaleType(selectedSaleType));
 
     // Setting this to handle selected css styling and show the loading indicator
-    dispatch(setSelectedSaleType(saleType));
+    dispatch(actions.setSelectedSaleType(saleType));
     setLoading(true);
 
     // Using useApiContext hook to get the params
@@ -107,14 +98,14 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
         if (j.error === 0) {
           // Checking to see if we need to display No Transactions Found
           if (j.sales.length === 0) {
-            dispatch(toggleNoTransMsg(true));
+            dispatch(actions.toggleNoTransMsg(true));
           } else {
-            dispatch(toggleNoTransMsg(false));
+            dispatch(actions.toggleNoTransMsg(false));
           }
 
           // The chunked sales and trends are being set in the dispatches
-          dispatch(setCashierDetails(j.sales));
-          dispatch(setCashierTrends(j.trend));
+          dispatch(actions.setCashierDetails(j.sales));
+          dispatch(actions.setCashierTrends(j.trend));
         }
       })
       .catch((err: JsonError) =>
@@ -122,7 +113,7 @@ const SaleTypes = ({ setLoading }: SaleTypesProps) => {
       )
       .finally(() => setLoading(false));
     getCashierDetails(params.url, params.token, params.lpBaseStart, params.lpBaseEnd, params.useGroups, params.searchValue, params.singleStore, [saleType])
-      .then((r) => { if (r.data.error === 0) dispatch(setBaselineDetails(r.data.sales)); })
+      .then((r) => { if (r.data.error === 0) dispatch(actions.setBaselineDetails(r.data.sales)); })
       .catch(() => {});
   };
 
