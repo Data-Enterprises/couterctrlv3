@@ -1,12 +1,7 @@
 import { useAppDispatch } from "../../../hooks";
 import { useSubMarginCtx, useParams } from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import {
-  requerySubDeptMargins,
-  setLoadingSubDepts,
-  setSearchValue,
-  setSubDepts,
-} from "../../../features/subMarginSlice";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
 import { getSubDepts } from "../../../api/subMargins";
 import type { JsonError, SubDept, SubSalesJsonResp } from "../../../interfaces";
 
@@ -20,9 +15,10 @@ const SubDeptMobileView = () => {
   const params = useParams();
   const toast = useToast();
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
 
   const handleStoreSelect = (id: string | number) => {
-    dispatch(setSearchValue(Number(id)));
+    dispatch(actions.setSearchValue(Number(id)));
   };
 
   const handleSubDeptSearch = () => {
@@ -30,8 +26,8 @@ const SubDeptMobileView = () => {
       toast.warn("Please select a store");
       return;
     }
-    dispatch(requerySubDeptMargins());
-    dispatch(setLoadingSubDepts(true));
+    dispatch(actions.requerySubDeptMargins());
+    dispatch(actions.setLoadingSubDepts(true));
     getSubDepts(
       ctx.url,
       ctx.token,
@@ -56,11 +52,11 @@ const SubDeptMobileView = () => {
             }, [])
             .sort((a, b) => a.id - b.id);
 
-          dispatch(setSubDepts(subDepts));
+          dispatch(actions.setSubDepts(subDepts));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setLoadingSubDepts(false)));
+      .finally(() => dispatch(actions.setLoadingSubDepts(false)));
   };
 
   const findStoreName = () => {

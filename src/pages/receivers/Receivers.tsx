@@ -17,7 +17,7 @@ import {
 } from "../../features/receiversSlice";
 
 import DatePickers from "../../components/datePickers/DatePickers";
-import SingleSelect from "../../components/SingleSelect";
+import SingleStoreSearchCard from "../../components/SingleStoreSearchCard";
 import ReceiverListPanel from "./ReceiverListPanel";
 import ReceiverDetailPanel from "./ReceiverDetailPanel";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
@@ -33,6 +33,7 @@ const Receivers = () => {
   const { url, token, isMobile, isTablet } = useAppSelector((state) => state.app);
   const { assignedStores } = useAppSelector((state) => state.user);
   const { startDate, endDate } = useAppSelector((state) => state.search);
+
   useEffect(() => {
     if (state.listGridData.length === 0) {
       dispatch(setReceiverDetails([]));
@@ -86,15 +87,15 @@ const Receivers = () => {
       .finally(() => dispatch(setIsFetchingList(false)));
   };
 
-  const setSelectedStore = (storeid: string | number) => {
-    dispatch(setStoreId(storeid as number));
+  const setSelectedStore = (id: number) => {
+    dispatch(setStoreId(id));
   };
 
   if (isMobile) {
     return (
       <ReceiversMobileView
         getReceivers={getReceivers}
-        setSelectedStore={setSelectedStore}
+        setSelectedStore={(id) => setSelectedStore(id as number)}
       />
     );
   }
@@ -103,73 +104,48 @@ const Receivers = () => {
     return <ReceiversTablet getData={getReceivers} />;
   }
 
-
-  // Loading
   if (state.isFetchingList) {
     return (
       <div className="w-full h-[calc(100vh-3rem)] relative">
-
         <LoadingIndicator message="Loading receivers" />
       </div>
     );
   }
 
-  // No results
   if (state.noReceivers) {
     return (
-      <div className="h-[calc(100vh-3rem)] flex items-center justify-center">
-
-        <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3">
-          <div>
-            <h2 className="text-base font-semibold text-content">No receivers found</h2>
-            <p className="text-[12px] text-content/50 mt-1">
-              No receiving records matched the selected store and date range.
-            </p>
-          </div>
-          <button
-            onClick={() => dispatch(resetReceiverSlice())}
-            className="w-full py-2 text-sm font-semibold text-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors"
-          >
-            Search again
-          </button>
-        </div>
+      <div className="h-[calc(100vh-3rem)] flex items-center justify-center mx-4 pb-12">
+        <SingleStoreSearchCard
+          title="No receivers found"
+          description="No receiving records matched the selected store and date range."
+          buttonLabel="Search again"
+          stores={assignedStores}
+          selectedStoreId={state.storeid}
+          onStoreSelect={setSelectedStore}
+          onSearch={() => { dispatch(resetReceiverSlice()); }}
+          datePicker={<DatePickers showBtn={false} handleQuery={getReceivers} />}
+        />
       </div>
     );
   }
 
-  // Initial search card
   if (state.list.length === 0) {
     return (
       <div className="h-[calc(100vh-3rem)] flex items-center justify-center mx-4 pb-12">
-
-        <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3">
-          <div>
-            <h2 className="text-base font-semibold text-content">Receivers</h2>
-            <p className="text-[12px] text-content/50 mt-1">
-              Select a store and date range to load receiving history.
-            </p>
-          </div>
-          <SingleSelect
-            label="Select Store"
-            data={assignedStores}
-            displayKey="store_name"
-            valueKey="storeid"
-            onSelect={setSelectedStore}
-            innerClass="text-[13px] py-1"
-          />
-          <DatePickers showBtn={false} handleQuery={getReceivers} />
-          <button
-            onClick={getReceivers}
-            className="w-full py-2 text-sm font-semibold text-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none"
-          >
-            Load Receivers
-          </button>
-        </div>
+        <SingleStoreSearchCard
+          title="Receivers"
+          description="Select a store and date range to load receiving history."
+          buttonLabel="Load Receivers"
+          stores={assignedStores}
+          selectedStoreId={state.storeid}
+          onStoreSelect={setSelectedStore}
+          onSearch={getReceivers}
+          datePicker={<DatePickers showBtn={false} handleQuery={getReceivers} />}
+        />
       </div>
     );
   }
 
-  // Two-panel layout
   return (
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-4">
       {searchModalOpen && (
@@ -177,26 +153,17 @@ const Receivers = () => {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
           onClick={() => setSearchModalOpen(false)}
         >
-          <div className="w-full max-w-sm mx-4 bg-custom-white rounded-2xl shadow-xl p-6 flex flex-col gap-3" onClick={(e) => e.stopPropagation()}>
-            <div>
-              <h2 className="text-base font-semibold text-content">Receivers</h2>
-              <p className="text-[12px] text-content/50 mt-1">Select a store and date range to load receiving history.</p>
-            </div>
-            <SingleSelect
-              label="Select Store"
-              data={assignedStores}
-              displayKey="store_name"
-              valueKey="storeid"
-              onSelect={setSelectedStore}
-              innerClass="text-[13px] py-1"
+          <div className="mx-4" onClick={(e) => e.stopPropagation()}>
+            <SingleStoreSearchCard
+              title="Receivers"
+              description="Select a store and date range to load receiving history."
+              buttonLabel="Load Receivers"
+              stores={assignedStores}
+              selectedStoreId={state.storeid}
+              onStoreSelect={setSelectedStore}
+              onSearch={() => { setSearchModalOpen(false); getReceivers(); }}
+              datePicker={<DatePickers showBtn={false} handleQuery={() => { setSearchModalOpen(false); getReceivers(); }} />}
             />
-            <DatePickers showBtn={false} handleQuery={() => { setSearchModalOpen(false); getReceivers(); }} />
-            <button
-              onClick={() => { setSearchModalOpen(false); getReceivers(); }}
-              className="w-full py-2 text-sm font-semibold text-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none"
-            >
-              Load Receivers
-            </button>
           </div>
         </div>
       )}

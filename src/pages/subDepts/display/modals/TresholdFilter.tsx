@@ -1,12 +1,7 @@
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import {
-  setFilterTextInput,
-  setThresholdFilter,
-  setThreshOperator,
-  type ItemFilterType,
-  type ThreshOperator,
-} from "../../../../features/subMarginSlice";
+import { useSubMarginActions } from "../../hooks/useSubMarginActions";
+import type { ItemFilterType, ThreshOperator } from "../../../../features/subMarginSlice";
 import CheckBox from "../../../../components/inputs/CheckBox";
 import Input from "../../../../components/inputs/Input";
 
@@ -19,10 +14,11 @@ interface ThresholdFilter {
 const ThresholdFilter = ({ label, type, handleClose }: ThresholdFilter) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const subMargin = useAppSelector((state) => state.subMargin);
 
   const textChange = (x: string) => {
-    dispatch(setFilterTextInput(x));
+    dispatch(actions.setFilterTextInput(x));
   };
 
   const handleSubmit = () => {
@@ -40,7 +36,7 @@ const ThresholdFilter = ({ label, type, handleClose }: ThresholdFilter) => {
     if (type === "sales") {
       // dispatch action to set sales filter
       dispatch(
-        setThresholdFilter({
+        actions.setThresholdFilter({
           filter: "salesFilter",
           value: {
             operator: subMargin.threshOperator,
@@ -51,7 +47,7 @@ const ThresholdFilter = ({ label, type, handleClose }: ThresholdFilter) => {
     } else if (type === "qty") {
       // dispatch action to set quantity filter
       dispatch(
-        setThresholdFilter({
+        actions.setThresholdFilter({
           filter: "qtyFilter",
           value: {
             operator: subMargin.threshOperator,
@@ -62,7 +58,7 @@ const ThresholdFilter = ({ label, type, handleClose }: ThresholdFilter) => {
     } else if (type === "cogs") {
       // dispatch action to set cogs filter
       dispatch(
-        setThresholdFilter({
+        actions.setThresholdFilter({
           filter: "cogsFilter",
           value: {
             operator: subMargin.threshOperator,
@@ -73,7 +69,7 @@ const ThresholdFilter = ({ label, type, handleClose }: ThresholdFilter) => {
     } else if (type === "caseCost") {
       // dispatch action to set case cost filter
       dispatch(
-        setThresholdFilter({
+        actions.setThresholdFilter({
           filter: "caseCostFilter",
           value: {
             operator: subMargin.threshOperator,
@@ -84,7 +80,7 @@ const ThresholdFilter = ({ label, type, handleClose }: ThresholdFilter) => {
     } else if (type === "unitCost") {
       // dispatch action to set unit cost filter
       dispatch(
-        setThresholdFilter({
+        actions.setThresholdFilter({
           filter: "unitCostFilter",
           value: {
             operator: subMargin.threshOperator,
@@ -95,7 +91,7 @@ const ThresholdFilter = ({ label, type, handleClose }: ThresholdFilter) => {
     } else if (type === "margin") {
       // dispatch action to set margin filter
       dispatch(
-        setThresholdFilter({
+        actions.setThresholdFilter({
           filter: "marginFilter",
           value: {
             operator: subMargin.threshOperator,
@@ -111,9 +107,9 @@ const ThresholdFilter = ({ label, type, handleClose }: ThresholdFilter) => {
   const handleOperatorChange = (operator: ThreshOperator) => {
     // dispatch action to set the operator (greater than, less than, equal to)
     if (subMargin.threshOperator === operator) {
-      dispatch(setThreshOperator(""));
+      dispatch(actions.setThreshOperator(""));
     } else {
-      dispatch(setThreshOperator(operator));
+      dispatch(actions.setThreshOperator(operator));
     }
   };
 

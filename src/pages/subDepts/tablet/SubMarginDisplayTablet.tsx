@@ -1,11 +1,7 @@
 import { useMemo } from "react";
 import { useSubMarginCtx } from "../hooks";
 import { useAppDispatch } from "../../../hooks";
-import {
-  setSubDeptCost,
-  setSubDeptGridView,
-  setViewTabletCards,
-} from "../../../features/subMarginSlice";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
 
 import { formatDate, type BarData } from "../display/widgets";
 import { gpm } from "../../../functions";
@@ -21,6 +17,7 @@ import AllWeeksTablet from "./AllWeeksTablet";
 
 const SubMarginDisplayTablet = () => {
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const {
     margins,
     loadingMargins,
@@ -107,7 +104,7 @@ const SubMarginDisplayTablet = () => {
   };
 
   const handleDailyBtnClick = () => {
-    dispatch(setViewTabletCards(true));
+    dispatch(actions.setViewTabletCards(true));
   };
 
   const handleGridViewChange = (view: "item" | "cost") => {
@@ -153,10 +150,10 @@ const SubMarginDisplayTablet = () => {
         [],
       );
 
-      dispatch(setSubDeptCost(marginCosts));
+      dispatch(actions.setSubDeptCost(marginCosts));
     }
-    dispatch(setViewTabletCards(false));
-    dispatch(setSubDeptGridView(view));
+    dispatch(actions.setViewTabletCards(false));
+    dispatch(actions.setSubDeptGridView(view));
   };
 
   return (

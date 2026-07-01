@@ -1,17 +1,14 @@
 import { useCashierCtx } from "..";
-import {
-  setCashierFilterModalOpen,
-  type CashierFilterType,
-  setCashierFilterType,
-  resetCashierFilters,
-} from "../../../features/cashiersSlice";
+import { type CashierFilterType } from "../../../features/cashiersSlice";
+import { useCashiersActions } from "../hooks/useCashiersActions";
 
 const CardFilters = () => {
   const ctx = useCashierCtx();
+  const actions = useCashiersActions();
 
   const handleOpenFilterModal = (type: CashierFilterType) => {
-    ctx.dispatch(setCashierFilterType(type));
-    ctx.dispatch(setCashierFilterModalOpen(true));
+    ctx.dispatch(actions.setCashierFilterType(type));
+    ctx.dispatch(actions.setCashierFilterModalOpen(true));
   };
 
   const handleFilterTextDisplay = (type: CashierFilterType) => {
@@ -151,7 +148,7 @@ const CardFilters = () => {
       </button>
       <button
         className="py-2 shadow-md mx-2 rounded-lg hover:shadow-inner hover:text-content transition-all duration-200 text-[13px]"
-        onClick={() => ctx.dispatch(resetCashierFilters())}
+        onClick={() => ctx.dispatch(actions.resetCashierFilters())}
       >
         {handleFilterTextDisplay("")}
       </button>

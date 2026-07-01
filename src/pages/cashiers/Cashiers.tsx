@@ -4,14 +4,7 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 import { formatGoliathDate } from "../../utils";
 import { getStoreCards } from "../../api/cashiers";
 import type { CashierCard, JsonError, StoreCardResp } from "../../interfaces";
-import {
-  reQueryStepOne,
-  setCashierFilterType,
-  setDataView,
-  setLoadingStores,
-  setNoStoresFound,
-  setStoreCards,
-} from "../../features/cashiersSlice";
+import { useCashiersActions } from "./hooks/useCashiersActions";
 import SearchCard from "../../components/SearchCard";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import StoresView from "./stores/StoresView";
@@ -24,13 +17,14 @@ import CashiersMobile from "./mobile/CashiersMobile";
 const Cashiers = () => {
   const toast = useToast();
   const ctx = useCashierCtx();
+  const actions = useCashiersActions();
   const [selectedCashierCard, setSelectedCashierCard] = useState<CashierCard | null>(null);
 
   const getSCards = () => {
-    ctx.dispatch(setCashierFilterType(""));
-    ctx.dispatch(reQueryStepOne());
-    ctx.dispatch(setLoadingStores(true));
-    ctx.dispatch(setDataView("stores"));
+    ctx.dispatch(actions.setCashierFilterType(""));
+    ctx.dispatch(actions.reQueryStepOne());
+    ctx.dispatch(actions.setLoadingStores(true));
+    ctx.dispatch(actions.setDataView("stores"));
 
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
@@ -42,15 +36,15 @@ const Cashiers = () => {
       .then((resp) => {
         const j: StoreCardResp = resp.data;
         if (j.error === 0) {
-          ctx.dispatch(setNoStoresFound(j.stores.length === 0));
-          ctx.dispatch(setStoreCards(j.stores));
+          ctx.dispatch(actions.setNoStoresFound(j.stores.length === 0));
+          ctx.dispatch(actions.setStoreCards(j.stores));
         }
       })
       .catch((err: JsonError) => {
         toast.error(err.message);
-        ctx.dispatch(setDataView(""));
+        ctx.dispatch(actions.setDataView(""));
       })
-      .finally(() => ctx.dispatch(setLoadingStores(false)));
+      .finally(() => ctx.dispatch(actions.setLoadingStores(false)));
   };
 
   if (ctx.isMobile) return <CashiersMobile />;
@@ -74,12 +68,12 @@ const Cashiers = () => {
   const showCashierLeft = ctx.dataView === "cashiers" || (ctx.dataView === "transactions" && ctx.cashierCards.length > 0);
 
   const handleBackToStores = () => {
-    ctx.dispatch(setDataView("stores"));
+    ctx.dispatch(actions.setDataView("stores"));
     setSelectedCashierCard(null);
   };
 
   const handleBackToDetail = () => {
-    ctx.dispatch(setDataView(ctx.cashierCards.length > 0 ? "cashiers" : "stores"));
+    ctx.dispatch(actions.setDataView(ctx.cashierCards.length > 0 ? "cashiers" : "stores"));
   };
 
   return (

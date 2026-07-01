@@ -4,10 +4,7 @@ import type { BarData } from "../display/widgets";
 import { gpm } from "../../../functions";
 import { calculateCogs } from "..";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
-import {
-  setMobileMainView,
-  setSelectedWeekDay,
-} from "../../../features/subMarginSlice";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
 
 interface TotalsHeaderProps {
   barData: BarData[];
@@ -16,6 +13,7 @@ interface TotalsHeaderProps {
 const TotalsHeader = ({ barData }: TotalsHeaderProps) => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const { assignedStores } = useAppSelector((state) => state.user);
 
   const sales = barData.reduce((acc, data) => acc + data.sales, 0);
@@ -40,8 +38,8 @@ const TotalsHeader = ({ barData }: TotalsHeaderProps) => {
 
   const handleAllDates = () => {
     if (ctx.viewDaily && ctx.mobileMainView === "overview") {
-      dispatch(setMobileMainView("items"));
-      dispatch(setSelectedWeekDay(""));
+      dispatch(actions.setMobileMainView("items"));
+      dispatch(actions.setSelectedWeekDay(""));
     }
   };
 

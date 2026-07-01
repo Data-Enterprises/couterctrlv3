@@ -1,10 +1,6 @@
 import { useState } from "react";
 import { useCashierCtx } from "..";
-import {
-  setNoTransactions,
-  setTransDrillDown,
-  setTransModalOpen,
-} from "../../../features/cashiersSlice";
+import { useCashiersActions } from "../hooks/useCashiersActions";
 import { getCashierTransaction } from "../../../api/lossPrevention";
 import type { JsonError, TransactionListItem, TransactionOverview } from "../../../interfaces";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -24,6 +20,7 @@ const fmtDate = (date: string) => {
 const TransactionsView = ({ onBack }: Props) => {
   const ctx = useCashierCtx();
   const toast = useToast();
+  const actions = useCashiersActions();
   const [selectedOverview, setSelectedOverview] = useState<TransactionOverview | null>(null);
   const [loadingReceipt, setLoadingReceipt] = useState(false);
 
@@ -33,8 +30,8 @@ const TransactionsView = ({ onBack }: Props) => {
 const fetchReceipt = (overview: TransactionOverview) => {
     setSelectedOverview(overview);
     setLoadingReceipt(true);
-    ctx.dispatch(setTransDrillDown([]));
-    ctx.dispatch(setNoTransactions(false));
+    ctx.dispatch(actions.setTransDrillDown([]));
+    ctx.dispatch(actions.setNoTransactions(false));
 
 
     const saleDate = overview.sale_date.split("T")[0];
@@ -65,14 +62,14 @@ const fetchReceipt = (overview: TransactionOverview) => {
             }
             return acc;
           }, []);
-          ctx.dispatch(setTransDrillDown([reduced]));
-          ctx.dispatch(setNoTransactions(false));
+          ctx.dispatch(actions.setTransDrillDown([reduced]));
+          ctx.dispatch(actions.setNoTransactions(false));
         } else {
-          ctx.dispatch(setNoTransactions(true));
+          ctx.dispatch(actions.setNoTransactions(true));
         }
       })
       .catch((err: JsonError) => {
-        ctx.dispatch(setTransModalOpen(false));
+        ctx.dispatch(actions.setTransModalOpen(false));
         toast.error("Error fetching transaction: " + err.message);
       })
       .finally(() => setLoadingReceipt(false));

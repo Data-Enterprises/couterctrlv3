@@ -4,16 +4,10 @@ import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 
 import {
-  resetMobileSort,
-  setFetchingItemHistory,
-  setItemDataFilteredMobile,
-  setMobileSort,
-  setScannedItemHistory,
-  setScannedItemMobile,
-  setUpcSearch,
   type MobileSort,
   type SortOption,
 } from "../../../features/subMarginSlice";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
 import { setError, setUpcCode } from "../../../features/itemScanSlice";
 
 import type { JsonError } from "../../../interfaces";
@@ -48,26 +42,27 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
   const toast = useToast();
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const scan = useAppSelector((state) => state.itemScan);
 
   const handleScanItem = (upc: string) => {
-    dispatch(setScannedItemHistory([]));
-    dispatch(setFetchingItemHistory(true));
+    dispatch(actions.setScannedItemHistory([]));
+    dispatch(actions.setFetchingItemHistory(true));
 
     // Setting the upc search string here for SDM so when you press Close on ItemHistoryStatic,
     // it will set scan.upcCode to this code to maintain the filtered item list.
     // The clear function here will reset the same value along side scan.upcCode to reset the item list when you press Clear.
-    dispatch(setUpcSearch(upc));
+    dispatch(actions.setUpcSearch(upc));
 
     getItemLookupSingleStore(ctx.url, ctx.token, upc, ctx.searchValue)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          dispatch(setScannedItemHistory(j.history));
+          dispatch(actions.setScannedItemHistory(j.history));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setFetchingItemHistory(false)));
+      .finally(() => dispatch(actions.setFetchingItemHistory(false)));
   };
 
   const scanItem = (upc: string) => {
@@ -98,15 +93,15 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
       return;
     }
 
-    dispatch(setItemDataFilteredMobile(newData));
+    dispatch(actions.setItemDataFilteredMobile(newData));
   };
 
   const clear = () => {
     resetFilteredItems();
-    dispatch(setScannedItemMobile(null));
-    dispatch(setScannedItemHistory([]));
+    dispatch(actions.setScannedItemMobile(null));
+    dispatch(actions.setScannedItemHistory([]));
     dispatch(setUpcCode(""));
-    dispatch(setUpcSearch(""));
+    dispatch(actions.setUpcSearch(""));
     dispatch(setError(""));
   };
 
@@ -130,24 +125,24 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
       margin: ((item.total_sales - item.cogs) / item.total_sales) * 100 || 0,
     }));
 
-    dispatch(setItemDataFilteredMobile(newData));
+    dispatch(actions.setItemDataFilteredMobile(newData));
   };
 
   useEffect(() => {
     if (ctx.subDeptGridView === "item") {
       resetFilteredItems();
-      dispatch(resetMobileSort());
+      dispatch(actions.resetMobileSort());
     }
   }, [ctx.selectedWeekDay]);
 
   const setSort = (option: SortOption) => {
     if (option === "reset") {
-      dispatch(resetMobileSort());
+      dispatch(actions.resetMobileSort());
       resetFilteredItems();
       return;
     }
 
-    dispatch(setMobileSort({ option }));
+    dispatch(actions.setMobileSort({ option }));
   };
 
   const subDept = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId);

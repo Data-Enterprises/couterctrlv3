@@ -6,16 +6,14 @@ import { calculateCogs } from "..";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
 import { itemCols, type ItemRow } from "../display/widgets";
-import {
-  setFilteredItemGridData,
-  setItemGridData,
-  type ThreshOperator,
-} from "../../../features/subMarginSlice";
+import { type ThreshOperator } from "../../../features/subMarginSlice";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
 import ItemsGridFiltersTablet from "./ItemsGridFiltersTablet";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 
 const ItemsGridTablet = () => {
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const { margins, selectedWeekDay } = useSubMarginCtx();
   const sm = useAppSelector((state) => state.subMargin);
   const [gridData, setGridData] = useState<ItemRow[]>([]);
@@ -75,7 +73,7 @@ const ItemsGridTablet = () => {
         );
       });
       setGridData(filteredData);
-      dispatch(setFilteredItemGridData(filteredData));
+      dispatch(actions.setFilteredItemGridData(filteredData));
     }
   }, [
     sm.upcFilter,
@@ -139,8 +137,8 @@ const ItemsGridTablet = () => {
       margin: ((item.total_sales - item.cogs) / item.total_sales) * 100 || 0,
     }));
     
-    dispatch(setItemGridData(newData));
-    dispatch(setFilteredItemGridData(newData));
+    dispatch(actions.setItemGridData(newData));
+    dispatch(actions.setFilteredItemGridData(newData));
     setGridData(newData);
   }, [selectedWeekDay]);
 

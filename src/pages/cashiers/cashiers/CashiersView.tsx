@@ -1,11 +1,8 @@
 import { useEffect } from "react";
 import { useCashierCtx } from "..";
 import { useAppDispatch } from "../../../hooks";
-import {
-  setApplyFilters,
-  setFilteredCashierCards,
-  type NumberFilter,
-} from "../../../features/cashiersSlice";
+import { type NumberFilter } from "../../../features/cashiersSlice";
+import { useCashiersActions } from "../hooks/useCashiersActions";
 import type { CashierCard, ExceptionType } from "../../../interfaces";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import { ExclamationTriangleIcon, ExclamationCircleIcon, CheckCircleIcon } from "@heroicons/react/20/solid";
@@ -37,6 +34,7 @@ const SELECTED_BG: Record<Tier, string> = {
 const CashiersView = ({ selectedCashier, onCashierSelect, onBackToStores }: Props) => {
   const ctx = useCashierCtx();
   const dispatch = useAppDispatch();
+  const actions = useCashiersActions();
 
   useEffect(() => {
     if (ctx.applyFilters) {
@@ -83,8 +81,8 @@ const CashiersView = ({ selectedCashier, onCashierSelect, onBackToStores }: Prop
           (!qtyTypes.includes("Voided") || !qtyOp || handleThreshold(card, "Voided", totalQty, "qty"))
         );
       });
-      dispatch(setFilteredCashierCards(filtered));
-      dispatch(setApplyFilters(false));
+      dispatch(actions.setFilteredCashierCards(filtered));
+      dispatch(actions.setApplyFilters(false));
     }
   }, [ctx.applyFilters, ctx.cashNameFilterApplied, ctx.totalSalesFilterApplied, ctx.totalQtyFilterApplied, ctx.riskLevelFilterApplied, ctx.exceptionTierFilterApplied]);
 

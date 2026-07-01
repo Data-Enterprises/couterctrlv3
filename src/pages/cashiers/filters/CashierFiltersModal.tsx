@@ -1,17 +1,6 @@
 import { useCashierCtx } from "..";
 import Modal from "../../../components/Modal";
-import {
-  setApplyFilters,
-  setCashierFilterModalOpen,
-  setCashierFilterType,
-  setExceptionQtyTypes,
-  setExceptionSalesTypes,
-  setExceptionTierFilter,
-  setRiskLevelFilter,
-  setStoreNameFilter,
-  setTotalQtyFilter,
-  setTotalSalesFilter,
-} from "../../../features/cashiersSlice";
+import { useCashiersActions } from "../hooks/useCashiersActions";
 import CashierNumberFilter from "./CashierNumberFilter";
 
 import CashierTextFilter from "./CashierTextFilter";
@@ -19,6 +8,7 @@ import CashierTierFilter from "./CashierTierFilter";
 
 const CashierFiltersModal = () => {
   const ctx = useCashierCtx();
+  const actions = useCashiersActions();
 
   const renderFilter = () => {
     switch (ctx.cashierFilterType) {
@@ -39,42 +29,42 @@ const CashierFiltersModal = () => {
   };
 
   const handleSubmit = () => {
-    ctx.dispatch(setApplyFilters(true));
+    ctx.dispatch(actions.setApplyFilters(true));
     handleClose();
   };
 
   const handleClose = (isClearing: boolean = false) => {
     if (isClearing) {
       if (ctx.cashierFilterType === "cashier_name") {
-        ctx.dispatch(setCashierFilterType(""));
+        ctx.dispatch(actions.setCashierFilterType(""));
       }
 
       if (ctx.cashierFilterType === "store_name") {
-        ctx.dispatch(setStoreNameFilter(""));
+        ctx.dispatch(actions.setStoreNameFilter(""));
       }
 
       if (ctx.cashierFilterType === "total_sales") {
-        ctx.dispatch(setTotalSalesFilter({ operator: "", value: 0 }));
-        ctx.dispatch(setExceptionSalesTypes([]));
+        ctx.dispatch(actions.setTotalSalesFilter({ operator: "", value: 0 }));
+        ctx.dispatch(actions.setExceptionSalesTypes([]));
       }
 
       if (ctx.cashierFilterType === "total_qty") {
-        ctx.dispatch(setTotalQtyFilter({ operator: "", value: 0 }));
-        ctx.dispatch(setExceptionQtyTypes([]));
+        ctx.dispatch(actions.setTotalQtyFilter({ operator: "", value: 0 }));
+        ctx.dispatch(actions.setExceptionQtyTypes([]));
       }
 
       if (ctx.cashierFilterType === "risk_level") {
-        ctx.dispatch(setRiskLevelFilter(""));
+        ctx.dispatch(actions.setRiskLevelFilter(""));
       }
 
       if (ctx.cashierFilterType === "exception_tier") {
-        ctx.dispatch(setExceptionTierFilter(""));
+        ctx.dispatch(actions.setExceptionTierFilter(""));
       }
     }
 
-    ctx.dispatch(setCashierFilterModalOpen(false));
-    ctx.dispatch(setCashierFilterType(""));
-    ctx.dispatch(setApplyFilters(true));
+    ctx.dispatch(actions.setCashierFilterModalOpen(false));
+    ctx.dispatch(actions.setCashierFilterType(""));
+    ctx.dispatch(actions.setApplyFilters(true));
   };
 
   return (

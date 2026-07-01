@@ -7,7 +7,7 @@ import BottomSheet from "../../../components/BottomSheet";
 import Transaction from "../transactions/Transaction";
 import { getCashierTransaction } from "../../../api/lossPrevention";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { setNoTransactions, setTransDrillDown, setTransModalOpen } from "../../../features/cashiersSlice";
+import { useCashiersActions } from "../hooks/useCashiersActions";
 import SelectFilter from "../../../components/filters/SelectFilter";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import type { ThresholdValue } from "../../../components/filters/ThresholdFilter";
@@ -35,6 +35,7 @@ const meetsThreshold = (value: number, threshold: ThresholdValue | null): boolea
 const TransactionsMobileScreen = ({ onBack, onOpenSearch, cashierName, storeName }: Props) => {
   const ctx = useCashierCtx();
   const toast = useToast();
+  const actions = useCashiersActions();
   const [selectedOverview, setSelectedOverview] = useState<TransactionOverview | null>(null);
   const [loadingReceipt, setLoadingReceipt] = useState(false);
   const [dateFilter, setDateFilter] = useState("");
@@ -76,8 +77,8 @@ const TransactionsMobileScreen = ({ onBack, onOpenSearch, cashierName, storeName
   const handleTxRowTap = (ov: TransactionOverview) => {
     setSelectedOverview(ov);
     setLoadingReceipt(true);
-    ctx.dispatch(setTransDrillDown([]));
-    ctx.dispatch(setNoTransactions(false));
+    ctx.dispatch(actions.setTransDrillDown([]));
+    ctx.dispatch(actions.setNoTransactions(false));
 
     const saleDate = ov.sale_date.split("T")[0];
     getCashierTransaction(ctx.url, ctx.token, saleDate, ov.sale_id, ov.storeid)
@@ -107,13 +108,13 @@ const TransactionsMobileScreen = ({ onBack, onOpenSearch, cashierName, storeName
             }
             return acc;
           }, []);
-          ctx.dispatch(setTransDrillDown([reduced]));
+          ctx.dispatch(actions.setTransDrillDown([reduced]));
         } else {
-          ctx.dispatch(setNoTransactions(true));
+          ctx.dispatch(actions.setNoTransactions(true));
         }
       })
       .catch((err: JsonError) => {
-        ctx.dispatch(setTransModalOpen(false));
+        ctx.dispatch(actions.setTransModalOpen(false));
         toast.error("Error fetching transaction: " + err.message);
       })
       .finally(() => setLoadingReceipt(false));
@@ -121,7 +122,7 @@ const TransactionsMobileScreen = ({ onBack, onOpenSearch, cashierName, storeName
 
   const handleCloseReceipt = () => {
     setSelectedOverview(null);
-    ctx.dispatch(setTransDrillDown([]));
+    ctx.dispatch(actions.setTransDrillDown([]));
   };
 
   return (

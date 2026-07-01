@@ -1,4 +1,5 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
+import { useCashiersState } from "./hooks/useCashiersState";
 
 export const useCashierCtx = () => {
   const dispatch = useAppDispatch();
@@ -54,7 +55,7 @@ export const useCashierCtx = () => {
     transDrillDown,
     noTransactions,
     selectedSaleType,
-  } = useAppSelector((state) => state.cashier);
+  } = useCashiersState();
   const { startDate, endDate, type, lastStore, lastGroup } = useAppSelector(
     (state) => state.search,
   );

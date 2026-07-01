@@ -46,6 +46,10 @@ interface SubMarginState {
   weekTwoMargins: SubDeptMargin[];
   weekThreeMargins: SubDeptMargin[];
   weekFourMargins: SubDeptMargin[];
+  weekOneMarginsLY: SubDeptMargin[];
+  weekTwoMarginsLY: SubDeptMargin[];
+  weekThreeMarginsLY: SubDeptMargin[];
+  weekFourMarginsLY: SubDeptMargin[];
   filteredMargins: SubDeptMargin[];
   selectedSubDeptId: number;
   subDeptFitlerText: string;
@@ -106,6 +110,10 @@ const initialState: SubMarginState = {
   weekTwoMargins: [],
   weekThreeMargins: [],
   weekFourMargins: [],
+  weekOneMarginsLY: [],
+  weekTwoMarginsLY: [],
+  weekThreeMarginsLY: [],
+  weekFourMarginsLY: [],
   filteredMargins: [],
   selectedSubDeptId: 0,
   subDeptFitlerText: "",
@@ -197,6 +205,26 @@ const subMarginSlice = createSlice({
           break;
       }
     },
+    setWeekTrendMarginsLY: (
+      state,
+      action: PayloadAction<{ data: SubDeptMargin[]; week: number }>,
+    ) => {
+      const { data, week } = action.payload;
+      switch (week) {
+        case 1:
+          state.weekOneMarginsLY = data;
+          break;
+        case 2:
+          state.weekTwoMarginsLY = data;
+          break;
+        case 3:
+          state.weekThreeMarginsLY = data;
+          break;
+        case 4:
+          state.weekFourMarginsLY = data;
+          break;
+      }
+    },
     setSubDeptFilterText: (state, action: PayloadAction<string>) => {
       state.subDeptFitlerText = action.payload;
     },
@@ -213,6 +241,10 @@ const subMarginSlice = createSlice({
       state.weekTwoMargins = [];
       state.weekThreeMargins = [];
       state.weekFourMargins = [];
+      state.weekOneMarginsLY = [];
+      state.weekTwoMarginsLY = [];
+      state.weekThreeMarginsLY = [];
+      state.weekFourMarginsLY = [];
       state.filteredMargins = [];
       state.selectedSubDeptId = 0;
       state.subDeptFitlerText = "";
@@ -434,6 +466,7 @@ export const {
   setSubDepts,
   setSubDeptFilterText,
   setWeekTrendMargins,
+  setWeekTrendMarginsLY,
   setSelectedWeekDay,
   resetSubMarginState,
   setUpcFilter,

@@ -1,14 +1,7 @@
 import { useCashierCtx } from "..";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getCashierCards } from "../../../api/cashiers";
-import {
-  reQueryStepTwo,
-  setCashierCards,
-  setCashierFilterType,
-  setDataView,
-  setLoadingCashiers,
-  setSelectedStoreCard,
-} from "../../../features/cashiersSlice";
+import { useCashiersActions } from "../hooks/useCashiersActions";
 import type { CashierCardResp, JsonError } from "../../../interfaces";
 import { formatBigNumber, formatCurrency2, formatGoliathDate } from "../../../utils";
 import ExceptionRow from "./ExceptionRow";
@@ -23,6 +16,7 @@ const riskConfig = {
 const StoreOverview = () => {
   const ctx = useCashierCtx();
   const toast = useToast();
+  const actions = useCashiersActions();
 
   const store = ctx.filteredStoreCards.find((s) => s.storeid === ctx.selectedStoreCard)
     ?? ctx.storeCards.find((s) => s.storeid === ctx.selectedStoreCard);
@@ -33,25 +27,25 @@ const StoreOverview = () => {
   const rc = riskConfig[risk] ?? riskConfig["High"];
 
   const getCCards = () => {
-    ctx.dispatch(setCashierFilterType(""));
-    ctx.dispatch(setSelectedStoreCard(store.storeid));
-    ctx.dispatch(reQueryStepTwo());
-    ctx.dispatch(setLoadingCashiers(true));
-    ctx.dispatch(setDataView("cashiers"));
+    ctx.dispatch(actions.setCashierFilterType(""));
+    ctx.dispatch(actions.setSelectedStoreCard(store.storeid));
+    ctx.dispatch(actions.reQueryStepTwo());
+    ctx.dispatch(actions.setLoadingCashiers(true));
+    ctx.dispatch(actions.setDataView("cashiers"));
 
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
     getCashierCards(ctx.miktoUrl, ctx.userid, start, end, 0, store.storeid, 1, ctx.apiKey)
       .then((resp) => {
         const j: CashierCardResp = resp.data;
-        if (j.error === 0) ctx.dispatch(setCashierCards(j.stores));
+        if (j.error === 0) ctx.dispatch(actions.setCashierCards(j.stores));
       })
       .catch((err: JsonError) => {
-        ctx.dispatch(setSelectedStoreCard(0));
-        ctx.dispatch(setDataView("stores"));
+        ctx.dispatch(actions.setSelectedStoreCard(0));
+        ctx.dispatch(actions.setDataView("stores"));
         toast.error("Error fetching cashiers: " + err.message);
       })
-      .finally(() => ctx.dispatch(setLoadingCashiers(false)));
+      .finally(() => ctx.dispatch(actions.setLoadingCashiers(false)));
   };
 
   const exceptions = [

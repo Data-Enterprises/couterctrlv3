@@ -5,15 +5,7 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import { formatSubDate } from ".";
 import { getSubMargins } from "../../../api/subMargins";
 
-import {
-  requerySubDeptMargins,
-  setSelectedSubDeptId,
-  setSubDepts,
-  setLoadingMargins,
-  setSelectedWeek,
-  setWeekTrendMargins,
-  setProcessMobileItemData,
-} from "../../../features/subMarginSlice";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
 
 import type {
   SubMarginsJsonResp,
@@ -32,16 +24,17 @@ const MobileDeptSelect = () => {
   const params = useParams();
   const toast = useToast();
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
 
   const getData = (week: number, id: number) => {
     const subs = [...ctx.subDepts];
-    dispatch(requerySubDeptMargins());
-    dispatch(setSelectedSubDeptId(id));
-    dispatch(setSubDepts(subs));
-    dispatch(setLoadingMargins(true));
+    dispatch(actions.requerySubDeptMargins());
+    dispatch(actions.setSelectedSubDeptId(id));
+    dispatch(actions.setSubDepts(subs));
+    dispatch(actions.setLoadingMargins(true));
 
     // For mobile, just wanting to look at week 1
-    dispatch(setSelectedWeek(1));
+    dispatch(actions.setSelectedWeek(1));
     getSubMargins(
       ctx.url,
       ctx.token,
@@ -90,8 +83,8 @@ const MobileDeptSelect = () => {
 
                     // If all pages have been fetched, we can set the margins for the week
                     if (pages.every((p) => p.fetched)) {
-                      dispatch(setWeekTrendMargins({ data: marginData, week }));
-                      dispatch(setProcessMobileItemData(true));
+                      dispatch(actions.setWeekTrendMargins({ data: marginData, week }));
+                      dispatch(actions.setProcessMobileItemData(true));
                     }
                   }
                 })
@@ -99,8 +92,8 @@ const MobileDeptSelect = () => {
             }
           } else {
             // If we only have one page of data total, we can just set the margins for the week
-            dispatch(setWeekTrendMargins({ data: marginData, week }));
-            dispatch(setProcessMobileItemData(true));
+            dispatch(actions.setWeekTrendMargins({ data: marginData, week }));
+            dispatch(actions.setProcessMobileItemData(true));
           }
         }
       })

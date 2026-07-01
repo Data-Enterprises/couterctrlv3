@@ -1,18 +1,19 @@
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { setTransModalOpen } from "../../../features/cashiersSlice";
+import { useCashiersActions } from "../hooks/useCashiersActions";
 import Modal from "../../../components/Modal";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import Transaction from "./Transaction";
 
 const TransactionModal = () => {
   const dispatch = useAppDispatch();
+  const actions = useCashiersActions();
   const cashier = useAppSelector((state) => state.cashier);
 
   return (
     <Modal
       isOpen={cashier.transModalOpen}
       modalClassName="bg-custom-white lg:w-[77%] xl:w-[38%] relative no-scrollbar max-h-[80vh] overflow-y-auto p-2 rounded-lg shadow-lg"
-      onClose={() => dispatch(setTransModalOpen(false))}
+      onClose={() => dispatch(actions.setTransModalOpen(false))}
     >
       {cashier.noTransactions && (
         <div className="w-full h-full flex items-center justify-center">

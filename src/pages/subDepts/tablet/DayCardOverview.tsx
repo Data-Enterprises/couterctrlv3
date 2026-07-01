@@ -1,7 +1,7 @@
 import { type BarData } from "../display/widgets";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { useAppDispatch } from "../../../hooks";
-import { setSelectedWeekDay, setViewTabletCards } from "../../../features/subMarginSlice";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
 
 interface DayCardProps {
   data: BarData;
@@ -9,6 +9,7 @@ interface DayCardProps {
 }
 const DayCardOverview = ({ data, selectedWeekDay }: DayCardProps) => {
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const activeStyle =
     data.date === selectedWeekDay
       ? "bg-[rgb(30,45,80)]/75 text-custom-white"
@@ -16,10 +17,10 @@ const DayCardOverview = ({ data, selectedWeekDay }: DayCardProps) => {
 
   const handleCardClick = (date: string) => {
     if (date !== selectedWeekDay) {
-      dispatch(setSelectedWeekDay(date));
-      dispatch(setViewTabletCards(false));
+      dispatch(actions.setSelectedWeekDay(date));
+      dispatch(actions.setViewTabletCards(false));
     } else {
-      dispatch(setSelectedWeekDay(""));
+      dispatch(actions.setSelectedWeekDay(""));
     }
   };
 

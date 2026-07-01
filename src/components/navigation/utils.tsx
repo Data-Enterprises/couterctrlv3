@@ -30,6 +30,7 @@ export type Navigation = {
   mobile: boolean;
   userLevels: string[];
   isHovering: boolean;
+  isVisible: boolean;
 };
 
 /**
@@ -50,6 +51,7 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userLevels: ["9"],
     isHovering: false,
+    isVisible: true,
   },
   {
     name: "Sales",
@@ -60,6 +62,7 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userLevels: ["*"],
     isHovering: false,
+    isVisible: true,
   },
   {
     name: "Team",
@@ -70,6 +73,7 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userLevels: ["5", "7", "8", "9"],
     isHovering: false,
+    isVisible: true,
   },
   {
     name: "Loss Prevention",
@@ -80,6 +84,7 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userLevels: ["*"],
     isHovering: false,
+    isVisible: true,
   },
   {
     name: "User Groups",
@@ -90,6 +95,7 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userLevels: ["*"],
     isHovering: false,
+    isVisible: true,
   },
   {
     name: "Upc List",
@@ -100,6 +106,7 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userLevels: ["*"],
     isHovering: false,
+    isVisible: true,
   },
   {
     name: "Item Lookup",
@@ -110,6 +117,7 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userLevels: ["*"],
     isHovering: false,
+    isVisible: true,
   },
   {
     name: "Forecasting",
@@ -120,6 +128,7 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userLevels: ["*"],
     isHovering: false,
+    isVisible: true,
   },
   {
     name: "Quicksight",
@@ -130,6 +139,7 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userLevels: ["*"],
     isHovering: false,
+    isVisible: true,
   },
   {
     name: "Receivers",
@@ -140,6 +150,7 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userLevels: ["*"],
     isHovering: false,
+    isVisible: true,
   },
   {
     name: "Coupons",
@@ -150,6 +161,7 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userLevels: ["*"],
     isHovering: false,
+    isVisible: true,
   },
   {
     name: "Sub Dept Margins",
@@ -160,6 +172,7 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userLevels: ["*"],
     isHovering: false,
+    isVisible: true,
   },
   {
     name: "Cashiers",
@@ -170,6 +183,7 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userLevels: ["*"],
     isHovering: false,
+    isVisible: true,
   },
   {
     name: "Orders",
@@ -180,6 +194,7 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userLevels: ["*"],
     isHovering: false,
+    isVisible: true,
   },
   {
     name: "Admin",
@@ -190,6 +205,7 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userLevels: ["9"],
     isHovering: false,
+    isVisible: true,
   },
   // This fake link is just to show that user types can be restricted
   {
@@ -201,6 +217,7 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userLevels: ["9999", "22"],
     isHovering: false,
+    isVisible: true,
   },
 ];
 
@@ -215,35 +232,145 @@ export const categories: NavCategory[] = [
     name: "Performance",
     icon: ArrowTrendingUpIcon,
     pages: [
-      { name: "Sales",            href: "sales",           icon: SalesIconV2,   mobile: true,  children: [], childOpen: false, userLevels: ["*"],              isHovering: false },
-      { name: "Loss Prevention",  href: "loss-prevention", icon: CashierIcon,   mobile: true,  children: [], childOpen: false, userLevels: ["*"],              isHovering: false },
+      {
+        name: "Sales",
+        href: "sales",
+        icon: SalesIconV2,
+        mobile: true,
+        children: [],
+        childOpen: false,
+        userLevels: ["*"],
+        isHovering: false,
+        isVisible: true,
+      },
+      {
+        name: "Loss Prevention",
+        href: "loss-prevention",
+        icon: CashierIcon,
+        mobile: true,
+        children: [],
+        childOpen: false,
+        userLevels: ["*"],
+        isHovering: false,
+        isVisible: true,
+      },
     ],
   },
   {
     name: "Analytics",
     icon: ChartBarSquareIcon,
     pages: [
-      { name: "Forecasting",      href: "forecasting",     icon: ArrowTrendingUpIcon,  mobile: false, children: [], childOpen: false, userLevels: ["9"],      isHovering: false },
-      { name: "Sub Dept Margins", href: "sub-dept-margins",icon: CurrencyDollarIcon,   mobile: false, children: [], childOpen: false, userLevels: ["9"],      isHovering: false },
+      {
+        name: "Forecasting",
+        href: "forecasting",
+        icon: ArrowTrendingUpIcon,
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: ["*"],
+        isHovering: false,
+        isVisible: false,
+      },
+      {
+        name: "Sub Dept Margins",
+        href: "sub-dept-margins",
+        icon: CurrencyDollarIcon,
+        mobile: true,
+        children: [],
+        childOpen: false,
+        userLevels: ["*"],
+        isHovering: false,
+        isVisible: true,
+      },
     ],
   },
   {
     name: "Data",
     icon: CircleStackIcon,
     pages: [
-      { name: "Orders",           href: "orders",          icon: DocumentCheckIcon,       mobile: true,  children: [], childOpen: false, userLevels: ["*"],   isHovering: false },
-      { name: "Receivers",        href: "receivers",       icon: ClipboardDocumentCheckIcon, mobile: true, children: [], childOpen: false, userLevels: ["9"], isHovering: false },
-      { name: "Coupons",          href: "coupons",         icon: CouponIcon,              mobile: true,  children: [], childOpen: false, userLevels: ["9"],   isHovering: false },
-      { name: "Upc List",         href: "upc-upload",      icon: UpcListIcon,             mobile: false, children: [], childOpen: false, userLevels: ["9"],   isHovering: false },
+      {
+        name: "Orders",
+        href: "orders",
+        icon: DocumentCheckIcon,
+        mobile: true,
+        children: [],
+        childOpen: false,
+        userLevels: ["*"],
+        isHovering: false,
+        isVisible: true,
+      },
+      {
+        name: "Receivers",
+        href: "receivers",
+        icon: ClipboardDocumentCheckIcon,
+        mobile: true,
+        children: [],
+        childOpen: false,
+        userLevels: ["9"],
+        isHovering: false,
+        isVisible: true,
+      },
+      {
+        name: "Coupons",
+        href: "coupons",
+        icon: CouponIcon,
+        mobile: true,
+        children: [],
+        childOpen: false,
+        userLevels: ["9"],
+        isHovering: false,
+        isVisible: true,
+      },
+      {
+        name: "Upc List",
+        href: "upc-upload",
+        icon: UpcListIcon,
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: ["9"],
+        isHovering: false,
+        isVisible: false,
+      },
     ],
   },
   {
     name: "Config",
     icon: Cog6ToothIcon,
     pages: [
-      { name: "User Groups",      href: "groups",          icon: GroupsIcon,    mobile: true,  children: [], childOpen: false, userLevels: ["*"],              isHovering: false },
-      { name: "Team",             href: "team",            icon: UsersIcon,     mobile: false, children: [], childOpen: false, userLevels: ["5", "7", "8", "9"], isHovering: false },
-      { name: "Admin",            href: "admin",           icon: KeyIcon,       mobile: false, children: [], childOpen: false, userLevels: ["9"],              isHovering: false },
+      {
+        name: "User Groups",
+        href: "groups",
+        icon: GroupsIcon,
+        mobile: true,
+        children: [],
+        childOpen: false,
+        userLevels: ["*"],
+        isHovering: false,
+        isVisible: false,
+      },
+      {
+        name: "Team",
+        href: "team",
+        icon: UsersIcon,
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: ["5", "7", "8", "9"],
+        isHovering: false,
+        isVisible: false,
+      },
+      {
+        name: "Admin",
+        href: "admin",
+        icon: KeyIcon,
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: ["9"],
+        isHovering: false,
+        isVisible: false,
+      },
     ],
   },
 ];

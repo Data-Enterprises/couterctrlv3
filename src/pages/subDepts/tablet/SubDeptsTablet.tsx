@@ -1,17 +1,13 @@
 import { useAppDispatch } from "../../../hooks";
 import { useSubMarginCtx } from "../hooks";
-import {
-  requerySubDeptMargins,
-  setSelectedSubDeptId,
-  setSubDeptFilterText,
-  setSubDepts,
-} from "../../../features/subMarginSlice";
+import { useSubMarginActions } from "../hooks/useSubMarginActions";
 
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import Input from "../../../components/inputs/Input";
 
 const SubDeptsTablet = () => {
   const dispatch = useAppDispatch();
+  const actions = useSubMarginActions();
   const ctx = useSubMarginCtx();
 
   const filteredSubDepts = ctx.subDepts.filter((sub) =>
@@ -19,14 +15,14 @@ const SubDeptsTablet = () => {
   );
 
   const handleFilterTextChange = (x: string) => {
-    dispatch(setSubDeptFilterText(x));
+    dispatch(actions.setSubDeptFilterText(x));
   };
 
   const handleSubDeptClick = (id: number) => {
     const subs = [...ctx.subDepts];
-    dispatch(requerySubDeptMargins());
-    dispatch(setSelectedSubDeptId(id));
-    dispatch(setSubDepts(subs));
+    dispatch(actions.requerySubDeptMargins());
+    dispatch(actions.setSelectedSubDeptId(id));
+    dispatch(actions.setSubDepts(subs));
   };
 
   if (ctx.loadingSubDepts) {

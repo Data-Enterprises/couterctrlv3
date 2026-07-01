@@ -1,18 +1,16 @@
 import { useCashierCtx } from "..";
-import {
-  setStoreNameFilter,
-  setCashierNameFilter,
-} from "../../../features/cashiersSlice";
+import { useCashiersActions } from "../hooks/useCashiersActions";
 import Input from "../../../components/inputs/Input";
 
 const CashierTextFilter = () => {
   const ctx = useCashierCtx();
+  const actions = useCashiersActions();
 
   const handleTextChange = (x: string) => {
     if (ctx.cashierFilterType === "cashier_name") {
-      ctx.dispatch(setCashierNameFilter(x));
+      ctx.dispatch(actions.setCashierNameFilter(x));
     } else if (ctx.cashierFilterType === "store_name") {
-      ctx.dispatch(setStoreNameFilter(x));
+      ctx.dispatch(actions.setStoreNameFilter(x));
     }
   };
 

@@ -1,12 +1,8 @@
 import { useEffect } from "react";
 import { useCashierCtx } from "..";
 import { useAppDispatch } from "../../../hooks";
-import {
-  setApplyFilters,
-  setFilteredStoreCards,
-  setSelectedStoreCard,
-  type NumberFilter,
-} from "../../../features/cashiersSlice";
+import { type NumberFilter } from "../../../features/cashiersSlice";
+import { useCashiersActions } from "../hooks/useCashiersActions";
 import type { ExceptionType, StoreCard } from "../../../interfaces";
 import { MagnifyingGlassIcon, ExclamationTriangleIcon, ExclamationCircleIcon, CheckCircleIcon } from "@heroicons/react/20/solid";
 
@@ -35,6 +31,7 @@ const SELECTED_BG: Record<Tier, string> = {
 const StoresView = ({ onNewSearch }: Props) => {
   const ctx = useCashierCtx();
   const dispatch = useAppDispatch();
+  const actions = useCashiersActions();
 
   useEffect(() => {
     if (ctx.applyFilters) {
@@ -80,8 +77,8 @@ const StoresView = ({ onNewSearch }: Props) => {
           (!qtyTypes.includes("Voided") || !qtyOperator || handleThreshold(card, "Voided", totalQty, "qty"))
         );
       });
-      dispatch(setFilteredStoreCards(filtered));
-      dispatch(setApplyFilters(false));
+      dispatch(actions.setFilteredStoreCards(filtered));
+      dispatch(actions.setApplyFilters(false));
     }
   }, [ctx.applyFilters, ctx.storeNameFilterApplied, ctx.totalSalesFilterApplied, ctx.totalQtyFilterApplied, ctx.riskLevelFilterApplied, ctx.exceptionTierFilterApplied]);
 
@@ -96,7 +93,7 @@ const StoresView = ({ onNewSearch }: Props) => {
     const isSel = ctx.selectedStoreCard === store.storeid;
     return (
       <button
-        onClick={() => dispatch(setSelectedStoreCard(store.storeid))}
+        onClick={() => dispatch(actions.setSelectedStoreCard(store.storeid))}
         className="w-full flex flex-col px-3 py-2 border-b border-gray-100 transition-colors text-left hover:bg-gray-50"
         style={isSel ? { boxShadow: `inset 0 0 8px ${SHADOW_COLOR[tier]}`, background: SELECTED_BG[tier] } : undefined}
       >
