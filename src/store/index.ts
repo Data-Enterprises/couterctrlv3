@@ -28,6 +28,7 @@ import adminReducer from "../features/adminSlice.ts";
 import baseGroupReducer from "../features/baseGroupSlice.ts";
 import companyReducer from "../features/companySlice.ts";
 import subMarginReducer from "../features/subMarginSlice.ts";
+import subMarginLegacyReducer from "../features/subMarginLegacySlice";
 import cashiersReducer from '../features/cashiersSlice.ts';
 import itemScanReducer from "../features/itemScanSlice.ts";
 import mobileSalesReducer from "../features/salesMobileSlice.ts";
@@ -70,6 +71,7 @@ export const setupStore = () =>
       baseGroup: baseGroupReducer,
       company: companyReducer,
       subMargin: subMarginReducer,
+      subMarginLegacy: subMarginLegacyReducer,
       cashier: cashiersReducer,
       itemScan: itemScanReducer,
       salesMobile: mobileSalesReducer,
