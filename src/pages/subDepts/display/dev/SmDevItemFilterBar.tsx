@@ -64,7 +64,7 @@ const SmDevItemFilterBar = () => {
       <span className="text-[9px] text-content/40 uppercase tracking-wide font-medium mr-0.5">
         Filter
       </span>
-      {FILTER_TYPES.map(({ type, label }) => {
+      {FILTER_TYPES.map(({ type }) => {
         const active = isActive(type);
         return (
           <button

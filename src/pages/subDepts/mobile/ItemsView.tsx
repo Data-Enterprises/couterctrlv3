@@ -148,7 +148,7 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
   const subDept = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId);
 
   const handleUpcSearchText = (value: string) => {
-    dispatch(setUpcSearch(value));
+    dispatch(actions.setUpcSearch(value));
   };
 
   const activeSortStyle = (option: SortOption) => {

@@ -110,7 +110,7 @@ const ScanView = ({ dates }: ScanViewProps) => {
   const setWeekDay = (dteStr: string) => {
     const weekDay = dteStr === "" ? "" : fullDate(dteStr);
     if (dteStr === "") {
-      dispatch(setSelectedWeekDay(""));
+      dispatch(actions.setSelectedWeekDay(""));
     } else {
       dispatch(actions.setSelectedWeekDay(weekDay));
     }
