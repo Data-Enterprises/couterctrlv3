@@ -11,8 +11,8 @@ import SalesGrid from "./widgets/SalesGrid";
 import SalesBar from "./widgets/SalesBar";
 import ItemsGrid from "./widgets/ItemsGrid";
 import ItemsGridFilters from "./widgets/ItemsGridFilters";
-import SubDeptCostGrid from "./widgets/SubDeptCostGrid";
-import CostGridFilters from "./widgets/CostGridFilters";
+import SubDeptCostGrid from "./widgets/SubDeptCostGridLegacy";
+import CostGridFilters from "./widgets/CostGridFiltersLegacy";
 import AllWeeksTrend from "./allWeeks/AllWeeksTrend";
 
 const SubMarginDisplay = () => {
