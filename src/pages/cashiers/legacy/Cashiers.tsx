@@ -12,7 +12,7 @@ import {
   setLoadingStores,
   setNoStoresFound,
   setStoreCards,
-} from "../../../features/cashiersSlice";
+} from "../../../features/cashiersLegacySlice";
 
 import DatePickers from "../../../components/datePickers/DatePickers";
 import StorePicker from "../../../components/storePicker/StorePicker";

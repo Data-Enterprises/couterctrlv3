@@ -11,7 +11,7 @@ const TitleBarLegacy = () => {
   const user = useAppSelector((state) => state.user);
   const nav = useAppSelector((state) => state.nav);
   const location = useLocation();
-  const devPages = ["sales", "loss-prevention", "orders", "receivers", "coupons", "sub-dept-margins"];
+  const devPages = ["sales", "loss-prevention", "orders", "receivers", "coupons"];
   const showToggle = devPages.some((p) => location.pathname.includes(p));
 
   const toggleNav = () => {

@@ -11,7 +11,7 @@ interface TransactionProps {
 const Transaction = ({ trans }: TransactionProps) => {
   const toast = useToast();
   const context = useAppSelector((state) => state.app);
-  const cashier = useAppSelector((state) => state.cashier);
+  const cashier = useAppSelector((state) => state.cashierLegacy);
   const extractSaleId = (saleId: string) => {
     return saleId.split("-")[1];
   };
