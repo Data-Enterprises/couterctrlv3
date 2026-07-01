@@ -11,7 +11,7 @@ const LoadingIndicatorLegacy = ({
 }: Props) => {
   return (
     <div data-testid="loading-indicator" className={`loading-indicator-legacy ${className}`}>
-      <span className="absolute mt-5 text-center w-full font-medium">{message}</span>
+      <span className="absolute mt-5 text-center text-[13px] w-full font-medium">{message}</span>
     </div>
   );
 };
