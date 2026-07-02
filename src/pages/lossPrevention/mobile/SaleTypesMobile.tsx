@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getCashierDetails } from "../../../api/lossPrevention";
 import { useLPState } from "../hooks/useLPState";
@@ -15,7 +15,6 @@ const SaleTypesMobile = () => {
   const dispatch = useAppDispatch();
   const cashier = useLPState();
   const actions = useLPActions();
-  const { startDate, endDate } = useAppSelector((state) => state.search);
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const submitDescription = (description: string) => {
@@ -32,8 +31,8 @@ const SaleTypesMobile = () => {
     getCashierDetails(
       params.url,
       params.token,
-      params.lpStart,
-      params.lpEnd,
+      params.start,
+      params.end,
       params.useGroups,
       params.searchValue,
       params.singleStore,
@@ -55,9 +54,6 @@ const SaleTypesMobile = () => {
         toast.error("Error fetching cashier details: " + err.message),
       )
       .finally(() => dispatch(actions.setLoadingCashierDetails(false)));
-    getCashierDetails(params.url, params.token, params.lpBaseStart, params.lpBaseEnd, params.useGroups, params.searchValue, params.singleStore, ["description"], description)
-      .then((r) => { if (r.data.error === 0) dispatch(actions.setBaselineDetails(r.data.sales)); })
-      .catch(() => {});
   };
 
   const handlePanelClick = (saleType: string) => {
@@ -83,8 +79,8 @@ const SaleTypesMobile = () => {
     getCashierDetails(
       params.url,
       params.token,
-      params.lpStart,
-      params.lpEnd,
+      params.start,
+      params.end,
       params.useGroups,
       params.searchValue,
       params.singleStore,
@@ -109,9 +105,6 @@ const SaleTypesMobile = () => {
         toast.error("Error fetching cashier details: " + err.message),
       )
       .finally(() => dispatch(actions.setLoadingCashierDetails(false)));
-    getCashierDetails(params.url, params.token, params.lpBaseStart, params.lpBaseEnd, params.useGroups, params.searchValue, params.singleStore, [saleType])
-      .then((r) => { if (r.data.error === 0) dispatch(actions.setBaselineDetails(r.data.sales)); })
-      .catch(() => {});
   };
 
   return (
