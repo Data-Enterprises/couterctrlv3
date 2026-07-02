@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAppDispatch } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getCashierDetails } from "../../../api/lossPrevention";
 import { useLPState } from "../hooks/useLPState";
@@ -15,6 +15,7 @@ const SaleTypesMobile = () => {
   const dispatch = useAppDispatch();
   const cashier = useLPState();
   const actions = useLPActions();
+  const search = useAppSelector((state) => state.search);
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const submitDescription = (description: string) => {
@@ -120,7 +121,7 @@ const SaleTypesMobile = () => {
       />
       <div className="rounded-t-lg text-[11px] px-2 py-0.5 font-medium flex justify-between items-center">
         <div>Select Exception</div>
-        <div>{startDate} - {endDate}</div>
+        <div>{search.startDate} - {search.endDate}</div>
       </div>
       <div className="grid grid-cols-2 h-[1.5px] mx-2">
         <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
