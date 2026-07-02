@@ -1,28 +1,28 @@
 import { useMemo } from "react";
-import { useAppDispatch } from "../../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
 import { formatDate } from "../widgets";
-import { setDates } from "../..";
+import { setDates, calculateCogs } from "../..";
 import type { SubDeptMargin } from "../../../../interfaces";
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const selectedStyle = { boxShadow: "inset 0 -4px 0 rgba(30, 42, 74, 0.5)" };
 
-const netSales = (rows: SubDeptMargin[]) =>
-  rows.reduce((acc, m) => acc + (m.total_sales - m.total_tax), 0);
+const agg = (rows: SubDeptMargin[]) => {
+  const sales = rows.reduce((acc, m) => acc + (m.total_sales - m.total_tax), 0);
+  const cogs = rows.reduce((acc, m) => acc + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight), 0);
+  return { sales, marginPct: sales > 0 ? ((sales - cogs) / sales) * 100 : 0 };
+};
 
-const DeltaBadge = ({ tw, ly }: { tw: number; ly: number }) => {
-  if (!ly) return <span className="text-[9px] font-semibold mt-0.5 text-content/25">—</span>;
-  const pct = ((tw - ly) / Math.abs(ly)) * 100;
-  const isUp = pct >= 0;
+const DeltaBadge = ({ tyVal, lyVal, unit }: { tyVal: number; lyVal: number; unit: "pct" | "pts" }) => {
+  if (!lyVal && unit === "pct") return <span className="text-[9px] font-semibold mt-0.5 text-content/25">—</span>;
+  const delta = unit === "pts" ? tyVal - lyVal : ((tyVal - lyVal) / Math.abs(lyVal)) * 100;
+  const isUp = delta >= 0;
   return (
-    <span
-      className="text-[9px] font-bold mt-0.5"
-      style={{ color: isUp ? "#16a34a" : "#dc2626" }}
-    >
-      {isUp ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}%
+    <span className="text-[9px] font-bold mt-0.5" style={{ color: isUp ? "#16a34a" : "#dc2626" }}>
+      {isUp ? "▲" : "▼"} {Math.abs(delta).toFixed(1)}{unit === "pts" ? " pts" : "%"}
     </span>
   );
 };
@@ -31,49 +31,42 @@ const SmDevDaySidebar = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
+  const gradingMetric = useAppSelector((s) => s.subMargin.gradingMetric);
 
   const dates = useMemo(
-    () =>
-      Array.from(
-        new Set(ctx.margins.map((m) => m.sale_date.split("T")[0])),
-      ).sort((a, b) => new Date(a).getTime() - new Date(b).getTime()),
+    () => Array.from(new Set(ctx.margins.map((m) => m.sale_date.split("T")[0]))).sort((a, b) => new Date(a).getTime() - new Date(b).getTime()),
     [ctx.margins],
   );
 
-  // LY margins for the currently selected week
   const lyMargins = useMemo(() => {
     switch (ctx.selectedWeek) {
       case 1: return ctx.weekOneMarginsLY;
       case 2: return ctx.weekTwoMarginsLY;
       case 3: return ctx.weekThreeMarginsLY;
       case 4: return ctx.weekFourMarginsLY;
-      case 5: return [
-        ...ctx.weekOneMarginsLY,
-        ...ctx.weekTwoMarginsLY,
-        ...ctx.weekThreeMarginsLY,
-        ...ctx.weekFourMarginsLY,
-      ];
+      case 5: return [...ctx.weekOneMarginsLY, ...ctx.weekTwoMarginsLY, ...ctx.weekThreeMarginsLY, ...ctx.weekFourMarginsLY];
       default: return [];
     }
-  }, [
-    ctx.selectedWeek,
-    ctx.weekOneMarginsLY,
-    ctx.weekTwoMarginsLY,
-    ctx.weekThreeMarginsLY,
-    ctx.weekFourMarginsLY,
-  ]);
+  }, [ctx.selectedWeek, ctx.weekOneMarginsLY, ctx.weekTwoMarginsLY, ctx.weekThreeMarginsLY, ctx.weekFourMarginsLY]);
 
-  // Build a lookup: LY ISO date → net sales for that day
+  // LY lookup by date → { sales, marginPct }
   const lyByDate = useMemo(() => {
-    const map: Record<string, number> = {};
+    const map: Record<string, { sales: number; cogs: number }> = {};
     for (const m of lyMargins) {
       const d = m.sale_date.split("T")[0];
-      map[d] = (map[d] ?? 0) + (m.total_sales - m.total_tax);
+      if (!map[d]) map[d] = { sales: 0, cogs: 0 };
+      map[d].sales += m.total_sales - m.total_tax;
+      map[d].cogs += calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight);
     }
-    return map;
+    const result: Record<string, { sales: number; marginPct: number }> = {};
+    for (const [d, v] of Object.entries(map)) {
+      result[d] = { sales: v.sales, marginPct: v.sales > 0 ? ((v.sales - v.cogs) / v.sales) * 100 : 0 };
+    }
+    return result;
   }, [lyMargins]);
 
   const allSelected = ctx.selectedWeekDay === "";
+  const unit = gradingMetric === "margin" ? "pts" : "pct";
 
   const handleDayClick = (isoDate: string) => {
     const formatted = formatDate(isoDate);
@@ -83,13 +76,10 @@ const SmDevDaySidebar = () => {
   const rangeLabel =
     dates.length > 1
       ? `${formatDate(dates[0])} – ${formatDate(dates[dates.length - 1])}`
-      : dates.length === 1
-        ? formatDate(dates[0])
-        : "";
+      : dates.length === 1 ? formatDate(dates[0]) : "";
 
-  // All-week totals
-  const twTotal = useMemo(() => netSales(ctx.margins), [ctx.margins]);
-  const lyTotal = useMemo(() => netSales(lyMargins), [lyMargins]);
+  const twAll = useMemo(() => agg(ctx.margins), [ctx.margins]);
+  const lyAll = useMemo(() => agg(lyMargins), [lyMargins]);
 
   return (
     <div className="flex border-b border-gray-100">
@@ -103,7 +93,11 @@ const SmDevDaySidebar = () => {
       >
         <span className="text-[10px] font-semibold text-content">All week</span>
         <span className="text-[8px] mt-0.5 text-content/35">{rangeLabel}</span>
-        <DeltaBadge tw={twTotal} ly={lyTotal} />
+        <DeltaBadge
+          tyVal={unit === "pts" ? twAll.marginPct : twAll.sales}
+          lyVal={unit === "pts" ? lyAll.marginPct : lyAll.sales}
+          unit={unit}
+        />
       </div>
 
       {/* Individual days */}
@@ -112,11 +106,10 @@ const SmDevDaySidebar = () => {
         const isSelected = ctx.selectedWeekDay === formatted;
         const [year, month, day] = isoDate.split("-").map(Number);
         const dow = new Date(year, month - 1, day).getDay();
-
-        // LY date is 364 days before this TW date
         const lyIsoDate = setDates(new Date(isoDate), 364);
-        const twDaySales = netSales(ctx.margins.filter((m) => m.sale_date.split("T")[0] === isoDate));
-        const lyDaySales = lyByDate[lyIsoDate] ?? 0;
+
+        const twDay = agg(ctx.margins.filter((m) => m.sale_date.split("T")[0] === isoDate));
+        const lyDay = lyByDate[lyIsoDate] ?? { sales: 0, marginPct: 0 };
 
         return (
           <div
@@ -129,7 +122,11 @@ const SmDevDaySidebar = () => {
           >
             <span className="text-[10px] font-semibold text-content">{DAY_LABELS[dow]}</span>
             <span className="text-[8px] mt-0.5 text-content/35">{`${month}/${day}`}</span>
-            <DeltaBadge tw={twDaySales} ly={lyDaySales} />
+            <DeltaBadge
+              tyVal={unit === "pts" ? twDay.marginPct : twDay.sales}
+              lyVal={unit === "pts" ? lyDay.marginPct : lyDay.sales}
+              unit={unit}
+            />
           </div>
         );
       })}
