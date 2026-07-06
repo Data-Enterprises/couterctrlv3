@@ -44,7 +44,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const { tab, selectedDate, rawSubs, rawLWSubs, rawLYSubs, rawHourly, rawLWHourly, rawLYHourly, subDeptThreshold, hourlyThreshold } = useAppSelector((state) => state.salesLedger);
+  const { tab, selectedDate, rawSubs, rawLWSubs, rawLYSubs, rawHourly, rawLWHourly, rawLYHourly, subDeptThreshold, hourlyThreshold, exportSubDeptItems, exportSubDeptName } = useAppSelector((state) => state.salesLedger);
 
   const activeThreshold = tab === "subdept" ? subDeptThreshold : hourlyThreshold;
 
@@ -179,6 +179,8 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           rawLWHourly={rawLWHourly}
           rawLYHourly={rawLYHourly}
           days={selection.days}
+          subDeptItems={exportSubDeptItems}
+          subDeptName={exportSubDeptName}
         />
       )}
 

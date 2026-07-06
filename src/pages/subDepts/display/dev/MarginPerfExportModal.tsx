@@ -1,12 +1,11 @@
 import { useState, useMemo } from "react";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type { SubDeptMargin } from "../../../../interfaces";
-import type { GradingMetric } from "../../../../features/subMarginSlice";
 import { calculateCogs } from "../..";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type ExportPreset = "items" | "items_vs_ly" | "cost" | "nocost" | "week_trend";
+type ExportPreset = "items" | "items_vs_ly" | "cost" | "nocost";
 type ModalMode = "presets" | "custom";
 type CustomSource = "ty" | "ly";
 type AggFn = "sum" | "avg" | "min" | "max" | "count";
@@ -24,15 +23,6 @@ interface MarginPerfExportModalProps {
   dateRange: string;
   tyMargins: SubDeptMargin[];
   lyMargins: SubDeptMargin[];
-  weekOneMargins: SubDeptMargin[];
-  weekTwoMargins: SubDeptMargin[];
-  weekThreeMargins: SubDeptMargin[];
-  weekFourMargins: SubDeptMargin[];
-  weekOneMarginsLY: SubDeptMargin[];
-  weekTwoMarginsLY: SubDeptMargin[];
-  weekThreeMarginsLY: SubDeptMargin[];
-  weekFourMarginsLY: SubDeptMargin[];
-  gradingMetric: GradingMetric;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -165,26 +155,6 @@ const buildNoCostCsv = (margins: SubDeptMargin[]) => {
   return rowsToCsv(headers, rows);
 };
 
-const buildWeekTrendCsv = (
-  weeks: SubDeptMargin[][],
-  weeksLY: SubDeptMargin[][],
-) => {
-  const headers = ["Week", "TY Net Sales", "TY Margin %", "LY Net Sales", "LY Margin %", "Sales Δ%", "Margin Pts Δ"];
-  const calcWeek = (src: SubDeptMargin[]) => {
-    const sales = src.reduce((acc, m) => acc + netSales(m), 0);
-    const cogs = src.reduce((acc, m) => acc + itemCogs(m), 0);
-    return { sales, marginPct: sales > 0 ? ((sales - cogs) / sales) * 100 : 0 };
-  };
-  const rows = weeks.map((wk, i) => {
-    const ty = calcWeek(wk);
-    const ly = calcWeek(weeksLY[i]);
-    const salesDelta = ly.sales > 0 ? ((ty.sales - ly.sales) / Math.abs(ly.sales)) * 100 : 0;
-    const ptsDelta = ty.marginPct - ly.marginPct;
-    return [`Week ${i + 1}`, fmtNum(ty.sales), fmtNum(ty.marginPct), fmtNum(ly.sales), fmtNum(ly.marginPct), fmtNum(salesDelta), fmtNum(ptsDelta)];
-  });
-  return rowsToCsv(headers, rows);
-};
-
 // ─── Aggregation engine ───────────────────────────────────────────────────────
 
 function applyAgg(values: number[], fn: AggFn): number {
@@ -251,18 +221,10 @@ const MarginPerfExportModal = ({
   dateRange,
   tyMargins,
   lyMargins,
-  weekOneMargins,
-  weekTwoMargins,
-  weekThreeMargins,
-  weekFourMargins,
-  weekOneMarginsLY,
-  weekTwoMarginsLY,
-  weekThreeMarginsLY,
-  weekFourMarginsLY,
 }: MarginPerfExportModalProps) => {
 
   const [mode, setMode] = useState<ModalMode>("presets");
-  const [selected, setSelected] = useState<Set<ExportPreset>>(new Set(["items", "week_trend"]));
+  const [selected, setSelected] = useState<Set<ExportPreset>>(new Set(["items"]));
   const [source, setSource] = useState<CustomSource>("ty");
   const [groupBy, setGroupBy] = useState<Set<string>>(new Set(["product_code", "product_description"]));
   const [metrics, setMetrics] = useState<Map<string, MetricSelection>>(
@@ -362,7 +324,6 @@ const MarginPerfExportModal = ({
     { id: "items_vs_ly", label: "Items vs Last Year",  description: "Side-by-side TY vs LY per item with margin pts Δ" },
     { id: "cost",        label: "Cost Analysis",       description: "Cost, net cost, case size, and COGS breakdown per item" },
     { id: "nocost",      label: "No Cost Items",       description: "Items flagged for missing cost data" },
-    { id: "week_trend",  label: "Week Trend",          description: "4-week TY vs LY net sales and margin comparison" },
   ];
 
   const safeName = (storeName + "_" + subDeptName).replace(/[^a-z0-9]/gi, "_");
@@ -373,10 +334,6 @@ const MarginPerfExportModal = ({
     if (selected.has("items_vs_ly")) sections.push(`Items vs Last Year\n${buildItemsVsLyCsv(tyMargins, lyMargins)}`);
     if (selected.has("cost"))        sections.push(`Cost Analysis\n${buildCostCsv(tyMargins)}`);
     if (selected.has("nocost"))      sections.push(`No Cost Items\n${buildNoCostCsv(tyMargins)}`);
-    if (selected.has("week_trend"))  sections.push(`Week Trend\n${buildWeekTrendCsv(
-      [weekOneMargins, weekTwoMargins, weekThreeMargins, weekFourMargins],
-      [weekOneMarginsLY, weekTwoMarginsLY, weekThreeMarginsLY, weekFourMarginsLY],
-    )}`);
     if (!sections.length) return;
     downloadCsv(sections.join("\n\n"), `${safeName}_${dateRange.replace(/\s/g, "")}.csv`);
     onClose();

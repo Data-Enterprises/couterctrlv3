@@ -1,7 +1,7 @@
 import { useSalesState } from "../hooks/useSalesState";
 ﻿import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { setItemThreshold } from "../../../features/salesLedgerSlice";
+import { setItemThreshold, setExportSubDeptName, setExportSubDeptItems } from "../../../features/salesLedgerSlice";
 import type { GradingMetric } from "../../../features/salesLedgerSlice";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import { formatCurrency2, addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../utils";
@@ -346,7 +346,16 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel, storeId, sele
   const selected = selectedId !== null ? rows.find((r) => r.id === selectedId) ?? null : null;
   const cta = selected ? getCta(selected, threshold) : null;
 
-  const itemsWithSev = items.map((item) => ({ ...item, sev: itemSeverity(item, itemThreshold, gradingMetric) }));
+  const itemsWithSev = useMemo(
+    () => items.map((item) => ({ ...item, sev: itemSeverity(item, itemThreshold, gradingMetric) })),
+    [items, itemThreshold, gradingMetric],
+  );
+
+  useEffect(() => {
+    dispatch(setExportSubDeptName(selected?.desc ?? ""));
+    dispatch(setExportSubDeptItems(selected ? itemsWithSev : []));
+  }, [itemsWithSev, selectedId]);
+
   const itemCritCount = itemsWithSev.filter((i) => i.sev === "critical").length;
   const itemWatchCount = itemsWithSev.filter((i) => i.sev === "watch").length;
   const itemHealthyCount = itemsWithSev.filter((i) => i.sev === "healthy").length;

@@ -162,6 +162,16 @@ const TitleBar = () => {
   const nav = useAppSelector((state) => state.nav);
 
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const categoryCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleCategoryEnter = (name: string) => {
+    if (categoryCloseTimer.current) clearTimeout(categoryCloseTimer.current);
+    setOpenCategory(name);
+  };
+
+  const handleCategoryLeave = () => {
+    categoryCloseTimer.current = setTimeout(() => setOpenCategory(null), 80);
+  };
   const [avatarOpen, setAvatarOpen] = useState(false);
 
   const currentPath = location.pathname.replace(/^\//, "");
@@ -313,8 +323,8 @@ const TitleBar = () => {
                 <div
                   key={cat.name}
                   className="relative flex items-stretch"
-                  onMouseEnter={() => setOpenCategory(cat.name)}
-                  onMouseLeave={() => setOpenCategory(null)}
+                  onMouseEnter={() => handleCategoryEnter(cat.name)}
+                  onMouseLeave={handleCategoryLeave}
                 >
                   <button
                     className={`flex items-center gap-1.5 px-3 text-[12px] font-medium transition-colors rounded-md my-1.5 ${

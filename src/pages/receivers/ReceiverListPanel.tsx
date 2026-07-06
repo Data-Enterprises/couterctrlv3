@@ -217,7 +217,7 @@ const fmtRangePart = (mdy: string, withYear = false) => {
                       >
                         <div className="flex flex-col gap-0.5 min-w-0">
                           <span className="text-[10px] font-medium text-content">
-                            Ref #{item.reference_number}
+                            Invoice #{item.invoiceid}
                           </span>
                           <span className="text-[9px] text-content/50">
                             {formatDate(item.invoice_date.split("T")[0])} · {item.cashier_name}

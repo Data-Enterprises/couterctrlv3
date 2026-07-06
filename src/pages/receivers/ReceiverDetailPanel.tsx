@@ -5,15 +5,6 @@ import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import ReceiversExportModal from "./ReceiversExportModal";
 
-const Chip = ({ label, value }: { label: string; value: string }) => (
-  <div
-    className="flex items-baseline gap-1 rounded px-1.5 py-0.5"
-    style={{ background: "rgba(30,42,74,0.06)", boxShadow: "inset 0 1px 2px rgba(30,42,74,0.08)" }}
-  >
-    <span className="text-[8.5px] text-content/60 whitespace-nowrap">{label}</span>
-    <span className="text-[10px] font-semibold text-content whitespace-nowrap">{value}</span>
-  </div>
-);
 
 const ReceiverDetailPanel = () => {
   const [exportOpen, setExportOpen] = useState(false);
@@ -105,22 +96,35 @@ const ReceiverDetailPanel = () => {
       {/* Line items */}
       {selectedReceiver && !state.isFetchingDetails && (
         <>
-          {/* Sub-header */}
-          <div className="flex items-center gap-2 px-2.5 py-1.5 border-b border-gray-100 flex-shrink-0">
-            <span className="text-[9px] font-bold uppercase tracking-wide text-content/70">Line items</span>
-            <span className="text-[9px] text-content/45">— {selectedReceiver.vendor_name}</span>
-            <div className="flex-1" />
-            {totals && (
-              <>
-                <Chip label="Cases" value={String(totals.cases)} />
-                <Chip label="Units" value={String(totals.units)} />
-                <Chip label="U Cost" value={formatCurrency2(totals.ucost)} />
-                <Chip label="Ext Cost" value={formatCurrency2(totals.ext_cost)} />
-                <Chip label="Retail" value={formatCurrency2(totals.retail)} />
-                <Chip label="Ext Retail" value={formatCurrency2(totals.ext_retail)} />
-              </>
-            )}
-          </div>
+          {/* KPI strip */}
+          {totals && (
+            <div className="grid grid-cols-6 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+              <div className="px-4 py-2.5">
+                <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Cases</div>
+                <div className="text-[13px] font-semibold text-content">{totals.cases}</div>
+              </div>
+              <div className="px-4 py-2.5">
+                <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Units</div>
+                <div className="text-[13px] font-semibold text-content">{totals.units}</div>
+              </div>
+              <div className="px-4 py-2.5">
+                <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">U Cost</div>
+                <div className="text-[13px] font-semibold text-content">{formatCurrency2(totals.ucost)}</div>
+              </div>
+              <div className="px-4 py-2.5">
+                <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Ext Cost</div>
+                <div className="text-[13px] font-semibold text-content">{formatCurrency2(totals.ext_cost)}</div>
+              </div>
+              <div className="px-4 py-2.5">
+                <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Retail</div>
+                <div className="text-[13px] font-semibold text-content">{formatCurrency2(totals.retail)}</div>
+              </div>
+              <div className="px-4 py-2.5">
+                <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Ext Retail</div>
+                <div className="text-[13px] font-semibold text-content">{formatCurrency2(totals.ext_retail)}</div>
+              </div>
+            </div>
+          )}
 
           {/* Table */}
           <div className="flex-1 overflow-auto thin-scrollbar">

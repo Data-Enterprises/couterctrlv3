@@ -285,15 +285,6 @@ const MarginPerfRightPanel = () => {
           dateRange={dateRange}
           tyMargins={ctx.weekOneMargins}
           lyMargins={ctx.weekOneMarginsLY}
-          weekOneMargins={ctx.weekOneMargins}
-          weekTwoMargins={ctx.weekTwoMargins}
-          weekThreeMargins={ctx.weekThreeMargins}
-          weekFourMargins={ctx.weekFourMargins}
-          weekOneMarginsLY={ctx.weekOneMarginsLY}
-          weekTwoMarginsLY={ctx.weekTwoMarginsLY}
-          weekThreeMarginsLY={ctx.weekThreeMarginsLY}
-          weekFourMarginsLY={ctx.weekFourMarginsLY}
-          gradingMetric={gradingMetric}
         />
       )}
     </div>
