@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MagnifyingGlassIcon, QuestionMarkCircleIcon } from "@heroicons/react/16/solid";
+import { MagnifyingGlassIcon, QuestionMarkCircleIcon, MinusCircleIcon } from "@heroicons/react/16/solid";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
 import { formatDate } from "../widgets";
@@ -207,14 +207,14 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
   const tooltipTiers =
     gradingMetric === "margin"
       ? [
-          { color: "#fca5a5", label: `Critical — >${gradingThreshold}pts below LY` },
-          { color: "#fcd34d", label: `Watch — 0–${gradingThreshold}pts below LY` },
-          { color: "#6ee7b7", label: "Healthy — at or above LY" },
+          { color: "#fca5a5", label: `Critical — >${gradingThreshold}pts below LY (or LW if no LY)` },
+          { color: "#fcd34d", label: `Watch — 0–${gradingThreshold}pts below LY (or LW if no LY)` },
+          { color: "#6ee7b7", label: "Healthy — at or above LY (or LW if no LY)" },
         ]
       : [
-          { color: "#fca5a5", label: `Critical — >${gradingThreshold}% below LY` },
-          { color: "#fcd34d", label: `Watch — 0–${gradingThreshold}% below LY` },
-          { color: "#6ee7b7", label: "Healthy — at or above LY" },
+          { color: "#fca5a5", label: `Critical — >${gradingThreshold}% below LY (or LW if no LY)` },
+          { color: "#fcd34d", label: `Watch — 0–${gradingThreshold}% below LY (or LW if no LY)` },
+          { color: "#6ee7b7", label: "Healthy — at or above LY (or LW if no LY)" },
         ];
 
   return (
@@ -258,8 +258,8 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
                       <div className="w-px h-4 bg-white/15 flex-shrink-0" />
                       <div className="flex items-baseline gap-1.5">
                         <span className="text-[10px] text-white/45 uppercase tracking-wide">vs LY</span>
-                        <span className="text-[13px] font-medium" style={{ color: avgDelta >= 0 ? "#86efac" : "#fca5a5" }}>
-                          {avgDelta >= 0 ? "+" : ""}{avgDelta.toFixed(1)} pts
+                        <span className="text-[13px] font-medium" style={{ color: totalLySales === 0 ? "white" : avgDelta >= 0 ? "#86efac" : "#fca5a5" }}>
+                          {avgDelta > 0 ? "+" : ""}{avgDelta.toFixed(1)} pts
                         </span>
                       </div>
                     </>
@@ -287,8 +287,8 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
                       <div className="w-px h-4 bg-white/15 flex-shrink-0" />
                       <div className="flex items-baseline gap-1.5">
                         <span className="text-[10px] text-white/45 uppercase tracking-wide">vs LY</span>
-                        <span className="text-[13px] font-medium" style={{ color: vsLYSalesPct >= 0 ? "#86efac" : "#fca5a5" }}>
-                          {vsLYSalesPct >= 0 ? "+" : ""}{vsLYSalesPct.toFixed(1)}%
+                        <span className="text-[13px] font-medium" style={{ color: totalLySales === 0 ? "white" : vsLYSalesPct >= 0 ? "#86efac" : "#fca5a5" }}>
+                          {vsLYSalesPct > 0 ? "+" : ""}{vsLYSalesPct.toFixed(1)}%
                         </span>
                       </div>
                     </>

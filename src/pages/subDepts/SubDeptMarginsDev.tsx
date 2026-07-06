@@ -30,6 +30,13 @@ import { setMenuPosition } from "../../features/ctxMenuSlice";
 import type { Handlers } from "../../interfaces";
 import { smOptions } from "../upc/utils";
 
+const fetchSafe = (
+  url: string, token: string, subDeptId: number,
+  start: string, end: string,
+  useGroups: number, searchValue: number, singleStore: number,
+): Promise<SubDeptMargin[]> =>
+  fetchAllPages(url, token, subDeptId, start, end, useGroups, searchValue, singleStore).catch(() => []);
+
 const fetchAllPages = async (
   url: string,
   token: string,
@@ -135,8 +142,8 @@ const SubDeptMarginsDev = () => {
           for (const sd of subDepts) {
             Promise.all([
               fetchAllPages(ctx.url, ctx.token, sd.id, params.start, params.end, params.useGroups, params.searchValue, params.singleStore),
-              fetchAllPages(ctx.url, ctx.token, sd.id, setDates(new Date(params.start), 364), setDates(new Date(params.end), 364), params.useGroups, params.searchValue, params.singleStore),
-              fetchAllPages(ctx.url, ctx.token, sd.id, setDates(new Date(params.end), 13), setDates(new Date(params.end), 7), params.useGroups, params.searchValue, params.singleStore),
+              fetchSafe(ctx.url, ctx.token, sd.id, setDates(new Date(params.start), 364), setDates(new Date(params.end), 364), params.useGroups, params.searchValue, params.singleStore),
+              fetchSafe(ctx.url, ctx.token, sd.id, setDates(new Date(params.end), 13), setDates(new Date(params.end), 7), params.useGroups, params.searchValue, params.singleStore),
             ])
               .then(([tyData, lyData, lwData]) => {
                 dispatch(setSubDeptGrade({ id: sd.id, grade: computeSubDeptGrade(tyData, lyData, lwData) }));
@@ -177,33 +184,26 @@ const SubDeptMarginsDev = () => {
     const ss = params.singleStore;
     const id = ctx.selectedSubDeptId;
 
-    fetchAllPages(ctx.url, ctx.token, id, setDates(new Date(e), 13), setDates(new Date(e), 7), g, sv, ss)
-      .then((data) => dispatch(setWeekTrendMargins({ data, week: 2 })))
-      .catch((err: JsonError) => toast.error(err.message));
+    fetchSafe(ctx.url, ctx.token, id, setDates(new Date(e), 13), setDates(new Date(e), 7), g, sv, ss)
+      .then((data) => dispatch(setWeekTrendMargins({ data, week: 2 })));
 
-    fetchAllPages(ctx.url, ctx.token, id, setDates(new Date(e), 20), setDates(new Date(e), 14), g, sv, ss)
-      .then((data) => dispatch(setWeekTrendMargins({ data, week: 3 })))
-      .catch((err: JsonError) => toast.error(err.message));
+    fetchSafe(ctx.url, ctx.token, id, setDates(new Date(e), 20), setDates(new Date(e), 14), g, sv, ss)
+      .then((data) => dispatch(setWeekTrendMargins({ data, week: 3 })));
 
-    fetchAllPages(ctx.url, ctx.token, id, setDates(new Date(e), 27), setDates(new Date(e), 21), g, sv, ss)
-      .then((data) => dispatch(setWeekTrendMargins({ data, week: 4 })))
-      .catch((err: JsonError) => toast.error(err.message));
+    fetchSafe(ctx.url, ctx.token, id, setDates(new Date(e), 27), setDates(new Date(e), 21), g, sv, ss)
+      .then((data) => dispatch(setWeekTrendMargins({ data, week: 4 })));
 
-    fetchAllPages(ctx.url, ctx.token, id, setDates(new Date(e), 377), setDates(new Date(e), 371), g, sv, ss)
-      .then((data) => dispatch(setWeekTrendMarginsLY({ data, week: 2 })))
-      .catch((err: JsonError) => toast.error(err.message));
+    fetchSafe(ctx.url, ctx.token, id, setDates(new Date(e), 377), setDates(new Date(e), 371), g, sv, ss)
+      .then((data) => dispatch(setWeekTrendMarginsLY({ data, week: 2 })));
 
-    fetchAllPages(ctx.url, ctx.token, id, setDates(new Date(e), 384), setDates(new Date(e), 378), g, sv, ss)
-      .then((data) => dispatch(setWeekTrendMarginsLY({ data, week: 3 })))
-      .catch((err: JsonError) => toast.error(err.message));
+    fetchSafe(ctx.url, ctx.token, id, setDates(new Date(e), 384), setDates(new Date(e), 378), g, sv, ss)
+      .then((data) => dispatch(setWeekTrendMarginsLY({ data, week: 3 })));
 
-    fetchAllPages(ctx.url, ctx.token, id, setDates(new Date(e), 391), setDates(new Date(e), 385), g, sv, ss)
-      .then((data) => dispatch(setWeekTrendMarginsLY({ data, week: 4 })))
-      .catch((err: JsonError) => toast.error(err.message));
+    fetchSafe(ctx.url, ctx.token, id, setDates(new Date(e), 391), setDates(new Date(e), 385), g, sv, ss)
+      .then((data) => dispatch(setWeekTrendMarginsLY({ data, week: 4 })));
 
-    fetchAllPages(ctx.url, ctx.token, id, setDates(new Date(e), 34), setDates(new Date(e), 28), g, sv, ss)
-      .then((data) => dispatch(setWeekTrendMarginsLW({ data, week: 4 })))
-      .catch((err: JsonError) => toast.error(err.message));
+    fetchSafe(ctx.url, ctx.token, id, setDates(new Date(e), 34), setDates(new Date(e), 28), g, sv, ss)
+      .then((data) => dispatch(setWeekTrendMarginsLW({ data, week: 4 })));
   }, [ctx.selectedSubDeptId]);
 
   useEffect(() => {

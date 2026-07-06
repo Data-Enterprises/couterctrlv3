@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from "react";
-import { MagnifyingGlassIcon, ExclamationTriangleIcon, ExclamationCircleIcon, CheckCircleIcon } from "@heroicons/react/16/solid";
+import { MagnifyingGlassIcon, ExclamationTriangleIcon, ExclamationCircleIcon, CheckCircleIcon, MinusCircleIcon } from "@heroicons/react/16/solid";
 import { useAppDispatch } from "../../../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
 import { calculateCogs } from "../..";
@@ -9,7 +9,7 @@ import type { SubDeptMargin } from "../../../../interfaces";
 import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
 import type { ThresholdValue } from "../../../../components/filters/ThresholdFilter";
 
-type Severity = "critical" | "watch" | "healthy";
+type Severity = "critical" | "watch" | "healthy" | "ungraded";
 type SevFilter = "all" | Severity;
 
 interface ItemMarginRow {
@@ -34,11 +34,13 @@ const BADGE_BG: Record<Severity, string> = {
   critical: "#fee2e2",
   watch: "#fef3c7",
   healthy: "#d1fae5",
+  ungraded: "#f3f4f6",
 };
 const BADGE_COLOR: Record<Severity, string> = {
   critical: "#ef4444",
   watch: "#f59e0b",
   healthy: "#10b981",
+  ungraded: "#9ca3af",
 };
 
 const SeverityBadge = ({ severity }: { severity: Severity }) => (
@@ -49,6 +51,7 @@ const SeverityBadge = ({ severity }: { severity: Severity }) => (
     {severity === "critical" && <ExclamationTriangleIcon className="w-3 h-3" style={{ color: BADGE_COLOR[severity] }} />}
     {severity === "watch" && <ExclamationCircleIcon className="w-3 h-3" style={{ color: BADGE_COLOR[severity] }} />}
     {severity === "healthy" && <CheckCircleIcon className="w-3 h-3" style={{ color: BADGE_COLOR[severity] }} />}
+    {severity === "ungraded" && <MinusCircleIcon className="w-3 h-3" style={{ color: BADGE_COLOR[severity] }} />}
   </div>
 );
 
@@ -62,12 +65,13 @@ const chipClass = (active: boolean, sev: Severity) => {
 };
 
 const getItemSeverity = (row: ItemMarginRow, threshold: number): Severity => {
-  const delta = row.lyMarginPct !== null
+  const raw = row.lyMarginPct !== null
     ? row.tyMarginPct - row.lyMarginPct
     : row.lwMarginPct !== null
     ? row.tyMarginPct - row.lwMarginPct
     : null;
-  if (delta === null) return "healthy";
+  if (raw === null) return "ungraded";
+  const delta = Math.round(raw * 10) / 10;
   if (delta < -threshold) return "critical";
   if (delta < 0) return "watch";
   return "healthy";
@@ -263,7 +267,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
   const thresholdAmt = thresholdValue?.amount ?? 0;
 
   const sevCounts = useMemo(() => {
-    const counts: Record<Severity, number> = { critical: 0, watch: 0, healthy: 0 };
+    const counts: Record<Severity, number> = { critical: 0, watch: 0, healthy: 0, ungraded: 0 };
     for (const row of rawRows) counts[getItemSeverity(row, thresholdAmt)]++;
     return counts;
   }, [rawRows, thresholdAmt]);
@@ -325,7 +329,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
 
   const ptsDelta = (ty: number, ref: number | null) => {
     if (ref === null) return null;
-    return ty - ref;
+    return Math.round((ty - ref) * 10) / 10;
   };
 
   return (
@@ -431,8 +435,8 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
                   <>
                     <div className="text-[11px] tabular-nums text-content/70">{item.lwMarginPct.toFixed(2)}%</div>
                     {lwDelta !== null && (
-                      <div className="text-[9px] tabular-nums font-medium" style={{ color: lwDelta >= 0 ? "#16a34a" : "#ef4444" }}>
-                        {lwDelta >= 0 ? "+" : ""}{lwDelta.toFixed(1)} pts
+                      <div className="text-[9px] tabular-nums font-medium" style={{ color: lwDelta > 0 ? "#16a34a" : lwDelta < 0 ? "#ef4444" : "#16a34a" }}>
+                        {lwDelta > 0 ? "+" : ""}{lwDelta.toFixed(1)} pts
                       </div>
                     )}
                   </>
@@ -445,8 +449,8 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
                   <>
                     <div className="text-[11px] tabular-nums text-content/70">{item.lyMarginPct.toFixed(2)}%</div>
                     {lyDelta !== null && (
-                      <div className="text-[9px] tabular-nums font-medium" style={{ color: lyDelta >= 0 ? "#16a34a" : "#ef4444" }}>
-                        {lyDelta >= 0 ? "+" : ""}{lyDelta.toFixed(1)} pts
+                      <div className="text-[9px] tabular-nums font-medium" style={{ color: lyDelta > 0 ? "#16a34a" : lyDelta < 0 ? "#ef4444" : "#16a34a" }}>
+                        {lyDelta > 0 ? "+" : ""}{lyDelta.toFixed(1)} pts
                       </div>
                     )}
                   </>
