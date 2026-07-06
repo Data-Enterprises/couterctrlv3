@@ -241,11 +241,14 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
                   const j = resp.data;
                   if (j.error === 0) {
                     allTrans.push(...j.transactions.filter((t: any) => t.sale_type === saleType));
-                    pages.find((p) => p.page === page)!.fetched = true;
-                    if (pages.every((p) => p.fetched)) {
-                      const saleIds = Array.from(new Set(allTrans.map((t) => t.sale_id)));
-                      fetchTransactions(saleIds, saleType);
-                    }
+                  }
+                })
+                .catch((err: JsonError) => toast.error(err.message))
+                .finally(() => {
+                  pages.find((p) => p.page === page)!.fetched = true;
+                  if (pages.every((p) => p.fetched)) {
+                    const saleIds = Array.from(new Set(allTrans.map((t) => t.sale_id)));
+                    fetchTransactions(saleIds, saleType);
                   }
                 });
             }
@@ -306,6 +309,8 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
             qty: item.qty ?? 0,
           }));
           dispatch(setTransactionDrillDown([transactions]));
+        } else {
+          toast.warn(j.msg);
         }
       })
       .catch((err: JsonError) => {
