@@ -136,8 +136,8 @@ const SubDeptCostGrid = () => {
   const actions = useSubMarginActions();
   const sm = useAppSelector((state) => state.subMargin);
 
-  const [sortCol, setSortCol] = useState<SortCol>("cogs");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [sortCol, setSortCol] = useState<SortCol | null>("cogs");
+  const [sortDir, setSortDir] = useState<"desc" | "asc" | null>("desc");
 
   // Text filters
   const [draftDesc, setDraftDesc] = useState("");
@@ -182,21 +182,23 @@ const SubDeptCostGrid = () => {
     if (appliedQty.val) data = data.filter((d) => applyThresh(appliedQty.val, appliedQty.op, d.qty));
     if (appliedCogs.val) data = data.filter((d) => applyThresh(appliedCogs.val, appliedCogs.op, d.total_cost));
 
-    data.sort((a, b) => {
-      let av: number | string, bv: number | string;
-      switch (sortCol) {
-        case "description": av = a.description; bv = b.description; break;
-        case "upc": av = a.product_code; bv = b.product_code; break;
-        case "unitCost": av = a.calculated_cost; bv = b.calculated_cost; break;
-        case "caseCost": av = a.cost; bv = b.cost; break;
-        case "qty": av = a.qty; bv = b.qty; break;
-        case "cogs": av = a.total_cost; bv = b.total_cost; break;
-      }
-      if (typeof av === "string") {
-        return sortDir === "asc" ? av.localeCompare(bv as string) : (bv as string).localeCompare(av);
-      }
-      return sortDir === "asc" ? av - (bv as number) : (bv as number) - av;
-    });
+    if (sortCol && sortDir) {
+      data.sort((a, b) => {
+        let av: number | string, bv: number | string;
+        switch (sortCol) {
+          case "description": av = a.description; bv = b.description; break;
+          case "upc": av = a.product_code; bv = b.product_code; break;
+          case "unitCost": av = a.calculated_cost; bv = b.calculated_cost; break;
+          case "caseCost": av = a.cost; bv = b.cost; break;
+          case "qty": av = a.qty; bv = b.qty; break;
+          case "cogs": av = a.total_cost; bv = b.total_cost; break;
+        }
+        if (typeof av === "string") {
+          return sortDir === "asc" ? av.localeCompare(bv as string) : (bv as string).localeCompare(av);
+        }
+        return sortDir === "asc" ? av - (bv as number) : (bv as number) - av;
+      });
+    }
 
     return data;
   }, [sm.subDeptCost, sm.selectedWeekDay, appliedDesc, appliedUpc, appliedUnitCost, appliedCaseCost, appliedQty, appliedCogs, sortCol, sortDir]);
@@ -206,12 +208,14 @@ const SubDeptCostGrid = () => {
   }, [displayData]);
 
   const handleSort = (col: SortCol) => {
-    if (sortCol === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setSortCol(col); setSortDir("desc"); }
+    if (sortCol === col) {
+      if (sortDir === "desc") setSortDir("asc");
+      else if (sortDir === "asc") { setSortCol(null); setSortDir(null); }
+    } else { setSortCol(col); setSortDir("desc"); }
   };
 
   const arrow = (col: SortCol) => {
-    if (sortCol !== col) return <span className="text-content/20"> ↕</span>;
+    if (sortCol !== col || !sortDir) return <span className="text-content/20"> ↕</span>;
     return <span className="text-[#1e2a4a]"> {sortDir === "desc" ? "↓" : "↑"}</span>;
   };
 

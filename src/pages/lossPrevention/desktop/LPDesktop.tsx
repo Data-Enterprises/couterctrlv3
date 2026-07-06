@@ -90,12 +90,17 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
             dispatch(setCashierDetails(j.sales));
             dispatch(setCashierTrends(j.trend));
           }
+        } else {
+          toast.warn(j.msg);
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
       .finally(() => setLoading(false));
     getCashierDetails(params.url, params.token, params.lpBaseStart, params.lpBaseEnd, params.useGroups, params.searchValue, params.singleStore, [saleType])
-      .then((r) => { if (r.data.error === 0) dispatch(setBaselineDetails(r.data.sales)); })
+      .then((r) => {
+        if (r.data.error === 0) dispatch(setBaselineDetails(r.data.sales));
+        else toast.warn(r.data.msg);
+      })
       .catch(() => {});
   };
 
@@ -184,6 +189,8 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
 
           dispatch(setTransOverviews(overviews));
           dispatch(setTransList(formatted));
+        } else {
+          toast.warn(j.msg);
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
@@ -247,6 +254,8 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
             dispatch(setSelectedSaleIds(saleIds));
             fetchTransactions(saleIds, saleType);
           }
+        } else {
+          toast.warn(j.msg);
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
@@ -277,6 +286,8 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
             }, []);
             dispatch(setBaselineOverviews(overviews));
           });
+        } else {
+          toast.warn(j.msg);
         }
       })
       .catch(() => { /* baseline failure is non-fatal */ });

@@ -39,6 +39,7 @@ import ordersLegacyReducer from '../features/ordersLegacySlice';
 import adListReducer from '../features/adListSlice';
 import salesLedgerReducer from '../features/salesLedgerSlice';
 import salesLegacyReducer from '../features/salesLegacySlice';
+import upcDevReducer from '../features/upcDevSlice';
 
 export const setupStore = () =>
   configureStore({
@@ -82,6 +83,7 @@ export const setupStore = () =>
       adList: adListReducer,
       salesLedger: salesLedgerReducer,
       salesLegacy: salesLegacyReducer,
+      upcDev: upcDevReducer,
     },
   });
 

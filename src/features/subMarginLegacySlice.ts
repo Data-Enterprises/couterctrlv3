@@ -3,7 +3,7 @@ import type { SubDeptMargin, SubDept, SubDeptCost } from "../interfaces";
 import type { ItemRow, ItemRowMobile } from "../pages/subDepts/display/widgets";
 import type { ItemLookupHistory } from "./itemLookupSlice";
 
-export type SubDeptGridView = "item" | "cost";
+export type SubDeptGridView = "item" | "cost" | "nocost";
 export type MarginWeek = 0 | 1 | 2 | 3 | 4 | 5;
 export type ItemFilterType =
   | "upc"
@@ -50,6 +50,7 @@ interface SubMarginState {
   weekTwoMarginsLY: SubDeptMargin[];
   weekThreeMarginsLY: SubDeptMargin[];
   weekFourMarginsLY: SubDeptMargin[];
+  weekFourMarginsLW: SubDeptMargin[];
   filteredMargins: SubDeptMargin[];
   selectedSubDeptId: number;
   subDeptFitlerText: string;
@@ -114,6 +115,7 @@ const initialState: SubMarginState = {
   weekTwoMarginsLY: [],
   weekThreeMarginsLY: [],
   weekFourMarginsLY: [],
+  weekFourMarginsLW: [],
   filteredMargins: [],
   selectedSubDeptId: 0,
   subDeptFitlerText: "",

@@ -1,7 +1,8 @@
 import { useSalesState } from "../hooks/useSalesState";
-﻿import { useState, useMemo, useEffect } from "react";
+﻿import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { setItemThreshold } from "../../../features/salesLedgerSlice";
+import type { GradingMetric } from "../../../features/salesLedgerSlice";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import { formatCurrency2, addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../utils";
 import { getSubMargins } from "../../../api/subMargins";
@@ -94,12 +95,14 @@ const deptSeverity = (r: DeptRow, threshold: number): Severity => {
   return "healthy";
 };
 
-const itemSeverity = (item: Top10Item, threshold: number): Severity => {
-  const lyQtyPct = item.lyQty !== null && item.lyQty > 0
-    ? ((item.tyQty - item.lyQty) / item.lyQty) * 100 : null;
-  const lwQtyPct = item.lwQty !== null && item.lwQty > 0
-    ? ((item.tyQty - item.lwQty) / item.lwQty) * 100 : null;
-  const pct = lyQtyPct ?? lwQtyPct ?? 0;
+const itemSeverity = (item: Top10Item, threshold: number, metric: GradingMetric): Severity => {
+  const lyPct = metric === "sales"
+    ? (item.lyNet !== null && item.lyNet > 0 ? ((item.tyNet - item.lyNet) / item.lyNet) * 100 : null)
+    : (item.lyQty !== null && item.lyQty > 0 ? ((item.tyQty - item.lyQty) / item.lyQty) * 100 : null);
+  const lwPct = metric === "sales"
+    ? (item.lwNet !== null && item.lwNet > 0 ? ((item.tyNet - item.lwNet) / item.lwNet) * 100 : null)
+    : (item.lwQty !== null && item.lwQty > 0 ? ((item.tyQty - item.lwQty) / item.lwQty) * 100 : null);
+  const pct = lyPct ?? lwPct ?? 0;
   if (pct < -threshold) return "critical";
   if (pct < 0) return "watch";
   return "healthy";
@@ -175,13 +178,27 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel, storeId, sele
   const search = useAppSelector((state) => state.search);
   const threshold = useAppSelector((state) => state.salesLedger.subDeptThreshold);
   const itemThreshold = useAppSelector((state) => state.salesLedger.itemThreshold);
+  const gradingMetric = useAppSelector((state) => state.salesLedger.gradingMetric);
   const dispatch = useAppDispatch();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [ctaOpen, setCtaOpen] = useState(false);
-  const [_, setItemSevFilter] = useState<SevFilter>("all");
+  const [itemSevFilter, setItemSevFilter] = useState<SevFilter>("all");
   const [items, setItems] = useState<Top10Item[]>([]);
   const [itemsLoading, setItemsLoading] = useState(false);
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; upc: string } | null>(null);
+  const ctxMenuRef = useRef<HTMLDivElement>(null);
+
+  const closeCtxMenu = useCallback(() => setCtxMenu(null), []);
+
+  useEffect(() => {
+    if (!ctxMenu) return;
+    const handler = (e: MouseEvent) => {
+      if (ctxMenuRef.current && !ctxMenuRef.current.contains(e.target as Node)) closeCtxMenu();
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [ctxMenu, closeCtxMenu]);
 
   useEffect(() => { setItemSevFilter("all"); }, [selectedId]);
 
@@ -329,14 +346,11 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel, storeId, sele
   const selected = selectedId !== null ? rows.find((r) => r.id === selectedId) ?? null : null;
   const cta = selected ? getCta(selected, threshold) : null;
 
-  const itemsWithSev = items.map((item) => ({ ...item, sev: itemSeverity(item, itemThreshold) }));
-  // const itemCounts: Record<SevFilter, number> = {
-  //   all: itemsWithSev.length,
-  //   critical: itemsWithSev.filter((i) => i.sev === "critical").length,
-  //   watch: itemsWithSev.filter((i) => i.sev === "watch").length,
-  //   healthy: itemsWithSev.filter((i) => i.sev === "healthy").length,
-  // };
-  const visibleItems = itemsWithSev;
+  const itemsWithSev = items.map((item) => ({ ...item, sev: itemSeverity(item, itemThreshold, gradingMetric) }));
+  const itemCritCount = itemsWithSev.filter((i) => i.sev === "critical").length;
+  const itemWatchCount = itemsWithSev.filter((i) => i.sev === "watch").length;
+  const itemHealthyCount = itemsWithSev.filter((i) => i.sev === "healthy").length;
+  const visibleItems = itemSevFilter === "all" ? itemsWithSev : itemsWithSev.filter((i) => i.sev === itemSevFilter);
 
   if (!rows.length) {
     return <div className="flex items-center justify-center h-32 text-content/45 text-sm">No sub department data</div>;
@@ -354,6 +368,7 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel, storeId, sele
   };
 
   return (
+    <>
     <div className="flex h-full">
       {/* Left panel — signal list */}
       <div className="flex flex-col border-r border-gray-100" style={{ width: "40%" }}>
@@ -400,9 +415,18 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel, storeId, sele
       <div className="flex flex-col flex-1 min-w-0">
         {/* Header row: selected name */}
         {selected && (
-          <div className="flex items-baseline gap-1.5 px-3 py-1.5 bg-gray-100 border-b border-gray-100">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 border-b border-gray-100">
             <span className="text-[12px] font-semibold text-content truncate">{selected.desc}</span>
             <span className="text-[10px] text-content/45 italic flex-shrink-0">{twDateLabel}</span>
+            <div className="flex-1" />
+            <span className="text-[10px] text-content/45 flex-shrink-0">Item Threshold</span>
+            <ThresholdFilter
+              value={{ op: "gt", amount: itemThreshold }}
+              onChange={(v) => { if (v) dispatch(setItemThreshold(v.amount)); }}
+              showOp={false}
+              suffix="%"
+              inputWidth={40}
+            />
           </div>
         )}
 
@@ -441,18 +465,13 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel, storeId, sele
               {/* Items section */}
               <div className="border-b border-gray-100">
                 {/* Items header */}
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 border-b border-gray-100">
-                  <span className="text-[10px] font-medium uppercase tracking-wide text-content/55">Items</span>
-                  <span className="text-[9px] italic text-content/45">{twDateLabel} · {items.length} items</span>
-                  <div className="flex-1" />
-                  <span className="text-[10px] text-content/45">Threshold</span>
-                  <ThresholdFilter
-                    value={{ op: "gt", amount: itemThreshold }}
-                    onChange={(v) => { if (v) dispatch(setItemThreshold(v.amount)); }}
-                    showOp={false}
-                    suffix="%"
-                    inputWidth={40}
-                  />
+                <div className="flex items-center gap-2 px-3 py-1 bg-gray-100 border-b border-gray-100">
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-content/55 flex-shrink-0">Items</span>
+                    <button onClick={() => setItemSevFilter("all")} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(itemSevFilter === "all")}`}>All ({itemsWithSev.length})</button>
+                    <button onClick={() => setItemSevFilter("critical")} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(itemSevFilter === "critical", "critical")}`}><ExclamationTriangleIcon className="w-2.5 h-2.5" />Crit ({itemCritCount})</button>
+                    <button onClick={() => setItemSevFilter("watch")} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(itemSevFilter === "watch", "watch")}`}><ExclamationCircleIcon className="w-2.5 h-2.5" />Watch ({itemWatchCount})</button>
+                    <button onClick={() => setItemSevFilter("healthy")} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(itemSevFilter === "healthy", "healthy")}`}><CheckCircleIcon className="w-2.5 h-2.5" />OK ({itemHealthyCount})</button>
+                    <div className="flex-1" />
                 </div>
 
                 {itemsLoading ? (
@@ -461,43 +480,49 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel, storeId, sele
                   <div className="px-4 py-3 text-[11px] text-content/35 italic">No data</div>
                 ) : (
                   visibleItems.map((item) => {
-                    const lwNetPct = item.lwNet !== null && item.lwNet > 0
-                      ? ((item.tyNet - item.lwNet) / item.lwNet) * 100 : null;
-                    const lyNetPct = item.lyNet !== null && item.lyNet > 0
-                      ? ((item.tyNet - item.lyNet) / item.lyNet) * 100 : null;
+                    const lwNetPct = gradingMetric === "sales"
+                      ? (item.lwNet !== null && item.lwNet > 0 ? ((item.tyNet - item.lwNet) / item.lwNet) * 100 : null)
+                      : (item.lwQty !== null && item.lwQty > 0 ? ((item.tyQty - item.lwQty) / item.lwQty) * 100 : null);
+                    const lyNetPct = gradingMetric === "sales"
+                      ? (item.lyNet !== null && item.lyNet > 0 ? ((item.tyNet - item.lyNet) / item.lyNet) * 100 : null)
+                      : (item.lyQty !== null && item.lyQty > 0 ? ((item.tyQty - item.lyQty) / item.lyQty) * 100 : null);
                     return (
-                      <div key={item.productCode} className="px-3 py-2.5 border-b border-gray-100">
+                      <div
+                        key={item.productCode}
+                        className="px-3 py-2.5 border-b border-gray-100"
+                        onContextMenu={(e) => { e.preventDefault(); setCtxMenu({ x: e.clientX, y: e.clientY, upc: item.upc }); }}
+                      >
                         <div className="flex items-start gap-2">
                           <SeverityBadge severity={item.sev} />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-baseline justify-between gap-2">
                               <span className="text-[12px] font-medium text-content truncate" style={{ maxWidth: "55%" }}>{item.desc}</span>
-                              <span className="text-[9px] text-content/45 flex-shrink-0">{item.upc}</span>
+                              <span className="text-[10px] text-content/75 flex-shrink-0">{item.upc}</span>
                             </div>
-                            <div className="grid grid-cols-3 divide-x divide-gray-100 border border-gray-100 rounded mt-1.5">
-                              <div className="px-2 py-1.5">
-                                <div className="text-[8px] text-content/45 uppercase tracking-wide">TW</div>
+                            <div className="grid grid-cols-3 divide-x divide-gray-100 mt-1.5">
+                              <div className="px-2 py-1">
+                                <div className="text-[8px] text-content/60 uppercase tracking-wide">TW</div>
                                 <div className="text-[11px] font-semibold text-content mt-0.5">{formatCurrency2(item.tyNet)}</div>
                                 <div className="text-[10px] text-content/60 mt-0.5">{item.tyQty.toLocaleString()} u</div>
-                                {item.tyWeight > 0 && <div className="text-[10px] text-content/50 mt-0.5">{item.tyWeight.toFixed(2)} lb</div>}
+                                {item.tyWeight > 0 && <div className="text-[10px] text-content/60 mt-0.5">{item.tyWeight.toFixed(2)} lb</div>}
                               </div>
-                              <div className="px-2 py-1.5">
-                                <div className="text-[8px] text-content/45 uppercase tracking-wide">LW</div>
+                              <div className="px-2 py-1">
+                                <div className="text-[8px] text-content/60 uppercase tracking-wide">LW</div>
                                 <div className="flex items-baseline gap-1 mt-0.5">
                                   <span className="text-[11px] font-semibold text-content">{item.lwNet !== null ? formatCurrency2(item.lwNet) : "—"}</span>
                                   {lwNetPct !== null && <span className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lwNetPct, itemThreshold)}`}>{formatPct(lwNetPct)}</span>}
                                 </div>
                                 {item.lwQty !== null && <div className="text-[10px] text-content/60 mt-0.5">{item.lwQty.toLocaleString()} u</div>}
-                                {item.lwWeight !== null && item.lwWeight > 0 && <div className="text-[10px] text-content/50 mt-0.5">{item.lwWeight.toFixed(2)} lb</div>}
+                                {item.lwWeight !== null && item.lwWeight > 0 && <div className="text-[10px] text-content/60 mt-0.5">{item.lwWeight.toFixed(2)} lb</div>}
                               </div>
-                              <div className="px-2 py-1.5">
-                                <div className="text-[8px] text-content/45 uppercase tracking-wide">LY</div>
+                              <div className="px-2 py-1">
+                                <div className="text-[8px] text-content/60 uppercase tracking-wide">LY</div>
                                 <div className="flex items-baseline gap-1 mt-0.5">
                                   <span className="text-[11px] font-semibold text-content">{item.lyNet !== null ? formatCurrency2(item.lyNet) : "—"}</span>
                                   {lyNetPct !== null && <span className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lyNetPct, itemThreshold)}`}>{formatPct(lyNetPct)}</span>}
                                 </div>
                                 {item.lyQty !== null && <div className="text-[10px] text-content/60 mt-0.5">{item.lyQty.toLocaleString()} u</div>}
-                                {item.lyWeight !== null && item.lyWeight > 0 && <div className="text-[10px] text-content/50 mt-0.5">{item.lyWeight.toFixed(2)} lb</div>}
+                                {item.lyWeight !== null && item.lyWeight > 0 && <div className="text-[10px] text-content/60 mt-0.5">{item.lyWeight.toFixed(2)} lb</div>}
                               </div>
                             </div>
                           </div>
@@ -559,6 +584,22 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel, storeId, sele
         )}
       </div>
     </div>
+
+    {ctxMenu && (
+      <div
+        ref={ctxMenuRef}
+        style={{ position: "fixed", top: ctxMenu.y, left: ctxMenu.x, zIndex: 9999 }}
+        className="bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[140px]"
+      >
+        <button
+          className="w-full text-left px-3 py-2 text-[12px] text-content hover:bg-gray-50 transition-colors"
+          onClick={() => { navigator.clipboard.writeText(ctxMenu.upc); closeCtxMenu(); }}
+        >
+          Copy UPC
+        </button>
+      </div>
+    )}
+    </>
   );
 };
 

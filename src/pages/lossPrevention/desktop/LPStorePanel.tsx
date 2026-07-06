@@ -97,10 +97,11 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
       },
       {
         label: "Total",
-        current: Math.abs(detail.amount),
-        trend: b ? Math.abs(b.amount) / 2 : null,
+        current: detail.amount,
+        trend: b ? b.amount / 2 : null,
         fmt: (v: number) => formatCurrency2(v),
         showPct: true,
+        useAbs: !isNoDollarType(selectedSaleType),
       },
       {
         label: "Trans",
@@ -119,9 +120,11 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
       >
         <div className="text-[11px] font-medium text-content truncate w-full text-center">{storeName}</div>
         <div className="grid grid-cols-3 w-full">
-          {metrics.map(({ label, current, trend: trendVal, fmt, showPct }) => {
-            const pct = showPct && trendVal && trendVal !== 0 ? ((current - trendVal) / Math.abs(trendVal)) * 100 : null;
-            const isUp = pct !== null && pct >= 0;
+          {metrics.map(({ label, current, trend: trendVal, fmt, showPct, useAbs }) => {
+            const c = useAbs ? Math.abs(current) : current;
+            const t = trendVal !== null && useAbs ? Math.abs(trendVal) : trendVal;
+            const pct = showPct && t && t !== 0 ? ((c - t) / Math.abs(t)) * 100 : null;
+            const isUp = pct !== null && pct > 0;
             return (
               <div key={label} className="px-2 py-1 text-center">
                 <div className="text-[7px] text-content/45 uppercase tracking-wide">{label}</div>
@@ -131,7 +134,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
                 )}
                 {pct !== null && (
                   <div className={`text-[9px] font-medium mt-0.5 ${isUp ? "text-red-500" : "text-emerald-600"}`}>
-                    {fmtPct(pct)}
+                    {pct !== 0 ? fmtPct(pct) : "0.0%"}
                   </div>
                 )}
               </div>
@@ -181,7 +184,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
           <div className="flex-1" />
-          <span className="text-[9px] font-medium uppercase tracking-wide flex-shrink-0" style={{ color: "rgba(255,255,255,0.35)" }}>Exception activity vs trend</span>
+          <span className="text-[9px] font-medium uppercase tracking-wide flex-shrink-0" style={{ color: "rgba(255,255,255,0.35)" }}>Exception activity vs baseline</span>
           <div className="relative flex-shrink-0" onMouseEnter={() => setLegendHover(true)} onMouseLeave={() => setLegendHover(false)}>
             <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/50 hover:text-white hover:border-white/40 transition-colors">
               <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
@@ -189,19 +192,21 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
             {legendHover && (
               <div className="absolute right-0 top-full mt-1.5 z-50 bg-[#1e2a4a] border border-white/15 rounded-lg shadow-lg px-3 py-2.5 flex flex-col gap-1.5" style={{ minWidth: 230 }}>
                 {(isNoDollarType(selectedSaleType) ? [
-                  { color: "#fca5a5", label: "Critical — neither metric at or below trend" },
-                  { color: "#fcd34d", label: "Watch — 1 metric at or below trend" },
-                  { color: "#6ee7b7", label: "Healthy — both metrics at or below trend" },
+                  { color: "#fca5a5", label: "Critical — neither metric at or below baseline" },
+                  { color: "#fcd34d", label: "Watch — 1 metric at or below baseline" },
+                  { color: "#6ee7b7", label: "Healthy — both metrics at or below baseline" },
                 ] : [
-                  { color: "#fca5a5", label: "Critical — fewer than 2 metrics at or below trend" },
-                  { color: "#fcd34d", label: "Watch — exactly 2 metrics at or below trend" },
-                  { color: "#6ee7b7", label: "Healthy — 3 or more metrics at or below trend" },
+                  { color: "#fca5a5", label: "Critical — fewer than 2 metrics at or below baseline" },
+                  { color: "#fcd34d", label: "Watch — exactly 2 metrics at or below baseline" },
+                  { color: "#6ee7b7", label: "Healthy — 3 or more metrics at or below baseline" },
                 ]).map(({ color, label }) => (
                   <div key={label} className="flex items-start gap-2">
                     <div className="w-[7px] h-[7px] rounded-[2px] flex-shrink-0 mt-[3px]" style={{ background: color }} />
                     <span className="text-[11px] text-white/90 leading-snug">{label}</span>
                   </div>
                 ))}
+                <div className="h-px bg-white/10 my-0.5" />
+                <div className="text-[9px] text-white/50 leading-snug">Baseline = avg per week over the prior 2 weeks</div>
                 <div className="h-px bg-white/10 my-0.5" />
                 <div className="text-[9px] font-semibold uppercase tracking-wide text-white/35">Metrics graded</div>
                 <div className="flex flex-col gap-1">

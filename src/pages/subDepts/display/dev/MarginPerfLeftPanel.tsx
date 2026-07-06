@@ -3,6 +3,7 @@ import { MagnifyingGlassIcon, QuestionMarkCircleIcon } from "@heroicons/react/16
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
 import { formatDate } from "../widgets";
+import { formatCurrency2 } from "../../../../utils";
 import { setDates } from "../..";
 import {
   setGradingThreshold,
@@ -21,9 +22,12 @@ interface Props {
 }
 
 const getTier = (grade: SubDeptGrade, threshold: number, metric: GradingMetric): MarginTier => {
+  const hasLY = grade.lySales > 0 || grade.lyMarginPct > 0;
   const vsLY = metric === "margin" ? grade.ptsDelta : grade.vsLYSalesPct;
-  if (vsLY >= 0) return "healthy";
-  if (vsLY < -threshold) return "critical";
+  const vsLW = metric === "margin" ? grade.lwPtsDelta : grade.vsLWSalesPct;
+  const delta = hasLY ? vsLY : vsLW;
+  if (delta >= 0) return "healthy";
+  if (delta < -threshold) return "critical";
   return "watch";
 };
 
@@ -33,35 +37,27 @@ const SHADOW: Record<MarginTier, string> = {
   healthy: "rgba(16, 185, 129, 0.25)",
 };
 
-const fmt = (n: number) =>
-  n >= 1_000_000
-    ? `$${(n / 1_000_000).toFixed(1)}M`
-    : n >= 1_000
-    ? `$${(n / 1_000).toFixed(1)}k`
-    : `$${n.toFixed(0)}`;
 
 const SubDeptCard = ({
-  id,
   grade,
   tier,
+  metric,
   name,
   isSelected,
   onClick,
 }: {
-  id: number;
   grade: SubDeptGrade;
   tier: MarginTier;
+  metric: GradingMetric;
   name: string;
   isSelected: boolean;
   onClick: () => void;
 }) => {
-  const ptsDelta = grade.ptsDelta;
   const hasLY = grade.lyMarginPct > 0 || grade.lySales > 0;
-  const vsLY = grade.vsLYSalesPct;
+  const hasLW = grade.lwSales > 0;
 
   return (
     <button
-      key={id}
       onClick={onClick}
       className={`flex flex-col w-full px-3 py-2.5 transition-colors gap-1.5 text-left border-b border-gray-100 ${
         isSelected ? "" : "hover:bg-gray-50"
@@ -69,47 +65,64 @@ const SubDeptCard = ({
       style={isSelected ? { boxShadow: `inset 0 0 8px ${SHADOW[tier]}` } : undefined}
     >
       <div className="text-[11px] font-medium text-content truncate w-full text-center">{name}</div>
-      <div className="grid grid-cols-4">
-        {/* TY Sales */}
-        <div className="px-1 py-1 text-center">
-          <div className="text-[7px] text-content/45 uppercase tracking-wide">TY Sales</div>
-          <div className="text-[10px] font-medium text-content mt-0.5">{fmt(grade.tySales)}</div>
-        </div>
-        {/* LY Sales */}
-        <div className="px-1 py-1 text-center">
-          <div className="text-[7px] text-content/45 uppercase tracking-wide">LY Sales</div>
-          <div className="text-[10px] font-medium text-content mt-0.5">
-            {hasLY ? fmt(grade.lySales) : "—"}
-          </div>
-          {hasLY && (
-            <div
-              className="text-[9px] font-medium mt-0.5"
-              style={{ color: vsLY >= 0 ? "#16a34a" : "#ef4444" }}
-            >
-              {vsLY >= 0 ? "+" : ""}{vsLY.toFixed(1)}%
+      <div className="grid grid-cols-3">
+        {metric === "margin" ? (
+          <>
+            {/* TY Margin */}
+            <div className="px-1 py-1 text-center">
+              <div className="text-[7px] text-content/45 uppercase tracking-wide">TY</div>
+              <div className="text-[10px] font-medium text-content mt-0.5">{grade.tyMarginPct.toFixed(1)}%</div>
             </div>
-          )}
-        </div>
-        {/* TY Margin */}
-        <div className="px-1 py-1 text-center">
-          <div className="text-[7px] text-content/45 uppercase tracking-wide">TY Mgn</div>
-          <div className="text-[10px] font-medium text-content mt-0.5">{grade.tyMarginPct.toFixed(1)}%</div>
-        </div>
-        {/* LY Margin */}
-        <div className="px-1 py-1 text-center">
-          <div className="text-[7px] text-content/45 uppercase tracking-wide">LY Mgn</div>
-          <div className="text-[10px] font-medium text-content mt-0.5">
-            {hasLY ? `${grade.lyMarginPct.toFixed(1)}%` : "—"}
-          </div>
-          {hasLY && (
-            <div
-              className="text-[9px] font-medium mt-0.5"
-              style={{ color: ptsDelta >= 0 ? "#16a34a" : "#ef4444" }}
-            >
-              {ptsDelta >= 0 ? "+" : ""}{ptsDelta.toFixed(1)} pts
+            {/* vs LW Margin */}
+            <div className="px-1 py-1 text-center">
+              <div className="text-[7px] text-content/45 uppercase tracking-wide">LW</div>
+              <div className="text-[10px] font-medium text-content mt-0.5">{hasLW ? `${grade.lwMarginPct.toFixed(1)}%` : "—"}</div>
+              {hasLW && (
+                <div className="text-[9px] font-medium mt-0.5" style={{ color: grade.lwPtsDelta >= 0 ? "#16a34a" : "#ef4444" }}>
+                  {grade.lwPtsDelta >= 0 ? "+" : ""}{grade.lwPtsDelta.toFixed(1)} pts
+                </div>
+              )}
             </div>
-          )}
-        </div>
+            {/* vs LY Margin */}
+            <div className="px-1 py-1 text-center">
+              <div className="text-[7px] text-content/45 uppercase tracking-wide">LY</div>
+              <div className="text-[10px] font-medium text-content mt-0.5">{hasLY ? `${grade.lyMarginPct.toFixed(1)}%` : "—"}</div>
+              {hasLY && (
+                <div className="text-[9px] font-medium mt-0.5" style={{ color: grade.ptsDelta >= 0 ? "#16a34a" : "#ef4444" }}>
+                  {grade.ptsDelta >= 0 ? "+" : ""}{grade.ptsDelta.toFixed(1)} pts
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            {/* TY Sales */}
+            <div className="px-1 py-1 text-center">
+              <div className="text-[7px] text-content/45 uppercase tracking-wide">TY</div>
+              <div className="text-[10px] font-medium text-content mt-0.5">{formatCurrency2(grade.tySales)}</div>
+            </div>
+            {/* vs LW Sales */}
+            <div className="px-1 py-1 text-center">
+              <div className="text-[7px] text-content/45 uppercase tracking-wide">LW</div>
+              <div className="text-[10px] font-medium text-content mt-0.5">{hasLW ? formatCurrency2(grade.lwSales) : "—"}</div>
+              {hasLW && (
+                <div className="text-[9px] font-medium mt-0.5" style={{ color: grade.vsLWSalesPct >= 0 ? "#16a34a" : "#ef4444" }}>
+                  {grade.vsLWSalesPct >= 0 ? "+" : ""}{grade.vsLWSalesPct.toFixed(1)}%
+                </div>
+              )}
+            </div>
+            {/* vs LY Sales */}
+            <div className="px-1 py-1 text-center">
+              <div className="text-[7px] text-content/45 uppercase tracking-wide">LY</div>
+              <div className="text-[10px] font-medium text-content mt-0.5">{hasLY ? formatCurrency2(grade.lySales) : "—"}</div>
+              {hasLY && (
+                <div className="text-[9px] font-medium mt-0.5" style={{ color: grade.vsLYSalesPct >= 0 ? "#16a34a" : "#ef4444" }}>
+                  {grade.vsLYSalesPct >= 0 ? "+" : ""}{grade.vsLYSalesPct.toFixed(1)}%
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </button>
   );
@@ -154,8 +167,12 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
     : null;
   const totalTySales = grades.reduce((acc, g) => acc + g.grade.tySales, 0);
   const totalLySales = grades.reduce((acc, g) => acc + g.grade.lySales, 0);
+  const totalLwSales = grades.reduce((acc, g) => acc + g.grade.lwSales, 0);
   const vsLYSalesPct = totalLySales > 0 ? ((totalTySales - totalLySales) / totalLySales) * 100 : null;
-  const totalNoCost = grades.reduce((acc, g) => acc + g.grade.noCostCount, 0);
+  const vsLWSalesPct = totalLwSales > 0 ? ((totalTySales - totalLwSales) / totalLwSales) * 100 : null;
+  const avgLwDelta = grades.length
+    ? grades.reduce((acc, g) => acc + g.grade.lwPtsDelta, 0) / grades.length
+    : null;
 
   const threshValue = { op: "gt" as const, amount: gradingThreshold };
 
@@ -174,9 +191,9 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
           return (
             <SubDeptCard
               key={id}
-              id={id}
               grade={grade}
               tier={tier}
+              metric={gradingMetric}
               name={sd.desc}
               isSelected={ctx.selectedSubDeptId === id}
               onClick={() => handleSubDeptClick(id)}
@@ -225,6 +242,17 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
                       <span className="text-[13px] font-medium text-white">{avgMarginPct.toFixed(1)}%</span>
                     </div>
                   )}
+                  {avgLwDelta !== null && (
+                    <>
+                      <div className="w-px h-4 bg-white/15 flex-shrink-0" />
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-[10px] text-white/45 uppercase tracking-wide">vs LW</span>
+                        <span className="text-[13px] font-medium" style={{ color: avgLwDelta >= 0 ? "#86efac" : "#fca5a5" }}>
+                          {avgLwDelta >= 0 ? "+" : ""}{avgLwDelta.toFixed(1)} pts
+                        </span>
+                      </div>
+                    </>
+                  )}
                   {avgDelta !== null && (
                     <>
                       <div className="w-px h-4 bg-white/15 flex-shrink-0" />
@@ -240,9 +268,20 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
               ) : (
                 <>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-[10px] text-white/45 uppercase tracking-wide">Sales</span>
-                    <span className="text-[13px] font-medium text-white">{fmt(totalTySales)}</span>
+                    <span className="text-[10px] text-white/45 uppercase tracking-wide">Total</span>
+                    <span className="text-[13px] font-medium text-white">{formatCurrency2(totalTySales)}</span>
                   </div>
+                  {vsLWSalesPct !== null && (
+                    <>
+                      <div className="w-px h-4 bg-white/15 flex-shrink-0" />
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-[10px] text-white/45 uppercase tracking-wide">vs LW</span>
+                        <span className="text-[13px] font-medium" style={{ color: vsLWSalesPct >= 0 ? "#86efac" : "#fca5a5" }}>
+                          {vsLWSalesPct >= 0 ? "+" : ""}{vsLWSalesPct.toFixed(1)}%
+                        </span>
+                      </div>
+                    </>
+                  )}
                   {vsLYSalesPct !== null && (
                     <>
                       <div className="w-px h-4 bg-white/15 flex-shrink-0" />
@@ -254,15 +293,6 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
                       </div>
                     </>
                   )}
-                </>
-              )}
-              {totalNoCost > 0 && (
-                <>
-                  <div className="w-px h-4 bg-white/15 flex-shrink-0" />
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-[10px] text-white/45 uppercase tracking-wide">No cost</span>
-                    <span className="text-[13px] font-medium text-amber-300">{totalNoCost}</span>
-                  </div>
                 </>
               )}
             </>

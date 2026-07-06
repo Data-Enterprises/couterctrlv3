@@ -41,6 +41,8 @@ const Coupons = () => {
         .then((resp) => {
           if (resp.data.error === 0) {
             dispatch(setSelectedGroupStores(resp.data.stores.filter((s: any) => s.active)));
+          } else {
+            toast.warn(resp.data.msg);
           }
         })
         .catch(() => {});
@@ -55,7 +57,9 @@ const Coupons = () => {
     getCoupons(context.url, context.token, start, end, useGroups, singleStore, searchValue)
       .then((resp) => {
         const j: CouponsResponse = resp.data;
-        if (j.error === 0 && j.records.length > 0) {
+        if (j.error !== 0) {
+          toast.warn(j.msg);
+        } else if (j.records.length > 0) {
           dispatch(setCoupons(j.records));
         } else {
           dispatch(setNoCouponsFound(true));

@@ -50,7 +50,9 @@ const Receivers = () => {
     getReceiversList(url, token, state.storeid, startDate, endDate)
       .then((resp) => {
         const j: ReceiverListResponse = resp.data;
-        if (j.error == 0 && j.recievers.length > 0) {
+        if (j.error !== 0) {
+          toast.warn(j.msg);
+        } else if (j.recievers.length > 0) {
           dispatch(setReceiversList(j.recievers));
           dispatch(setListGridData(j.recievers));
 

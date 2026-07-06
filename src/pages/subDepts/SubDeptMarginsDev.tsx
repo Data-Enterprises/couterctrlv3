@@ -13,6 +13,7 @@ import {
   setLoadingGrades,
   setWeekTrendMargins,
   setWeekTrendMarginsLY,
+  setWeekTrendMarginsLW,
   type SubDeptGrade,
 } from "../../features/subMarginSlice";
 
@@ -41,7 +42,7 @@ const fetchAllPages = async (
 ): Promise<SubDeptMargin[]> => {
   const resp = await getSubMargins(url, token, subDeptId, start, end, useGroups, searchValue, singleStore);
   const j: SubMarginsJsonResp = resp.data;
-  if (j.error !== 0) return [];
+  if (j.error !== 0) throw new Error(j.msg ?? "Failed to load margins");
   let data: SubDeptMargin[] = j.subs;
   if (j.total_pages > 1) {
     const extras = await Promise.all(
@@ -57,14 +58,18 @@ const fetchAllPages = async (
   return data;
 };
 
-const computeSubDeptGrade = (tyMargins: SubDeptMargin[], lyMargins: SubDeptMargin[]): SubDeptGrade => {
+const computeSubDeptGrade = (tyMargins: SubDeptMargin[], lyMargins: SubDeptMargin[], lwMargins: SubDeptMargin[]): SubDeptGrade => {
   const tySales = tyMargins.reduce((acc, m) => acc + (m.total_sales - m.total_tax), 0);
   const tyCogs = tyMargins.reduce((acc, m) => acc + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight), 0);
   const lySales = lyMargins.reduce((acc, m) => acc + (m.total_sales - m.total_tax), 0);
   const lyCogs = lyMargins.reduce((acc, m) => acc + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight), 0);
+  const lwSales = lwMargins.reduce((acc, m) => acc + (m.total_sales - m.total_tax), 0);
+  const lwCogs = lwMargins.reduce((acc, m) => acc + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight), 0);
   const tyMarginPct = tySales > 0 ? ((tySales - tyCogs) / tySales) * 100 : 0;
   const lyMarginPct = lySales > 0 ? ((lySales - lyCogs) / lySales) * 100 : 0;
+  const lwMarginPct = lwSales > 0 ? ((lwSales - lwCogs) / lwSales) * 100 : 0;
   const ptsDelta = lyMarginPct > 0 ? tyMarginPct - lyMarginPct : 0;
+  const lwPtsDelta = lwMarginPct > 0 ? tyMarginPct - lwMarginPct : 0;
   const seen = new Set<string>();
   let noCostCount = 0;
   for (const m of tyMargins) {
@@ -74,7 +79,8 @@ const computeSubDeptGrade = (tyMargins: SubDeptMargin[], lyMargins: SubDeptMargi
     }
   }
   const vsLYSalesPct = lySales > 0 ? ((tySales - lySales) / lySales) * 100 : 0;
-  return { tyMarginPct, lyMarginPct, ptsDelta, noCostCount, tySales, lySales, vsLYSalesPct, tyWeekOneMargins: tyMargins, lyWeekOneMargins: lyMargins };
+  const vsLWSalesPct = lwSales > 0 ? ((tySales - lwSales) / lwSales) * 100 : 0;
+  return { tyMarginPct, lyMarginPct, ptsDelta, noCostCount, tySales, lySales, vsLYSalesPct, lwSales, lwMarginPct, lwPtsDelta, vsLWSalesPct, tyWeekOneMargins: tyMargins, lyWeekOneMargins: lyMargins, lwWeekOneMargins: lwMargins };
 };
 
 const SubDeptMarginsDev = () => {
@@ -103,6 +109,10 @@ const SubDeptMarginsDev = () => {
     )
       .then((resp) => {
         const j: SubSalesJsonResp = resp.data;
+        if (j.error !== 0) {
+          toast.warn(j.msg);
+          return;
+        }
         if (j.error === 0) {
           const subDepts = j.subs
             .reduce((acc: SubDept[], curr) => {
@@ -115,7 +125,10 @@ const SubDeptMarginsDev = () => {
           dispatch(actions.setSubDepts(subDepts));
 
           const total = subDepts.length;
-          if (total === 0) return;
+          if (total === 0) {
+            toast.warn("No sub departments found for this search");
+            return;
+          }
           dispatch(setLoadingGrades(true));
           let completed = 0;
 
@@ -123,11 +136,12 @@ const SubDeptMarginsDev = () => {
             Promise.all([
               fetchAllPages(ctx.url, ctx.token, sd.id, params.start, params.end, params.useGroups, params.searchValue, params.singleStore),
               fetchAllPages(ctx.url, ctx.token, sd.id, setDates(new Date(params.start), 364), setDates(new Date(params.end), 364), params.useGroups, params.searchValue, params.singleStore),
+              fetchAllPages(ctx.url, ctx.token, sd.id, setDates(new Date(params.end), 13), setDates(new Date(params.end), 7), params.useGroups, params.searchValue, params.singleStore),
             ])
-              .then(([tyData, lyData]) => {
-                dispatch(setSubDeptGrade({ id: sd.id, grade: computeSubDeptGrade(tyData, lyData) }));
+              .then(([tyData, lyData, lwData]) => {
+                dispatch(setSubDeptGrade({ id: sd.id, grade: computeSubDeptGrade(tyData, lyData, lwData) }));
               })
-              .catch((err: JsonError) => toast.error(err.message))
+              .catch((err: JsonError) => toast.error(`${sd.desc}: ${err.message}`))
               .finally(() => {
                 completed++;
                 if (completed === total) dispatch(setLoadingGrades(false));
@@ -153,6 +167,7 @@ const SubDeptMarginsDev = () => {
     dispatch(setWeekTrendMarginsLY({ data: [], week: 2 }));
     dispatch(setWeekTrendMarginsLY({ data: [], week: 3 }));
     dispatch(setWeekTrendMarginsLY({ data: [], week: 4 }));
+    dispatch(setWeekTrendMarginsLW({ data: [], week: 4 }));
     dispatch(actions.setSelectedWeek(1));
     dispatch(actions.setSelectedWeekDay(""));
 
@@ -185,46 +200,16 @@ const SubDeptMarginsDev = () => {
     fetchAllPages(ctx.url, ctx.token, id, setDates(new Date(e), 391), setDates(new Date(e), 385), g, sv, ss)
       .then((data) => dispatch(setWeekTrendMarginsLY({ data, week: 4 })))
       .catch((err: JsonError) => toast.error(err.message));
+
+    fetchAllPages(ctx.url, ctx.token, id, setDates(new Date(e), 34), setDates(new Date(e), 28), g, sv, ss)
+      .then((data) => dispatch(setWeekTrendMarginsLW({ data, week: 4 })))
+      .catch((err: JsonError) => toast.error(err.message));
   }, [ctx.selectedSubDeptId]);
 
   useEffect(() => {
     dispatch(actions.resetFilters());
   }, [sm.subDeptGridView]);
 
-  useEffect(() => {
-    if (sm.selectedWeek > 0) {
-      dispatch(actions.resetFilters());
-      dispatch(actions.handleWeekReset());
-    }
-    if (
-      ctx.selectedWeek === 5 &&
-      ctx.weekOneMargins.length &&
-      ctx.weekTwoMargins.length &&
-      ctx.weekThreeMargins.length &&
-      ctx.weekFourMargins.length
-    ) {
-      dispatch(actions.setMargins([...ctx.weekOneMargins, ...ctx.weekTwoMargins, ...ctx.weekThreeMargins, ...ctx.weekFourMargins]));
-      dispatch(actions.setLoadingMargins(false));
-    } else if (ctx.selectedWeek === 1 && ctx.weekOneMargins.length) {
-      dispatch(actions.setMargins(ctx.weekOneMargins));
-      dispatch(actions.setLoadingMargins(false));
-    } else if (ctx.selectedWeek === 2 && ctx.weekTwoMargins.length) {
-      dispatch(actions.setMargins(ctx.weekTwoMargins));
-      dispatch(actions.setLoadingMargins(false));
-    } else if (ctx.selectedWeek === 3 && ctx.weekThreeMargins.length) {
-      dispatch(actions.setMargins(ctx.weekThreeMargins));
-      dispatch(actions.setLoadingMargins(false));
-    } else if (ctx.selectedWeek === 4 && ctx.weekFourMargins.length) {
-      dispatch(actions.setMargins(ctx.weekFourMargins));
-      dispatch(actions.setLoadingMargins(false));
-    }
-  }, [
-    ctx.selectedWeek,
-    ctx.weekOneMargins,
-    ctx.weekTwoMargins,
-    ctx.weekThreeMargins,
-    ctx.weekFourMargins,
-  ]);
 
   const handleClose = () => {
     dispatch(actions.setOpenExportModal(false));

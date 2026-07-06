@@ -1,5 +1,11 @@
 import { addDays, sameWeekDayLastYear } from "../../../utils";
-import type { WeeklySale, SubSale, HourlySale, SubDeptMargin, Store } from "../../../interfaces";
+import type {
+  WeeklySale,
+  SubSale,
+  HourlySale,
+  SubDeptMargin,
+  Store,
+} from "../../../interfaces";
 import type { LedgerRowData, Severity } from "../components/LedgerRow";
 import type { GradingMetric } from "../../../features/salesLedgerSlice";
 
@@ -34,24 +40,43 @@ export const SECTION_TEXT: Record<Severity, string> = {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type DeptRow = {
-  id: number; desc: string;
-  tw: number; lw: number; ly: number;
-  hasLW: boolean; hasLY: boolean;
-  vsLWPct: number; vsLYPct: number;
-  qty: number; lwQty: number; lyQty: number;
-  digital: number; lyDigital: number;
-  elecInstore: number; lyElecInstore: number;
-  elecStore: number; lyElecStore: number;
-  storeCpn: number; lyStoreCpn: number;
+  id: number;
+  desc: string;
+  tw: number;
+  lw: number;
+  ly: number;
+  hasLW: boolean;
+  hasLY: boolean;
+  vsLWPct: number;
+  vsLYPct: number;
+  qty: number;
+  lwQty: number;
+  lyQty: number;
+  digital: number;
+  lyDigital: number;
+  elecInstore: number;
+  lyElecInstore: number;
+  elecStore: number;
+  lyElecStore: number;
+  storeCpn: number;
+  lyStoreCpn: number;
 };
 
 export type HourRow = {
   hour: number;
-  tw: number; lw: number; ly: number;
-  trans: number; lwTrans: number; lyTrans: number;
-  qty: number; lwQty: number; lyQty: number;
-  vsLWPct: number; vsLYPct: number;
-  hasLW: boolean; hasLY: boolean;
+  tw: number;
+  lw: number;
+  ly: number;
+  trans: number;
+  lwTrans: number;
+  lyTrans: number;
+  qty: number;
+  lwQty: number;
+  lyQty: number;
+  vsLWPct: number;
+  vsLYPct: number;
+  hasLW: boolean;
+  hasLY: boolean;
 };
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
@@ -59,7 +84,10 @@ export type HourRow = {
 export const formatPct = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`;
 
 export const fmtDate = (d: string) =>
-  new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  new Date(d + "T12:00:00").toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
 
 export const ampm = (h: number) =>
   h === 0 ? "12 AM" : h < 12 ? `${h} AM` : h === 12 ? "12 PM" : `${h - 12} PM`;
@@ -98,9 +126,18 @@ export const buildLedgerRows = (
       const lyRows = ly.filter((d) => d.storeid === id);
       const ref = twRows[0];
       const assigned = assignedStores.find((s) => s.storeid === id);
-      const twTotal = twRows.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
-      const lwTotal = lwRows.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
-      const lyTotal = lyRows.reduce((acc, r) => acc + (r.total_sales - r.total_tax), 0);
+      const twTotal = twRows.reduce(
+        (acc, r) => acc + (r.total_sales - r.total_tax),
+        0,
+      );
+      const lwTotal = lwRows.reduce(
+        (acc, r) => acc + (r.total_sales - r.total_tax),
+        0,
+      );
+      const lyTotal = lyRows.reduce(
+        (acc, r) => acc + (r.total_sales - r.total_tax),
+        0,
+      );
       const twQty = twRows.reduce((acc, r) => acc + r.qty, 0);
       const lwQty = lwRows.reduce((acc, r) => acc + r.qty, 0);
       const lyQty = lyRows.reduce((acc, r) => acc + r.qty, 0);
@@ -123,7 +160,9 @@ export const buildLedgerRows = (
         .sort((a, b) => a.sale_date.localeCompare(b.sale_date))
         .map((r) => {
           const twDate = r.sale_date.split("T")[0];
-          const lwDate = addDays(new Date(twDate), -7).toISOString().split("T")[0];
+          const lwDate = addDays(new Date(twDate), -7)
+            .toISOString()
+            .split("T")[0];
           const lyDate = sameWeekDayLastYear(twDate).date;
           const lwRow = lwRows.find((l) => l.sale_date.startsWith(lwDate));
           const lyRow = lyRows.find((l) => l.sale_date.startsWith(lyDate));
@@ -135,8 +174,22 @@ export const buildLedgerRows = (
           };
         });
       return {
-        storeid: id, store_name: assigned?.store_name ?? ref.store_name, store_number: assigned?.store_number ?? ref.store_number,
-        twTotal, lwTotal, lyTotal, twQty, lwQty, lyQty, vsLWPct, vsLYPct, vsLYDollar, hasLW, hasLY, severity, days,
+        storeid: id,
+        store_name: assigned?.store_name ?? ref.store_name,
+        store_number: assigned?.store_number ?? ref.store_number,
+        twTotal,
+        lwTotal,
+        lyTotal,
+        twQty,
+        lwQty,
+        lyQty,
+        vsLWPct,
+        vsLYPct,
+        vsLYDollar,
+        hasLW,
+        hasLY,
+        severity,
+        days,
       };
     })
     .sort((a, b) => {
@@ -152,11 +205,30 @@ export const buildLedgerRows = (
 
 export const aggSubDepts = (
   src: SubSale[],
-): Record<number, { desc: string; net: number; qty: number; digital: number; elecInstore: number; elecStore: number; storeCpn: number }> =>
+): Record<
+  number,
+  {
+    desc: string;
+    net: number;
+    qty: number;
+    digital: number;
+    elecInstore: number;
+    elecStore: number;
+    storeCpn: number;
+  }
+> =>
   src.reduce(
     (acc, s) => {
       if (!acc[s.sub_department])
-        acc[s.sub_department] = { desc: s.sub_department_description, net: 0, qty: 0, digital: 0, elecInstore: 0, elecStore: 0, storeCpn: 0 };
+        acc[s.sub_department] = {
+          desc: s.sub_department_description,
+          net: 0,
+          qty: 0,
+          digital: 0,
+          elecInstore: 0,
+          elecStore: 0,
+          storeCpn: 0,
+        };
       acc[s.sub_department].net += s.total_sales - s.total_tax;
       acc[s.sub_department].qty += s.qty;
       acc[s.sub_department].digital += s.digital_coupons;
@@ -165,7 +237,18 @@ export const aggSubDepts = (
       acc[s.sub_department].storeCpn += s.store_coupon;
       return acc;
     },
-    {} as Record<number, { desc: string; net: number; qty: number; digital: number; elecInstore: number; elecStore: number; storeCpn: number }>,
+    {} as Record<
+      number,
+      {
+        desc: string;
+        net: number;
+        qty: number;
+        digital: number;
+        elecInstore: number;
+        elecStore: number;
+        storeCpn: number;
+      }
+    >,
   );
 
 export const aggHours = (
@@ -185,11 +268,23 @@ export const aggHours = (
 export const aggByCode = (
   items: SubDeptMargin[],
 ): Map<string, { desc: string; net: number; qty: number; weight: number }> => {
-  const map = new Map<string, { desc: string; net: number; qty: number; weight: number }>();
+  const map = new Map<
+    string,
+    { desc: string; net: number; qty: number; weight: number }
+  >();
   for (const item of items) {
     const ex = map.get(item.product_code);
-    if (ex) { ex.net += item.total_sales - item.total_tax; ex.qty += item.qty; ex.weight += item.weight; }
-    else map.set(item.product_code, { desc: item.product_description, net: item.total_sales - item.total_tax, qty: item.qty, weight: item.weight });
+    if (ex) {
+      ex.net += item.total_sales - item.total_tax;
+      ex.qty += item.qty;
+      ex.weight += item.weight;
+    } else
+      map.set(item.product_code, {
+        desc: item.product_description,
+        net: item.total_sales - item.total_tax,
+        qty: item.qty,
+        weight: item.weight,
+      });
   }
   return map;
 };

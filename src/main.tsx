@@ -9,11 +9,10 @@ import { ToastProvider } from "./components/toasts/ToastProvider.tsx";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
 import App from "./App.tsx";
 import Home from "./pages/home/Home.tsx";
-import { SalesPage, LossPreventionPage, OrdersPage, CouponsPage, ReceiversPage, CashiersPage } from "./DevPages.tsx";
+import { SalesPage, LossPreventionPage, OrdersPage, CouponsPage, ReceiversPage, CashiersPage, UpcPage } from "./DevPages.tsx";
 import Team from "./pages/team/Team.tsx";
 import Groups from "./pages/groups/Groups.tsx";
 import Settings from "./pages/settings/Settings.tsx";
-import UpcList from "./pages/upc/UpcList.tsx";
 import ItemLookup from "./pages/lookup/ItemLookup.tsx";
 import Forecasting from "./pages/forecast/Forecasting.tsx";
 import Dashboard from "./pages/quicksight/Dashboard.tsx";
@@ -34,7 +33,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="loss-prevention" element={<LossPreventionPage />} />
                 <Route path="groups" element={<Groups />} />
                 <Route path="settings" element={<Settings />} />
-                <Route path="upc-upload" element={<UpcList />} />
+                <Route path="upc-upload" element={<UpcPage />} />
                 <Route path="item-lookup" element={<ItemLookup />} />
                 <Route path="forecasting" element={<Forecasting />} />
                 <Route path="quicksight" element={<Dashboard />} />

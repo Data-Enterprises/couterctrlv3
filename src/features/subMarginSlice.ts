@@ -29,8 +29,13 @@ export type SubDeptGrade = {
   tySales: number;
   lySales: number;
   vsLYSalesPct: number;
+  lwSales: number;
+  lwMarginPct: number;
+  lwPtsDelta: number;
+  vsLWSalesPct: number;
   tyWeekOneMargins: SubDeptMargin[];
   lyWeekOneMargins: SubDeptMargin[];
+  lwWeekOneMargins: SubDeptMargin[];
 };
 
 export type ThresholdFilter = {
@@ -65,6 +70,7 @@ interface SubMarginState {
   weekTwoMarginsLY: SubDeptMargin[];
   weekThreeMarginsLY: SubDeptMargin[];
   weekFourMarginsLY: SubDeptMargin[];
+  weekFourMarginsLW: SubDeptMargin[];
   filteredMargins: SubDeptMargin[];
   selectedSubDeptId: number;
   subDeptFitlerText: string;
@@ -134,6 +140,7 @@ const initialState: SubMarginState = {
   weekTwoMarginsLY: [],
   weekThreeMarginsLY: [],
   weekFourMarginsLY: [],
+  weekFourMarginsLW: [],
   filteredMargins: [],
   selectedSubDeptId: 0,
   subDeptFitlerText: "",
@@ -249,6 +256,12 @@ const subMarginSlice = createSlice({
           break;
       }
     },
+    setWeekTrendMarginsLW: (
+      state,
+      action: PayloadAction<{ data: SubDeptMargin[]; week: number }>,
+    ) => {
+      if (action.payload.week === 4) state.weekFourMarginsLW = action.payload.data;
+    },
     setSubDeptFilterText: (state, action: PayloadAction<string>) => {
       state.subDeptFitlerText = action.payload;
     },
@@ -281,6 +294,7 @@ const subMarginSlice = createSlice({
       state.weekTwoMarginsLY = [];
       state.weekThreeMarginsLY = [];
       state.weekFourMarginsLY = [];
+      state.weekFourMarginsLW = [];
       state.filteredMargins = [];
       state.selectedSubDeptId = 0;
       state.subDeptFitlerText = "";
@@ -509,6 +523,7 @@ export const {
   setSubDeptFilterText,
   setWeekTrendMargins,
   setWeekTrendMarginsLY,
+  setWeekTrendMarginsLW,
   setSelectedWeekDay,
   resetSubMarginState,
   setUpcFilter,

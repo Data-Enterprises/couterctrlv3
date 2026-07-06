@@ -681,6 +681,7 @@ export interface ReceiverListItem {
 
 export interface ReceiverListResponse {
   error: number;
+  msg?: string;
   success: boolean;
   record_count: number;
   recievers: ReceiverListItem[];
@@ -761,6 +762,7 @@ export interface CouponItem {
 
 export interface CouponsResponse {
   error: number;
+  msg?: string;
   success: boolean;
   record_count: number;
   records: CouponItem[];
@@ -919,6 +921,7 @@ export type SubDept = {
 
 export type SubSalesJsonResp = {
   error: number;
+  msg?: string;
   success: boolean;
   store_count: number;
   total_records: number;
@@ -958,6 +961,7 @@ export type SubDeptMargin = {
 
 export type SubMarginsJsonResp = {
   error: number;
+  msg?: string;
   success: boolean;
   store_count: number;
   total_records: number;

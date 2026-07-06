@@ -42,6 +42,8 @@ const Orders = () => {
             ctx.dispatch(setSelectedGroupStores(activeStores));
             const storeids: number[] = activeStores.map((s: Store) => s.storeid);
             fetchAvailable(storeids);
+          } else {
+            toast.warn(j.msg);
           }
         })
         .catch((err: JsonError) => toast.error(err.message));
@@ -64,6 +66,10 @@ const Orders = () => {
     getAvailableOrders(ctx.url, ctx.token, start, end, storeids)
       .then((resp) => {
         const j: AvailableOrderResp = resp.data;
+        if (j.error !== 0) {
+          toast.warn(j.msg);
+          return;
+        }
         if (j.error === 0) {
           ctx.dispatch(setAvailableOrders(j.orders));
 
@@ -137,6 +143,8 @@ const Orders = () => {
 
           ctx.dispatch(setUniqueSubs(uniqueSubs));
           ctx.dispatch(setAllOrders(ordersWERet));
+        } else {
+          toast.warn(j.msg);
         }
       })
       .catch((err: JsonError) => toast.error(err.message))

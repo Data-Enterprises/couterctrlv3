@@ -27,6 +27,7 @@ import {
   reQueryLedger,
   type GradingMetric,
 } from "../../features/salesLedgerSlice";
+import { useToast } from "../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import EmptyPrompt from "../../components/EmptyPrompt";
 import TierStrip from "../../components/TierStrip";
@@ -138,6 +139,7 @@ const buildLedgerRows = (
 
 const SalesLedger = () => {
   const dispatch = useAppDispatch();
+  const toast = useToast();
   const context = useAppSelector((state) => state.app);
   const { userid } = useAppSelector((state) => state.user);
   const search = useAppSelector((state) => state.search);
@@ -195,6 +197,7 @@ const SalesLedger = () => {
     if (isGroup) {
       try {
         const groupResp = await getStoresAssignedToUserGroup(context.url, context.token, userid, search.lastGroup);
+        if (groupResp.data.error !== 0) toast.warn(groupResp.data.msg);
         const stores: Store[] = groupResp.data.error === 0
           ? groupResp.data.stores.filter((s: any) => s.active)
           : [];
