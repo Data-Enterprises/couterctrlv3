@@ -58,7 +58,7 @@ const Coupons = () => {
       .then((resp) => {
         const j: CouponsResponse = resp.data;
         if (j.error !== 0) {
-          toast.warn(j.msg);
+          toast.warn(j.msg ?? "Failed to load coupons");
         } else if (j.records.length > 0) {
           dispatch(setCoupons(j.records));
         } else {

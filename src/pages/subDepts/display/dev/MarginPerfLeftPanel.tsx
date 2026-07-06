@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MagnifyingGlassIcon, QuestionMarkCircleIcon, MinusCircleIcon } from "@heroicons/react/16/solid";
+import { MagnifyingGlassIcon, QuestionMarkCircleIcon } from "@heroicons/react/16/solid";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
 import { formatDate } from "../widgets";

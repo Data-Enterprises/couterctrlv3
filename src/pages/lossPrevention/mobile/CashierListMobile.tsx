@@ -15,7 +15,8 @@ interface Props {
   onSelectCashier: () => void;
 }
 
-const toSevBadge = (s: CashierSeverity): "critical" | "watch" | "healthy" => s === "ok" ? "healthy" : s;
+const toSevBadge = (s: CashierSeverity): "critical" | "watch" | "healthy" =>
+  s === "ok" || s === "ungraded" ? "healthy" : s;
 
 const MetricChip = ({ label, value, isPass }: { label: string; value: string; isPass: boolean }) => (
   <div className={`flex items-baseline gap-1 rounded px-1.5 py-0.5 ${isPass ? "bg-emerald-400 text-white" : "bg-red-400 text-white"}`}>

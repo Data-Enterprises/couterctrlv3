@@ -117,7 +117,7 @@ const SubDeptMarginsDev = () => {
       .then((resp) => {
         const j: SubSalesJsonResp = resp.data;
         if (j.error !== 0) {
-          toast.warn(j.msg);
+          toast.warn(j.msg ?? "Failed to load sub departments");
           return;
         }
         if (j.error === 0) {

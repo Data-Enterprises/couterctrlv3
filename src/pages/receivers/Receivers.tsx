@@ -51,7 +51,7 @@ const Receivers = () => {
       .then((resp) => {
         const j: ReceiverListResponse = resp.data;
         if (j.error !== 0) {
-          toast.warn(j.msg);
+          toast.warn(j.msg ?? "Failed to load receivers");
         } else if (j.recievers.length > 0) {
           dispatch(setReceiversList(j.recievers));
           dispatch(setListGridData(j.recievers));
