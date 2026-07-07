@@ -52,9 +52,9 @@ interface SalesLedgerState {
   // Grading
   gradingMetric: GradingMetric;
   threshold: ThresholdValue | null;
-  subDeptThreshold: number;
-  hourlyThreshold: number;
-  itemThreshold: number;
+  subDeptThreshold: number | null;
+  hourlyThreshold: number | null;
+  itemThreshold: number | null;
 
   // Sub dept items export
   exportSubDeptName: string;
@@ -161,13 +161,13 @@ const salesLedgerSlice = createSlice({
     setThreshold: (state, action: PayloadAction<ThresholdValue | null>) => {
       state.threshold = action.payload;
     },
-    setSubDeptThreshold: (state, action: PayloadAction<number>) => {
+    setSubDeptThreshold: (state, action: PayloadAction<number | null>) => {
       state.subDeptThreshold = action.payload;
     },
-    setHourlyThreshold: (state, action: PayloadAction<number>) => {
+    setHourlyThreshold: (state, action: PayloadAction<number | null>) => {
       state.hourlyThreshold = action.payload;
     },
-    setItemThreshold: (state, action: PayloadAction<number>) => {
+    setItemThreshold: (state, action: PayloadAction<number | null>) => {
       state.itemThreshold = action.payload;
     },
     setListSevFilter: (state, action: PayloadAction<SevFilter>) => {

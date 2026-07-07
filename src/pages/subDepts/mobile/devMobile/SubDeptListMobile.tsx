@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useSubMarginCtx, useParams } from "../../hooks";
@@ -34,7 +34,14 @@ const SubDeptListMobile = ({ onSearch, gradingProgress }: Props) => {
 
   const subDeptGrades = useAppSelector((s) => s.subMargin.subDeptGrades);
   const loadingGrades = useAppSelector((s) => s.subMargin.loadingGrades);
-  const gradingThreshold = useAppSelector((s) => s.subMargin.gradingThreshold);
+  const rawGradingThreshold = useAppSelector((s) => s.subMargin.gradingThreshold);
+
+  // Grading should never move sub depts around on its own when the threshold
+  // input is cleared — keep grading against the last valid amount so tier
+  // placement stays exactly where it was until a new number is typed.
+  const gradingThresholdRef = useRef<number>(rawGradingThreshold ?? 9);
+  if (rawGradingThreshold != null) gradingThresholdRef.current = rawGradingThreshold;
+  const gradingThreshold = gradingThresholdRef.current;
 
   const store = ctx.assignedStores.find((s) => s.storeid === params.searchValue);
   const storeName = store?.store_name ?? "";
@@ -96,8 +103,8 @@ const SubDeptListMobile = ({ onSearch, gradingProgress }: Props) => {
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <span className="text-[9px] text-white/45">Threshold</span>
             <ThresholdFilter
-              value={{ op: "gt", amount: gradingThreshold }}
-              onChange={(v) => dispatch(setGradingThreshold(v?.amount ?? 0))}
+              value={rawGradingThreshold === null ? null : { op: "gt", amount: rawGradingThreshold }}
+              onChange={(v) => dispatch(setGradingThreshold(v?.amount ?? null))}
               suffix="pts"
               showOp={false}
               showClear={false}

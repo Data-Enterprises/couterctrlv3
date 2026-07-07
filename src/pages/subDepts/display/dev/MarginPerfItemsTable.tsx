@@ -264,7 +264,12 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
     }))));
   }, [rawRows]);
 
-  const thresholdAmt = thresholdValue?.amount ?? 0;
+  // Grading should never move items around on its own when the threshold
+  // input is cleared — keep grading against the last valid amount so
+  // severity/sort stays exactly where it was until a new number is typed.
+  const thresholdRef = useRef<number>(thresholdValue?.amount ?? 3);
+  if (thresholdValue?.amount != null) thresholdRef.current = thresholdValue.amount;
+  const thresholdAmt = thresholdRef.current;
 
   const sevCounts = useMemo(() => {
     const counts: Record<Severity, number> = { critical: 0, watch: 0, healthy: 0, ungraded: 0 };

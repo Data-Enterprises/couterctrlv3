@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { MagnifyingGlassIcon, QuestionMarkCircleIcon } from "@heroicons/react/16/solid";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
@@ -139,8 +139,15 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
   const [legendHover, setLegendHover] = useState(false);
 
   const subDeptGrades = useAppSelector((s) => s.subMargin.subDeptGrades);
-  const gradingThreshold = useAppSelector((s) => s.subMargin.gradingThreshold);
+  const rawGradingThreshold = useAppSelector((s) => s.subMargin.gradingThreshold);
   const gradingMetric = useAppSelector((s) => s.subMargin.gradingMetric);
+
+  // Grading should never move sub depts around on its own when the threshold
+  // input is cleared — keep grading against the last valid amount so tier
+  // placement stays exactly where it was until a new number is typed.
+  const gradingThresholdRef = useRef<number>(rawGradingThreshold ?? 9);
+  if (rawGradingThreshold != null) gradingThresholdRef.current = rawGradingThreshold;
+  const gradingThreshold = gradingThresholdRef.current;
   const loadingGrades = useAppSelector((s) => s.subMargin.loadingGrades);
 
   const storeName = ctx.assignedStores.find((s) => s.storeid === ctx.searchValue)?.store_name ?? "";
@@ -174,7 +181,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
     ? grades.reduce((acc, g) => acc + g.grade.lwPtsDelta, 0) / grades.length
     : null;
 
-  const threshValue = { op: "gt" as const, amount: gradingThreshold };
+  const threshValue = rawGradingThreshold === null ? null : { op: "gt" as const, amount: rawGradingThreshold };
 
   const handleSubDeptClick = (id: number) => {
     if (id === ctx.selectedSubDeptId) return;
@@ -344,7 +351,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
             <span className="text-[10px] text-white/45 uppercase tracking-wide">Threshold</span>
             <ThresholdFilter
               value={threshValue}
-              onChange={(v) => dispatch(setGradingThreshold(v?.amount ?? gradingThreshold))}
+              onChange={(v) => dispatch(setGradingThreshold(v?.amount ?? null))}
               suffix="%"
               showOp={false}
               inputWidth={40}

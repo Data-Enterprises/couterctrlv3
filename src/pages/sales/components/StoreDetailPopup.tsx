@@ -236,9 +236,9 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
         <div className="flex items-center gap-1.5 py-1">
           <span className="text-[10px] text-content/45">{tab === "subdept" ? "Sub dept" : "Hourly"} Threshold</span>
           <ThresholdFilter
-            value={{ op: "gt", amount: activeThreshold }}
+            value={activeThreshold === null ? null : { op: "gt", amount: activeThreshold }}
             onChange={(v) => {
-              if (v) dispatch(tab === "subdept" ? setSubDeptThreshold(v.amount) : setHourlyThreshold(v.amount));
+              dispatch(tab === "subdept" ? setSubDeptThreshold(v?.amount ?? null) : setHourlyThreshold(v?.amount ?? null));
             }}
             showOp={false}
             suffix="%"

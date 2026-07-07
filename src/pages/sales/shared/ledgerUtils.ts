@@ -115,7 +115,7 @@ export const buildLedgerRows = (
   lw: WeeklySale[],
   ly: WeeklySale[],
   assignedStores: Store[] = [],
-  threshold: number | null = 9,
+  threshold: number = 9,
   gradingMetric: GradingMetric = "sales",
 ): LedgerRowData[] => {
   const storeIds = [...new Set(tw.map((d) => d.storeid))];
@@ -150,7 +150,6 @@ export const buildLedgerRows = (
       const vsLYPct = hasLY ? ((gradeTW - gradeLY) / gradeLY) * 100 : 0;
       const vsLWPct = hasLW ? ((gradeTW - gradeLW) / gradeLW) * 100 : 0;
       const severity: LedgerRowData["severity"] = (() => {
-        if (threshold === null) return "healthy";
         const pct = hasLY ? vsLYPct : hasLW ? vsLWPct : 0;
         if (pct < -threshold) return "critical";
         if (pct < 0) return "watch";

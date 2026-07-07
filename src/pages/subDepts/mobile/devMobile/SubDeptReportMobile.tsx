@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { ChevronLeftIcon, ChevronRightIcon, ExclamationTriangleIcon, ExclamationCircleIcon, CheckCircleIcon } from "@heroicons/react/20/solid";
 import { useAppSelector } from "../../../../hooks";
 import { useSubMarginCtx, useParams } from "../../hooks";
@@ -56,8 +56,15 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
 
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
-  const [itemThreshold, setItemThreshold] = useState(gradingThreshold);
+  const [rawItemThreshold, setRawItemThreshold] = useState<number | null>(gradingThreshold);
   const [sheetItem, setSheetItem] = useState<AggregatedItem | null>(null);
+
+  // Grading should never move items around on its own when the threshold
+  // input is cleared — keep grading against the last valid amount so tier
+  // placement stays exactly where it was until a new number is typed.
+  const itemThresholdRef = useRef<number>(rawItemThreshold ?? gradingThreshold ?? 9);
+  if (rawItemThreshold != null) itemThresholdRef.current = rawItemThreshold;
+  const itemThreshold = itemThresholdRef.current;
 
   const pillClass = (pts: number | null) => {
     const base = "text-[10px] font-semibold px-1.5 py-0.5 rounded";
@@ -305,10 +312,11 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
           <span>Threshold</span>
           <input
             type="number"
-            value={itemThreshold}
+            value={rawItemThreshold === null ? "" : rawItemThreshold}
             onChange={(e) => {
+              if (e.target.value === "") { setRawItemThreshold(null); return; }
               const n = Number(e.target.value);
-              if (!isNaN(n) && n >= 0) setItemThreshold(n);
+              if (!isNaN(n) && n >= 0) setRawItemThreshold(n);
             }}
             className="w-8 text-center text-[10px] bg-gray-50 border border-gray-200 rounded px-1 py-0.5 text-content"
             style={{ outline: "none", WebkitAppearance: "none", boxShadow: "none" }}

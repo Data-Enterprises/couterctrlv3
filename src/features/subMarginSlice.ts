@@ -107,7 +107,7 @@ interface SubMarginState {
   caseCostFilter: ThresholdFilter;
 
   subDeptGrades: Record<number, SubDeptGrade>;
-  gradingThreshold: number;
+  gradingThreshold: number | null;
   gradingMetric: GradingMetric;
   loadingGrades: boolean;
 
@@ -274,7 +274,7 @@ const subMarginSlice = createSlice({
     setSubDeptGrade(state, action: PayloadAction<{ id: number; grade: SubDeptGrade }>) {
       state.subDeptGrades[action.payload.id] = action.payload.grade;
     },
-    setGradingThreshold(state, action: PayloadAction<number>) {
+    setGradingThreshold(state, action: PayloadAction<number | null>) {
       state.gradingThreshold = action.payload;
     },
     setGradingMetric(state, action: PayloadAction<GradingMetric>) {

@@ -356,7 +356,6 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
   const critCount = cashierGrades.filter((g) => g.severity === "critical").length;
   const watchCount = cashierGrades.filter((g) => g.severity === "watch").length;
   const okCount = cashierGrades.filter((g) => g.severity === "ok").length;
-  const ungradedCount = cashierGrades.filter((g) => g.severity === "ungraded").length;
   const visibleGrades =
     cashierSevFilter === "all"
       ? cashierGrades
@@ -679,15 +678,6 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
                       <CheckCircleIcon className="w-2.5 h-2.5" />
                       OK ({okCount})
                     </button>
-                    {ungradedCount > 0 && (
-                      <button
-                        onClick={() => setCashierSevFilter("ungraded")}
-                        className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(cashierSevFilter === "ungraded", "ungraded")}`}
-                      >
-                        <MinusCircleIcon className="w-2.5 h-2.5" />
-                        N/A ({ungradedCount})
-                      </button>
-                    )}
                   </div>
 
                   {/* Column header + scrollable cashier rows + sticky avg footer */}

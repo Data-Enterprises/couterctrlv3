@@ -176,9 +176,20 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel, storeId, sele
   const { subSales, subSalesWk2, subSalesWk3 } = useSalesState();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const threshold = useAppSelector((state) => state.salesLedger.subDeptThreshold);
-  const itemThreshold = useAppSelector((state) => state.salesLedger.itemThreshold);
+  const rawThreshold = useAppSelector((state) => state.salesLedger.subDeptThreshold);
+  const rawItemThreshold = useAppSelector((state) => state.salesLedger.itemThreshold);
   const gradingMetric = useAppSelector((state) => state.salesLedger.gradingMetric);
+
+  // Grading should never move rows around on its own when the threshold input
+  // is cleared — keep grading against the last valid amount so severity/sort
+  // order stays exactly where it was until a new number is typed.
+  const thresholdRef = useRef<number>(rawThreshold ?? 9);
+  if (rawThreshold != null) thresholdRef.current = rawThreshold;
+  const threshold = thresholdRef.current;
+
+  const itemThresholdRef = useRef<number>(rawItemThreshold ?? 9);
+  if (rawItemThreshold != null) itemThresholdRef.current = rawItemThreshold;
+  const itemThreshold = itemThresholdRef.current;
   const dispatch = useAppDispatch();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
@@ -430,8 +441,8 @@ const PopupSubDeptList = ({ twDateLabel, lwDateLabel, lyDateLabel, storeId, sele
             <div className="flex-1" />
             <span className="text-[10px] text-content/45 flex-shrink-0">Item Threshold</span>
             <ThresholdFilter
-              value={{ op: "gt", amount: itemThreshold }}
-              onChange={(v) => { if (v) dispatch(setItemThreshold(v.amount)); }}
+              value={rawItemThreshold === null ? null : { op: "gt", amount: rawItemThreshold }}
+              onChange={(v) => dispatch(setItemThreshold(v?.amount ?? null))}
               showOp={false}
               suffix="%"
               inputWidth={40}

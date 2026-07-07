@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from "react";
+﻿import { useState, useMemo, useRef } from "react";
 import { useAppSelector } from "../../../hooks";
 import { formatCurrency2 } from "../../../utils";
 import {
@@ -167,7 +167,15 @@ const PopupHourlyView = ({
 }: PopupHourlyViewProps) => {
   const { hourlySales, hourlySalesLastWeek, hourlySalesLastYear } =
     useAppSelector((s) => s.sales);
-  const threshold = useAppSelector((s) => s.salesLedger.hourlyThreshold);
+  const rawThreshold = useAppSelector((s) => s.salesLedger.hourlyThreshold);
+
+  // Grading should never move rows around on its own when the threshold input
+  // is cleared — keep grading against the last valid amount so severity/sort
+  // order stays exactly where it was until a new number is typed.
+  const thresholdRef = useRef<number>(rawThreshold ?? 9);
+  if (rawThreshold != null) thresholdRef.current = rawThreshold;
+  const threshold = thresholdRef.current;
+
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [ctaOpen, setCtaOpen] = useState(false);

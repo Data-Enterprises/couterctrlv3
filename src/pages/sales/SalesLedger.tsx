@@ -1,5 +1,5 @@
 import { useSalesState } from "./hooks/useSalesState";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { getWeekly, getHourly } from "../../api/sales";
 import { getStoresAssignedToUserGroup } from "../../api/groups";
@@ -44,7 +44,7 @@ const buildLedgerRows = (
   lwData: WeeklySale[],
   lyData: WeeklySale[],
   assignedStores: Store[],
-  threshold: number | null,
+  threshold: number,
   gradingMetric: GradingMetric,
 ): LedgerRowData[] => {
   const storeIds = [...new Set(twData.map((d) => d.storeid))];
@@ -84,7 +84,6 @@ const buildLedgerRows = (
       const vsLWPct = hasLW ? ((gradeTW - gradeLW) / gradeLW) * 100 : 0;
 
       const severity: LedgerRowData["severity"] = (() => {
-        if (threshold === null) return "healthy";
         const pct = hasLY ? vsLYPct : hasLW ? vsLWPct : 0;
         if (pct < -threshold) return "critical";
         if (pct < 0) return "watch";
@@ -159,6 +158,14 @@ const SalesLedger = () => {
     gradingMetric,
   } = useAppSelector((state) => state.salesLedger);
   const { assignedStores } = useAppSelector((state) => state.user);
+
+  // Grading should never move stores around on its own when the threshold
+  // input is cleared — with no new number typed, keep grading against the
+  // last valid amount so severity/sort order stays exactly where it was.
+  const lastValidThresholdRef = useRef<number>(threshold?.amount ?? 9);
+  if (threshold?.amount != null) {
+    lastValidThresholdRef.current = threshold.amount;
+  }
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
@@ -261,7 +268,7 @@ const SalesLedger = () => {
     weeklySalesLastWeek,
     weeklySalesLastYear,
     assignedStores,
-    threshold?.amount ?? null,
+    lastValidThresholdRef.current,
     gradingMetric,
   );
 
