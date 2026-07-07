@@ -1,15 +1,17 @@
 ﻿import { useState, useMemo, useRef } from "react";
 import { useAppSelector } from "../../../hooks";
-import { formatCurrency2 } from "../../../utils";
+import { formatCurrency2, addDays, sameWeekDayLastYear } from "../../../utils";
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
   CheckCircleIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  PresentationChartLineIcon,
 } from "@heroicons/react/20/solid";
 import type { Severity } from "./LedgerRow";
 import { SEVERITY_CONFIG } from "./tierColumnUtils";
+import HourTrendChart from "./HourTrendChart";
 
 const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
 
@@ -167,6 +169,9 @@ const PopupHourlyView = ({
 }: PopupHourlyViewProps) => {
   const { hourlySales, hourlySalesLastWeek, hourlySalesLastYear } =
     useAppSelector((s) => s.sales);
+  const { rawHourly, rawLWHourly, rawLYHourly } = useAppSelector(
+    (s) => s.salesLedger,
+  );
   const rawThreshold = useAppSelector((s) => s.salesLedger.hourlyThreshold);
 
   // Grading should never move rows around on its own when the threshold input
@@ -179,6 +184,44 @@ const PopupHourlyView = ({
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [ctaOpen, setCtaOpen] = useState(false);
+  const [chartOpen, setChartOpen] = useState(false);
+
+  // Chart is always scoped to the full 7-day week for the selected hour,
+  // regardless of any single-day selection elsewhere in the popup — one
+  // point per day (TY/LW/LY), built from the unfiltered raw hourly records
+  // rather than the (possibly day-filtered) `hours` rows used for
+  // grading/severity below.
+  const weekHourDays = useMemo(() => {
+    if (selectedHour === null) return null;
+    const tyDates = Array.from(
+      new Set(rawHourly.map((h) => h.sale_date.split("T")[0])),
+    ).sort();
+
+    const sumFor = (src: typeof rawHourly, dateStr: string) =>
+      src
+        .filter(
+          (h) => h.hour === selectedHour && h.sale_date.split("T")[0] === dateStr,
+        )
+        .reduce((acc, h) => acc + (h.total_sales - h.total_tax), 0);
+
+    return tyDates.map((tyDate) => {
+      const lwDate = addDays(tyDate, -7).toISOString().split("T")[0];
+      const lyDate = sameWeekDayLastYear(tyDate).date;
+      const label = new Date(tyDate + "T12:00:00").toLocaleDateString(
+        "en-US",
+        { weekday: "short" },
+      );
+      return {
+        label,
+        tw: sumFor(rawHourly, tyDate),
+        lw: sumFor(rawLWHourly, lwDate),
+        ly: sumFor(rawLYHourly, lyDate),
+      };
+    });
+  }, [selectedHour, rawHourly, rawLWHourly, rawLYHourly]);
+
+  const hasWeekLW = selectedHour !== null && rawLWHourly.some((h) => h.hour === selectedHour);
+  const hasWeekLY = selectedHour !== null && rawLYHourly.some((h) => h.hour === selectedHour);
 
   const hours = useMemo((): HourRow[] => {
     const buildMap = (src: typeof hourlySales) =>
@@ -565,6 +608,33 @@ const PopupHourlyView = ({
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Chart */}
+              <div className="border-b border-gray-100">
+                <button
+                  onClick={() => setChartOpen((v) => !v)}
+                  className="w-full flex items-center justify-between px-4 py-2"
+                >
+                  <span className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wide text-content/55">
+                    <PresentationChartLineIcon className="w-3.5 h-3.5 text-content/45" />
+                    Chart
+                  </span>
+                  {chartOpen ? (
+                    <ChevronUpIcon className="w-3 h-3 text-content/40" />
+                  ) : (
+                    <ChevronDownIcon className="w-3 h-3 text-content/40" />
+                  )}
+                </button>
+                {chartOpen && weekHourDays && (
+                  <div className="px-2 pb-3">
+                    <HourTrendChart
+                      days={weekHourDays}
+                      hasLW={hasWeekLW}
+                      hasLY={hasWeekLY}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 

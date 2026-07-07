@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { MagnifyingGlassIcon, ExclamationTriangleIcon, ExclamationCircleIcon, CheckCircleIcon, MinusCircleIcon } from "@heroicons/react/16/solid";
 import { useAppDispatch } from "../../../../hooks";
+import { useSubMarginCtx } from "../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
-import { calculateCogs } from "../..";
-import { formatCurrency2 } from "../../../../utils";
+import { calculateCogs, getLYDate } from "../..";
+import { formatCurrency2, addDays } from "../../../../utils";
 import { setMenuPosition, setSMClipboardText } from "../../../../features/ctxMenuSlice";
 import type { SubDeptMargin } from "../../../../interfaces";
 import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
@@ -230,9 +231,13 @@ interface Props {
   lyMargins: SubDeptMargin[];
 }
 
+const byDate = (src: SubDeptMargin[], dateStr: string) =>
+  src.filter((m) => m.sale_date.split("T")[0] === dateStr);
+
 const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
+  const ctx = useSubMarginCtx();
 
   const [sortCol, setSortCol] = useState<SortCol | null>("grossSales");
   const [sortDir, setSortDir] = useState<"desc" | "asc" | null>("desc");
@@ -244,9 +249,24 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
   const [thresholdValue, setThresholdValue] = useState<ThresholdValue | null>({ op: "gt", amount: 3 });
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
 
+  // When a single day is selected in the day sidebar, scope all three
+  // periods down to that day — TY to the day itself, LW/LY to that same
+  // day's mapped date (holiday- and leap-year-aware for LY via getLYDate).
+  const dayFilteredMargins = useMemo(() => {
+    if (!ctx.selectedWeekDay) return { ty: tyMargins, lw: lwMargins, ly: lyMargins };
+    const tyDate = ctx.selectedWeekDay;
+    const lwDate = addDays(tyDate, -7).toISOString().split("T")[0];
+    const lyDate = getLYDate(tyDate);
+    return {
+      ty: byDate(tyMargins, tyDate),
+      lw: byDate(lwMargins, lwDate),
+      ly: byDate(lyMargins, lyDate),
+    };
+  }, [ctx.selectedWeekDay, tyMargins, lwMargins, lyMargins]);
+
   const rawRows = useMemo(
-    () => buildRows(tyMargins, lwMargins, lyMargins),
-    [tyMargins, lwMargins, lyMargins],
+    () => buildRows(dayFilteredMargins.ty, dayFilteredMargins.lw, dayFilteredMargins.ly),
+    [dayFilteredMargins],
   );
 
   useEffect(() => {
@@ -357,7 +377,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
         <div className="w-px h-4 bg-gray-200 flex-shrink-0 mx-0.5" />
 
         <button onClick={() => setSevFilter("all")} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${sevFilter === "all" ? "bg-[#1e2a4a] border-[#1e2a4a] text-white" : "bg-transparent border-gray-200 text-content/40 hover:text-content/60"}`}>
-          All
+          All ({rawRows.length})
         </button>
         <button onClick={() => setSevFilter("critical")} className={chipClass(sevFilter === "critical", "critical")}>
           <ExclamationTriangleIcon className="w-2.5 h-2.5" />Crit ({sevCounts.critical})

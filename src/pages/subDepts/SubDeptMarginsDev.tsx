@@ -6,7 +6,7 @@ import { useSubMarginState } from "./hooks/useSubMarginState";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { getSubDepts, getSubMargins } from "../../api/subMargins";
 import { useParams } from "./hooks";
-import { setDates, calculateCogs } from ".";
+import { setDates, calculateCogs, getLYDate } from ".";
 import type { JsonError, SubDept, SubSalesJsonResp, SubMarginsJsonResp, SubDeptMargin } from "../../interfaces";
 import {
   setSubDeptGrade,
@@ -145,7 +145,7 @@ const SubDeptMarginsDev = () => {
           for (const sd of subDepts) {
             Promise.all([
               fetchAllPages(ctx.url, ctx.token, sd.id, params.start, params.end, params.useGroups, params.searchValue, params.singleStore),
-              fetchSafe(ctx.url, ctx.token, sd.id, setDates(new Date(params.start), 364), setDates(new Date(params.end), 364), params.useGroups, params.searchValue, params.singleStore),
+              fetchSafe(ctx.url, ctx.token, sd.id, getLYDate(params.start), getLYDate(params.end), params.useGroups, params.searchValue, params.singleStore),
               fetchSafe(ctx.url, ctx.token, sd.id, setDates(new Date(params.end), 13), setDates(new Date(params.end), 7), params.useGroups, params.searchValue, params.singleStore),
             ])
               .then(([tyData, lyData, lwData]) => {

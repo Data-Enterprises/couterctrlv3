@@ -389,17 +389,17 @@ const TitleBar = () => {
             <button
               onClick={() => dispatch(toggleDevMode())}
               className="flex items-center gap-0 rounded-full overflow-hidden border border-white/20 text-[10px] font-bold select-none"
-              title={context.devMode ? "Switch to PROD" : "Switch to DEV"}
+              title={context.devMode ? "Switch to LIVE" : "Switch to PREVIEW"}
             >
               <span
                 className={`px-2.5 py-1 transition-colors ${!context.devMode ? "bg-white text-[#1e2a4a]" : "text-white/40"}`}
               >
-                PROD
+                LIVE
               </span>
               <span
                 className={`px-2.5 py-1 transition-colors ${context.devMode ? "bg-emerald-500 text-white" : "text-white/40"}`}
               >
-                DEV
+                PREVIEW
               </span>
             </button>
           </div>

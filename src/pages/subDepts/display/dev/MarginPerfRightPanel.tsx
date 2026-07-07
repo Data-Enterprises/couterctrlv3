@@ -3,16 +3,17 @@ import { useAppDispatch, useAppSelector, useStoreName } from "../../../../hooks"
 import { useSubMarginCtx } from "../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
 import { formatDate } from "../widgets";
-import { formatCurrency2 } from "../../../../utils";
+import { formatCurrency2, addDays } from "../../../../utils";
 import { gpm } from "../../../../functions";
-import { calculateCogs, setDates } from "../..";
+import { calculateCogs, setDates, getLYDate } from "../..";
 import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
-import type { SubDeptCost } from "../../../../interfaces";
+import type { SubDeptCost, SubDeptMargin } from "../../../../interfaces";
 
 import LoadingIndicator from "../../../../components/loading/LoadingIndicator";
 import MarginPerfItemsTable from "./MarginPerfItemsTable";
 import SubDeptCostGrid from "../widgets/SubDeptCostGrid";
 import MarginPerfExportModal from "./MarginPerfExportModal";
+import MarginPerfDaySidebar from "./MarginPerfDaySidebar";
 
 const MarginPerfRightPanel = () => {
   const ctx = useSubMarginCtx();
@@ -27,13 +28,36 @@ const MarginPerfRightPanel = () => {
   const periodStart = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 6)) : "";
   const dateRange = periodStart && periodEnd ? `${periodStart} – ${periodEnd}` : "";
 
-  const lyPeriodEnd = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 364)) : "";
-  const lyPeriodStart = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 370)) : "";
+  const lyPeriodEnd = ctx.singleDate ? formatDate(getLYDate(ctx.singleDate)) : "";
+  const lyPeriodStart = ctx.singleDate
+    ? formatDate(getLYDate(setDates(new Date(ctx.singleDate), 6)))
+    : "";
   const lyDateRange = lyPeriodStart && lyPeriodEnd ? `${lyPeriodStart} – ${lyPeriodEnd}` : "";
 
   const lwPeriodEnd = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 7)) : "";
   const lwPeriodStart = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 13)) : "";
   const lwDateRange = lwPeriodStart && lwPeriodEnd ? `${lwPeriodStart} – ${lwPeriodEnd}` : "";
+
+  // When a single day is selected in the day sidebar, the KPI strip scopes
+  // down to that day (TY the day itself, LW/LY that day's mapped date,
+  // holiday- and leap-year-aware for LY via getLYDate) instead of the week.
+  const byDate = (src: SubDeptMargin[], dateStr: string) =>
+    src.filter((m) => m.sale_date.split("T")[0] === dateStr);
+  const fmtDayLabel = (iso: string) =>
+    new Date(iso + "T12:00:00").toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+
+  const selectedLwDate = ctx.selectedWeekDay
+    ? addDays(ctx.selectedWeekDay, -7).toISOString().split("T")[0]
+    : null;
+  const selectedLyDate = ctx.selectedWeekDay ? getLYDate(ctx.selectedWeekDay) : null;
+
+  const kpiTyLabel = ctx.selectedWeekDay ? fmtDayLabel(ctx.selectedWeekDay) : dateRange;
+  const kpiLwLabel = selectedLwDate ? fmtDayLabel(selectedLwDate) : lwDateRange;
+  const kpiLyLabel = selectedLyDate ? fmtDayLabel(selectedLyDate) : lyDateRange;
 
   const computeKpis = (src: typeof ctx.weekOneMargins) => {
     if (!src.length) return null;
@@ -43,9 +67,20 @@ const MarginPerfRightPanel = () => {
     return { sales, cogs: cogsTotal, margin: gpm(sales, cogsTotal), rawMargin: marginPct };
   };
 
-  const tyKpis = useMemo(() => computeKpis(ctx.weekOneMargins), [ctx.weekOneMargins]);
-  const lwKpis = useMemo(() => computeKpis(ctx.weekTwoMargins), [ctx.weekTwoMargins]);
-  const lyKpis = useMemo(() => computeKpis(ctx.weekOneMarginsLY), [ctx.weekOneMarginsLY]);
+  const tyKpis = useMemo(() => {
+    const src = ctx.selectedWeekDay ? byDate(ctx.weekOneMargins, ctx.selectedWeekDay) : ctx.weekOneMargins;
+    return computeKpis(src);
+  }, [ctx.selectedWeekDay, ctx.weekOneMargins]);
+
+  const lwKpis = useMemo(() => {
+    const src = selectedLwDate ? byDate(ctx.weekTwoMargins, selectedLwDate) : ctx.weekTwoMargins;
+    return computeKpis(src);
+  }, [selectedLwDate, ctx.weekTwoMargins]);
+
+  const lyKpis = useMemo(() => {
+    const src = selectedLyDate ? byDate(ctx.weekOneMarginsLY, selectedLyDate) : ctx.weekOneMarginsLY;
+    return computeKpis(src);
+  }, [selectedLyDate, ctx.weekOneMarginsLY]);
 
   const noCostCount = useMemo(() => {
     const seen = new Set<string>();
@@ -71,10 +106,7 @@ const MarginPerfRightPanel = () => {
   const [exportOpen, setExportOpen] = useState(false);
 
   const handleNoCostTab = () => {
-    const fmtDate = (dte: string) => {
-      const s = dte.split("T")[0].split("-");
-      return `${s[1]}/${s[2]}/${s[0]}`;
-    };
+    const fmtDate = (dte: string) => dte.split("T")[0];
     const noCostItems = ctx.weekOneMargins.filter(
       (m) => m.case_size === 0 || (m.net_cost === 0 && m.cost === 0),
     );
@@ -100,10 +132,7 @@ const MarginPerfRightPanel = () => {
   };
 
   const handleCostTab = () => {
-    const fmtDate = (dte: string) => {
-      const s = dte.split("T")[0].split("-");
-      return `${s[1]}/${s[2]}/${s[0]}`;
-    };
+    const fmtDate = (dte: string) => dte.split("T")[0];
     const costData: SubDeptCost[] = ctx.weekOneMargins.reduce((acc: SubDeptCost[], curr) => {
       const found = acc.find((i) => i.product_code === curr.product_code);
       if (!found) {
@@ -175,7 +204,7 @@ const MarginPerfRightPanel = () => {
             <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">
               {gradingMetric === "margin" ? "TY Margin" : "TY Net Sales"}
             </div>
-            <div className="text-[8px] text-content/55 italic mb-0.5">{dateRange}</div>
+            <div className="text-[8px] text-content/55 italic mb-0.5">{kpiTyLabel}</div>
             <div className="text-[13px] font-semibold text-content">
               {tyKpis ? gradingMetric === "margin" ? tyKpis.margin : formatCurrency2(tyKpis.sales) : "—"}
             </div>
@@ -184,7 +213,7 @@ const MarginPerfRightPanel = () => {
           {/* vs LW */}
           <div className="px-3 py-2.5">
             <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">vs Last Week</div>
-            <div className="text-[8px] text-content/55 italic mb-0.5">{lwDateRange}</div>
+            <div className="text-[8px] text-content/55 italic mb-0.5">{kpiLwLabel}</div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-[13px] font-semibold text-content">
                 {lwKpis ? gradingMetric === "margin" ? lwKpis.margin : formatCurrency2(lwKpis.sales) : "—"}
@@ -205,7 +234,7 @@ const MarginPerfRightPanel = () => {
           {/* vs LY */}
           <div className="px-3 py-2.5">
             <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">vs Last Year</div>
-            <div className="text-[8px] text-content/55 italic mb-0.5">{lyDateRange}</div>
+            <div className="text-[8px] text-content/55 italic mb-0.5">{kpiLyLabel}</div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-[13px] font-semibold text-content">
                 {lyKpis ? gradingMetric === "margin" ? lyKpis.margin : formatCurrency2(lyKpis.sales) : "—"}
@@ -224,6 +253,9 @@ const MarginPerfRightPanel = () => {
           </div>
 
         </div>
+
+        {/* ── Day sidebar ── */}
+        <MarginPerfDaySidebar />
 
         {/* ── Tabs ── */}
         <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
