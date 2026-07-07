@@ -84,18 +84,36 @@ const LedgerStoreReport = () => {
     itemThreshold,
   } = useAppSelector((s) => s.salesLedger);
 
-  const activeThreshold =
+  const rawActiveThreshold =
     tab === "subdept" ? subDeptThreshold : hourlyThreshold;
   const [tabThresholdInput, setTabThresholdInput] = useState(
-    String(activeThreshold),
+    rawActiveThreshold === null ? "" : String(rawActiveThreshold),
   );
   const [itemThresholdInput, setItemThresholdInput] = useState(
-    String(itemThreshold),
+    itemThreshold === null ? "" : String(itemThreshold),
   );
 
   useEffect(() => {
-    setTabThresholdInput(String(activeThreshold));
+    setTabThresholdInput(rawActiveThreshold === null ? "" : String(rawActiveThreshold));
   }, [tab]);
+
+  // Grading should never move rows around on its own when a threshold input
+  // is cleared — keep grading against the last valid amount so severity/sort
+  // order stays exactly where it was until a new number is typed.
+  const subDeptThresholdRef = useRef<number>(subDeptThreshold ?? 9);
+  if (subDeptThreshold != null) subDeptThresholdRef.current = subDeptThreshold;
+  const effectiveSubDeptThreshold = subDeptThresholdRef.current;
+
+  const hourlyThresholdRef = useRef<number>(hourlyThreshold ?? 9);
+  if (hourlyThreshold != null) hourlyThresholdRef.current = hourlyThreshold;
+  const effectiveHourlyThreshold = hourlyThresholdRef.current;
+
+  const itemThresholdRef = useRef<number>(itemThreshold ?? 9);
+  if (itemThreshold != null) itemThresholdRef.current = itemThreshold;
+  const effectiveItemThreshold = itemThresholdRef.current;
+
+  const activeThreshold =
+    tab === "subdept" ? effectiveSubDeptThreshold : effectiveHourlyThreshold;
 
   // ── Date ranges ─────────────────────────────────────────────────────────────
   const twEnd = formatGoliathDate(search.singleDate);
@@ -366,14 +384,14 @@ const LedgerStoreReport = () => {
       })
       .sort((a, b) => {
         const rd =
-          SEVERITY_RANK[deptSeverity(a, subDeptThreshold)] -
-          SEVERITY_RANK[deptSeverity(b, subDeptThreshold)];
+          SEVERITY_RANK[deptSeverity(a, effectiveSubDeptThreshold)] -
+          SEVERITY_RANK[deptSeverity(b, effectiveSubDeptThreshold)];
         return rd !== 0
           ? rd
           : (a.hasLY ? a.vsLYPct : a.vsLWPct) -
               (b.hasLY ? b.vsLYPct : b.vsLWPct);
       });
-  }, [rawSubs, rawLWSubs, rawLYSubs, selectedDate, subDeptThreshold]);
+  }, [rawSubs, rawLWSubs, rawLYSubs, selectedDate, effectiveSubDeptThreshold]);
 
   const hours = useMemo((): HourRow[] => {
     const lwDay = selectedDate
@@ -417,14 +435,14 @@ const LedgerStoreReport = () => {
       })
       .sort((a, b) => {
         const rd =
-          SEVERITY_RANK[hourSeverity(a, hourlyThreshold)] -
-          SEVERITY_RANK[hourSeverity(b, hourlyThreshold)];
+          SEVERITY_RANK[hourSeverity(a, effectiveHourlyThreshold)] -
+          SEVERITY_RANK[hourSeverity(b, effectiveHourlyThreshold)];
         return rd !== 0
           ? rd
           : (a.hasLY ? a.vsLYPct : a.vsLWPct) -
               (b.hasLY ? b.vsLYPct : b.vsLWPct);
       });
-  }, [rawHourly, rawLWHourly, rawLYHourly, selectedDate, hourlyThreshold]);
+  }, [rawHourly, rawLWHourly, rawLYHourly, selectedDate, effectiveHourlyThreshold]);
 
   // ── Sheet row resolution ──────────────────────────────────────────────────────
   const sheetDept =
@@ -437,9 +455,9 @@ const LedgerStoreReport = () => {
       : null;
   const sheetRow = sheetDept ?? sheetHour;
   const sheetSev: Severity | null = sheetDept
-    ? deptSeverity(sheetDept, subDeptThreshold)
+    ? deptSeverity(sheetDept, effectiveSubDeptThreshold)
     : sheetHour
-      ? hourSeverity(sheetHour, hourlyThreshold)
+      ? hourSeverity(sheetHour, effectiveHourlyThreshold)
       : null;
 
   const sheetTW = sheetRow?.tw ?? 0;
@@ -473,7 +491,7 @@ const LedgerStoreReport = () => {
   const signalItems =
     tab === "subdept"
       ? depts.map((r) => ({
-          sev: deptSeverity(r, subDeptThreshold),
+          sev: deptSeverity(r, effectiveSubDeptThreshold),
           label: r.desc,
           tw: r.tw,
           qty: r.qty,
@@ -484,7 +502,7 @@ const LedgerStoreReport = () => {
           onClick: () => dispatch(openSheet({ type: "subdept", id: r.id })),
         }))
       : hours.map((r) => ({
-          sev: hourSeverity(r, hourlyThreshold),
+          sev: hourSeverity(r, effectiveHourlyThreshold),
           label: `${ampm(r.hour)} – ${ampm(r.hour + 1 <= 23 ? r.hour + 1 : 0)}`,
           tw: r.tw,
           qty: r.qty,
@@ -699,6 +717,14 @@ const LedgerStoreReport = () => {
               value={tabThresholdInput}
               onChange={(e) => {
                 setTabThresholdInput(e.target.value);
+                if (e.target.value === "") {
+                  dispatch(
+                    tab === "subdept"
+                      ? setSubDeptThreshold(null)
+                      : setHourlyThreshold(null),
+                  );
+                  return;
+                }
                 const v = parseInt(e.target.value, 10);
                 if (!isNaN(v) && v >= 1 && v <= 99)
                   dispatch(
@@ -709,8 +735,8 @@ const LedgerStoreReport = () => {
               }}
               onBlur={() => {
                 const v = parseInt(tabThresholdInput, 10);
-                if (isNaN(v) || v < 1 || v > 99)
-                  setTabThresholdInput(String(activeThreshold));
+                if (tabThresholdInput !== "" && (isNaN(v) || v < 1 || v > 99))
+                  setTabThresholdInput(rawActiveThreshold === null ? "" : String(rawActiveThreshold));
               }}
               className="w-9 text-center text-[11px] bg-gray-50 border border-gray-200 rounded px-1 py-px focus:outline-none focus:border-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
@@ -982,7 +1008,7 @@ const LedgerStoreReport = () => {
                       ? ((item.tyQty - item.lwQty) / item.lwQty) * 100
                       : null;
                   const pct = lyQtyPct ?? lwQtyPct ?? 0;
-                  if (pct < -itemThreshold) return "critical";
+                  if (pct < -effectiveItemThreshold) return "critical";
                   if (pct < 0) return "watch";
                   return "healthy";
                 };
@@ -1023,14 +1049,18 @@ const LedgerStoreReport = () => {
                         value={itemThresholdInput}
                         onChange={(e) => {
                           setItemThresholdInput(e.target.value);
+                          if (e.target.value === "") {
+                            dispatch(setItemThreshold(null));
+                            return;
+                          }
                           const v = parseInt(e.target.value, 10);
                           if (!isNaN(v) && v >= 1 && v <= 99)
                             dispatch(setItemThreshold(v));
                         }}
                         onBlur={() => {
                           const v = parseInt(itemThresholdInput, 10);
-                          if (isNaN(v) || v < 1 || v > 99)
-                            setItemThresholdInput(String(itemThreshold));
+                          if (itemThresholdInput !== "" && (isNaN(v) || v < 1 || v > 99))
+                            setItemThresholdInput(itemThreshold === null ? "" : String(itemThreshold));
                         }}
                         className="w-9 text-center text-[10px] bg-white border border-gray-200 rounded px-1 py-px focus:outline-none focus:border-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
@@ -1147,7 +1177,7 @@ const LedgerStoreReport = () => {
                                               </span>
                                               {lwNetPct !== null && (
                                                 <span
-                                                  className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lwNetPct, itemThreshold)}`}
+                                                  className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lwNetPct, effectiveItemThreshold)}`}
                                                 >
                                                   {formatPct(lwNetPct)}
                                                 </span>
@@ -1177,7 +1207,7 @@ const LedgerStoreReport = () => {
                                               </span>
                                               {lyNetPct !== null && (
                                                 <span
-                                                  className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lyNetPct, itemThreshold)}`}
+                                                  className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lyNetPct, effectiveItemThreshold)}`}
                                                 >
                                                   {formatPct(lyNetPct)}
                                                 </span>

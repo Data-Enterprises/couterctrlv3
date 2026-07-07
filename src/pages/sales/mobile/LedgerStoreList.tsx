@@ -1,4 +1,4 @@
-﻿import { useMemo } from "react";
+﻿import { useMemo, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { buildLedgerRows, fmtDate } from "../shared/ledgerUtils";
 import { setListSevFilter, navigateToReport, setHasSearched, setThreshold } from "../../../features/salesLedgerSlice";
@@ -17,12 +17,20 @@ const LedgerStoreList = () => {
   const { listSevFilter, threshold, gradingMetric } = useAppSelector((s) => s.salesLedger);
   const { assignedStores } = useAppSelector((s) => s.user);
 
+  // Grading should never move stores around on its own when the threshold
+  // input is cleared — with no new number typed, keep grading against the
+  // last valid amount so severity/sort order stays exactly where it was.
+  const lastValidThresholdRef = useRef<number>(threshold?.amount ?? 9);
+  if (threshold?.amount != null) {
+    lastValidThresholdRef.current = threshold.amount;
+  }
+
   const twEnd = formatGoliathDate(search.singleDate);
   const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
   const weekLabel = `${fmtDate(twStart)} – ${fmtDate(twEnd)}, ${new Date(twEnd + "T12:00:00").getFullYear()}`;
 
   const ledgerRows = useMemo(
-    () => buildLedgerRows(weeklySales, weeklySalesLastWeek, weeklySalesLastYear, assignedStores, threshold?.amount ?? null, gradingMetric),
+    () => buildLedgerRows(weeklySales, weeklySalesLastWeek, weeklySalesLastYear, assignedStores, lastValidThresholdRef.current, gradingMetric),
     [weeklySales, weeklySalesLastWeek, weeklySalesLastYear, assignedStores, threshold, gradingMetric],
   );
 

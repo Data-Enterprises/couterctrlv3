@@ -42,6 +42,8 @@ const LossPrevention = () => {
           // const saleTypes = [...j.sale_types, { sale_type: "Description" }];
           const saleTypes = j.sale_types;
           dispatch(setSaleTypes(saleTypes));
+        } else {
+          toast.warn(j.msg);
         }
       })
       .catch((err: JsonError) =>

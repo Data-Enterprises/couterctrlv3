@@ -23,6 +23,7 @@ import ReceiverDetailPanel from "./ReceiverDetailPanel";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import { useEffect, useState } from "react";
 import ReceiversMobileView from "./mobile/ReceiversMobileView";
+import ReceiversMobileDev from "./mobile/devMobile";
 import ReceiversTablet from "./tablet/ReceiversTablet";
 
 const Receivers = () => {
@@ -30,7 +31,7 @@ const Receivers = () => {
   const dispatch = useAppDispatch();
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const state = useAppSelector((state) => state.receivers);
-  const { url, token, isMobile, isTablet } = useAppSelector((state) => state.app);
+  const { url, token, isMobile, isTablet, devMode } = useAppSelector((state) => state.app);
   const { assignedStores } = useAppSelector((state) => state.user);
   const { startDate, endDate } = useAppSelector((state) => state.search);
 
@@ -50,7 +51,9 @@ const Receivers = () => {
     getReceiversList(url, token, state.storeid, startDate, endDate)
       .then((resp) => {
         const j: ReceiverListResponse = resp.data;
-        if (j.error == 0 && j.recievers.length > 0) {
+        if (j.error !== 0) {
+          toast.warn(j.msg ?? "Failed to load receivers");
+        } else if (j.recievers.length > 0) {
           dispatch(setReceiversList(j.recievers));
           dispatch(setListGridData(j.recievers));
 
@@ -90,6 +93,8 @@ const Receivers = () => {
   const setSelectedStore = (id: number) => {
     dispatch(setStoreId(id));
   };
+
+  if (isMobile && devMode) return <ReceiversMobileDev />;
 
   if (isMobile) {
     return (

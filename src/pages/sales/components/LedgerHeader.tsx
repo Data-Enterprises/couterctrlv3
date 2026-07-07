@@ -132,7 +132,7 @@ const LedgerHeader = ({
         {/* Threshold */}
         <div className="flex items-center gap-1.5 flex-shrink-0">
           <span className="text-[10px] text-white/45 uppercase tracking-wide">
-            Threshold
+            Store Threshold
           </span>
           <ThresholdFilter
             value={threshold}

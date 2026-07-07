@@ -63,16 +63,19 @@ const SalesLedgerMobile = () => {
 
   return (
     <div className="flex flex-col h-[calc(100dvh-3rem)] overflow-hidden">
-      <SearchCard
-        top
-        title="Weekly Performance"
-        description="Select a store or group and end date."
-        buttonLabel="Load stores"
-        singleDate
-        onSearch={fetchLedger}
-        loading={ledgerLoading}
-      />
-      {hasSearched && <div className="flex-1 overflow-hidden"><LedgerStoreList /></div>}
+      {!hasSearched ? (
+        <SearchCard
+          top
+          title="Weekly Performance"
+          description="Select a store or group and end date."
+          buttonLabel="Load stores"
+          singleDate
+          onSearch={fetchLedger}
+          loading={ledgerLoading}
+        />
+      ) : (
+        <div className="flex-1 overflow-hidden"><LedgerStoreList /></div>
+      )}
     </div>
   );
 };

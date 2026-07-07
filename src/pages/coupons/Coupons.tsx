@@ -20,6 +20,7 @@ import DatePickers from "../../components/datePickers/DatePickers";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import TransactionModal from "../lossPrevention/TransactionModal";
 import CouponsMobile from "./mobile/CouponsMobile";
+import CouponsMobileDev from "./mobile/devMobile";
 import CouponListPanel from "./CouponListPanel";
 import CouponDetailPanel from "./CouponDetailPanel";
 
@@ -27,6 +28,7 @@ const Coupons = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useCouponContext();
+  const devMode = useAppSelector((s) => s.app.devMode);
   const { url, token } = useAppSelector((s) => s.app);
   const { userid } = useAppSelector((s) => s.user);
   const [selectedKey, setSelectedKey] = useState("");
@@ -41,6 +43,8 @@ const Coupons = () => {
         .then((resp) => {
           if (resp.data.error === 0) {
             dispatch(setSelectedGroupStores(resp.data.stores.filter((s: any) => s.active)));
+          } else {
+            toast.warn(resp.data.msg);
           }
         })
         .catch(() => {});
@@ -55,7 +59,9 @@ const Coupons = () => {
     getCoupons(context.url, context.token, start, end, useGroups, singleStore, searchValue)
       .then((resp) => {
         const j: CouponsResponse = resp.data;
-        if (j.error === 0 && j.records.length > 0) {
+        if (j.error !== 0) {
+          toast.warn(j.msg ?? "Failed to load coupons");
+        } else if (j.records.length > 0) {
           dispatch(setCoupons(j.records));
         } else {
           dispatch(setNoCouponsFound(true));
@@ -65,6 +71,7 @@ const Coupons = () => {
       .finally(() => dispatch(setIsFetching(false)));
   };
 
+  if (context.isMobile && devMode) return <CouponsMobileDev />;
   if (context.isMobile) return <CouponsMobile />;
 
   // Loading

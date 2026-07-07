@@ -3,7 +3,7 @@ import type { SubDeptMargin, SubDept, SubDeptCost } from "../interfaces";
 import type { ItemRow, ItemRowMobile } from "../pages/subDepts/display/widgets";
 import type { ItemLookupHistory } from "./itemLookupSlice";
 
-export type SubDeptGridView = "item" | "cost";
+export type SubDeptGridView = "item" | "cost" | "nocost";
 export type MarginWeek = 0 | 1 | 2 | 3 | 4 | 5;
 export type ItemFilterType =
   | "upc"
@@ -17,6 +17,26 @@ export type ItemFilterType =
   | "";
 
 export type ThreshOperator = ">" | "<" | "=" | "";
+
+export type MarginTier = "critical" | "watch" | "healthy";
+export type GradingMetric = "margin" | "sales";
+
+export type SubDeptGrade = {
+  tyMarginPct: number;
+  lyMarginPct: number;
+  ptsDelta: number;
+  noCostCount: number;
+  tySales: number;
+  lySales: number;
+  vsLYSalesPct: number;
+  lwSales: number;
+  lwMarginPct: number;
+  lwPtsDelta: number;
+  vsLWSalesPct: number;
+  tyWeekOneMargins: SubDeptMargin[];
+  lyWeekOneMargins: SubDeptMargin[];
+  lwWeekOneMargins: SubDeptMargin[];
+};
 
 export type ThresholdFilter = {
   operator: ThreshOperator;
@@ -50,6 +70,7 @@ interface SubMarginState {
   weekTwoMarginsLY: SubDeptMargin[];
   weekThreeMarginsLY: SubDeptMargin[];
   weekFourMarginsLY: SubDeptMargin[];
+  weekFourMarginsLW: SubDeptMargin[];
   filteredMargins: SubDeptMargin[];
   selectedSubDeptId: number;
   subDeptFitlerText: string;
@@ -85,6 +106,11 @@ interface SubMarginState {
   unitCostFilter: ThresholdFilter;
   caseCostFilter: ThresholdFilter;
 
+  subDeptGrades: Record<number, SubDeptGrade>;
+  gradingThreshold: number | null;
+  gradingMetric: GradingMetric;
+  loadingGrades: boolean;
+
   scannedUpc: string;
   pause: boolean;
   scannedItemHistory: ItemLookupHistory[];
@@ -114,6 +140,7 @@ const initialState: SubMarginState = {
   weekTwoMarginsLY: [],
   weekThreeMarginsLY: [],
   weekFourMarginsLY: [],
+  weekFourMarginsLW: [],
   filteredMargins: [],
   selectedSubDeptId: 0,
   subDeptFitlerText: "",
@@ -141,6 +168,10 @@ const initialState: SubMarginState = {
   filteredCostGridData: [],
   caseCostFilter: defaultThreshFilter,
   unitCostFilter: defaultThreshFilter,
+  subDeptGrades: {},
+  gradingThreshold: 9,
+  gradingMetric: "margin",
+  loadingGrades: false,
   scannedUpc: "",
   pause: true,
   scannedItemHistory: [],
@@ -225,6 +256,12 @@ const subMarginSlice = createSlice({
           break;
       }
     },
+    setWeekTrendMarginsLW: (
+      state,
+      action: PayloadAction<{ data: SubDeptMargin[]; week: number }>,
+    ) => {
+      if (action.payload.week === 4) state.weekFourMarginsLW = action.payload.data;
+    },
     setSubDeptFilterText: (state, action: PayloadAction<string>) => {
       state.subDeptFitlerText = action.payload;
     },
@@ -233,6 +270,18 @@ const subMarginSlice = createSlice({
     },
     setLoadingMargins: (state, action: PayloadAction<boolean>) => {
       state.loadingMargins = action.payload;
+    },
+    setSubDeptGrade(state, action: PayloadAction<{ id: number; grade: SubDeptGrade }>) {
+      state.subDeptGrades[action.payload.id] = action.payload.grade;
+    },
+    setGradingThreshold(state, action: PayloadAction<number | null>) {
+      state.gradingThreshold = action.payload;
+    },
+    setGradingMetric(state, action: PayloadAction<GradingMetric>) {
+      state.gradingMetric = action.payload;
+    },
+    setLoadingGrades(state, action: PayloadAction<boolean>) {
+      state.loadingGrades = action.payload;
     },
     requerySubDeptMargins: (state) => {
       state.subDepts = [];
@@ -245,6 +294,7 @@ const subMarginSlice = createSlice({
       state.weekTwoMarginsLY = [];
       state.weekThreeMarginsLY = [];
       state.weekFourMarginsLY = [];
+      state.weekFourMarginsLW = [];
       state.filteredMargins = [];
       state.selectedSubDeptId = 0;
       state.subDeptFitlerText = "";
@@ -262,6 +312,8 @@ const subMarginSlice = createSlice({
       state.pause = false;
       state.upcSearch = "";
       state.viewDaily = false;
+      state.subDeptGrades = {};
+      state.loadingGrades = false;
     },
     setSelectedWeek: (state, action: PayloadAction<MarginWeek>) => {
       state.selectedWeek = action.payload;
@@ -456,6 +508,10 @@ const subMarginSlice = createSlice({
 });
 
 export const {
+  setSubDeptGrade,
+  setGradingThreshold,
+  setGradingMetric,
+  setLoadingGrades,
   setFilteredMargins,
   setLoadingMargins,
   setLoadingSubDepts,
@@ -467,6 +523,7 @@ export const {
   setSubDeptFilterText,
   setWeekTrendMargins,
   setWeekTrendMarginsLY,
+  setWeekTrendMarginsLW,
   setSelectedWeekDay,
   resetSubMarginState,
   setUpcFilter,

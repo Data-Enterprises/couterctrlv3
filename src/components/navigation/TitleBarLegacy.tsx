@@ -1,6 +1,5 @@
 import logo from "../../assets/dcr_counterctrl-favicon_32.png";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
-import { useLocation } from "react-router";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { setIsNavOpen } from "../../features/navSlice";
 import { toggleDevMode } from "../../features/appSlice";
@@ -10,9 +9,6 @@ const TitleBarLegacy = () => {
   const context = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
   const nav = useAppSelector((state) => state.nav);
-  const location = useLocation();
-  const devPages = ["sales", "loss-prevention", "orders", "receivers", "coupons"];
-  const showToggle = devPages.some((p) => location.pathname.includes(p));
 
   const toggleNav = () => {
     dispatch(setIsNavOpen(!nav.isNavOpen));
@@ -43,17 +39,17 @@ const TitleBarLegacy = () => {
           <div>Welcome {user.firstName}</div>
         </div>
         <div className="flex items-center h-full gap-2 pr-2">
-          {user.role === 9 && showToggle && (
+          {user.role === 9 && (
             <button
               onClick={() => dispatch(toggleDevMode())}
               className="flex items-center gap-0 rounded-full overflow-hidden border border-content/20 text-[10px] font-bold select-none"
-              title={context.devMode ? "Switch to PROD" : "Switch to DEV"}
+              title={context.devMode ? "Switch to LIVE" : "Switch to PREVIEW"}
             >
               <span className={`px-2.5 py-1 transition-colors ${!context.devMode ? "bg-[#1e2a4a] text-white" : "text-content/40"}`}>
-                PROD
+                LIVE
               </span>
               <span className={`px-2.5 py-1 transition-colors ${context.devMode ? "bg-emerald-500 text-white" : "text-content/40"}`}>
-                DEV
+                PREVIEW
               </span>
             </button>
           )}

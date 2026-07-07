@@ -36,13 +36,22 @@ interface NavSheetProps {
   currentPath: string;
 }
 
-const NavSheet = ({ cat, visiblePages, onClose, onNavigate, currentPath }: NavSheetProps) => {
+const NavSheet = ({
+  cat,
+  visiblePages,
+  onClose,
+  onNavigate,
+  currentPath,
+}: NavSheetProps) => {
   const sheetRef = useRef<HTMLDivElement>(null);
   const dragState = useRef<{ startY: number; currentY: number } | null>(null);
 
   const slideDown = () => {
     const el = sheetRef.current;
-    if (!el) { onClose(); return; }
+    if (!el) {
+      onClose();
+      return;
+    }
     el.style.transition = "transform 0.25s ease";
     el.style.transform = "translateY(100%)";
     setTimeout(onClose, 220);
@@ -102,7 +111,9 @@ const NavSheet = ({ cat, visiblePages, onClose, onNavigate, currentPath }: NavSh
         >
           <div className="w-9 h-1 bg-gray-200 rounded-full" />
         </div>
-        <p className="text-[9px] font-semibold uppercase tracking-wider text-content/40 px-4 pb-1">{cat.name}</p>
+        <p className="text-[9px] font-semibold uppercase tracking-wider text-content/40 px-4 pb-1">
+          {cat.name}
+        </p>
         <div className="pb-2">
           {visiblePages.map((page) => {
             const isActive = currentPath === page.href;
@@ -110,16 +121,28 @@ const NavSheet = ({ cat, visiblePages, onClose, onNavigate, currentPath }: NavSh
               <NavLink
                 key={page.href}
                 to={page.href}
-                onClick={() => { slideDown(); setTimeout(() => onNavigate(page.href), 0); }}
+                onClick={() => {
+                  slideDown();
+                  setTimeout(() => onNavigate(page.href), 0);
+                }}
                 className={`flex items-center gap-3 px-4 py-3 transition-colors ${isActive ? "bg-gray-50" : "hover:bg-gray-50"}`}
               >
                 <div
                   className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ background: isActive ? "#1e2a4a" : "rgba(30,42,74,0.07)" }}
+                  style={{
+                    background: isActive ? "#1e2a4a" : "rgba(30,42,74,0.07)",
+                  }}
                 >
-                  <page.icon className="h-4 w-4" style={{ color: isActive ? "#fff" : "#1e2a4a" }} />
+                  <page.icon
+                    className="h-4 w-4"
+                    style={{ color: isActive ? "#fff" : "#1e2a4a" }}
+                  />
                 </div>
-                <span className={`text-[13px] ${isActive ? "font-semibold text-[#1e2a4a]" : "font-medium text-content"}`}>{page.name}</span>
+                <span
+                  className={`text-[13px] ${isActive ? "font-semibold text-[#1e2a4a]" : "font-medium text-content"}`}
+                >
+                  {page.name}
+                </span>
               </NavLink>
             );
           })}
@@ -139,16 +162,32 @@ const TitleBar = () => {
   const nav = useAppSelector((state) => state.nav);
 
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const categoryCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleCategoryEnter = (name: string) => {
+    if (categoryCloseTimer.current) clearTimeout(categoryCloseTimer.current);
+    setOpenCategory(name);
+  };
+
+  const handleCategoryLeave = () => {
+    categoryCloseTimer.current = setTimeout(() => setOpenCategory(null), 80);
+  };
   const [avatarOpen, setAvatarOpen] = useState(false);
 
   const currentPath = location.pathname.replace(/^\//, "");
-  const activePage = categories.flatMap((c) => c.pages).find((p) => p.href === currentPath);
-  const activeCategory = categories.find((c) => c.pages.some((p) => p.href === currentPath));
+  const activePage = categories
+    .flatMap((c) => c.pages)
+    .find((p) => p.href === currentPath);
+  const activeCategory = categories.find((c) =>
+    c.pages.some((p) => p.href === currentPath),
+  );
 
   const canSee = (userLevels: string[]) =>
     userLevels.includes(user.userLevel.toString()) || userLevels.includes("*");
 
-  const visibleCategories = categories.filter((cat) => cat.pages.some((p) => canSee(p.userLevels)));
+  const visibleCategories = categories.filter((cat) =>
+    cat.pages.some((p) => canSee(p.userLevels)),
+  );
 
   // Persist last route whenever it changes
   useEffect(() => {
@@ -197,25 +236,40 @@ const TitleBar = () => {
         className={`flex items-center gap-2 px-3 hover:bg-white/8 transition-colors h-full ${context.isDesktop ? "border-l border-white/10" : ""}`}
       >
         <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-white text-[11px] font-semibold flex-shrink-0">
-          {(user.firstName?.[0] ?? "").toUpperCase()}{(user.lastName?.[0] ?? "").toUpperCase()}
+          {(user.firstName?.[0] ?? "").toUpperCase()}
+          {(user.lastName?.[0] ?? "").toUpperCase()}
         </div>
-        <ChevronDownIcon className={`h-3.5 w-3.5 text-white/50 transition-transform duration-200 ${avatarOpen ? "rotate-180" : ""}`} />
+        <ChevronDownIcon
+          className={`h-3.5 w-3.5 text-white/50 transition-transform duration-200 ${avatarOpen ? "rotate-180" : ""}`}
+        />
       </button>
 
       {avatarOpen && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setAvatarOpen(false)} />
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setAvatarOpen(false)}
+          />
           <div
             className="absolute right-0 top-full mt-1 z-50 w-52 bg-white border border-gray-200 rounded-md overflow-hidden"
             style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
           >
             <div className="px-4 py-3 border-b border-gray-100">
-              <div className="text-[13px] font-semibold text-content">{user.firstName} {user.lastName}</div>
-              {user.email && <div className="text-[11px] text-content/50 mt-0.5">{user.email}</div>}
+              <div className="text-[13px] font-semibold text-content">
+                {user.firstName} {user.lastName}
+              </div>
+              {user.email && (
+                <div className="text-[11px] text-content/50 mt-0.5">
+                  {user.email}
+                </div>
+              )}
             </div>
             <button
               data-testid="signout-btn"
-              onClick={() => { setAvatarOpen(false); handleSignOut(); }}
+              onClick={() => {
+                setAvatarOpen(false);
+                handleSignOut();
+              }}
               className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-red-600 hover:bg-red-50 transition-colors"
             >
               Sign out
@@ -234,16 +288,24 @@ const TitleBar = () => {
         className="h-12 w-full flex items-stretch bg-[#1e2a4a] text-white select-none relative z-50"
       >
         {/* Logo + page title */}
-        <div className={`flex items-center gap-2.5 px-3 flex-shrink-0 min-w-[173px] ${context.isDesktop ? "border-r border-white/10" : ""}`}>
+        <div
+          className={`flex items-center gap-2.5 px-3 flex-shrink-0 min-w-[173px] ${context.isDesktop ? "border-r border-white/10" : ""}`}
+        >
           <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-            <img src={logo} alt="Logo" style={{ width: "28px", height: "28px" }} />
+            <img
+              src={logo}
+              alt="Logo"
+              style={{ width: "28px", height: "28px" }}
+            />
           </div>
           <div className="flex flex-col justify-center leading-none">
             <span className="text-[13px] font-medium text-white">
               {activePage?.name ?? "CounterCtrl"}
             </span>
             {activePage && (
-              <span className="text-[9px] text-white/70 mt-0.5">CounterCtrl</span>
+              <span className="text-[9px] text-white/70 mt-0.5">
+                CounterCtrl
+              </span>
             )}
           </div>
         </div>
@@ -254,13 +316,15 @@ const TitleBar = () => {
             {visibleCategories.map((cat) => {
               const isActive = activeCategory?.name === cat.name;
               const isOpen = openCategory === cat.name;
-              const visiblePages = cat.pages.filter((p) => canSee(p.userLevels) && p.isVisible);
+              const visiblePages = cat.pages.filter(
+                (p) => canSee(p.userLevels) && p.isVisible,
+              );
               return (
                 <div
                   key={cat.name}
                   className="relative flex items-stretch"
-                  onMouseEnter={() => setOpenCategory(cat.name)}
-                  onMouseLeave={() => setOpenCategory(null)}
+                  onMouseEnter={() => handleCategoryEnter(cat.name)}
+                  onMouseLeave={handleCategoryLeave}
                 >
                   <button
                     className={`flex items-center gap-1.5 px-3 text-[12px] font-medium transition-colors rounded-md my-1.5 ${
@@ -271,16 +335,23 @@ const TitleBar = () => {
                   >
                     <cat.icon className="h-3.5 w-3.5" />
                     {cat.name}
-                    <ChevronDownIcon className={`h-3 w-3 opacity-60 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+                    <ChevronDownIcon
+                      className={`h-3 w-3 opacity-60 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                    />
                   </button>
 
                   <div
                     className={`absolute left-0 top-full z-50 transition-all duration-150 ${
-                      isOpen ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-1 pointer-events-none"
+                      isOpen
+                        ? "opacity-100 translate-y-0 pointer-events-auto"
+                        : "opacity-0 -translate-y-1 pointer-events-none"
                     }`}
                     style={{ minWidth: 170 }}
                   >
-                    <div className="mt-1 bg-white border border-gray-200 rounded-md overflow-hidden" style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+                    <div
+                      className="mt-1 bg-white border border-gray-200 rounded-md overflow-hidden"
+                      style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                    >
                       {visiblePages.map((page) => (
                         <NavLink
                           key={page.href}
@@ -312,19 +383,23 @@ const TitleBar = () => {
 
         <div className="flex-1" />
 
-        {/* DEV/PROD toggle — programmer only */}
+        {/* DEV/PROD toggle — programmer/admin only */}
         {user.role === 9 && (
           <div className="flex items-center px-3 border-r border-white/10">
             <button
               onClick={() => dispatch(toggleDevMode())}
               className="flex items-center gap-0 rounded-full overflow-hidden border border-white/20 text-[10px] font-bold select-none"
-              title={context.devMode ? "Switch to PROD" : "Switch to DEV"}
+              title={context.devMode ? "Switch to LIVE" : "Switch to PREVIEW"}
             >
-              <span className={`px-2.5 py-1 transition-colors ${!context.devMode ? "bg-white text-[#1e2a4a]" : "text-white/40"}`}>
-                PROD
+              <span
+                className={`px-2.5 py-1 transition-colors ${!context.devMode ? "bg-white text-[#1e2a4a]" : "text-white/40"}`}
+              >
+                LIVE
               </span>
-              <span className={`px-2.5 py-1 transition-colors ${context.devMode ? "bg-emerald-500 text-white" : "text-white/40"}`}>
-                DEV
+              <span
+                className={`px-2.5 py-1 transition-colors ${context.devMode ? "bg-emerald-500 text-white" : "text-white/40"}`}
+              >
+                PREVIEW
               </span>
             </button>
           </div>
@@ -338,21 +413,26 @@ const TitleBar = () => {
       {!context.isDesktop && (
         <>
           {/* Bottom sheet — animated slide-up/down */}
-          {openCategory && (() => {
-            const cat = visibleCategories.find((c) => c.name === openCategory);
-            if (!cat) return null;
-            const visiblePages = cat.pages.filter((p) => canSee(p.userLevels) && p.mobile);
-            return (
-              <NavSheet
-                key={cat.name}
-                cat={cat}
-                visiblePages={visiblePages}
-                onClose={() => setOpenCategory(null)}
-                onNavigate={handleMobileNavClick}
-                currentPath={currentPath}
-              />
-            );
-          })()}
+          {openCategory &&
+            (() => {
+              const cat = visibleCategories.find(
+                (c) => c.name === openCategory,
+              );
+              if (!cat) return null;
+              const visiblePages = cat.pages.filter(
+                (p) => canSee(p.userLevels) && p.mobile,
+              );
+              return (
+                <NavSheet
+                  key={cat.name}
+                  cat={cat}
+                  visiblePages={visiblePages}
+                  onClose={() => setOpenCategory(null)}
+                  onNavigate={handleMobileNavClick}
+                  currentPath={currentPath}
+                />
+              );
+            })()}
 
           {/* Bottom tab bar */}
           <div
@@ -367,7 +447,10 @@ const TitleBar = () => {
                   key={cat.name}
                   onClick={() => setOpenCategory(isOpen ? null : cat.name)}
                   className="flex-1 flex flex-col items-center justify-center gap-1 transition-colors"
-                  style={{ color: isActive || isOpen ? "#1e2a4a" : "rgba(30,42,74,0.35)" }}
+                  style={{
+                    color:
+                      isActive || isOpen ? "#1e2a4a" : "rgba(30,42,74,0.35)",
+                  }}
                 >
                   <cat.icon className="h-5 w-5" />
                   <span className="text-[9px] font-medium">{cat.name}</span>

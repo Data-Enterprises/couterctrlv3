@@ -24,6 +24,8 @@ export type Top10Item = {
   lyWeight: number | null;
 };
 
+export type ExportSubDeptItem = Top10Item & { sev: "critical" | "watch" | "healthy" };
+
 interface SalesLedgerState {
   // Navigation (shared desktop + mobile)
   hasSearched: boolean;
@@ -50,9 +52,13 @@ interface SalesLedgerState {
   // Grading
   gradingMetric: GradingMetric;
   threshold: ThresholdValue | null;
-  subDeptThreshold: number;
-  hourlyThreshold: number;
-  itemThreshold: number;
+  subDeptThreshold: number | null;
+  hourlyThreshold: number | null;
+  itemThreshold: number | null;
+
+  // Sub dept items export
+  exportSubDeptName: string;
+  exportSubDeptItems: ExportSubDeptItem[];
 
   // Mobile-specific
   screen: "list" | "report";
@@ -77,6 +83,8 @@ const initialState: SalesLedgerState = {
   rawLWHourly: [],
   rawLYHourly: [],
   top10: [],
+  exportSubDeptName: "",
+  exportSubDeptItems: [],
   gradingMetric: "sales" as GradingMetric,
   threshold: { op: "gt", amount: 9 } as ThresholdValue,
   subDeptThreshold: 9,
@@ -138,6 +146,12 @@ const salesLedgerSlice = createSlice({
     setTop10: (state, action: PayloadAction<Top10Item[]>) => {
       state.top10 = action.payload;
     },
+    setExportSubDeptName: (state, action: PayloadAction<string>) => {
+      state.exportSubDeptName = action.payload;
+    },
+    setExportSubDeptItems: (state, action: PayloadAction<ExportSubDeptItem[]>) => {
+      state.exportSubDeptItems = action.payload;
+    },
     setScreen: (state, action: PayloadAction<"list" | "report">) => {
       state.screen = action.payload;
     },
@@ -147,13 +161,13 @@ const salesLedgerSlice = createSlice({
     setThreshold: (state, action: PayloadAction<ThresholdValue | null>) => {
       state.threshold = action.payload;
     },
-    setSubDeptThreshold: (state, action: PayloadAction<number>) => {
+    setSubDeptThreshold: (state, action: PayloadAction<number | null>) => {
       state.subDeptThreshold = action.payload;
     },
-    setHourlyThreshold: (state, action: PayloadAction<number>) => {
+    setHourlyThreshold: (state, action: PayloadAction<number | null>) => {
       state.hourlyThreshold = action.payload;
     },
-    setItemThreshold: (state, action: PayloadAction<number>) => {
+    setItemThreshold: (state, action: PayloadAction<number | null>) => {
       state.itemThreshold = action.payload;
     },
     setListSevFilter: (state, action: PayloadAction<SevFilter>) => {
@@ -188,6 +202,8 @@ const salesLedgerSlice = createSlice({
       state.rawLWHourly = [];
       state.rawLYHourly = [];
       state.top10 = [];
+      state.exportSubDeptName = "";
+      state.exportSubDeptItems = [];
       state.screen = "list";
       state.listSevFilter = "all";
       state.reportSevFilter = "all";
@@ -232,6 +248,8 @@ export const {
   setRawLWHourly,
   setRawLYHourly,
   setTop10,
+  setExportSubDeptName,
+  setExportSubDeptItems,
   setScreen,
   setThreshold,
   setSubDeptThreshold,

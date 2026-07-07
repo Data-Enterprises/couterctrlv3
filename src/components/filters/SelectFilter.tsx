@@ -74,6 +74,8 @@ const SelectFilter = ({ options, value, onChange, placeholder = "All", className
             boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
             maxHeight: 220,
             overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
           }}
           className="thin-scrollbar"
         >

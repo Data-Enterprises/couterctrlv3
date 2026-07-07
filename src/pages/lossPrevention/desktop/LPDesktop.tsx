@@ -90,12 +90,17 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
             dispatch(setCashierDetails(j.sales));
             dispatch(setCashierTrends(j.trend));
           }
+        } else {
+          toast.warn(j.msg);
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
       .finally(() => setLoading(false));
     getCashierDetails(params.url, params.token, params.lpBaseStart, params.lpBaseEnd, params.useGroups, params.searchValue, params.singleStore, [saleType])
-      .then((r) => { if (r.data.error === 0) dispatch(setBaselineDetails(r.data.sales)); })
+      .then((r) => {
+        if (r.data.error === 0) dispatch(setBaselineDetails(r.data.sales));
+        else toast.warn(r.data.msg);
+      })
       .catch(() => {});
   };
 
@@ -184,6 +189,8 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
 
           dispatch(setTransOverviews(overviews));
           dispatch(setTransList(formatted));
+        } else {
+          toast.warn(j.msg);
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
@@ -234,11 +241,14 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
                   const j = resp.data;
                   if (j.error === 0) {
                     allTrans.push(...j.transactions.filter((t: any) => t.sale_type === saleType));
-                    pages.find((p) => p.page === page)!.fetched = true;
-                    if (pages.every((p) => p.fetched)) {
-                      const saleIds = Array.from(new Set(allTrans.map((t) => t.sale_id)));
-                      fetchTransactions(saleIds, saleType);
-                    }
+                  }
+                })
+                .catch((err: JsonError) => toast.error(err.message))
+                .finally(() => {
+                  pages.find((p) => p.page === page)!.fetched = true;
+                  if (pages.every((p) => p.fetched)) {
+                    const saleIds = Array.from(new Set(allTrans.map((t) => t.sale_id)));
+                    fetchTransactions(saleIds, saleType);
                   }
                 });
             }
@@ -247,6 +257,8 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
             dispatch(setSelectedSaleIds(saleIds));
             fetchTransactions(saleIds, saleType);
           }
+        } else {
+          toast.warn(j.msg);
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
@@ -277,6 +289,8 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
             }, []);
             dispatch(setBaselineOverviews(overviews));
           });
+        } else {
+          toast.warn(j.msg);
         }
       })
       .catch(() => { /* baseline failure is non-fatal */ });
@@ -295,6 +309,8 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
             qty: item.qty ?? 0,
           }));
           dispatch(setTransactionDrillDown([transactions]));
+        } else {
+          toast.warn(j.msg);
         }
       })
       .catch((err: JsonError) => {

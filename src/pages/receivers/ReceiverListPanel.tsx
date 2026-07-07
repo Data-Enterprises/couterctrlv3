@@ -22,37 +22,29 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
   const search = useAppSelector((s) => s.search);
 
   const [openVendors, setOpenVendors] = useState<Set<string>>(new Set());
-  const [openDates, setOpenDates] = useState<Set<string>>(new Set());
   const [vendorFilter, setVendorFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
 
   const toggleVendor = (key: string) =>
     setOpenVendors((prev) => { const s = new Set(prev); s.has(key) ? s.delete(key) : s.add(key); return s; });
 
-  const toggleDate = (key: string) =>
-    setOpenDates((prev) => { const s = new Set(prev); s.has(key) ? s.delete(key) : s.add(key); return s; });
-
   const grouped = useMemo(() => {
-    const vendorMap = new Map<string, { vendorName: string; dateMap: Map<string, typeof state.listGridData> }>();
+    const vendorMap = new Map<string, { vendorName: string; items: typeof state.listGridData }>();
     state.listGridData.forEach((item) => {
       const vKey = item.vendorid;
-      if (!vendorMap.has(vKey)) vendorMap.set(vKey, { vendorName: item.vendor_name, dateMap: new Map() });
-      const vendor = vendorMap.get(vKey)!;
-      const dateKey = item.invoice_date.split("T")[0];
-      if (!vendor.dateMap.has(dateKey)) vendor.dateMap.set(dateKey, []);
-      vendor.dateMap.get(dateKey)!.push(item);
+      if (!vendorMap.has(vKey)) vendorMap.set(vKey, { vendorName: item.vendor_name, items: [] });
+      vendorMap.get(vKey)!.items.push(item);
     });
     return Array.from(vendorMap.entries())
       .filter(([vendorid]) => !vendorFilter || vendorid === vendorFilter)
-      .map(([vendorid, { vendorName, dateMap }]) => ({
+      .map(([vendorid, { vendorName, items }]) => ({
         vendorid,
         vendorName,
-        dates: Array.from(dateMap.entries())
-          .filter(([date]) => !dateFilter || date === dateFilter)
-          .sort(([a], [b]) => b.localeCompare(a))
-          .map(([date, items]) => ({ date, items })),
+        items: items
+          .filter((item) => !dateFilter || item.invoice_date.split("T")[0] === dateFilter)
+          .sort((a, b) => b.invoice_date.localeCompare(a.invoice_date)),
       }))
-      .filter((v) => v.dates.length > 0);
+      .filter((v) => v.items.length > 0);
   }, [state.listGridData, vendorFilter, dateFilter]);
 
   const getSelectedDetails = (invoiceid: number, transDate: string) => {
@@ -181,7 +173,7 @@ const fmtRangePart = (mdy: string, withYear = false) => {
         />
       </FilterBar>
 
-      {/* Collapsible tree: Vendor → Date → Receiver */}
+      {/* Collapsible tree: Vendor → Receiver */}
       <div className="flex-1 overflow-y-auto thin-scrollbar p-3 flex flex-col gap-3">
         {grouped.length === 0 && (
           <div className="flex items-center justify-center py-8 text-[11px] text-content/70">
@@ -191,7 +183,6 @@ const fmtRangePart = (mdy: string, withYear = false) => {
 
         {grouped.map((vendor) => {
           const vendorOpen = openVendors.has(vendor.vendorid) || hasFilters;
-          const totalItems = vendor.dates.reduce((n, d) => n + d.items.length, 0);
 
           return (
             <div key={vendor.vendorid} className="rounded-lg border border-gray-100">
@@ -207,61 +198,39 @@ const fmtRangePart = (mdy: string, withYear = false) => {
                 <span className="text-[11px] font-semibold text-[#1e2a4a] flex-1 text-left truncate">
                   {vendor.vendorName}
                 </span>
-                <span className="text-[10px] text-[#1e2a4a]/55 flex-shrink-0">{totalItems}</span>
+                <span className="text-[10px] text-[#1e2a4a]/55 flex-shrink-0">{vendor.items.length}</span>
               </button>
 
-              {/* Date rows */}
-              {vendorOpen && vendor.dates.map((dateGroup) => {
-                const dateKey = `${vendor.vendorid}::${dateGroup.date}`;
-                const dateOpen = openDates.has(dateKey) || hasFilters;
-
-                return (
-                  <div key={dateGroup.date} className="border-t border-gray-100">
-                    <button
-                      onClick={() => toggleDate(dateKey)}
-                      className="w-full flex items-center gap-2 pl-6 pr-3 py-1.5 bg-gray-50 hover:bg-gray-100 transition-colors"
-                    >
-                      <ChevronRightIcon
-                        className="w-3 h-3 text-content/40 flex-shrink-0 transition-transform"
-                        style={{ transform: dateOpen ? "rotate(90deg)" : "rotate(0deg)" }}
-                      />
-                      <span className="text-[10px] font-medium text-content/65 flex-1 text-left">
-                        {formatDate(dateGroup.date)}
-                      </span>
-                      <span className="text-[10px] text-content/55 flex-shrink-0">{dateGroup.items.length}</span>
-                    </button>
-
-                    {/* Leaf: individual receivers */}
-                    {dateOpen && (
-                      <div className="divide-y divide-gray-100">
-                        {dateGroup.items.map((item) => {
-                          const isSel = state.selectedInvoice === item.invoiceid.toString();
-                          return (
-                            <button
-                              key={item.invoiceid}
-                              onClick={() => getSelectedDetails(item.invoiceid, formatDate(item.invoice_date))}
-                              className={`w-full flex items-center justify-between pl-9 pr-3 py-2 text-left transition-colors ${
-                                isSel ? "bg-white" : "hover:bg-gray-50"
-                              }`}
-                              style={isSel ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
-                            >
-                              <div className="flex flex-col gap-0.5 min-w-0">
-                                <span className="text-[10px] font-medium text-content">
-                                  Ref #{item.reference_number}
-                                </span>
-                                <span className="text-[9px] text-content/50">{item.cashier_name}</span>
-                              </div>
-                              <span className="text-[10px] text-content/75 bg-gray-100 rounded-full px-2 py-0.5 flex-shrink-0 ml-2">
-                                {item.items} {item.items === 1 ? "item" : "items"}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              {/* Receiver rows */}
+              {vendorOpen && (
+                <div className="divide-y divide-gray-100">
+                  {vendor.items.map((item) => {
+                    const isSel = state.selectedInvoice === item.invoiceid.toString();
+                    return (
+                      <button
+                        key={item.invoiceid}
+                        onClick={() => getSelectedDetails(item.invoiceid, formatDate(item.invoice_date))}
+                        className={`w-full flex items-center justify-between pl-6 pr-3 py-2 text-left transition-colors ${
+                          isSel ? "bg-white" : "hover:bg-gray-50"
+                        }`}
+                        style={isSel ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
+                      >
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                          <span className="text-[10px] font-medium text-content">
+                            Invoice #{item.invoiceid}
+                          </span>
+                          <span className="text-[9px] text-content/50">
+                            {formatDate(item.invoice_date.split("T")[0])} · {item.cashier_name}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-content/75 bg-gray-100 rounded-full px-2 py-0.5 flex-shrink-0 ml-2">
+                          {item.items} {item.items === 1 ? "item" : "items"}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })}

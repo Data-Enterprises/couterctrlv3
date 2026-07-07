@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type { SubSale, HourlySale } from "../../../interfaces";
 import type { DayDot } from "./LedgerRow";
+import type { ExportSubDeptItem } from "../../../features/salesLedgerSlice";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -16,9 +17,12 @@ interface SalesExportModalProps {
   rawLWHourly: HourlySale[];
   rawLYHourly: HourlySale[];
   days: DayDot[];
+  subDeptItems?: ExportSubDeptItem[];
+  subDeptName?: string;
 }
 
-type ExportDataset = "subdept" | "hourly" | "summary";
+type ExportDataset = "subdept" | "hourly" | "summary" | "items";
+type ItemSev = "critical" | "watch" | "healthy";
 type ModalMode = "presets" | "custom";
 type CustomSource = "subdept" | "hourly";
 type AggFn = "sum" | "avg" | "min" | "max" | "count";
@@ -76,6 +80,33 @@ const buildSummaryCsv = (days: DayDot[]) => {
   const headers = ["Date", "TY Net Sales", "LW Net Sales", "LY Net Sales"];
   const rows = [...days].sort((a, b) => a.sale_date.localeCompare(b.sale_date))
     .map((d) => [fmtDate(d.sale_date.split("T")[0]), fmtNum(d.twNet), fmtNum(d.lwNet), fmtNum(d.lyNet)]);
+  return rowsToCsv(headers, rows);
+};
+
+const SEV_LABEL: Record<ItemSev, string> = { critical: "Critical", watch: "Watch", healthy: "Healthy" };
+
+const fmtPctRaw = (pct: number | null) => pct === null ? "" : `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
+
+const buildItemsCsv = (items: ExportSubDeptItem[], sevs: Set<ItemSev>) => {
+  const filtered = items.filter((i) => sevs.has(i.sev));
+  const headers = ["Product Code", "Description", "Severity", "TY Net", "TY Qty", "LW Net", "LW Qty", "LW vs %", "LY Net", "LY Qty", "LY vs %"];
+  const rows = filtered.map((i) => {
+    const lwPct = i.lwNet !== null && i.lwNet > 0 ? ((i.tyNet - i.lwNet) / i.lwNet) * 100 : null;
+    const lyPct = i.lyNet !== null && i.lyNet > 0 ? ((i.tyNet - i.lyNet) / i.lyNet) * 100 : null;
+    return [
+      i.productCode,
+      i.desc,
+      SEV_LABEL[i.sev],
+      fmtNum(i.tyNet),
+      i.tyQty,
+      i.lwNet !== null ? fmtNum(i.lwNet) : "",
+      i.lwQty ?? "",
+      fmtPctRaw(lwPct),
+      i.lyNet !== null ? fmtNum(i.lyNet) : "",
+      i.lyQty ?? "",
+      fmtPctRaw(lyPct),
+    ];
+  });
   return rowsToCsv(headers, rows);
 };
 
@@ -176,11 +207,19 @@ const SalesExportModal = ({
   rawSubs, rawLWSubs, rawLYSubs,
   rawHourly, rawLWHourly, rawLYHourly,
   days,
+  subDeptItems,
+  subDeptName,
 }: SalesExportModalProps) => {
+
+  const hasItems = !!subDeptItems && subDeptItems.length > 0;
 
   // ── Preset state ──
   const [mode, setMode] = useState<ModalMode>("presets");
   const [selected, setSelected] = useState<Set<ExportDataset>>(new Set(["subdept", "hourly", "summary"]));
+  const [itemSevs, setItemSevs] = useState<Set<ItemSev>>(new Set(["critical", "watch", "healthy"]));
+
+  const toggleItemSev = (sev: ItemSev) =>
+    setItemSevs((prev) => { const n = new Set(prev); n.has(sev) ? n.delete(sev) : n.add(sev); return n; });
 
   // ── Custom builder state ──
   const [source, setSource] = useState<CustomSource>("subdept");
@@ -310,6 +349,10 @@ const SalesExportModal = ({
     if (selected.has("summary")) sections.push(`Weekly Summary\n${buildSummaryCsv(days)}`);
     if (selected.has("subdept")) sections.push(`Sub Department\n${buildSubDeptCsv(rawSubs, rawLWSubs, rawLYSubs)}`);
     if (selected.has("hourly"))  sections.push(`Hourly Breakdown\n${buildHourlyCsv(rawHourly, rawLWHourly, rawLYHourly)}`);
+    if (selected.has("items") && subDeptItems && itemSevs.size > 0) {
+      const label = subDeptName ? `Items — ${subDeptName}` : "Sub Dept Items";
+      sections.push(`${label}\n${buildItemsCsv(subDeptItems, itemSevs)}`);
+    }
     if (!sections.length) return;
     const safeName = storeName.replace(/[^a-z0-9]/gi, "_");
     downloadCsv(sections.join("\n\n"), `${safeName}_${dateLabel}.csv`);
@@ -330,6 +373,12 @@ const SalesExportModal = ({
     { id: "summary",  label: "Weekly Summary",      description: "Day-by-day net sales vs last week and last year" },
     { id: "subdept",  label: "Sub Department",      description: "Net sales, qty, and transactions by sub dept (TY / LW / LY)" },
     { id: "hourly",   label: "Hourly Breakdown",    description: "Hourly net sales, basket size, and avg item price (TY / LW / LY)" },
+  ];
+
+  const SEV_CHIP: { sev: ItemSev; label: string; activeClass: string }[] = [
+    { sev: "critical", label: "Critical", activeClass: "bg-red-600 border-red-600 text-white" },
+    { sev: "watch",    label: "Watch",    activeClass: "bg-amber-500 border-amber-500 text-white" },
+    { sev: "healthy",  label: "Healthy",  activeClass: "bg-emerald-600 border-emerald-600 text-white" },
   ];
 
   const canCustomDownload = columns.length > 0 && aggRows.length > 0;
@@ -389,6 +438,39 @@ const SalesExportModal = ({
                   </div>
                 </label>
               ))}
+
+              {hasItems && (
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selected.has("items")}
+                    onChange={() => setSelected((prev) => { const n = new Set(prev); n.has("items") ? n.delete("items") : n.add("items"); return n; })}
+                    className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <p className="text-[13px] font-medium text-content">Sub Dept Items</p>
+                      {subDeptName && (
+                        <span className="text-[10px] text-content/45 italic truncate">{subDeptName}</span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-content/50 mt-0.5 mb-1.5">Product-level items with severity grading (TY / LW / LY)</p>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {SEV_CHIP.map(({ sev, label, activeClass }) => (
+                        <button
+                          key={sev}
+                          onClick={() => toggleItemSev(sev)}
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
+                            itemSevs.has(sev) ? activeClass : "bg-white border-gray-200 text-content/55"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-2">
               <button onClick={onClose} className="text-[12px] text-content/50 hover:text-content transition-colors">Cancel</button>

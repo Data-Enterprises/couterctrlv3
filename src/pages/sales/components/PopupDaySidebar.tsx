@@ -1,4 +1,6 @@
 ﻿import type { DayDot } from "./LedgerRow";
+import { getHolidayName } from "../../../utils/holidays";
+import { StarIcon } from "@heroicons/react/20/solid";
 
 interface PopupDaySidebarProps {
   days: DayDot[];
@@ -62,16 +64,22 @@ const PopupDaySidebar = ({ days, selectedDate, onSelect }: PopupDaySidebarProps)
         const displayPct = vsLYPct ?? vsLWPct;
         const displaySuffix = hasLY ? "LY" : hasLW ? "LW" : null;
         const isNeg = displayPct !== null && displayPct < 0;
+        const holidayName = getHolidayName(dateStr);
 
         return (
           <button
             key={dateStr}
             onClick={() => onSelect(dateStr)}
-            className={`flex flex-col items-center justify-center px-1 py-2 border-r border-gray-100 last:border-r-0 transition-colors flex-1 ${
+            className={`relative flex flex-col items-center justify-center px-1 py-2 border-r border-gray-100 last:border-r-0 transition-colors flex-1 ${
               isSelected ? "bg-gray-100" : "bg-white hover:bg-gray-50"
             }`}
             style={isSelected ? INSET_SHADOW : undefined}
           >
+            {holidayName && (
+              <span title={holidayName} className="absolute top-1 right-1">
+                <StarIcon className="w-2.5 h-2.5 text-amber-500" />
+              </span>
+            )}
             <div className="text-[10px] font-semibold text-content">{dayLabel}</div>
             <div className="text-[8px] mt-0.5 text-content/35">{calLabel}</div>
             <div className={`text-[9px] font-semibold mt-0.5 ${displayPct === null ? "text-content/25" : isNeg ? "text-red-500" : "text-emerald-600"}`}>

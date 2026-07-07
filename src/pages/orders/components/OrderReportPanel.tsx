@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import EmptyPrompt from "../../../components/EmptyPrompt";
 import SelectFilter from "../../../components/filters/SelectFilter";
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import { ArrowDownTrayIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import type { AllOrder } from "../../../interfaces";
 import type { SelectedOrderKey } from "../../../features/ordersSlice";
 import type { Store } from "../../../interfaces";
@@ -24,14 +24,99 @@ const fmtDate = (iso: string) => {
   return `${m}/${d}/${y}`;
 };
 
-const Chip = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex items-baseline gap-1 rounded px-1.5 py-0.5" style={{ background: "rgba(30,42,74,0.06)", boxShadow: "inset 0 1px 2px rgba(30,42,74,0.08)" }}>
-    <span className="text-[8.5px] text-content/70 whitespace-nowrap">{label}</span>
-    <span className="text-[10px] font-semibold text-content whitespace-nowrap">{value}</span>
-  </div>
-);
-
 const MAX_CHIPS = 3;
+
+const colFilterInputStyle: React.CSSProperties = {
+  width: "100%",
+  fontSize: 11,
+  border: "1px solid rgba(30,42,74,0.15)",
+  borderRadius: 4,
+  padding: "4px 7px",
+  outline: "none",
+  color: "#1e2a4a",
+};
+
+interface ColFilterProps {
+  label: string;
+  active: boolean;
+  appliedDisplay?: string;
+  align?: "left" | "right";
+  onApply: () => void;
+  onClear?: () => void;
+  children: React.ReactNode;
+}
+
+const ColFilter = ({ label, active, appliedDisplay, align = "left", onApply, onClear, children }: ColFilterProps) => {
+  const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [open]);
+
+  const handleApply = () => { onApply(); setOpen(false); };
+  const handleKeyDown = (e: React.KeyboardEvent) => { if (e.key === "Enter") handleApply(); };
+  const labelColor = open || active ? "#1e2a4a" : hovered ? "rgba(30,42,74,0.65)" : "rgba(30,42,74,0.4)";
+
+  return (
+    <div ref={wrapRef} className="relative flex items-center gap-1 min-w-0">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide transition-colors select-none flex-shrink-0"
+        style={{ color: labelColor }}
+      >
+        {label}
+      </button>
+      {active && appliedDisplay && (
+        <span className="flex items-center gap-0.5 rounded px-1 py-0.5 flex-shrink-0" style={{ background: "rgba(30,42,74,0.08)", maxWidth: 90 }}>
+          <span className="text-[8px] font-medium text-[#1e2a4a] truncate">{appliedDisplay}</span>
+          {onClear && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onClear(); }}
+              className="text-[8px] text-[#1e2a4a]/50 hover:text-[#1e2a4a] leading-none flex-shrink-0 ml-0.5"
+            >✕</button>
+          )}
+        </span>
+      )}
+      {open && <div className="fixed inset-0 z-[199]" onClick={() => setOpen(false)} />}
+      {open && (
+        <div
+          onKeyDown={handleKeyDown}
+          style={{
+            position: "absolute",
+            top: "calc(100% + 6px)",
+            ...(align === "right" ? { right: 0 } : { left: 0 }),
+            zIndex: 200,
+            background: "white",
+            border: "1px solid rgba(30,42,74,0.12)",
+            borderRadius: 6,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+            padding: "10px 10px 8px",
+            minWidth: 176,
+          }}
+        >
+          {children}
+          <button
+            onClick={handleApply}
+            className="mt-2 w-full flex items-center justify-center gap-1.5 rounded py-1 text-[10px] font-medium"
+            style={{ background: "#1e2a4a", color: "white" }}
+          >
+            <MagnifyingGlassIcon className="w-3 h-3" />
+            Apply
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const DescCell = ({ text }: { text: string }) => {
   const [hovered, setHovered] = useState(false);
@@ -85,6 +170,20 @@ const OrderReportPanel = ({
   const [subDeptFilter, setSubDeptFilter] = useState<string>("");
   const [exportOpen, setExportOpen] = useState(false);
 
+  const [draftUpc, setDraftUpc] = useState("");
+  const [appliedUpc, setAppliedUpc] = useState("");
+  const [draftDesc, setDraftDesc] = useState("");
+  const [appliedDesc, setAppliedDesc] = useState("");
+  const [appliedSubDept, setAppliedSubDept] = useState("");
+  const [appliedVendor, setAppliedVendor] = useState("");
+
+  useEffect(() => {
+    setDraftUpc(""); setAppliedUpc("");
+    setDraftDesc(""); setAppliedDesc("");
+    setAppliedSubDept("");
+    setAppliedVendor("");
+  }, [selectedOrderId]);
+
   const storeName = selectedKey
     ? (assignedStores.find((s) => s.storeid === selectedKey.storeid)?.store_name ?? `Store ${selectedKey.storeid}`)
     : null;
@@ -107,12 +206,28 @@ const OrderReportPanel = ({
     ? [...filteredOrders.filter((o) => o.order_id === selectedOrderId)].sort((a, b) => a.line_number - b.line_number)
     : [];
 
-  const totalExtRetail = subFilteredOrders.reduce((s, o) => s + (o.e_ret ?? 0), 0);
-  const totalCost = subFilteredOrders.reduce((s, o) => s + (o.cogs ?? 0), 0);
-  const totalItems = subFilteredOrders.length;
-
   const selectedExtRetail = orderItems.reduce((s, o) => s + (o.e_ret ?? 0), 0);
   const selectedCost = orderItems.reduce((s, o) => s + (o.cogs ?? 0), 0);
+
+  const orderSubDepts = useMemo(
+    () => Array.from(new Set(orderItems.map((o) => o.sub_department_description).filter(Boolean))).sort(),
+    [orderItems]
+  );
+
+  const orderVendors = useMemo(
+    () => Array.from(new Set(orderItems.map((o) => o.vendor_name).filter(Boolean))).sort(),
+    [orderItems]
+  );
+
+  const visibleOrderItems = useMemo(() => {
+    return orderItems.filter((o) => {
+      if (appliedUpc && !String(o.product_code).toLowerCase().includes(appliedUpc.toLowerCase())) return false;
+      if (appliedDesc && !o.description.toLowerCase().includes(appliedDesc.toLowerCase())) return false;
+      if (appliedSubDept && o.sub_department_description !== appliedSubDept) return false;
+      if (appliedVendor && o.vendor_name !== appliedVendor) return false;
+      return true;
+    });
+  }, [orderItems, appliedUpc, appliedDesc, appliedSubDept, appliedVendor]);
 
   return (
     <div className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white" style={{ flex: 1, minWidth: 0 }}>
@@ -150,29 +265,6 @@ const OrderReportPanel = ({
             >
               <ArrowDownTrayIcon className="w-4 h-4" />
             </button>
-          )}
-          {selectedKey && !loading && (
-            <>
-              <div className="flex items-baseline gap-1 flex-shrink-0">
-                <span className="text-[10px] uppercase tracking-wide text-white/45">Orders</span>
-                <span className="text-[13px] font-medium text-white">{uniqueOrderIds.length}</span>
-              </div>
-              <div className="w-px h-4 bg-white/15 flex-shrink-0" />
-              <div className="flex items-baseline gap-1 flex-shrink-0">
-                <span className="text-[10px] uppercase tracking-wide text-white/45">Items</span>
-                <span className="text-[13px] font-medium text-white">{totalItems}</span>
-              </div>
-              <div className="w-px h-4 bg-white/15 flex-shrink-0" />
-              <div className="flex items-baseline gap-1 flex-shrink-0">
-                <span className="text-[10px] uppercase tracking-wide text-white/45">Ext retail</span>
-                <span className="text-[13px] font-medium text-white">{formatCurrency2(totalExtRetail)}</span>
-              </div>
-              <div className="w-px h-4 bg-white/15 flex-shrink-0" />
-              <div className="flex items-baseline gap-1 flex-shrink-0">
-                <span className="text-[10px] uppercase tracking-wide text-white/45">Cost</span>
-                <span className="text-[13px] font-medium text-white">{formatCurrency2(totalCost)}</span>
-              </div>
-            </>
           )}
         </div>
       </div>
@@ -244,22 +336,85 @@ const OrderReportPanel = ({
               <EmptyPrompt title="No order selected" description="Select an order from the list to view its line items" />
             ) : (
               <>
-                <div className="flex items-center gap-2 px-2.5 py-1.5 border-b border-gray-100 flex-shrink-0">
-                  <span className="text-[9px] font-bold uppercase tracking-wide text-content/70">Line items — #{selectedOrderId}</span>
-                  <div className="flex-1" />
-                  <Chip label="Items" value={String(orderItems.length)} />
-                  <Chip label="Ext retail" value={formatCurrency2(selectedExtRetail)} />
-                  <Chip label="Cost" value={formatCurrency2(selectedCost)} />
+                <div className="grid grid-cols-4 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+                  <div className="px-4 py-2.5">
+                    <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Order</div>
+                    <div className="text-[13px] font-semibold text-content">#{selectedOrderId}</div>
+                  </div>
+                  <div className="px-4 py-2.5">
+                    <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Items</div>
+                    <div className="text-[13px] font-semibold text-content">{orderItems.length}</div>
+                  </div>
+                  <div className="px-4 py-2.5">
+                    <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Ext retail</div>
+                    <div className="text-[13px] font-semibold text-content">{formatCurrency2(selectedExtRetail)}</div>
+                  </div>
+                  <div className="px-4 py-2.5">
+                    <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Ext cost</div>
+                    <div className="text-[13px] font-semibold text-content">{formatCurrency2(selectedCost)}</div>
+                  </div>
                 </div>
                 <div className="flex-1 overflow-auto thin-scrollbar">
                   <table className="w-full border-collapse text-[11px]">
                     <thead>
                       <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
                         <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70">#</th>
-                        <th className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 whitespace-nowrap">UPC</th>
-                        <th className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70" style={{ width: "18%" }}>Description</th>
-                        <th className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 whitespace-nowrap">Sub dept</th>
-                        <th className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70" style={{ width: "12%" }}>Vendor</th>
+                        <th className="text-left px-3 py-2">
+                          <ColFilter
+                            label="UPC"
+                            active={!!appliedUpc}
+                            appliedDisplay={appliedUpc}
+                            onApply={() => setAppliedUpc(draftUpc)}
+                            onClear={() => { setAppliedUpc(""); setDraftUpc(""); }}
+                          >
+                            <input autoFocus style={colFilterInputStyle} placeholder="Search UPC…" value={draftUpc} onChange={(e) => setDraftUpc(e.target.value)} />
+                          </ColFilter>
+                        </th>
+                        <th className="text-left px-3 py-2" style={{ width: "18%" }}>
+                          <ColFilter
+                            label="Description"
+                            active={!!appliedDesc}
+                            appliedDisplay={appliedDesc}
+                            onApply={() => setAppliedDesc(draftDesc)}
+                            onClear={() => { setAppliedDesc(""); setDraftDesc(""); }}
+                          >
+                            <input autoFocus style={colFilterInputStyle} placeholder="Search…" value={draftDesc} onChange={(e) => setDraftDesc(e.target.value)} />
+                          </ColFilter>
+                        </th>
+                        <th className="text-left px-3 py-2 whitespace-nowrap">
+                          <ColFilter
+                            label="Sub dept"
+                            active={!!appliedSubDept}
+                            appliedDisplay={appliedSubDept}
+                            onApply={() => {}}
+                            onClear={() => setAppliedSubDept("")}
+                          >
+                            <SelectFilter
+                              options={orderSubDepts.map((sd) => ({ value: sd, label: sd }))}
+                              value={appliedSubDept}
+                              onChange={setAppliedSubDept}
+                              placeholder="All sub depts"
+                              className="w-full"
+                            />
+                          </ColFilter>
+                        </th>
+                        <th className="text-left px-3 py-2" style={{ width: "12%" }}>
+                          <ColFilter
+                            label="Vendor"
+                            active={!!appliedVendor}
+                            appliedDisplay={appliedVendor}
+                            onApply={() => {}}
+                            onClear={() => setAppliedVendor("")}
+                          >
+                            <SelectFilter
+                              options={orderVendors.map((v) => ({ value: v, label: v }))}
+                              value={appliedVendor}
+                              onChange={setAppliedVendor}
+                              placeholder="All vendors"
+                              className="w-full"
+                            />
+                          </ColFilter>
+                        </th>
                         <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70">Qty</th>
                         <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 whitespace-nowrap">Unit cost</th>
                         <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70">Retail</th>
@@ -267,7 +422,7 @@ const OrderReportPanel = ({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                      {orderItems.map((o) => (
+                      {visibleOrderItems.map((o) => (
                         <tr key={o.line_number} className="hover:bg-gray-50 transition-colors">
                           <td className="px-3 py-1.5 text-right tabular-nums text-content/70">{o.line_number}</td>
                           <td className="px-3 py-1.5 tabular-nums text-content/70 whitespace-nowrap">{o.product_code}</td>

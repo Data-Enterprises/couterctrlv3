@@ -1,5 +1,5 @@
 import { useSalesState } from "./hooks/useSalesState";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { getWeekly, getHourly } from "../../api/sales";
 import { getStoresAssignedToUserGroup } from "../../api/groups";
@@ -27,6 +27,7 @@ import {
   reQueryLedger,
   type GradingMetric,
 } from "../../features/salesLedgerSlice";
+import { useToast } from "../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import EmptyPrompt from "../../components/EmptyPrompt";
 import TierStrip from "../../components/TierStrip";
@@ -43,7 +44,7 @@ const buildLedgerRows = (
   lwData: WeeklySale[],
   lyData: WeeklySale[],
   assignedStores: Store[],
-  threshold: number | null,
+  threshold: number,
   gradingMetric: GradingMetric,
 ): LedgerRowData[] => {
   const storeIds = [...new Set(twData.map((d) => d.storeid))];
@@ -83,7 +84,6 @@ const buildLedgerRows = (
       const vsLWPct = hasLW ? ((gradeTW - gradeLW) / gradeLW) * 100 : 0;
 
       const severity: LedgerRowData["severity"] = (() => {
-        if (threshold === null) return "healthy";
         const pct = hasLY ? vsLYPct : hasLW ? vsLWPct : 0;
         if (pct < -threshold) return "critical";
         if (pct < 0) return "watch";
@@ -138,6 +138,7 @@ const buildLedgerRows = (
 
 const SalesLedger = () => {
   const dispatch = useAppDispatch();
+  const toast = useToast();
   const context = useAppSelector((state) => state.app);
   const { userid } = useAppSelector((state) => state.user);
   const search = useAppSelector((state) => state.search);
@@ -157,6 +158,14 @@ const SalesLedger = () => {
     gradingMetric,
   } = useAppSelector((state) => state.salesLedger);
   const { assignedStores } = useAppSelector((state) => state.user);
+
+  // Grading should never move stores around on its own when the threshold
+  // input is cleared — with no new number typed, keep grading against the
+  // last valid amount so severity/sort order stays exactly where it was.
+  const lastValidThresholdRef = useRef<number>(threshold?.amount ?? 9);
+  if (threshold?.amount != null) {
+    lastValidThresholdRef.current = threshold.amount;
+  }
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
@@ -195,6 +204,7 @@ const SalesLedger = () => {
     if (isGroup) {
       try {
         const groupResp = await getStoresAssignedToUserGroup(context.url, context.token, userid, search.lastGroup);
+        if (groupResp.data.error !== 0) toast.warn(groupResp.data.msg);
         const stores: Store[] = groupResp.data.error === 0
           ? groupResp.data.stores.filter((s: any) => s.active)
           : [];
@@ -239,11 +249,15 @@ const SalesLedger = () => {
           getHourly(context.url, context.token, lyStart, lyEnd, useGroups, searchValue, singleStore),
         ]);
       if (twResp.data.error === 0)       dispatch(setWeeklySales(twResp.data.sales));
+      else                               toast.warn(twResp.data.msg);
       if (lwResp.data.error === 0)       dispatch(setWeeklySalesLastWeek(lwResp.data.sales));
       if (lyResp.data.error === 0)       dispatch(setWeeklySalesLastYear(lyResp.data.sales));
       if (hourlyResp.data.error === 0)   dispatch(setHourlySales(hourlyResp.data.subs));
+      else                               toast.warn(hourlyResp.data.msg);
       if (lwHourlyResp.data.error === 0) dispatch(setHourlySalesLastWeek(lwHourlyResp.data.subs));
       if (lyHourlyResp.data.error === 0) dispatch(setHourlySalesLastYear(lyHourlyResp.data.subs));
+    } catch (err: any) {
+      toast.error(err.message);
     } finally {
       dispatch(setLedgerLoading(false));
     }
@@ -254,7 +268,7 @@ const SalesLedger = () => {
     weeklySalesLastWeek,
     weeklySalesLastYear,
     assignedStores,
-    threshold?.amount ?? null,
+    lastValidThresholdRef.current,
     gradingMetric,
   );
 

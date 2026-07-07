@@ -1,6 +1,6 @@
 import type { TransactionOverview, UniqueCashier } from "../../interfaces";
 
-export type CashierSeverity = "critical" | "watch" | "ok";
+export type CashierSeverity = "critical" | "watch" | "ok" | "ungraded";
 
 export interface CashierMetric {
   value: number;
@@ -125,8 +125,8 @@ export const gradeCashier = (
   const hasBaseline = baselineStats !== null && baselineStats.trans > 0;
 
   // Normalize baseline to per-week so it's on the same scale as the 1-week current period
-  const bTrans     = hasBaseline ? baselineStats!.trans / baselineWeeks : 0;
-  const bQty       = hasBaseline ? baselineStats!.qty / baselineWeeks   : 0;
+  const bTrans     = hasBaseline ? Math.round(baselineStats!.trans / baselineWeeks) : 0;
+  const bQty       = hasBaseline ? Math.round(baselineStats!.qty / baselineWeeks)   : 0;
   const bSales     = hasBaseline ? baselineStats!.sales / baselineWeeks : 0;
   const bAvgTicket = hasBaseline ? baselineStats!.sales / baselineStats!.trans : 0;
 
@@ -143,7 +143,7 @@ export const gradeCashier = (
 
   // No baseline → can't grade fairly, default to ok
   const severity: CashierSeverity = !hasBaseline
-    ? "ok"
+    ? "ungraded"
     : noSale
     ? passes === 2 ? "ok" : passes === 1 ? "watch" : "critical"
     : passes >= 3  ? "ok" : passes === 2 ? "watch" : "critical";
@@ -164,7 +164,7 @@ export const gradeCashier = (
 
 // ── Convenience: grade all cashiers, sorted Critical → Watch → OK ────────────
 
-const SEVERITY_RANK: Record<CashierSeverity, number> = { critical: 0, watch: 1, ok: 2 };
+const SEVERITY_RANK: Record<CashierSeverity, number> = { critical: 0, watch: 1, ok: 2, ungraded: 3 };
 
 /**
  * currentOverviews: 7-day window (singleDate - 6 → singleDate)

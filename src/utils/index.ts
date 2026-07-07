@@ -1,4 +1,5 @@
 import type { Store } from "../interfaces";
+import { getHolidayLastYear } from "./holidays";
 
 export const getStoreName = (assignedStores: Store[], storeid: number, fallback?: string): string => {
   const match = assignedStores.find((s) => s.storeid === storeid);
@@ -140,6 +141,17 @@ const days = [
   "Saturday",
 ];
 export const sameWeekDayLastYear = (current: string) => {
+  // Holidays get matched to the actual holiday date last year instead of a
+  // plain weekday-preserving shift — fixed-date holidays land on a different
+  // weekday each year, and floating ones (Thanksgiving, Labor Day, etc.)
+  // aren't tied to a fixed date at all, so the weekday shift below is wrong
+  // for either case.
+  const holidayLastYear = getHolidayLastYear(current.split("T")[0]);
+  if (holidayLastYear) {
+    const d = new Date(holidayLastYear + "T12:00:00");
+    return { date: holidayLastYear, dow: days[d.getDay()] };
+  }
+
   const currDte = new Date(current);
   const currYear = currDte.getFullYear();
   const prevYear = currYear - 1;
