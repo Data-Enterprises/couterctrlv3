@@ -24,37 +24,49 @@ const LpMobile = ({ getSaleTypes }: Props) => {
     getSaleTypes();
   };
 
+  // Re-search from within results: clear loaded data to return to the entry card
+  const handleNewSearch = () => {
+    setScreen("stores");
+    dispatch(resetCashierSlice());
+  };
+
+  // Entry screen — full-page SearchCard until exception data has loaded
+  if (saleTypes.length === 0) {
+    return (
+      <div className="h-[calc(100dvh-3rem)] overflow-y-auto bg-custom-white">
+        <SearchCard
+          top
+          title="Loss prevention"
+          description="Select a store and date to view exception activity."
+          buttonLabel="Load exceptions"
+          singleDate
+          onSearch={handleSearch}
+          loading={false}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="h-[calc(100dvh-3rem)] overflow-hidden flex flex-col bg-custom-white">
-      <SearchCard
-        top
-        title="Loss prevention"
-        description="Select a store and date to view exception activity."
-        buttonLabel="Load exceptions"
-        singleDate
-        onSearch={handleSearch}
-        loading={false}
-      />
-      {saleTypes.length > 0 && (
-        <div className="flex-1 overflow-hidden">
-          {screen === "transactions" ? (
-            <TransactionsMobile
-              onBack={() => setScreen("cashiers")}
-              onOpenSearch={() => {}}
-            />
-          ) : screen === "cashiers" ? (
-            <CashierListMobile
-              onBack={() => setScreen("stores")}
-              onSelectCashier={() => setScreen("transactions")}
-            />
-          ) : (
-            <StoreListMobile
-              onOpenSearch={() => {}}
-              onStoreSelected={() => setScreen("cashiers")}
-            />
-          )}
-        </div>
-      )}
+      <div className="flex-1 overflow-hidden">
+        {screen === "transactions" ? (
+          <TransactionsMobile
+            onBack={() => setScreen("cashiers")}
+            onOpenSearch={handleNewSearch}
+          />
+        ) : screen === "cashiers" ? (
+          <CashierListMobile
+            onBack={() => setScreen("stores")}
+            onSelectCashier={() => setScreen("transactions")}
+          />
+        ) : (
+          <StoreListMobile
+            onOpenSearch={handleNewSearch}
+            onStoreSelected={() => setScreen("cashiers")}
+          />
+        )}
+      </div>
     </div>
   );
 };

@@ -20,6 +20,7 @@ import DatePickers from "../../components/datePickers/DatePickers";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import TransactionModal from "../lossPrevention/TransactionModal";
 import CouponsMobile from "./mobile/CouponsMobile";
+import CouponsMobileDev from "./mobile/devMobile";
 import CouponListPanel from "./CouponListPanel";
 import CouponDetailPanel from "./CouponDetailPanel";
 
@@ -27,6 +28,7 @@ const Coupons = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useCouponContext();
+  const devMode = useAppSelector((s) => s.app.devMode);
   const { url, token } = useAppSelector((s) => s.app);
   const { userid } = useAppSelector((s) => s.user);
   const [selectedKey, setSelectedKey] = useState("");
@@ -69,6 +71,7 @@ const Coupons = () => {
       .finally(() => dispatch(setIsFetching(false)));
   };
 
+  if (context.isMobile && devMode) return <CouponsMobileDev />;
   if (context.isMobile) return <CouponsMobile />;
 
   // Loading

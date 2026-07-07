@@ -20,6 +20,7 @@ import {
 import MarginPerfLeftPanel from "./display/dev/MarginPerfLeftPanel";
 import MarginPerfRightPanel from "./display/dev/MarginPerfRightPanel";
 import SmDevSearchOverlay from "./display/dev/SmDevSearchOverlay";
+import SubDeptMarginsMobile from "./mobile/devMobile";
 import SmDevEntryCard from "./display/dev/SmDevEntryCard";
 import ItemFilterModal from "./display/modals/ItemFilterModal";
 import ExportModal from "../../components/modals/ExportModal";
@@ -101,6 +102,8 @@ const SubDeptMarginsDev = () => {
   const [searchOpen, setSearchOpen] = useState(false);
 
   const subDeptGrades = useAppSelector((s) => s.subMargin.subDeptGrades);
+
+  if (ctx.isMobile) return <SubDeptMarginsMobile />;
 
   const handleSearch = () => {
     dispatch(actions.requerySubDeptMargins());

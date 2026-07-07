@@ -163,6 +163,15 @@ const OrdersMobile = () => {
 
   const hasData = ctx.groupedAvailableOrders.length > 0;
 
+  const handleReset = () => {
+    ctx.dispatch(setAvailableOrders([]));
+    ctx.dispatch(setGroupedAvailableOrders([]));
+    ctx.dispatch(setAllOrders([]));
+    ctx.dispatch(setSelectedOrderKey(null));
+    ctx.dispatch(setSelectedOrderId(null));
+    setStep("available");
+  };
+
   return (
     <div className="h-[calc(100dvh-3rem)] overflow-hidden flex flex-col bg-custom-white">
       <ExportModal
@@ -172,14 +181,16 @@ const OrdersMobile = () => {
         onClose={() => ctx.dispatch(setOrdersExportModalOpen(false))}
       />
 
-      <SearchCard
-        top
-        title="Orders"
-        description="Select a store or group and date range to find available orders."
-        buttonLabel="Find orders"
-        onSearch={handleSearch}
-        loading={ctx.loadingAvailableOrders}
-      />
+      {!hasData && !ctx.loadingAvailableOrders && (
+        <SearchCard
+          top
+          title="Orders"
+          description="Select a store or group and date range to find available orders."
+          buttonLabel="Find orders"
+          onSearch={handleSearch}
+          loading={ctx.loadingAvailableOrders}
+        />
+      )}
 
       {(hasData || ctx.loadingAvailableOrders) && (
         <div className="flex-1 overflow-hidden">
@@ -191,7 +202,7 @@ const OrdersMobile = () => {
               startDate={ctx.startDate}
               endDate={ctx.endDate}
               onSelectStore={handleSelectStore}
-              onOpenSearch={() => {}}
+              onOpenSearch={handleReset}
             />
           )}
 

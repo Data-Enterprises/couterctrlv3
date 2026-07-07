@@ -1,6 +1,5 @@
 import { useAppSelector } from "./hooks";
 import UpcList from "./pages/upc/UpcList.tsx";
-import UpcListDev from "./pages/upc/dev/UpcListDev.tsx";
 import Cashiers from "./pages/cashiers/Cashiers.tsx";
 import CashiersLegacy from "./pages/cashiers/CashiersLegacy.tsx";
 import Sales from "./pages/sales/Sales.tsx";
@@ -59,6 +58,5 @@ export const ReceiversPage = () => {
 };
 
 export const UpcPage = () => {
-  const devMode = useAppSelector((s) => s.app.devMode);
-  return devMode ? <UpcListDev /> : <UpcList />;
+  return <UpcList />;
 };
