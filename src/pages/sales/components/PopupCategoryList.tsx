@@ -11,15 +11,8 @@ import {
 } from "@heroicons/react/20/solid";
 import type { Severity } from "./LedgerRow";
 import { SEVERITY_CONFIG } from "./tierColumnUtils";
-
-const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
-
-const pillClass = (pct: number | null, threshold: number) => {
-  if (pct === null) return "bg-gray-100 text-gray-500";
-  if (pct < -threshold) return "bg-red-100 text-red-800";
-  if (pct < 0) return "bg-amber-100 text-amber-800";
-  return "bg-emerald-100 text-emerald-800";
-};
+import { formatPct, pillClass, chipClass, type SevFilter } from "./utils";
+import SeverityBadge from "../../../components/SeverityBadge";
 
 type CatRow = {
   id: number;
@@ -44,51 +37,12 @@ type CatRow = {
   lyStoreCpn: number;
 };
 
-type SevFilter = "all" | "critical" | "watch" | "healthy";
-
 const catSeverity = (r: CatRow, threshold: number): Severity => {
   const pct = r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0;
   if (pct < -threshold) return "critical";
   if (pct < 0) return "watch";
   return "healthy";
 };
-
-const BADGE_BG: Record<Severity, string> = {
-  critical: "#fee2e2",
-  watch: "#fef3c7",
-  healthy: "#d1fae5",
-};
-const BADGE_COLOR: Record<Severity, string> = {
-  critical: "#ef4444",
-  watch: "#f59e0b",
-  healthy: "#10b981",
-};
-
-const SeverityBadge = ({ severity }: { severity: Severity }) => (
-  <div
-    className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0"
-    style={{ background: BADGE_BG[severity] }}
-  >
-    {severity === "critical" && (
-      <ExclamationTriangleIcon
-        className="w-3 h-3"
-        style={{ color: BADGE_COLOR[severity] }}
-      />
-    )}
-    {severity === "watch" && (
-      <ExclamationCircleIcon
-        className="w-3 h-3"
-        style={{ color: BADGE_COLOR[severity] }}
-      />
-    )}
-    {severity === "healthy" && (
-      <CheckCircleIcon
-        className="w-3 h-3"
-        style={{ color: BADGE_COLOR[severity] }}
-      />
-    )}
-  </div>
-);
 
 const getCta = (
   row: CatRow,
@@ -324,24 +278,12 @@ const PopupCategoryList = ({
     );
   }
 
-  const chipClass = (active: boolean, sev?: Severity) => {
-    if (!active)
-      return "bg-white border border-gray-200 text-content hover:border-gray-400";
-    if (!sev) return "bg-[#1e2a4a] border-[#1e2a4a] text-white";
-    const m: Record<Severity, string> = {
-      critical: "bg-red-600 border-red-600 text-white",
-      watch: "bg-amber-500 border-amber-500 text-white",
-      healthy: "bg-emerald-600 border-emerald-600 text-white",
-    };
-    return m[sev];
-  };
-
   return (
     <div className="flex h-full">
       {/* Left panel — signal list */}
       <div
         className="flex flex-col border-r border-gray-100"
-        style={{ width: "40%" }}
+        style={{ width: "36.5%" }}
       >
         {/* Filter chips */}
         <div className="flex flex-wrap gap-1 p-2 border-b border-gray-100 bg-gray-100">

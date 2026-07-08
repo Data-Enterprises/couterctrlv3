@@ -28,15 +28,9 @@ import type { Severity } from "./LedgerRow";
 import type { SubDeptMargin } from "../../../interfaces";
 import { SEVERITY_CONFIG } from "./tierColumnUtils";
 import UpcContextMenu from "../../../components/UpcContextMenu";
-
-const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
-
-const pillClass = (pct: number | null, threshold: number) => {
-  if (pct === null) return "bg-gray-100 text-gray-500";
-  if (pct < -threshold) return "bg-red-100 text-red-800";
-  if (pct < 0) return "bg-amber-100 text-amber-800";
-  return "bg-emerald-100 text-emerald-800";
-};
+import { formatPct, pillClass, chipClass, type SevFilter } from "./utils";
+import SeverityBadge from "../../../components/SeverityBadge";
+import TextFilter from "../../../components/filters/TextFilter";
 
 type DeptRow = {
   id: number;
@@ -60,8 +54,6 @@ type DeptRow = {
   storeCpn: number;
   lyStoreCpn: number;
 };
-
-type SevFilter = "all" | "critical" | "watch" | "healthy";
 
 type Top10Item = {
   productCode: string;
@@ -136,43 +128,6 @@ const itemSeverity = (
   if (pct < 0) return "watch";
   return "healthy";
 };
-
-const BADGE_BG: Record<Severity, string> = {
-  critical: "#fee2e2",
-  watch: "#fef3c7",
-  healthy: "#d1fae5",
-};
-const BADGE_COLOR: Record<Severity, string> = {
-  critical: "#ef4444",
-  watch: "#f59e0b",
-  healthy: "#10b981",
-};
-
-const SeverityBadge = ({ severity }: { severity: Severity }) => (
-  <div
-    className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0"
-    style={{ background: BADGE_BG[severity] }}
-  >
-    {severity === "critical" && (
-      <ExclamationTriangleIcon
-        className="w-3 h-3"
-        style={{ color: BADGE_COLOR[severity] }}
-      />
-    )}
-    {severity === "watch" && (
-      <ExclamationCircleIcon
-        className="w-3 h-3"
-        style={{ color: BADGE_COLOR[severity] }}
-      />
-    )}
-    {severity === "healthy" && (
-      <CheckCircleIcon
-        className="w-3 h-3"
-        style={{ color: BADGE_COLOR[severity] }}
-      />
-    )}
-  </div>
-);
 
 const getCta = (
   row: DeptRow,
@@ -267,6 +222,7 @@ const PopupSubDeptList = ({
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [ctaOpen, setCtaOpen] = useState(false);
   const [itemSevFilter, setItemSevFilter] = useState<SevFilter>("all");
+  const [itemTextFilter, setItemTextFilter] = useState("");
   const [itemsLoading, setItemsLoading] = useState(false);
   const [ctxMenu, setCtxMenu] = useState<{
     x: number;
@@ -557,16 +513,32 @@ const PopupSubDeptList = ({
   // Independent of the active severity chip, so the context menu's
   // "copy critical/watch/healthy" options always mean the same thing.
   const allUpcs = useMemo(() => itemsWithSev.map((i) => i.upc), [itemsWithSev]);
-  const severityUpcs = useMemo(() => ({
-    critical: itemsWithSev.filter((i) => i.sev === "critical").map((i) => i.upc),
-    watch: itemsWithSev.filter((i) => i.sev === "watch").map((i) => i.upc),
-    healthy: itemsWithSev.filter((i) => i.sev === "healthy").map((i) => i.upc),
-  }), [itemsWithSev]);
+  const severityUpcs = useMemo(
+    () => ({
+      critical: itemsWithSev
+        .filter((i) => i.sev === "critical")
+        .map((i) => i.upc),
+      watch: itemsWithSev.filter((i) => i.sev === "watch").map((i) => i.upc),
+      healthy: itemsWithSev
+        .filter((i) => i.sev === "healthy")
+        .map((i) => i.upc),
+    }),
+    [itemsWithSev],
+  );
 
   const visibleItems =
     itemSevFilter === "all"
       ? itemsWithSev
       : itemsWithSev.filter((i) => i.sev === itemSevFilter);
+
+  const textFilteredItems = itemTextFilter.trim()
+    ? visibleItems.filter((i) => {
+        const q = itemTextFilter.trim().toLowerCase();
+        return (
+          i.upc.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q)
+        );
+      })
+    : visibleItems;
 
   if (!rows.length) {
     return (
@@ -576,25 +548,13 @@ const PopupSubDeptList = ({
     );
   }
 
-  const chipClass = (active: boolean, sev?: Severity) => {
-    if (!active)
-      return "bg-white border border-gray-200 text-content hover:border-gray-400";
-    if (!sev) return "bg-[#1e2a4a] border-[#1e2a4a] text-white";
-    const m: Record<Severity, string> = {
-      critical: "bg-red-600 border-red-600 text-white",
-      watch: "bg-amber-500 border-amber-500 text-white",
-      healthy: "bg-emerald-600 border-emerald-600 text-white",
-    };
-    return m[sev];
-  };
-
   return (
     <>
       <div className="flex h-full">
         {/* Left panel — signal list */}
         <div
           className="flex flex-col border-r border-gray-100"
-          style={{ width: "40%" }}
+          style={{ width: "36.5%" }}
         >
           {/* Filter chips */}
           <div className="flex flex-wrap gap-1 p-2 border-b border-gray-100 bg-gray-100">
@@ -634,7 +594,9 @@ const PopupSubDeptList = ({
               return (
                 <button
                   key={r.id}
-                  onClick={() => dispatch(setSelectedSubDeptId(isSel ? null : r.id))}
+                  onClick={() =>
+                    dispatch(setSelectedSubDeptId(isSel ? null : r.id))
+                  }
                   className={`w-full px-3 py-2 border-b border-gray-100 last:border-0 gap-2 text-left transition-colors ${isSel ? "bg-white" : "hover:bg-gray-50"}`}
                   style={
                     isSel
@@ -787,10 +749,10 @@ const PopupSubDeptList = ({
                 {/* Items section */}
                 <div className="border-b border-gray-100 leading-snug">
                   {/* Items header */}
-                  <div className="flex items-center gap-2 px-3 py-1 bg-gray-100 border-b border-gray-100">
-                    <span className="text-[10px] font-medium uppercase tracking-wide text-content flex-shrink-0">
+                  <div className="flex items-center gap-1 px-3 py-1 bg-gray-100 border-b border-gray-100">
+                    {/* <span className="text-[10px] font-medium uppercase tracking-wide text-content flex-shrink-0">
                       Items
-                    </span>
+                    </span> */}
                     <button
                       onClick={() => setItemSevFilter("all")}
                       className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(itemSevFilter === "all")}`}
@@ -818,19 +780,26 @@ const PopupSubDeptList = ({
                       <CheckCircleIcon className="w-2.5 h-2.5" />
                       OK ({itemHealthyCount})
                     </button>
-                    <div className="flex-1" />
+                    {/* <div className="flex-1" /> */}
+                    <div className="w-[37%]">
+                      <TextFilter
+                        value={itemTextFilter}
+                        onChange={setItemTextFilter}
+                        placeholder="UPC/Desc"
+                      />
+                    </div>
                   </div>
 
                   {itemsLoading ? (
                     <div className="px-4 py-3 text-[11px] text-content">
                       Loading…
                     </div>
-                  ) : visibleItems.length === 0 ? (
+                  ) : textFilteredItems.length === 0 ? (
                     <div className="px-4 py-3 text-[11px] text-content">
                       No data
                     </div>
                   ) : (
-                    visibleItems.map((item) => {
+                    textFilteredItems.map((item) => {
                       const lwNetPct =
                         gradingMetric === "sales"
                           ? item.lwNet !== null && item.lwNet > 0
