@@ -168,6 +168,7 @@ const SalesLedger = () => {
   }
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [fetchFailed, setFetchFailed] = useState(false);
 
   const resetToEntry = () => {
     dispatch(reQuery());
@@ -199,6 +200,7 @@ const SalesLedger = () => {
     dispatch(reQuery());
     dispatch(reQueryLedger());
     setSearchModalOpen(false);
+    setFetchFailed(false);
 
     // Large group path: >30 stores → per-store calls, collect progressively
     if (isGroup) {
@@ -256,6 +258,7 @@ const SalesLedger = () => {
       if (lyHourlyResp.data.error === 0) dispatch(setHourlySalesLastYear(lyHourlyResp.data.subs));
     } catch (err: any) {
       toast.error(err.message);
+      setFetchFailed(true);
     } finally {
       dispatch(setLedgerLoading(false));
     }
@@ -305,7 +308,7 @@ const SalesLedger = () => {
           onSearch={fetchLedger}
           loading={loading}
           notice={
-            hasSearched
+            hasSearched && !fetchFailed
               ? "No records found, try a different store, group, or week ending"
               : undefined
           }
