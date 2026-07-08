@@ -50,12 +50,12 @@ const LedgerHeader = ({
         <span className="text-white font-medium text-[13px] flex-shrink-0">
           Weekly performance
         </span>
-        <span className="text-white/35 text-[11px] flex-shrink-0">
+        <span className="text-white text-[11px] flex-shrink-0">
           {weekLabel}
         </span>
         <div className="flex-1" />
         <div className="flex items-baseline gap-1.5">
-          <span className="text-[10px] text-white/45 uppercase tracking-wide">
+          <span className="text-[10px] text-white uppercase tracking-wide">
             {isQty ? "Units" : "Net"}
           </span>
           <span className="text-[13px] font-medium text-white">
@@ -66,7 +66,7 @@ const LedgerHeader = ({
           <>
             <div className="w-px h-4 bg-white/15 flex-shrink-0" />
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[10px] text-white/45 uppercase tracking-wide">
+              <span className="text-[10px] text-white uppercase tracking-wide">
                 vs LY
               </span>
               <span
@@ -79,7 +79,7 @@ const LedgerHeader = ({
         )}
         {hasLW && (
           <div className="flex items-baseline gap-1.5">
-            <span className="text-[10px] text-white/45 uppercase tracking-wide">
+            <span className="text-[10px] text-white uppercase tracking-wide">
               vs LW
             </span>
             <span
@@ -119,7 +119,7 @@ const LedgerHeader = ({
                   gradingMetric === m
                     ? "rgba(255,255,255,0.2)"
                     : "rgba(255,255,255,0.07)",
-                color: gradingMetric === m ? "#fff" : "rgba(255,255,255,0.4)",
+                color: "#fff",
               }}
             >
               {m}
@@ -131,7 +131,7 @@ const LedgerHeader = ({
 
         {/* Threshold */}
         <div className="flex items-center gap-1.5 flex-shrink-0">
-          <span className="text-[10px] text-white/45 uppercase tracking-wide">
+          <span className="text-[10px] text-white uppercase tracking-wide">
             Store Threshold
           </span>
           <ThresholdFilter
@@ -180,13 +180,13 @@ const LedgerHeader = ({
                     className="w-[7px] h-[7px] rounded-[2px] flex-shrink-0 mt-[3px]"
                     style={{ background: color }}
                   />
-                  <span className="text-[11px] text-white/90 leading-snug">
+                  <span className="text-[11px] text-white leading-snug">
                     {label}
                   </span>
                 </div>
               ))}
               <div className="h-px bg-white/10 my-0.5" />
-              <div className="text-[9px] font-semibold uppercase tracking-wide text-white/35">
+              <div className="text-[9px] font-semibold uppercase tracking-wide text-white">
                 Metric graded
               </div>
               {[
@@ -194,10 +194,10 @@ const LedgerHeader = ({
                 { label: "Quantity", active: isQty },
               ].map(({ label, active }) => (
                 <div key={label} className="flex items-center gap-1.5">
-                  <span className="text-white/30 text-[10px]">·</span>
-                  <span className="text-[10px] text-white/90">{label}</span>
+                  <span className="text-white text-[10px]">·</span>
+                  <span className="text-[10px] text-white">{label}</span>
                   {active && (
-                    <span className="text-[9px] text-white/60 italic">
+                    <span className="text-[9px] text-white italic">
                       selected
                     </span>
                   )}

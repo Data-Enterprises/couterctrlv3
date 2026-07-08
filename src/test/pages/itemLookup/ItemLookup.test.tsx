@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, type Mock } from "vitest";
 import { renderWithProviders } from "../../utils";
-import ItemLookup from "../../../pages/lookup/ItemLookup";
+import ItemLookupLegacy from "../../../pages/lookup/ItemLookupLegacy";
 import { setupStore } from "../../../store";
 import userEvent from "@testing-library/user-event";
 
@@ -85,7 +85,7 @@ describe("Item Lookup page", () => {
   //     ],
   //   });
   //   (getStoreList as Mock).mockRejectedValueOnce(defaultError);
-  //   renderWithProviders(<ItemLookup />);
+  //   renderWithProviders(<ItemLookupLegacy />);
   //   await waitFor(() => {
   //     expect(mockToastError).toHaveBeenCalledWith("API Error");
   //   });
@@ -99,7 +99,7 @@ describe("Item Lookup page", () => {
   //     ],
   //   });
   //   (getStoreList as Mock).mockResolvedValue(storeListResp);
-  //   renderWithProviders(<ItemLookup />, { store });
+  //   renderWithProviders(<ItemLookupLegacy />, { store });
   // });
 
   it("should set an error message if the item is not found for all stores", async () => {
@@ -111,7 +111,7 @@ describe("Item Lookup page", () => {
     });
     (getStoreList as Mock).mockResolvedValue(storeListResp);
     (getItemLookup as Mock).mockResolvedValue(itemLookupWarnResp);
-    renderWithProviders(<ItemLookup />, { store });
+    renderWithProviders(<ItemLookupLegacy />, { store });
 
     const scan = await screen.findByTestId("scan-button");
     await user.click(scan);
@@ -135,7 +135,7 @@ describe("Item Lookup page", () => {
     });
     (getStoreList as Mock).mockResolvedValue(storeListResp);
     (getItemLookup as Mock).mockResolvedValue(itemLookupResp);
-    renderWithProviders(<ItemLookup />, { store });
+    renderWithProviders(<ItemLookupLegacy />, { store });
 
     const scan = await screen.findByTestId("scan-button");
     await user.click(scan);
@@ -160,7 +160,7 @@ describe("Item Lookup page", () => {
     });
     (getStoreList as Mock).mockResolvedValue(storeListResp);
     (getItemLookup as Mock).mockResolvedValue(itemLookupResp);
-    renderWithProviders(<ItemLookup />, { store });
+    renderWithProviders(<ItemLookupLegacy />, { store });
 
     const scan = await screen.findByTestId("scan-button");
     await user.click(scan);
@@ -193,7 +193,7 @@ describe("Item Lookup page", () => {
         { deviceId: "back-1", label: "Back Camera" },
       ],
     });
-    renderWithProviders(<ItemLookup />, { store });
+    renderWithProviders(<ItemLookupLegacy />, { store });
 
     const lookupSelectStore = await screen.findByTestId("lookup-select-store");
     await user.click(lookupSelectStore);
@@ -216,7 +216,7 @@ describe("Item Lookup page", () => {
         { deviceId: "back-1", label: "Back Camera" },
       ],
     });
-    renderWithProviders(<ItemLookup />, { store });
+    renderWithProviders(<ItemLookupLegacy />, { store });
     const lookupSelectStore = await screen.findByTestId("lookup-select-store");
     await user.click(lookupSelectStore);
 
@@ -239,7 +239,7 @@ describe("Item Lookup page", () => {
         { deviceId: "back-1", label: "Back Camera" },
       ],
     });
-    renderWithProviders(<ItemLookup />, { store });
+    renderWithProviders(<ItemLookupLegacy />, { store });
     const lookupSelectStore = await screen.findByTestId("lookup-select-store");
     await user.click(lookupSelectStore);
 
@@ -270,7 +270,7 @@ describe("Item Lookup page", () => {
       ],
     });
     (getItemLookupSingleStore as Mock).mockRejectedValue(defaultError);
-    renderWithProviders(<ItemLookup />, { store });
+    renderWithProviders(<ItemLookupLegacy />, { store });
 
     const lookupSelectStore = await screen.findByTestId("lookup-select-store");
     await user.click(lookupSelectStore);
@@ -294,7 +294,7 @@ describe("Item Lookup page", () => {
       ],
     });
     (getItemLookupSingleStore as Mock).mockResolvedValue(itemLookupWarnResp);
-    renderWithProviders(<ItemLookup />, { store });
+    renderWithProviders(<ItemLookupLegacy />, { store });
 
     const lookupSelectStore = await screen.findByTestId("lookup-select-store");
     await user.click(lookupSelectStore);
@@ -320,7 +320,7 @@ describe("Item Lookup page", () => {
     (getItemLookupSingleStore as Mock).mockResolvedValue(
       itemLookupSingleStoreResp
     );
-    renderWithProviders(<ItemLookup />, { store });
+    renderWithProviders(<ItemLookupLegacy />, { store });
 
     const lookupSelectStore = await screen.findByTestId("lookup-select-store");
     await user.click(lookupSelectStore);
@@ -346,7 +346,7 @@ describe("Item Lookup page", () => {
     (getItemLookupSingleStore as Mock).mockResolvedValue(
       itemLookupSingleStoreResp
     );
-    renderWithProviders(<ItemLookup />, { store });
+    renderWithProviders(<ItemLookupLegacy />, { store });
 
     const lookupSelectStore = await screen.findByTestId("lookup-select-store");
     await user.click(lookupSelectStore);
@@ -380,7 +380,7 @@ describe("Item Lookup page", () => {
       ],
     });
     (getItemLookup as Mock).mockResolvedValue(itemLookupResp);
-    renderWithProviders(<ItemLookup />, { store });
+    renderWithProviders(<ItemLookupLegacy />, { store });
     const upcInput = await screen.findByTestId("scan-item-input");
     await user.type(upcInput, "1234567890123");
 
@@ -398,7 +398,7 @@ describe("Item Lookup page", () => {
     (getItemLookupSingleStore as Mock).mockResolvedValue(
       itemLookupSingleStoreResp
     );
-    renderWithProviders(<ItemLookup />, { store });
+    renderWithProviders(<ItemLookupLegacy />, { store });
 
     const lookupSelectStore = await screen.findByTestId("lookup-select-store");
     await user.click(lookupSelectStore);
@@ -423,7 +423,7 @@ describe("Item Lookup page", () => {
         { deviceId: "back-1", label: "Back Camera" },
       ],
     });
-    renderWithProviders(<ItemLookup />, { store });
+    renderWithProviders(<ItemLookupLegacy />, { store });
 
     const scan = await screen.findByTestId("scan-button");
 
@@ -451,7 +451,7 @@ describe("Item Lookup page", () => {
         { deviceId: "back-1", label: "Back Camera" },
       ],
     });
-    renderWithProviders(<ItemLookup />, { store });
+    renderWithProviders(<ItemLookupLegacy />, { store });
     const scan = await screen.findByTestId("scan-button");
     await user.click(scan);
     await user.click(scan);
@@ -464,7 +464,7 @@ describe("Item Lookup page", () => {
         { deviceId: "back-1", label: "Back Camera" },
       ],
     });
-    renderWithProviders(<ItemLookup />, { store });
+    renderWithProviders(<ItemLookupLegacy />, { store });
     const lookupSelectStore = await screen.findByTestId("lookup-select-store");
     await user.click(lookupSelectStore);
 

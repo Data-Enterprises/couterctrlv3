@@ -12,6 +12,8 @@ import Coupons from "./pages/coupons/Coupons.tsx";
 import CouponsLegacy from "./pages/coupons/CouponsLegacy.tsx";
 import Receivers from "./pages/receivers/Receivers.tsx";
 import ReceiversLegacy from "./pages/receivers/ReceiversLegacy.tsx";
+// import ItemLookup from "./pages/lookup/ItemLookup.tsx";
+import ItemLookupLegacy from "./pages/lookup/ItemLookupLegacy.tsx";
 import TitleBar from "./components/navigation/TitleBar.tsx";
 import TitleBarLegacy from "./components/navigation/TitleBarLegacy.tsx";
 import SideBarLegacy from "./components/navigation/SideBarLegacy.tsx";
@@ -59,4 +61,10 @@ export const ReceiversPage = () => {
 
 export const UpcPage = () => {
   return <UpcList />;
+};
+
+export const ItemLookupPage = () => {
+  // const devMode = useAppSelector((s) => s.app.devMode);
+  // return devMode ? <ItemLookup /> : <ItemLookupLegacy />;
+  return <ItemLookupLegacy />;
 };

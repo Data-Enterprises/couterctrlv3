@@ -315,7 +315,7 @@ const SalesLedger = () => {
           <LoadingIndicator message="Loading store ledger" />
         </div>
       ) : ledgerRows.length === 0 ? (
-        <div className="h-[calc(100vh-3rem)] flex items-center justify-center text-content/40 text-sm">
+        <div className="h-[calc(100vh-3rem)] flex items-center justify-center text-content text-sm">
           No data found for this period.
         </div>
       ) : (

@@ -16,7 +16,8 @@ const fmtPts = (pts: number) => `${pts >= 0 ? "+" : ""}${pts.toFixed(1)} pts`;
 const agg = (rows: SubDeptMargin[]) => {
   const sales = rows.reduce((acc, m) => acc + (m.total_sales - m.total_tax), 0);
   const cogs = rows.reduce(
-    (acc, m) => acc + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight),
+    (acc, m) =>
+      acc + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight),
     0,
   );
   return { sales, marginPct: sales > 0 ? ((sales - cogs) / sales) * 100 : 0 };
@@ -34,12 +35,17 @@ const MarginPerfDaySidebar = () => {
 
   const tyDates = useMemo(
     () =>
-      Array.from(new Set(ctx.weekOneMargins.map((m) => m.sale_date.split("T")[0]))).sort(),
+      Array.from(
+        new Set(ctx.weekOneMargins.map((m) => m.sale_date.split("T")[0])),
+      ).sort(),
     [ctx.weekOneMargins],
   );
 
   const weekTw = useMemo(() => agg(ctx.weekOneMargins), [ctx.weekOneMargins]);
-  const weekLy = useMemo(() => agg(ctx.weekOneMarginsLY), [ctx.weekOneMarginsLY]);
+  const weekLy = useMemo(
+    () => agg(ctx.weekOneMarginsLY),
+    [ctx.weekOneMarginsLY],
+  );
   const weekLw = useMemo(() => agg(ctx.weekTwoMargins), [ctx.weekTwoMargins]);
 
   const weekHasLY = weekLy.sales > 0;
@@ -58,8 +64,14 @@ const MarginPerfDaySidebar = () => {
   const firstDate = tyDates[0] ?? "";
   const lastDate = tyDates[tyDates.length - 1] ?? "";
   const fmtShort = (d: string) =>
-    new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  const weekRange = firstDate && lastDate ? `${fmtShort(firstDate)} – ${fmtShort(lastDate)}` : "";
+    new Date(d + "T12:00:00").toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  const weekRange =
+    firstDate && lastDate
+      ? `${fmtShort(firstDate)} – ${fmtShort(lastDate)}`
+      : "";
 
   const allSelected = ctx.selectedWeekDay === "";
 
@@ -68,16 +80,20 @@ const MarginPerfDaySidebar = () => {
       {/* All week card */}
       <button
         onClick={() => dispatch(actions.setSelectedWeekDay(""))}
-        className={`flex flex-col items-center justify-center px-3 py-2 border-r-2 border-gray-200 transition-colors flex-[1.3] ${
+        className={`flex flex-col items-center justify-center px-3 py-2 leading-tight border-r-2 border-gray-200 transition-colors flex-[1.3] ${
           allSelected ? "bg-gray-100" : "bg-gray-50 hover:bg-gray-100"
         }`}
         style={allSelected ? INSET_SHADOW : undefined}
       >
         <div className="text-[10px] font-bold text-content">All week</div>
-        <div className="text-[8px] mt-0.5 text-content/35">{weekRange}</div>
+        <div className="text-[9.5px] mt-0.5 text-content">{weekRange}</div>
         <div
-          className={`text-[10px] font-semibold mt-0.5 ${
-            weekDelta === null ? "text-content/25" : weekDelta < 0 ? "text-red-500" : "text-emerald-600"
+          className={`text-[9.5px] font-semibold mt-0.5 ${
+            weekDelta === null
+              ? "text-content"
+              : weekDelta < 0
+                ? "text-red-500"
+                : "text-emerald-600"
           }`}
         >
           {weekDelta !== null
@@ -90,7 +106,10 @@ const MarginPerfDaySidebar = () => {
       {tyDates.map((tyDate) => {
         const date = new Date(tyDate + "T12:00:00");
         const dayLabel = date.toLocaleDateString("en-US", { weekday: "short" });
-        const calLabel = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        const calLabel = date.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        });
         const isSelected = ctx.selectedWeekDay === tyDate;
 
         const lyDate = getLYDate(tyDate);
@@ -118,8 +137,10 @@ const MarginPerfDaySidebar = () => {
         return (
           <button
             key={tyDate}
-            onClick={() => dispatch(actions.setSelectedWeekDay(isSelected ? "" : tyDate))}
-            className={`relative flex flex-col items-center justify-center px-1 py-2 border-r border-gray-100 last:border-r-0 transition-colors flex-1 ${
+            onClick={() =>
+              dispatch(actions.setSelectedWeekDay(isSelected ? "" : tyDate))
+            }
+            className={`relative flex flex-col items-center justify-center px-1 py-2 border-r border-gray-100 leading-tight last:border-r-0 transition-colors flex-1 ${
               isSelected ? "bg-gray-100" : "bg-white hover:bg-gray-50"
             }`}
             style={isSelected ? INSET_SHADOW : undefined}
@@ -129,14 +150,22 @@ const MarginPerfDaySidebar = () => {
                 <StarIcon className="w-2.5 h-2.5 text-amber-500" />
               </span>
             )}
-            <div className="text-[10px] font-semibold text-content">{dayLabel}</div>
-            <div className="text-[8px] mt-0.5 text-content/35">{calLabel}</div>
+            <div className="text-[10px] font-semibold text-content">
+              {dayLabel}
+            </div>
+            <div className="text-[9.5px] mt-0.5 text-content">{calLabel}</div>
             <div
-              className={`text-[9px] font-semibold mt-0.5 ${
-                delta === null ? "text-content/25" : isNeg ? "text-red-500" : "text-emerald-600"
+              className={`text-[9.5px] font-semibold mt-0.5 ${
+                delta === null
+                  ? "text-content"
+                  : isNeg
+                    ? "text-red-500"
+                    : "text-emerald-600"
               }`}
             >
-              {delta !== null ? `${unit === "pts" ? fmtPts(delta) : fmtPct(delta)} ${suffix}` : "—"}
+              {delta !== null
+                ? `${unit === "pts" ? fmtPts(delta) : fmtPct(delta)} ${suffix}`
+                : "—"}
             </div>
           </button>
         );

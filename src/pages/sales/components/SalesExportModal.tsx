@@ -397,7 +397,7 @@ const SalesExportModal = ({
           <div className="flex items-center gap-3">
             <div>
               <p className="text-white text-[13px] font-semibold">Export CSV</p>
-              <p className="text-white/55 text-[10px] mt-0.5">{storeName}</p>
+              <p className="text-white text-[10px] mt-0.5">{storeName}</p>
             </div>
             {/* Mode tabs */}
             <div className="flex items-center gap-0.5 bg-white/10 rounded-md p-0.5 ml-2">
@@ -406,7 +406,7 @@ const SalesExportModal = ({
                   key={m}
                   onClick={() => setMode(m)}
                   className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                    mode === m ? "bg-white text-[#1e2a4a]" : "text-white/70 hover:text-white"
+                    mode === m ? "bg-white text-[#1e2a4a]" : "text-white"
                   }`}
                 >
                   {m === "presets" ? "Presets" : "Custom"}
@@ -423,7 +423,7 @@ const SalesExportModal = ({
         {mode === "presets" && (
           <>
             <div className="px-4 pt-4 pb-2 space-y-3">
-              <p className="text-[11px] text-content/50 uppercase tracking-wide font-medium">Select data to include</p>
+              <p className="text-[11px] text-content uppercase tracking-wide font-medium">Select data to include</p>
               {presetDatasets.map(({ id, label, description }) => (
                 <label key={id} className="flex items-start gap-3 cursor-pointer group">
                   <input
@@ -434,7 +434,7 @@ const SalesExportModal = ({
                   />
                   <div>
                     <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">{label}</p>
-                    <p className="text-[11px] text-content/50 mt-0.5">{description}</p>
+                    <p className="text-[11px] text-content mt-0.5">{description}</p>
                   </div>
                 </label>
               ))}
@@ -451,17 +451,17 @@ const SalesExportModal = ({
                     <div className="flex items-baseline gap-2 flex-wrap">
                       <p className="text-[13px] font-medium text-content">Sub Dept Items</p>
                       {subDeptName && (
-                        <span className="text-[10px] text-content/45 italic truncate">{subDeptName}</span>
+                        <span className="text-[10px] text-content italic truncate">{subDeptName}</span>
                       )}
                     </div>
-                    <p className="text-[11px] text-content/50 mt-0.5 mb-1.5">Product-level items with severity grading (TY / LW / LY)</p>
+                    <p className="text-[11px] text-content mt-0.5 mb-1.5">Product-level items with severity grading (TY / LW / LY)</p>
                     <div className="flex gap-1.5 flex-wrap">
                       {SEV_CHIP.map(({ sev, label, activeClass }) => (
                         <button
                           key={sev}
                           onClick={() => toggleItemSev(sev)}
                           className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
-                            itemSevs.has(sev) ? activeClass : "bg-white border-gray-200 text-content/55"
+                            itemSevs.has(sev) ? activeClass : "bg-white border-gray-200 text-content"
                           }`}
                         >
                           {label}
@@ -473,7 +473,7 @@ const SalesExportModal = ({
               )}
             </div>
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-2">
-              <button onClick={onClose} className="text-[12px] text-content/50 hover:text-content transition-colors">Cancel</button>
+              <button onClick={onClose} className="text-[12px] text-content transition-colors">Cancel</button>
               <button
                 onClick={handlePresetDownload}
                 disabled={selected.size === 0}
@@ -495,7 +495,7 @@ const SalesExportModal = ({
               <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
                 {/* Source */}
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">Data Source</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">Data Source</p>
                   <div className="flex flex-col gap-1.5">
                     {(["subdept", "hourly"] as CustomSource[]).map((s) => (
                       <label key={s} className="flex items-center gap-2 cursor-pointer">
@@ -513,7 +513,7 @@ const SalesExportModal = ({
 
                 {/* Group by */}
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">Group By</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">Group By</p>
                   <div className="space-y-1.5">
                     {dims.map((d) => (
                       <label key={d.key} className="flex items-center gap-2 cursor-pointer">
@@ -531,7 +531,7 @@ const SalesExportModal = ({
 
                 {/* Metrics */}
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">Metrics</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">Metrics</p>
                   <div className="space-y-2">
                     {mDefs.map((m) => {
                       const sel = metrics.get(m.key)!;
@@ -543,7 +543,7 @@ const SalesExportModal = ({
                             onChange={() => toggleMetric(m.key)}
                             className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0"
                           />
-                          <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/40"}`}>{m.label}</span>
+                          <span className="text-[12px] flex-1 text-content">{m.label}</span>
                           <select
                             value={sel.fn}
                             disabled={!sel.enabled}
@@ -565,8 +565,8 @@ const SalesExportModal = ({
               {/* Right: preview */}
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
-                  <p className="text-[11px] font-semibold text-content/60 uppercase tracking-wide">Preview</p>
-                  <span className="text-[10px] text-content/40">
+                  <p className="text-[11px] font-semibold text-content uppercase tracking-wide">Preview</p>
+                  <span className="text-[10px] text-content">
                     {aggRows.length === 0
                       ? "No data — select at least one group or metric"
                       : `Showing ${Math.min(PREVIEW_ROWS, aggRows.length)} of ${aggRows.length} rows`}
@@ -575,7 +575,7 @@ const SalesExportModal = ({
 
                 {columns.length === 0 ? (
                   <div className="flex-1 flex items-center justify-center p-6 text-center">
-                    <p className="text-[12px] text-content/40 leading-relaxed">
+                    <p className="text-[12px] text-content leading-relaxed">
                       Select at least one group-by dimension<br />or metric to see a preview.
                     </p>
                   </div>
@@ -585,7 +585,7 @@ const SalesExportModal = ({
                       <thead className="sticky top-0 bg-gray-50 z-10">
                         <tr>
                           {columns.map((c) => (
-                            <th key={c.key} className="text-left px-3 py-2 text-content/55 font-semibold border-b border-gray-100 whitespace-nowrap">
+                            <th key={c.key} className="text-left px-3 py-2 text-content font-semibold border-b border-gray-100 whitespace-nowrap">
                               {c.label}
                             </th>
                           ))}
@@ -595,7 +595,7 @@ const SalesExportModal = ({
                         {aggRows.slice(0, PREVIEW_ROWS).map((row, i) => (
                           <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
                             {columns.map((c) => (
-                              <td key={c.key} className="px-3 py-1.5 text-content/80 whitespace-nowrap border-b border-gray-50">
+                              <td key={c.key} className="px-3 py-1.5 text-content whitespace-nowrap border-b border-gray-50">
                                 {row[c.key] ?? "—"}
                               </td>
                             ))}
@@ -603,7 +603,7 @@ const SalesExportModal = ({
                         ))}
                         {aggRows.length > PREVIEW_ROWS && (
                           <tr>
-                            <td colSpan={columns.length} className="px-3 py-2 text-[10px] text-content/35 italic">
+                            <td colSpan={columns.length} className="px-3 py-2 text-[10px] text-content italic">
                               + {aggRows.length - PREVIEW_ROWS} more rows in download…
                             </td>
                           </tr>
@@ -617,7 +617,7 @@ const SalesExportModal = ({
 
             {/* Footer */}
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-              <button onClick={onClose} className="text-[12px] text-content/50 hover:text-content transition-colors">Cancel</button>
+              <button onClick={onClose} className="text-[12px] text-content transition-colors">Cancel</button>
               <button
                 onClick={handleCustomDownload}
                 disabled={!canCustomDownload}

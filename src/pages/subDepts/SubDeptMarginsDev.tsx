@@ -26,10 +26,6 @@ import ItemFilterModal from "./display/modals/ItemFilterModal";
 import ExportModal from "../../components/modals/ExportModal";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import { costCols, itemCols } from "./display/widgets";
-import CtxMenu from "../../components/CtxMenu";
-import { setMenuPosition } from "../../features/ctxMenuSlice";
-import type { Handlers } from "../../interfaces";
-import { smOptions } from "../upc/utils";
 
 const fetchSafe = (
   url: string, token: string, subDeptId: number,
@@ -93,7 +89,6 @@ const computeSubDeptGrade = (tyMargins: SubDeptMargin[], lyMargins: SubDeptMargi
 
 const SubDeptMarginsDev = () => {
   const ctx = useSubMarginCtx();
-  const context = useAppSelector((state) => state.ctxMenu);
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
   const sm = useSubMarginState();
@@ -219,20 +214,9 @@ const SubDeptMarginsDev = () => {
     dispatch(actions.setOpenCostExportModal(false));
   };
 
-  const handleCopy = async (text: string) => {
-    await navigator.clipboard.writeText(text);
-    dispatch(setMenuPosition(null));
-  };
-
-  const handlers: Handlers = {
-    copyUpc: () => handleCopy(context.smClipboardText.upc),
-    copyAllUpcs: () => handleCopy(context.smClipboardText.allUpc),
-  };
-
   if (ctx.subDepts.length === 0 && !ctx.loadingSubDepts) {
     return (
       <div className="w-full select-none min-h-[calc(100vh-3rem)]">
-        <CtxMenu handlers={handlers} options={smOptions} />
         <SmDevEntryCard onSearch={handleSearch} />
       </div>
     );
@@ -241,7 +225,6 @@ const SubDeptMarginsDev = () => {
   if (ctx.loadingSubDepts) {
     return (
       <div className="w-full select-none min-h-[calc(100vh-3rem)] relative">
-        <CtxMenu handlers={handlers} options={smOptions} />
         <LoadingIndicator message="Loading sub departments..." />
       </div>
     );
@@ -249,7 +232,6 @@ const SubDeptMarginsDev = () => {
 
   return (
     <div className="w-full p-4 select-none min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
-      <CtxMenu handlers={handlers} options={smOptions} />
       <ExportModal
         isOpen={sm.openExportModal}
         columns={itemCols}
