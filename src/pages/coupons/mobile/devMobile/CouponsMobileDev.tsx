@@ -184,13 +184,13 @@ const CouponsMobileDev = () => {
               Select a store or group and date range to load coupon activity.
             </div>
           </div>
-          <StorePicker />
-          <DatePickers showBtn={false} handleQuery={getData} />
           {ctx.noCouponsFound && (
-            <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-[11px] text-amber-800">
-              No coupons found for the selected store and date range.
+            <div className="px-2.5 py-2 rounded-lg bg-amber-50 text-[11.5px] text-amber-900 leading-snug">
+              No coupons came back for this search.
             </div>
           )}
+          <StorePicker />
+          <DatePickers showBtn={false} handleQuery={getData} />
           <button
             onClick={getData}
             disabled={ctx.isFetching}

@@ -95,6 +95,7 @@ const SubDeptMarginsDev = () => {
   const toast = useToast();
   const params = useParams();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [notice, setNotice] = useState<string | undefined>(undefined);
 
   const subDeptGrades = useAppSelector((s) => s.subMargin.subDeptGrades);
 
@@ -103,6 +104,7 @@ const SubDeptMarginsDev = () => {
   const handleSearch = () => {
     dispatch(actions.requerySubDeptMargins());
     dispatch(actions.setLoadingSubDepts(true));
+    setNotice(undefined);
     getSubDepts(
       ctx.url,
       ctx.token,
@@ -115,7 +117,7 @@ const SubDeptMarginsDev = () => {
       .then((resp) => {
         const j: SubSalesJsonResp = resp.data;
         if (j.error !== 0) {
-          toast.warn(j.msg ?? "Failed to load sub departments");
+          setNotice("No sub departments came back for this search");
           return;
         }
         if (j.error === 0) {
@@ -131,7 +133,7 @@ const SubDeptMarginsDev = () => {
 
           const total = subDepts.length;
           if (total === 0) {
-            toast.warn("No sub departments found for this search");
+            setNotice("No sub departments came back for this search.");
             return;
           }
           dispatch(setLoadingGrades(true));
@@ -217,7 +219,7 @@ const SubDeptMarginsDev = () => {
   if (ctx.subDepts.length === 0 && !ctx.loadingSubDepts) {
     return (
       <div className="w-full select-none min-h-[calc(100vh-3rem)]">
-        <SmDevEntryCard onSearch={handleSearch} />
+        <SmDevEntryCard onSearch={handleSearch} notice={notice} />
       </div>
     );
   }

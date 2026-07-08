@@ -336,6 +336,11 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
             singleDate={true}
             onSearch={getSaleTypes}
             loading={false}
+            notice={
+              cashier.noSaleTypesFound
+                ? "No sale types came back for this search."
+                : undefined
+            }
           />
         </div>
       </div>

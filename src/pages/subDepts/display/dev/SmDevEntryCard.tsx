@@ -6,9 +6,10 @@ import SingleStoreSearchCard from "../../../../components/SingleStoreSearchCard"
 
 interface Props {
   onSearch: () => void;
+  notice?: string;
 }
 
-const SmDevEntryCard = ({ onSearch }: Props) => {
+const SmDevEntryCard = ({ onSearch, notice }: Props) => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
   const ctx = useSubMarginCtx();
@@ -25,6 +26,7 @@ const SmDevEntryCard = ({ onSearch }: Props) => {
         onSearch={onSearch}
         loading={ctx.loadingSubDepts}
         datePicker={<SingleDatePicker />}
+        notice={notice}
       />
     </div>
   );

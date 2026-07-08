@@ -249,11 +249,9 @@ const SalesLedger = () => {
           getHourly(context.url, context.token, lyStart, lyEnd, useGroups, searchValue, singleStore),
         ]);
       if (twResp.data.error === 0)       dispatch(setWeeklySales(twResp.data.sales));
-      else                               toast.warn(twResp.data.msg);
       if (lwResp.data.error === 0)       dispatch(setWeeklySalesLastWeek(lwResp.data.sales));
       if (lyResp.data.error === 0)       dispatch(setWeeklySalesLastYear(lyResp.data.sales));
       if (hourlyResp.data.error === 0)   dispatch(setHourlySales(hourlyResp.data.subs));
-      else                               toast.warn(hourlyResp.data.msg);
       if (lwHourlyResp.data.error === 0) dispatch(setHourlySalesLastWeek(lwHourlyResp.data.subs));
       if (lyHourlyResp.data.error === 0) dispatch(setHourlySalesLastYear(lyHourlyResp.data.subs));
     } catch (err: any) {

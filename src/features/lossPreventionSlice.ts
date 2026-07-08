@@ -32,6 +32,7 @@ export interface LossPreventionState {
   transList: TransactionListItem[];
   transactionDrillDown: TransactionListItem[][];
   saleTypes: SaleType[];
+  noSaleTypesFound: boolean;
   selectedSaleType: string;
   selectedSaleIds: string[];
   cashierSaleIds: string[];
@@ -66,6 +67,7 @@ const initialState: LossPreventionState = {
   baselineDetails: [],
   cashierTransactions: [],
   saleTypes: [],
+  noSaleTypesFound: false,
   selectedSaleType: "",
   transModalOpen: false,
   cashiers: [],
@@ -124,6 +126,9 @@ export const lossPreventionSlice = createSlice({
     },
     setSaleTypes: (state, action: PayloadAction<SaleType[]>) => {
       state.saleTypes = action.payload;
+    },
+    setNoSaleTypesFound: (state, action: PayloadAction<boolean>) => {
+      state.noSaleTypesFound = action.payload;
     },
     setSelectedSaleType: (state, action: PayloadAction<string>) => {
       state.selectedSaleType = action.payload;
@@ -281,6 +286,7 @@ export const {
   setCashierTrends,
   setCashierTransactions,
   setSaleTypes,
+  setNoSaleTypesFound,
   setSelectedSaleType,
   setTransModalOpen,
   setCashiers,
