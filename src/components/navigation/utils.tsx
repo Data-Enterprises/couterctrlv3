@@ -272,6 +272,17 @@ export const categories: NavCategory[] = [
     icon: ChartBarSquareIcon,
     pages: [
       {
+        name: "Item Lookup",
+        href: "item-lookup",
+        icon: MagnifyingGlassIcon,
+        mobile: true,
+        children: [],
+        childOpen: false,
+        userLevels: ["*"],
+        isHovering: false,
+        isVisible: true,
+      },
+      {
         name: "Forecasting",
         href: "forecasting",
         icon: ArrowTrendingUpIcon,

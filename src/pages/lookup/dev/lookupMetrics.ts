@@ -6,6 +6,7 @@ export interface DayBucket {
   qty: number;
   revenue: number;
   cost: number;
+  listPrice: number;
   hasSale: boolean;
 }
 
@@ -13,13 +14,14 @@ export const buildDayBuckets = (
   history: ItemLookupHistory[],
   daysBack = 14,
 ): DayBucket[] => {
-  const byDate = new Map<string, { qty: number; revenue: number; cost: number }>();
+  const byDate = new Map<string, { qty: number; revenue: number; cost: number; listPrice: number }>();
   history.forEach((h) => {
     const d = h.sale_date.split("T")[0];
-    const existing = byDate.get(d) ?? { qty: 0, revenue: 0, cost: 0 };
+    const existing = byDate.get(d) ?? { qty: 0, revenue: 0, cost: 0, listPrice: 0 };
     existing.qty += h.qty;
     existing.revenue += h.total_sales;
     existing.cost += h.extended_cost;
+    existing.listPrice = h.price;
     byDate.set(d, existing);
   });
 
@@ -36,6 +38,7 @@ export const buildDayBuckets = (
       qty: agg?.qty ?? 0,
       revenue: agg?.revenue ?? 0,
       cost: agg?.cost ?? 0,
+      listPrice: agg?.listPrice ?? 0,
       hasSale: (agg?.qty ?? 0) > 0,
     });
   }
