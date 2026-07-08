@@ -41,6 +41,9 @@ const LossPrevention = () => {
         if (j.error === 0) {
           // const saleTypes = [...j.sale_types, { sale_type: "Description" }];
           const saleTypes = j.sale_types;
+          if (saleTypes.length === 0) {
+            toast.warn("No sale types came back for this search.");
+          }
           dispatch(setSaleTypes(saleTypes));
         } else {
           toast.warn(j.msg);

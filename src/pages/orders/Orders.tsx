@@ -71,6 +71,9 @@ const Orders = () => {
           return;
         }
         if (j.error === 0) {
+          if (j.orders.length === 0) {
+            toast.warn("No orders came back for this search.");
+          }
           ctx.dispatch(setAvailableOrders(j.orders));
 
           // Group by order_type → order_date → stores (frequency = appearances per type+date+store)
@@ -119,6 +122,9 @@ const Orders = () => {
       .then((resp) => {
         const j: AllOrderResp = resp.data;
         if (j.error === 0) {
+          if (j.orders.length === 0) {
+            toast.warn("No orders came back for this search.");
+          }
           const ordersWERet = j.orders.map((o) => {
             const base_cost = o.base_cost ?? 0;
             const net_cost = o.net_cost ?? 0;

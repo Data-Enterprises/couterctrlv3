@@ -140,8 +140,8 @@ const LookupReportPanel = ({
             <span>Date</span>
             <span className="text-right">Qty</span>
             <span className="text-right">Revenue</span>
-            <span className="text-right">Cost</span>
             <span className="text-right">Case cost</span>
+            <span className="text-right">Cost</span>
             <span className="text-right">List price</span>
             <span className="text-right">Margin</span>
           </div>

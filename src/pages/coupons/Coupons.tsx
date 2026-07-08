@@ -64,6 +64,7 @@ const Coupons = () => {
         } else if (j.records.length > 0) {
           dispatch(setCoupons(j.records));
         } else {
+          toast.warn("No coupons came back for this search.");
           dispatch(setNoCouponsFound(true));
         }
       })

@@ -1,4 +1,5 @@
 import { ErrorIcon, WarningIcon, InfoIcon, SuccessIcon } from "./Icons";
+import { useAppSelector } from "../../hooks";
 import { type ToastProps } from "./interfaces";
 import { useRef, useEffect } from "react";
 
@@ -9,6 +10,7 @@ interface ToastCmpProps {
 
 const Toast = ({ toast, onClick }: ToastCmpProps) => {
   const progressRef = useRef<HTMLDivElement>(null);
+  const devToggle = useAppSelector((store) => store.app.devMode);
   const { message, type, options } = toast;
   const { useIcon = true, autoClose, duration } = options || {};
 
@@ -31,6 +33,8 @@ const Toast = ({ toast, onClick }: ToastCmpProps) => {
     }
   }, []);
 
+  const leftMargin = devToggle ? "" : "md:ml-16";
+
   const getIcon = () => {
     switch (type) {
       case "success":
@@ -48,8 +52,8 @@ const Toast = ({ toast, onClick }: ToastCmpProps) => {
   return (
     <div
       query-id={toast.id}
-      style={{ zIndex: 5000}}
-      className="flex flex-col justify-content-between items-center mb-2 md:ml-16 border rounded-lg cursor-pointer min-h-[34px] animate-slidein shadow-lg bg-custom-white"
+      style={{ zIndex: 5000 }}
+      className={`flex flex-col justify-content-between items-center mb-2 ${leftMargin} border rounded-lg cursor-pointer min-h-[34px] animate-slidein shadow-lg bg-custom-white`}
       onClick={onClick}
     >
       <div className="flex w-full">
@@ -61,8 +65,15 @@ const Toast = ({ toast, onClick }: ToastCmpProps) => {
           </div>
         ) : null}
         <div className="flex flex-col w-full">
-          <div className={`uppercase border-b border-white pl-2 toast-${type} rounded-tr-lg w-full`}>{type}</div>
-          <div data-testid="toast-message" className="pl-2 pr-8 py-1 font-medium bg-custom-white text-content">
+          <div
+            className={`uppercase border-b border-white pl-2 toast-${type} rounded-tr-lg w-full`}
+          >
+            {type}
+          </div>
+          <div
+            data-testid="toast-message"
+            className="pl-2 pr-8 py-1 font-medium bg-custom-white text-content"
+          >
             {message}
           </div>
         </div>

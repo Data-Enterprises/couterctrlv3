@@ -300,10 +300,18 @@ const SalesLedger = () => {
     return `${fmtD(start)} – ${fmtD(end)}/${end.getFullYear()}`;
   })();
 
-  if (!hasSearched) {
+  if (!hasSearched || (!loading && ledgerRows.length === 0)) {
     return (
       <div className="w-full min-h-[calc(100vh-3rem)] overflow-hidden p-4">
-        <LedgerEntryCard onSearch={fetchLedger} loading={loading} />
+        <LedgerEntryCard
+          onSearch={fetchLedger}
+          loading={loading}
+          notice={
+            hasSearched
+              ? "No records found, try a different store, group, or week ending"
+              : undefined
+          }
+        />
       </div>
     );
   }
@@ -313,10 +321,6 @@ const SalesLedger = () => {
       {loading ? (
         <div className="relative h-[calc(100vh-3rem)]">
           <LoadingIndicator message="Loading store ledger" />
-        </div>
-      ) : ledgerRows.length === 0 ? (
-        <div className="h-[calc(100vh-3rem)] flex items-center justify-center text-content text-sm">
-          No data found for this period.
         </div>
       ) : (
         <div className="flex gap-4 h-[calc(100vh-5rem)]">

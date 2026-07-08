@@ -671,13 +671,7 @@ const PopupSubDeptList = ({
 
           {selected ? (
             <>
-              <div
-                className="flex-1 overflow-y-auto thin-scrollbar"
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  setCtxMenu({ x: e.clientX, y: e.clientY, upc: "" });
-                }}
-              >
+              <div className="flex-1 overflow-y-auto thin-scrollbar">
                 {/* 3-col KPI grid: TY / LW / LY */}
                 <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 leading-snug">
                   <div className="px-4 py-3">
@@ -747,7 +741,13 @@ const PopupSubDeptList = ({
                 </div>
 
                 {/* Items section */}
-                <div className="border-b border-gray-100 leading-snug">
+                <div
+                  className="border-b border-gray-100 leading-snug"
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    setCtxMenu({ x: e.clientX, y: e.clientY, upc: "" });
+                  }}
+                >
                   {/* Items header */}
                   <div className="flex items-center gap-1 px-3 py-1 bg-gray-100 border-b border-gray-100">
                     {/* <span className="text-[10px] font-medium uppercase tracking-wide text-content flex-shrink-0">

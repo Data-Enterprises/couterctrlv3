@@ -83,6 +83,7 @@ const Receivers = () => {
             dispatch(setReducedVendors(reducedVendors));
           }
         } else {
+          toast.warn("No receivers came back for this search.");
           dispatch(setNoReceivers(true));
         }
       })
