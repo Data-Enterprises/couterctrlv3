@@ -320,7 +320,7 @@ const PopupHourlyView = ({
 
   if (!hours.length) {
     return (
-      <div className="flex items-center justify-center h-32 text-content/45 text-sm">
+      <div className="flex items-center justify-center h-32 text-content text-sm">
         No hourly data
       </div>
     );
@@ -328,7 +328,7 @@ const PopupHourlyView = ({
 
   const chipClass = (active: boolean, sev?: Severity) => {
     if (!active)
-      return "bg-white border border-gray-200 text-content/65 hover:border-gray-400";
+      return "bg-white border border-gray-200 text-content hover:border-gray-400";
     if (!sev) return "bg-[#1e2a4a] border-[#1e2a4a] text-white";
     const map: Record<Severity, string> = {
       critical: "bg-red-600 border-red-600 text-white",
@@ -394,9 +394,7 @@ const PopupHourlyView = ({
                     <div className="text-[12px] font-medium text-content">
                       {ampm(r.hour)}
                     </div>
-                    <div
-                      className={`text-[9px] ${isSel ? "text-content/50" : "text-content/45"}`}
-                    >
+                    <div className="text-[9px] text-content">
                       {formatHourRange(r.hour)}
                     </div>
                   </div>
@@ -404,7 +402,7 @@ const PopupHourlyView = ({
                     <span className="text-[12px] font-semibold text-content">
                       {formatCurrency2(r.tw)}
                     </span>
-                    <span className="text-[10px] text-content/60">
+                    <span className="text-[10px] text-content">
                       {r.qty.toLocaleString()} u
                     </span>
                   </div>
@@ -435,7 +433,7 @@ const PopupHourlyView = ({
         {selected && (
           <div className="flex items-baseline gap-1.5 px-3 py-1.5 bg-gray-100 border-b border-gray-100">
             <span className="text-[12px] font-semibold text-content">{ampm(selected.hour)}</span>
-            <span className="text-[10px] text-content/45 italic flex-shrink-0">{formatHourRange(selected.hour)} · {twDateLabel}</span>
+            <span className="text-[10px] text-content italic flex-shrink-0">{formatHourRange(selected.hour)} · {twDateLabel}</span>
           </div>
         )}
 
@@ -445,24 +443,24 @@ const PopupHourlyView = ({
               {/* 3-col net sales KPI grid */}
               <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100">
                 <div className="px-4 py-3">
-                  <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+                  <div className="text-[9px] font-medium uppercase tracking-wide text-content">
                     TY
                   </div>
-                  <div className="text-[8px] italic text-content/55 mt-0.5">
+                  <div className="text-[8px] italic text-content mt-0.5">
                     {twDateLabel}
                   </div>
                   <div className="text-[13px] font-semibold text-content mt-0.5">
                     {formatCurrency2(selected.tw)}
                   </div>
-                  <div className="text-[11px] text-content/60 mt-0.5">
+                  <div className="text-[11px] text-content mt-0.5">
                     {selected.qty.toLocaleString()} u
                   </div>
                 </div>
                 <div className="px-4 py-3">
-                  <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+                  <div className="text-[9px] font-medium uppercase tracking-wide text-content">
                     LW
                   </div>
-                  <div className="text-[8px] italic text-content/55 mt-0.5">
+                  <div className="text-[8px] italic text-content mt-0.5">
                     {lwDateLabel}
                   </div>
                   <div className="flex items-baseline gap-1.5 mt-0.5">
@@ -478,16 +476,16 @@ const PopupHourlyView = ({
                     )}
                   </div>
                   {selected.lwQty > 0 && (
-                    <div className="text-[11px] text-content/60 mt-0.5">
+                    <div className="text-[11px] text-content mt-0.5">
                       {selected.lwQty.toLocaleString()} u
                     </div>
                   )}
                 </div>
                 <div className="px-4 py-3">
-                  <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+                  <div className="text-[9px] font-medium uppercase tracking-wide text-content">
                     LY
                   </div>
-                  <div className="text-[8px] italic text-content/55 mt-0.5">
+                  <div className="text-[8px] italic text-content mt-0.5">
                     {lyDateLabel}
                   </div>
                   <div className="flex items-baseline gap-1.5 mt-0.5">
@@ -503,7 +501,7 @@ const PopupHourlyView = ({
                     )}
                   </div>
                   {selected.lyQty > 0 && (
-                    <div className="text-[11px] text-content/60 mt-0.5">
+                    <div className="text-[11px] text-content mt-0.5">
                       {selected.lyQty.toLocaleString()} u
                     </div>
                   )}
@@ -512,7 +510,7 @@ const PopupHourlyView = ({
 
               {/* Transactions — 3-col */}
               <div className="border-b border-gray-100">
-                <div className="px-4 py-1.5 bg-gray-100 text-[10px] font-medium uppercase tracking-wide text-content/55">
+                <div className="px-4 py-1.5 bg-gray-100 text-[10px] font-medium uppercase tracking-wide text-content">
                   Transactions
                 </div>
                 <div className="grid grid-cols-3 divide-x divide-gray-100">
@@ -566,7 +564,7 @@ const PopupHourlyView = ({
 
               {/* Avg basket — 3-col */}
               <div className="border-b border-gray-100">
-                <div className="px-4 py-1.5 bg-gray-100 text-[10px] font-medium uppercase tracking-wide text-content/55">
+                <div className="px-4 py-1.5 bg-gray-100 text-[10px] font-medium uppercase tracking-wide text-content">
                   Avg basket
                 </div>
                 <div className="grid grid-cols-3 divide-x divide-gray-100">
@@ -616,7 +614,7 @@ const PopupHourlyView = ({
                   onClick={() => setChartOpen((v) => !v)}
                   className="w-full flex items-center justify-between px-4 py-2"
                 >
-                  <span className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wide text-content/55">
+                  <span className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wide text-content">
                     <PresentationChartLineIcon className="w-3.5 h-3.5 text-content/45" />
                     Chart
                   </span>
@@ -660,7 +658,7 @@ const PopupHourlyView = ({
             )}
           </>
         ) : (
-          <div className="flex items-center justify-center h-full text-[12px] text-content/35">
+          <div className="flex items-center justify-center h-full text-[12px] text-content">
             Select an hour
           </div>
         )}

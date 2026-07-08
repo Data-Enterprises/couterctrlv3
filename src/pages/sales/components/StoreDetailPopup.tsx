@@ -152,7 +152,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           <p className="text-white text-[13px] font-semibold leading-tight">
             {selection.storeName}
           </p>
-          <span className="text-white/60 text-[10px]">Weekly Sales Report · {staticTwDate}</span>
+          <span className="text-white text-[10px]">Weekly Sales Report · {staticTwDate}</span>
         </div>
         <div className="flex items-center gap-2 mt-0.5">
           {!loading && (rawSubs.length > 0 || rawHourly.length > 0) && (
@@ -187,13 +187,13 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
       {/* KPI metric strip — values and date labels update with day selection */}
       <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
         <div className="px-4 py-2.5">
-          <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">TY Net Sales</div>
-          <div className="text-[8px] text-content/55 italic mb-0.5">{twDateLabel}</div>
+          <div className="text-[9px] font-medium uppercase tracking-wide text-content">TY Net Sales</div>
+          <div className="text-[8px] text-content mb-0.5">{twDateLabel}</div>
           <div className="text-[13px] font-semibold text-content">{formatCurrency2(headerTwTotal)}</div>
         </div>
         <div className="px-4 py-2.5">
-          <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">vs Last Week</div>
-          <div className="text-[8px] text-content/55 italic mb-0.5">{lwDateLabel}</div>
+          <div className="text-[9px] font-medium uppercase tracking-wide text-content">vs Last Week</div>
+          <div className="text-[8px] text-content mb-0.5">{lwDateLabel}</div>
           <div className="flex items-baseline gap-2">
             <span className="text-[13px] font-semibold text-content">{formatCurrency2(headerLwTotal)}</span>
             {headerVsLWPct !== null && (
@@ -204,8 +204,8 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           </div>
         </div>
         <div className="px-4 py-2.5">
-          <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">vs Last Year</div>
-          <div className="text-[8px] text-content/55 italic mb-0.5">{lyDateLabel}</div>
+          <div className="text-[9px] font-medium uppercase tracking-wide text-content">vs Last Year</div>
+          <div className="text-[8px] text-content mb-0.5">{lyDateLabel}</div>
           <div className="flex items-baseline gap-2">
             <span className="text-[13px] font-semibold text-content">{formatCurrency2(headerLyTotal)}</span>
             {headerVsLYPct !== null && (
@@ -226,7 +226,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
             className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors ${
               tab === t
                 ? "border-[#1e2a4a] text-content"
-                : "border-transparent text-content/70 hover:text-content/80"
+                : "border-transparent text-content"
             }`}
           >
             {t === "subdept" ? "Sub dept" : "Hourly"}
@@ -234,7 +234,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
         ))}
         <div className="flex-1" />
         <div className="flex items-center gap-1.5 py-1">
-          <span className="text-[10px] text-content/45">{tab === "subdept" ? "Sub dept" : "Hourly"} Threshold</span>
+          <span className="text-[10px] text-content">{tab === "subdept" ? "Sub dept" : "Hourly"} Threshold</span>
           <ThresholdFilter
             value={activeThreshold === null ? null : { op: "gt", amount: activeThreshold }}
             onChange={(v) => {

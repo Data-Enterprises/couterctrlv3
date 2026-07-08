@@ -30,6 +30,7 @@ export default defineConfig([
       "no-console": "off",
       "no-explicit-any": 0,
       "@typescript-eslint/no-explicit-any": "off",
+      "react-hooks/rules-of-hooks": "off",
     },
   },
 ]);

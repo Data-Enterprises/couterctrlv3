@@ -159,8 +159,8 @@ const MarginPerfRightPanel = () => {
     return (
       <div className="flex-1 min-w-0 shadow-lg">
         <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full items-center justify-center gap-2">
-          <p className="text-[13px] font-medium text-content/40">Select a sub department</p>
-          <p className="text-[11px] text-content/25">Choose one from the left panel</p>
+          <p className="text-[13px] font-medium text-content">Select a sub department</p>
+          <p className="text-[11px] text-content">Choose one from the left panel</p>
         </div>
       </div>
     );
@@ -184,7 +184,7 @@ const MarginPerfRightPanel = () => {
         <div className="flex-shrink-0 px-4 py-[10px] flex items-center justify-between bg-[#1e2a4a]">
           <div>
             <div className="text-[13px] font-semibold text-white leading-tight">{subDeptName}</div>
-            <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.50)" }}>
+            <div className="text-[10px] mt-0.5 text-white">
               Weekly Margin Report{dateRange ? ` · ${dateRange}` : ""}
             </div>
           </div>
@@ -201,10 +201,10 @@ const MarginPerfRightPanel = () => {
         <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
           {/* TY metric */}
           <div className="px-3 py-2.5">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+            <div className="text-[9px] font-medium uppercase tracking-wide text-content">
               {gradingMetric === "margin" ? "TY Margin" : "TY Net Sales"}
             </div>
-            <div className="text-[8px] text-content/55 italic mb-0.5">{kpiTyLabel}</div>
+            <div className="text-[8px] text-content mb-0.5">{kpiTyLabel}</div>
             <div className="text-[13px] font-semibold text-content">
               {tyKpis ? gradingMetric === "margin" ? tyKpis.margin : formatCurrency2(tyKpis.sales) : "—"}
             </div>
@@ -212,8 +212,8 @@ const MarginPerfRightPanel = () => {
 
           {/* vs LW */}
           <div className="px-3 py-2.5">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">vs Last Week</div>
-            <div className="text-[8px] text-content/55 italic mb-0.5">{kpiLwLabel}</div>
+            <div className="text-[9px] font-medium uppercase tracking-wide text-content">vs Last Week</div>
+            <div className="text-[8px] text-content mb-0.5">{kpiLwLabel}</div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-[13px] font-semibold text-content">
                 {lwKpis ? gradingMetric === "margin" ? lwKpis.margin : formatCurrency2(lwKpis.sales) : "—"}
@@ -233,8 +233,8 @@ const MarginPerfRightPanel = () => {
 
           {/* vs LY */}
           <div className="px-3 py-2.5">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">vs Last Year</div>
-            <div className="text-[8px] text-content/55 italic mb-0.5">{kpiLyLabel}</div>
+            <div className="text-[9px] font-medium uppercase tracking-wide text-content">vs Last Year</div>
+            <div className="text-[8px] text-content mb-0.5">{kpiLyLabel}</div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-[13px] font-semibold text-content">
                 {lyKpis ? gradingMetric === "margin" ? lyKpis.margin : formatCurrency2(lyKpis.sales) : "—"}
@@ -263,7 +263,7 @@ const MarginPerfRightPanel = () => {
             className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors ${
               ctx.subDeptGridView === "item"
                 ? "border-[#1e2a4a] text-content"
-                : "border-transparent text-content/70 hover:text-content/80"
+                : "border-transparent text-content hover:text-content"
             }`}
             onClick={() => dispatch(actions.setSubDeptGridView("item"))}
           >
@@ -273,7 +273,7 @@ const MarginPerfRightPanel = () => {
             className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors ${
               ctx.subDeptGridView === "cost"
                 ? "border-[#1e2a4a] text-content"
-                : "border-transparent text-content/70 hover:text-content/80"
+                : "border-transparent text-content hover:text-content"
             }`}
             onClick={handleCostTab}
           >
@@ -283,7 +283,7 @@ const MarginPerfRightPanel = () => {
             className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors ${
               ctx.subDeptGridView === "nocost"
                 ? "border-red-400 text-red-700"
-                : "border-transparent text-content/70 hover:text-content/80"
+                : "border-transparent text-content hover:text-content"
             }`}
             onClick={handleNoCostTab}
           >
@@ -300,7 +300,7 @@ const MarginPerfRightPanel = () => {
               lyMargins={ctx.weekOneMarginsLY}
             />
           ) : ctx.subDeptGridView === "nocost" && noCostCount === 0 ? (
-            <div className="flex items-center justify-center h-24 text-[11px] text-content/30">
+            <div className="flex items-center justify-center h-24 text-[11px] text-content">
               No items missing cost data
             </div>
           ) : (

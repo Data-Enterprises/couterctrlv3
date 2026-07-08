@@ -202,7 +202,7 @@ const LedgerRow = ({ row, onClick }: LedgerRowProps) => {
         )}
       </td>
       <td className="px-4 py-3 text-right">
-        <div className="font-medium text-content/50">{formatCurrency2(row.lyTotal)}</div>
+        <div className="font-medium text-content">{formatCurrency2(row.lyTotal)}</div>
       </td>
     </tr>
   );

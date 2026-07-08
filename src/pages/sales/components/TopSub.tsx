@@ -146,25 +146,25 @@ const TopSubDept = ({ inReport }: Props) => {
           <div className="font-medium border-b text-sm">Totals</div>
           <div className="grid grid-cols-4 gap-2 py-1">
             <div>
-              <div className="text-sm text-content/60">Sales</div>
+              <div className="text-sm text-content">Sales</div>
               <div className="font-medium">
                 {formatCurrency2(topSub.total_sales - topSub.total_tax)}
               </div>
             </div>
             <div>
-              <div className="text-sm text-content/60">Net</div>
+              <div className="text-sm text-content">Net</div>
               <div className="font-medium">
                 {formatCurrency2(topSub.net_sales)}
               </div>
             </div>
             <div>
-              <div className="text-sm text-content/60">Qty</div>
+              <div className="text-sm text-content">Qty</div>
               <div className="font-medium">
                 {formatBigNumber(topSub.qty, 0)}
               </div>
             </div>
             <div>
-              <div className="text-sm text-content/60">Coupons</div>
+              <div className="text-sm text-content">Coupons</div>
               <div className="font-medium">
                 {formatCurrency2(reduceCpnAmt())}
               </div>
@@ -176,7 +176,7 @@ const TopSubDept = ({ inReport }: Props) => {
               <div className="font-medium border-b text-sm">Flags</div>
               <div className="grid grid-cols-2 gap-2 py-1">
                 <div className="">
-                  <div className="text-sm text-content/60 flex gap-1 items-center relative">
+                  <div className="text-sm text-content flex gap-1 items-center relative">
                     <div>Leak</div>
                     {!inReport && (
                       <QuestionMarkCircleIcon
@@ -211,7 +211,7 @@ const TopSubDept = ({ inReport }: Props) => {
                   </div>
                 </div>
                 <div className="">
-                  <div className="text-sm text-content/60 flex gap-1 items-center relative">
+                  <div className="text-sm text-content flex gap-1 items-center relative">
                     <div>NSP</div>
                     {!inReport && (
                       <QuestionMarkCircleIcon
@@ -252,7 +252,7 @@ const TopSubDept = ({ inReport }: Props) => {
               <div className="font-medium border-b text-sm">Velocity/day</div>
               <div className="grid grid-cols-2 gap-2 py-1">
                 <div>
-                  <div className="text-sm text-content/60">Sales</div>
+                  <div className="text-sm text-content">Sales</div>
                   <div className="font-medium">
                     {formatCurrency2(
                       parseInt(formatVelocity(topSub.total_sales)),
@@ -260,7 +260,7 @@ const TopSubDept = ({ inReport }: Props) => {
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-content/60">Qty</div>
+                  <div className="text-sm text-content">Qty</div>
                   <div className="font-medium">
                     {formatBigNumber(parseFloat(formatVelocity(topSub.qty)))}
                   </div>

@@ -29,9 +29,16 @@ export interface ItemLookupHistory {
   total_sales: number;
 }
 
+export interface RecentLookup {
+  productCode: string;
+  description: string;
+  marginPct: number | null;
+}
+
 interface ItemLookupState {
   upcCode: string;
   mode: "Sales" | "Qty" | "Price";
+  recentLookups: RecentLookup[];
   topStoreSales: ItemLookup | null;
   lowestStoreSales: ItemLookup | null;
   topStoreQty: ItemLookup | null;
@@ -41,6 +48,7 @@ interface ItemLookupState {
   totalStores: number;
   productCode: string;
   description: string;
+  categoryDescription: string;
   totalSales: number;
   totalQty: number;
   avgPrice: number;
@@ -57,6 +65,7 @@ interface ItemLookupState {
 const initialState: ItemLookupState = {
   upcCode: "",
   mode: "Sales",
+  recentLookups: [],
   topStoreSales: null,
   lowestStoreSales: null,
   topStoreQty: null,
@@ -66,6 +75,7 @@ const initialState: ItemLookupState = {
   totalStores: 0,
   productCode: "",
   description: "",
+  categoryDescription: "",
   totalSales: 0,
   totalQty: 0,
   avgPrice: 0,
@@ -122,6 +132,9 @@ const itemLookupSlice = createSlice({
     setDescription: (state, action: PayloadAction<string>) => {
       state.description = action.payload;
     },
+    setCategoryDescription: (state, action: PayloadAction<string>) => {
+      state.categoryDescription = action.payload;
+    },
     setMetrics: (
       state,
       action: PayloadAction<{
@@ -158,6 +171,12 @@ const itemLookupSlice = createSlice({
     setPause: (state, action: PayloadAction<boolean>) => {
       state.pause = action.payload;
     },
+    addRecentLookup: (state, action: PayloadAction<RecentLookup>) => {
+      const filtered = state.recentLookups.filter(
+        (r) => r.productCode !== action.payload.productCode,
+      );
+      state.recentLookups = [action.payload, ...filtered].slice(0, 8);
+    },
     setILView: (
       state,
       action: PayloadAction<"search" | "history" | "daily">,
@@ -184,6 +203,7 @@ const itemLookupSlice = createSlice({
       state.totalStores = 0;
       state.productCode = "";
       state.description = "";
+      state.categoryDescription = "";
       state.totalSales = 0;
       state.totalQty = 0;
       state.avgPrice = 0;
@@ -207,6 +227,7 @@ export const {
   setItemsLoaded,
   setProductCode,
   setDescription,
+  setCategoryDescription,
   setMetrics,
   setSelectedStore,
   setItemLookupHistory,
@@ -214,6 +235,7 @@ export const {
   setPause,
   reQueryUpc,
   setILView,
+  addRecentLookup,
 } = itemLookupSlice.actions;
 
 export default itemLookupSlice.reducer;

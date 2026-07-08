@@ -28,20 +28,20 @@ const StoreRowItem = ({
       <div className="text-[11px] font-medium text-content truncate w-full text-center">{storeName}</div>
       <div className="grid grid-cols-3">
         <div className="px-2 py-1 text-center">
-          <div className="text-[7px] text-content/45 uppercase tracking-wide">TY</div>
+          <div className="text-[7px] text-content uppercase tracking-wide">TY</div>
           <div className="text-[10px] font-medium text-content mt-0.5">
             {gradingMetric === "qty" ? formatBigNumber(row.twQty, 0) : formatCurrency2(row.twTotal)}
           </div>
         </div>
         <div className="px-2 py-1 text-center">
-          <div className="text-[7px] text-content/45 uppercase tracking-wide">LW</div>
+          <div className="text-[7px] text-content uppercase tracking-wide">LW</div>
           <div className="text-[10px] font-medium text-content mt-0.5">
             {row.hasLW ? (gradingMetric === "qty" ? formatBigNumber(row.lwQty, 0) : formatCurrency2(row.lwTotal)) : "—"}
           </div>
           {row.hasLW && <div className={`text-[9px] font-medium mt-0.5 ${row.vsLWPct >= 0 ? "text-emerald-600" : "text-red-500"}`}>{formatPct(row.vsLWPct)}</div>}
         </div>
         <div className="px-2 py-1 text-center">
-          <div className="text-[7px] text-content/45 uppercase tracking-wide">LY</div>
+          <div className="text-[7px] text-content uppercase tracking-wide">LY</div>
           <div className="text-[10px] font-medium text-content mt-0.5">
             {row.hasLY ? (gradingMetric === "qty" ? formatBigNumber(row.lyQty, 0) : formatCurrency2(row.lyTotal)) : "—"}
           </div>

@@ -35,7 +35,7 @@ const ColFilter = ({ label, active, align = "left", onApply, onClear, children }
       <button
         onClick={() => setOpen((v) => !v)}
         className={`flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wide transition-colors select-none flex-shrink-0 ${
-          active ? "text-[#1e2a4a]" : "text-content/35 hover:text-content/60"
+          active ? "text-[#1e2a4a]" : "text-content hover:text-content"
         }`}
       >
         {label}
@@ -69,7 +69,7 @@ const ColFilter = ({ label, active, align = "left", onApply, onClear, children }
             {onClear && (
               <button
                 onClick={() => { onClear(); setOpen(false); }}
-                className="px-2 rounded py-1 text-[10px] text-content/40 border border-gray-200 hover:text-content/60 transition-colors"
+                className="px-2 rounded py-1 text-[10px] text-content border border-gray-200 hover:text-content transition-colors"
               >
                 Clear
               </button>
@@ -215,7 +215,7 @@ const SubDeptCostGrid = () => {
   };
 
   const arrow = (col: SortCol) => {
-    if (sortCol !== col || !sortDir) return <span className="text-content/20"> ↕</span>;
+    if (sortCol !== col || !sortDir) return <span className="text-content"> ↕</span>;
     return <span className="text-[#1e2a4a]"> {sortDir === "desc" ? "↓" : "↑"}</span>;
   };
 
@@ -280,7 +280,7 @@ const SubDeptCostGrid = () => {
           >
             <ThreshInput operator={draftUnitCostOp} value={draftUnitCostVal} onOperatorChange={setDraftUnitCostOp} onValueChange={setDraftUnitCostVal} placeholder="Amount…" />
           </ColFilter>
-          <button onClick={() => handleSort("unitCost")} className="text-[9px] text-content/30 hover:text-content/60">{arrow("unitCost")}</button>
+          <button onClick={() => handleSort("unitCost")} className="text-[9px] text-content hover:text-content">{arrow("unitCost")}</button>
         </div>
         <div className={`${thStyle} flex items-center justify-end gap-1.5`}>
           <ColFilter
@@ -292,7 +292,7 @@ const SubDeptCostGrid = () => {
           >
             <ThreshInput operator={draftCaseCostOp} value={draftCaseCostVal} onOperatorChange={setDraftCaseCostOp} onValueChange={setDraftCaseCostVal} placeholder="Amount…" />
           </ColFilter>
-          <button onClick={() => handleSort("caseCost")} className="text-[9px] text-content/30 hover:text-content/60">{arrow("caseCost")}</button>
+          <button onClick={() => handleSort("caseCost")} className="text-[9px] text-content hover:text-content">{arrow("caseCost")}</button>
         </div>
         <div className={`${thStyle} flex items-center justify-end gap-1.5`}>
           <ColFilter
@@ -304,7 +304,7 @@ const SubDeptCostGrid = () => {
           >
             <ThreshInput operator={draftQtyOp} value={draftQtyVal} onOperatorChange={setDraftQtyOp} onValueChange={setDraftQtyVal} placeholder="Qty…" />
           </ColFilter>
-          <button onClick={() => handleSort("qty")} className="text-[9px] text-content/30 hover:text-content/60">{arrow("qty")}</button>
+          <button onClick={() => handleSort("qty")} className="text-[9px] text-content hover:text-content">{arrow("qty")}</button>
         </div>
         <div className={`${thStyle} flex items-center justify-end gap-1.5`}>
           <ColFilter
@@ -316,13 +316,13 @@ const SubDeptCostGrid = () => {
           >
             <ThreshInput operator={draftCogsOp} value={draftCogsVal} onOperatorChange={setDraftCogsOp} onValueChange={setDraftCogsVal} placeholder="Amount…" />
           </ColFilter>
-          <button onClick={() => handleSort("cogs")} className="text-[9px] text-content/30 hover:text-content/60">{arrow("cogs")}</button>
+          <button onClick={() => handleSort("cogs")} className="text-[9px] text-content hover:text-content">{arrow("cogs")}</button>
         </div>
       </div>
 
       {/* Rows */}
       {displayData.length === 0 ? (
-        <div className="flex items-center justify-center h-24 text-[11px] text-content/30">
+        <div className="flex items-center justify-center h-24 text-[11px] text-content">
           {sm.subDeptCost.length > 0 ? "No items match filters" : "No cost data"}
         </div>
       ) : (
@@ -337,10 +337,10 @@ const SubDeptCostGrid = () => {
             onContextMenuCapture={(e) => handleCtxMenu(e, item)}
           >
             <div className="px-3 py-[9px] text-[11px] font-medium text-content truncate">{item.description}</div>
-            <div className="px-3 py-[9px] text-[10px] text-content/50 tabular-nums truncate">{item.product_code}</div>
-            <div className="px-3 py-[9px] text-[11px] text-right tabular-nums text-content/70">{formatCurrency2(item.calculated_cost)}</div>
-            <div className="px-3 py-[9px] text-[11px] text-right tabular-nums text-content/70">{formatCurrency2(item.cost)}</div>
-            <div className="px-3 py-[9px] text-[11px] text-right tabular-nums text-content/70">{formatBigNumber(item.qty, 0)}</div>
+            <div className="px-3 py-[9px] text-[10px] text-content tabular-nums truncate">{item.product_code}</div>
+            <div className="px-3 py-[9px] text-[11px] text-right tabular-nums text-content">{formatCurrency2(item.calculated_cost)}</div>
+            <div className="px-3 py-[9px] text-[11px] text-right tabular-nums text-content">{formatCurrency2(item.cost)}</div>
+            <div className="px-3 py-[9px] text-[11px] text-right tabular-nums text-content">{formatBigNumber(item.qty, 0)}</div>
             <div className="px-3 py-[9px] text-[11px] text-right tabular-nums font-semibold text-[#1e2a4a]">{formatCurrency2(item.total_cost)}</div>
           </div>
         ))

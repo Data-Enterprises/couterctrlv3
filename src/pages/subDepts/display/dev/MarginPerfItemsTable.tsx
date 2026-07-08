@@ -62,7 +62,7 @@ const chipClass = (active: boolean, sev: Severity) => {
     const fill = sev === "critical" ? "bg-red-600 border-red-600 text-white" : sev === "watch" ? "bg-amber-500 border-amber-500 text-white" : "bg-emerald-600 border-emerald-600 text-white";
     return `${base} ${fill}`;
   }
-  return `${base} bg-transparent border-gray-200 text-content/40 hover:text-content/60`;
+  return `${base} bg-transparent border-gray-200 text-content hover:text-content`;
 };
 
 const getItemSeverity = (row: ItemMarginRow, threshold: number): Severity => {
@@ -105,7 +105,7 @@ const ColFilter = ({ label, active, align = "left", onApply, onClear, children }
       <button
         onClick={() => setOpen((v) => !v)}
         className={`flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wide transition-colors select-none flex-shrink-0 ${
-          active ? "text-[#1e2a4a]" : "text-content/35 hover:text-content/60"
+          active ? "text-[#1e2a4a]" : "text-content hover:text-content"
         }`}
       >
         {label}
@@ -139,7 +139,7 @@ const ColFilter = ({ label, active, align = "left", onApply, onClear, children }
             {onClear && (
               <button
                 onClick={() => { onClear(); setOpen(false); }}
-                className="px-2 rounded py-1 text-[10px] text-content/40 border border-gray-200 hover:text-content/60 transition-colors"
+                className="px-2 rounded py-1 text-[10px] text-content border border-gray-200 hover:text-content transition-colors"
               >
                 Clear
               </button>
@@ -338,7 +338,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
   };
 
   const arrow = (col: SortCol) => {
-    if (sortCol !== col || !sortDir) return <span className="text-content/20"> ↕</span>;
+    if (sortCol !== col || !sortDir) return <span className="text-content"> ↕</span>;
     return <span className="text-[#1e2a4a]"> {sortDir === "desc" ? "↓" : "↑"}</span>;
   };
 
@@ -350,7 +350,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
   };
 
   const thStyle = "px-2 py-2";
-  const thBtn = "text-[9px] font-semibold uppercase tracking-wide text-content/35 hover:text-content/60 transition-colors";
+  const thBtn = "text-[9px] font-semibold uppercase tracking-wide text-content hover:text-content transition-colors";
 
   const ptsDelta = (ty: number, ref: number | null) => {
     if (ref === null) return null;
@@ -364,7 +364,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
     >
       {/* ── Control bar ── */}
       <div className="sticky top-0 z-20 flex items-center gap-2 px-3 py-1.5 bg-gray-50 border-b border-gray-100">
-        <span className="text-[9px] font-semibold uppercase tracking-wide text-content/45 flex-shrink-0">Item Threshold</span>
+        <span className="text-[9px] font-semibold uppercase tracking-wide text-content flex-shrink-0">Item Threshold</span>
         <ThresholdFilter
           value={thresholdValue}
           onChange={setThresholdValue}
@@ -376,7 +376,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
 
         <div className="w-px h-4 bg-gray-200 flex-shrink-0 mx-0.5" />
 
-        <button onClick={() => setSevFilter("all")} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${sevFilter === "all" ? "bg-[#1e2a4a] border-[#1e2a4a] text-white" : "bg-transparent border-gray-200 text-content/40 hover:text-content/60"}`}>
+        <button onClick={() => setSevFilter("all")} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${sevFilter === "all" ? "bg-[#1e2a4a] border-[#1e2a4a] text-white" : "bg-transparent border-gray-200 text-content hover:text-content"}`}>
           All ({rawRows.length})
         </button>
         <button onClick={() => setSevFilter("critical")} className={chipClass(sevFilter === "critical", "critical")}>
@@ -393,7 +393,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
       {/* ── Column headers ── */}
       <div className="sticky top-[33px] z-10 grid bg-gray-100 border-b border-gray-100" style={{ gridTemplateColumns: COLS }}>
         <div className={`${thStyle} flex items-center gap-2`}>
-          <span className="text-[9px] font-semibold uppercase tracking-wide text-content/35">Item</span>
+          <span className="text-[9px] font-semibold uppercase tracking-wide text-content">Item</span>
           <ColFilter label="UPC" active={!!appliedUpc} onApply={() => setAppliedUpc(draftUpc)} onClear={() => { setAppliedUpc(""); setDraftUpc(""); }}>
             <input autoFocus style={colInputStyle} placeholder="Search UPC…" value={draftUpc} onChange={(e) => setDraftUpc(e.target.value)} />
           </ColFilter>
@@ -425,7 +425,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
       </div>
 
       {displayData.length === 0 ? (
-        <div className="flex items-center justify-center h-24 text-[11px] text-content/30">
+        <div className="flex items-center justify-center h-24 text-[11px] text-content">
           {rawRows.length > 0 ? "No items match filters" : "No item data"}
         </div>
       ) : (
@@ -446,19 +446,19 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
               <div className="flex items-center gap-2 px-2 py-[7px] min-w-0">
                 <SeverityBadge severity={sev} />
                 <div className="flex flex-col justify-center min-w-0">
-                  <div className="text-[10px] text-content/50 tabular-nums truncate">{item.productCode}</div>
+                  <div className="text-[10px] text-content tabular-nums truncate">{item.productCode}</div>
                   <div className="text-[11px] font-medium text-content truncate">{item.description}</div>
                 </div>
               </div>
-              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums text-content/80">{formatCurrency2(item.grossSales)}</div>
-              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums text-content/80">{item.qty}</div>
+              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums text-content">{formatCurrency2(item.grossSales)}</div>
+              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums text-content">{item.qty}</div>
               <div className="px-2 py-[9px] text-[11px] text-right tabular-nums font-semibold text-[#1e2a4a]">
                 {item.tyMarginPct.toFixed(2)}%
               </div>
               <div className="px-2 py-[9px] text-right">
                 {item.lwMarginPct !== null ? (
                   <>
-                    <div className="text-[11px] tabular-nums text-content/70">{item.lwMarginPct.toFixed(2)}%</div>
+                    <div className="text-[11px] tabular-nums text-content">{item.lwMarginPct.toFixed(2)}%</div>
                     {lwDelta !== null && (
                       <div className="text-[9px] tabular-nums font-medium" style={{ color: lwDelta > 0 ? "#16a34a" : lwDelta < 0 ? "#ef4444" : "#16a34a" }}>
                         {lwDelta > 0 ? "+" : ""}{lwDelta.toFixed(1)} pts
@@ -466,13 +466,13 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
                     )}
                   </>
                 ) : (
-                  <span className="text-[11px] text-content/25">—</span>
+                  <span className="text-[11px] text-content">—</span>
                 )}
               </div>
               <div className="px-2 py-[9px] text-right">
                 {item.lyMarginPct !== null ? (
                   <>
-                    <div className="text-[11px] tabular-nums text-content/70">{item.lyMarginPct.toFixed(2)}%</div>
+                    <div className="text-[11px] tabular-nums text-content">{item.lyMarginPct.toFixed(2)}%</div>
                     {lyDelta !== null && (
                       <div className="text-[9px] tabular-nums font-medium" style={{ color: lyDelta > 0 ? "#16a34a" : lyDelta < 0 ? "#ef4444" : "#16a34a" }}>
                         {lyDelta > 0 ? "+" : ""}{lyDelta.toFixed(1)} pts
@@ -480,13 +480,13 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
                     )}
                   </>
                 ) : (
-                  <span className="text-[11px] text-content/25">—</span>
+                  <span className="text-[11px] text-content">—</span>
                 )}
               </div>
-              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums text-content/80">
+              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums text-content">
                 {formatCurrency2(item.cogs)}
               </div>
-              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums text-content/60">
+              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums text-content">
                 {item.costFees.toFixed(2)}%
               </div>
             </div>
