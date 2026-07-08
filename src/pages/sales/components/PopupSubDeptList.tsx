@@ -5,6 +5,8 @@ import {
   setItemThreshold,
   setExportSubDeptName,
   setExportSubDeptItems,
+  setSelectedSubDeptId,
+  setSelectedSubDeptItems,
 } from "../../../features/salesLedgerSlice";
 import type { GradingMetric } from "../../../features/salesLedgerSlice";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
@@ -244,6 +246,12 @@ const PopupSubDeptList = ({
   const gradingMetric = useAppSelector(
     (state) => state.salesLedger.gradingMetric,
   );
+  const selectedId = useAppSelector(
+    (state) => state.salesLedger.selectedSubDeptId,
+  );
+  const items = useAppSelector(
+    (state) => state.salesLedger.selectedSubDeptItems,
+  );
 
   // Grading should never move rows around on its own when the threshold input
   // is cleared — keep grading against the last valid amount so severity/sort
@@ -256,11 +264,9 @@ const PopupSubDeptList = ({
   if (rawItemThreshold != null) itemThresholdRef.current = rawItemThreshold;
   const itemThreshold = itemThresholdRef.current;
   const dispatch = useAppDispatch();
-  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [ctaOpen, setCtaOpen] = useState(false);
   const [itemSevFilter, setItemSevFilter] = useState<SevFilter>("all");
-  const [items, setItems] = useState<Top10Item[]>([]);
   const [itemsLoading, setItemsLoading] = useState(false);
   const [ctxMenu, setCtxMenu] = useState<{
     x: number;
@@ -274,7 +280,7 @@ const PopupSubDeptList = ({
 
   useEffect(() => {
     if (selectedId === null) {
-      setItems([]);
+      dispatch(setSelectedSubDeptItems([]));
       return;
     }
 
@@ -351,25 +357,27 @@ const PopupSubDeptList = ({
 
         const sorted = [...tyMap.entries()].sort((a, b) => b[1].qty - a[1].qty);
 
-        setItems(
-          sorted.map(([code, ty]) => {
-            const lw = lwMap.get(code) ?? null;
-            const ly = lyMap.get(code) ?? null;
-            return {
-              productCode: code,
-              upc: code,
-              desc: ty.desc,
-              tyNet: ty.net,
-              tyQty: ty.qty,
-              tyWeight: ty.weight,
-              lwNet: lw?.net ?? null,
-              lwQty: lw?.qty ?? null,
-              lwWeight: lw?.weight ?? null,
-              lyNet: ly?.net ?? null,
-              lyQty: ly?.qty ?? null,
-              lyWeight: ly?.weight ?? null,
-            };
-          }),
+        dispatch(
+          setSelectedSubDeptItems(
+            sorted.map(([code, ty]) => {
+              const lw = lwMap.get(code) ?? null;
+              const ly = lyMap.get(code) ?? null;
+              return {
+                productCode: code,
+                upc: code,
+                desc: ty.desc,
+                tyNet: ty.net,
+                tyQty: ty.qty,
+                tyWeight: ty.weight,
+                lwNet: lw?.net ?? null,
+                lwQty: lw?.qty ?? null,
+                lwWeight: lw?.weight ?? null,
+                lyNet: ly?.net ?? null,
+                lyQty: ly?.qty ?? null,
+                lyWeight: ly?.weight ?? null,
+              };
+            }),
+          ),
         );
       } finally {
         if (!cancelled) setItemsLoading(false);
@@ -626,7 +634,7 @@ const PopupSubDeptList = ({
               return (
                 <button
                   key={r.id}
-                  onClick={() => setSelectedId(isSel ? null : r.id)}
+                  onClick={() => dispatch(setSelectedSubDeptId(isSel ? null : r.id))}
                   className={`w-full px-3 py-2 border-b border-gray-100 last:border-0 gap-2 text-left transition-colors ${isSel ? "bg-white" : "hover:bg-gray-50"}`}
                   style={
                     isSel

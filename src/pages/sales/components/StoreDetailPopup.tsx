@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { getSubs, getHourly } from "../../../api/sales";
+import { getSubs, getHourly, getCats } from "../../../api/sales";
 import SalesExportModal from "./SalesExportModal";
 import {
   setSubSales,
@@ -18,14 +18,20 @@ import {
   setRawHourly,
   setRawLWHourly,
   setRawLYHourly,
+  setRawCats,
+  setRawLWCats,
+  setRawLYCats,
   setSubDeptThreshold,
   setHourlyThreshold,
+  setCategoryThreshold,
+  clearPopupSelections,
 } from "../../../features/salesLedgerSlice";
 import { addDays, formatGoliathDate, sameWeekDayLastYear, formatCurrency2 } from "../../../utils";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import PopupDaySidebar from "./PopupDaySidebar";
 import PopupSubDeptList from "./PopupSubDeptList";
 import PopupHourlyView from "./PopupHourlyView";
+import PopupCategoryList from "./PopupCategoryList";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import type { StoreSelection } from "./LedgerRow";
@@ -35,7 +41,7 @@ interface StoreDetailPopupProps {
   onClose: () => void;
 }
 
-type PopupTab = "subdept" | "hourly";
+type PopupTab = "subdept" | "hourly" | "category";
 
 const fmtDate = (d: string) =>
   new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -44,12 +50,14 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
-  const { tab, selectedDate, rawSubs, rawLWSubs, rawLYSubs, rawHourly, rawLWHourly, rawLYHourly, subDeptThreshold, hourlyThreshold, exportSubDeptItems, exportSubDeptName } = useAppSelector((state) => state.salesLedger);
+  const { tab, selectedDate, rawSubs, rawLWSubs, rawLYSubs, rawHourly, rawLWHourly, rawLYHourly, subDeptThreshold, hourlyThreshold, categoryThreshold, exportSubDeptItems, exportSubDeptName } = useAppSelector((state) => state.salesLedger);
 
-  const activeThreshold = tab === "subdept" ? subDeptThreshold : hourlyThreshold;
+  const activeThreshold = tab === "subdept" ? subDeptThreshold : tab === "hourly" ? hourlyThreshold : categoryThreshold;
 
   const [loading, setLoading] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [catLoading, setCatLoading] = useState(false);
+  const [catFetchedFor, setCatFetchedFor] = useState<number | null>(null);
 
   const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
   const twEnd = formatGoliathDate(search.singleDate);
@@ -97,6 +105,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   };
 
   useEffect(() => {
+    dispatch(clearPopupSelections());
     const fetch = async () => {
       setLoading(true);
       try {
@@ -121,6 +130,30 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
     };
     fetch();
   }, [selection.storeId]);
+
+  // Category data can run into hundreds of rows per store, so it's fetched
+  // lazily on first visit to the tab rather than eagerly alongside sub
+  // dept/hourly — avoids the extra payload for users who never open it.
+  useEffect(() => {
+    if (tab !== "category" || catFetchedFor === selection.storeId) return;
+    const fetchCats = async () => {
+      setCatLoading(true);
+      try {
+        const [catsResp, lwCatsResp, lyCatsResp] = await Promise.all([
+          getCats(context.url, context.token, twStart, twEnd, 0, selection.storeId, 1),
+          getCats(context.url, context.token, lwStart, lwEnd, 0, selection.storeId, 1),
+          getCats(context.url, context.token, lyStart, lyEnd, 0, selection.storeId, 1),
+        ]);
+        dispatch(setRawCats(catsResp.data.error === 0 ? catsResp.data.subs : []));
+        dispatch(setRawLWCats(lwCatsResp.data.error === 0 ? lwCatsResp.data.subs : []));
+        dispatch(setRawLYCats(lyCatsResp.data.error === 0 ? lyCatsResp.data.subs : []));
+        setCatFetchedFor(selection.storeId);
+      } finally {
+        setCatLoading(false);
+      }
+    };
+    fetchCats();
+  }, [tab, selection.storeId]);
 
   useEffect(() => {
     if (!rawSubs.length && !rawHourly.length) return;
@@ -219,7 +252,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
 
       {/* Tabs + threshold */}
       <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
-        {(["subdept", "hourly"] as PopupTab[]).map((t) => (
+        {(["subdept", "hourly", "category"] as PopupTab[]).map((t) => (
           <button
             key={t}
             onClick={() => dispatch(setLedgerTab(t))}
@@ -229,16 +262,19 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
                 : "border-transparent text-content"
             }`}
           >
-            {t === "subdept" ? "Sub dept" : "Hourly"}
+            {t === "subdept" ? "Sub dept" : t === "hourly" ? "Hourly" : "Category"}
           </button>
         ))}
         <div className="flex-1" />
         <div className="flex items-center gap-1.5 py-1">
-          <span className="text-[10px] text-content">{tab === "subdept" ? "Sub dept" : "Hourly"} Threshold</span>
+          <span className="text-[10px] text-content">{tab === "subdept" ? "Sub dept" : tab === "hourly" ? "Hourly" : "Category"} Threshold</span>
           <ThresholdFilter
             value={activeThreshold === null ? null : { op: "gt", amount: activeThreshold }}
             onChange={(v) => {
-              dispatch(tab === "subdept" ? setSubDeptThreshold(v?.amount ?? null) : setHourlyThreshold(v?.amount ?? null));
+              const val = v?.amount ?? null;
+              if (tab === "subdept") dispatch(setSubDeptThreshold(val));
+              else if (tab === "hourly") dispatch(setHourlyThreshold(val));
+              else dispatch(setCategoryThreshold(val));
             }}
             showOp={false}
             suffix="%"
@@ -270,11 +306,22 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
             storeId={selection.storeId}
             selectedDate={selectedDate}
           />
-        ) : (
+        ) : tab === "hourly" ? (
           <PopupHourlyView
             twDateLabel={twDateLabel}
             lwDateLabel={lwDateLabel}
             lyDateLabel={lyDateLabel}
+          />
+        ) : catLoading ? (
+          <div className="relative h-full">
+            <LoadingIndicator message="Loading category data" />
+          </div>
+        ) : (
+          <PopupCategoryList
+            twDateLabel={twDateLabel}
+            lwDateLabel={lwDateLabel}
+            lyDateLabel={lyDateLabel}
+            selectedDate={selectedDate}
           />
         )}
       </div>

@@ -1,5 +1,6 @@
 ﻿import { useState, useMemo, useRef } from "react";
-import { useAppSelector } from "../../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { setSelectedHour } from "../../../features/salesLedgerSlice";
 import { formatCurrency2, addDays, sameWeekDayLastYear } from "../../../utils";
 import {
   ExclamationTriangleIcon,
@@ -173,6 +174,8 @@ const PopupHourlyView = ({
     (s) => s.salesLedger,
   );
   const rawThreshold = useAppSelector((s) => s.salesLedger.hourlyThreshold);
+  const selectedHour = useAppSelector((s) => s.salesLedger.selectedHour);
+  const dispatch = useAppDispatch();
 
   // Grading should never move rows around on its own when the threshold input
   // is cleared — keep grading against the last valid amount so severity/sort
@@ -181,7 +184,6 @@ const PopupHourlyView = ({
   if (rawThreshold != null) thresholdRef.current = rawThreshold;
   const threshold = thresholdRef.current;
 
-  const [selectedHour, setSelectedHour] = useState<number | null>(null);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [ctaOpen, setCtaOpen] = useState(false);
   const [chartOpen, setChartOpen] = useState(false);
@@ -384,7 +386,7 @@ const PopupHourlyView = ({
             return (
               <button
                 key={r.hour}
-                onClick={() => setSelectedHour(isSel ? null : r.hour)}
+                onClick={() => dispatch(setSelectedHour(isSel ? null : r.hour))}
                 className={`w-full px-3 py-2 border-b border-gray-100 last:border-0 gap-2 text-left transition-colors ${isSel ? "bg-white" : "hover:bg-gray-50"}`}
                 style={isSel ? { boxShadow: `inset 0 0 8px ${SEVERITY_CONFIG[sev].shadowColor}` } : undefined}
               >
@@ -439,7 +441,7 @@ const PopupHourlyView = ({
 
         {selected ? (
           <>
-            <div className="flex-1 overflow-y-auto thin-scrollbar">
+            <div className="flex-1 overflow-y-auto thin-scrollbar leading-snug">
               {/* 3-col net sales KPI grid */}
               <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100">
                 <div className="px-4 py-3">
@@ -509,7 +511,7 @@ const PopupHourlyView = ({
               </div>
 
               {/* Transactions — 3-col */}
-              <div className="border-b border-gray-100">
+              <div className="border-b border-gray-100 leading-snug">
                 <div className="px-4 py-1.5 bg-gray-100 text-[10px] font-medium uppercase tracking-wide text-content">
                   Transactions
                 </div>
@@ -563,7 +565,7 @@ const PopupHourlyView = ({
               </div>
 
               {/* Avg basket — 3-col */}
-              <div className="border-b border-gray-100">
+              <div className="border-b border-gray-100 leading-snug">
                 <div className="px-4 py-1.5 bg-gray-100 text-[10px] font-medium uppercase tracking-wide text-content">
                   Avg basket
                 </div>

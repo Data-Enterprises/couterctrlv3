@@ -1,11 +1,11 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { SubSale, HourlySale } from "../interfaces";
+import type { SubSale, HourlySale, CatSale } from "../interfaces";
 import type { StoreSelection } from "../pages/sales/components/LedgerRow";
 import type { ThresholdValue } from "../components/filters/ThresholdFilter";
 
 export type GradingMetric = "sales" | "qty";
 
-export type LedgerTab = "subdept" | "hourly";
+export type LedgerTab = "subdept" | "hourly" | "category";
 export type SevFilter = "all" | "critical" | "watch" | "healthy";
 export type OpenSheetType = "subdept" | "hourly" | null;
 
@@ -45,6 +45,9 @@ interface SalesLedgerState {
   rawHourly: HourlySale[];
   rawLWHourly: HourlySale[];
   rawLYHourly: HourlySale[];
+  rawCats: CatSale[];
+  rawLWCats: CatSale[];
+  rawLYCats: CatSale[];
 
   // Top 10
   top10: Top10Item[];
@@ -55,10 +58,17 @@ interface SalesLedgerState {
   subDeptThreshold: number | null;
   hourlyThreshold: number | null;
   itemThreshold: number | null;
+  categoryThreshold: number | null;
 
   // Sub dept items export
   exportSubDeptName: string;
   exportSubDeptItems: ExportSubDeptItem[];
+
+  // Popup row selections — persist across tab switches, reset on new store
+  selectedSubDeptId: number | null;
+  selectedSubDeptItems: Top10Item[];
+  selectedHour: number | null;
+  selectedCatId: number | null;
 
   // Mobile-specific
   screen: "list" | "report";
@@ -82,14 +92,22 @@ const initialState: SalesLedgerState = {
   rawHourly: [],
   rawLWHourly: [],
   rawLYHourly: [],
+  rawCats: [],
+  rawLWCats: [],
+  rawLYCats: [],
   top10: [],
   exportSubDeptName: "",
   exportSubDeptItems: [],
+  selectedSubDeptId: null,
+  selectedSubDeptItems: [],
+  selectedHour: null,
+  selectedCatId: null,
   gradingMetric: "sales" as GradingMetric,
   threshold: { op: "gt", amount: 9 } as ThresholdValue,
   subDeptThreshold: 9,
   hourlyThreshold: 9,
   itemThreshold: 9,
+  categoryThreshold: 9,
   screen: "list",
   listSevFilter: "all",
   reportSevFilter: "all",
@@ -143,6 +161,15 @@ const salesLedgerSlice = createSlice({
     setRawLYHourly: (state, action: PayloadAction<HourlySale[]>) => {
       state.rawLYHourly = action.payload;
     },
+    setRawCats: (state, action: PayloadAction<CatSale[]>) => {
+      state.rawCats = action.payload;
+    },
+    setRawLWCats: (state, action: PayloadAction<CatSale[]>) => {
+      state.rawLWCats = action.payload;
+    },
+    setRawLYCats: (state, action: PayloadAction<CatSale[]>) => {
+      state.rawLYCats = action.payload;
+    },
     setTop10: (state, action: PayloadAction<Top10Item[]>) => {
       state.top10 = action.payload;
     },
@@ -151,6 +178,24 @@ const salesLedgerSlice = createSlice({
     },
     setExportSubDeptItems: (state, action: PayloadAction<ExportSubDeptItem[]>) => {
       state.exportSubDeptItems = action.payload;
+    },
+    setSelectedSubDeptId: (state, action: PayloadAction<number | null>) => {
+      state.selectedSubDeptId = action.payload;
+    },
+    setSelectedSubDeptItems: (state, action: PayloadAction<Top10Item[]>) => {
+      state.selectedSubDeptItems = action.payload;
+    },
+    setSelectedHour: (state, action: PayloadAction<number | null>) => {
+      state.selectedHour = action.payload;
+    },
+    setSelectedCatId: (state, action: PayloadAction<number | null>) => {
+      state.selectedCatId = action.payload;
+    },
+    clearPopupSelections: (state) => {
+      state.selectedSubDeptId = null;
+      state.selectedSubDeptItems = [];
+      state.selectedHour = null;
+      state.selectedCatId = null;
     },
     setScreen: (state, action: PayloadAction<"list" | "report">) => {
       state.screen = action.payload;
@@ -169,6 +214,9 @@ const salesLedgerSlice = createSlice({
     },
     setItemThreshold: (state, action: PayloadAction<number | null>) => {
       state.itemThreshold = action.payload;
+    },
+    setCategoryThreshold: (state, action: PayloadAction<number | null>) => {
+      state.categoryThreshold = action.payload;
     },
     setListSevFilter: (state, action: PayloadAction<SevFilter>) => {
       state.listSevFilter = action.payload;
@@ -201,9 +249,16 @@ const salesLedgerSlice = createSlice({
       state.rawHourly = [];
       state.rawLWHourly = [];
       state.rawLYHourly = [];
+      state.rawCats = [];
+      state.rawLWCats = [];
+      state.rawLYCats = [];
       state.top10 = [];
       state.exportSubDeptName = "";
       state.exportSubDeptItems = [];
+      state.selectedSubDeptId = null;
+      state.selectedSubDeptItems = [];
+      state.selectedHour = null;
+      state.selectedCatId = null;
       state.screen = "list";
       state.listSevFilter = "all";
       state.reportSevFilter = "all";
@@ -247,14 +302,23 @@ export const {
   setRawHourly,
   setRawLWHourly,
   setRawLYHourly,
+  setRawCats,
+  setRawLWCats,
+  setRawLYCats,
   setTop10,
   setExportSubDeptName,
   setExportSubDeptItems,
+  setSelectedSubDeptId,
+  setSelectedSubDeptItems,
+  setSelectedHour,
+  setSelectedCatId,
+  clearPopupSelections,
   setScreen,
   setThreshold,
   setSubDeptThreshold,
   setHourlyThreshold,
   setItemThreshold,
+  setCategoryThreshold,
   setListSevFilter,
   setReportSevFilter,
   openSheet,
