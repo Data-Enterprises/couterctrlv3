@@ -263,7 +263,7 @@ const MarginPerfRightPanel = () => {
             className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors ${
               ctx.subDeptGridView === "item"
                 ? "border-[#1e2a4a] text-content"
-                : "border-transparent text-content hover:text-content"
+                : "border-transparent text-content"
             }`}
             onClick={() => dispatch(actions.setSubDeptGridView("item"))}
           >
@@ -273,7 +273,7 @@ const MarginPerfRightPanel = () => {
             className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors ${
               ctx.subDeptGridView === "cost"
                 ? "border-[#1e2a4a] text-content"
-                : "border-transparent text-content hover:text-content"
+                : "border-transparent text-content"
             }`}
             onClick={handleCostTab}
           >
@@ -283,7 +283,7 @@ const MarginPerfRightPanel = () => {
             className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors ${
               ctx.subDeptGridView === "nocost"
                 ? "border-red-400 text-red-700"
-                : "border-transparent text-content hover:text-content"
+                : "border-transparent text-content"
             }`}
             onClick={handleNoCostTab}
           >

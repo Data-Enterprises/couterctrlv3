@@ -4,6 +4,8 @@ export interface DayBucket {
   date: string;
   label: string;
   qty: number;
+  revenue: number;
+  cost: number;
   hasSale: boolean;
 }
 
@@ -11,10 +13,14 @@ export const buildDayBuckets = (
   history: ItemLookupHistory[],
   daysBack = 14,
 ): DayBucket[] => {
-  const byDate = new Map<string, number>();
+  const byDate = new Map<string, { qty: number; revenue: number; cost: number }>();
   history.forEach((h) => {
     const d = h.sale_date.split("T")[0];
-    byDate.set(d, (byDate.get(d) ?? 0) + h.qty);
+    const existing = byDate.get(d) ?? { qty: 0, revenue: 0, cost: 0 };
+    existing.qty += h.qty;
+    existing.revenue += h.total_sales;
+    existing.cost += h.extended_cost;
+    byDate.set(d, existing);
   });
 
   const buckets: DayBucket[] = [];
@@ -23,12 +29,14 @@ export const buildDayBuckets = (
     const d = new Date(today);
     d.setDate(d.getDate() - i);
     const iso = d.toISOString().split("T")[0];
-    const qty = byDate.get(iso) ?? 0;
+    const agg = byDate.get(iso);
     buckets.push({
       date: iso,
       label: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-      qty,
-      hasSale: qty > 0,
+      qty: agg?.qty ?? 0,
+      revenue: agg?.revenue ?? 0,
+      cost: agg?.cost ?? 0,
+      hasSale: (agg?.qty ?? 0) > 0,
     });
   }
   return buckets;
@@ -73,6 +81,9 @@ export const computeMargin = (
   };
 };
 
+// Only resolved (closed) gaps — a run of no-sale days still open as of today
+// is surfaced separately via computeActiveGap, since "no sales as of today"
+// is a live, urgent signal rather than a passive historical stat.
 export const findGaps = (buckets: DayBucket[]): { start: string; end: string; days: number }[] => {
   const gaps: { start: string; end: string; days: number }[] = [];
   let runStartIndex = -1;
@@ -90,13 +101,16 @@ export const findGaps = (buckets: DayBucket[]): { start: string; end: string; da
     }
   }
 
-  if (runStartIndex !== -1) {
-    gaps.push({
-      start: buckets[runStartIndex].label,
-      end: buckets[buckets.length - 1].label,
-      days: buckets.length - runStartIndex,
-    });
-  }
-
   return gaps.filter((g) => g.days >= 2);
+};
+
+// Consecutive no-sale days counting back from the most recent bucket. 0 if
+// the most recent day had a sale (no active dry spell).
+export const computeActiveGap = (buckets: DayBucket[]): number => {
+  let days = 0;
+  for (let i = buckets.length - 1; i >= 0; i--) {
+    if (buckets[i].hasSale) break;
+    days++;
+  }
+  return days;
 };

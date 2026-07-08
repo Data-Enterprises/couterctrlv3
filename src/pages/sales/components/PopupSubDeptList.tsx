@@ -1,5 +1,5 @@
 import { useSalesState } from "../hooks/useSalesState";
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import {
   setItemThreshold,
@@ -25,6 +25,7 @@ import {
 import type { Severity } from "./LedgerRow";
 import type { SubDeptMargin } from "../../../interfaces";
 import { SEVERITY_CONFIG } from "./tierColumnUtils";
+import UpcContextMenu from "../../../components/UpcContextMenu";
 
 const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
 
@@ -266,19 +267,6 @@ const PopupSubDeptList = ({
     y: number;
     upc: string;
   } | null>(null);
-  const ctxMenuRef = useRef<HTMLDivElement>(null);
-
-  const closeCtxMenu = useCallback(() => setCtxMenu(null), []);
-
-  useEffect(() => {
-    if (!ctxMenu) return;
-    const handler = (e: MouseEvent) => {
-      if (ctxMenuRef.current && !ctxMenuRef.current.contains(e.target as Node))
-        closeCtxMenu();
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [ctxMenu, closeCtxMenu]);
 
   useEffect(() => {
     setItemSevFilter("all");
@@ -557,6 +545,16 @@ const PopupSubDeptList = ({
   const itemHealthyCount = itemsWithSev.filter(
     (i) => i.sev === "healthy",
   ).length;
+
+  // Independent of the active severity chip, so the context menu's
+  // "copy critical/watch/healthy" options always mean the same thing.
+  const allUpcs = useMemo(() => itemsWithSev.map((i) => i.upc), [itemsWithSev]);
+  const severityUpcs = useMemo(() => ({
+    critical: itemsWithSev.filter((i) => i.sev === "critical").map((i) => i.upc),
+    watch: itemsWithSev.filter((i) => i.sev === "watch").map((i) => i.upc),
+    healthy: itemsWithSev.filter((i) => i.sev === "healthy").map((i) => i.upc),
+  }), [itemsWithSev]);
+
   const visibleItems =
     itemSevFilter === "all"
       ? itemsWithSev
@@ -703,7 +701,13 @@ const PopupSubDeptList = ({
 
           {selected ? (
             <>
-              <div className="flex-1 overflow-y-auto thin-scrollbar">
+              <div
+                className="flex-1 overflow-y-auto thin-scrollbar"
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setCtxMenu({ x: e.clientX, y: e.clientY, upc: "" });
+                }}
+              >
                 {/* 3-col KPI grid: TY / LW / LY */}
                 <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 leading-snug">
                   <div className="px-4 py-3">
@@ -841,6 +845,7 @@ const PopupSubDeptList = ({
                           className="px-3 py-2.5 border-b border-gray-100"
                           onContextMenu={(e) => {
                             e.preventDefault();
+                            e.stopPropagation();
                             setCtxMenu({
                               x: e.clientX,
                               y: e.clientY,
@@ -1059,26 +1064,14 @@ const PopupSubDeptList = ({
       </div>
 
       {ctxMenu && (
-        <div
-          ref={ctxMenuRef}
-          style={{
-            position: "fixed",
-            top: ctxMenu.y,
-            left: ctxMenu.x,
-            zIndex: 9999,
-          }}
-          className="bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[140px]"
-        >
-          <button
-            className="w-full text-left px-3 py-2 text-[12px] text-content hover:bg-gray-50 transition-colors"
-            onClick={() => {
-              navigator.clipboard.writeText(ctxMenu.upc);
-              closeCtxMenu();
-            }}
-          >
-            Copy UPC
-          </button>
-        </div>
+        <UpcContextMenu
+          x={ctxMenu.x}
+          y={ctxMenu.y}
+          upc={ctxMenu.upc}
+          allUpcs={allUpcs}
+          severityUpcs={severityUpcs}
+          onClose={() => setCtxMenu(null)}
+        />
       )}
     </>
   );

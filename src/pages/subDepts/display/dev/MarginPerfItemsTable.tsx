@@ -5,10 +5,10 @@ import { useSubMarginCtx } from "../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
 import { calculateCogs, getLYDate } from "../..";
 import { formatCurrency2, addDays } from "../../../../utils";
-import { setMenuPosition, setSMClipboardText } from "../../../../features/ctxMenuSlice";
 import type { SubDeptMargin } from "../../../../interfaces";
 import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
 import type { ThresholdValue } from "../../../../components/filters/ThresholdFilter";
+import UpcContextMenu from "../../../../components/UpcContextMenu";
 
 type Severity = "critical" | "watch" | "healthy" | "ungraded";
 type SevFilter = "all" | Severity;
@@ -62,7 +62,7 @@ const chipClass = (active: boolean, sev: Severity) => {
     const fill = sev === "critical" ? "bg-red-600 border-red-600 text-white" : sev === "watch" ? "bg-amber-500 border-amber-500 text-white" : "bg-emerald-600 border-emerald-600 text-white";
     return `${base} ${fill}`;
   }
-  return `${base} bg-transparent border-gray-200 text-content hover:text-content`;
+  return `${base} bg-transparent border-gray-200 text-content`;
 };
 
 const getItemSeverity = (row: ItemMarginRow, threshold: number): Severity => {
@@ -105,7 +105,7 @@ const ColFilter = ({ label, active, align = "left", onApply, onClear, children }
       <button
         onClick={() => setOpen((v) => !v)}
         className={`flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wide transition-colors select-none flex-shrink-0 ${
-          active ? "text-[#1e2a4a]" : "text-content hover:text-content"
+          active ? "text-[#1e2a4a]" : "text-content"
         }`}
       >
         {label}
@@ -297,6 +297,21 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
     return counts;
   }, [rawRows, thresholdAmt]);
 
+  // Independent of the active severity chip / search filters, so the context
+  // menu's "copy critical/watch/healthy" options always mean the same thing.
+  const severityUpcs = useMemo(() => {
+    const buckets = { critical: [] as string[], watch: [] as string[], healthy: [] as string[] };
+    for (const row of rawRows) {
+      const sev = getItemSeverity(row, thresholdAmt);
+      if (sev === "critical" || sev === "watch" || sev === "healthy") buckets[sev].push(row.productCode);
+    }
+    return buckets;
+  }, [rawRows, thresholdAmt]);
+
+  const allUpcs = useMemo(() => rawRows.map((r) => r.productCode), [rawRows]);
+
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; upc: string } | null>(null);
+
   const displayData = useMemo(() => {
     let data = [...rawRows];
     if (appliedDesc) data = data.filter((d) => d.description.toLowerCase().includes(appliedDesc.toLowerCase()));
@@ -342,15 +357,13 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
     return <span className="text-[#1e2a4a]"> {sortDir === "desc" ? "↓" : "↑"}</span>;
   };
 
-  const handleCtxMenu = (e: React.MouseEvent<HTMLDivElement>, upc?: string) => {
+  const openCtxMenu = (e: React.MouseEvent, upc: string) => {
     e.preventDefault();
-    dispatch(setMenuPosition({ x: e.clientX + 5, y: e.clientY }));
-    const allUpc = displayData.map((d) => d.productCode).join(", ");
-    dispatch(setSMClipboardText({ upc: upc ?? "", allUpc }));
+    setCtxMenu({ x: e.clientX, y: e.clientY, upc });
   };
 
   const thStyle = "px-2 py-2";
-  const thBtn = "text-[9px] font-semibold uppercase tracking-wide text-content hover:text-content transition-colors";
+  const thBtn = "text-[9px] font-semibold uppercase tracking-wide text-content transition-colors";
 
   const ptsDelta = (ty: number, ref: number | null) => {
     if (ref === null) return null;
@@ -358,9 +371,10 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
   };
 
   return (
+    <>
     <div
       className="flex-1 min-h-0 overflow-y-auto thin-scrollbar"
-      onContextMenuCapture={(e) => handleCtxMenu(e)}
+      onContextMenu={(e) => openCtxMenu(e, "")}
     >
       {/* ── Control bar ── */}
       <div className="sticky top-0 z-20 flex items-center gap-2 px-3 py-1.5 bg-gray-50 border-b border-gray-100">
@@ -376,7 +390,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
 
         <div className="w-px h-4 bg-gray-200 flex-shrink-0 mx-0.5" />
 
-        <button onClick={() => setSevFilter("all")} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${sevFilter === "all" ? "bg-[#1e2a4a] border-[#1e2a4a] text-white" : "bg-transparent border-gray-200 text-content hover:text-content"}`}>
+        <button onClick={() => setSevFilter("all")} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${sevFilter === "all" ? "bg-[#1e2a4a] border-[#1e2a4a] text-white" : "bg-transparent border-gray-200 text-content"}`}>
           All ({rawRows.length})
         </button>
         <button onClick={() => setSevFilter("critical")} className={chipClass(sevFilter === "critical", "critical")}>
@@ -441,7 +455,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
                 gridTemplateColumns: COLS,
                 background: i % 2 === 1 ? "rgba(30,42,74,0.015)" : undefined,
               }}
-              onContextMenuCapture={(e) => handleCtxMenu(e, item.productCode)}
+              onContextMenu={(e) => { e.stopPropagation(); openCtxMenu(e, item.productCode); }}
             >
               <div className="flex items-center gap-2 px-2 py-[7px] min-w-0">
                 <SeverityBadge severity={sev} />
@@ -494,6 +508,17 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
         })
       )}
     </div>
+    {ctxMenu && (
+      <UpcContextMenu
+        x={ctxMenu.x}
+        y={ctxMenu.y}
+        upc={ctxMenu.upc}
+        allUpcs={allUpcs}
+        severityUpcs={severityUpcs}
+        onClose={() => setCtxMenu(null)}
+      />
+    )}
+    </>
   );
 };
 

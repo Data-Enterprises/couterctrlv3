@@ -2,9 +2,9 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
-import { setMenuPosition, setSMClipboardText } from "../../../../features/ctxMenuSlice";
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
 import type { SubDeptCost } from "../../../../interfaces";
+import UpcContextMenu from "../../../../components/UpcContextMenu";
 
 // ── Shared filter popover ─────────────────────────────────────────────────────
 
@@ -35,7 +35,7 @@ const ColFilter = ({ label, active, align = "left", onApply, onClear, children }
       <button
         onClick={() => setOpen((v) => !v)}
         className={`flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wide transition-colors select-none flex-shrink-0 ${
-          active ? "text-[#1e2a4a]" : "text-content hover:text-content"
+          active ? "text-[#1e2a4a]" : "text-content"
         }`}
       >
         {label}
@@ -219,19 +219,20 @@ const SubDeptCostGrid = () => {
     return <span className="text-[#1e2a4a]"> {sortDir === "desc" ? "↓" : "↑"}</span>;
   };
 
-  const handleCtxMenu = (e: React.MouseEvent<HTMLDivElement>, item?: SubDeptCost) => {
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; upc: string } | null>(null);
+  const openCtxMenu = (e: React.MouseEvent, upc: string) => {
     e.preventDefault();
-    dispatch(setMenuPosition({ x: e.clientX + 5, y: e.clientY }));
-    const allUpc = displayData.map((d) => d.product_code).join(", ");
-    dispatch(setSMClipboardText({ upc: item?.product_code ?? "", allUpc }));
+    setCtxMenu({ x: e.clientX, y: e.clientY, upc });
   };
+  const allUpcs = useMemo(() => displayData.map((d) => d.product_code), [displayData]);
 
   const thStyle = "px-3 py-2";
 
   return (
+    <>
     <div
       className="flex-1 min-h-0 overflow-y-auto thin-scrollbar"
-      onContextMenuCapture={(e) => handleCtxMenu(e)}
+      onContextMenu={(e) => openCtxMenu(e, "")}
     >
       {/* Sticky column headers */}
       <div
@@ -280,7 +281,7 @@ const SubDeptCostGrid = () => {
           >
             <ThreshInput operator={draftUnitCostOp} value={draftUnitCostVal} onOperatorChange={setDraftUnitCostOp} onValueChange={setDraftUnitCostVal} placeholder="Amount…" />
           </ColFilter>
-          <button onClick={() => handleSort("unitCost")} className="text-[9px] text-content hover:text-content">{arrow("unitCost")}</button>
+          <button onClick={() => handleSort("unitCost")} className="text-[9px] text-content">{arrow("unitCost")}</button>
         </div>
         <div className={`${thStyle} flex items-center justify-end gap-1.5`}>
           <ColFilter
@@ -292,7 +293,7 @@ const SubDeptCostGrid = () => {
           >
             <ThreshInput operator={draftCaseCostOp} value={draftCaseCostVal} onOperatorChange={setDraftCaseCostOp} onValueChange={setDraftCaseCostVal} placeholder="Amount…" />
           </ColFilter>
-          <button onClick={() => handleSort("caseCost")} className="text-[9px] text-content hover:text-content">{arrow("caseCost")}</button>
+          <button onClick={() => handleSort("caseCost")} className="text-[9px] text-content">{arrow("caseCost")}</button>
         </div>
         <div className={`${thStyle} flex items-center justify-end gap-1.5`}>
           <ColFilter
@@ -304,7 +305,7 @@ const SubDeptCostGrid = () => {
           >
             <ThreshInput operator={draftQtyOp} value={draftQtyVal} onOperatorChange={setDraftQtyOp} onValueChange={setDraftQtyVal} placeholder="Qty…" />
           </ColFilter>
-          <button onClick={() => handleSort("qty")} className="text-[9px] text-content hover:text-content">{arrow("qty")}</button>
+          <button onClick={() => handleSort("qty")} className="text-[9px] text-content">{arrow("qty")}</button>
         </div>
         <div className={`${thStyle} flex items-center justify-end gap-1.5`}>
           <ColFilter
@@ -316,7 +317,7 @@ const SubDeptCostGrid = () => {
           >
             <ThreshInput operator={draftCogsOp} value={draftCogsVal} onOperatorChange={setDraftCogsOp} onValueChange={setDraftCogsVal} placeholder="Amount…" />
           </ColFilter>
-          <button onClick={() => handleSort("cogs")} className="text-[9px] text-content hover:text-content">{arrow("cogs")}</button>
+          <button onClick={() => handleSort("cogs")} className="text-[9px] text-content">{arrow("cogs")}</button>
         </div>
       </div>
 
@@ -334,7 +335,7 @@ const SubDeptCostGrid = () => {
               gridTemplateColumns: COLS,
               background: i % 2 === 1 ? "rgba(30,42,74,0.015)" : undefined,
             }}
-            onContextMenuCapture={(e) => handleCtxMenu(e, item)}
+            onContextMenu={(e) => { e.stopPropagation(); openCtxMenu(e, item.product_code); }}
           >
             <div className="px-3 py-[9px] text-[11px] font-medium text-content truncate">{item.description}</div>
             <div className="px-3 py-[9px] text-[10px] text-content tabular-nums truncate">{item.product_code}</div>
@@ -346,6 +347,16 @@ const SubDeptCostGrid = () => {
         ))
       )}
     </div>
+    {ctxMenu && (
+      <UpcContextMenu
+        x={ctxMenu.x}
+        y={ctxMenu.y}
+        upc={ctxMenu.upc}
+        allUpcs={allUpcs}
+        onClose={() => setCtxMenu(null)}
+      />
+    )}
+    </>
   );
 };
 
