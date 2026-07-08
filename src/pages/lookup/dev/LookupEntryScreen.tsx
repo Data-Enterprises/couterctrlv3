@@ -61,7 +61,7 @@ const LookupEntryScreen = ({
         />
 
         {!hasStore && (
-          <p className="text-[11px] text-content/50 -mt-2 mb-3.5">
+          <p className="text-[11px] text-content/75 -mt-2 mb-3.5">
             Select a store to scan or search for an item.
           </p>
         )}
@@ -71,7 +71,7 @@ const LookupEntryScreen = ({
             <>
               <DevUpcScanner handleScan={handleScan} retryKey={retryKey} />
               <button
-                className="mt-1.5 text-[11.5px] text-content/50 underline"
+                className="mt-1.5 text-[11.5px] text-content/75 underline"
                 onClick={() => setCameraOpen(false)}
               >
                 Close camera
@@ -110,7 +110,7 @@ const LookupEntryScreen = ({
 
         <div className="flex items-center gap-2 my-3.5">
           <div className="flex-1 h-px bg-content/15" />
-          <span className="text-[10.5px] text-content/45">
+          <span className="text-[10.5px] text-content/75">
             or enter manually
           </span>
           <div className="flex-1 h-px bg-content/15" />
@@ -133,7 +133,7 @@ const LookupEntryScreen = ({
           </button>
         </div>
 
-        <RecentLookupsStrip onSelect={onSelectRecent} />
+        <RecentLookupsStrip onSelect={onSelectRecent} variant="list" />
       </div>
     </div>
   );

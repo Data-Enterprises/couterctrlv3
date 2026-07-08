@@ -1,7 +1,14 @@
-import { ArrowTrendingDownIcon, ChevronLeftIcon } from "@heroicons/react/20/solid";
+import { useState } from "react";
+import {
+  ArrowTrendingDownIcon,
+  ChevronLeftIcon,
+  ExclamationTriangleIcon,
+} from "@heroicons/react/20/solid";
 import { formatCurrency2 } from "../../../utils";
 import type { MarginResult, DayBucket, TrendResult } from "./lookupMetrics";
+import { computeActiveGap } from "./lookupMetrics";
 import RecentLookupsStrip from "./RecentLookupsStrip";
+import DailyBreakdownSheet from "./DailyBreakdownSheet";
 
 interface LookupResultScreenProps {
   description: string;
@@ -32,22 +39,36 @@ const LookupResultScreen = ({
   trend,
   gaps,
 }: LookupResultScreenProps) => {
+  const [breakdownOpen, setBreakdownOpen] = useState(false);
   const isNegative = margin.marginPct !== null && margin.marginPct < 0;
-  const maxQty = Math.max(...buckets.map((b) => b.qty), 1);
+  const activeGapDays = computeActiveGap(buckets);
+  const longestGap = gaps.reduce((max, g) => Math.max(max, g.days), 0);
+  const dateRangeLabel = buckets.length
+    ? `${buckets[0].label} – ${buckets[buckets.length - 1].label}`
+    : "";
 
   return (
     <div className="min-h-[calc(100vh-56px)] bg-custom-white">
-      <div className="flex-shrink-0 px-3 pt-2 pb-2.5" style={{ background: "#1e2a4a" }}>
+      <div
+        className="flex-shrink-0 px-3 pt-2 pb-2.5"
+        style={{ background: "#1e2a4a" }}
+      >
         <div className="flex items-center gap-2">
-          <button onClick={onBack} className="text-white/65 hover:text-white transition-colors flex-shrink-0 -ml-1">
+          <button
+            onClick={onBack}
+            className="text-white/65 hover:text-white transition-colors flex-shrink-0 -ml-1"
+          >
             <ChevronLeftIcon className="w-5 h-5" />
           </button>
           <div className="min-w-0">
             <div className="text-[13px] font-semibold text-white truncate">
-              {description}
+              {storeName}
             </div>
-            <div className="text-[10px] mt-0.5 truncate" style={{ color: "rgba(255,255,255,0.45)" }}>
-              {productCode} · {categoryDescription} · {storeName}
+            <div
+              className="text-[10px] mt-0.5 truncate"
+              style={{ color: "rgba(255,255,255,0.75)" }}
+            >
+              {dateRangeLabel}
             </div>
           </div>
         </div>
@@ -55,84 +76,144 @@ const LookupResultScreen = ({
 
       <div className="p-3.5">
         <div className="bg-content/5 rounded-xl p-3.5">
-          <div className="flex items-baseline justify-between">
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-content/45">Margin, last 14 days</span>
-            {isNegative && (
-              <span className="text-[10px] font-semibold text-red-800">Selling below cost</span>
-            )}
-          </div>
-          <div className={`text-[26px] font-bold mt-0.5 tabular-nums ${isNegative ? "text-red-800" : "text-emerald-800"}`}>
-            {margin.marginPct !== null ? `${margin.marginPct.toFixed(1)}%` : "-"}
+          <div className="flex items-start justify-between gap-2 pb-2.5 border-b border-content/10">
+            <div className="min-w-0">
+              <div className="text-[13px] font-semibold text-content truncate">
+                {description}
+              </div>
+              <div className="text-[10px] text-content/75 mt-0.5 truncate">
+                {productCode} · {categoryDescription}
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 mt-3 border-t border-content/10 pt-2.5">
+          <div className="flex items-start justify-between gap-2 mt-2.5">
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-content/75">
+              Margin, last 14 days
+            </span>
+            <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+              {isNegative && (
+                <span className="text-[10px] font-semibold text-red-800">
+                  Selling below cost
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <div
+              className={`text-[16px] font-bold mt-0.5 tabular-nums ${isNegative ? "text-red-800" : "text-emerald-800"}`}
+            >
+              {margin.marginPct !== null
+                ? `${margin.marginPct.toFixed(1)}%`
+                : "-"}
+            </div>
+            <button
+              onClick={() => setBreakdownOpen(true)}
+              className="text-[10px] mt-1.5 font-semibold text-[#1e2a4a] border border-[#1e2a4a] rounded-md py-0.5 px-1"
+            >
+              View breakdown
+            </button>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 mt-2 border-t border-content/10 pt-2.5">
             <div>
-              <div className="text-[9px] font-semibold uppercase tracking-wide text-content/45">List price</div>
-              <div className="text-[13px] font-semibold tabular-nums mt-0.5">{formatCurrency2(margin.listPrice)}</div>
+              <div className="text-[9px] font-semibold uppercase tracking-wide text-content/75">
+                List price
+              </div>
+              <div className="text-[13px] font-semibold tabular-nums mt-0.5">
+                {formatCurrency2(margin.listPrice)}
+              </div>
             </div>
             <div>
-              <div className="text-[9px] font-semibold uppercase tracking-wide text-content/45">Avg sold at</div>
-              <div className={`text-[13px] font-semibold tabular-nums mt-0.5 ${isNegative ? "text-red-800" : ""}`}>
+              <div className="text-[9px] font-semibold uppercase tracking-wide text-content/75">
+                Avg sold at
+              </div>
+              <div
+                className={`text-[13px] font-semibold tabular-nums mt-0.5 ${isNegative ? "text-red-800" : ""}`}
+              >
                 {formatCurrency2(margin.avgSoldAt)}
               </div>
             </div>
             <div>
-              <div className="text-[9px] font-semibold uppercase tracking-wide text-content/45">Case cost</div>
-              <div className="text-[13px] font-semibold tabular-nums mt-0.5">{formatCurrency2(margin.caseCost)}</div>
+              <div className="text-[9px] font-semibold uppercase tracking-wide text-content/75">
+                Case cost
+              </div>
+              <div className="text-[13px] font-semibold tabular-nums mt-0.5">
+                {formatCurrency2(margin.caseCost)}
+              </div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 mt-2.5 border-t border-content/10 pt-2.5">
+          <div className="grid grid-cols-3 gap-2 mt-2.5 border-t border-content/10 pt-2.5">
             <div>
-              <div className="text-[9px] font-semibold uppercase tracking-wide text-content/45">Total units</div>
-              <div className="text-[13px] font-semibold tabular-nums mt-0.5">{totalQty}</div>
+              <div className="text-[9px] font-semibold uppercase tracking-wide text-content/75">
+                Total units
+              </div>
+              <div className="text-[13px] font-semibold tabular-nums mt-0.5">
+                {totalQty}
+              </div>
             </div>
             <div>
-              <div className="text-[9px] font-semibold uppercase tracking-wide text-content/45">Sold on</div>
-              <div className="text-[13px] font-semibold tabular-nums mt-0.5">{daysSold} of last 14 days</div>
+              <div className="text-[9px] font-semibold uppercase tracking-wide text-content/75">
+                Days sold
+              </div>
+              <div className="text-[13px] font-semibold tabular-nums mt-0.5">
+                {daysSold}{" "}
+                <span className="text-[11px] font-medium text-content/75">
+                  of 14
+                </span>
+              </div>
+            </div>
+            <div>
+              <div className="text-[9px] font-semibold uppercase tracking-wide text-content/75">
+                Longest gap
+              </div>
+              <div className="text-[13px] font-semibold tabular-nums mt-0.5">
+                {longestGap > 0 ? (
+                  <>
+                    {longestGap}{" "}
+                    <span className="text-[11px] font-medium text-content/75">
+                      days
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-content/75">None</span>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
         {trend.isSlowing && (
-          <div className="flex items-center gap-1.5 mt-3 px-2.5 py-2 bg-amber-50 rounded-lg">
+          <div className="flex items-center gap-1.5 mt-1.5 px-2.5 py-2 bg-amber-50 rounded-lg">
             <ArrowTrendingDownIcon className="w-4 h-4 text-amber-800" />
             <span className="text-[11.5px] text-amber-900">
-              Slowing down - {trend.firstHalfQty} units first week, {trend.secondHalfQty} units this week
+              Slowing down - {trend.firstHalfQty} units first week,{" "}
+              {trend.secondHalfQty} units this week
             </span>
           </div>
         )}
 
-        <div className="text-[9px] font-semibold text-content/45 uppercase tracking-wide mt-4 mb-2">
-          Daily units sold
-        </div>
-        <div className="flex items-end gap-1" style={{ height: 70 }}>
-          {buckets.map((b) => (
-            <div
-              key={b.date}
-              title={`${b.label} - ${b.hasSale ? `${b.qty} units` : "no sales"}`}
-              className={`flex-1 rounded-t-sm ${b.hasSale ? "bg-blue-300" : "bg-red-100"}`}
-              style={{ height: b.hasSale ? Math.max((b.qty / maxQty) * 70, 4) : 4 }}
-            />
-          ))}
-        </div>
-        <div className="flex justify-between mt-1">
-          <span className="text-[9px] text-content/45">{buckets[0]?.label}</span>
-          <span className="text-[9px] text-content/45">{buckets[buckets.length - 1]?.label}</span>
-        </div>
-
-        {gaps.length > 0 && (
-          <div className="flex items-center gap-1.5 mt-2">
-            <div className="w-2 h-2 bg-red-100 rounded-sm" />
-            <span className="text-[10.5px] text-content/60">
-              {gaps.map((g) => `${g.days}-day gap with no sales, ${g.start} - ${g.end}`).join("; ")}
+        {activeGapDays >= 2 && (
+          <div className="flex items-center gap-1.5 mt-1.5 px-2.5 py-2 bg-red-50 rounded-lg">
+            <ExclamationTriangleIcon className="w-4 h-4 text-red-700" />
+            <span className="text-[11.5px] text-red-800">
+              No sales in the last {activeGapDays} days
             </span>
           </div>
         )}
 
         <div className="mt-4">
-          <RecentLookupsStrip onSelect={onSelectRecent} />
+          <RecentLookupsStrip onSelect={onSelectRecent} variant="list" />
         </div>
       </div>
+
+      {breakdownOpen && (
+        <DailyBreakdownSheet
+          description={description}
+          buckets={buckets}
+          onClose={() => setBreakdownOpen(false)}
+        />
+      )}
     </div>
   );
 };
