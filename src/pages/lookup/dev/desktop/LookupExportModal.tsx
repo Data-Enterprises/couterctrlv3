@@ -3,6 +3,7 @@ import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import { computeMargin } from "../lookupMetrics";
 import type { DayBucket } from "../lookupMetrics";
 import type { QueueItem } from "../../../../features/itemLookupSlice";
+import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
 
 interface LookupExportModalProps {
   queue: QueueItem[];
@@ -38,27 +39,6 @@ const DAILY_COLS: { key: DailyColKey; label: string; defaultOn: boolean }[] = [
 ];
 
 const PREVIEW_ROWS = 5;
-
-const escCsv = (val: string | number | null | undefined) => {
-  const s = String(val ?? "");
-  return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s.replace(/"/g, '""')}"` : s;
-};
-
-const rowsToCsv = (headers: string[], rows: (string | number | null)[][]): string => {
-  const lines = [headers.map(escCsv).join(",")];
-  for (const row of rows) lines.push(row.map(escCsv).join(","));
-  return lines.join("\n");
-};
-
-const downloadCsv = (content: string, filename: string) => {
-  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-};
 
 interface BatchRow {
   upc: string;

@@ -3,6 +3,8 @@ import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type { SubSale, HourlySale } from "../../../interfaces";
 import type { DayDot } from "./LedgerRow";
 import type { ExportSubDeptItem } from "../../../features/salesLedgerSlice";
+import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../utils/csvExport";
+import type { AggFn, AggRow } from "../../../utils/csvExport";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -25,13 +27,10 @@ type ExportDataset = "subdept" | "hourly" | "summary" | "items";
 type ItemSev = "critical" | "watch" | "healthy";
 type ModalMode = "presets" | "custom";
 type CustomSource = "subdept" | "hourly";
-type AggFn = "sum" | "avg" | "min" | "max" | "count";
 
 interface DimDef { key: string; label: string }
 interface MetricDef { key: string; label: string }
 interface MetricSelection { fn: AggFn; enabled: boolean }
-
-type AggRow = Record<string, string | number>;
 
 // ─── Formatting helpers ────────────────────────────────────────────────────────
 
@@ -44,20 +43,6 @@ const fmtHour = (h: number) => {
   const ampm = h < 12 ? "AM" : "PM";
   const display = h === 0 ? 12 : h > 12 ? h - 12 : h;
   return `${display}:00 ${ampm}`;
-};
-
-const fmtNum = (v: number, dp = 2) => v.toFixed(dp);
-
-const escCsv = (val: string | number | null | undefined) => {
-  const s = String(val ?? "");
-  return s.includes(",") || s.includes('"') || s.includes("\n")
-    ? `"${s.replace(/"/g, '""')}"` : s;
-};
-
-const rowsToCsv = (headers: string[], rows: (string | number | null)[][]): string => {
-  const lines = [headers.map(escCsv).join(",")];
-  for (const row of rows) lines.push(row.map(escCsv).join(","));
-  return lines.join("\n");
 };
 
 // ─── Preset CSV builders ──────────────────────────────────────────────────────
@@ -110,53 +95,6 @@ const buildItemsCsv = (items: ExportSubDeptItem[], sevs: Set<ItemSev>) => {
   return rowsToCsv(headers, rows);
 };
 
-const downloadCsv = (content: string, filename: string) => {
-  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-};
-
-// ─── Aggregation engine ───────────────────────────────────────────────────────
-
-function applyAgg(values: number[], fn: AggFn): number {
-  if (!values.length) return 0;
-  switch (fn) {
-    case "sum":   return values.reduce((a, b) => a + b, 0);
-    case "avg":   return values.reduce((a, b) => a + b, 0) / values.length;
-    case "min":   return Math.min(...values);
-    case "max":   return Math.max(...values);
-    case "count": return values.length;
-  }
-}
-
-function aggregateRows(
-  rows: AggRow[],
-  dims: string[],
-  metrics: { key: string; fn: AggFn }[],
-): AggRow[] {
-  if (!dims.length && !metrics.length) return rows.slice(0, 100);
-
-  const groups = new Map<string, AggRow[]>();
-  for (const row of rows) {
-    const key = dims.map((d) => String(row[d] ?? "")).join("|||");
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key)!.push(row);
-  }
-
-  return Array.from(groups.values()).map((group) => {
-    const result: AggRow = {};
-    for (const d of dims) result[d] = group[0][d];
-    for (const { key, fn } of metrics) {
-      const vals = group.map((r) => Number(r[key]) || 0);
-      result[`${fn}__${key}`] = applyAgg(vals, fn);
-    }
-    return result;
-  });
-}
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
