@@ -18,7 +18,7 @@ import UpdateComp from "./forms/UpdateComp";
 import DeleteComp from "./forms/DeleteComp";
 import StoreActivity from "./forms/StoreActivity";
 
-const AdminPage = () => {
+const AdminLegacy = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAdminContext();
@@ -97,4 +97,4 @@ const AdminPage = () => {
   );
 };
 
-export default AdminPage;
+export default AdminLegacy;

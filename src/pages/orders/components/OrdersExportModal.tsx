@@ -9,7 +9,7 @@ interface OrdersExportModalProps {
   onClose: () => void;
   storeNames: string[];
   orderType: string;
-  orderDate: string;
+  dateLabel: string; // pre-formatted — a single date, or "MM/DD/YYYY – MM/DD/YYYY" for a range
   allOrders: AllOrder[];        // full set for selected store+date+type
   selectedOrderItems: AllOrder[]; // line items for selected order (empty if none)
   selectedOrder: SelectedOrder;
@@ -27,12 +27,12 @@ type AggRow = Record<string, string | number | null>;
 
 // ─── Formatting ───────────────────────────────────────────────────────────────
 
+const fmtNum = (v: number, dp = 2) => v.toFixed(dp);
+
 const fmtDate = (iso: string) => {
   const [y, m, d] = iso.split("T")[0].split("-");
   return `${m}/${d}/${y}`;
 };
-
-const fmtNum = (v: number, dp = 2) => v.toFixed(dp);
 
 const escCsv = (val: string | number | null | undefined) => {
   const s = String(val ?? "");
@@ -60,12 +60,12 @@ const downloadCsv = (content: string, filename: string) => {
 
 const buildOrdersCsv = (orders: AllOrder[], label: string) => {
   const headers = [
-    "Store #", "Store Name", "Order #", "Line #", "UPC", "Description", "Sub Dept", "Vendor",
+    "Store #", "Store Name", "Date", "Order #", "Line #", "UPC", "Description", "Sub Dept", "Vendor",
     "Status", "Qty", "Case Size", "Unit Cost", "Net Cost",
     "Retail Price", "Ext Retail", "COGS", "Revenue",
   ];
   const rows = orders.map((o) => [
-    o.storenumber, o.storename, o.order_id, o.line_number, o.product_code, o.description,
+    o.storenumber, o.storename, fmtDate(o.order_date), o.order_id, o.line_number, o.product_code, o.description,
     o.sub_department_description, o.vendor_name, o.status,
     o.qty, o.casesize,
     o.casesize > 0 ? fmtNum(o.base_cost / o.casesize) : "—",
@@ -142,7 +142,7 @@ const OrdersExportModal = ({
   onClose,
   storeNames,
   orderType,
-  orderDate,
+  dateLabel,
   allOrders,
   selectedOrderItems,
   selectedOrder,
@@ -281,16 +281,17 @@ const OrdersExportModal = ({
   // ── Preset download ──
   const handlePresetDownload = () => {
     const sections: string[] = [];
-    if (selected.has("all"))      sections.push(buildOrdersCsv(allOrders, `All Orders — ${storeLabel} ${orderType} ${fmtDate(orderDate)}`));
+    if (selected.has("all"))      sections.push(buildOrdersCsv(allOrders, `All Orders — ${storeLabel} ${orderType} ${dateLabel}`));
     if (selected.has("selected") && selectedOrderItems.length) sections.push(buildOrdersCsv(selectedOrderItems, `Order #${selectedOrder?.orderId}`));
     if (selected.has("subDepts") && presetSubDeptFilteredOrders.length) {
-      sections.push(buildOrdersCsv(presetSubDeptFilteredOrders, `By Sub Depts (${presetSubDepts.size} of ${uniqueSubDepts.length}) — ${storeLabel} ${orderType} ${fmtDate(orderDate)}`));
+      sections.push(buildOrdersCsv(presetSubDeptFilteredOrders, `By Sub Depts (${presetSubDepts.size} of ${uniqueSubDepts.length}) — ${storeLabel} ${orderType} ${dateLabel}`));
     }
     if (!sections.length) return;
     // Combined multi-store exports are named by order type + date only — a store
     // count isn't a meaningful filename slug. Single-store exports keep the name.
     const safeName = (isMultiStore ? orderType : `${storeLabel}_${orderType}`).replace(/[^a-z0-9]/gi, "_");
-    downloadCsv(sections.join("\n\n"), `${safeName}_${fmtDate(orderDate)}.csv`);
+    const safeDateLabel = dateLabel.replace(/[^a-z0-9]/gi, "_");
+    downloadCsv(sections.join("\n\n"), `${safeName}_${safeDateLabel}.csv`);
     onClose();
   };
 
@@ -300,7 +301,8 @@ const OrdersExportModal = ({
     const headers = columns.map((c) => c.label);
     const rows = aggRows.map((r) => columns.map((c) => r[c.key] ?? ""));
     const safeName = (isMultiStore ? orderType : `${storeLabel}_${orderType}`).replace(/[^a-z0-9]/gi, "_");
-    downloadCsv(rowsToCsv(headers, rows), `${safeName}_custom_${fmtDate(orderDate)}.csv`);
+    const safeDateLabel = dateLabel.replace(/[^a-z0-9]/gi, "_");
+    downloadCsv(rowsToCsv(headers, rows), `${safeName}_custom_${safeDateLabel}.csv`);
     onClose();
   };
 
@@ -356,7 +358,7 @@ const OrdersExportModal = ({
                 <div>
                   <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">All Orders</p>
                   <p className="text-[11px] text-content mt-0.5">
-                    All {allOrders.length} line items for {storeLabel} — {orderType} on {fmtDate(orderDate)}
+                    All {allOrders.length} line items for {storeLabel} — {orderType} on {dateLabel}
                   </p>
                 </div>
               </label>
@@ -554,7 +556,7 @@ const OrdersExportModal = ({
                 <p className="text-[10px] text-content italic leading-relaxed">
                   Working on {customFilteredOrders.length} of {allOrders.length} line items
                   {isMultiSubDept ? ` · ${customSubDepts.size} of ${uniqueSubDepts.length} sub depts` : ""}
-                  {" "}for {orderType} on {fmtDate(orderDate)}.
+                  {" "}for {orderType} on {dateLabel}.
                 </p>
               </div>
 

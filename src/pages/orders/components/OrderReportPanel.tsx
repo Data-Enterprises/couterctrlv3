@@ -214,6 +214,13 @@ const OrderReportPanel = ({
         : [],
     [selectedKey, assignedStores],
   );
+
+  const dateLabel = selectedKey
+    ? (selectedKey.order_date === selectedKey.order_date_end
+        ? fmtDate(selectedKey.order_date)
+        : `${fmtDate(selectedKey.order_date)} – ${fmtDate(selectedKey.order_date_end)}`)
+    : "";
+
   const filteredOrders = selectedKey
     ? orders.filter((o) => o.order_type === selectedKey.order_type)
     : orders;
@@ -281,7 +288,7 @@ const OrderReportPanel = ({
           onClose={() => setExportOpen(false)}
           storeNames={storeNames}
           orderType={selectedKey.order_type}
-          orderDate={selectedKey.order_date}
+          dateLabel={dateLabel}
           allOrders={filteredOrders}
           selectedOrderItems={orderItems}
           selectedOrder={selectedOrder}
@@ -297,7 +304,7 @@ const OrderReportPanel = ({
               <span className="text-white font-medium text-[13px] flex-shrink-0">
                 <StoreLabel names={storeNames} /> — {selectedKey.order_type}
               </span>
-              <span className="text-white text-[10px] flex-shrink-0">{fmtDate(selectedKey.order_date)}</span>
+              <span className="text-white text-[10px] flex-shrink-0">{dateLabel}</span>
             </>
           ) : (
             <span className="text-white font-medium text-[13px]">Order Report</span>

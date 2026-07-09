@@ -113,7 +113,7 @@ const OrdersMobile = () => {
   };
 
   const handleSelectStore = (order_date: string, order_type: string, storeid: number) => {
-    ctx.dispatch(setSelectedOrderKey({ order_date, order_type, storeids: [storeid] }));
+    ctx.dispatch(setSelectedOrderKey({ order_date, order_date_end: order_date, order_type, storeids: [storeid] }));
     ctx.dispatch(setSelectedOrder(null));
     ctx.dispatch(setAllOrders([]));
 
