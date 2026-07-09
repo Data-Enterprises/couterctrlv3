@@ -14,6 +14,7 @@ import {
   setWeekTrendMargins,
   setWeekTrendMarginsLY,
   setWeekTrendMarginsLW,
+  setLastFetchedTrendKey,
   type SubDeptGrade,
 } from "../../features/subMarginSlice";
 
@@ -98,6 +99,9 @@ const SubDeptMarginsDev = () => {
   const [notice, setNotice] = useState<string | undefined>(undefined);
 
   const subDeptGrades = useAppSelector((s) => s.subMargin.subDeptGrades);
+  const lastFetchedTrendKey = useAppSelector(
+    (s) => s.subMargin.lastFetchedTrendKey,
+  );
 
   if (ctx.isMobile) return <SubDeptMarginsMobile />;
 
@@ -166,6 +170,18 @@ const SubDeptMarginsDev = () => {
     const grade = subDeptGrades[ctx.selectedSubDeptId];
     if (!grade) return;
 
+    const e = params.end;
+    const g = params.useGroups;
+    const sv = params.searchValue;
+    const ss = params.singleStore;
+    const id = ctx.selectedSubDeptId;
+
+    // Remounting with weeks 2-4 already fetched for this exact sub dept +
+    // date range + search (e.g. navigating away and back) shouldn't blank
+    // and re-fire those fetches — Redux still has the data.
+    const trendKey = `${id}_${e}_${g}_${sv}_${ss}`;
+    if (lastFetchedTrendKey === trendKey) return;
+
     dispatch(setWeekTrendMargins({ data: grade.tyWeekOneMargins, week: 1 }));
     dispatch(setWeekTrendMarginsLY({ data: grade.lyWeekOneMargins, week: 1 }));
     dispatch(setWeekTrendMargins({ data: [], week: 2 }));
@@ -177,12 +193,7 @@ const SubDeptMarginsDev = () => {
     dispatch(setWeekTrendMarginsLW({ data: [], week: 4 }));
     dispatch(actions.setSelectedWeek(1));
     dispatch(actions.setSelectedWeekDay(""));
-
-    const e = params.end;
-    const g = params.useGroups;
-    const sv = params.searchValue;
-    const ss = params.singleStore;
-    const id = ctx.selectedSubDeptId;
+    dispatch(setLastFetchedTrendKey(trendKey));
 
     fetchSafe(ctx.url, ctx.token, id, setDates(new Date(e), 13), setDates(new Date(e), 7), g, sv, ss)
       .then((data) => dispatch(setWeekTrendMargins({ data, week: 2 })));

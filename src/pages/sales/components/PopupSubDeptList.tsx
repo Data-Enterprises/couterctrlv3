@@ -7,6 +7,7 @@ import {
   setExportSubDeptItems,
   setSelectedSubDeptId,
   setSelectedSubDeptItems,
+  setLastFetchedItemsKey,
 } from "../../../features/salesLedgerSlice";
 import type { GradingMetric } from "../../../features/salesLedgerSlice";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
@@ -207,6 +208,9 @@ const PopupSubDeptList = ({
   const items = useAppSelector(
     (state) => state.salesLedger.selectedSubDeptItems,
   );
+  const lastFetchedItemsKey = useAppSelector(
+    (state) => state.salesLedger.lastFetchedItemsKey,
+  );
 
   // Grading should never move rows around on its own when the threshold input
   // is cleared — keep grading against the last valid amount so severity/sort
@@ -239,6 +243,12 @@ const PopupSubDeptList = ({
       dispatch(setSelectedSubDeptItems([]));
       return;
     }
+
+    // Remounting with items already fetched for this exact store+sub
+    // dept+day (e.g. navigating away and back) shouldn't refire the
+    // request — Redux still has it, only the component tree was torn down.
+    const itemsKey = `${storeId}_${selectedId}_${selectedDate ?? "all"}`;
+    if (lastFetchedItemsKey === itemsKey) return;
 
     const twEnd = formatGoliathDate(search.singleDate);
     const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
@@ -335,6 +345,7 @@ const PopupSubDeptList = ({
             }),
           ),
         );
+        dispatch(setLastFetchedItemsKey(itemsKey));
       } finally {
         if (!cancelled) setItemsLoading(false);
       }

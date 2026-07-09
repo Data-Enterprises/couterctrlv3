@@ -24,6 +24,7 @@ import {
   setSubDeptThreshold,
   setHourlyThreshold,
   // setCategoryThreshold,
+  setLastFetchedStoreId,
   clearPopupSelections,
 } from "../../../features/salesLedgerSlice";
 import {
@@ -74,6 +75,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
     hourlyThreshold,
     exportSubDeptItems,
     exportSubDeptName,
+    lastFetchedStoreId,
   } = useAppSelector((state) => state.salesLedger);
 
   const activeThreshold =
@@ -163,6 +165,10 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   };
 
   useEffect(() => {
+    // Remounting with data already fetched for this exact store (e.g.
+    // navigating away and back) shouldn't refire the request — Redux still
+    // has it, only the component tree was torn down.
+    if (lastFetchedStoreId === selection.storeId) return;
     dispatch(clearPopupSelections());
     const fetch = async () => {
       setLoading(true);
@@ -252,6 +258,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
             lyHourlyResp.data.error === 0 ? lyHourlyResp.data.subs : [],
           ),
         );
+        dispatch(setLastFetchedStoreId(selection.storeId));
       } finally {
         setLoading(false);
       }

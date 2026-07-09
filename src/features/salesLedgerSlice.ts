@@ -38,6 +38,11 @@ interface SalesLedgerState {
   reportLoading: boolean;
   top10Loading: boolean;
 
+  // Tracks which store the raw data below was fetched for, so remounting
+  // StoreDetailPopup (e.g. after navigating away and back) with the same
+  // selection doesn't re-fire the fetch — it just reuses what's already here.
+  lastFetchedStoreId: number | null;
+
   // Raw API data (shared desktop + mobile)
   rawSubs: SubSale[];
   rawLWSubs: SubSale[];
@@ -70,6 +75,11 @@ interface SalesLedgerState {
   selectedHour: number | null;
   selectedCatId: number | null;
 
+  // Tracks which store+sub dept+day combination selectedSubDeptItems was
+  // fetched for, so remounting PopupSubDeptList with the same selection
+  // doesn't re-fire the item-level fetch.
+  lastFetchedItemsKey: string | null;
+
   // Mobile-specific
   screen: "list" | "report";
   listSevFilter: SevFilter;
@@ -86,6 +96,7 @@ const initialState: SalesLedgerState = {
   ledgerLoading: false,
   reportLoading: false,
   top10Loading: false,
+  lastFetchedStoreId: null,
   rawSubs: [],
   rawLWSubs: [],
   rawLYSubs: [],
@@ -102,6 +113,7 @@ const initialState: SalesLedgerState = {
   selectedSubDeptItems: [],
   selectedHour: null,
   selectedCatId: null,
+  lastFetchedItemsKey: null,
   gradingMetric: "sales" as GradingMetric,
   threshold: { op: "gt", amount: 9 } as ThresholdValue,
   subDeptThreshold: 9,
@@ -142,6 +154,9 @@ const salesLedgerSlice = createSlice({
     },
     setTop10Loading: (state, action: PayloadAction<boolean>) => {
       state.top10Loading = action.payload;
+    },
+    setLastFetchedStoreId: (state, action: PayloadAction<number | null>) => {
+      state.lastFetchedStoreId = action.payload;
     },
     setRawSubs: (state, action: PayloadAction<SubSale[]>) => {
       state.rawSubs = action.payload;
@@ -191,11 +206,15 @@ const salesLedgerSlice = createSlice({
     setSelectedCatId: (state, action: PayloadAction<number | null>) => {
       state.selectedCatId = action.payload;
     },
+    setLastFetchedItemsKey: (state, action: PayloadAction<string | null>) => {
+      state.lastFetchedItemsKey = action.payload;
+    },
     clearPopupSelections: (state) => {
       state.selectedSubDeptId = null;
       state.selectedSubDeptItems = [];
       state.selectedHour = null;
       state.selectedCatId = null;
+      state.lastFetchedItemsKey = null;
     },
     setScreen: (state, action: PayloadAction<"list" | "report">) => {
       state.screen = action.payload;
@@ -243,6 +262,7 @@ const salesLedgerSlice = createSlice({
     reQueryLedger: (state) => {
       state.selection = null;
       state.selectedDate = null;
+      state.lastFetchedStoreId = null;
       state.rawSubs = [];
       state.rawLWSubs = [];
       state.rawLYSubs = [];
@@ -259,6 +279,7 @@ const salesLedgerSlice = createSlice({
       state.selectedSubDeptItems = [];
       state.selectedHour = null;
       state.selectedCatId = null;
+      state.lastFetchedItemsKey = null;
       state.screen = "list";
       state.listSevFilter = "all";
       state.reportSevFilter = "all";
@@ -296,6 +317,7 @@ export const {
   setLedgerLoading,
   setReportLoading,
   setTop10Loading,
+  setLastFetchedStoreId,
   setRawSubs,
   setRawLWSubs,
   setRawLYSubs,
@@ -312,6 +334,7 @@ export const {
   setSelectedSubDeptItems,
   setSelectedHour,
   setSelectedCatId,
+  setLastFetchedItemsKey,
   clearPopupSelections,
   setScreen,
   setThreshold,
