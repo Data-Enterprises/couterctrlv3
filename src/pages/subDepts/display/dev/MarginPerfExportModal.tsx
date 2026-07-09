@@ -9,6 +9,7 @@ type ExportPreset = "items" | "items_vs_ly" | "cost" | "nocost";
 type ModalMode = "presets" | "custom";
 type CustomSource = "ty" | "ly";
 type AggFn = "sum" | "avg" | "min" | "max" | "count";
+type ItemSev = "critical" | "watch" | "healthy";
 
 interface DimDef { key: string; label: string }
 interface MetricDef { key: string; label: string }
@@ -23,6 +24,7 @@ interface MarginPerfExportModalProps {
   dateRange: string;
   tyMargins: SubDeptMargin[];
   lyMargins: SubDeptMargin[];
+  threshold: number;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -86,8 +88,16 @@ const buildItemsCsv = (margins: SubDeptMargin[]) => {
   return rowsToCsv(headers, rows);
 };
 
-const buildItemsVsLyCsv = (ty: SubDeptMargin[], ly: SubDeptMargin[]) => {
-  const headers = ["Product Code", "Description", "TY Net Sales", "LY Net Sales", "TY Margin %", "LY Margin %", "Margin Pts Δ"];
+const SEV_LABEL: Record<ItemSev, string> = { critical: "Critical", watch: "Watch", healthy: "Healthy" };
+
+const getMarginPtsSeverity = (pts: number, threshold: number): ItemSev => {
+  if (pts < -threshold) return "critical";
+  if (pts < 0) return "watch";
+  return "healthy";
+};
+
+const buildItemsVsLyCsv = (ty: SubDeptMargin[], ly: SubDeptMargin[], threshold: number, sevs: Set<ItemSev>) => {
+  const headers = ["Product Code", "Description", "Severity", "TY Net Sales", "LY Net Sales", "TY Margin %", "LY Margin %", "Margin Pts Δ"];
   const agg = (src: SubDeptMargin[]) => {
     const map = new Map<string, { desc: string; sales: number; cogs: number }>();
     for (const m of src) {
@@ -111,7 +121,9 @@ const buildItemsVsLyCsv = (ty: SubDeptMargin[], ly: SubDeptMargin[]) => {
     const tyMpct = tySales > 0 ? ((tySales - tyCogs) / tySales) * 100 : 0;
     const lyMpct = lySales > 0 ? ((lySales - lyCogs) / lySales) * 100 : 0;
     const pts = tyMpct - lyMpct;
-    rows.push([code, t?.desc ?? l?.desc ?? "", fmtNum(tySales), fmtNum(lySales), fmtNum(tyMpct), fmtNum(lyMpct), fmtNum(pts)]);
+    const sev = getMarginPtsSeverity(pts, threshold);
+    if (!sevs.has(sev)) return;
+    rows.push([code, t?.desc ?? l?.desc ?? "", SEV_LABEL[sev], fmtNum(tySales), fmtNum(lySales), fmtNum(tyMpct), fmtNum(lyMpct), fmtNum(pts)]);
   });
   return rowsToCsv(headers, rows);
 };
@@ -221,10 +233,12 @@ const MarginPerfExportModal = ({
   dateRange,
   tyMargins,
   lyMargins,
+  threshold,
 }: MarginPerfExportModalProps) => {
 
   const [mode, setMode] = useState<ModalMode>("presets");
   const [selected, setSelected] = useState<Set<ExportPreset>>(new Set(["items"]));
+  const [itemSevs, setItemSevs] = useState<Set<ItemSev>>(new Set(["critical", "watch", "healthy"]));
   const [source, setSource] = useState<CustomSource>("ty");
   const [groupBy, setGroupBy] = useState<Set<string>>(new Set(["product_code", "product_description"]));
   const [metrics, setMetrics] = useState<Map<string, MetricSelection>>(
@@ -263,6 +277,9 @@ const MarginPerfExportModal = ({
       return next;
     });
   };
+
+  const toggleItemSev = (sev: ItemSev) =>
+    setItemSevs((prev) => { const n = new Set(prev); n.has(sev) ? n.delete(sev) : n.add(sev); return n; });
 
   const setMetricFn = (key: string, fn: AggFn) => {
     setMetrics((prev) => {
@@ -320,20 +337,27 @@ const MarginPerfExportModal = ({
   }, [flatRows, groupBy, metrics]);
 
   const presetDatasets: { id: ExportPreset; label: string; description: string }[] = [
-    { id: "items",       label: "Items Report",       description: "TY net sales, qty, COGS, and margin % aggregated by item" },
-    { id: "items_vs_ly", label: "Items vs Last Year",  description: "Side-by-side TY vs LY per item with margin pts Δ" },
-    { id: "cost",        label: "Cost Analysis",       description: "Cost, net cost, case size, and COGS breakdown per item" },
-    { id: "nocost",      label: "No Cost Items",       description: "Items flagged for missing cost data" },
+    { id: "items",  label: "Items Report",  description: "TY net sales, qty, COGS, and margin % aggregated by item" },
+    { id: "cost",   label: "Cost Analysis", description: "Cost, net cost, case size, and COGS breakdown per item" },
+    { id: "nocost", label: "No Cost Items", description: "Items flagged for missing cost data" },
+  ];
+
+  const SEV_CHIP: { sev: ItemSev; label: string; activeClass: string }[] = [
+    { sev: "critical", label: "Critical", activeClass: "bg-red-600 border-red-600 text-white" },
+    { sev: "watch",    label: "Watch",    activeClass: "bg-amber-500 border-amber-500 text-white" },
+    { sev: "healthy",  label: "Healthy",  activeClass: "bg-emerald-600 border-emerald-600 text-white" },
   ];
 
   const safeName = (storeName + "_" + subDeptName).replace(/[^a-z0-9]/gi, "_");
 
   const handlePresetDownload = () => {
     const sections: string[] = [];
-    if (selected.has("items"))       sections.push(`Items Report\n${buildItemsCsv(tyMargins)}`);
-    if (selected.has("items_vs_ly")) sections.push(`Items vs Last Year\n${buildItemsVsLyCsv(tyMargins, lyMargins)}`);
-    if (selected.has("cost"))        sections.push(`Cost Analysis\n${buildCostCsv(tyMargins)}`);
-    if (selected.has("nocost"))      sections.push(`No Cost Items\n${buildNoCostCsv(tyMargins)}`);
+    if (selected.has("items"))  sections.push(`Items Report\n${buildItemsCsv(tyMargins)}`);
+    if (selected.has("cost"))   sections.push(`Cost Analysis\n${buildCostCsv(tyMargins)}`);
+    if (selected.has("nocost")) sections.push(`No Cost Items\n${buildNoCostCsv(tyMargins)}`);
+    if (selected.has("items_vs_ly") && itemSevs.size > 0) {
+      sections.push(`Items vs Last Year\n${buildItemsVsLyCsv(tyMargins, lyMargins, threshold, itemSevs)}`);
+    }
     if (!sections.length) return;
     downloadCsv(sections.join("\n\n"), `${safeName}_${dateRange.replace(/\s/g, "")}.csv`);
     onClose();
@@ -403,6 +427,32 @@ const MarginPerfExportModal = ({
                   </div>
                 </label>
               ))}
+
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={selected.has("items_vs_ly")}
+                  onChange={() => setSelected((prev) => { const n = new Set(prev); n.has("items_vs_ly") ? n.delete("items_vs_ly") : n.add("items_vs_ly"); return n; })}
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium text-content">Items vs Last Year</p>
+                  <p className="text-[11px] text-content mt-0.5 mb-1.5">Side-by-side TY vs LY per item with margin pts Δ</p>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {SEV_CHIP.map(({ sev, label, activeClass }) => (
+                      <button
+                        key={sev}
+                        onClick={() => toggleItemSev(sev)}
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
+                          itemSevs.has(sev) ? activeClass : "bg-white border-gray-200 text-content"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-2">
               <button onClick={onClose} className="text-[12px] text-content transition-colors">Cancel</button>
