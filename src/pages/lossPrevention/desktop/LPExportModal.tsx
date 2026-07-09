@@ -169,23 +169,21 @@ const LPExportModal = ({
   cashierGrades,
 }: LPExportModalProps) => {
 
-  // ── Preset state ──
+  // ── Preset state — no default selections ──
   const [mode, setMode] = useState<ModalMode>("presets");
-  const [selected, setSelected] = useState<Set<ExportDataset>>(new Set(["transactions", "cashiers"]));
-  const [cashierSevs, setCashierSevs] = useState<Set<CashierSeverity>>(
-    new Set(["critical", "watch", "ok", "ungraded"]),
-  );
+  const [selected, setSelected] = useState<Set<ExportDataset>>(new Set());
+  const [cashierSevs, setCashierSevs] = useState<Set<CashierSeverity>>(new Set());
 
   const toggleCashierSev = (sev: CashierSeverity) =>
     setCashierSevs((prev) => { const n = new Set(prev); n.has(sev) ? n.delete(sev) : n.add(sev); return n; });
 
-  // ── Custom builder state ──
+  // ── Custom builder state — no default selections ──
   const [source, setSource] = useState<CustomSource>("transactions");
-  const [groupBy, setGroupBy] = useState<Set<string>>(new Set(["cashier_name", "sale_date"]));
+  const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
   const [metrics, setMetrics] = useState<Map<string, MetricSelection>>(
     new Map([
-      ["qty",         { fn: "sum", enabled: true }],
-      ["total_sales", { fn: "sum", enabled: true }],
+      ["qty",         { fn: "sum", enabled: false }],
+      ["total_sales", { fn: "sum", enabled: false }],
     ])
   );
 
@@ -194,18 +192,17 @@ const LPExportModal = ({
 
   const switchSource = (s: CustomSource) => {
     setSource(s);
+    setGroupBy(new Set());
     if (s === "transactions") {
-      setGroupBy(new Set(["cashier_name", "sale_date"]));
       setMetrics(new Map([
-        ["qty",         { fn: "sum", enabled: true }],
-        ["total_sales", { fn: "sum", enabled: true }],
+        ["qty",         { fn: "sum", enabled: false }],
+        ["total_sales", { fn: "sum", enabled: false }],
       ]));
     } else {
-      setGroupBy(new Set(["cashier_name", "severity"]));
       setMetrics(new Map([
-        ["trans_value",     { fn: "sum", enabled: true }],
+        ["trans_value",     { fn: "sum", enabled: false }],
         ["qty_value",       { fn: "sum", enabled: false }],
-        ["sales_value",     { fn: "sum", enabled: true }],
+        ["sales_value",     { fn: "sum", enabled: false }],
         ["avgTicket_value", { fn: "avg", enabled: false }],
       ]));
     }

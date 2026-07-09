@@ -8,7 +8,7 @@ import {
   setAvailableOrders,
   setGroupedAvailableOrders,
   setSelectedOrderKey,
-  setSelectedOrderId,
+  setSelectedOrder,
   setLoadingAllOrders,
   setLoadingAvailableOrders,
   setOrdersExportModalOpen,
@@ -63,7 +63,7 @@ const OrdersMobile = () => {
     ctx.dispatch(setGroupedAvailableOrders([]));
     ctx.dispatch(setAllOrders([]));
     ctx.dispatch(setSelectedOrderKey(null));
-    ctx.dispatch(setSelectedOrderId(null));
+    ctx.dispatch(setSelectedOrder(null));
     setStep("available");
 
     const start = formatGoliathDate(ctx.startDate);
@@ -113,8 +113,8 @@ const OrdersMobile = () => {
   };
 
   const handleSelectStore = (order_date: string, order_type: string, storeid: number) => {
-    ctx.dispatch(setSelectedOrderKey({ order_date, order_type, storeid }));
-    ctx.dispatch(setSelectedOrderId(null));
+    ctx.dispatch(setSelectedOrderKey({ order_date, order_type, storeids: [storeid] }));
+    ctx.dispatch(setSelectedOrder(null));
     ctx.dispatch(setAllOrders([]));
 
     ctx.dispatch(setLoadingAllOrders(true));
@@ -151,7 +151,7 @@ const OrdersMobile = () => {
           const filtered = ordersWERet.filter((o) => o.order_type === order_type);
           const ids = Array.from(new Set(filtered.map((o) => o.order_id)));
           if (ids.length === 1) {
-            ctx.dispatch(setSelectedOrderId(ids[0]));
+            ctx.dispatch(setSelectedOrder({ storeid, orderId: ids[0] }));
             setSheetOpen(true);
           } else {
             setStep("list");
@@ -163,8 +163,15 @@ const OrdersMobile = () => {
   };
 
   const handleSelectOrderId = (id: number | null) => {
-    ctx.dispatch(setSelectedOrderId(id));
-    if (id !== null) setSheetOpen(true);
+    if (id === null) {
+      ctx.dispatch(setSelectedOrder(null));
+      return;
+    }
+    const storeid = ctx.selectedOrderKey?.storeids[0];
+    if (storeid !== undefined) {
+      ctx.dispatch(setSelectedOrder({ storeid, orderId: id }));
+      setSheetOpen(true);
+    }
   };
 
   const hasData = ctx.groupedAvailableOrders.length > 0;
@@ -174,7 +181,7 @@ const OrdersMobile = () => {
     ctx.dispatch(setGroupedAvailableOrders([]));
     ctx.dispatch(setAllOrders([]));
     ctx.dispatch(setSelectedOrderKey(null));
-    ctx.dispatch(setSelectedOrderId(null));
+    ctx.dispatch(setSelectedOrder(null));
     setStep("available");
   };
 
@@ -182,7 +189,11 @@ const OrdersMobile = () => {
     <div className="h-[calc(100dvh-3rem)] overflow-hidden flex flex-col bg-custom-white">
       <ExportModal
         isOpen={ctx.ordersExportModalOpen}
-        data={ctx.selectedOrderId !== null ? ctx.allOrders.filter((o) => o.order_id === ctx.selectedOrderId) : []}
+        data={
+          ctx.selectedOrder !== null
+            ? ctx.allOrders.filter((o) => o.order_id === ctx.selectedOrder!.orderId && o.storeid === ctx.selectedOrder!.storeid)
+            : []
+        }
         columns={ordersCols}
         onClose={() => ctx.dispatch(setOrdersExportModalOpen(false))}
       />
@@ -226,12 +237,12 @@ const OrdersMobile = () => {
         </div>
       )}
 
-      {sheetOpen && ctx.selectedOrderKey && ctx.selectedOrderId !== null && (
-        <BottomSheet onClose={() => { setSheetOpen(false); ctx.dispatch(setSelectedOrderId(null)); }}>
+      {sheetOpen && ctx.selectedOrderKey && ctx.selectedOrder !== null && (
+        <BottomSheet onClose={() => { setSheetOpen(false); ctx.dispatch(setSelectedOrder(null)); }}>
           <OrdersLineItemsScreen
             orders={ctx.allOrders}
             selectedKey={ctx.selectedOrderKey}
-            selectedOrderId={ctx.selectedOrderId}
+            selectedOrderId={ctx.selectedOrder.orderId}
             assignedStores={ctx.assignedStores}
             onExport={() => ctx.dispatch(setOrdersExportModalOpen(true))}
           />

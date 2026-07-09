@@ -35,6 +35,22 @@ export interface RecentLookup {
   marginPct: number | null;
 }
 
+export type QueueItemStatus = "queued" | "loading" | "loaded" | "error";
+
+export interface QueueItem {
+  upc: string;
+  status: QueueItemStatus;
+  productCode?: string;
+  description?: string;
+  categoryDescription?: string;
+  history?: ItemLookupHistory[];
+  totalSales?: number;
+  totalQty?: number;
+  daysSold?: number;
+  marginPct?: number | null;
+  errorMessage?: string;
+}
+
 interface ItemLookupState {
   upcCode: string;
   mode: "Sales" | "Qty" | "Price";
@@ -60,6 +76,8 @@ interface ItemLookupState {
   viewSearch: boolean;
   viewHistory: boolean;
   viewDaily: boolean;
+  lookupQueue: QueueItem[];
+  lookupSelectedUpc: string | null;
 }
 
 const initialState: ItemLookupState = {
@@ -87,6 +105,8 @@ const initialState: ItemLookupState = {
   viewSearch: true,
   viewHistory: false,
   viewDaily: false,
+  lookupQueue: [],
+  lookupSelectedUpc: null,
 };
 
 interface ItemsPayload {
@@ -216,6 +236,21 @@ const itemLookupSlice = createSlice({
       state.viewDaily = false;
     },
     resetLookupSlice: () => initialState,
+    setLookupQueue: (state, action: PayloadAction<QueueItem[]>) => {
+      state.lookupQueue = action.payload;
+    },
+    updateLookupQueueItem: (
+      state,
+      action: PayloadAction<{ upc: string; patch: Partial<QueueItem> }>,
+    ) => {
+      const { upc, patch } = action.payload;
+      state.lookupQueue = state.lookupQueue.map((q) =>
+        q.upc === upc ? { ...q, ...patch } : q,
+      );
+    },
+    setLookupSelectedUpc: (state, action: PayloadAction<string | null>) => {
+      state.lookupSelectedUpc = action.payload;
+    },
   },
 });
 
@@ -236,6 +271,9 @@ export const {
   reQueryUpc,
   setILView,
   addRecentLookup,
+  setLookupQueue,
+  updateLookupQueueItem,
+  setLookupSelectedUpc,
 } = itemLookupSlice.actions;
 
 export default itemLookupSlice.reducer;

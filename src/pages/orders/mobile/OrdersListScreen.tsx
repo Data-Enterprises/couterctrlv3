@@ -33,10 +33,10 @@ const SubDeptChips = ({ subDepts }: { subDepts: string[] }) => {
   return (
     <div className="flex flex-wrap gap-1 items-center mt-1.5">
       {visible.map((sd) => (
-        <span key={sd} className="text-[8px] bg-gray-100 text-content/70 rounded px-1.5 py-0.5">{sd}</span>
+        <span key={sd} className="text-[8px] bg-gray-100 text-content rounded px-1.5 py-0.5">{sd}</span>
       ))}
       {overflow.length > 0 && (
-        <span className="text-[8px] font-semibold bg-[#1e2a4a]/[0.07] text-content/70 rounded px-1.5 py-0.5">
+        <span className="text-[8px] font-semibold bg-[#1e2a4a]/[0.07] text-content rounded px-1.5 py-0.5">
           +{overflow.length} more
         </span>
       )}
@@ -48,7 +48,7 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, onBack
   const [subDeptFilter, setSubDeptFilter] = useState("");
 
   const storeName = selectedKey
-    ? (assignedStores.find((s) => s.storeid === selectedKey.storeid)?.store_name ?? `Store ${selectedKey.storeid}`)
+    ? (assignedStores.find((s) => s.storeid === selectedKey.storeids[0])?.store_name ?? `Store ${selectedKey.storeids[0]}`)
     : "";
 
   const filteredOrders = selectedKey
@@ -75,9 +75,9 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, onBack
         </button>
         <div className="min-w-0 flex-1">
           <div className="text-white font-semibold text-[15px] truncate">
-            {storeName} <span className="text-white/45 font-normal text-[12px]">— {selectedKey?.order_type}</span>
+            {storeName} <span className="text-white font-normal text-[12px]">— {selectedKey?.order_type}</span>
           </div>
-          <div className="text-white/65 text-[11px] mt-0.5">
+          <div className="text-white text-[11px] mt-0.5">
             {selectedKey ? fmtDate(selectedKey.order_date) : ""}
           </div>
         </div>
@@ -96,15 +96,15 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, onBack
         )}
         <div className="flex items-center gap-1.5 flex-shrink-0">
           <div className="flex items-baseline gap-1 rounded px-1.5 py-0.5" style={chipStyle}>
-            <span className="text-[8.5px] text-content/60">Orders</span>
+            <span className="text-[8.5px] text-content">Orders</span>
             <span className="text-[10px] font-semibold text-content">{uniqueOrderIds.length}</span>
           </div>
           <div className="flex items-baseline gap-1 rounded px-1.5 py-0.5" style={chipStyle}>
-            <span className="text-[8.5px] text-content/60">Items</span>
+            <span className="text-[8.5px] text-content">Items</span>
             <span className="text-[10px] font-semibold text-content">{subFilteredOrders.length}</span>
           </div>
           <div className="flex items-baseline gap-1 rounded px-1.5 py-0.5" style={chipStyle}>
-            <span className="text-[8.5px] text-content/60">Retail</span>
+            <span className="text-[8.5px] text-content">Retail</span>
             <span className="text-[10px] font-semibold text-content">{formatCurrency2(totalExtRetail)}</span>
           </div>
         </div>
@@ -113,7 +113,7 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, onBack
       {/* Order list */}
       <div className="flex-1 overflow-y-auto thin-scrollbar">
         {loading && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/70">Loading orders…</div>
+          <div className="flex items-center justify-center py-16 text-[12px] text-content">Loading orders…</div>
         )}
         {!loading && uniqueOrderIds.map((orderId) => {
           const items = subFilteredOrders.filter((o) => o.order_id === orderId);
@@ -128,11 +128,11 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, onBack
             >
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-[13px] font-semibold text-[#1e2a4a]">#{orderId}</span>
-                {status && <span className="text-[9px] italic text-content/55 flex-shrink-0">{status}</span>}
+                {status && <span className="text-[9px] italic text-content flex-shrink-0">{status}</span>}
               </div>
               <div className="flex items-baseline justify-between gap-2 mt-0.5">
                 <span className="text-[11px] font-semibold text-[#1e2a4a]">{formatCurrency2(eRet)}</span>
-                <span className="text-[10px] text-content/70 flex-shrink-0">{items.length} items</span>
+                <span className="text-[10px] text-content flex-shrink-0">{items.length} items</span>
               </div>
               <SubDeptChips subDepts={subDepts} />
             </button>

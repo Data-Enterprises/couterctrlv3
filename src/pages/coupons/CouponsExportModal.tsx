@@ -109,9 +109,10 @@ const PREVIEW_ROWS = 5;
 const CouponsExportModal = ({ onClose, title, subtitle, rows }: CouponsExportModalProps) => {
   const [mode, setMode] = useState<ModalMode>("presets");
 
-  const [groupBy, setGroupBy] = useState<Set<string>>(new Set(["sub_department_description"]));
+  // No default selections
+  const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
   const [metrics, setMetrics] = useState<Map<string, MetricSelection>>(new Map([
-    ["coupon_amount", { fn: "sum", enabled: true }],
+    ["coupon_amount", { fn: "sum", enabled: false }],
     ["qty",           { fn: "sum", enabled: false }],
   ]));
 
@@ -126,8 +127,8 @@ const CouponsExportModal = ({ onClose, title, subtitle, rows }: CouponsExportMod
 
   const isMultiStore = uniqueStores.length > 1;
 
-  // Selected stores (default = all)
-  const [selectedStores, setSelectedStores] = useState<Set<string>>(() => new Set(rows.map((r) => r.store_number)));
+  // Selected stores — no default selections
+  const [selectedStores, setSelectedStores] = useState<Set<string>>(() => new Set());
 
   const toggleStore = (num: string) =>
     setSelectedStores((prev) => { const n = new Set(prev); n.has(num) ? n.delete(num) : n.add(num); return n; });

@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import { computeMargin } from "../lookupMetrics";
 import type { DayBucket } from "../lookupMetrics";
-import type { QueueItem } from "./useLookupQueue";
+import type { QueueItem } from "../../../../features/itemLookupSlice";
 
 interface LookupExportModalProps {
   queue: QueueItem[];

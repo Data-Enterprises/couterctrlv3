@@ -8,7 +8,7 @@ import {
   setAvailableOrders,
   setGroupedAvailableOrders,
   setSelectedOrderKey,
-  setSelectedOrderId,
+  setSelectedOrder,
   setLoadingAllOrders,
   setLoadingAvailableOrders,
   setOrdersExportModalOpen,
@@ -58,7 +58,7 @@ const Orders = () => {
     ctx.dispatch(setGroupedAvailableOrders([]));
     ctx.dispatch(setAllOrders([]));
     ctx.dispatch(setSelectedOrderKey(null));
-    ctx.dispatch(setSelectedOrderId(null));
+    ctx.dispatch(setSelectedOrder(null));
 
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
@@ -115,13 +115,13 @@ const Orders = () => {
       .finally(() => ctx.dispatch(setLoadingAvailableOrders(false)));
   };
 
-  const handleSelectStore = (order_date: string, order_type: string, storeid: number) => {
-    ctx.dispatch(setSelectedOrderKey({ order_date, order_type, storeid }));
-    ctx.dispatch(setSelectedOrderId(null));
+  const fetchOrderDetails = (order_date: string, order_type: string, storeids: number[]) => {
+    ctx.dispatch(setSelectedOrderKey({ order_date, order_type, storeids }));
+    ctx.dispatch(setSelectedOrder(null));
     ctx.dispatch(setAllOrders([]));
 
     ctx.dispatch(setLoadingAllOrders(true));
-    getAllOrders(ctx.url, ctx.token, order_date, order_date, [storeid])
+    getAllOrders(ctx.url, ctx.token, order_date, order_date, storeids)
       .then((resp) => {
         const j: AllOrderResp = resp.data;
         if (j.error === 0) {
@@ -160,6 +160,14 @@ const Orders = () => {
       .finally(() => ctx.dispatch(setLoadingAllOrders(false)));
   };
 
+  const handleSelectStore = (order_date: string, order_type: string, storeid: number) => {
+    fetchOrderDetails(order_date, order_type, [storeid]);
+  };
+
+  const handleSelectAllStores = (order_date: string, order_type: string, storeids: number[]) => {
+    fetchOrderDetails(order_date, order_type, storeids);
+  };
+
   if (ctx.isMobile) return <OrdersMobile />;
 
   const hasData = ctx.groupedAvailableOrders.length > 0;
@@ -181,7 +189,13 @@ const Orders = () => {
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-3">
       <ExportModal
         isOpen={ctx.ordersExportModalOpen}
-        data={ctx.selectedOrderId !== null ? ctx.allOrders.filter((o) => o.order_id === ctx.selectedOrderId) : []}
+        data={
+          ctx.selectedOrder !== null
+            ? ctx.allOrders.filter(
+                (o) => o.order_id === ctx.selectedOrder!.orderId && o.storeid === ctx.selectedOrder!.storeid,
+              )
+            : []
+        }
         columns={ordersCols}
         onClose={() => ctx.dispatch(setOrdersExportModalOpen(false))}
       />
@@ -191,10 +205,11 @@ const Orders = () => {
         selectedKey={ctx.selectedOrderKey}
         loading={ctx.loadingAvailableOrders}
         onSelectStore={handleSelectStore}
+        onSelectAllStores={handleSelectAllStores}
         onOpenSearch={() => setSearchModalOpen(true)}
         onReset={() => {
           ctx.dispatch(setSelectedOrderKey(null));
-          ctx.dispatch(setSelectedOrderId(null));
+          ctx.dispatch(setSelectedOrder(null));
           ctx.dispatch(setAllOrders([]));
         }}
         startDate={ctx.startDate}
@@ -209,9 +224,9 @@ const Orders = () => {
         orders={ctx.allOrders}
         loading={ctx.loadingAllOrders}
         selectedKey={ctx.selectedOrderKey}
-        selectedOrderId={ctx.selectedOrderId}
+        selectedOrder={ctx.selectedOrder}
         assignedStores={ctx.assignedStores}
-        onSelectOrderId={(id) => ctx.dispatch(setSelectedOrderId(id))}
+        onSelectOrder={(storeid, orderId) => ctx.dispatch(setSelectedOrder(orderId === null ? null : { storeid, orderId }))}
         onExport={() => ctx.dispatch(setOrdersExportModalOpen(true))}
       />
       {searchModalOpen && (

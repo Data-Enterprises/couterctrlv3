@@ -236,14 +236,15 @@ const MarginPerfExportModal = ({
   threshold,
 }: MarginPerfExportModalProps) => {
 
+  // No default selections anywhere in this modal.
   const [mode, setMode] = useState<ModalMode>("presets");
-  const [selected, setSelected] = useState<Set<ExportPreset>>(new Set(["items"]));
-  const [itemSevs, setItemSevs] = useState<Set<ItemSev>>(new Set(["critical", "watch", "healthy"]));
+  const [selected, setSelected] = useState<Set<ExportPreset>>(new Set());
+  const [itemSevs, setItemSevs] = useState<Set<ItemSev>>(new Set());
   const [source, setSource] = useState<CustomSource>("ty");
-  const [groupBy, setGroupBy] = useState<Set<string>>(new Set(["product_code", "product_description"]));
+  const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
   const [metrics, setMetrics] = useState<Map<string, MetricSelection>>(
     new Map([
-      ["net_sales_calc", { fn: "sum", enabled: true }],
+      ["net_sales_calc", { fn: "sum", enabled: false }],
       ["qty",            { fn: "sum", enabled: false }],
       ["cogs_calc",      { fn: "sum", enabled: false }],
       ["total_tax",      { fn: "sum", enabled: false }],
@@ -252,9 +253,9 @@ const MarginPerfExportModal = ({
 
   const switchSource = (s: CustomSource) => {
     setSource(s);
-    setGroupBy(new Set(["product_code", "product_description"]));
+    setGroupBy(new Set());
     setMetrics(new Map([
-      ["net_sales_calc", { fn: "sum", enabled: true }],
+      ["net_sales_calc", { fn: "sum", enabled: false }],
       ["qty",            { fn: "sum", enabled: false }],
       ["cogs_calc",      { fn: "sum", enabled: false }],
       ["total_tax",      { fn: "sum", enabled: false }],
@@ -278,8 +279,18 @@ const MarginPerfExportModal = ({
     });
   };
 
-  const toggleItemSev = (sev: ItemSev) =>
-    setItemSevs((prev) => { const n = new Set(prev); n.has(sev) ? n.delete(sev) : n.add(sev); return n; });
+  // Selecting a severity chip activates the "Items vs Last Year" preset (and
+  // clearing them all back out deactivates it), so the two stay in sync.
+  const toggleItemSev = (sev: ItemSev) => {
+    const next = new Set(itemSevs);
+    next.has(sev) ? next.delete(sev) : next.add(sev);
+    setItemSevs(next);
+    setSelected((prev) => {
+      const n = new Set(prev);
+      if (next.size > 0) n.add("items_vs_ly"); else n.delete("items_vs_ly");
+      return n;
+    });
+  };
 
   const setMetricFn = (key: string, fn: AggFn) => {
     setMetrics((prev) => {
@@ -430,7 +441,15 @@ const MarginPerfExportModal = ({
                 <input
                   type="checkbox"
                   checked={selected.has("items_vs_ly")}
-                  onChange={() => setSelected((prev) => { const n = new Set(prev); n.has("items_vs_ly") ? n.delete("items_vs_ly") : n.add("items_vs_ly"); return n; })}
+                  onChange={() => {
+                    const checking = !selected.has("items_vs_ly");
+                    if (checking) {
+                      if (itemSevs.size === 0) setItemSevs(new Set(["critical", "watch", "healthy"]));
+                    } else {
+                      setItemSevs(new Set());
+                    }
+                    setSelected((prev) => { const n = new Set(prev); checking ? n.add("items_vs_ly") : n.delete("items_vs_ly"); return n; });
+                  }}
                   className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ExclamationTriangleIcon, MagnifyingGlassIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
-import type { QueueItem } from "./useLookupQueue";
+import type { QueueItem } from "../../../../features/itemLookupSlice";
 
 interface LookupQueuePanelProps {
   storeName: string;

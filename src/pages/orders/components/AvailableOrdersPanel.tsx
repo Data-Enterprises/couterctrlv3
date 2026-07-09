@@ -16,6 +16,7 @@ interface Props {
   startDate: string;
   endDate: string;
   onSelectStore: (order_date: string, order_type: string, storeid: number) => void;
+  onSelectAllStores: (order_date: string, order_type: string, storeids: number[]) => void;
   onOpenSearch: () => void;
   onReset: () => void;
   type?: SEARCH_TYPE;
@@ -36,6 +37,7 @@ const AvailableOrdersPanel = ({
   startDate,
   endDate,
   onSelectStore,
+  onSelectAllStores,
   onOpenSearch,
   onReset,
   type,
@@ -62,7 +64,7 @@ const AvailableOrdersPanel = ({
 const isSelected = (order_date: string, order_type: string, storeid: number) =>
     selectedKey?.order_date === order_date &&
     selectedKey?.order_type === order_type &&
-    selectedKey?.storeid === storeid;
+    !!selectedKey?.storeids.includes(storeid);
 
   const typeFiltered = activeType === "all" ? cards : cards.filter((c) => c.order_type === activeType);
 
@@ -92,6 +94,14 @@ const isSelected = (order_date: string, order_type: string, storeid: number) =>
       .filter((card) => card.dates.length > 0);
   }, [typeFiltered, storeFilter, dateFilter]);
 
+  // "Select all stores" is only meaningful once narrowed to one type + one date —
+  // getAllOrders has no order_type param, so combining across dates would mix scope
+  // beyond what's been agreed (one date at a time, matching the single-store fetch).
+  const allVisibleStoreIds = useMemo(() => {
+    if (activeType === "all" || !dateFilter) return [];
+    return visibleCards[0]?.dates.flatMap((d) => d.stores.map((s) => s.storeid)) ?? [];
+  }, [visibleCards, activeType, dateFilter]);
+
   return (
     <div
       className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white"
@@ -102,7 +112,7 @@ const isSelected = (order_date: string, order_type: string, storeid: number) =>
         {/* Row 1: title + date | totals */}
         <div className="flex items-end gap-3 min-h-[26px]">
           <span className="text-white font-medium text-[13px] flex-shrink-0">Available Orders</span>
-          <span className="text-white/45 text-[10px] flex-shrink-0">{dateLabel}</span>
+          <span className="text-white text-[10px] flex-shrink-0">{dateLabel}</span>
           <div className="flex-1" />
         </div>
         {/* Row 2: search + group name + legend */}
@@ -116,14 +126,14 @@ const isSelected = (order_date: string, order_type: string, storeid: number) =>
           </button>
           {type === "Group" && selectedGroup?.group_name && (
             <div className="flex flex-col leading-tight truncate">
-              <span className="text-[11px] font-medium text-white/70 truncate">{selectedGroup.group_name}</span>
+              <span className="text-[11px] font-medium text-white truncate">{selectedGroup.group_name}</span>
               {groupStores.length > 0 && (
-                <span className="text-[9px] text-white/40">{groupStores.length} stores</span>
+                <span className="text-[9px] text-white">{groupStores.length} stores</span>
               )}
             </div>
           )}
           {type === "Store" && selectedStore?.store_name && (
-            <span className="text-[11px] font-medium text-white/70 truncate">{selectedStore.store_name}</span>
+            <span className="text-[11px] font-medium text-white truncate">{selectedStore.store_name}</span>
           )}
           <div className="flex-1" />
           <div className="relative flex-shrink-0" onMouseEnter={() => setLegendHover(true)} onMouseLeave={() => setLegendHover(false)}>
@@ -138,7 +148,7 @@ const isSelected = (order_date: string, order_type: string, storeid: number) =>
                 ].map(({ color, label, desc }) => (
                   <div key={label} className="flex items-start gap-2">
                     <div className="w-[7px] h-[7px] rounded-full flex-shrink-0 mt-[3px]" style={{ background: color }} />
-                    <span className="text-[11px] text-white/70 leading-snug">
+                    <span className="text-[11px] text-white leading-snug">
                       <span className="text-white font-medium">{label}</span> — {desc}
                     </span>
                   </div>
@@ -146,14 +156,14 @@ const isSelected = (order_date: string, order_type: string, storeid: number) =>
                 {groupStores.length > 0 && (
                   <>
                     <div className="h-px bg-white/10" />
-                    <div className="text-[9px] font-semibold uppercase tracking-wide text-white/35">
+                    <div className="text-[9px] font-semibold uppercase tracking-wide text-white">
                       {selectedGroup?.group_name ?? "Group"} stores
                     </div>
                     <div className="flex flex-col gap-1">
                       {groupStores.map((s) => (
                         <div key={s.storeid} className="flex items-center gap-1.5">
-                          <span className="text-white/30 text-[10px]">·</span>
-                          <span className="text-[10px] text-white/90">{s.store_name}</span>
+                          <span className="text-white text-[10px]">·</span>
+                          <span className="text-[10px] text-white">{s.store_name}</span>
                         </div>
                       ))}
                     </div>
@@ -173,7 +183,7 @@ const isSelected = (order_date: string, order_type: string, storeid: number) =>
             className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
               activeType === "all"
                 ? "border-[#1e2a4a] text-[#1e2a4a]"
-                : "border-transparent text-content/60 hover:text-content"
+                : "border-transparent text-content"
             }`}
           >
             All
@@ -185,7 +195,7 @@ const isSelected = (order_date: string, order_type: string, storeid: number) =>
               className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
                 activeType === card.order_type
                   ? "border-[#1e2a4a] text-[#1e2a4a]"
-                  : "border-transparent text-content/60 hover:text-content"
+                  : "border-transparent text-content"
               }`}
             >
               {card.order_type}
@@ -212,12 +222,23 @@ const isSelected = (order_date: string, order_type: string, storeid: number) =>
         </FilterBar>
       )}
 
+      {allVisibleStoreIds.length > 1 && (
+        <div className="px-3 pb-2 flex-shrink-0">
+          <button
+            onClick={() => onSelectAllStores(dateFilter, activeType, allVisibleStoreIds)}
+            className="w-full text-[11px] font-medium py-1.5 rounded-md border border-[#1e2a4a]/20 text-[#1e2a4a] hover:bg-[#1e2a4a]/5 transition-colors"
+          >
+            Select all {allVisibleStoreIds.length} stores
+          </button>
+        </div>
+      )}
+
       {/* Cards list */}
       <div className="flex-1 overflow-y-auto thin-scrollbar p-3 flex flex-col gap-3">
         {loading && <div className="flex-1 relative"><LoadingIndicator message="Loading orders" /></div>}
 
         {!loading && cards.length === 0 && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/60">
+          <div className="flex items-center justify-center py-16 text-[12px] text-content">
             No orders found for this date range.
           </div>
         )}
@@ -239,7 +260,7 @@ const isSelected = (order_date: string, order_type: string, storeid: number) =>
                   <span className="text-[11px] font-semibold text-[#1e2a4a] uppercase tracking-wide flex-1 text-left">
                     {card.order_type}
                   </span>
-                  <span className="text-[10px] text-[#1e2a4a]/55">{card.dates.reduce((n, d) => n + d.stores.length, 0)}</span>
+                  <span className="text-[10px] text-[#1e2a4a]">{card.dates.reduce((n, d) => n + d.stores.length, 0)}</span>
                 </button>
               )}
 
@@ -260,9 +281,9 @@ const isSelected = (order_date: string, order_type: string, storeid: number) =>
                         >
                           <div className="flex flex-col min-w-0">
                             <span className="text-[10px] font-medium text-content truncate">{store.store_name}</span>
-                            <span className="text-[9px] text-content/45 mt-px">{fmtDate(dateGroup.order_date)}</span>
+                            <span className="text-[9px] text-content mt-px">{fmtDate(dateGroup.order_date)}</span>
                           </div>
-                          <span className="text-[10px] text-content/75 bg-gray-100 rounded-full px-2 py-0.5 flex-shrink-0 ml-2">
+                          <span className="text-[10px] text-content bg-gray-100 rounded-full px-2 py-0.5 flex-shrink-0 ml-2">
                             {store.frequency} {store.frequency === 1 ? "order" : "orders"}
                           </span>
                         </button>
