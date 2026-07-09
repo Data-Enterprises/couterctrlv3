@@ -26,9 +26,14 @@ export const buildDayBuckets = (
   });
 
   const buckets: DayBucket[] = [];
-  const today = new Date();
+  // The lookup endpoint takes no date param — it's a plain daysback count —
+  // and its window ends yesterday, not today (today's sales aren't final
+  // yet). Mirror that here so the grid we build lines up with what the
+  // API actually returned.
+  const end = new Date();
+  end.setDate(end.getDate() - 1);
   for (let i = daysBack - 1; i >= 0; i--) {
-    const d = new Date(today);
+    const d = new Date(end);
     d.setDate(d.getDate() - i);
     const iso = d.toISOString().split("T")[0];
     const agg = byDate.get(iso);

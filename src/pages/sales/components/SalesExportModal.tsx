@@ -213,20 +213,30 @@ const SalesExportModal = ({
 
   const hasItems = !!subDeptItems && subDeptItems.length > 0;
 
-  // ── Preset state ──
+  // ── Preset state — no default selections ──
   const [mode, setMode] = useState<ModalMode>("presets");
-  const [selected, setSelected] = useState<Set<ExportDataset>>(new Set(["subdept", "hourly", "summary"]));
-  const [itemSevs, setItemSevs] = useState<Set<ItemSev>>(new Set(["critical", "watch", "healthy"]));
+  const [selected, setSelected] = useState<Set<ExportDataset>>(new Set());
+  const [itemSevs, setItemSevs] = useState<Set<ItemSev>>(new Set());
 
-  const toggleItemSev = (sev: ItemSev) =>
-    setItemSevs((prev) => { const n = new Set(prev); n.has(sev) ? n.delete(sev) : n.add(sev); return n; });
+  // Selecting a severity chip activates the "Sub Dept Items" preset (and
+  // clearing them all back out deactivates it), so the two stay in sync.
+  const toggleItemSev = (sev: ItemSev) => {
+    const next = new Set(itemSevs);
+    next.has(sev) ? next.delete(sev) : next.add(sev);
+    setItemSevs(next);
+    setSelected((prev) => {
+      const n = new Set(prev);
+      if (next.size > 0) n.add("items"); else n.delete("items");
+      return n;
+    });
+  };
 
-  // ── Custom builder state ──
+  // ── Custom builder state — no default selections ──
   const [source, setSource] = useState<CustomSource>("subdept");
-  const [groupBy, setGroupBy] = useState<Set<string>>(new Set(["sale_date", "period", "sub_department_description"]));
+  const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
   const [metrics, setMetrics] = useState<Map<string, MetricSelection>>(
     new Map([
-      ["net_sales",         { fn: "sum", enabled: true }],
+      ["net_sales",         { fn: "sum", enabled: false }],
       ["qty",               { fn: "sum", enabled: false }],
       ["transaction_count", { fn: "sum", enabled: false }],
       ["total_tax",         { fn: "sum", enabled: false }],
@@ -236,21 +246,20 @@ const SalesExportModal = ({
   const dims  = source === "subdept" ? SUBDEPT_DIMS  : HOURLY_DIMS;
   const mDefs = source === "subdept" ? SUBDEPT_METRICS : HOURLY_METRICS;
 
-  // Switch source → reset groupBy & metrics to sensible defaults
+  // Switch source → reset groupBy & metrics (no default selections)
   const switchSource = (s: CustomSource) => {
     setSource(s);
+    setGroupBy(new Set());
     if (s === "subdept") {
-      setGroupBy(new Set(["sale_date", "period", "sub_department_description"]));
       setMetrics(new Map([
-        ["net_sales",         { fn: "sum", enabled: true }],
+        ["net_sales",         { fn: "sum", enabled: false }],
         ["qty",               { fn: "sum", enabled: false }],
         ["transaction_count", { fn: "sum", enabled: false }],
         ["total_tax",         { fn: "sum", enabled: false }],
       ]));
     } else {
-      setGroupBy(new Set(["sale_date", "period", "hour"]));
       setMetrics(new Map([
-        ["net_sales",         { fn: "sum", enabled: true }],
+        ["net_sales",         { fn: "sum", enabled: false }],
         ["qty",               { fn: "sum", enabled: false }],
         ["transactions",      { fn: "sum", enabled: false }],
         ["basket_size_sales", { fn: "avg", enabled: false }],
@@ -442,7 +451,15 @@ const SalesExportModal = ({
                   <input
                     type="checkbox"
                     checked={selected.has("items")}
-                    onChange={() => setSelected((prev) => { const n = new Set(prev); n.has("items") ? n.delete("items") : n.add("items"); return n; })}
+                    onChange={() => {
+                      const checking = !selected.has("items");
+                      if (checking) {
+                        if (itemSevs.size === 0) setItemSevs(new Set(["critical", "watch", "healthy"]));
+                      } else {
+                        setItemSevs(new Set());
+                      }
+                      setSelected((prev) => { const n = new Set(prev); checking ? n.add("items") : n.delete("items"); return n; });
+                    }}
                     className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">

@@ -169,23 +169,31 @@ const LPExportModal = ({
   cashierGrades,
 }: LPExportModalProps) => {
 
-  // ── Preset state ──
+  // ── Preset state — no default selections ──
   const [mode, setMode] = useState<ModalMode>("presets");
-  const [selected, setSelected] = useState<Set<ExportDataset>>(new Set(["transactions", "cashiers"]));
-  const [cashierSevs, setCashierSevs] = useState<Set<CashierSeverity>>(
-    new Set(["critical", "watch", "ok", "ungraded"]),
-  );
+  const [selected, setSelected] = useState<Set<ExportDataset>>(new Set());
+  const [cashierSevs, setCashierSevs] = useState<Set<CashierSeverity>>(new Set());
 
-  const toggleCashierSev = (sev: CashierSeverity) =>
-    setCashierSevs((prev) => { const n = new Set(prev); n.has(sev) ? n.delete(sev) : n.add(sev); return n; });
+  // Selecting a severity chip activates the "Cashier Summary" preset (and
+  // clearing them all back out deactivates it), so the two stay in sync.
+  const toggleCashierSev = (sev: CashierSeverity) => {
+    const next = new Set(cashierSevs);
+    next.has(sev) ? next.delete(sev) : next.add(sev);
+    setCashierSevs(next);
+    setSelected((prev) => {
+      const n = new Set(prev);
+      if (next.size > 0) n.add("cashiers"); else n.delete("cashiers");
+      return n;
+    });
+  };
 
-  // ── Custom builder state ──
+  // ── Custom builder state — no default selections ──
   const [source, setSource] = useState<CustomSource>("transactions");
-  const [groupBy, setGroupBy] = useState<Set<string>>(new Set(["cashier_name", "sale_date"]));
+  const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
   const [metrics, setMetrics] = useState<Map<string, MetricSelection>>(
     new Map([
-      ["qty",         { fn: "sum", enabled: true }],
-      ["total_sales", { fn: "sum", enabled: true }],
+      ["qty",         { fn: "sum", enabled: false }],
+      ["total_sales", { fn: "sum", enabled: false }],
     ])
   );
 
@@ -194,18 +202,17 @@ const LPExportModal = ({
 
   const switchSource = (s: CustomSource) => {
     setSource(s);
+    setGroupBy(new Set());
     if (s === "transactions") {
-      setGroupBy(new Set(["cashier_name", "sale_date"]));
       setMetrics(new Map([
-        ["qty",         { fn: "sum", enabled: true }],
-        ["total_sales", { fn: "sum", enabled: true }],
+        ["qty",         { fn: "sum", enabled: false }],
+        ["total_sales", { fn: "sum", enabled: false }],
       ]));
     } else {
-      setGroupBy(new Set(["cashier_name", "severity"]));
       setMetrics(new Map([
-        ["trans_value",     { fn: "sum", enabled: true }],
+        ["trans_value",     { fn: "sum", enabled: false }],
         ["qty_value",       { fn: "sum", enabled: false }],
-        ["sales_value",     { fn: "sum", enabled: true }],
+        ["sales_value",     { fn: "sum", enabled: false }],
         ["avgTicket_value", { fn: "avg", enabled: false }],
       ]));
     }
@@ -367,7 +374,15 @@ const LPExportModal = ({
                 <input
                   type="checkbox"
                   checked={selected.has("cashiers")}
-                  onChange={() => setSelected((p) => { const n = new Set(p); n.has("cashiers") ? n.delete("cashiers") : n.add("cashiers"); return n; })}
+                  onChange={() => {
+                    const checking = !selected.has("cashiers");
+                    if (checking) {
+                      if (cashierSevs.size === 0) setCashierSevs(new Set(["critical", "watch", "ok", "ungraded"]));
+                    } else {
+                      setCashierSevs(new Set());
+                    }
+                    setSelected((p) => { const n = new Set(p); checking ? n.add("cashiers") : n.delete("cashiers"); return n; });
+                  }}
                   className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">

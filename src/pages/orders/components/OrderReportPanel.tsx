@@ -4,7 +4,7 @@ import EmptyPrompt from "../../../components/EmptyPrompt";
 import SelectFilter from "../../../components/filters/SelectFilter";
 import { ArrowDownTrayIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import type { AllOrder } from "../../../interfaces";
-import type { SelectedOrderKey } from "../../../features/ordersSlice";
+import type { SelectedOrderKey, SelectedOrder } from "../../../features/ordersSlice";
 import type { Store } from "../../../interfaces";
 import { formatCurrency2 } from "../../../utils";
 import OrdersExportModal from "./OrdersExportModal";
@@ -13,9 +13,9 @@ interface Props {
   orders: AllOrder[];
   loading: boolean;
   selectedKey: SelectedOrderKey;
-  selectedOrderId: number | null;
+  selectedOrder: SelectedOrder;
   assignedStores: Store[];
-  onSelectOrderId: (id: number | null) => void;
+  onSelectOrder: (storeid: number, orderId: number | null) => void;
   onExport: () => void;
 }
 
@@ -81,7 +81,7 @@ const ColFilter = ({ label, active, appliedDisplay, align = "left", onApply, onC
           {onClear && (
             <button
               onClick={(e) => { e.stopPropagation(); onClear(); }}
-              className="text-[8px] text-[#1e2a4a]/50 hover:text-[#1e2a4a] leading-none flex-shrink-0 ml-0.5"
+              className="text-[8px] text-[#1e2a4a] leading-none flex-shrink-0 ml-0.5"
             >✕</button>
           )}
         </span>
@@ -125,7 +125,7 @@ const DescCell = ({ text }: { text: string }) => {
       <div className="overflow-hidden text-ellipsis whitespace-nowrap">{text}</div>
       {hovered && (
         <div className="absolute left-0 top-full mt-1 z-50 bg-[#1e2a4a] rounded-lg shadow-lg px-2.5 py-1.5 whitespace-nowrap pointer-events-none">
-          <span className="text-[9px] text-white/80">{text}</span>
+          <span className="text-[9px] text-white">{text}</span>
         </div>
       )}
     </div>
@@ -139,17 +139,17 @@ const SubDeptChips = ({ subDepts }: { subDepts: string[] }) => {
   return (
     <div className="flex flex-wrap gap-1.5 items-center">
       {visible.map((sd) => (
-        <span key={sd} className="text-[8px] bg-gray-100 text-content/70 rounded px-1.5 py-0.5">{sd}</span>
+        <span key={sd} className="text-[8px] bg-gray-100 text-content rounded px-1.5 py-0.5">{sd}</span>
       ))}
       {overflow.length > 0 && (
         <div className="relative inline-flex" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-          <span className="text-[8px] font-semibold bg-[#1e2a4a]/[0.07] text-content/70 rounded px-1.5 py-0.5 cursor-default">
+          <span className="text-[8px] font-semibold bg-[#1e2a4a]/[0.07] text-content rounded px-1.5 py-0.5 cursor-default">
             +{overflow.length} more
           </span>
           {hovered && (
             <div className="absolute right-0 top-full mt-1 z-50 bg-[#1e2a4a] rounded-lg shadow-lg px-2.5 py-2 flex flex-col gap-0.5" style={{ minWidth: 100 }}>
               {overflow.map((sd) => (
-                <span key={sd} className="text-[9px] text-white/75 leading-relaxed whitespace-nowrap">{sd}</span>
+                <span key={sd} className="text-[9px] text-white leading-relaxed whitespace-nowrap">{sd}</span>
               ))}
             </div>
           )}
@@ -159,13 +159,34 @@ const SubDeptChips = ({ subDepts }: { subDepts: string[] }) => {
   );
 };
 
+const StoreLabel = ({ names }: { names: string[] }) => {
+  const [hovered, setHovered] = useState(false);
+  if (names.length <= 1) return <>{names[0] ?? ""}</>;
+  return (
+    <span
+      className="relative inline-block cursor-default"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {names.length} stores
+      {hovered && (
+        <div className="absolute left-0 top-full mt-1 z-50 bg-[#1e2a4a] rounded-lg shadow-lg px-2.5 py-1.5 flex flex-col gap-0.5 whitespace-nowrap">
+          {names.map((n) => (
+            <span key={n} className="text-[9px] text-white leading-relaxed">{n}</span>
+          ))}
+        </div>
+      )}
+    </span>
+  );
+};
+
 const OrderReportPanel = ({
   orders,
   loading,
   selectedKey,
-  selectedOrderId,
+  selectedOrder,
   assignedStores,
-  onSelectOrderId,
+  onSelectOrder,
 }: Props) => {
   const [subDeptFilter, setSubDeptFilter] = useState<string>("");
   const [exportOpen, setExportOpen] = useState(false);
@@ -176,18 +197,23 @@ const OrderReportPanel = ({
   const [appliedDesc, setAppliedDesc] = useState("");
   const [appliedSubDept, setAppliedSubDept] = useState("");
   const [appliedVendor, setAppliedVendor] = useState("");
+  const [appliedStore, setAppliedStore] = useState("");
 
   useEffect(() => {
     setDraftUpc(""); setAppliedUpc("");
     setDraftDesc(""); setAppliedDesc("");
     setAppliedSubDept("");
     setAppliedVendor("");
-  }, [selectedOrderId]);
+    setAppliedStore("");
+  }, [selectedOrder]);
 
-  const storeName = selectedKey
-    ? (assignedStores.find((s) => s.storeid === selectedKey.storeid)?.store_name ?? `Store ${selectedKey.storeid}`)
-    : null;
-
+  const storeNames = useMemo(
+    () =>
+      selectedKey
+        ? selectedKey.storeids.map((id) => assignedStores.find((s) => s.storeid === id)?.store_name ?? `Store ${id}`)
+        : [],
+    [selectedKey, assignedStores],
+  );
   const filteredOrders = selectedKey
     ? orders.filter((o) => o.order_type === selectedKey.order_type)
     : orders;
@@ -200,10 +226,17 @@ const OrderReportPanel = ({
     ? filteredOrders.filter((o) => o.sub_department_description === subDeptFilter)
     : filteredOrders;
 
-  const uniqueOrderIds = Array.from(new Set(subFilteredOrders.map((o) => o.order_id))).sort((a, b) => a - b);
+  const uniqueOrderKeys = useMemo(() => {
+    const map = new Map<string, { storeid: number; orderId: number }>();
+    subFilteredOrders.forEach((o) => {
+      const key = `${o.storeid}:${o.order_id}`;
+      if (!map.has(key)) map.set(key, { storeid: o.storeid, orderId: o.order_id });
+    });
+    return Array.from(map.values()).sort((a, b) => a.orderId - b.orderId || a.storeid - b.storeid);
+  }, [subFilteredOrders]);
 
-  const orderItems = selectedOrderId !== null
-    ? [...filteredOrders.filter((o) => o.order_id === selectedOrderId)].sort((a, b) => a.line_number - b.line_number)
+  const orderItems = selectedOrder !== null
+    ? [...filteredOrders.filter((o) => o.order_id === selectedOrder.orderId && o.storeid === selectedOrder.storeid)].sort((a, b) => a.line_number - b.line_number)
     : [];
 
   const selectedExtRetail = orderItems.reduce((s, o) => s + (o.e_ret ?? 0), 0);
@@ -219,15 +252,26 @@ const OrderReportPanel = ({
     [orderItems]
   );
 
+  const orderStores = useMemo(() => {
+    const map = new Map<number, string>();
+    orderItems.forEach((o) => {
+      if (!map.has(o.storeid)) {
+        map.set(o.storeid, assignedStores.find((s) => s.storeid === o.storeid)?.store_name ?? `Store ${o.storeid}`);
+      }
+    });
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [orderItems, assignedStores]);
+
   const visibleOrderItems = useMemo(() => {
     return orderItems.filter((o) => {
       if (appliedUpc && !String(o.product_code).toLowerCase().includes(appliedUpc.toLowerCase())) return false;
       if (appliedDesc && !o.description.toLowerCase().includes(appliedDesc.toLowerCase())) return false;
       if (appliedSubDept && o.sub_department_description !== appliedSubDept) return false;
       if (appliedVendor && o.vendor_name !== appliedVendor) return false;
+      if (appliedStore && String(o.storeid) !== appliedStore) return false;
       return true;
     });
-  }, [orderItems, appliedUpc, appliedDesc, appliedSubDept, appliedVendor]);
+  }, [orderItems, appliedUpc, appliedDesc, appliedSubDept, appliedVendor, appliedStore]);
 
   return (
     <div className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white" style={{ flex: 1, minWidth: 0 }}>
@@ -235,12 +279,12 @@ const OrderReportPanel = ({
       {exportOpen && selectedKey && (
         <OrdersExportModal
           onClose={() => setExportOpen(false)}
-          storeName={storeName ?? ""}
+          storeNames={storeNames}
           orderType={selectedKey.order_type}
           orderDate={selectedKey.order_date}
           allOrders={filteredOrders}
           selectedOrderItems={orderItems}
-          selectedOrderId={selectedOrderId}
+          selectedOrder={selectedOrder}
         />
       )}
 
@@ -250,8 +294,10 @@ const OrderReportPanel = ({
         <div className="flex items-end gap-3 min-h-[26px]">
           {selectedKey ? (
             <>
-              <span className="text-white font-medium text-[13px] flex-shrink-0">{storeName} — {selectedKey.order_type}</span>
-              <span className="text-white/45 text-[10px] flex-shrink-0">{fmtDate(selectedKey.order_date)}</span>
+              <span className="text-white font-medium text-[13px] flex-shrink-0">
+                <StoreLabel names={storeNames} /> — {selectedKey.order_type}
+              </span>
+              <span className="text-white text-[10px] flex-shrink-0">{fmtDate(selectedKey.order_date)}</span>
             </>
           ) : (
             <span className="text-white font-medium text-[13px]">Order Report</span>
@@ -284,42 +330,47 @@ const OrderReportPanel = ({
           {/* Left: order list */}
           <div className="flex flex-col border-r border-gray-100 flex-shrink-0" style={{ width: "20%" }}>
             <div className="flex items-center gap-2 px-2.5 py-1.5 border-b border-gray-100 flex-shrink-0">
-              <span className="text-[9px] font-bold uppercase tracking-wide text-content/70 flex-shrink-0">Orders</span>
+              <span className="text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0">Orders</span>
               {allSubDepts.length > 0 && (
                 <SelectFilter
                   options={allSubDepts.map((sd) => ({ value: sd, label: sd }))}
                   value={subDeptFilter}
-                  onChange={(v) => { setSubDeptFilter(v); onSelectOrderId(null); }}
+                  onChange={(v) => { setSubDeptFilter(v); onSelectOrder(0, null); }}
                   placeholder="All sub depts"
                   className="flex-1 min-w-0"
                 />
               )}
             </div>
             <div className="flex-1 overflow-y-auto thin-scrollbar">
-              {uniqueOrderIds.length === 0 ? (
-                <div className="flex items-center justify-center py-8 text-[11px] text-content/70">No orders found</div>
+              {uniqueOrderKeys.length === 0 ? (
+                <div className="flex items-center justify-center py-8 text-[11px] text-content">No orders found</div>
               ) : (
-                uniqueOrderIds.map((orderId) => {
-                  const items = subFilteredOrders.filter((o) => o.order_id === orderId);
-                  const allItems = filteredOrders.filter((o) => o.order_id === orderId);
+                uniqueOrderKeys.map(({ storeid, orderId }) => {
+                  const items = subFilteredOrders.filter((o) => o.order_id === orderId && o.storeid === storeid);
+                  const allItems = filteredOrders.filter((o) => o.order_id === orderId && o.storeid === storeid);
                   const eRet = items.reduce((s, o) => s + (o.e_ret ?? 0), 0);
                   const subDepts = Array.from(new Set(allItems.map((o) => o.sub_department_description).filter(Boolean)));
-                  const isSel = selectedOrderId === orderId;
+                  const isSel = selectedOrder?.orderId === orderId && selectedOrder?.storeid === storeid;
                   return (
                     <button
-                      key={orderId}
-                      onClick={() => onSelectOrderId(orderId)}
+                      key={`${storeid}-${orderId}`}
+                      onClick={() => onSelectOrder(storeid, orderId)}
                       className={`w-full flex gap-2 items-start px-2.5 py-2 border-b border-gray-100 text-left transition-colors ${isSel ? "bg-white" : "hover:bg-gray-50"}`}
                       style={isSel ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
                     >
                       <div className="flex flex-col gap-1 flex-1 min-w-0">
                         <div className="flex items-baseline justify-between gap-2">
                           <span className="text-[11px] font-semibold text-[#1e2a4a]">#{orderId}</span>
-                          {items[0]?.status && <span className="text-[9px] italic text-content/55 flex-shrink-0">{items[0].status}</span>}
+                          {items[0]?.status && <span className="text-[9px] italic text-content flex-shrink-0">{items[0].status}</span>}
                         </div>
+                        {storeNames.length > 1 && (
+                          <span className="text-[9px] text-content truncate">
+                            {assignedStores.find((s) => s.storeid === storeid)?.store_name ?? `Store ${storeid}`}
+                          </span>
+                        )}
                         <div className="flex items-baseline justify-between gap-2">
                           <span className="text-[10px] font-semibold text-[#1e2a4a]">{formatCurrency2(eRet)}</span>
-                          <span className="text-[9px] text-content/70 flex-shrink-0">{items.length} items</span>
+                          <span className="text-[9px] text-content flex-shrink-0">{items.length} items</span>
                         </div>
                         <SubDeptChips subDepts={subDepts} />
                       </div>
@@ -332,25 +383,25 @@ const OrderReportPanel = ({
 
           {/* Right: line items */}
           <div className="flex flex-col flex-1 min-w-0 min-h-0">
-            {selectedOrderId === null ? (
+            {selectedOrder === null ? (
               <EmptyPrompt title="No order selected" description="Select an order from the list to view its line items" />
             ) : (
               <>
                 <div className="grid grid-cols-4 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
                   <div className="px-4 py-2.5">
-                    <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Order</div>
-                    <div className="text-[13px] font-semibold text-content">#{selectedOrderId}</div>
+                    <div className="text-[9px] font-medium uppercase tracking-wide text-content">Order</div>
+                    <div className="text-[13px] font-semibold text-content">#{selectedOrder?.orderId}</div>
                   </div>
                   <div className="px-4 py-2.5">
-                    <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Items</div>
+                    <div className="text-[9px] font-medium uppercase tracking-wide text-content">Items</div>
                     <div className="text-[13px] font-semibold text-content">{orderItems.length}</div>
                   </div>
                   <div className="px-4 py-2.5">
-                    <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Ext retail</div>
+                    <div className="text-[9px] font-medium uppercase tracking-wide text-content">Ext retail</div>
                     <div className="text-[13px] font-semibold text-content">{formatCurrency2(selectedExtRetail)}</div>
                   </div>
                   <div className="px-4 py-2.5">
-                    <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Ext cost</div>
+                    <div className="text-[9px] font-medium uppercase tracking-wide text-content">Ext cost</div>
                     <div className="text-[13px] font-semibold text-content">{formatCurrency2(selectedCost)}</div>
                   </div>
                 </div>
@@ -358,7 +409,24 @@ const OrderReportPanel = ({
                   <table className="w-full border-collapse text-[11px]">
                     <thead>
                       <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
-                        <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70">#</th>
+                        <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content">#</th>
+                        <th className="text-left px-3 py-2" style={{ width: "12%" }}>
+                          <ColFilter
+                            label="Store"
+                            active={!!appliedStore}
+                            appliedDisplay={orderStores.find((s) => String(s.id) === appliedStore)?.name}
+                            onApply={() => {}}
+                            onClear={() => setAppliedStore("")}
+                          >
+                            <SelectFilter
+                              options={orderStores.map((s) => ({ value: String(s.id), label: s.name }))}
+                              value={appliedStore}
+                              onChange={setAppliedStore}
+                              placeholder="All stores"
+                              className="w-full"
+                            />
+                          </ColFilter>
+                        </th>
                         <th className="text-left px-3 py-2">
                           <ColFilter
                             label="UPC"
@@ -415,25 +483,28 @@ const OrderReportPanel = ({
                             />
                           </ColFilter>
                         </th>
-                        <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70">Qty</th>
-                        <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 whitespace-nowrap">Unit cost</th>
-                        <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70">Retail</th>
-                        <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 whitespace-nowrap">Ext retail</th>
+                        <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content">Qty</th>
+                        <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap">Unit cost</th>
+                        <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content">Retail</th>
+                        <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap">Ext retail</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {visibleOrderItems.map((o) => (
-                        <tr key={o.line_number} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-3 py-1.5 text-right tabular-nums text-content/70">{o.line_number}</td>
-                          <td className="px-3 py-1.5 tabular-nums text-content/70 whitespace-nowrap">{o.product_code}</td>
+                        <tr key={`${o.storeid}-${o.line_number}`} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-3 py-1.5 text-right tabular-nums text-content">{o.line_number}</td>
+                          <td className="px-3 py-1.5 text-content whitespace-nowrap">
+                            {assignedStores.find((s) => s.storeid === o.storeid)?.store_name ?? o.storeid}
+                          </td>
+                          <td className="px-3 py-1.5 tabular-nums text-content whitespace-nowrap">{o.product_code}</td>
                           <td className="px-3 py-1.5 font-medium text-content max-w-0 cursor-default"><DescCell text={o.description} /></td>
-                          <td className="px-3 py-1.5 text-content/70 whitespace-nowrap">{o.sub_department_description}</td>
-                          <td className="px-3 py-1.5 text-content/70 max-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{o.vendor_name}</td>
+                          <td className="px-3 py-1.5 text-content whitespace-nowrap">{o.sub_department_description}</td>
+                          <td className="px-3 py-1.5 text-content max-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{o.vendor_name}</td>
                           <td className="px-3 py-1.5 text-right tabular-nums text-content">{o.qty}</td>
-                          <td className="px-3 py-1.5 text-right tabular-nums text-content/70">
+                          <td className="px-3 py-1.5 text-right tabular-nums text-content">
                             {o.casesize > 0 ? formatCurrency2(o.base_cost / o.casesize) : "—"}
                           </td>
-                          <td className="px-3 py-1.5 text-right tabular-nums text-content/70">{formatCurrency2(o.active_retail_price)}</td>
+                          <td className="px-3 py-1.5 text-right tabular-nums text-content">{formatCurrency2(o.active_retail_price)}</td>
                           <td className="px-3 py-1.5 text-right tabular-nums font-semibold text-content">{formatCurrency2(o.e_ret)}</td>
                         </tr>
                       ))}

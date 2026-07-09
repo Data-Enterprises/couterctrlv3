@@ -134,18 +134,16 @@ const ReceiversExportModal = ({
 
   const [mode, setMode] = useState<ModalMode>("presets");
 
-  // Custom builder state
-  const [groupBy, setGroupBy] = useState<Set<string>>(
-    new Set(["product_code", "product_description"])
-  );
+  // Custom builder state — no default selections
+  const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
   const [metrics, setMetrics] = useState<Map<string, MetricSelection>>(
     new Map([
-      ["cases",      { fn: "sum", enabled: true }],
-      ["units",      { fn: "sum", enabled: true }],
+      ["cases",      { fn: "sum", enabled: false }],
+      ["units",      { fn: "sum", enabled: false }],
       ["ucost",      { fn: "avg", enabled: false }],
-      ["ext_cost",   { fn: "sum", enabled: true }],
+      ["ext_cost",   { fn: "sum", enabled: false }],
       ["retail",     { fn: "avg", enabled: false }],
-      ["ext_retail", { fn: "sum", enabled: true }],
+      ["ext_retail", { fn: "sum", enabled: false }],
       ["gm",         { fn: "avg", enabled: false }],
     ])
   );

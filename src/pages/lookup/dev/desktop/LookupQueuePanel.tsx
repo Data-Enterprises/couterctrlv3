@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ExclamationTriangleIcon, MagnifyingGlassIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
-import type { QueueItem } from "./useLookupQueue";
+import type { QueueItem } from "../../../../features/itemLookupSlice";
 
 interface LookupQueuePanelProps {
   storeName: string;
@@ -16,10 +16,14 @@ const LookupQueuePanel = ({ storeName, queue, selectedUpc, onSelect, onOpenSearc
   const [legendHover, setLegendHover] = useState(false);
   const loadedCount = queue.filter((q) => q.status === "loaded" || q.status === "error").length;
 
-  const today = new Date();
-  const start = new Date(today);
+  // The lookup endpoint's 14-day window ends yesterday, not today (today's
+  // sales aren't final yet), and it takes no date param — so this label has
+  // to mirror that same offset rather than just showing "today."
+  const end = new Date();
+  end.setDate(end.getDate() - 1);
+  const start = new Date(end);
   start.setDate(start.getDate() - 13);
-  const dateRangeLabel = `${fmtRangeDate(start)} – ${fmtRangeDate(today)}`;
+  const dateRangeLabel = `${fmtRangeDate(start)} – ${fmtRangeDate(end)}`;
 
   return (
     <div className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white flex-shrink-0" style={{ width: "25%" }}>

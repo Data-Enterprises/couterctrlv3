@@ -27,14 +27,19 @@ export type GroupedOrderCard = {
 export type SelectedOrderKey = {
   order_date: string;
   order_type: string;
+  storeids: number[];
+} | null;
+
+export type SelectedOrder = {
   storeid: number;
+  orderId: number;
 } | null;
 
 interface OrdersState {
   availableOrders: AvailableOrder[];
   groupedAvailableOrders: GroupedOrderCard[];
   selectedOrderKey: SelectedOrderKey;
-  selectedOrderId: number | null;
+  selectedOrder: SelectedOrder;
   allOrders: AllOrder[];
   orderTypeFilter: string[];
   subDeptFilter: number;
@@ -57,7 +62,7 @@ const initialState: OrdersState = {
   availableOrders: [],
   groupedAvailableOrders: [],
   selectedOrderKey: null,
-  selectedOrderId: null,
+  selectedOrder: null,
   allOrders: [],
   orderTypeFilter: [],
   subDeptFilter: 0,
@@ -90,8 +95,8 @@ const ordersSlice = createSlice({
     setSelectedOrderKey: (state, action: PayloadAction<SelectedOrderKey>) => {
       state.selectedOrderKey = action.payload;
     },
-    setSelectedOrderId: (state, action: PayloadAction<number | null>) => {
-      state.selectedOrderId = action.payload;
+    setSelectedOrder: (state, action: PayloadAction<SelectedOrder>) => {
+      state.selectedOrder = action.payload;
     },
     setFilteredAvailableOrders: (state, action: PayloadAction<AvailableOrder[]>) => {
       state.filteredAvailableOrders = action.payload;
@@ -170,7 +175,7 @@ export const {
   setAvailableOrders,
   setGroupedAvailableOrders,
   setSelectedOrderKey,
-  setSelectedOrderId,
+  setSelectedOrder,
   setAllOrders,
   setFilteredOrders,
   setOrderTypeFilter,

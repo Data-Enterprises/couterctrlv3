@@ -39,7 +39,7 @@ const OrdersAvailableScreen = ({
   const isSelected = (order_date: string, order_type: string, storeid: number) =>
     selectedKey?.order_date === order_date &&
     selectedKey?.order_type === order_type &&
-    selectedKey?.storeid === storeid;
+    !!selectedKey?.storeids.includes(storeid);
 
   const typeFiltered = activeType === "all" ? cards : cards.filter((c) => c.order_type === activeType);
 
@@ -81,7 +81,7 @@ const OrdersAvailableScreen = ({
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-white font-semibold text-[15px]">Available Orders</div>
-            <div className="text-white/65 text-[11px] mt-0.5">{weekLabel}</div>
+            <div className="text-white text-[11px] mt-0.5">{weekLabel}</div>
           </div>
           <button
             onClick={onOpenSearch}
@@ -99,7 +99,7 @@ const OrdersAvailableScreen = ({
           <button
             onClick={() => { setActiveType("all"); setDateFilter(""); setOpenTypes(new Set()); }}
             className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
-              activeType === "all" ? "border-[#1e2a4a] text-[#1e2a4a]" : "border-transparent text-content/70"
+              activeType === "all" ? "border-[#1e2a4a] text-[#1e2a4a]" : "border-transparent text-content"
             }`}
           >
             All
@@ -109,7 +109,7 @@ const OrdersAvailableScreen = ({
               key={card.order_type}
               onClick={() => { setActiveType(card.order_type); setDateFilter(""); setOpenTypes(new Set()); }}
               className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
-                activeType === card.order_type ? "border-[#1e2a4a] text-[#1e2a4a]" : "border-transparent text-content/70"
+                activeType === card.order_type ? "border-[#1e2a4a] text-[#1e2a4a]" : "border-transparent text-content"
               }`}
             >
               {card.order_type}
@@ -135,10 +135,10 @@ const OrdersAvailableScreen = ({
       {/* List */}
       <div className="flex-1 overflow-y-auto thin-scrollbar">
         {loading && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/70">Loading…</div>
+          <div className="flex items-center justify-center py-16 text-[12px] text-content">Loading…</div>
         )}
         {!loading && cards.length === 0 && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/70">
+          <div className="flex items-center justify-center py-16 text-[12px] text-content">
             No orders found for this date range.
           </div>
         )}
@@ -160,7 +160,7 @@ const OrdersAvailableScreen = ({
                   <span className="text-[11px] font-semibold text-[#1e2a4a] uppercase tracking-wide flex-1 text-left">
                     {card.order_type}
                   </span>
-                  <span className="text-[10px] text-[#1e2a4a]/55">
+                  <span className="text-[10px] text-[#1e2a4a]">
                     {card.dates.reduce((n, d) => n + d.stores.length, 0)}
                   </span>
                 </button>
@@ -183,9 +183,9 @@ const OrdersAvailableScreen = ({
                         >
                           <div className="flex flex-col min-w-0">
                             <span className="text-[12px] font-medium text-content truncate">{store.store_name}</span>
-                            <span className="text-[9px] text-content-70 mt-px">{fmtDate(dateGroup.order_date)}</span>
+                            <span className="text-[9px] text-content mt-px">{fmtDate(dateGroup.order_date)}</span>
                           </div>
-                          <span className="text-[10px] text-content/75 bg-gray-100 rounded-full px-2 py-0.5 flex-shrink-0 ml-2">
+                          <span className="text-[10px] text-content bg-gray-100 rounded-full px-2 py-0.5 flex-shrink-0 ml-2">
                             {store.frequency} {store.frequency === 1 ? "order" : "orders"}
                           </span>
                         </button>
