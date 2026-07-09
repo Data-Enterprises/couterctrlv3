@@ -7,9 +7,20 @@ interface TextFilterProps {
   className?: string;
 }
 
-const TextFilter = ({ value, onChange, placeholder = "Filter…", className = "" }: TextFilterProps) => {
+const TextFilter = ({
+  value,
+  onChange,
+  placeholder = "Filter…",
+  className = "",
+}: TextFilterProps) => {
   return (
-    <div className={`flex items-center gap-1 rounded px-1.5 min-w-0 flex-1 ${className}`} style={{ background: "rgba(30,42,74,0.06)", boxShadow: "inset 0 1px 3px rgba(30,42,74,0.1)" }}>
+    <div
+      className={`flex items-center gap-1 rounded px-1.5 min-w-0 flex-1 ${className}`}
+      style={{
+        background: "rgba(30,42,74,0.06)",
+        boxShadow: "inset 0 1px 3px rgba(30,42,74,0.1)",
+      }}
+    >
       <MagnifyingGlassIcon className="w-3 h-3 text-content/40 flex-shrink-0" />
       <input
         type="text"
@@ -20,7 +31,10 @@ const TextFilter = ({ value, onChange, placeholder = "Filter…", className = ""
         style={{ outline: "none", WebkitAppearance: "none", boxShadow: "none" }}
       />
       {value && (
-        <button onClick={() => onChange("")} className="flex-shrink-0 text-content/40 hover:text-content transition-colors">
+        <button
+          onClick={() => onChange("")}
+          className="flex-shrink-0 text-content/40 hover:text-content transition-colors"
+        >
           <XMarkIcon className="w-3 h-3" />
         </button>
       )}

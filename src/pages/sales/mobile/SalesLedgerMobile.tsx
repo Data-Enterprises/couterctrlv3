@@ -19,6 +19,7 @@ const SalesLedgerMobile = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
+  const { weeklySales } = useAppSelector((s) => s.sales);
   const { hasSearched, ledgerLoading, screen } = useAppSelector((s) => s.salesLedger);
 
   // Lock body scroll for the entire mobile experience
@@ -63,7 +64,7 @@ const SalesLedgerMobile = () => {
 
   return (
     <div className="flex flex-col h-[calc(100dvh-3rem)] overflow-hidden">
-      {!hasSearched ? (
+      {!hasSearched || (!ledgerLoading && weeklySales.length === 0) ? (
         <SearchCard
           top
           title="Weekly Performance"
@@ -72,6 +73,11 @@ const SalesLedgerMobile = () => {
           singleDate
           onSearch={fetchLedger}
           loading={ledgerLoading}
+          notice={
+            hasSearched
+              ? "No data found for that search — try a different store, group, or week."
+              : undefined
+          }
         />
       ) : (
         <div className="flex-1 overflow-hidden"><LedgerStoreList /></div>

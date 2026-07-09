@@ -33,6 +33,7 @@ const OrdersMobile = () => {
   const toast = useToast();
   const [step, setStep] = useState<MobileStep>("available");
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [notice, setNotice] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -73,6 +74,11 @@ const OrdersMobile = () => {
       .then((resp) => {
         const j: AvailableOrderResp = resp.data;
         if (j.error === 0) {
+          setNotice(
+            j.orders.length === 0
+              ? "No orders came back for this search."
+              : undefined,
+          );
           ctx.dispatch(setAvailableOrders(j.orders));
 
           const typeMap = new Map<string, Map<string, Map<number, number>>>();
@@ -189,6 +195,7 @@ const OrdersMobile = () => {
           buttonLabel="Find orders"
           onSearch={handleSearch}
           loading={ctx.loadingAvailableOrders}
+          notice={notice}
         />
       )}
 

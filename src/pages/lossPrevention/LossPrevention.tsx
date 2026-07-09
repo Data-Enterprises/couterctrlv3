@@ -1,7 +1,7 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { getSaleTypes } from "../../api/lossPrevention";
-import { resetCashierSlice, setSaleTypes } from "../../features/lossPreventionSlice";
+import { resetCashierSlice, setSaleTypes, setNoSaleTypesFound } from "../../features/lossPreventionSlice";
 import type { JsonError } from "../../interfaces";
 import LPTablet from "./tablet/LPTablet";
 import LpMobile from "./mobile/LpMobile";
@@ -41,6 +41,7 @@ const LossPrevention = () => {
         if (j.error === 0) {
           // const saleTypes = [...j.sale_types, { sale_type: "Description" }];
           const saleTypes = j.sale_types;
+          dispatch(setNoSaleTypesFound(saleTypes.length === 0));
           dispatch(setSaleTypes(saleTypes));
         } else {
           toast.warn(j.msg);

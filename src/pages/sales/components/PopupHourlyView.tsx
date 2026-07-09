@@ -1,5 +1,6 @@
 ﻿import { useState, useMemo, useRef } from "react";
-import { useAppSelector } from "../../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { setSelectedHour } from "../../../features/salesLedgerSlice";
 import { formatCurrency2, addDays, sameWeekDayLastYear } from "../../../utils";
 import {
   ExclamationTriangleIcon,
@@ -12,8 +13,8 @@ import {
 import type { Severity } from "./LedgerRow";
 import { SEVERITY_CONFIG } from "./tierColumnUtils";
 import HourTrendChart from "./HourTrendChart";
-
-const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
+import { formatPct, pillClass, chipClass, type SevFilter } from "./utils";
+import SeverityBadge from "../../../components/SeverityBadge";
 
 const ampm = (h: number) =>
   h === 0 ? "12 AM" : h < 12 ? `${h} AM` : h === 12 ? "12 PM" : `${h - 12} PM`;
@@ -38,59 +39,12 @@ type HourRow = {
   hasLY: boolean;
 };
 
-type SevFilter = "all" | "critical" | "watch" | "healthy";
-
-const pillClass = (pct: number | null, threshold: number) => {
-  if (pct === null) return "bg-gray-100 text-gray-500";
-  if (pct < -threshold) return "bg-red-100 text-red-800";
-  if (pct < 0) return "bg-amber-100 text-amber-800";
-  return "bg-emerald-100 text-emerald-800";
-};
-
 const hourSeverity = (r: HourRow, threshold: number): Severity => {
   const pct = r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0;
   if (pct < -threshold) return "critical";
   if (pct < 0) return "watch";
   return "healthy";
 };
-
-const BADGE_BG: Record<Severity, string> = {
-  critical: "#fee2e2",
-  watch: "#fef3c7",
-  healthy: "#d1fae5",
-};
-
-const BADGE_COLOR: Record<Severity, string> = {
-  critical: "#ef4444",
-  watch: "#f59e0b",
-  healthy: "#10b981",
-};
-
-const SeverityBadge = ({ severity }: { severity: Severity }) => (
-  <div
-    className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0"
-    style={{ background: BADGE_BG[severity] }}
-  >
-    {severity === "critical" && (
-      <ExclamationTriangleIcon
-        className="w-3 h-3"
-        style={{ color: BADGE_COLOR[severity] }}
-      />
-    )}
-    {severity === "watch" && (
-      <ExclamationCircleIcon
-        className="w-3 h-3"
-        style={{ color: BADGE_COLOR[severity] }}
-      />
-    )}
-    {severity === "healthy" && (
-      <CheckCircleIcon
-        className="w-3 h-3"
-        style={{ color: BADGE_COLOR[severity] }}
-      />
-    )}
-  </div>
-);
 
 const getCta = (
   row: HourRow,
@@ -173,6 +127,8 @@ const PopupHourlyView = ({
     (s) => s.salesLedger,
   );
   const rawThreshold = useAppSelector((s) => s.salesLedger.hourlyThreshold);
+  const selectedHour = useAppSelector((s) => s.salesLedger.selectedHour);
+  const dispatch = useAppDispatch();
 
   // Grading should never move rows around on its own when the threshold input
   // is cleared — keep grading against the last valid amount so severity/sort
@@ -181,7 +137,6 @@ const PopupHourlyView = ({
   if (rawThreshold != null) thresholdRef.current = rawThreshold;
   const threshold = thresholdRef.current;
 
-  const [selectedHour, setSelectedHour] = useState<number | null>(null);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [ctaOpen, setCtaOpen] = useState(false);
   const [chartOpen, setChartOpen] = useState(false);
@@ -326,24 +281,12 @@ const PopupHourlyView = ({
     );
   }
 
-  const chipClass = (active: boolean, sev?: Severity) => {
-    if (!active)
-      return "bg-white border border-gray-200 text-content hover:border-gray-400";
-    if (!sev) return "bg-[#1e2a4a] border-[#1e2a4a] text-white";
-    const map: Record<Severity, string> = {
-      critical: "bg-red-600 border-red-600 text-white",
-      watch: "bg-amber-500 border-amber-500 text-white",
-      healthy: "bg-emerald-600 border-emerald-600 text-white",
-    };
-    return map[sev];
-  };
-
   return (
     <div className="flex h-full">
       {/* Left panel */}
       <div
         className="flex flex-col border-r border-gray-100"
-        style={{ width: "40%" }}
+        style={{ width: "36.5%" }}
       >
         {/* Filter chips */}
         <div className="flex flex-wrap gap-1 p-2 border-b border-gray-100 bg-gray-100">
@@ -384,7 +327,7 @@ const PopupHourlyView = ({
             return (
               <button
                 key={r.hour}
-                onClick={() => setSelectedHour(isSel ? null : r.hour)}
+                onClick={() => dispatch(setSelectedHour(isSel ? null : r.hour))}
                 className={`w-full px-3 py-2 border-b border-gray-100 last:border-0 gap-2 text-left transition-colors ${isSel ? "bg-white" : "hover:bg-gray-50"}`}
                 style={isSel ? { boxShadow: `inset 0 0 8px ${SEVERITY_CONFIG[sev].shadowColor}` } : undefined}
               >
@@ -439,7 +382,7 @@ const PopupHourlyView = ({
 
         {selected ? (
           <>
-            <div className="flex-1 overflow-y-auto thin-scrollbar">
+            <div className="flex-1 overflow-y-auto thin-scrollbar leading-snug">
               {/* 3-col net sales KPI grid */}
               <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100">
                 <div className="px-4 py-3">
@@ -509,7 +452,7 @@ const PopupHourlyView = ({
               </div>
 
               {/* Transactions — 3-col */}
-              <div className="border-b border-gray-100">
+              <div className="border-b border-gray-100 leading-snug">
                 <div className="px-4 py-1.5 bg-gray-100 text-[10px] font-medium uppercase tracking-wide text-content">
                   Transactions
                 </div>
@@ -563,7 +506,7 @@ const PopupHourlyView = ({
               </div>
 
               {/* Avg basket — 3-col */}
-              <div className="border-b border-gray-100">
+              <div className="border-b border-gray-100 leading-snug">
                 <div className="px-4 py-1.5 bg-gray-100 text-[10px] font-medium uppercase tracking-wide text-content">
                   Avg basket
                 </div>

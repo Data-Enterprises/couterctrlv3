@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type { TransactionOverview } from "../../../interfaces";
-import type { CashierGrade } from "../gradingUtils";
+import type { CashierGrade, CashierSeverity } from "../gradingUtils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -73,9 +73,9 @@ const buildTransactionsCsv = (rows: TransactionOverview[]) => {
   return rowsToCsv(headers, data);
 };
 
-const buildCashiersCsv = (grades: CashierGrade[]) => {
+const buildCashiersCsv = (grades: CashierGrade[], sevs: Set<CashierSeverity>) => {
   const headers = ["Cashier #", "Cashier Name", "Store #", "Severity", "Transactions", "Items", "Total Sales", "Avg Ticket"];
-  const data = grades.map((g) => [
+  const data = grades.filter((g) => sevs.has(g.severity)).map((g) => [
     g.cashier_number,
     g.cashier_name,
     g.store_number,
@@ -172,6 +172,12 @@ const LPExportModal = ({
   // ── Preset state ──
   const [mode, setMode] = useState<ModalMode>("presets");
   const [selected, setSelected] = useState<Set<ExportDataset>>(new Set(["transactions", "cashiers"]));
+  const [cashierSevs, setCashierSevs] = useState<Set<CashierSeverity>>(
+    new Set(["critical", "watch", "ok", "ungraded"]),
+  );
+
+  const toggleCashierSev = (sev: CashierSeverity) =>
+    setCashierSevs((prev) => { const n = new Set(prev); n.has(sev) ? n.delete(sev) : n.add(sev); return n; });
 
   // ── Custom builder state ──
   const [source, setSource] = useState<CustomSource>("transactions");
@@ -284,7 +290,9 @@ const LPExportModal = ({
   const handlePresetDownload = () => {
     const sections: string[] = [];
     if (selected.has("transactions")) sections.push(`Transaction List\n${buildTransactionsCsv(transactions)}`);
-    if (selected.has("cashiers"))     sections.push(`Cashier Summary\n${buildCashiersCsv(cashierGrades)}`);
+    if (selected.has("cashiers") && cashierSevs.size > 0) {
+      sections.push(`Cashier Summary\n${buildCashiersCsv(cashierGrades, cashierSevs)}`);
+    }
     if (!sections.length) return;
     const safeName = `${storeName}_${saleType}`.replace(/[^a-z0-9]/gi, "_");
     downloadCsv(sections.join("\n\n"), `${safeName}_${dateRange}.csv`);
@@ -309,31 +317,29 @@ const LPExportModal = ({
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-xl shadow-xl w-full overflow-hidden transition-all duration-200 ${mode === "custom" ? "max-w-2xl" : "max-w-sm"}`}
+        className={`bg-white rounded-xl shadow-xl w-full overflow-hidden transition-all duration-200 ${mode === "custom" ? "max-w-2xl" : "max-w-lg"}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 bg-[#1e2a4a]">
-          <div className="flex items-center gap-3">
-            <div>
-              <p className="text-white text-[13px] font-semibold">Export CSV</p>
-              <p className="text-white/55 text-[10px] mt-0.5">{storeName} — {saleType}</p>
-            </div>
-            <div className="flex items-center gap-0.5 bg-white/10 rounded-md p-0.5 ml-2">
-              {(["presets", "custom"] as ModalMode[]).map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setMode(m)}
-                  className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                    mode === m ? "bg-white text-[#1e2a4a]" : "text-white/70 hover:text-white"
-                  }`}
-                >
-                  {m === "presets" ? "Presets" : "Custom"}
-                </button>
-              ))}
-            </div>
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
+          <div>
+            <p className="text-white text-[13px] font-semibold">Export CSV</p>
+            <p className="text-white/55 text-[10px] mt-0.5">{storeName} — {saleType}</p>
           </div>
-          <button onClick={onClose} className="text-white/60 hover:text-white transition-colors">
+          <div className="flex items-center gap-0.5 bg-white/10 rounded-md p-0.5">
+            {(["presets", "custom"] as ModalMode[]).map((m) => (
+              <button
+                key={m}
+                onClick={() => setMode(m)}
+                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
+                  mode === m ? "bg-white text-[#1e2a4a]" : "text-white/70 hover:text-white"
+                }`}
+              >
+                {m === "presets" ? "Presets" : "Custom"}
+              </button>
+            ))}
+          </div>
+          <button onClick={onClose} className="text-white/60 hover:text-white transition-colors justify-self-end">
             <XMarkIcon className="w-4 h-4" />
           </button>
         </div>
@@ -344,23 +350,51 @@ const LPExportModal = ({
             <div className="px-4 pt-4 pb-2 space-y-3">
               <p className="text-[11px] text-content/50 uppercase tracking-wide font-medium">Select data to include</p>
 
-              {([
-                { id: "transactions" as ExportDataset, label: "Transaction List",  description: `${transactions.length} transactions currently in view (filters applied)` },
-                { id: "cashiers"     as ExportDataset, label: "Cashier Summary",   description: `${cashierGrades.length} cashiers with severity, totals, and avg ticket` },
-              ]).map(({ id, label, description }) => (
-                <label key={id} className="flex items-start gap-3 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={selected.has(id)}
-                    onChange={() => setSelected((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; })}
-                    className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
-                  />
-                  <div>
-                    <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">{label}</p>
-                    <p className="text-[11px] text-content/50 mt-0.5">{description}</p>
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={selected.has("transactions")}
+                  onChange={() => setSelected((p) => { const n = new Set(p); n.has("transactions") ? n.delete("transactions") : n.add("transactions"); return n; })}
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                />
+                <div>
+                  <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">Transaction List</p>
+                  <p className="text-[11px] text-content/50 mt-0.5">{transactions.length} transactions currently in view (filters applied)</p>
+                </div>
+              </label>
+
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={selected.has("cashiers")}
+                  onChange={() => setSelected((p) => { const n = new Set(p); n.has("cashiers") ? n.delete("cashiers") : n.add("cashiers"); return n; })}
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium text-content">Cashier Summary</p>
+                  <p className="text-[11px] text-content/50 mt-0.5 mb-1.5">{cashierGrades.length} cashiers with severity, totals, and avg ticket</p>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {(
+                      [
+                        { sev: "critical" as CashierSeverity, label: "Critical", activeClass: "bg-red-600 border-red-600 text-white" },
+                        { sev: "watch"    as CashierSeverity, label: "Watch",    activeClass: "bg-amber-500 border-amber-500 text-white" },
+                        { sev: "ok"       as CashierSeverity, label: "OK",       activeClass: "bg-emerald-600 border-emerald-600 text-white" },
+                        { sev: "ungraded" as CashierSeverity, label: "Ungraded", activeClass: "bg-gray-400 border-gray-400 text-white" },
+                      ]
+                    ).map(({ sev, label, activeClass }) => (
+                      <button
+                        key={sev}
+                        onClick={() => toggleCashierSev(sev)}
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
+                          cashierSevs.has(sev) ? activeClass : "bg-white border-gray-200 text-content/50"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
                   </div>
-                </label>
-              ))}
+                </div>
+              </div>
             </div>
 
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-2">

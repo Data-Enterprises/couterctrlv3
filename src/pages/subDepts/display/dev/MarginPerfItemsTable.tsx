@@ -246,7 +246,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
   const [draftUpc, setDraftUpc] = useState("");
   const [appliedUpc, setAppliedUpc] = useState("");
 
-  const [thresholdValue, setThresholdValue] = useState<ThresholdValue | null>({ op: "gt", amount: 3 });
+  const [thresholdValue, setThresholdValue] = useState<ThresholdValue | null>({ op: "gt", amount: 9 });
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
 
   // When a single day is selected in the day sidebar, scope all three
@@ -287,7 +287,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
   // Grading should never move items around on its own when the threshold
   // input is cleared — keep grading against the last valid amount so
   // severity/sort stays exactly where it was until a new number is typed.
-  const thresholdRef = useRef<number>(thresholdValue?.amount ?? 3);
+  const thresholdRef = useRef<number>(thresholdValue?.amount ?? 9);
   if (thresholdValue?.amount != null) thresholdRef.current = thresholdValue.amount;
   const thresholdAmt = thresholdRef.current;
 

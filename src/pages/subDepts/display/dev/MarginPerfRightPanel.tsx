@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector, useStoreName } from "../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
@@ -23,6 +23,14 @@ const MarginPerfRightPanel = () => {
   const gradingMetric = useAppSelector((s) => s.subMargin.gradingMetric);
   const subDeptName = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId)?.desc ?? "";
   const storeName = useStoreName(ctx.searchValue);
+
+  // Grading should never move rows around on its own when the threshold
+  // input is cleared — keep grading against the last valid amount so
+  // severity/sort stays exactly where it was until a new number is typed.
+  const rawGradingThreshold = useAppSelector((s) => s.subMargin.gradingThreshold);
+  const gradingThresholdRef = useRef<number>(rawGradingThreshold ?? 9);
+  if (rawGradingThreshold != null) gradingThresholdRef.current = rawGradingThreshold;
+  const gradingThreshold = gradingThresholdRef.current;
 
   const periodEnd = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 0)) : "";
   const periodStart = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 6)) : "";
@@ -317,6 +325,7 @@ const MarginPerfRightPanel = () => {
           dateRange={dateRange}
           tyMargins={ctx.weekOneMargins}
           lyMargins={ctx.weekOneMarginsLY}
+          threshold={gradingThreshold}
         />
       )}
     </div>

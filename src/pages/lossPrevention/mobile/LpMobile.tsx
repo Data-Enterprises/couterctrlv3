@@ -15,7 +15,7 @@ interface Props {
 
 const LpMobile = ({ getSaleTypes }: Props) => {
   const dispatch = useAppDispatch();
-  const { saleTypes } = useAppSelector((state) => state.lossPrevention);
+  const { saleTypes, noSaleTypesFound } = useAppSelector((state) => state.lossPrevention);
   const [screen, setScreen] = useState<Screen>("stores");
 
   const handleSearch = () => {
@@ -42,6 +42,11 @@ const LpMobile = ({ getSaleTypes }: Props) => {
           singleDate
           onSearch={handleSearch}
           loading={false}
+          notice={
+            noSaleTypesFound
+              ? "No sale types came back for this search."
+              : undefined
+          }
         />
       </div>
     );

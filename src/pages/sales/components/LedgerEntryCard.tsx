@@ -3,9 +3,10 @@ import SearchCard from "../../../components/SearchCard";
 interface LedgerEntryCardProps {
   onSearch: () => void;
   loading: boolean;
+  notice?: string;
 }
 
-const LedgerEntryCard = ({ onSearch, loading }: LedgerEntryCardProps) => {
+const LedgerEntryCard = ({ onSearch, loading, notice }: LedgerEntryCardProps) => {
   return (
     <SearchCard
       title="Weekly Sales Performance"
@@ -14,6 +15,7 @@ const LedgerEntryCard = ({ onSearch, loading }: LedgerEntryCardProps) => {
       singleDate
       onSearch={onSearch}
       loading={loading}
+      notice={notice}
     />
   );
 };

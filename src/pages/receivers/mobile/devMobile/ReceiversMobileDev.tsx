@@ -132,12 +132,12 @@ const ReceiversMobileDev = () => {
           onSearch={handleSearch}
           loading={rcv.isFetchingList}
           datePicker={<DatePickers showBtn={false} handleQuery={handleSearch} />}
+          notice={
+            rcv.noReceivers
+              ? "No receivers came back for this search."
+              : undefined
+          }
         />
-        {rcv.noReceivers && (
-          <div className="mt-3 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-[11px] text-amber-800">
-            No receivers found for the selected store and date range.
-          </div>
-        )}
       </div>
     </div>
   );

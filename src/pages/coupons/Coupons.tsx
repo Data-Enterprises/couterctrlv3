@@ -6,7 +6,6 @@ import { setSelectedGroupStores } from "../../features/userSlice";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { useCouponContext } from ".";
 import {
-  resetCoupons,
   setIsFetching,
   setNoCouponsFound,
   setCoupons,
@@ -15,8 +14,6 @@ import type { CouponsResponse, JsonError } from "../../interfaces";
 import { formatGoliathDate } from "../../utils";
 
 import SearchCard from "../../components/SearchCard";
-import StorePicker from "../../components/storePicker/StorePicker";
-import DatePickers from "../../components/datePickers/DatePickers";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import TransactionModal from "../lossPrevention/TransactionModal";
 import CouponsMobile from "./mobile/CouponsMobile";
@@ -83,44 +80,22 @@ const Coupons = () => {
     );
   }
 
-  // No coupons found
-  if (context.noCouponsFound) {
-    return (
-      <div className="h-[calc(100vh-3rem)] flex items-center justify-center">
-        <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3">
-          <div>
-            <h2 className="text-base font-semibold text-content">No coupons found</h2>
-            <p className="text-[12px] text-content/50 mt-1">No coupon activity matched the selected store and date range.</p>
-          </div>
-          <button
-            onClick={() => dispatch(resetCoupons())}
-            className="w-full py-2 text-sm font-semibold text-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors"
-          >
-            Search again
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Initial search card
+  // Initial search card / no results for the last search
   if (context.coupons.length === 0) {
     return (
       <div className="h-[calc(100vh-3rem)] flex items-center justify-center mx-4 pb-12">
-        <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3">
-          <div>
-            <h2 className="text-base font-semibold text-content">Coupons</h2>
-            <p className="text-[12px] text-content/50 mt-1">Select a store and date range to load coupon activity.</p>
-          </div>
-          <StorePicker />
-          <DatePickers showBtn={false} handleQuery={getData} />
-          <button
-            onClick={getData}
-            className="w-full py-2 text-sm font-semibold text-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none"
-          >
-            Load Coupons
-          </button>
-        </div>
+        <SearchCard
+          title="Coupons"
+          description="Select a store and date range to load coupon activity."
+          buttonLabel="Load Coupons"
+          onSearch={getData}
+          loading={context.isFetching}
+          notice={
+            context.noCouponsFound
+              ? "No coupons came back for this search."
+              : undefined
+          }
+        />
       </div>
     );
   }

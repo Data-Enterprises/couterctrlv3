@@ -31,6 +31,7 @@ const Orders = () => {
   const ctx = useOrdersCtx();
   const toast = useToast();
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [notice, setNotice] = useState<string | undefined>(undefined);
 
   const handleSearch = () => {
     if (ctx.type === "Group") {
@@ -71,6 +72,11 @@ const Orders = () => {
           return;
         }
         if (j.error === 0) {
+          setNotice(
+            j.orders.length === 0
+              ? "No orders came back for this search."
+              : undefined,
+          );
           ctx.dispatch(setAvailableOrders(j.orders));
 
           // Group by order_type → order_date → stores (frequency = appearances per type+date+store)
@@ -119,6 +125,9 @@ const Orders = () => {
       .then((resp) => {
         const j: AllOrderResp = resp.data;
         if (j.error === 0) {
+          if (j.orders.length === 0) {
+            toast.warn("No orders came back for this search.");
+          }
           const ordersWERet = j.orders.map((o) => {
             const base_cost = o.base_cost ?? 0;
             const net_cost = o.net_cost ?? 0;
@@ -163,6 +172,7 @@ const Orders = () => {
         buttonLabel="Find orders"
         onSearch={handleSearch}
         loading={ctx.loadingAvailableOrders}
+        notice={notice}
       />
     );
   }

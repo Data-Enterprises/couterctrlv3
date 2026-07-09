@@ -73,6 +73,10 @@ interface SubMarginState {
   weekFourMarginsLW: SubDeptMargin[];
   filteredMargins: SubDeptMargin[];
   selectedSubDeptId: number;
+  // Tracks which sub dept + date range + search the week 2-4 trend data
+  // below was fetched for, so remounting SubDeptMarginsDev (e.g. after
+  // navigating away and back) doesn't blank and re-fire those fetches.
+  lastFetchedTrendKey: string | null;
   subDeptFitlerText: string;
   loadingSubDepts: boolean;
   loadingMargins: boolean;
@@ -143,6 +147,7 @@ const initialState: SubMarginState = {
   weekFourMarginsLW: [],
   filteredMargins: [],
   selectedSubDeptId: 0,
+  lastFetchedTrendKey: null,
   subDeptFitlerText: "",
   loadingSubDepts: false,
   loadingMargins: false,
@@ -212,6 +217,9 @@ const subMarginSlice = createSlice({
     },
     setSelectedSubDeptId: (state, action: PayloadAction<number>) => {
       state.selectedSubDeptId = action.payload;
+    },
+    setLastFetchedTrendKey: (state, action: PayloadAction<string | null>) => {
+      state.lastFetchedTrendKey = action.payload;
     },
     setWeekTrendMargins: (
       state,
@@ -297,6 +305,7 @@ const subMarginSlice = createSlice({
       state.weekFourMarginsLW = [];
       state.filteredMargins = [];
       state.selectedSubDeptId = 0;
+      state.lastFetchedTrendKey = null;
       state.subDeptFitlerText = "";
       state.selectedWeek = 0;
       state.selectedWeekDay = "";
@@ -518,6 +527,7 @@ export const {
   setMargins,
   setSearchValue,
   setSelectedSubDeptId,
+  setLastFetchedTrendKey,
   setSelectedWeek,
   setSubDepts,
   setSubDeptFilterText,
