@@ -115,13 +115,13 @@ const Orders = () => {
       .finally(() => ctx.dispatch(setLoadingAvailableOrders(false)));
   };
 
-  const fetchOrderDetails = (order_date: string, order_type: string, storeids: number[]) => {
-    ctx.dispatch(setSelectedOrderKey({ order_date, order_type, storeids }));
+  const fetchOrderDetails = (start_date: string, end_date: string, order_type: string, storeids: number[]) => {
+    ctx.dispatch(setSelectedOrderKey({ order_date: start_date, order_date_end: end_date, order_type, storeids }));
     ctx.dispatch(setSelectedOrder(null));
     ctx.dispatch(setAllOrders([]));
 
     ctx.dispatch(setLoadingAllOrders(true));
-    getAllOrders(ctx.url, ctx.token, order_date, order_date, storeids)
+    getAllOrders(ctx.url, ctx.token, start_date, end_date, storeids)
       .then((resp) => {
         const j: AllOrderResp = resp.data;
         if (j.error === 0) {
@@ -161,11 +161,16 @@ const Orders = () => {
   };
 
   const handleSelectStore = (order_date: string, order_type: string, storeid: number) => {
-    fetchOrderDetails(order_date, order_type, [storeid]);
+    fetchOrderDetails(order_date, order_date, order_type, [storeid]);
   };
 
+  // No date filter selected → span the whole search range instead of one day.
   const handleSelectAllStores = (order_date: string, order_type: string, storeids: number[]) => {
-    fetchOrderDetails(order_date, order_type, storeids);
+    if (order_date) {
+      fetchOrderDetails(order_date, order_date, order_type, storeids);
+    } else {
+      fetchOrderDetails(formatGoliathDate(ctx.startDate), formatGoliathDate(ctx.endDate), order_type, storeids);
+    }
   };
 
   if (ctx.isMobile) return <OrdersMobile />;

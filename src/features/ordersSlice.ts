@@ -26,6 +26,7 @@ export type GroupedOrderCard = {
 
 export type SelectedOrderKey = {
   order_date: string;
+  order_date_end: string;
   order_type: string;
   storeids: number[];
 } | null;

@@ -61,10 +61,11 @@ const AvailableOrdersPanel = ({
   const toggleType = (type: string) =>
     setOpenTypes((prev) => { const s = new Set(prev); s.has(type) ? s.delete(type) : s.add(type); return s; });
 
-const isSelected = (order_date: string, order_type: string, storeid: number) =>
-    selectedKey?.order_date === order_date &&
-    selectedKey?.order_type === order_type &&
-    !!selectedKey?.storeids.includes(storeid);
+const isSelected = (order_date: string, order_type: string, storeid: number) => {
+    if (!selectedKey || selectedKey.order_type !== order_type || !selectedKey.storeids.includes(storeid)) return false;
+    const d = order_date.split("T")[0];
+    return d >= selectedKey.order_date.split("T")[0] && d <= selectedKey.order_date_end.split("T")[0];
+  };
 
   const typeFiltered = activeType === "all" ? cards : cards.filter((c) => c.order_type === activeType);
 
@@ -94,13 +95,16 @@ const isSelected = (order_date: string, order_type: string, storeid: number) =>
       .filter((card) => card.dates.length > 0);
   }, [typeFiltered, storeFilter, dateFilter]);
 
-  // "Select all stores" is only meaningful once narrowed to one type + one date —
-  // getAllOrders has no order_type param, so combining across dates would mix scope
-  // beyond what's been agreed (one date at a time, matching the single-store fetch).
+  // "Select all stores" shows once a specific type is active, regardless of the
+  // date filter. With a date chosen it's scoped to that day (visibleCards is
+  // already narrowed to it); with no date chosen it spans every date currently
+  // visible, combined — Orders.tsx widens the fetch to the full search range.
   const allVisibleStoreIds = useMemo(() => {
-    if (activeType === "all" || !dateFilter) return [];
-    return visibleCards[0]?.dates.flatMap((d) => d.stores.map((s) => s.storeid)) ?? [];
-  }, [visibleCards, activeType, dateFilter]);
+    if (activeType === "all") return [];
+    const ids = new Set<number>();
+    visibleCards[0]?.dates.forEach((d) => d.stores.forEach((s) => ids.add(s.storeid)));
+    return Array.from(ids);
+  }, [visibleCards, activeType]);
 
   return (
     <div

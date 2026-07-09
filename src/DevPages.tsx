@@ -14,6 +14,8 @@ import Receivers from "./pages/receivers/Receivers.tsx";
 import ReceiversLegacy from "./pages/receivers/ReceiversLegacy.tsx";
 import ItemLookup from "./pages/lookup/ItemLookup.tsx";
 import ItemLookupLegacy from "./pages/lookup/ItemLookupLegacy.tsx";
+// import Admin from "./pages/admin/dev/Admin.tsx";
+import AdminLegacy from "./pages/admin/AdminLegacy.tsx";
 import TitleBar from "./components/navigation/TitleBar.tsx";
 import TitleBarLegacy from "./components/navigation/TitleBarLegacy.tsx";
 import SideBarLegacy from "./components/navigation/SideBarLegacy.tsx";
@@ -66,4 +68,10 @@ export const UpcPage = () => {
 export const ItemLookupPage = () => {
   const devMode = useAppSelector((s) => s.app.devMode);
   return devMode ? <ItemLookup /> : <ItemLookupLegacy />;
+};
+
+export const AdminPage = () => {
+  return <AdminLegacy />;
+  // const devMode = useAppSelector((s) => s.app.devMode);
+  // return devMode ? <Admin /> : <AdminLegacy />;
 };
