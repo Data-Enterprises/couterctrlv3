@@ -46,6 +46,15 @@ export const formatCurrency2 = (x: number) => {
   return x < 0 ? `${format(x)}` : format(x);
 };
 
+export const formatCurrencyCompact = (x: number) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(x);
+};
+
 export const formatBigNumber = (
   value: number,
   decimals: number = 2,

@@ -1,6 +1,9 @@
-﻿import { useState, useMemo, useRef } from "react";
+﻿import { useState, useMemo, useRef, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { setSelectedHour } from "../../../features/salesLedgerSlice";
+import {
+  setSelectedHour,
+  setHourlyThreshold,
+} from "../../../features/salesLedgerSlice";
 import { formatCurrency2, addDays, sameWeekDayLastYear } from "../../../utils";
 import {
   ExclamationTriangleIcon,
@@ -11,10 +14,9 @@ import {
   PresentationChartLineIcon,
 } from "@heroicons/react/20/solid";
 import type { Severity } from "./LedgerRow";
-import { SEVERITY_CONFIG } from "./tierColumnUtils";
 import HourTrendChart from "./HourTrendChart";
-import { formatPct, pillClass, chipClass, type SevFilter } from "./utils";
-import SeverityBadge from "../../../components/SeverityBadge";
+import { formatPct, pillClass, chipClass, CTA_SEVERITY_CLASSES, severityDotClass, type SevFilter } from "./utils";
+import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 
 const ampm = (h: number) =>
   h === 0 ? "12 AM" : h < 12 ? `${h} AM` : h === 12 ? "12 PM" : `${h - 12} PM`;
@@ -140,6 +142,21 @@ const PopupHourlyView = ({
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [ctaOpen, setCtaOpen] = useState(false);
   const [chartOpen, setChartOpen] = useState(false);
+  const [threshOpen, setThreshOpen] = useState(false);
+  const threshBtnRef = useRef<HTMLButtonElement>(null);
+  const threshPopRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!threshOpen) return;
+    const close = (e: MouseEvent) => {
+      if (
+        threshBtnRef.current && !threshBtnRef.current.contains(e.target as Node) &&
+        threshPopRef.current && !threshPopRef.current.contains(e.target as Node)
+      ) setThreshOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [threshOpen]);
 
   // Chart is always scoped to the full 7-day week for the selected hour,
   // regardless of any single-day selection elsewhere in the popup — one
@@ -288,35 +305,85 @@ const PopupHourlyView = ({
         className="flex flex-col border-r border-gray-100"
         style={{ width: "36.5%" }}
       >
-        {/* Filter chips */}
-        <div className="flex flex-wrap gap-1 p-2 border-b border-gray-100 bg-gray-100">
+        {/* Filter chips + threshold */}
+        <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-100 bg-gray-100">
           <button
-            onClick={() => setSevFilter("all")}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(sevFilter === "all")}`}
+            onClick={() => setSevFilter((f) => (f === "critical" ? "all" : "critical"))}
+            className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
+              sevFilter === "critical" ? "ring-2 ring-severity_critical_text/40 shadow-sm" : ""
+            }`}
           >
-            All ({hours.length})
-          </button>
-          <button
-            onClick={() => setSevFilter("critical")}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(sevFilter === "critical", "critical")}`}
-          >
-            <ExclamationTriangleIcon className="w-2.5 h-2.5" />
             Crit ({critCount})
           </button>
           <button
-            onClick={() => setSevFilter("watch")}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(sevFilter === "watch", "watch")}`}
+            onClick={() => setSevFilter((f) => (f === "watch" ? "all" : "watch"))}
+            className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
+              sevFilter === "watch" ? "ring-2 ring-severity_watch_text/40 shadow-sm" : ""
+            }`}
           >
-            <ExclamationCircleIcon className="w-2.5 h-2.5" />
             Watch ({watchCount})
           </button>
           <button
-            onClick={() => setSevFilter("healthy")}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(sevFilter === "healthy", "healthy")}`}
+            onClick={() => setSevFilter((f) => (f === "healthy" ? "all" : "healthy"))}
+            className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${
+              sevFilter === "healthy" ? "ring-2 ring-severity_healthy_text/40 shadow-sm" : ""
+            }`}
           >
-            <CheckCircleIcon className="w-2.5 h-2.5" />
             OK ({healthyCount})
           </button>
+          <div className="relative">
+            <button
+              ref={threshBtnRef}
+              onClick={() => setThreshOpen((v) => !v)}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(threshOpen)}`}
+            >
+              Thresh
+            </button>
+            {threshOpen && (
+              <div
+                ref={threshPopRef}
+                className="absolute top-full left-0 mt-1 p-1.5 rounded-md border border-gray-200 bg-custom-white shadow-lg z-20"
+              >
+                <ThresholdFilter
+                  value={
+                    rawThreshold === null ? null : { op: "gt", amount: rawThreshold }
+                  }
+                  onChange={(v) => dispatch(setHourlyThreshold(v?.amount ?? null))}
+                  showOp={false}
+                  suffix="%"
+                  inputWidth={40}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Column headers */}
+        <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
+          <span className="w-2.5 flex-shrink-0" />
+          <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-1">
+            Hour
+          </span>
+          <div className="flex items-center gap-[14px]">
+            <span
+              className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 pl-2.5 text-right"
+              style={{ width: 64 }}
+            >
+              TY
+            </span>
+            <span
+              className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
+              style={{ width: 58 }}
+            >
+              vs LW
+            </span>
+            <span
+              className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
+              style={{ width: 58 }}
+            >
+              vs LY
+            </span>
+          </div>
         </div>
 
         {/* Signal list */}
@@ -328,40 +395,38 @@ const PopupHourlyView = ({
               <button
                 key={r.hour}
                 onClick={() => dispatch(setSelectedHour(isSel ? null : r.hour))}
-                className={`w-full px-3 py-2 border-b border-gray-100 last:border-0 gap-2 text-left transition-colors ${isSel ? "bg-white" : "hover:bg-gray-50"}`}
-                style={isSel ? { boxShadow: `inset 0 0 8px ${SEVERITY_CONFIG[sev].shadowColor}` } : undefined}
+                className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-[#1e2a4a]/15 ${
+                  isSel
+                    ? "bg-row_selected border-row_selected_border"
+                    : "border-transparent hover:bg-gray-50"
+                }`}
               >
-                <div className="flex items-center gap-2">
-                  <SeverityBadge severity={sev} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[12px] font-medium text-content">
-                      {ampm(r.hour)}
-                    </div>
-                    <div className="text-[9px] text-content">
-                      {formatHourRange(r.hour)}
-                    </div>
-                  </div>
-                  <div className="flex items-baseline gap-1.5 flex-shrink-0">
-                    <span className="text-[12px] font-semibold text-content">
-                      {formatCurrency2(r.tw)}
-                    </span>
-                    <span className="text-[10px] text-content">
-                      {r.qty.toLocaleString()} u
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-1.5 mt-1 justify-end">
-                  {r.hasLW && (
-                    <span
-                      className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${pillClass(r.vsLWPct, threshold)}`}
-                    >
-                      LW {formatPct(r.vsLWPct)}
-                    </span>
-                  )}
+                <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${severityDotClass[sev]}`} />
+                <span className="text-[12px] font-medium text-content truncate flex-1">
+                  {formatHourRange(r.hour)}
+                </span>
+                <div className="flex items-center gap-[14px]">
                   <span
-                    className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${pillClass(r.hasLY ? r.vsLYPct : null, threshold)}`}
+                    className="text-[12px] font-semibold text-content flex-shrink-0 pl-2.5 text-right"
+                    style={{ width: 64 }}
                   >
-                    LY {r.hasLY ? formatPct(r.vsLYPct) : "—"}
+                    {formatCurrency2(r.tw)}
+                  </span>
+                  <span
+                    className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
+                      r.hasLW ? pillClass(r.vsLWPct, threshold) : "bg-gray-100 text-gray-400"
+                    }`}
+                    style={{ width: 58 }}
+                  >
+                    {r.hasLW ? formatPct(r.vsLWPct) : "—"}
+                  </span>
+                  <span
+                    className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
+                      r.hasLY ? pillClass(r.vsLYPct, threshold) : "bg-gray-100 text-gray-400"
+                    }`}
+                    style={{ width: 58 }}
+                  >
+                    {r.hasLY ? formatPct(r.vsLYPct) : "—"}
                   </span>
                 </div>
               </button>
@@ -372,11 +437,44 @@ const PopupHourlyView = ({
 
       {/* Right panel */}
       <div className="flex flex-col flex-1 min-w-0">
-        {/* Header row: selected hour */}
-        {selected && (
-          <div className="flex items-baseline gap-1.5 px-3 py-1.5 bg-gray-100 border-b border-gray-100">
-            <span className="text-[12px] font-semibold text-content">{ampm(selected.hour)}</span>
-            <span className="text-[10px] text-content italic flex-shrink-0">{formatHourRange(selected.hour)} · {twDateLabel}</span>
+        {/* Header row: selected hour — doubles as the CTA insight toggle */}
+        {selected && cta && (
+          <div className={`relative border-b ${CTA_SEVERITY_CLASSES[cta.severity].border}`}>
+            <button
+              onClick={() => setCtaOpen((v) => !v)}
+              className={`w-full flex items-center gap-1.5 px-3 py-1.5 ${CTA_SEVERITY_CLASSES[cta.severity].bg} ${CTA_SEVERITY_CLASSES[cta.severity].hoverBg} transition-colors`}
+            >
+              {cta.severity === "critical" && (
+                <ExclamationTriangleIcon className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`} />
+              )}
+              {cta.severity === "watch" && (
+                <ExclamationCircleIcon className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`} />
+              )}
+              {cta.severity === "healthy" && (
+                <CheckCircleIcon className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`} />
+              )}
+              <span className={`text-[12px] font-semibold truncate ${CTA_SEVERITY_CLASSES[cta.severity].text}`}>
+                {formatHourRange(selected.hour)}
+              </span>
+              <span className={`text-[10px] font-semibold flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`}>
+                Insight
+              </span>
+              <span className="flex-1" />
+              {ctaOpen ? (
+                <ChevronUpIcon className={`w-3 h-3 flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`} />
+              ) : (
+                <ChevronDownIcon className={`w-3 h-3 flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`} />
+              )}
+            </button>
+            {ctaOpen && (
+              <div
+                className={`absolute top-full left-0 right-0 z-20 px-3 py-2 border-b shadow-lg ${CTA_SEVERITY_CLASSES[cta.severity].bg} ${CTA_SEVERITY_CLASSES[cta.severity].border}`}
+              >
+                <span className={`text-[11px] leading-relaxed ${CTA_SEVERITY_CLASSES[cta.severity].text}`}>
+                  {cta.text}
+                </span>
+              </div>
+            )}
           </div>
         )}
 
@@ -384,70 +482,72 @@ const PopupHourlyView = ({
           <>
             <div className="flex-1 overflow-y-auto thin-scrollbar leading-snug">
               {/* 3-col net sales KPI grid */}
-              <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100">
-                <div className="px-4 py-3">
-                  <div className="text-[9px] font-medium uppercase tracking-wide text-content">
-                    TY
+              <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 leading-snug flex-shrink-0">
+                <div className="px-4 py-3 text-center">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+                    TY Net Sales
                   </div>
-                  <div className="text-[8px] italic text-content mt-0.5">
+                  <div className="text-[10px] font-bold text-content mt-0.5">
                     {twDateLabel}
                   </div>
-                  <div className="text-[13px] font-semibold text-content mt-0.5">
-                    {formatCurrency2(selected.tw)}
-                  </div>
-                  <div className="text-[11px] text-content mt-0.5">
-                    {selected.qty.toLocaleString()} u
+                  <div className="flex items-baseline justify-center gap-1 mt-0.5">
+                    <span className="text-[13px] font-bold text-content">
+                      {formatCurrency2(selected.tw)}
+                    </span>
+                    <span className="text-[10px] font-bold text-content">
+                      {selected.qty.toLocaleString()} u
+                    </span>
                   </div>
                 </div>
-                <div className="px-4 py-3">
-                  <div className="text-[9px] font-medium uppercase tracking-wide text-content">
-                    LW
+                <div className="px-4 py-3 text-center">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+                    vs Last Week
                   </div>
-                  <div className="text-[8px] italic text-content mt-0.5">
+                  <div className="text-[10px] font-bold text-content mt-0.5">
                     {lwDateLabel}
                   </div>
-                  <div className="flex items-baseline gap-1.5 mt-0.5">
-                    <span className="text-[13px] font-semibold text-content">
+                  <div className="flex items-baseline justify-center gap-1.5 mt-0.5">
+                    <span className="text-[13px] font-bold text-content">
                       {selected.hasLW ? formatCurrency2(selected.lw) : "—"}
                     </span>
+                    {selected.lwQty > 0 && (
+                      <span className="text-[10px] font-bold text-content">
+                        {selected.lwQty.toLocaleString()} u
+                      </span>
+                    )}
                     {selected.hasLW && (
                       <span
-                        className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${pillClass(selected.vsLWPct, threshold)}`}
+                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${pillClass(selected.vsLWPct, threshold)}`}
                       >
                         {formatPct(selected.vsLWPct)}
                       </span>
                     )}
                   </div>
-                  {selected.lwQty > 0 && (
-                    <div className="text-[11px] text-content mt-0.5">
-                      {selected.lwQty.toLocaleString()} u
-                    </div>
-                  )}
                 </div>
-                <div className="px-4 py-3">
-                  <div className="text-[9px] font-medium uppercase tracking-wide text-content">
-                    LY
+                <div className="px-4 py-3 text-center">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+                    vs Last Year
                   </div>
-                  <div className="text-[8px] italic text-content mt-0.5">
+                  <div className="text-[10px] font-bold text-content mt-0.5">
                     {lyDateLabel}
                   </div>
-                  <div className="flex items-baseline gap-1.5 mt-0.5">
-                    <span className="text-[13px] font-semibold text-content">
+                  <div className="flex items-baseline justify-center gap-1.5 mt-0.5">
+                    <span className="text-[13px] font-bold text-content">
                       {selected.hasLY ? formatCurrency2(selected.ly) : "—"}
                     </span>
+                    {selected.lyQty > 0 && (
+                      <span className="text-[10px] font-bold text-content">
+                        {selected.lyQty.toLocaleString()} u
+                      </span>
+                    )}
                     {selected.hasLY && (
                       <span
-                        className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${pillClass(selected.vsLYPct, threshold)}`}
+                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${pillClass(selected.vsLYPct, threshold)}`}
                       >
                         {formatPct(selected.vsLYPct)}
                       </span>
                     )}
                   </div>
-                  {selected.lyQty > 0 && (
-                    <div className="text-[11px] text-content mt-0.5">
-                      {selected.lyQty.toLocaleString()} u
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -578,27 +678,6 @@ const PopupHourlyView = ({
                 )}
               </div>
             </div>
-
-            {/* CTA insight strip */}
-            {cta && (
-              <div className={`mx-3 mb-3 mt-1 rounded-md overflow-hidden ${cta.severity === "critical" ? "border border-orange-200" : cta.severity === "watch" ? "border border-amber-200" : "border border-emerald-200"}`}>
-                <button
-                  onClick={() => setCtaOpen((v) => !v)}
-                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 ${cta.severity === "critical" ? "bg-orange-50 hover:bg-orange-100" : cta.severity === "watch" ? "bg-amber-50 hover:bg-amber-100" : "bg-emerald-50 hover:bg-emerald-100"} transition-colors`}
-                >
-                  {cta.severity === "critical" && <ExclamationTriangleIcon className="w-3.5 h-3.5 text-orange-600 flex-shrink-0" />}
-                  {cta.severity === "watch" && <ExclamationCircleIcon className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />}
-                  {cta.severity === "healthy" && <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />}
-                  <span className={`text-[10px] font-medium flex-1 text-left ${cta.severity === "critical" ? "text-orange-800" : cta.severity === "watch" ? "text-amber-800" : "text-emerald-800"}`}>Insight</span>
-                  {ctaOpen ? <ChevronUpIcon className="w-3 h-3 text-content/40" /> : <ChevronDownIcon className="w-3 h-3 text-content/40" />}
-                </button>
-                {ctaOpen && (
-                  <div className={`px-2.5 py-2 ${cta.severity === "critical" ? "bg-orange-50" : cta.severity === "watch" ? "bg-amber-50" : "bg-emerald-50"}`}>
-                    <span className={`text-[11px] leading-relaxed ${cta.severity === "critical" ? "text-orange-900" : cta.severity === "watch" ? "text-amber-900" : "text-emerald-900"}`}>{cta.text}</span>
-                  </div>
-                )}
-              </div>
-            )}
           </>
         ) : (
           <div className="flex items-center justify-center h-full text-[12px] text-content">

@@ -385,9 +385,9 @@ const SalesExportModal = ({
   ];
 
   const SEV_CHIP: { sev: ItemSev; label: string; activeClass: string }[] = [
-    { sev: "critical", label: "Critical", activeClass: "bg-red-600 border-red-600 text-white" },
-    { sev: "watch",    label: "Watch",    activeClass: "bg-amber-500 border-amber-500 text-white" },
-    { sev: "healthy",  label: "Healthy",  activeClass: "bg-emerald-600 border-emerald-600 text-white" },
+    { sev: "critical", label: "Critical", activeClass: "bg-red-600 border-red-600 text-custom-white" },
+    { sev: "watch",    label: "Watch",    activeClass: "bg-amber-500 border-amber-500 text-custom-white" },
+    { sev: "healthy",  label: "Healthy",  activeClass: "bg-emerald-600 border-emerald-600 text-custom-white" },
   ];
 
   const canCustomDownload = columns.length > 0 && aggRows.length > 0;
@@ -398,30 +398,30 @@ const SalesExportModal = ({
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-xl shadow-xl w-full overflow-hidden transition-all duration-200 ${mode === "custom" ? "max-w-2xl" : "max-w-lg"}`}
+        className={`bg-custom-white rounded-xl shadow-xl w-full overflow-hidden transition-all duration-200 ${mode === "custom" ? "max-w-2xl" : "max-w-lg"}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
           <div>
-            <p className="text-white text-[13px] font-semibold">Export CSV</p>
-            <p className="text-white text-[10px] mt-0.5">{storeName}</p>
+            <p className="text-custom-white text-[13px] font-semibold">Export CSV</p>
+            <p className="text-custom-white text-[10px] mt-0.5">{storeName}</p>
           </div>
           {/* Mode tabs */}
-          <div className="flex items-center gap-0.5 bg-white/10 rounded-md p-0.5">
+          <div className="flex items-center gap-0.5 bg-custom-white/10 rounded-md p-0.5">
             {(["presets", "custom"] as ModalMode[]).map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
                 className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                  mode === m ? "bg-white text-[#1e2a4a]" : "text-white"
+                  mode === m ? "bg-custom-white text-[#1e2a4a]" : "text-custom-white"
                 }`}
               >
                 {m === "presets" ? "Presets" : "Custom"}
               </button>
             ))}
           </div>
-          <button onClick={onClose} className="text-white/60 hover:text-white transition-colors justify-self-end">
+          <button onClick={onClose} className="text-custom-white/60 hover:text-custom-white transition-colors justify-self-end">
             <XMarkIcon className="w-4 h-4" />
           </button>
         </div>
@@ -476,7 +476,7 @@ const SalesExportModal = ({
                           key={sev}
                           onClick={() => toggleItemSev(sev)}
                           className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
-                            itemSevs.has(sev) ? activeClass : "bg-white border-gray-200 text-content"
+                            itemSevs.has(sev) ? activeClass : "bg-custom-white border-gray-200 text-content"
                           }`}
                         >
                           {label}
@@ -492,7 +492,7 @@ const SalesExportModal = ({
               <button
                 onClick={handlePresetDownload}
                 disabled={selected.size === 0}
-                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV
@@ -563,7 +563,7 @@ const SalesExportModal = ({
                             value={sel.fn}
                             disabled={!sel.enabled}
                             onChange={(e) => setMetricFn(m.key, e.target.value as AggFn)}
-                            className="text-[10px] border border-gray-200 rounded px-1 py-0.5 text-content disabled:opacity-30 bg-white outline-none"
+                            className="text-[10px] border border-gray-200 rounded px-1 py-0.5 text-content disabled:opacity-30 bg-custom-white outline-none"
                             style={{ minWidth: 52 }}
                           >
                             {AGG_OPTIONS.map((o) => (
@@ -608,7 +608,7 @@ const SalesExportModal = ({
                       </thead>
                       <tbody>
                         {aggRows.slice(0, PREVIEW_ROWS).map((row, i) => (
-                          <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
+                          <tr key={i} className={i % 2 === 0 ? "bg-custom-white" : "bg-gray-50/50"}>
                             {columns.map((c) => (
                               <td key={c.key} className="px-3 py-1.5 text-content whitespace-nowrap border-b border-gray-50">
                                 {row[c.key] ?? "—"}
@@ -636,7 +636,7 @@ const SalesExportModal = ({
               <button
                 onClick={handleCustomDownload}
                 disabled={!canCustomDownload}
-                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV

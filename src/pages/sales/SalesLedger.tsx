@@ -30,12 +30,16 @@ import {
 import { useToast } from "../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import EmptyPrompt from "../../components/EmptyPrompt";
-import TierStrip from "../../components/TierStrip";
 import LedgerEntryCard from "./components/LedgerEntryCard";
 import StoreDetailPopup from "./components/StoreDetailPopup";
-import TierColumn from "./components/TierColumn";
 import LedgerHeader from "./components/LedgerHeader";
-import { type LedgerRowData } from "./components/LedgerRow";
+import LedgerRow, { type LedgerRowData } from "./components/LedgerRow";
+import type { SevFilter } from "./components/utils";
+import TextFilter from "../../components/filters/TextFilter";
+import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
+
+type SortColumn = "ty" | "vsLW" | "vsLY";
+type SortState = { column: SortColumn; direction: "desc" | "asc" } | null;
 
 const SEVERITY_RANK = { critical: 0, watch: 1, healthy: 2 } as const;
 
@@ -105,6 +109,7 @@ const buildLedgerRows = (
             twNet: r.total_sales - r.total_tax,
             lwNet: lwRow ? lwRow.total_sales - lwRow.total_tax : 0,
             lyNet: lyRow ? lyRow.total_sales - lyRow.total_tax : 0,
+            twQty: r.qty,
           };
         });
 
@@ -169,6 +174,17 @@ const SalesLedger = () => {
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [fetchFailed, setFetchFailed] = useState(false);
+  const [sevFilter, setSevFilter] = useState<SevFilter>("all");
+  const [storeFilter, setStoreFilter] = useState("");
+  const [sort, setSort] = useState<SortState>(null);
+
+  const handleSortClick = (column: SortColumn) => {
+    setSort((prev) => {
+      if (prev?.column !== column) return { column, direction: "desc" };
+      if (prev.direction === "desc") return { column, direction: "asc" };
+      return null;
+    });
+  };
 
   const resetToEntry = () => {
     dispatch(reQuery());
@@ -205,31 +221,93 @@ const SalesLedger = () => {
     // Large group path: >30 stores → per-store calls, collect progressively
     if (isGroup) {
       try {
-        const groupResp = await getStoresAssignedToUserGroup(context.url, context.token, userid, search.lastGroup);
+        const groupResp = await getStoresAssignedToUserGroup(
+          context.url,
+          context.token,
+          userid,
+          search.lastGroup,
+        );
         if (groupResp.data.error !== 0) toast.warn(groupResp.data.msg);
-        const stores: Store[] = groupResp.data.error === 0
-          ? groupResp.data.stores.filter((s: any) => s.active)
-          : [];
+        const stores: Store[] =
+          groupResp.data.error === 0
+            ? groupResp.data.stores.filter((s: any) => s.active)
+            : [];
 
         if (stores.length > 30) {
           await Promise.allSettled(
             stores.map((store) =>
               Promise.all([
-                getWeekly(context.url, context.token, twStart, twEnd, 0, store.storeid, 1),
-                getWeekly(context.url, context.token, lwStart, lwEnd, 0, store.storeid, 1),
-                getWeekly(context.url, context.token, lyStart, lyEnd, 0, store.storeid, 1),
-                getHourly(context.url, context.token, twStart, twEnd, 0, store.storeid, 1),
-                getHourly(context.url, context.token, lwStart, lwEnd, 0, store.storeid, 1),
-                getHourly(context.url, context.token, lyStart, lyEnd, 0, store.storeid, 1),
-              ]).then(([tw, lw, ly, h, lh, lhy]) => {
-                if (tw.data.error === 0)  dispatch(concatWeeklySales(tw.data.sales));
-                if (lw.data.error === 0)  dispatch(concatWeeklySalesLastWeek(lw.data.sales));
-                if (ly.data.error === 0)  dispatch(concatWeeklySalesLastYear(ly.data.sales));
-                if (h.data.error === 0)   dispatch(concatHourlySales(h.data.subs));
-                if (lh.data.error === 0)  dispatch(concatHourlySalesLastWeek(lh.data.subs));
-                if (lhy.data.error === 0) dispatch(concatHourlySalesLastYear(lhy.data.subs));
-              }).catch(() => {})
-            )
+                getWeekly(
+                  context.url,
+                  context.token,
+                  twStart,
+                  twEnd,
+                  0,
+                  store.storeid,
+                  1,
+                ),
+                getWeekly(
+                  context.url,
+                  context.token,
+                  lwStart,
+                  lwEnd,
+                  0,
+                  store.storeid,
+                  1,
+                ),
+                getWeekly(
+                  context.url,
+                  context.token,
+                  lyStart,
+                  lyEnd,
+                  0,
+                  store.storeid,
+                  1,
+                ),
+                getHourly(
+                  context.url,
+                  context.token,
+                  twStart,
+                  twEnd,
+                  0,
+                  store.storeid,
+                  1,
+                ),
+                getHourly(
+                  context.url,
+                  context.token,
+                  lwStart,
+                  lwEnd,
+                  0,
+                  store.storeid,
+                  1,
+                ),
+                getHourly(
+                  context.url,
+                  context.token,
+                  lyStart,
+                  lyEnd,
+                  0,
+                  store.storeid,
+                  1,
+                ),
+              ])
+                .then(([tw, lw, ly, h, lh, lhy]) => {
+                  if (tw.data.error === 0)
+                    dispatch(concatWeeklySales(tw.data.sales));
+                  if (lw.data.error === 0)
+                    dispatch(concatWeeklySalesLastWeek(lw.data.sales));
+                  if (ly.data.error === 0)
+                    dispatch(concatWeeklySalesLastYear(ly.data.sales));
+                  if (h.data.error === 0)
+                    dispatch(concatHourlySales(h.data.subs));
+                  if (lh.data.error === 0)
+                    dispatch(concatHourlySalesLastWeek(lh.data.subs));
+                  if (lhy.data.error === 0)
+                    dispatch(concatHourlySalesLastYear(lhy.data.subs));
+                })
+                .catch(() => {}),
+            ),
           );
           dispatch(setLedgerLoading(false));
           return;
@@ -243,19 +321,72 @@ const SalesLedger = () => {
     try {
       const [twResp, lwResp, lyResp, hourlyResp, lwHourlyResp, lyHourlyResp] =
         await Promise.all([
-          getWeekly(context.url, context.token, twStart, twEnd, useGroups, searchValue, singleStore),
-          getWeekly(context.url, context.token, lwStart, lwEnd, useGroups, searchValue, singleStore),
-          getWeekly(context.url, context.token, lyStart, lyEnd, useGroups, searchValue, singleStore),
-          getHourly(context.url, context.token, twStart, twEnd, useGroups, searchValue, singleStore),
-          getHourly(context.url, context.token, lwStart, lwEnd, useGroups, searchValue, singleStore),
-          getHourly(context.url, context.token, lyStart, lyEnd, useGroups, searchValue, singleStore),
+          getWeekly(
+            context.url,
+            context.token,
+            twStart,
+            twEnd,
+            useGroups,
+            searchValue,
+            singleStore,
+          ),
+          getWeekly(
+            context.url,
+            context.token,
+            lwStart,
+            lwEnd,
+            useGroups,
+            searchValue,
+            singleStore,
+          ),
+          getWeekly(
+            context.url,
+            context.token,
+            lyStart,
+            lyEnd,
+            useGroups,
+            searchValue,
+            singleStore,
+          ),
+          getHourly(
+            context.url,
+            context.token,
+            twStart,
+            twEnd,
+            useGroups,
+            searchValue,
+            singleStore,
+          ),
+          getHourly(
+            context.url,
+            context.token,
+            lwStart,
+            lwEnd,
+            useGroups,
+            searchValue,
+            singleStore,
+          ),
+          getHourly(
+            context.url,
+            context.token,
+            lyStart,
+            lyEnd,
+            useGroups,
+            searchValue,
+            singleStore,
+          ),
         ]);
-      if (twResp.data.error === 0)       dispatch(setWeeklySales(twResp.data.sales));
-      if (lwResp.data.error === 0)       dispatch(setWeeklySalesLastWeek(lwResp.data.sales));
-      if (lyResp.data.error === 0)       dispatch(setWeeklySalesLastYear(lyResp.data.sales));
-      if (hourlyResp.data.error === 0)   dispatch(setHourlySales(hourlyResp.data.subs));
-      if (lwHourlyResp.data.error === 0) dispatch(setHourlySalesLastWeek(lwHourlyResp.data.subs));
-      if (lyHourlyResp.data.error === 0) dispatch(setHourlySalesLastYear(lyHourlyResp.data.subs));
+      if (twResp.data.error === 0) dispatch(setWeeklySales(twResp.data.sales));
+      if (lwResp.data.error === 0)
+        dispatch(setWeeklySalesLastWeek(lwResp.data.sales));
+      if (lyResp.data.error === 0)
+        dispatch(setWeeklySalesLastYear(lyResp.data.sales));
+      if (hourlyResp.data.error === 0)
+        dispatch(setHourlySales(hourlyResp.data.subs));
+      if (lwHourlyResp.data.error === 0)
+        dispatch(setHourlySalesLastWeek(lwHourlyResp.data.subs));
+      if (lyHourlyResp.data.error === 0)
+        dispatch(setHourlySalesLastYear(lyHourlyResp.data.subs));
     } catch (err: any) {
       toast.error(err.message);
       setFetchFailed(true);
@@ -276,6 +407,35 @@ const SalesLedger = () => {
   const criticalRows = ledgerRows.filter((r) => r.severity === "critical");
   const watchRows = ledgerRows.filter((r) => r.severity === "watch");
   const healthyRows = ledgerRows.filter((r) => r.severity === "healthy");
+
+  const sevFilteredRows =
+    sevFilter === "all"
+      ? [...criticalRows, ...watchRows, ...healthyRows]
+      : sevFilter === "critical"
+        ? criticalRows
+        : sevFilter === "watch"
+          ? watchRows
+          : healthyRows;
+
+  const textFilteredRows = storeFilter.trim()
+    ? sevFilteredRows.filter((row) => {
+        const q = storeFilter.trim().toLowerCase();
+        return (
+          row.store_name.toLowerCase().includes(q) ||
+          row.store_number.toLowerCase().includes(q)
+        );
+      })
+    : sevFilteredRows;
+
+  const sortValue = (row: LedgerRowData, column: SortColumn) =>
+    column === "ty" ? row.twTotal : column === "vsLW" ? row.vsLWPct : row.vsLYPct;
+
+  const visibleRows = sort
+    ? [...textFilteredRows].sort((a, b) => {
+        const diff = sortValue(a, sort.column) - sortValue(b, sort.column);
+        return sort.direction === "desc" ? -diff : diff;
+      })
+    : textFilteredRows;
 
   const heroTWTotal = ledgerRows.reduce((acc, r) => acc + r.twTotal, 0);
   const heroLYTotal = ledgerRows.reduce((acc, r) => acc + r.lyTotal, 0);
@@ -328,7 +488,7 @@ const SalesLedger = () => {
           {/* Left: store list */}
           <div
             className="flex flex-col min-w-0 shadow-lg"
-            style={{ flexBasis: "46%", flexShrink: 0 }}
+            style={{ flexBasis: "35%", flexShrink: 0 }}
           >
             <LedgerHeader
               weekLabel={weekLabel}
@@ -343,37 +503,101 @@ const SalesLedger = () => {
               gradingMetric={gradingMetric}
             />
 
-            {/* Tier summary strip */}
-            <TierStrip
-              critical={criticalRows.length}
-              watch={watchRows.length}
-              healthy={healthyRows.length}
-              className="border-x border-gray-100"
-            />
+            {/* Tier summary pills — click to filter the list below */}
+            <div className="flex items-center justify-between px-4 py-2 bg-custom-white border-x border-gray-100">
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setSevFilter((f) => (f === "critical" ? "all" : "critical"))}
+                  className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
+                    sevFilter === "critical" ? "ring-2 ring-severity_critical_text/40 shadow-sm" : ""
+                  }`}
+                >
+                  Crit ({criticalRows.length})
+                </button>
+                <button
+                  onClick={() => setSevFilter((f) => (f === "watch" ? "all" : "watch"))}
+                  className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
+                    sevFilter === "watch" ? "ring-2 ring-severity_watch_text/40 shadow-sm" : ""
+                  }`}
+                >
+                  Watch ({watchRows.length})
+                </button>
+                <button
+                  onClick={() => setSevFilter((f) => (f === "healthy" ? "all" : "healthy"))}
+                  className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${
+                    sevFilter === "healthy" ? "ring-2 ring-severity_healthy_text/40 shadow-sm" : ""
+                  }`}
+                >
+                  OK ({healthyRows.length})
+                </button>
+              </div>
+              <TextFilter
+                value={storeFilter}
+                onChange={setStoreFilter}
+                placeholder="Filter by store…"
+                className="max-w-[230px]"
+              />
+            </div>
 
-            {/* Three columns — flex-1 so they fill remaining height */}
-            <div className="flex-1 overflow-hidden bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100 grid grid-cols-3 divide-x divide-gray-100">
-              <TierColumn
-                severity="critical"
-                rows={criticalRows}
-                onSelect={(s) => dispatch(setLedgerSelection(s))}
-                selectedStoreId={selection?.storeId}
-                gradingMetric={gradingMetric}
-              />
-              <TierColumn
-                severity="watch"
-                rows={watchRows}
-                onSelect={(s) => dispatch(setLedgerSelection(s))}
-                selectedStoreId={selection?.storeId}
-                gradingMetric={gradingMetric}
-              />
-              <TierColumn
-                severity="healthy"
-                rows={healthyRows}
-                onSelect={(s) => dispatch(setLedgerSelection(s))}
-                selectedStoreId={selection?.storeId}
-                gradingMetric={gradingMetric}
-              />
+            {/* Unified store list — sorted critical → watch → healthy */}
+            <div className="flex-1 overflow-hidden bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100 flex flex-col">
+              <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
+                <span className="w-2 flex-shrink-0" />
+                <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-1">
+                  Store
+                </span>
+                <div className="flex items-center gap-[14px]">
+                  <button
+                    onClick={() => handleSortClick("ty")}
+                    className="flex items-center justify-end gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0 pl-2.5"
+                    style={{ width: 64 }}
+                  >
+                    TY
+                    {sort?.column === "ty" &&
+                      (sort.direction === "desc" ? (
+                        <ChevronDownIcon className="w-3 h-3" />
+                      ) : (
+                        <ChevronUpIcon className="w-3 h-3" />
+                      ))}
+                  </button>
+                  <button
+                    onClick={() => handleSortClick("vsLW")}
+                    className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
+                    style={{ width: 58 }}
+                  >
+                    vs LW
+                    {sort?.column === "vsLW" &&
+                      (sort.direction === "desc" ? (
+                        <ChevronDownIcon className="w-3 h-3" />
+                      ) : (
+                        <ChevronUpIcon className="w-3 h-3" />
+                      ))}
+                  </button>
+                  <button
+                    onClick={() => handleSortClick("vsLY")}
+                    className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
+                    style={{ width: 58 }}
+                  >
+                    vs LY
+                    {sort?.column === "vsLY" &&
+                      (sort.direction === "desc" ? (
+                        <ChevronDownIcon className="w-3 h-3" />
+                      ) : (
+                        <ChevronUpIcon className="w-3 h-3" />
+                      ))}
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto thin-scrollbar">
+                {visibleRows.map((row) => (
+                  <LedgerRow
+                    key={row.storeid}
+                    row={row}
+                    isSelected={selection?.storeId === row.storeid}
+                    onClick={(s) => dispatch(setLedgerSelection(s))}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 

@@ -170,6 +170,7 @@ export const buildLedgerRows = (
             twNet: r.total_sales - r.total_tax,
             lwNet: lwRow ? lwRow.total_sales - lwRow.total_tax : 0,
             lyNet: lyRow ? lyRow.total_sales - lyRow.total_tax : 0,
+            twQty: r.qty,
           };
         });
       return {
