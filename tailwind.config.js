@@ -26,6 +26,29 @@ export default {
         },
         "custom-white": "rgb(var(--color-custom-white) / <alpha-value>)",
         bkg: "rgb(var(--color-bkg) / <alpha-value>)",
+        row_selected: "rgb(var(--color-row-selected) / <alpha-value>)",
+        row_selected_border:
+          "rgb(var(--color-row-selected-border) / <alpha-value>)",
+        severity_critical_bg:
+          "rgb(var(--color-severity-critical-bg) / <alpha-value>)",
+        severity_critical_text:
+          "rgb(var(--color-severity-critical-text) / <alpha-value>)",
+        severity_watch_bg:
+          "rgb(var(--color-severity-watch-bg) / <alpha-value>)",
+        severity_watch_text:
+          "rgb(var(--color-severity-watch-text) / <alpha-value>)",
+        severity_healthy_bg:
+          "rgb(var(--color-severity-healthy-bg) / <alpha-value>)",
+        severity_healthy_text:
+          "rgb(var(--color-severity-healthy-text) / <alpha-value>)",
+        delta_positive_bg:
+          "rgb(var(--color-delta-positive-bg) / <alpha-value>)",
+        delta_positive_text:
+          "rgb(var(--color-delta-positive-text) / <alpha-value>)",
+        delta_negative_bg:
+          "rgb(var(--color-delta-negative-bg) / <alpha-value>)",
+        delta_negative_text:
+          "rgb(var(--color-delta-negative-text) / <alpha-value>)",
         content: "rgb(var(--color-content) / <alpha-value>)",
         sidebar: "rgb(var(--color-sidebar) / <alpha-value>)",
         warning: "rgb(var(--color-warning) / <alpha-value>)",
@@ -208,7 +231,7 @@ export default {
             textShadow: value,
           }),
         },
-        { values: theme("textShadow") }
+        { values: theme("textShadow") },
       );
     }),
   ],
