@@ -21,8 +21,6 @@ import {
   // setRawCats,
   // setRawLWCats,
   // setRawLYCats,
-  setSubDeptThreshold,
-  setHourlyThreshold,
   // setCategoryThreshold,
   setLastFetchedStoreId,
   clearPopupSelections,
@@ -39,8 +37,9 @@ import PopupSubDeptList from "./PopupSubDeptList";
 import PopupHourlyView from "./PopupHourlyView";
 // import PopupCategoryList from "./PopupCategoryList";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
-import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import type { StoreSelection } from "./LedgerRow";
+import { formatPct, pillClass, severityHeaderBgClass } from "./utils";
+import GhostFlames from "./GhostFlames";
 
 interface StoreDetailPopupProps {
   selection: StoreSelection;
@@ -71,20 +70,26 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
     rawHourly,
     rawLWHourly,
     rawLYHourly,
-    subDeptThreshold,
-    hourlyThreshold,
     exportSubDeptItems,
     exportSubDeptName,
     lastFetchedStoreId,
   } = useAppSelector((state) => state.salesLedger);
 
-  const activeThreshold =
-    tab === "subdept" ? subDeptThreshold : hourlyThreshold;
-
   const [loading, setLoading] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [showFlames, setShowFlames] = useState(false);
   // const [catLoading, setCatLoading] = useState(false);
   // const [catFetchedFor, setCatFetchedFor] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (selection.severity !== "critical") {
+      setShowFlames(false);
+      return;
+    }
+    setShowFlames(true);
+    const timer = setTimeout(() => setShowFlames(false), 5000);
+    return () => clearTimeout(timer);
+  }, [selection.storeId, selection.severity]);
 
   const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
   const twEnd = formatGoliathDate(search.singleDate);
@@ -154,15 +159,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
       ? ((headerTwTotal - headerLyTotal) / headerLyTotal) * 100
       : null;
 
-  const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
-
   const THRESHOLD = 9;
-  const pillClass = (pct: number | null) => {
-    if (pct === null) return "bg-gray-100 text-gray-500";
-    if (pct < -THRESHOLD) return "bg-red-100 text-red-800";
-    if (pct < 0) return "bg-amber-100 text-amber-800";
-    return "bg-emerald-100 text-emerald-800";
-  };
 
   useEffect(() => {
     // Remounting with data already fetched for this exact store (e.g.
@@ -351,22 +348,21 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
 
   return (
     <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
-      {/* Navy title bar */}
-      <div className="flex items-start justify-between leading-tight px-4 py-3 bg-[#1e2a4a] flex-shrink-0">
-        <div>
-          <p className="text-white text-[13px] font-semibold leading-tight">
-            {selection.storeName}
-          </p>
-          <span className="text-white text-[10px]">
-            Weekly Sales Report · {staticTwDate}
-          </span>
-        </div>
-        <div className="flex items-center gap-2 mt-0.5">
+      {/* Title bar — tinted to the selected store's severity */}
+      <div className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${severityHeaderBgClass[selection.severity]}`}>
+        {showFlames && <GhostFlames />}
+        <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start">
+          {selection.storeName}
+        </p>
+        <span className="text-custom-white text-[13px] font-bold justify-self-center">
+          Weekly Sales Report · {staticTwDate}
+        </span>
+        <div className="flex items-center gap-2 justify-self-end">
           {!loading && (rawSubs.length > 0 || rawHourly.length > 0) && (
             <button
               onClick={() => setExportOpen(true)}
               title="Export CSV"
-              className="text-white/60 hover:text-white transition-colors"
+              className="text-custom-white transition-colors"
             >
               <ArrowDownTrayIcon className="w-4 h-4" />
             </button>
@@ -393,88 +389,50 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
 
       {/* KPI metric strip — values and date labels update with day selection */}
       <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
-        <div className="px-4 py-2.5">
-          <div className="text-[9px] font-medium uppercase tracking-wide text-content">
+        <div className="px-4 pt-2.5 text-center">
+          <div className="text-[10px] font-bold uppercase tracking-wide text-content">
             TY Net Sales
           </div>
-          <div className="text-[8px] text-content mb-0.5">{twDateLabel}</div>
-          <div className="text-[13px] font-semibold text-content">
+          <div className="text-[10px] font-bold text-content mb-0.5">{twDateLabel}</div>
+          <div className="text-[14px] font-bold text-content">
             {formatCurrency2(headerTwTotal)}
           </div>
         </div>
-        <div className="px-4 py-2.5">
-          <div className="text-[9px] font-medium uppercase tracking-wide text-content">
+        <div className="px-4 pt-2.5 text-center">
+          <div className="text-[10px] font-bold uppercase tracking-wide text-content">
             vs Last Week
           </div>
-          <div className="text-[8px] text-content mb-0.5">{lwDateLabel}</div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-[13px] font-semibold text-content">
+          <div className="text-[10px] font-bold text-content mb-0.5">{lwDateLabel}</div>
+          <div className="flex items-baseline justify-center gap-2">
+            <span className="text-[14px] font-bold text-content">
               {formatCurrency2(headerLwTotal)}
             </span>
             {headerVsLWPct !== null && (
               <span
-                className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${pillClass(headerVsLWPct)}`}
+                className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(headerVsLWPct, THRESHOLD)}`}
               >
                 {formatPct(headerVsLWPct)}
               </span>
             )}
           </div>
         </div>
-        <div className="px-4 py-2.5">
-          <div className="text-[9px] font-medium uppercase tracking-wide text-content">
+        <div className="px-4 pt-2.5 text-center">
+          <div className="text-[10px] font-bold uppercase tracking-wide text-content">
             vs Last Year
           </div>
-          <div className="text-[8px] text-content mb-0.5">{lyDateLabel}</div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-[13px] font-semibold text-content">
+          <div className="text-[10px] font-bold text-content mb-0.5">{lyDateLabel}</div>
+          <div className="flex items-baseline justify-center gap-2">
+            <span className="text-[14px] font-bold text-content">
               {formatCurrency2(headerLyTotal)}
             </span>
             {headerVsLYPct !== null && (
               <span
-                className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${pillClass(headerVsLYPct)}`}
+                className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(headerVsLYPct, THRESHOLD)}`}
               >
                 {formatPct(headerVsLYPct)}
               </span>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* Tabs + threshold */}
-      <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
-        {(["subdept", "hourly"] as PopupTab[]).map((t) => (
-          <button
-            key={t}
-            onClick={() => dispatch(setLedgerTab(t))}
-            className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors ${
-              tab === t
-                ? "border-[#1e2a4a] text-content"
-                : "border-transparent text-content"
-            }`}
-          >
-            {t === "subdept" ? "Sub dept" : "Hourly"}
-          </button>
-        ))}
-        <div className="flex-1" />
-        <div className="flex items-center gap-1.5 py-1">
-          <span className="text-[10px] text-content">
-            {tab === "subdept" ? "Sub dept" : "Hourly"} Threshold
-          </span>
-          <ThresholdFilter
-            value={
-              activeThreshold === null
-                ? null
-                : { op: "gt", amount: activeThreshold }
-            }
-            onChange={(v) => {
-              const val = v?.amount ?? null;
-              if (tab === "subdept") dispatch(setSubDeptThreshold(val));
-              else dispatch(setHourlyThreshold(val));
-            }}
-            showOp={false}
-            suffix="%"
-            inputWidth={40}
-          />
         </div>
       </div>
 
@@ -485,6 +443,23 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           selectedDate={selectedDate}
           onSelect={(date) => dispatch(setLedgerSelectedDate(date))}
         />
+      </div>
+
+      {/* Tabs */}
+      <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
+        {(["subdept", "hourly"] as PopupTab[]).map((t) => (
+          <button
+            key={t}
+            onClick={() => dispatch(setLedgerTab(t))}
+            className={`px-3 py-1.5 text-[12px] font-medium border-b-2 transition-colors ${
+              tab === t
+                ? "border-[#1e2a4a] text-content"
+                : "border-transparent text-content"
+            }`}
+          >
+            {t === "subdept" ? "Sub dept" : "Hourly"}
+          </button>
+        ))}
       </div>
 
       {/* Content — fills remaining height */}

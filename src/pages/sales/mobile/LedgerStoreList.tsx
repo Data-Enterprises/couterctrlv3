@@ -56,6 +56,7 @@ const LedgerStoreList = () => {
       end: sorted[sorted.length - 1]?.sale_date.split("T")[0] ?? "",
       mode: "weekly",
       days: sorted,
+      severity: row.severity,
     }));
   };
 

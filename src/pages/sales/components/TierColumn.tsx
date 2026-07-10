@@ -38,14 +38,14 @@ const StoreRowItem = ({
           <div className="text-[10px] font-medium text-content mt-0.5">
             {row.hasLW ? (gradingMetric === "qty" ? formatBigNumber(row.lwQty, 0) : formatCurrency2(row.lwTotal)) : "—"}
           </div>
-          {row.hasLW && <div className={`text-[9px] font-medium mt-0.5 ${row.vsLWPct >= 0 ? "text-emerald-600" : "text-red-500"}`}>{formatPct(row.vsLWPct)}</div>}
+          {row.hasLW && <div className={`text-[9px] font-medium mt-0.5 ${row.vsLWPct >= 0 ? "text-severity_healthy_text" : "text-severity_critical_text"}`}>{formatPct(row.vsLWPct)}</div>}
         </div>
         <div className="px-2 py-1 text-center">
           <div className="text-[7px] text-content uppercase tracking-wide">LY</div>
           <div className="text-[10px] font-medium text-content mt-0.5">
             {row.hasLY ? (gradingMetric === "qty" ? formatBigNumber(row.lyQty, 0) : formatCurrency2(row.lyTotal)) : "—"}
           </div>
-          {row.hasLY && <div className={`text-[9px] font-medium mt-0.5 ${row.vsLYPct >= 0 ? "text-emerald-600" : "text-red-500"}`}>{formatPct(row.vsLYPct)}</div>}
+          {row.hasLY && <div className={`text-[9px] font-medium mt-0.5 ${row.vsLYPct >= 0 ? "text-severity_healthy_text" : "text-severity_critical_text"}`}>{formatPct(row.vsLYPct)}</div>}
         </div>
       </div>
     </button>
@@ -79,6 +79,7 @@ const TierColumn = ({
       end: weekEnd,
       mode: "weekly",
       days: sorted,
+      severity: row.severity,
     });
   };
 

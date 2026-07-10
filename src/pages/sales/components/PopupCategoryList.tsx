@@ -11,7 +11,7 @@ import {
 } from "@heroicons/react/20/solid";
 import type { Severity } from "./LedgerRow";
 import { SEVERITY_CONFIG } from "./tierColumnUtils";
-import { formatPct, pillClass, chipClass, type SevFilter } from "./utils";
+import { formatPct, pillClass, chipClass, CTA_SEVERITY_CLASSES, type SevFilter } from "./utils";
 import SeverityBadge from "../../../components/SeverityBadge";
 
 type CatRow = {
@@ -324,7 +324,7 @@ const PopupCategoryList = ({
               <button
                 key={r.id}
                 onClick={() => dispatch(setSelectedCatId(isSel ? null : r.id))}
-                className={`w-full px-3 py-2 border-b border-gray-100 last:border-0 gap-2 text-left transition-colors ${isSel ? "bg-white" : "hover:bg-gray-50"}`}
+                className={`w-full px-3 py-2 border-b border-gray-100 last:border-0 gap-2 text-left transition-colors ${isSel ? "bg-custom-white" : "hover:bg-gray-50"}`}
                 style={
                   isSel
                     ? {
@@ -495,7 +495,7 @@ const PopupCategoryList = ({
                           </span>
                           {pct !== null && (
                             <span
-                              className={`text-[10px] font-medium ${pct >= 0 ? "text-emerald-600" : "text-red-500"}`}
+                              className={`text-[10px] font-medium ${pct >= 0 ? "text-severity_healthy_text" : "text-severity_critical_text"}`}
                             >
                               {formatPct(pct)}
                             </span>
@@ -511,23 +511,23 @@ const PopupCategoryList = ({
             {/* CTA insight strip */}
             {cta && (
               <div
-                className={`mx-3 mb-3 mt-1 rounded-md overflow-hidden ${cta.severity === "critical" ? "border border-orange-200" : cta.severity === "watch" ? "border border-amber-200" : "border border-emerald-200"}`}
+                className={`mx-3 mb-3 mt-1 rounded-md overflow-hidden border ${CTA_SEVERITY_CLASSES[cta.severity].border}`}
               >
                 <button
                   onClick={() => setCtaOpen((v) => !v)}
-                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 ${cta.severity === "critical" ? "bg-orange-50 hover:bg-orange-100" : cta.severity === "watch" ? "bg-amber-50 hover:bg-amber-100" : "bg-emerald-50 hover:bg-emerald-100"} transition-colors`}
+                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 ${CTA_SEVERITY_CLASSES[cta.severity].bg} ${CTA_SEVERITY_CLASSES[cta.severity].hoverBg} transition-colors`}
                 >
                   {cta.severity === "critical" && (
-                    <ExclamationTriangleIcon className="w-3.5 h-3.5 text-orange-600 flex-shrink-0" />
+                    <ExclamationTriangleIcon className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`} />
                   )}
                   {cta.severity === "watch" && (
-                    <ExclamationCircleIcon className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                    <ExclamationCircleIcon className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`} />
                   )}
                   {cta.severity === "healthy" && (
-                    <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                    <CheckCircleIcon className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`} />
                   )}
                   <span
-                    className={`text-[10px] font-medium flex-1 text-left ${cta.severity === "critical" ? "text-orange-800" : cta.severity === "watch" ? "text-amber-800" : "text-emerald-800"}`}
+                    className={`text-[10px] font-medium flex-1 text-left ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
                   >
                     Insight
                   </span>
@@ -539,10 +539,10 @@ const PopupCategoryList = ({
                 </button>
                 {ctaOpen && (
                   <div
-                    className={`px-2.5 py-2 ${cta.severity === "critical" ? "bg-orange-50" : cta.severity === "watch" ? "bg-amber-50" : "bg-emerald-50"}`}
+                    className={`px-2.5 py-2 ${CTA_SEVERITY_CLASSES[cta.severity].bg}`}
                   >
                     <span
-                      className={`text-[11px] leading-relaxed ${cta.severity === "critical" ? "text-orange-900" : cta.severity === "watch" ? "text-amber-900" : "text-emerald-900"}`}
+                      className={`text-[11px] leading-relaxed ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
                     >
                       {cta.text}
                     </span>

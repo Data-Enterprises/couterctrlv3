@@ -53,11 +53,34 @@ body {
   }
 }
 
+@keyframes ghost-flame-flicker {
+  0% {
+    transform: scaleY(0.85) translateY(2px);
+    opacity: 0.35;
+  }
+  100% {
+    transform: scaleY(1.15) translateY(-2px);
+    opacity: 0.75;
+  }
+}
+
 @layer base {
   :root {
     /* The main theme for now... */
     --color-bkg: 240 245 250;
-    --color-custom-white: 255 255 255;
+    --color-custom-white: 248 251 255;
+    --color-row-selected: 239 241 242;
+    --color-row-selected-border: 138 155 176;
+    --color-severity-critical-bg: 235 216 216;
+    --color-severity-critical-text: 147 16 16;
+    --color-severity-watch-bg: 236 224 205;
+    --color-severity-watch-text: 127 77 0;
+    --color-severity-healthy-bg: 216 235 225;
+    --color-severity-healthy-text: 14 99 49;
+    --color-delta-positive-bg: 209 242 225;
+    --color-delta-positive-text: 16 96 56;
+    --color-delta-negative-bg: 242 209 209;
+    --color-delta-negative-text: 142 16 16;
     --color-content: 30 41 59;
     --color-themeText: 30 41 59;
     --color-sidebar: 0 168 235;

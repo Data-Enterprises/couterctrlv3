@@ -6,10 +6,15 @@ import {
 import type { Severity } from "../pages/sales/components/LedgerRow";
 import { BADGE_BG, BADGE_COLOR } from "../pages/sales/components/utils";
 
-const SeverityBadge = ({ severity }: { severity: Severity }) => (
+interface SeverityBadgeProps {
+  severity: Severity;
+  showBackground?: boolean;
+}
+
+const SeverityBadge = ({ severity, showBackground = true }: SeverityBadgeProps) => (
   <div
     className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0"
-    style={{ background: BADGE_BG[severity] }}
+    style={showBackground ? { background: BADGE_BG[severity] } : undefined}
   >
     {severity === "critical" && (
       <ExclamationTriangleIcon
