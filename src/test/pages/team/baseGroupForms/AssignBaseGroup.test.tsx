@@ -31,7 +31,7 @@ import {
 import { selectedCompanyBGResp, bgAssignedToUserResp } from ".";
 
 // Component being tested
-import Team from "../../../../pages/team/Team";
+import Team from "../../../../pages/team/TeamLegacy";
 import { setCompanies, setUserLevel } from "../../../../features/userSlice";
 import { defaultError, defaultResp } from "../companyForms";
 

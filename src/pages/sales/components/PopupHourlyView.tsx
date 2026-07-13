@@ -5,6 +5,7 @@ import {
   setHourlyThreshold,
 } from "../../../features/salesLedgerSlice";
 import { formatCurrency2, addDays, sameWeekDayLastYear } from "../../../utils";
+import { buildDayShiftMaps, buildDayMatchedTwTotals } from "../shared/ledgerUtils";
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
@@ -225,11 +226,33 @@ const PopupHourlyView = ({
       ),
     ).sort((a, b) => a - b);
 
+    // An hour can have real TW sales on days where the store overall has an
+    // LW/LY match but that specific hour doesn't — restrict the TW side of
+    // each hour's percentage to just the days that hour has a match on.
+    const twRealDates = [
+      ...new Set(hourlySales.map((h) => h.sale_date.split("T")[0])),
+    ];
+    const { twToLwDay, twToLyDay } = buildDayShiftMaps(twRealDates);
+    const matched = buildDayMatchedTwTotals(
+      hourlySales,
+      hourlySalesLastWeek,
+      hourlySalesLastYear,
+      (h) => h.hour,
+      (h) => h.sale_date.split("T")[0],
+      (h) => h.total_sales - h.total_tax,
+      (h) => h.qty,
+      twToLwDay,
+      twToLyDay,
+    );
+
     return allHours
       .map((h) => {
         const tw = twMap[h]?.net ?? 0;
         const lw = lwMap[h]?.net ?? 0;
         const ly = lyMap[h]?.net ?? 0;
+        const m = matched.get(h);
+        const twNetForLW = m?.twNetForLW ?? 0;
+        const twNetForLY = m?.twNetForLY ?? 0;
         return {
           hour: h,
           tw,
@@ -243,8 +266,8 @@ const PopupHourlyView = ({
           lyQty: lyMap[h]?.qty ?? 0,
           hasLW: lw > 0,
           hasLY: ly > 0,
-          vsLWPct: lw ? ((tw - lw) / lw) * 100 : 0,
-          vsLYPct: ly ? ((tw - ly) / ly) * 100 : 0,
+          vsLWPct: lw ? ((twNetForLW - lw) / lw) * 100 : 0,
+          vsLYPct: ly ? ((twNetForLY - ly) / ly) * 100 : 0,
         };
       })
       .sort((a, b) => {

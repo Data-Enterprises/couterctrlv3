@@ -25,7 +25,7 @@ import {
 import { defaultCompaniesResp, defaultError, defaultResp } from ".";
 
 // Component being tested
-import Team from "../../../../pages/team/Team";
+import Team from "../../../../pages/team/TeamLegacy";
 import { setCompanies, setUserLevel } from "../../../../features/userSlice";
 import { setCompanyInfo } from "../../../../features/companySlice";
 

@@ -64,7 +64,12 @@ const buildHourlyCsv = (ty: HourlySale[], lw: HourlySale[], ly: HourlySale[]) =>
 const buildSummaryCsv = (days: DayDot[]) => {
   const headers = ["Date", "TY Net Sales", "LW Net Sales", "LY Net Sales"];
   const rows = [...days].sort((a, b) => a.sale_date.localeCompare(b.sale_date))
-    .map((d) => [fmtDate(d.sale_date.split("T")[0]), fmtNum(d.twNet), fmtNum(d.lwNet), fmtNum(d.lyNet)]);
+    .map((d) => [
+      fmtDate(d.sale_date.split("T")[0]),
+      fmtNum(d.twNet),
+      d.lwNet !== null ? fmtNum(d.lwNet) : "",
+      d.lyNet !== null ? fmtNum(d.lyNet) : "",
+    ]);
   return rowsToCsv(headers, rows);
 };
 
@@ -76,8 +81,8 @@ const buildItemsCsv = (items: ExportSubDeptItem[], sevs: Set<ItemSev>) => {
   const filtered = items.filter((i) => sevs.has(i.sev));
   const headers = ["Product Code", "Description", "Severity", "TY Net", "TY Qty", "LW Net", "LW Qty", "LW vs %", "LY Net", "LY Qty", "LY vs %"];
   const rows = filtered.map((i) => {
-    const lwPct = i.lwNet !== null && i.lwNet > 0 ? ((i.tyNet - i.lwNet) / i.lwNet) * 100 : null;
-    const lyPct = i.lyNet !== null && i.lyNet > 0 ? ((i.tyNet - i.lyNet) / i.lyNet) * 100 : null;
+    const lwPct = i.lwNet !== null && i.lwNet > 0 ? ((i.twNetForLW - i.lwNet) / i.lwNet) * 100 : null;
+    const lyPct = i.lyNet !== null && i.lyNet > 0 ? ((i.twNetForLY - i.lyNet) / i.lyNet) * 100 : null;
     return [
       i.productCode,
       i.desc,

@@ -22,7 +22,7 @@ import {
   assignOneStoreResp,
 } from "..";
 import { setupStore } from "../../../../store";
-import Team from "../../../../pages/team/Team";
+import Team from "../../../../pages/team/TeamLegacy";
 import {
   setCompanies,
   setUserId,

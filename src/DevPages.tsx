@@ -18,6 +18,8 @@ import Admin from "./pages/admin/dev/Admin.tsx";
 import AdminLegacy from "./pages/admin/AdminLegacy.tsx";
 import Groups from "./pages/groups/dev/Groups.tsx";
 import GroupsLegacy from "./pages/groups/GroupsLegacy.tsx";
+import Team from "./pages/team/dev/Team.tsx";
+import TeamLegacy from "./pages/team/TeamLegacy.tsx";
 import TitleBar from "./components/navigation/TitleBar.tsx";
 import TitleBarLegacy from "./components/navigation/TitleBarLegacy.tsx";
 import SideBarLegacy from "./components/navigation/SideBarLegacy.tsx";
@@ -80,4 +82,9 @@ export const AdminPage = () => {
 export const GroupsPage = () => {
   const devMode = useAppSelector((s) => s.app.devMode);
   return devMode ? <Groups /> : <GroupsLegacy />;
+};
+
+export const TeamPage = () => {
+  const devMode = useAppSelector((s) => s.app.devMode);
+  return devMode ? <Team /> : <TeamLegacy />;
 };

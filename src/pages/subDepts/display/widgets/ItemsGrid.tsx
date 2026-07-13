@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useSubMarginCtx } from "../../hooks";
-import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useSubMarginState } from "../../hooks/useSubMarginState";
+import { useAppDispatch } from "../../../../hooks";
 import { calculateCogs } from "../..";
 
 import { AgGridReact } from "ag-grid-react";
@@ -19,7 +20,7 @@ const ItemsGrid = () => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
   const { margins, selectedWeekDay } = useSubMarginCtx();
-  const sm = useAppSelector((state) => state.subMargin);
+  const sm = useSubMarginState();
   const [gridData, setGridData] = useState<ItemRow[]>([]);
 
   useEffect(() => {

@@ -14,7 +14,7 @@ import {
   userLvlResp,
 } from "..";
 
-import Team from "../../../../pages/team/Team";
+import Team from "../../../../pages/team/TeamLegacy";
 import { getAllUsers } from "../../../../api/user";
 import { getQuicksightUsers } from "../../../../api/quicksight";
 import { getUserLevels } from "../../../../api/team";

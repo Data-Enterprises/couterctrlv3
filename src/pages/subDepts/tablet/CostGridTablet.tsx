@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -7,13 +7,14 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 import { costCols } from "../display/widgets";
 import { type ThreshOperator } from "../../../features/subMarginSlice";
 import { useSubMarginActions } from "../hooks/useSubMarginActions";
+import { useSubMarginState } from "../hooks/useSubMarginState";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import CostGridFiltersTablet from "./CostGridFiltersTablet";
 
 const CostGridTablet = () => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
-  const sm = useAppSelector((state) => state.subMargin);
+  const sm = useSubMarginState();
 
   useEffect(() => {
     if (sm.margins.length) {

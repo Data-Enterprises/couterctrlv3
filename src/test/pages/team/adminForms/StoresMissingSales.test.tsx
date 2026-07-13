@@ -17,7 +17,7 @@ import {
 import { assignedStores, storesMissingSaleResp, unassignedStores } from ".";
 
 import { setupStore } from "../../../../store";
-import Team from "../../../../pages/team/Team";
+import Team from "../../../../pages/team/TeamLegacy";
 import {
   setAssignedStores,
   setCompanies,

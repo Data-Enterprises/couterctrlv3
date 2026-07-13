@@ -1,12 +1,13 @@
 import { type ItemFilterType } from "../../../features/subMarginSlice";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import { useSubMarginActions } from "../hooks/useSubMarginActions";
+import { useSubMarginState } from "../hooks/useSubMarginState";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 
 const CostGridFiltersTablet = () => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
-  const sm = useAppSelector((state) => state.subMargin);
+  const sm = useSubMarginState();
 
   const divStyle =
     "bg-bkg/75 py-1.5 text-[11px] text-center rounded-full shadow-md transition-all duration-200";

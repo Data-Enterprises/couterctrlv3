@@ -7,7 +7,7 @@ import { setCompanies, setUserLevel } from "../../../../features/userSlice";
 import { setRefresh, setUserLevels } from "../../../../features/usersSlice";
 import { allUsersResp, nonDCRCompanies, userLvlResp } from "..";
 import { getAllUsers } from "../../../../api/user";
-import Team from "../../../../pages/team/Team";
+import Team from "../../../../pages/team/TeamLegacy";
 
 const user = userEvent.setup();
 const store = setupStore();

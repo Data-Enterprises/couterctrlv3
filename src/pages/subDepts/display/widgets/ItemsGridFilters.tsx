@@ -1,12 +1,13 @@
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
+import { useSubMarginState } from "../../hooks/useSubMarginState";
 import type { ItemFilterType } from "../../../../features/subMarginSlice";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../../utils";
 
 const ItemsGridFilters = () => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
-  const sm = useAppSelector((state) => state.subMargin);
+  const sm = useSubMarginState();
 
   const divStyle =
     "py-1 text-sm flex justify-center items-center rounded-lg shadow-md hover:bg-blue-200 transition-all duration-200 cursor-pointer";

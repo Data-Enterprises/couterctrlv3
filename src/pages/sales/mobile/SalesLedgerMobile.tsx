@@ -32,8 +32,15 @@ const SalesLedgerMobile = () => {
   const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
   const lwEnd = addDays(search.singleDate, -7).toISOString().split("T")[0];
   const lwStart = addDays(search.singleDate, -13).toISOString().split("T")[0];
-  const lyEnd = sameWeekDayLastYear(twEnd).date;
-  const lyStart = sameWeekDayLastYear(twStart).date;
+  // Shifting just the two week endpoints breaks when one of them lands on a
+  // fixed-date holiday (e.g. July 4th) — that endpoint gets snapped to the
+  // exact holiday date last year while the other gets a plain weekday-preserving
+  // shift, desyncing the range from the per-day lookups elsewhere. Shifting
+  // every day in the week and taking the min/max keeps the range correct.
+  const twWeekDates = Array.from({ length: 7 }, (_, i) => addDays(twStart, i).toISOString().split("T")[0]);
+  const lyWeekDates = twWeekDates.map((d) => sameWeekDayLastYear(d).date).sort();
+  const lyStart = lyWeekDates[0];
+  const lyEnd = lyWeekDates[lyWeekDates.length - 1];
 
   const isStore = search.type === "Store";
   const useGroups = isStore ? 0 : 1;

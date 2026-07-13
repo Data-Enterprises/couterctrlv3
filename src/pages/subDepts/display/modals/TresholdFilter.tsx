@@ -1,6 +1,7 @@
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
+import { useSubMarginState } from "../../hooks/useSubMarginState";
 import type { ItemFilterType, ThreshOperator } from "../../../../features/subMarginSlice";
 import CheckBox from "../../../../components/inputs/CheckBox";
 import Input from "../../../../components/inputs/Input";
@@ -15,7 +16,7 @@ const ThresholdFilter = ({ label, type, handleClose }: ThresholdFilter) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
-  const subMargin = useAppSelector((state) => state.subMargin);
+  const subMargin = useSubMarginState();
 
   const textChange = (x: string) => {
     dispatch(actions.setFilterTextInput(x));
