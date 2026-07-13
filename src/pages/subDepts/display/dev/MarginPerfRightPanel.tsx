@@ -5,7 +5,7 @@ import { useSubMarginActions } from "../../hooks/useSubMarginActions";
 import { formatDate } from "../widgets";
 import { formatCurrency2, addDays } from "../../../../utils";
 import { gpm } from "../../../../functions";
-import { calculateCogs, setDates, getLYDate } from "../..";
+import { calculateCogs, setDates, getLYDate, getTier } from "../..";
 import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import type { SubDeptCost, SubDeptMargin } from "../../../../interfaces";
 
@@ -14,6 +14,7 @@ import MarginPerfItemsTable from "./MarginPerfItemsTable";
 import SubDeptCostGrid from "../widgets/SubDeptCostGrid";
 import MarginPerfExportModal from "./MarginPerfExportModal";
 import MarginPerfDaySidebar from "./MarginPerfDaySidebar";
+import { severityHeaderBgClass, pillClass, formatPct } from "../../../../utils/severity";
 
 const MarginPerfRightPanel = () => {
   const ctx = useSubMarginCtx();
@@ -21,6 +22,7 @@ const MarginPerfRightPanel = () => {
   const actions = useSubMarginActions();
 
   const gradingMetric = useAppSelector((s) => s.subMargin.gradingMetric);
+  const subDeptGrades = useAppSelector((s) => s.subMargin.subDeptGrades);
   const subDeptName = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId)?.desc ?? "";
   const storeName = useStoreName(ctx.searchValue);
 
@@ -31,6 +33,9 @@ const MarginPerfRightPanel = () => {
   const gradingThresholdRef = useRef<number>(rawGradingThreshold ?? 9);
   if (rawGradingThreshold != null) gradingThresholdRef.current = rawGradingThreshold;
   const gradingThreshold = gradingThresholdRef.current;
+
+  const selectedGrade = ctx.selectedSubDeptId != null ? subDeptGrades[ctx.selectedSubDeptId] : undefined;
+  const tier = selectedGrade ? getTier(selectedGrade, gradingThreshold, gradingMetric) : "healthy";
 
   const periodEnd = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 0)) : "";
   const periodStart = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 6)) : "";
@@ -188,73 +193,75 @@ const MarginPerfRightPanel = () => {
     <div className="flex-1 min-w-0 shadow-lg">
       <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
 
-        {/* ── 1-row navy header ── */}
-        <div className="flex-shrink-0 px-4 py-[10px] flex items-center justify-between bg-[#1e2a4a]">
-          <div>
-            <div className="text-[13px] font-semibold text-white leading-tight">{subDeptName}</div>
-            <div className="text-[10px] mt-0.5 text-white">
-              Weekly Margin Report{dateRange ? ` · ${dateRange}` : ""}
-            </div>
+        {/* ── Title bar — tinted to the selected sub dept's tier ── */}
+        <div className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${severityHeaderBgClass[tier]}`}>
+          <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start">
+            {subDeptName}
+          </p>
+          <span className="text-custom-white text-[13px] font-bold justify-self-center">
+            Weekly Margin Report{dateRange ? ` · ${dateRange}` : ""}
+          </span>
+          <div className="flex items-center gap-2 justify-self-end">
+            <button
+              className="text-custom-white transition-colors"
+              onClick={() => setExportOpen(true)}
+              title="Export"
+            >
+              <ArrowDownTrayIcon className="h-4 w-4" />
+            </button>
           </div>
-          <button
-            className="text-white/60 hover:text-white transition-colors"
-            onClick={() => setExportOpen(true)}
-            title="Export"
-          >
-            <ArrowDownTrayIcon className="h-4 w-4" />
-          </button>
         </div>
 
         {/* ── 3-col KPI strip ── */}
         <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
           {/* TY metric */}
-          <div className="px-3 py-2.5">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content">
+          <div className="px-4 pt-2.5 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
               {gradingMetric === "margin" ? "TY Margin" : "TY Net Sales"}
             </div>
-            <div className="text-[8px] text-content mb-0.5">{kpiTyLabel}</div>
-            <div className="text-[13px] font-semibold text-content">
+            <div className="text-[10px] font-bold text-content mb-0.5">{kpiTyLabel}</div>
+            <div className="text-[14px] font-bold text-content">
               {tyKpis ? gradingMetric === "margin" ? tyKpis.margin : formatCurrency2(tyKpis.sales) : "—"}
             </div>
           </div>
 
           {/* vs LW */}
-          <div className="px-3 py-2.5">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content">vs Last Week</div>
-            <div className="text-[8px] text-content mb-0.5">{kpiLwLabel}</div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[13px] font-semibold text-content">
+          <div className="px-4 pt-2.5 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content">vs Last Week</div>
+            <div className="text-[10px] font-bold text-content mb-0.5">{kpiLwLabel}</div>
+            <div className="flex items-baseline justify-center gap-2">
+              <span className="text-[14px] font-bold text-content">
                 {lwKpis ? gradingMetric === "margin" ? lwKpis.margin : formatCurrency2(lwKpis.sales) : "—"}
               </span>
               {gradingMetric === "margin" && lwMarginDelta !== null && (
-                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${lwMarginDelta >= 0 ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"}`}>
+                <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(lwMarginDelta, gradingThreshold)}`}>
                   {lwMarginDelta >= 0 ? "+" : ""}{lwMarginDelta.toFixed(1)} pts
                 </span>
               )}
               {gradingMetric === "sales" && lwSalesDelta !== null && (
-                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${lwSalesDelta >= 0 ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"}`}>
-                  {lwSalesDelta >= 0 ? "+" : ""}{lwSalesDelta.toFixed(1)}%
+                <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(lwSalesDelta, gradingThreshold)}`}>
+                  {formatPct(lwSalesDelta)}
                 </span>
               )}
             </div>
           </div>
 
           {/* vs LY */}
-          <div className="px-3 py-2.5">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content">vs Last Year</div>
-            <div className="text-[8px] text-content mb-0.5">{kpiLyLabel}</div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[13px] font-semibold text-content">
+          <div className="px-4 pt-2.5 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content">vs Last Year</div>
+            <div className="text-[10px] font-bold text-content mb-0.5">{kpiLyLabel}</div>
+            <div className="flex items-baseline justify-center gap-2">
+              <span className="text-[14px] font-bold text-content">
                 {lyKpis ? gradingMetric === "margin" ? lyKpis.margin : formatCurrency2(lyKpis.sales) : "—"}
               </span>
               {gradingMetric === "margin" && marginDelta !== null && (
-                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${marginDelta >= 0 ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"}`}>
+                <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(marginDelta, gradingThreshold)}`}>
                   {marginDelta >= 0 ? "+" : ""}{marginDelta.toFixed(1)} pts
                 </span>
               )}
               {gradingMetric === "sales" && salesDelta !== null && (
-                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${salesDelta >= 0 ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"}`}>
-                  {salesDelta >= 0 ? "+" : ""}{salesDelta.toFixed(1)}%
+                <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(salesDelta, gradingThreshold)}`}>
+                  {formatPct(salesDelta)}
                 </span>
               )}
             </div>

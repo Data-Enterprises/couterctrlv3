@@ -2,6 +2,8 @@ import { useState, useMemo } from "react";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type { TransactionOverview } from "../../../interfaces";
 import type { CashierGrade, CashierSeverity } from "../gradingUtils";
+import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../utils/csvExport";
+import type { AggFn, AggRow } from "../../../utils/csvExport";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -17,43 +19,16 @@ interface LPExportModalProps {
 type ModalMode = "presets" | "custom";
 type ExportDataset = "transactions" | "cashiers";
 type CustomSource = "transactions" | "cashiers";
-type AggFn = "sum" | "avg" | "min" | "max" | "count";
 
 interface DimDef    { key: string; label: string }
 interface MetricDef { key: string; label: string }
 interface MetricSelection { fn: AggFn; enabled: boolean }
-
-type AggRow = Record<string, string | number | null>;
 
 // ─── Formatting ───────────────────────────────────────────────────────────────
 
 const fmtDate = (iso: string) => {
   const d = iso.split("T")[0].split("-");
   return `${d[1]}/${d[2]}/${d[0]}`;
-};
-
-const fmtNum = (v: number, dp = 2) => v.toFixed(dp);
-
-const escCsv = (val: string | number | null | undefined) => {
-  const s = String(val ?? "");
-  return s.includes(",") || s.includes('"') || s.includes("\n")
-    ? `"${s.replace(/"/g, '""')}"` : s;
-};
-
-const rowsToCsv = (headers: string[], rows: (string | number | null)[][]): string => {
-  const lines = [headers.map(escCsv).join(",")];
-  for (const row of rows) lines.push(row.map(escCsv).join(","));
-  return lines.join("\n");
-};
-
-const downloadCsv = (content: string, filename: string) => {
-  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
 };
 
 // ─── Preset builders ──────────────────────────────────────────────────────────
@@ -87,38 +62,6 @@ const buildCashiersCsv = (grades: CashierGrade[], sevs: Set<CashierSeverity>) =>
   ]);
   return rowsToCsv(headers, data);
 };
-
-// ─── Aggregation engine ───────────────────────────────────────────────────────
-
-function applyAgg(values: number[], fn: AggFn): number {
-  if (!values.length) return 0;
-  switch (fn) {
-    case "sum":   return values.reduce((a, b) => a + b, 0);
-    case "avg":   return values.reduce((a, b) => a + b, 0) / values.length;
-    case "min":   return Math.min(...values);
-    case "max":   return Math.max(...values);
-    case "count": return values.length;
-  }
-}
-
-function aggregateRows(rows: AggRow[], dims: string[], metrics: { key: string; fn: AggFn }[]): AggRow[] {
-  if (!dims.length && !metrics.length) return rows.slice(0, 100);
-  const groups = new Map<string, AggRow[]>();
-  for (const row of rows) {
-    const key = dims.map((d) => String(row[d] ?? "")).join("|||");
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key)!.push(row);
-  }
-  return Array.from(groups.values()).map((group) => {
-    const result: AggRow = {};
-    for (const d of dims) result[d] = group[0][d];
-    for (const { key, fn } of metrics) {
-      const vals = group.map((r) => Number(r[key]) || 0);
-      result[`${fn}__${key}`] = applyAgg(vals, fn);
-    }
-    return result;
-  });
-}
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -324,29 +267,29 @@ const LPExportModal = ({
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-xl shadow-xl w-full overflow-hidden transition-all duration-200 ${mode === "custom" ? "max-w-2xl" : "max-w-lg"}`}
+        className={`bg-custom-white rounded-xl shadow-xl w-full overflow-hidden transition-all duration-200 ${mode === "custom" ? "max-w-2xl" : "max-w-lg"}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
           <div>
-            <p className="text-white text-[13px] font-semibold">Export CSV</p>
-            <p className="text-white/55 text-[10px] mt-0.5">{storeName} — {saleType}</p>
+            <p className="text-custom-white text-[13px] font-semibold">Export CSV</p>
+            <p className="text-custom-white/55 text-[10px] mt-0.5">{storeName} — {saleType}</p>
           </div>
-          <div className="flex items-center gap-0.5 bg-white/10 rounded-md p-0.5">
+          <div className="flex items-center gap-0.5 bg-custom-white/10 rounded-md p-0.5">
             {(["presets", "custom"] as ModalMode[]).map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
                 className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                  mode === m ? "bg-white text-[#1e2a4a]" : "text-white/70 hover:text-white"
+                  mode === m ? "bg-custom-white text-[#1e2a4a]" : "text-custom-white/70 hover:text-custom-white"
                 }`}
               >
                 {m === "presets" ? "Presets" : "Custom"}
               </button>
             ))}
           </div>
-          <button onClick={onClose} className="text-white/60 hover:text-white transition-colors justify-self-end">
+          <button onClick={onClose} className="text-custom-white/60 hover:text-custom-white transition-colors justify-self-end">
             <XMarkIcon className="w-4 h-4" />
           </button>
         </div>
@@ -391,17 +334,17 @@ const LPExportModal = ({
                   <div className="flex gap-1.5 flex-wrap">
                     {(
                       [
-                        { sev: "critical" as CashierSeverity, label: "Critical", activeClass: "bg-red-600 border-red-600 text-white" },
-                        { sev: "watch"    as CashierSeverity, label: "Watch",    activeClass: "bg-amber-500 border-amber-500 text-white" },
-                        { sev: "ok"       as CashierSeverity, label: "OK",       activeClass: "bg-emerald-600 border-emerald-600 text-white" },
-                        { sev: "ungraded" as CashierSeverity, label: "Ungraded", activeClass: "bg-gray-400 border-gray-400 text-white" },
+                        { sev: "critical" as CashierSeverity, label: "Critical", activeClass: "bg-red-600 border-red-600 text-custom-white" },
+                        { sev: "watch"    as CashierSeverity, label: "Watch",    activeClass: "bg-amber-500 border-amber-500 text-custom-white" },
+                        { sev: "ok"       as CashierSeverity, label: "OK",       activeClass: "bg-emerald-600 border-emerald-600 text-custom-white" },
+                        { sev: "ungraded" as CashierSeverity, label: "Ungraded", activeClass: "bg-gray-400 border-gray-400 text-custom-white" },
                       ]
                     ).map(({ sev, label, activeClass }) => (
                       <button
                         key={sev}
                         onClick={() => toggleCashierSev(sev)}
                         className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
-                          cashierSevs.has(sev) ? activeClass : "bg-white border-gray-200 text-content/50"
+                          cashierSevs.has(sev) ? activeClass : "bg-custom-white border-gray-200 text-content/50"
                         }`}
                       >
                         {label}
@@ -417,7 +360,7 @@ const LPExportModal = ({
               <button
                 onClick={handlePresetDownload}
                 disabled={selected.size === 0}
-                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV
@@ -489,7 +432,7 @@ const LPExportModal = ({
                             value={sel.fn}
                             disabled={!sel.enabled}
                             onChange={(e) => setMetricFn(m.key, e.target.value as AggFn)}
-                            className="text-[10px] border border-gray-200 rounded px-1 py-0.5 text-content disabled:opacity-30 bg-white outline-none"
+                            className="text-[10px] border border-gray-200 rounded px-1 py-0.5 text-content disabled:opacity-30 bg-custom-white outline-none"
                             style={{ minWidth: 52 }}
                           >
                             {AGG_OPTIONS.map((o) => (
@@ -534,7 +477,7 @@ const LPExportModal = ({
                       </thead>
                       <tbody>
                         {aggRows.slice(0, PREVIEW_ROWS).map((row, i) => (
-                          <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
+                          <tr key={i} className={i % 2 === 0 ? "bg-custom-white" : "bg-gray-50/50"}>
                             {columns.map((c) => (
                               <td key={c.key} className="px-3 py-1.5 text-content/80 whitespace-nowrap border-b border-gray-50">
                                 {row[c.key] ?? "—"}
@@ -561,7 +504,7 @@ const LPExportModal = ({
               <button
                 onClick={handleCustomDownload}
                 disabled={!canCustomDownload}
-                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV

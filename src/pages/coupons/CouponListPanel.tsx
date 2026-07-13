@@ -66,11 +66,11 @@ const CouponListPanel = ({ selectedKey, onSelect, sortMetric, onSortMetric, onOp
       <div className="flex-shrink-0 px-3 pt-1 pb-2.5 flex flex-col gap-0" style={{ background: "#1e2a4a" }}>
         <div className="flex items-end gap-3 min-h-[24px]">
           <span className="text-[13px] font-semibold text-white flex-shrink-0">Coupons</span>
-          <span className="text-[10px] flex-shrink-0" style={{ color: "rgba(255,255,255,0.45)" }}>{dateLabel}</span>
+          <span className="text-white text-[10px] flex-shrink-0">{dateLabel}</span>
           <div className="flex-1" />
           {state.coupons.length > 0 && (
             <div className="flex items-baseline gap-1 flex-shrink-0">
-              <span className="text-[10px] uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.45)" }}>Records</span>
+              <span className="text-white text-[10px] uppercase tracking-wide">Records</span>
               <span className="text-[13px] font-medium text-white">{state.coupons.length}</span>
             </div>
           )}
@@ -85,14 +85,14 @@ const CouponListPanel = ({ selectedKey, onSelect, sortMetric, onSortMetric, onOp
           </button>
           {isGroup && selectedGroup?.group_name && (
             <div className="flex flex-col leading-tight truncate">
-              <span className="text-[11px] font-medium text-white/70 truncate">{selectedGroup.group_name}</span>
+              <span className="text-[11px] font-medium text-white truncate">{selectedGroup.group_name}</span>
               {groupStores.length > 0 && (
-                <span className="text-[9px] text-white/40">{groupStores.length} stores</span>
+                <span className="text-[9px] text-white">{groupStores.length} stores</span>
               )}
             </div>
           )}
           {!isGroup && search.lastStore && (
-            <span className="text-[11px] font-medium text-white/80 truncate">{storeName}</span>
+            <span className="text-[11px] font-medium text-white truncate">{storeName}</span>
           )}
           <div className="flex-1" />
           <div className="flex items-center gap-0.5 flex-shrink-0">
@@ -142,10 +142,10 @@ const CouponListPanel = ({ selectedKey, onSelect, sortMetric, onSortMetric, onOp
                 }`}
                 style={selectedKey === "" ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.18)" } : undefined}
               >
-                <span className="text-[11px] font-semibold text-content">All stores</span>
+                <span className="text-[12px] font-semibold text-content">All stores</span>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-[10px] text-content/45">{state.coupons.length}</span>
-                  <span className="text-[10px] font-medium text-content/70">{formatCurrency2(totalAmount)}</span>
+                  <span className="text-[11px] text-content/45">{state.coupons.length}</span>
+                  <span className="text-[11px] font-medium text-content/70">{formatCurrency2(totalAmount)}</span>
                 </div>
               </button>
             )}
@@ -161,10 +161,10 @@ const CouponListPanel = ({ selectedKey, onSelect, sortMetric, onSortMetric, onOp
                   }`}
                   style={isSel ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.18)" } : undefined}
                 >
-                  <span className="text-[11px] text-content truncate flex-1 mr-2">{item.label}</span>
+                  <span className="text-[12px] text-content truncate flex-1 mr-2">{item.label}</span>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-[10px] text-content/45">{item.count}</span>
-                    <span className="text-[10px] font-medium text-content/70">{formatCurrency2(item.total)}</span>
+                    <span className="text-[11px] text-content/45">{item.count}</span>
+                    <span className="text-[11px] font-medium text-content/70">{formatCurrency2(item.total)}</span>
                   </div>
                 </button>
               );

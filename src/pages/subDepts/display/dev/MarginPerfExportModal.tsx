@@ -2,20 +2,19 @@ import { useState, useMemo } from "react";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type { SubDeptMargin } from "../../../../interfaces";
 import { calculateCogs } from "../..";
+import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
+import type { AggFn, AggRow } from "../../../../utils/csvExport";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type ExportPreset = "items" | "items_vs_ly" | "cost" | "nocost";
 type ModalMode = "presets" | "custom";
 type CustomSource = "ty" | "ly";
-type AggFn = "sum" | "avg" | "min" | "max" | "count";
 type ItemSev = "critical" | "watch" | "healthy";
 
 interface DimDef { key: string; label: string }
 interface MetricDef { key: string; label: string }
 interface MetricSelection { fn: AggFn; enabled: boolean }
-
-type AggRow = Record<string, string | number>;
 
 interface MarginPerfExportModalProps {
   onClose: () => void;
@@ -34,32 +33,8 @@ const fmtDate = (d: string) =>
     month: "short", day: "numeric", year: "numeric",
   });
 
-const fmtNum = (v: number, dp = 2) => v.toFixed(dp);
-
-const escCsv = (val: string | number | null | undefined) => {
-  const s = String(val ?? "");
-  return s.includes(",") || s.includes('"') || s.includes("\n")
-    ? `"${s.replace(/"/g, '""')}"` : s;
-};
-
-const rowsToCsv = (headers: string[], rows: (string | number | null)[][]): string => {
-  const lines = [headers.map(escCsv).join(",")];
-  for (const row of rows) lines.push(row.map(escCsv).join(","));
-  return lines.join("\n");
-};
-
 const netSales = (m: SubDeptMargin) => m.total_sales - m.total_tax;
 const itemCogs = (m: SubDeptMargin) => calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight);
-
-const downloadCsv = (content: string, filename: string) => {
-  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-};
 
 // ─── Preset CSV builders ──────────────────────────────────────────────────────
 
@@ -167,37 +142,6 @@ const buildNoCostCsv = (margins: SubDeptMargin[]) => {
   return rowsToCsv(headers, rows);
 };
 
-// ─── Aggregation engine ───────────────────────────────────────────────────────
-
-function applyAgg(values: number[], fn: AggFn): number {
-  if (!values.length) return 0;
-  switch (fn) {
-    case "sum":   return values.reduce((a, b) => a + b, 0);
-    case "avg":   return values.reduce((a, b) => a + b, 0) / values.length;
-    case "min":   return Math.min(...values);
-    case "max":   return Math.max(...values);
-    case "count": return values.length;
-  }
-}
-
-function aggregateRows(rows: AggRow[], dims: string[], metrics: { key: string; fn: AggFn }[]): AggRow[] {
-  if (!dims.length && !metrics.length) return rows.slice(0, 100);
-  const groups = new Map<string, AggRow[]>();
-  for (const row of rows) {
-    const key = dims.map((d) => String(row[d] ?? "")).join("|||");
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key)!.push(row);
-  }
-  return Array.from(groups.values()).map((group) => {
-    const result: AggRow = {};
-    for (const d of dims) result[d] = group[0][d];
-    for (const { key, fn } of metrics) {
-      const vals = group.map((r) => Number(r[key]) || 0);
-      result[`${fn}__${key}`] = applyAgg(vals, fn);
-    }
-    return result;
-  });
-}
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -354,9 +298,9 @@ const MarginPerfExportModal = ({
   ];
 
   const SEV_CHIP: { sev: ItemSev; label: string; activeClass: string }[] = [
-    { sev: "critical", label: "Critical", activeClass: "bg-red-600 border-red-600 text-white" },
-    { sev: "watch",    label: "Watch",    activeClass: "bg-amber-500 border-amber-500 text-white" },
-    { sev: "healthy",  label: "Healthy",  activeClass: "bg-emerald-600 border-emerald-600 text-white" },
+    { sev: "critical", label: "Critical", activeClass: "bg-red-600 border-red-600 text-custom-white" },
+    { sev: "watch",    label: "Watch",    activeClass: "bg-amber-500 border-amber-500 text-custom-white" },
+    { sev: "healthy",  label: "Healthy",  activeClass: "bg-emerald-600 border-emerald-600 text-custom-white" },
   ];
 
   const safeName = (storeName + "_" + subDeptName).replace(/[^a-z0-9]/gi, "_");
@@ -390,29 +334,29 @@ const MarginPerfExportModal = ({
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-xl shadow-xl w-full overflow-hidden transition-all duration-200 ${mode === "custom" ? "max-w-2xl" : "max-w-lg"}`}
+        className={`bg-custom-white rounded-xl shadow-xl w-full overflow-hidden transition-all duration-200 ${mode === "custom" ? "max-w-2xl" : "max-w-lg"}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
           <div>
-            <p className="text-white text-[13px] font-semibold">Export CSV</p>
-            <p className="text-white text-[10px] mt-0.5">{subDeptName} · {storeName}</p>
+            <p className="text-custom-white text-[13px] font-semibold">Export CSV</p>
+            <p className="text-custom-white text-[10px] mt-0.5">{subDeptName} · {storeName}</p>
           </div>
-          <div className="flex items-center gap-0.5 bg-white/10 rounded-md p-0.5">
+          <div className="flex items-center gap-0.5 bg-custom-white/10 rounded-md p-0.5">
             {(["presets", "custom"] as ModalMode[]).map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
                 className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                  mode === m ? "bg-white text-[#1e2a4a]" : "text-white"
+                  mode === m ? "bg-custom-white text-[#1e2a4a]" : "text-custom-white"
                 }`}
               >
                 {m === "presets" ? "Presets" : "Custom"}
               </button>
             ))}
           </div>
-          <button onClick={onClose} className="text-white/60 hover:text-white transition-colors justify-self-end">
+          <button onClick={onClose} className="text-custom-white/60 hover:text-custom-white transition-colors justify-self-end">
             <XMarkIcon className="w-4 h-4" />
           </button>
         </div>
@@ -461,7 +405,7 @@ const MarginPerfExportModal = ({
                         key={sev}
                         onClick={() => toggleItemSev(sev)}
                         className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
-                          itemSevs.has(sev) ? activeClass : "bg-white border-gray-200 text-content"
+                          itemSevs.has(sev) ? activeClass : "bg-custom-white border-gray-200 text-content"
                         }`}
                       >
                         {label}
@@ -476,7 +420,7 @@ const MarginPerfExportModal = ({
               <button
                 onClick={handlePresetDownload}
                 disabled={selected.size === 0}
-                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV
@@ -543,7 +487,7 @@ const MarginPerfExportModal = ({
                             value={sel.fn}
                             disabled={!sel.enabled}
                             onChange={(e) => setMetricFn(m.key, e.target.value as AggFn)}
-                            className="text-[10px] border border-gray-200 rounded px-1 py-0.5 text-content disabled:opacity-30 bg-white outline-none"
+                            className="text-[10px] border border-gray-200 rounded px-1 py-0.5 text-content disabled:opacity-30 bg-custom-white outline-none"
                             style={{ minWidth: 52 }}
                           >
                             {AGG_OPTIONS.map((o) => (
@@ -588,7 +532,7 @@ const MarginPerfExportModal = ({
                       </thead>
                       <tbody>
                         {aggRows.slice(0, PREVIEW_ROWS).map((row, i) => (
-                          <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
+                          <tr key={i} className={i % 2 === 0 ? "bg-custom-white" : "bg-gray-50/50"}>
                             {columns.map((c) => (
                               <td key={c.key} className="px-3 py-1.5 text-content whitespace-nowrap border-b border-gray-50">
                                 {row[c.key] ?? "—"}
@@ -616,7 +560,7 @@ const MarginPerfExportModal = ({
               <button
                 onClick={handleCustomDownload}
                 disabled={!canCustomDownload}
-                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV

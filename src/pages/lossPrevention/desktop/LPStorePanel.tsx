@@ -1,54 +1,14 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { MagnifyingGlassIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
-import TierStrip from "../../../components/TierStrip";
-import TierColumn from "../../../components/TierColumn";
-
-import { formatCurrency2, formatBigNumber } from "../../../utils";
-import { useAppSelector, useStoreName } from "../../../hooks";
+import { formatCurrency2, formatBigNumber, getStoreName } from "../../../utils";
+import { useAppSelector } from "../../../hooks";
 import type { CashierDetails } from "../../../interfaces";
+import type { Severity, SevFilter } from "../../../utils/severity";
+import { severityDotClass, formatPct } from "../../../utils/severity";
+import { isNoDollarType, storeSeverity, directionalPillClass } from "../gradingUtils";
+import TextFilter from "../../../components/filters/TextFilter";
 
-type Severity = "critical" | "watch" | "healthy";
-
-const SHADOW_COLOR: Record<Severity, string> = {
-  critical: "rgba(239, 68, 68, 0.25)",
-  watch:    "rgba(245, 158, 11, 0.25)",
-  healthy:  "rgba(16, 185, 129, 0.25)",
-};
-
-const isNoDollarType = (saleType: string) =>
-  saleType.toLowerCase().replace(/[^a-z]/g, "") === "nosale";
-
-const storeSeverity = (detail: CashierDetails, baselineDetails: CashierDetails[], saleType: string): Severity => {
-  const b = baselineDetails.find((x) => x.storeid === detail.storeid);
-  if (!b) return "healthy"; // no baseline = can't grade
-
-  const bTrans  = b.transaction_count / 2;
-  const bItems  = b.total_items / 2;
-  const bAmount = Math.abs(b.amount) / 2;
-  const bAvg    = Math.abs(b.average_dollars);
-
-  if (isNoDollarType(saleType)) {
-    const score = [
-      detail.transaction_count <= bTrans,
-      detail.total_items       <= bItems,
-    ].filter(Boolean).length;
-    if (score === 2) return "healthy";
-    if (score === 1) return "watch";
-    return "critical";
-  }
-
-  const score = [
-    detail.transaction_count         <= bTrans,
-    detail.total_items               <= bItems,
-    Math.abs(detail.amount)          <= bAmount,
-    Math.abs(detail.average_dollars) <= bAvg,
-  ].filter(Boolean).length;
-  if (score >= 3) return "healthy";
-  if (score === 2) return "watch";
-  return "critical";
-};
-
-const fmtPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
+const SEV_RANK: Record<Severity, number> = { critical: 0, watch: 1, healthy: 2 };
 
 interface Props {
   loading: boolean;
@@ -60,7 +20,10 @@ interface Props {
 const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }: Props) => {
   const cashier = useAppSelector((s) => s.lossPrevention);
   const search = useAppSelector((s) => s.search);
+  const assignedStores = useAppSelector((s) => s.user.assignedStores);
   const [legendHover, setLegendHover] = useState(false);
+  const [sevFilter, setSevFilter] = useState<SevFilter>("all");
+  const [storeFilter, setStoreFilter] = useState("");
 
   const {
     saleTypes, selectedSaleType, cashierDetails, baselineDetails,
@@ -77,120 +40,107 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
   const totalTrans  = cashierDetails.reduce((acc, d) => acc + d.transaction_count, 0);
   const totalItems  = cashierDetails.reduce((acc, d) => acc + d.total_items, 0);
 
-  const criticalStores = cashierDetails.filter((d) => storeSeverity(d, baselineDetails, selectedSaleType) === "critical");
-  const watchStores    = cashierDetails.filter((d) => storeSeverity(d, baselineDetails, selectedSaleType) === "watch");
-  const healthyStores  = cashierDetails.filter((d) => storeSeverity(d, baselineDetails, selectedSaleType) === "healthy");
+  const hasAmount = !isNoDollarType(selectedSaleType);
 
-  const StoreRow = ({ detail }: { detail: CashierDetails }) => {
-    const sev = storeSeverity(detail, baselineDetails, selectedSaleType);
-    const isSel = detail.storeid === selectedStoreId;
-    const b = baselineDetails.find((x) => x.storeid === detail.storeid);
-    const storeName = useStoreName(detail.storeid, detail.store_name);
+  const graded = useMemo(
+    () =>
+      cashierDetails.map((detail) => {
+        const b = baselineDetails.find((x) => x.storeid === detail.storeid);
+        const bTrans = b ? b.transaction_count / 2 : null;
+        const bItems = b ? b.total_items / 2 : null;
+        const bAmount = b ? Math.abs(b.amount) / 2 : null;
+        const bAvg = b ? Math.abs(b.average_dollars) : null;
+        const transPct =
+          bTrans !== null && bTrans !== 0
+            ? ((detail.transaction_count - bTrans) / Math.abs(bTrans)) * 100
+            : null;
+        const itemsPct =
+          bItems !== null && bItems !== 0
+            ? ((detail.total_items - bItems) / Math.abs(bItems)) * 100
+            : null;
+        const amountPct =
+          bAmount !== null && bAmount !== 0
+            ? ((Math.abs(detail.amount) - bAmount) / bAmount) * 100
+            : null;
+        const avgPct =
+          bAvg !== null && bAvg !== 0
+            ? ((Math.abs(detail.average_dollars) - bAvg) / bAvg) * 100
+            : null;
+        return {
+          detail,
+          name: getStoreName(assignedStores, detail.storeid, detail.store_name),
+          sev: storeSeverity(detail, baselineDetails, selectedSaleType),
+          transPct,
+          itemsPct,
+          amountPct,
+          avgPct,
+        };
+      }),
+    [cashierDetails, baselineDetails, selectedSaleType, assignedStores],
+  );
 
-    const metrics = [
-      {
-        label: "Cashiers",
-        current: detail.cashier_count,
-        trend: b ? b.cashier_count / 2 : null,
-        fmt: (v: number) => String(Math.round(v)),
-        showPct: false,
-      },
-      {
-        label: "Total",
-        current: detail.amount,
-        trend: b ? b.amount / 2 : null,
-        fmt: (v: number) => formatCurrency2(v),
-        showPct: true,
-        useAbs: !isNoDollarType(selectedSaleType),
-      },
-      {
-        label: "Trans",
-        current: detail.transaction_count,
-        trend: b ? b.transaction_count / 2 : null,
-        fmt: (v: number) => String(Math.round(v)),
-        showPct: true,
-      },
-    ];
+  const criticalCount = graded.filter((g) => g.sev === "critical").length;
+  const watchCount = graded.filter((g) => g.sev === "watch").length;
+  const healthyCount = graded.filter((g) => g.sev === "healthy").length;
 
-    return (
-      <button
-        onClick={() => onStoreSelect(detail)}
-        className={`w-full flex flex-col px-3 py-2.5 border-b border-gray-100 transition-colors text-left gap-1.5 ${isSel ? "bg-white" : "hover:bg-gray-50"}`}
-        style={isSel ? { boxShadow: `inset 0 0 8px ${SHADOW_COLOR[sev]}` } : undefined}
-      >
-        <div className="text-[11px] font-medium text-content truncate w-full text-center">{storeName}</div>
-        <div className="grid grid-cols-3 w-full">
-          {metrics.map(({ label, current, trend: trendVal, fmt, showPct, useAbs }) => {
-            const c = useAbs ? Math.abs(current) : current;
-            const t = trendVal !== null && useAbs ? Math.abs(trendVal) : trendVal;
-            const pct = showPct && t && t !== 0 ? ((c - t) / Math.abs(t)) * 100 : null;
-            const isUp = pct !== null && pct > 0;
-            return (
-              <div key={label} className="px-2 py-1 text-center">
-                <div className="text-[7px] text-content/45 uppercase tracking-wide">{label}</div>
-                <div className="text-[10px] font-medium text-content mt-0.5">{fmt(current)}</div>
-                {trendVal !== null && (
-                  <div className="text-[9px] font-medium mt-0.5">{fmt(trendVal)}</div>
-                )}
-                {pct !== null && (
-                  <div className={`text-[9px] font-medium mt-0.5 ${isUp ? "text-red-500" : "text-emerald-600"}`}>
-                    {pct !== 0 ? fmtPct(pct) : "0.0%"}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </button>
-    );
-  };
+  const sevFilteredStores =
+    sevFilter === "all" ? graded : graded.filter((g) => g.sev === sevFilter);
+
+  const textFilteredStores = storeFilter
+    ? sevFilteredStores.filter((g) =>
+        g.name.toLowerCase().includes(storeFilter.toLowerCase()),
+      )
+    : sevFilteredStores;
+
+  const visibleStores = [...textFilteredStores].sort(
+    (a, b) => SEV_RANK[a.sev] - SEV_RANK[b.sev],
+  );
 
   return (
-    <div className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white" style={{ width: "46%", flexShrink: 0 }}>
+    <div className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white" style={{ width: "39%", flexShrink: 0 }}>
       {/* Navy header */}
       <div className="flex-shrink-0 px-3 pt-1 pb-2.5 flex flex-col gap-0" style={{ background: "#1e2a4a" }}>
-        {/* Row 1: title + date | totals */}
-        <div className="flex items-end gap-3 min-h-[24px]">
-          <span className="text-[13px] font-semibold text-white flex-shrink-0">Loss Prevention</span>
-          <span className="text-[10px] flex-shrink-0" style={{ color: "rgba(255,255,255,0.45)" }}>{dateLabel}</span>
+        {/* Row 1: date | totals */}
+        <div className="flex items-center gap-2 min-h-[24px]">
+          <span className="text-[13px] font-semibold text-custom-white flex-shrink-0">{dateLabel}</span>
           <div className="flex-1" />
           {cashierDetails.length > 0 && (
             <>
               <div className="flex items-baseline gap-1 flex-shrink-0">
-                <span className="text-[10px] uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.45)" }}>Sales</span>
-                <span className="text-[13px] font-medium text-white">{formatCurrency2(totalSales)}</span>
+                <span className="text-[10px] uppercase tracking-wide text-custom-white/45">Sales</span>
+                <span className="text-[13px] font-medium text-custom-white">{formatCurrency2(totalSales)}</span>
               </div>
-              <div className="w-px h-4 bg-white/15 flex-shrink-0" />
+              <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
               <div className="flex items-baseline gap-1 flex-shrink-0">
-                <span className="text-[10px] uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.45)" }}>Trans</span>
-                <span className="text-[13px] font-medium text-white">{formatBigNumber(totalTrans, 0)}</span>
+                <span className="text-[10px] uppercase tracking-wide text-custom-white/45">Trans</span>
+                <span className="text-[13px] font-medium text-custom-white">{formatBigNumber(totalTrans, 0)}</span>
               </div>
-              <div className="w-px h-4 bg-white/15 flex-shrink-0" />
+              <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
               <div className="flex items-baseline gap-1 flex-shrink-0">
-                <span className="text-[10px] uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.45)" }}>Items</span>
-                <span className="text-[13px] font-medium text-white">{formatBigNumber(totalItems, 0)}</span>
+                <span className="text-[10px] uppercase tracking-wide text-custom-white/45">Items</span>
+                <span className="text-[13px] font-medium text-custom-white">{formatBigNumber(totalItems, 0)}</span>
               </div>
             </>
           )}
         </div>
 
         {/* Row 2: search left | legend right */}
-        <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-white/[0.08]">
+        <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
           <button
             onClick={onOpenSearch}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
             aria-label="Search stores"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
           <div className="flex-1" />
-          <span className="text-[9px] font-medium uppercase tracking-wide flex-shrink-0" style={{ color: "rgba(255,255,255,0.35)" }}>Exception activity vs baseline</span>
+          <span className="text-[9px] font-medium uppercase tracking-wide text-custom-white/35 flex-shrink-0">Exception activity vs baseline</span>
           <div className="relative flex-shrink-0" onMouseEnter={() => setLegendHover(true)} onMouseLeave={() => setLegendHover(false)}>
-            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/50 hover:text-white hover:border-white/40 transition-colors">
+            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/50 hover:text-custom-white hover:border-custom-white/40 transition-colors">
               <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
             </button>
             {legendHover && (
-              <div className="absolute right-0 top-full mt-1.5 z-50 bg-[#1e2a4a] border border-white/15 rounded-lg shadow-lg px-3 py-2.5 flex flex-col gap-1.5" style={{ minWidth: 230 }}>
+              <div className="absolute right-0 top-full mt-1.5 z-50 bg-[#1e2a4a] border border-custom-white/15 rounded-lg shadow-lg px-3 py-2.5 flex flex-col gap-1.5" style={{ minWidth: 230 }}>
                 {(isNoDollarType(selectedSaleType) ? [
                   { color: "#fca5a5", label: "Critical — neither metric at or below baseline" },
                   { color: "#fcd34d", label: "Watch — 1 metric at or below baseline" },
@@ -202,13 +152,13 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
                 ]).map(({ color, label }) => (
                   <div key={label} className="flex items-start gap-2">
                     <div className="w-[7px] h-[7px] rounded-[2px] flex-shrink-0 mt-[3px]" style={{ background: color }} />
-                    <span className="text-[11px] text-white/90 leading-snug">{label}</span>
+                    <span className="text-[11px] text-custom-white/90 leading-snug">{label}</span>
                   </div>
                 ))}
-                <div className="h-px bg-white/10 my-0.5" />
-                <div className="text-[9px] text-white/50 leading-snug">Baseline = avg per week over the prior 2 weeks</div>
-                <div className="h-px bg-white/10 my-0.5" />
-                <div className="text-[9px] font-semibold uppercase tracking-wide text-white/35">Metrics graded</div>
+                <div className="h-px bg-custom-white/10 my-0.5" />
+                <div className="text-[9px] text-custom-white/50 leading-snug">Baseline = avg per week over the prior 2 weeks</div>
+                <div className="h-px bg-custom-white/10 my-0.5" />
+                <div className="text-[9px] font-semibold uppercase tracking-wide text-custom-white/35">Metrics graded</div>
                 <div className="flex flex-col gap-1">
                   {(isNoDollarType(selectedSaleType) ? [
                     "Transaction count", "Total items",
@@ -216,8 +166,8 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
                     "Transaction count", "Total items", "Exception amount", "Average dollars",
                   ]).map((m) => (
                     <div key={m} className="flex items-center gap-1.5">
-                      <span className="text-white/30 text-[10px]">·</span>
-                      <span className="text-[10px] text-white/90">{m}</span>
+                      <span className="text-custom-white/30 text-[10px]">·</span>
+                      <span className="text-[10px] text-custom-white/90">{m}</span>
                     </div>
                   ))}
                 </div>
@@ -233,19 +183,54 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
           <button
             key={st.sale_type}
             onClick={() => onSaleTypeSelect(st.sale_type)}
-            className="flex-1 text-center px-2 py-2 text-[11px] whitespace-nowrap transition-colors"
-            style={{
-              borderBottom: selectedSaleType === st.sale_type ? "2px solid #1e2a4a" : "2px solid transparent",
-              color: selectedSaleType === st.sale_type ? "#1e2a4a" : "var(--color-text-secondary)",
-              fontWeight: selectedSaleType === st.sale_type ? 500 : 400,
-            }}
+            className={`flex-1 text-center px-2 py-2 text-[11px] font-medium whitespace-nowrap border-b-2 transition-colors ${
+              selectedSaleType === st.sale_type
+                ? "border-[#1e2a4a] text-content"
+                : "border-transparent text-content"
+            }`}
           >
             {st.sale_type}
           </button>
         ))}
       </div>
 
-      {/* Store tier columns */}
+      {/* Severity filter chips + text filter */}
+      <div className="flex items-center justify-between gap-1.5 px-3 py-2 bg-custom-white border-b border-gray-100">
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setSevFilter((f) => (f === "critical" ? "all" : "critical"))}
+            className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
+              sevFilter === "critical" ? "ring-2 ring-severity_critical_text/40 shadow-sm" : ""
+            }`}
+          >
+            Crit ({criticalCount})
+          </button>
+          <button
+            onClick={() => setSevFilter((f) => (f === "watch" ? "all" : "watch"))}
+            className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
+              sevFilter === "watch" ? "ring-2 ring-severity_watch_text/40 shadow-sm" : ""
+            }`}
+          >
+            Watch ({watchCount})
+          </button>
+          <button
+            onClick={() => setSevFilter((f) => (f === "healthy" ? "all" : "healthy"))}
+            className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${
+              sevFilter === "healthy" ? "ring-2 ring-severity_healthy_text/40 shadow-sm" : ""
+            }`}
+          >
+            OK ({healthyCount})
+          </button>
+        </div>
+        <TextFilter
+          value={storeFilter}
+          onChange={setStoreFilter}
+          placeholder="Filter by store…"
+          className="max-w-[180px]"
+        />
+      </div>
+
+      {/* Unified store list — sorted critical → watch → healthy */}
       <div className="flex-1 min-h-0 flex flex-col">
         {loading && cashierDetails.length === 0 ? (
           <div className="flex-1 flex items-center justify-center text-[11px] text-content/40">Loading…</div>
@@ -255,30 +240,111 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
           </div>
         ) : (
           <>
-            {/* Tier header strip */}
-            <TierStrip
-              critical={criticalStores.length}
-              watch={watchStores.length}
-              healthy={healthyStores.length}
-            />
+            <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
+              <span className="w-2.5 flex-shrink-0" />
+              <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-1">
+                Store
+              </span>
+              <div className="flex items-center gap-[14px]">
+                {hasAmount && (
+                  <span
+                    className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 pl-2.5 text-center"
+                    style={{ width: 64 }}
+                  >
+                    Total
+                  </span>
+                )}
+                <span
+                  className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
+                  style={{ width: 58 }}
+                >
+                  Trans
+                </span>
+                <span
+                  className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
+                  style={{ width: 58 }}
+                >
+                  Items
+                </span>
+                {hasAmount && (
+                  <span
+                    className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
+                    style={{ width: 58 }}
+                  >
+                    Avg $
+                  </span>
+                )}
+              </div>
+            </div>
 
-            {/* Three scrollable store columns */}
-            <div className="flex-1 min-h-0 grid grid-cols-3 divide-x divide-gray-100 overflow-hidden">
-              <TierColumn emptyText="None">
-                {criticalStores.length > 0 ? criticalStores.map((d) => <StoreRow key={d.storeid} detail={d} />) : undefined}
-              </TierColumn>
-              <TierColumn emptyText="None">
-                {watchStores.length > 0 ? watchStores.map((d) => <StoreRow key={d.storeid} detail={d} />) : undefined}
-              </TierColumn>
-              <TierColumn emptyText="None">
-                {healthyStores.length > 0 ? healthyStores.map((d) => <StoreRow key={d.storeid} detail={d} />) : undefined}
-              </TierColumn>
+            <div className="flex-1 overflow-y-auto thin-scrollbar">
+              {visibleStores.length === 0 ? (
+                <div className="flex items-center justify-center h-24 text-[11px] text-content/40">
+                  No stores match
+                </div>
+              ) : (
+                visibleStores.map(({ detail, name, sev, transPct, itemsPct, amountPct, avgPct }) => {
+                  const isSel = detail.storeid === selectedStoreId;
+                  return (
+                    <button
+                      key={detail.storeid}
+                      onClick={() => onStoreSelect(detail)}
+                      className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-[#1e2a4a]/15 ${
+                        isSel
+                          ? "bg-row_selected border-row_selected_border"
+                          : "border-transparent hover:bg-gray-50"
+                      }`}
+                    >
+                      <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${severityDotClass[sev]}`} />
+                      <span className="text-[13px] font-medium text-content truncate flex-1">
+                        {name}
+                      </span>
+                      <div className="flex items-center gap-[14px]">
+                        {hasAmount && (
+                          <span
+                            className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
+                              amountPct === null ? "bg-gray-100 text-gray-400" : directionalPillClass(amountPct)
+                            }`}
+                            style={{ width: 64 }}
+                          >
+                            {formatCurrency2(Math.abs(detail.amount))}
+                          </span>
+                        )}
+                        <span
+                          className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
+                            transPct === null ? "bg-gray-100 text-gray-400" : directionalPillClass(transPct)
+                          }`}
+                          style={{ width: 58 }}
+                        >
+                          {transPct === null ? "—" : formatPct(transPct)}
+                        </span>
+                        <span
+                          className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
+                            itemsPct === null ? "bg-gray-100 text-gray-400" : directionalPillClass(itemsPct)
+                          }`}
+                          style={{ width: 58 }}
+                        >
+                          {itemsPct === null ? "—" : formatPct(itemsPct)}
+                        </span>
+                        {hasAmount && (
+                          <span
+                            className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
+                              avgPct === null ? "bg-gray-100 text-gray-400" : directionalPillClass(avgPct)
+                            }`}
+                            style={{ width: 58 }}
+                          >
+                            {avgPct === null ? "—" : formatPct(avgPct)}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })
+              )}
             </div>
           </>
         )}
       </div>
-
-
     </div>
   );
 };

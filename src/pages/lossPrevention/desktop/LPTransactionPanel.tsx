@@ -1,11 +1,8 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import {
   MagnifyingGlassIcon,
-  ExclamationTriangleIcon,
-  ExclamationCircleIcon,
-  CheckCircleIcon,
   ArrowDownTrayIcon,
-  MinusCircleIcon,
+  EnvelopeIcon,
 } from "@heroicons/react/20/solid";
 import LPExportModal from "./LPExportModal";
 import { useAppSelector, useAppDispatch, useStoreName } from "../../../hooks";
@@ -25,7 +22,22 @@ import Transaction, { type TransactionHandle } from "../Transaction";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import EmptyPrompt from "../../../components/EmptyPrompt";
 import type { ThresholdValue } from "../../../components/filters/ThresholdFilter";
-import { gradeAllCashiers, type CashierSeverity } from "../gradingUtils";
+import {
+  gradeAllCashiers,
+  isNoDollarType,
+  storeSeverity,
+  type CashierSeverity,
+} from "../gradingUtils";
+import { severityHeaderBgClass } from "../../../utils/severity";
+
+// Cashier list uses a plain dot (list-level), matching Sales' store/sub-dept
+// rows — the icon+badge treatment is reserved for item-level drill-down.
+const CASHIER_DOT_CLASS: Record<CashierSeverity, string> = {
+  critical: "bg-red-500",
+  watch: "bg-amber-400",
+  ok: "bg-emerald-500",
+  ungraded: "bg-gray-300",
+};
 
 const fmtDate = (iso: string) => {
   const d = iso.split("T")[0].split("-");
@@ -38,61 +50,6 @@ const fmtThreshold = (t: ThresholdValue | null, prefix = ""): string => {
   return `${sym} ${prefix}${t.amount}`;
 };
 
-// ── Severity selection colors (mirrors LPStorePanel) ─────────────────────────
-
-const SEV_SHADOW: Record<CashierSeverity, string> = {
-  critical: "rgba(239,68,68,0.25)",
-  watch: "rgba(245,158,11,0.25)",
-  ok: "rgba(16,185,129,0.25)",
-  ungraded: "rgba(156,163,175,0.25)",
-};
-// ── Severity badge (matches Sales SeverityBadge) ──────────────────────────────
-
-const SEV_BADGE_BG: Record<CashierSeverity, string> = {
-  critical: "#fee2e2",
-  watch: "#fef3c7",
-  ok: "#d1fae5",
-  ungraded: "#f3f4f6",
-};
-
-const SEV_ICON: Record<CashierSeverity, React.ReactNode> = {
-  ungraded: (
-    <div
-      className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0"
-      style={{ background: SEV_BADGE_BG.ungraded }}
-    >
-      <MinusCircleIcon className="w-3 h-3" style={{ color: "#9ca3af" }} />
-    </div>
-  ),
-  critical: (
-    <div
-      className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0"
-      style={{ background: SEV_BADGE_BG.critical }}
-    >
-      <ExclamationTriangleIcon
-        className="w-3 h-3"
-        style={{ color: "#ef4444" }}
-      />
-    </div>
-  ),
-  watch: (
-    <div
-      className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0"
-      style={{ background: SEV_BADGE_BG.watch }}
-    >
-      <ExclamationCircleIcon className="w-3 h-3" style={{ color: "#f59e0b" }} />
-    </div>
-  ),
-  ok: (
-    <div
-      className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0"
-      style={{ background: SEV_BADGE_BG.ok }}
-    >
-      <CheckCircleIcon className="w-3 h-3" style={{ color: "#10b981" }} />
-    </div>
-  ),
-};
-
 // ── Shared strip cell ─────────────────────────────────────────────────────────
 
 const StripCell = ({
@@ -100,26 +57,32 @@ const StripCell = ({
   value,
   baselineValue,
   badge,
+  className = "px-4 pt-2.5 text-center",
+  valueClassName = "text-[14px] font-bold text-content",
 }: {
   label: string;
   value: string;
   baselineValue?: string;
   badge: React.ReactNode;
+  className?: string;
+  valueClassName?: string;
 }) => (
-  <div className="px-3.5 py-[11px] bg-white">
-    <div className="text-[8px] font-bold uppercase tracking-[.07em] text-content/40 mb-1">
+  <div className={className}>
+    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
       {label}
     </div>
-    <div className="text-[15px] font-bold text-[#1e2a4a] leading-none">
-      {value}
-    </div>
     {baselineValue !== undefined && (
-      <div className="text-[9px] text-content/40 mt-1" title="Avg per week over the prior 2 weeks">
-        Baseline{" "}
-        <span className="text-content/60 font-medium">{baselineValue}</span>
+      <div
+        className="text-[10px] font-bold text-content mb-0.5"
+        title="Avg per week over the prior 2 weeks"
+      >
+        Baseline {baselineValue}
       </div>
     )}
-    <div className="">{badge}</div>
+    <div className="flex items-baseline justify-center gap-2">
+      <span className={valueClassName}>{value}</span>
+      {badge}
+    </div>
   </div>
 );
 
@@ -141,12 +104,11 @@ const TrendBadge = ({
   const isUp = pct > 0;
   return (
     <span
-      className="inline-flex items-center gap-0.5 text-[8.5px] font-bold px-1.5 py-0.5 rounded"
-      style={
+      className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
         isUp
-          ? { background: "rgba(220,38,38,0.09)", color: "#dc2626" }
-          : { background: "rgba(22,163,74,0.09)", color: "#16a34a" }
-      }
+          ? "bg-severity_critical_bg text-severity_critical_text"
+          : "bg-severity_healthy_bg text-severity_healthy_text"
+      }`}
     >
       {pct !== 0 && (isUp ? "▲" : "▼")} {Math.abs(pct).toFixed(1)}%
     </span>
@@ -155,17 +117,24 @@ const TrendBadge = ({
 
 // ── Cashier breakdown badge ("avg") ──────────────────────────────────────────
 
-const AvgBadge = ({ pct, avg }: { pct: number; avg: number }) => {
+const AvgBadge = ({
+  pct,
+  avg,
+  textSize = "text-[11px]",
+}: {
+  pct: number;
+  avg: number;
+  textSize?: string;
+}) => {
   if (avg === 0) return null;
   const isUp = pct > 0;
   return (
     <span
-      className="inline-flex items-center gap-0.5 text-[8.5px] font-bold px-1.5 py-0.5 rounded"
-      style={
+      className={`${textSize} font-bold px-1.5 py-0.5 rounded ${
         isUp
-          ? { background: "rgba(220,38,38,0.09)", color: "#dc2626" }
-          : { background: "rgba(22,163,74,0.09)", color: "#16a34a" }
-      }
+          ? "bg-severity_critical_bg text-severity_critical_text"
+          : "bg-severity_healthy_bg text-severity_healthy_text"
+      }`}
     >
       {pct !== 0 && (isUp ? "▲" : "▼")} {Math.abs(pct).toFixed(1)}%
     </span>
@@ -261,12 +230,12 @@ const ColFilter = ({
       {open && (
         <div
           onKeyDown={handleKeyDown}
+          className="bg-custom-white"
           style={{
             position: "absolute",
             top: "calc(100% + 6px)",
             ...(align === "right" ? { right: 0 } : { left: 0 }),
             zIndex: 200,
-            background: "white",
             border: "1px solid rgba(30,42,74,0.12)",
             borderRadius: 6,
             boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
@@ -277,8 +246,8 @@ const ColFilter = ({
           {children}
           <button
             onClick={handleApply}
-            className="mt-2 w-full flex items-center justify-center gap-1.5 rounded py-1 text-[10px] font-medium"
-            style={{ background: "#1e2a4a", color: "white" }}
+            className="mt-2 w-full flex items-center justify-center gap-1.5 rounded py-1 text-[10px] font-medium text-custom-white"
+            style={{ background: "#1e2a4a" }}
           >
             <MagnifyingGlassIcon className="w-3 h-3" />
             Apply
@@ -331,11 +300,19 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
   const baselineDetail =
     cashier.baselineDetails.find((b) => b.storeid === selectedStoreId) ?? null;
   const storeName = useStoreName(selectedStoreId ?? 0, detail?.store_name);
+  const tier = detail
+    ? storeSeverity(detail, cashier.baselineDetails, selectedSaleType)
+    : "healthy";
+
+  const fmtRangePart = (mdy: string, withYear = false) => {
+    const [m, d, y] = mdy.split("/");
+    return withYear ? `${+m}/${+d}/${y}` : `${+m}/${+d}`;
+  };
+  const dateLabel = `${fmtRangePart(search.startDate)} – ${fmtRangePart(search.endDate, true)}`;
 
   // ── Graded cashier list ───────────────────────────────────────────────────
 
-  const isNoDollar =
-    selectedSaleType.toLowerCase().replace(/[^a-z]/g, "") === "nosale";
+  const isNoDollar = isNoDollarType(selectedSaleType);
 
   const cashierGrades = useMemo(
     () =>
@@ -360,19 +337,6 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
     cashierSevFilter === "all"
       ? cashierGrades
       : cashierGrades.filter((g) => g.severity === cashierSevFilter);
-
-  const chipClass = (active: boolean, sev?: CashierSeverity) => {
-    if (!active)
-      return "bg-white border-gray-200 text-content/65 hover:border-gray-400";
-    if (!sev) return "bg-[#1e2a4a] border-[#1e2a4a] text-white";
-    const m: Record<CashierSeverity, string> = {
-      critical: "bg-red-600 border-red-600 text-white",
-      watch: "bg-amber-500 border-amber-500 text-white",
-      ok: "bg-emerald-600 border-emerald-600 text-white",
-      ungraded: "bg-gray-400 border-gray-400 text-white",
-    };
-    return m[sev];
-  };
 
   // ── Cashier click ─────────────────────────────────────────────────────────
 
@@ -566,38 +530,28 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
         />
       ) : (
         <div className="flex flex-col flex-1 min-h-0 rounded-xl overflow-hidden bg-custom-white">
-          {/* Navy header */}
-          <div
-            className="flex-shrink-0 px-4 py-[11px] flex items-start justify-between"
-            style={{ background: "#1e2a4a" }}
-          >
-            <div>
-              <div className="text-[13px] font-semibold text-white">
-                {storeName}
-                <span
-                  className="ml-2 text-[11px] font-normal"
-                  style={{ color: "rgba(255,255,255,0.55)" }}
+          {/* Title bar — tinted to the selected store's severity */}
+          <div className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${severityHeaderBgClass[tier]}`}>
+            <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start">
+              {storeName}
+              <span className="ml-2 text-[11px] font-normal text-custom-white/70">
+                — {selectedSaleType}
+              </span>
+            </p>
+            <span className="text-custom-white text-[13px] font-bold justify-self-center">
+              Weekly LP Report · {dateLabel}
+            </span>
+            <div className="flex items-center gap-2 justify-self-end">
+              {transOverviews.length > 0 && !fetchingCashierTransactions && (
+                <button
+                  onClick={() => setExportOpen(true)}
+                  title="Export CSV"
+                  className="text-custom-white transition-colors"
                 >
-                  — {selectedSaleType}
-                </span>
-              </div>
-              <div
-                className="text-[10px] mt-0.5"
-                style={{ color: "rgba(255,255,255,0.55)" }}
-              >
-                {detail?.cashier_count} cashiers · {detail?.transaction_count}{" "}
-                transactions
-              </div>
+                  <ArrowDownTrayIcon className="w-4 h-4" />
+                </button>
+              )}
             </div>
-            {transOverviews.length > 0 && !fetchingCashierTransactions && (
-              <button
-                onClick={() => setExportOpen(true)}
-                title="Export CSV"
-                className="text-white/60 hover:text-white transition-colors mt-0.5"
-              >
-                <ArrowDownTrayIcon className="w-4 h-4" />
-              </button>
-            )}
           </div>
 
           {exportOpen && (
@@ -613,7 +567,7 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
 
           {/* Store KPI strip — always visible */}
           {kpiMetrics && (
-            <div className="flex-shrink-0 grid grid-cols-4 divide-x divide-gray-100 border-b border-gray-100">
+            <div className="flex-shrink-0 grid grid-cols-4 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50">
               {kpiMetrics.map((m) => (
                 <StripCell
                   key={m.label}
@@ -650,32 +604,29 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
               ) : (
                 <>
                   {/* Severity filter chips */}
-                  <div className="flex-shrink-0 flex flex-wrap gap-1 p-2 border-b border-gray-100 bg-gray-100">
+                  <div className="flex-shrink-0 flex items-center gap-1.5 p-2 border-b border-gray-100 bg-gray-100">
                     <button
-                      onClick={() => setCashierSevFilter("all")}
-                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(cashierSevFilter === "all")}`}
+                      onClick={() => setCashierSevFilter((f) => (f === "critical" ? "all" : "critical"))}
+                      className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
+                        cashierSevFilter === "critical" ? "ring-2 ring-severity_critical_text/40 shadow-sm" : ""
+                      }`}
                     >
-                      All ({cashierGrades.length})
-                    </button>
-                    <button
-                      onClick={() => setCashierSevFilter("critical")}
-                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(cashierSevFilter === "critical", "critical")}`}
-                    >
-                      <ExclamationTriangleIcon className="w-2.5 h-2.5" />
                       Crit ({critCount})
                     </button>
                     <button
-                      onClick={() => setCashierSevFilter("watch")}
-                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(cashierSevFilter === "watch", "watch")}`}
+                      onClick={() => setCashierSevFilter((f) => (f === "watch" ? "all" : "watch"))}
+                      className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
+                        cashierSevFilter === "watch" ? "ring-2 ring-severity_watch_text/40 shadow-sm" : ""
+                      }`}
                     >
-                      <ExclamationCircleIcon className="w-2.5 h-2.5" />
                       Watch ({watchCount})
                     </button>
                     <button
-                      onClick={() => setCashierSevFilter("ok")}
-                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(cashierSevFilter === "ok", "ok")}`}
+                      onClick={() => setCashierSevFilter((f) => (f === "ok" ? "all" : "ok"))}
+                      className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${
+                        cashierSevFilter === "ok" ? "ring-2 ring-severity_healthy_text/40 shadow-sm" : ""
+                      }`}
                     >
-                      <CheckCircleIcon className="w-2.5 h-2.5" />
                       OK ({okCount})
                     </button>
                   </div>
@@ -692,7 +643,7 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
                         (h, i) => (
                           <div
                             key={h}
-                            className={`px-2 py-1.5 text-[8px] font-bold uppercase tracking-wide text-content/35 ${i > 0 ? "text-right" : ""}`}
+                            className={`px-2 py-1.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 ${i > 0 ? "text-right" : ""}`}
                           >
                             {h}
                           </div>
@@ -708,29 +659,26 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
                           onClick={() =>
                             handleCashierClick(g.cashier_number, g.store_number)
                           }
-                          className={`w-full grid border-b border-gray-50 transition-colors text-left ${isSel ? "bg-white" : "hover:bg-gray-50"}`}
-                          style={{
-                            gridTemplateColumns: "1fr 0.42fr 0.42fr 0.58fr",
-                            ...(isSel
-                              ? {
-                                  boxShadow: `inset 0 0 8px ${SEV_SHADOW[g.severity]}`,
-                                }
-                              : {}),
-                          }}
+                          className={`w-full grid border-l-2 border-b border-b-[#1e2a4a]/15 transition-colors text-left ${
+                            isSel
+                              ? "bg-row_selected border-row_selected_border"
+                              : "border-transparent hover:bg-gray-50"
+                          }`}
+                          style={{ gridTemplateColumns: "1fr 0.42fr 0.42fr 0.58fr" }}
                         >
                           <div className="px-2 py-[11px] flex items-center gap-1.5 min-w-0">
-                            {SEV_ICON[g.severity]}
-                            <span className="text-[10px] font-medium truncate text-[#1e2a4a]">
+                            <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${CASHIER_DOT_CLASS[g.severity]}`} />
+                            <span className="text-[13px] font-medium text-content truncate">
                               {g.cashier_name}
                             </span>
                           </div>
-                          <div className="px-2 py-[11px] text-[10px] text-right tabular-nums font-semibold text-[#1e2a4a]">
+                          <div className="px-2 py-[11px] text-[13px] font-semibold text-content text-right tabular-nums">
                             {g.trans.value}
                           </div>
-                          <div className="px-2 py-[11px] text-[10px] text-right tabular-nums font-semibold text-[#1e2a4a]">
+                          <div className="px-2 py-[11px] text-[13px] font-semibold text-content text-right tabular-nums">
                             {g.qty.value}
                           </div>
-                          <div className="px-2 py-[11px] text-[10px] text-right tabular-nums font-semibold text-[#1e2a4a]">
+                          <div className="px-2 py-[11px] text-[13px] font-semibold text-content text-right tabular-nums">
                             {formatCurrency2(g.sales.value)}
                           </div>
                         </button>
@@ -747,15 +695,15 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
               {scoreMetrics && selectedGrade && (
                 <>
                   <div className="flex-shrink-0 px-3.5 py-1.5 border-b border-gray-100 bg-gray-100">
-                    <div className="text-[11px] font-bold text-[#1e2a4a]">
+                    <div className="text-[12px] font-semibold text-content">
                       {selectedGrade.cashier_name}
                     </div>
-                    <div className="text-[8px] font-bold uppercase tracking-[.07em] text-content/35">
+                    <div className="text-[9px] font-semibold uppercase tracking-wide text-content/40">
                       Cashier breakdown
                     </div>
                   </div>
                   <div
-                    className={`flex-shrink-0 grid divide-x divide-gray-100 border-b border-gray-100 ${isNoDollar ? "grid-cols-2" : "grid-cols-4"}`}
+                    className={`flex-shrink-0 grid divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 ${isNoDollar ? "grid-cols-2" : "grid-cols-4"}`}
                   >
                     {scoreMetrics.map((m) => (
                       <StripCell
@@ -763,7 +711,9 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
                         label={m.label}
                         value={m.value}
                         baselineValue={m.baselineStr}
-                        badge={<AvgBadge pct={m.pct} avg={m.avg} />}
+                        badge={<AvgBadge pct={m.pct} avg={m.avg} textSize="text-[10px]" />}
+                        className="py-2.5 text-center"
+                        valueClassName="text-[13px] font-bold text-content"
                       />
                     ))}
                   </div>
@@ -776,25 +726,24 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
                   <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-gray-100 border-b border-gray-100">
                     <button
                       onClick={() => setSelectedOverview(null)}
-                      className="text-[9px] font-semibold uppercase tracking-wide text-[#1e2a4a] hover:text-[#1e2a4a]/70 transition-colors"
+                      className="text-[12px] font-semibold text-[#1e2a4a] hover:text-[#1e2a4a]/70 transition-colors"
                     >
                       ← Back
                     </button>
-                    <span className="text-[9px] text-content/40">
-                      #{selectedOverview?.transaction_id}
-                    </span>
-                    <div className="ml-auto flex gap-1.5">
+                    <div className="ml-auto flex gap-2">
                       <button
                         onClick={() => transactionRef.current?.email()}
-                        className="flex items-center gap-1 text-[10px] font-medium bg-[#1e2a4a] text-white rounded px-2 py-1"
+                        className="text-content hover:text-[#1e2a4a] transition-colors"
+                        title="Email"
                       >
-                        Email
+                        <EnvelopeIcon className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => transactionRef.current?.export()}
-                        className="flex items-center gap-1 text-[10px] font-medium bg-[#1e2a4a] text-white rounded px-2 py-1"
+                        className="text-content hover:text-[#1e2a4a] transition-colors"
+                        title="Export CSV"
                       >
-                        CSV
+                        <ArrowDownTrayIcon className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -927,7 +876,7 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
                           filteredOverviews.map((o, i) => (
                             <div
                               key={o.transaction_id + i}
-                              className="grid border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                              className="grid border-b border-b-[#1e2a4a]/15 hover:bg-gray-50 transition-colors"
                               style={{
                                 gridTemplateColumns: "1fr 0.7fr 0.45fr 0.6fr",
                                 background:
@@ -938,17 +887,17 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
                             >
                               <button
                                 onClick={() => handleRowClick(o)}
-                                className="px-3 py-2 text-[11px] font-semibold text-[#1e2a4a] underline underline-offset-2 text-left truncate"
+                                className="px-3 py-2 text-[13px] font-semibold text-[#1e2a4a] underline underline-offset-2 text-left truncate"
                               >
                                 {o.transaction_id}
                               </button>
-                              <div className="px-3 py-2 text-[11px] text-content">
+                              <div className="px-3 py-2 text-[13px] text-content">
                                 {fmtDate(o.sale_date)}
                               </div>
-                              <div className="px-3 py-2 text-[11px] text-content text-right tabular-nums">
+                              <div className="px-3 py-2 text-[13px] text-content text-right tabular-nums">
                                 {o.qty}
                               </div>
-                              <div className="px-3 py-2 text-[11px] text-content text-right tabular-nums">
+                              <div className="px-3 py-2 text-[13px] text-content text-right tabular-nums">
                                 {formatCurrency2(o.total_sales)}
                               </div>
                             </div>

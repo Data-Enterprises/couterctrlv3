@@ -375,7 +375,7 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
       <div className="flex-shrink-0 px-4 py-[11px] flex items-start justify-between" style={{ background: "#1e2a4a" }}>
         <div className="text-[13px] font-semibold text-white">
           {headerTitle}
-          <span className="ml-2 text-[11px] font-normal" style={{ color: "rgba(255,255,255,0.55)" }}>
+          <span className="ml-2 text-[11px] font-normal text-white">
             {headerSuffix} · {dateRangeLabel}
           </span>
         </div>
@@ -386,7 +386,7 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
             </button>
             <div className="w-px h-4 bg-white/15" />
             <div className="flex items-baseline gap-1">
-              <span className="text-[10px] uppercase tracking-wide text-white/45">Records</span>
+              <span className="text-white text-[10px] uppercase tracking-wide">Records</span>
               <span className="text-[13px] font-medium text-white">{totalCoupons}</span>
             </div>
           </div>
@@ -404,9 +404,9 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
             { label: "Sub depts",    value: String(uniqueSubDepts) },
             { label: "Vendor",       value: String(vendorCount) },
           ].map(({ label, value }) => (
-            <div key={label} className="px-3 py-2">
-              <div className="text-[9px] font-medium uppercase tracking-wide text-content/60">{label}</div>
-              <div className="text-[13px] font-semibold text-content">{value}</div>
+            <div key={label} className="px-4 pt-2.5 text-center">
+              <div className="text-[10px] font-bold uppercase tracking-wide text-content">{label}</div>
+              <div className="text-[14px] font-bold text-content">{value}</div>
             </div>
           ))}
         </div>
@@ -455,7 +455,7 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
                       <span className="text-[12px] font-medium flex-1 truncate text-content">{section.label}</span>
                       <div className="flex items-baseline gap-1.5 flex-shrink-0">
                         <span className="text-[12px] font-semibold text-content">{formatCurrency2(section.total)}</span>
-                        <span className="text-[10px] text-content/60">{section.count}</span>
+                        <span className="text-[11px] text-content/60">{section.count}</span>
                       </div>
                     </div>
                   </button>
@@ -475,7 +475,7 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
                 <>
                 <div className="flex items-baseline gap-1.5 px-3 py-1.5 bg-gray-100 border-b border-gray-100 flex-shrink-0">
                   <span className="text-[12px] font-semibold text-content truncate">{sec.label}</span>
-                  <span className="text-[10px] text-content/45 italic flex-shrink-0">{tabLabel} · {dateRangeLabel}</span>
+                  <span className="text-[11px] text-content/45 italic flex-shrink-0">{tabLabel} · {dateRangeLabel}</span>
                 </div>
                 <div className="grid grid-cols-4 divide-x divide-gray-100 border-b border-gray-100 flex-shrink-0">
                   {[
@@ -484,9 +484,9 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
                     { label: "Avg / coupon", value: formatCurrency2(secAvg) },
                     { label: "Products",     value: String(secProducts) },
                   ].map(({ label, value }) => (
-                    <div key={label} className="px-4 py-3">
-                      <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">{label}</div>
-                      <div className="text-[13px] font-semibold text-content">{value}</div>
+                    <div key={label} className="px-4 pt-2.5 text-center">
+                      <div className="text-[10px] font-bold uppercase tracking-wide text-content">{label}</div>
+                      <div className="text-[13px] font-bold text-content">{value}</div>
                     </div>
                   ))}
                 </div>
@@ -551,7 +551,7 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
                 ) : (
                   <>
                     <div className="flex-1 overflow-auto thin-scrollbar">
-                      <table className="w-full border-collapse text-[11px]">
+                      <table className="w-full border-collapse text-[12px]">
                         <thead>
                           <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
                             <th className="px-2 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-right w-7">#</th>
@@ -608,7 +608,7 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
                   </div>
                 ) : (
                   <div className="flex-1 overflow-auto thin-scrollbar">
-                    <table className="w-full border-collapse text-[11px]">
+                    <table className="w-full border-collapse text-[12px]">
                       <thead>
                         <tr className="sticky top-0 bg-gray-100 border-b border-gray-100 z-10">
                           <th className="px-3 py-2 text-left w-32" style={{ overflow: "visible" }}>
@@ -625,16 +625,15 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
                               <input autoFocus style={{ width: "100%", fontSize: 11, border: "1px solid rgba(30,42,74,0.15)", borderRadius: 4, padding: "4px 7px", outline: "none", color: "var(--color-text-primary)", background: "rgba(30,42,74,0.03)" }} placeholder="Search product…" value={draftProduct} onChange={(e) => setDraftProduct(e.target.value)} />
                             </ColFilter>
                           </th>
-                          <th className="px-3 py-2 text-left" style={{ overflow: "visible" }}>
+                          <th className="px-3 py-2 text-left" style={{ overflow: "visible", width: "10.2%" }}>
                             <ColFilter label="Sub dept" active={!!appliedSubDept} appliedDisplay={appliedSubDept}
                               onApply={() => setAppliedSubDept(draftSubDept)}
                               onClear={() => { setAppliedSubDept(""); setDraftSubDept(""); }}>
                               <SelectFilter options={uniqueSubDeptOptions} value={draftSubDept} onChange={setDraftSubDept} placeholder="All sub depts" className="w-full" />
                             </ColFilter>
                           </th>
-                          <th className="px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-right whitespace-nowrap" style={{ width: "8%" }}>Trans</th>
-                          {isGroup && <th className="px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-left w-14">Store</th>}
-                          <th className="px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 text-right w-12">Count</th>
+                          <th className="px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content text-right whitespace-nowrap" style={{ width: "8%" }}>Trans</th>
+                          <th className="px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content text-right w-12">Count</th>
                           <th className="px-3 py-2 text-right w-24" style={{ overflow: "visible" }}>
                             <ColFilter label="Total" active={!!appliedAmount} appliedDisplay={fmtThreshold(appliedAmount, "$")} align="right"
                               onApply={() => setAppliedAmount(draftAmount)}
@@ -660,26 +659,24 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
                                       ? <ChevronDownIcon className="w-3 h-3 text-content/30 flex-shrink-0" />
                                       : <ChevronRightIcon className="w-3 h-3 text-content/30 flex-shrink-0" />
                                     }
-                                    <span className="text-content/50">{agg.product_code || "—"}</span>
+                                    <span className="text-content">{agg.product_code || "—"}</span>
                                   </div>
                                 </td>
                                 <td className="px-3 py-2 text-content font-medium truncate max-w-0" style={{ maxWidth: 180 }}>{agg.product_description}</td>
-                                <td className="px-3 py-2 text-content/60 whitespace-nowrap">{agg.sub_department_description}</td>
-                                <td className="px-3 py-2 text-right tabular-nums text-content/60">{agg.uses.length}</td>
-                                {isGroup && <td className="px-3 py-2 text-content/40 text-[10px] whitespace-nowrap">{agg.uses.length > 0 ? `${new Set(agg.uses.map(u => u.store_number)).size} stores` : "—"}</td>}
-                                <td className="px-3 py-2 text-right tabular-nums text-content/60">{agg.count}</td>
+                                <td className="px-3 py-2 text-content whitespace-nowrap">{agg.sub_department_description}</td>
+                                <td className="px-3 py-2 text-right tabular-nums text-content">{agg.uses.length}</td>
+                                <td className="px-3 py-2 text-right tabular-nums text-content">{agg.count}</td>
                                 <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">{formatCurrency2(agg.total)}</td>
                               </tr>
                               {isExp && (
                                 <>
                                   <tr className="bg-gray-100/70">
                                     <td className="pl-8 pr-3 py-1" />
-                                    <td className="px-3 py-1 text-[8px] font-semibold uppercase tracking-wide text-content/40">Cashier</td>
-                                    <td className="px-3 py-1 text-[8px] font-semibold uppercase tracking-wide text-content/40">Date</td>
-                                    <td className="px-3 py-1 text-[8px] font-semibold uppercase tracking-wide text-content/40">Trans ID</td>
-                                    {isGroup && <td className="px-3 py-1 text-[8px] font-semibold uppercase tracking-wide text-content/40">Store</td>}
-                                    <td className="px-3 py-1 text-[8px] font-semibold uppercase tracking-wide text-content/40 text-right">Qty</td>
-                                    <td className="px-3 py-1 text-[8px] font-semibold uppercase tracking-wide text-content/40 text-right">Amount</td>
+                                    <td className="px-3 py-1 text-[8px] font-semibold uppercase tracking-wide text-content">Cashier</td>
+                                    <td className="px-3 py-1 text-[8px] font-semibold uppercase tracking-wide text-content">Date</td>
+                                    <td className="px-3 py-1 text-[8px] font-semibold uppercase tracking-wide text-content">Trans ID</td>
+                                    <td className="px-3 py-1 text-[8px] font-semibold uppercase tracking-wide text-content text-right">Qty</td>
+                                    <td className="px-3 py-1 text-[8px] font-semibold uppercase tracking-wide text-content text-right">Amount</td>
                                   </tr>
                                   {agg.uses.map((use) => (
                                     <tr
@@ -688,11 +685,10 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
                                       onClick={(e) => { e.stopPropagation(); handleRowClick(use.row); }}
                                     >
                                       <td className="pl-8 pr-3 py-1.5" />
-                                      <td className="px-3 py-1.5 text-[10px] text-content/60 truncate max-w-0" style={{ maxWidth: 180 }}>{use.cashier_name}</td>
-                                      <td className="px-3 py-1.5 text-[10px] text-content/50 whitespace-nowrap">{formatDate(use.sale_date.split("T")[0])}</td>
-                                      <td className="px-3 py-1.5 text-[10px] text-content/40 whitespace-nowrap tabular-nums">{use.sale_id}</td>
-                                      {isGroup && <td className="px-3 py-1.5 text-[10px] text-content/50 whitespace-nowrap">{use.store_number}</td>}
-                                      <td className="px-3 py-1.5 text-right tabular-nums text-[10px] text-content/60">{use.count}</td>
+                                      <td className="px-3 py-1.5 text-[10px] text-content truncate max-w-0" style={{ maxWidth: 180 }}>{use.cashier_name}</td>
+                                      <td className="px-3 py-1.5 text-[10px] text-content whitespace-nowrap">{formatDate(use.sale_date.split("T")[0])}</td>
+                                      <td className="px-3 py-1.5 text-[10px] text-content whitespace-nowrap tabular-nums">{use.sale_id}</td>
+                                      <td className="px-3 py-1.5 text-right tabular-nums text-[10px] text-content">{use.count}</td>
                                       <td className="px-3 py-1.5 text-right tabular-nums text-[10px] font-semibold text-content">{formatCurrency2(use.amount)}</td>
                                     </tr>
                                   ))}
@@ -702,7 +698,7 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
                           );
                         })}
                         {aggCouponRows.length === 0 && (
-                          <tr><td colSpan={isGroup ? 7 : 6} className="px-3 py-6 text-center text-[11px] text-content/40">No results match the current filters</td></tr>
+                          <tr><td colSpan={6} className="px-3 py-6 text-center text-[11px] text-content">No results match the current filters</td></tr>
                         )}
                       </tbody>
                     </table>

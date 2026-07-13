@@ -330,19 +330,19 @@ const SubDeptCostGrid = () => {
         displayData.map((item, i) => (
           <div
             key={`${item.product_code}-${i}`}
-            className="grid border-b border-gray-100 hover:bg-gray-50 transition-colors"
+            className="grid border-b border-b-[#1e2a4a]/15 hover:bg-gray-50 transition-colors"
             style={{
               gridTemplateColumns: COLS,
               background: i % 2 === 1 ? "rgba(30,42,74,0.015)" : undefined,
             }}
             onContextMenu={(e) => { e.stopPropagation(); openCtxMenu(e, item.product_code); }}
           >
-            <div className="px-3 py-[9px] text-[11px] font-medium text-content truncate">{item.description}</div>
+            <div className="px-3 py-[9px] text-[13px] font-medium text-content truncate">{item.description}</div>
             <div className="px-3 py-[9px] text-[10px] text-content tabular-nums truncate">{item.product_code}</div>
-            <div className="px-3 py-[9px] text-[11px] text-right tabular-nums text-content">{formatCurrency2(item.calculated_cost)}</div>
-            <div className="px-3 py-[9px] text-[11px] text-right tabular-nums text-content">{formatCurrency2(item.cost)}</div>
-            <div className="px-3 py-[9px] text-[11px] text-right tabular-nums text-content">{formatBigNumber(item.qty, 0)}</div>
-            <div className="px-3 py-[9px] text-[11px] text-right tabular-nums font-semibold text-[#1e2a4a]">{formatCurrency2(item.total_cost)}</div>
+            <div className="px-3 py-[9px] text-[13px] text-right tabular-nums text-content">{formatCurrency2(item.calculated_cost)}</div>
+            <div className="px-3 py-[9px] text-[13px] text-right tabular-nums text-content">{formatCurrency2(item.cost)}</div>
+            <div className="px-3 py-[9px] text-[13px] text-right tabular-nums text-content">{formatBigNumber(item.qty, 0)}</div>
+            <div className="px-3 py-[9px] text-[13px] text-right tabular-nums font-semibold text-[#1e2a4a]">{formatCurrency2(item.total_cost)}</div>
           </div>
         ))
       )}

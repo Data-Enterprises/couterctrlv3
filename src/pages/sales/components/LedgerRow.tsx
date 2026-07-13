@@ -1,6 +1,9 @@
 import { formatCurrencyCompact } from "../../../utils";
 import { useStoreName } from "../../../hooks";
 import { severityDotClass } from "./utils";
+import type { Severity } from "../../../utils/severity";
+
+export type { Severity };
 
 export type DayDot = {
   sale_date: string;
@@ -9,8 +12,6 @@ export type DayDot = {
   lyNet: number;
   twQty: number;
 };
-
-export type Severity = "critical" | "watch" | "healthy";
 
 export type LedgerRowData = {
   storeid: number;

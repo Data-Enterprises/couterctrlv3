@@ -94,13 +94,13 @@ const fmtRangePart = (mdy: string, withYear = false) => {
         {/* Row 1: title + date | record count */}
         <div className="flex items-end gap-3 min-h-[24px]">
           <span className="text-[13px] font-semibold text-white flex-shrink-0">Receivers</span>
-          <span className="text-[10px] flex-shrink-0" style={{ color: "rgba(255,255,255,0.45)" }}>
+          <span className="text-white text-[10px] flex-shrink-0">
             {dateLabel}
           </span>
           <div className="flex-1" />
           {state.listGridData.length > 0 && (
             <div className="flex items-baseline gap-1 flex-shrink-0">
-              <span className="text-[10px] uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.45)" }}>
+              <span className="text-white text-[10px] uppercase tracking-wide">
                 Records
               </span>
               <span className="text-[13px] font-medium text-white">{state.listGridData.length}</span>
@@ -117,7 +117,7 @@ const fmtRangePart = (mdy: string, withYear = false) => {
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
           {state.storeid && (
-            <span className="text-[11px] font-medium text-white/80 truncate">{storeName}</span>
+            <span className="text-[11px] font-medium text-white truncate">{storeName}</span>
           )}
           <div className="flex-1" />
           <div className="relative flex-shrink-0" onMouseEnter={() => setLegendHover(true)} onMouseLeave={() => setLegendHover(false)}>
@@ -145,7 +145,7 @@ const fmtRangePart = (mdy: string, withYear = false) => {
                 ].map(({ color, label, desc }) => (
                   <div key={label} className="flex items-start gap-2">
                     <div className="w-[7px] h-[7px] rounded-full flex-shrink-0 mt-[3px]" style={{ background: color }} />
-                    <span className="text-[11px] text-white/70 leading-snug">
+                    <span className="text-[11px] text-white leading-snug">
                       <span className="text-white font-medium">{label}</span> — {desc}
                     </span>
                   </div>
@@ -195,10 +195,10 @@ const fmtRangePart = (mdy: string, withYear = false) => {
                   className="w-3 h-3 text-[#1e2a4a]/60 flex-shrink-0 transition-transform"
                   style={{ transform: vendorOpen ? "rotate(90deg)" : "rotate(0deg)" }}
                 />
-                <span className="text-[11px] font-semibold text-[#1e2a4a] flex-1 text-left truncate">
+                <span className="text-[12px] font-semibold text-[#1e2a4a] flex-1 text-left truncate">
                   {vendor.vendorName}
                 </span>
-                <span className="text-[10px] text-[#1e2a4a]/55 flex-shrink-0">{vendor.items.length}</span>
+                <span className="text-[11px] text-[#1e2a4a]/55 flex-shrink-0">{vendor.items.length}</span>
               </button>
 
               {/* Receiver rows */}
@@ -216,10 +216,10 @@ const fmtRangePart = (mdy: string, withYear = false) => {
                         style={isSel ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
                       >
                         <div className="flex flex-col gap-0.5 min-w-0">
-                          <span className="text-[10px] font-medium text-content">
+                          <span className="text-[12px] font-medium text-content">
                             Invoice #{item.invoiceid}
                           </span>
-                          <span className="text-[9px] text-content/50">
+                          <span className="text-[11px] text-content/50">
                             {formatDate(item.invoice_date.split("T")[0])} · {item.cashier_name}
                           </span>
                         </div>

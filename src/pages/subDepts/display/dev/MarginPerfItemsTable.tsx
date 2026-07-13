@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from "react";
-import { MagnifyingGlassIcon, ExclamationTriangleIcon, ExclamationCircleIcon, CheckCircleIcon, MinusCircleIcon } from "@heroicons/react/16/solid";
+import { MagnifyingGlassIcon, MinusCircleIcon } from "@heroicons/react/16/solid";
 import { useAppDispatch } from "../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
@@ -9,6 +9,8 @@ import type { SubDeptMargin } from "../../../../interfaces";
 import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
 import type { ThresholdValue } from "../../../../components/filters/ThresholdFilter";
 import UpcContextMenu from "../../../../components/UpcContextMenu";
+import SharedSeverityBadge from "../../../../components/SeverityBadge";
+import { chipClass } from "../../../../utils/severity";
 
 type Severity = "critical" | "watch" | "healthy" | "ungraded";
 type SevFilter = "all" | Severity;
@@ -31,39 +33,15 @@ type SortCol = "description" | "upc" | "grossSales" | "qty" | "cogs" | "costFees
 
 const COLS = "minmax(0,1.548fr) 0.5fr 0.35fr 0.418fr 0.494fr 0.494fr 0.5fr 0.42fr";
 
-const BADGE_BG: Record<Severity, string> = {
-  critical: "#fee2e2",
-  watch: "#fef3c7",
-  healthy: "#d1fae5",
-  ungraded: "#f3f4f6",
-};
-const BADGE_COLOR: Record<Severity, string> = {
-  critical: "#ef4444",
-  watch: "#f59e0b",
-  healthy: "#10b981",
-  ungraded: "#9ca3af",
-};
-
-const SeverityBadge = ({ severity }: { severity: Severity }) => (
-  <div
-    className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0"
-    style={{ background: BADGE_BG[severity] }}
-  >
-    {severity === "critical" && <ExclamationTriangleIcon className="w-3 h-3" style={{ color: BADGE_COLOR[severity] }} />}
-    {severity === "watch" && <ExclamationCircleIcon className="w-3 h-3" style={{ color: BADGE_COLOR[severity] }} />}
-    {severity === "healthy" && <CheckCircleIcon className="w-3 h-3" style={{ color: BADGE_COLOR[severity] }} />}
-    {severity === "ungraded" && <MinusCircleIcon className="w-3 h-3" style={{ color: BADGE_COLOR[severity] }} />}
-  </div>
-);
-
-const chipClass = (active: boolean, sev: Severity) => {
-  const base = "flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border";
-  if (active) {
-    const fill = sev === "critical" ? "bg-red-600 border-red-600 text-white" : sev === "watch" ? "bg-amber-500 border-amber-500 text-white" : "bg-emerald-600 border-emerald-600 text-white";
-    return `${base} ${fill}`;
-  }
-  return `${base} bg-transparent border-gray-200 text-content`;
-};
+// "ungraded" has no shared SeverityBadge equivalent — small local adapter.
+const SeverityBadge = ({ severity }: { severity: Severity }) =>
+  severity === "ungraded" ? (
+    <div className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0 bg-gray-100">
+      <MinusCircleIcon className="w-3 h-3 text-gray-400" />
+    </div>
+  ) : (
+    <SharedSeverityBadge severity={severity} />
+  );
 
 const getItemSeverity = (row: ItemMarginRow, threshold: number): Severity => {
   const raw = row.lyMarginPct !== null
@@ -114,12 +92,12 @@ const ColFilter = ({ label, active, align = "left", onApply, onClear, children }
       {open && <div className="fixed inset-0 z-[199]" onClick={() => setOpen(false)} />}
       {open && (
         <div
+          className="bg-custom-white"
           style={{
             position: "absolute",
             top: "calc(100% + 6px)",
             ...(align === "right" ? { right: 0 } : { left: 0 }),
             zIndex: 200,
-            background: "white",
             border: "1px solid rgba(30,42,74,0.12)",
             borderRadius: 6,
             boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
@@ -131,8 +109,8 @@ const ColFilter = ({ label, active, align = "left", onApply, onClear, children }
           <div className="flex gap-1.5 mt-2">
             <button
               onClick={() => { onApply(); setOpen(false); }}
-              className="flex-1 flex items-center justify-center gap-1 rounded py-1 text-[10px] font-medium"
-              style={{ background: "#1e2a4a", color: "white" }}
+              className="flex-1 flex items-center justify-center gap-1 rounded py-1 text-[10px] font-medium text-custom-white"
+              style={{ background: "#1e2a4a" }}
             >
               <MagnifyingGlassIcon className="w-3 h-3" /> Apply
             </button>
@@ -248,6 +226,21 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
 
   const [thresholdValue, setThresholdValue] = useState<ThresholdValue | null>({ op: "gt", amount: 9 });
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
+  const [threshOpen, setThreshOpen] = useState(false);
+  const threshBtnRef = useRef<HTMLButtonElement>(null);
+  const threshPopRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!threshOpen) return;
+    const close = (e: MouseEvent) => {
+      if (
+        threshBtnRef.current && !threshBtnRef.current.contains(e.target as Node) &&
+        threshPopRef.current && !threshPopRef.current.contains(e.target as Node)
+      ) setThreshOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [threshOpen]);
 
   // When a single day is selected in the day sidebar, scope all three
   // periods down to that day — TY to the day itself, LW/LY to that same
@@ -378,30 +371,55 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
     >
       {/* ── Control bar ── */}
       <div className="sticky top-0 z-20 flex items-center gap-2 px-3 py-1.5 bg-gray-50 border-b border-gray-100">
-        <span className="text-[9px] font-semibold uppercase tracking-wide text-content flex-shrink-0">Item Threshold</span>
-        <ThresholdFilter
-          value={thresholdValue}
-          onChange={setThresholdValue}
-          showOp={false}
-          showClear={false}
-          suffix="pts"
-          inputWidth={46}
-        />
+        <button
+          onClick={() => setSevFilter((f) => (f === "critical" ? "all" : "critical"))}
+          className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
+            sevFilter === "critical" ? "ring-2 ring-severity_critical_text/40 shadow-sm" : ""
+          }`}
+        >
+          Crit ({sevCounts.critical})
+        </button>
+        <button
+          onClick={() => setSevFilter((f) => (f === "watch" ? "all" : "watch"))}
+          className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
+            sevFilter === "watch" ? "ring-2 ring-severity_watch_text/40 shadow-sm" : ""
+          }`}
+        >
+          Watch ({sevCounts.watch})
+        </button>
+        <button
+          onClick={() => setSevFilter((f) => (f === "healthy" ? "all" : "healthy"))}
+          className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${
+            sevFilter === "healthy" ? "ring-2 ring-severity_healthy_text/40 shadow-sm" : ""
+          }`}
+        >
+          OK ({sevCounts.healthy})
+        </button>
 
-        <div className="w-px h-4 bg-gray-200 flex-shrink-0 mx-0.5" />
-
-        <button onClick={() => setSevFilter("all")} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${sevFilter === "all" ? "bg-[#1e2a4a] border-[#1e2a4a] text-white" : "bg-transparent border-gray-200 text-content"}`}>
-          All ({rawRows.length})
-        </button>
-        <button onClick={() => setSevFilter("critical")} className={chipClass(sevFilter === "critical", "critical")}>
-          <ExclamationTriangleIcon className="w-2.5 h-2.5" />Crit ({sevCounts.critical})
-        </button>
-        <button onClick={() => setSevFilter("watch")} className={chipClass(sevFilter === "watch", "watch")}>
-          <ExclamationCircleIcon className="w-2.5 h-2.5" />Watch ({sevCounts.watch})
-        </button>
-        <button onClick={() => setSevFilter("healthy")} className={chipClass(sevFilter === "healthy", "healthy")}>
-          <CheckCircleIcon className="w-2.5 h-2.5" />OK ({sevCounts.healthy})
-        </button>
+        <div className="relative flex-shrink-0">
+          <button
+            ref={threshBtnRef}
+            onClick={() => setThreshOpen((v) => !v)}
+            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(threshOpen)}`}
+          >
+            Thresh
+          </button>
+          {threshOpen && (
+            <div
+              ref={threshPopRef}
+              className="absolute top-full left-0 mt-1 p-1.5 rounded-md border border-gray-200 bg-custom-white shadow-lg z-20"
+            >
+              <ThresholdFilter
+                value={thresholdValue}
+                onChange={setThresholdValue}
+                showOp={false}
+                showClear={false}
+                suffix="pts"
+                inputWidth={46}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ── Column headers ── */}
@@ -450,7 +468,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
           return (
             <div
               key={item.productCode}
-              className="grid border-b border-gray-100 hover:bg-gray-50/80 transition-colors"
+              className="grid border-b border-b-[#1e2a4a]/15 hover:bg-gray-50/80 transition-colors"
               style={{
                 gridTemplateColumns: COLS,
                 background: i % 2 === 1 ? "rgba(30,42,74,0.015)" : undefined,
@@ -460,47 +478,47 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
               <div className="flex items-center gap-2 px-2 py-[7px] min-w-0">
                 <SeverityBadge severity={sev} />
                 <div className="flex flex-col justify-center min-w-0">
+                  <div className="text-[13px] font-medium text-content truncate">{item.description}</div>
                   <div className="text-[10px] text-content tabular-nums truncate">{item.productCode}</div>
-                  <div className="text-[11px] font-medium text-content truncate">{item.description}</div>
                 </div>
               </div>
-              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums text-content">{formatCurrency2(item.grossSales)}</div>
-              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums text-content">{item.qty}</div>
-              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums font-semibold text-[#1e2a4a]">
+              <div className="px-2 py-[9px] text-[13px] text-right tabular-nums text-content">{formatCurrency2(item.grossSales)}</div>
+              <div className="px-2 py-[9px] text-[13px] text-right tabular-nums text-content">{item.qty}</div>
+              <div className="px-2 py-[9px] text-[13px] text-right tabular-nums font-semibold text-[#1e2a4a]">
                 {item.tyMarginPct.toFixed(2)}%
               </div>
               <div className="px-2 py-[9px] text-right">
                 {item.lwMarginPct !== null ? (
                   <>
-                    <div className="text-[11px] tabular-nums text-content">{item.lwMarginPct.toFixed(2)}%</div>
+                    <div className="text-[13px] tabular-nums text-content">{item.lwMarginPct.toFixed(2)}%</div>
                     {lwDelta !== null && (
-                      <div className="text-[9px] tabular-nums font-medium" style={{ color: lwDelta > 0 ? "#16a34a" : lwDelta < 0 ? "#ef4444" : "#16a34a" }}>
+                      <div className="text-[10px] tabular-nums font-medium" style={{ color: lwDelta > 0 ? "#16a34a" : lwDelta < 0 ? "#ef4444" : "#16a34a" }}>
                         {lwDelta > 0 ? "+" : ""}{lwDelta.toFixed(1)} pts
                       </div>
                     )}
                   </>
                 ) : (
-                  <span className="text-[11px] text-content">—</span>
+                  <span className="text-[13px] text-content">—</span>
                 )}
               </div>
               <div className="px-2 py-[9px] text-right">
                 {item.lyMarginPct !== null ? (
                   <>
-                    <div className="text-[11px] tabular-nums text-content">{item.lyMarginPct.toFixed(2)}%</div>
+                    <div className="text-[13px] tabular-nums text-content">{item.lyMarginPct.toFixed(2)}%</div>
                     {lyDelta !== null && (
-                      <div className="text-[9px] tabular-nums font-medium" style={{ color: lyDelta > 0 ? "#16a34a" : lyDelta < 0 ? "#ef4444" : "#16a34a" }}>
+                      <div className="text-[10px] tabular-nums font-medium" style={{ color: lyDelta > 0 ? "#16a34a" : lyDelta < 0 ? "#ef4444" : "#16a34a" }}>
                         {lyDelta > 0 ? "+" : ""}{lyDelta.toFixed(1)} pts
                       </div>
                     )}
                   </>
                 ) : (
-                  <span className="text-[11px] text-content">—</span>
+                  <span className="text-[13px] text-content">—</span>
                 )}
               </div>
-              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums text-content">
+              <div className="px-2 py-[9px] text-[13px] text-right tabular-nums text-content">
                 {formatCurrency2(item.cogs)}
               </div>
-              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums text-content">
+              <div className="px-2 py-[9px] text-[13px] text-right tabular-nums text-content">
                 {item.costFees.toFixed(2)}%
               </div>
             </div>
