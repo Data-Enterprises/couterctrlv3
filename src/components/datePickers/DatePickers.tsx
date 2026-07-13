@@ -6,12 +6,14 @@ interface Props {
   handleQuery?: () => void;
   btnPadding?: string;
   showBtn?: boolean;
+  stacked?: boolean;
 }
 
 const DatePickers = ({
   handleQuery,
   btnPadding = "",
   showBtn = true,
+  stacked = false,
 }: Props) => {
   const context = useAppSelector((state) => state.app);
 
@@ -21,8 +23,9 @@ const DatePickers = ({
     }
   };
 
-  const pickerStyle =
-    context.isDesktop
+  const pickerStyle = stacked
+    ? "grid gap-2"
+    : context.isDesktop
       ? "flex gap-2"
       : context.isMobile ? "grid grid-cols-1 md:grid-cols-2 gap-2" : "grid gap-2";
 

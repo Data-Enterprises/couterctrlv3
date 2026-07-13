@@ -72,12 +72,12 @@ const UpdateComp = () => {
         {id > 0 ? (
           <>
             <div className="text-[13px] font-semibold text-content mb-0.5">{name}</div>
-            <div className="text-[11px] text-content mb-4">Update company details</div>
+            <div className="text-[12px] text-content mb-4">Update company details</div>
           </>
         ) : (
           <>
             <div className="text-[13px] font-semibold text-content mb-0.5">Select a company</div>
-            <div className="text-[11px] text-content mb-4">Pick a company from the list to update</div>
+            <div className="text-[12px] text-content mb-4">Pick a company from the list to update</div>
           </>
         )}
 
@@ -104,13 +104,13 @@ const UpdateComp = () => {
         </div>
 
         <div className="flex items-center justify-end gap-4 mt-5">
-          <button onClick={handleReset} disabled={!canClear} className="text-[11px] text-content disabled:opacity-40 transition-colors">
+          <button onClick={handleReset} disabled={!canClear} className="text-[12px] text-content disabled:opacity-40 transition-colors">
             Reset fields
           </button>
           <button
             onClick={handleUpdateComp}
             disabled={!canSubmit}
-            className={`text-[11px] font-medium px-4 py-1.5 rounded-md transition-colors text-white ${
+            className={`text-[12px] font-medium px-4 py-1.5 rounded-md transition-colors text-white ${
               canSubmit ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85" : "bg-gray-300 cursor-not-allowed"
             }`}
           >

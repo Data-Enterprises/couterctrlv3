@@ -32,7 +32,7 @@ const options = [
   { label: "Assign/Unassign Stores", id: "assign" },
 ];
 
-const Groups = () => {
+const GroupsLegacy = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const ctx = useGroupCtx();
@@ -163,4 +163,4 @@ const Groups = () => {
   );
 };
 
-export default Groups;
+export default GroupsLegacy;

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, type Mock } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../../utils";
-import Groups from "../../../pages/groups/Groups";
+import Groups from "../../../pages/groups/GroupsLegacy";
 import userEvent from "@testing-library/user-event";
 import { setupStore } from "../../../store";
 import {
