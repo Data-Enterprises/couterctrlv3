@@ -17,7 +17,7 @@ import {
 } from "..";
 
 import { setupStore } from "../../../../store";
-import Team from "../../../../pages/team/Team";
+import Team from "../../../../pages/team/TeamLegacy";
 import { setCompanies, setUserLevel } from "../../../../features/userSlice";
 import { getBGAssignedToUserSplit } from "../../../../api/baseGroups";
 

@@ -1,13 +1,14 @@
-import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
 import Modal from "../../../../components/Modal";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
+import { useSubMarginState } from "../../hooks/useSubMarginState";
 import TextFilter from "./TextFilter";
 import ThresholdFilter from "./TresholdFilter";
 
 const ItemFilterModal = () => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
-  const subMargin = useAppSelector((state) => state.subMargin);
+  const subMargin = useSubMarginState();
 
   const handleClose = () => {
     dispatch(actions.setFilterModalOpen(false));

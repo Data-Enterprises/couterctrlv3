@@ -4,7 +4,8 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import { getWeekly, getHourly } from "../../api/sales";
 import { getStoresAssignedToUserGroup } from "../../api/groups";
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../utils";
-import type { WeeklySale, Store } from "../../interfaces";
+import { buildLedgerRows } from "./shared/ledgerUtils";
+import type { Store } from "../../interfaces";
 import {
   setWeeklySales,
   setWeeklySalesLastWeek,
@@ -25,7 +26,6 @@ import {
   setLedgerLoading,
   setLedgerSelection,
   reQueryLedger,
-  type GradingMetric,
 } from "../../features/salesLedgerSlice";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
@@ -40,106 +40,6 @@ import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
 
 type SortColumn = "ty" | "vsLW" | "vsLY";
 type SortState = { column: SortColumn; direction: "desc" | "asc" } | null;
-
-const SEVERITY_RANK = { critical: 0, watch: 1, healthy: 2 } as const;
-
-const buildLedgerRows = (
-  twData: WeeklySale[],
-  lwData: WeeklySale[],
-  lyData: WeeklySale[],
-  assignedStores: Store[],
-  threshold: number,
-  gradingMetric: GradingMetric,
-): LedgerRowData[] => {
-  const storeIds = [...new Set(twData.map((d) => d.storeid))];
-
-  return storeIds
-    .map((id) => {
-      const twRows = twData.filter((d) => d.storeid === id);
-      const lwRows = lwData.filter((d) => d.storeid === id);
-      const lyRows = lyData.filter((d) => d.storeid === id);
-      const ref = twRows[0];
-      const assigned = assignedStores.find((s) => s.storeid === id);
-
-      const twTotal = twRows.reduce(
-        (acc, r) => acc + (r.total_sales - r.total_tax),
-        0,
-      );
-      const lwTotal = lwRows.reduce(
-        (acc, r) => acc + (r.total_sales - r.total_tax),
-        0,
-      );
-      const lyTotal = lyRows.reduce(
-        (acc, r) => acc + (r.total_sales - r.total_tax),
-        0,
-      );
-      const twQty = twRows.reduce((acc, r) => acc + r.qty, 0);
-      const lwQty = lwRows.reduce((acc, r) => acc + r.qty, 0);
-      const lyQty = lyRows.reduce((acc, r) => acc + r.qty, 0);
-
-      const gradeTW = gradingMetric === "qty" ? twQty : twTotal;
-      const gradeLW = gradingMetric === "qty" ? lwQty : lwTotal;
-      const gradeLY = gradingMetric === "qty" ? lyQty : lyTotal;
-
-      const hasLW = lwTotal > 0;
-      const hasLY = lyTotal > 0;
-      const vsLYDollar = twTotal - lyTotal;
-      const vsLYPct = hasLY ? ((gradeTW - gradeLY) / gradeLY) * 100 : 0;
-      const vsLWPct = hasLW ? ((gradeTW - gradeLW) / gradeLW) * 100 : 0;
-
-      const severity: LedgerRowData["severity"] = (() => {
-        const pct = hasLY ? vsLYPct : hasLW ? vsLWPct : 0;
-        if (pct < -threshold) return "critical";
-        if (pct < 0) return "watch";
-        return "healthy";
-      })();
-
-      const days = twRows
-        .sort((a, b) => a.sale_date.localeCompare(b.sale_date))
-        .map((r) => {
-          const twDate = r.sale_date.split("T")[0];
-          const lwDate = addDays(new Date(twDate), -7)
-            .toISOString()
-            .split("T")[0];
-          const lyDate = sameWeekDayLastYear(twDate).date;
-          const lwRow = lwRows.find((l) => l.sale_date.startsWith(lwDate));
-          const lyRow = lyRows.find((l) => l.sale_date.startsWith(lyDate));
-          return {
-            sale_date: r.sale_date,
-            twNet: r.total_sales - r.total_tax,
-            lwNet: lwRow ? lwRow.total_sales - lwRow.total_tax : 0,
-            lyNet: lyRow ? lyRow.total_sales - lyRow.total_tax : 0,
-            twQty: r.qty,
-          };
-        });
-
-      return {
-        storeid: id,
-        store_name: assigned?.store_name ?? ref.store_name,
-        store_number: assigned?.store_number ?? ref.store_number,
-        twTotal,
-        lwTotal,
-        lyTotal,
-        twQty,
-        lwQty,
-        lyQty,
-        vsLWPct,
-        vsLYPct,
-        vsLYDollar,
-        hasLW,
-        hasLY,
-        severity,
-        days,
-      };
-    })
-    .sort((a, b) => {
-      const rankDiff = SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity];
-      if (rankDiff !== 0) return rankDiff;
-      const aPct = a.hasLY ? a.vsLYPct : a.vsLWPct;
-      const bPct = b.hasLY ? b.vsLYPct : b.vsLWPct;
-      return aPct - bPct;
-    });
-};
 
 const SalesLedger = () => {
   const dispatch = useAppDispatch();
@@ -197,8 +97,15 @@ const SalesLedger = () => {
     const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
     const lwEnd = addDays(search.singleDate, -7).toISOString().split("T")[0];
     const lwStart = addDays(search.singleDate, -13).toISOString().split("T")[0];
-    const lyEnd = sameWeekDayLastYear(twEnd).date;
-    const lyStart = sameWeekDayLastYear(twStart).date;
+    // Shifting just the two week endpoints breaks when one of them lands on a
+    // fixed-date holiday (e.g. July 4th) — that endpoint gets snapped to the
+    // exact holiday date last year while the other gets a plain weekday-preserving
+    // shift, desyncing the range from the per-day lookups in buildLedgerRows.
+    // Shifting every day in the week and taking the min/max keeps it correct.
+    const twWeekDates = Array.from({ length: 7 }, (_, i) => addDays(twStart, i).toISOString().split("T")[0]);
+    const lyWeekDates = twWeekDates.map((d) => sameWeekDayLastYear(d).date).sort();
+    const lyStart = lyWeekDates[0];
+    const lyEnd = lyWeekDates[lyWeekDates.length - 1];
     return { twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd };
   };
 

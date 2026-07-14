@@ -7,7 +7,7 @@ import { setupStore } from "../../../../store";
 import { allUsersResp, loggedInUserCompanies, userLvlResp } from "..";
 
 import { getAllUsers } from "../../../../api/user";
-import Team from "../../../../pages/team/Team";
+import Team from "../../../../pages/team/TeamLegacy";
 import { setRefresh, setUserLevels } from "../../../../features/usersSlice";
 import { setCompanies, setUserLevel } from "../../../../features/userSlice";
 

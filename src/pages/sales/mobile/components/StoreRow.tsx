@@ -42,9 +42,9 @@ const StoreRow = ({ row, onClick }: StoreRowProps) => {
             const dayLabel = new Date(dateStr + "T12:00:00")
               .toLocaleDateString("en-US", { weekday: "short" })
               .slice(0, 1);
-            const hasLY = d.lyNet > 0;
-            const hasLW = d.lwNet > 0;
-            const ref = hasLY ? d.lyNet : hasLW ? d.lwNet : 0;
+            const hasLY = d.lyNet !== null && d.lyNet > 0;
+            const hasLW = d.lwNet !== null && d.lwNet > 0;
+            const ref = hasLY ? (d.lyNet as number) : hasLW ? (d.lwNet as number) : 0;
             const hasRef = hasLY || hasLW;
             const isPos = hasRef ? d.twNet >= ref : true;
             return (

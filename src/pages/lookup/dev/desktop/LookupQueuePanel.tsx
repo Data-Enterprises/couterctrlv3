@@ -30,10 +30,10 @@ const LookupQueuePanel = ({ storeName, queue, selectedUpc, onSelect, onOpenSearc
       <div className="flex-shrink-0 px-3 pt-1 pb-2.5 flex flex-col gap-0" style={{ background: "#1e2a4a" }}>
         <div className="flex items-end gap-3 min-h-[24px]">
           <span className="text-[13px] font-semibold text-white flex-shrink-0">Item lookup</span>
-          <span className="text-[10px] flex-shrink-0" style={{ color: "rgba(255,255,255,0.45)" }}>{dateRangeLabel}</span>
+          <span className="text-white text-[10px] flex-shrink-0">{dateRangeLabel}</span>
           <div className="flex-1" />
           <div className="flex items-baseline gap-1 flex-shrink-0">
-            <span className="text-[10px] uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.45)" }}>Loaded</span>
+            <span className="text-white text-[10px] uppercase tracking-wide">Loaded</span>
             <span className="text-[13px] font-medium text-white">{loadedCount} / {queue.length}</span>
           </div>
         </div>
@@ -45,7 +45,7 @@ const LookupQueuePanel = ({ storeName, queue, selectedUpc, onSelect, onOpenSearc
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
-          <span className="text-[11px] font-medium text-white/80 truncate">{storeName}</span>
+          <span className="text-[11px] font-medium text-white truncate">{storeName}</span>
           <div className="flex-1" />
           <div
             className="relative flex-shrink-0"
@@ -94,7 +94,7 @@ const LookupQueuePanel = ({ storeName, queue, selectedUpc, onSelect, onOpenSearc
                     {item.description}
                   </span>
                   <div className="flex items-center justify-between mt-0.5">
-                    <span className="text-[10px] text-content">{item.upc}</span>
+                    <span className="text-[11px] text-content">{item.upc}</span>
                     <span
                       className="text-[11px] font-semibold tabular-nums"
                       style={{ color: isNegative ? "#991b1b" : "#059669" }}

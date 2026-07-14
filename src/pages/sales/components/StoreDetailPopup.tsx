@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
+// import { useSalesState } from "../hooks/useSalesState";
 import { getSubs, getHourly /* , getCats */ } from "../../../api/sales";
 import SalesExportModal from "./SalesExportModal";
 import {
@@ -31,10 +32,12 @@ import {
   sameWeekDayLastYear,
   formatCurrency2,
 } from "../../../utils";
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import { computeDayMatchedTotals /*, getWeeklyDataGaps, getWeeklyGapCount */ } from "../shared/ledgerUtils";
+import { ArrowDownTrayIcon /*, ExclamationTriangleIcon */ } from "@heroicons/react/20/solid";
 import PopupDaySidebar from "./PopupDaySidebar";
 import PopupSubDeptList from "./PopupSubDeptList";
 import PopupHourlyView from "./PopupHourlyView";
+// import DataGapReport from "./DataGapReport";
 // import PopupCategoryList from "./PopupCategoryList";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import type { StoreSelection } from "./LedgerRow";
@@ -74,9 +77,12 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
     exportSubDeptName,
     lastFetchedStoreId,
   } = useAppSelector((state) => state.salesLedger);
+  // const { weeklySales, weeklySalesLastWeek, weeklySalesLastYear } =
+  //   useSalesState();
 
   const [loading, setLoading] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  // const [gapReportOpen, setGapReportOpen] = useState(false);
   const [showFlames, setShowFlames] = useState(false);
   // const [catLoading, setCatLoading] = useState(false);
   // const [catFetchedFor, setCatFetchedFor] = useState<number | null>(null);
@@ -95,8 +101,36 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   const twEnd = formatGoliathDate(search.singleDate);
   const lwStart = addDays(search.singleDate, -13).toISOString().split("T")[0];
   const lwEnd = addDays(search.singleDate, -7).toISOString().split("T")[0];
-  const lyStart = sameWeekDayLastYear(twStart).date;
-  const lyEnd = sameWeekDayLastYear(twEnd).date;
+  // Checked against the raw weekly-sales fetch (not selection.days, which
+  // only ever contains real TW rows) so a day missing from TW itself — not
+  // just from LW/LY — actually shows up instead of being silently invisible.
+  // const gaps = getWeeklyDataGaps(
+  //   selection.storeId,
+  //   twStart,
+  //   twEnd,
+  //   lwStart,
+  //   lwEnd,
+  //   weeklySales,
+  //   weeklySalesLastWeek,
+  //   weeklySalesLastYear,
+  // );
+  // const gapCount = getWeeklyGapCount(gaps);
+  // The store's weekly-sales data (selection.days, built by buildLedgerRows)
+  // is fragmented — it only has an entry for the calendar days that actually
+  // have a row, not all 7 days of the week. The KPI header and left panel
+  // both treat that real, possibly-sparse set of days as "this week." Basing
+  // the LW/LY match set on all 7 hypothetical calendar days instead (rather
+  // than the real ones) would recognize a wider set of "matched" days than
+  // the store level does, so sub-dept/hourly could show real figures for a
+  // day the KPI header doesn't even count as part of the week. Deriving the
+  // match set from selection.days' actual dates keeps every level in sync.
+  const twRealDates = selection.days.map((d) => d.sale_date.split("T")[0]);
+  const lyWeekDates = twRealDates.map((d) => sameWeekDayLastYear(d).date).sort();
+  const lyStart = lyWeekDates[0];
+  const lyEnd = lyWeekDates[lyWeekDates.length - 1];
+  const lwWeekDates = twRealDates.map(
+    (d) => addDays(new Date(d), -7).toISOString().split("T")[0],
+  );
 
   const twYear = new Date(twEnd + "T12:00:00").getFullYear();
   // const lyYear = new Date(lyEnd + "T12:00:00").getFullYear();
@@ -141,22 +175,38 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   const activeDay = selectedDate
     ? sortedDays.find((d) => d.sale_date.startsWith(selectedDate))
     : null;
-  const headerTwTotal = activeDay
-    ? activeDay.twNet
-    : sortedDays.reduce((acc, d) => acc + d.twNet, 0);
-  const headerLwTotal = activeDay
-    ? activeDay.lwNet
-    : sortedDays.reduce((acc, d) => acc + d.lwNet, 0);
-  const headerLyTotal = activeDay
-    ? activeDay.lyNet
-    : sortedDays.reduce((acc, d) => acc + d.lyNet, 0);
-  const headerVsLWPct =
-    headerLwTotal > 0
-      ? ((headerTwTotal - headerLwTotal) / headerLwTotal) * 100
+  // Whole-week figures go through computeDayMatchedTotals so the header
+  // agrees with the left panel and day strip — the TW side of each
+  // comparison is restricted to just the days with a genuine LW/LY match,
+  // same as buildLedgerRows/PopupDaySidebar. A single selected day has no
+  // aggregation to do, but its lwNet/lyNet can still be null (no match).
+  const weekTotals = computeDayMatchedTotals(sortedDays);
+  const headerTwTotal = activeDay ? activeDay.twNet : weekTotals.twTotal;
+  const headerLwTotal = activeDay ? activeDay.lwNet : weekTotals.lwTotal;
+  const headerLyTotal = activeDay ? activeDay.lyNet : weekTotals.lyTotal;
+  const headerHasLW = activeDay
+    ? activeDay.lwNet !== null && activeDay.lwNet > 0
+    : weekTotals.hasLW;
+  const headerHasLY = activeDay
+    ? activeDay.lyNet !== null && activeDay.lyNet > 0
+    : weekTotals.hasLY;
+  const headerVsLWPct = activeDay
+    ? headerHasLW
+      ? ((activeDay.twNet - (activeDay.lwNet as number)) /
+          (activeDay.lwNet as number)) *
+        100
+      : null
+    : weekTotals.hasLW
+      ? weekTotals.vsLWPct
       : null;
-  const headerVsLYPct =
-    headerLyTotal > 0
-      ? ((headerTwTotal - headerLyTotal) / headerLyTotal) * 100
+  const headerVsLYPct = activeDay
+    ? headerHasLY
+      ? ((activeDay.twNet - (activeDay.lyNet as number)) /
+          (activeDay.lyNet as number)) *
+        100
+      : null
+    : weekTotals.hasLY
+      ? weekTotals.vsLYPct
       : null;
 
   const THRESHOLD = 9;
@@ -292,12 +342,38 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
     if (!rawSubs.length && !rawHourly.length) return;
 
     if (selectedDate === null) {
+      // The raw LW/LY arrays can include days that don't actually correspond
+      // to any day in this TW week (the LY range is deliberately widened
+      // around holidays, and the underlying data itself is fragmented) —
+      // filter down to the exact matched date set before aggregating, same
+      // as buildLedgerRows already does for the store-level totals, so the
+      // sub-dept/hourly figures agree with the KPI header above them.
+      const lwDateSet = new Set(lwWeekDates);
+      const lyDateSet = new Set(lyWeekDates);
       dispatch(setSubSales(rawSubs));
-      dispatch(setPeriodSubSales({ subs: rawLWSubs, period: 2 }));
-      dispatch(setPeriodSubSales({ subs: rawLYSubs, period: 3 }));
+      dispatch(
+        setPeriodSubSales({
+          subs: rawLWSubs.filter((s) => lwDateSet.has(s.sale_date.split("T")[0])),
+          period: 2,
+        }),
+      );
+      dispatch(
+        setPeriodSubSales({
+          subs: rawLYSubs.filter((s) => lyDateSet.has(s.sale_date.split("T")[0])),
+          period: 3,
+        }),
+      );
       dispatch(setHourlySales(rawHourly));
-      dispatch(setHourlySalesLastWeek(rawLWHourly));
-      dispatch(setHourlySalesLastYear(rawLYHourly));
+      dispatch(
+        setHourlySalesLastWeek(
+          rawLWHourly.filter((h) => lwDateSet.has(h.sale_date.split("T")[0])),
+        ),
+      );
+      dispatch(
+        setHourlySalesLastYear(
+          rawLYHourly.filter((h) => lyDateSet.has(h.sale_date.split("T")[0])),
+        ),
+      );
     } else {
       dispatch(
         setSubSales(
@@ -357,7 +433,21 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
         <span className="text-custom-white text-[13px] font-bold justify-self-center">
           Weekly Sales Report · {staticTwDate}
         </span>
-        <div className="flex items-center gap-2 justify-self-end">
+        <div className="flex items-center gap-3 justify-self-end">
+          {/* {!loading && gapCount > 0 && (
+            <button
+              onClick={() => setGapReportOpen(true)}
+              title={`${gapCount} day${gapCount === 1 ? "" : "s"} missing comparison data`}
+              className="relative flex items-center justify-center w-[22px] h-[22px] flex-shrink-0"
+            >
+              <span className="relative inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-custom-white">
+                <ExclamationTriangleIcon className="w-3 h-3 text-amber-600" />
+              </span>
+              <span className="absolute -top-1 -right-1 min-w-[13px] h-[13px] px-[3px] rounded-full bg-amber-600 text-custom-white text-[8px] font-semibold flex items-center justify-center leading-none">
+                {gapCount}
+              </span>
+            </button>
+          )} */}
           {!loading && (rawSubs.length > 0 || rawHourly.length > 0) && (
             <button
               onClick={() => setExportOpen(true)}
@@ -369,6 +459,15 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           )}
         </div>
       </div>
+
+      {/* {gapReportOpen && (
+        <DataGapReport
+          gaps={gaps}
+          storeName={selection.storeName}
+          storeNumber={selection.storeNumber}
+          onClose={() => setGapReportOpen(false)}
+        />
+      )} */}
 
       {exportOpen && (
         <SalesExportModal
@@ -405,7 +504,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           <div className="text-[10px] font-bold text-content mb-0.5">{lwDateLabel}</div>
           <div className="flex items-baseline justify-center gap-2">
             <span className="text-[14px] font-bold text-content">
-              {formatCurrency2(headerLwTotal)}
+              {headerLwTotal !== null ? formatCurrency2(headerLwTotal) : "—"}
             </span>
             {headerVsLWPct !== null && (
               <span
@@ -423,7 +522,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           <div className="text-[10px] font-bold text-content mb-0.5">{lyDateLabel}</div>
           <div className="flex items-baseline justify-center gap-2">
             <span className="text-[14px] font-bold text-content">
-              {formatCurrency2(headerLyTotal)}
+              {headerLyTotal !== null ? formatCurrency2(headerLyTotal) : "—"}
             </span>
             {headerVsLYPct !== null && (
               <span
@@ -475,6 +574,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
             lyDateLabel={lyDateLabel}
             storeId={selection.storeId}
             selectedDate={selectedDate}
+            twRealDates={twRealDates}
           />
         ) : (
           <PopupHourlyView

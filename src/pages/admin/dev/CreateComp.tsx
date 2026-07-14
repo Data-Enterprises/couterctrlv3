@@ -61,7 +61,7 @@ const CreateComp = () => {
 
       <div className="flex-1 p-5 overflow-y-auto thin-scrollbar">
         <div className="text-[13px] font-semibold text-content mb-0.5">New company</div>
-        <div className="text-[11px] text-content mb-4">Fill in the details below</div>
+        <div className="text-[12px] text-content mb-4">Fill in the details below</div>
 
         <div className="grid grid-cols-2 gap-3 max-w-xl">
           <div className="relative">
@@ -91,13 +91,13 @@ const CreateComp = () => {
         </div>
 
         <div className="flex items-center justify-end gap-4 mt-5">
-          <button onClick={handleReset} disabled={!canClear} className="text-[11px] text-content disabled:opacity-40 transition-colors">
+          <button onClick={handleReset} disabled={!canClear} className="text-[12px] text-content disabled:opacity-40 transition-colors">
             Reset fields
           </button>
           <button
             onClick={handleCreateComp}
             disabled={!canSubmit}
-            className={`text-[11px] font-medium px-4 py-1.5 rounded-md transition-colors text-white ${
+            className={`text-[12px] font-medium px-4 py-1.5 rounded-md transition-colors text-white ${
               canSubmit ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85" : "bg-gray-300 cursor-not-allowed"
             }`}
           >

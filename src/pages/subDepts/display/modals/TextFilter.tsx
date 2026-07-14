@@ -1,6 +1,7 @@
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
 import Input from "../../../../components/inputs/Input";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
+import { useSubMarginState } from "../../hooks/useSubMarginState";
 import type { ItemFilterType } from "../../../../features/subMarginSlice";
 
 interface TextFilterProps {
@@ -12,7 +13,7 @@ interface TextFilterProps {
 const TextFilter = ({ label, type, handleClose }: TextFilterProps) => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
-  const { filterTextInput } = useAppSelector((state) => state.subMargin);
+  const { filterTextInput } = useSubMarginState();
 
   const handleInputChange = (x: string) => {
     dispatch(actions.setFilterTextInput(x));

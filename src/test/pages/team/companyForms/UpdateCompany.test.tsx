@@ -29,7 +29,7 @@ import {
   defaultResp,
 } from ".";
 
-import Team from "../../../../pages/team/Team";
+import Team from "../../../../pages/team/TeamLegacy";
 import { setCompanies, setUserLevel } from "../../../../features/userSlice";
 import { setCompanyInfo } from "../../../../features/companySlice";
 

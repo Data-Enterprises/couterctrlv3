@@ -39,7 +39,7 @@ const ReceiverDetailPanel = () => {
             <>
               <div className="text-[13px] font-semibold text-white">
                 {selectedReceiver.vendor_name}
-                <span className="ml-2 text-[11px] font-normal" style={{ color: "rgba(255,255,255,0.55)" }}>
+                <span className="ml-2 text-[11px] font-normal text-white">
                   — {selectedReceiver.cashier_name} · {formatDate(selectedReceiver.invoice_date.split("T")[0])}
                 </span>
               </div>
@@ -59,17 +59,17 @@ const ReceiverDetailPanel = () => {
             </button>
             <div className="w-px h-4 bg-white/15 flex-shrink-0" />
             <div className="flex items-baseline gap-1 flex-shrink-0">
-              <span className="text-[10px] uppercase tracking-wide text-white/45">Invoice</span>
+              <span className="text-[10px] uppercase tracking-wide text-white">Invoice</span>
               <span className="text-[13px] font-medium text-white">{selectedReceiver!.invoiceid}</span>
             </div>
             <div className="w-px h-4 bg-white/15 flex-shrink-0" />
             <div className="flex items-baseline gap-1 flex-shrink-0">
-              <span className="text-[10px] uppercase tracking-wide text-white/45">Ref #</span>
+              <span className="text-[10px] uppercase tracking-wide text-white">Ref #</span>
               <span className="text-[13px] font-medium text-white">{selectedReceiver!.reference_number}</span>
             </div>
             <div className="w-px h-4 bg-white/15 flex-shrink-0" />
             <div className="flex items-baseline gap-1 flex-shrink-0">
-              <span className="text-[10px] uppercase tracking-wide text-white/45">Items</span>
+              <span className="text-[10px] uppercase tracking-wide text-white">Items</span>
               <span className="text-[13px] font-medium text-white">{state.details.length}</span>
             </div>
           </div>
@@ -99,36 +99,36 @@ const ReceiverDetailPanel = () => {
           {/* KPI strip */}
           {totals && (
             <div className="grid grid-cols-6 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
-              <div className="px-4 py-2.5">
-                <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Cases</div>
-                <div className="text-[13px] font-semibold text-content">{totals.cases}</div>
+              <div className="px-4 pt-2.5 text-center">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-content">Cases</div>
+                <div className="text-[14px] font-bold text-content">{totals.cases}</div>
               </div>
-              <div className="px-4 py-2.5">
-                <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Units</div>
-                <div className="text-[13px] font-semibold text-content">{totals.units}</div>
+              <div className="px-4 pt-2.5 text-center">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-content">Units</div>
+                <div className="text-[14px] font-bold text-content">{totals.units}</div>
               </div>
-              <div className="px-4 py-2.5">
-                <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">U Cost</div>
-                <div className="text-[13px] font-semibold text-content">{formatCurrency2(totals.ucost)}</div>
+              <div className="px-4 pt-2.5 text-center">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-content">U Cost</div>
+                <div className="text-[14px] font-bold text-content">{formatCurrency2(totals.ucost)}</div>
               </div>
-              <div className="px-4 py-2.5">
-                <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Ext Cost</div>
-                <div className="text-[13px] font-semibold text-content">{formatCurrency2(totals.ext_cost)}</div>
+              <div className="px-4 pt-2.5 text-center">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-content">Ext Cost</div>
+                <div className="text-[14px] font-bold text-content">{formatCurrency2(totals.ext_cost)}</div>
               </div>
-              <div className="px-4 py-2.5">
-                <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Retail</div>
-                <div className="text-[13px] font-semibold text-content">{formatCurrency2(totals.retail)}</div>
+              <div className="px-4 pt-2.5 text-center">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-content">Retail</div>
+                <div className="text-[14px] font-bold text-content">{formatCurrency2(totals.retail)}</div>
               </div>
-              <div className="px-4 py-2.5">
-                <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Ext Retail</div>
-                <div className="text-[13px] font-semibold text-content">{formatCurrency2(totals.ext_retail)}</div>
+              <div className="px-4 pt-2.5 text-center">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-content">Ext Retail</div>
+                <div className="text-[14px] font-bold text-content">{formatCurrency2(totals.ext_retail)}</div>
               </div>
             </div>
           )}
 
           {/* Table */}
           <div className="flex-1 overflow-auto thin-scrollbar">
-            <table className="w-full border-collapse text-[11px]">
+            <table className="w-full border-collapse text-[12px]">
               <thead>
                 <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
                   <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70">

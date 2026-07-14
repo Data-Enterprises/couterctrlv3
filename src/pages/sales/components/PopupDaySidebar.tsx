@@ -1,6 +1,7 @@
 import type { DayDot } from "./LedgerRow";
 import { getHolidayName } from "../../../utils/holidays";
 import { formatCurrency2 } from "../../../utils";
+import { computeDayMatchedTotals } from "../shared/ledgerUtils";
 import { StarIcon } from "@heroicons/react/20/solid";
 
 interface PopupDaySidebarProps {
@@ -20,15 +21,14 @@ const PopupDaySidebar = ({
     a.sale_date.localeCompare(b.sale_date),
   );
 
-  const weekTw = sorted.reduce((acc, d) => acc + d.twNet, 0);
-  const weekLw = sorted.reduce((acc, d) => acc + d.lwNet, 0);
-  const weekLy = sorted.reduce((acc, d) => acc + d.lyNet, 0);
-  const weekHasLY = weekLy > 0;
-  const weekHasLW = weekLw > 0;
+  const weekTotals = computeDayMatchedTotals(sorted);
+  const weekTw = weekTotals.twTotal;
+  const weekHasLY = weekTotals.hasLY;
+  const weekHasLW = weekTotals.hasLW;
   const weekDisplayPct = weekHasLY
-    ? ((weekTw - weekLy) / weekLy) * 100
+    ? weekTotals.vsLYPct
     : weekHasLW
-      ? ((weekTw - weekLw) / weekLw) * 100
+      ? weekTotals.vsLWPct
       : null;
   const weekSuffix = weekHasLY ? "LY" : weekHasLW ? "LW" : null;
   const weekIsNeg = weekDisplayPct !== null && weekDisplayPct < 0;
@@ -83,10 +83,16 @@ const PopupDaySidebar = ({
         const dayName = date.toLocaleDateString("en-US", { weekday: "long" });
         const dateNum = `${date.getMonth() + 1}/${date.getDate()}`;
         const isSelected = selectedDate === dateStr;
-        const hasLY = d.lyNet > 0;
-        const hasLW = d.lwNet > 0;
-        const vsLYPct = hasLY ? ((d.twNet - d.lyNet) / d.lyNet) * 100 : null;
-        const vsLWPct = hasLW ? ((d.twNet - d.lwNet) / d.lwNet) * 100 : null;
+        const hasLY = d.lyNet !== null && d.lyNet > 0;
+        const hasLW = d.lwNet !== null && d.lwNet > 0;
+        const vsLYPct =
+          hasLY && d.lyNet !== null
+            ? ((d.twNet - d.lyNet) / d.lyNet) * 100
+            : null;
+        const vsLWPct =
+          hasLW && d.lwNet !== null
+            ? ((d.twNet - d.lwNet) / d.lwNet) * 100
+            : null;
         const displayPct = vsLYPct ?? vsLWPct;
         const displaySuffix = hasLY ? "LY" : hasLW ? "LW" : null;
         const isNeg = displayPct !== null && displayPct < 0;

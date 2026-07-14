@@ -19,9 +19,9 @@ const CompanyPicker = ({ companies, mode, selectedId, collisionName, onSelect }:
           {mode === "reference" ? "Existing companies" : "Companies"}
         </span>
       </div>
-      <div className="flex-1 overflow-y-auto thin-scrollbar">
+      <div className="max-h-60 overflow-y-auto thin-scrollbar">
         {companies.length === 0 ? (
-          <div className="flex items-center justify-center py-8 text-[11px] text-content">No companies found</div>
+          <div className="flex items-center justify-center py-8 text-[12px] text-content">No companies found</div>
         ) : (
           companies.map((c) => {
             const isSelected = mode === "select" && selectedId === c.id;
@@ -31,7 +31,7 @@ const CompanyPicker = ({ companies, mode, selectedId, collisionName, onSelect }:
                 key={c.id}
                 onClick={() => onSelect?.(c.id)}
                 disabled={mode === "reference"}
-                className={`w-full text-left px-3 py-2 border-b border-gray-100 text-[11px] transition-colors ${
+                className={`w-full text-left px-3 py-2 border-b border-gray-100 text-[12px] transition-colors ${
                   mode === "select" ? "cursor-pointer hover:bg-gray-50" : "cursor-default"
                 } ${isCollision ? "bg-red-50 text-red-800" : "text-content"}`}
                 style={isSelected ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)", background: "white" } : undefined}

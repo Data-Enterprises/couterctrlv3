@@ -63,7 +63,7 @@ const DeleteComp = () => {
         {id > 0 ? (
           <>
             <div className="text-[13px] font-semibold text-content mb-0.5">{name}</div>
-            <div className="text-[11px] text-content mb-4">Select a company to delete</div>
+            <div className="text-[12px] text-content mb-4">Select a company to delete</div>
 
             <div className="grid grid-cols-2 gap-3 max-w-xl">
               {fields.map(({ label, key }) => (
@@ -80,7 +80,7 @@ const DeleteComp = () => {
               <div className="flex justify-end mt-5">
                 <button
                   onClick={() => dispatch(setDeleteCompanyModalOpen(true))}
-                  className="text-[11px] font-medium px-4 py-1.5 rounded-md bg-red-600 hover:bg-red-600/85 text-white transition-colors"
+                  className="text-[12px] font-medium px-4 py-1.5 rounded-md bg-red-600 hover:bg-red-600/85 text-white transition-colors"
                 >
                   Delete
                 </button>
@@ -89,19 +89,19 @@ const DeleteComp = () => {
 
             {context.deleteCompanyModalOpen && (
               <div className="border border-red-300 bg-red-50 rounded-lg px-3.5 py-3 mt-5 max-w-xl">
-                <div className="text-[11px] text-red-800 mb-2.5">
+                <div className="text-[12px] text-red-800 mb-2.5">
                   Delete {name}? This can't be undone.
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={handleDeleteComp}
-                    className="text-[11px] font-medium px-3.5 py-1.5 rounded-md bg-red-600 hover:bg-red-600/85 text-white transition-colors"
+                    className="text-[12px] font-medium px-3.5 py-1.5 rounded-md bg-red-600 hover:bg-red-600/85 text-white transition-colors"
                   >
                     Yes, delete
                   </button>
                   <button
                     onClick={() => dispatch(setDeleteCompanyModalOpen(false))}
-                    className="text-[11px] font-medium px-3.5 py-1.5 rounded-md bg-white border border-gray-200 text-content transition-colors"
+                    className="text-[12px] font-medium px-3.5 py-1.5 rounded-md bg-white border border-gray-200 text-content transition-colors"
                   >
                     Cancel
                   </button>
@@ -112,7 +112,7 @@ const DeleteComp = () => {
         ) : (
           <>
             <div className="text-[13px] font-semibold text-content mb-0.5">Select a company</div>
-            <div className="text-[11px] text-content">Pick a company from the list to delete</div>
+            <div className="text-[12px] text-content">Pick a company from the list to delete</div>
           </>
         )}
       </div>

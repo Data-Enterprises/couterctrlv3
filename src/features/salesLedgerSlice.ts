@@ -22,6 +22,21 @@ export type Top10Item = {
   lyNet: number | null;
   lyQty: number | null;
   lyWeight: number | null;
+  // TW net/qty restricted to just the days this item also has a matching
+  // LW/LY row for — an item can have real TW sales on days the store
+  // overall matches but this specific item doesn't. Comparing tyNet/tyQty
+  // (the full period total) against lwNet/lyNet (already day-restricted)
+  // would misstate the % change, so these are the correct TW-side inputs
+  // for any vs LW/LY percentage. See computeDayMatchedTotals.
+  twNetForLW: number;
+  twQtyForLW: number;
+  twNetForLY: number;
+  twQtyForLY: number;
+  // Present and false only on synthetic rows built for items that sold in
+  // LW/LY but not at all this week — lets the item row show "—" for TY
+  // instead of a misleading $0. Absent (undefined) means a normal,
+  // TY-anchored row — every existing consumer already treats that as active.
+  hasTY?: boolean;
 };
 
 export type ExportSubDeptItem = Top10Item & { sev: "critical" | "watch" | "healthy" };
@@ -72,6 +87,11 @@ interface SalesLedgerState {
   // Popup row selections — persist across tab switches, reset on new store
   selectedSubDeptId: number | null;
   selectedSubDeptItems: Top10Item[];
+  // Items that sold LW and/or LY but not at all this week, for the same
+  // sub dept/day selection — surfaced via the item list's Active/Inactive
+  // filter so slow/discontinued items don't stay invisible just because
+  // they have no TY row to anchor a normal Top10Item on.
+  inactiveSubDeptItems: Top10Item[];
   selectedHour: number | null;
   selectedCatId: number | null;
 
@@ -111,6 +131,7 @@ const initialState: SalesLedgerState = {
   exportSubDeptItems: [],
   selectedSubDeptId: null,
   selectedSubDeptItems: [],
+  inactiveSubDeptItems: [],
   selectedHour: null,
   selectedCatId: null,
   lastFetchedItemsKey: null,
@@ -200,6 +221,9 @@ const salesLedgerSlice = createSlice({
     setSelectedSubDeptItems: (state, action: PayloadAction<Top10Item[]>) => {
       state.selectedSubDeptItems = action.payload;
     },
+    setInactiveSubDeptItems: (state, action: PayloadAction<Top10Item[]>) => {
+      state.inactiveSubDeptItems = action.payload;
+    },
     setSelectedHour: (state, action: PayloadAction<number | null>) => {
       state.selectedHour = action.payload;
     },
@@ -212,6 +236,7 @@ const salesLedgerSlice = createSlice({
     clearPopupSelections: (state) => {
       state.selectedSubDeptId = null;
       state.selectedSubDeptItems = [];
+      state.inactiveSubDeptItems = [];
       state.selectedHour = null;
       state.selectedCatId = null;
       state.lastFetchedItemsKey = null;
@@ -277,6 +302,7 @@ const salesLedgerSlice = createSlice({
       state.exportSubDeptItems = [];
       state.selectedSubDeptId = null;
       state.selectedSubDeptItems = [];
+      state.inactiveSubDeptItems = [];
       state.selectedHour = null;
       state.selectedCatId = null;
       state.lastFetchedItemsKey = null;
@@ -332,6 +358,7 @@ export const {
   setExportSubDeptItems,
   setSelectedSubDeptId,
   setSelectedSubDeptItems,
+  setInactiveSubDeptItems,
   setSelectedHour,
   setSelectedCatId,
   setLastFetchedItemsKey,

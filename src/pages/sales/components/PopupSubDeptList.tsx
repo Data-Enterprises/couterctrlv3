@@ -8,6 +8,7 @@ import {
   setExportSubDeptItems,
   setSelectedSubDeptId,
   setSelectedSubDeptItems,
+  setInactiveSubDeptItems,
   setLastFetchedItemsKey,
 } from "../../../features/salesLedgerSlice";
 import type { GradingMetric } from "../../../features/salesLedgerSlice";
@@ -19,6 +20,7 @@ import {
   sameWeekDayLastYear,
 } from "../../../utils";
 import { getSubMargins } from "../../../api/subMargins";
+import { buildDayShiftMaps, buildDayMatchedTwTotals } from "../shared/ledgerUtils";
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
@@ -32,6 +34,7 @@ import UpcContextMenu from "../../../components/UpcContextMenu";
 import { formatPct, pillClass, chipClass, CTA_SEVERITY_CLASSES, severityDotClass, type SevFilter } from "./utils";
 import SeverityBadge from "../../../components/SeverityBadge";
 import TextFilter from "../../../components/filters/TextFilter";
+import SelectFilter from "../../../components/filters/SelectFilter";
 
 type DeptRow = {
   id: number;
@@ -69,7 +72,17 @@ type Top10Item = {
   lyNet: number | null;
   lyQty: number | null;
   lyWeight: number | null;
+  twNetForLW: number;
+  twQtyForLW: number;
+  twNetForLY: number;
+  twQtyForLY: number;
 };
+
+type DeptSortColumn = "ty" | "vsLW" | "vsLY";
+type DeptSortState = { column: DeptSortColumn; direction: "desc" | "asc" } | null;
+
+type ItemSortColumn = "ty" | "lw" | "ly";
+type ItemSortState = { column: ItemSortColumn; direction: "desc" | "asc" } | null;
 
 const aggregateByCode = (
   items: SubDeptMargin[],
@@ -111,18 +124,18 @@ const itemSeverity = (
   const lyPct =
     metric === "sales"
       ? item.lyNet !== null && item.lyNet > 0
-        ? ((item.tyNet - item.lyNet) / item.lyNet) * 100
+        ? ((item.twNetForLY - item.lyNet) / item.lyNet) * 100
         : null
       : item.lyQty !== null && item.lyQty > 0
-        ? ((item.tyQty - item.lyQty) / item.lyQty) * 100
+        ? ((item.twQtyForLY - item.lyQty) / item.lyQty) * 100
         : null;
   const lwPct =
     metric === "sales"
       ? item.lwNet !== null && item.lwNet > 0
-        ? ((item.tyNet - item.lwNet) / item.lwNet) * 100
+        ? ((item.twNetForLW - item.lwNet) / item.lwNet) * 100
         : null
       : item.lwQty !== null && item.lwQty > 0
-        ? ((item.tyQty - item.lwQty) / item.lwQty) * 100
+        ? ((item.twQtyForLW - item.lwQty) / item.lwQty) * 100
         : null;
   const pct = lyPct ?? lwPct ?? 0;
   if (pct < -threshold) return "critical";
@@ -181,6 +194,12 @@ interface PopupSubDeptListProps {
   lyDateLabel: string;
   storeId: number;
   selectedDate: string | null;
+  // The store's real (possibly-sparse) TW dates for this week, from
+  // selection.days — used to build the exact LW/LY match set so the item
+  // list's whole-week totals agree with the KPI strip and sub-dept rows,
+  // which are all keyed off the same real dates rather than a hypothetical
+  // full 7-day week.
+  twRealDates: string[];
 }
 
 const PopupSubDeptList = ({
@@ -189,6 +208,7 @@ const PopupSubDeptList = ({
   lyDateLabel,
   storeId,
   selectedDate,
+  twRealDates,
 }: PopupSubDeptListProps) => {
   const { subSales, subSalesWk2, subSalesWk3 } = useSalesState();
   const context = useAppSelector((state) => state.app);
@@ -208,6 +228,9 @@ const PopupSubDeptList = ({
   const items = useAppSelector(
     (state) => state.salesLedger.selectedSubDeptItems,
   );
+  const inactiveItems = useAppSelector(
+    (state) => state.salesLedger.inactiveSubDeptItems,
+  );
   const lastFetchedItemsKey = useAppSelector(
     (state) => state.salesLedger.lastFetchedItemsKey,
   );
@@ -222,6 +245,9 @@ const PopupSubDeptList = ({
   const itemThresholdRef = useRef<number>(rawItemThreshold ?? 9);
   if (rawItemThreshold != null) itemThresholdRef.current = rawItemThreshold;
   const itemThreshold = itemThresholdRef.current;
+  // Per-day shift maps so dept/item-level matching uses the same
+  // twDate→lwDate/lyDate lookups as the store level.
+  const { twToLwDay, twToLyDay } = buildDayShiftMaps(twRealDates);
   const dispatch = useAppDispatch();
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [ctaOpen, setCtaOpen] = useState(false);
@@ -233,6 +259,9 @@ const PopupSubDeptList = ({
   const itemThreshPopRef = useRef<HTMLDivElement>(null);
   const [itemSevFilter, setItemSevFilter] = useState<SevFilter>("all");
   const [itemTextFilter, setItemTextFilter] = useState("");
+  const [itemActiveFilter, setItemActiveFilter] = useState("active");
+  const [deptSort, setDeptSort] = useState<DeptSortState>(null);
+  const [itemSort, setItemSort] = useState<ItemSortState>(null);
   const [itemsLoading, setItemsLoading] = useState(false);
   const [ctxMenu, setCtxMenu] = useState<{
     x: number;
@@ -271,6 +300,7 @@ const PopupSubDeptList = ({
   useEffect(() => {
     if (selectedId === null) {
       dispatch(setSelectedSubDeptItems([]));
+      dispatch(setInactiveSubDeptItems([]));
       return;
     }
 
@@ -284,8 +314,16 @@ const PopupSubDeptList = ({
     const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
     const lwStart = addDays(search.singleDate, -13).toISOString().split("T")[0];
     const lwEnd = addDays(search.singleDate, -7).toISOString().split("T")[0];
-    const lyStart = sameWeekDayLastYear(twStart).date;
-    const lyEnd = sameWeekDayLastYear(twEnd).date;
+    // The store's real (possibly-sparse) TW dates, passed down from the
+    // parent's selection.days — using the real dates (not a hypothetical
+    // full 7-day week) keeps the match set identical to what the KPI strip
+    // and sub-dept rows use, so whole-week item totals agree with them.
+    const lyWeekDates = twRealDates.map((d) => sameWeekDayLastYear(d).date).sort();
+    const lyStart = lyWeekDates[0] ?? lwEnd;
+    const lyEnd = lyWeekDates[lyWeekDates.length - 1] ?? lwEnd;
+    const lwWeekDates = twRealDates.map(
+      (d) => addDays(new Date(d), -7).toISOString().split("T")[0],
+    );
 
     const tyStart = selectedDate ?? twStart;
     const tyEnd = selectedDate ?? twEnd;
@@ -342,10 +380,22 @@ const PopupSubDeptList = ({
 
         const tyItems: SubDeptMargin[] =
           tyResp.data?.error === 0 ? tyResp.data.subs : [];
-        const lwItems: SubDeptMargin[] =
+        let lwItems: SubDeptMargin[] =
           lwResp.data?.error === 0 ? lwResp.data.subs : [];
-        const lyItems: SubDeptMargin[] =
+        let lyItems: SubDeptMargin[] =
           lyResp.data?.error === 0 ? lyResp.data.subs : [];
+
+        // Whole-week case: the fetched LW/LY rows can include days that
+        // don't actually correspond to any day in this TW week — filter down
+        // to the exact matched date set before aggregating, so item totals
+        // agree with the dept-level and store-level figures shown elsewhere
+        // in this same popup.
+        if (!selectedDate) {
+          const lwDateSet = new Set(lwWeekDates);
+          const lyDateSet = new Set(lyWeekDates);
+          lwItems = lwItems.filter((i) => lwDateSet.has(i.sale_date.split("T")[0]));
+          lyItems = lyItems.filter((i) => lyDateSet.has(i.sale_date.split("T")[0]));
+        }
 
         const tyMap = aggregateByCode(tyItems);
         const lwMap = aggregateByCode(lwItems);
@@ -353,11 +403,28 @@ const PopupSubDeptList = ({
 
         const sorted = [...tyMap.entries()].sort((a, b) => b[1].qty - a[1].qty);
 
+        // An item can have real TW sales on days where the store overall
+        // has an LW/LY match but this specific item doesn't — restrict the
+        // TW side of each item's percentage to just the days that item has
+        // a match on, same as the dept-level fix above.
+        const matched = buildDayMatchedTwTotals(
+          tyItems,
+          lwItems,
+          lyItems,
+          (i) => i.product_code,
+          (i) => i.sale_date.split("T")[0],
+          (i) => i.total_sales - i.total_tax,
+          (i) => i.qty,
+          twToLwDay,
+          twToLyDay,
+        );
+
         dispatch(
           setSelectedSubDeptItems(
             sorted.map(([code, ty]) => {
               const lw = lwMap.get(code) ?? null;
               const ly = lyMap.get(code) ?? null;
+              const m = matched.get(code);
               return {
                 productCode: code,
                 upc: code,
@@ -371,6 +438,47 @@ const PopupSubDeptList = ({
                 lyNet: ly?.net ?? null,
                 lyQty: ly?.qty ?? null,
                 lyWeight: ly?.weight ?? null,
+                twNetForLW: m?.twNetForLW ?? 0,
+                twQtyForLW: m?.twQtyForLW ?? 0,
+                twNetForLY: m?.twNetForLY ?? 0,
+                twQtyForLY: m?.twQtyForLY ?? 0,
+              };
+            }),
+          ),
+        );
+        // Items that sold LW and/or LY but have no TY row at all — invisible
+        // in the normal TY-anchored list above since it's built from tyMap
+        // alone. Surfaced separately so someone can spot "this used to sell
+        // here" without it polluting the active list's severity counts.
+        const inactiveCodes = new Set([...lwMap.keys(), ...lyMap.keys()].filter((code) => !tyMap.has(code)));
+        const inactiveSorted = [...inactiveCodes].sort((a, b) => {
+          const aTotal = (lwMap.get(a)?.net ?? 0) + (lyMap.get(a)?.net ?? 0);
+          const bTotal = (lwMap.get(b)?.net ?? 0) + (lyMap.get(b)?.net ?? 0);
+          return bTotal - aTotal;
+        });
+        dispatch(
+          setInactiveSubDeptItems(
+            inactiveSorted.map((code) => {
+              const lw = lwMap.get(code) ?? null;
+              const ly = lyMap.get(code) ?? null;
+              return {
+                productCode: code,
+                upc: code,
+                desc: lw?.desc ?? ly?.desc ?? code,
+                tyNet: 0,
+                tyQty: 0,
+                tyWeight: 0,
+                hasTY: false,
+                lwNet: lw?.net ?? null,
+                lwQty: lw?.qty ?? null,
+                lwWeight: lw?.weight ?? null,
+                lyNet: ly?.net ?? null,
+                lyQty: ly?.qty ?? null,
+                lyWeight: ly?.weight ?? null,
+                twNetForLW: 0,
+                twQtyForLW: 0,
+                twNetForLY: 0,
+                twQtyForLY: 0,
               };
             }),
           ),
@@ -471,22 +579,41 @@ const PopupSubDeptList = ({
       {},
     );
 
+    // A dept can have real TW sales across days where the STORE overall has
+    // an LW/LY match, but the dept itself doesn't — restrict the TW side of
+    // each dept's percentage to just the days that dept has a match on.
+    const matched = buildDayMatchedTwTotals(
+      subSales,
+      subSalesWk2,
+      subSalesWk3,
+      (s) => s.sub_department,
+      (s) => s.sale_date.split("T")[0],
+      (s) => s.total_sales - s.total_tax,
+      (s) => s.qty,
+      twToLwDay,
+      twToLyDay,
+    );
+
     return Object.entries(twMap)
       .map(([id, r]) => {
-        const lw = lwMap[Number(id)];
-        const ly = lyMap[Number(id)];
+        const numId = Number(id);
+        const lw = lwMap[numId];
+        const ly = lyMap[numId];
         const lwNet = lw?.net ?? 0;
         const lyNet = ly?.net ?? 0;
+        const m = matched.get(numId);
+        const twNetForLW = m?.twNetForLW ?? 0;
+        const twNetForLY = m?.twNetForLY ?? 0;
         return {
-          id: Number(id),
+          id: numId,
           desc: r.desc,
           tw: r.net,
           lw: lwNet,
           ly: lyNet,
           hasLW: lwNet > 0,
           hasLY: lyNet > 0,
-          vsLWPct: lwNet ? ((r.net - lwNet) / lwNet) * 100 : 0,
-          vsLYPct: lyNet ? ((r.net - lyNet) / lyNet) * 100 : 0,
+          vsLWPct: lwNet ? ((twNetForLW - lwNet) / lwNet) * 100 : 0,
+          vsLYPct: lyNet ? ((twNetForLY - lyNet) / lyNet) * 100 : 0,
           qty: r.qty,
           lwQty: lw?.qty ?? 0,
           lyQty: ly?.qty ?? 0,
@@ -525,19 +652,46 @@ const PopupSubDeptList = ({
     sevFilter === "all"
       ? rows
       : rows.filter((r) => deptSeverity(r, threshold) === sevFilter);
+
+  const handleDeptSortClick = (column: DeptSortColumn) => {
+    setDeptSort((prev) => {
+      if (prev?.column !== column) return { column, direction: "desc" };
+      if (prev.direction === "desc") return { column, direction: "asc" };
+      return null;
+    });
+  };
+  const deptSortValue = (row: DeptRow, column: DeptSortColumn) =>
+    column === "ty" ? row.tw : column === "vsLW" ? row.vsLWPct : row.vsLYPct;
+  const sortedVisible = deptSort
+    ? [...visible].sort((a, b) => {
+        const diff = deptSortValue(a, deptSort.column) - deptSortValue(b, deptSort.column);
+        return deptSort.direction === "desc" ? -diff : diff;
+      })
+    : visible;
+
   const selected =
     selectedId !== null
       ? (rows.find((r) => r.id === selectedId) ?? null)
       : null;
   const cta = selected ? getCta(selected, threshold) : null;
 
+  const baseItems = useMemo(
+    () =>
+      itemActiveFilter === "inactive"
+        ? inactiveItems
+        : itemActiveFilter === "active"
+          ? items
+          : [...items, ...inactiveItems],
+    [itemActiveFilter, items, inactiveItems],
+  );
+
   const itemsWithSev = useMemo(
     () =>
-      items.map((item) => ({
+      baseItems.map((item) => ({
         ...item,
         sev: itemSeverity(item, itemThreshold, gradingMetric),
       })),
-    [items, itemThreshold, gradingMetric],
+    [baseItems, itemThreshold, gradingMetric],
   );
 
   useEffect(() => {
@@ -580,6 +734,30 @@ const PopupSubDeptList = ({
         );
       })
     : visibleItems;
+
+  const handleItemSortClick = (column: ItemSortColumn) => {
+    setItemSort((prev) => {
+      if (prev?.column !== column) return { column, direction: "desc" };
+      if (prev.direction === "desc") return { column, direction: "asc" };
+      return null;
+    });
+  };
+  // Nulls (no data for that period, e.g. an inactive item's TY or an
+  // item with no LW/LY match) always sort last, regardless of direction —
+  // otherwise "asc" would put them first, which reads as "worst" not "no data".
+  const itemSortValue = (item: (typeof textFilteredItems)[number], column: ItemSortColumn) =>
+    column === "ty" ? (item.hasTY === false ? null : item.tyNet) : column === "lw" ? item.lwNet : item.lyNet;
+  const sortedItems = itemSort
+    ? [...textFilteredItems].sort((a, b) => {
+        const av = itemSortValue(a, itemSort.column);
+        const bv = itemSortValue(b, itemSort.column);
+        if (av === null && bv === null) return 0;
+        if (av === null) return 1;
+        if (bv === null) return -1;
+        const diff = av - bv;
+        return itemSort.direction === "desc" ? -diff : diff;
+      })
+    : textFilteredItems;
 
   if (!rows.length) {
     return (
@@ -656,29 +834,50 @@ const PopupSubDeptList = ({
               Sub Dept
             </span>
             <div className="flex items-center gap-[14px]">
-              <span
-                className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 pl-2.5 text-right"
+              <button
+                onClick={() => handleDeptSortClick("ty")}
+                className="flex items-center justify-end gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0 pl-2.5"
                 style={{ width: 64 }}
               >
                 TY
-              </span>
-              <span
-                className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
+                {deptSort?.column === "ty" &&
+                  (deptSort.direction === "desc" ? (
+                    <ChevronDownIcon className="w-3 h-3" />
+                  ) : (
+                    <ChevronUpIcon className="w-3 h-3" />
+                  ))}
+              </button>
+              <button
+                onClick={() => handleDeptSortClick("vsLW")}
+                className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
                 style={{ width: 58 }}
               >
                 vs LW
-              </span>
-              <span
-                className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
+                {deptSort?.column === "vsLW" &&
+                  (deptSort.direction === "desc" ? (
+                    <ChevronDownIcon className="w-3 h-3" />
+                  ) : (
+                    <ChevronUpIcon className="w-3 h-3" />
+                  ))}
+              </button>
+              <button
+                onClick={() => handleDeptSortClick("vsLY")}
+                className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
                 style={{ width: 58 }}
               >
                 vs LY
-              </span>
+                {deptSort?.column === "vsLY" &&
+                  (deptSort.direction === "desc" ? (
+                    <ChevronDownIcon className="w-3 h-3" />
+                  ) : (
+                    <ChevronUpIcon className="w-3 h-3" />
+                  ))}
+              </button>
             </div>
           </div>
 
           <div className="overflow-y-auto thin-scrollbar flex-1">
-            {visible.map((r) => {
+            {sortedVisible.map((r) => {
               const sev = deptSeverity(r, threshold);
               const isSel = selectedId === r.id;
               return (
@@ -909,11 +1108,23 @@ const PopupSubDeptList = ({
                         )}
                       </div>
                     </div>
-                    <div className="w-[37%]">
-                      <TextFilter
-                        value={itemTextFilter}
-                        onChange={setItemTextFilter}
-                        placeholder="UPC/Desc"
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-[140px]">
+                        <TextFilter
+                          value={itemTextFilter}
+                          onChange={setItemTextFilter}
+                          placeholder="UPC/Desc"
+                        />
+                      </div>
+                      <SelectFilter
+                        options={[
+                          { label: "Active", value: "active" },
+                          { label: `Inactive (${inactiveItems.length})`, value: "inactive" },
+                        ]}
+                        value={itemActiveFilter}
+                        onChange={setItemActiveFilter}
+                        placeholder="All items"
+                        className="w-[110px]"
                       />
                     </div>
                   </div>
@@ -935,29 +1146,50 @@ const PopupSubDeptList = ({
                           Items
                         </span>
                         <div className="flex items-center gap-[14px]">
-                          <span
-                            className="text-[9px] font-semibold uppercase tracking-wide text-content flex-shrink-0 pl-2.5"
+                          <button
+                            onClick={() => handleItemSortClick("ty")}
+                            className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-content hover:text-[#1e2a4a] flex-shrink-0 pl-2.5"
                             style={{ width: 64 }}
                           >
                             TY
-                          </span>
-                          <span
-                            className="text-[9px] font-semibold uppercase tracking-wide text-content flex-shrink-0"
+                            {itemSort?.column === "ty" &&
+                              (itemSort.direction === "desc" ? (
+                                <ChevronDownIcon className="w-2.5 h-2.5" />
+                              ) : (
+                                <ChevronUpIcon className="w-2.5 h-2.5" />
+                              ))}
+                          </button>
+                          <button
+                            onClick={() => handleItemSortClick("lw")}
+                            className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-content hover:text-[#1e2a4a] flex-shrink-0"
                             style={{ width: 64 }}
                           >
                             LW
-                          </span>
-                          <span
-                            className="text-[9px] font-semibold uppercase tracking-wide text-content flex-shrink-0"
+                            {itemSort?.column === "lw" &&
+                              (itemSort.direction === "desc" ? (
+                                <ChevronDownIcon className="w-2.5 h-2.5" />
+                              ) : (
+                                <ChevronUpIcon className="w-2.5 h-2.5" />
+                              ))}
+                          </button>
+                          <button
+                            onClick={() => handleItemSortClick("ly")}
+                            className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-content hover:text-[#1e2a4a] flex-shrink-0"
                             style={{ width: 64 }}
                           >
                             LY
-                          </span>
+                            {itemSort?.column === "ly" &&
+                              (itemSort.direction === "desc" ? (
+                                <ChevronDownIcon className="w-2.5 h-2.5" />
+                              ) : (
+                                <ChevronUpIcon className="w-2.5 h-2.5" />
+                              ))}
+                          </button>
                         </div>
                       </div>
 
                       <div className="flex-1 overflow-y-auto thin-scrollbar">
-                        {textFilteredItems.map((item) => (
+                        {sortedItems.map((item) => (
                           <div
                             key={item.productCode}
                             className="flex items-start gap-2.5 px-3 py-2 border-b border-b-[#1e2a4a]/15 last:border-0"
@@ -983,10 +1215,10 @@ const PopupSubDeptList = ({
                             <div className="flex items-start gap-[14px]">
                               <div className="flex-shrink-0 pl-2.5" style={{ width: 64 }}>
                                 <div className="text-[13px] font-semibold text-content">
-                                  {formatCurrency2(item.tyNet)}
+                                  {item.hasTY === false ? "—" : formatCurrency2(item.tyNet)}
                                 </div>
                                 <div className="text-[10px] text-content">
-                                  {item.tyQty.toLocaleString()} u
+                                  {item.hasTY === false ? "" : `${item.tyQty.toLocaleString()} u`}
                                 </div>
                               </div>
                               <div className="flex-shrink-0" style={{ width: 64 }}>

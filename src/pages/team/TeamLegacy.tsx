@@ -46,7 +46,7 @@ const options = [
   { label: "Companies", value: 4 },
 ];
 
-const Team = () => {
+const TeamLegacy = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token, isDesktop, isTablet } = useAppSelector(
@@ -237,4 +237,4 @@ const Team = () => {
   );
 };
 
-export default Team;
+export default TeamLegacy;

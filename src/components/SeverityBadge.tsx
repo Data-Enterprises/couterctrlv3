@@ -3,8 +3,8 @@ import {
   ExclamationCircleIcon,
   CheckCircleIcon,
 } from "@heroicons/react/20/solid";
-import type { Severity } from "../pages/sales/components/LedgerRow";
-import { BADGE_BG, BADGE_COLOR } from "../pages/sales/components/utils";
+import type { Severity } from "../utils/severity";
+import { BADGE_BG, BADGE_COLOR } from "../utils/severity";
 
 interface SeverityBadgeProps {
   severity: Severity;

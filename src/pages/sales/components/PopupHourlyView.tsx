@@ -5,6 +5,7 @@ import {
   setHourlyThreshold,
 } from "../../../features/salesLedgerSlice";
 import { formatCurrency2, addDays, sameWeekDayLastYear } from "../../../utils";
+import { buildDayShiftMaps, buildDayMatchedTwTotals } from "../shared/ledgerUtils";
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
@@ -40,6 +41,9 @@ type HourRow = {
   hasLW: boolean;
   hasLY: boolean;
 };
+
+type HourSortColumn = "ty" | "vsLW" | "vsLY";
+type HourSortState = { column: HourSortColumn; direction: "desc" | "asc" } | null;
 
 const hourSeverity = (r: HourRow, threshold: number): Severity => {
   const pct = r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0;
@@ -140,6 +144,7 @@ const PopupHourlyView = ({
   const threshold = thresholdRef.current;
 
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
+  const [hourSort, setHourSort] = useState<HourSortState>(null);
   const [ctaOpen, setCtaOpen] = useState(false);
   const [chartOpen, setChartOpen] = useState(false);
   const [threshOpen, setThreshOpen] = useState(false);
@@ -225,11 +230,33 @@ const PopupHourlyView = ({
       ),
     ).sort((a, b) => a - b);
 
+    // An hour can have real TW sales on days where the store overall has an
+    // LW/LY match but that specific hour doesn't — restrict the TW side of
+    // each hour's percentage to just the days that hour has a match on.
+    const twRealDates = [
+      ...new Set(hourlySales.map((h) => h.sale_date.split("T")[0])),
+    ];
+    const { twToLwDay, twToLyDay } = buildDayShiftMaps(twRealDates);
+    const matched = buildDayMatchedTwTotals(
+      hourlySales,
+      hourlySalesLastWeek,
+      hourlySalesLastYear,
+      (h) => h.hour,
+      (h) => h.sale_date.split("T")[0],
+      (h) => h.total_sales - h.total_tax,
+      (h) => h.qty,
+      twToLwDay,
+      twToLyDay,
+    );
+
     return allHours
       .map((h) => {
         const tw = twMap[h]?.net ?? 0;
         const lw = lwMap[h]?.net ?? 0;
         const ly = lyMap[h]?.net ?? 0;
+        const m = matched.get(h);
+        const twNetForLW = m?.twNetForLW ?? 0;
+        const twNetForLY = m?.twNetForLY ?? 0;
         return {
           hour: h,
           tw,
@@ -243,8 +270,8 @@ const PopupHourlyView = ({
           lyQty: lyMap[h]?.qty ?? 0,
           hasLW: lw > 0,
           hasLY: ly > 0,
-          vsLWPct: lw ? ((tw - lw) / lw) * 100 : 0,
-          vsLYPct: ly ? ((tw - ly) / ly) * 100 : 0,
+          vsLWPct: lw ? ((twNetForLW - lw) / lw) * 100 : 0,
+          vsLYPct: ly ? ((twNetForLY - ly) / ly) * 100 : 0,
         };
       })
       .sort((a, b) => {
@@ -276,6 +303,22 @@ const PopupHourlyView = ({
       return hourSeverity(h, threshold) === "healthy";
     return true;
   });
+
+  const handleHourSortClick = (column: HourSortColumn) => {
+    setHourSort((prev) => {
+      if (prev?.column !== column) return { column, direction: "desc" };
+      if (prev.direction === "desc") return { column, direction: "asc" };
+      return null;
+    });
+  };
+  const hourSortValue = (row: HourRow, column: HourSortColumn) =>
+    column === "ty" ? row.tw : column === "vsLW" ? row.vsLWPct : row.vsLYPct;
+  const sortedVisible = hourSort
+    ? [...visible].sort((a, b) => {
+        const diff = hourSortValue(a, hourSort.column) - hourSortValue(b, hourSort.column);
+        return hourSort.direction === "desc" ? -diff : diff;
+      })
+    : visible;
 
   const selected =
     selectedHour !== null
@@ -365,30 +408,51 @@ const PopupHourlyView = ({
             Hour
           </span>
           <div className="flex items-center gap-[14px]">
-            <span
-              className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 pl-2.5 text-right"
+            <button
+              onClick={() => handleHourSortClick("ty")}
+              className="flex items-center justify-end gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0 pl-2.5"
               style={{ width: 64 }}
             >
               TY
-            </span>
-            <span
-              className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
+              {hourSort?.column === "ty" &&
+                (hourSort.direction === "desc" ? (
+                  <ChevronDownIcon className="w-3 h-3" />
+                ) : (
+                  <ChevronUpIcon className="w-3 h-3" />
+                ))}
+            </button>
+            <button
+              onClick={() => handleHourSortClick("vsLW")}
+              className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
               style={{ width: 58 }}
             >
               vs LW
-            </span>
-            <span
-              className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
+              {hourSort?.column === "vsLW" &&
+                (hourSort.direction === "desc" ? (
+                  <ChevronDownIcon className="w-3 h-3" />
+                ) : (
+                  <ChevronUpIcon className="w-3 h-3" />
+                ))}
+            </button>
+            <button
+              onClick={() => handleHourSortClick("vsLY")}
+              className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
               style={{ width: 58 }}
             >
               vs LY
-            </span>
+              {hourSort?.column === "vsLY" &&
+                (hourSort.direction === "desc" ? (
+                  <ChevronDownIcon className="w-3 h-3" />
+                ) : (
+                  <ChevronUpIcon className="w-3 h-3" />
+                ))}
+            </button>
           </div>
         </div>
 
         {/* Signal list */}
         <div className="overflow-y-auto thin-scrollbar flex-1">
-          {visible.map((r) => {
+          {sortedVisible.map((r) => {
             const sev = hourSeverity(r, threshold);
             const isSel = selectedHour === r.hour;
             return (

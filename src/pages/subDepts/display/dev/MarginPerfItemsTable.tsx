@@ -1,17 +1,31 @@
 import { useEffect, useState, useRef, useMemo } from "react";
-import { MagnifyingGlassIcon, ExclamationTriangleIcon, ExclamationCircleIcon, CheckCircleIcon, MinusCircleIcon } from "@heroicons/react/16/solid";
-import { useAppDispatch } from "../../../../hooks";
+import { MagnifyingGlassIcon, MinusCircleIcon } from "@heroicons/react/16/solid";
+import {
+  ExclamationTriangleIcon,
+  ExclamationCircleIcon,
+  CheckCircleIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "@heroicons/react/20/solid";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
 import { calculateCogs, getLYDate } from "../..";
 import { formatCurrency2, addDays } from "../../../../utils";
 import type { SubDeptMargin } from "../../../../interfaces";
+import type { GradingMetric } from "../../../../features/subMarginSlice";
 import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
 import type { ThresholdValue } from "../../../../components/filters/ThresholdFilter";
+import SelectFilter from "../../../../components/filters/SelectFilter";
 import UpcContextMenu from "../../../../components/UpcContextMenu";
+import SharedSeverityBadge from "../../../../components/SeverityBadge";
+import { chipClass, pillClass, formatPct, CTA_SEVERITY_CLASSES } from "../../../../utils/severity";
 
 type Severity = "critical" | "watch" | "healthy" | "ungraded";
 type SevFilter = "all" | Severity;
+// Graded-only subset (no "ungraded") — what CTA_SEVERITY_CLASSES and the
+// insight banner actually key off of, since an insight never fires ungraded.
+type GradedSeverity = "critical" | "watch" | "healthy";
 
 interface ItemMarginRow {
   productCode: string;
@@ -25,52 +39,85 @@ interface ItemMarginRow {
   tyMarginPct: number;
   lwMarginPct: number | null;
   lyMarginPct: number | null;
+  // Share of the whole sub dept's sales for that same period — null for
+  // LW/LY when the item had no sales that period, same "no data" convention
+  // as tyMarginPct/lwMarginPct above.
+  tyContributionPct: number;
+  lwContributionPct: number | null;
+  lyContributionPct: number | null;
+  // Whether the item had any sales at all in LW/LY — drives the "—" vs.
+  // graded-pill treatment for every vs-LW/vs-LY figure below.
+  hasLW: boolean;
+  hasLY: boolean;
+  // "Primary" % change vs LY, falling back to LW when there's no LY data —
+  // same preference order as getItemSeverity's margin trend. Used for the
+  // single-line trend badge in the item report's KPI strip.
+  salesTrendPct: number | null;
+  qtyTrendPct: number | null;
+  // Separate (not "primary") vs LW / vs LY % change per metric — the left
+  // list shows both independently, same as the sub dept rows in dev Sales.
+  lwSalesPct: number | null;
+  lySalesPct: number | null;
+  lwQtyPct: number | null;
+  lyQtyPct: number | null;
+  lwCogsPct: number | null;
+  lyCogsPct: number | null;
+  // Raw LW/LY figures (native units, not a % change) — the left list's vs
+  // LW/vs LY columns display these directly per the selected View, coloring
+  // still comes from the *Pct fields above so grading stays threshold-based.
+  lwGrossSales: number | null;
+  lyGrossSales: number | null;
+  lwQty: number | null;
+  lyQty: number | null;
+  lwCogs: number | null;
+  lyCogs: number | null;
 }
 
-type SortCol = "description" | "upc" | "grossSales" | "qty" | "cogs" | "costFees" | "tyMargin" | "lwMargin" | "lyMargin";
+// Only the metrics a View preset can rank by — these are the only sortCol
+// values reachable now that the flat multi-column table is gone.
+type SortCol = "contribution" | "salesTrend" | "qty" | "cogs";
+type RowMetricKey = "contribution" | "sales" | "qty" | "cogs";
 
-const COLS = "minmax(0,1.548fr) 0.5fr 0.35fr 0.418fr 0.494fr 0.494fr 0.5fr 0.42fr";
+interface ViewPreset {
+  label: string;
+  col: SortCol;
+  dir: "desc" | "asc";
+  metric: RowMetricKey;
+}
 
-const BADGE_BG: Record<Severity, string> = {
-  critical: "#fee2e2",
-  watch: "#fef3c7",
-  healthy: "#d1fae5",
-  ungraded: "#f3f4f6",
-};
-const BADGE_COLOR: Record<Severity, string> = {
-  critical: "#ef4444",
-  watch: "#f59e0b",
-  healthy: "#10b981",
-  ungraded: "#9ca3af",
-};
+const VIEW_PRESETS: ViewPreset[] = [
+  { label: "Top Contribution", col: "contribution", dir: "desc", metric: "contribution" },
+  { label: "Sales Gainers", col: "salesTrend", dir: "desc", metric: "sales" },
+  { label: "Sales Decliners", col: "salesTrend", dir: "asc", metric: "sales" },
+  { label: "Highest Volume", col: "qty", dir: "desc", metric: "qty" },
+  { label: "Highest COGS", col: "cogs", dir: "desc", metric: "cogs" },
+];
 
-const SeverityBadge = ({ severity }: { severity: Severity }) => (
-  <div
-    className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0"
-    style={{ background: BADGE_BG[severity] }}
-  >
-    {severity === "critical" && <ExclamationTriangleIcon className="w-3 h-3" style={{ color: BADGE_COLOR[severity] }} />}
-    {severity === "watch" && <ExclamationCircleIcon className="w-3 h-3" style={{ color: BADGE_COLOR[severity] }} />}
-    {severity === "healthy" && <CheckCircleIcon className="w-3 h-3" style={{ color: BADGE_COLOR[severity] }} />}
-    {severity === "ungraded" && <MinusCircleIcon className="w-3 h-3" style={{ color: BADGE_COLOR[severity] }} />}
-  </div>
-);
+const presetKey = (col: SortCol, dir: "desc" | "asc") => `${col}_${dir}`;
+const VIEW_OPTIONS = VIEW_PRESETS.map((p) => ({ label: p.label, value: presetKey(p.col, p.dir) }));
 
-const chipClass = (active: boolean, sev: Severity) => {
-  const base = "flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border";
-  if (active) {
-    const fill = sev === "critical" ? "bg-red-600 border-red-600 text-white" : sev === "watch" ? "bg-amber-500 border-amber-500 text-white" : "bg-emerald-600 border-emerald-600 text-white";
-    return `${base} ${fill}`;
-  }
-  return `${base} bg-transparent border-gray-200 text-content`;
-};
+// "ungraded" has no shared SeverityBadge equivalent — small local adapter.
+const SeverityBadge = ({ severity }: { severity: Severity }) =>
+  severity === "ungraded" ? (
+    <div className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0 bg-gray-100">
+      <MinusCircleIcon className="w-3 h-3 text-gray-400" />
+    </div>
+  ) : (
+    <SharedSeverityBadge severity={severity} />
+  );
 
-const getItemSeverity = (row: ItemMarginRow, threshold: number): Severity => {
-  const raw = row.lyMarginPct !== null
-    ? row.tyMarginPct - row.lyMarginPct
-    : row.lwMarginPct !== null
-    ? row.tyMarginPct - row.lwMarginPct
-    : null;
+// Grades on whichever metric is selected in the left panel's Margin/Sales
+// toggle (gradingMetric), same as getTier does for sub dept rows — so
+// switching that toggle re-grades the item list too, not just sub depts.
+const getItemSeverity = (row: ItemMarginRow, threshold: number, gradingMetric: GradingMetric): Severity => {
+  const raw =
+    gradingMetric === "sales"
+      ? row.salesTrendPct
+      : row.lyMarginPct !== null
+      ? row.tyMarginPct - row.lyMarginPct
+      : row.lwMarginPct !== null
+      ? row.tyMarginPct - row.lwMarginPct
+      : null;
   if (raw === null) return "ungraded";
   const delta = Math.round(raw * 10) / 10;
   if (delta < -threshold) return "critical";
@@ -114,12 +161,12 @@ const ColFilter = ({ label, active, align = "left", onApply, onClear, children }
       {open && <div className="fixed inset-0 z-[199]" onClick={() => setOpen(false)} />}
       {open && (
         <div
+          className="bg-custom-white"
           style={{
             position: "absolute",
             top: "calc(100% + 6px)",
             ...(align === "right" ? { right: 0 } : { left: 0 }),
             zIndex: 200,
-            background: "white",
             border: "1px solid rgba(30,42,74,0.12)",
             borderRadius: 6,
             boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
@@ -131,8 +178,8 @@ const ColFilter = ({ label, active, align = "left", onApply, onClear, children }
           <div className="flex gap-1.5 mt-2">
             <button
               onClick={() => { onApply(); setOpen(false); }}
-              className="flex-1 flex items-center justify-center gap-1 rounded py-1 text-[10px] font-medium"
-              style={{ background: "#1e2a4a", color: "white" }}
+              className="flex-1 flex items-center justify-center gap-1 rounded py-1 text-[10px] font-medium text-custom-white"
+              style={{ background: "#1e2a4a" }}
             >
               <MagnifyingGlassIcon className="w-3 h-3" /> Apply
             </button>
@@ -194,6 +241,12 @@ const buildRows = (
   const lwMap = aggregateByUpc(lwMargins);
   const lyMap = aggregateByUpc(lyMargins);
 
+  // Sub dept-wide totals for the same three periods — each item's
+  // contribution % is its share of this, not of its own row.
+  const tyTotal = tyMargins.reduce((s, m) => s + m.total_sales, 0);
+  const lwTotal = lwMargins.reduce((s, m) => s + m.total_sales, 0);
+  const lyTotal = lyMargins.reduce((s, m) => s + m.total_sales, 0);
+
   const rows: ItemMarginRow[] = [];
   for (const [upc, ty] of tyMap) {
     const netSales = ty.grossSales - ty.tax;
@@ -207,6 +260,17 @@ const buildRows = (
     const lyNet = ly ? ly.grossSales - ly.tax : 0;
     const lyMarginPct = ly && lyNet > 0 ? ((lyNet - ly.cogs) / lyNet) * 100 : null;
 
+    const salesTrendPct = ly && ly.grossSales > 0
+      ? ((ty.grossSales - ly.grossSales) / ly.grossSales) * 100
+      : lw && lw.grossSales > 0
+      ? ((ty.grossSales - lw.grossSales) / lw.grossSales) * 100
+      : null;
+    const qtyTrendPct = ly && ly.qty > 0
+      ? ((ty.qty - ly.qty) / ly.qty) * 100
+      : lw && lw.qty > 0
+      ? ((ty.qty - lw.qty) / lw.qty) * 100
+      : null;
+
     rows.push({
       productCode: upc,
       description: ty.desc,
@@ -219,10 +283,220 @@ const buildRows = (
       tyMarginPct,
       lwMarginPct,
       lyMarginPct,
+      tyContributionPct: tyTotal > 0 ? (ty.grossSales / tyTotal) * 100 : 0,
+      lwContributionPct: lw && lwTotal > 0 ? (lw.grossSales / lwTotal) * 100 : null,
+      lyContributionPct: ly && lyTotal > 0 ? (ly.grossSales / lyTotal) * 100 : null,
+      hasLW: !!lw,
+      hasLY: !!ly,
+      salesTrendPct,
+      qtyTrendPct,
+      lwSalesPct: lw && lw.grossSales > 0 ? ((ty.grossSales - lw.grossSales) / lw.grossSales) * 100 : null,
+      lySalesPct: ly && ly.grossSales > 0 ? ((ty.grossSales - ly.grossSales) / ly.grossSales) * 100 : null,
+      lwQtyPct: lw && lw.qty > 0 ? ((ty.qty - lw.qty) / lw.qty) * 100 : null,
+      lyQtyPct: ly && ly.qty > 0 ? ((ty.qty - ly.qty) / ly.qty) * 100 : null,
+      lwCogsPct: lw && lw.cogs > 0 ? ((ty.cogs - lw.cogs) / lw.cogs) * 100 : null,
+      lyCogsPct: ly && ly.cogs > 0 ? ((ty.cogs - ly.cogs) / ly.cogs) * 100 : null,
+      lwGrossSales: lw ? lw.grossSales : null,
+      lyGrossSales: ly ? ly.grossSales : null,
+      lwQty: lw ? lw.qty : null,
+      lyQty: ly ? ly.qty : null,
+      lwCogs: lw ? lw.cogs : null,
+      lyCogs: ly ? ly.cogs : null,
     });
   }
 
   return rows;
+};
+
+const WEEKDAY_ORDER = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+interface DayOfWeekValue {
+  ty: number | null;
+  lw: number | null;
+  ly: number | null;
+}
+
+interface ItemDetail {
+  // Dominant (highest-qty) unit price this period, TY vs LW vs LY — lets the
+  // insight below tell a price-point shift apart from a pure volume swing,
+  // against whichever period (LY preferred, LW fallback) is the basis.
+  tyDominantPrice: number | null;
+  lwDominantPrice: number | null;
+  lyDominantPrice: number | null;
+  dayOfWeek: Record<string, DayOfWeekValue>;
+}
+
+const weekdayOf = (m: SubDeptMargin): string =>
+  new Date(`${m.sale_date.split("T")[0]}T12:00:00`).toLocaleDateString("en-US", { weekday: "short" });
+
+const weekdayTotals = (itemRows: SubDeptMargin[]): Map<string, number> => {
+  const byWeekday = new Map<string, number>();
+  for (const m of itemRows) {
+    const wd = weekdayOf(m);
+    byWeekday.set(wd, (byWeekday.get(wd) ?? 0) + (m.total_sales - m.total_tax));
+  }
+  return byWeekday;
+};
+
+const dominantPrice = (itemRows: SubDeptMargin[]): number | null => {
+  const byPrice = new Map<number, number>();
+  for (const m of itemRows) {
+    if (m.qty <= 0) continue;
+    const unitPrice = Math.round((m.total_sales / m.qty) * 100) / 100;
+    byPrice.set(unitPrice, (byPrice.get(unitPrice) ?? 0) + m.qty);
+  }
+  let best: number | null = null;
+  let bestQty = -Infinity;
+  for (const [price, qty] of byPrice) {
+    if (qty > bestQty) { bestQty = qty; best = price; }
+  }
+  return best;
+};
+
+// Always scoped to the full week's margins for this UPC in each period,
+// regardless of any single-day selection elsewhere in the panel — a
+// day-of-week chart with only one day in it isn't useful.
+const buildItemDetail = (
+  productCode: string,
+  tyMargins: SubDeptMargin[],
+  lwMargins: SubDeptMargin[],
+  lyMargins: SubDeptMargin[],
+): ItemDetail => {
+  const tyRows = tyMargins.filter((m) => m.product_code === productCode);
+  const lwRows = lwMargins.filter((m) => m.product_code === productCode);
+  const lyRows = lyMargins.filter((m) => m.product_code === productCode);
+
+  const tyByWeekday = weekdayTotals(tyRows);
+  const lwByWeekday = weekdayTotals(lwRows);
+  const lyByWeekday = weekdayTotals(lyRows);
+
+  const dayOfWeek: Record<string, DayOfWeekValue> = {};
+  for (const wd of WEEKDAY_ORDER) {
+    dayOfWeek[wd] = {
+      ty: tyByWeekday.has(wd) ? tyByWeekday.get(wd)! : null,
+      lw: lwByWeekday.has(wd) ? lwByWeekday.get(wd)! : null,
+      ly: lyByWeekday.has(wd) ? lyByWeekday.get(wd)! : null,
+    };
+  }
+
+  return {
+    tyDominantPrice: dominantPrice(tyRows),
+    lwDominantPrice: dominantPrice(lwRows),
+    lyDominantPrice: dominantPrice(lyRows),
+    dayOfWeek,
+  };
+};
+
+// A day's "primary" trend — prefers LY, falls back to LW when there's no LY
+// figure for that weekday, same preference order as ItemMarginRow's
+// salesTrendPct/qtyTrendPct (and dev Sales/LP's trend badges generally).
+const dayTrend = (val: DayOfWeekValue): number | null => {
+  if (val.ty === null) return null;
+  if (val.ly !== null && val.ly > 0) return ((val.ty - val.ly) / val.ly) * 100;
+  if (val.lw !== null && val.lw > 0) return ((val.ty - val.lw) / val.lw) * 100;
+  return null;
+};
+
+const bestWorstDay = (dayOfWeek: Record<string, DayOfWeekValue>): { best: string | null; worst: string | null } => {
+  let best: string | null = null;
+  let worst: string | null = null;
+  let bestPct = -Infinity;
+  let worstPct = Infinity;
+  for (const wd of WEEKDAY_ORDER) {
+    const pct = dayTrend(dayOfWeek[wd]);
+    if (pct === null) continue;
+    if (pct > bestPct) { bestPct = pct; best = wd; }
+    if (pct < worstPct) { worstPct = pct; worst = wd; }
+  }
+  return { best, worst };
+};
+
+// A metric's change counts as "flat" (muted, not colored) below this
+// magnitude — mirrors the reference mock's flat-vs-colored delta treatment.
+const FLAT_PTS_EPSILON = 0.15;
+const FLAT_PCT_EPSILON = 5;
+
+// Synthesizes why margin moved — a price point shift, a volume change, both,
+// or neither — for the top of the item report. Prefers LY as the comparison
+// basis, falling back to LW when there's no LY figure — same preference
+// order as getItemSeverity, so the banner's severity always matches the
+// item's dot/grade everywhere else in the panel.
+const buildInsight = (
+  item: ItemMarginRow,
+  detail: ItemDetail,
+  threshold: number,
+): { headline: string; detail: string; sev: GradedSeverity } | null => {
+  const hasLY = item.lyMarginPct !== null;
+  const basisMarginPct = hasLY ? item.lyMarginPct : item.lwMarginPct;
+  if (basisMarginPct === null) return null;
+  const basisLabel = hasLY ? "LY" : "LW";
+  const marginDelta = Math.round((item.tyMarginPct - basisMarginPct) * 10) / 10;
+
+  const basisPrice = hasLY ? detail.lyDominantPrice : detail.lwDominantPrice;
+  const priceDeltaAmt =
+    detail.tyDominantPrice !== null && basisPrice !== null
+      ? Math.round((detail.tyDominantPrice - basisPrice) * 100) / 100
+      : null;
+  const priceChanged = priceDeltaAmt !== null && Math.abs(priceDeltaAmt) > 0.01;
+  const qtyChangePct = hasLY ? item.lyQtyPct : item.lwQtyPct;
+  const volumeChanged = qtyChangePct !== null && Math.abs(qtyChangePct) >= FLAT_PCT_EPSILON;
+  const cogsChangePct = hasLY ? item.lyCogsPct : item.lwCogsPct;
+  const cogsChanged = cogsChangePct !== null && Math.abs(cogsChangePct) >= FLAT_PCT_EPSILON;
+
+  const sev: GradedSeverity = marginDelta < -threshold ? "critical" : marginDelta < 0 ? "watch" : "healthy";
+
+  const headline = (() => {
+    if (sev === "critical") {
+      if (priceChanged && cogsChanged) return "Margin in freefall — price and cost both moved";
+      if (priceChanged) return "Margin in freefall — price cut is the driver";
+      if (volumeChanged) return "Margin in freefall — volume collapsed";
+      return "Margin in freefall — cost spiked";
+    }
+    if (sev === "watch") {
+      if (volumeChanged && !priceChanged) return "Margin slipping — volume down";
+      if (priceChanged) return "Margin slipping — price shifted";
+      return "Margin slipping — check cost";
+    }
+    if (Math.abs(marginDelta) < FLAT_PTS_EPSILON) return "Margin held — investigate cost";
+    return marginDelta > 0 ? "Margin improving" : "Margin holding steady";
+  })();
+
+  const middleClause = (() => {
+    if (priceChanged && cogsChanged) {
+      return `Price ${priceDeltaAmt! < 0 ? "dropped" : "rose"} ${formatCurrency2(Math.abs(priceDeltaAmt!))} while COGS ${
+        cogsChangePct! >= 0 ? "rose" : "fell"
+      } ${Math.abs(cogsChangePct!).toFixed(0)}%`;
+    }
+    if (priceChanged) {
+      return `Price ${priceDeltaAmt! < 0 ? "dropped" : "rose"} ${formatCurrency2(Math.abs(priceDeltaAmt!))}${
+        volumeChanged ? ` with qty ${qtyChangePct! < 0 ? "down" : "up"} ${Math.abs(qtyChangePct!).toFixed(0)}%` : " with qty holding steady"
+      }`;
+    }
+    if (volumeChanged) {
+      return `Qty ${qtyChangePct! < 0 ? "dropped" : "rose"} ${Math.abs(qtyChangePct!).toFixed(0)}% with price held flat`;
+    }
+    if (cogsChanged) {
+      return `Cost ${cogsChangePct! >= 0 ? "rose" : "fell"} ${Math.abs(cogsChangePct!).toFixed(0)}% with price and volume flat`;
+    }
+    return "No price or volume change";
+  })();
+
+  const action =
+    sev === "critical"
+      ? "Immediate review needed"
+      : priceChanged
+      ? "Check pricing strategy"
+      : volumeChanged
+      ? "Check placement and promo status"
+      : cogsChanged
+      ? "Check vendor cost changes"
+      : "Cost may have shifted";
+
+  return {
+    headline,
+    detail: `${marginDelta >= 0 ? "+" : ""}${marginDelta.toFixed(1)} pts vs ${basisLabel}. ${middleClause}. ${action}.`,
+    sev,
+  };
 };
 
 interface Props {
@@ -234,13 +508,37 @@ interface Props {
 const byDate = (src: SubDeptMargin[], dateStr: string) =>
   src.filter((m) => m.sale_date.split("T")[0] === dateStr);
 
+const SEV_PILL_CLASSES: Record<Severity, string> = {
+  critical: "bg-severity_critical_bg text-severity_critical_text",
+  watch: "bg-severity_watch_bg text-severity_watch_text",
+  healthy: "bg-severity_healthy_bg text-severity_healthy_text",
+  ungraded: "bg-gray-100 text-gray-500",
+};
+
+// One graded cell in the report-card table — a metric's change vs one
+// period, rendered as a Crit/Watch/OK pill same as the item's overall
+// severity, so the table reads like a set of subject grades.
+const GradeCell = ({ pct, threshold, isPts }: { pct: number | null; threshold: number; isPts: boolean }) => {
+  if (pct === null) return <span className="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">—</span>;
+  const sev: GradedSeverity = pct < -threshold ? "critical" : pct < 0 ? "watch" : "healthy";
+  return (
+    <span className={`text-[10.5px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${SEV_PILL_CLASSES[sev]}`}>
+      {isPts ? `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}pt` : formatPct(pct)}
+    </span>
+  );
+};
+
 const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
   const ctx = useSubMarginCtx();
+  // Same Margin/Sales toggle the left panel grades sub depts against —
+  // read directly from the dev slice, matching how MarginPerfLeftPanel and
+  // MarginPerfRightPanel already read it (this tab is dev-only).
+  const gradingMetric = useAppSelector((s) => s.subMargin.gradingMetric);
 
-  const [sortCol, setSortCol] = useState<SortCol | null>("grossSales");
-  const [sortDir, setSortDir] = useState<"desc" | "asc" | null>("desc");
+  const [sortCol, setSortCol] = useState<SortCol>("contribution");
+  const [sortDir, setSortDir] = useState<"desc" | "asc">("desc");
   const [draftDesc, setDraftDesc] = useState("");
   const [appliedDesc, setAppliedDesc] = useState("");
   const [draftUpc, setDraftUpc] = useState("");
@@ -248,6 +546,22 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
 
   const [thresholdValue, setThresholdValue] = useState<ThresholdValue | null>({ op: "gt", amount: 9 });
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
+  const [insightOpen, setInsightOpen] = useState(false);
+  const [threshOpen, setThreshOpen] = useState(false);
+  const threshBtnRef = useRef<HTMLButtonElement>(null);
+  const threshPopRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!threshOpen) return;
+    const close = (e: MouseEvent) => {
+      if (
+        threshBtnRef.current && !threshBtnRef.current.contains(e.target as Node) &&
+        threshPopRef.current && !threshPopRef.current.contains(e.target as Node)
+      ) setThreshOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [threshOpen]);
 
   // When a single day is selected in the day sidebar, scope all three
   // periods down to that day — TY to the day itself, LW/LY to that same
@@ -293,24 +607,38 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
 
   const sevCounts = useMemo(() => {
     const counts: Record<Severity, number> = { critical: 0, watch: 0, healthy: 0, ungraded: 0 };
-    for (const row of rawRows) counts[getItemSeverity(row, thresholdAmt)]++;
+    for (const row of rawRows) counts[getItemSeverity(row, thresholdAmt, gradingMetric)]++;
     return counts;
-  }, [rawRows, thresholdAmt]);
+  }, [rawRows, thresholdAmt, gradingMetric]);
 
   // Independent of the active severity chip / search filters, so the context
   // menu's "copy critical/watch/healthy" options always mean the same thing.
   const severityUpcs = useMemo(() => {
     const buckets = { critical: [] as string[], watch: [] as string[], healthy: [] as string[] };
     for (const row of rawRows) {
-      const sev = getItemSeverity(row, thresholdAmt);
+      const sev = getItemSeverity(row, thresholdAmt, gradingMetric);
       if (sev === "critical" || sev === "watch" || sev === "healthy") buckets[sev].push(row.productCode);
     }
     return buckets;
-  }, [rawRows, thresholdAmt]);
+  }, [rawRows, thresholdAmt, gradingMetric]);
 
   const allUpcs = useMemo(() => rawRows.map((r) => r.productCode), [rawRows]);
 
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; upc: string } | null>(null);
+  const [selectedUpc, setSelectedUpc] = useState<string | null>(null);
+  const selectedItem = selectedUpc ? rawRows.find((r) => r.productCode === selectedUpc) ?? null : null;
+  const selectedDetail = useMemo(
+    () => (selectedUpc ? buildItemDetail(selectedUpc, tyMargins, lwMargins, lyMargins) : null),
+    [selectedUpc, tyMargins, lwMargins, lyMargins],
+  );
+  const bestWorst = useMemo(
+    () => (selectedDetail ? bestWorstDay(selectedDetail.dayOfWeek) : { best: null, worst: null }),
+    [selectedDetail],
+  );
+  const selectedInsight = useMemo(
+    () => (selectedItem && selectedDetail ? buildInsight(selectedItem, selectedDetail, thresholdAmt) : null),
+    [selectedItem, selectedDetail, thresholdAmt],
+  );
 
   const displayData = useMemo(() => {
     let data = [...rawRows];
@@ -318,195 +646,431 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
     if (appliedUpc) data = data.filter((d) => d.productCode.includes(appliedUpc));
 
     if (sevFilter !== "all") {
-      data = data.filter((d) => getItemSeverity(d, thresholdAmt) === sevFilter);
+      data = data.filter((d) => getItemSeverity(d, thresholdAmt, gradingMetric) === sevFilter);
     }
 
-    if (sortCol && sortDir) {
-      data.sort((a, b) => {
-        let av: number | string, bv: number | string;
-        switch (sortCol) {
-          case "description": av = a.description; bv = b.description; break;
-          case "upc": av = a.productCode; bv = b.productCode; break;
-          case "grossSales": av = a.grossSales; bv = b.grossSales; break;
-          case "qty": av = a.qty; bv = b.qty; break;
-          case "cogs": av = a.cogs; bv = b.cogs; break;
-          case "costFees": av = a.costFees; bv = b.costFees; break;
-          case "tyMargin": av = a.tyMarginPct; bv = b.tyMarginPct; break;
-          case "lwMargin": av = a.lwMarginPct ?? -999; bv = b.lwMarginPct ?? -999; break;
-          case "lyMargin": av = a.lyMarginPct ?? -999; bv = b.lyMarginPct ?? -999; break;
-        }
-        if (typeof av === "string") {
-          return sortDir === "asc" ? av.localeCompare(bv as string) : (bv as string).localeCompare(av);
-        }
-        return sortDir === "asc" ? av - (bv as number) : (bv as number) - av;
-      });
-    }
+    data.sort((a, b) => {
+      let av: number, bv: number;
+      switch (sortCol) {
+        case "contribution": av = a.tyContributionPct; bv = b.tyContributionPct; break;
+        case "salesTrend": av = a.salesTrendPct ?? -999; bv = b.salesTrendPct ?? -999; break;
+        case "qty": av = a.qty; bv = b.qty; break;
+        case "cogs": av = a.cogs; bv = b.cogs; break;
+      }
+      return sortDir === "asc" ? av - bv : bv - av;
+    });
 
     return data;
-  }, [rawRows, sortCol, sortDir, appliedDesc, appliedUpc, sevFilter, thresholdAmt]);
-
-  const handleSort = (col: SortCol) => {
-    if (sortCol === col) {
-      if (sortDir === "desc") setSortDir("asc");
-      else if (sortDir === "asc") { setSortCol(null); setSortDir(null); }
-    } else { setSortCol(col); setSortDir("desc"); }
-  };
-
-  const arrow = (col: SortCol) => {
-    if (sortCol !== col || !sortDir) return <span className="text-content"> ↕</span>;
-    return <span className="text-[#1e2a4a]"> {sortDir === "desc" ? "↓" : "↑"}</span>;
-  };
+  }, [rawRows, sortCol, sortDir, appliedDesc, appliedUpc, sevFilter, thresholdAmt, gradingMetric]);
 
   const openCtxMenu = (e: React.MouseEvent, upc: string) => {
     e.preventDefault();
     setCtxMenu({ x: e.clientX, y: e.clientY, upc });
   };
 
-  const thStyle = "px-2 py-2";
-  const thBtn = "text-[9px] font-semibold uppercase tracking-wide text-content transition-colors";
-
   const ptsDelta = (ty: number, ref: number | null) => {
     if (ref === null) return null;
     return Math.round((ty - ref) * 10) / 10;
   };
 
+  // Which View preset drove the current sort — determines which metric the
+  // left list's vs LW/vs LY figures show (same row shape as the sub dept
+  // list in dev Sales, just parameterized by whichever metric is active).
+  const activeMetric: RowMetricKey =
+    sortCol === "salesTrend" ? "sales" : sortCol === "qty" ? "qty" : sortCol === "cogs" ? "cogs" : "contribution";
+
+  const rawDelta = (ty: number, ref: number | null) => (ref === null ? null : ty - ref);
+
+  const fmtCurrencyDelta = (d: number) => formatCurrency2(Math.abs(d));
+  const fmtContributionDelta = (d: number) => `${Math.abs(d).toFixed(1)}%`;
+  const fmtQtyDelta = (d: number) => `${Math.abs(d)}`;
+
+  // Returns the metric's own delta (dollars/units/points) for display, plus
+  // a separate %-based color figure for grading — COGS is graded inverted
+  // (a cost increase is bad) even though it's still shown as a plain $ delta.
+  const getRowMetric = (item: ItemMarginRow, key: RowMetricKey) => {
+    switch (key) {
+      case "contribution": {
+        const lwDelta = ptsDelta(item.tyContributionPct, item.lwContributionPct);
+        const lyDelta = ptsDelta(item.tyContributionPct, item.lyContributionPct);
+        return {
+          tyDisplay: `${item.tyContributionPct.toFixed(1)}%`,
+          lwColorPct: lwDelta,
+          lyColorPct: lyDelta,
+          lwDelta,
+          lyDelta,
+          format: fmtContributionDelta,
+        };
+      }
+      case "sales":
+        return {
+          tyDisplay: formatCurrency2(item.grossSales),
+          lwColorPct: item.lwSalesPct,
+          lyColorPct: item.lySalesPct,
+          lwDelta: rawDelta(item.grossSales, item.lwGrossSales),
+          lyDelta: rawDelta(item.grossSales, item.lyGrossSales),
+          format: fmtCurrencyDelta,
+        };
+      case "qty":
+        return {
+          tyDisplay: String(item.qty),
+          lwColorPct: item.lwQtyPct,
+          lyColorPct: item.lyQtyPct,
+          lwDelta: rawDelta(item.qty, item.lwQty),
+          lyDelta: rawDelta(item.qty, item.lyQty),
+          format: fmtQtyDelta,
+        };
+      case "cogs":
+        return {
+          tyDisplay: formatCurrency2(item.cogs),
+          lwColorPct: item.lwCogsPct !== null ? -item.lwCogsPct : null,
+          lyColorPct: item.lyCogsPct !== null ? -item.lyCogsPct : null,
+          lwDelta: rawDelta(item.cogs, item.lwCogs),
+          lyDelta: rawDelta(item.cogs, item.lyCogs),
+          format: fmtCurrencyDelta,
+        };
+    }
+  };
+
+  // TY is the target figure the row is judged against — color it by the
+  // worse of vs-LW/vs-LY when both exist, so it can never show green while
+  // sitting next to a red pill: a bad result in either period pulls TY down
+  // with it, not just whichever period happens to be "primary" elsewhere.
+  const primaryColorPct = (item: ItemMarginRow, metric: { lwColorPct: number | null; lyColorPct: number | null }) => {
+    const lw = item.hasLW ? metric.lwColorPct : null;
+    const ly = item.hasLY ? metric.lyColorPct : null;
+    if (lw !== null && ly !== null) return Math.min(lw, ly);
+    return ly ?? lw;
+  };
+
   return (
     <>
-    <div
-      className="flex-1 min-h-0 overflow-y-auto thin-scrollbar"
-      onContextMenu={(e) => openCtxMenu(e, "")}
-    >
-      {/* ── Control bar ── */}
-      <div className="sticky top-0 z-20 flex items-center gap-2 px-3 py-1.5 bg-gray-50 border-b border-gray-100">
-        <span className="text-[9px] font-semibold uppercase tracking-wide text-content flex-shrink-0">Item Threshold</span>
-        <ThresholdFilter
-          value={thresholdValue}
-          onChange={setThresholdValue}
-          showOp={false}
-          showClear={false}
-          suffix="pts"
-          inputWidth={46}
-        />
+    <div className="flex-1 min-h-0 flex" onContextMenu={(e) => openCtxMenu(e, "")}>
 
-        <div className="w-px h-4 bg-gray-200 flex-shrink-0 mx-0.5" />
+      {/* ── Left: item list ── */}
+      <div className="flex flex-col border-r border-gray-100 min-w-0" style={{ width: "45%", flexShrink: 0 }}>
 
-        <button onClick={() => setSevFilter("all")} className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${sevFilter === "all" ? "bg-[#1e2a4a] border-[#1e2a4a] text-white" : "bg-transparent border-gray-200 text-content"}`}>
-          All ({rawRows.length})
-        </button>
-        <button onClick={() => setSevFilter("critical")} className={chipClass(sevFilter === "critical", "critical")}>
-          <ExclamationTriangleIcon className="w-2.5 h-2.5" />Crit ({sevCounts.critical})
-        </button>
-        <button onClick={() => setSevFilter("watch")} className={chipClass(sevFilter === "watch", "watch")}>
-          <ExclamationCircleIcon className="w-2.5 h-2.5" />Watch ({sevCounts.watch})
-        </button>
-        <button onClick={() => setSevFilter("healthy")} className={chipClass(sevFilter === "healthy", "healthy")}>
-          <CheckCircleIcon className="w-2.5 h-2.5" />OK ({sevCounts.healthy})
-        </button>
-      </div>
+        {/* Severity chips + threshold + view */}
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border-b border-gray-100 flex-shrink-0">
+          <button
+            onClick={() => setSevFilter((f) => (f === "critical" ? "all" : "critical"))}
+            className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
+              sevFilter === "critical" ? "ring-2 ring-severity_critical_text/40 shadow-sm" : ""
+            }`}
+          >
+            Crit ({sevCounts.critical})
+          </button>
+          <button
+            onClick={() => setSevFilter((f) => (f === "watch" ? "all" : "watch"))}
+            className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
+              sevFilter === "watch" ? "ring-2 ring-severity_watch_text/40 shadow-sm" : ""
+            }`}
+          >
+            Watch ({sevCounts.watch})
+          </button>
+          <button
+            onClick={() => setSevFilter((f) => (f === "healthy" ? "all" : "healthy"))}
+            className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${
+              sevFilter === "healthy" ? "ring-2 ring-severity_healthy_text/40 shadow-sm" : ""
+            }`}
+          >
+            OK ({sevCounts.healthy})
+          </button>
 
-      {/* ── Column headers ── */}
-      <div className="sticky top-[33px] z-10 grid bg-gray-100 border-b border-gray-100" style={{ gridTemplateColumns: COLS }}>
-        <div className={`${thStyle} flex items-center gap-2`}>
-          <span className="text-[9px] font-semibold uppercase tracking-wide text-content">Item</span>
-          <ColFilter label="UPC" active={!!appliedUpc} onApply={() => setAppliedUpc(draftUpc)} onClear={() => { setAppliedUpc(""); setDraftUpc(""); }}>
-            <input autoFocus style={colInputStyle} placeholder="Search UPC…" value={draftUpc} onChange={(e) => setDraftUpc(e.target.value)} />
-          </ColFilter>
-          <ColFilter label="Desc" active={!!appliedDesc} onApply={() => setAppliedDesc(draftDesc)} onClear={() => { setAppliedDesc(""); setDraftDesc(""); }}>
-            <input autoFocus style={colInputStyle} placeholder="Search description…" value={draftDesc} onChange={(e) => setDraftDesc(e.target.value)} />
-          </ColFilter>
-        </div>
-        <div className={`${thStyle} flex justify-end`}>
-          <button onClick={() => handleSort("grossSales")} className={thBtn}>Sales{arrow("grossSales")}</button>
-        </div>
-        <div className={`${thStyle} flex justify-end`}>
-          <button onClick={() => handleSort("qty")} className={thBtn}>Qty{arrow("qty")}</button>
-        </div>
-        <div className={`${thStyle} flex justify-end`}>
-          <button onClick={() => handleSort("tyMargin")} className={thBtn}>TY %{arrow("tyMargin")}</button>
-        </div>
-        <div className={`${thStyle} flex justify-end`}>
-          <button onClick={() => handleSort("lwMargin")} className={thBtn}>LW %{arrow("lwMargin")}</button>
-        </div>
-        <div className={`${thStyle} flex justify-end`}>
-          <button onClick={() => handleSort("lyMargin")} className={thBtn}>LY %{arrow("lyMargin")}</button>
-        </div>
-        <div className={`${thStyle} flex justify-end`}>
-          <button onClick={() => handleSort("cogs")} className={thBtn}>COGS{arrow("cogs")}</button>
-        </div>
-        <div className={`${thStyle} flex justify-end`}>
-          <button onClick={() => handleSort("costFees")} className={thBtn}>Cost Fees{arrow("costFees")}</button>
-        </div>
-      </div>
-
-      {displayData.length === 0 ? (
-        <div className="flex items-center justify-center h-24 text-[11px] text-content">
-          {rawRows.length > 0 ? "No items match filters" : "No item data"}
-        </div>
-      ) : (
-        displayData.map((item, i) => {
-          const sev = getItemSeverity(item, thresholdAmt);
-          const lwDelta = ptsDelta(item.tyMarginPct, item.lwMarginPct);
-          const lyDelta = ptsDelta(item.tyMarginPct, item.lyMarginPct);
-          return (
-            <div
-              key={item.productCode}
-              className="grid border-b border-gray-100 hover:bg-gray-50/80 transition-colors"
-              style={{
-                gridTemplateColumns: COLS,
-                background: i % 2 === 1 ? "rgba(30,42,74,0.015)" : undefined,
-              }}
-              onContextMenu={(e) => { e.stopPropagation(); openCtxMenu(e, item.productCode); }}
+          <div className="relative flex-shrink-0">
+            <button
+              ref={threshBtnRef}
+              onClick={() => setThreshOpen((v) => !v)}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(threshOpen)}`}
             >
-              <div className="flex items-center gap-2 px-2 py-[7px] min-w-0">
-                <SeverityBadge severity={sev} />
-                <div className="flex flex-col justify-center min-w-0">
-                  <div className="text-[10px] text-content tabular-nums truncate">{item.productCode}</div>
-                  <div className="text-[11px] font-medium text-content truncate">{item.description}</div>
+              Thresh
+            </button>
+            {threshOpen && (
+              <div
+                ref={threshPopRef}
+                className="absolute top-full left-0 mt-1 p-1.5 rounded-md border border-gray-200 bg-custom-white shadow-lg z-20"
+              >
+                <ThresholdFilter
+                  value={thresholdValue}
+                  onChange={setThresholdValue}
+                  showOp={false}
+                  showClear={false}
+                  suffix={gradingMetric === "sales" ? "%" : "pts"}
+                  inputWidth={46}
+                />
+              </div>
+            )}
+          </div>
+
+          <SelectFilter
+            options={VIEW_OPTIONS}
+            value={presetKey(sortCol, sortDir)}
+            onChange={(v) => {
+              const preset = VIEW_PRESETS.find((p) => presetKey(p.col, p.dir) === v);
+              if (preset) { setSortCol(preset.col); setSortDir(preset.dir); }
+            }}
+            placeholder="View"
+            className="w-32"
+          />
+        </div>
+
+        {/* List header — Item / active metric / vs LW / vs LY, same anatomy
+            as the sub dept rows in dev Sales. Right padding is 4px wider
+            than the rows' — matches the reserved scrollbar-gutter below so
+            columns still line up whether or not the list is scrollable. */}
+        <div className="flex items-center gap-2.5 pl-3 pr-4 py-1.5 border-b border-gray-100 flex-shrink-0">
+          <span className="w-2.5 flex-shrink-0" />
+          <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-1 flex items-center gap-2 min-w-0">
+            Item
+            <ColFilter label="UPC" active={!!appliedUpc} onApply={() => setAppliedUpc(draftUpc)} onClear={() => { setAppliedUpc(""); setDraftUpc(""); }}>
+              <input autoFocus style={colInputStyle} placeholder="Search UPC…" value={draftUpc} onChange={(e) => setDraftUpc(e.target.value)} />
+            </ColFilter>
+            <ColFilter label="Desc" active={!!appliedDesc} onApply={() => setAppliedDesc(draftDesc)} onClear={() => { setAppliedDesc(""); setDraftDesc(""); }}>
+              <input autoFocus style={colInputStyle} placeholder="Search description…" value={draftDesc} onChange={(e) => setDraftDesc(e.target.value)} />
+            </ColFilter>
+          </span>
+          <div className="flex items-center gap-[10px]">
+            <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-right" style={{ width: 56 }}>
+              TY
+            </span>
+            <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center" style={{ width: 52 }}>
+              LW
+            </span>
+            <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center" style={{ width: 52 }}>
+              LY
+            </span>
+          </div>
+        </div>
+
+        {/* Rows */}
+        <div className="flex-1 overflow-y-auto thin-scrollbar" style={{ scrollbarGutter: "stable" }}>
+          {displayData.length === 0 ? (
+            <div className="flex items-center justify-center h-24 text-[11px] text-content">
+              {rawRows.length > 0 ? "No items match filters" : "No item data"}
+            </div>
+          ) : (
+            displayData.map((item) => {
+              const sev = getItemSeverity(item, thresholdAmt, gradingMetric);
+              const isSel = selectedUpc === item.productCode;
+              const metric = getRowMetric(item, activeMetric);
+              return (
+                <button
+                  key={item.productCode}
+                  onClick={() => setSelectedUpc(isSel ? null : item.productCode)}
+                  onContextMenu={(e) => { e.stopPropagation(); openCtxMenu(e, item.productCode); }}
+                  className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-[#1e2a4a]/15 ${
+                    isSel
+                      ? "bg-row_selected border-row_selected_border"
+                      : "border-transparent hover:bg-gray-50"
+                  }`}
+                >
+                  <SeverityBadge severity={sev} />
+                  <div className="flex flex-col justify-center min-w-0 flex-1">
+                    <div className="text-[13px] font-medium text-content truncate">{item.description}</div>
+                    <div className="text-[10px] text-content tabular-nums truncate">{item.productCode}</div>
+                  </div>
+                  <div className="flex items-center gap-[10px]">
+                    <span
+                      className={`text-[13px] font-semibold px-1.5 py-1 rounded text-right flex-shrink-0 whitespace-nowrap ${pillClass(
+                        primaryColorPct(item, metric),
+                        thresholdAmt,
+                      )}`}
+                      style={{ width: 56 }}
+                    >
+                      {metric.tyDisplay}
+                    </span>
+                    <span className="text-[12px] font-semibold text-content text-center flex-shrink-0 whitespace-nowrap" style={{ width: 52 }}>
+                      {item.hasLW && metric.lwDelta !== null ? metric.format(metric.lwDelta) : "—"}
+                    </span>
+                    <span className="text-[12px] font-semibold text-content text-center flex-shrink-0 whitespace-nowrap" style={{ width: 52 }}>
+                      {item.hasLY && metric.lyDelta !== null ? metric.format(metric.lyDelta) : "—"}
+                    </span>
+                  </div>
+                </button>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* ── Right: item report ── */}
+      <div className="flex-1 min-w-0 overflow-y-auto thin-scrollbar" onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+        {!selectedItem ? (
+          <div className="flex items-center justify-center h-full text-[12px] text-content">
+            Select an item to see its report
+          </div>
+        ) : (
+          <>
+            {/* Header row: item name — doubles as the CTA insight toggle,
+                same styling/behavior as the sub dept CTA strip in dev Sales.
+                Severity reflects selectedInsight, which follows the day
+                selection below; name/UPC always identify the full item. */}
+            {selectedInsight ? (
+              <div className={`relative border-b ${CTA_SEVERITY_CLASSES[selectedInsight.sev].border}`}>
+                <button
+                  onClick={() => setInsightOpen((v) => !v)}
+                  className={`w-full flex items-center gap-1.5 px-4 py-2 ${CTA_SEVERITY_CLASSES[selectedInsight.sev].bg} ${CTA_SEVERITY_CLASSES[selectedInsight.sev].hoverBg} transition-colors`}
+                >
+                  {selectedInsight.sev === "critical" && (
+                    <ExclamationTriangleIcon className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[selectedInsight.sev].text} flex-shrink-0`} />
+                  )}
+                  {selectedInsight.sev === "watch" && (
+                    <ExclamationCircleIcon className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[selectedInsight.sev].text} flex-shrink-0`} />
+                  )}
+                  {selectedInsight.sev === "healthy" && (
+                    <CheckCircleIcon className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[selectedInsight.sev].text} flex-shrink-0`} />
+                  )}
+                  <span className={`text-[13px] font-semibold truncate ${CTA_SEVERITY_CLASSES[selectedInsight.sev].text}`}>
+                    {selectedItem.description}
+                    <span className="ml-2 font-normal text-[11px] tabular-nums">{selectedItem.productCode}</span>
+                  </span>
+                  <span className="flex-1" />
+                  {insightOpen ? (
+                    <ChevronUpIcon className={`w-3 h-3 flex-shrink-0 ${CTA_SEVERITY_CLASSES[selectedInsight.sev].text}`} />
+                  ) : (
+                    <ChevronDownIcon className={`w-3 h-3 flex-shrink-0 ${CTA_SEVERITY_CLASSES[selectedInsight.sev].text}`} />
+                  )}
+                </button>
+                {insightOpen && (
+                  <div
+                    className={`absolute top-full left-0 right-0 z-20 px-4 py-2.5 border-b shadow-lg ${CTA_SEVERITY_CLASSES[selectedInsight.sev].bg} ${CTA_SEVERITY_CLASSES[selectedInsight.sev].border}`}
+                  >
+                    <div className={`text-[12.5px] font-medium mb-1 ${CTA_SEVERITY_CLASSES[selectedInsight.sev].text}`}>
+                      {selectedInsight.headline}
+                    </div>
+                    <div className={`text-[11px] leading-relaxed ${CTA_SEVERITY_CLASSES[selectedInsight.sev].text}`}>
+                      {selectedInsight.detail}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-100 bg-gray-50">
+                <span className="text-[14px] font-medium text-content truncate">{selectedItem.description}</span>
+                <span className="text-[11px] text-content tabular-nums flex-shrink-0">{selectedItem.productCode}</span>
+              </div>
+            )}
+
+            <div className="px-4 py-2.5 border-b border-gray-100">
+              <div className="grid gap-2 items-center" style={{ gridTemplateColumns: "1fr 64px 88px 88px" }}>
+                <span />
+                <span className="text-[9px] font-semibold uppercase tracking-wide text-content text-right">This year</span>
+                <span className="text-[9px] font-semibold uppercase tracking-wide text-content text-center">vs LW</span>
+                <span className="text-[9px] font-semibold uppercase tracking-wide text-content text-center">vs LY</span>
+
+                <span className="text-[12px] font-semibold text-content py-1 border-t border-gray-100">Contribution</span>
+                <span className="text-[12px] font-medium text-content text-right py-1 border-t border-gray-100">
+                  {selectedItem.tyContributionPct.toFixed(1)}%
+                </span>
+                <div className="flex justify-center py-1 border-t border-gray-100">
+                  <GradeCell pct={ptsDelta(selectedItem.tyContributionPct, selectedItem.lwContributionPct)} threshold={thresholdAmt} isPts />
+                </div>
+                <div className="flex justify-center py-1 border-t border-gray-100">
+                  <GradeCell pct={ptsDelta(selectedItem.tyContributionPct, selectedItem.lyContributionPct)} threshold={thresholdAmt} isPts />
+                </div>
+
+                <span className="text-[12px] font-semibold text-content py-1 border-t border-gray-100">Sales</span>
+                <span className="text-[12px] font-medium text-content text-right py-1 border-t border-gray-100">
+                  {formatCurrency2(selectedItem.grossSales)}
+                </span>
+                <div className="flex justify-center py-1 border-t border-gray-100">
+                  <GradeCell pct={selectedItem.lwSalesPct} threshold={thresholdAmt} isPts={false} />
+                </div>
+                <div className="flex justify-center py-1 border-t border-gray-100">
+                  <GradeCell pct={selectedItem.lySalesPct} threshold={thresholdAmt} isPts={false} />
+                </div>
+
+                <span className="text-[12px] font-semibold text-content py-1 border-t border-gray-100">Qty</span>
+                <span className="text-[12px] font-medium text-content text-right py-1 border-t border-gray-100">{selectedItem.qty}</span>
+                <div className="flex justify-center py-1 border-t border-gray-100">
+                  <GradeCell pct={selectedItem.lwQtyPct} threshold={thresholdAmt} isPts={false} />
+                </div>
+                <div className="flex justify-center py-1 border-t border-gray-100">
+                  <GradeCell pct={selectedItem.lyQtyPct} threshold={thresholdAmt} isPts={false} />
+                </div>
+
+                <span className="text-[12px] font-semibold text-content py-1 border-t border-gray-100">Margin</span>
+                <span className="text-[12px] font-medium text-content text-right py-1 border-t border-gray-100">
+                  {selectedItem.tyMarginPct.toFixed(1)}%
+                </span>
+                <div className="flex justify-center py-1 border-t border-gray-100">
+                  <GradeCell pct={ptsDelta(selectedItem.tyMarginPct, selectedItem.lwMarginPct)} threshold={thresholdAmt} isPts />
+                </div>
+                <div className="flex justify-center py-1 border-t border-gray-100">
+                  <GradeCell pct={ptsDelta(selectedItem.tyMarginPct, selectedItem.lyMarginPct)} threshold={thresholdAmt} isPts />
                 </div>
               </div>
-              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums text-content">{formatCurrency2(item.grossSales)}</div>
-              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums text-content">{item.qty}</div>
-              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums font-semibold text-[#1e2a4a]">
-                {item.tyMarginPct.toFixed(2)}%
-              </div>
-              <div className="px-2 py-[9px] text-right">
-                {item.lwMarginPct !== null ? (
-                  <>
-                    <div className="text-[11px] tabular-nums text-content">{item.lwMarginPct.toFixed(2)}%</div>
-                    {lwDelta !== null && (
-                      <div className="text-[9px] tabular-nums font-medium" style={{ color: lwDelta > 0 ? "#16a34a" : lwDelta < 0 ? "#ef4444" : "#16a34a" }}>
-                        {lwDelta > 0 ? "+" : ""}{lwDelta.toFixed(1)} pts
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-[11px] text-content">—</span>
-                )}
-              </div>
-              <div className="px-2 py-[9px] text-right">
-                {item.lyMarginPct !== null ? (
-                  <>
-                    <div className="text-[11px] tabular-nums text-content">{item.lyMarginPct.toFixed(2)}%</div>
-                    {lyDelta !== null && (
-                      <div className="text-[9px] tabular-nums font-medium" style={{ color: lyDelta > 0 ? "#16a34a" : lyDelta < 0 ? "#ef4444" : "#16a34a" }}>
-                        {lyDelta > 0 ? "+" : ""}{lyDelta.toFixed(1)} pts
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-[11px] text-content">—</span>
-                )}
-              </div>
-              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums text-content">
-                {formatCurrency2(item.cogs)}
-              </div>
-              <div className="px-2 py-[9px] text-[11px] text-right tabular-nums text-content">
-                {item.costFees.toFixed(2)}%
+
+              <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100">
+                <span
+                  className={`text-[12px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${
+                    selectedItem.tyMarginPct >= 0 ? "bg-severity_healthy_bg text-severity_healthy_text" : "bg-severity_critical_bg text-severity_critical_text"
+                  }`}
+                >
+                  {selectedItem.tyMarginPct >= 0 ? "Still profitable" : "Losing money"}
+                </span>
+                <span className="text-[12.5px] text-content">
+                  {selectedItem.tyMarginPct.toFixed(1)}% margin
+                  {(ptsDelta(selectedItem.tyMarginPct, selectedItem.lwMarginPct) ?? 0) < 0 ||
+                  (ptsDelta(selectedItem.tyMarginPct, selectedItem.lyMarginPct) ?? 0) < 0
+                    ? ", trending down"
+                    : ""}
+                </span>
               </div>
             </div>
-          );
-        })
-      )}
+
+            {selectedDetail && (
+              <div className="px-4 py-2.5">
+                <div className="text-[9px] font-semibold uppercase tracking-wide text-content mb-1.5">Day trend</div>
+                <div className="grid grid-cols-4 gap-2">
+                  {WEEKDAY_ORDER.map((wd) => {
+                    const val = selectedDetail.dayOfWeek[wd];
+                    if (val.ty === null) {
+                      return (
+                        <div key={wd} className="text-center rounded-md px-2 py-1.5 border bg-gray-50 border-gray-200">
+                          <div className="text-[10px] text-content mb-1">{wd}</div>
+                          <div className="text-[13px] text-content">—</div>
+                        </div>
+                      );
+                    }
+                    const pct = dayTrend(val);
+                    const isBest = wd === bestWorst.best;
+                    const isWorst = wd === bestWorst.worst && bestWorst.worst !== bestWorst.best;
+                    const flat = pct !== null && Math.abs(pct) < FLAT_PCT_EPSILON;
+                    return (
+                      <div
+                        key={wd}
+                        className={`text-center rounded-md px-2 py-2 border ${
+                          isBest
+                            ? "bg-severity_healthy_bg border-severity_healthy_text/40"
+                            : isWorst
+                            ? "bg-severity_critical_bg border-severity_critical_text/40"
+                            : "bg-gray-50 border-gray-200"
+                        }`}
+                      >
+                        <div className="text-[10px] text-content mb-1">{wd}</div>
+                        <div className="text-[13px] font-semibold text-content">{formatCurrency2(val.ty)}</div>
+                        <div
+                          className="text-[10.5px] font-medium text-content mt-0.5"
+                          style={pct !== null && !flat ? { color: pct >= 0 ? "#16a34a" : "#ef4444" } : undefined}
+                        >
+                          {pct === null ? "—" : flat ? "flat" : `${pct >= 0 ? "+" : ""}${pct.toFixed(0)}%`}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {(bestWorst.best || (bestWorst.worst && bestWorst.worst !== bestWorst.best)) && (
+                  <div className="flex gap-4 mt-2 text-[10.5px] text-content">
+                    {bestWorst.best && <span>Best day — {bestWorst.best}</span>}
+                    {bestWorst.worst && bestWorst.worst !== bestWorst.best && <span>Worst day — {bestWorst.worst}</span>}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
     {ctxMenu && (
       <UpcContextMenu

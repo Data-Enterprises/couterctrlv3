@@ -117,21 +117,21 @@ const Transaction = forwardRef<TransactionHandle, TransactionProps>(({ trans }, 
     <div className="flex flex-col flex-1 min-h-0">
       {/* KPI strip: Trans ID / Date / Time / Cashier / Terminal */}
       {context.isMobile ? (
-        <div className="flex-shrink-0 grid divide-x divide-gray-100 border-b border-gray-100 bg-white" style={{ gridTemplateColumns: "1fr 1.15fr 1.6fr 1fr" }}>
+        <div className="flex-shrink-0 grid divide-x divide-gray-100 border-b border-gray-100 bg-gray-50" style={{ gridTemplateColumns: "1fr 1.15fr 1.6fr 1fr" }}>
           {[
             { label: "Trans ID", value: `#${saleId}` },
             { label: "Date",     value: fmtDate },
             { label: "Time",     value: `${fmtTime(first.sale_start_time)} – ${fmtTime(first.sale_end_time)}` },
             { label: "Terminal", value: first.terminal },
           ].map(({ label, value }) => (
-            <div key={label} className="px-3 py-2">
-              <div className="text-[8px] font-bold uppercase tracking-wide text-content/40">{label}</div>
-              <div className="text-[11px] font-medium text-[#1e2a4a] mt-0.5">{value}</div>
+            <div key={label} className="px-3 py-2 text-center">
+              <div className="text-[10px] font-bold uppercase tracking-wide text-content">{label}</div>
+              <div className="text-[13px] font-semibold text-content mt-0.5">{value}</div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="flex-shrink-0 grid divide-x divide-gray-100 border-b border-gray-100 bg-white" style={{ gridTemplateColumns: "0.97fr 1.15fr 0.97fr 0.97fr 0.97fr 0.97fr" }}>
+        <div className="flex-shrink-0 grid divide-x divide-gray-100 border-b border-gray-100 bg-gray-50" style={{ gridTemplateColumns: "0.97fr 1.15fr 0.97fr 0.97fr 0.97fr 0.97fr" }}>
           {[
             { label: "Trans ID",   value: `#${saleId}` },
             { label: "Date",       value: fmtDate },
@@ -140,18 +140,18 @@ const Transaction = forwardRef<TransactionHandle, TransactionProps>(({ trans }, 
             { label: "Cashier",    value: `#${first.cashier_number}` },
             { label: "Terminal",   value: first.terminal },
           ].map(({ label, value }) => (
-            <div key={label} className="px-3 py-2">
-              <div className="text-[8px] font-bold uppercase tracking-wide text-content/40">{label}</div>
-              <div className="text-[11px] font-medium text-[#1e2a4a] mt-0.5">{value}</div>
+            <div key={label} className="px-3 py-2 text-center">
+              <div className="text-[10px] font-bold uppercase tracking-wide text-content">{label}</div>
+              <div className="text-[13px] font-semibold text-content mt-0.5">{value}</div>
             </div>
           ))}
         </div>
       )}
 
       {/* Column headers */}
-      <div className="flex-shrink-0 grid gap-1 px-4 py-1.5 bg-gray-100 border-b border-gray-100" style={{ gridTemplateColumns: "80px 1fr 28px 62px 55px" }}>
+      <div className="flex-shrink-0 grid gap-1 px-4 py-1.5 bg-gray-100 border-b border-gray-100" style={{ gridTemplateColumns: "84px 1fr 28px 62px 55px" }}>
         {["UPC", "Description", "Qty", "Net", "Type"].map((h, i) => (
-          <div key={h} className="text-[9px] font-bold uppercase tracking-wide text-content/40" style={{ textAlign: i >= 2 ? "right" : "left" }}>
+          <div key={h} className="text-[9px] font-semibold uppercase tracking-wide text-content" style={{ textAlign: i >= 2 ? "right" : "left" }}>
             {h}
           </div>
         ))}
@@ -167,18 +167,18 @@ const Transaction = forwardRef<TransactionHandle, TransactionProps>(({ trans }, 
           const displayNet = item.net_sales;
           const stamps = !context.isMobile ? renderStamps(item) : null;
           return (
-            <div key={i} className="grid gap-1 py-1.5 border-b border-gray-50 items-center" style={{ gridTemplateColumns: "80px 1fr 28px 62px 55px" }}>
-              <div className="text-[9px] text-content/65 truncate">{item.product_code || "—"}</div>
-              <div className="text-[10px] text-content truncate">
+            <div key={i} className="grid gap-1 py-1.5 border-b border-b-[#1e2a4a]/15 items-center" style={{ gridTemplateColumns: "84px 1fr 28px 62px 55px" }}>
+              <div className="text-[13px] text-content truncate">{item.product_code || "—"}</div>
+              <div className="text-[13px] font-medium text-content truncate">
                 {item.product_description}
-                {stamps && <span className="ml-1.5 text-[8px] font-semibold text-white px-1 py-px rounded" style={{ background: "#1e2a4a" }}>{stamps}</span>}
+                {stamps && <span className="ml-1.5 text-[8px] font-semibold bg-bkg text-content px-1 py-px rounded">{stamps}</span>}
               </div>
-              <div className="text-[10px] text-content/75 text-right">{item.qty ?? 0}</div>
-              <div className={`text-[10px] font-medium text-right ${isVoid ? "text-content/55 line-through" : isCoupon ? "text-red-500" : "text-content"}`}>
+              <div className="text-[13px] text-content text-right">{item.qty ?? 0}</div>
+              <div className={`text-[13px] font-semibold text-right ${isVoid ? "text-content/55 line-through" : isCoupon ? "text-severity_critical_text" : "text-content"}`}>
                 {formatCurrency2(displayNet)}
               </div>
               <div className="flex items-center justify-end">
-                <span className="text-[8px] uppercase tracking-wide px-1 py-px rounded bg-gray-100 text-content/65">
+                <span className="text-[13px] text-content">
                   {item.sale_type}
                 </span>
               </div>
@@ -189,31 +189,31 @@ const Transaction = forwardRef<TransactionHandle, TransactionProps>(({ trans }, 
         {/* Totals — sticky to bottom of scroll area */}
         <div className="flex justify-end pt-3 pb-3 border-t border-gray-100 bg-custom-white" style={{ position: "sticky", bottom: 0 }}>
           <div style={{ minWidth: 160 }}>
-            <div className="flex justify-between text-[10px] py-0.5">
+            <div className="flex justify-between text-[13px] py-0.5">
               <span className="text-content/65">Net sales</span>
               <span className="font-medium text-content">{formatCurrency2(netSales)}</span>
             </div>
             {totalTax > 0 && (
-              <div className="flex justify-between text-[10px] py-0.5">
+              <div className="flex justify-between text-[13px] py-0.5">
                 <span className="text-content/65">Tax</span>
                 <span className="font-medium text-content">{formatCurrency2(totalTax)}</span>
               </div>
             )}
             {voidAmount !== 0 && (
-              <div className="flex justify-between text-[10px] py-0.5">
+              <div className="flex justify-between text-[13px] py-0.5">
                 <span className="text-content/65">Voided</span>
                 <span className="font-medium text-content">{formatCurrency2(voidAmount)}</span>
               </div>
             )}
             {refundAmount !== 0 && (
-              <div className="flex justify-between text-[10px] py-0.5">
+              <div className="flex justify-between text-[13px] py-0.5">
                 <span className="text-content/65">Refunded</span>
                 <span className="font-medium text-content">{formatCurrency2(refundAmount)}</span>
               </div>
             )}
             <div className="border-t border-dashed border-gray-200 mt-1 pt-1.5 flex justify-between">
-              <span className="text-[11px] font-semibold text-content">Total</span>
-              <span className="text-[12px] font-semibold text-content">{formatCurrency2(totalSales)}</span>
+              <span className="text-[13px] font-semibold text-content">Total</span>
+              <span className="text-[13px] font-bold text-content">{formatCurrency2(totalSales)}</span>
             </div>
           </div>
         </div>

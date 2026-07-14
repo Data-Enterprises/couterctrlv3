@@ -59,45 +59,45 @@ const LookupReportPanel = ({
 
         {/* 7-col KPI strip — margin first */}
         <div className="grid grid-cols-7 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
-          <div className="px-3 py-2.5">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content">Margin</div>
-            <div className={`text-[13px] font-semibold tabular-nums mt-0.5 ${isNegative ? "text-red-800" : "text-emerald-800"}`}>
+          <div className="px-4 pt-2.5 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content">Margin</div>
+            <div className={`text-[14px] font-bold tabular-nums mt-0.5 ${isNegative ? "text-red-800" : "text-emerald-800"}`}>
               {margin.marginPct !== null ? `${margin.marginPct.toFixed(1)}%` : "-"}
             </div>
           </div>
-          <div className="px-3 py-2.5">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content">List price</div>
-            <div className="text-[13px] font-semibold text-content tabular-nums mt-0.5">
+          <div className="px-4 pt-2.5 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content">List price</div>
+            <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
               {formatCurrency2(margin.listPrice)}
             </div>
           </div>
-          <div className="px-3 py-2.5">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content">Avg sold at</div>
+          <div className="px-4 pt-2.5 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content">Avg sold at</div>
             <div
-              className={`text-[13px] font-semibold tabular-nums mt-0.5 ${isNegative ? "text-red-800" : "text-content"}`}
+              className={`text-[14px] font-bold tabular-nums mt-0.5 ${isNegative ? "text-red-800" : "text-content"}`}
             >
               {formatCurrency2(margin.avgSoldAt)}
             </div>
           </div>
-          <div className="px-3 py-2.5">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content">Case cost</div>
-            <div className="text-[13px] font-semibold text-content tabular-nums mt-0.5">
+          <div className="px-4 pt-2.5 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content">Case cost</div>
+            <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
               {formatCurrency2(margin.caseCost)}
             </div>
           </div>
-          <div className="px-3 py-2.5">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content">Total units</div>
-            <div className="text-[13px] font-semibold text-content tabular-nums mt-0.5">{totalQty}</div>
+          <div className="px-4 pt-2.5 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content">Total units</div>
+            <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">{totalQty}</div>
           </div>
-          <div className="px-3 py-2.5">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content">Days sold</div>
-            <div className="text-[13px] font-semibold text-content tabular-nums mt-0.5">
+          <div className="px-4 pt-2.5 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content">Days sold</div>
+            <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
               {daysSold} <span className="text-[11px] font-medium text-gray-400">of 14</span>
             </div>
           </div>
-          <div className="px-3 py-2.5">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content">Longest gap</div>
-            <div className="text-[13px] font-semibold text-content tabular-nums mt-0.5">
+          <div className="px-4 pt-2.5 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content">Longest gap</div>
+            <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
               {longestGap > 0 ? (
                 <>
                   {longestGap} <span className="text-[11px] font-medium text-gray-400">days</span>

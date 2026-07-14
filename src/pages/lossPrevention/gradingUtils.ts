@@ -1,6 +1,53 @@
-import type { TransactionOverview, UniqueCashier } from "../../interfaces";
+import type { TransactionOverview, UniqueCashier, CashierDetails } from "../../interfaces";
+import type { Severity } from "../../utils/severity";
 
 export type CashierSeverity = "critical" | "watch" | "ok" | "ungraded";
+
+// ── Store-level severity (LPStorePanel + LPTransactionPanel header) ─────────
+
+export const isNoDollarType = (saleType: string) =>
+  saleType.toLowerCase().replace(/[^a-z]/g, "") === "nosale";
+
+export const storeSeverity = (
+  detail: CashierDetails,
+  baselineDetails: CashierDetails[],
+  saleType: string,
+): Severity => {
+  const b = baselineDetails.find((x) => x.storeid === detail.storeid);
+  if (!b) return "healthy"; // no baseline = can't grade
+
+  const bTrans  = b.transaction_count / 2;
+  const bItems  = b.total_items / 2;
+  const bAmount = Math.abs(b.amount) / 2;
+  const bAvg    = Math.abs(b.average_dollars);
+
+  if (isNoDollarType(saleType)) {
+    const score = [
+      detail.transaction_count <= bTrans,
+      detail.total_items       <= bItems,
+    ].filter(Boolean).length;
+    if (score === 2) return "healthy";
+    if (score === 1) return "watch";
+    return "critical";
+  }
+
+  const score = [
+    detail.transaction_count         <= bTrans,
+    detail.total_items               <= bItems,
+    Math.abs(detail.amount)          <= bAmount,
+    Math.abs(detail.average_dollars) <= bAvg,
+  ].filter(Boolean).length;
+  if (score >= 3) return "healthy";
+  if (score === 2) return "watch";
+  return "critical";
+};
+
+// Exception counts are "worse" when they rise vs baseline — direction-based,
+// not threshold-graded like Sales' vsLY/vsLW pills.
+export const directionalPillClass = (pct: number) =>
+  pct > 0
+    ? "bg-severity_critical_bg text-severity_critical_text"
+    : "bg-severity_healthy_bg text-severity_healthy_text";
 
 export interface CashierMetric {
   value: number;

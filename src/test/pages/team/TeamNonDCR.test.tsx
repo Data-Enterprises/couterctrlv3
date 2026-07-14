@@ -1,7 +1,7 @@
 import { describe, it, vi, type Mock } from "vitest";
 import { renderWithProviders } from "../../utils";
 import { setupStore } from "../../../store";
-import Team from "../../../pages/team/Team";
+import Team from "../../../pages/team/TeamLegacy";
 import { setCompanies } from "../../../features/userSlice";
 import { allUsersResp, nonDCRUserCompanies, qsUserResp, userLvlResp } from ".";
 import { getAllUsers } from "../../../api/user";

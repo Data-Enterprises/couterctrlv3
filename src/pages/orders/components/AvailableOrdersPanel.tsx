@@ -109,7 +109,7 @@ const isSelected = (order_date: string, order_type: string, storeid: number) => 
   return (
     <div
       className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white"
-      style={{ flexBasis: "27%", minWidth: 0 }}
+      style={{ flexBasis: "25%", minWidth: 0 }}
     >
       {/* Header */}
       <div className="bg-[#1e2a4a] px-3 pt-1 pb-2.5 flex-shrink-0 flex flex-col gap-0">
@@ -261,10 +261,10 @@ const isSelected = (order_date: string, order_type: string, storeid: number) => 
                     className="w-3 h-3 text-[#1e2a4a]/60 flex-shrink-0 transition-transform"
                     style={{ transform: typeOpen ? "rotate(90deg)" : "rotate(0deg)" }}
                   />
-                  <span className="text-[11px] font-semibold text-[#1e2a4a] uppercase tracking-wide flex-1 text-left">
+                  <span className="text-[12px] font-semibold text-[#1e2a4a] uppercase tracking-wide flex-1 text-left">
                     {card.order_type}
                   </span>
-                  <span className="text-[10px] text-[#1e2a4a]">{card.dates.reduce((n, d) => n + d.stores.length, 0)}</span>
+                  <span className="text-[11px] text-[#1e2a4a]">{card.dates.reduce((n, d) => n + d.stores.length, 0)}</span>
                 </button>
               )}
 
@@ -284,8 +284,8 @@ const isSelected = (order_date: string, order_type: string, storeid: number) => 
                           }`}
                         >
                           <div className="flex flex-col min-w-0">
-                            <span className="text-[10px] font-medium text-content truncate">{store.store_name}</span>
-                            <span className="text-[9px] text-content mt-px">{fmtDate(dateGroup.order_date)}</span>
+                            <span className="text-[12px] font-medium text-content truncate">{store.store_name}</span>
+                            <span className="text-[11px] text-content mt-px">{fmtDate(dateGroup.order_date)}</span>
                           </div>
                           <span className="text-[10px] text-content bg-gray-100 rounded-full px-2 py-0.5 flex-shrink-0 ml-2">
                             {store.frequency} {store.frequency === 1 ? "order" : "orders"}

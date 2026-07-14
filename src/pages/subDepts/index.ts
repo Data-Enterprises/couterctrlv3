@@ -1,4 +1,5 @@
 import { sameWeekDayLastYear } from "../../utils";
+import type { MarginTier, SubDeptGrade, GradingMetric } from "../../features/subMarginSlice";
 
 export const setDates = (date: Date, days: number = 0) => {
   const d = new Date(date);
@@ -10,6 +11,16 @@ export const setDates = (date: Date, days: number = 0) => {
 // Last-year date for a given "YYYY-MM-DD", holiday- and leap-year-aware
 // (see sameWeekDayLastYear) — use this instead of setDates(date, 364).
 export const getLYDate = (date: string): string => sameWeekDayLastYear(date).date;
+
+export const getTier = (grade: SubDeptGrade, threshold: number, metric: GradingMetric): MarginTier => {
+  const hasLY = grade.lySales > 0 || grade.lyMarginPct > 0;
+  const vsLY = metric === "margin" ? grade.ptsDelta : grade.vsLYSalesPct;
+  const vsLW = metric === "margin" ? grade.lwPtsDelta : grade.vsLWSalesPct;
+  const delta = hasLY ? vsLY : vsLW;
+  if (delta >= 0) return "healthy";
+  if (delta < -threshold) return "critical";
+  return "watch";
+};
 
 export const calculateCogs = (
   netCost: number,

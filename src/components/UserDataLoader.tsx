@@ -22,6 +22,13 @@ import { setAssignedStores, setUnassignedStores } from "../features/userSlice";
 import { setAllAvailableStores } from "../features/storeSlice";
 import { setFetchingCredentials, setLoggedIn } from "../features/appSlice";
 
+// API store names come back like "945 - SONIC BG KY (6917)" — strip the
+// trailing "(storeid)" so it never surfaces in the UI.
+const stripStoreIdSuffix = (s: Store): Store => ({
+  ...s,
+  store_name: s.store_name.replace(/\s*\(\d+\)\s*$/, ""),
+});
+
 // This component is hidden and is strictly used for fetching user data on user login
 const UserDataLoader = () => {
   const toast = useToast();
@@ -92,9 +99,11 @@ const UserDataLoader = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          const all = (j.all_stores_for_user ?? []).filter(
-            (s: Store) => s.store_number !== null && s.store_name !== null,
-          );
+          const all = (j.all_stores_for_user ?? [])
+            .filter(
+              (s: Store) => s.store_number !== null && s.store_name !== null,
+            )
+            .map(stripStoreIdSuffix);
           const assigned = j.assigned_stores
             .filter(
               (s: Store) => s.store_number !== null && s.store_name !== null,
@@ -102,7 +111,8 @@ const UserDataLoader = () => {
             .sort(
               (a: Store, b: Store) =>
                 parseInt(a.store_number) - parseInt(b.store_number),
-            );
+            )
+            .map(stripStoreIdSuffix);
           const unassigned = j.unassigned_stores
             .filter(
               (s: Store) => s.store_number !== null && s.store_name !== null,
@@ -110,16 +120,16 @@ const UserDataLoader = () => {
             .sort(
               (a: Store, b: Store) =>
                 parseInt(a.store_number) - parseInt(b.store_number),
-            );
+            )
+            .map(stripStoreIdSuffix);
 
           dispatch(setAllAvailableStores(all));
           dispatch(setAssignedStores(assigned));
           dispatch(setUnassignedStores(unassigned));
           // On login, if last_search_type is Store => then set that selected store in search slice
           // This is for default loading of data when user logs in
-          const stores = j.assigned_stores;
-          const selectedStore = stores.find(
-            (s: any) => s.storeid === search.lastStore,
+          const selectedStore = assigned.find(
+            (s: Store) => s.storeid === search.lastStore,
           );
           if (selectedStore) {
             dispatch(setSelectedStore(selectedStore));
