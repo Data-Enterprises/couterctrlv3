@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch, useAppSelector, useStoreName } from "../../../../hooks";
 import SingleSelect from "../../../../components/SingleSelect";
 import { setSelectedStore } from "../../../../features/itemLookupSlice";
 
@@ -17,6 +17,7 @@ const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
   const dispatch = useAppDispatch();
   const { assignedStores } = useAppSelector((s) => s.user);
   const { selectedStore } = useAppSelector((s) => s.item);
+  const storeName = useStoreName(selectedStore, "");
   const [rawUpcs, setRawUpcs] = useState("");
 
   const handleStoreSelect = (id: string | number) => {
@@ -46,6 +47,7 @@ const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
         displayKey="store_name"
         valueKey="storeid"
         onSelect={handleStoreSelect}
+        defaultQuery={storeName}
         innerClass="text-sm py-1.5"
         listClass="text-sm"
       />

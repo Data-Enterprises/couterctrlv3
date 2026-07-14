@@ -16,6 +16,7 @@ import {
 import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
 import TextFilter from "../../../../components/filters/TextFilter";
 import { severityDotClass, pillClass, formatPct, type SevFilter } from "../../../../utils/severity";
+import type { SubDeptMargin } from "../../../../interfaces";
 
 interface Props {
   onSearchOpen: () => void;
@@ -27,6 +28,34 @@ const TOGGLE_OPTS: { key: GradingMetric; label: string }[] = [
   { key: "margin", label: "Margin" },
   { key: "sales", label: "Sales" },
 ];
+
+const TIER_STROKE: Record<MarginTier, string> = {
+  critical: "#ef4444",
+  watch: "#fbbf24",
+  healthy: "#10b981",
+};
+
+// Small inline trend line for a sub dept's daily sales across the current
+// week — purely visual, no axis/labels, sized to sit in a single row.
+const Sparkline = ({ values, stroke }: { values: number[]; stroke: string }) => {
+  const w = 48;
+  const h = 18;
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const range = max - min;
+  const points = values
+    .map((v, i) => {
+      const x = values.length > 1 ? (i / (values.length - 1)) * w : w / 2;
+      const y = range > 0 ? h - 2 - ((v - min) / range) * (h - 4) : h / 2;
+      return `${x},${y}`;
+    })
+    .join(" ");
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} className="flex-shrink-0">
+      <polyline points={points} fill="none" stroke={stroke} strokeWidth={1.5} />
+    </svg>
+  );
+};
 
 const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
   const ctx = useSubMarginCtx();
@@ -52,6 +81,24 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
   const periodEnd = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 0)) : "";
   const periodStart = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 6)) : "";
   const dateRange = periodStart && periodEnd ? `${periodStart} – ${periodEnd}` : "";
+
+  // Oldest → newest, so the sparkline reads left-to-right chronologically.
+  const weekDates = ctx.singleDate
+    ? Array.from({ length: 7 }, (_, i) => setDates(new Date(ctx.singleDate!), 6 - i))
+    : [];
+
+  // Each grade already carries its own week's raw line items (tyWeekOneMargins)
+  // from the per-sub-dept fetch — state.subMargin.margins itself is never
+  // populated in dev mode (only the legacy page's fetch dispatches setMargins),
+  // so that flat array can't be used as a shared lookup here.
+  const dailySeries = (margins: SubDeptMargin[]) => {
+    const byDay = new Map<string, number>();
+    for (const m of margins) {
+      const day = m.sale_date.split("T")[0];
+      byDay.set(day, (byDay.get(day) ?? 0) + (m.total_sales - m.total_tax));
+    }
+    return weekDates.map((d) => byDay.get(d) ?? 0);
+  };
 
   const grades = Object.entries(subDeptGrades).map(([id, grade]) => ({
     id: Number(id),
@@ -312,6 +359,12 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
               </span>
               <div className="flex items-center gap-[14px]">
                 <span
+                  className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
+                  style={{ width: 48 }}
+                >
+                  Trend
+                </span>
+                <span
                   className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 pl-2.5 text-right"
                   style={{ width: 64 }}
                 >
@@ -373,6 +426,12 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
                         {name}
                       </span>
                       <div className="flex items-center gap-[14px]">
+                        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 48 }}>
+                          <Sparkline
+                            values={dailySeries(grade.tyWeekOneMargins)}
+                            stroke={TIER_STROKE[tier]}
+                          />
+                        </div>
                         <span
                           className="text-[13px] font-semibold text-content flex-shrink-0 pl-2.5 text-right"
                           style={{ width: 64 }}
