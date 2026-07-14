@@ -42,6 +42,9 @@ type HourRow = {
   hasLY: boolean;
 };
 
+type HourSortColumn = "ty" | "vsLW" | "vsLY";
+type HourSortState = { column: HourSortColumn; direction: "desc" | "asc" } | null;
+
 const hourSeverity = (r: HourRow, threshold: number): Severity => {
   const pct = r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0;
   if (pct < -threshold) return "critical";
@@ -141,6 +144,7 @@ const PopupHourlyView = ({
   const threshold = thresholdRef.current;
 
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
+  const [hourSort, setHourSort] = useState<HourSortState>(null);
   const [ctaOpen, setCtaOpen] = useState(false);
   const [chartOpen, setChartOpen] = useState(false);
   const [threshOpen, setThreshOpen] = useState(false);
@@ -300,6 +304,22 @@ const PopupHourlyView = ({
     return true;
   });
 
+  const handleHourSortClick = (column: HourSortColumn) => {
+    setHourSort((prev) => {
+      if (prev?.column !== column) return { column, direction: "desc" };
+      if (prev.direction === "desc") return { column, direction: "asc" };
+      return null;
+    });
+  };
+  const hourSortValue = (row: HourRow, column: HourSortColumn) =>
+    column === "ty" ? row.tw : column === "vsLW" ? row.vsLWPct : row.vsLYPct;
+  const sortedVisible = hourSort
+    ? [...visible].sort((a, b) => {
+        const diff = hourSortValue(a, hourSort.column) - hourSortValue(b, hourSort.column);
+        return hourSort.direction === "desc" ? -diff : diff;
+      })
+    : visible;
+
   const selected =
     selectedHour !== null
       ? (hours.find((h) => h.hour === selectedHour) ?? null)
@@ -388,30 +408,51 @@ const PopupHourlyView = ({
             Hour
           </span>
           <div className="flex items-center gap-[14px]">
-            <span
-              className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 pl-2.5 text-right"
+            <button
+              onClick={() => handleHourSortClick("ty")}
+              className="flex items-center justify-end gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0 pl-2.5"
               style={{ width: 64 }}
             >
               TY
-            </span>
-            <span
-              className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
+              {hourSort?.column === "ty" &&
+                (hourSort.direction === "desc" ? (
+                  <ChevronDownIcon className="w-3 h-3" />
+                ) : (
+                  <ChevronUpIcon className="w-3 h-3" />
+                ))}
+            </button>
+            <button
+              onClick={() => handleHourSortClick("vsLW")}
+              className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
               style={{ width: 58 }}
             >
               vs LW
-            </span>
-            <span
-              className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
+              {hourSort?.column === "vsLW" &&
+                (hourSort.direction === "desc" ? (
+                  <ChevronDownIcon className="w-3 h-3" />
+                ) : (
+                  <ChevronUpIcon className="w-3 h-3" />
+                ))}
+            </button>
+            <button
+              onClick={() => handleHourSortClick("vsLY")}
+              className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
               style={{ width: 58 }}
             >
               vs LY
-            </span>
+              {hourSort?.column === "vsLY" &&
+                (hourSort.direction === "desc" ? (
+                  <ChevronDownIcon className="w-3 h-3" />
+                ) : (
+                  <ChevronUpIcon className="w-3 h-3" />
+                ))}
+            </button>
           </div>
         </div>
 
         {/* Signal list */}
         <div className="overflow-y-auto thin-scrollbar flex-1">
-          {visible.map((r) => {
+          {sortedVisible.map((r) => {
             const sev = hourSeverity(r, threshold);
             const isSel = selectedHour === r.hour;
             return (

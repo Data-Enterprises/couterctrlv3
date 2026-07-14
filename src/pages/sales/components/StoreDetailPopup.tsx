@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { useSalesState } from "../hooks/useSalesState";
+// import { useSalesState } from "../hooks/useSalesState";
 import { getSubs, getHourly /* , getCats */ } from "../../../api/sales";
 import SalesExportModal from "./SalesExportModal";
 import {
@@ -32,12 +32,12 @@ import {
   sameWeekDayLastYear,
   formatCurrency2,
 } from "../../../utils";
-import { computeDayMatchedTotals, getWeeklyDataGaps, getWeeklyGapCount } from "../shared/ledgerUtils";
-import { ArrowDownTrayIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid";
+import { computeDayMatchedTotals /*, getWeeklyDataGaps, getWeeklyGapCount */ } from "../shared/ledgerUtils";
+import { ArrowDownTrayIcon /*, ExclamationTriangleIcon */ } from "@heroicons/react/20/solid";
 import PopupDaySidebar from "./PopupDaySidebar";
 import PopupSubDeptList from "./PopupSubDeptList";
 import PopupHourlyView from "./PopupHourlyView";
-import DataGapReport from "./DataGapReport";
+// import DataGapReport from "./DataGapReport";
 // import PopupCategoryList from "./PopupCategoryList";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import type { StoreSelection } from "./LedgerRow";
@@ -77,12 +77,12 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
     exportSubDeptName,
     lastFetchedStoreId,
   } = useAppSelector((state) => state.salesLedger);
-  const { weeklySales, weeklySalesLastWeek, weeklySalesLastYear } =
-    useSalesState();
+  // const { weeklySales, weeklySalesLastWeek, weeklySalesLastYear } =
+  //   useSalesState();
 
   const [loading, setLoading] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
-  const [gapReportOpen, setGapReportOpen] = useState(false);
+  // const [gapReportOpen, setGapReportOpen] = useState(false);
   const [showFlames, setShowFlames] = useState(false);
   // const [catLoading, setCatLoading] = useState(false);
   // const [catFetchedFor, setCatFetchedFor] = useState<number | null>(null);
@@ -104,17 +104,17 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   // Checked against the raw weekly-sales fetch (not selection.days, which
   // only ever contains real TW rows) so a day missing from TW itself — not
   // just from LW/LY — actually shows up instead of being silently invisible.
-  const gaps = getWeeklyDataGaps(
-    selection.storeId,
-    twStart,
-    twEnd,
-    lwStart,
-    lwEnd,
-    weeklySales,
-    weeklySalesLastWeek,
-    weeklySalesLastYear,
-  );
-  const gapCount = getWeeklyGapCount(gaps);
+  // const gaps = getWeeklyDataGaps(
+  //   selection.storeId,
+  //   twStart,
+  //   twEnd,
+  //   lwStart,
+  //   lwEnd,
+  //   weeklySales,
+  //   weeklySalesLastWeek,
+  //   weeklySalesLastYear,
+  // );
+  // const gapCount = getWeeklyGapCount(gaps);
   // The store's weekly-sales data (selection.days, built by buildLedgerRows)
   // is fragmented — it only has an entry for the calendar days that actually
   // have a row, not all 7 days of the week. The KPI header and left panel
@@ -434,13 +434,12 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           Weekly Sales Report · {staticTwDate}
         </span>
         <div className="flex items-center gap-3 justify-self-end">
-          {!loading && gapCount > 0 && (
+          {/* {!loading && gapCount > 0 && (
             <button
               onClick={() => setGapReportOpen(true)}
               title={`${gapCount} day${gapCount === 1 ? "" : "s"} missing comparison data`}
               className="relative flex items-center justify-center w-[22px] h-[22px] flex-shrink-0"
             >
-              <span className="absolute inline-flex h-full w-full rounded-full bg-custom-white opacity-50 animate-ping motion-reduce:animate-none" />
               <span className="relative inline-flex items-center justify-center w-[18px] h-[18px] rounded-full bg-custom-white">
                 <ExclamationTriangleIcon className="w-3 h-3 text-amber-600" />
               </span>
@@ -448,7 +447,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
                 {gapCount}
               </span>
             </button>
-          )}
+          )} */}
           {!loading && (rawSubs.length > 0 || rawHourly.length > 0) && (
             <button
               onClick={() => setExportOpen(true)}
@@ -461,14 +460,14 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
         </div>
       </div>
 
-      {gapReportOpen && (
+      {/* {gapReportOpen && (
         <DataGapReport
           gaps={gaps}
           storeName={selection.storeName}
           storeNumber={selection.storeNumber}
           onClose={() => setGapReportOpen(false)}
         />
-      )}
+      )} */}
 
       {exportOpen && (
         <SalesExportModal

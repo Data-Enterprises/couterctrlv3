@@ -85,6 +85,7 @@ export const GroupsPage = () => {
 };
 
 export const TeamPage = () => {
+  return <TeamLegacy />;
   const devMode = useAppSelector((s) => s.app.devMode);
   return devMode ? <Team /> : <TeamLegacy />;
 };

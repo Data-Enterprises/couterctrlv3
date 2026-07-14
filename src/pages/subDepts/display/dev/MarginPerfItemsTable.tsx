@@ -27,11 +27,17 @@ interface ItemMarginRow {
   tyMarginPct: number;
   lwMarginPct: number | null;
   lyMarginPct: number | null;
+  // Share of the whole sub dept's sales for that same period — null for
+  // LW/LY when the item had no sales that period, same "no data" convention
+  // as tyMarginPct/lwMarginPct above.
+  tyContributionPct: number;
+  lwContributionPct: number | null;
+  lyContributionPct: number | null;
 }
 
-type SortCol = "description" | "upc" | "grossSales" | "qty" | "cogs" | "costFees" | "tyMargin" | "lwMargin" | "lyMargin";
+type SortCol = "description" | "upc" | "contribution" | "grossSales" | "qty" | "cogs" | "costFees" | "tyMargin" | "lwMargin" | "lyMargin";
 
-const COLS = "minmax(0,1.548fr) 0.5fr 0.35fr 0.418fr 0.494fr 0.494fr 0.5fr 0.42fr";
+const COLS = "minmax(0,1.548fr) 0.62fr 0.5fr 0.35fr 0.418fr 0.494fr 0.494fr 0.5fr 0.42fr";
 
 // "ungraded" has no shared SeverityBadge equivalent — small local adapter.
 const SeverityBadge = ({ severity }: { severity: Severity }) =>
@@ -172,6 +178,12 @@ const buildRows = (
   const lwMap = aggregateByUpc(lwMargins);
   const lyMap = aggregateByUpc(lyMargins);
 
+  // Sub dept-wide totals for the same three periods — each item's
+  // contribution % is its share of this, not of its own row.
+  const tyTotal = tyMargins.reduce((s, m) => s + m.total_sales, 0);
+  const lwTotal = lwMargins.reduce((s, m) => s + m.total_sales, 0);
+  const lyTotal = lyMargins.reduce((s, m) => s + m.total_sales, 0);
+
   const rows: ItemMarginRow[] = [];
   for (const [upc, ty] of tyMap) {
     const netSales = ty.grossSales - ty.tax;
@@ -197,6 +209,9 @@ const buildRows = (
       tyMarginPct,
       lwMarginPct,
       lyMarginPct,
+      tyContributionPct: tyTotal > 0 ? (ty.grossSales / tyTotal) * 100 : 0,
+      lwContributionPct: lw && lwTotal > 0 ? (lw.grossSales / lwTotal) * 100 : null,
+      lyContributionPct: ly && lyTotal > 0 ? (ly.grossSales / lyTotal) * 100 : null,
     });
   }
 
@@ -320,6 +335,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
         switch (sortCol) {
           case "description": av = a.description; bv = b.description; break;
           case "upc": av = a.productCode; bv = b.productCode; break;
+          case "contribution": av = a.tyContributionPct; bv = b.tyContributionPct; break;
           case "grossSales": av = a.grossSales; bv = b.grossSales; break;
           case "qty": av = a.qty; bv = b.qty; break;
           case "cogs": av = a.cogs; bv = b.cogs; break;
@@ -434,6 +450,9 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
           </ColFilter>
         </div>
         <div className={`${thStyle} flex justify-end`}>
+          <button onClick={() => handleSort("contribution")} className={thBtn}>Contrib %{arrow("contribution")}</button>
+        </div>
+        <div className={`${thStyle} flex justify-end`}>
           <button onClick={() => handleSort("grossSales")} className={thBtn}>Sales{arrow("grossSales")}</button>
         </div>
         <div className={`${thStyle} flex justify-end`}>
@@ -465,6 +484,8 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
           const sev = getItemSeverity(item, thresholdAmt);
           const lwDelta = ptsDelta(item.tyMarginPct, item.lwMarginPct);
           const lyDelta = ptsDelta(item.tyMarginPct, item.lyMarginPct);
+          const lwContribDelta = ptsDelta(item.tyContributionPct, item.lwContributionPct);
+          const lyContribDelta = ptsDelta(item.tyContributionPct, item.lyContributionPct);
           return (
             <div
               key={item.productCode}
@@ -481,6 +502,19 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
                   <div className="text-[13px] font-medium text-content truncate">{item.description}</div>
                   <div className="text-[10px] text-content tabular-nums truncate">{item.productCode}</div>
                 </div>
+              </div>
+              <div className="px-2 py-[9px] text-right">
+                <div className="text-[13px] font-semibold tabular-nums text-[#1e2a4a]">{item.tyContributionPct.toFixed(1)}%</div>
+                {lwContribDelta !== null && (
+                  <div className="text-[9px] tabular-nums font-medium" style={{ color: lwContribDelta > 0 ? "#16a34a" : lwContribDelta < 0 ? "#ef4444" : "#16a34a" }}>
+                    {lwContribDelta > 0 ? "+" : ""}{lwContribDelta.toFixed(1)}pt LW
+                  </div>
+                )}
+                {lyContribDelta !== null && (
+                  <div className="text-[9px] tabular-nums font-medium" style={{ color: lyContribDelta > 0 ? "#16a34a" : lyContribDelta < 0 ? "#ef4444" : "#16a34a" }}>
+                    {lyContribDelta > 0 ? "+" : ""}{lyContribDelta.toFixed(1)}pt LY
+                  </div>
+                )}
               </div>
               <div className="px-2 py-[9px] text-[13px] text-right tabular-nums text-content">{formatCurrency2(item.grossSales)}</div>
               <div className="px-2 py-[9px] text-[13px] text-right tabular-nums text-content">{item.qty}</div>

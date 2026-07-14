@@ -53,8 +53,13 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   useEffect(() => {
-    if (cashier.saleTypes.length > 0 && !cashier.selectedSaleType && cashier.cashierDetails.length === 0) {
-      handleSaleTypeSelect(cashier.saleTypes[0].sale_type);
+    // Skip Description/Tender — they're excluded from the tab list, so
+    // auto-selecting one of them would land on a type with no visible tab.
+    const firstVisible = cashier.saleTypes.find(
+      (st) => st.sale_type !== "Description" && st.sale_type !== "Tender",
+    );
+    if (firstVisible && !cashier.selectedSaleType && cashier.cashierDetails.length === 0) {
+      handleSaleTypeSelect(firstVisible.sale_type);
     }
   }, [cashier.saleTypes]);
   // const [descModalOpen, setDescModalOpen] = useState(false);

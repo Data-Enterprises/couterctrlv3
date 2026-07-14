@@ -177,9 +177,9 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
         </div>
       </div>
 
-      {/* Exception type tabs — Description excluded until further notice */}
+      {/* Exception type tabs — Description and Tender excluded until further notice */}
       <div className="flex flex-shrink-0 border-b border-gray-100 overflow-x-auto no-scrollbar">
-        {saleTypes.filter((st) => st.sale_type !== "Description").map((st) => (
+        {saleTypes.filter((st) => st.sale_type !== "Description" && st.sale_type !== "Tender").map((st) => (
           <button
             key={st.sale_type}
             onClick={() => onSaleTypeSelect(st.sale_type)}
