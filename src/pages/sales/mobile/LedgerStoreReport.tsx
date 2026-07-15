@@ -1,6 +1,6 @@
 ﻿import { useMemo, useEffect, useRef, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { useSalesState } from "../hooks/useSalesState";
+// import { useSalesState } from "../hooks/useSalesState";
 import { getSubs, getHourly } from "../../../api/sales";
 import { getSubMargins } from "../../../api/subMargins";
 import {
@@ -45,8 +45,8 @@ import {
   BADGE_COLOR,
   SEVERITY_RANK,
   computeDayMatchedTotals,
-  getWeeklyDataGaps,
-  getWeeklyGapCount,
+  // getWeeklyDataGaps,
+  // getWeeklyGapCount,
   type DeptRow,
   type HourRow,
 } from "../shared/ledgerUtils";
@@ -60,17 +60,15 @@ import {
 import BottomSheet from "../../../components/BottomSheet";
 import SevBadge from "./components/SevBadge";
 import SevChips from "./components/SevChips";
-import DataGapReport from "./components/DataGapReport";
+// import DataGapReport from "./components/DataGapReport";
 
 const LedgerStoreReport = () => {
   const dispatch = useAppDispatch();
   const sheetCloseRef = useRef<(() => void) | null>(null);
   const [itemSevFilter, setItemSevFilter] = useState<SevFilter>("all");
-  const [gapReportOpen, setGapReportOpen] = useState(false);
+  // const [gapReportOpen, setGapReportOpen] = useState(false);
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
-  const { weeklySales, weeklySalesLastWeek, weeklySalesLastYear } =
-    useSalesState();
   const {
     selection,
     tab,
@@ -599,19 +597,19 @@ const LedgerStoreReport = () => {
   // Checked against the raw weekly-sales fetch (not selection.days, which
   // only ever contains real TW rows) so a day missing from TW itself — not
   // just from LW/LY — actually shows up instead of being silently invisible.
-  const gaps = selection
-    ? getWeeklyDataGaps(
-        selection.storeId,
-        twStart,
-        twEnd,
-        lwStart,
-        lwEnd,
-        weeklySales,
-        weeklySalesLastWeek,
-        weeklySalesLastYear,
-      )
-    : null;
-  const gapCount = gaps ? getWeeklyGapCount(gaps) : 0;
+  // const gaps = selection
+  //   ? getWeeklyDataGaps(
+  //       selection.storeId,
+  //       twStart,
+  //       twEnd,
+  //       lwStart,
+  //       lwEnd,
+  //       weeklySales,
+  //       weeklySalesLastWeek,
+  //       weeklySalesLastYear,
+  //     )
+  //   : null;
+  // const gapCount = gaps ? getWeeklyGapCount(gaps) : 0;
 
   if (!selection) return null;
 
@@ -632,7 +630,7 @@ const LedgerStoreReport = () => {
             </div>
             <div className="text-white/65 text-[11px]">Weekly Sales Report</div>
           </div>
-          {gapCount > 0 && (
+          {/* {gapCount > 0 && (
             <button
               onClick={() => setGapReportOpen(true)}
               title={`${gapCount} day${gapCount === 1 ? "" : "s"} missing comparison data`}
@@ -646,7 +644,7 @@ const LedgerStoreReport = () => {
                 {gapCount}
               </span>
             </button>
-          )}
+          )} */}
         </div>
 
         {/* KPI strip */}
@@ -1349,14 +1347,14 @@ const LedgerStoreReport = () => {
         </BottomSheet>
       )}
 
-      {gapReportOpen && selection && gaps && (
+      {/* {gapReportOpen && selection && gaps && (
         <DataGapReport
           gaps={gaps}
           storeName={selection.storeName}
           storeNumber={selection.storeNumber}
           onClose={() => setGapReportOpen(false)}
         />
-      )}
+      )} */}
     </>
   );
 };
