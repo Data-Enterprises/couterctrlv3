@@ -217,46 +217,46 @@ const ReceiverDetailPanel = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-[#1e2a4a]/15">
                 {state.details.map((item) => (
                   <tr
                     key={item.line_number}
                     className="hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-3 py-1.5 text-right tabular-nums text-content/70">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/70">
                       {item.line_number}
                     </td>
-                    <td className="px-3 py-1.5 tabular-nums text-content/70 whitespace-nowrap">
+                    <td className="px-3 py-2 tabular-nums text-content/70 whitespace-nowrap">
                       {item.product_code}
                     </td>
-                    <td className="px-3 py-1.5 font-medium text-content truncate max-w-0">
+                    <td className="px-3 py-2 font-medium text-content truncate max-w-0">
                       {item.product_description}
                     </td>
-                    <td className="px-3 py-1.5 text-right tabular-nums text-content/70">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/70">
                       {item.cases}
                     </td>
-                    <td className="px-3 py-1.5 text-right tabular-nums text-content/70">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/70">
                       {item.units}
                     </td>
-                    <td className="px-3 py-1.5 text-right tabular-nums text-content/70">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/70">
                       {formatCurrency2(item.ucost)}
                     </td>
-                    <td className="px-3 py-1.5 text-right tabular-nums text-content">
+                    <td className="px-3 py-2 text-right tabular-nums text-content">
                       {formatCurrency2(item.ext_cost)}
                     </td>
-                    <td className="px-3 py-1.5 text-right tabular-nums text-content/70">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/70">
                       {formatCurrency2(item.retail)}
                     </td>
-                    <td className="px-3 py-1.5 text-right tabular-nums font-semibold text-content">
+                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
                       {formatCurrency2(item.ext_retail)}
                     </td>
-                    <td className="px-3 py-1.5 text-right tabular-nums text-content/70">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/70">
                       {formatBigNumber(item.gm, 2)}
                     </td>
-                    <td className="px-3 py-1.5 text-right tabular-nums text-content/70">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/70">
                       {item.free}
                     </td>
-                    <td className="px-3 py-1.5 text-right tabular-nums text-content/70">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/70">
                       {item.return}
                     </td>
                   </tr>

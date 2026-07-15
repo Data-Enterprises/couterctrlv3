@@ -587,7 +587,10 @@ const OrderReportPanel = ({
                         <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content">
                           #
                         </th>
-                        <th className="text-left px-3 py-2">
+                        <th
+                          className="text-left px-3 py-2"
+                          style={{ width: "6%" }}
+                        >
                           <ColFilter
                             label="UPC"
                             active={!!appliedUpc}
@@ -609,7 +612,7 @@ const OrderReportPanel = ({
                         </th>
                         <th
                           className="text-left px-3 py-2"
-                          style={{ width: "18%" }}
+                          style={{ width: "26%" }}
                         >
                           <ColFilter
                             label="Description"
@@ -632,7 +635,7 @@ const OrderReportPanel = ({
                         </th>
                         <th
                           className="text-left px-3 py-2 whitespace-nowrap"
-                          style={{ width: "11.4%" }}
+                          style={{ width: "8.4%" }}
                         >
                           <ColFilter
                             label="Sub dept"
@@ -673,39 +676,39 @@ const OrderReportPanel = ({
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50 bg-custom-white">
+                    <tbody className="bg-custom-white">
                       {visibleOrderItems.map((o) => (
                         <tr
                           key={`${o.storeid}-${o.line_number}`}
-                          className="hover:bg-gray-50 transition-colors"
+                          className="border-b border-b-[#1e2a4a]/15 hover:bg-gray-50 transition-colors"
                         >
-                          <td className="px-3 py-1.5 text-right tabular-nums text-content">
+                          <td className="px-3 py-2 text-right tabular-nums text-content">
                             {o.line_number}
                           </td>
-                          <td className="px-3 py-1.5 tabular-nums text-content whitespace-nowrap">
+                          <td className="px-3 py-2 tabular-nums text-content whitespace-nowrap">
                             {o.product_code}
                           </td>
-                          <td className="px-3 py-1.5 font-medium text-content max-w-0 cursor-default">
+                          <td className="px-3 py-2 font-medium text-content max-w-0 cursor-default">
                             <DescCell text={o.description} />
                           </td>
-                          <td className="px-3 py-1.5 text-content whitespace-nowrap">
+                          <td className="px-3 py-2 text-content whitespace-nowrap">
                             {o.sub_department_description}
                           </td>
-                          <td className="px-3 py-1.5 text-right tabular-nums text-content">
+                          <td className="px-3 py-2 text-right tabular-nums text-content">
                             {o.qty}
                           </td>
-                          <td className="px-3 py-1.5 text-right tabular-nums text-content">
+                          <td className="px-3 py-2 text-right tabular-nums text-content">
                             {o.casesize > 0
                               ? formatCurrency2(o.base_cost / o.casesize)
                               : "—"}
                           </td>
-                          <td className="px-3 py-1.5 text-right tabular-nums text-content">
+                          <td className="px-3 py-2 text-right tabular-nums text-content">
                             {formatCurrency2(o.cogs)}
                           </td>
-                          <td className="px-3 py-1.5 text-right tabular-nums text-content">
+                          <td className="px-3 py-2 text-right tabular-nums text-content">
                             {formatCurrency2(o.active_retail_price)}
                           </td>
-                          <td className="px-3 py-1.5 text-right tabular-nums font-semibold text-content">
+                          <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
                             {formatCurrency2(o.e_ret)}
                           </td>
                         </tr>

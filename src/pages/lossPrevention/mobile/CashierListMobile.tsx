@@ -91,7 +91,7 @@ const CashierListMobile = ({ onBack, onSelectCashier }: Props) => {
           <ChevronLeftIcon className="w-5 h-5" />
         </button>
         <div>
-          <div className="text-custom-white font-semibold text-[15px]">{storeName}</div>
+          <div className="text-custom-white font-semibold text-[13px]">{storeName}</div>
           <div className="text-custom-white/85 text-[11px]">{lp.selectedSaleType} Activity</div>
         </div>
       </div>

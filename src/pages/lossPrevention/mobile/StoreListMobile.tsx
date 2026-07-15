@@ -214,7 +214,7 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
       <div className="bg-[#1e2a4a] px-4 pt-3 pb-4 flex-shrink-0">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-custom-white font-semibold text-[15px]">Loss prevention</div>
+            <div className="text-custom-white font-semibold text-[13px]">Exception Activity</div>
             <div className="text-custom-white/85 text-[11px] mt-0.5">{weekLabel}</div>
           </div>
           <button
