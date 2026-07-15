@@ -684,7 +684,7 @@ const LedgerStoreReport = () => {
             <ChevronLeftIcon className="w-5 h-5" />
           </button>
           <div className="flex-1 min-w-0">
-            <div className="text-custom-white font-semibold text-[15px]">
+            <div className="text-custom-white font-semibold text-[13px]">
               {selection.storeName}
             </div>
             <div className="text-custom-white/85 text-[11px]">
