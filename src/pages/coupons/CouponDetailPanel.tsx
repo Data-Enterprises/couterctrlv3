@@ -373,21 +373,21 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
 
       {/* Navy header */}
       <div className="flex-shrink-0 px-4 py-[11px] flex items-start justify-between" style={{ background: "#1e2a4a" }}>
-        <div className="text-[13px] font-semibold text-white">
+        <div className="text-[13px] font-semibold test-custom-white">
           {headerTitle}
-          <span className="ml-2 text-[11px] font-normal text-white">
+          <span className="ml-2 text-[11px] font-normal test-custom-white">
             {headerSuffix} · {dateRangeLabel}
           </span>
         </div>
         {totalCoupons > 0 && (
           <div className="flex items-center gap-3 mt-0.5">
-            <button onClick={() => setExportOpen(true)} title="Export CSV" className="text-white/60 hover:text-white transition-colors">
+            <button onClick={() => setExportOpen(true)} title="Export CSV" className="test-custom-white/60 hover:test-custom-white transition-colors">
               <ArrowDownTrayIcon className="w-4 h-4" />
             </button>
-            <div className="w-px h-4 bg-white/15" />
+            <div className="w-px h-4 bg-custom-white/15" />
             <div className="flex items-baseline gap-1">
-              <span className="text-white text-[10px] uppercase tracking-wide">Records</span>
-              <span className="text-[13px] font-medium text-white">{totalCoupons}</span>
+              <span className="test-custom-white text-[10px] uppercase tracking-wide">Records</span>
+              <span className="text-[13px] font-medium test-custom-white">{totalCoupons}</span>
             </div>
           </div>
         )}
@@ -448,7 +448,7 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
                   <button
                     key={section.key}
                     onClick={() => setSelectedSection(isSel ? null : section.key)}
-                    className={`w-full px-3 py-2 border-b border-gray-100 last:border-0 gap-2 text-left transition-colors ${isSel ? "bg-white" : "hover:bg-gray-50"}`}
+                    className={`w-full px-3 py-2 border-b border-gray-100 last:border-0 gap-2 text-left transition-colors ${isSel ? "bg-custom-white" : "hover:bg-gray-50"}`}
                     style={isSel ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
                   >
                     <div className="flex items-center gap-2">
@@ -496,7 +496,7 @@ const CouponDetailPanel = ({ selectedKey, sortMetric }: CouponDetailPanelProps) 
             {selectedSaleId ? (
               /* Transaction detail */
               <>
-                <div className="flex-shrink-0 px-3 py-2 flex items-center justify-between border-b border-gray-100 bg-white">
+                <div className="flex-shrink-0 px-3 py-2 flex items-center justify-between border-b border-gray-100 bg-custom-white">
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleBack}

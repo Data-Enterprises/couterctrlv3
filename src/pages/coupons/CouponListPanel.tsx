@@ -65,34 +65,34 @@ const CouponListPanel = ({ selectedKey, onSelect, sortMetric, onSortMetric, onOp
       {/* Navy header */}
       <div className="flex-shrink-0 px-3 pt-1 pb-2.5 flex flex-col gap-0" style={{ background: "#1e2a4a" }}>
         <div className="flex items-end gap-3 min-h-[24px]">
-          <span className="text-[13px] font-semibold text-white flex-shrink-0">Coupons</span>
-          <span className="text-white text-[10px] flex-shrink-0">{dateLabel}</span>
+          <span className="text-[13px] font-semibold test-custom-white flex-shrink-0">Coupons</span>
+          <span className="test-custom-white text-[10px] flex-shrink-0">{dateLabel}</span>
           <div className="flex-1" />
           {state.coupons.length > 0 && (
             <div className="flex items-baseline gap-1 flex-shrink-0">
-              <span className="text-white text-[10px] uppercase tracking-wide">Records</span>
-              <span className="text-[13px] font-medium text-white">{state.coupons.length}</span>
+              <span className="test-custom-white text-[10px] uppercase tracking-wide">Records</span>
+              <span className="text-[13px] font-medium test-custom-white">{state.coupons.length}</span>
             </div>
           )}
         </div>
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-white/[0.08]">
           <button
             onClick={onOpenSearch}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 test-custom-white/60 hover:test-custom-white hover:border-white/40 transition-colors flex-shrink-0"
             aria-label="New search"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
           {isGroup && selectedGroup?.group_name && (
             <div className="flex flex-col leading-tight truncate">
-              <span className="text-[11px] font-medium text-white truncate">{selectedGroup.group_name}</span>
+              <span className="text-[11px] font-medium test-custom-white truncate">{selectedGroup.group_name}</span>
               {groupStores.length > 0 && (
-                <span className="text-[9px] text-white">{groupStores.length} stores</span>
+                <span className="text-[9px] test-custom-white">{groupStores.length} stores</span>
               )}
             </div>
           )}
           {!isGroup && search.lastStore && (
-            <span className="text-[11px] font-medium text-white truncate">{storeName}</span>
+            <span className="text-[11px] font-medium test-custom-white truncate">{storeName}</span>
           )}
           <div className="flex-1" />
           <div className="flex items-center gap-0.5 flex-shrink-0">
@@ -102,8 +102,8 @@ const CouponListPanel = ({ selectedKey, onSelect, sortMetric, onSortMetric, onOp
                 onClick={() => onSortMetric(m)}
                 className={`px-2 py-0.5 text-[9px] font-medium rounded transition-colors ${
                   sortMetric === m
-                    ? "bg-white/20 text-white"
-                    : "text-white/40 hover:text-white/70"
+                    ? "bg-custom-white/20 text-custom-white"
+                    : "test-custom-white/40 hover:test-custom-white/70"
                 }`}
               >
                 {m === "amount" ? "Amt" : "Qty"}
@@ -138,7 +138,7 @@ const CouponListPanel = ({ selectedKey, onSelect, sortMetric, onSortMetric, onOp
               <button
                 onClick={() => onSelect("")}
                 className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors ${
-                  selectedKey === "" ? "bg-white" : "hover:bg-gray-50"
+                  selectedKey === "" ? "bg-cusom-white" : "hover:bg-gray-50"
                 }`}
                 style={selectedKey === "" ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.18)" } : undefined}
               >
@@ -157,7 +157,7 @@ const CouponListPanel = ({ selectedKey, onSelect, sortMetric, onSortMetric, onOp
                   key={item.key}
                   onClick={() => onSelect(isSel && isGroup ? "" : item.key)}
                   className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors ${
-                    isSel ? "bg-white" : "hover:bg-gray-50"
+                    isSel ? "bg-custom-white" : "hover:bg-gray-50"
                   }`}
                   style={isSel ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.18)" } : undefined}
                 >

@@ -168,7 +168,7 @@ const DescCell = ({ text }: { text: string }) => {
       </div>
       {hovered && (
         <div className="absolute left-0 top-full mt-1 z-50 bg-[#1e2a4a] rounded-lg shadow-lg px-2.5 py-1.5 whitespace-nowrap pointer-events-none">
-          <span className="text-[9px] text-white">{text}</span>
+          <span className="text-[9px] text-custom-white">{text}</span>
         </div>
       )}
     </div>
@@ -232,7 +232,7 @@ const StoreLabel = ({ names }: { names: string[] }) => {
       {hovered && (
         <div className="absolute left-0 top-full mt-1 z-50 bg-[#1e2a4a] rounded-lg shadow-lg px-2.5 py-1.5 flex flex-col gap-0.5 whitespace-nowrap">
           {names.map((n) => (
-            <span key={n} className="text-[9px] text-white leading-relaxed">
+            <span key={n} className="text-[9px] text-custom-white leading-relaxed">
               {n}
             </span>
           ))}
@@ -384,15 +384,15 @@ const OrderReportPanel = ({
         <div className="flex items-end gap-3 min-h-[26px]">
           {selectedKey ? (
             <>
-              <span className="text-white font-medium text-[13px] flex-shrink-0">
+              <span className="text-custom-white font-medium text-[13px] flex-shrink-0">
                 <StoreLabel names={storeNames} /> — {selectedKey.order_type}
               </span>
-              <span className="text-white text-[10px] flex-shrink-0">
+              <span className="text-custom-white text-[10px] flex-shrink-0">
                 {dateLabel}
               </span>
             </>
           ) : (
-            <span className="text-white font-medium text-[13px]">
+            <span className="text-custom-white font-medium text-[13px]">
               Order Report
             </span>
           )}
@@ -401,7 +401,7 @@ const OrderReportPanel = ({
             <button
               onClick={() => setExportOpen(true)}
               title="Export CSV"
-              className="text-white/60 hover:text-white transition-colors flex-shrink-0"
+              className="text-custom-white/60 hover:text-custom-white transition-colors flex-shrink-0"
             >
               <ArrowDownTrayIcon className="w-4 h-4" />
             </button>
@@ -479,7 +479,7 @@ const OrderReportPanel = ({
                       key={`${storeid}-${orderId}`}
                       onClick={() => onSelectOrder(storeid, orderId)}
                       className={`w-full flex flex-col gap-2 rounded-lg border border-[#1e2a4a]/20 p-2 text-left transition-colors ${
-                        isSel ? "bg-white" : "bg-custom-white hover:bg-gray-50"
+                        isSel ? "bg-custom-white" : "bg-custom-white hover:bg-gray-50"
                       }`}
                       style={
                         isSel
@@ -673,7 +673,7 @@ const OrderReportPanel = ({
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-gray-50 bg-custom-white">
                       {visibleOrderItems.map((o) => (
                         <tr
                           key={`${o.storeid}-${o.line_number}`}

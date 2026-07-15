@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ChevronLeftIcon } from "@heroicons/react/20/solid";
+import { ChevronLeftIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import SelectFilter from "../../../components/filters/SelectFilter";
 import type { AllOrder } from "../../../interfaces";
 import type { SelectedOrderKey } from "../../../features/ordersSlice";
@@ -13,6 +13,7 @@ interface Props {
   assignedStores: Store[];
   onBack: () => void;
   onSelectOrderId: (id: number | null) => void;
+  onExport: () => void;
 }
 
 const fmtDate = (iso: string) => {
@@ -33,10 +34,10 @@ const SubDeptChips = ({ subDepts }: { subDepts: string[] }) => {
   return (
     <div className="flex flex-wrap gap-1 items-center mt-1.5">
       {visible.map((sd) => (
-        <span key={sd} className="text-[8px] bg-gray-100 text-content rounded px-1.5 py-0.5">{sd}</span>
+        <span key={sd} className="text-[10px] bg-gray-100 text-content rounded px-1.5 py-0.5">{sd}</span>
       ))}
       {overflow.length > 0 && (
-        <span className="text-[8px] font-semibold bg-[#1e2a4a]/[0.07] text-content rounded px-1.5 py-0.5">
+        <span className="text-[10px] font-semibold bg-[#1e2a4a]/[0.07] text-content rounded px-1.5 py-0.5">
           +{overflow.length} more
         </span>
       )}
@@ -44,7 +45,7 @@ const SubDeptChips = ({ subDepts }: { subDepts: string[] }) => {
   );
 };
 
-const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, onBack, onSelectOrderId }: Props) => {
+const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, onBack, onSelectOrderId, onExport }: Props) => {
   const [subDeptFilter, setSubDeptFilter] = useState("");
 
   const storeName = selectedKey
@@ -74,13 +75,19 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, onBack
           <ChevronLeftIcon className="w-5 h-5" />
         </button>
         <div className="min-w-0 flex-1">
-          <div className="text-custom-white font-semibold text-[15px] truncate">
+          <div className="text-custom-white font-semibold text-[13px] truncate">
             {storeName} <span className="text-custom-white font-normal text-[12px]">— {selectedKey?.order_type}</span>
           </div>
           <div className="text-custom-white text-[11px] mt-0.5">
             {selectedKey ? fmtDate(selectedKey.order_date) : ""}
           </div>
         </div>
+        <button
+          onClick={onExport}
+          className="w-[28px] h-[28px] flex items-center justify-center rounded border border-custom-white/25 text-custom-white/85 hover:text-custom-white hover:border-custom-white/45 transition-colors flex-shrink-0"
+        >
+          <ArrowDownTrayIcon className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Sub-header chips + sub dept filter */}
@@ -96,15 +103,15 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, onBack
         )}
         <div className="flex items-center gap-1.5 flex-shrink-0">
           <div className="flex items-baseline gap-1 rounded px-1.5 py-0.5" style={chipStyle}>
-            <span className="text-[8.5px] text-content">Orders</span>
+            <span className="text-[10px] text-content">Orders</span>
             <span className="text-[10px] font-semibold text-content">{uniqueOrderIds.length}</span>
           </div>
           <div className="flex items-baseline gap-1 rounded px-1.5 py-0.5" style={chipStyle}>
-            <span className="text-[8.5px] text-content">Items</span>
+            <span className="text-[10px] text-content">Items</span>
             <span className="text-[10px] font-semibold text-content">{subFilteredOrders.length}</span>
           </div>
           <div className="flex items-baseline gap-1 rounded px-1.5 py-0.5" style={chipStyle}>
-            <span className="text-[8.5px] text-content">Retail</span>
+            <span className="text-[10px] text-content">Retail</span>
             <span className="text-[10px] font-semibold text-content">{formatCurrency2(totalExtRetail)}</span>
           </div>
         </div>
@@ -128,7 +135,7 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, onBack
             >
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-[13px] font-semibold text-[#1e2a4a]">#{orderId}</span>
-                {status && <span className="text-[9px] italic text-content flex-shrink-0">{status}</span>}
+                {status && <span className="text-[10px] text-content flex-shrink-0">{status}</span>}
               </div>
               <div className="flex items-baseline justify-between gap-2 mt-0.5">
                 <span className="text-[11px] font-semibold text-[#1e2a4a]">{formatCurrency2(eRet)}</span>

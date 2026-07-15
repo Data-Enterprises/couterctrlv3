@@ -115,8 +115,8 @@ const isSelected = (order_date: string, order_type: string, storeid: number) => 
       <div className="bg-[#1e2a4a] px-3 pt-1 pb-2.5 flex-shrink-0 flex flex-col gap-0">
         {/* Row 1: title + date | totals */}
         <div className="flex items-end gap-3 min-h-[26px]">
-          <span className="text-white font-medium text-[13px] flex-shrink-0">Available Orders</span>
-          <span className="text-white text-[10px] flex-shrink-0">{dateLabel}</span>
+          <span className="text-custom-white font-medium text-[13px] flex-shrink-0">Available Orders</span>
+          <span className="text-custom-white text-[10px] flex-shrink-0">{dateLabel}</span>
           <div className="flex-1" />
         </div>
         {/* Row 2: search + group name + legend */}
@@ -124,24 +124,24 @@ const isSelected = (order_date: string, order_type: string, storeid: number) => 
           <button
             onClick={onOpenSearch}
             aria-label="New search"
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/60 hover:text-custom-white hover:border-white/40 transition-colors flex-shrink-0"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
           {type === "Group" && selectedGroup?.group_name && (
             <div className="flex flex-col leading-tight truncate">
-              <span className="text-[11px] font-medium text-white truncate">{selectedGroup.group_name}</span>
+              <span className="text-[11px] font-medium text-custom-white truncate">{selectedGroup.group_name}</span>
               {groupStores.length > 0 && (
-                <span className="text-[9px] text-white">{groupStores.length} stores</span>
+                <span className="text-[9px] text-custom-white">{groupStores.length} stores</span>
               )}
             </div>
           )}
           {type === "Store" && selectedStore?.store_name && (
-            <span className="text-[11px] font-medium text-white truncate">{selectedStore.store_name}</span>
+            <span className="text-[11px] font-medium text-custom-white truncate">{selectedStore.store_name}</span>
           )}
           <div className="flex-1" />
           <div className="relative flex-shrink-0" onMouseEnter={() => setLegendHover(true)} onMouseLeave={() => setLegendHover(false)}>
-            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/50 hover:text-white hover:border-white/40 transition-colors">
+            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/50 hover:text-custom-white hover:border-white/40 transition-colors">
               <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
             </button>
             {legendHover && (
@@ -152,22 +152,22 @@ const isSelected = (order_date: string, order_type: string, storeid: number) => 
                 ].map(({ color, label, desc }) => (
                   <div key={label} className="flex items-start gap-2">
                     <div className="w-[7px] h-[7px] rounded-full flex-shrink-0 mt-[3px]" style={{ background: color }} />
-                    <span className="text-[11px] text-white leading-snug">
-                      <span className="text-white font-medium">{label}</span> — {desc}
+                    <span className="text-[11px] text-custom-white leading-snug">
+                      <span className="text-custom-white font-medium">{label}</span> — {desc}
                     </span>
                   </div>
                 ))}
                 {groupStores.length > 0 && (
                   <>
-                    <div className="h-px bg-white/10" />
-                    <div className="text-[9px] font-semibold uppercase tracking-wide text-white">
+                    <div className="h-px bg-custom-white" />
+                    <div className="text-[9px] font-semibold uppercase tracking-wide text-custom-white">
                       {selectedGroup?.group_name ?? "Group"} stores
                     </div>
                     <div className="flex flex-col gap-1">
                       {groupStores.map((s) => (
                         <div key={s.storeid} className="flex items-center gap-1.5">
-                          <span className="text-white text-[10px]">·</span>
-                          <span className="text-[10px] text-white">{s.store_name}</span>
+                          <span className="text-custom-white text-[10px]">·</span>
+                          <span className="text-[10px] text-custom-white">{s.store_name}</span>
                         </div>
                       ))}
                     </div>
@@ -280,14 +280,14 @@ const isSelected = (order_date: string, order_type: string, storeid: number) => 
                           onClick={() => onSelectStore(dateGroup.order_date, card.order_type, store.storeid)}
                           style={sel ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
                           className={`w-full flex items-center justify-between pl-6 pr-3 py-2 text-left transition-colors ${
-                            sel ? "bg-white" : "hover:bg-gray-50"
+                            sel ? "bg-custom-white" : "hover:bg-gray-50"
                           }`}
                         >
                           <div className="flex flex-col min-w-0">
                             <span className="text-[12px] font-medium text-content truncate">{store.store_name}</span>
                             <span className="text-[11px] text-content mt-px">{fmtDate(dateGroup.order_date)}</span>
                           </div>
-                          <span className="text-[10px] text-content bg-gray-100 rounded-full px-2 py-0.5 flex-shrink-0 ml-2">
+                          <span className="text-[10px] text-content bg-custom-white rounded-full px-2 py-0.5 flex-shrink-0 ml-2">
                             {store.frequency} {store.frequency === 1 ? "order" : "orders"}
                           </span>
                         </button>

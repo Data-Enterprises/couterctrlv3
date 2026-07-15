@@ -43,7 +43,7 @@ class ErrorBoundary extends Component<Props, State> {
             onClick={() => {
               window.location.reload();
             }}
-            className="border rounded-lg shadow-md py-2 px-8 hover:bg-white/25 transition-all duration-500"
+            className="border rounded-lg shadow-md py-2 px-8 hover:bg-custom-white/25 transition-all duration-500"
           >
             Reset
           </button>

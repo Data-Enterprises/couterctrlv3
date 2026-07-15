@@ -4,6 +4,7 @@ import type { AllOrder } from "../../../interfaces";
 import type { SelectedOrder } from "../../../features/ordersSlice";
 import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../utils/csvExport";
 import type { AggFn, AggRow } from "../../../utils/csvExport";
+import { buildOrdersCsv, DIMS, METRICS, AGG_OPTIONS } from "./ordersExportShared";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,62 +21,7 @@ interface OrdersExportModalProps {
 type ModalMode = "presets" | "custom";
 type ExportDataset = "all" | "selected" | "subDepts";
 
-interface DimDef   { key: string; label: string }
-interface MetricDef { key: string; label: string }
 interface MetricSelection { fn: AggFn; enabled: boolean }
-
-// ─── Formatting ───────────────────────────────────────────────────────────────
-
-const fmtDate = (iso: string) => {
-  const [y, m, d] = iso.split("T")[0].split("-");
-  return `${m}/${d}/${y}`;
-};
-
-// ─── Preset builders ──────────────────────────────────────────────────────────
-
-const buildOrdersCsv = (orders: AllOrder[], label: string) => {
-  const headers = [
-    "Store #", "Store Name", "Date", "Order #", "Line #", "UPC", "Description", "Sub Dept", "Vendor",
-    "Status", "Qty", "Case Size", "Unit Cost", "Net Cost",
-    "Retail Price", "Ext Retail", "COGS", "Revenue",
-  ];
-  const rows = orders.map((o) => [
-    o.storenumber, o.storename, fmtDate(o.order_date), o.order_id, o.line_number, o.product_code, o.description,
-    o.sub_department_description, o.vendor_name, o.status,
-    o.qty, o.casesize,
-    o.casesize > 0 ? fmtNum(o.base_cost / o.casesize) : "—",
-    fmtNum(o.net_cost), fmtNum(o.active_retail_price),
-    fmtNum(o.e_ret), fmtNum(o.cogs), fmtNum(o.rev),
-  ]);
-  return `${label}\n${rowsToCsv(headers, rows)}`;
-};
-
-// ─── Config ───────────────────────────────────────────────────────────────────
-
-const DIMS: DimDef[] = [
-  { key: "order_id",                  label: "Order #" },
-  { key: "sub_department_description", label: "Sub Dept" },
-  { key: "vendor_name",               label: "Vendor" },
-  { key: "status",                    label: "Status" },
-  { key: "description",               label: "Description" },
-];
-
-const METRICS: MetricDef[] = [
-  { key: "qty",                label: "Qty" },
-  { key: "e_ret",              label: "Ext Retail" },
-  { key: "cogs",               label: "COGS" },
-  { key: "rev",                label: "Revenue" },
-  { key: "active_retail_price", label: "Retail Price" },
-  { key: "net_cost",           label: "Net Cost" },
-];
-
-const AGG_OPTIONS: { value: AggFn; label: string }[] = [
-  { value: "sum",   label: "Sum" },
-  { value: "avg",   label: "Avg" },
-  { value: "min",   label: "Min" },
-  { value: "max",   label: "Max" },
-  { value: "count", label: "Count" },
-];
 
 const PREVIEW_ROWS = 5;
 
@@ -258,29 +204,29 @@ const OrdersExportModal = ({
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-xl shadow-xl w-full overflow-hidden transition-all duration-200 ${mode === "custom" ? "max-w-2xl" : "max-w-lg"}`}
+        className={`bg-custom-white rounded-xl shadow-xl w-full overflow-hidden transition-all duration-200 ${mode === "custom" ? "max-w-2xl" : "max-w-lg"}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
           <div>
-            <p className="text-white text-[13px] font-semibold">Export CSV</p>
-            <p className="text-white text-[10px] mt-0.5">{storeLabel} — {orderType}</p>
+            <p className="text-custom-white text-[13px] font-semibold">Export CSV</p>
+            <p className="text-custom-white text-[10px] mt-0.5">{storeLabel} — {orderType}</p>
           </div>
-          <div className="flex items-center gap-0.5 bg-white/10 rounded-md p-0.5">
+          <div className="flex items-center gap-0.5 bg-custom-white/10 rounded-md p-0.5">
             {(["presets", "custom"] as ModalMode[]).map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
                 className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                  mode === m ? "bg-white text-[#1e2a4a]" : "text-white"
+                  mode === m ? "bg-custom-white text-[#1e2a4a]" : "text-custom-white"
                 }`}
               >
                 {m === "presets" ? "Presets" : "Custom"}
               </button>
             ))}
           </div>
-          <button onClick={onClose} className="text-white/60 hover:text-white transition-colors justify-self-end">
+          <button onClick={onClose} className="text-custom-white/60 hover:text-custom-white transition-colors justify-self-end">
             <XMarkIcon className="w-4 h-4" />
           </button>
         </div>
@@ -371,8 +317,8 @@ const OrdersExportModal = ({
                           onClick={(e) => { e.preventDefault(); togglePresetSubDept(s.id); }}
                           className={`text-[10px] px-2 py-1 rounded-full border transition-colors ${
                             presetSubDepts.has(s.id)
-                              ? "bg-[#1e2a4a] text-white border-[#1e2a4a]"
-                              : "bg-white text-content border-gray-200 hover:border-[#1e2a4a]/40"
+                              ? "bg-[#1e2a4a] text-custom-white border-[#1e2a4a]"
+                              : "bg-custom-white text-content border-gray-200 hover:border-[#1e2a4a]/40"
                           }`}
                         >
                           {s.id}
@@ -389,7 +335,7 @@ const OrdersExportModal = ({
               <button
                 onClick={handlePresetDownload}
                 disabled={selected.size === 0}
-                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV
@@ -483,7 +429,7 @@ const OrdersExportModal = ({
                             value={sel.fn}
                             disabled={!sel.enabled}
                             onChange={(e) => setMetricFn(m.key, e.target.value as AggFn)}
-                            className="text-[10px] border border-gray-200 rounded px-1 py-0.5 text-content disabled:opacity-30 bg-white outline-none"
+                            className="text-[10px] border border-gray-200 rounded px-1 py-0.5 text-content disabled:opacity-30 bg-custom-white outline-none"
                             style={{ minWidth: 52 }}
                           >
                             {AGG_OPTIONS.map((o) => (
@@ -534,7 +480,7 @@ const OrdersExportModal = ({
                       </thead>
                       <tbody>
                         {aggRows.slice(0, PREVIEW_ROWS).map((row, i) => (
-                          <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
+                          <tr key={i} className={i % 2 === 0 ? "bg-custom-white" : "bg-gray-50/50"}>
                             {columns.map((c) => (
                               <td key={c.key} className="px-3 py-1.5 text-content whitespace-nowrap border-b border-gray-50">
                                 {row[c.key] ?? "—"}
@@ -561,7 +507,7 @@ const OrdersExportModal = ({
               <button
                 onClick={handleCustomDownload}
                 disabled={!canCustomDownload}
-                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV

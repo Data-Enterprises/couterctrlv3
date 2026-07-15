@@ -134,7 +134,7 @@ const CouponsExportModal = ({ onClose, title, subtitle, rows }: CouponsExportMod
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
       <div
-        className={`bg-white rounded-xl shadow-xl w-full overflow-hidden transition-all duration-200 ${mode === "custom" ? "max-w-2xl" : "max-w-lg"}`}
+        className={`bg-custom-white rounded-xl shadow-xl w-full overflow-hidden transition-all duration-200 ${mode === "custom" ? "max-w-2xl" : "max-w-lg"}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -143,12 +143,12 @@ const CouponsExportModal = ({ onClose, title, subtitle, rows }: CouponsExportMod
             <p className="text-white text-[13px] font-semibold">Export CSV</p>
             <p className="text-white/55 text-[10px] mt-0.5">{subtitle}</p>
           </div>
-          <div className="flex items-center gap-0.5 bg-white/10 rounded-md p-0.5">
+          <div className="flex items-center gap-0.5 bg-custom-white/10 rounded-md p-0.5">
             {(["presets", "custom"] as ModalMode[]).map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
-                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${mode === m ? "bg-white text-[#1e2a4a]" : "text-white/70 hover:text-white"}`}
+                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${mode === m ? "bg-custom-white text-[#1e2a4a]" : "text-white/70 hover:text-white"}`}
               >
                 {m === "presets" ? "Presets" : "Custom"}
               </button>
@@ -221,7 +221,7 @@ const CouponsExportModal = ({ onClose, title, subtitle, rows }: CouponsExportMod
                           <input type="checkbox" checked={sel.enabled} onChange={() => toggleMetric(m.key)} className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0" />
                           <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/40"}`}>{m.label}</span>
                           <select value={sel.fn} disabled={!sel.enabled} onChange={(e) => setMetricFn(m.key, e.target.value as AggFn)}
-                            className="text-[10px] border border-gray-200 rounded px-1 py-0.5 text-content disabled:opacity-30 bg-white outline-none" style={{ minWidth: 52 }}>
+                            className="text-[10px] border border-gray-200 rounded px-1 py-0.5 text-content disabled:opacity-30 bg-custom-white outline-none" style={{ minWidth: 52 }}>
                             {AGG_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                           </select>
                         </div>
@@ -259,7 +259,7 @@ const CouponsExportModal = ({ onClose, title, subtitle, rows }: CouponsExportMod
                       </thead>
                       <tbody>
                         {aggRows.slice(0, PREVIEW_ROWS).map((row, i) => (
-                          <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
+                          <tr key={i} className={i % 2 === 0 ? "bg-custom-white" : "bg-gray-50/50"}>
                             {columns.map((c) => (
                               <td key={c.key} className="px-3 py-1.5 text-content/80 whitespace-nowrap border-b border-gray-50">{row[c.key] ?? "—"}</td>
                             ))}

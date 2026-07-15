@@ -8,6 +8,7 @@ interface Props {
   orders: AllOrder[];
   selectedKey: SelectedOrderKey;
   selectedOrderId: number;
+  selectedStoreId?: number;
   assignedStores: Store[];
   onExport: () => void;
 }
@@ -22,9 +23,12 @@ const chipStyle = {
   boxShadow: "inset 0 1px 2px rgba(30,42,74,0.08)",
 };
 
-const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrderId, assignedStores, onExport }: Props) => {
-  const storeName = selectedKey
-    ? (assignedStores.find((s) => s.storeid === selectedKey.storeids[0])?.store_name ?? `Store ${selectedKey.storeids[0]}`)
+const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrderId, selectedStoreId, assignedStores, onExport }: Props) => {
+  // The order's own store, not selectedKey.storeids[0] — with "select all
+  // stores" a selected order can belong to any store in the selection.
+  const storeid = selectedStoreId ?? selectedKey?.storeids[0];
+  const storeName = storeid !== undefined
+    ? (assignedStores.find((s) => s.storeid === storeid)?.store_name ?? `Store ${storeid}`)
     : "";
 
   const items = [...orders.filter((o) => o.order_id === selectedOrderId)].sort(
@@ -50,7 +54,7 @@ const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrderId, assignedS
             className="flex items-center gap-1 px-2 py-1 rounded border border-gray-200 text-content hover:border-gray-300 transition-colors flex-shrink-0"
           >
             <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-            <span className="text-[9px] font-medium">Export</span>
+            <span className="text-[10px] font-medium">Export</span>
           </button>
         </div>
         <div className="flex items-center gap-1.5 mt-2">
@@ -74,7 +78,7 @@ const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrderId, assignedS
         {items.map((o) => (
           <div key={o.line_number} className="flex items-start justify-between px-4 py-3 gap-3">
             <div className="flex-1 min-w-0">
-              <div className="text-[9px] text-content mb-0.5">
+              <div className="text-[10px] text-content mb-0.5">
                 #{o.line_number} · {o.product_code}
               </div>
               <div className="text-[12px] font-medium text-content truncate">{o.description}</div>
