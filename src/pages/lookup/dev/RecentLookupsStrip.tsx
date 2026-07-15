@@ -6,7 +6,7 @@ interface RecentLookupsStripProps {
 }
 
 const marginColor = (marginPct: number | null) => {
-  if (marginPct === null) return "text-content/75";
+  if (marginPct === null) return "text-content/85";
   return marginPct < 0 ? "text-red-700" : "text-emerald-700";
 };
 
@@ -17,7 +17,7 @@ const RecentLookupsStrip = ({ onSelect, variant = "cards" }: RecentLookupsStripP
   if (variant === "list") {
     return (
       <div>
-        <div className="text-[9px] font-semibold text-content/75 uppercase tracking-wide mb-1.5">
+        <div className="text-[10px] font-semibold text-content/85 uppercase tracking-wide mb-1.5">
           Recent lookups
         </div>
         <div className="max-h-[168px] overflow-y-auto thin-scrollbar border-t border-content/10">
@@ -40,7 +40,7 @@ const RecentLookupsStrip = ({ onSelect, variant = "cards" }: RecentLookupsStripP
 
   return (
     <div>
-      <div className="text-[9px] font-semibold text-content/75 uppercase tracking-wide mb-2">
+      <div className="text-[10px] font-semibold text-content/85 uppercase tracking-wide mb-2">
         Recent lookups
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1">

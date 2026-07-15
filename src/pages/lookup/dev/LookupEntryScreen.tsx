@@ -44,7 +44,7 @@ const LookupEntryScreen = ({
   return (
     <div className="min-h-[calc(100vh-56px)] bg-custom-white">
       <div className="flex-shrink-0 px-3 pt-2 pb-2.5" style={{ background: "#1e2a4a" }}>
-        <div className="text-[13px] font-semibold text-white">Item lookup</div>
+        <div className="text-[13px] font-semibold text-custom-white">Item lookup</div>
       </div>
 
       <div className="p-3">
@@ -61,7 +61,7 @@ const LookupEntryScreen = ({
         />
 
         {!hasStore && (
-          <p className="text-[11px] text-content/75 -mt-2 mb-3.5">
+          <p className="text-[11px] text-content/85 -mt-2 mb-3.5">
             Select a store to scan or search for an item.
           </p>
         )}
@@ -71,7 +71,7 @@ const LookupEntryScreen = ({
             <>
               <DevUpcScanner handleScan={handleScan} retryKey={retryKey} />
               <button
-                className="mt-1.5 text-[11.5px] text-content/75 underline"
+                className="mt-1.5 text-[11.5px] text-content/85 underline"
                 onClick={() => setCameraOpen(false)}
               >
                 Close camera
@@ -88,7 +88,7 @@ const LookupEntryScreen = ({
                     Hold steady and try again, or enter the code below.
                   </p>
                   <button
-                    className="w-full bg-[#1e2a4a] text-white text-[11.5px] rounded-md py-1.5"
+                    className="w-full bg-[#1e2a4a] text-custom-white text-[11.5px] rounded-md py-1.5"
                     onClick={() => setRetryKey((k) => k + 1)}
                   >
                     Try scanning again
@@ -100,7 +100,7 @@ const LookupEntryScreen = ({
             <button
               disabled={!hasStore}
               onClick={() => setCameraOpen(true)}
-              className="w-full flex items-center justify-center gap-2 bg-[#1e2a4a] disabled:bg-content/20 text-white text-[13px] font-medium rounded-xl py-3"
+              className="w-full flex items-center justify-center gap-2 bg-[#1e2a4a] disabled:bg-content/20 text-custom-white text-[13px] font-medium rounded-xl py-3"
             >
               <CameraIcon className="w-4 h-4" />
               Scan barcode
@@ -110,7 +110,7 @@ const LookupEntryScreen = ({
 
         <div className="flex items-center gap-2 my-3.5">
           <div className="flex-1 h-px bg-content/15" />
-          <span className="text-[10.5px] text-content/75">
+          <span className="text-[10.5px] text-content/85">
             or enter manually
           </span>
           <div className="flex-1 h-px bg-content/15" />
@@ -126,7 +126,7 @@ const LookupEntryScreen = ({
           />
           <button
             disabled={!hasStore}
-            className="bg-[#1e2a4a] disabled:bg-content/20 text-white text-[13px] px-4 py-1.5 rounded-md"
+            className="bg-[#1e2a4a] disabled:bg-content/20 text-custom-white text-[13px] px-4 py-1.5 rounded-md"
             onClick={handleManualSearch}
           >
             Search

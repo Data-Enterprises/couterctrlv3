@@ -113,7 +113,7 @@ const DevUpcScanner = ({ handleScan, retryKey }: DevUpcScannerProps) => {
       />
       <div className="absolute bottom-2.5 left-0 right-0 flex items-center justify-center gap-1.5">
         <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-        <span className="text-[11px] text-white/75">Scanning for a barcode</span>
+        <span className="text-[11px] text-custom-white/85">Scanning for a barcode</span>
       </div>
     </div>
   );
