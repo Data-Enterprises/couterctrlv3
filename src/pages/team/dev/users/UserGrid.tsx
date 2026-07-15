@@ -1,7 +1,12 @@
 import { useMemo, useState } from "react";
 import { useTeamCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { setRefresh, setSelectedUserForm, setSelectedUserId, setSelectedUserInfo } from "../../../../features/usersSlice";
+import {
+  setRefresh,
+  setSelectedUserForm,
+  setSelectedUserId,
+  setSelectedUserInfo,
+} from "../../../../features/usersSlice";
 import { deleteUser } from "../../../../api/team";
 import type { JsonError, User } from "../../../../interfaces";
 import { roles } from "../..";
@@ -30,13 +35,19 @@ const UserGrid = ({ mode }: UserGridProps) => {
 
   const isOutranked = (lvl: number) => lvl > ctx.userLevel;
 
-  const renderRoleText = (role: number | null) => roles.find((r) => r.value == role)?.label ?? "";
-  const renderLvlText = (lvl: number) => ctx.userLevels.find((l) => l.id === lvl)?.name ?? "N/A";
+  const renderRoleText = (role: number | null) =>
+    roles.find((r) => r.value == role)?.label ?? "";
+  const renderLvlText = (lvl: number) =>
+    ctx.userLevels.find((l) => l.id === lvl)?.name ?? "N/A";
 
   const filtered = useMemo(() => {
     return ctx.users.filter((u) => {
-      const companyCheck = companyFilter ? u.companies.some((c) => c.company === Number(companyFilter)) : true;
-      const levelCheck = levelFilter ? u.user_level === Number(levelFilter) : true;
+      const companyCheck = companyFilter
+        ? u.companies.some((c) => c.company === Number(companyFilter))
+        : true;
+      const levelCheck = levelFilter
+        ? u.user_level === Number(levelFilter)
+        : true;
       const roleCheck = roleFilter ? u.role === Number(roleFilter) : true;
       const lowerText = searchText.toLowerCase();
       const textCheck =
@@ -47,7 +58,14 @@ const UserGrid = ({ mode }: UserGridProps) => {
             : (u.email ?? "").toLowerCase().includes(lowerText);
       return companyCheck && levelCheck && roleCheck && textCheck;
     });
-  }, [ctx.users, companyFilter, levelFilter, roleFilter, searchType, searchText]);
+  }, [
+    ctx.users,
+    companyFilter,
+    levelFilter,
+    roleFilter,
+    searchType,
+    searchText,
+  ]);
 
   const handleActionClick = (u: User) => {
     if (mode === "info") {
@@ -72,28 +90,39 @@ const UserGrid = ({ mode }: UserGridProps) => {
           toast.warn("Error deleting user: " + j.msg);
         }
       })
-      .catch((err: JsonError) => toast.error("Error deleting user: " + err.message));
+      .catch((err: JsonError) =>
+        toast.error("Error deleting user: " + err.message),
+      );
   };
 
   return (
     <div className="flex-1 flex flex-col min-h-0 p-4">
       <div className="flex flex-wrap items-center gap-2 mb-3">
         <SelectFilter
-          options={ctx.companies.map((c) => ({ value: String(c.company), label: c.name }))}
+          options={ctx.companies.map((c) => ({
+            value: String(c.company),
+            label: c.name,
+          }))}
           value={companyFilter}
           onChange={setCompanyFilter}
           placeholder="All companies"
           className="w-[150px]"
         />
         <SelectFilter
-          options={ctx.userLevels.map((l) => ({ value: String(l.id), label: l.name }))}
+          options={ctx.userLevels.map((l) => ({
+            value: String(l.id),
+            label: l.name,
+          }))}
           value={levelFilter}
           onChange={setLevelFilter}
           placeholder="All levels"
           className="w-[130px]"
         />
         <SelectFilter
-          options={roles.map((r) => ({ value: String(r.value), label: r.label }))}
+          options={roles.map((r) => ({
+            value: String(r.value),
+            label: r.label,
+          }))}
           value={roleFilter}
           onChange={setRoleFilter}
           placeholder="All roles"
@@ -114,7 +143,12 @@ const UserGrid = ({ mode }: UserGridProps) => {
             Email
           </button>
         </div>
-        <TextFilter value={searchText} onChange={setSearchText} placeholder="Search…" className="min-w-[140px]" />
+        <TextFilter
+          value={searchText}
+          onChange={setSearchText}
+          placeholder="Search…"
+          className="min-w-[140px]"
+        />
       </div>
 
       <div className="border border-gray-100 rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col">
@@ -141,7 +175,9 @@ const UserGrid = ({ mode }: UserGridProps) => {
                 <div>{renderRoleText(u.role)}</div>
                 <div className="text-right">
                   {outranked ? (
-                    <span className="text-[10px] italic text-content/40">Unauthorized</span>
+                    <span className="text-[10px] italic text-content/40">
+                      Unauthorized
+                    </span>
                   ) : (
                     <button
                       onClick={() => handleActionClick(u)}
@@ -155,7 +191,9 @@ const UserGrid = ({ mode }: UserGridProps) => {
             );
           })}
           {filtered.length === 0 && (
-            <div className="flex items-center justify-center py-8 text-[12px] text-content">No users found</div>
+            <div className="flex items-center justify-center py-8 text-[12px] text-content">
+              No users found
+            </div>
           )}
         </div>
       </div>
@@ -174,7 +212,7 @@ const UserGrid = ({ mode }: UserGridProps) => {
             </button>
             <button
               onClick={() => setDeletingUser(null)}
-              className="text-[12px] font-medium px-3.5 py-1.5 rounded-md bg-white border border-gray-200 text-content transition-colors"
+              className="text-[12px] font-medium px-3.5 py-1.5 rounded-md bg-custom-white border border-gray-200 text-content transition-colors"
             >
               Cancel
             </button>

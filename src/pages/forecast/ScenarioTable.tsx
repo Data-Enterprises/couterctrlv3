@@ -121,8 +121,7 @@ const ScenarioTable = ({
           </thead>
           <tbody>
             {allPrices.map((row) => {
-              const isActive =
-                Math.abs(row.price - liveFcstPrice) < 0.001;
+              const isActive = Math.abs(row.price - liveFcstPrice) < 0.001;
               return (
                 <tr
                   key={row.price}
@@ -130,7 +129,7 @@ const ScenarioTable = ({
                     isActive
                       ? "bg-blue-200"
                       : row.isCustom
-                        ? "bg-white border-b border-gray-100"
+                        ? "bg-custom-white border-b border-gray-100"
                         : "bg-blue-50 border-b border-blue-100"
                   }
                 >

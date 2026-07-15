@@ -101,7 +101,7 @@ const CostGridTablet = () => {
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200/70 bg-white/95 p-3 shadow-sm text-sm">
+    <div className="rounded-2xl border border-slate-200/70 bg-custom-white/95 p-3 shadow-sm text-sm">
       <CostGridFiltersTablet />
       <div className="mt-3 rounded-xl overflow-hidden border border-slate-200/70">
         <div className="grid grid-cols-[0.9fr_2.1fr_0.7fr_1fr_0.6fr_0.7fr] bg-slate-100/90 px-2 py-2 text-[12.5px] font-semibold uppercase tracking-wide text-slate-500">
@@ -119,7 +119,7 @@ const CostGridTablet = () => {
           {sm.filteredCostGridData.map((data, i) => (
             <div
               key={i}
-              className="grid grid-cols-[0.9fr_2.1fr_0.7fr_1fr_0.6fr_0.7fr] items-center px-2 py-1.5 text-[12.2px] text-slate-700 odd:bg-white even:bg-slate-50/80 hover:bg-sky-50/70 transition-colors duration-150"
+              className="grid grid-cols-[0.9fr_2.1fr_0.7fr_1fr_0.6fr_0.7fr] items-center px-2 py-1.5 text-[12.2px] text-slate-700 odd:bg-custom-white even:bg-slate-50/80 hover:bg-sky-50/70 transition-colors duration-150"
             >
               <div className="font-medium text-slate-900 truncate">
                 {data.product_code}

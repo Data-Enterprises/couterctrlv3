@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { MagnifyingGlassIcon, QuestionMarkCircleIcon } from "@heroicons/react/16/solid";
+import {
+  MagnifyingGlassIcon,
+  QuestionMarkCircleIcon,
+} from "@heroicons/react/16/solid";
 import { useAppDispatch } from "../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
@@ -23,7 +26,8 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
   const hasSubDept = ctx.selectedSubDeptId > 0;
 
   const storeName =
-    ctx.assignedStores.find((s) => s.storeid === ctx.searchValue)?.store_name ?? "";
+    ctx.assignedStores.find((s) => s.storeid === ctx.searchValue)?.store_name ??
+    "";
   const subDeptName =
     ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId)?.desc ?? "";
 
@@ -33,7 +37,8 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
   const periodStart = ctx.singleDate
     ? formatDate(setDates(new Date(ctx.singleDate), -27))
     : "";
-  const dateRange = periodStart && periodEnd ? `${periodStart} – ${periodEnd}` : "";
+  const dateRange =
+    periodStart && periodEnd ? `${periodStart} – ${periodEnd}` : "";
 
   const allWeeksData = [
     ...ctx.weekOneMargins,
@@ -41,9 +46,13 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
     ...ctx.weekThreeMargins,
     ...ctx.weekFourMargins,
   ];
-  const totalSales = allWeeksData.reduce((acc, m) => acc + (m.total_sales - m.total_tax), 0);
+  const totalSales = allWeeksData.reduce(
+    (acc, m) => acc + (m.total_sales - m.total_tax),
+    0,
+  );
   const totalCogs = allWeeksData.reduce(
-    (acc, m) => acc + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight),
+    (acc, m) =>
+      acc + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight),
     0,
   );
   const totalMargin = gpm(totalSales, totalCogs);
@@ -69,28 +78,35 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
     >
       {/* Navy header — 2-row canonical pattern */}
       <div className="bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
-
         {/* Row 1: title + date range | summary metrics */}
         <div className="flex items-end gap-3 min-h-[26px]">
           <span className="text-white font-medium text-[13px] flex-shrink-0">
             Sub Dept Margins
           </span>
           {dateRange && (
-            <span className="text-white/35 text-[11px] flex-shrink-0">{dateRange}</span>
+            <span className="text-white/35 text-[11px] flex-shrink-0">
+              {dateRange}
+            </span>
           )}
           <div className="flex-1" />
           {hasAllWeeksData && (
             <>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-[10px] text-white/45 uppercase tracking-wide">Net</span>
+                <span className="text-[10px] text-white/45 uppercase tracking-wide">
+                  Net
+                </span>
                 <span className="text-[13px] font-medium text-white">
                   {formatCurrency2(totalSales)}
                 </span>
               </div>
-              <div className="w-px h-4 bg-white/15 flex-shrink-0" />
+              <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
               <div className="flex items-baseline gap-1.5">
-                <span className="text-[10px] text-white/45 uppercase tracking-wide">Margin</span>
-                <span className="text-[13px] font-medium text-white">{totalMargin}</span>
+                <span className="text-[10px] text-white/45 uppercase tracking-wide">
+                  Margin
+                </span>
+                <span className="text-[13px] font-medium text-white">
+                  {totalMargin}
+                </span>
               </div>
             </>
           )}
@@ -107,9 +123,13 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
           </button>
 
           <div className="flex flex-col leading-tight min-w-0">
-            <span className="text-[11px] font-medium text-white/70 truncate">{storeName}</span>
+            <span className="text-[11px] font-medium text-white/70 truncate">
+              {storeName}
+            </span>
             {subDeptName && (
-              <span className="text-[9px] text-white/40 truncate">{subDeptName}</span>
+              <span className="text-[9px] text-white/40 truncate">
+                {subDeptName}
+              </span>
             )}
           </div>
 
@@ -141,8 +161,13 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
                   <div key={label} className="flex items-start gap-2">
                     <span className="text-white/30 text-[10px] mt-px">·</span>
                     <div>
-                      <span className="text-[10px] text-white font-medium">{label}</span>
-                      <span className="text-[10px] text-white/55"> — {desc}</span>
+                      <span className="text-[10px] text-white font-medium">
+                        {label}
+                      </span>
+                      <span className="text-[10px] text-white/55">
+                        {" "}
+                        — {desc}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -169,11 +194,12 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
           <SmDevWeekList />
         ) : (
           <div className="flex flex-col items-center justify-center h-full gap-2 p-6 text-center">
-            <p className="text-[12px] text-content/40">Select a sub department above</p>
+            <p className="text-[12px] text-content/40">
+              Select a sub department above
+            </p>
           </div>
         )}
       </div>
-
     </div>
   );
 };

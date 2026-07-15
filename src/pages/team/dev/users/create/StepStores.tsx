@@ -15,10 +15,15 @@ const StepStores = ({ onContinue }: StepStoresProps) => {
   const filtered = useMemo(() => {
     if (!ctx.storesWithBGID.length) return [];
     const baseFiltered =
-      selectedBG === 0 ? ctx.storesWithBGID : ctx.storesWithBGID.filter((s) => s.base_group === selectedBG);
+      selectedBG === 0
+        ? ctx.storesWithBGID
+        : ctx.storesWithBGID.filter((s) => s.base_group === selectedBG);
     return showSelected
       ? baseFiltered.filter((s) =>
-          ctx.selectedNewUserStores.some((store) => store.storeid === s.storeid && store.base_group === s.base_group),
+          ctx.selectedNewUserStores.some(
+            (store) =>
+              store.storeid === s.storeid && store.base_group === s.base_group,
+          ),
         )
       : baseFiltered;
   }, [ctx.storesWithBGID, selectedBG, showSelected, ctx.selectedNewUserStores]);
@@ -34,11 +39,18 @@ const StepStores = ({ onContinue }: StepStoresProps) => {
     if (found) {
       ctx.dispatch(
         setSelectedNewUserStores(
-          ctx.selectedNewUserStores.filter((s) => !(s.storeid === store.storeid && s.base_group === store.base_group)),
+          ctx.selectedNewUserStores.filter(
+            (s) =>
+              !(
+                s.storeid === store.storeid && s.base_group === store.base_group
+              ),
+          ),
         ),
       );
     } else {
-      ctx.dispatch(setSelectedNewUserStores([...ctx.selectedNewUserStores, store]));
+      ctx.dispatch(
+        setSelectedNewUserStores([...ctx.selectedNewUserStores, store]),
+      );
     }
   };
 
@@ -48,7 +60,12 @@ const StepStores = ({ onContinue }: StepStoresProps) => {
     } else {
       ctx.dispatch(
         setSelectedNewUserStores(
-          ctx.selectedNewUserStores.filter((s) => !filtered.some((f) => f.storeid === s.storeid && f.base_group === s.base_group)),
+          ctx.selectedNewUserStores.filter(
+            (s) =>
+              !filtered.some(
+                (f) => f.storeid === s.storeid && f.base_group === s.base_group,
+              ),
+          ),
         ),
       );
     }
@@ -63,14 +80,14 @@ const StepStores = ({ onContinue }: StepStoresProps) => {
           <button
             key={bg.id}
             onClick={() => handleBGFilterSelect(bg.id)}
-            className={`text-[11px] px-3 py-1 rounded-full ${selectedBG === bg.id ? "bg-[#1e2a4a] text-custom-white" : "bg-white border border-gray-200 text-content"}`}
+            className={`text-[11px] px-3 py-1 rounded-full ${selectedBG === bg.id ? "bg-[#1e2a4a] text-custom-white" : "bg-custom-white border border-gray-200 text-content"}`}
           >
             {bg.name}
           </button>
         ))}
         <button
           onClick={() => setShowSelected((v) => !v)}
-          className={`text-[11px] px-3 py-1 rounded-full ${showSelected ? "bg-[#1e2a4a] text-custom-white" : "bg-white border border-gray-200 text-content"}`}
+          className={`text-[11px] px-3 py-1 rounded-full ${showSelected ? "bg-[#1e2a4a] text-custom-white" : "bg-custom-white border border-gray-200 text-content"}`}
         >
           Selected only
         </button>
@@ -95,14 +112,17 @@ const StepStores = ({ onContinue }: StepStoresProps) => {
         {filtered.map((s) => {
           const bg = ctx.selectedBaseGroups.find((b) => b.id === s.base_group);
           const isSelected = ctx.selectedNewUserStores.some(
-            (store) => store.storeid === s.storeid && store.base_group === s.base_group,
+            (store) =>
+              store.storeid === s.storeid && store.base_group === s.base_group,
           );
           return (
             <div
               key={`${s.storeid}-${s.base_group}`}
               onClick={() => handleStoreSelect(s)}
               className={`px-2.5 py-1.5 text-[12px] border-b border-gray-100 cursor-pointer ${
-                isSelected ? "bg-[#1e2a4a] text-custom-white" : "hover:bg-gray-50 text-content"
+                isSelected
+                  ? "bg-[#1e2a4a] text-custom-white"
+                  : "hover:bg-gray-50 text-content"
               }`}
             >
               <div className="flex justify-between">
@@ -113,12 +133,16 @@ const StepStores = ({ onContinue }: StepStoresProps) => {
           );
         })}
         {filtered.length === 0 && (
-          <div className="flex items-center justify-center py-8 text-[12px] text-content">No stores found</div>
+          <div className="flex items-center justify-center py-8 text-[12px] text-content">
+            No stores found
+          </div>
         )}
       </div>
 
       <div className="flex justify-between items-center mt-3">
-        <div className="text-[10px] text-content">{ctx.selectedNewUserStores.length} stores selected</div>
+        <div className="text-[10px] text-content">
+          {ctx.selectedNewUserStores.length} stores selected
+        </div>
         <button
           onClick={onContinue}
           disabled={!canContinue}

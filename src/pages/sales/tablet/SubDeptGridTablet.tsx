@@ -89,7 +89,7 @@ const SubDeptGridTablet = () => {
 
   return (
     <div className="rounded-2xl shadow-lg h-[325px]">
-      <div className="h-full overflow-y-auto rounded-xl border border-slate-200 bg-white">
+      <div className="h-full overflow-y-auto rounded-xl border border-slate-200 bg-custom-white">
         <table className="w-full border-collapse text-left">
           <thead className="sticky top-0 z-10 bg-custom-white">
             <tr className="text-sm tracking-wide text-content/60">

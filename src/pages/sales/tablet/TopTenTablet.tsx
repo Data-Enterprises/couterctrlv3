@@ -119,7 +119,7 @@ const TopTenTablet = () => {
         </div>
       </div>
       <div className="overflow-hidden">
-        <div className="h-full overflow-y-auto rounded-xl border border-slate-200 bg-white">
+        <div className="h-full overflow-y-auto rounded-xl border border-slate-200 bg-custom-white">
           <table className="w-full border-collapse text-left">
             <thead className="sticky top-0 z-10 bg-slate-50">
               <tr className="text-[11px] uppercase tracking-wide text-slate-500">

@@ -101,7 +101,7 @@ const DeleteComp = () => {
                   </button>
                   <button
                     onClick={() => dispatch(setDeleteCompanyModalOpen(false))}
-                    className="text-[12px] font-medium px-3.5 py-1.5 rounded-md bg-white border border-gray-200 text-content transition-colors"
+                    className="text-[12px] font-medium px-3.5 py-1.5 rounded-md bg-custom-white border border-gray-200 text-content transition-colors"
                   >
                     Cancel
                   </button>
