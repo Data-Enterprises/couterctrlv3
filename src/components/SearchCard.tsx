@@ -29,7 +29,13 @@ const SearchCard = ({
   notice,
 }: SearchCardProps) => {
   return (
-    <div className={top ? "mx-4 pt-4 pb-2" : "flex items-center justify-center min-h-[calc(100vh-3rem)] overflow-hidden mx-4 pb-12 md:pb-8"}>
+    <div
+      className={
+        top
+          ? "mx-4 pt-4 pb-2"
+          : "flex items-center justify-center min-h-[calc(100vh-3rem)] overflow-hidden mx-4 pb-12 md:pb-8"
+      }
+    >
       <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3">
         <div>
           <h2 className="text-base font-semibold text-content">{title}</h2>
@@ -44,16 +50,12 @@ const SearchCard = ({
 
         <StorePicker />
 
-        {singleDate ? (
-          <SingleDatePicker />
-        ) : (
-          <DatePickers showBtn={false} />
-        )}
+        {singleDate ? <SingleDatePicker /> : <DatePickers showBtn={false} />}
 
         <button
           onClick={onSearch}
           disabled={loading}
-          className="w-full py-2 text-sm font-semibold text-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
+          className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
         >
           {loading ? "Loading..." : buttonLabel}
         </button>
@@ -65,7 +67,9 @@ const SearchCard = ({
             style={{ background: "rgba(30,42,74,0.07)", borderRadius: 10 }}
           >
             <ArrowLeftIcon className="w-4 h-4 text-[#1e2a4a]" />
-            <span className="text-[#1e2a4a] font-semibold text-[13px] underline underline-offset-2">{backLabel}</span>
+            <span className="text-[#1e2a4a] font-semibold text-[13px] underline underline-offset-2">
+              {backLabel}
+            </span>
           </button>
         )}
       </div>

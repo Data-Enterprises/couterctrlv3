@@ -28,7 +28,7 @@ const CouponGridFilters = () => {
     const customerId = state.customerId;
 
     // Declaring the active style and applying it to the matching conditions
-    const style = "bg-orange-500 text-white font-semibold shadow-inner";
+    const style = "bg-orange-500 text-custom-white font-semibold shadow-inner";
     let result = false;
     if (option === "Store" && storeNum) result = true;
     if (option === "UPC" && productCode) result = true;
@@ -73,9 +73,7 @@ const CouponGridFilters = () => {
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg mt-4">
-      <div className="font-medium rounded-t-lg px-2 py-0.5">
-        Filter By
-      </div>
+      <div className="font-medium rounded-t-lg px-2 py-0.5">Filter By</div>
       <div className="grid grid-cols-2 h-[1.5px]">
         <div className="bg-gradient-to-r from-blue-200 to-custom-white"></div>
         <div className="bg-gradient-to-l from-blue-200 to-custom-white"></div>

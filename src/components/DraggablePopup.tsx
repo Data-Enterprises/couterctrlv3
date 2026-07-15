@@ -69,15 +69,15 @@ const DraggablePopup = ({
         className="flex items-start justify-between px-4 py-3 bg-[#1e2a4a] cursor-grab active:cursor-grabbing select-none"
       >
         <div>
-          <p className="text-white text-sm font-semibold leading-tight">{title}</p>
-          {subtitle && (
-            <div className="mt-1">{subtitle}</div>
-          )}
+          <p className="text-custom-white text-sm font-semibold leading-tight">
+            {title}
+          </p>
+          {subtitle && <div className="mt-1">{subtitle}</div>}
         </div>
         <button
           onMouseDown={(e) => e.stopPropagation()}
           onClick={onClose}
-          className="text-white/50 hover:text-white transition-colors mt-0.5"
+          className="text-custom-white/50 hover:text-custom-white transition-colors mt-0.5"
         >
           <XMarkIcon className="w-4 h-4" />
         </button>

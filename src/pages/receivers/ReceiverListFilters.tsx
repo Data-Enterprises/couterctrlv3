@@ -53,7 +53,7 @@ const RecevierListFilters = () => {
     const invoiceId = state.invoiceIdFilter;
 
     // Declaring the active style and applying it to the matching conditions
-    const style = "bg-orange-500 text-white font-semibold shadow-inner";
+    const style = "bg-orange-500 text-custom-white font-semibold shadow-inner";
     let result = false;
     if (option === "VendorID" && vendorId) result = true;
     if (option === "VendorName" && vendorName) result = true;
@@ -71,9 +71,7 @@ const RecevierListFilters = () => {
         state.list.length === 0 && "hidden"
       } bg-custom-white rounded-lg shadow-lg text-sm`}
     >
-      <div className="font-medium rounded-t-lg px-2 py-0.5">
-        Filter By
-      </div>
+      <div className="font-medium rounded-t-lg px-2 py-0.5">Filter By</div>
       <div className="grid grid-cols-2 h-[1.5px]">
         <div className="bg-gradient-to-r from-blue-200 to-custom-white"></div>
         <div className="bg-gradient-to-l from-blue-200 to-custom-white"></div>

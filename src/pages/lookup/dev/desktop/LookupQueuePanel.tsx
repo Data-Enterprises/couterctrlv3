@@ -48,18 +48,18 @@ const LookupQueuePanel = ({
         style={{ background: "#1e2a4a" }}
       >
         <div className="flex items-end gap-3 min-h-[24px]">
-          <span className="text-[13px] font-semibold text-white flex-shrink-0">
+          <span className="text-[13px] font-semibold text-custom-white flex-shrink-0">
             Item lookup
           </span>
-          <span className="text-white text-[10px] flex-shrink-0">
+          <span className="text-custom-white text-[10px] flex-shrink-0">
             {dateRangeLabel}
           </span>
           <div className="flex-1" />
           <div className="flex items-baseline gap-1 flex-shrink-0">
-            <span className="text-white text-[10px] uppercase tracking-wide">
+            <span className="text-custom-white text-[10px] uppercase tracking-wide">
               Loaded
             </span>
-            <span className="text-[13px] font-medium text-white">
+            <span className="text-[13px] font-medium text-custom-white">
               {loadedCount} / {queue.length}
             </span>
           </div>
@@ -67,12 +67,12 @@ const LookupQueuePanel = ({
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-white/[0.08]">
           <button
             onClick={onOpenSearch}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/60 hover:text-custom-white hover:border-white/40 transition-colors flex-shrink-0"
             aria-label="New search"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
-          <span className="text-[11px] font-medium text-white truncate">
+          <span className="text-[11px] font-medium text-custom-white truncate">
             {storeName}
           </span>
           <div className="flex-1" />
@@ -81,7 +81,7 @@ const LookupQueuePanel = ({
             onMouseEnter={() => setLegendHover(true)}
             onMouseLeave={() => setLegendHover(false)}
           >
-            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/50 hover:text-white hover:border-white/40 transition-colors">
+            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/50 hover:text-custom-white hover:border-white/40 transition-colors">
               <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
             </button>
             {legendHover && (
@@ -89,7 +89,7 @@ const LookupQueuePanel = ({
                 className="absolute right-0 top-full mt-1.5 z-50 bg-[#1e2a4a] border border-white/15 rounded-lg shadow-lg px-3 py-2.5 flex flex-col gap-1.5"
                 style={{ minWidth: 230 }}
               >
-                <div className="text-[11px] text-white leading-snug">
+                <div className="text-[11px] text-custom-white leading-snug">
                   Margin is calculated fresh for each item — 14-day revenue vs.
                   cost at this store — not inherited from wherever the UPC was
                   copied from.
@@ -97,7 +97,7 @@ const LookupQueuePanel = ({
                 <div className="h-px bg-custom-white/10 my-0.5" />
                 <div className="flex items-start gap-2">
                   <div className="w-[7px] h-[7px] rounded-full flex-shrink-0 mt-[3px] border border-white/40" />
-                  <span className="text-[11px] text-white leading-snug">
+                  <span className="text-[11px] text-custom-white leading-snug">
                     Still loading
                   </span>
                 </div>

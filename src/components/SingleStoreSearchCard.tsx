@@ -29,7 +29,8 @@ const SingleStoreSearchCard = ({
   children,
   notice,
 }: SingleStoreSearchCardProps) => {
-  const storeName = stores.find((s) => s.storeid === selectedStoreId)?.store_name ?? "";
+  const storeName =
+    stores.find((s) => s.storeid === selectedStoreId)?.store_name ?? "";
 
   return (
     <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3">
@@ -60,7 +61,7 @@ const SingleStoreSearchCard = ({
       <button
         onClick={onSearch}
         disabled={selectedStoreId === 0 || loading}
-        className="w-full py-2 text-sm font-semibold text-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
+        className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
       >
         {loading ? "Loading..." : buttonLabel}
       </button>

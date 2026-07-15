@@ -97,7 +97,7 @@ const DeleteComp = () => {
               <button
                 onClick={() => setIsDeleting(true)}
                 disabled={id === 0}
-                className={`w-full text-[12px] font-medium py-2 rounded-md transition-colors text-white ${
+                className={`w-full text-[12px] font-medium py-2 rounded-md transition-colors text-custom-white ${
                   id > 0
                     ? "bg-red-600 hover:bg-red-600/85"
                     : "bg-gray-300 cursor-not-allowed"
@@ -123,7 +123,7 @@ const DeleteComp = () => {
               <div className="flex gap-2">
                 <button
                   onClick={handleDeleteGroup}
-                  className="flex-1 text-[12px] font-medium py-1.5 rounded-md bg-red-600 hover:bg-red-600/85 text-white transition-colors"
+                  className="flex-1 text-[12px] font-medium py-1.5 rounded-md bg-red-600 hover:bg-red-600/85 text-custom-white transition-colors"
                 >
                   Yes, delete
                 </button>

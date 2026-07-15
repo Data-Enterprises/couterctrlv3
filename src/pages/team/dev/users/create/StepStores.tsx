@@ -96,13 +96,13 @@ const StepStores = ({ onContinue }: StepStoresProps) => {
       <div className="flex gap-2 mb-2">
         <button
           onClick={() => handleSelectAll("add")}
-          className="text-[11px] font-medium px-3 py-1.5 rounded-md bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 text-white"
+          className="text-[11px] font-medium px-3 py-1.5 rounded-md bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 text-custom-white"
         >
           Add all
         </button>
         <button
           onClick={() => handleSelectAll("remove")}
-          className="text-[11px] font-medium px-3 py-1.5 rounded-md bg-red-600 hover:bg-red-600/85 text-white"
+          className="text-[11px] font-medium px-3 py-1.5 rounded-md bg-red-600 hover:bg-red-600/85 text-custom-white"
         >
           Remove all
         </button>
@@ -146,7 +146,7 @@ const StepStores = ({ onContinue }: StepStoresProps) => {
         <button
           onClick={onContinue}
           disabled={!canContinue}
-          className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-white ${canContinue ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85" : "bg-gray-300 cursor-not-allowed"}`}
+          className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white ${canContinue ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85" : "bg-gray-300 cursor-not-allowed"}`}
         >
           Continue
         </button>

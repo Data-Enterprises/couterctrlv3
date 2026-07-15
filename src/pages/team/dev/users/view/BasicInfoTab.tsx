@@ -143,7 +143,7 @@ const BasicInfoTab = () => {
       <div className="flex justify-end">
         <button
           onClick={handleSubmit}
-          className="text-[12px] font-medium px-4 py-1.5 rounded-md bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 text-white"
+          className="text-[12px] font-medium px-4 py-1.5 rounded-md bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 text-custom-white"
         >
           Save changes
         </button>

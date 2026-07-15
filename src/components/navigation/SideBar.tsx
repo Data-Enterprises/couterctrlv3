@@ -43,7 +43,11 @@ const SideBar = () => {
   //   settings: boolean;
   //   signout: boolean;
   // }>({ settings: false, signout: false });
-  const [tooltip, setTooltip] = useState<{ label: string; x: number; y: number } | null>(null);
+  const [tooltip, setTooltip] = useState<{
+    label: string;
+    x: number;
+    y: number;
+  } | null>(null);
 
   // make api call to set the user prefs when navigating to a new page
   useEffect(() => {
@@ -58,7 +62,9 @@ const SideBar = () => {
 
   useEffect(() => {
     if (context.isMobile) {
-      const filteredNav = navigation.filter((item) => item.mobile && item.name !== "Cashiers");
+      const filteredNav = navigation.filter(
+        (item) => item.mobile && item.name !== "Cashiers",
+      );
       setNavItems(filteredNav);
       const found = filteredNav.find((item) => item.href === nav.lastRoute);
       if (!found) {
@@ -178,73 +184,76 @@ const SideBar = () => {
 
   return (
     <>
-    <div
-      ref={ref}
-      data-testid="side-bar"
-      data-open={nav.isNavOpen}
-      className={`bg-bkg absolute text-sm top-12 left-0 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] flex flex-col justify-between border-t 
+      <div
+        ref={ref}
+        data-testid="side-bar"
+        data-open={nav.isNavOpen}
+        className={`bg-bkg absolute text-sm top-12 left-0 min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] flex flex-col justify-between border-t 
         ${slidingStyle} ${context.isMobile && !nav.isNavOpen ? "pointer-events-none" : ""}`}
-      style={styleObj()}
-    >
-      {/* using this to close the nav when clicking outside if it is open. User events are disabled in the Outlet when nav is open */}
-      {nav.isNavOpen && (
-        <div
-          id="fixed-frame"
-          onClick={handleiFrameClick}
-          className="fixed inset-0 z-40 top-12 left-48 transition-all duration-300"
-          style={{ cursor: "default" }}
-        />
-      )}
+        style={styleObj()}
+      >
+        {/* using this to close the nav when clicking outside if it is open. User events are disabled in the Outlet when nav is open */}
+        {nav.isNavOpen && (
+          <div
+            id="fixed-frame"
+            onClick={handleiFrameClick}
+            className="fixed inset-0 z-40 top-12 left-48 transition-all duration-300"
+            style={{ cursor: "default" }}
+          />
+        )}
 
-      {/* NavLinks => working, but will need modifications when nav children are introduced */}
-      <div>
-        {navItems.map((item: Navigation) => (
-          <NavLink
-            data-testid={`nav-${item.href}`}
-            to={item.href}
-            key={item.name}
-            draggable={false}
-            className={() =>
-              `${
-                item.userLevels.includes(user.userLevel.toString()) ||
-                item.userLevels.includes("*")
-                  ? "flex"
-                  : "hidden"
-              } relative group`
-            }
-            style={({ isActive }) => ({
-              background: isActive ? "#1e2a4a" : undefined,
-              color: isActive ? "#fff" : undefined,
-            })}
-            onClick={() => handleNavClick(item)}
-            onMouseMove={(e) => { if (!nav.isNavOpen && !context.isMobile) setTooltip({ label: item.name, x: e.clientX, y: e.clientY }); }}
-            onMouseLeave={() => setTooltip(null)}
-          >
-            <div className="flex w-full items-center md:pl-2 py-2 gap-1 md:gap-2 transition-all duration-100 hover:bg-[rgba(30,42,74,0.5)] hover:text-white">
-              <div className="flex-shrink-0 flex items-center justify-center">
-                <item.icon className={mobileIconStyle()} />
+        {/* NavLinks => working, but will need modifications when nav children are introduced */}
+        <div>
+          {navItems.map((item: Navigation) => (
+            <NavLink
+              data-testid={`nav-${item.href}`}
+              to={item.href}
+              key={item.name}
+              draggable={false}
+              className={() =>
+                `${
+                  item.userLevels.includes(user.userLevel.toString()) ||
+                  item.userLevels.includes("*")
+                    ? "flex"
+                    : "hidden"
+                } relative group`
+              }
+              style={({ isActive }) => ({
+                background: isActive ? "#1e2a4a" : undefined,
+                color: isActive ? "#fff" : undefined,
+              })}
+              onClick={() => handleNavClick(item)}
+              onMouseMove={(e) => {
+                if (!nav.isNavOpen && !context.isMobile)
+                  setTooltip({ label: item.name, x: e.clientX, y: e.clientY });
+              }}
+              onMouseLeave={() => setTooltip(null)}
+            >
+              <div className="flex w-full items-center md:pl-2 py-2 gap-1 md:gap-2 transition-all duration-100 hover:bg-[rgba(30,42,74,0.5)] hover:text-custom-white">
+                <div className="flex-shrink-0 flex items-center justify-center">
+                  <item.icon className={mobileIconStyle()} />
+                </div>
+                <div
+                  className={`font-medium text-[11.5px] md:text-sm ${
+                    nav.isNavOpen
+                      ? "w-full opacity-100"
+                      : "w-0 opacity-0 pointer-events-none"
+                  } transition-all duration-200 text-nowrap`}
+                >
+                  {item.name}
+                </div>
               </div>
-              <div
-                className={`font-medium text-[11.5px] md:text-sm ${
-                  nav.isNavOpen
-                    ? "w-full opacity-100"
-                    : "w-0 opacity-0 pointer-events-none"
-                } transition-all duration-200 text-nowrap`}
-              >
-                {item.name}
-              </div>
-            </div>
-          </NavLink>
-        ))}
-      </div>
+            </NavLink>
+          ))}
+        </div>
 
-      {/* Settings and Sign Out */}
-      <div className="select-none cursor-pointer">
-        {/* <div
+        {/* Settings and Sign Out */}
+        <div className="select-none cursor-pointer">
+          {/* <div
           data-testid="nav-settings"
           className={`${
             context.isDesktop || context.isTablet ? "" : "hidden"
-          } group flex w-full items-center pl-2 py-2 gap-3 hover:bg-[rgba(30,42,74,0.5)] hover:text-white transition-all duration-200 relative`}
+          } group flex w-full items-center pl-2 py-2 gap-3 hover:bg-[rgba(30,42,74,0.5)] hover:text-custom-white transition-all duration-200 relative`}
           onClick={() => {
             navigate("settings");
           }}
@@ -264,9 +273,9 @@ const SideBar = () => {
             Settings
           </div>
         </div> */}
-        {/* <div
+          {/* <div
           data-testid="signout-btn"
-          className="group flex w-full items-center pl-0.5 md:pl-2 py-2 gap-1 md:gap-2 hover:bg-[rgba(30,42,74,0.5)] hover:text-white transition-all duration-200 relative"
+          className="group flex w-full items-center pl-0.5 md:pl-2 py-2 gap-1 md:gap-2 hover:bg-[rgba(30,42,74,0.5)] hover:text-custom-white transition-all duration-200 relative"
           onClick={handleSignOut}
           onMouseMove={(e) => { if (!nav.isNavOpen) setTooltip({ label: "Sign Out", x: e.clientX, y: e.clientY }); }}
           onMouseLeave={() => setTooltip(null)}
@@ -284,24 +293,24 @@ const SideBar = () => {
             Sign Out
           </div>
         </div> */}
+        </div>
       </div>
-    </div>
 
-    {/* Global cursor-following tooltip */}
-    {tooltip && (
-      <div
-        className="fixed text-nowrap text-[11px] font-medium text-white rounded-md px-2.5 py-1.5 pointer-events-none"
-        style={{
-          zIndex: 99999,
-          background: "#1e2a4a",
-          left: tooltip.x + 14,
-          top: tooltip.y + 14,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
-        }}
-      >
-        {tooltip.label}
-      </div>
-    )}
+      {/* Global cursor-following tooltip */}
+      {tooltip && (
+        <div
+          className="fixed text-nowrap text-[11px] font-medium text-custom-white rounded-md px-2.5 py-1.5 pointer-events-none"
+          style={{
+            zIndex: 99999,
+            background: "#1e2a4a",
+            left: tooltip.x + 14,
+            top: tooltip.y + 14,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
+          }}
+        >
+          {tooltip.label}
+        </div>
+      )}
     </>
   );
 };

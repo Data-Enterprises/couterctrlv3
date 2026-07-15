@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { useAppDispatch, useAppSelector, useStoreName } from "../../../../hooks";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useStoreName,
+} from "../../../../hooks";
 import SingleSelect from "../../../../components/SingleSelect";
 import { setSelectedStore } from "../../../../features/itemLookupSlice";
 
@@ -53,7 +57,9 @@ const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
       />
 
       <div>
-        <label className="text-[11px] font-medium text-content/60 ml-0.5">UPCs</label>
+        <label className="text-[11px] font-medium text-content/60 ml-0.5">
+          UPCs
+        </label>
         <textarea
           value={rawUpcs}
           onChange={(e) => setRawUpcs(e.target.value)}
@@ -70,7 +76,7 @@ const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
       <button
         onClick={handleSubmit}
         disabled={!canSearch}
-        className="w-full py-2 text-sm font-semibold text-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
+        className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
       >
         {upcs.length > 1 ? `Look up ${upcs.length} items` : "Search"}
       </button>

@@ -90,13 +90,17 @@ const StoreActivityExportModal = ({
       >
         <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
           <div>
-            <p className="text-white text-[13px] font-semibold">Export CSV</p>
-            <p className="text-white text-[10px] mt-0.5">{companyName}</p>
+            <p className="text-custom-white text-[13px] font-semibold">
+              Export CSV
+            </p>
+            <p className="text-custom-white text-[10px] mt-0.5">
+              {companyName}
+            </p>
           </div>
           <div />
           <button
             onClick={onClose}
-            className="text-white/60 hover:text-white transition-colors justify-self-end"
+            className="text-custom-white/60 hover:text-custom-white transition-colors justify-self-end"
           >
             <XMarkIcon className="w-4 h-4" />
           </button>
@@ -169,7 +173,7 @@ const StoreActivityExportModal = ({
           <button
             onClick={handleDownload}
             disabled={selected.size === 0}
-            className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+            className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
           >
             <ArrowDownTrayIcon className="w-3.5 h-3.5" />
             Download CSV

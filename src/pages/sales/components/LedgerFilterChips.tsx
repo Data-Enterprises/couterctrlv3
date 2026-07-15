@@ -1,4 +1,9 @@
-import { ExclamationTriangleIcon, ExclamationCircleIcon, CheckCircleIcon, Squares2X2Icon } from "@heroicons/react/20/solid";
+import {
+  ExclamationTriangleIcon,
+  ExclamationCircleIcon,
+  CheckCircleIcon,
+  Squares2X2Icon,
+} from "@heroicons/react/20/solid";
 import type { ReactNode } from "react";
 
 export type FilterMode = "all" | "critical" | "attention" | "above";
@@ -21,25 +26,25 @@ const chips: {
     key: "all",
     label: (total) => `All (${total})`,
     icon: <Squares2X2Icon className="w-3.5 h-3.5" />,
-    activeClass: "bg-[#3b82f6] text-white border-[#3b82f6]",
+    activeClass: "bg-[#3b82f6] text-custom-white border-[#3b82f6]",
   },
   {
     key: "critical",
     label: (_, critical) => `Critical (${critical})`,
     icon: <ExclamationTriangleIcon className="w-3.5 h-3.5" />,
-    activeClass: "bg-red-600 text-white border-red-600",
+    activeClass: "bg-red-600 text-custom-white border-red-600",
   },
   {
     key: "attention",
     label: (_, _c, attn) => `Watch (${attn})`,
     icon: <ExclamationCircleIcon className="w-3.5 h-3.5" />,
-    activeClass: "bg-amber-500 text-white border-amber-500",
+    activeClass: "bg-amber-500 text-custom-white border-amber-500",
   },
   {
     key: "above",
     label: () => "Healthy",
     icon: <CheckCircleIcon className="w-3.5 h-3.5" />,
-    activeClass: "bg-emerald-600 text-white border-emerald-600",
+    activeClass: "bg-emerald-600 text-custom-white border-emerald-600",
   },
 ];
 

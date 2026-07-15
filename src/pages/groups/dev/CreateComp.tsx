@@ -30,7 +30,9 @@ const CreateComp = () => {
   };
 
   const alreadyExists = ctx.groups.some(
-    (g) => g.group_name.toLowerCase() === ctx.createInput.trim().toLowerCase() && ctx.createInput.trim() !== "",
+    (g) =>
+      g.group_name.toLowerCase() === ctx.createInput.trim().toLowerCase() &&
+      ctx.createInput.trim() !== "",
   );
 
   const canSubmit = ctx.createInput.trim() !== "" && !alreadyExists;
@@ -38,17 +40,32 @@ const CreateComp = () => {
 
   return (
     <div className="flex flex-1 min-h-0">
-      <GroupPicker groups={ctx.groups} mode="reference" collisionName={ctx.createInput} />
+      <GroupPicker
+        groups={ctx.groups}
+        mode="reference"
+        collisionName={ctx.createInput}
+      />
 
       <div className="flex-1 flex flex-col items-center justify-center p-5 overflow-y-auto thin-scrollbar">
         <div className="w-full max-w-xs">
-          <div className="text-[13px] font-semibold text-content mb-0.5 text-center">New group</div>
-          <div className="text-[12px] text-content mb-4 text-center">Fill in the details below</div>
+          <div className="text-[13px] font-semibold text-content mb-0.5 text-center">
+            New group
+          </div>
+          <div className="text-[12px] text-content mb-4 text-center">
+            Fill in the details below
+          </div>
 
           <div className="relative">
-            <Input label="Group name" value={ctx.createInput} setValue={(v) => dispatch(setCreateInput(v))} className="py-1.5 text-[13px]" />
+            <Input
+              label="Group name"
+              value={ctx.createInput}
+              setValue={(v) => dispatch(setCreateInput(v))}
+              className="py-1.5 text-[13px]"
+            />
             {alreadyExists && (
-              <div className="text-[10px] text-red-600 mt-1">Group name already exists</div>
+              <div className="text-[10px] text-red-600 mt-1">
+                Group name already exists
+              </div>
             )}
           </div>
 
@@ -56,13 +73,19 @@ const CreateComp = () => {
             <button
               onClick={handleCreateGroup}
               disabled={!canSubmit}
-              className={`w-full text-[12px] font-medium py-2 rounded-md transition-colors text-white ${
-                canSubmit ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85" : "bg-gray-300 cursor-not-allowed"
+              className={`w-full text-[12px] font-medium py-2 rounded-md transition-colors text-custom-white ${
+                canSubmit
+                  ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85"
+                  : "bg-gray-300 cursor-not-allowed"
               }`}
             >
               Create group
             </button>
-            <button onClick={handleReset} disabled={!canClear} className="text-[12px] text-content disabled:opacity-40 transition-colors">
+            <button
+              onClick={handleReset}
+              disabled={!canClear}
+              className="text-[12px] text-content disabled:opacity-40 transition-colors"
+            >
               Reset fields
             </button>
           </div>

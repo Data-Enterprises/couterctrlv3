@@ -43,7 +43,9 @@ const FileGrid = () => {
               const display = file.split("_").slice(4).join("_");
               return { date, name: display };
             })
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            .sort(
+              (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+            );
           setTableData(data);
         }
       })
@@ -62,16 +64,30 @@ const FileGrid = () => {
     const fileDate = item.date.replace(/\//g, "_");
     const fileName = `${context.userid}_${fileDate}_${item.name}`;
 
-    getHistoryFromList(context.url, context.token, context.storeids, context.endDate, "", fileName)
+    getHistoryFromList(
+      context.url,
+      context.token,
+      context.storeids,
+      context.endDate,
+      "",
+      fileName,
+    )
       .then((resp) => {
         const j: PriceHistoryFromListResp = resp.data;
         if (j.error === 0 && j.results.length > 0) {
-          const upcItems = j.results.map((item) => ({ upc: item.upc, description: item.description }));
+          const upcItems = j.results.map((item) => ({
+            upc: item.upc,
+            description: item.description,
+          }));
           dispatch(setItems(upcItems));
           dispatch(setForecastResults(j.results));
 
-          const singlePrices = j.results.filter((item) => item.price_history.length === 1);
-          const multiPrices = j.results.filter((item) => item.price_history.length > 1);
+          const singlePrices = j.results.filter(
+            (item) => item.price_history.length === 1,
+          );
+          const multiPrices = j.results.filter(
+            (item) => item.price_history.length > 1,
+          );
 
           const rowData = [
             ...formatRowData(multiPrices),
@@ -89,10 +105,16 @@ const FileGrid = () => {
 
   return (
     <div className="bg-custom-white rounded-lg shadow-lg overflow-hidden">
-      <div ref={topRef} className="bg-blue-500 text-white text-xs font-medium px-3 py-1 rounded-t-lg">
+      <div
+        ref={topRef}
+        className="bg-blue-500 text-custom-white text-xs font-medium px-3 py-1 rounded-t-lg"
+      >
         Select UPC List
       </div>
-      <div className="overflow-y-auto thin-scrollbar" style={{ maxHeight: 250 }}>
+      <div
+        className="overflow-y-auto thin-scrollbar"
+        style={{ maxHeight: 250 }}
+      >
         {tableData.length === 0 ? (
           <div className="flex items-center justify-center h-full text-xs text-gray-400">
             No saved lists

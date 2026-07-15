@@ -212,9 +212,7 @@ const NewStoreName = () => {
                     #{s.store_number}
                   </div>
                 </div>
-                <div className="text-[13px] font-semibold">
-                  {s.store_name}
-                </div>
+                <div className="text-[13px] font-semibold">{s.store_name}</div>
               </div>
               <div className="text-[11.5px] font-medium text-content shadow-sm rounded-full px-2 bg-custom-white py-0.5">
                 {s.company_name}
@@ -242,7 +240,7 @@ const NewStoreName = () => {
         </div>
         <button
           data-testid="submit-new-store-name-btn"
-          className={`btn-themeBlue w-full py-2 text-[13px] font-medium bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/85 hover:text-white transition-all duration-200 shadow-sm rounded-xl ${canSubmit()}`}
+          className={`btn-themeBlue w-full py-2 text-[13px] font-medium bg-[rgb(30,45,80)] border-[rgb(30,45,80)] hover:bg-[rgb(30,45,80)]/85 hover:text-custom-white transition-all duration-200 shadow-sm rounded-xl ${canSubmit()}`}
           onClick={handleSubmit}
         >
           Submit

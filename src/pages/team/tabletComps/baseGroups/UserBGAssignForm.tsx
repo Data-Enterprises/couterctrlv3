@@ -265,7 +265,7 @@ const UserBGAssignForm = () => {
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button
                 data-testid="bg-assign-form-assign-btn"
-                className={`rounded-xl bg-[rgb(30,45,80)] py-2 text-[13px] font-medium text-white shadow-sm transition-all duration-200 hover:bg-[rgb(30,45,80)]/85 ${
+                className={`rounded-xl bg-[rgb(30,45,80)] py-2 text-[13px] font-medium text-custom-white shadow-sm transition-all duration-200 hover:bg-[rgb(30,45,80)]/85 ${
                   bgIdsToAssign.length === 0 && "pointer-events-none opacity-50"
                 }`}
                 onClick={handleAssignClick}
@@ -322,7 +322,7 @@ const UserBGAssignForm = () => {
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button
                 data-testid="bg-assign-form-unassign-btn"
-                className={`rounded-xl bg-[rgb(30,45,80)] py-2 text-[13px] font-medium text-white shadow-sm transition-all duration-200 hover:bg-[rgb(30,45,80)]/85 ${
+                className={`rounded-xl bg-[rgb(30,45,80)] py-2 text-[13px] font-medium text-custom-white shadow-sm transition-all duration-200 hover:bg-[rgb(30,45,80)]/85 ${
                   bgIdsToUnassign.length === 0 &&
                   "pointer-events-none opacity-50"
                 }`}

@@ -41,16 +41,16 @@ const ReceiverDetailPanel = () => {
         <div>
           {selectedReceiver ? (
             <>
-              <div className="text-[13px] font-semibold text-white">
+              <div className="text-[13px] font-semibold text-custom-white">
                 {selectedReceiver.vendor_name}
-                <span className="ml-2 text-[11px] font-normal text-white">
+                <span className="ml-2 text-[11px] font-normal text-custom-white">
                   — {selectedReceiver.cashier_name} ·{" "}
                   {formatDate(selectedReceiver.invoice_date.split("T")[0])}
                 </span>
               </div>
             </>
           ) : (
-            <div className="text-[13px] font-semibold text-white">
+            <div className="text-[13px] font-semibold text-custom-white">
               Receiver Detail
             </div>
           )}
@@ -60,34 +60,34 @@ const ReceiverDetailPanel = () => {
             <button
               onClick={() => setExportOpen(true)}
               title="Export CSV"
-              className="text-white/60 hover:text-white transition-colors flex-shrink-0"
+              className="text-custom-white/60 hover:text-custom-white transition-colors flex-shrink-0"
             >
               <ArrowDownTrayIcon className="w-4 h-4" />
             </button>
             <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
             <div className="flex items-baseline gap-1 flex-shrink-0">
-              <span className="text-[10px] uppercase tracking-wide text-white">
+              <span className="text-[10px] uppercase tracking-wide text-custom-white">
                 Invoice
               </span>
-              <span className="text-[13px] font-medium text-white">
+              <span className="text-[13px] font-medium text-custom-white">
                 {selectedReceiver!.invoiceid}
               </span>
             </div>
             <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
             <div className="flex items-baseline gap-1 flex-shrink-0">
-              <span className="text-[10px] uppercase tracking-wide text-white">
+              <span className="text-[10px] uppercase tracking-wide text-custom-white">
                 Ref #
               </span>
-              <span className="text-[13px] font-medium text-white">
+              <span className="text-[13px] font-medium text-custom-white">
                 {selectedReceiver!.reference_number}
               </span>
             </div>
             <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
             <div className="flex items-baseline gap-1 flex-shrink-0">
-              <span className="text-[10px] uppercase tracking-wide text-white">
+              <span className="text-[10px] uppercase tracking-wide text-custom-white">
                 Items
               </span>
-              <span className="text-[13px] font-medium text-white">
+              <span className="text-[13px] font-medium text-custom-white">
                 {state.details.length}
               </span>
             </div>

@@ -80,11 +80,11 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
       <div className="bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
         {/* Row 1: title + date range | summary metrics */}
         <div className="flex items-end gap-3 min-h-[26px]">
-          <span className="text-white font-medium text-[13px] flex-shrink-0">
+          <span className="text-custom-white font-medium text-[13px] flex-shrink-0">
             Sub Dept Margins
           </span>
           {dateRange && (
-            <span className="text-white/35 text-[11px] flex-shrink-0">
+            <span className="text-custom-white/35 text-[11px] flex-shrink-0">
               {dateRange}
             </span>
           )}
@@ -92,19 +92,19 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
           {hasAllWeeksData && (
             <>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-[10px] text-white/45 uppercase tracking-wide">
+                <span className="text-[10px] text-custom-white/45 uppercase tracking-wide">
                   Net
                 </span>
-                <span className="text-[13px] font-medium text-white">
+                <span className="text-[13px] font-medium text-custom-white">
                   {formatCurrency2(totalSales)}
                 </span>
               </div>
               <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
               <div className="flex items-baseline gap-1.5">
-                <span className="text-[10px] text-white/45 uppercase tracking-wide">
+                <span className="text-[10px] text-custom-white/45 uppercase tracking-wide">
                   Margin
                 </span>
-                <span className="text-[13px] font-medium text-white">
+                <span className="text-[13px] font-medium text-custom-white">
                   {totalMargin}
                 </span>
               </div>
@@ -115,7 +115,7 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
         {/* Row 2: search icon + store name | ? icon */}
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-white/[0.08]">
           <button
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/60 hover:text-custom-white hover:border-white/40 transition-colors flex-shrink-0"
             onClick={onSearchOpen}
             title="Search"
           >
@@ -123,11 +123,11 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
           </button>
 
           <div className="flex flex-col leading-tight min-w-0">
-            <span className="text-[11px] font-medium text-white/70 truncate">
+            <span className="text-[11px] font-medium text-custom-white/70 truncate">
               {storeName}
             </span>
             {subDeptName && (
-              <span className="text-[9px] text-white/40 truncate">
+              <span className="text-[9px] text-custom-white/40 truncate">
                 {subDeptName}
               </span>
             )}
@@ -140,7 +140,7 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
             onMouseEnter={() => setLegendHover(true)}
             onMouseLeave={() => setLegendHover(false)}
           >
-            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/50 hover:text-white hover:border-white/40 transition-colors">
+            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/50 hover:text-custom-white hover:border-white/40 transition-colors">
               <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
             </button>
             {legendHover && (
@@ -148,7 +148,7 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
                 className="absolute right-0 top-full mt-1.5 z-50 bg-[#1e2a4a] border border-white/15 rounded-lg shadow-lg px-3 py-2.5 flex flex-col gap-1.5"
                 style={{ minWidth: 220 }}
               >
-                <div className="text-[9px] font-semibold uppercase tracking-wide text-white/35">
+                <div className="text-[9px] font-semibold uppercase tracking-wide text-custom-white/35">
                   Metrics
                 </div>
                 {[
@@ -159,12 +159,14 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
                   { label: "Unique Items", desc: "Distinct UPCs in period" },
                 ].map(({ label, desc }) => (
                   <div key={label} className="flex items-start gap-2">
-                    <span className="text-white/30 text-[10px] mt-px">·</span>
+                    <span className="text-custom-white/30 text-[10px] mt-px">
+                      ·
+                    </span>
                     <div>
-                      <span className="text-[10px] text-white font-medium">
+                      <span className="text-[10px] text-custom-white font-medium">
                         {label}
                       </span>
-                      <span className="text-[10px] text-white/55">
+                      <span className="text-[10px] text-custom-white/55">
                         {" "}
                         — {desc}
                       </span>

@@ -45,17 +45,23 @@ const TitleBarLegacy = () => {
               className="flex items-center gap-0 rounded-full overflow-hidden border border-content/20 text-[10px] font-bold select-none"
               title={context.devMode ? "Switch to LIVE" : "Switch to PREVIEW"}
             >
-              <span className={`px-2.5 py-1 transition-colors ${!context.devMode ? "bg-[#1e2a4a] text-white" : "text-content/40"}`}>
+              <span
+                className={`px-2.5 py-1 transition-colors ${!context.devMode ? "bg-[#1e2a4a] text-custom-white" : "text-content/40"}`}
+              >
                 LIVE
               </span>
-              <span className={`px-2.5 py-1 transition-colors ${context.devMode ? "bg-emerald-500 text-white" : "text-content/40"}`}>
+              <span
+                className={`px-2.5 py-1 transition-colors ${context.devMode ? "bg-emerald-500 text-custom-white" : "text-content/40"}`}
+              >
                 PREVIEW
               </span>
             </button>
           )}
           {context.isDesktop && (
             <div className="flex items-center px-6 ml-4 border-l-2 relative">
-              <div className="text-[12px] md:text-sm font-medium">{user.username}</div>
+              <div className="text-[12px] md:text-sm font-medium">
+                {user.username}
+              </div>
               <ChevronDownIcon
                 id="dev-chevron"
                 className={`h-4 w-4 m-2 cursor-pointer hover:text-accent1 transition-colors`}

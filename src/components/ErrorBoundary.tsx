@@ -27,13 +27,13 @@ class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="text-white w-screen h-screen flex flex-col p-8 justify-center items-center">
+        <div className="text-custom-white w-screen h-screen flex flex-col p-8 justify-center items-center">
           <img
             className="absolute inset-0 -z-10 size-full object-cover object-top"
             src={error}
             alt="error"
           />
-          <h1 className="font-medium text-2xl text-white">
+          <h1 className="font-medium text-2xl text-custom-white">
             Something went wrong.
           </h1>
           <h2>Error</h2>

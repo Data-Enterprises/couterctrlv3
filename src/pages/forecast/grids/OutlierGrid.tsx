@@ -121,7 +121,7 @@ const OutlierGrid = () => {
             <div className="truncate flex items-center gap-1">
               <span className="truncate">{getValue()}</span>
               {row.original.adListData && (
-                <span className="shrink-0 text-[9px] bg-blue-500 text-white rounded px-0.5 font-medium">
+                <span className="shrink-0 text-[9px] bg-blue-500 text-custom-white rounded px-0.5 font-medium">
                   AD
                 </span>
               )}
@@ -193,7 +193,9 @@ const OutlierGrid = () => {
       columnHelper.accessor("markdownDollars", {
         header: "Markdown $",
         cell: ({ getValue }) => (
-          <div className="text-right">{formatCurrency2(Math.max(0, getValue()))}</div>
+          <div className="text-right">
+            {formatCurrency2(Math.max(0, getValue()))}
+          </div>
         ),
       }),
     ],
@@ -236,7 +238,7 @@ const OutlierGrid = () => {
         {/* Badge legend */}
         <div className="flex items-center gap-2 shrink-0 cursor-default select-none">
           <span className="flex items-center gap-1 text-[10px] text-gray-500">
-            <span className="text-[9px] bg-blue-500 text-white rounded px-0.5 font-medium">
+            <span className="text-[9px] bg-blue-500 text-custom-white rounded px-0.5 font-medium">
               AD
             </span>
             AD list item
@@ -381,7 +383,10 @@ const OutlierGrid = () => {
             ))}
           </colgroup>
           <thead className="sticky top-0 z-10">
-            <tr className="bg-blue-500 text-white" style={{ height: "22px" }}>
+            <tr
+              className="bg-blue-500 text-custom-white"
+              style={{ height: "22px" }}
+            >
               {table.getHeaderGroups()[0].headers.map((header) => (
                 <th
                   key={header.id}

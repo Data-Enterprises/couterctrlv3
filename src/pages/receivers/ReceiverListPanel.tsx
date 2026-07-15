@@ -117,19 +117,19 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
       >
         {/* Row 1: title + date | record count */}
         <div className="flex items-end gap-3 min-h-[24px]">
-          <span className="text-[13px] font-semibold text-white flex-shrink-0">
+          <span className="text-[13px] font-semibold text-custom-white flex-shrink-0">
             Receivers
           </span>
-          <span className="text-white text-[10px] flex-shrink-0">
+          <span className="text-custom-white text-[10px] flex-shrink-0">
             {dateLabel}
           </span>
           <div className="flex-1" />
           {state.listGridData.length > 0 && (
             <div className="flex items-baseline gap-1 flex-shrink-0">
-              <span className="text-white text-[10px] uppercase tracking-wide">
+              <span className="text-custom-white text-[10px] uppercase tracking-wide">
                 Records
               </span>
-              <span className="text-[13px] font-medium text-white">
+              <span className="text-[13px] font-medium text-custom-white">
                 {state.listGridData.length}
               </span>
             </div>
@@ -139,13 +139,13 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-white/[0.08]">
           <button
             onClick={onOpenSearch}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/60 hover:text-custom-white hover:border-white/40 transition-colors flex-shrink-0"
             aria-label="New search"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
           {state.storeid && (
-            <span className="text-[11px] font-medium text-white truncate">
+            <span className="text-[11px] font-medium text-custom-white truncate">
               {storeName}
             </span>
           )}
@@ -155,7 +155,7 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
             onMouseEnter={() => setLegendHover(true)}
             onMouseLeave={() => setLegendHover(false)}
           >
-            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/50 hover:text-white hover:border-white/40 transition-colors">
+            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/50 hover:text-custom-white hover:border-white/40 transition-colors">
               <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
             </button>
             {legendHover && (
@@ -185,9 +185,11 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
                       className="w-[7px] h-[7px] rounded-full flex-shrink-0 mt-[3px]"
                       style={{ background: color }}
                     />
-                    <span className="text-[11px] text-white leading-snug">
-                      <span className="text-white font-medium">{label}</span> —{" "}
-                      {desc}
+                    <span className="text-[11px] text-custom-white leading-snug">
+                      <span className="text-custom-white font-medium">
+                        {label}
+                      </span>{" "}
+                      — {desc}
                     </span>
                   </div>
                 ))}

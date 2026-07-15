@@ -81,9 +81,9 @@ const ForecastSetupWizard = (props: WizardProps) => {
         <div
           className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all ${
             active
-              ? "bg-blue-500 border-blue-500 text-white"
+              ? "bg-blue-500 border-blue-500 text-custom-white"
               : done
-                ? "bg-green-500 border-green-500 text-white"
+                ? "bg-green-500 border-green-500 text-custom-white"
                 : "bg-custom-white border-gray-300 text-gray-400"
           }`}
         >

@@ -107,7 +107,7 @@ const ScenarioTable = ({
       <div className="overflow-y-auto flex-1 min-h-0">
         <table className="w-full text-xs border-collapse">
           <thead>
-            <tr className="bg-blue-500 text-white sticky top-0">
+            <tr className="bg-blue-500 text-custom-white sticky top-0">
               <th className="text-left px-1.5 py-1 font-medium">Price</th>
               <th className="text-right px-1.5 py-1 font-medium">Hist Qty</th>
               <th className="text-right px-1.5 py-1 font-medium">
@@ -157,8 +157,8 @@ const ScenarioTable = ({
                     <button
                       className={`text-[11px] px-2 py-0.5 rounded ${
                         isActive
-                          ? "bg-green-500 text-white"
-                          : "bg-blue-500 text-white hover:bg-blue-600"
+                          ? "bg-green-500 text-custom-white"
+                          : "bg-blue-500 text-custom-white hover:bg-blue-600"
                       }`}
                       onClick={() => onApply(row.price)}
                     >

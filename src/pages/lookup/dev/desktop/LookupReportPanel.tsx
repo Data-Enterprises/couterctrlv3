@@ -1,4 +1,8 @@
-import { ArrowDownTrayIcon, ArrowTrendingDownIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid";
+import {
+  ArrowDownTrayIcon,
+  ArrowTrendingDownIcon,
+  ExclamationTriangleIcon,
+} from "@heroicons/react/20/solid";
 import { formatCurrency2 } from "../../../../utils";
 import type { MarginResult, DayBucket, TrendResult } from "../lookupMetrics";
 import { computeActiveGap } from "../lookupMetrics";
@@ -41,16 +45,16 @@ const LookupReportPanel = ({
         {/* 1-row navy header */}
         <div className="flex-shrink-0 px-4 py-[10px] flex items-center justify-between gap-3 bg-[#1e2a4a]">
           <div className="min-w-0">
-            <div className="text-[13px] font-semibold text-white leading-tight truncate">
+            <div className="text-[13px] font-semibold text-custom-white leading-tight truncate">
               {description}
             </div>
-            <div className="text-[10px] mt-0.5 text-white truncate">
+            <div className="text-[10px] mt-0.5 text-custom-white truncate">
               {productCode} · {categoryDescription}
             </div>
           </div>
           <button
             onClick={onExportOpen}
-            className="text-white/60 hover:text-white transition-colors flex-shrink-0"
+            className="text-custom-white/60 hover:text-custom-white transition-colors flex-shrink-0"
             title="Export"
           >
             <ArrowDownTrayIcon className="h-4 w-4" />
@@ -60,19 +64,29 @@ const LookupReportPanel = ({
         {/* 7-col KPI strip — margin first */}
         <div className="grid grid-cols-7 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
           <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">Margin</div>
-            <div className={`text-[14px] font-bold tabular-nums mt-0.5 ${isNegative ? "text-red-800" : "text-emerald-800"}`}>
-              {margin.marginPct !== null ? `${margin.marginPct.toFixed(1)}%` : "-"}
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+              Margin
+            </div>
+            <div
+              className={`text-[14px] font-bold tabular-nums mt-0.5 ${isNegative ? "text-red-800" : "text-emerald-800"}`}
+            >
+              {margin.marginPct !== null
+                ? `${margin.marginPct.toFixed(1)}%`
+                : "-"}
             </div>
           </div>
           <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">List price</div>
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+              List price
+            </div>
             <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
               {formatCurrency2(margin.listPrice)}
             </div>
           </div>
           <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">Avg sold at</div>
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+              Avg sold at
+            </div>
             <div
               className={`text-[14px] font-bold tabular-nums mt-0.5 ${isNegative ? "text-red-800" : "text-content"}`}
             >
@@ -80,27 +94,43 @@ const LookupReportPanel = ({
             </div>
           </div>
           <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">Case cost</div>
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+              Case cost
+            </div>
             <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
               {formatCurrency2(margin.caseCost)}
             </div>
           </div>
           <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">Total units</div>
-            <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">{totalQty}</div>
-          </div>
-          <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">Days sold</div>
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+              Total units
+            </div>
             <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
-              {daysSold} <span className="text-[11px] font-medium text-gray-400">of 14</span>
+              {totalQty}
             </div>
           </div>
           <div className="px-4 pt-2.5 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">Longest gap</div>
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+              Days sold
+            </div>
+            <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
+              {daysSold}{" "}
+              <span className="text-[11px] font-medium text-gray-400">
+                of 14
+              </span>
+            </div>
+          </div>
+          <div className="px-4 pt-2.5 text-center">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+              Longest gap
+            </div>
             <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
               {longestGap > 0 ? (
                 <>
-                  {longestGap} <span className="text-[11px] font-medium text-gray-400">days</span>
+                  {longestGap}{" "}
+                  <span className="text-[11px] font-medium text-gray-400">
+                    days
+                  </span>
                 </>
               ) : (
                 <span className="text-gray-400">None</span>
@@ -116,7 +146,8 @@ const LookupReportPanel = ({
               <div className="flex-1 flex items-center gap-1.5 px-2.5 py-2 bg-amber-50 rounded-lg min-w-0">
                 <ArrowTrendingDownIcon className="w-4 h-4 text-amber-800 flex-shrink-0" />
                 <span className="text-[11.5px] text-amber-900 truncate">
-                  Slowing down - {trend.firstHalfQty} units first week, {trend.secondHalfQty} units this week
+                  Slowing down - {trend.firstHalfQty} units first week,{" "}
+                  {trend.secondHalfQty} units this week
                 </span>
               </div>
             )}
@@ -133,7 +164,9 @@ const LookupReportPanel = ({
 
         {/* Consolidated daily breakdown */}
         <div className="px-4 pt-4 pb-2 flex-shrink-0">
-          <div className="text-[11px] font-semibold text-content">Daily breakdown</div>
+          <div className="text-[11px] font-semibold text-content">
+            Daily breakdown
+          </div>
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-4 pb-4">
           <div className="grid grid-cols-7 px-2 py-1.5 text-[9px] font-medium uppercase tracking-wide text-content border-b border-gray-100 sticky top-0 bg-custom-white">
@@ -154,25 +187,41 @@ const LookupReportPanel = ({
                 key={b.date}
                 className={`grid grid-cols-7 px-2 py-2 text-[12px] border-b border-gray-50 ${b.hasSale ? "" : "bg-gray-50/60"}`}
               >
-                <span className={b.hasSale ? "text-content" : "text-gray-400"}>{b.label}</span>
-                <span className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}>
+                <span className={b.hasSale ? "text-content" : "text-gray-400"}>
+                  {b.label}
+                </span>
+                <span
+                  className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}
+                >
                   {b.hasSale ? b.qty : "—"}
                 </span>
-                <span className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}>
+                <span
+                  className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}
+                >
                   {b.hasSale ? formatCurrency2(b.revenue) : "—"}
                 </span>
-                <span className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}>
+                <span
+                  className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}
+                >
                   {b.hasSale ? formatCurrency2(b.cost) : "—"}
                 </span>
-                <span className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}>
+                <span
+                  className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}
+                >
                   {caseCost !== null ? formatCurrency2(caseCost) : "—"}
                 </span>
-                <span className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}>
+                <span
+                  className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}
+                >
                   {b.hasSale ? formatCurrency2(b.listPrice) : "—"}
                 </span>
                 <span
                   className={`text-right tabular-nums font-medium ${
-                    !b.hasSale ? "text-gray-400" : isNeg ? "text-red-700" : "text-emerald-700"
+                    !b.hasSale
+                      ? "text-gray-400"
+                      : isNeg
+                        ? "text-red-700"
+                        : "text-emerald-700"
                   }`}
                 >
                   {pct !== null ? `${pct.toFixed(1)}%` : "—"}

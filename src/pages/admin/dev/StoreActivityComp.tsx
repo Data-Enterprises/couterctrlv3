@@ -24,7 +24,10 @@ interface StoreActivityCompProps {
   setExportOpen: (v: boolean) => void;
 }
 
-const StoreActivityComp = ({ exportOpen, setExportOpen }: StoreActivityCompProps) => {
+const StoreActivityComp = ({
+  exportOpen,
+  setExportOpen,
+}: StoreActivityCompProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAdminPageCtx();
@@ -65,7 +68,9 @@ const StoreActivityComp = ({ exportOpen, setExportOpen }: StoreActivityCompProps
   };
 
   const handleMissingClick = () => {
-    const missing = context.companyStoresActivity.filter((s) => s.inactive_or_missing_days > 0);
+    const missing = context.companyStoresActivity.filter(
+      (s) => s.inactive_or_missing_days > 0,
+    );
     dispatch(setFilteredCompanyStoresActivity(missing));
   };
 
@@ -92,14 +97,24 @@ const StoreActivityComp = ({ exportOpen, setExportOpen }: StoreActivityCompProps
       )}
 
       <div className="flex flex-col flex-shrink-0">
-        <CompanyPicker companies={context.companies} mode="select" selectedId={context.companyForm.id} onSelect={handleCompanySelect} />
-        <div className="border-r border-gray-100 p-3 flex-shrink-0" style={{ width: "220px" }}>
+        <CompanyPicker
+          companies={context.companies}
+          mode="select"
+          selectedId={context.companyForm.id}
+          onSelect={handleCompanySelect}
+        />
+        <div
+          className="border-r border-gray-100 p-3 flex-shrink-0"
+          style={{ width: "220px" }}
+        >
           <DatePickers showBtn={false} stacked />
           <button
             onClick={fetchStoreActivity}
             disabled={context.companyForm.id === 0}
-            className={`mt-2 w-full text-[12px] font-medium py-1.5 rounded-md transition-colors text-white ${
-              context.companyForm.id > 0 ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85" : "bg-gray-300 cursor-not-allowed"
+            className={`mt-2 w-full text-[12px] font-medium py-1.5 rounded-md transition-colors text-custom-white ${
+              context.companyForm.id > 0
+                ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85"
+                : "bg-gray-300 cursor-not-allowed"
             }`}
           >
             Search
@@ -116,7 +131,9 @@ const StoreActivityComp = ({ exportOpen, setExportOpen }: StoreActivityCompProps
             />
           </div>
         ) : context.isLoadingStoreActivity ? (
-          <div className="min-h-[260px] relative"><LoadingIndicator message="Loading store activity" /></div>
+          <div className="min-h-[260px] relative">
+            <LoadingIndicator message="Loading store activity" />
+          </div>
         ) : (
           <>
             <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100 flex-shrink-0">
@@ -131,7 +148,10 @@ const StoreActivityComp = ({ exportOpen, setExportOpen }: StoreActivityCompProps
               >
                 View all missing
               </button>
-              <button onClick={handleAllClick} className="text-[10px] font-medium text-content px-2.5 py-1.5 flex-shrink-0">
+              <button
+                onClick={handleAllClick}
+                className="text-[10px] font-medium text-content px-2.5 py-1.5 flex-shrink-0"
+              >
                 View all
               </button>
             </div>
@@ -153,7 +173,9 @@ const StoreActivityComp = ({ exportOpen, setExportOpen }: StoreActivityCompProps
                   <div className="truncate">{s.store_name}</div>
                   <div className="text-right">{s.total_days_in_range}</div>
                   <div className="text-right">{s.active_days}</div>
-                  <div className={`text-right ${s.inactive_or_missing_days > 0 ? "text-red-600 font-medium" : "text-content"}`}>
+                  <div
+                    className={`text-right ${s.inactive_or_missing_days > 0 ? "text-red-600 font-medium" : "text-content"}`}
+                  >
                     {s.inactive_or_missing_days}
                   </div>
                 </div>

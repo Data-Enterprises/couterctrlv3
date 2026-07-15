@@ -181,7 +181,7 @@ const StepAccess = ({ onContinue }: StepAccessProps) => {
         <button
           onClick={onContinue}
           disabled={!canContinue}
-          className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-white ${canContinue ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85" : "bg-gray-300 cursor-not-allowed"}`}
+          className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white ${canContinue ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85" : "bg-gray-300 cursor-not-allowed"}`}
         >
           Continue
         </button>

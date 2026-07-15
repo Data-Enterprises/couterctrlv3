@@ -129,19 +129,19 @@ body {
 
 @layer components {
   .btn-themeBlue {
-    @apply text-white font-semibold py-2 px-8 rounded-lg bg-[#3b82f6] 
+    @apply text-custom-white font-semibold py-2 px-8 rounded-lg bg-[#3b82f6] 
     hover:bg-blue-200 border-2 border-[#3b82f6] hover:text-themeText 
     transition-all duration-300 hover:shadow-md cursor-pointer select-none;
   }
 
   .btn-themeOrange {
-    @apply text-white font-semibold py-2 px-8 rounded-lg bg-[#f97316] 
+    @apply text-custom-white font-semibold py-2 px-8 rounded-lg bg-[#f97316] 
     hover:bg-orange-200 border-2 border-[#f97316] hover:text-themeText 
     transition-all duration-300 hover:shadow-md cursor-pointer select-none;
   }
 
   .btn-themeGreen {
-    @apply text-white font-semibold py-2 px-8 rounded-lg bg-[#10b981] 
+    @apply text-custom-white font-semibold py-2 px-8 rounded-lg bg-[#10b981] 
     hover:bg-green-200 border-2 border-[#10b981] hover:text-themeText 
     transition-all duration-300 hover:shadow-md cursor-pointer select-none;
   }
@@ -151,7 +151,7 @@ body {
     font-medium transition-all duration-500 cursor-pointer
     border-2 select-none flex justify-center items-center
     hover:bg-panel_active
-    hover:text-white
+    hover:text-custom-white
     active:scale-95;
   }
 
@@ -175,18 +175,18 @@ body {
   }
   .btn-green {
     @apply btn-base border-button-green text-content
-    hover:bg-button-green/50 hover:text-white
+    hover:bg-button-green/50 hover:text-custom-white
     active:bg-button-green/25;
   }
 
   .btn-blue {
     @apply btn-base border-button-blue text-content
-    hover:bg-button-blue/50 hover:text-white
+    hover:bg-button-blue/50 hover:text-custom-white
     active:bg-button-blue/25;
   }
 
   .btn-cancel {
-    @apply bg-button-orange text-white font-medium text-center
+    @apply bg-button-orange text-custom-white font-medium text-center
     rounded-lg shadow-lg
     px-10 py-2 
     hover:bg-button-orange/50 hover:text-content 
@@ -197,12 +197,12 @@ body {
 
   .btn-delete {
     @apply btn-base border-button-red text-content
-    hover:bg-button-red/50 hover:text-white hover:shadow-xl
+    hover:bg-button-red/50 hover:text-custom-white hover:shadow-xl
     active:bg-button-red/25;
   }
 
   .btn-info {
-    @apply bg-button-liteblue text-white font-medium text-center
+    @apply bg-button-liteblue text-custom-white font-medium text-center
     rounded-lg shadow-lg
     px-10 py-2 
     hover:bg-button-liteblue/50 hover:text-content 
@@ -212,7 +212,7 @@ body {
   }
 
   .btn-lime {
-    @apply bg-button-lime text-white font-medium text-center
+    @apply bg-button-lime text-custom-white font-medium text-center
     rounded-lg shadow-lg
     px-10 py-2 
     hover:bg-button-lime/50 hover:text-content 
@@ -223,7 +223,7 @@ body {
 
   .btn-purple {
     @apply btn-base border-button-purple text-content
-    hover:bg-button-purple/50 hover:text-white
+    hover:bg-button-purple/50 hover:text-custom-white
     active:bg-button-purple/25;
   }
 
@@ -310,14 +310,14 @@ body {
 }
 
 .toast-error {
-  @apply bg-red-500 text-white;
+  @apply bg-red-500 text-custom-white;
 }
 .toast-success {
-  @apply bg-green-500 text-white;
+  @apply bg-green-500 text-custom-white;
 }
 .toast-info {
-  @apply bg-blue-400 text-white;
+  @apply bg-blue-400 text-custom-white;
 }
 .toast-warning {
-  @apply bg-orange-500 text-white;
+  @apply bg-orange-500 text-custom-white;
 }

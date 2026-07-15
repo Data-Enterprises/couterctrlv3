@@ -223,7 +223,7 @@ const SmDevRightPanel = () => {
         {/* ── Navy header ── */}
         <div className="flex-shrink-0 px-4 py-[11px] flex items-start justify-between bg-[#1e2a4a]">
           <div>
-            <div className="text-[13px] font-semibold text-white">
+            <div className="text-[13px] font-semibold text-custom-white">
               {weekHeader()}
               {subDeptName && (
                 <span
@@ -246,7 +246,7 @@ const SmDevRightPanel = () => {
             </div>
           </div>
           <button
-            className="text-white/60 hover:text-white transition-colors mt-0.5"
+            className="text-custom-white/60 hover:text-custom-white transition-colors mt-0.5"
             onClick={openExport}
             title="Export"
           >

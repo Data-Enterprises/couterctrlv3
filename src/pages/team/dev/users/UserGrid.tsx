@@ -181,7 +181,7 @@ const UserGrid = ({ mode }: UserGridProps) => {
                   ) : (
                     <button
                       onClick={() => handleActionClick(u)}
-                      className={`text-[11px] font-medium px-3 py-1 rounded-md text-white ${mode === "info" ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85" : "bg-red-600 hover:bg-red-600/85"}`}
+                      className={`text-[11px] font-medium px-3 py-1 rounded-md text-custom-white ${mode === "info" ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85" : "bg-red-600 hover:bg-red-600/85"}`}
                     >
                       {mode === "info" ? "View info" : "Delete"}
                     </button>
@@ -206,7 +206,7 @@ const UserGrid = ({ mode }: UserGridProps) => {
           <div className="flex gap-2">
             <button
               onClick={handleDeleteConfirm}
-              className="text-[12px] font-medium px-3.5 py-1.5 rounded-md bg-red-600 hover:bg-red-600/85 text-white transition-colors"
+              className="text-[12px] font-medium px-3.5 py-1.5 rounded-md bg-red-600 hover:bg-red-600/85 text-custom-white transition-colors"
             >
               Yes, delete
             </button>

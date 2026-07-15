@@ -308,7 +308,7 @@ const CalcModal = () => {
 
               {selectedRow.adListData && (
                 <div className="mt-2 border-2 border-blue-300 rounded-lg bg-blue-50 text-[12px]">
-                  <div className="bg-blue-500 text-white rounded-t-md px-2 py-0.5 font-medium text-[12px]">
+                  <div className="bg-blue-500 text-custom-white rounded-t-md px-2 py-0.5 font-medium text-[12px]">
                     AD List Info
                   </div>
                   <div className="p-2 flex flex-col gap-1.5">

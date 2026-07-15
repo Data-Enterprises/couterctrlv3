@@ -11,7 +11,10 @@ import { deleteCompany } from "../../../api/company";
 import type { JsonError } from "../../../interfaces";
 import CompanyPicker from "./CompanyPicker";
 
-const fields: { label: string; key: "address" | "city" | "state" | "zip" | "phone" | "contact_email" }[] = [
+const fields: {
+  label: string;
+  key: "address" | "city" | "state" | "zip" | "phone" | "contact_email";
+}[] = [
   { label: "Address", key: "address" },
   { label: "City", key: "city" },
   { label: "State", key: "state" },
@@ -57,13 +60,22 @@ const DeleteComp = () => {
 
   return (
     <div className="flex flex-1 min-h-0">
-      <CompanyPicker companies={context.companies} mode="select" selectedId={id} onSelect={handleSelect} />
+      <CompanyPicker
+        companies={context.companies}
+        mode="select"
+        selectedId={id}
+        onSelect={handleSelect}
+      />
 
       <div className="flex-1 p-5 overflow-y-auto thin-scrollbar">
         {id > 0 ? (
           <>
-            <div className="text-[13px] font-semibold text-content mb-0.5">{name}</div>
-            <div className="text-[12px] text-content mb-4">Select a company to delete</div>
+            <div className="text-[13px] font-semibold text-content mb-0.5">
+              {name}
+            </div>
+            <div className="text-[12px] text-content mb-4">
+              Select a company to delete
+            </div>
 
             <div className="grid grid-cols-2 gap-3 max-w-xl">
               {fields.map(({ label, key }) => (
@@ -80,7 +92,7 @@ const DeleteComp = () => {
               <div className="flex justify-end mt-5">
                 <button
                   onClick={() => dispatch(setDeleteCompanyModalOpen(true))}
-                  className="text-[12px] font-medium px-4 py-1.5 rounded-md bg-red-600 hover:bg-red-600/85 text-white transition-colors"
+                  className="text-[12px] font-medium px-4 py-1.5 rounded-md bg-red-600 hover:bg-red-600/85 text-custom-white transition-colors"
                 >
                   Delete
                 </button>
@@ -95,7 +107,7 @@ const DeleteComp = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={handleDeleteComp}
-                    className="text-[12px] font-medium px-3.5 py-1.5 rounded-md bg-red-600 hover:bg-red-600/85 text-white transition-colors"
+                    className="text-[12px] font-medium px-3.5 py-1.5 rounded-md bg-red-600 hover:bg-red-600/85 text-custom-white transition-colors"
                   >
                     Yes, delete
                   </button>
@@ -111,8 +123,12 @@ const DeleteComp = () => {
           </>
         ) : (
           <>
-            <div className="text-[13px] font-semibold text-content mb-0.5">Select a company</div>
-            <div className="text-[12px] text-content">Pick a company from the list to delete</div>
+            <div className="text-[13px] font-semibold text-content mb-0.5">
+              Select a company
+            </div>
+            <div className="text-[12px] text-content">
+              Pick a company from the list to delete
+            </div>
           </>
         )}
       </div>
