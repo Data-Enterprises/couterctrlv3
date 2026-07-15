@@ -37,13 +37,13 @@ const RcvVendorList = ({ list, storeName, dateRangeLabel, onSelect, onSearch }: 
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="text-[13px] font-semibold text-custom-white truncate">{storeName}</div>
-            <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+            <div className="text-[10px] mt-0.5 text-custom-white/85">
               {dateRangeLabel}
             </div>
           </div>
           <button
             onClick={onSearch}
-            className="w-[28px] h-[28px] flex items-center justify-center rounded border border-white/20 text-custom-white/85 flex-shrink-0"
+            className="w-[28px] h-[28px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 flex-shrink-0"
           >
             <MagnifyingGlassIcon className="w-4 h-4" />
           </button>
@@ -58,7 +58,7 @@ const RcvVendorList = ({ list, storeName, dateRangeLabel, onSelect, onSearch }: 
           { label: "Operators", value: String(uniqueOperators) },
         ].map(({ label, value }) => (
           <div key={label} className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0">
-            <div className="text-[7px] font-semibold uppercase tracking-wide text-content-70">{label}</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">{label}</div>
             <div className="text-[12px] font-bold text-content mt-0.5 tabular-nums">{value}</div>
           </div>
         ))}
@@ -73,11 +73,11 @@ const RcvVendorList = ({ list, storeName, dateRangeLabel, onSelect, onSearch }: 
           >
             <div className="flex-1 min-w-0">
               <div className="text-[12px] font-medium text-content truncate">{name}</div>
-              <div className="text-[9px] text-content-70 mt-0.5">
+              <div className="text-[10px] text-content/85 mt-0.5">
                 {vendorid} · {receiverCount} recv
               </div>
             </div>
-            <div className="text-[10px] text-content-70 flex-shrink-0 tabular-nums">{items} items</div>
+            <div className="text-[10px] text-content/85 flex-shrink-0 tabular-nums">{items} items</div>
             <svg
               className="w-4 h-4 text-content/85 flex-shrink-0"
               viewBox="0 0 24 24"

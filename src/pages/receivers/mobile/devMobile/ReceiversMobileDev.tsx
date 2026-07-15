@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { ArrowLeftIcon } from "@heroicons/react/20/solid";
+import { useAppDispatch, useAppSelector, useStoreName } from "../../../../hooks";
 import { useReceiversState } from "../../hooks/useReceiversState";
 import { useReceiversActions } from "../../hooks/useReceiversActions";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
@@ -42,10 +43,7 @@ const ReceiversMobileDev = () => {
     return `${fmtSearchDate(startDate)} – ${fmtSearchDate(endDate)}, ${endDate.split("/")[2]}`;
   }, [startDate, endDate]);
 
-  const storeName = useMemo(
-    () => assignedStores.find((s) => s.storeid === rcv.storeid)?.store_name ?? "",
-    [assignedStores, rcv.storeid],
-  );
+  const storeName = useStoreName(rcv.storeid, "");
 
   const handleSearch = () => {
     if (!rcv.storeid) {
@@ -71,10 +69,18 @@ const ReceiversMobileDev = () => {
       .finally(() => dispatch(actions.setIsFetchingList(false)));
   };
 
-  const handleReset = () => {
-    dispatch(actions.reQuery());
+  // Re-open the search card without clearing already-loaded data — the
+  // "already loaded" shortcut button lets the user jump straight back
+  // instead of forcing a re-fetch if this was tapped by accident.
+  const handleOpenSearch = () => {
     setScreen("entry");
+  };
+
+  const hasData = rcv.list.length > 0;
+
+  const handleBackToResults = () => {
     setSelectedVendorId(null);
+    setScreen("vendors");
   };
 
   const vendorReceivers = useMemo(
@@ -97,7 +103,7 @@ const ReceiversMobileDev = () => {
           setSelectedVendorId(vendorId);
           setScreen("receivers");
         }}
-        onSearch={handleReset}
+        onSearch={handleOpenSearch}
       />
     );
   }
@@ -114,7 +120,7 @@ const ReceiversMobileDev = () => {
           setSelectedVendorId(null);
           setScreen("vendors");
         }}
-        onSearch={handleReset}
+        onSearch={handleOpenSearch}
       />
     );
   }
@@ -137,7 +143,20 @@ const ReceiversMobileDev = () => {
               ? "No receivers came back for this search."
               : undefined
           }
-        />
+        >
+          {hasData && (
+            <button
+              onClick={handleBackToResults}
+              className="w-full py-2.5 flex items-center justify-center gap-1.5 transition-colors"
+              style={{ background: "rgba(30,42,74,0.07)", borderRadius: 10 }}
+            >
+              <ArrowLeftIcon className="w-4 h-4 text-[#1e2a4a]" />
+              <span className="text-[#1e2a4a] font-semibold text-[13px] underline underline-offset-2">
+                Back to results
+              </span>
+            </button>
+          )}
+        </SingleStoreSearchCard>
       </div>
     </div>
   );
