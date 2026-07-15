@@ -1,8 +1,9 @@
-import { useMemo } from "react";
-import { MagnifyingGlassIcon, ChevronLeftIcon } from "@heroicons/react/20/solid";
+import { useMemo, useState } from "react";
+import { MagnifyingGlassIcon, ChevronLeftIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import { formatCurrency2 } from "../../../../utils";
 import type { CouponItem } from "../../../../interfaces";
 import type { GroupTab } from "./CouponsMobileDev";
+import CpnExportSheet from "./CpnExportSheet";
 
 interface Props {
   coupons: CouponItem[];
@@ -37,6 +38,8 @@ const CpnOverview = ({
   onBack,
   onSearch,
 }: Props) => {
+  const [exportOpen, setExportOpen] = useState(false);
+
   const totalAmount = coupons.reduce((s, c) => s + c.coupon_amount, 0);
   const avgPerCoupon = coupons.length > 0 ? totalAmount / coupons.length : 0;
   const uniqueProducts = new Set(coupons.map((c) => c.product_code)).size;
@@ -95,42 +98,48 @@ const CpnOverview = ({
             </button>
             <div className="min-w-0">
               <div className="text-[13px] font-semibold text-custom-white truncate">{storeName}</div>
-              <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+              <div className="text-[10px] mt-0.5 text-custom-white/85">
                 {dateRangeLabel}
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <div className="flex border border-white/20 rounded overflow-hidden">
+            <div className="flex border border-custom-white/20 rounded overflow-hidden">
               {(["amount", "qty"] as const).map((m) => (
                 <button
                   key={m}
                   onClick={() => onSortMetric(m)}
-                  className={`px-2 py-1 text-[9px] font-medium ${
-                    sortMetric === m ? "bg-white/20 text-custom-white" : "text-custom-white/85"
+                  className={`px-2 py-1 text-[10px] font-medium ${
+                    sortMetric === m ? "bg-custom-white/20 text-custom-white" : "text-custom-white/85"
                   }`}
                 >
                   {m === "amount" ? "Amt" : "Qty"}
                 </button>
               ))}
             </div>
+            <button
+              onClick={() => setExportOpen(true)}
+              className="w-[28px] h-[28px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85"
+            >
+              <ArrowDownTrayIcon className="w-4 h-4" />
+            </button>
             {isGroup && (
               <button
                 onClick={onSearch}
-                className="w-[28px] h-[28px] flex items-center justify-center rounded border border-white/20 text-custom-white/85"
+                className="w-[28px] h-[28px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85"
               >
                 <MagnifyingGlassIcon className="w-4 h-4" />
               </button>
             )}
           </div>
         </div>
-        <div className="flex items-baseline gap-3 mt-2 pt-1.5 border-t border-white/[0.08]">
+        {/* <div className="flex items-baseline gap-3 mt-2 pt-1.5 border-t border-white/[0.08]">
           <div className="flex items-baseline gap-1.5">
-            <span className="text-[8px] uppercase tracking-wide text-custom-white/85">Records</span>
+            <span className="text-[10px] uppercase tracking-wide text-custom-white/85">Records</span>
             <span className="text-[12px] font-semibold text-custom-white">{coupons.length}</span>
           </div>
           <span className="text-[10px] font-medium text-custom-white/85">{formatCurrency2(totalAmount)} total</span>
-        </div>
+        </div> */}
       </div>
 
       {/* KPI strip */}
@@ -142,7 +151,7 @@ const CpnOverview = ({
           { label: "Products", value: String(uniqueProducts) },
         ].map(({ label, value }) => (
           <div key={label} className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0">
-            <div className="text-[7px] font-semibold uppercase tracking-wide text-content/85">{label}</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">{label}</div>
             <div className="text-[12px] font-bold text-content mt-0.5 tabular-nums">{value}</div>
           </div>
         ))}
@@ -195,6 +204,15 @@ const CpnOverview = ({
           </div>
         )}
       </div>
+
+      {exportOpen && (
+        <CpnExportSheet
+          onClose={() => setExportOpen(false)}
+          title={storeName}
+          subtitle={dateRangeLabel}
+          rows={coupons}
+        />
+      )}
     </div>
   );
 };
