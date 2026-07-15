@@ -157,7 +157,7 @@ const UpcSearchCard = ({ onSearch }: Props) => {
         {/* run */}
         <button
           onClick={onSearch}
-          className="w-full py-2 text-sm font-semibold text-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
+          className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
           disabled={!ctx.upcs.length}
         >
           Run

@@ -115,16 +115,15 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   //   weeklySalesLastYear,
   // );
   // const gapCount = getWeeklyGapCount(gaps);
-  // The store's weekly-sales data (selection.days, built by buildLedgerRows)
-  // is fragmented — it only has an entry for the calendar days that actually
-  // have a row, not all 7 days of the week. The KPI header and left panel
-  // both treat that real, possibly-sparse set of days as "this week." Basing
-  // the LW/LY match set on all 7 hypothetical calendar days instead (rather
-  // than the real ones) would recognize a wider set of "matched" days than
-  // the store level does, so sub-dept/hourly could show real figures for a
-  // day the KPI header doesn't even count as part of the week. Deriving the
-  // match set from selection.days' actual dates keeps every level in sync.
-  const twRealDates = selection.days.map((d) => d.sale_date.split("T")[0]);
+  // The full 7 calendar days of the searched week — deliberately NOT
+  // selection.days (the store's weekly-sales row list), which only has an
+  // entry for days that list actually returned a row for. A day missing
+  // there doesn't mean this specific dept/hour/item has no real data for
+  // it — using the true calendar range means every entity's LW/LY match is
+  // scoped to its own genuine data, not gated by a different fetch's gaps.
+  const twRealDates = Array.from({ length: 7 }, (_, i) =>
+    addDays(new Date(twStart), i).toISOString().split("T")[0],
+  );
   const lyWeekDates = twRealDates.map((d) => sameWeekDayLastYear(d).date).sort();
   const lyStart = lyWeekDates[0];
   const lyEnd = lyWeekDates[lyWeekDates.length - 1];

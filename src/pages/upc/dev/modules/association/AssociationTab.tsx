@@ -36,7 +36,7 @@ const AssociationTab = () => {
         "all",
       );
       if (!res.data.error && res.data.items?.length) {
-        dispatch(setDevItemAssociations([res.data.items[0] as ItemAssociate[]]));
+        dispatch(setDevItemAssociations([res.data.items as ItemAssociate[]]));
       } else {
         dispatch(setDevItemAssociations([]));
       }
@@ -76,7 +76,7 @@ const AssociationTab = () => {
         "all",
       );
       if (!res.data.error && res.data.items?.length) {
-        dispatch(addDevAssociationLevel(res.data.items[0] as ItemAssociate[]));
+        dispatch(addDevAssociationLevel(res.data.items as ItemAssociate[]));
       }
     } finally {
       dispatch(setDevAssociationLoading(false));
@@ -105,7 +105,7 @@ const AssociationTab = () => {
         <p className="text-[11px] text-content/30">No association data loaded</p>
         <button
           onClick={fetchInitial}
-          className="px-3 py-1.5 rounded text-[11px] font-medium text-white"
+          className="px-3 py-1.5 rounded text-[11px] font-medium text-custom-white"
           style={{ background: "#1e2a4a" }}
         >
           Load Associations

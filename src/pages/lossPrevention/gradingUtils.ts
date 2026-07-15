@@ -3,6 +3,32 @@ import type { Severity } from "../../utils/severity";
 
 export type CashierSeverity = "critical" | "watch" | "ok" | "ungraded";
 
+// ── Week date range (LPStorePanel + LPTransactionPanel header/export) ──────
+// search.singleDate is the searched week-ending date ("m/d/yyyy") — the week
+// always runs the 6 days before it through singleDate itself, matching
+// LPDesktop's own start/end math for the API fetch. search.startDate/endDate
+// belong to a different (multi-date-picker) search flow and are never set
+// by LP's single-date search — don't read them for this.
+
+export const weekStartDate = (singleDate: string): string => {
+  const [m, d, y] = singleDate.split("/").map(Number);
+  const end = new Date(y, m - 1, d);
+  const start = new Date(end);
+  start.setDate(start.getDate() - 6);
+  return `${start.getMonth() + 1}/${start.getDate()}/${start.getFullYear()}`;
+};
+
+const fmtRangePart = (mdy: string, withYear = false) => {
+  const [m, d, y] = mdy.split("/");
+  return withYear ? `${+m}/${+d}/${y}` : `${+m}/${+d}`;
+};
+
+export const weekRangeLabel = (singleDate: string): string =>
+  `${fmtRangePart(weekStartDate(singleDate))} – ${fmtRangePart(singleDate, true)}`;
+
+export const weekRangeFilename = (singleDate: string): string =>
+  `${weekStartDate(singleDate)}–${singleDate}`;
+
 // ── Store-level severity (LPStorePanel + LPTransactionPanel header) ─────────
 
 export const isNoDollarType = (saleType: string) =>

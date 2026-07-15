@@ -175,8 +175,8 @@ const ForecastTab = () => {
               onClick={() => setViewMode(mode)}
               className={`px-2 py-0.5 text-[9px] font-medium transition-colors ${
                 viewMode === mode
-                  ? "bg-[#1e2a4a] text-white"
-                  : "bg-white text-content/50 hover:text-content/70"
+                  ? "bg-[#1e2a4a] text-custom-white"
+                  : "bg-custom-white text-content/50 hover:text-content/70"
               }`}
             >
               {label}

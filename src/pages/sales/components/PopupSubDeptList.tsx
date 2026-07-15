@@ -20,7 +20,6 @@ import {
   sameWeekDayLastYear,
 } from "../../../utils";
 import { getSubMargins } from "../../../api/subMargins";
-import { buildDayShiftMaps, buildDayMatchedTwTotals } from "../shared/ledgerUtils";
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
@@ -72,10 +71,6 @@ type Top10Item = {
   lyNet: number | null;
   lyQty: number | null;
   lyWeight: number | null;
-  twNetForLW: number;
-  twQtyForLW: number;
-  twNetForLY: number;
-  twQtyForLY: number;
 };
 
 type DeptSortColumn = "ty" | "vsLW" | "vsLY";
@@ -110,7 +105,8 @@ const aggregateByCode = (
 };
 
 const deptSeverity = (r: DeptRow, threshold: number): Severity => {
-  const pct = r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0;
+  // Rounded before grading — see itemSeverity below for why.
+  const pct = Math.round((r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0) * 10) / 10;
   if (pct < -threshold) return "critical";
   if (pct < 0) return "watch";
   return "healthy";
@@ -124,20 +120,23 @@ const itemSeverity = (
   const lyPct =
     metric === "sales"
       ? item.lyNet !== null && item.lyNet > 0
-        ? ((item.twNetForLY - item.lyNet) / item.lyNet) * 100
+        ? ((item.tyNet - item.lyNet) / item.lyNet) * 100
         : null
       : item.lyQty !== null && item.lyQty > 0
-        ? ((item.twQtyForLY - item.lyQty) / item.lyQty) * 100
+        ? ((item.tyQty - item.lyQty) / item.lyQty) * 100
         : null;
   const lwPct =
     metric === "sales"
       ? item.lwNet !== null && item.lwNet > 0
-        ? ((item.twNetForLW - item.lwNet) / item.lwNet) * 100
+        ? ((item.tyNet - item.lwNet) / item.lwNet) * 100
         : null
       : item.lwQty !== null && item.lwQty > 0
-        ? ((item.twQtyForLW - item.lwQty) / item.lwQty) * 100
+        ? ((item.tyQty - item.lwQty) / item.lwQty) * 100
         : null;
-  const pct = lyPct ?? lwPct ?? 0;
+  // Rounded before grading — tyNet/lwNet/lyNet are sums of individual line
+  // items, so floating-point noise can leave a value like -0.0000000001%
+  // even when the displayed dollars are identical, misgrading it "watch".
+  const pct = Math.round((lyPct ?? lwPct ?? 0) * 10) / 10;
   if (pct < -threshold) return "critical";
   if (pct < 0) return "watch";
   return "healthy";
@@ -194,11 +193,9 @@ interface PopupSubDeptListProps {
   lyDateLabel: string;
   storeId: number;
   selectedDate: string | null;
-  // The store's real (possibly-sparse) TW dates for this week, from
-  // selection.days — used to build the exact LW/LY match set so the item
-  // list's whole-week totals agree with the KPI strip and sub-dept rows,
-  // which are all keyed off the same real dates rather than a hypothetical
-  // full 7-day week.
+  // The full 7 calendar days of the searched week (see StoreDetailPopup) —
+  // used to build the exact LW/LY match set so the item list's whole-week
+  // totals agree with the KPI strip and sub-dept rows.
   twRealDates: string[];
 }
 
@@ -245,9 +242,6 @@ const PopupSubDeptList = ({
   const itemThresholdRef = useRef<number>(rawItemThreshold ?? 9);
   if (rawItemThreshold != null) itemThresholdRef.current = rawItemThreshold;
   const itemThreshold = itemThresholdRef.current;
-  // Per-day shift maps so dept/item-level matching uses the same
-  // twDate→lwDate/lyDate lookups as the store level.
-  const { twToLwDay, twToLyDay } = buildDayShiftMaps(twRealDates);
   const dispatch = useAppDispatch();
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [ctaOpen, setCtaOpen] = useState(false);
@@ -314,10 +308,6 @@ const PopupSubDeptList = ({
     const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
     const lwStart = addDays(search.singleDate, -13).toISOString().split("T")[0];
     const lwEnd = addDays(search.singleDate, -7).toISOString().split("T")[0];
-    // The store's real (possibly-sparse) TW dates, passed down from the
-    // parent's selection.days — using the real dates (not a hypothetical
-    // full 7-day week) keeps the match set identical to what the KPI strip
-    // and sub-dept rows use, so whole-week item totals agree with them.
     const lyWeekDates = twRealDates.map((d) => sameWeekDayLastYear(d).date).sort();
     const lyStart = lyWeekDates[0] ?? lwEnd;
     const lyEnd = lyWeekDates[lyWeekDates.length - 1] ?? lwEnd;
@@ -403,28 +393,11 @@ const PopupSubDeptList = ({
 
         const sorted = [...tyMap.entries()].sort((a, b) => b[1].qty - a[1].qty);
 
-        // An item can have real TW sales on days where the store overall
-        // has an LW/LY match but this specific item doesn't — restrict the
-        // TW side of each item's percentage to just the days that item has
-        // a match on, same as the dept-level fix above.
-        const matched = buildDayMatchedTwTotals(
-          tyItems,
-          lwItems,
-          lyItems,
-          (i) => i.product_code,
-          (i) => i.sale_date.split("T")[0],
-          (i) => i.total_sales - i.total_tax,
-          (i) => i.qty,
-          twToLwDay,
-          twToLyDay,
-        );
-
         dispatch(
           setSelectedSubDeptItems(
             sorted.map(([code, ty]) => {
               const lw = lwMap.get(code) ?? null;
               const ly = lyMap.get(code) ?? null;
-              const m = matched.get(code);
               return {
                 productCode: code,
                 upc: code,
@@ -438,10 +411,6 @@ const PopupSubDeptList = ({
                 lyNet: ly?.net ?? null,
                 lyQty: ly?.qty ?? null,
                 lyWeight: ly?.weight ?? null,
-                twNetForLW: m?.twNetForLW ?? 0,
-                twQtyForLW: m?.twQtyForLW ?? 0,
-                twNetForLY: m?.twNetForLY ?? 0,
-                twQtyForLY: m?.twQtyForLY ?? 0,
               };
             }),
           ),
@@ -475,10 +444,6 @@ const PopupSubDeptList = ({
                 lyNet: ly?.net ?? null,
                 lyQty: ly?.qty ?? null,
                 lyWeight: ly?.weight ?? null,
-                twNetForLW: 0,
-                twQtyForLW: 0,
-                twNetForLY: 0,
-                twQtyForLY: 0,
               };
             }),
           ),
@@ -579,21 +544,6 @@ const PopupSubDeptList = ({
       {},
     );
 
-    // A dept can have real TW sales across days where the STORE overall has
-    // an LW/LY match, but the dept itself doesn't — restrict the TW side of
-    // each dept's percentage to just the days that dept has a match on.
-    const matched = buildDayMatchedTwTotals(
-      subSales,
-      subSalesWk2,
-      subSalesWk3,
-      (s) => s.sub_department,
-      (s) => s.sale_date.split("T")[0],
-      (s) => s.total_sales - s.total_tax,
-      (s) => s.qty,
-      twToLwDay,
-      twToLyDay,
-    );
-
     return Object.entries(twMap)
       .map(([id, r]) => {
         const numId = Number(id);
@@ -601,9 +551,6 @@ const PopupSubDeptList = ({
         const ly = lyMap[numId];
         const lwNet = lw?.net ?? 0;
         const lyNet = ly?.net ?? 0;
-        const m = matched.get(numId);
-        const twNetForLW = m?.twNetForLW ?? 0;
-        const twNetForLY = m?.twNetForLY ?? 0;
         return {
           id: numId,
           desc: r.desc,
@@ -612,8 +559,8 @@ const PopupSubDeptList = ({
           ly: lyNet,
           hasLW: lwNet > 0,
           hasLY: lyNet > 0,
-          vsLWPct: lwNet ? ((twNetForLW - lwNet) / lwNet) * 100 : 0,
-          vsLYPct: lyNet ? ((twNetForLY - lyNet) / lyNet) * 100 : 0,
+          vsLWPct: lwNet ? ((r.net - lwNet) / lwNet) * 100 : 0,
+          vsLYPct: lyNet ? ((r.net - lyNet) / lyNet) * 100 : 0,
           qty: r.qty,
           lwQty: lw?.qty ?? 0,
           lyQty: ly?.qty ?? 0,

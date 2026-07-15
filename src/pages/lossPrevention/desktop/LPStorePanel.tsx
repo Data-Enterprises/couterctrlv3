@@ -5,7 +5,7 @@ import { useAppSelector } from "../../../hooks";
 import type { CashierDetails } from "../../../interfaces";
 import type { Severity, SevFilter } from "../../../utils/severity";
 import { severityDotClass, formatPct } from "../../../utils/severity";
-import { isNoDollarType, storeSeverity, directionalPillClass } from "../gradingUtils";
+import { isNoDollarType, storeSeverity, directionalPillClass, weekRangeLabel } from "../gradingUtils";
 import TextFilter from "../../../components/filters/TextFilter";
 
 const SEV_RANK: Record<Severity, number> = { critical: 0, watch: 1, healthy: 2 };
@@ -30,11 +30,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
     selectedStoreId,
   } = cashier;
 
-  const fmtRangePart = (mdy: string, withYear = false) => {
-    const [m, d, y] = mdy.split("/");
-    return withYear ? `${+m}/${+d}/${y}` : `${+m}/${+d}`;
-  };
-  const dateLabel = `${fmtRangePart(search.startDate)} – ${fmtRangePart(search.endDate, true)}`;
+  const dateLabel = weekRangeLabel(search.singleDate);
 
   const totalSales  = cashierDetails.reduce((acc, d) => acc + Math.abs(d.amount), 0);
   const totalTrans  = cashierDetails.reduce((acc, d) => acc + d.transaction_count, 0);

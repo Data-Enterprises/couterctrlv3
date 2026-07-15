@@ -26,6 +26,8 @@ import {
   gradeAllCashiers,
   isNoDollarType,
   storeSeverity,
+  weekRangeLabel,
+  weekRangeFilename,
   type CashierSeverity,
 } from "../gradingUtils";
 import { severityHeaderBgClass } from "../../../utils/severity";
@@ -304,11 +306,7 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
     ? storeSeverity(detail, cashier.baselineDetails, selectedSaleType)
     : "healthy";
 
-  const fmtRangePart = (mdy: string, withYear = false) => {
-    const [m, d, y] = mdy.split("/");
-    return withYear ? `${+m}/${+d}/${y}` : `${+m}/${+d}`;
-  };
-  const dateLabel = `${fmtRangePart(search.startDate)} – ${fmtRangePart(search.endDate, true)}`;
+  const dateLabel = weekRangeLabel(search.singleDate);
 
   // ── Graded cashier list ───────────────────────────────────────────────────
 
@@ -559,7 +557,7 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
               onClose={() => setExportOpen(false)}
               storeName={storeName}
               saleType={selectedSaleType}
-              dateRange={`${fmtDate(search.startDate)}–${fmtDate(search.endDate)}`}
+              dateRange={weekRangeFilename(search.singleDate)}
               transactions={filteredOverviews}
               cashierGrades={cashierGrades}
             />

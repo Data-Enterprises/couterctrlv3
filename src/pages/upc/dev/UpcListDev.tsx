@@ -6,6 +6,7 @@ import {
   setDevIsLoading,
   setDevDataLoaded,
   setDevSalesComp,
+  setDevSalesCompLY,
   setDevSalesCompLoaded,
   setDevUpcItems,
   setDevUpcCount,
@@ -13,6 +14,7 @@ import {
 } from "../../../features/upcDevSlice";
 import { getSalesComp } from "../../../api/upc";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
+import { sameWeekDayLastYear } from "../../../utils";
 import type { UpcItem, UpcSalesComp } from "../../../interfaces";
 
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
@@ -74,27 +76,52 @@ const UpcListDev = () => {
 
     const upcParam = ctx.upcs.join(",");
     const upcItemsMap = new Map<string, UpcItem>();
+    // sameWeekDayLastYear returns ISO (YYYY-MM-DD); the API rejects that
+    // with a 400 ("Please use mm/dd/yyyy") — reformat to match ctx.startDate/
+    // endDate's own m/d/yyyy format. Plain string split, not `new Date(iso)`
+    // + getMonth/getDate — that round-trip parses as UTC midnight and can
+    // roll back a day in any negative-UTC-offset timezone (all of the US).
+    const isoToMdy = (iso: string) => {
+      const [y, m, d] = iso.split("-");
+      return `${Number(m)}/${Number(d)}/${y}`;
+    };
+    const lyStartDate = isoToMdy(sameWeekDayLastYear(ctx.startDate).date);
+    const lyEndDate = isoToMdy(sameWeekDayLastYear(ctx.endDate).date);
 
-    try {
-      const res = await getSalesComp(ctx.url, ctx.token, storeids, ctx.startDate, ctx.endDate, upcParam);
-      const j = res.data;
-      if (j.error === 0 && j.daily?.length > 0) {
-        dispatch(setDevSalesComp(j.daily));
-        dispatch(setDevUpcCount(j.upc_count ?? j.daily.length));
-        for (const row of j.daily as UpcSalesComp[]) {
-          if (!upcItemsMap.has(row.product_code)) {
-            upcItemsMap.set(row.product_code, {
-              product_code: row.product_code,
-              description: row.description,
-            });
-          }
-        }
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to load sales comp";
+    // LY is a supplementary comparison — fetched alongside TY, but a failed
+    // or empty LY response shouldn't block the search the way a failed TY
+    // fetch does.
+    const [tyResult, lyResult] = await Promise.allSettled([
+      getSalesComp(ctx.url, ctx.token, storeids, ctx.startDate, ctx.endDate, upcParam),
+      getSalesComp(ctx.url, ctx.token, storeids, lyStartDate, lyEndDate, upcParam),
+    ]);
+
+    if (tyResult.status === "rejected") {
+      const msg = tyResult.reason instanceof Error ? tyResult.reason.message : "Failed to load sales comp";
       toast.error(msg);
       dispatch(setDevIsLoading(false));
       return;
+    }
+
+    const j = tyResult.value.data;
+    if (j.error === 0 && j.daily?.length > 0) {
+      dispatch(setDevSalesComp(j.daily));
+      dispatch(setDevUpcCount(j.upc_count ?? j.daily.length));
+      for (const row of j.daily as UpcSalesComp[]) {
+        if (!upcItemsMap.has(row.product_code)) {
+          upcItemsMap.set(row.product_code, {
+            product_code: row.product_code,
+            description: row.description,
+          });
+        }
+      }
+    }
+
+    if (lyResult.status === "fulfilled") {
+      const lyJ = lyResult.value.data;
+      if (lyJ.error === 0 && lyJ.daily?.length > 0) {
+        dispatch(setDevSalesCompLY(lyJ.daily));
+      }
     }
 
     if (!upcItemsMap.size) {

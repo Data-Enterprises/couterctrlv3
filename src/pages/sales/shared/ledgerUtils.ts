@@ -95,15 +95,19 @@ export const ampm = (h: number) =>
 
 // ─── Severity helpers ─────────────────────────────────────────────────────────
 
+// Rounded before grading — the underlying totals are sums of individual
+// line items, so floating-point noise can leave a value like
+// -0.0000000001% even when the displayed dollars are identical, misgrading
+// what should be "healthy" as "watch".
 export const deptSeverity = (r: DeptRow, threshold = 9): Severity => {
-  const pct = r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0;
+  const pct = Math.round((r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0) * 10) / 10;
   if (pct < -threshold) return "critical";
   if (pct < 0) return "watch";
   return "healthy";
 };
 
 export const hourSeverity = (r: HourRow, threshold = 9): Severity => {
-  const pct = r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0;
+  const pct = Math.round((r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0) * 10) / 10;
   if (pct < -threshold) return "critical";
   if (pct < 0) return "watch";
   return "healthy";
@@ -191,95 +195,6 @@ export const computeDayMatchedTotals = (
   };
 };
 
-/** Given the store's real TW dates, builds twDate → lwDate / twDate → lyDate
- * lookup maps (the same per-day shift used to fetch/filter LW/LY data) —
- * shared so every aggregation level (store, dept, hour, item) matches days
- * the identical way. */
-export const buildDayShiftMaps = (
-  twRealDates: string[],
-): { twToLwDay: Map<string, string>; twToLyDay: Map<string, string> } => {
-  const twToLwDay = new Map<string, string>();
-  const twToLyDay = new Map<string, string>();
-  for (const d of twRealDates) {
-    twToLwDay.set(d, addDays(new Date(d), -7).toISOString().split("T")[0]);
-    twToLyDay.set(d, sameWeekDayLastYear(d).date);
-  }
-  return { twToLwDay, twToLyDay };
-};
-
-/** For each entity (dept id, hour, product code, ...), computes how much of
- * its TW total falls on days that also have a matching LW/LY row for that
- * SAME entity — a day can have store-wide LW data while a specific
- * department/hour/item still has none for that day. Used to scope each
- * entity's "vs LW"/"vs LY" percentage the same way computeDayMatchedTotals
- * does at the store level, without altering the flat, unrestricted totals
- * (net/qty/etc.) that aggSubDepts/aggHours/aggByCode already produce for
- * display. */
-export const buildDayMatchedTwTotals = <T>(
-  twSrc: T[],
-  lwSrc: T[],
-  lySrc: T[],
-  keyOf: (row: T) => string | number,
-  dayOf: (row: T) => string,
-  netOf: (row: T) => number,
-  qtyOf: (row: T) => number,
-  twToLwDay: Map<string, string>,
-  twToLyDay: Map<string, string>,
-): Map<
-  string | number,
-  { twNetForLW: number; twQtyForLW: number; twNetForLY: number; twQtyForLY: number }
-> => {
-  const daysByEntity = (rows: T[]) => {
-    const map = new Map<string | number, Set<string>>();
-    for (const r of rows) {
-      const key = keyOf(r);
-      if (!map.has(key)) map.set(key, new Set());
-      map.get(key)!.add(dayOf(r));
-    }
-    return map;
-  };
-  const lwDaysByEntity = daysByEntity(lwSrc);
-  const lyDaysByEntity = daysByEntity(lySrc);
-
-  const twByEntityDay = new Map<string | number, Map<string, { net: number; qty: number }>>();
-  for (const r of twSrc) {
-    const key = keyOf(r);
-    const day = dayOf(r);
-    if (!twByEntityDay.has(key)) twByEntityDay.set(key, new Map());
-    const dayMap = twByEntityDay.get(key)!;
-    const existing = dayMap.get(day) ?? { net: 0, qty: 0 };
-    existing.net += netOf(r);
-    existing.qty += qtyOf(r);
-    dayMap.set(day, existing);
-  }
-
-  const result = new Map<
-    string | number,
-    { twNetForLW: number; twQtyForLW: number; twNetForLY: number; twQtyForLY: number }
-  >();
-  for (const [key, dayMap] of twByEntityDay) {
-    let twNetForLW = 0;
-    let twQtyForLW = 0;
-    let twNetForLY = 0;
-    let twQtyForLY = 0;
-    const lwDays = lwDaysByEntity.get(key);
-    const lyDays = lyDaysByEntity.get(key);
-    for (const [day, v] of dayMap) {
-      const lwDay = twToLwDay.get(day);
-      if (lwDay && lwDays?.has(lwDay)) {
-        twNetForLW += v.net;
-        twQtyForLW += v.qty;
-      }
-      const lyDay = twToLyDay.get(day);
-      if (lyDay && lyDays?.has(lyDay)) {
-        twNetForLY += v.net;
-        twQtyForLY += v.qty;
-      }
-    }
-    result.set(key, { twNetForLW, twQtyForLW, twNetForLY, twQtyForLY });
-  }
-  return result;
-};
 
 // ─── Data gap report ────────────────────────────────────────────────────────────
 //
@@ -453,7 +368,8 @@ export const buildLedgerRows = (
         vsLYDollar,
       } = computeDayMatchedTotals(days, gradingMetric);
       const severity: LedgerRowData["severity"] = (() => {
-        const pct = hasLY ? vsLYPct : hasLW ? vsLWPct : 0;
+        // Rounded before grading — see itemSeverity in PopupSubDeptList for why.
+        const pct = Math.round((hasLY ? vsLYPct : hasLW ? vsLWPct : 0) * 10) / 10;
         if (pct < -threshold) return "critical";
         if (pct < 0) return "watch";
         return "healthy";

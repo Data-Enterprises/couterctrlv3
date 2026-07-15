@@ -45,8 +45,6 @@ import {
   BADGE_COLOR,
   SEVERITY_RANK,
   computeDayMatchedTotals,
-  buildDayShiftMaps,
-  buildDayMatchedTwTotals,
   getWeeklyDataGaps,
   getWeeklyGapCount,
   type DeptRow,
@@ -130,28 +128,21 @@ const LedgerStoreReport = () => {
   const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
   const lwEnd = addDays(search.singleDate, -7).toISOString().split("T")[0];
   const lwStart = addDays(search.singleDate, -13).toISOString().split("T")[0];
-  // The store's weekly-sales data (selection.days, built by buildLedgerRows)
-  // is fragmented — it only has an entry for the calendar days that actually
-  // have a row, not all 7 days of the week. The KPI strip and store list
-  // both treat that real, possibly-sparse set of days as "this week." Basing
-  // the LW/LY match set on all 7 hypothetical calendar days instead (rather
-  // than the real ones) would recognize a wider set of "matched" days than
-  // the store level does, so sub-dept/hourly could show real figures for a
-  // day the KPI strip doesn't even count as part of the week. Deriving the
-  // match set from selection.days' actual dates keeps every level in sync.
-  const twRealDates = selection
-    ? selection.days.map((d) => d.sale_date.split("T")[0])
-    : [];
+  // The full 7 calendar days of the searched week — deliberately NOT
+  // selection.days (the store's weekly-sales row list), which only has an
+  // entry for days that list actually returned a row for. A day missing
+  // there doesn't mean this specific dept/hour/item has no real data for
+  // it — using the true calendar range means every entity's LW/LY match is
+  // scoped to its own genuine data, not gated by a different fetch's gaps.
+  const twRealDates = Array.from({ length: 7 }, (_, i) =>
+    addDays(new Date(twStart), i).toISOString().split("T")[0],
+  );
   const lyWeekDates = twRealDates.map((d) => sameWeekDayLastYear(d).date).sort();
   const lyStart = lyWeekDates[0];
   const lyEnd = lyWeekDates[lyWeekDates.length - 1];
   const lwWeekDates = twRealDates.map(
     (d) => addDays(new Date(d), -7).toISOString().split("T")[0],
   );
-  // Per-day shift maps so dept/hour entity-level matching uses the same
-  // twDate→lwDate/lyDate lookups as the store level.
-  const { twToLwDay, twToLyDay } = buildDayShiftMaps(twRealDates);
-
   // Dynamic date labels
   const twDateLabel = selectedDate
     ? new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", {
@@ -344,27 +335,11 @@ const LedgerStoreReport = () => {
         const lwMap = aggByCode(lwItems);
         const lyMap = aggByCode(lyItems);
         const sorted = [...tyMap.entries()].sort((a, b) => b[1].qty - a[1].qty);
-        // An item can have real TW sales on days where the store overall has
-        // an LW/LY match but this specific item doesn't — restrict the TW
-        // side of each item's percentage to just the days that item has a
-        // match on, same as the dept/hour-level fix.
-        const matched = buildDayMatchedTwTotals(
-          tyItems,
-          lwItems,
-          lyItems,
-          (i) => i.product_code,
-          (i) => i.sale_date.split("T")[0],
-          (i) => i.total_sales - i.total_tax,
-          (i) => i.qty,
-          twToLwDay,
-          twToLyDay,
-        );
         dispatch(
           setTop10(
             sorted.map(([code, ty]) => {
               const lw = lwMap.get(code) ?? null;
               const ly = lyMap.get(code) ?? null;
-              const m = matched.get(code);
               return {
                 productCode: code,
                 upc: code,
@@ -378,10 +353,6 @@ const LedgerStoreReport = () => {
                 lyNet: ly?.net ?? null,
                 lyQty: ly?.qty ?? null,
                 lyWeight: ly?.weight ?? null,
-                twNetForLW: m?.twNetForLW ?? 0,
-                twQtyForLW: m?.twQtyForLW ?? 0,
-                twNetForLY: m?.twNetForLY ?? 0,
-                twQtyForLY: m?.twQtyForLY ?? 0,
               };
             }),
           ),
@@ -421,20 +392,6 @@ const LedgerStoreReport = () => {
     const twMap = aggSubDepts(twSrc);
     const lwMap = aggSubDepts(lwSrc);
     const lyMap = aggSubDepts(lySrc);
-    // A dept can have real TW sales across days where the STORE overall has
-    // an LW/LY match, but the dept itself doesn't — restrict the TW side of
-    // each dept's percentage to just the days that dept has a match on.
-    const matched = buildDayMatchedTwTotals(
-      twSrc,
-      lwSrc,
-      lySrc,
-      (s) => s.sub_department,
-      (s) => s.sale_date.split("T")[0],
-      (s) => s.total_sales - s.total_tax,
-      (s) => s.qty,
-      twToLwDay,
-      twToLyDay,
-    );
     return Object.entries(twMap)
       .map(([id, r]) => {
         const numId = Number(id);
@@ -442,9 +399,6 @@ const LedgerStoreReport = () => {
         const ly = lyMap[numId];
         const lwNet = lw?.net ?? 0;
         const lyNet = ly?.net ?? 0;
-        const m = matched.get(numId);
-        const twNetForLW = m?.twNetForLW ?? 0;
-        const twNetForLY = m?.twNetForLY ?? 0;
         return {
           id: numId,
           desc: r.desc,
@@ -453,8 +407,8 @@ const LedgerStoreReport = () => {
           ly: lyNet,
           hasLW: lwNet > 0,
           hasLY: lyNet > 0,
-          vsLWPct: lwNet ? ((twNetForLW - lwNet) / lwNet) * 100 : 0,
-          vsLYPct: lyNet ? ((twNetForLY - lyNet) / lyNet) * 100 : 0,
+          vsLWPct: lwNet ? ((r.net - lwNet) / lwNet) * 100 : 0,
+          vsLYPct: lyNet ? ((r.net - lyNet) / lyNet) * 100 : 0,
           qty: r.qty,
           lwQty: lw?.qty ?? 0,
           lyQty: ly?.qty ?? 0,
@@ -501,30 +455,12 @@ const LedgerStoreReport = () => {
     const twMap = aggHours(twSrc);
     const lwMap = aggHours(lwSrc);
     const lyMap = aggHours(lySrc);
-    // Same fix as `depts` above — an hour can have real TW sales on days
-    // where the store overall has an LW/LY match but that specific hour
-    // doesn't, so restrict the TW side of each hour's percentage to just
-    // the days that hour has a match on.
-    const matched = buildDayMatchedTwTotals(
-      twSrc,
-      lwSrc,
-      lySrc,
-      (h) => h.hour,
-      (h) => h.sale_date.split("T")[0],
-      (h) => h.total_sales - h.total_tax,
-      (h) => h.qty,
-      twToLwDay,
-      twToLyDay,
-    );
     return Array.from(new Set(Object.keys(twMap).map(Number)))
       .sort((a, b) => a - b)
       .map((h) => {
         const tw = twMap[h]?.net ?? 0;
         const lw = lwMap[h]?.net ?? 0;
         const ly = lyMap[h]?.net ?? 0;
-        const m = matched.get(h);
-        const twNetForLW = m?.twNetForLW ?? 0;
-        const twNetForLY = m?.twNetForLY ?? 0;
         return {
           hour: h,
           tw,
@@ -538,8 +474,8 @@ const LedgerStoreReport = () => {
           lyQty: lyMap[h]?.qty ?? 0,
           hasLW: lw > 0,
           hasLY: ly > 0,
-          vsLWPct: lw ? ((twNetForLW - lw) / lw) * 100 : 0,
-          vsLYPct: ly ? ((twNetForLY - ly) / ly) * 100 : 0,
+          vsLWPct: lw ? ((tw - lw) / lw) * 100 : 0,
+          vsLYPct: ly ? ((tw - ly) / ly) * 100 : 0,
         };
       })
       .sort((a, b) => {
@@ -1160,15 +1096,22 @@ const LedgerStoreReport = () => {
             {openSheetType === "subdept" &&
               (() => {
                 const itemSeverity = (item: (typeof top10)[0]): Severity => {
-                  const lyQtyPct =
-                    item.lyQty !== null && item.lyQty > 0
-                      ? ((item.twQtyForLY - item.lyQty) / item.lyQty) * 100
+                  // Grades on the same net (dollar) comparison the pill
+                  // below actually displays — grading on qty instead would
+                  // let the badge disagree with a visible 0% figure.
+                  const lyNetPct =
+                    item.lyNet !== null && item.lyNet > 0
+                      ? ((item.tyNet - item.lyNet) / item.lyNet) * 100
                       : null;
-                  const lwQtyPct =
-                    item.lwQty !== null && item.lwQty > 0
-                      ? ((item.twQtyForLW - item.lwQty) / item.lwQty) * 100
+                  const lwNetPct =
+                    item.lwNet !== null && item.lwNet > 0
+                      ? ((item.tyNet - item.lwNet) / item.lwNet) * 100
                       : null;
-                  const pct = lyQtyPct ?? lwQtyPct ?? 0;
+                  // Rounded before grading — tyNet/lwNet/lyNet are sums of
+                  // individual line items, so floating-point noise can leave
+                  // a value like -0.0000000001% even when the displayed
+                  // dollars are identical, misgrading it "watch".
+                  const pct = Math.round((lyNetPct ?? lwNetPct ?? 0) * 10) / 10;
                   if (pct < -effectiveItemThreshold) return "critical";
                   if (pct < 0) return "watch";
                   return "healthy";
@@ -1281,13 +1224,13 @@ const LedgerStoreReport = () => {
                               {group.map((item) => {
                                 const lwNetPct =
                                   item.lwNet !== null && item.lwNet > 0
-                                    ? ((item.twNetForLW - item.lwNet) /
+                                    ? ((item.tyNet - item.lwNet) /
                                         item.lwNet) *
                                       100
                                     : null;
                                 const lyNetPct =
                                   item.lyNet !== null && item.lyNet > 0
-                                    ? ((item.twNetForLY - item.lyNet) /
+                                    ? ((item.tyNet - item.lyNet) /
                                         item.lyNet) *
                                       100
                                     : null;

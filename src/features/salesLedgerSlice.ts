@@ -22,16 +22,6 @@ export type Top10Item = {
   lyNet: number | null;
   lyQty: number | null;
   lyWeight: number | null;
-  // TW net/qty restricted to just the days this item also has a matching
-  // LW/LY row for — an item can have real TW sales on days the store
-  // overall matches but this specific item doesn't. Comparing tyNet/tyQty
-  // (the full period total) against lwNet/lyNet (already day-restricted)
-  // would misstate the % change, so these are the correct TW-side inputs
-  // for any vs LW/LY percentage. See computeDayMatchedTotals.
-  twNetForLW: number;
-  twQtyForLW: number;
-  twNetForLY: number;
-  twQtyForLY: number;
   // Present and false only on synthetic rows built for items that sold in
   // LW/LY but not at all this week — lets the item row show "—" for TY
   // instead of a misleading $0. Absent (undefined) means a normal,

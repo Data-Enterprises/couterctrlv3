@@ -38,6 +38,7 @@ interface UpcDevState {
   // Sales Comp
   salesCompLoaded: boolean;
   salesComp: UpcSalesComp[];
+  salesCompLY: UpcSalesComp[];
   // Forecast
   forecastLoaded: boolean;
   forecastLoading: boolean;
@@ -83,6 +84,7 @@ const initialState: UpcDevState = {
   // Sales Comp
   salesCompLoaded: false,
   salesComp: [],
+  salesCompLY: [],
   // Forecast
   forecastLoaded: false,
   forecastLoading: false,
@@ -183,6 +185,9 @@ const upcDevSlice = createSlice({
     setDevSalesComp(state, action: PayloadAction<UpcSalesComp[]>) {
       state.salesComp = action.payload;
     },
+    setDevSalesCompLY(state, action: PayloadAction<UpcSalesComp[]>) {
+      state.salesCompLY = action.payload;
+    },
     // Forecast
     setDevForecastLoaded(state, action: PayloadAction<boolean>) {
       state.forecastLoaded = action.payload;
@@ -281,6 +286,7 @@ const upcDevSlice = createSlice({
       state.upcCount = 0;
       state.salesCompLoaded = false;
       state.salesComp = [];
+      state.salesCompLY = [];
       state.forecastLoaded = false;
       state.forecastLoading = false;
       state.forecastQtyData = [];
@@ -327,6 +333,7 @@ export const {
   setDevShowMode,
   setDevSalesCompLoaded,
   setDevSalesComp,
+  setDevSalesCompLY,
   setDevForecastLoaded,
   setDevForecastLoading,
   setDevForecastQtyData,

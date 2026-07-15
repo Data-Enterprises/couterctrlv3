@@ -101,7 +101,7 @@ const TrendTab = () => {
             onClick={() => dispatch(setDevTrendMode(m))}
             className={`px-3 py-1 rounded text-[10px] font-medium transition-colors ${
               ctx.trendMode === m
-                ? "bg-[#1e2a4a] text-white"
+                ? "bg-[#1e2a4a] text-custom-white"
                 : "text-content/50 hover:text-content/80 hover:bg-gray-100"
             }`}
           >
