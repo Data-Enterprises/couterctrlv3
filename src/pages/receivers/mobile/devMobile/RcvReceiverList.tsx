@@ -133,11 +133,11 @@ const RcvReceiverList = ({
       <div className="flex-shrink-0 px-3 pt-2 pb-2.5" style={{ background: "#1e2a4a" }}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-1.5 min-w-0">
-            <button onClick={onBack} className="text-white/65 hover:text-white transition-colors flex-shrink-0 mt-0.5">
+            <button onClick={onBack} className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0 mt-0.5">
               <ChevronLeftIcon className="w-4 h-4" />
             </button>
             <div className="min-w-0">
-              <div className="text-[13px] font-semibold text-white truncate">{vendorName}</div>
+              <div className="text-[13px] font-semibold text-custom-white truncate">{vendorName}</div>
               <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
                 {storeName} · {dateRangeLabel}
               </div>
@@ -145,14 +145,14 @@ const RcvReceiverList = ({
           </div>
           <button
             onClick={onSearch}
-            className="w-[28px] h-[28px] flex items-center justify-center rounded border border-white/20 text-white/60 flex-shrink-0"
+            className="w-[28px] h-[28px] flex items-center justify-center rounded border border-white/20 text-custom-white/85 flex-shrink-0"
           >
             <MagnifyingGlassIcon className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      <div className="flex-shrink-0 grid grid-cols-4 bg-white border-b border-gray-100">
+      <div className="flex-shrink-0 grid grid-cols-4 bg-custom-white border-b border-gray-100">
         {[
           { label: "Receivers", value: String(receivers.length) },
           { label: "Items", value: String(totalItems) },
@@ -171,7 +171,7 @@ const RcvReceiverList = ({
           <button
             key={`${r.invoiceid}-${r.invoice_date}`}
             onClick={() => handleReceiverTap(r)}
-            className="w-full flex items-center px-3 py-2.5 bg-white border-b border-gray-100 text-left active:bg-gray-50 gap-3"
+            className="w-full flex items-center px-3 py-2.5 bg-custom-white border-b border-gray-100 text-left active:bg-gray-50 gap-3"
           >
             <div className="flex-1 min-w-0">
               <div className="text-[12px] font-medium text-content">
@@ -185,7 +185,7 @@ const RcvReceiverList = ({
               </div>
             </div>
             <svg
-              className="w-4 h-4 text-content/30 flex-shrink-0"
+              className="w-4 h-4 text-content/85 flex-shrink-0"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -214,7 +214,7 @@ const RcvReceiverList = ({
             {details.length > 0 && (
               <button
                 onClick={handleExport}
-                className="flex items-center gap-1 px-2 py-1 rounded border border-gray-200 text-content/50 hover:text-content hover:border-gray-300 transition-colors flex-shrink-0"
+                className="flex items-center gap-1 px-2 py-1 rounded border border-gray-200 text-content/85 hover:text-content hover:border-gray-300 transition-colors flex-shrink-0"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 <span className="text-[9px] font-medium">Export</span>
@@ -260,7 +260,7 @@ const RcvReceiverList = ({
                 {["Description", "Cs", "Un", "Cost", "GM%"].map((h, i) => (
                   <div
                     key={h}
-                    className={`text-[7px] font-semibold uppercase tracking-wide text-content/38 ${i > 0 ? "text-right" : ""}`}
+                    className={`text-[7px] font-semibold uppercase tracking-wide text-content/85 ${i > 0 ? "text-right" : ""}`}
                   >
                     {h}
                   </div>
@@ -276,7 +276,7 @@ const RcvReceiverList = ({
                   >
                     <div className="min-w-0 pr-1">
                       <div className="text-[9px] text-content truncate">{item.product_description}</div>
-                      <div className="text-[7px] text-content/38">{item.product_code}</div>
+                      <div className="text-[7px] text-content/85">{item.product_code}</div>
                     </div>
                     <div className="text-[9px] text-content text-right tabular-nums">{item.cases}</div>
                     <div className="text-[9px] text-content text-right tabular-nums">{item.units}</div>

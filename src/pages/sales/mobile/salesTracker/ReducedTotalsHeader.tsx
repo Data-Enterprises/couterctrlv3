@@ -117,14 +117,14 @@ const ReducedTotalsHeader = () => {
       </div>
       <div className="grid grid-cols-[53%_46%] gap-2">
         {/* col 1 */}
-        <div className="text-content/60 text-[10px] grid grid-cols-2 gap-y-1">
-          <div className="text-content/60">
+        <div className="text-content/85 text-[10px] grid grid-cols-2 gap-y-1">
+          <div className="text-content/85">
             <div>Period Start</div>
             <div className="text-content">
               {ctx.trackerKpis.dateRange.split(" - ")[0]}
             </div>
           </div>
-          <div className="text-content/60">
+          <div className="text-content/85">
             <div>Period End</div>
             <div className="text-content">
               {ctx.trackerKpis.dateRange.split(" - ")[1]}

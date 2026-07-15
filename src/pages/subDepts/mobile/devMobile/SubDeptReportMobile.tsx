@@ -220,11 +220,11 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
       {/* Navy header */}
       <div className="flex-shrink-0 px-3 pt-2 pb-2.5" style={{ background: "#1e2a4a" }}>
         <div className="flex items-center gap-2">
-          <button onClick={onBack} className="text-white/70 hover:text-white transition-colors flex-shrink-0 -ml-1">
+          <button onClick={onBack} className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0 -ml-1">
             <ChevronLeftIcon className="w-5 h-5" />
           </button>
           <div>
-            <div className="text-[13px] font-semibold text-white">{subDept?.desc ?? "Sub Dept"}</div>
+            <div className="text-[13px] font-semibold text-custom-white">{subDept?.desc ?? "Sub Dept"}</div>
             <div className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
               Weekly Margin Report · {endLabel}
             </div>
@@ -234,19 +234,19 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
 
       {/* KPI strip */}
       {kpi && (
-        <div className="flex-shrink-0 grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-white">
+        <div className="flex-shrink-0 grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-custom-white">
           <div className="px-3 py-2">
-            <div className="text-[8px] font-semibold uppercase tracking-wide text-content/50">TY Margin</div>
+            <div className="text-[8px] font-semibold uppercase tracking-wide text-content/85">TY Margin</div>
             <div className="text-[14px] font-bold text-content mt-0.5">{fmt1(kpi.tyMarginPct)}%</div>
           </div>
           <div className="px-3 py-2">
-            <div className="text-[8px] font-semibold uppercase tracking-wide text-content/50">vs LW</div>
+            <div className="text-[8px] font-semibold uppercase tracking-wide text-content/85">vs LW</div>
             <div className={`text-[13px] font-bold mt-0.5 ${kpi.lwPtsDelta >= 0 ? "text-emerald-600" : "text-red-600"}`}>
               {fmtPts(kpi.lwPtsDelta)}
             </div>
           </div>
           <div className="px-3 py-2">
-            <div className="text-[8px] font-semibold uppercase tracking-wide text-content/50">vs LY</div>
+            <div className="text-[8px] font-semibold uppercase tracking-wide text-content/85">vs LY</div>
             <div className={`text-[13px] font-bold mt-0.5 ${kpi.ptsDelta >= 0 ? "text-emerald-600" : "text-red-600"}`}>
               {fmtPts(kpi.ptsDelta)}
             </div>
@@ -256,7 +256,7 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
 
       {/* Day strip */}
       <div
-        className="flex-shrink-0 grid bg-white border-b border-gray-100"
+        className="flex-shrink-0 grid bg-custom-white border-b border-gray-100"
         style={{ gridTemplateColumns: `repeat(${dayStrip.length + 1}, 1fr)` }}
       >
         {/* ALL cell */}
@@ -266,10 +266,10 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
             selectedDay === null ? "bg-[#1e2a4a]" : ""
           }`}
         >
-          <span className={`text-[9px] font-semibold leading-none ${selectedDay === null ? "text-white" : "text-content"}`}>
+          <span className={`text-[9px] font-semibold leading-none ${selectedDay === null ? "text-custom-white" : "text-content"}`}>
             ALL
           </span>
-          <span className={`text-[7px] ${selectedDay === null ? "text-white/60" : "text-content/50"}`}>wk</span>
+          <span className={`text-[7px] ${selectedDay === null ? "text-custom-white/85" : "text-content/85"}`}>wk</span>
         </button>
         {/* Day cells */}
         {dayStrip.map(({ date, weekday, dateStr, isUp, hasRef }) => {
@@ -284,9 +284,9 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
                 isSelected ? "bg-[#1e2a4a]" : ""
               }`}
             >
-              <span className={`text-[9px] font-semibold leading-none ${isSelected ? "text-white" : "text-content"}`}>
+              <span className={`text-[9px] font-semibold leading-none ${isSelected ? "text-custom-white" : "text-content"}`}>
                 {weekday}{" "}
-                <span className={isSelected ? "text-white/65" : "text-content/60"}>
+                <span className={isSelected ? "text-custom-white/85" : "text-content/85"}>
                   {dateStr}
                 </span>
               </span>
@@ -305,10 +305,10 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
       </div>
 
       {/* Tab bar + threshold */}
-      <div className="flex-shrink-0 flex items-center bg-white border-b border-gray-100 px-3">
+      <div className="flex-shrink-0 flex items-center bg-custom-white border-b border-gray-100 px-3">
         <div className="py-2.5 text-[11px] font-semibold text-content border-b-2 border-[#1e2a4a]">Items</div>
         <div className="flex-1" />
-        <div className="flex items-center gap-1.5 text-[9px] text-content/50">
+        <div className="flex items-center gap-1.5 text-[9px] text-content/85">
           <span>Threshold</span>
           <input
             type="number"
@@ -334,16 +334,16 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
           <button
             key={item.product_code}
             onClick={() => setSheetItem(item)}
-            className="w-full px-3 py-2.5 bg-white border-b border-gray-100 text-left active:bg-gray-50"
+            className="w-full px-3 py-2.5 bg-custom-white border-b border-gray-100 text-left active:bg-gray-50"
           >
             <div className="flex items-center gap-2.5">
               <SevBadge sev={item.tier} />
               <span className="flex-1 text-[12px] font-medium text-content truncate">{item.product_description}</span>
               <div className="flex items-baseline gap-1.5 flex-shrink-0">
                 <span className="text-[12px] font-semibold text-content">{formatCurrency2(item.tyNet)}</span>
-                <span className="text-[11px] text-content/60">{item.tyQty.toLocaleString()} u</span>
+                <span className="text-[11px] text-content/85">{item.tyQty.toLocaleString()} u</span>
               </div>
-              <ChevronRightIcon className="w-4 h-4 text-content/45 flex-shrink-0" />
+              <ChevronRightIcon className="w-4 h-4 text-content/85 flex-shrink-0" />
             </div>
             <div className="flex gap-2 mt-1.5 justify-end">
               {item.lwNet > 0 && (
@@ -363,7 +363,7 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
           <div className="flex items-start justify-between px-4 pb-3 border-b border-gray-100">
             <div className="min-w-0 flex-1">
               <div className="text-[13px] font-bold text-content truncate">{sheetItem.product_description}</div>
-              <div className="text-[10px] text-content/45 mt-0.5">{sheetItem.product_code}</div>
+              <div className="text-[10px] text-content/85 mt-0.5">{sheetItem.product_code}</div>
             </div>
             <div
               className="flex-shrink-0 ml-3 flex items-center gap-1.5 px-2 py-1 rounded-full"
@@ -387,41 +387,41 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
           {/* TW / LW / LY KPI */}
           <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100">
             <div className="px-3 py-2.5">
-              <div className="text-[8px] font-semibold uppercase tracking-wide text-content/50">TW</div>
+              <div className="text-[8px] font-semibold uppercase tracking-wide text-content/85">TW</div>
               <div className="text-[13px] font-bold text-content mt-0.5">{formatCurrency2(sheetItem.tyNet)}</div>
-              <div className="text-[9px] text-content/50 mt-0.5">{fmt1(sheetItem.tyMarginPct)}% margin</div>
-              <div className="text-[9px] text-content/40">{sheetItem.tyQty.toFixed(0)} units</div>
+              <div className="text-[9px] text-content/85 mt-0.5">{fmt1(sheetItem.tyMarginPct)}% margin</div>
+              <div className="text-[9px] text-content/85">{sheetItem.tyQty.toFixed(0)} units</div>
             </div>
             <div className="px-3 py-2.5">
-              <div className="text-[8px] font-semibold uppercase tracking-wide text-content/50">LW</div>
+              <div className="text-[8px] font-semibold uppercase tracking-wide text-content/85">LW</div>
               <div className="text-[13px] font-bold text-content mt-0.5">{formatCurrency2(sheetItem.lwNet)}</div>
               <div className={`text-[9px] font-semibold mt-0.5 ${sheetItem.lwPtsDelta >= 0 ? "text-emerald-600" : "text-red-600"}`}>
                 {fmtPts(sheetItem.lwPtsDelta)}
               </div>
-              <div className="text-[9px] text-content/40">{sheetItem.lwQty.toFixed(0)} units</div>
+              <div className="text-[9px] text-content/85">{sheetItem.lwQty.toFixed(0)} units</div>
             </div>
             <div className="px-3 py-2.5">
-              <div className="text-[8px] font-semibold uppercase tracking-wide text-content/50">LY</div>
+              <div className="text-[8px] font-semibold uppercase tracking-wide text-content/85">LY</div>
               <div className="text-[13px] font-bold text-content mt-0.5">{formatCurrency2(sheetItem.lyNet)}</div>
               <div className={`text-[9px] font-semibold mt-0.5 ${sheetItem.ptsDelta >= 0 ? "text-emerald-600" : "text-red-600"}`}>
                 {fmtPts(sheetItem.ptsDelta)}
               </div>
-              <div className="text-[9px] text-content/40">{sheetItem.lyQty.toFixed(0)} units</div>
+              <div className="text-[9px] text-content/85">{sheetItem.lyQty.toFixed(0)} units</div>
             </div>
           </div>
 
           {/* Extra rows */}
           <div className="px-4 py-2 border-b border-gray-100 flex items-center justify-between">
-            <span className="text-[11px] text-content/60">LY margin</span>
+            <span className="text-[11px] text-content/85">LY margin</span>
             <span className="text-[11px] font-semibold text-content">{fmt1(sheetItem.lyMarginPct)}%</span>
           </div>
           <div className="px-4 py-2 border-b border-gray-100 flex items-center justify-between">
-            <span className="text-[11px] text-content/60">LW margin</span>
+            <span className="text-[11px] text-content/85">LW margin</span>
             <span className="text-[11px] font-semibold text-content">{fmt1(sheetItem.lwMarginPct)}%</span>
           </div>
           {sheetItem.noCost && (
             <div className="px-4 py-2 flex items-center justify-between">
-              <span className="text-[11px] text-content/60">Cost data</span>
+              <span className="text-[11px] text-content/85">Cost data</span>
               <span className="text-[11px] font-semibold text-red-600">Missing cost data</span>
             </div>
           )}

@@ -61,13 +61,13 @@ const StoresMobile = ({ onStoreSelect, onOpenSearch }: Props) => {
         <div className="relative flex items-center justify-center mb-2">
           <div className="w-[22px] h-[22px] flex-shrink-0" />
           <div className="text-center px-8 flex-1">
-            <div className="text-white font-medium text-[13px]">Stores</div>
-            <div className="text-white/60 text-[10px] mt-0.5">{ctx.startDate} – {ctx.endDate}</div>
+            <div className="text-custom-white font-medium text-[13px]">Stores</div>
+            <div className="text-custom-white/85 text-[10px] mt-0.5">{ctx.startDate} – {ctx.endDate}</div>
           </div>
           <button
             onClick={onOpenSearch}
             aria-label="New search"
-            className="absolute right-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors"
+            className="absolute right-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/85 hover:text-custom-white hover:border-white/40 transition-colors"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
@@ -80,8 +80,8 @@ const StoresMobile = ({ onStoreSelect, onOpenSearch }: Props) => {
               { label: "Qty",   value: totalQty.toLocaleString() },
             ].map(({ label, value }) => (
               <div key={label} className="rounded px-2 py-1.5" style={{ background: "rgba(255,255,255,0.08)" }}>
-                <div className="text-[10px] text-white/50">{label}</div>
-                <div className="text-[12px] font-medium text-white mt-0.5 truncate">{value}</div>
+                <div className="text-[10px] text-custom-white/85">{label}</div>
+                <div className="text-[12px] font-medium text-custom-white mt-0.5 truncate">{value}</div>
               </div>
             ))}
           </div>
@@ -96,13 +96,13 @@ const StoresMobile = ({ onStoreSelect, onOpenSearch }: Props) => {
       {/* Store list */}
       <div className="flex-1 overflow-y-auto thin-scrollbar">
         {ctx.loadingStores && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/70">Loading stores…</div>
+          <div className="flex items-center justify-center py-16 text-[12px] text-content/85">Loading stores…</div>
         )}
         {!ctx.loadingStores && ctx.noStoresFound && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/70">No stores found for this date range.</div>
+          <div className="flex items-center justify-center py-16 text-[12px] text-content/85">No stores found for this date range.</div>
         )}
         {!ctx.loadingStores && visible.length === 0 && !ctx.noStoresFound && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/70">No stores match filter.</div>
+          <div className="flex items-center justify-center py-16 text-[12px] text-content/85">No stores match filter.</div>
         )}
         {!ctx.loadingStores && visible.map((store) => {
           const tier = toTier(store.risk_tier);
@@ -126,7 +126,7 @@ const StoresMobile = ({ onStoreSelect, onOpenSearch }: Props) => {
                   { label: "Qty",   value: formatBigNumber(store.total_qty, 0) },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex items-baseline gap-1 rounded px-1.5 py-0.5" style={chipStyle}>
-                    <span className="text-[9px] text-content/50">{label}</span>
+                    <span className="text-[9px] text-content/85">{label}</span>
                     <span className="text-[10px] font-semibold text-content">{value}</span>
                   </div>
                 ))}

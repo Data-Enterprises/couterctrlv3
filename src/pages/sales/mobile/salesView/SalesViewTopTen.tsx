@@ -38,23 +38,23 @@ const SalesViewTopTen = ({ displayName }: SalesViewTopTenProps) => {
             </div>
 
             <div>
-              <div className="text-[9px] text-content/60">Sales</div>
+              <div className="text-[9px] text-content/85">Sales</div>
               <div className="font-medium">
                 {formatCurrency2(item.total_sales)}
               </div>
             </div>
             <div>
-              <div className="text-[9px] text-content/60">Qty</div>
+              <div className="text-[9px] text-content/85">Qty</div>
               <div className="font-medium">{formatBigNumber(item.qty, 0)}</div>
             </div>
 
             {/* Column 2 */}
             <div>
-              <div className="text-[9px] text-content/60">COGS</div>
+              <div className="text-[9px] text-content/85">COGS</div>
               <div className="font-medium">{formatCurrency2(item.cost)}</div>
             </div>
             <div>
-              <div className="text-[9px] text-content/60">Profit</div>
+              <div className="text-[9px] text-content/85">Profit</div>
               <div className="font-medium">
                 {formatCurrency2(item.total_sales - item.cost)}
               </div>
@@ -62,25 +62,25 @@ const SalesViewTopTen = ({ displayName }: SalesViewTopTenProps) => {
 
             {/* 3rd row: 2x4 grid (GPM / RPU / PPU / CPU) */}
             <div>
-              <div className="text-[9px] text-content/60">GPM</div>
+              <div className="text-[9px] text-content/85">GPM</div>
               <div className="font-medium">
                 {gpm(item.total_sales, item.cost)}
               </div>
             </div>
             <div>
-              <div className="text-[9px] text-content/60">RPU</div>
+              <div className="text-[9px] text-content/85">RPU</div>
               <div className="font-medium">
                 {formatCurrency2(rpu(item.total_sales, item.qty))}
               </div>
             </div>
             <div>
-              <div className="text-[9px] text-content/60">PPU</div>
+              <div className="text-[9px] text-content/85">PPU</div>
               <div className="font-medium">
                 {formatCurrency2(ppu(item.total_sales, item.cost, item.qty))}
               </div>
             </div>
             <div>
-              <div className="text-[9px] text-content/60">CPU</div>
+              <div className="text-[9px] text-content/85">CPU</div>
               <div className="font-medium">
                 {formatCurrency2(cpu(item.cost, item.qty))}
               </div>

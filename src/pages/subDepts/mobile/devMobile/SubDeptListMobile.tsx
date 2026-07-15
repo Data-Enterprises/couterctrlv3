@@ -71,14 +71,14 @@ const SubDeptListMobile = ({ onSearch, gradingProgress }: Props) => {
       <div className="flex-shrink-0 px-3 pt-2 pb-2.5" style={{ background: "#1e2a4a" }}>
         <div className="flex items-start justify-between">
           <div>
-            <div className="text-[13px] font-semibold text-white">{storeName}</div>
+            <div className="text-[13px] font-semibold text-custom-white">{storeName}</div>
             <div className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
               {weekLabel}
             </div>
           </div>
           <button
             onClick={onSearch}
-            className="w-[30px] h-[30px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors flex-shrink-0 mt-0.5"
+            className="w-[30px] h-[30px] flex items-center justify-center rounded border border-white/20 text-custom-white/85 hover:text-custom-white hover:border-white/40 transition-colors flex-shrink-0 mt-0.5"
           >
             <MagnifyingGlassIcon className="w-4 h-4" />
           </button>
@@ -89,19 +89,19 @@ const SubDeptListMobile = ({ onSearch, gradingProgress }: Props) => {
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
               <div className="w-[7px] h-[7px] rounded-[2px] bg-red-200 flex-shrink-0" />
-              <span className="text-white/60 text-[9px]">Critical &gt;{gradingThreshold} pts</span>
+              <span className="text-custom-white/85 text-[9px]">Critical &gt;{gradingThreshold} pts</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" />
-              <span className="text-white/60 text-[9px]">Watch ≤{gradingThreshold} pts</span>
+              <span className="text-custom-white/85 text-[9px]">Watch ≤{gradingThreshold} pts</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-200 flex-shrink-0" />
-              <span className="text-white/60 text-[9px]">Healthy</span>
+              <span className="text-custom-white/85 text-[9px]">Healthy</span>
             </div>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
-            <span className="text-[9px] text-white/45">Threshold</span>
+            <span className="text-[9px] text-custom-white/85">Threshold</span>
             <ThresholdFilter
               value={rawGradingThreshold === null ? null : { op: "gt", amount: rawGradingThreshold }}
               onChange={(v) => dispatch(setGradingThreshold(v?.amount ?? null))}

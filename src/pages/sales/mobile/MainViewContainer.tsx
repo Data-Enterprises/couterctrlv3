@@ -52,7 +52,7 @@ const MainViewContainer = () => {
     );
 
   const activeStyle = (view: SalesMobileView) => {
-    return ctx.view === view ? "text-orange-500" : "text-content/60";
+    return ctx.view === view ? "text-orange-500" : "text-content/85";
   };
 
   // The Sales Tracker Dashboard
@@ -64,7 +64,7 @@ const MainViewContainer = () => {
     const activeTrackerStyle = (view: SalesTrackerView) => {
       return ctx.salesTrackerView === view
         ? "text-orange-500"
-        : "text-content/60";
+        : "text-content/85";
     };
 
     return (

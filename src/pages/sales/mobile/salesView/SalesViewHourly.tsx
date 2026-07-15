@@ -128,7 +128,7 @@ const SalesViewHourly = ({ displayName }: SalesViewHourlyProps) => {
                       </div>
                     </div>
                   ) : (
-                    <div className="h-[66px] rounded-lg shadow-md p-1.5 flex justify-center items-center font-medium text-content/60 bg-bkg">
+                    <div className="h-[66px] rounded-lg shadow-md p-1.5 flex justify-center items-center font-medium text-content/85 bg-bkg">
                       No Data
                     </div>
                   )}
@@ -152,7 +152,7 @@ const SalesViewHourly = ({ displayName }: SalesViewHourlyProps) => {
                       </div>
                     </div>
                   ) : (
-                    <div className="h-[66px] rounded-lg shadow-md p-1.5 flex justify-center items-center font-medium text-content/60 bg-bkg">
+                    <div className="h-[66px] rounded-lg shadow-md p-1.5 flex justify-center items-center font-medium text-content/85 bg-bkg">
                       No Data
                     </div>
                   )}
@@ -200,7 +200,7 @@ const SalesViewHourly = ({ displayName }: SalesViewHourlyProps) => {
                       </div>
                     </div>
                   ) : (
-                    <div className="h-[66px] rounded-lg shadow-md p-1.5 flex justify-center items-center font-medium text-content/60 bg-bkg">
+                    <div className="h-[66px] rounded-lg shadow-md p-1.5 flex justify-center items-center font-medium text-content/85 bg-bkg">
                       No Data
                     </div>
                   )}
@@ -227,7 +227,7 @@ const SalesViewHourly = ({ displayName }: SalesViewHourlyProps) => {
                       </div>
                     </div>
                   ) : (
-                    <div className="h-[66px] rounded-lg shadow-md p-1.5 flex justify-center items-center font-medium text-content/60 bg-bkg">
+                    <div className="h-[66px] rounded-lg shadow-md p-1.5 flex justify-center items-center font-medium text-content/85 bg-bkg">
                       No Data
                     </div>
                   )}

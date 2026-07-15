@@ -38,19 +38,19 @@ const CashierOverviewMobile = ({ cashier, onBack, onOpenSearch }: Props) => {
         <div className="relative flex items-center justify-center mb-2">
           <button
             onClick={onBack}
-            className="absolute left-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors"
+            className="absolute left-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/85 hover:text-custom-white hover:border-white/40 transition-colors"
             aria-label="Back to cashiers"
           >
             <ArrowLeftIcon className="w-3.5 h-3.5" />
           </button>
           <div className="text-center px-8">
-            <div className="text-white font-medium text-[13px]">{cashier.cashier_name}</div>
-            <div className="text-white/60 text-[10px] mt-0.5">{cashier.store_name}</div>
+            <div className="text-custom-white font-medium text-[13px]">{cashier.cashier_name}</div>
+            <div className="text-custom-white/85 text-[10px] mt-0.5">{cashier.store_name}</div>
           </div>
           <button
             onClick={onOpenSearch}
             aria-label="New search"
-            className="absolute right-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors"
+            className="absolute right-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/85 hover:text-custom-white hover:border-white/40 transition-colors"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
@@ -63,8 +63,8 @@ const CashierOverviewMobile = ({ cashier, onBack, onOpenSearch }: Props) => {
             { label: "Trans", value: formatBigNumber(cashier.total_transactions, 0) },
           ].map(({ label, value }) => (
             <div key={label} className="rounded px-2 py-1.5" style={{ background: "rgba(255,255,255,0.08)" }}>
-              <div className="text-[10px] text-white/50">{label}</div>
-              <div className="text-[12px] font-medium text-white mt-0.5 truncate">{value}</div>
+              <div className="text-[10px] text-custom-white/85">{label}</div>
+              <div className="text-[12px] font-medium text-custom-white mt-0.5 truncate">{value}</div>
             </div>
           ))}
         </div>
@@ -73,7 +73,7 @@ const CashierOverviewMobile = ({ cashier, onBack, onOpenSearch }: Props) => {
       {/* Exception table header */}
       <div className="flex-shrink-0 grid px-4 py-2 bg-gray-50 border-b border-gray-100" style={{ gridTemplateColumns: "1.5fr 1fr 0.7fr 0.7fr 0.7fr" }}>
         {["Exception", "Sales", "Qty", "Count", "Rate"].map((h, i) => (
-          <div key={h} className="text-[9px] font-semibold uppercase tracking-wide text-content/45" style={{ textAlign: i > 0 ? "right" : "left" }}>{h}</div>
+          <div key={h} className="text-[9px] font-semibold uppercase tracking-wide text-content/85" style={{ textAlign: i > 0 ? "right" : "left" }}>{h}</div>
         ))}
       </div>
 
@@ -93,9 +93,9 @@ const CashierOverviewMobile = ({ cashier, onBack, onOpenSearch }: Props) => {
           />
         ))}
         <div className="flex items-center justify-center gap-2 px-4 py-3">
-          <span className="text-[10px] text-content/45 uppercase tracking-wide">Cashier risk</span>
+          <span className="text-[10px] text-content/85 uppercase tracking-wide">Cashier risk</span>
           <span className="text-[9px] font-medium px-2 py-0.5 rounded" style={{ background: rc.bg, color: rc.color }}>{cashier.risk_tier}</span>
-          <span className="text-[10px] text-content/45 uppercase tracking-wide ml-2">Exception tier</span>
+          <span className="text-[10px] text-content/85 uppercase tracking-wide ml-2">Exception tier</span>
           <span className="text-[9px] font-medium px-2 py-0.5 rounded" style={{ background: rc.bg, color: rc.color }}>{cashier.exception_tier}</span>
         </div>
       </div>

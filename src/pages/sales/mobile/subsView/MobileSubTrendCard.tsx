@@ -72,7 +72,7 @@ const SubTrendCard = ({ sub, row, dates }: TrendRowProps) => {
 
   return (
     <div className={`p-1 rounded-lg shadow-md border ${borderColor} text-[11px]`}>
-      <div className="font-medium text-content/60 flex justify-between pb-0.5">
+      <div className="font-medium text-content/85 flex justify-between pb-0.5">
         <div>{title}</div>
         <div className="font-bold">{noData.length ? noData : dateRange()}</div>
       </div>
@@ -85,19 +85,19 @@ const SubTrendCard = ({ sub, row, dates }: TrendRowProps) => {
       {/* First metrics row (Sales / Net / Qty / Cpn %) */}
       <div className="grid grid-cols-4 gap-1">
         <div className="min-w-0">
-          <div className="text-content/60">Sales</div>
+          <div className="text-content/85">Sales</div>
           <div className="font-medium">{formatCurrency2(sub.total_sales)}</div>
         </div>
         <div className="min-w-0">
-          <div className="text-content/60">Net</div>
+          <div className="text-content/85">Net</div>
           <div className="font-medium">{formatCurrency2(sub.net_sales)}</div>
         </div>
         <div className="min-w-0">
-          <div className="text-content/60">Qty</div>
+          <div className="text-content/85">Qty</div>
           <div className="font-medium">{formatBigNumber(sub.qty, 0)}</div>
         </div>
         <div className="min-w-0">
-          <div className="text-content/60 text-[10.5px]">Cpn %</div>
+          <div className="text-content/85 text-[10.5px]">Cpn %</div>
           <div className="font-medium">{couponSalePct(cpns, sub.total_sales)}</div>
         </div>
       </div>
@@ -109,23 +109,23 @@ const SubTrendCard = ({ sub, row, dates }: TrendRowProps) => {
 
       <div className="grid grid-cols-4 gap-1 text-[10.5px]">
         <div className="min-w-0">
-          <div className="text-content/60">Digital Cpn</div>
+          <div className="text-content/85">Digital Cpn</div>
           <div className="font-medium">
             {formatCurrency2(sub.digital_coupons)}
           </div>
         </div>
         <div className="min-w-0">
-          <div className="text-content/60">Store Cpn</div>
+          <div className="text-content/85">Store Cpn</div>
           <div className="font-medium">{formatCurrency2(sub.store_coupon)}</div>
         </div>
         <div className="min-w-0">
-          <div className="text-content/60">E. Store Cpn</div>
+          <div className="text-content/85">E. Store Cpn</div>
           <div className="font-medium">
             {formatCurrency2(sub.elec_store_coupons)}
           </div>
         </div>
         <div className="min-w-0">
-          <div className="text-content/60">E. Instore Cpn</div>
+          <div className="text-content/85">E. Instore Cpn</div>
           <div className="font-medium">
             {formatCurrency2(sub.elec_instore_coupons)}
           </div>

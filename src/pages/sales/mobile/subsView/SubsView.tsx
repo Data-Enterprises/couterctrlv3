@@ -196,7 +196,7 @@ const SubsView = () => {
   return (
     <div className="p-2 space-y-2 max-h-[calc(100vh-6rem)] overflow-y-auto">
       <div className="bg-custom-white rounded-lg shadow-lg">
-        <div className="grid grid-cols-[1fr_0.5fr_0.5fr_0.4fr] px-2 py-0.5 text-content/60 text-[11px] font-medium">
+        <div className="grid grid-cols-[1fr_0.5fr_0.5fr_0.4fr] px-2 py-0.5 text-content/85 text-[11px] font-medium">
           <div>Sub Dept</div>
           <div>This Yr $</div>
           <div>Last Yr $</div>
@@ -241,11 +241,11 @@ const SubsView = () => {
 
         <div className="flex justify-between items-center text-[11px] mt-1">
           <div className="flex items-center gap-1">
-            <div className="text-content/60">Last Week</div>
+            <div className="text-content/85">Last Week</div>
             {trendIcon(weekTrend, "this")}
           </div>
           <div className="flex items-center gap-1">
-            <div className="text-content/60">Last Year</div>
+            <div className="text-content/85">Last Year</div>
             <div>{trendIcon(yearTrend, "last")}</div>
           </div>
         </div>

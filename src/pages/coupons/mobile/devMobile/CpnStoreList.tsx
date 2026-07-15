@@ -31,7 +31,7 @@ const CpnStoreList = ({ coupons, groupName, dateRangeLabel, sortMetric, onSortMe
       <div className="flex-shrink-0 px-3 pt-2 pb-2.5" style={{ background: "#1e2a4a" }}>
         <div className="flex items-start justify-between gap-2">
           <div>
-            <div className="text-[13px] font-semibold text-white">{groupName}</div>
+            <div className="text-[13px] font-semibold text-custom-white">{groupName}</div>
             <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
               {dateRangeLabel}
             </div>
@@ -42,7 +42,7 @@ const CpnStoreList = ({ coupons, groupName, dateRangeLabel, sortMetric, onSortMe
                 <button
                   key={m}
                   onClick={() => onSortMetric(m)}
-                  className={`px-2 py-1 text-[9px] font-medium ${sortMetric === m ? "bg-white/20 text-white" : "text-white/40"}`}
+                  className={`px-2 py-1 text-[9px] font-medium ${sortMetric === m ? "bg-white/20 text-custom-white" : "text-custom-white/85"}`}
                 >
                   {m === "amount" ? "Amt" : "Qty"}
                 </button>
@@ -50,7 +50,7 @@ const CpnStoreList = ({ coupons, groupName, dateRangeLabel, sortMetric, onSortMe
             </div>
             <button
               onClick={onSearch}
-              className="w-[28px] h-[28px] flex items-center justify-center rounded border border-white/20 text-white/60"
+              className="w-[28px] h-[28px] flex items-center justify-center rounded border border-white/20 text-custom-white/85"
             >
               <MagnifyingGlassIcon className="w-4 h-4" />
             </button>
@@ -58,11 +58,11 @@ const CpnStoreList = ({ coupons, groupName, dateRangeLabel, sortMetric, onSortMe
         </div>
         <div className="flex items-baseline gap-3 mt-2 pt-1.5 border-t border-white/[0.08]">
           <div className="flex items-baseline gap-1.5">
-            <span className="text-[8px] uppercase tracking-wide text-white/40">Records</span>
-            <span className="text-[12px] font-semibold text-white">{coupons.length}</span>
+            <span className="text-[8px] uppercase tracking-wide text-custom-white/85">Records</span>
+            <span className="text-[12px] font-semibold text-custom-white">{coupons.length}</span>
           </div>
-          <span className="text-[10px] font-medium text-white/70">{formatCurrency2(totalAmount)} total</span>
-          <span className="text-[10px] text-white/40">{stores.length} stores</span>
+          <span className="text-[10px] font-medium text-custom-white/85">{formatCurrency2(totalAmount)} total</span>
+          <span className="text-[10px] text-custom-white/85">{stores.length} stores</span>
         </div>
       </div>
 
@@ -71,15 +71,15 @@ const CpnStoreList = ({ coupons, groupName, dateRangeLabel, sortMetric, onSortMe
           <button
             key={storeId}
             onClick={() => onSelect(storeId)}
-            className="w-full flex items-center px-3 py-2.5 bg-white border-b border-gray-100 text-left active:bg-gray-50 gap-3"
+            className="w-full flex items-center px-3 py-2.5 bg-custom-white border-b border-gray-100 text-left active:bg-gray-50 gap-3"
           >
             <span className="text-[12px] font-medium text-content flex-1 truncate">{name}</span>
-            <span className="text-[10px] text-content/45 flex-shrink-0">{count}</span>
+            <span className="text-[10px] text-content/85 flex-shrink-0">{count}</span>
             <span className="text-[11px] font-semibold text-content flex-shrink-0 tabular-nums">
               {formatCurrency2(total)}
             </span>
             <svg
-              className="w-4 h-4 text-content/30 flex-shrink-0"
+              className="w-4 h-4 text-content/85 flex-shrink-0"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"

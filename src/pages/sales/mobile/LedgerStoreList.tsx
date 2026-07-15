@@ -65,25 +65,25 @@ const LedgerStoreList = () => {
       <div className="bg-[#1e2a4a] px-4 pt-3 pb-4 flex-shrink-0">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-white font-semibold text-[15px]">Weekly performance</div>
-            <div className="text-white/65 text-[11px] mt-0.5">{weekLabel}</div>
+            <div className="text-custom-white font-semibold text-[15px]">Weekly performance</div>
+            <div className="text-custom-white/85 text-[11px] mt-0.5">{weekLabel}</div>
           </div>
           <button
             onClick={() => dispatch(setHasSearched(false))}
             aria-label="New search"
-            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-white/25 text-white/65 hover:text-white hover:border-white/45 transition-colors"
+            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-white/25 text-custom-white/85 hover:text-custom-white hover:border-white/45 transition-colors"
           >
             <MagnifyingGlassIcon className="w-4 h-4" />
           </button>
         </div>
         <div className="flex items-center justify-between gap-3 mt-2">
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-red-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">{threshold ? `Critical >${threshold.amount}%` : "Critical"}</span></div>
-            <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">{threshold ? `Watch ≤${threshold.amount}%` : "Watch"}</span></div>
-            <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">Healthy</span></div>
+            <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-red-200 flex-shrink-0" /><span className="text-custom-white/85 text-[9px]">{threshold ? `Critical >${threshold.amount}%` : "Critical"}</span></div>
+            <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" /><span className="text-custom-white/85 text-[9px]">{threshold ? `Watch ≤${threshold.amount}%` : "Watch"}</span></div>
+            <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-200 flex-shrink-0" /><span className="text-custom-white/85 text-[9px]">Healthy</span></div>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
-            <span className="text-[9px] text-white/45">Threshold</span>
+            <span className="text-[9px] text-custom-white/85">Threshold</span>
             <ThresholdFilter
               value={threshold}
               onChange={(v) => dispatch(setThreshold(v))}
@@ -101,7 +101,7 @@ const LedgerStoreList = () => {
         {watchRows.map((r) => <StoreRow key={r.storeid} row={r} onClick={handleSelectStore} />)}
         {healthyRows.map((r) => <StoreRow key={r.storeid} row={r} onClick={handleSelectStore} />)}
         {filtered.length === 0 && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/55">
+          <div className="flex items-center justify-center py-16 text-[12px] text-content/85">
             No stores match filter
           </div>
         )}

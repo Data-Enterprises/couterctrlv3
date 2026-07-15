@@ -61,8 +61,8 @@ const MetricChip = ({
       isPass === null
         ? "bg-gray-200 text-gray-500"
         : isPass
-        ? "bg-emerald-400 text-white"
-        : "bg-red-400 text-white"
+        ? "bg-emerald-400 text-custom-white"
+        : "bg-red-400 text-custom-white"
     }`}
   >
     <span className="text-[9px] opacity-80">{label}</span>
@@ -265,26 +265,26 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
       <div className="bg-[#1e2a4a] px-4 pt-3 pb-4 flex-shrink-0">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-white font-semibold text-[15px]">Loss prevention</div>
-            <div className="text-white/65 text-[11px] mt-0.5">{weekLabel}</div>
+            <div className="text-custom-white font-semibold text-[15px]">Loss prevention</div>
+            <div className="text-custom-white/85 text-[11px] mt-0.5">{weekLabel}</div>
           </div>
           <button
             onClick={onOpenSearch}
             aria-label="New search"
-            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-white/25 text-white/65 hover:text-white hover:border-white/45 transition-colors"
+            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-white/25 text-custom-white/85 hover:text-custom-white hover:border-white/45 transition-colors"
           >
             <MagnifyingGlassIcon className="w-4 h-4" />
           </button>
         </div>
         <div className="flex items-center gap-2 mt-2">
-          <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-red-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">{noSale ? "Critical 0/2" : "Critical ≤1/4"}</span></div>
-          <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">{noSale ? "Watch 1/2" : "Watch 2/4"}</span></div>
-          <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">{noSale ? "Healthy 2/2" : "Healthy ≥3/4"}</span></div>
+          <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-red-200 flex-shrink-0" /><span className="text-custom-white/85 text-[9px]">{noSale ? "Critical 0/2" : "Critical ≤1/4"}</span></div>
+          <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" /><span className="text-custom-white/85 text-[9px]">{noSale ? "Watch 1/2" : "Watch 2/4"}</span></div>
+          <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-200 flex-shrink-0" /><span className="text-custom-white/85 text-[9px]">{noSale ? "Healthy 2/2" : "Healthy ≥3/4"}</span></div>
         </div>
       </div>
 
       {/* Exception type selector */}
-      <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 bg-white">
+      <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 bg-custom-white">
         <SelectFilter
           options={lp.saleTypes.filter((st) => st.sale_type !== "Description").map((st) => ({ value: st.sale_type, label: st.sale_type }))}
           value={lp.selectedSaleType}
@@ -300,10 +300,10 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
       {/* Store list */}
       <div className="flex-1 overflow-y-auto thin-scrollbar">
         {lp.loadingCashierDetails && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/70">Loading…</div>
+          <div className="flex items-center justify-center py-16 text-[12px] text-content/85">Loading…</div>
         )}
         {!lp.loadingCashierDetails && lp.noTransMsg && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/70">No exceptions found.</div>
+          <div className="flex items-center justify-center py-16 text-[12px] text-content/85">No exceptions found.</div>
         )}
         {!lp.loadingCashierDetails && !lp.noTransMsg && visible.map((d) => {
           const storeName = assignedStores.find((s) => s.storeid === d.storeid)?.store_name ?? d.store_name;

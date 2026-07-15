@@ -36,21 +36,21 @@ const RcvVendorList = ({ list, storeName, dateRangeLabel, onSelect, onSearch }: 
       <div className="flex-shrink-0 px-3 pt-2 pb-2.5" style={{ background: "#1e2a4a" }}>
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <div className="text-[13px] font-semibold text-white truncate">{storeName}</div>
+            <div className="text-[13px] font-semibold text-custom-white truncate">{storeName}</div>
             <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
               {dateRangeLabel}
             </div>
           </div>
           <button
             onClick={onSearch}
-            className="w-[28px] h-[28px] flex items-center justify-center rounded border border-white/20 text-white/60 flex-shrink-0"
+            className="w-[28px] h-[28px] flex items-center justify-center rounded border border-white/20 text-custom-white/85 flex-shrink-0"
           >
             <MagnifyingGlassIcon className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      <div className="flex-shrink-0 grid grid-cols-4 bg-white border-b border-gray-100">
+      <div className="flex-shrink-0 grid grid-cols-4 bg-custom-white border-b border-gray-100">
         {[
           { label: "Receivers", value: String(totalReceivers) },
           { label: "Items", value: String(totalItems) },
@@ -69,7 +69,7 @@ const RcvVendorList = ({ list, storeName, dateRangeLabel, onSelect, onSearch }: 
           <button
             key={vendorid}
             onClick={() => onSelect(vendorid)}
-            className="w-full flex items-center px-3 py-2.5 bg-white border-b border-gray-100 text-left active:bg-gray-50 gap-3"
+            className="w-full flex items-center px-3 py-2.5 bg-custom-white border-b border-gray-100 text-left active:bg-gray-50 gap-3"
           >
             <div className="flex-1 min-w-0">
               <div className="text-[12px] font-medium text-content truncate">{name}</div>
@@ -79,7 +79,7 @@ const RcvVendorList = ({ list, storeName, dateRangeLabel, onSelect, onSearch }: 
             </div>
             <div className="text-[10px] text-content-70 flex-shrink-0 tabular-nums">{items} items</div>
             <svg
-              className="w-4 h-4 text-content/30 flex-shrink-0"
+              className="w-4 h-4 text-content/85 flex-shrink-0"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"

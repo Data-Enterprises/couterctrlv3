@@ -146,12 +146,12 @@ const TransactionsMobile = ({ onBack }: Props) => {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="bg-[#1e2a4a] px-4 pt-3 pb-4 flex items-start gap-3 flex-shrink-0">
-        <button onClick={onBack} className="text-white/75 mt-0.5 flex-shrink-0">
+        <button onClick={onBack} className="text-custom-white/85 mt-0.5 flex-shrink-0">
           <ChevronLeftIcon className="w-5 h-5" />
         </button>
         <div className="min-w-0 flex-1">
-          <div className="text-white font-semibold text-[15px] truncate">{cashierName} <span className="text-white/45 font-normal text-[12px]">#{lp.selectedCashier.cashier_number}</span> <span className="text-white/50 font-normal text-[11px]">— {lp.selectedSaleType} Activity</span></div>
-          {storeName && <div className="text-white/45 text-[10px] mt-0.5">{storeName}</div>}
+          <div className="text-custom-white font-semibold text-[15px] truncate">{cashierName} <span className="text-custom-white/85 font-normal text-[12px]">#{lp.selectedCashier.cashier_number}</span> <span className="text-custom-white/85 font-normal text-[11px]">— {lp.selectedSaleType} Activity</span></div>
+          {storeName && <div className="text-custom-white/85 text-[10px] mt-0.5">{storeName}</div>}
         </div>
       </div>
 
@@ -159,13 +159,13 @@ const TransactionsMobile = ({ onBack }: Props) => {
       {cashierGrade && (
         <>
           <div className="flex-shrink-0 px-3 py-[9px] bg-gray-100 border-b border-gray-200 flex items-center justify-between">
-            <span className="text-[9px] font-semibold uppercase tracking-wide text-content/50">Cashier Totals</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wide text-content/85">Cashier Totals</span>
             <div className="flex items-center gap-1.5">
-              <div className="flex items-center gap-1"><div className="w-[6px] h-[6px] rounded-[2px] bg-emerald-400 flex-shrink-0" /><span className="text-[9px] font-semibold uppercase tracking-wide text-content/50">below avg</span></div>
-              <div className="flex items-center gap-1"><div className="w-[6px] h-[6px] rounded-[2px] bg-red-400 flex-shrink-0" /><span className="text-[9px] font-semibold uppercase tracking-wide text-content/50">above avg</span></div>
+              <div className="flex items-center gap-1"><div className="w-[6px] h-[6px] rounded-[2px] bg-emerald-400 flex-shrink-0" /><span className="text-[9px] font-semibold uppercase tracking-wide text-content/85">below avg</span></div>
+              <div className="flex items-center gap-1"><div className="w-[6px] h-[6px] rounded-[2px] bg-red-400 flex-shrink-0" /><span className="text-[9px] font-semibold uppercase tracking-wide text-content/85">above avg</span></div>
             </div>
           </div>
-          <div className="flex-shrink-0 grid divide-x divide-gray-100 bg-white border-b border-gray-100"
+          <div className="flex-shrink-0 grid divide-x divide-gray-100 bg-custom-white border-b border-gray-100"
             style={{ gridTemplateColumns: noSale ? "repeat(2, 1fr)" : "repeat(4, 1fr)" }}
           >
             {[
@@ -177,7 +177,7 @@ const TransactionsMobile = ({ onBack }: Props) => {
               ] : []),
             ].map(({ label, value, pct }) => (
               <div key={label} className="px-3 py-2">
-                <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">{label}</div>
+                <div className="text-[9px] font-medium uppercase tracking-wide text-content/85">{label}</div>
                 <div className="text-[12px] font-semibold text-content mt-0.5">{value}</div>
                 <span
                   className="inline-flex items-center gap-0.5 text-[7.5px] font-bold px-1.5 py-0.5 rounded mt-1"
@@ -197,15 +197,15 @@ const TransactionsMobile = ({ onBack }: Props) => {
       {peerAvgs && (
         <>
           <div className="flex-shrink-0 px-3 py-[9px] bg-gray-100 border-b border-gray-200 flex items-center">
-            <span className="text-[9px] font-semibold uppercase tracking-wide text-content/50">Store Averages</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wide text-content/85">Store Averages</span>
           </div>
-          <div className="flex-shrink-0 grid divide-x divide-gray-100 bg-white border-b border-gray-100"
+          <div className="flex-shrink-0 grid divide-x divide-gray-100 bg-custom-white border-b border-gray-100"
             style={{ gridTemplateColumns: noSale ? "repeat(2, 1fr)" : "repeat(4, 1fr)" }}
           >
-            <div className="px-3 py-2"><div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Trans</div><div className="text-[12px] font-semibold text-content mt-0.5">{Math.round(peerAvgs.trans).toLocaleString()}</div></div>
-            <div className="px-3 py-2"><div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Items</div><div className="text-[12px] font-semibold text-content mt-0.5">{Math.round(peerAvgs.qty).toLocaleString()}</div></div>
-            {!noSale && <div className="px-3 py-2"><div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Total</div><div className="text-[12px] font-semibold text-content mt-0.5">{formatCurrency2(Math.abs(peerAvgs.sales))}</div></div>}
-            {!noSale && <div className="px-3 py-2"><div className="text-[9px] font-medium uppercase tracking-wide text-content/70">Avg ticket</div><div className="text-[12px] font-semibold text-content mt-0.5">{formatCurrency2(Math.abs(peerAvgs.avgTicket))}</div></div>}
+            <div className="px-3 py-2"><div className="text-[9px] font-medium uppercase tracking-wide text-content/85">Trans</div><div className="text-[12px] font-semibold text-content mt-0.5">{Math.round(peerAvgs.trans).toLocaleString()}</div></div>
+            <div className="px-3 py-2"><div className="text-[9px] font-medium uppercase tracking-wide text-content/85">Items</div><div className="text-[12px] font-semibold text-content mt-0.5">{Math.round(peerAvgs.qty).toLocaleString()}</div></div>
+            {!noSale && <div className="px-3 py-2"><div className="text-[9px] font-medium uppercase tracking-wide text-content/85">Total</div><div className="text-[12px] font-semibold text-content mt-0.5">{formatCurrency2(Math.abs(peerAvgs.sales))}</div></div>}
+            {!noSale && <div className="px-3 py-2"><div className="text-[9px] font-medium uppercase tracking-wide text-content/85">Avg ticket</div><div className="text-[12px] font-semibold text-content mt-0.5">{formatCurrency2(Math.abs(peerAvgs.avgTicket))}</div></div>}
           </div>
         </>
       )}
@@ -234,7 +234,7 @@ const TransactionsMobile = ({ onBack }: Props) => {
 
       {/* Column headers — Date, Qty, Total are sortable */}
       <div className="flex-shrink-0 grid px-4 py-2 bg-gray-50 border-b border-gray-100" style={{ gridTemplateColumns: "1fr 0.6fr 0.55fr 0.7fr" }}>
-        <div className="text-[9px] font-semibold uppercase tracking-wide text-content/45">Trans ID</div>
+        <div className="text-[9px] font-semibold uppercase tracking-wide text-content/85">Trans ID</div>
         {(["date", "qty", "total"] as SortCol[]).map((col) => {
           const label = col === "date" ? "Date" : col === "qty" ? "Items" : "Total";
           const isActive = sortCol === col && sortDir !== "none";
@@ -247,7 +247,7 @@ const TransactionsMobile = ({ onBack }: Props) => {
                 else if (sortDir === "desc") setSortDir("asc");
                 else if (sortDir === "asc") { setSortDir("none"); setSortCol(null); }
               }}
-              className={`text-[9px] font-semibold uppercase tracking-wide text-right ${isActive ? "text-[#1e2a4a]" : "text-content/45"}`}
+              className={`text-[9px] font-semibold uppercase tracking-wide text-right ${isActive ? "text-[#1e2a4a]" : "text-content/85"}`}
             >
               {label}{arrow}
             </button>
@@ -258,10 +258,10 @@ const TransactionsMobile = ({ onBack }: Props) => {
       {/* Rows */}
       <div className="flex-1 overflow-y-auto thin-scrollbar">
         {lp.fetchingCashierTransactions && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/70">{lp.transactionLoadingMessage || "Loading…"}</div>
+          <div className="flex items-center justify-center py-16 text-[12px] text-content/85">{lp.transactionLoadingMessage || "Loading…"}</div>
         )}
         {!lp.fetchingCashierTransactions && visible.length === 0 && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/70">No transactions match filters.</div>
+          <div className="flex items-center justify-center py-16 text-[12px] text-content/85">No transactions match filters.</div>
         )}
         {!lp.fetchingCashierTransactions && visible.map((ov, i) => (
           <button
@@ -271,8 +271,8 @@ const TransactionsMobile = ({ onBack }: Props) => {
             style={{ gridTemplateColumns: "1fr 0.6fr 0.55fr 0.7fr", background: i % 2 === 1 ? "rgba(30,42,74,0.015)" : undefined }}
           >
             <span className="text-[12px] font-semibold underline truncate" style={{ color: "#1e2a4a", textUnderlineOffset: 2 }}>#{ov.transaction_id}</span>
-            <span className="text-[12px] text-content/70 text-right">{fmtDate(ov.sale_date)}</span>
-            <span className="text-[12px] text-content/70 text-right">{(ov.qty ?? 0).toLocaleString()}</span>
+            <span className="text-[12px] text-content/85 text-right">{fmtDate(ov.sale_date)}</span>
+            <span className="text-[12px] text-content/85 text-right">{(ov.qty ?? 0).toLocaleString()}</span>
             <span className="text-[12px] font-medium text-content text-right">{formatCurrency2(ov.total_sales)}</span>
           </button>
         ))}
@@ -283,21 +283,21 @@ const TransactionsMobile = ({ onBack }: Props) => {
         <BottomSheet onClose={handleCloseReceipt} closeRef={receiptCloseRef}>
           <div className="flex flex-col" style={{ maxHeight: "80vh" }}>
             {loadingReceipt ? (
-              <div className="flex items-center justify-center py-16 text-[12px] text-content/70">Loading receipt…</div>
+              <div className="flex items-center justify-center py-16 text-[12px] text-content/85">Loading receipt…</div>
             ) : !receipt ? (
-              <div className="flex items-center justify-center py-16 text-[12px] text-content/70">No line items found.</div>
+              <div className="flex items-center justify-center py-16 text-[12px] text-content/85">No line items found.</div>
             ) : (
               <>
-                <div className="flex-shrink-0 flex items-center justify-end gap-1.5 px-4 py-2 border-b border-gray-100 bg-white">
+                <div className="flex-shrink-0 flex items-center justify-end gap-1.5 px-4 py-2 border-b border-gray-100 bg-custom-white">
                   <button
                     onClick={() => transactionRef.current?.email()}
-                    className="flex items-center gap-1 text-[10px] font-medium bg-[#1e2a4a] text-white rounded px-2 py-1"
+                    className="flex items-center gap-1 text-[10px] font-medium bg-[#1e2a4a] text-custom-white rounded px-2 py-1"
                   >
                     Email
                   </button>
                   <button
                     onClick={() => transactionRef.current?.export()}
-                    className="flex items-center gap-1 text-[10px] font-medium bg-[#1e2a4a] text-white rounded px-2 py-1"
+                    className="flex items-center gap-1 text-[10px] font-medium bg-[#1e2a4a] text-custom-white rounded px-2 py-1"
                   >
                     CSV
                   </button>

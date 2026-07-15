@@ -90,14 +90,14 @@ const VendorSelect = () => {
           onClick={handleRefresh}
         >
           <ArrowPathIcon className="w-6 h-6 transition-all duration-200" />
-          <div className="text-content/60">Refresh</div>
+          <div className="text-content/85">Refresh</div>
         </div>
         <div
           className="bg-custom-white flex gap-2 justify-center items-center py-2"
           onClick={handleVendorsClick}
         >
           <DocumentCheckIcon className="w-6 h-6 transition-all duration-200" />
-          <div className="text-content/60">
+          <div className="text-content/85">
             {state.vendorView === 1 ? "Received" : "Vendors"}
           </div>
         </div>
@@ -118,15 +118,15 @@ const VendorSelect = () => {
 
         <div className="grid grid-cols-3 gap-2 px-1 text-[12px] mt-2">
           <div className="flex flex-col py-1 leading-tight justify-center items-center rounded-md bg-slate-100 shadow-md">
-            <div className="text-content/60">Vendors:</div>
+            <div className="text-content/85">Vendors:</div>
             <div className="font-medium">{totalVendors}</div>
           </div>
           <div className="flex flex-col py-1 leading-tight justify-center items-center rounded-md bg-slate-100 shadow-md">
-            <div className="text-content/60">Operators:</div>
+            <div className="text-content/85">Operators:</div>
             <div className="font-medium">{totalCashiers}</div>
           </div>
           <div className="flex flex-col py-1 leading-tight justify-center items-center rounded-md bg-slate-100 shadow-md">
-            <div className="text-content/60">Items:</div>
+            <div className="text-content/85">Items:</div>
             <div className="font-medium">{totalItems}</div>
           </div>
         </div>
@@ -185,15 +185,15 @@ const VendorSelect = () => {
               </div>
               <div className="bg-custom-white p-1 rounded-md shadow-md">
                 <div className="flex justify-between leading-tight">
-                  <div className="text-content/60">Trans #:</div>
+                  <div className="text-content/85">Trans #:</div>
                   <div>{rec.invoiceid}</div>
                 </div>
                 <div className="flex justify-between leading-tight">
-                  <div className="text-content/60">Operator:</div>
+                  <div className="text-content/85">Operator:</div>
                   <div>{rec.cashier_name}</div>
                 </div>
                 <div className="flex justify-between leading-tight">
-                  <div className="text-content/60">Invoice:</div>
+                  <div className="text-content/85">Invoice:</div>
                   <div>{rec.reference_number}</div>
                 </div>
               </div>

@@ -132,21 +132,21 @@ const TransactionsMobileScreen = ({ onBack, onOpenSearch, cashierName, storeName
         <div className="relative flex items-center justify-center mb-2">
           <button
             onClick={onBack}
-            className="absolute left-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors"
+            className="absolute left-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/85 hover:text-custom-white hover:border-white/40 transition-colors"
             aria-label="Back"
           >
             <ArrowLeftIcon className="w-3.5 h-3.5" />
           </button>
           <div className="text-center px-8">
-            <div className="text-white font-medium text-[13px]">
+            <div className="text-custom-white font-medium text-[13px]">
               {cashierName ? `${cashierName} – ${ctx.selectedSaleType}` : ctx.selectedSaleType}
             </div>
-            {storeName && <div className="text-white/60 text-[10px] mt-0.5">{storeName}</div>}
+            {storeName && <div className="text-custom-white/85 text-[10px] mt-0.5">{storeName}</div>}
           </div>
           <button
             onClick={onOpenSearch}
             aria-label="New search"
-            className="absolute right-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors"
+            className="absolute right-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/85 hover:text-custom-white hover:border-white/40 transition-colors"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
@@ -158,8 +158,8 @@ const TransactionsMobileScreen = ({ onBack, onOpenSearch, cashierName, storeName
             { label: "Total", value: formatCurrency2(totalSales) },
           ].map(({ label, value }) => (
             <div key={label} className="rounded px-2 py-1.5" style={{ background: "rgba(255,255,255,0.08)" }}>
-              <div className="text-[10px] text-white/50">{label}</div>
-              <div className="text-[12px] font-medium text-white mt-0.5 truncate">{value}</div>
+              <div className="text-[10px] text-custom-white/85">{label}</div>
+              <div className="text-[12px] font-medium text-custom-white mt-0.5 truncate">{value}</div>
             </div>
           ))}
         </div>
@@ -168,14 +168,14 @@ const TransactionsMobileScreen = ({ onBack, onOpenSearch, cashierName, storeName
       {/* Filters */}
       {cashierName ? (
         /* Cashier mode — 3-col single row */
-        <div className="flex-shrink-0 border-b border-gray-100 bg-white px-3 py-2 grid grid-cols-3 gap-2">
+        <div className="flex-shrink-0 border-b border-gray-100 bg-custom-white px-3 py-2 grid grid-cols-3 gap-2">
           <SelectFilter options={dateOptions} value={dateFilter} onChange={setDateFilter} placeholder="All dates" className="w-full" />
           <ThresholdFilter value={salesThreshold} onChange={setSalesThreshold} prefix="$" showOp showClear placeholder="Sales" stretch className="w-full" />
           <ThresholdFilter value={qtyThreshold} onChange={setQtyThreshold} suffix="qty" showOp showClear placeholder="Qty" stretch className="w-full" />
         </div>
       ) : (
         /* Store mode — 2×2 grid */
-        <div className="flex-shrink-0 border-b border-gray-100 bg-white px-3 py-2 grid grid-cols-2 gap-2">
+        <div className="flex-shrink-0 border-b border-gray-100 bg-custom-white px-3 py-2 grid grid-cols-2 gap-2">
           <SelectFilter options={dateOptions} value={dateFilter} onChange={setDateFilter} placeholder="All dates" className="w-full" />
           <SelectFilter options={cashierOptions} value={cashierFilter} onChange={setCashierFilter} placeholder="All cashiers" className="w-full" />
           <ThresholdFilter value={salesThreshold} onChange={setSalesThreshold} prefix="$" showOp showClear placeholder="Sales" stretch className="w-full" />
@@ -186,20 +186,20 @@ const TransactionsMobileScreen = ({ onBack, onOpenSearch, cashierName, storeName
       {/* Column headers */}
       <div className="flex-shrink-0 grid px-4 py-2 bg-gray-50 border-b border-gray-100" style={{ gridTemplateColumns: "1fr 0.6fr 0.55fr 0.7fr" }}>
         {["Trans ID", "Date", "Qty", "Total"].map((h, i) => (
-          <div key={h} className="text-[9px] font-semibold uppercase tracking-wide text-content/45" style={{ textAlign: i > 0 ? "right" : "left" }}>{h}</div>
+          <div key={h} className="text-[9px] font-semibold uppercase tracking-wide text-content/85" style={{ textAlign: i > 0 ? "right" : "left" }}>{h}</div>
         ))}
       </div>
 
       {/* Transaction rows */}
       <div className="flex-1 overflow-y-auto thin-scrollbar">
         {ctx.fetchingTransactions && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/70">Loading transactions…</div>
+          <div className="flex items-center justify-center py-16 text-[12px] text-content/85">Loading transactions…</div>
         )}
         {!ctx.fetchingTransactions && ctx.noRowsFound && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/70">No transactions found.</div>
+          <div className="flex items-center justify-center py-16 text-[12px] text-content/85">No transactions found.</div>
         )}
         {!ctx.fetchingTransactions && !ctx.noRowsFound && visible.length === 0 && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/70">No transactions match filters.</div>
+          <div className="flex items-center justify-center py-16 text-[12px] text-content/85">No transactions match filters.</div>
         )}
         {!ctx.fetchingTransactions && visible.map((ov, i) => (
           <button
@@ -214,8 +214,8 @@ const TransactionsMobileScreen = ({ onBack, onOpenSearch, cashierName, storeName
             <span className="text-[12px] font-semibold underline truncate" style={{ color: "#1e2a4a", textUnderlineOffset: 2 }}>
               #{ov.transaction_id}
             </span>
-            <span className="text-[12px] text-content/70 text-right">{fmtDate(ov.sale_date)}</span>
-            <span className="text-[12px] text-content/70 text-right">{(ov.qty).toLocaleString()}</span>
+            <span className="text-[12px] text-content/85 text-right">{fmtDate(ov.sale_date)}</span>
+            <span className="text-[12px] text-content/85 text-right">{(ov.qty).toLocaleString()}</span>
             <span className="text-[12px] font-medium text-content text-right">{formatCurrency2(ov.total_sales)}</span>
           </button>
         ))}
@@ -225,9 +225,9 @@ const TransactionsMobileScreen = ({ onBack, onOpenSearch, cashierName, storeName
       {selectedOverview && (
         <BottomSheet onClose={handleCloseReceipt} closeRef={receiptCloseRef}>
           {loadingReceipt ? (
-            <div className="flex items-center justify-center py-16 text-[12px] text-content/70">Loading receipt…</div>
+            <div className="flex items-center justify-center py-16 text-[12px] text-content/85">Loading receipt…</div>
           ) : ctx.noTransactions ? (
-            <div className="flex items-center justify-center py-16 text-[12px] text-content/70">No line items found.</div>
+            <div className="flex items-center justify-center py-16 text-[12px] text-content/85">No line items found.</div>
           ) : receipt ? (
             <div className="flex flex-col" style={{ maxHeight: "80vh" }}>
               <Transaction trans={receipt} />

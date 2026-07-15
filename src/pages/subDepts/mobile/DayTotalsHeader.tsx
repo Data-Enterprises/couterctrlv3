@@ -36,26 +36,26 @@ const TotalsHeader = ({ barData }: TotalsHeaderProps) => {
         <div className="font-medium">{findStoreName()}</div>
         <div className="font-medium">{findSubDeptName()}</div>
         <div className="flex gap-1.5">
-          <div className="text-content/50">Sales:</div>
+          <div className="text-content/85">Sales:</div>
           <div className="font-medium">{formatCurrency2(sales)}</div>
         </div>
         <div className="flex gap-1.5">
-          <div className="text-content/50">Qty:</div>
+          <div className="text-content/85">Qty:</div>
           <div className="font-medium">{formatBigNumber(qty, 0)}</div>
         </div>
       </div>
       <div className="">
         <div className="text-right font-medium">{date}</div>
         <div className="flex gap-1.5 justify-end">
-          <div className="text-content/50">Tax:</div>
+          <div className="text-content/85">Tax:</div>
           <div className="font-medium">{formatCurrency2(tax)}</div>
         </div>
         <div className="flex gap-1.5 justify-end">
-          <div className="text-content/50">COGS:</div>
+          <div className="text-content/85">COGS:</div>
           <div className="font-medium">{formatCurrency2(cogs)}</div>
         </div>
         <div className="flex gap-1.5 justify-end">
-          <div className="text-content/50">GPM:</div>
+          <div className="text-content/85">GPM:</div>
           <div className="font-medium">{margin}</div>
         </div>
       </div>

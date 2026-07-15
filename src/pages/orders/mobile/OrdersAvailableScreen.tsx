@@ -80,13 +80,13 @@ const OrdersAvailableScreen = ({
       <div className="bg-[#1e2a4a] px-4 pt-3 pb-4 flex-shrink-0">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-white font-semibold text-[15px]">Available Orders</div>
-            <div className="text-white text-[11px] mt-0.5">{weekLabel}</div>
+            <div className="text-custom-white font-semibold text-[15px]">Available Orders</div>
+            <div className="text-custom-white text-[11px] mt-0.5">{weekLabel}</div>
           </div>
           <button
             onClick={onOpenSearch}
             aria-label="New search"
-            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-white/25 text-white/65 hover:text-white hover:border-white/45 transition-colors"
+            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-white/25 text-custom-white/85 hover:text-custom-white hover:border-white/45 transition-colors"
           >
             <MagnifyingGlassIcon className="w-4 h-4" />
           </button>
@@ -95,7 +95,7 @@ const OrdersAvailableScreen = ({
 
       {/* Type tabs */}
       {cards.length > 0 && (
-        <div className="flex border-b border-gray-100 flex-shrink-0 bg-white">
+        <div className="flex border-b border-gray-100 flex-shrink-0 bg-custom-white">
           <button
             onClick={() => { setActiveType("all"); setDateFilter(""); setOpenTypes(new Set()); }}
             className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
@@ -120,7 +120,7 @@ const OrdersAvailableScreen = ({
 
       {/* Filter bar */}
       {cards.length > 0 && (
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100 bg-white flex-shrink-0">
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100 bg-custom-white flex-shrink-0">
           <TextFilter value={storeFilter} onChange={setStoreFilter} placeholder="Filter by store…" />
           <SelectFilter
             options={dateOptions}
@@ -178,7 +178,7 @@ const OrdersAvailableScreen = ({
                           onClick={() => onSelectStore(dateGroup.order_date, card.order_type, store.storeid)}
                           style={sel ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
                           className={`w-full flex items-center justify-between pl-6 pr-4 py-2.5 text-left transition-colors ${
-                            sel ? "bg-white" : "hover:bg-gray-50"
+                            sel ? "bg-custom-white" : "hover:bg-gray-50"
                           }`}
                         >
                           <div className="flex flex-col min-w-0">

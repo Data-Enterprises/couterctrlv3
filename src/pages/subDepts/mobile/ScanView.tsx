@@ -183,7 +183,7 @@ const ScanView = ({ dates }: ScanViewProps) => {
       )}
       {/* <UpcScanner handleScan={handleScan} onClear={clear} /> */}
       {msg.length ? (
-        <div className="w-full mt-4 flex flex-col items-center justify-center text-content/60 font-medium">
+        <div className="w-full mt-4 flex flex-col items-center justify-center text-content/85 font-medium">
           <div className="text-center p-2 rounded-lg shadow-lg bg-custom-white flex flex-col items-center gap-1 w-full">
             <WarningIcon height={60} width={60} fill="rgb(249 115 22)" />
             <div className="text-orange-500">{msg}</div>

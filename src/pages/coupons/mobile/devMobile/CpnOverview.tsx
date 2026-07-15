@@ -89,12 +89,12 @@ const CpnOverview = ({
           <div className="flex items-start gap-1.5 min-w-0">
             <button
               onClick={onBack}
-              className="text-white/65 hover:text-white transition-colors flex-shrink-0 mt-0.5"
+              className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0 mt-0.5"
             >
               <ChevronLeftIcon className="w-4 h-4" />
             </button>
             <div className="min-w-0">
-              <div className="text-[13px] font-semibold text-white truncate">{storeName}</div>
+              <div className="text-[13px] font-semibold text-custom-white truncate">{storeName}</div>
               <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
                 {dateRangeLabel}
               </div>
@@ -107,7 +107,7 @@ const CpnOverview = ({
                   key={m}
                   onClick={() => onSortMetric(m)}
                   className={`px-2 py-1 text-[9px] font-medium ${
-                    sortMetric === m ? "bg-white/20 text-white" : "text-white/40"
+                    sortMetric === m ? "bg-white/20 text-custom-white" : "text-custom-white/85"
                   }`}
                 >
                   {m === "amount" ? "Amt" : "Qty"}
@@ -117,7 +117,7 @@ const CpnOverview = ({
             {isGroup && (
               <button
                 onClick={onSearch}
-                className="w-[28px] h-[28px] flex items-center justify-center rounded border border-white/20 text-white/60"
+                className="w-[28px] h-[28px] flex items-center justify-center rounded border border-white/20 text-custom-white/85"
               >
                 <MagnifyingGlassIcon className="w-4 h-4" />
               </button>
@@ -126,15 +126,15 @@ const CpnOverview = ({
         </div>
         <div className="flex items-baseline gap-3 mt-2 pt-1.5 border-t border-white/[0.08]">
           <div className="flex items-baseline gap-1.5">
-            <span className="text-[8px] uppercase tracking-wide text-white/40">Records</span>
-            <span className="text-[12px] font-semibold text-white">{coupons.length}</span>
+            <span className="text-[8px] uppercase tracking-wide text-custom-white/85">Records</span>
+            <span className="text-[12px] font-semibold text-custom-white">{coupons.length}</span>
           </div>
-          <span className="text-[10px] font-medium text-white/70">{formatCurrency2(totalAmount)} total</span>
+          <span className="text-[10px] font-medium text-custom-white/85">{formatCurrency2(totalAmount)} total</span>
         </div>
       </div>
 
       {/* KPI strip */}
-      <div className="flex-shrink-0 grid grid-cols-4 bg-white border-b border-gray-100">
+      <div className="flex-shrink-0 grid grid-cols-4 bg-custom-white border-b border-gray-100">
         {[
           { label: "Coupons", value: String(coupons.length) },
           { label: "Total", value: formatCurrency2(totalAmount) },
@@ -142,14 +142,14 @@ const CpnOverview = ({
           { label: "Products", value: String(uniqueProducts) },
         ].map(({ label, value }) => (
           <div key={label} className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0">
-            <div className="text-[7px] font-semibold uppercase tracking-wide text-content/45">{label}</div>
+            <div className="text-[7px] font-semibold uppercase tracking-wide text-content/85">{label}</div>
             <div className="text-[12px] font-bold text-content mt-0.5 tabular-nums">{value}</div>
           </div>
         ))}
       </div>
 
       {/* Tab bar */}
-      <div className="flex-shrink-0 flex bg-white border-b border-gray-100">
+      <div className="flex-shrink-0 flex bg-custom-white border-b border-gray-100">
         {TABS.map((t) => (
           <button
             key={t.key}
@@ -157,7 +157,7 @@ const CpnOverview = ({
             className={`px-3 py-2 text-[11px] font-medium border-b-2 transition-colors ${
               selectedTab === t.key
                 ? "border-[#1e2a4a] text-content font-semibold"
-                : "border-transparent text-content/45"
+                : "border-transparent text-content/85"
             }`}
           >
             {t.label}
@@ -171,15 +171,15 @@ const CpnOverview = ({
           <button
             key={key}
             onClick={() => onSectionSelect(key, label)}
-            className="w-full flex items-center px-3 py-2.5 bg-white border-b border-gray-100 text-left active:bg-gray-50 gap-3"
+            className="w-full flex items-center px-3 py-2.5 bg-custom-white border-b border-gray-100 text-left active:bg-gray-50 gap-3"
           >
             <span className="text-[12px] font-medium text-content flex-1 truncate">{label}</span>
-            <span className="text-[10px] text-content/45 flex-shrink-0">{count}</span>
+            <span className="text-[10px] text-content/85 flex-shrink-0">{count}</span>
             <span className="text-[11px] font-semibold text-content flex-shrink-0 tabular-nums">
               {formatCurrency2(total)}
             </span>
             <svg
-              className="w-4 h-4 text-content/30 flex-shrink-0"
+              className="w-4 h-4 text-content/85 flex-shrink-0"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -190,7 +190,7 @@ const CpnOverview = ({
           </button>
         ))}
         {sections.length === 0 && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/45">
+          <div className="flex items-center justify-center py-16 text-[12px] text-content/85">
             No coupons to display
           </div>
         )}

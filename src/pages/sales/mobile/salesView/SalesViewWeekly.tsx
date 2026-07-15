@@ -212,11 +212,11 @@ const SalesViewWeekly = ({ displayName }: SalesViewWeeklyProps) => {
                 {/* Values with dates */}
                 <div className="flex justify-between mt-1 leading-tight">
                   <div className="font-medium text-[10px]">
-                    <div className="text-content/60">{pieData[0].id}</div>
+                    <div className="text-content/85">{pieData[0].id}</div>
                     <div>{formatCurrency2(pieData[0].value)}</div>
                   </div>
                   <div className="font-medium text-[10px] text-right">
-                    <div className="text-content/60">{pieData[1].id}</div>
+                    <div className="text-content/85">{pieData[1].id}</div>
                     <div>{formatCurrency2(pieData[1].value)}</div>
                   </div>
                 </div>

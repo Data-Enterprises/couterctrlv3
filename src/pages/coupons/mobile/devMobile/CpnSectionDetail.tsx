@@ -173,11 +173,11 @@ const CpnSectionDetail = ({ coupons, sectionLabel, sectionSub, sortMetric, onBac
       {/* Header */}
       <div className="flex-shrink-0 px-3 pt-2 pb-2.5" style={{ background: "#1e2a4a" }}>
         <div className="flex items-center gap-2">
-          <button onClick={onBack} className="text-white/65 hover:text-white transition-colors flex-shrink-0 -ml-1">
+          <button onClick={onBack} className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0 -ml-1">
             <ChevronLeftIcon className="w-5 h-5" />
           </button>
           <div>
-            <div className="text-[13px] font-semibold text-white">{sectionLabel}</div>
+            <div className="text-[13px] font-semibold text-custom-white">{sectionLabel}</div>
             <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
               {sectionSub}
             </div>
@@ -186,7 +186,7 @@ const CpnSectionDetail = ({ coupons, sectionLabel, sectionSub, sortMetric, onBac
       </div>
 
       {/* KPI strip */}
-      <div className="flex-shrink-0 grid grid-cols-4 bg-white border-b border-gray-100">
+      <div className="flex-shrink-0 grid grid-cols-4 bg-custom-white border-b border-gray-100">
         {[
           { label: "Coupons", value: String(coupons.length) },
           { label: "Total", value: formatCurrency2(totalAmount) },
@@ -194,7 +194,7 @@ const CpnSectionDetail = ({ coupons, sectionLabel, sectionSub, sortMetric, onBac
           { label: "Products", value: String(uniqueProducts) },
         ].map(({ label, value }) => (
           <div key={label} className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0">
-            <div className="text-[7px] font-semibold uppercase tracking-wide text-content/45">{label}</div>
+            <div className="text-[7px] font-semibold uppercase tracking-wide text-content/85">{label}</div>
             <div className="text-[12px] font-bold text-content mt-0.5 tabular-nums">{value}</div>
           </div>
         ))}
@@ -205,21 +205,21 @@ const CpnSectionDetail = ({ coupons, sectionLabel, sectionSub, sortMetric, onBac
         {aggRows.map((agg) => {
           const isExp = expanded.has(agg.product_code);
           return (
-            <div key={agg.product_code} className="bg-white border-b border-gray-100">
+            <div key={agg.product_code} className="bg-custom-white border-b border-gray-100">
               <button
                 onClick={() => toggleExpanded(agg.product_code)}
                 className="w-full flex items-center gap-2 px-3 py-2.5 text-left active:bg-gray-50"
               >
                 {isExp ? (
-                  <ChevronDownIcon className="w-3.5 h-3.5 text-content/30 flex-shrink-0" />
+                  <ChevronDownIcon className="w-3.5 h-3.5 text-content/85 flex-shrink-0" />
                 ) : (
-                  <ChevronRightIcon className="w-3.5 h-3.5 text-content/30 flex-shrink-0" />
+                  <ChevronRightIcon className="w-3.5 h-3.5 text-content/85 flex-shrink-0" />
                 )}
                 <span className="flex-1 text-[11px] font-medium text-content truncate">
                   {agg.product_description}
                 </span>
-                <span className="text-[10px] text-content/45 flex-shrink-0">{agg.product_code}</span>
-                <span className="text-[10px] text-content/45 flex-shrink-0">{agg.count}×</span>
+                <span className="text-[10px] text-content/85 flex-shrink-0">{agg.product_code}</span>
+                <span className="text-[10px] text-content/85 flex-shrink-0">{agg.count}×</span>
                 <span className="text-[11px] font-semibold text-content flex-shrink-0 tabular-nums">
                   {formatCurrency2(agg.total)}
                 </span>
@@ -230,7 +230,7 @@ const CpnSectionDetail = ({ coupons, sectionLabel, sectionSub, sortMetric, onBac
                     {["Cashier", "Date", "Trans #", "Amt"].map((h, i) => (
                       <div
                         key={h}
-                        className={`text-[7px] font-semibold uppercase tracking-wide text-content/35 ${i === 3 ? "text-right" : ""}`}
+                        className={`text-[7px] font-semibold uppercase tracking-wide text-content/85 ${i === 3 ? "text-right" : ""}`}
                       >
                         {h}
                       </div>
@@ -242,11 +242,11 @@ const CpnSectionDetail = ({ coupons, sectionLabel, sectionSub, sortMetric, onBac
                       onClick={() => handleUseClick(use)}
                       className="w-full grid grid-cols-4 gap-2 px-3 py-2 bg-gray-50/60 border-b border-gray-100 last:border-0 text-left active:bg-blue-50/40"
                     >
-                      <span className="text-[9px] text-content/65 truncate">{use.cashier_name}</span>
-                      <span className="text-[9px] text-content/50">
+                      <span className="text-[9px] text-content/85 truncate">{use.cashier_name}</span>
+                      <span className="text-[9px] text-content/85">
                         {formatDate(use.sale_date.split("T")[0])}
                       </span>
-                      <span className="text-[9px] text-content/38 tabular-nums">#{use.sale_id}</span>
+                      <span className="text-[9px] text-content/85 tabular-nums">#{use.sale_id}</span>
                       <span className="text-[9px] font-semibold text-content text-right tabular-nums">
                         {formatCurrency2(use.amount)}
                       </span>
@@ -267,12 +267,12 @@ const CpnSectionDetail = ({ coupons, sectionLabel, sectionSub, sortMetric, onBac
               <div className="text-[13px] font-bold text-content">
                 {txMeta?.cashier_name ?? "Loading…"}
                 {txMeta?.terminal && (
-                  <span className="ml-2 text-[10px] font-normal text-content/45">
+                  <span className="ml-2 text-[10px] font-normal text-content/85">
                     Terminal {txMeta.terminal}
                   </span>
                 )}
               </div>
-              <div className="text-[10px] text-content/45 mt-0.5">
+              <div className="text-[10px] text-content/85 mt-0.5">
                 {txMeta?.sale_date ? formatDate(txMeta.sale_date.split("T")[0]) : ""}
                 {txMeta?.sale_start_time ? ` · ${String(txMeta.sale_start_time).replace(/(\d{2})(\d{2})/, "$1:$2")}` : ""}
               </div>
@@ -280,7 +280,7 @@ const CpnSectionDetail = ({ coupons, sectionLabel, sectionSub, sortMetric, onBac
             {txLines.length > 0 && (
               <button
                 onClick={handleExport}
-                className="flex items-center gap-1 px-2 py-1 rounded border border-gray-200 text-content/50 hover:text-content hover:border-gray-300 transition-colors flex-shrink-0"
+                className="flex items-center gap-1 px-2 py-1 rounded border border-gray-200 text-content/85 hover:text-content hover:border-gray-300 transition-colors flex-shrink-0"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 <span className="text-[9px] font-medium">Export</span>
@@ -288,7 +288,7 @@ const CpnSectionDetail = ({ coupons, sectionLabel, sectionSub, sortMetric, onBac
             )}
           </div>
           {txLines.length === 0 ? (
-            <div className="py-8 text-center text-[11px] text-content/45">Loading transaction…</div>
+            <div className="py-8 text-center text-[11px] text-content/85">Loading transaction…</div>
           ) : (
             <>
               <div className="overflow-y-auto max-h-[420px]">
@@ -299,7 +299,7 @@ const CpnSectionDetail = ({ coupons, sectionLabel, sectionSub, sortMetric, onBac
                   {["#", "Description", "Qty", "Total", "Type"].map((h, i) => (
                     <div
                       key={h}
-                      className={`text-[7px] font-semibold uppercase tracking-wide text-content/38 ${
+                      className={`text-[7px] font-semibold uppercase tracking-wide text-content/85 ${
                         i >= 2 && i <= 3 ? "text-right" : i === 4 ? "text-right" : ""
                       }`}
                     >
@@ -319,13 +319,13 @@ const CpnSectionDetail = ({ coupons, sectionLabel, sectionSub, sortMetric, onBac
                         background: isCpn ? "rgba(234,179,8,0.06)" : undefined,
                       }}
                     >
-                      <span className="text-[9px] text-content/35 tabular-nums">
+                      <span className="text-[9px] text-content/85 tabular-nums">
                         {item.line_number}
                       </span>
                       <span className={`text-[9px] truncate ${isCpn ? "text-amber-700" : "text-content"}`}>
                         {item.product_description}
                       </span>
-                      <span className="text-[9px] text-content/45 text-right">
+                      <span className="text-[9px] text-content/85 text-right">
                         {item.qty > 0 ? item.qty : "—"}
                       </span>
                       <span
@@ -359,11 +359,11 @@ const CpnSectionDetail = ({ coupons, sectionLabel, sectionSub, sortMetric, onBac
                     <span className="font-semibold">-{formatCurrency2(txCoupons)}</span>
                   </span>
                 )}
-                <span className="text-[9.5px] text-content/50">
+                <span className="text-[9.5px] text-content/85">
                   Tax{" "}
                   <span className="text-content font-semibold">{formatCurrency2(txTax)}</span>
                 </span>
-                <span className="text-[9.5px] text-content/50">
+                <span className="text-[9.5px] text-content/85">
                   Net{" "}
                   <span className="text-content font-semibold">{formatCurrency2(txNet)}</span>
                 </span>

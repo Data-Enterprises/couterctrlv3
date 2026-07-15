@@ -620,15 +620,15 @@ const LedgerStoreReport = () => {
         <div className="bg-[#1e2a4a] px-4 pt-3 pb-4 flex items-start gap-3 flex-shrink-0">
           <button
             onClick={() => dispatch(navigateToList())}
-            className="text-white/75 mt-0.5 flex-shrink-0"
+            className="text-custom-white/85 mt-0.5 flex-shrink-0"
           >
             <ChevronLeftIcon className="w-5 h-5" />
           </button>
           <div className="flex-1 min-w-0">
-            <div className="text-white font-semibold text-[15px]">
+            <div className="text-custom-white font-semibold text-[15px]">
               {selection.storeName}
             </div>
-            <div className="text-white/65 text-[11px]">Weekly Sales Report</div>
+            <div className="text-custom-white/85 text-[11px]">Weekly Sales Report</div>
           </div>
           {/* {gapCount > 0 && (
             <button
@@ -648,12 +648,12 @@ const LedgerStoreReport = () => {
         </div>
 
         {/* KPI strip */}
-        <div className="grid grid-cols-3 divide-x divide-gray-100 bg-white border-b border-gray-100 flex-shrink-0">
+        <div className="grid grid-cols-3 divide-x divide-gray-100 bg-custom-white border-b border-gray-100 flex-shrink-0">
           <div className="px-3 py-2">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+            <div className="text-[9px] font-medium uppercase tracking-wide text-content/85">
               TY net sales
             </div>
-            <div className="text-[8px] italic text-content/55 mt-0.5">
+            <div className="text-[8px] italic text-content/85 mt-0.5">
               {twDateLabel}
             </div>
             <div className="text-[12px] font-semibold text-content mt-0.5">
@@ -661,10 +661,10 @@ const LedgerStoreReport = () => {
             </div>
           </div>
           <div className="px-3 py-2">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+            <div className="text-[9px] font-medium uppercase tracking-wide text-content/85">
               vs last week
             </div>
-            <div className="text-[8px] italic text-content/55 mt-0.5">
+            <div className="text-[8px] italic text-content/85 mt-0.5">
               {lwDateLabel}
             </div>
             <div className="flex items-baseline gap-1.5 mt-0.5">
@@ -681,10 +681,10 @@ const LedgerStoreReport = () => {
             </div>
           </div>
           <div className="px-3 py-2">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+            <div className="text-[9px] font-medium uppercase tracking-wide text-content/85">
               vs last year
             </div>
-            <div className="text-[8px] italic text-content/55 mt-0.5">
+            <div className="text-[8px] italic text-content/85 mt-0.5">
               {lyDateLabel}
             </div>
             <div className="flex items-baseline gap-1.5 mt-0.5">
@@ -703,18 +703,18 @@ const LedgerStoreReport = () => {
         </div>
 
         {/* Day strip */}
-        <div className="grid grid-cols-8 bg-white border-b border-gray-100 flex-shrink-0">
+        <div className="grid grid-cols-8 bg-custom-white border-b border-gray-100 flex-shrink-0">
           <button
             onClick={() => dispatch(setLedgerSelectedDate(null))}
             className={`flex flex-col items-center justify-center py-2 border-r border-gray-100 transition-colors ${selectedDate === null ? "bg-[#1e2a4a]" : "hover:bg-gray-50"}`}
           >
             <span
-              className={`text-[9px] font-bold ${selectedDate === null ? "text-white" : "text-content"}`}
+              className={`text-[9px] font-bold ${selectedDate === null ? "text-custom-white" : "text-content"}`}
             >
               ALL
             </span>
             <span
-              className={`text-[8px] mt-0.5 ${selectedDate === null ? "text-white/65" : "text-content/70"}`}
+              className={`text-[8px] mt-0.5 ${selectedDate === null ? "text-custom-white/85" : "text-content/85"}`}
             >
               wk
             </span>
@@ -748,11 +748,11 @@ const LedgerStoreReport = () => {
                 className={`flex flex-col items-center justify-center gap-1 py-2 border-r border-gray-100 last:border-r-0 transition-colors ${isSelected ? "bg-[#1e2a4a]" : "hover:bg-gray-50"}`}
               >
                 <span
-                  className={`text-[9px] font-semibold leading-none ${isSelected ? "text-white" : "text-content"}`}
+                  className={`text-[9px] font-semibold leading-none ${isSelected ? "text-custom-white" : "text-content"}`}
                 >
                   {date.toLocaleDateString("en-US", { weekday: "short" })}{" "}
                   <span
-                    className={isSelected ? "text-white/65" : "text-content/70"}
+                    className={isSelected ? "text-custom-white/85" : "text-content/85"}
                   >
                     {date.toLocaleDateString("en-US", {
                       month: "numeric",
@@ -789,7 +789,7 @@ const LedgerStoreReport = () => {
         </div>
 
         {/* Tabs + threshold */}
-        <div className="flex items-center bg-white border-b border-gray-100 flex-shrink-0 px-3">
+        <div className="flex items-center bg-custom-white border-b border-gray-100 flex-shrink-0 px-3">
           {(["subdept", "hourly"] as const).map((t) => (
             <button
               key={t}
@@ -797,14 +797,14 @@ const LedgerStoreReport = () => {
                 dispatch(setLedgerTab(t));
                 dispatch(closeSheet());
               }}
-              className={`py-2.5 px-3 text-[13px] font-medium border-b-2 transition-colors ${tab === t ? "border-[#1e2a4a] text-content" : "border-transparent text-content/70"}`}
+              className={`py-2.5 px-3 text-[13px] font-medium border-b-2 transition-colors ${tab === t ? "border-[#1e2a4a] text-content" : "border-transparent text-content/85"}`}
             >
               {t === "subdept" ? "Sub dept" : "Hourly"}
             </button>
           ))}
           <div className="flex-1" />
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-content/45">Threshold</span>
+            <span className="text-[10px] text-content/85">Threshold</span>
             <input
               type="number"
               min={1}
@@ -835,7 +835,7 @@ const LedgerStoreReport = () => {
               }}
               className="w-9 text-center text-[11px] bg-gray-50 border border-gray-200 rounded px-1 py-px focus:outline-none focus:border-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
-            <span className="text-[10px] text-content/45">%</span>
+            <span className="text-[10px] text-content/85">%</span>
           </div>
         </div>
 
@@ -849,11 +849,11 @@ const LedgerStoreReport = () => {
         {/* Signal list */}
         <div className="flex-1 overflow-y-auto">
           {reportLoading ? (
-            <div className="flex items-center justify-center py-16 text-[12px] text-content/70">
+            <div className="flex items-center justify-center py-16 text-[12px] text-content/85">
               Loading…
             </div>
           ) : filteredSignals.length === 0 ? (
-            <div className="flex items-center justify-center py-16 text-[12px] text-content/55">
+            <div className="flex items-center justify-center py-16 text-[12px] text-content/85">
               No data
             </div>
           ) : (
@@ -861,7 +861,7 @@ const LedgerStoreReport = () => {
               <button
                 key={idx}
                 onClick={item.onClick}
-                className="w-full px-3 py-2.5 bg-white border-b border-gray-100 text-left active:bg-gray-50"
+                className="w-full px-3 py-2.5 bg-custom-white border-b border-gray-100 text-left active:bg-gray-50"
               >
                 <div className="flex items-center gap-2.5">
                   <SevBadge sev={item.sev} />
@@ -872,11 +872,11 @@ const LedgerStoreReport = () => {
                     <span className="text-[12px] font-semibold text-content">
                       {formatCurrency2(item.tw)}
                     </span>
-                    <span className="text-[11px] text-content/60">
+                    <span className="text-[11px] text-content/85">
                       {item.qty.toLocaleString()} u
                     </span>
                   </div>
-                  <ChevronRightIcon className="w-4 h-4 text-content/45 flex-shrink-0" />
+                  <ChevronRightIcon className="w-4 h-4 text-content/85 flex-shrink-0" />
                 </div>
                 <div className="flex gap-2 mt-1.5 justify-end">
                   {item.hasLW && (
@@ -914,7 +914,7 @@ const LedgerStoreReport = () => {
                     ? ampm(sheetHour.hour)
                     : ""}
               </div>
-              <div className="text-[10px] text-content/70 italic mt-0.5">
+              <div className="text-[10px] text-content/85 italic mt-0.5">
                 {twDateLabel}
               </div>
             </div>
@@ -959,26 +959,26 @@ const LedgerStoreReport = () => {
                 <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100">
                   <div className="px-3 py-2.5">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+                      <span className="text-[9px] font-medium uppercase tracking-wide text-content/85">
                         TY
                       </span>
-                      <span className="text-[8px] italic text-content/45">
+                      <span className="text-[8px] italic text-content/85">
                         {twDateLabel}
                       </span>
                     </div>
                     <div className="text-[12px] font-semibold text-content mt-0.5">
                       {formatCurrency2(sheetTW)}
                     </div>
-                    <div className="text-[10px] text-content/60 mt-0.5">
+                    <div className="text-[10px] text-content/85 mt-0.5">
                       {tyQty.toLocaleString()} u
                     </div>
                   </div>
                   <div className="px-3 py-2.5">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+                      <span className="text-[9px] font-medium uppercase tracking-wide text-content/85">
                         LW
                       </span>
-                      <span className="text-[8px] italic text-content/45">
+                      <span className="text-[8px] italic text-content/85">
                         {lwDateLabel}
                       </span>
                     </div>
@@ -995,17 +995,17 @@ const LedgerStoreReport = () => {
                       )}
                     </div>
                     {lwQty > 0 && (
-                      <div className="text-[10px] text-content/60 mt-0.5">
+                      <div className="text-[10px] text-content/85 mt-0.5">
                         {lwQty.toLocaleString()} u
                       </div>
                     )}
                   </div>
                   <div className="px-3 py-2.5">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+                      <span className="text-[9px] font-medium uppercase tracking-wide text-content/85">
                         LY
                       </span>
-                      <span className="text-[8px] italic text-content/45">
+                      <span className="text-[8px] italic text-content/85">
                         {lyDateLabel}
                       </span>
                     </div>
@@ -1022,7 +1022,7 @@ const LedgerStoreReport = () => {
                       )}
                     </div>
                     {lyQty > 0 && (
-                      <div className="text-[10px] text-content/60 mt-0.5">
+                      <div className="text-[10px] text-content/85 mt-0.5">
                         {lyQty.toLocaleString()} u
                       </div>
                     )}
@@ -1134,14 +1134,14 @@ const LedgerStoreReport = () => {
                 return (
                   <>
                     <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 border-b border-gray-100 border-t border-t-gray-100">
-                      <span className="text-[10px] font-medium uppercase tracking-wide text-content/70">
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-content/85">
                         Items
                       </span>
-                      <span className="text-[9px] italic text-content/55">
+                      <span className="text-[9px] italic text-content/85">
                         {twDateLabel} · {top10.length} items
                       </span>
                       <div className="flex-1" />
-                      <span className="text-[10px] text-content/45">
+                      <span className="text-[10px] text-content/85">
                         Threshold
                       </span>
                       <input
@@ -1164,12 +1164,12 @@ const LedgerStoreReport = () => {
                           if (itemThresholdInput !== "" && (isNaN(v) || v < 1 || v > 99))
                             setItemThresholdInput(itemThreshold === null ? "" : String(itemThreshold));
                         }}
-                        className="w-9 text-center text-[10px] bg-white border border-gray-200 rounded px-1 py-px focus:outline-none focus:border-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-9 text-center text-[10px] bg-custom-white border border-gray-200 rounded px-1 py-px focus:outline-none focus:border-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
-                      <span className="text-[10px] text-content/45">%</span>
+                      <span className="text-[10px] text-content/85">%</span>
                     </div>
                     {/* Item filter chips — sticky so items scroll beneath */}
-                    <div className="flex gap-2 px-4 py-2 bg-white border-b border-gray-100 sticky top-0 z-10">
+                    <div className="flex gap-2 px-4 py-2 bg-custom-white border-b border-gray-100 sticky top-0 z-10">
                       {(
                         ["all", "critical", "watch", "healthy"] as SevFilter[]
                       ).map((f) => {
@@ -1184,13 +1184,13 @@ const LedgerStoreReport = () => {
                         const active = itemSevFilter === f;
                         const colorClass = active
                           ? f === "all"
-                            ? "bg-[#1e2a4a] text-white border-[#1e2a4a]"
+                            ? "bg-[#1e2a4a] text-custom-white border-[#1e2a4a]"
                             : f === "critical"
                               ? "bg-red-100 text-red-800 border-red-200"
                               : f === "watch"
                                 ? "bg-amber-100 text-amber-800 border-amber-200"
                                 : "bg-emerald-100 text-emerald-800 border-emerald-200"
-                          : "bg-white text-content/70 border-gray-200";
+                          : "bg-custom-white text-content/85 border-gray-200";
                         return (
                           <button
                             key={f}
@@ -1203,11 +1203,11 @@ const LedgerStoreReport = () => {
                       })}
                     </div>
                     {top10Loading ? (
-                      <div className="px-4 py-3 text-[11px] text-content/70 italic">
+                      <div className="px-4 py-3 text-[11px] text-content/85 italic">
                         Loading…
                       </div>
                     ) : filteredItems.length === 0 ? (
-                      <div className="px-4 py-3 text-[11px] text-content/55 italic">
+                      <div className="px-4 py-3 text-[11px] text-content/85 italic">
                         No data
                       </div>
                     ) : (
@@ -1247,30 +1247,30 @@ const LedgerStoreReport = () => {
                                           >
                                             {item.desc}
                                           </span>
-                                          <span className="text-[9px] text-content/45 flex-shrink-0">
+                                          <span className="text-[9px] text-content/85 flex-shrink-0">
                                             {item.upc}
                                           </span>
                                         </div>
                                         {/* TW / LW / LY: net sales + qty + weight per period */}
                                         <div className="grid grid-cols-3 divide-x divide-gray-100 border border-gray-100 rounded mt-1.5">
                                           <div className="px-2 py-1.5">
-                                            <div className="text-[8px] text-content/45 uppercase tracking-wide">
+                                            <div className="text-[8px] text-content/85 uppercase tracking-wide">
                                               TW
                                             </div>
                                             <div className="text-[10px] font-semibold text-content mt-0.5">
                                               {formatCurrency2(item.tyNet)}
                                             </div>
-                                            <div className="text-[9px] text-content/60 mt-0.5">
+                                            <div className="text-[9px] text-content/85 mt-0.5">
                                               {item.tyQty.toLocaleString()} u
                                             </div>
                                             {item.tyWeight > 0 && (
-                                              <div className="text-[9px] text-content/50 mt-0.5">
+                                              <div className="text-[9px] text-content/85 mt-0.5">
                                                 {item.tyWeight.toFixed(2)} lb
                                               </div>
                                             )}
                                           </div>
                                           <div className="px-2 py-1.5">
-                                            <div className="text-[8px] text-content/45 uppercase tracking-wide">
+                                            <div className="text-[8px] text-content/85 uppercase tracking-wide">
                                               LW
                                             </div>
                                             <div className="flex items-baseline gap-1 mt-0.5">
@@ -1288,19 +1288,19 @@ const LedgerStoreReport = () => {
                                               )}
                                             </div>
                                             {item.lwQty !== null && (
-                                              <div className="text-[9px] text-content/60 mt-0.5">
+                                              <div className="text-[9px] text-content/85 mt-0.5">
                                                 {item.lwQty.toLocaleString()} u
                                               </div>
                                             )}
                                             {item.lwWeight !== null &&
                                               item.lwWeight > 0 && (
-                                                <div className="text-[9px] text-content/50 mt-0.5">
+                                                <div className="text-[9px] text-content/85 mt-0.5">
                                                   {item.lwWeight.toFixed(2)} lb
                                                 </div>
                                               )}
                                           </div>
                                           <div className="px-2 py-1.5">
-                                            <div className="text-[8px] text-content/45 uppercase tracking-wide">
+                                            <div className="text-[8px] text-content/85 uppercase tracking-wide">
                                               LY
                                             </div>
                                             <div className="flex items-baseline gap-1 mt-0.5">
@@ -1318,13 +1318,13 @@ const LedgerStoreReport = () => {
                                               )}
                                             </div>
                                             {item.lyQty !== null && (
-                                              <div className="text-[9px] text-content/60 mt-0.5">
+                                              <div className="text-[9px] text-content/85 mt-0.5">
                                                 {item.lyQty.toLocaleString()} u
                                               </div>
                                             )}
                                             {item.lyWeight !== null &&
                                               item.lyWeight > 0 && (
-                                                <div className="text-[9px] text-content/50 mt-0.5">
+                                                <div className="text-[9px] text-content/85 mt-0.5">
                                                   {item.lyWeight.toFixed(2)} lb
                                                 </div>
                                               )}
