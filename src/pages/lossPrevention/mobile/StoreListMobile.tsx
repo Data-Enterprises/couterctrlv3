@@ -11,64 +11,14 @@ import { formatCurrency2 } from "../../../utils";
 import SevChips from "../../sales/mobile/components/SevChips";
 import SevBadge from "../../sales/mobile/components/SevBadge";
 import type { SevFilter } from "../../../features/salesLedgerSlice";
-import type { CashierDetails } from "../../../interfaces";
 import SelectFilter from "../../../components/filters/SelectFilter";
+import { storeSeverity, isNoDollarType, weekRangeLabel } from "../gradingUtils";
+import MetricChip from "./components/MetricChip";
 
 interface Props {
   onOpenSearch: () => void;
   onStoreSelected: () => void;
 }
-
-const isNoSale = (saleType: string) =>
-  saleType.toLowerCase().replace(/[^a-z]/g, "") === "nosale";
-
-const getStoreSev = (
-  detail: CashierDetails,
-  baseline: CashierDetails | undefined,
-  saleType: string,
-): "critical" | "watch" | "healthy" => {
-  if (!baseline) return "healthy"; // no baseline = can't grade
-  // baseline covers 2 weeks; normalize to 1-week to match current period
-  const bTrans = baseline.transaction_count / 2;
-  const bItems = baseline.total_items / 2;
-  const bAmount = Math.abs(baseline.amount) / 2;
-  const bAvg = Math.abs(baseline.average_dollars);
-  if (isNoSale(saleType)) {
-    const score = [
-      detail.transaction_count <= bTrans,
-      detail.total_items <= bItems,
-    ].filter(Boolean).length;
-    if (score === 2) return "healthy";
-    if (score === 1) return "watch";
-    return "critical";
-  }
-  const score = [
-    detail.transaction_count <= bTrans,
-    detail.total_items <= bItems,
-    Math.abs(detail.amount) <= bAmount,
-    Math.abs(detail.average_dollars) <= bAvg,
-  ].filter(Boolean).length;
-  if (score >= 3) return "healthy";
-  if (score === 2) return "watch";
-  return "critical";
-};
-
-const MetricChip = ({
-  label, value, isPass,
-}: { label: string; value: string; isPass: boolean | null }) => (
-  <div
-    className={`flex items-baseline gap-1 rounded px-1.5 py-0.5 ${
-      isPass === null
-        ? "bg-gray-200 text-gray-500"
-        : isPass
-        ? "bg-emerald-400 text-custom-white"
-        : "bg-red-400 text-custom-white"
-    }`}
-  >
-    <span className="text-[9px] opacity-80">{label}</span>
-    <span className="text-[10px] font-semibold">{value}</span>
-  </div>
-);
 
 const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
   const toast = useToast();
@@ -238,7 +188,7 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
     return lp.cashierDetails.map((d) => {
       const trend = lp.cashierTrends.find((t) => t.storeid === d.storeid);
       const baseline = lp.baselineDetails.find((b) => b.storeid === d.storeid);
-      const sev = getStoreSev(d, baseline, lp.selectedSaleType);
+      const sev = storeSeverity(d, lp.baselineDetails, lp.selectedSaleType);
       return { ...d, sev, trend, baseline };
     });
   }, [lp.cashierDetails, lp.cashierTrends, lp.baselineDetails, lp.selectedSaleType]);
@@ -255,9 +205,8 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
     return storesWithSev.filter((s) => s.sev === sevFilter);
   }, [storesWithSev, sevFilter]);
 
-  const noSale = isNoSale(lp.selectedSaleType);
-  const fmtMDY = (mdy: string) => new Date(mdy).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  const weekLabel = `${fmtMDY(search.startDate)} – ${fmtMDY(search.endDate)}, ${search.endDate.split("/")[2]}`;
+  const noSale = isNoDollarType(lp.selectedSaleType);
+  const weekLabel = weekRangeLabel(search.singleDate);
 
   return (
     <div className="flex flex-col h-full">
@@ -271,15 +220,10 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
           <button
             onClick={onOpenSearch}
             aria-label="New search"
-            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-white/25 text-custom-white/85 hover:text-custom-white hover:border-white/45 transition-colors"
+            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-custom-white/25 text-custom-white/85 hover:text-custom-white hover:border-custom-white/45 transition-colors"
           >
             <MagnifyingGlassIcon className="w-4 h-4" />
           </button>
-        </div>
-        <div className="flex items-center gap-2 mt-2">
-          <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-red-200 flex-shrink-0" /><span className="text-custom-white/85 text-[9px]">{noSale ? "Critical 0/2" : "Critical ≤1/4"}</span></div>
-          <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" /><span className="text-custom-white/85 text-[9px]">{noSale ? "Watch 1/2" : "Watch 2/4"}</span></div>
-          <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-200 flex-shrink-0" /><span className="text-custom-white/85 text-[9px]">{noSale ? "Healthy 2/2" : "Healthy ≥3/4"}</span></div>
         </div>
       </div>
 

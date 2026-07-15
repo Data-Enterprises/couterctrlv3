@@ -9,6 +9,8 @@ import { formatCurrency2 } from "../../../utils";
 import SevBadge from "../../sales/mobile/components/SevBadge";
 import SevChips from "../../sales/mobile/components/SevChips";
 import type { SevFilter } from "../../../features/salesLedgerSlice";
+import MetricChip from "./components/MetricChip";
+import TrendBadge from "./components/TrendBadge";
 
 interface Props {
   onBack: () => void;
@@ -18,33 +20,14 @@ interface Props {
 const toSevBadge = (s: CashierSeverity): "critical" | "watch" | "healthy" =>
   s === "ok" || s === "ungraded" ? "healthy" : s;
 
-const MetricChip = ({ label, value, isPass }: { label: string; value: string; isPass: boolean }) => (
-  <div className={`flex items-baseline gap-1 rounded px-1.5 py-0.5 ${isPass ? "bg-emerald-400 text-custom-white" : "bg-red-400 text-custom-white"}`}>
-    <span className="text-[9px] opacity-80">{label}</span>
-    <span className="text-[10px] font-semibold">{value}</span>
-  </div>
-);
-
-
-const AvgBadge = ({ pct }: { pct: number }) => {
-  const isUp = pct > 0;
-  return (
-    <span
-      className="inline-flex items-center gap-0.5 text-[7.5px] font-bold px-1.5 py-0.5 rounded mt-1"
-      style={isUp
-        ? { background: "rgba(220,38,38,0.09)", color: "#dc2626" }
-        : { background: "rgba(22,163,74,0.09)",  color: "#16a34a" }}
-    >
-      {isUp ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}% trend
-    </span>
-  );
-};
-
-const KpiCell = ({ label, value, pct, last }: { label: string; value: string; pct?: number; last?: boolean }) => (
+const KpiCell = ({
+  label, value, pct, baseline, last,
+}: { label: string; value: string; pct?: number; baseline?: string; last?: boolean }) => (
   <div className={`px-3 py-2 ${!last ? "border-r border-gray-100" : ""}`}>
-    <div className="text-[9px] font-medium uppercase tracking-wide text-content/85">{label}</div>
+    <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">{label}</div>
     <div className="text-[12px] font-semibold text-content mt-0.5">{value}</div>
-    {pct !== undefined && <AvgBadge pct={pct} />}
+    {baseline && <div className="text-[10px] text-content/85 mt-0.5">vs {baseline}</div>}
+    {pct !== undefined && <TrendBadge pct={pct} />}
   </div>
 );
 
@@ -62,12 +45,12 @@ const CashierListMobile = ({ onBack, onSelectCashier }: Props) => {
 
   const noSale = lp.selectedSaleType.toLowerCase().replace(/[^a-z]/g, "") === "nosale";
 
-  const peerAvgs = grades.length > 0 ? {
-    trans:     grades[0].trans.avg,
-    qty:       grades[0].qty.avg,
-    sales:     grades[0].sales.avg,
-    avgTicket: grades[0].avgTicket.avg,
-  } : null;
+  // const peerAvgs = grades.length > 0 ? {
+  //   trans:     grades[0].trans.avg,
+  //   qty:       grades[0].qty.avg,
+  //   sales:     grades[0].sales.avg,
+  //   avgTicket: grades[0].avgTicket.avg,
+  // } : null;
 
   const detail = lp.cashierDetails.find((d) => d.storeid === lp.selectedStoreId) ?? null;
   const trend  = lp.cashierTrends.find((t) => t.storeid === lp.selectedStoreId) ?? null;
@@ -115,20 +98,21 @@ const CashierListMobile = ({ onBack, onSelectCashier }: Props) => {
 
       {/* Totals strip */}
       <div className="flex-shrink-0 px-3 py-[9px] bg-gray-100 border-b border-gray-200 flex items-center">
-        <span className="text-[9px] font-semibold uppercase tracking-wide text-content/85">Store Totals</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-content/85">Store Totals</span>
       </div>
       <div className="flex-shrink-0 grid divide-x divide-gray-100 bg-custom-white border-b border-gray-100"
         style={{ gridTemplateColumns: stdCols ? "repeat(4, 1fr)" : "repeat(2, 1fr)" }}
       >
-        <KpiCell label="Trans"      value={detail ? detail.transaction_count.toLocaleString() : "—"}          pct={detail && trend ? trendPct(detail.transaction_count, trend.transaction_count) : undefined} />
-        <KpiCell label="Items"      value={detail ? detail.total_items.toLocaleString() : "—"}                pct={detail && trend ? trendPct(detail.total_items, trend.total_items) : undefined} />
-        {stdCols && <KpiCell label="Total"      value={detail ? formatCurrency2(detail.amount) : "—"}          pct={detail && trend ? trendPct(detail.amount, trend.amount, true) : undefined} />}
-        {stdCols && <KpiCell label="Avg ticket" value={detail ? formatCurrency2(detail.average_dollars) : "—"} pct={detail && trend ? trendPct(detail.average_dollars, trend.average_dollars, true) : undefined} last />}
+        <KpiCell label="Trans"      value={detail ? detail.transaction_count.toLocaleString() : "—"}          pct={detail && trend ? trendPct(detail.transaction_count, trend.transaction_count) : undefined} baseline={trend ? trend.transaction_count.toLocaleString() : undefined} />
+        <KpiCell label="Items"      value={detail ? detail.total_items.toLocaleString() : "—"}                pct={detail && trend ? trendPct(detail.total_items, trend.total_items) : undefined} baseline={trend ? trend.total_items.toLocaleString() : undefined} />
+        {stdCols && <KpiCell label="Total"      value={detail ? formatCurrency2(detail.amount) : "—"}          pct={detail && trend ? trendPct(detail.amount, trend.amount, true) : undefined} baseline={trend ? formatCurrency2(Math.abs(trend.amount)) : undefined} />}
+        {stdCols && <KpiCell label="Avg ticket" value={detail ? formatCurrency2(detail.average_dollars) : "—"} pct={detail && trend ? trendPct(detail.average_dollars, trend.average_dollars, true) : undefined} baseline={trend ? formatCurrency2(Math.abs(trend.average_dollars)) : undefined} last />}
 
       </div>
 
-      {/* Avg strip */}
-      {peerAvgs && (
+      {/* Avg strip — removed, existence became arbitrary once baseline
+          values are shown directly on the graded KPIs above */}
+      {/* {peerAvgs && (
         <>
         <div className="flex-shrink-0 px-3 py-[9px] bg-gray-100 border-b border-gray-200 flex items-center justify-between">
           <span className="text-[9px] font-semibold uppercase tracking-wide text-content/85">Cashier Averages</span>
@@ -148,7 +132,7 @@ const CashierListMobile = ({ onBack, onSelectCashier }: Props) => {
           {stdCols && <KpiCell label="Avg ticket" value={formatCurrency2(Math.abs(peerAvgs.avgTicket))} last />}
         </div>
         </>
-      )}
+      )} */}
 
       <SevChips active={sevFilter} counts={counts} onChange={setSevFilter} />
 

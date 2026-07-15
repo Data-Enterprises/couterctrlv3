@@ -11,6 +11,7 @@ import type { JsonError, TransactionListItem, TransactionOverview } from "../../
 import { formatCurrency2 } from "../../../utils";
 import BottomSheet from "../../../components/BottomSheet";
 import Transaction, { type TransactionHandle } from "../Transaction";
+import TrendBadge from "./components/TrendBadge";
 // import SelectFilter from "../../../components/filters/SelectFilter";
 // import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 // import type { ThresholdValue } from "../../../components/filters/ThresholdFilter";
@@ -63,12 +64,12 @@ const TransactionsMobile = ({ onBack }: Props) => {
 
   const cashierGrade = grades.find((g) => g.cashier_number === lp.selectedCashier.cashier_number) ?? null;
 
-  const peerAvgs = grades.length > 0 ? {
-    trans:     grades[0].trans.avg,
-    qty:       grades[0].qty.avg,
-    sales:     grades[0].sales.avg,
-    avgTicket: grades[0].avgTicket.avg,
-  } : null;
+  // const peerAvgs = grades.length > 0 ? {
+  //   trans:     grades[0].trans.avg,
+  //   qty:       grades[0].qty.avg,
+  //   sales:     grades[0].sales.avg,
+  //   avgTicket: grades[0].avgTicket.avg,
+  // } : null;
 
   // filter logic (preserving original LP slice filter fields)
   useEffect(() => {
@@ -158,43 +159,34 @@ const TransactionsMobile = ({ onBack }: Props) => {
       {/* Cashier Totals strip */}
       {cashierGrade && (
         <>
-          <div className="flex-shrink-0 px-3 py-[9px] bg-gray-100 border-b border-gray-200 flex items-center justify-between">
-            <span className="text-[9px] font-semibold uppercase tracking-wide text-content/85">Cashier Totals</span>
-            <div className="flex items-center gap-1.5">
-              <div className="flex items-center gap-1"><div className="w-[6px] h-[6px] rounded-[2px] bg-emerald-400 flex-shrink-0" /><span className="text-[9px] font-semibold uppercase tracking-wide text-content/85">below avg</span></div>
-              <div className="flex items-center gap-1"><div className="w-[6px] h-[6px] rounded-[2px] bg-red-400 flex-shrink-0" /><span className="text-[9px] font-semibold uppercase tracking-wide text-content/85">above avg</span></div>
-            </div>
+          <div className="flex-shrink-0 px-3 py-[9px] bg-gray-100 border-b border-gray-200 flex items-center">
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-content/85">Cashier Totals</span>
           </div>
           <div className="flex-shrink-0 grid divide-x divide-gray-100 bg-custom-white border-b border-gray-100"
             style={{ gridTemplateColumns: noSale ? "repeat(2, 1fr)" : "repeat(4, 1fr)" }}
           >
             {[
-              { label: "Trans",      value: cashierGrade.trans.value.toLocaleString(),               pct: cashierGrade.trans.pct },
-              { label: "Items",      value: cashierGrade.qty.value.toLocaleString(),                 pct: cashierGrade.qty.pct },
+              { label: "Trans",      value: cashierGrade.trans.value.toLocaleString(),               pct: cashierGrade.trans.pct, avg: Math.round(cashierGrade.trans.avg).toLocaleString() },
+              { label: "Items",      value: cashierGrade.qty.value.toLocaleString(),                 pct: cashierGrade.qty.pct, avg: Math.round(cashierGrade.qty.avg).toLocaleString() },
               ...(!noSale ? [
-                { label: "Total",      value: formatCurrency2(Math.abs(cashierGrade.sales.value)),     pct: cashierGrade.sales.pct },
-                { label: "Avg ticket", value: formatCurrency2(Math.abs(cashierGrade.avgTicket.value)), pct: cashierGrade.avgTicket.pct },
+                { label: "Total",      value: formatCurrency2(Math.abs(cashierGrade.sales.value)),     pct: cashierGrade.sales.pct, avg: formatCurrency2(Math.abs(cashierGrade.sales.avg)) },
+                { label: "Avg ticket", value: formatCurrency2(Math.abs(cashierGrade.avgTicket.value)), pct: cashierGrade.avgTicket.pct, avg: formatCurrency2(Math.abs(cashierGrade.avgTicket.avg)) },
               ] : []),
-            ].map(({ label, value, pct }) => (
+            ].map(({ label, value, pct, avg }) => (
               <div key={label} className="px-3 py-2">
-                <div className="text-[9px] font-medium uppercase tracking-wide text-content/85">{label}</div>
+                <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">{label}</div>
                 <div className="text-[12px] font-semibold text-content mt-0.5">{value}</div>
-                <span
-                  className="inline-flex items-center gap-0.5 text-[7.5px] font-bold px-1.5 py-0.5 rounded mt-1"
-                  style={pct > 0
-                    ? { background: "rgba(220,38,38,0.09)", color: "#dc2626" }
-                    : { background: "rgba(22,163,74,0.09)", color: "#16a34a" }}
-                >
-                  {pct > 0 ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}% avg
-                </span>
+                <div className="text-[10px] text-content/85 mt-0.5">vs {avg}</div>
+                <TrendBadge pct={pct} suffix="avg" />
               </div>
             ))}
           </div>
         </>
       )}
 
-      {/* Store Averages strip */}
-      {peerAvgs && (
+      {/* Store Averages strip — removed, existence became arbitrary once
+          baseline values are shown directly on the Cashier Totals strip above */}
+      {/* {peerAvgs && (
         <>
           <div className="flex-shrink-0 px-3 py-[9px] bg-gray-100 border-b border-gray-200 flex items-center">
             <span className="text-[9px] font-semibold uppercase tracking-wide text-content/85">Store Averages</span>
@@ -208,7 +200,7 @@ const TransactionsMobile = ({ onBack }: Props) => {
             {!noSale && <div className="px-3 py-2"><div className="text-[9px] font-medium uppercase tracking-wide text-content/85">Avg ticket</div><div className="text-[12px] font-semibold text-content mt-0.5">{formatCurrency2(Math.abs(peerAvgs.avgTicket))}</div></div>}
           </div>
         </>
-      )}
+      )} */}
 
       {/* Filters — commented out for mobile drill-down flow */}
       {/* <div className="flex-shrink-0 border-b border-gray-100 bg-white px-3 py-2 grid grid-cols-2 gap-2">
@@ -234,7 +226,7 @@ const TransactionsMobile = ({ onBack }: Props) => {
 
       {/* Column headers — Date, Qty, Total are sortable */}
       <div className="flex-shrink-0 grid px-4 py-2 bg-gray-50 border-b border-gray-100" style={{ gridTemplateColumns: "1fr 0.6fr 0.55fr 0.7fr" }}>
-        <div className="text-[9px] font-semibold uppercase tracking-wide text-content/85">Trans ID</div>
+        <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">Trans ID</div>
         {(["date", "qty", "total"] as SortCol[]).map((col) => {
           const label = col === "date" ? "Date" : col === "qty" ? "Items" : "Total";
           const isActive = sortCol === col && sortDir !== "none";
@@ -247,7 +239,7 @@ const TransactionsMobile = ({ onBack }: Props) => {
                 else if (sortDir === "desc") setSortDir("asc");
                 else if (sortDir === "asc") { setSortDir("none"); setSortCol(null); }
               }}
-              className={`text-[9px] font-semibold uppercase tracking-wide text-right ${isActive ? "text-[#1e2a4a]" : "text-content/85"}`}
+              className={`text-[10px] font-semibold uppercase tracking-wide text-right ${isActive ? "text-[#1e2a4a]" : "text-content/85"}`}
             >
               {label}{arrow}
             </button>

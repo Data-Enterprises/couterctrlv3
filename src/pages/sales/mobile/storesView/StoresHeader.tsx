@@ -128,7 +128,7 @@ const StoresHeader = ({ totals, coupons }: StoresHeaderProps) => {
             margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
           />
           <div className="text-center font-bold absolute left-1/2 bottom-0 -translate-x-1/2 whitespace-nowrap">
-            <div className="text-[9.5px]">Cpn $</div>
+            <div className="text-[10px]">Cpn $</div>
             {formatCurrency2(totalCpns)}
           </div>
         </div>

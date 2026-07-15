@@ -17,21 +17,26 @@ const LpMobile = ({ getSaleTypes }: Props) => {
   const dispatch = useAppDispatch();
   const { saleTypes, noSaleTypesFound } = useAppSelector((state) => state.lossPrevention);
   const [screen, setScreen] = useState<Screen>("stores");
+  const [showSearch, setShowSearch] = useState(false);
 
   const handleSearch = () => {
     setScreen("stores");
+    setShowSearch(false);
     dispatch(resetCashierSlice());
     getSaleTypes();
   };
 
-  // Re-search from within results: clear loaded data to return to the entry card
-  const handleNewSearch = () => {
-    setScreen("stores");
-    dispatch(resetCashierSlice());
+  // Re-open the search card without clearing already-loaded data — the
+  // SearchCard's "already loaded" shortcut lets the user jump straight back
+  // instead of forcing a re-fetch if this was tapped by accident.
+  const handleOpenSearch = () => {
+    setShowSearch(true);
   };
 
+  const hasData = saleTypes.length > 0;
+
   // Entry screen — full-page SearchCard until exception data has loaded
-  if (saleTypes.length === 0) {
+  if (saleTypes.length === 0 || showSearch) {
     return (
       <div className="h-[calc(100dvh-3rem)] overflow-y-auto bg-custom-white">
         <SearchCard
@@ -42,6 +47,7 @@ const LpMobile = ({ getSaleTypes }: Props) => {
           singleDate
           onSearch={handleSearch}
           loading={false}
+          onBack={hasData ? () => setShowSearch(false) : undefined}
           notice={
             noSaleTypesFound
               ? "No sale types came back for this search."
@@ -58,7 +64,7 @@ const LpMobile = ({ getSaleTypes }: Props) => {
         {screen === "transactions" ? (
           <TransactionsMobile
             onBack={() => setScreen("cashiers")}
-            onOpenSearch={handleNewSearch}
+            onOpenSearch={handleOpenSearch}
           />
         ) : screen === "cashiers" ? (
           <CashierListMobile
@@ -67,7 +73,7 @@ const LpMobile = ({ getSaleTypes }: Props) => {
           />
         ) : (
           <StoreListMobile
-            onOpenSearch={handleNewSearch}
+            onOpenSearch={handleOpenSearch}
             onStoreSelected={() => setScreen("cashiers")}
           />
         )}

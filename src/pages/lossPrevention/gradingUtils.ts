@@ -75,6 +75,19 @@ export const directionalPillClass = (pct: number) =>
     ? "bg-severity_critical_bg text-severity_critical_text"
     : "bg-severity_healthy_bg text-severity_healthy_text";
 
+// Solid-fill pass/fail chip color — mirrors the literal red-500/emerald-500
+// palette used by Sales mobile's SevBadge (mobile dev convention), not the
+// CSS-variable-based severity_* tokens above.
+export const passFailChipClass = (isPass: boolean | null): string => {
+  if (isPass === null) return "bg-gray-200 text-gray-500";
+  return isPass ? "bg-emerald-500 text-custom-white" : "bg-red-500 text-custom-white";
+};
+
+// Soft-tint trend pill — same palette, used for up/down % badges (up = worse
+// = red, down = better = green, matching LP's "lower vs baseline is good").
+export const trendPillClass = (pct: number): string =>
+  pct > 0 ? "bg-red-500/10 text-red-500" : "bg-emerald-500/10 text-emerald-500";
+
 export interface CashierMetric {
   value: number;
   avg: number;

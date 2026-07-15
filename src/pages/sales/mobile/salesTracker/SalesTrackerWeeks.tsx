@@ -218,9 +218,9 @@ const SalesTrackerWeeks = () => {
                     </div>
 
                     <div className="space-y-0.5">
-                      <div className="flex items-end justify-between gap-1 text-[9.5px]">
+                      <div className="flex items-end justify-between gap-1 text-[10px]">
                         <div className="text-left min-w-0">
-                          <div className="text-content/85 -mb-0.5 text-[9px] flex gap-1 items-center leading-tight">
+                          <div className="text-content/85 -mb-0.5 text-[10px] flex gap-1 items-center leading-tight">
                             <div
                               className="h-1.5 w-1.5 rounded-full"
                               style={{ backgroundColor: colors[0] }}
@@ -232,7 +232,7 @@ const SalesTrackerWeeks = () => {
                           </div>
                         </div>
                         <div className="text-left min-w-0">
-                          <div className="text-content/85 -mb-0.5 text-[9px] flex gap-1 items-center leading-tight">
+                          <div className="text-content/85 -mb-0.5 text-[10px] flex gap-1 items-center leading-tight">
                             <div
                               className="h-1.5 w-1.5 rounded-full"
                               style={{ backgroundColor: colors[1] }}
