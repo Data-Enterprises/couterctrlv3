@@ -107,8 +107,8 @@ const ForecastControlBar = ({
             data-testid="items-toggle-btn"
             className={`py-1 px-0 text-[12px] rounded-lg border-2 transition-all ${
               showItemsPanel
-                ? "bg-blue-500 text-white border-blue-500"
-                : "bg-white text-blue-500 border-blue-300 hover:border-blue-500"
+                ? "bg-blue-500 text-custom-white border-blue-500"
+                : "bg-custom-white text-blue-500 border-blue-300 hover:border-blue-500"
             }`}
             onClick={onItemsToggle}
           >

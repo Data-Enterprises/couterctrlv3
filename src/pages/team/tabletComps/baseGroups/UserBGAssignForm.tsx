@@ -241,7 +241,7 @@ const UserBGAssignForm = () => {
                   className={`w-full rounded-xl border p-3 text-left transition-all duration-200 ${
                     bgIdsToAssign.includes(bg.id)
                       ? "border-orange-300 bg-orange-100 shadow-md"
-                      : "border-slate-200 bg-white/80 hover:border-orange-200 hover:bg-orange-50 hover:shadow-md"
+                      : "border-slate-200 bg-custom-white/80 hover:border-orange-200 hover:bg-orange-50 hover:shadow-md"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -265,7 +265,7 @@ const UserBGAssignForm = () => {
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button
                 data-testid="bg-assign-form-assign-btn"
-                className={`rounded-xl bg-[rgb(30,45,80)] py-2 text-[13px] font-medium text-white shadow-sm transition-all duration-200 hover:bg-[rgb(30,45,80)]/85 ${
+                className={`rounded-xl bg-[rgb(30,45,80)] py-2 text-[13px] font-medium text-custom-white shadow-sm transition-all duration-200 hover:bg-[rgb(30,45,80)]/85 ${
                   bgIdsToAssign.length === 0 && "pointer-events-none opacity-50"
                 }`}
                 onClick={handleAssignClick}
@@ -274,7 +274,7 @@ const UserBGAssignForm = () => {
               </button>
               <button
                 data-testid="bg-assign-form-assign-all-btn"
-                className="rounded-xl border border-slate-200 bg-white py-2 text-[13px] font-medium text-slate-700 shadow-sm transition-all duration-200 hover:bg-slate-50 hover:shadow-md"
+                className="rounded-xl border border-slate-200 bg-custom-white py-2 text-[13px] font-medium text-slate-700 shadow-sm transition-all duration-200 hover:bg-slate-50 hover:shadow-md"
                 onClick={() => handleSubmitAll("assign_all")}
               >
                 Assign All
@@ -298,7 +298,7 @@ const UserBGAssignForm = () => {
                   className={`w-full rounded-xl border p-3 text-left transition-all duration-200 ${
                     bgIdsToUnassign.includes(bg.id)
                       ? "border-orange-300 bg-orange-100 shadow-md"
-                      : "border-slate-200 bg-white/80 hover:border-orange-200 hover:bg-orange-50 hover:shadow-md"
+                      : "border-slate-200 bg-custom-white/80 hover:border-orange-200 hover:bg-orange-50 hover:shadow-md"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -322,7 +322,7 @@ const UserBGAssignForm = () => {
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button
                 data-testid="bg-assign-form-unassign-btn"
-                className={`rounded-xl bg-[rgb(30,45,80)] py-2 text-[13px] font-medium text-white shadow-sm transition-all duration-200 hover:bg-[rgb(30,45,80)]/85 ${
+                className={`rounded-xl bg-[rgb(30,45,80)] py-2 text-[13px] font-medium text-custom-white shadow-sm transition-all duration-200 hover:bg-[rgb(30,45,80)]/85 ${
                   bgIdsToUnassign.length === 0 &&
                   "pointer-events-none opacity-50"
                 }`}
@@ -332,7 +332,7 @@ const UserBGAssignForm = () => {
               </button>
               <button
                 data-testid="bg-assign-form-unassign-all-btn"
-                className="rounded-xl border border-slate-200 bg-white py-2 text-[13px] font-medium text-slate-700 shadow-sm transition-all duration-200 hover:bg-slate-50 hover:shadow-md"
+                className="rounded-xl border border-slate-200 bg-custom-white py-2 text-[13px] font-medium text-slate-700 shadow-sm transition-all duration-200 hover:bg-slate-50 hover:shadow-md"
                 onClick={() => handleSubmitAll("unassign_all")}
               >
                 Unassign All

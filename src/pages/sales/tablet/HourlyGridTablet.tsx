@@ -15,7 +15,8 @@ const HourlyGridTablet = () => {
   // const [dates, setDates] = useState<string[]>([]);
   const [barData, setBarData] = useState<any[]>([]);
   const [_, setLyData] = useState<any[]>([]);
-  const { hourlySales, selectedSalesPanel, hourlySalesLastYear } = useSalesState();
+  const { hourlySales, selectedSalesPanel, hourlySalesLastYear } =
+    useSalesState();
 
   // useEffect(() => {
   //   if (barData.length) {
@@ -256,7 +257,7 @@ const HourlyGridTablet = () => {
               </div>
 
               <div className="mt-3 grid grid-cols-2 gap-2">
-                <div className="rounded-xl bg-white px-2.5 py-2 shadow-sm">
+                <div className="rounded-xl bg-custom-white px-2.5 py-2 shadow-sm">
                   <div className="text-[10px] uppercase tracking-wide text-slate-500">
                     TY Sales
                   </div>
@@ -265,7 +266,7 @@ const HourlyGridTablet = () => {
                   </div>
                 </div>
 
-                <div className="rounded-xl bg-white px-2.5 py-2 shadow-sm">
+                <div className="rounded-xl bg-custom-white px-2.5 py-2 shadow-sm">
                   <div className="text-[10px] uppercase tracking-wide text-slate-500">
                     LY Sales
                   </div>
@@ -274,7 +275,7 @@ const HourlyGridTablet = () => {
                   </div>
                 </div>
 
-                <div className="rounded-xl bg-white px-2.5 py-2 shadow-sm">
+                <div className="rounded-xl bg-custom-white px-2.5 py-2 shadow-sm">
                   <div className="text-[10px] uppercase tracking-wide text-slate-500">
                     TY Trans
                   </div>
@@ -283,7 +284,7 @@ const HourlyGridTablet = () => {
                   </div>
                 </div>
 
-                <div className="rounded-xl bg-white px-2.5 py-2 shadow-sm">
+                <div className="rounded-xl bg-custom-white px-2.5 py-2 shadow-sm">
                   <div className="text-[10px] uppercase tracking-wide text-slate-500">
                     LY Trans
                   </div>

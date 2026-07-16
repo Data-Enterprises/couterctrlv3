@@ -21,7 +21,7 @@ const TransactionFilters = () => {
     "py-1.5 rounded-lg text-center shadow-md shadow-content/20 hover:bg-orange-200 cursor-pointer transition-all duration-200";
 
   const activePanelStyle = (option: string) => {
-    const style = "bg-orange-500 text-white font-semibold shadow-inner";
+    const style = "bg-orange-500 text-custom-white font-semibold shadow-inner";
     let result = false;
     if (option === "Sale Date" && cashier.saleDateFilter) result = true;
     if (option === "Total Sales" && cashier.salesThreshold) result = true;
@@ -35,10 +35,14 @@ const TransactionFilters = () => {
       return cashier.saleDateFilter || "Sale Date";
     } else if (type === "Total Sales") {
       const s = cashier.salesThreshold;
-      return s ? `${s.op === "gt" ? "Over" : s.op === "lt" ? "Under" : "="} ${formatCurrency2(s.amount)}` : "Total Sales";
+      return s
+        ? `${s.op === "gt" ? "Over" : s.op === "lt" ? "Under" : "="} ${formatCurrency2(s.amount)}`
+        : "Total Sales";
     } else if (type === "Total Qty") {
       const q = cashier.qtyThreshold;
-      return q ? `${q.op === "gt" ? "Over" : q.op === "lt" ? "Under" : "="} ${q.amount}` : "Total Qty";
+      return q
+        ? `${q.op === "gt" ? "Over" : q.op === "lt" ? "Under" : "="} ${q.amount}`
+        : "Total Qty";
     } else if (type === "Transaction ID") {
       return cashier.transIdFilter || "Transaction ID";
     } else {

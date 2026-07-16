@@ -330,7 +330,7 @@ const HourlyGrid = () => {
             keys={["total_sales"]}
             indexBy={barIndex}
             tooltip={({ value }) => (
-              <div className="p-2 bg-white shadow-lg rounded text-sm text-nowrap">
+              <div className="p-2 bg-custom-white shadow-lg rounded text-sm text-nowrap">
                 <strong>{formatCurrency2(value)}</strong>
               </div>
             )}

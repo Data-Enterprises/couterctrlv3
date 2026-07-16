@@ -145,7 +145,7 @@ const MobileTrendCard = () => {
       <div className="overflow-y-auto p-2 text-[11px]">
         <div className="grid grid-cols-2 gap-2">
           <div className="p-1.5 bg-blue-200/50 rounded-lg shadow-md leading-tight">
-            <div className="font-medium mb-1 text-content/80 col-span-2 flex justify-between items-start">
+            <div className="font-medium mb-1 text-content/85 col-span-2 flex justify-between items-start">
               <div>Transactions</div>
               {individualTrend(
                 selectedCashierDetails!.transaction_count,
@@ -154,7 +154,7 @@ const MobileTrendCard = () => {
             </div>
             <div className="grid grid-cols-2 gap-1.5">
               <div className="text-center bg-custom-white rounded-lg p-1.5">
-                <div className="text-content/60 font-medium">
+                <div className="text-content/85 font-medium">
                   Total
                 </div>
                 <div className="font-medium text-nowrap truncate">
@@ -162,7 +162,7 @@ const MobileTrendCard = () => {
                 </div>
               </div>
               <div className="text-center bg-custom-white rounded-lg p-1.5">
-                <div className="text-content/60 font-medium">
+                <div className="text-content/85 font-medium">
                   Trend
                 </div>
                 <div className="font-medium text-nowrap truncate">
@@ -173,7 +173,7 @@ const MobileTrendCard = () => {
           </div>
 
           <div className="p-1.5 bg-blue-200/50 rounded-lg shadow-md leading-tight">
-            <div className="font-medium mb-1 text-content/80 col-span-2 flex justify-between items-start">
+            <div className="font-medium mb-1 text-content/85 col-span-2 flex justify-between items-start">
               <div>Total Items</div>
               {individualTrend(
                 selectedCashierDetails!.total_items,
@@ -182,7 +182,7 @@ const MobileTrendCard = () => {
             </div>
             <div className="grid grid-cols-2 gap-1.5">
               <div className="text-center bg-custom-white rounded-lg p-1.5">
-                <div className="text-content/60 font-medium">
+                <div className="text-content/85 font-medium">
                   Total
                 </div>
                 <div className="font-medium text-nowrap truncate">
@@ -190,7 +190,7 @@ const MobileTrendCard = () => {
                 </div>
               </div>
               <div className="text-center bg-custom-white rounded-lg p-1.5">
-                <div className="text-content/60 font-medium">
+                <div className="text-content/85 font-medium">
                   Trend
                 </div>
                 <div className="font-medium text-nowrap truncate">
@@ -201,7 +201,7 @@ const MobileTrendCard = () => {
           </div>
 
           <div className="p-1.5 bg-blue-200/50 rounded-lg shadow-md leading-tight">
-            <div className="font-medium mb-1 text-content/80 col-span-2 flex justify-between items-start">
+            <div className="font-medium mb-1 text-content/85 col-span-2 flex justify-between items-start">
               <div>Total Dollars</div>
               {individualTrend(
                 selectedCashierDetails!.amount,
@@ -210,7 +210,7 @@ const MobileTrendCard = () => {
             </div>
             <div className="grid grid-cols-2 gap-1.5">
               <div className="text-center bg-custom-white rounded-lg p-1.5">
-                <div className="text-content/60 font-medium">
+                <div className="text-content/85 font-medium">
                   Total
                 </div>
                 <div className="font-medium text-nowrap truncate">
@@ -218,7 +218,7 @@ const MobileTrendCard = () => {
                 </div>
               </div>
               <div className="text-center bg-custom-white rounded-lg p-1.5">
-                <div className="text-content/60 font-medium">
+                <div className="text-content/85 font-medium">
                   Trend
                 </div>
                 <div className="font-medium text-nowrap truncate">
@@ -231,7 +231,7 @@ const MobileTrendCard = () => {
           </div>
 
           <div className="p-1.5 bg-blue-200/50 rounded-lg shadow-md leading-tight">
-            <div className="font-medium mb-1 text-content/80 col-span-2 flex justify-between items-start">
+            <div className="font-medium mb-1 text-content/85 col-span-2 flex justify-between items-start">
               <div>Avg Dollars</div>
               {individualTrend(
                 selectedCashierDetails!.average_dollars,
@@ -240,7 +240,7 @@ const MobileTrendCard = () => {
             </div>
             <div className="grid grid-cols-2 gap-1.5">
               <div className="text-center bg-custom-white rounded-lg p-1.5">
-                <div className="text-content/60 font-medium">
+                <div className="text-content/85 font-medium">
                   Total
                 </div>
                 <div className="font-medium text-nowrap truncate">
@@ -248,7 +248,7 @@ const MobileTrendCard = () => {
                 </div>
               </div>
               <div className="text-center bg-custom-white rounded-lg p-1.5">
-                <div className="text-content/60 font-medium">
+                <div className="text-content/85 font-medium">
                   Trend
                 </div>
                 <div className="font-medium text-nowrap truncate">
@@ -261,7 +261,7 @@ const MobileTrendCard = () => {
           </div>
 
           <div className="p-1.5 bg-blue-200/50 rounded-lg shadow-md leading-tight">
-            <div className="font-medium mb-1 text-content/80 col-span-2 flex justify-between items-start">
+            <div className="font-medium mb-1 text-content/85 col-span-2 flex justify-between items-start">
               <div>Avg Quantity</div>
               {individualTrend(
                 selectedCashierDetails!.average_qty,
@@ -270,7 +270,7 @@ const MobileTrendCard = () => {
             </div>
             <div className="grid grid-cols-2 gap-1.5">
               <div className="text-center bg-custom-white rounded-lg p-1.5">
-                <div className="text-content/60 font-medium">
+                <div className="text-content/85 font-medium">
                   Total
                 </div>
                 <div className="font-medium text-nowrap truncate">
@@ -278,7 +278,7 @@ const MobileTrendCard = () => {
                 </div>
               </div>
               <div className="text-center bg-custom-white rounded-lg p-1.5">
-                <div className="text-content/60 font-medium">
+                <div className="text-content/85 font-medium">
                   Trend
                 </div>
                 <div className="font-medium text-nowrap truncate">
@@ -289,12 +289,12 @@ const MobileTrendCard = () => {
           </div>
 
           <div className="p-1.5 bg-blue-200/50 rounded-lg shadow-md leading-tight">
-            <div className="font-medium mb-2 text-content/80 col-span-2">
+            <div className="font-medium mb-2 text-content/85 col-span-2">
               Cashiers
             </div>
             <div className="grid grid-cols-2 gap-1.5">
               <div className="text-center bg-custom-white rounded-lg p-1.5">
-                <div className="text-content/60 font-medium">
+                <div className="text-content/85 font-medium">
                   Total
                 </div>
                 <div className="font-medium text-nowrap truncate">
@@ -302,7 +302,7 @@ const MobileTrendCard = () => {
                 </div>
               </div>
               <div className="text-center bg-custom-white rounded-lg p-1.5">
-                <div className="text-content/60 font-medium">
+                <div className="text-content/85 font-medium">
                   Trend
                 </div>
                 <div className="font-medium text-nowrap truncate">

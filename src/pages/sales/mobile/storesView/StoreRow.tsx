@@ -215,28 +215,28 @@ const StoreRow = ({ panel }: StoreRowProps) => {
 
       <div className="grid grid-cols-4 gap-x-1 pt-1">
         <div className="min-w-0">
-          <div className="text-content/60 text-[10px]">Sales</div>
+          <div className="text-content/85 text-[10px]">Sales</div>
           <div className="font-medium text-[10.5px]">
             {formatCurrency2(panel.total_sales - panel.total_tax)}
           </div>
         </div>
 
         <div className="min-w-0">
-          <div className="text-content/60 text-[10px]">Tax</div>
+          <div className="text-content/85 text-[10px]">Tax</div>
           <div className="font-medium text-[10.5px]">
             {formatCurrency2(panel.total_tax)}
           </div>
         </div>
 
         <div className="min-w-0">
-          <div className="text-content/60 text-[10px]">Qty</div>
+          <div className="text-content/85 text-[10px]">Qty</div>
           <div className="font-medium text-[10.5px]">
             {formatBigNumber(panel.qty, 0)}
           </div>
         </div>
 
         <div className="min-w-0">
-          <div className="text-content/60 text-[10px]">Weight</div>
+          <div className="text-content/85 text-[10px]">Weight</div>
           <div className="font-medium text-[10.5px]">
             {formatWeight(panel.weight)}
           </div>

@@ -1,9 +1,20 @@
 import { useEffect } from "react";
 import { useTeamCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import { assignBaseGroupToUser, deleteUserBaseGroupLink, getBaseGroupsAssignedToUser } from "../../../../../api/team";
-import { setUserBaseGroups, setUserCompany } from "../../../../../features/baseGroupSlice";
-import type { BaseGroupJsonResp, JsonError, UserCompany } from "../../../../../interfaces";
+import {
+  assignBaseGroupToUser,
+  deleteUserBaseGroupLink,
+  getBaseGroupsAssignedToUser,
+} from "../../../../../api/team";
+import {
+  setUserBaseGroups,
+  setUserCompany,
+} from "../../../../../features/baseGroupSlice";
+import type {
+  BaseGroupJsonResp,
+  JsonError,
+  UserCompany,
+} from "../../../../../interfaces";
 import AssignPanel from "../AssignPanel";
 
 const BaseGroupsTab = () => {
@@ -18,12 +29,18 @@ const BaseGroupsTab = () => {
       .then((resp) => {
         const j: BaseGroupJsonResp = resp.data;
         if (j.error === 0) {
-          const active = j.active.filter((bg) => bg.company === company.company);
-          const inactive = j.inactive.filter((bg) => bg.company === company.company);
+          const active = j.active.filter(
+            (bg) => bg.company === company.company,
+          );
+          const inactive = j.inactive.filter(
+            (bg) => bg.company === company.company,
+          );
           ctx.dispatch(setUserBaseGroups({ active, inactive }));
         }
       })
-      .catch((err: JsonError) => toast.error("Error fetching user's base groups " + err.message));
+      .catch((err: JsonError) =>
+        toast.error("Error fetching user's base groups " + err.message),
+      );
   };
 
   useEffect(() => {
@@ -64,7 +81,9 @@ const BaseGroupsTab = () => {
             key={c.id}
             onClick={() => handleCompanySelect(c)}
             className={`text-[11px] px-3 py-1 rounded-full ${
-              ctx.userCompany?.company === c.company ? "bg-[#1e2a4a] text-custom-white" : "bg-white border border-gray-200 text-content"
+              ctx.userCompany?.company === c.company
+                ? "bg-[#1e2a4a] text-custom-white"
+                : "bg-custom-white border border-gray-200 text-content"
             }`}
           >
             {c.name}
@@ -74,8 +93,14 @@ const BaseGroupsTab = () => {
       <AssignPanel
         leftTitle="Unassigned"
         rightTitle="Assigned"
-        leftItems={ctx.inactiveBaseGroups.map((bg) => ({ id: bg.id, label: bg.name }))}
-        rightItems={ctx.activeBaseGroups.map((bg) => ({ id: bg.id, label: bg.name }))}
+        leftItems={ctx.inactiveBaseGroups.map((bg) => ({
+          id: bg.id,
+          label: bg.name,
+        }))}
+        rightItems={ctx.activeBaseGroups.map((bg) => ({
+          id: bg.id,
+          label: bg.name,
+        }))}
         onAssign={submitAssign}
         onUnassign={submitUnassign}
       />

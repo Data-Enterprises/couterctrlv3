@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { MagnifyingGlassIcon, QuestionMarkCircleIcon } from "@heroicons/react/16/solid";
+import {
+  MagnifyingGlassIcon,
+  QuestionMarkCircleIcon,
+} from "@heroicons/react/16/solid";
 import { useAppDispatch } from "../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
@@ -23,7 +26,8 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
   const hasSubDept = ctx.selectedSubDeptId > 0;
 
   const storeName =
-    ctx.assignedStores.find((s) => s.storeid === ctx.searchValue)?.store_name ?? "";
+    ctx.assignedStores.find((s) => s.storeid === ctx.searchValue)?.store_name ??
+    "";
   const subDeptName =
     ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId)?.desc ?? "";
 
@@ -33,7 +37,8 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
   const periodStart = ctx.singleDate
     ? formatDate(setDates(new Date(ctx.singleDate), -27))
     : "";
-  const dateRange = periodStart && periodEnd ? `${periodStart} – ${periodEnd}` : "";
+  const dateRange =
+    periodStart && periodEnd ? `${periodStart} – ${periodEnd}` : "";
 
   const allWeeksData = [
     ...ctx.weekOneMargins,
@@ -41,9 +46,13 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
     ...ctx.weekThreeMargins,
     ...ctx.weekFourMargins,
   ];
-  const totalSales = allWeeksData.reduce((acc, m) => acc + (m.total_sales - m.total_tax), 0);
+  const totalSales = allWeeksData.reduce(
+    (acc, m) => acc + (m.total_sales - m.total_tax),
+    0,
+  );
   const totalCogs = allWeeksData.reduce(
-    (acc, m) => acc + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight),
+    (acc, m) =>
+      acc + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight),
     0,
   );
   const totalMargin = gpm(totalSales, totalCogs);
@@ -69,28 +78,35 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
     >
       {/* Navy header — 2-row canonical pattern */}
       <div className="bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
-
         {/* Row 1: title + date range | summary metrics */}
         <div className="flex items-end gap-3 min-h-[26px]">
-          <span className="text-white font-medium text-[13px] flex-shrink-0">
+          <span className="text-custom-white font-medium text-[13px] flex-shrink-0">
             Sub Dept Margins
           </span>
           {dateRange && (
-            <span className="text-white/35 text-[11px] flex-shrink-0">{dateRange}</span>
+            <span className="text-custom-white/35 text-[11px] flex-shrink-0">
+              {dateRange}
+            </span>
           )}
           <div className="flex-1" />
           {hasAllWeeksData && (
             <>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-[10px] text-white/45 uppercase tracking-wide">Net</span>
-                <span className="text-[13px] font-medium text-white">
+                <span className="text-[10px] text-custom-white/45 uppercase tracking-wide">
+                  Net
+                </span>
+                <span className="text-[13px] font-medium text-custom-white">
                   {formatCurrency2(totalSales)}
                 </span>
               </div>
-              <div className="w-px h-4 bg-white/15 flex-shrink-0" />
+              <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
               <div className="flex items-baseline gap-1.5">
-                <span className="text-[10px] text-white/45 uppercase tracking-wide">Margin</span>
-                <span className="text-[13px] font-medium text-white">{totalMargin}</span>
+                <span className="text-[10px] text-custom-white/45 uppercase tracking-wide">
+                  Margin
+                </span>
+                <span className="text-[13px] font-medium text-custom-white">
+                  {totalMargin}
+                </span>
               </div>
             </>
           )}
@@ -99,7 +115,7 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
         {/* Row 2: search icon + store name | ? icon */}
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-white/[0.08]">
           <button
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/60 hover:text-custom-white hover:border-white/40 transition-colors flex-shrink-0"
             onClick={onSearchOpen}
             title="Search"
           >
@@ -107,9 +123,13 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
           </button>
 
           <div className="flex flex-col leading-tight min-w-0">
-            <span className="text-[11px] font-medium text-white/70 truncate">{storeName}</span>
+            <span className="text-[11px] font-medium text-custom-white/70 truncate">
+              {storeName}
+            </span>
             {subDeptName && (
-              <span className="text-[9px] text-white/40 truncate">{subDeptName}</span>
+              <span className="text-[9px] text-custom-white/40 truncate">
+                {subDeptName}
+              </span>
             )}
           </div>
 
@@ -120,7 +140,7 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
             onMouseEnter={() => setLegendHover(true)}
             onMouseLeave={() => setLegendHover(false)}
           >
-            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/50 hover:text-white hover:border-white/40 transition-colors">
+            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/50 hover:text-custom-white hover:border-white/40 transition-colors">
               <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
             </button>
             {legendHover && (
@@ -128,7 +148,7 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
                 className="absolute right-0 top-full mt-1.5 z-50 bg-[#1e2a4a] border border-white/15 rounded-lg shadow-lg px-3 py-2.5 flex flex-col gap-1.5"
                 style={{ minWidth: 220 }}
               >
-                <div className="text-[9px] font-semibold uppercase tracking-wide text-white/35">
+                <div className="text-[9px] font-semibold uppercase tracking-wide text-custom-white/35">
                   Metrics
                 </div>
                 {[
@@ -139,10 +159,17 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
                   { label: "Unique Items", desc: "Distinct UPCs in period" },
                 ].map(({ label, desc }) => (
                   <div key={label} className="flex items-start gap-2">
-                    <span className="text-white/30 text-[10px] mt-px">·</span>
+                    <span className="text-custom-white/30 text-[10px] mt-px">
+                      ·
+                    </span>
                     <div>
-                      <span className="text-[10px] text-white font-medium">{label}</span>
-                      <span className="text-[10px] text-white/55"> — {desc}</span>
+                      <span className="text-[10px] text-custom-white font-medium">
+                        {label}
+                      </span>
+                      <span className="text-[10px] text-custom-white/55">
+                        {" "}
+                        — {desc}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -169,11 +196,12 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
           <SmDevWeekList />
         ) : (
           <div className="flex flex-col items-center justify-center h-full gap-2 p-6 text-center">
-            <p className="text-[12px] text-content/40">Select a sub department above</p>
+            <p className="text-[12px] text-content/40">
+              Select a sub department above
+            </p>
           </div>
         )}
       </div>
-
     </div>
   );
 };

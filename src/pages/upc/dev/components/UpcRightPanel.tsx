@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../hooks";
-import { setDevActiveTab, type UpcDevTab } from "../../../../features/upcDevSlice";
+import { setDevActiveTab, UPC_DEV_TABS } from "../../../../features/upcDevSlice";
 
 import UpcKpiStrip from "./UpcKpiStrip";
 import UpcExportModal from "./UpcExportModal";
@@ -12,20 +12,12 @@ import PriceOptTab from "../modules/priceOpt/PriceOptTab";
 import TrendTab from "../modules/trend/TrendTab";
 import AssociationTab from "../modules/association/AssociationTab";
 
-const TABS: { id: UpcDevTab; label: string }[] = [
-  { id: "salesComp", label: "Sales Comp" },
-
-  { id: "priceOpt", label: "Price Opt" },
-  { id: "trend", label: "Trend" },
-  { id: "association", label: "Association" },
-];
-
 const UpcRightPanel = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
   const [exportOpen, setExportOpen] = useState(false);
 
-  const activeTabLabel = TABS.find((t) => t.id === ctx.activeTab)?.label ?? "";
+  const activeTabLabel = UPC_DEV_TABS.find((t) => t.id === ctx.activeTab)?.label ?? "";
 
   return (
     <div className="flex-1 min-w-0 shadow-lg">
@@ -34,18 +26,18 @@ const UpcRightPanel = () => {
         {/* 1-row navy header */}
         <div className="flex-shrink-0 px-4 py-3 flex items-start justify-between bg-[#1e2a4a]">
           <div>
-            <div className="text-[13px] font-semibold text-white leading-tight">
+            <div className="text-[13px] font-semibold text-custom-white leading-tight">
               {activeTabLabel}
             </div>
-            <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.50)" }}>
+            <div className="text-[10px] mt-0.5" style={{ color: "rgb(var(--color-custom-white) / 0.50)" }}>
               {ctx.selectedUpcs.length > 0
                 ? `${ctx.selectedUpcs.length} of ${ctx.upcItems.length} selected`
                 : "Select UPCs to view report"}
             </div>
           </div>
           <button
-            className="flex items-center justify-center w-[22px] h-[22px] rounded border text-white/60 hover:text-white hover:border-white/40 transition-colors"
-            style={{ borderColor: "rgba(255,255,255,0.20)" }}
+            className="flex items-center justify-center w-[22px] h-[22px] rounded border text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors"
+            style={{ borderColor: "rgb(var(--color-custom-white) / 0.20)" }}
             onClick={() => setExportOpen(true)}
             title="Export"
           >
@@ -53,25 +45,26 @@ const UpcRightPanel = () => {
           </button>
         </div>
 
-        {/* KPI strip — before tabs (performance page spec) */}
-        <UpcKpiStrip />
-
-        {/* Tabs */}
+        {/* Tabs — above the KPI strip, since the strip's content is now
+            tab-contextual rather than one fixed shape */}
         <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0 overflow-x-auto thin-scrollbar">
-          {TABS.map((tab) => (
+          {UPC_DEV_TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => dispatch(setDevActiveTab(tab.id))}
               className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors whitespace-nowrap ${
                 ctx.activeTab === tab.id
                   ? "border-[#1e2a4a] text-content"
-                  : "border-transparent text-content/70 hover:text-content/80"
+                  : "border-transparent text-content"
               }`}
             >
               {tab.label}
             </button>
           ))}
         </div>
+
+        {/* KPI strip — per-tab content */}
+        <UpcKpiStrip />
 
         {/* Tab content — all tabs always mounted so background fetches fire immediately */}
         <div className="flex-1 overflow-hidden flex flex-col min-h-0 relative">

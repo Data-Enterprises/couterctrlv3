@@ -6,7 +6,8 @@ import {
   setDevUpcText,
   removeDevUpc,
   clearDevUpcs,
-  setDevTrendPeriods,
+  setDevActiveTab,
+  UPC_DEV_TABS,
 } from "../../../../features/upcDevSlice";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
@@ -59,12 +60,12 @@ const UpcSearchCard = ({ onSearch }: Props) => {
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-3rem)] overflow-hidden mx-4 pb-12 md:pb-8">
-      <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-4">
+      <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-2">
 
         {/* title */}
         <div>
-          <h2 className="text-base font-semibold text-content">UPC Workbook</h2>
-          <p className="text-[12px] text-content/50 mt-1">
+          <h2 className="text-base font-semibold text-content">UPC List</h2>
+          <p className="text-[12px] text-content/50">
             Sales comp · Forecast · Price opt · Trend · Association
           </p>
         </div>
@@ -74,22 +75,6 @@ const UpcSearchCard = ({ onSearch }: Props) => {
 
         {/* date range */}
         <DatePickers showBtn={false} />
-
-        {/* trend periods */}
-        <div>
-          <label className="block text-[12px] font-medium text-content/70 mb-1">
-            Trend periods (days)
-          </label>
-          <input
-            type="number"
-            value={ctx.trendPeriods}
-            min={30}
-            max={365}
-            onChange={(e) => dispatch(setDevTrendPeriods(Number(e.target.value)))}
-            className="basic-input w-28 text-[13px] py-1"
-            style={{ outline: "none", WebkitAppearance: "none", boxShadow: "none" }}
-          />
-        </div>
 
         {/* UPC input */}
         <div>
@@ -154,13 +139,35 @@ const UpcSearchCard = ({ onSearch }: Props) => {
           )}
         </div>
 
+        {/* landing tab */}
+        <div>
+          <label className="block text-[12px] font-medium text-content mb-1">
+            Open to
+          </label>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {UPC_DEV_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => dispatch(setDevActiveTab(tab.id))}
+                className={`px-2.5 py-1 text-[11px] font-medium rounded border transition-colors ${
+                  ctx.activeTab === tab.id
+                    ? "bg-[#1e2a4a] border-[#1e2a4a] text-custom-white"
+                    : "border-content/20 text-content/60 hover:text-content/80 hover:border-content/35"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* run */}
         <button
           onClick={onSearch}
-          className="w-full py-2 text-sm font-semibold text-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
+          className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
           disabled={!ctx.upcs.length}
         >
-          Run
+          Search
         </button>
 
       </div>

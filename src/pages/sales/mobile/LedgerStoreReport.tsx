@@ -1,6 +1,6 @@
 ﻿import { useMemo, useEffect, useRef, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { useSalesState } from "../hooks/useSalesState";
+// import { useSalesState } from "../hooks/useSalesState";
 import { getSubs, getHourly } from "../../../api/sales";
 import { getSubMargins } from "../../../api/subMargins";
 import {
@@ -19,6 +19,7 @@ import {
   setRawLWHourly,
   setRawLYHourly,
   setTop10,
+  setInactiveSubDeptItems,
   setLedgerTab,
   setLedgerSelectedDate,
   setReportSevFilter,
@@ -29,7 +30,11 @@ import {
   closeSheet,
   navigateToList,
 } from "../../../features/salesLedgerSlice";
-import type { SevFilter } from "../../../features/salesLedgerSlice";
+import type {
+  SevFilter,
+  GradingMetric,
+} from "../../../features/salesLedgerSlice";
+import SelectFilter from "../../../components/filters/SelectFilter";
 import type { SubDeptMargin } from "../../../interfaces";
 import type { Severity } from "../components/LedgerRow";
 import {
@@ -45,10 +50,8 @@ import {
   BADGE_COLOR,
   SEVERITY_RANK,
   computeDayMatchedTotals,
-  buildDayShiftMaps,
-  buildDayMatchedTwTotals,
-  getWeeklyDataGaps,
-  getWeeklyGapCount,
+  // getWeeklyDataGaps,
+  // getWeeklyGapCount,
   type DeptRow,
   type HourRow,
 } from "../shared/ledgerUtils";
@@ -62,17 +65,16 @@ import {
 import BottomSheet from "../../../components/BottomSheet";
 import SevBadge from "./components/SevBadge";
 import SevChips from "./components/SevChips";
-import DataGapReport from "./components/DataGapReport";
+// import DataGapReport from "./components/DataGapReport";
 
 const LedgerStoreReport = () => {
   const dispatch = useAppDispatch();
   const sheetCloseRef = useRef<(() => void) | null>(null);
   const [itemSevFilter, setItemSevFilter] = useState<SevFilter>("all");
-  const [gapReportOpen, setGapReportOpen] = useState(false);
+  const [itemActiveFilter, setItemActiveFilter] = useState("active");
+  // const [gapReportOpen, setGapReportOpen] = useState(false);
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
-  const { weeklySales, weeklySalesLastWeek, weeklySalesLastYear } =
-    useSalesState();
   const {
     selection,
     tab,
@@ -86,12 +88,14 @@ const LedgerStoreReport = () => {
     rawLWHourly,
     rawLYHourly,
     top10,
+    inactiveSubDeptItems,
     reportSevFilter,
     openSheetType,
     openSheetId,
     subDeptThreshold,
     hourlyThreshold,
     itemThreshold,
+    gradingMetric,
   } = useAppSelector((s) => s.salesLedger);
 
   const rawActiveThreshold =
@@ -104,7 +108,9 @@ const LedgerStoreReport = () => {
   );
 
   useEffect(() => {
-    setTabThresholdInput(rawActiveThreshold === null ? "" : String(rawActiveThreshold));
+    setTabThresholdInput(
+      rawActiveThreshold === null ? "" : String(rawActiveThreshold),
+    );
   }, [tab]);
 
   // Grading should never move rows around on its own when a threshold input
@@ -130,28 +136,24 @@ const LedgerStoreReport = () => {
   const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
   const lwEnd = addDays(search.singleDate, -7).toISOString().split("T")[0];
   const lwStart = addDays(search.singleDate, -13).toISOString().split("T")[0];
-  // The store's weekly-sales data (selection.days, built by buildLedgerRows)
-  // is fragmented — it only has an entry for the calendar days that actually
-  // have a row, not all 7 days of the week. The KPI strip and store list
-  // both treat that real, possibly-sparse set of days as "this week." Basing
-  // the LW/LY match set on all 7 hypothetical calendar days instead (rather
-  // than the real ones) would recognize a wider set of "matched" days than
-  // the store level does, so sub-dept/hourly could show real figures for a
-  // day the KPI strip doesn't even count as part of the week. Deriving the
-  // match set from selection.days' actual dates keeps every level in sync.
-  const twRealDates = selection
-    ? selection.days.map((d) => d.sale_date.split("T")[0])
-    : [];
-  const lyWeekDates = twRealDates.map((d) => sameWeekDayLastYear(d).date).sort();
+  // The full 7 calendar days of the searched week — deliberately NOT
+  // selection.days (the store's weekly-sales row list), which only has an
+  // entry for days that list actually returned a row for. A day missing
+  // there doesn't mean this specific dept/hour/item has no real data for
+  // it — using the true calendar range means every entity's LW/LY match is
+  // scoped to its own genuine data, not gated by a different fetch's gaps.
+  const twRealDates = Array.from(
+    { length: 7 },
+    (_, i) => addDays(new Date(twStart), i).toISOString().split("T")[0],
+  );
+  const lyWeekDates = twRealDates
+    .map((d) => sameWeekDayLastYear(d).date)
+    .sort();
   const lyStart = lyWeekDates[0];
   const lyEnd = lyWeekDates[lyWeekDates.length - 1];
   const lwWeekDates = twRealDates.map(
     (d) => addDays(new Date(d), -7).toISOString().split("T")[0],
   );
-  // Per-day shift maps so dept/hour entity-level matching uses the same
-  // twDate→lwDate/lyDate lookups as the store level.
-  const { twToLwDay, twToLyDay } = buildDayShiftMaps(twRealDates);
-
   // Dynamic date labels
   const twDateLabel = selectedDate
     ? new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", {
@@ -270,6 +272,7 @@ const LedgerStoreReport = () => {
   useEffect(() => {
     if (openSheetType !== "subdept" || openSheetId === null || !selection) {
       dispatch(setTop10([]));
+      dispatch(setInactiveSubDeptItems([]));
       return;
     }
     const tyS = selectedDate ?? twStart;
@@ -336,35 +339,23 @@ const LedgerStoreReport = () => {
         if (!selectedDate) {
           const lwDateSet = new Set(lwWeekDates);
           const lyDateSet = new Set(lyWeekDates);
-          lwItems = lwItems.filter((i) => lwDateSet.has(i.sale_date.split("T")[0]));
-          lyItems = lyItems.filter((i) => lyDateSet.has(i.sale_date.split("T")[0]));
+          lwItems = lwItems.filter((i) =>
+            lwDateSet.has(i.sale_date.split("T")[0]),
+          );
+          lyItems = lyItems.filter((i) =>
+            lyDateSet.has(i.sale_date.split("T")[0]),
+          );
         }
 
         const tyMap = aggByCode(tyItems);
         const lwMap = aggByCode(lwItems);
         const lyMap = aggByCode(lyItems);
         const sorted = [...tyMap.entries()].sort((a, b) => b[1].qty - a[1].qty);
-        // An item can have real TW sales on days where the store overall has
-        // an LW/LY match but this specific item doesn't — restrict the TW
-        // side of each item's percentage to just the days that item has a
-        // match on, same as the dept/hour-level fix.
-        const matched = buildDayMatchedTwTotals(
-          tyItems,
-          lwItems,
-          lyItems,
-          (i) => i.product_code,
-          (i) => i.sale_date.split("T")[0],
-          (i) => i.total_sales - i.total_tax,
-          (i) => i.qty,
-          twToLwDay,
-          twToLyDay,
-        );
         dispatch(
           setTop10(
             sorted.map(([code, ty]) => {
               const lw = lwMap.get(code) ?? null;
               const ly = lyMap.get(code) ?? null;
-              const m = matched.get(code);
               return {
                 productCode: code,
                 upc: code,
@@ -378,10 +369,41 @@ const LedgerStoreReport = () => {
                 lyNet: ly?.net ?? null,
                 lyQty: ly?.qty ?? null,
                 lyWeight: ly?.weight ?? null,
-                twNetForLW: m?.twNetForLW ?? 0,
-                twQtyForLW: m?.twQtyForLW ?? 0,
-                twNetForLY: m?.twNetForLY ?? 0,
-                twQtyForLY: m?.twQtyForLY ?? 0,
+              };
+            }),
+          ),
+        );
+        // Items that sold LW and/or LY but have no TY row at all — invisible
+        // in the normal TY-anchored list above since it's built from tyMap
+        // alone. Surfaced separately so someone can spot "this used to sell
+        // here" without it polluting the active list's severity counts.
+        const inactiveCodes = new Set(
+          [...lwMap.keys(), ...lyMap.keys()].filter((code) => !tyMap.has(code)),
+        );
+        const inactiveSorted = [...inactiveCodes].sort((a, b) => {
+          const aTotal = (lwMap.get(a)?.net ?? 0) + (lyMap.get(a)?.net ?? 0);
+          const bTotal = (lwMap.get(b)?.net ?? 0) + (lyMap.get(b)?.net ?? 0);
+          return bTotal - aTotal;
+        });
+        dispatch(
+          setInactiveSubDeptItems(
+            inactiveSorted.map((code) => {
+              const lw = lwMap.get(code) ?? null;
+              const ly = lyMap.get(code) ?? null;
+              return {
+                productCode: code,
+                upc: code,
+                desc: lw?.desc ?? ly?.desc ?? code,
+                tyNet: 0,
+                tyQty: 0,
+                tyWeight: 0,
+                hasTY: false,
+                lwNet: lw?.net ?? null,
+                lwQty: lw?.qty ?? null,
+                lwWeight: lw?.weight ?? null,
+                lyNet: ly?.net ?? null,
+                lyQty: ly?.qty ?? null,
+                lyWeight: ly?.weight ?? null,
               };
             }),
           ),
@@ -421,20 +443,6 @@ const LedgerStoreReport = () => {
     const twMap = aggSubDepts(twSrc);
     const lwMap = aggSubDepts(lwSrc);
     const lyMap = aggSubDepts(lySrc);
-    // A dept can have real TW sales across days where the STORE overall has
-    // an LW/LY match, but the dept itself doesn't — restrict the TW side of
-    // each dept's percentage to just the days that dept has a match on.
-    const matched = buildDayMatchedTwTotals(
-      twSrc,
-      lwSrc,
-      lySrc,
-      (s) => s.sub_department,
-      (s) => s.sale_date.split("T")[0],
-      (s) => s.total_sales - s.total_tax,
-      (s) => s.qty,
-      twToLwDay,
-      twToLyDay,
-    );
     return Object.entries(twMap)
       .map(([id, r]) => {
         const numId = Number(id);
@@ -442,9 +450,6 @@ const LedgerStoreReport = () => {
         const ly = lyMap[numId];
         const lwNet = lw?.net ?? 0;
         const lyNet = ly?.net ?? 0;
-        const m = matched.get(numId);
-        const twNetForLW = m?.twNetForLW ?? 0;
-        const twNetForLY = m?.twNetForLY ?? 0;
         return {
           id: numId,
           desc: r.desc,
@@ -453,8 +458,8 @@ const LedgerStoreReport = () => {
           ly: lyNet,
           hasLW: lwNet > 0,
           hasLY: lyNet > 0,
-          vsLWPct: lwNet ? ((twNetForLW - lwNet) / lwNet) * 100 : 0,
-          vsLYPct: lyNet ? ((twNetForLY - lyNet) / lyNet) * 100 : 0,
+          vsLWPct: lwNet ? ((r.net - lwNet) / lwNet) * 100 : 0,
+          vsLYPct: lyNet ? ((r.net - lyNet) / lyNet) * 100 : 0,
           qty: r.qty,
           lwQty: lw?.qty ?? 0,
           lyQty: ly?.qty ?? 0,
@@ -501,30 +506,12 @@ const LedgerStoreReport = () => {
     const twMap = aggHours(twSrc);
     const lwMap = aggHours(lwSrc);
     const lyMap = aggHours(lySrc);
-    // Same fix as `depts` above — an hour can have real TW sales on days
-    // where the store overall has an LW/LY match but that specific hour
-    // doesn't, so restrict the TW side of each hour's percentage to just
-    // the days that hour has a match on.
-    const matched = buildDayMatchedTwTotals(
-      twSrc,
-      lwSrc,
-      lySrc,
-      (h) => h.hour,
-      (h) => h.sale_date.split("T")[0],
-      (h) => h.total_sales - h.total_tax,
-      (h) => h.qty,
-      twToLwDay,
-      twToLyDay,
-    );
     return Array.from(new Set(Object.keys(twMap).map(Number)))
       .sort((a, b) => a - b)
       .map((h) => {
         const tw = twMap[h]?.net ?? 0;
         const lw = lwMap[h]?.net ?? 0;
         const ly = lyMap[h]?.net ?? 0;
-        const m = matched.get(h);
-        const twNetForLW = m?.twNetForLW ?? 0;
-        const twNetForLY = m?.twNetForLY ?? 0;
         return {
           hour: h,
           tw,
@@ -538,8 +525,8 @@ const LedgerStoreReport = () => {
           lyQty: lyMap[h]?.qty ?? 0,
           hasLW: lw > 0,
           hasLY: ly > 0,
-          vsLWPct: lw ? ((twNetForLW - lw) / lw) * 100 : 0,
-          vsLYPct: ly ? ((twNetForLY - ly) / ly) * 100 : 0,
+          vsLWPct: lw ? ((tw - lw) / lw) * 100 : 0,
+          vsLYPct: ly ? ((tw - ly) / ly) * 100 : 0,
         };
       })
       .sort((a, b) => {
@@ -551,7 +538,13 @@ const LedgerStoreReport = () => {
           : (a.hasLY ? a.vsLYPct : a.vsLWPct) -
               (b.hasLY ? b.vsLYPct : b.vsLWPct);
       });
-  }, [rawHourly, rawLWHourly, rawLYHourly, selectedDate, effectiveHourlyThreshold]);
+  }, [
+    rawHourly,
+    rawLWHourly,
+    rawLYHourly,
+    selectedDate,
+    effectiveHourlyThreshold,
+  ]);
 
   // ── Sheet row resolution ──────────────────────────────────────────────────────
   const sheetDept =
@@ -663,19 +656,19 @@ const LedgerStoreReport = () => {
   // Checked against the raw weekly-sales fetch (not selection.days, which
   // only ever contains real TW rows) so a day missing from TW itself — not
   // just from LW/LY — actually shows up instead of being silently invisible.
-  const gaps = selection
-    ? getWeeklyDataGaps(
-        selection.storeId,
-        twStart,
-        twEnd,
-        lwStart,
-        lwEnd,
-        weeklySales,
-        weeklySalesLastWeek,
-        weeklySalesLastYear,
-      )
-    : null;
-  const gapCount = gaps ? getWeeklyGapCount(gaps) : 0;
+  // const gaps = selection
+  //   ? getWeeklyDataGaps(
+  //       selection.storeId,
+  //       twStart,
+  //       twEnd,
+  //       lwStart,
+  //       lwEnd,
+  //       weeklySales,
+  //       weeklySalesLastWeek,
+  //       weeklySalesLastYear,
+  //     )
+  //   : null;
+  // const gapCount = gaps ? getWeeklyGapCount(gaps) : 0;
 
   if (!selection) return null;
 
@@ -686,17 +679,19 @@ const LedgerStoreReport = () => {
         <div className="bg-[#1e2a4a] px-4 pt-3 pb-4 flex items-start gap-3 flex-shrink-0">
           <button
             onClick={() => dispatch(navigateToList())}
-            className="text-white/75 mt-0.5 flex-shrink-0"
+            className="text-custom-white/85 mt-0.5 flex-shrink-0"
           >
             <ChevronLeftIcon className="w-5 h-5" />
           </button>
           <div className="flex-1 min-w-0">
-            <div className="text-white font-semibold text-[15px]">
+            <div className="text-custom-white font-semibold text-[13px]">
               {selection.storeName}
             </div>
-            <div className="text-white/65 text-[11px]">Weekly Sales Report</div>
+            <div className="text-custom-white/85 text-[11px]">
+              Weekly Sales Report
+            </div>
           </div>
-          {gapCount > 0 && (
+          {/* {gapCount > 0 && (
             <button
               onClick={() => setGapReportOpen(true)}
               title={`${gapCount} day${gapCount === 1 ? "" : "s"} missing comparison data`}
@@ -706,20 +701,20 @@ const LedgerStoreReport = () => {
               <span className="relative inline-flex items-center justify-center w-[16px] h-[16px] rounded-full bg-custom-white">
                 <ExclamationTriangleIcon className="w-2.5 h-2.5 text-amber-600" />
               </span>
-              <span className="absolute -top-1 -right-1 min-w-[12px] h-[12px] px-[3px] rounded-full bg-amber-600 text-custom-white text-[7px] font-semibold flex items-center justify-center leading-none">
+              <span className="absolute -top-1 -right-1 min-w-[12px] h-[12px] px-[3px] rounded-full bg-amber-600 text-custom-white text-[10px] font-semibold flex items-center justify-center leading-none">
                 {gapCount}
               </span>
             </button>
-          )}
+          )} */}
         </div>
 
         {/* KPI strip */}
-        <div className="grid grid-cols-3 divide-x divide-gray-100 bg-white border-b border-gray-100 flex-shrink-0">
+        <div className="grid grid-cols-3 divide-x divide-gray-100 bg-custom-white border-b border-gray-100 flex-shrink-0">
           <div className="px-3 py-2">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+            <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">
               TY net sales
             </div>
-            <div className="text-[8px] italic text-content/55 mt-0.5">
+            <div className="text-[10px] text-content/85 mt-0.5">
               {twDateLabel}
             </div>
             <div className="text-[12px] font-semibold text-content mt-0.5">
@@ -727,10 +722,10 @@ const LedgerStoreReport = () => {
             </div>
           </div>
           <div className="px-3 py-2">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+            <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">
               vs last week
             </div>
-            <div className="text-[8px] italic text-content/55 mt-0.5">
+            <div className="text-[10px] text-content/85 mt-0.5">
               {lwDateLabel}
             </div>
             <div className="flex items-baseline gap-1.5 mt-0.5">
@@ -747,10 +742,10 @@ const LedgerStoreReport = () => {
             </div>
           </div>
           <div className="px-3 py-2">
-            <div className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+            <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">
               vs last year
             </div>
-            <div className="text-[8px] italic text-content/55 mt-0.5">
+            <div className="text-[10px] text-content/85 mt-0.5">
               {lyDateLabel}
             </div>
             <div className="flex items-baseline gap-1.5 mt-0.5">
@@ -769,18 +764,18 @@ const LedgerStoreReport = () => {
         </div>
 
         {/* Day strip */}
-        <div className="grid grid-cols-8 bg-white border-b border-gray-100 flex-shrink-0">
+        <div className="grid grid-cols-8 bg-custom-white border-b border-gray-100 flex-shrink-0">
           <button
             onClick={() => dispatch(setLedgerSelectedDate(null))}
             className={`flex flex-col items-center justify-center py-2 border-r border-gray-100 transition-colors ${selectedDate === null ? "bg-[#1e2a4a]" : "hover:bg-gray-50"}`}
           >
             <span
-              className={`text-[9px] font-bold ${selectedDate === null ? "text-white" : "text-content"}`}
+              className={`text-[10px] font-bold ${selectedDate === null ? "text-custom-white" : "text-content"}`}
             >
               ALL
             </span>
             <span
-              className={`text-[8px] mt-0.5 ${selectedDate === null ? "text-white/65" : "text-content/70"}`}
+              className={`text-[10px] mt-0.5 ${selectedDate === null ? "text-custom-white" : "text-content"}`}
             >
               wk
             </span>
@@ -791,15 +786,19 @@ const LedgerStoreReport = () => {
             const isSelected = selectedDate === dateStr;
             const hasLY = d.lyNet !== null && d.lyNet > 0;
             const hasLW = d.lwNet !== null && d.lwNet > 0;
-            const ref = hasLY ? (d.lyNet as number) : hasLW ? (d.lwNet as number) : 0;
+            const ref = hasLY
+              ? (d.lyNet as number)
+              : hasLW
+                ? (d.lwNet as number)
+                : 0;
             const hasRef = hasLY || hasLW;
             const refPct = hasRef ? ((d.twNet - ref) / ref) * 100 : 0;
             const isNeg = refPct < 0;
-            const dayBadgeBg = !hasRef
-              ? "#e5e7eb"
-              : isNeg
-                ? "#fee2e2"
-                : "#d1fae5";
+            // const dayBadgeBg = !hasRef
+            //   ? "#e5e7eb"
+            //   : isNeg
+            //     ? "#fee2e2"
+            //     : "#d1fae5";
             const dayBadgeColor = !hasRef
               ? "#9ca3af"
               : isNeg
@@ -814,11 +813,13 @@ const LedgerStoreReport = () => {
                 className={`flex flex-col items-center justify-center gap-1 py-2 border-r border-gray-100 last:border-r-0 transition-colors ${isSelected ? "bg-[#1e2a4a]" : "hover:bg-gray-50"}`}
               >
                 <span
-                  className={`text-[9px] font-semibold leading-none ${isSelected ? "text-white" : "text-content"}`}
+                  className={`text-[10px] font-semibold leading-none ${isSelected ? "text-custom-white" : "text-content"}`}
                 >
                   {date.toLocaleDateString("en-US", { weekday: "short" })}{" "}
                   <span
-                    className={isSelected ? "text-white/65" : "text-content/70"}
+                    className={
+                      isSelected ? "text-custom-white" : "text-content"
+                    }
                   >
                     {date.toLocaleDateString("en-US", {
                       month: "numeric",
@@ -826,25 +827,17 @@ const LedgerStoreReport = () => {
                     })}
                   </span>
                 </span>
-                <div
-                  className="w-[18px] h-[18px] rounded-[5px] flex items-center justify-center flex-shrink-0"
-                  style={{ background: dayBadgeBg }}
-                >
+                <div className="w-[18px] h-[18px] rounded-[5px] flex items-center justify-center flex-shrink-0">
                   {!hasRef ? (
-                    <span
-                      className="text-[7px] font-bold"
-                      style={{ color: dayBadgeColor }}
-                    >
-                      —
-                    </span>
+                    <span className="text-[10px] font-bold">—</span>
                   ) : isNeg ? (
                     <ExclamationTriangleIcon
-                      className="w-2.5 h-2.5"
+                      className="w-5 h-5"
                       style={{ color: dayBadgeColor }}
                     />
                   ) : (
                     <CheckCircleIcon
-                      className="w-2.5 h-2.5"
+                      className="w-5 h-5"
                       style={{ color: dayBadgeColor }}
                     />
                   )}
@@ -855,7 +848,7 @@ const LedgerStoreReport = () => {
         </div>
 
         {/* Tabs + threshold */}
-        <div className="flex items-center bg-white border-b border-gray-100 flex-shrink-0 px-3">
+        <div className="flex items-center bg-custom-white border-b border-gray-100 flex-shrink-0 px-3">
           {(["subdept", "hourly"] as const).map((t) => (
             <button
               key={t}
@@ -863,14 +856,14 @@ const LedgerStoreReport = () => {
                 dispatch(setLedgerTab(t));
                 dispatch(closeSheet());
               }}
-              className={`py-2.5 px-3 text-[13px] font-medium border-b-2 transition-colors ${tab === t ? "border-[#1e2a4a] text-content" : "border-transparent text-content/70"}`}
+              className={`py-2.5 px-3 text-[13px] font-medium border-b-2 transition-colors ${tab === t ? "border-[#1e2a4a] text-content" : "border-transparent text-content/85"}`}
             >
               {t === "subdept" ? "Sub dept" : "Hourly"}
             </button>
           ))}
           <div className="flex-1" />
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-content/45">Threshold</span>
+            <span className="text-[10px] text-content/85">Threshold</span>
             <input
               type="number"
               min={1}
@@ -897,11 +890,15 @@ const LedgerStoreReport = () => {
               onBlur={() => {
                 const v = parseInt(tabThresholdInput, 10);
                 if (tabThresholdInput !== "" && (isNaN(v) || v < 1 || v > 99))
-                  setTabThresholdInput(rawActiveThreshold === null ? "" : String(rawActiveThreshold));
+                  setTabThresholdInput(
+                    rawActiveThreshold === null
+                      ? ""
+                      : String(rawActiveThreshold),
+                  );
               }}
               className="w-9 text-center text-[11px] bg-gray-50 border border-gray-200 rounded px-1 py-px focus:outline-none focus:border-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
-            <span className="text-[10px] text-content/45">%</span>
+            <span className="text-[10px] text-content/85">%</span>
           </div>
         </div>
 
@@ -915,11 +912,11 @@ const LedgerStoreReport = () => {
         {/* Signal list */}
         <div className="flex-1 overflow-y-auto">
           {reportLoading ? (
-            <div className="flex items-center justify-center py-16 text-[12px] text-content/70">
+            <div className="flex items-center justify-center py-16 text-[12px] text-content/85">
               Loading…
             </div>
           ) : filteredSignals.length === 0 ? (
-            <div className="flex items-center justify-center py-16 text-[12px] text-content/55">
+            <div className="flex items-center justify-center py-16 text-[12px] text-content/85">
               No data
             </div>
           ) : (
@@ -927,7 +924,7 @@ const LedgerStoreReport = () => {
               <button
                 key={idx}
                 onClick={item.onClick}
-                className="w-full px-3 py-2.5 bg-white border-b border-gray-100 text-left active:bg-gray-50"
+                className="w-full px-3 py-2.5 bg-custom-white border-b border-gray-100 text-left active:bg-gray-50"
               >
                 <div className="flex items-center gap-2.5">
                   <SevBadge sev={item.sev} />
@@ -938,11 +935,11 @@ const LedgerStoreReport = () => {
                     <span className="text-[12px] font-semibold text-content">
                       {formatCurrency2(item.tw)}
                     </span>
-                    <span className="text-[11px] text-content/60">
+                    <span className="text-[11px] text-content/85">
                       {item.qty.toLocaleString()} u
                     </span>
                   </div>
-                  <ChevronRightIcon className="w-4 h-4 text-content/45 flex-shrink-0" />
+                  <ChevronRightIcon className="w-4 h-4 text-content/85 flex-shrink-0" />
                 </div>
                 <div className="flex gap-2 mt-1.5 justify-end">
                   {item.hasLW && (
@@ -980,7 +977,7 @@ const LedgerStoreReport = () => {
                     ? ampm(sheetHour.hour)
                     : ""}
               </div>
-              <div className="text-[10px] text-content/70 italic mt-0.5">
+              <div className="text-[10px] text-content/85 mt-0.5">
                 {twDateLabel}
               </div>
             </div>
@@ -1025,26 +1022,26 @@ const LedgerStoreReport = () => {
                 <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100">
                   <div className="px-3 py-2.5">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-content/85">
                         TY
                       </span>
-                      <span className="text-[8px] italic text-content/45">
+                      <span className="text-[10px] text-content/85">
                         {twDateLabel}
                       </span>
                     </div>
                     <div className="text-[12px] font-semibold text-content mt-0.5">
                       {formatCurrency2(sheetTW)}
                     </div>
-                    <div className="text-[10px] text-content/60 mt-0.5">
+                    <div className="text-[10px] text-content/85 mt-0.5">
                       {tyQty.toLocaleString()} u
                     </div>
                   </div>
                   <div className="px-3 py-2.5">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-content/85">
                         LW
                       </span>
-                      <span className="text-[8px] italic text-content/45">
+                      <span className="text-[10px] text-content/85">
                         {lwDateLabel}
                       </span>
                     </div>
@@ -1054,24 +1051,24 @@ const LedgerStoreReport = () => {
                       </span>
                       {sheetVsLW !== null && (
                         <span
-                          className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${pillClass(sheetVsLW)}`}
+                          className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${pillClass(sheetVsLW)}`}
                         >
                           {formatPct(sheetVsLW)}
                         </span>
                       )}
                     </div>
                     {lwQty > 0 && (
-                      <div className="text-[10px] text-content/60 mt-0.5">
+                      <div className="text-[10px] text-content/85 mt-0.5">
                         {lwQty.toLocaleString()} u
                       </div>
                     )}
                   </div>
                   <div className="px-3 py-2.5">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-[9px] font-medium uppercase tracking-wide text-content/70">
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-content/85">
                         LY
                       </span>
-                      <span className="text-[8px] italic text-content/45">
+                      <span className="text-[10px] text-content/85">
                         {lyDateLabel}
                       </span>
                     </div>
@@ -1081,14 +1078,14 @@ const LedgerStoreReport = () => {
                       </span>
                       {sheetVsLY !== null && (
                         <span
-                          className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${pillClass(sheetVsLY)}`}
+                          className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${pillClass(sheetVsLY)}`}
                         >
                           {formatPct(sheetVsLY)}
                         </span>
                       )}
                     </div>
                     {lyQty > 0 && (
-                      <div className="text-[10px] text-content/60 mt-0.5">
+                      <div className="text-[10px] text-content/85 mt-0.5">
                         {lyQty.toLocaleString()} u
                       </div>
                     )}
@@ -1159,23 +1156,49 @@ const LedgerStoreReport = () => {
             )}
             {openSheetType === "subdept" &&
               (() => {
-                const itemSeverity = (item: (typeof top10)[0]): Severity => {
-                  const lyQtyPct =
-                    item.lyQty !== null && item.lyQty > 0
-                      ? ((item.twQtyForLY - item.lyQty) / item.lyQty) * 100
-                      : null;
-                  const lwQtyPct =
-                    item.lwQty !== null && item.lwQty > 0
-                      ? ((item.twQtyForLW - item.lwQty) / item.lwQty) * 100
-                      : null;
-                  const pct = lyQtyPct ?? lwQtyPct ?? 0;
+                const itemSeverity = (
+                  item: (typeof top10)[0],
+                  metric: GradingMetric,
+                ): Severity => {
+                  // Grades on the same metric (Sales vs Qty, per the
+                  // gradingMetric toggle) the pill below actually displays —
+                  // grading on a different metric than what's shown would
+                  // let the badge disagree with a visible 0% figure.
+                  const lyPct =
+                    metric === "sales"
+                      ? item.lyNet !== null && item.lyNet > 0
+                        ? ((item.tyNet - item.lyNet) / item.lyNet) * 100
+                        : null
+                      : item.lyQty !== null && item.lyQty > 0
+                        ? ((item.tyQty - item.lyQty) / item.lyQty) * 100
+                        : null;
+                  const lwPct =
+                    metric === "sales"
+                      ? item.lwNet !== null && item.lwNet > 0
+                        ? ((item.tyNet - item.lwNet) / item.lwNet) * 100
+                        : null
+                      : item.lwQty !== null && item.lwQty > 0
+                        ? ((item.tyQty - item.lwQty) / item.lwQty) * 100
+                        : null;
+                  // Rounded before grading — tyNet/lwNet/lyNet (and their qty
+                  // counterparts) are sums of individual line items, so
+                  // floating-point noise can leave a value like
+                  // -0.0000000001% even when the displayed figures are
+                  // identical, misgrading it "watch".
+                  const pct = Math.round((lyPct ?? lwPct ?? 0) * 10) / 10;
                   if (pct < -effectiveItemThreshold) return "critical";
                   if (pct < 0) return "watch";
                   return "healthy";
                 };
-                const itemsWithSev = top10.map((item) => ({
+                const baseItems =
+                  itemActiveFilter === "inactive"
+                    ? inactiveSubDeptItems
+                    : itemActiveFilter === "active"
+                      ? top10
+                      : [...top10, ...inactiveSubDeptItems];
+                const itemsWithSev = baseItems.map((item) => ({
                   ...item,
-                  sev: itemSeverity(item),
+                  sev: itemSeverity(item, gradingMetric),
                 }));
                 const itemCounts: Record<SevFilter, number> = {
                   all: itemsWithSev.length,
@@ -1193,14 +1216,21 @@ const LedgerStoreReport = () => {
                 return (
                   <>
                     <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 border-b border-gray-100 border-t border-t-gray-100">
-                      <span className="text-[10px] font-medium uppercase tracking-wide text-content/70">
-                        Items
-                      </span>
-                      <span className="text-[9px] italic text-content/55">
-                        {twDateLabel} · {top10.length} items
-                      </span>
+                      <SelectFilter
+                        options={[
+                          { label: "Active", value: "active" },
+                          {
+                            label: `Inactive (${inactiveSubDeptItems.length})`,
+                            value: "inactive",
+                          },
+                        ]}
+                        value={itemActiveFilter}
+                        onChange={setItemActiveFilter}
+                        placeholder="All items"
+                        className="w-[110px]"
+                      />
                       <div className="flex-1" />
-                      <span className="text-[10px] text-content/45">
+                      <span className="text-[10px] text-content/85">
                         Threshold
                       </span>
                       <input
@@ -1220,15 +1250,22 @@ const LedgerStoreReport = () => {
                         }}
                         onBlur={() => {
                           const v = parseInt(itemThresholdInput, 10);
-                          if (itemThresholdInput !== "" && (isNaN(v) || v < 1 || v > 99))
-                            setItemThresholdInput(itemThreshold === null ? "" : String(itemThreshold));
+                          if (
+                            itemThresholdInput !== "" &&
+                            (isNaN(v) || v < 1 || v > 99)
+                          )
+                            setItemThresholdInput(
+                              itemThreshold === null
+                                ? ""
+                                : String(itemThreshold),
+                            );
                         }}
-                        className="w-9 text-center text-[10px] bg-white border border-gray-200 rounded px-1 py-px focus:outline-none focus:border-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-9 text-center text-[10px] bg-custom-white border border-gray-200 rounded px-1 py-px focus:outline-none focus:border-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
-                      <span className="text-[10px] text-content/45">%</span>
+                      <span className="text-[10px] text-content/85">%</span>
                     </div>
                     {/* Item filter chips — sticky so items scroll beneath */}
-                    <div className="flex gap-2 px-4 py-2 bg-white border-b border-gray-100 sticky top-0 z-10">
+                    <div className="flex gap-2 px-4 py-2 bg-custom-white border-b border-gray-100 sticky top-0 z-10">
                       {(
                         ["all", "critical", "watch", "healthy"] as SevFilter[]
                       ).map((f) => {
@@ -1243,13 +1280,13 @@ const LedgerStoreReport = () => {
                         const active = itemSevFilter === f;
                         const colorClass = active
                           ? f === "all"
-                            ? "bg-[#1e2a4a] text-white border-[#1e2a4a]"
+                            ? "bg-[#1e2a4a] text-custom-white border-[#1e2a4a]"
                             : f === "critical"
                               ? "bg-red-100 text-red-800 border-red-200"
                               : f === "watch"
                                 ? "bg-amber-100 text-amber-800 border-amber-200"
                                 : "bg-emerald-100 text-emerald-800 border-emerald-200"
-                          : "bg-white text-content/70 border-gray-200";
+                          : "bg-custom-white text-content/85 border-gray-200";
                         return (
                           <button
                             key={f}
@@ -1262,11 +1299,11 @@ const LedgerStoreReport = () => {
                       })}
                     </div>
                     {top10Loading ? (
-                      <div className="px-4 py-3 text-[11px] text-content/70 italic">
+                      <div className="px-4 py-3 text-[11px] text-content/85">
                         Loading…
                       </div>
                     ) : filteredItems.length === 0 ? (
-                      <div className="px-4 py-3 text-[11px] text-content/55 italic">
+                      <div className="px-4 py-3 text-[11px] text-content/85">
                         No data
                       </div>
                     ) : (
@@ -1280,17 +1317,29 @@ const LedgerStoreReport = () => {
                             <div key={sev}>
                               {group.map((item) => {
                                 const lwNetPct =
-                                  item.lwNet !== null && item.lwNet > 0
-                                    ? ((item.twNetForLW - item.lwNet) /
-                                        item.lwNet) *
-                                      100
-                                    : null;
+                                  gradingMetric === "sales"
+                                    ? item.lwNet !== null && item.lwNet > 0
+                                      ? ((item.tyNet - item.lwNet) /
+                                          item.lwNet) *
+                                        100
+                                      : null
+                                    : item.lwQty !== null && item.lwQty > 0
+                                      ? ((item.tyQty - item.lwQty) /
+                                          item.lwQty) *
+                                        100
+                                      : null;
                                 const lyNetPct =
-                                  item.lyNet !== null && item.lyNet > 0
-                                    ? ((item.twNetForLY - item.lyNet) /
-                                        item.lyNet) *
-                                      100
-                                    : null;
+                                  gradingMetric === "sales"
+                                    ? item.lyNet !== null && item.lyNet > 0
+                                      ? ((item.tyNet - item.lyNet) /
+                                          item.lyNet) *
+                                        100
+                                      : null
+                                    : item.lyQty !== null && item.lyQty > 0
+                                      ? ((item.tyQty - item.lyQty) /
+                                          item.lyQty) *
+                                        100
+                                      : null;
                                 return (
                                   <div
                                     key={item.productCode}
@@ -1306,30 +1355,35 @@ const LedgerStoreReport = () => {
                                           >
                                             {item.desc}
                                           </span>
-                                          <span className="text-[9px] text-content/45 flex-shrink-0">
+                                          <span className="text-[10px] text-content/85 flex-shrink-0">
                                             {item.upc}
                                           </span>
                                         </div>
                                         {/* TW / LW / LY: net sales + qty + weight per period */}
                                         <div className="grid grid-cols-3 divide-x divide-gray-100 border border-gray-100 rounded mt-1.5">
                                           <div className="px-2 py-1.5">
-                                            <div className="text-[8px] text-content/45 uppercase tracking-wide">
+                                            <div className="text-[10px] text-content/85 uppercase tracking-wide">
                                               TW
                                             </div>
                                             <div className="text-[10px] font-semibold text-content mt-0.5">
-                                              {formatCurrency2(item.tyNet)}
+                                              {item.hasTY === false
+                                                ? "—"
+                                                : formatCurrency2(item.tyNet)}
                                             </div>
-                                            <div className="text-[9px] text-content/60 mt-0.5">
-                                              {item.tyQty.toLocaleString()} u
+                                            <div className="text-[10px] text-content/85 mt-0.5">
+                                              {item.hasTY === false
+                                                ? ""
+                                                : `${item.tyQty.toLocaleString()} u`}
                                             </div>
-                                            {item.tyWeight > 0 && (
-                                              <div className="text-[9px] text-content/50 mt-0.5">
-                                                {item.tyWeight.toFixed(2)} lb
-                                              </div>
-                                            )}
+                                            {item.hasTY !== false &&
+                                              item.tyWeight > 0 && (
+                                                <div className="text-[10px] text-content/85 mt-0.5">
+                                                  {item.tyWeight.toFixed(2)} lb
+                                                </div>
+                                              )}
                                           </div>
                                           <div className="px-2 py-1.5">
-                                            <div className="text-[8px] text-content/45 uppercase tracking-wide">
+                                            <div className="text-[10px] text-content/85 uppercase tracking-wide">
                                               LW
                                             </div>
                                             <div className="flex items-baseline gap-1 mt-0.5">
@@ -1340,26 +1394,26 @@ const LedgerStoreReport = () => {
                                               </span>
                                               {lwNetPct !== null && (
                                                 <span
-                                                  className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lwNetPct, effectiveItemThreshold)}`}
+                                                  className={`text-[10px] font-semibold px-1 py-0.5 rounded ${pillClass(lwNetPct, effectiveItemThreshold)}`}
                                                 >
                                                   {formatPct(lwNetPct)}
                                                 </span>
                                               )}
                                             </div>
                                             {item.lwQty !== null && (
-                                              <div className="text-[9px] text-content/60 mt-0.5">
+                                              <div className="text-[10px] text-content/85 mt-0.5">
                                                 {item.lwQty.toLocaleString()} u
                                               </div>
                                             )}
                                             {item.lwWeight !== null &&
                                               item.lwWeight > 0 && (
-                                                <div className="text-[9px] text-content/50 mt-0.5">
+                                                <div className="text-[10px] text-content/85 mt-0.5">
                                                   {item.lwWeight.toFixed(2)} lb
                                                 </div>
                                               )}
                                           </div>
                                           <div className="px-2 py-1.5">
-                                            <div className="text-[8px] text-content/45 uppercase tracking-wide">
+                                            <div className="text-[10px] text-content/85 uppercase tracking-wide">
                                               LY
                                             </div>
                                             <div className="flex items-baseline gap-1 mt-0.5">
@@ -1370,20 +1424,20 @@ const LedgerStoreReport = () => {
                                               </span>
                                               {lyNetPct !== null && (
                                                 <span
-                                                  className={`text-[8px] font-semibold px-1 py-0.5 rounded ${pillClass(lyNetPct, effectiveItemThreshold)}`}
+                                                  className={`text-[10px] font-semibold px-1 py-0.5 rounded ${pillClass(lyNetPct, effectiveItemThreshold)}`}
                                                 >
                                                   {formatPct(lyNetPct)}
                                                 </span>
                                               )}
                                             </div>
                                             {item.lyQty !== null && (
-                                              <div className="text-[9px] text-content/60 mt-0.5">
+                                              <div className="text-[10px] text-content/85 mt-0.5">
                                                 {item.lyQty.toLocaleString()} u
                                               </div>
                                             )}
                                             {item.lyWeight !== null &&
                                               item.lyWeight > 0 && (
-                                                <div className="text-[9px] text-content/50 mt-0.5">
+                                                <div className="text-[10px] text-content/85 mt-0.5">
                                                   {item.lyWeight.toFixed(2)} lb
                                                 </div>
                                               )}
@@ -1406,14 +1460,14 @@ const LedgerStoreReport = () => {
         </BottomSheet>
       )}
 
-      {gapReportOpen && selection && gaps && (
+      {/* {gapReportOpen && selection && gaps && (
         <DataGapReport
           gaps={gaps}
           storeName={selection.storeName}
           storeNumber={selection.storeNumber}
           onClose={() => setGapReportOpen(false)}
         />
-      )}
+      )} */}
     </>
   );
 };

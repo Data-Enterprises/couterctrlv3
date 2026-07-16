@@ -95,7 +95,7 @@ const DataGapReport = ({
         <button
           onClick={handleExport}
           title="Export CSV"
-          className="text-content/70 flex-shrink-0 pt-0.5"
+          className="text-content/85 flex-shrink-0 pt-0.5"
         >
           <ArrowDownTrayIcon className="w-4 h-4" />
         </button>

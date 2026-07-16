@@ -49,7 +49,7 @@ const ReceiverFilters = () => {
     const invoiceId = state.invoiceIdFilter;
 
     // Declaring the active style and applying it to the matching conditions
-    const style = "bg-orange-500 text-white font-semibold shadow-inner";
+    const style = "bg-orange-500 text-custom-white font-semibold shadow-inner";
     let result = false;
     if (option === "VendorID" && vendorId) result = true;
     if (option === "VendorName" && vendorName) result = true;

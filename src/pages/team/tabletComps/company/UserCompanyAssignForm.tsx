@@ -219,7 +219,7 @@ const UserCompanyAssignForm = () => {
                   </div>
                 </div>
 
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-[rgb(30,45,80)] px-2.5 py-1 text-[11px] font-medium text-white shadow-sm">
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-[rgb(30,45,80)] px-2.5 py-1 text-[11px] font-medium text-custom-white shadow-sm">
                   Assign
                 </div>
               </button>
@@ -229,7 +229,7 @@ const UserCompanyAssignForm = () => {
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button
               data-testid="company-assign-btn"
-              className={`rounded-xl bg-[rgb(30,45,80)] py-2 text-[13px] font-medium text-white shadow-sm transition-all duration-200 hover:bg-[rgb(30,45,80)]/85 ${
+              className={`rounded-xl bg-[rgb(30,45,80)] py-2 text-[13px] font-medium text-custom-white shadow-sm transition-all duration-200 hover:bg-[rgb(30,45,80)]/85 ${
                 companiesToAssign.length === 0 &&
                 "pointer-events-none opacity-50"
               }`}
@@ -284,7 +284,7 @@ const UserCompanyAssignForm = () => {
                   </div>
                 </div>
 
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-red-600 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm">
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-red-600 px-2.5 py-1 text-[11px] font-medium text-custom-white shadow-sm">
                   Unassign
                 </div>
               </button>
@@ -294,7 +294,7 @@ const UserCompanyAssignForm = () => {
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button
               data-testid="company-unassign-btn"
-              className={`rounded-xl bg-[rgb(30,45,80)] py-2 text-[13px] font-medium text-white shadow-sm transition-all duration-200 hover:bg-[rgb(30,45,80)]/85 ${
+              className={`rounded-xl bg-[rgb(30,45,80)] py-2 text-[13px] font-medium text-custom-white shadow-sm transition-all duration-200 hover:bg-[rgb(30,45,80)]/85 ${
                 companiesToUnassign.length === 0 &&
                 "pointer-events-none opacity-50"
               }`}

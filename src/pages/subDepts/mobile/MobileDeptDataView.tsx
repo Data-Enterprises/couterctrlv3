@@ -135,17 +135,17 @@ const MobileDeptDataView = () => {
           onClick={() => handleMainView(true)}
         >
           <BuildingStorefrontIcon className="w-6 h-6 transition-all duration-200" />
-          <div className="text-content/60">Sub Depts</div>
+          <div className="text-content/85">Sub Depts</div>
         </div>
         <div
-          className={`${!ctx.viewDaily ? "text-orange-500" : "text-content/60"} bg-custom-white py-2 flex gap-2 justify-center items-center px-0 text-[12px] border-r border-content/15`}
+          className={`${!ctx.viewDaily ? "text-orange-500" : "text-content/85"} bg-custom-white py-2 flex gap-2 justify-center items-center px-0 text-[12px] border-r border-content/15`}
           onClick={handleScanView}
         >
           <MagnifyingGlassIcon className="w-6 h-6 transition-all duration-200" />
-          <div className="text-content/60">Search</div>
+          <div className="text-content/85">Search</div>
         </div>
         <div
-          className={`${ctx.viewDaily ? "text-orange-500" : "text-content/60"} bg-custom-white py-2 flex gap-2 justify-center items-center px-0 text-[12px]`}
+          className={`${ctx.viewDaily ? "text-orange-500" : "text-content/85"} bg-custom-white py-2 flex gap-2 justify-center items-center px-0 text-[12px]`}
           onClick={() => handleMainView(false)}
         >
           {ctx.mobileMainView === "overview" ? (
@@ -153,7 +153,7 @@ const MobileDeptDataView = () => {
           ) : (
             <ArrowPathIcon className="w-6 h-6 transition-all duration-200" />
           )}
-          <div className="text-content/60">
+          <div className="text-content/85">
             {ctx.mobileMainView === "overview" ? "View Daily" : "Go Back"}
           </div>
         </div>

@@ -2,7 +2,11 @@ import { useState } from "react";
 import { useAppDispatch } from "../../../hooks";
 import { useGroupCtx } from "..";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { setCreateInput, setRefreshGroups, setSelectedGroup } from "../../../features/groupSlice";
+import {
+  setCreateInput,
+  setRefreshGroups,
+  setSelectedGroup,
+} from "../../../features/groupSlice";
 import { deleteGroup } from "../../../api/groups";
 import type { JsonError } from "../../../interfaces";
 import GroupPicker from "./GroupPicker";
@@ -47,19 +51,32 @@ const DeleteComp = () => {
 
   return (
     <div className="flex flex-1 min-h-0">
-      <GroupPicker groups={ctx.groups} mode="select" selectedId={id} onSelect={handleSelect} />
+      <GroupPicker
+        groups={ctx.groups}
+        mode="select"
+        selectedId={id}
+        onSelect={handleSelect}
+      />
 
       <div className="flex-1 flex flex-col items-center justify-center p-5 overflow-y-auto thin-scrollbar">
         <div className="w-full max-w-xs">
           {id > 0 ? (
             <>
-              <div className="text-[13px] font-semibold text-content mb-0.5 text-center">{group_name}</div>
-              <div className="text-[12px] text-content mb-4 text-center">Select a group to delete</div>
+              <div className="text-[13px] font-semibold text-content mb-0.5 text-center">
+                {group_name}
+              </div>
+              <div className="text-[12px] text-content mb-4 text-center">
+                Select a group to delete
+              </div>
             </>
           ) : (
             <>
-              <div className="text-[13px] font-semibold text-content mb-0.5 text-center">Select a group</div>
-              <div className="text-[12px] text-content mb-4 text-center">Pick a group from the list to delete</div>
+              <div className="text-[13px] font-semibold text-content mb-0.5 text-center">
+                Select a group
+              </div>
+              <div className="text-[12px] text-content mb-4 text-center">
+                Pick a group from the list to delete
+              </div>
             </>
           )}
 
@@ -80,13 +97,19 @@ const DeleteComp = () => {
               <button
                 onClick={() => setIsDeleting(true)}
                 disabled={id === 0}
-                className={`w-full text-[12px] font-medium py-2 rounded-md transition-colors text-white ${
-                  id > 0 ? "bg-red-600 hover:bg-red-600/85" : "bg-gray-300 cursor-not-allowed"
+                className={`w-full text-[12px] font-medium py-2 rounded-md transition-colors text-custom-white ${
+                  id > 0
+                    ? "bg-red-600 hover:bg-red-600/85"
+                    : "bg-gray-300 cursor-not-allowed"
                 }`}
               >
                 Delete
               </button>
-              <button onClick={handleReset} disabled={id === 0} className="text-[12px] text-content disabled:opacity-40 transition-colors">
+              <button
+                onClick={handleReset}
+                disabled={id === 0}
+                className="text-[12px] text-content disabled:opacity-40 transition-colors"
+              >
                 Reset fields
               </button>
             </div>
@@ -100,13 +123,13 @@ const DeleteComp = () => {
               <div className="flex gap-2">
                 <button
                   onClick={handleDeleteGroup}
-                  className="flex-1 text-[12px] font-medium py-1.5 rounded-md bg-red-600 hover:bg-red-600/85 text-white transition-colors"
+                  className="flex-1 text-[12px] font-medium py-1.5 rounded-md bg-red-600 hover:bg-red-600/85 text-custom-white transition-colors"
                 >
                   Yes, delete
                 </button>
                 <button
                   onClick={() => setIsDeleting(false)}
-                  className="flex-1 text-[12px] font-medium py-1.5 rounded-md bg-white border border-gray-200 text-content transition-colors"
+                  className="flex-1 text-[12px] font-medium py-1.5 rounded-md bg-custom-white border border-gray-200 text-content transition-colors"
                 >
                   Cancel
                 </button>

@@ -251,7 +251,7 @@ const CashierSalesMobile = () => {
       <div className="bg-custom-white rounded-lg shadow-lg">
         {!showTrendCard() ? (
           <div className="text-[12px] leading-tight flex flex-col justify-center items-center h-full p-4 md:p-6">
-            <div className="text-center font-medium text-content/70 space-y-1">
+            <div className="text-center font-medium text-content/85 space-y-1">
               <div>Select a store to view trend Data</div>
             </div>
           </div>

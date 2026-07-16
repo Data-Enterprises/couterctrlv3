@@ -64,19 +64,19 @@ const CashiersMobileList = ({ onCashierSelect, onBackToStoreDetail, onOpenSearch
         <div className="relative flex items-center justify-center mb-2">
           <button
             onClick={onBackToStoreDetail}
-            className="absolute left-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors"
+            className="absolute left-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/85 hover:text-custom-white hover:border-white/40 transition-colors"
             aria-label="Back to store"
           >
             <ArrowLeftIcon className="w-3.5 h-3.5" />
           </button>
           <div className="text-center px-8">
-            <div className="text-white font-medium text-[13px]">Cashiers</div>
-            {store && <div className="text-white/60 text-[10px] mt-0.5">{store.store_name}</div>}
+            <div className="text-custom-white font-medium text-[13px]">Cashiers</div>
+            {store && <div className="text-custom-white/85 text-[10px] mt-0.5">{store.store_name}</div>}
           </div>
           <button
             onClick={onOpenSearch}
             aria-label="New search"
-            className="absolute right-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors"
+            className="absolute right-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/85 hover:text-custom-white hover:border-white/40 transition-colors"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
@@ -89,8 +89,8 @@ const CashiersMobileList = ({ onCashierSelect, onBackToStoreDetail, onOpenSearch
               { label: "Qty",   value: totalQty.toLocaleString() },
             ].map(({ label, value }) => (
               <div key={label} className="rounded px-2 py-1.5" style={{ background: "rgba(255,255,255,0.08)" }}>
-                <div className="text-[10px] text-white/50">{label}</div>
-                <div className="text-[12px] font-medium text-white mt-0.5 truncate">{value}</div>
+                <div className="text-[10px] text-custom-white/85">{label}</div>
+                <div className="text-[12px] font-medium text-custom-white mt-0.5 truncate">{value}</div>
               </div>
             ))}
           </div>
@@ -105,10 +105,10 @@ const CashiersMobileList = ({ onCashierSelect, onBackToStoreDetail, onOpenSearch
       {/* Cashier list */}
       <div className="flex-1 overflow-y-auto thin-scrollbar">
         {ctx.loadingCashiers && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/70">Loading cashiers…</div>
+          <div className="flex items-center justify-center py-16 text-[12px] text-content/85">Loading cashiers…</div>
         )}
         {!ctx.loadingCashiers && visible.length === 0 && ctx.cashierCards.length > 0 && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/70">No cashiers match filter.</div>
+          <div className="flex items-center justify-center py-16 text-[12px] text-content/85">No cashiers match filter.</div>
         )}
         {!ctx.loadingCashiers && visible.map((cashier) => {
           const tier = toTier(cashier.risk_tier);
@@ -132,7 +132,7 @@ const CashiersMobileList = ({ onCashierSelect, onBackToStoreDetail, onOpenSearch
                   { label: "Qty",   value: formatBigNumber(cashier.total_qty, 0) },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex items-baseline gap-1 rounded px-1.5 py-0.5" style={chipStyle}>
-                    <span className="text-[9px] text-content/50">{label}</span>
+                    <span className="text-[9px] text-content/85">{label}</span>
                     <span className="text-[10px] font-semibold text-content">{value}</span>
                   </div>
                 ))}

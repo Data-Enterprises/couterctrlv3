@@ -89,25 +89,25 @@ const StoresHeader = ({ totals, coupons }: StoresHeaderProps) => {
 
       <div className="grid grid-cols-[55%_45%] justify-between">
         <div>
-          <div className="text-content/60 text-[11px]">Sales</div>
+          <div className="text-content/85 text-[11px]">Sales</div>
           <span className="block font-medium">
             {formatCurrency2(totals.total_sales)}
           </span>
         </div>
         <div>
-          <div className="text-content/60 text-[11px]">Trans</div>
+          <div className="text-content/85 text-[11px]">Trans</div>
           <span className="block font-medium">
             {totals.transactions.toLocaleString("en-US")}
           </span>
         </div>
         <div>
-          <div className="text-content/60 text-[11px]">Avg Basket</div>
+          <div className="text-content/85 text-[11px]">Avg Basket</div>
           <span className="block font-medium">
             {formatCurrency2(totals.avg_basket_amount)}
           </span>
         </div>
         <div>
-          <div className="text-content/60 text-[11px]">Tax</div>
+          <div className="text-content/85 text-[11px]">Tax</div>
           <span className="block font-medium">
             {formatCurrency2(totals.total_tax)}
           </span>
@@ -128,7 +128,7 @@ const StoresHeader = ({ totals, coupons }: StoresHeaderProps) => {
             margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
           />
           <div className="text-center font-bold absolute left-1/2 bottom-0 -translate-x-1/2 whitespace-nowrap">
-            <div className="text-[9.5px]">Cpn $</div>
+            <div className="text-[10px]">Cpn $</div>
             {formatCurrency2(totalCpns)}
           </div>
         </div>

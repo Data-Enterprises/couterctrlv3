@@ -105,9 +105,21 @@ const LedgerRow = ({ row, isSelected, onClick }: LedgerRowProps) => {
       <span
         className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${severityDotClass[row.severity]}`}
       />
-      <span className="text-[13px] font-medium text-content truncate flex-1">
-        {storeName}
-      </span>
+      <div className="min-w-0 flex-1">
+        <div className="text-[13px] font-medium text-content truncate">
+          {storeName}
+        </div>
+        <div className="text-[12px] text-content/85 truncate">
+          LW{" "}
+          <span className="font-semibold">
+            {row.hasLW ? formatCurrencyCompact(row.lwTotal) : "—"}
+          </span>{" "}
+          · LY{" "}
+          <span className="font-semibold">
+            {row.hasLY ? formatCurrencyCompact(row.lyTotal) : "—"}
+          </span>
+        </div>
+      </div>
       <div className="flex items-center gap-[14px]">
         <span
           className="text-[13px] font-semibold text-content flex-shrink-0 pl-2.5"

@@ -34,7 +34,7 @@ const LPTablet = ({ getSaleTypes }: LPTabletProps) => {
           <SingleDatePicker />
           <button
             onClick={getSaleTypes}
-            className="w-full py-2 text-sm font-semibold text-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors"
+            className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors"
           >
             Load exceptions
           </button>

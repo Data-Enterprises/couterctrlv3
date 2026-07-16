@@ -1,7 +1,10 @@
 import { useEffect } from "react";
 import { useTeamCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import { getAllStoresInBaseGroup, getBaseGroups } from "../../../../../api/baseGroups";
+import {
+  getAllStoresInBaseGroup,
+  getBaseGroups,
+} from "../../../../../api/baseGroups";
 import {
   setAllSelectedBaseGroups,
   setBaseGroups,
@@ -10,7 +13,11 @@ import {
   setSelectedNewUserStores,
   setStoresWithBGID,
 } from "../../../../../features/baseGroupSlice";
-import type { CompanyBaseGroup, JsonError, Store } from "../../../../../interfaces";
+import type {
+  CompanyBaseGroup,
+  JsonError,
+  Store,
+} from "../../../../../interfaces";
 
 interface StepAccessProps {
   onContinue: () => void;
@@ -40,13 +47,24 @@ const StepAccess = ({ onContinue }: StepAccessProps) => {
 
   const companyStyle = (companyId: number) => {
     if (ctx.company && ctx.company.id === companyId) {
-      return { style: { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)", background: "white" }, className: "text-content" };
+      return {
+        style: {
+          boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)",
+          background: "white",
+        },
+        className: "text-content",
+      };
     }
-    const hasSelectedBG = ctx.selectedBaseGroups.some((bg) => bg.company === companyId);
+    const hasSelectedBG = ctx.selectedBaseGroups.some(
+      (bg) => bg.company === companyId,
+    );
     if (hasSelectedBG) {
       return { style: undefined, className: "bg-blue-50 text-blue-800" };
     }
-    return { style: undefined, className: "bg-white border border-gray-200 text-content" };
+    return {
+      style: undefined,
+      className: "bg-custom-white border border-gray-200 text-content",
+    };
   };
 
   const handleBGSelect = (bg: CompanyBaseGroup) => {
@@ -57,8 +75,13 @@ const StepAccess = ({ onContinue }: StepAccessProps) => {
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
-            const withBGID = [...j.assigned_stores].map((s: Store) => ({ ...s, base_group: bg.id }));
-            ctx.dispatch(setStoresWithBGID([...ctx.storesWithBGID, ...withBGID]));
+            const withBGID = [...j.assigned_stores].map((s: Store) => ({
+              ...s,
+              base_group: bg.id,
+            }));
+            ctx.dispatch(
+              setStoresWithBGID([...ctx.storesWithBGID, ...withBGID]),
+            );
           }
         })
         .catch((err: JsonError) => toast.error(err.message));
@@ -73,7 +96,9 @@ const StepAccess = ({ onContinue }: StepAccessProps) => {
   const handleClearBGForCompany = () => {
     if (!ctx.company) return;
     const companyId = ctx.company.id;
-    const filteredSelected = ctx.selectedBaseGroups.filter((bg) => bg.company !== companyId);
+    const filteredSelected = ctx.selectedBaseGroups.filter(
+      (bg) => bg.company !== companyId,
+    );
     const filteredStores = ctx.selectedNewUserStores.filter((s) => {
       const bgForStore = ctx.baseGroups.find((bg) => bg.id === s.base_group);
       return bgForStore ? bgForStore.company !== companyId : true;
@@ -120,7 +145,14 @@ const StepAccess = ({ onContinue }: StepAccessProps) => {
             <div
               key={bg.id}
               onClick={() => handleBGSelect(bg)}
-              style={isSelected ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)", background: "white" } : undefined}
+              style={
+                isSelected
+                  ? {
+                      boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)",
+                      background: "white",
+                    }
+                  : undefined
+              }
               className={`rounded-lg border border-gray-200 px-2.5 py-2 text-[12px] cursor-pointer ${isSelected ? "text-content" : "bg-gray-50 text-content/70"}`}
             >
               {bg.name}
@@ -139,14 +171,17 @@ const StepAccess = ({ onContinue }: StepAccessProps) => {
           <button onClick={handleClearAll} className="text-[12px] text-content">
             Clear all
           </button>
-          <button onClick={handleClearBGForCompany} className="text-[12px] text-content">
+          <button
+            onClick={handleClearBGForCompany}
+            className="text-[12px] text-content"
+          >
             Clear base groups
           </button>
         </div>
         <button
           onClick={onContinue}
           disabled={!canContinue}
-          className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-white ${canContinue ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85" : "bg-gray-300 cursor-not-allowed"}`}
+          className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white ${canContinue ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85" : "bg-gray-300 cursor-not-allowed"}`}
         >
           Continue
         </button>

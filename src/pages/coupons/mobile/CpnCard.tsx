@@ -86,7 +86,7 @@ const CpnCard = ({ c }: CpnCardProps) => {
       <div className="flex justify-between text-[12.5px]">
         <div className="font-medium">{formatDate(c.sale_date)}</div>
         <div className="flex gap-1">
-          <div className="text-content/60">Cashier:</div>
+          <div className="text-content/85">Cashier:</div>
           <div className="font-medium">{c.cashier_name}</div>
         </div>
       </div>
@@ -98,27 +98,27 @@ const CpnCard = ({ c }: CpnCardProps) => {
 
       <div className="grid grid-cols-3 gap-2 text-[11px]">
         <div className="bg-bkg rounded-md shadow-md p-1.5">
-          <div className="text-content/60">{c.product_code ? c.product_code : "No UPC Found"}</div>
+          <div className="text-content/85">{c.product_code ? c.product_code : "No UPC Found"}</div>
           <div className="font-medium">{c.product_description}</div>
         </div>
         <div className="bg-bkg rounded-md shadow-md p-1.5">
-          <div className="text-content/60">Type:</div>
+          <div className="text-content/85">Type:</div>
           <div className="font-medium">{c.coupon_type}</div>
         </div>
         <div className="bg-bkg rounded-md shadow-md p-1.5">
-          <div className="text-content/60">Dept:</div>
+          <div className="text-content/85">Dept:</div>
           <div className="font-medium">{c.sub_department_description}</div>
         </div>
         <div className="bg-bkg rounded-md shadow-md p-1.5">
-          <div className="text-content/60">Amount:</div>
+          <div className="text-content/85">Amount:</div>
           <div className="font-medium">{formatCurrency2(c.coupon_amount)}</div>
         </div>
         <div className="bg-bkg rounded-md shadow-md p-1.5">
-          <div className="text-content/60">Trans #:</div>
+          <div className="text-content/85">Trans #:</div>
           <div className="font-medium">{c.sale_id}</div>
         </div>
         <div className="bg-bkg rounded-md shadow-md p-1.5">
-          <div className="text-content/60">Cust ID:</div>
+          <div className="text-content/85">Cust ID:</div>
           <div className="font-medium">
             {c.customer_id.split(".")[0] || "N/A"}
           </div>

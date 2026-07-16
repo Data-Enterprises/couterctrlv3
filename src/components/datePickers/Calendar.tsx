@@ -40,20 +40,20 @@ const Calendar = ({ handleCancel, handleDate, dateFlag }: Props) => {
   const prevMonth = () => {
     setCurrentMonth((prevMonth) => (prevMonth === 0 ? 11 : prevMonth - 1));
     setCurrentYear((prevYear) =>
-      currentMonth === 0 ? prevYear - 1 : prevYear
+      currentMonth === 0 ? prevYear - 1 : prevYear,
     );
   };
 
   const nextMonth = () => {
     setCurrentMonth((prevMonth) => (prevMonth === 11 ? 0 : prevMonth + 1));
     setCurrentYear((prevYear) =>
-      currentMonth === 11 ? prevYear + 1 : prevYear
+      currentMonth === 11 ? prevYear + 1 : prevYear,
     );
   };
 
   const handleSelect = (e: number) => {
     const dte = formatDate(
-      new Date(currentYear, currentMonth, e + 1).toString()
+      new Date(currentYear, currentMonth, e + 1).toString(),
     );
 
     if (dateFlag === "start") {
@@ -112,7 +112,7 @@ const Calendar = ({ handleCancel, handleDate, dateFlag }: Props) => {
           <div className="buttons flex gap-2 px-2">
             <i
               data-testid="prev-month-button"
-              className="bg-[#10b981] rounded-full text-white cursor-pointer"
+              className="bg-[#10b981] rounded-full text-custom-white cursor-pointer"
               onClick={prevMonth}
             >
               <ChevronLeftIcon
@@ -123,7 +123,7 @@ const Calendar = ({ handleCancel, handleDate, dateFlag }: Props) => {
             </i>
             <i
               data-testid="next-month-button"
-              className="bg-[#10b981] rounded-full text-white cursor-pointer"
+              className="bg-[#10b981] rounded-full text-custom-white cursor-pointer"
               onClick={nextMonth}
             >
               <ChevronRightIcon
@@ -154,7 +154,7 @@ const Calendar = ({ handleCancel, handleDate, dateFlag }: Props) => {
             onClick={() => handleSelect(day)}
             key={`day-${id}`}
             className={`day hover:bg-blue-200 transition-all duration-200 ${isSelectedDate(
-              day
+              day,
             )}`}
           >
             {day + 1}

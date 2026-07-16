@@ -137,7 +137,7 @@ const ItemsGridTablet = () => {
       ...item,
       margin: ((item.total_sales - item.cogs) / item.total_sales) * 100 || 0,
     }));
-    
+
     dispatch(actions.setItemGridData(newData));
     dispatch(actions.setFilteredItemGridData(newData));
     setGridData(newData);
@@ -154,7 +154,7 @@ const ItemsGridTablet = () => {
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200/70 bg-white/95 p-3 shadow-sm text-sm">
+    <div className="rounded-2xl border border-slate-200/70 bg-custom-white/95 p-3 shadow-sm text-sm">
       <ItemsGridFiltersTablet />
 
       <div className="mt-3 rounded-xl overflow-hidden border border-slate-200/70">
@@ -173,7 +173,7 @@ const ItemsGridTablet = () => {
           {gridData.map((data, i) => (
             <div
               key={i}
-              className="grid grid-cols-[1fr_2.4fr_0.9fr_0.6fr_0.6fr_0.8fr_0.9fr_0.8fr] items-center px-2 py-1.5 text-[12.2px] text-slate-700 odd:bg-white even:bg-slate-50/80 hover:bg-sky-50/70 transition-colors duration-150"
+              className="grid grid-cols-[1fr_2.4fr_0.9fr_0.6fr_0.6fr_0.8fr_0.9fr_0.8fr] items-center px-2 py-1.5 text-[12.2px] text-slate-700 odd:bg-custom-white even:bg-slate-50/80 hover:bg-sky-50/70 transition-colors duration-150"
             >
               <div className="font-medium text-slate-900 truncate">
                 {data.product_code}

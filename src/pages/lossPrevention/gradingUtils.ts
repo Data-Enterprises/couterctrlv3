@@ -3,6 +3,32 @@ import type { Severity } from "../../utils/severity";
 
 export type CashierSeverity = "critical" | "watch" | "ok" | "ungraded";
 
+// ── Week date range (LPStorePanel + LPTransactionPanel header/export) ──────
+// search.singleDate is the searched week-ending date ("m/d/yyyy") — the week
+// always runs the 6 days before it through singleDate itself, matching
+// LPDesktop's own start/end math for the API fetch. search.startDate/endDate
+// belong to a different (multi-date-picker) search flow and are never set
+// by LP's single-date search — don't read them for this.
+
+export const weekStartDate = (singleDate: string): string => {
+  const [m, d, y] = singleDate.split("/").map(Number);
+  const end = new Date(y, m - 1, d);
+  const start = new Date(end);
+  start.setDate(start.getDate() - 6);
+  return `${start.getMonth() + 1}/${start.getDate()}/${start.getFullYear()}`;
+};
+
+const fmtRangePart = (mdy: string, withYear = false) => {
+  const [m, d, y] = mdy.split("/");
+  return withYear ? `${+m}/${+d}/${y}` : `${+m}/${+d}`;
+};
+
+export const weekRangeLabel = (singleDate: string): string =>
+  `${fmtRangePart(weekStartDate(singleDate))} – ${fmtRangePart(singleDate, true)}`;
+
+export const weekRangeFilename = (singleDate: string): string =>
+  `${weekStartDate(singleDate)}–${singleDate}`;
+
 // ── Store-level severity (LPStorePanel + LPTransactionPanel header) ─────────
 
 export const isNoDollarType = (saleType: string) =>
@@ -48,6 +74,19 @@ export const directionalPillClass = (pct: number) =>
   pct > 0
     ? "bg-severity_critical_bg text-severity_critical_text"
     : "bg-severity_healthy_bg text-severity_healthy_text";
+
+// Solid-fill pass/fail chip color — mirrors the literal red-500/emerald-500
+// palette used by Sales mobile's SevBadge (mobile dev convention), not the
+// CSS-variable-based severity_* tokens above.
+export const passFailChipClass = (isPass: boolean | null): string => {
+  if (isPass === null) return "bg-gray-200 text-gray-500";
+  return isPass ? "bg-emerald-500 text-custom-white" : "bg-red-500 text-custom-white";
+};
+
+// Soft-tint trend pill — same palette, used for up/down % badges (up = worse
+// = red, down = better = green, matching LP's "lower vs baseline is good").
+export const trendPillClass = (pct: number): string =>
+  pct > 0 ? "bg-red-500/10 text-red-500" : "bg-emerald-500/10 text-emerald-500";
 
 export interface CashierMetric {
   value: number;

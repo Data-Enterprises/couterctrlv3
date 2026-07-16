@@ -105,7 +105,7 @@ const CouponsGridMobile = () => {
               Deselect All
             </button>
           </div>
-          <div className="text-[13px] text-center text-content/60 mt-2">
+          <div className="text-[13px] text-center text-content/85 mt-2">
             <div>If none are selected</div>
             <div>it will show all sub departments</div>
           </div>

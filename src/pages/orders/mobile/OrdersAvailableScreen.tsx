@@ -11,6 +11,7 @@ interface Props {
   startDate: string;
   endDate: string;
   onSelectStore: (order_date: string, order_type: string, storeid: number) => void;
+  onSelectAllStores: (order_date: string, order_type: string, storeids: number[]) => void;
   onOpenSearch: () => void;
 }
 
@@ -26,6 +27,7 @@ const OrdersAvailableScreen = ({
   startDate,
   endDate,
   onSelectStore,
+  onSelectAllStores,
   onOpenSearch,
 }: Props) => {
   const [activeType, setActiveType] = useState("all");
@@ -74,19 +76,30 @@ const OrdersAvailableScreen = ({
   };
   const weekLabel = `${fmtRangePart(startDate)} – ${fmtRangePart(endDate, true)}`;
 
+  // "Select all stores" shows once a specific type is active, regardless of the
+  // date filter. With a date chosen it's scoped to that day (visibleCards is
+  // already narrowed to it); with no date chosen it spans every date currently
+  // visible, combined — OrdersMobile.tsx widens the fetch to the full search range.
+  const allVisibleStoreIds = useMemo(() => {
+    if (activeType === "all") return [];
+    const ids = new Set<number>();
+    visibleCards[0]?.dates.forEach((d) => d.stores.forEach((s) => ids.add(s.storeid)));
+    return Array.from(ids);
+  }, [visibleCards, activeType]);
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="bg-[#1e2a4a] px-4 pt-3 pb-4 flex-shrink-0">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-white font-semibold text-[15px]">Available Orders</div>
-            <div className="text-white text-[11px] mt-0.5">{weekLabel}</div>
+            <div className="text-custom-white font-semibold text-[13px]">Available Orders</div>
+            <div className="text-custom-white text-[11px] mt-0.5">{weekLabel}</div>
           </div>
           <button
             onClick={onOpenSearch}
             aria-label="New search"
-            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-white/25 text-white/65 hover:text-white hover:border-white/45 transition-colors"
+            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-custom-white/25 text-custom-white/85 hover:text-custom-white hover:border-custom-white/45 transition-colors"
           >
             <MagnifyingGlassIcon className="w-4 h-4" />
           </button>
@@ -95,7 +108,7 @@ const OrdersAvailableScreen = ({
 
       {/* Type tabs */}
       {cards.length > 0 && (
-        <div className="flex border-b border-gray-100 flex-shrink-0 bg-white">
+        <div className="flex border-b border-gray-100 flex-shrink-0 bg-custom-white">
           <button
             onClick={() => { setActiveType("all"); setDateFilter(""); setOpenTypes(new Set()); }}
             className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
@@ -120,7 +133,7 @@ const OrdersAvailableScreen = ({
 
       {/* Filter bar */}
       {cards.length > 0 && (
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100 bg-white flex-shrink-0">
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100 bg-custom-white flex-shrink-0">
           <TextFilter value={storeFilter} onChange={setStoreFilter} placeholder="Filter by store…" />
           <SelectFilter
             options={dateOptions}
@@ -129,6 +142,17 @@ const OrdersAvailableScreen = ({
             placeholder="All dates"
             className="w-[32%]"
           />
+        </div>
+      )}
+
+      {allVisibleStoreIds.length > 1 && (
+        <div className="px-3 py-2 border-b border-gray-100 bg-custom-white flex-shrink-0">
+          <button
+            onClick={() => onSelectAllStores(dateFilter, activeType, allVisibleStoreIds)}
+            className="w-full text-[11px] font-medium py-2 rounded-md border border-[#1e2a4a]/20 text-[#1e2a4a] transition-colors"
+          >
+            Select all {allVisibleStoreIds.length} stores
+          </button>
         </div>
       )}
 
@@ -178,12 +202,12 @@ const OrdersAvailableScreen = ({
                           onClick={() => onSelectStore(dateGroup.order_date, card.order_type, store.storeid)}
                           style={sel ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
                           className={`w-full flex items-center justify-between pl-6 pr-4 py-2.5 text-left transition-colors ${
-                            sel ? "bg-white" : "hover:bg-gray-50"
+                            sel ? "bg-custom-white" : "hover:bg-gray-50"
                           }`}
                         >
                           <div className="flex flex-col min-w-0">
                             <span className="text-[12px] font-medium text-content truncate">{store.store_name}</span>
-                            <span className="text-[9px] text-content mt-px">{fmtDate(dateGroup.order_date)}</span>
+                            <span className="text-[10px] text-content mt-px">{fmtDate(dateGroup.order_date)}</span>
                           </div>
                           <span className="text-[10px] text-content bg-gray-100 rounded-full px-2 py-0.5 flex-shrink-0 ml-2">
                             {store.frequency} {store.frequency === 1 ? "order" : "orders"}

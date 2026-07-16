@@ -28,13 +28,13 @@ const DailyBreakdownSheet = ({ description, buckets, onClose }: DailyBreakdownSh
       <div className="px-4 pb-3 border-b border-gray-100 flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-[13px] font-bold text-content truncate">{description}</div>
-          <div className="text-[10px] text-content/75 mt-0.5">Daily breakdown · last 14 days</div>
+          <div className="text-[10px] text-content/85 mt-0.5">Daily breakdown · last 14 days</div>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0 border border-gray-200 rounded-md p-0.5">
           <button
             onClick={() => setView("margin")}
             className={`px-2 py-1 rounded text-[10.5px] font-medium transition-colors ${
-              view === "margin" ? "bg-[#1e2a4a] text-white" : "text-content/75"
+              view === "margin" ? "bg-[#1e2a4a] text-custom-white" : "text-content/85"
             }`}
           >
             Margin
@@ -42,7 +42,7 @@ const DailyBreakdownSheet = ({ description, buckets, onClose }: DailyBreakdownSh
           <button
             onClick={() => setView("cost")}
             className={`px-2 py-1 rounded text-[10.5px] font-medium transition-colors ${
-              view === "cost" ? "bg-[#1e2a4a] text-white" : "text-content/75"
+              view === "cost" ? "bg-[#1e2a4a] text-custom-white" : "text-content/85"
             }`}
           >
             Cost
@@ -52,39 +52,39 @@ const DailyBreakdownSheet = ({ description, buckets, onClose }: DailyBreakdownSh
 
       <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 flex-shrink-0">
         <div className="px-3 py-2">
-          <div className="text-[9px] font-medium uppercase tracking-wide text-content/75">Total units</div>
+          <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">Total units</div>
           <div className="text-[13px] font-semibold text-content mt-0.5">{totalQty}</div>
         </div>
         {view === "margin" ? (
           <>
             <div className="px-3 py-2">
-              <div className="text-[9px] font-medium uppercase tracking-wide text-content/75">Revenue</div>
+              <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">Revenue</div>
               <div className="text-[13px] font-semibold text-content mt-0.5">{formatCurrency2(totalRevenue)}</div>
             </div>
             <div className="px-3 py-2">
-              <div className="text-[9px] font-medium uppercase tracking-wide text-content/75">Avg price</div>
+              <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">Avg price</div>
               <div className="text-[13px] font-semibold text-content mt-0.5">{formatCurrency2(avgPrice)}</div>
             </div>
           </>
         ) : (
           <>
             <div className="px-3 py-2">
-              <div className="text-[9px] font-medium uppercase tracking-wide text-content/75">Total cost</div>
+              <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">Total cost</div>
               <div className="text-[13px] font-semibold text-content mt-0.5">{formatCurrency2(totalCost)}</div>
             </div>
             <div className="px-3 py-2">
-              <div className="text-[9px] font-medium uppercase tracking-wide text-content/75">Avg unit cost</div>
+              <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">Avg unit cost</div>
               <div className="text-[13px] font-semibold text-content mt-0.5">{formatCurrency2(avgUnitCost)}</div>
             </div>
           </>
         )}
       </div>
 
-      <div className="grid grid-cols-4 px-4 py-1.5 text-[9px] font-medium uppercase tracking-wide text-content/75 border-b border-gray-100">
+      <div className="grid grid-cols-4 px-4 py-1.5 text-[10px] font-medium uppercase tracking-wide text-content/85 border-b border-gray-100">
         <span>Date</span>
         <span className="text-right">Qty</span>
-        <span className="text-right">{view === "margin" ? "Revenue" : "Cost"}</span>
-        <span className="text-right">{view === "margin" ? "Margin" : "Unit cost"}</span>
+        <span className="text-right">{view === "margin" ? "Revenue" : "Case Cost"}</span>
+        <span className="text-right">{view === "margin" ? "Margin" : "Cost"}</span>
       </div>
 
       <div className="overflow-y-auto thin-scrollbar" style={{ maxHeight: "50vh" }}>
@@ -97,29 +97,29 @@ const DailyBreakdownSheet = ({ description, buckets, onClose }: DailyBreakdownSh
               key={b.date}
               className={`grid grid-cols-4 px-4 py-2 text-[12px] border-b border-gray-50 ${b.hasSale ? "" : "bg-gray-50/60"}`}
             >
-              <span className={b.hasSale ? "text-content" : "text-content/75"}>{b.label}</span>
-              <span className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-content/75"}`}>
+              <span className={b.hasSale ? "text-content" : "text-content/85"}>{b.label}</span>
+              <span className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-content/85"}`}>
                 {b.hasSale ? b.qty : "—"}
               </span>
               {view === "margin" ? (
-                <span className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-content/75"}`}>
+                <span className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-content/85"}`}>
                   {b.hasSale ? formatCurrency2(b.revenue) : "—"}
                 </span>
               ) : (
-                <span className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-content/75"}`}>
+                <span className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-content/85"}`}>
                   {b.hasSale ? formatCurrency2(b.cost) : "—"}
                 </span>
               )}
               {view === "margin" ? (
                 <span
                   className={`text-right tabular-nums font-medium ${
-                    !b.hasSale ? "text-content/75" : isNegative ? "text-red-700" : "text-emerald-700"
+                    !b.hasSale ? "text-content/85" : isNegative ? "text-red-700" : "text-emerald-700"
                   }`}
                 >
                   {pct !== null ? `${pct.toFixed(1)}%` : "—"}
                 </span>
               ) : (
-                <span className={`text-right tabular-nums font-medium ${b.hasSale ? "text-content" : "text-content/75"}`}>
+                <span className={`text-right tabular-nums font-medium ${b.hasSale ? "text-content" : "text-content/85"}`}>
                   {unitCost !== null ? formatCurrency2(unitCost) : "—"}
                 </span>
               )}

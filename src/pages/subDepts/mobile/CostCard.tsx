@@ -24,21 +24,21 @@ const CostCard = ({ cost, handleClick }: CostCardProps) => {
       {/* <div className="px-2 text-[13px] font-medium">{cost.description}</div> */}
       <div className="grid grid-cols-4 px-2 pb-0.5">
         <div>
-          <div className="text-content/60">U Cost:</div>
+          <div className="text-content/85">U Cost:</div>
           <div className="font-medium">
             {formatCurrency2(cost.calculated_cost)}
           </div>
         </div>
         <div>
-          <div className="text-content/60">C Cost:</div>
+          <div className="text-content/85">C Cost:</div>
           <div className="font-medium">{formatCurrency2(cost.cost)}</div>
         </div>
         <div>
-          <div className="text-content/60">Qty:</div>
+          <div className="text-content/85">Qty:</div>
           <div className="font-medium">{formatBigNumber(cost.qty, 0)}</div>
         </div>
         <div>
-          <div className="text-content/60">COGS:</div>
+          <div className="text-content/85">COGS:</div>
           <div className="font-medium">{formatCurrency2(cost.total_cost)}</div>
         </div>
       </div>

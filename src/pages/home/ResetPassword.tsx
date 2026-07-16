@@ -49,7 +49,7 @@ const ResetPassword = () => {
     <Modal
       isOpen={user.resetPassword === 1}
       onClose={handleClose}
-      modalClassName="w-[37%] rounded-2xl bg-white ring-1 ring-black/5 space-y-2.5"
+      modalClassName="w-[37%] rounded-2xl bg-custom-white ring-1 ring-black/5 space-y-2.5"
       allowClickOutside={false}
     >
       <div className=" text-center">

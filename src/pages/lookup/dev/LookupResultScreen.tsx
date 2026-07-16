@@ -56,18 +56,15 @@ const LookupResultScreen = ({
         <div className="flex items-center gap-2">
           <button
             onClick={onBack}
-            className="text-white/65 hover:text-white transition-colors flex-shrink-0 -ml-1"
+            className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0 -ml-1"
           >
             <ChevronLeftIcon className="w-5 h-5" />
           </button>
           <div className="min-w-0">
-            <div className="text-[13px] font-semibold text-white truncate">
+            <div className="text-[13px] font-semibold text-custom-white truncate">
               {storeName}
             </div>
-            <div
-              className="text-[10px] mt-0.5 truncate"
-              style={{ color: "rgba(255,255,255,0.75)" }}
-            >
+            <div className="text-[10px] mt-0.5 truncate text-custom-white/85">
               {dateRangeLabel}
             </div>
           </div>
@@ -81,14 +78,14 @@ const LookupResultScreen = ({
               <div className="text-[13px] font-semibold text-content truncate">
                 {description}
               </div>
-              <div className="text-[10px] text-content/75 mt-0.5 truncate">
+              <div className="text-[10px] text-content/85 mt-0.5 truncate">
                 {productCode} · {categoryDescription}
               </div>
             </div>
           </div>
 
           <div className="flex items-start justify-between gap-2 mt-2.5">
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-content/75">
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
               Margin, last 14 days
             </span>
             <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
@@ -117,7 +114,7 @@ const LookupResultScreen = ({
 
           <div className="grid grid-cols-3 gap-2 mt-2 border-t border-content/10 pt-2.5">
             <div>
-              <div className="text-[9px] font-semibold uppercase tracking-wide text-content/75">
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
                 List price
               </div>
               <div className="text-[13px] font-semibold tabular-nums mt-0.5">
@@ -125,7 +122,7 @@ const LookupResultScreen = ({
               </div>
             </div>
             <div>
-              <div className="text-[9px] font-semibold uppercase tracking-wide text-content/75">
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
                 Avg sold at
               </div>
               <div
@@ -135,7 +132,7 @@ const LookupResultScreen = ({
               </div>
             </div>
             <div>
-              <div className="text-[9px] font-semibold uppercase tracking-wide text-content/75">
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
                 Case cost
               </div>
               <div className="text-[13px] font-semibold tabular-nums mt-0.5">
@@ -145,7 +142,7 @@ const LookupResultScreen = ({
           </div>
           <div className="grid grid-cols-3 gap-2 mt-2.5 border-t border-content/10 pt-2.5">
             <div>
-              <div className="text-[9px] font-semibold uppercase tracking-wide text-content/75">
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
                 Total units
               </div>
               <div className="text-[13px] font-semibold tabular-nums mt-0.5">
@@ -153,30 +150,30 @@ const LookupResultScreen = ({
               </div>
             </div>
             <div>
-              <div className="text-[9px] font-semibold uppercase tracking-wide text-content/75">
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
                 Days sold
               </div>
               <div className="text-[13px] font-semibold tabular-nums mt-0.5">
                 {daysSold}{" "}
-                <span className="text-[11px] font-medium text-content/75">
+                <span className="text-[11px] font-medium text-content/85">
                   of 14
                 </span>
               </div>
             </div>
             <div>
-              <div className="text-[9px] font-semibold uppercase tracking-wide text-content/75">
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
                 Longest gap
               </div>
               <div className="text-[13px] font-semibold tabular-nums mt-0.5">
                 {longestGap > 0 ? (
                   <>
                     {longestGap}{" "}
-                    <span className="text-[11px] font-medium text-content/75">
+                    <span className="text-[11px] font-medium text-content/85">
                       days
                     </span>
                   </>
                 ) : (
-                  <span className="text-content/75">None</span>
+                  <span className="text-content/85">None</span>
                 )}
               </div>
             </div>

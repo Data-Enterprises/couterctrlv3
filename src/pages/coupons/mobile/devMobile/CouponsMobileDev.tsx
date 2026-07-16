@@ -177,10 +177,10 @@ const CouponsMobileDev = () => {
   return (
     <div className="h-[calc(100dvh-3rem)] overflow-y-auto bg-gray-50">
       <div className="mx-4 pt-4 pb-2">
-        <div className="bg-white rounded-2xl shadow-lg p-4 flex flex-col gap-3">
+        <div className="bg-custom-white rounded-2xl shadow-lg p-4 flex flex-col gap-3">
           <div>
             <div className="text-[15px] font-bold text-content">Coupons</div>
-            <div className="text-[10px] text-content/50 mt-1">
+            <div className="text-[10px] text-content/85 mt-1">
               Select a store or group and date range to load coupon activity.
             </div>
           </div>
@@ -194,7 +194,7 @@ const CouponsMobileDev = () => {
           <button
             onClick={getData}
             disabled={ctx.isFetching}
-            className="w-full py-2.5 text-[12px] font-semibold text-white rounded-xl bg-[#1e2a4a] hover:bg-[#2a3a63] disabled:opacity-60 transition-colors"
+            className="w-full py-2.5 text-[12px] font-semibold text-custom-white rounded-xl bg-[#1e2a4a] hover:bg-[#2a3a63] disabled:opacity-60 transition-colors"
           >
             {ctx.isFetching ? "Loading…" : "Load Coupons"}
           </button>

@@ -162,7 +162,7 @@ const SalesTrackerWeeks = () => {
                         <div>{desc}</div>
                         <div>Week: {idx + 1}</div>
                       </div>
-                      <div className="flex justify-between text-[10px] text-content/60">
+                      <div className="flex justify-between text-[10px] text-content/85">
                         <div>WS: {formatDate(week[0].sale_date)}</div>
                         <div
                           className={`font-bold ${changeTextColor(totalsWithMissing.dollarChange, 0)}`}
@@ -171,10 +171,10 @@ const SalesTrackerWeeks = () => {
                         </div>
                       </div>
                       <div className="flex justify-between items-end text-[10px]">
-                        <div className="text-content/60">
+                        <div className="text-content/85">
                           WE: {formatDate(week[week.length - 1].sale_date)}
                         </div>
-                        <div className="text-content/60">
+                        <div className="text-content/85">
                           ATS:{" "}
                           {formatCurrency2(totalsWithMissing.atsTotalSales)}
                         </div>
@@ -218,9 +218,9 @@ const SalesTrackerWeeks = () => {
                     </div>
 
                     <div className="space-y-0.5">
-                      <div className="flex items-end justify-between gap-1 text-[9.5px]">
+                      <div className="flex items-end justify-between gap-1 text-[10px]">
                         <div className="text-left min-w-0">
-                          <div className="text-content/60 -mb-0.5 text-[9px] flex gap-1 items-center leading-tight">
+                          <div className="text-content/85 -mb-0.5 text-[10px] flex gap-1 items-center leading-tight">
                             <div
                               className="h-1.5 w-1.5 rounded-full"
                               style={{ backgroundColor: colors[0] }}
@@ -232,7 +232,7 @@ const SalesTrackerWeeks = () => {
                           </div>
                         </div>
                         <div className="text-left min-w-0">
-                          <div className="text-content/60 -mb-0.5 text-[9px] flex gap-1 items-center leading-tight">
+                          <div className="text-content/85 -mb-0.5 text-[10px] flex gap-1 items-center leading-tight">
                             <div
                               className="h-1.5 w-1.5 rounded-full"
                               style={{ backgroundColor: colors[1] }}

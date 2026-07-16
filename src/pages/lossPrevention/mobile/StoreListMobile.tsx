@@ -11,64 +11,14 @@ import { formatCurrency2 } from "../../../utils";
 import SevChips from "../../sales/mobile/components/SevChips";
 import SevBadge from "../../sales/mobile/components/SevBadge";
 import type { SevFilter } from "../../../features/salesLedgerSlice";
-import type { CashierDetails } from "../../../interfaces";
 import SelectFilter from "../../../components/filters/SelectFilter";
+import { storeSeverity, isNoDollarType, weekRangeLabel } from "../gradingUtils";
+import MetricChip from "./components/MetricChip";
 
 interface Props {
   onOpenSearch: () => void;
   onStoreSelected: () => void;
 }
-
-const isNoSale = (saleType: string) =>
-  saleType.toLowerCase().replace(/[^a-z]/g, "") === "nosale";
-
-const getStoreSev = (
-  detail: CashierDetails,
-  baseline: CashierDetails | undefined,
-  saleType: string,
-): "critical" | "watch" | "healthy" => {
-  if (!baseline) return "healthy"; // no baseline = can't grade
-  // baseline covers 2 weeks; normalize to 1-week to match current period
-  const bTrans = baseline.transaction_count / 2;
-  const bItems = baseline.total_items / 2;
-  const bAmount = Math.abs(baseline.amount) / 2;
-  const bAvg = Math.abs(baseline.average_dollars);
-  if (isNoSale(saleType)) {
-    const score = [
-      detail.transaction_count <= bTrans,
-      detail.total_items <= bItems,
-    ].filter(Boolean).length;
-    if (score === 2) return "healthy";
-    if (score === 1) return "watch";
-    return "critical";
-  }
-  const score = [
-    detail.transaction_count <= bTrans,
-    detail.total_items <= bItems,
-    Math.abs(detail.amount) <= bAmount,
-    Math.abs(detail.average_dollars) <= bAvg,
-  ].filter(Boolean).length;
-  if (score >= 3) return "healthy";
-  if (score === 2) return "watch";
-  return "critical";
-};
-
-const MetricChip = ({
-  label, value, isPass,
-}: { label: string; value: string; isPass: boolean | null }) => (
-  <div
-    className={`flex items-baseline gap-1 rounded px-1.5 py-0.5 ${
-      isPass === null
-        ? "bg-gray-200 text-gray-500"
-        : isPass
-        ? "bg-emerald-400 text-white"
-        : "bg-red-400 text-white"
-    }`}
-  >
-    <span className="text-[9px] opacity-80">{label}</span>
-    <span className="text-[10px] font-semibold">{value}</span>
-  </div>
-);
 
 const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
   const toast = useToast();
@@ -238,7 +188,7 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
     return lp.cashierDetails.map((d) => {
       const trend = lp.cashierTrends.find((t) => t.storeid === d.storeid);
       const baseline = lp.baselineDetails.find((b) => b.storeid === d.storeid);
-      const sev = getStoreSev(d, baseline, lp.selectedSaleType);
+      const sev = storeSeverity(d, lp.baselineDetails, lp.selectedSaleType);
       return { ...d, sev, trend, baseline };
     });
   }, [lp.cashierDetails, lp.cashierTrends, lp.baselineDetails, lp.selectedSaleType]);
@@ -255,9 +205,8 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
     return storesWithSev.filter((s) => s.sev === sevFilter);
   }, [storesWithSev, sevFilter]);
 
-  const noSale = isNoSale(lp.selectedSaleType);
-  const fmtMDY = (mdy: string) => new Date(mdy).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  const weekLabel = `${fmtMDY(search.startDate)} – ${fmtMDY(search.endDate)}, ${search.endDate.split("/")[2]}`;
+  const noSale = isNoDollarType(lp.selectedSaleType);
+  const weekLabel = weekRangeLabel(search.singleDate);
 
   return (
     <div className="flex flex-col h-full">
@@ -265,26 +214,21 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
       <div className="bg-[#1e2a4a] px-4 pt-3 pb-4 flex-shrink-0">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-white font-semibold text-[15px]">Loss prevention</div>
-            <div className="text-white/65 text-[11px] mt-0.5">{weekLabel}</div>
+            <div className="text-custom-white font-semibold text-[13px]">Exception Activity</div>
+            <div className="text-custom-white/85 text-[11px] mt-0.5">{weekLabel}</div>
           </div>
           <button
             onClick={onOpenSearch}
             aria-label="New search"
-            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-white/25 text-white/65 hover:text-white hover:border-white/45 transition-colors"
+            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-custom-white/25 text-custom-white/85 hover:text-custom-white hover:border-custom-white/45 transition-colors"
           >
             <MagnifyingGlassIcon className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex items-center gap-2 mt-2">
-          <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-red-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">{noSale ? "Critical 0/2" : "Critical ≤1/4"}</span></div>
-          <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">{noSale ? "Watch 1/2" : "Watch 2/4"}</span></div>
-          <div className="flex items-center gap-1"><div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-200 flex-shrink-0" /><span className="text-white/60 text-[9px]">{noSale ? "Healthy 2/2" : "Healthy ≥3/4"}</span></div>
-        </div>
       </div>
 
       {/* Exception type selector */}
-      <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 bg-white">
+      <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 bg-custom-white">
         <SelectFilter
           options={lp.saleTypes.filter((st) => st.sale_type !== "Description").map((st) => ({ value: st.sale_type, label: st.sale_type }))}
           value={lp.selectedSaleType}
@@ -300,10 +244,10 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
       {/* Store list */}
       <div className="flex-1 overflow-y-auto thin-scrollbar">
         {lp.loadingCashierDetails && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/70">Loading…</div>
+          <div className="flex items-center justify-center py-16 text-[12px] text-content/85">Loading…</div>
         )}
         {!lp.loadingCashierDetails && lp.noTransMsg && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/70">No exceptions found.</div>
+          <div className="flex items-center justify-center py-16 text-[12px] text-content/85">No exceptions found.</div>
         )}
         {!lp.loadingCashierDetails && !lp.noTransMsg && visible.map((d) => {
           const storeName = assignedStores.find((s) => s.storeid === d.storeid)?.store_name ?? d.store_name;
@@ -316,9 +260,9 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
 
           const gradedMetrics = [
             { label: "Trans", value: d.transaction_count.toLocaleString(), isPass: bTrans !== null ? d.transaction_count <= bTrans : null },
-            { label: "Items", value: d.total_items.toLocaleString(), isPass: bItems !== null ? d.total_items <= bItems : null },
+            { label: "Qty", value: d.total_items.toLocaleString(), isPass: bItems !== null ? d.total_items <= bItems : null },
             ...(!noSale ? [
-              { label: "Total", value: formatCurrency2(Math.abs(d.amount)), isPass: bAmount !== null ? Math.abs(d.amount) <= bAmount : null },
+              { label: "Total $", value: formatCurrency2(Math.abs(d.amount)), isPass: bAmount !== null ? Math.abs(d.amount) <= bAmount : null },
               { label: "Avg $", value: formatCurrency2(Math.abs(d.average_dollars)), isPass: bAvg !== null ? Math.abs(d.average_dollars) <= bAvg : null },
             ] : []),
           ];

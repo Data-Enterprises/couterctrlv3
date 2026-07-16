@@ -90,7 +90,7 @@ const Admin = () => {
               <span className="text-custom-white text-[12px] font-medium">
                 {context.companyStoresActivity.length}
               </span>
-              <div className="w-px h-3.5 bg-white/15" />
+              <div className="w-px h-3.5 bg-custom-white/15" />
               <span className="text-custom-white text-[10px] uppercase tracking-wide">
                 Missing
               </span>

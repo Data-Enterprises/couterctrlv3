@@ -23,6 +23,7 @@ import TeamLegacy from "./pages/team/TeamLegacy.tsx";
 import TitleBar from "./components/navigation/TitleBar.tsx";
 import TitleBarLegacy from "./components/navigation/TitleBarLegacy.tsx";
 import SideBarLegacy from "./components/navigation/SideBarLegacy.tsx";
+import UpcListDev from "./pages/upc/dev/UpcListDev.tsx";
 
 export const NavSwitch = () => {
   const devMode = useAppSelector((s) => s.app.devMode);
@@ -67,6 +68,8 @@ export const ReceiversPage = () => {
 
 export const UpcPage = () => {
   return <UpcList />;
+  const devMode = useAppSelector((s) => s.app.devMode);
+  return devMode ? <UpcListDev /> : <UpcList />;
 };
 
 export const ItemLookupPage = () => {

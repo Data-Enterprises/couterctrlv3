@@ -27,7 +27,7 @@ const ForecastLine = ({ data, title, search, title2 = "" }: LineProps) => {
   useEffect(() => {
     if (state.selectedUpcs.length) {
       setLegendData(
-        state.upcList.filter((item) => state.selectedUpcs.includes(item.label))
+        state.upcList.filter((item) => state.selectedUpcs.includes(item.label)),
       );
     }
   }, [state.upcList, state.selectedUpcs]);
@@ -43,13 +43,13 @@ const ForecastLine = ({ data, title, search, title2 = "" }: LineProps) => {
     if (lineData) {
       setMax(
         Math.max(
-          ...lineData.map((item) => Math.max(...item.data.map((d) => d.y)))
-        )
+          ...lineData.map((item) => Math.max(...item.data.map((d) => d.y))),
+        ),
       );
       setMin(
         Math.min(
-          ...lineData.map((item) => Math.min(...item.data.map((d) => d.y)))
-        )
+          ...lineData.map((item) => Math.min(...item.data.map((d) => d.y))),
+        ),
       );
     }
   }, [lineData]);
@@ -57,17 +57,17 @@ const ForecastLine = ({ data, title, search, title2 = "" }: LineProps) => {
   useEffect(() => {
     if (data) {
       setMax(
-        Math.max(...data.map((item) => Math.max(...item.data.map((d) => d.y))))
+        Math.max(...data.map((item) => Math.max(...item.data.map((d) => d.y)))),
       );
       setMin(
-        Math.min(...data.map((item) => Math.min(...item.data.map((d) => d.y))))
+        Math.min(...data.map((item) => Math.min(...item.data.map((d) => d.y)))),
       );
       setLineData(data);
     }
 
     if (search.length > 0 && lineData) {
       setLineData((prev) =>
-        prev.filter((item) => search.includes(item.id.split(" - ")[0]))
+        prev.filter((item) => search.includes(item.id.split(" - ")[0])),
       );
     }
   }, [data, search]);
@@ -75,7 +75,7 @@ const ForecastLine = ({ data, title, search, title2 = "" }: LineProps) => {
   return (
     <div className="w-full h-full bg-custom-white rounded-lg shadow-lg">
       <div
-        className={`bg-blue-500 text-white font-medium text-center py-[1px] rounded-t-lg text-[20px] ${
+        className={`bg-blue-500 text-custom-white font-medium text-center py-[1px] rounded-t-lg text-[20px] ${
           title2 ? "grid grid-cols-2" : ""
         }`}
       >

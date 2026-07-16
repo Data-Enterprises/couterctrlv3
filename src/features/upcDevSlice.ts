@@ -11,6 +11,15 @@ import type {
 } from "../interfaces";
 
 export type UpcDevTab = "salesComp" | "forecast" | "priceOpt" | "trend" | "association";
+
+// Forecast excluded — still inert, not a selectable landing tab.
+export const UPC_DEV_TABS: { id: UpcDevTab; label: string }[] = [
+  { id: "salesComp", label: "Sales Comp" },
+  { id: "priceOpt", label: "Price Opt" },
+  { id: "trend", label: "Trend" },
+  { id: "association", label: "Association" },
+];
+
 export type UpcDevDisplayMode = "code" | "desc";
 export type UpcDevShowMode = "all" | "selected";
 export type UpcDevTrendMode = "Totals" | "Mean" | "Volatility";
@@ -19,6 +28,14 @@ export type ItemAssociate = {
   product_code: string;
   product_description: string;
   qty: number;
+};
+
+// Price Opt — current price/cost derived from the most recent Item Lookup
+// history row for a UPC at one specific store. Keyed by `${storeid}:${product_code}`.
+export type UpcCurrentPriceCost = {
+  product_code: string;
+  currentPrice: number | null;
+  currentCost: number | null;
 };
 
 interface UpcDevState {
@@ -38,6 +55,7 @@ interface UpcDevState {
   // Sales Comp
   salesCompLoaded: boolean;
   salesComp: UpcSalesComp[];
+  salesCompLY: UpcSalesComp[];
   // Forecast
   forecastLoaded: boolean;
   forecastLoading: boolean;
@@ -50,6 +68,12 @@ interface UpcDevState {
   priceOptLoading: boolean;
   optBestPrices: UpcPriceOpt[];
   optBestPricesByUpc: UpcPriceOpt[];
+  // Group search only — store picked to unlock current price/cost. Store
+  // search always has a single store already, no picker needed.
+  priceOptStoreId: number | null;
+  // Session-scoped cache, keyed `${storeid}:${product_code}` — never
+  // cleared on re-search, only refetched when a key is missing.
+  currentPriceCost: Record<string, UpcCurrentPriceCost>;
   // Trend
   trendLoaded: boolean;
   trendLoading: boolean;
@@ -70,7 +94,7 @@ const initialState: UpcDevState = {
   upcs: [],
   upcText: "",
   storeids: "",
-  trendPeriods: 120,
+  trendPeriods: 90,
   activeTab: "salesComp",
   dataLoaded: false,
   isLoading: false,
@@ -83,6 +107,7 @@ const initialState: UpcDevState = {
   // Sales Comp
   salesCompLoaded: false,
   salesComp: [],
+  salesCompLY: [],
   // Forecast
   forecastLoaded: false,
   forecastLoading: false,
@@ -95,6 +120,8 @@ const initialState: UpcDevState = {
   priceOptLoading: false,
   optBestPrices: [],
   optBestPricesByUpc: [],
+  priceOptStoreId: null,
+  currentPriceCost: {},
   // Trend
   trendLoaded: false,
   trendLoading: false,
@@ -183,6 +210,9 @@ const upcDevSlice = createSlice({
     setDevSalesComp(state, action: PayloadAction<UpcSalesComp[]>) {
       state.salesComp = action.payload;
     },
+    setDevSalesCompLY(state, action: PayloadAction<UpcSalesComp[]>) {
+      state.salesCompLY = action.payload;
+    },
     // Forecast
     setDevForecastLoaded(state, action: PayloadAction<boolean>) {
       state.forecastLoaded = action.payload;
@@ -214,6 +244,12 @@ const upcDevSlice = createSlice({
     },
     setDevOptBestPricesByUpc(state, action: PayloadAction<UpcPriceOpt[]>) {
       state.optBestPricesByUpc = action.payload;
+    },
+    setDevPriceOptStoreId(state, action: PayloadAction<number | null>) {
+      state.priceOptStoreId = action.payload;
+    },
+    setDevCurrentPriceCost(state, action: PayloadAction<{ key: string; data: UpcCurrentPriceCost }>) {
+      state.currentPriceCost[action.payload.key] = action.payload.data;
     },
     // Trend
     setDevTrendLoaded(state, action: PayloadAction<boolean>) {
@@ -281,6 +317,7 @@ const upcDevSlice = createSlice({
       state.upcCount = 0;
       state.salesCompLoaded = false;
       state.salesComp = [];
+      state.salesCompLY = [];
       state.forecastLoaded = false;
       state.forecastLoading = false;
       state.forecastQtyData = [];
@@ -291,6 +328,7 @@ const upcDevSlice = createSlice({
       state.priceOptLoading = false;
       state.optBestPrices = [];
       state.optBestPricesByUpc = [];
+      state.priceOptStoreId = null;
       state.trendLoaded = false;
       state.trendLoading = false;
       state.upcTrends = [];
@@ -327,6 +365,7 @@ export const {
   setDevShowMode,
   setDevSalesCompLoaded,
   setDevSalesComp,
+  setDevSalesCompLY,
   setDevForecastLoaded,
   setDevForecastLoading,
   setDevForecastQtyData,
@@ -337,6 +376,8 @@ export const {
   setDevPriceOptLoading,
   setDevOptBestPrices,
   setDevOptBestPricesByUpc,
+  setDevPriceOptStoreId,
+  setDevCurrentPriceCost,
   setDevTrendLoaded,
   setDevTrendLoading,
   setDevTrendMode,

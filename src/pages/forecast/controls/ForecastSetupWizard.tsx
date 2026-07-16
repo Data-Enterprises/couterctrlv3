@@ -39,10 +39,23 @@ type UpcTab = "paste" | "upload" | "saved" | "adlist";
 
 const ForecastSetupWizard = (props: WizardProps) => {
   const {
-    radioId, filteredData, selectedStores, storeids, upcs, upcText,
-    isLoading, noResults, endDate,
-    onSelectChange, onSelectClick, onTextChange, onAddUpc, onRemoveUpc,
-    onEnterDown, onSearch, setFile,
+    radioId,
+    filteredData,
+    selectedStores,
+    storeids,
+    upcs,
+    upcText,
+    isLoading,
+    noResults,
+    endDate,
+    onSelectChange,
+    onSelectClick,
+    onTextChange,
+    onAddUpc,
+    onRemoveUpc,
+    onEnterDown,
+    onSearch,
+    setFile,
   } = props;
 
   const [step, setStep] = useState<Step>(1);
@@ -65,14 +78,20 @@ const ForecastSetupWizard = (props: WizardProps) => {
         onClick={() => setStep(n as Step)}
         className="flex flex-col items-center gap-1 group"
       >
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all ${
-          active ? "bg-blue-500 border-blue-500 text-white" :
-          done ? "bg-green-500 border-green-500 text-white" :
-          "bg-white border-gray-300 text-gray-400"
-        }`}>
+        <div
+          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all ${
+            active
+              ? "bg-blue-500 border-blue-500 text-custom-white"
+              : done
+                ? "bg-green-500 border-green-500 text-custom-white"
+                : "bg-custom-white border-gray-300 text-gray-400"
+          }`}
+        >
           {done && !active ? "✓" : n}
         </div>
-        <span className={`text-[11px] font-medium whitespace-nowrap ${active ? "text-blue-500" : done ? "text-green-600" : "text-gray-400"}`}>
+        <span
+          className={`text-[11px] font-medium whitespace-nowrap ${active ? "text-blue-500" : done ? "text-green-600" : "text-gray-400"}`}
+        >
           {label}
         </span>
       </button>
@@ -173,25 +192,27 @@ const ForecastSetupWizard = (props: WizardProps) => {
 
               {/* Tab switcher */}
               <div className="flex border-b border-gray-200">
-                {(["paste", "upload", "saved", "adlist"] as UpcTab[]).map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setUpcTab(tab)}
-                    className={`px-4 py-1.5 text-[13px] font-medium capitalize border-b-2 transition-colors ${
-                      upcTab === tab
-                        ? "border-blue-500 text-blue-500"
-                        : "border-transparent text-gray-400 hover:text-gray-600"
-                    }`}
-                  >
-                    {tab === "paste"
-                      ? "Paste UPCs"
-                      : tab === "upload"
-                        ? "Upload CSV"
-                        : tab === "saved"
-                          ? "Saved List"
-                          : "AD List"}
-                  </button>
-                ))}
+                {(["paste", "upload", "saved", "adlist"] as UpcTab[]).map(
+                  (tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setUpcTab(tab)}
+                      className={`px-4 py-1.5 text-[13px] font-medium capitalize border-b-2 transition-colors ${
+                        upcTab === tab
+                          ? "border-blue-500 text-blue-500"
+                          : "border-transparent text-gray-400 hover:text-gray-600"
+                      }`}
+                    >
+                      {tab === "paste"
+                        ? "Paste UPCs"
+                        : tab === "upload"
+                          ? "Upload CSV"
+                          : tab === "saved"
+                            ? "Saved List"
+                            : "AD List"}
+                    </button>
+                  ),
+                )}
               </div>
 
               {upcTab === "paste" && (

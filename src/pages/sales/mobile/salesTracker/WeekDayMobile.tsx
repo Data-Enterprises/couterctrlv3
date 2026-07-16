@@ -56,7 +56,7 @@ const WeekDayMobile = ({ week, desc, idx }: WeekDayMobileProps) => {
           <div>
             <ArrowRightCircleIcon
               ref={iconRef}
-              className="w-6 h-6 text-content/60 transition-all duration-100 ease-in-out"
+              className="w-6 h-6 text-content/85 transition-all duration-100 ease-in-out"
               onClick={handleDayToggle}
             />
           </div>
@@ -65,10 +65,10 @@ const WeekDayMobile = ({ week, desc, idx }: WeekDayMobileProps) => {
               <div>{desc}</div>
             </div>
             <div className="flex justify-between items-end">
-              <div className="font-normal text-content/60 -mt-0.5">
+              <div className="font-normal text-content/85 -mt-0.5">
                 Week: {idx + 1}
               </div>
-              <div className="text-content/60">
+              <div className="text-content/85">
                 {formatDate(week[0].sale_date)} -{" "}
                 {formatDate(week[week.length - 1].sale_date)}
               </div>
@@ -112,28 +112,28 @@ const WeekDayMobile = ({ week, desc, idx }: WeekDayMobileProps) => {
               </div>
 
               <div className="">
-                <div className="text-content/60">TY Sales</div>
+                <div className="text-content/85">TY Sales</div>
                 <div className="font-medium">
                   {formatCurrency2(weekDay.salesTY)}
                 </div>
               </div>
 
               <div>
-                <div className="text-content/60">LY Sales</div>
+                <div className="text-content/85">LY Sales</div>
                 <div className="font-medium">
                   {formatCurrency2(weekDay.salesLY)}
                 </div>
               </div>
 
               <div>
-                <div className="text-content/60">ATS Sales</div>
+                <div className="text-content/85">ATS Sales</div>
                 <div className="font-medium">
                   {formatCurrency2(atsTotalSales)}
                 </div>
               </div>
 
               <div>
-                <div className="text-content/60 text-xs">TY vs LY</div>
+                <div className="text-content/85 text-xs">TY vs LY</div>
                 <div
                   className={`font-medium ${changeTextColor(
                     weekDay.salesTY - weekDay.salesLY,

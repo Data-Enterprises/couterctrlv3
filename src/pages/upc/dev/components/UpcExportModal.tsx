@@ -2,14 +2,19 @@ import { useState } from "react";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import type { UpcDevTab } from "../../../../features/upcDevSlice";
+import { computeUpcSalesCompStats, DAYS, DAY_SHORT } from "../modules/salesComp/salesCompStats";
 
 interface Props {
   onClose: () => void;
 }
 
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;
-
 type Preset = { id: string; label: string };
+type ExportShape = "summary" | "detail";
+
+const SHAPES: { id: ExportShape; label: string }[] = [
+  { id: "summary", label: "Summary — Total, vs LY, WoW, Peak day" },
+  { id: "detail", label: "Weekly detail — raw rows" },
+];
 
 const PRESETS: Record<UpcDevTab, Preset[]> = {
   salesComp: [
@@ -60,6 +65,7 @@ const UpcExportModal = ({ onClose }: Props) => {
   const ctx = useUpcDevCtx();
   const presets = PRESETS[ctx.activeTab];
   const [selectedPreset, setSelectedPreset] = useState(presets[0].id);
+  const [exportShape, setExportShape] = useState<ExportShape>("summary");
 
   const handleExport = () => {
     const tab = ctx.activeTab;
@@ -69,12 +75,30 @@ const UpcExportModal = ({ onClose }: Props) => {
     switch (tab) {
       case "salesComp": {
         const data = ctx.salesComp.filter((s) => sel === "all" || isSelected(s.product_code));
-        const headers = ["UPC", "Description", "Week", ...DAYS.map((d) => d.slice(0, 3)), "Total"];
-        const rows = data.map((s) => {
-          const total = DAYS.reduce((acc, d) => acc + (s[d] ?? 0), 0);
-          return [s.product_code, s.description, s.week, ...DAYS.map((d) => String(s[d] ?? 0)), String(total)];
-        });
-        download(toBlobCsv(headers, rows), `sales_comp_${sel}.csv`);
+        if (exportShape === "summary") {
+          const dataLY = ctx.salesCompLY.filter((s) => sel === "all" || isSelected(s.product_code));
+          const upcCodes = [...new Set(data.map((s) => s.product_code))];
+          const stats = computeUpcSalesCompStats(upcCodes, data, dataLY, ctx.endDate);
+          const headers = ["UPC", "Description", "TY Total", "LY Total", "vs LY %", "WoW %", "Peak Day", "Peak Shifted vs LY"];
+          const rows = stats.map((s) => [
+            s.code,
+            s.desc,
+            String(Math.round(s.periodTotal)),
+            s.hasLY ? String(Math.round(s.lyPeriodTotal)) : "",
+            s.vsLYPct === null ? "" : s.vsLYPct.toFixed(1),
+            s.wowPct === null ? "" : s.wowPct.toFixed(1),
+            DAY_SHORT[s.peakIdx],
+            s.hasLY ? (s.peakShifted ? "Yes" : "No") : "",
+          ]);
+          download(toBlobCsv(headers, rows), `sales_comp_summary_${sel}.csv`);
+        } else {
+          const headers = ["UPC", "Description", "Week", ...DAYS.map((d) => d.slice(0, 3)), "Total"];
+          const rows = data.map((s) => {
+            const total = DAYS.reduce((acc, d) => acc + (s[d] ?? 0), 0);
+            return [s.product_code, s.description, s.week, ...DAYS.map((d) => String(s[d] ?? 0)), String(total)];
+          });
+          download(toBlobCsv(headers, rows), `sales_comp_detail_${sel}.csv`);
+        }
         break;
       }
       case "forecast": {
@@ -139,18 +163,40 @@ const UpcExportModal = ({ onClose }: Props) => {
         {/* header */}
         <div className="bg-[#1e2a4a] px-5 py-3 flex items-center justify-between">
           <div>
-            <div className="text-[13px] font-semibold text-white">Export CSV</div>
-            <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.50)" }}>
+            <div className="text-[13px] font-semibold text-custom-white">Export CSV</div>
+            <div className="text-[10px] mt-0.5" style={{ color: "rgb(var(--color-custom-white) / 0.50)" }}>
               {TAB_LABELS[ctx.activeTab]}
             </div>
           </div>
-          <button onClick={onClose} className="text-white/60 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-custom-white/60 hover:text-custom-white transition-colors">
             <XMarkIcon className="h-4 w-4" />
           </button>
         </div>
 
         <div className="p-5 flex flex-col gap-4">
-          {/* presets */}
+          {/* shape — sales comp only: what the rows represent */}
+          {ctx.activeTab === "salesComp" && (
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-content/50 mb-2">
+                Export shape
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {SHAPES.map((s) => (
+                  <label key={s.id} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={exportShape === s.id}
+                      onChange={() => setExportShape(s.id)}
+                      className="accent-[#1e2a4a]"
+                    />
+                    <span className="text-[11px] text-content/80">{s.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* presets — scope: which UPCs */}
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-wide text-content/50 mb-2">
               Export type
@@ -178,7 +224,7 @@ const UpcExportModal = ({ onClose }: Props) => {
 
           <button
             onClick={handleExport}
-            className="w-full py-2.5 rounded-lg text-[12px] font-semibold text-white flex items-center justify-center gap-2 transition-opacity"
+            className="w-full py-2.5 rounded-lg text-[12px] font-semibold text-custom-white flex items-center justify-center gap-2 transition-opacity"
             style={{ background: "#1e2a4a" }}
           >
             <ArrowDownTrayIcon className="h-3.5 w-3.5" />

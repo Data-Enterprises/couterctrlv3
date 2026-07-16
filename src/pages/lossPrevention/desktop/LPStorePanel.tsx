@@ -4,8 +4,8 @@ import { formatCurrency2, formatBigNumber, getStoreName } from "../../../utils";
 import { useAppSelector } from "../../../hooks";
 import type { CashierDetails } from "../../../interfaces";
 import type { Severity, SevFilter } from "../../../utils/severity";
-import { severityDotClass, formatPct } from "../../../utils/severity";
-import { isNoDollarType, storeSeverity, directionalPillClass } from "../gradingUtils";
+import { severityDotClass } from "../../../utils/severity";
+import { isNoDollarType, storeSeverity, directionalPillClass, weekRangeLabel } from "../gradingUtils";
 import TextFilter from "../../../components/filters/TextFilter";
 
 const SEV_RANK: Record<Severity, number> = { critical: 0, watch: 1, healthy: 2 };
@@ -30,11 +30,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
     selectedStoreId,
   } = cashier;
 
-  const fmtRangePart = (mdy: string, withYear = false) => {
-    const [m, d, y] = mdy.split("/");
-    return withYear ? `${+m}/${+d}/${y}` : `${+m}/${+d}`;
-  };
-  const dateLabel = `${fmtRangePart(search.startDate)} – ${fmtRangePart(search.endDate, true)}`;
+  const dateLabel = weekRangeLabel(search.singleDate);
 
   const totalSales  = cashierDetails.reduce((acc, d) => acc + Math.abs(d.amount), 0);
   const totalTrans  = cashierDetails.reduce((acc, d) => acc + d.transaction_count, 0);
@@ -117,7 +113,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
               </div>
               <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
               <div className="flex items-baseline gap-1 flex-shrink-0">
-                <span className="text-[10px] uppercase tracking-wide text-custom-white/45">Items</span>
+                <span className="text-[10px] uppercase tracking-wide text-custom-white/45">Qty</span>
                 <span className="text-[13px] font-medium text-custom-white">{formatBigNumber(totalItems, 0)}</span>
               </div>
             </>
@@ -246,14 +242,6 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
                 Store
               </span>
               <div className="flex items-center gap-[14px]">
-                {hasAmount && (
-                  <span
-                    className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 pl-2.5 text-center"
-                    style={{ width: 64 }}
-                  >
-                    Total
-                  </span>
-                )}
                 <span
                   className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
                   style={{ width: 58 }}
@@ -264,8 +252,16 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
                   className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
                   style={{ width: 58 }}
                 >
-                  Items
+                  Qty
                 </span>
+                {hasAmount && (
+                  <span
+                    className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 pl-2.5 text-center"
+                    style={{ width: 64 }}
+                  >
+                    Total $
+                  </span>
+                )}
                 {hasAmount && (
                   <span
                     className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
@@ -300,6 +296,22 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
                         {name}
                       </span>
                       <div className="flex items-center gap-[14px]">
+                        <span
+                          className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
+                            transPct === null ? "bg-gray-100 text-gray-400" : directionalPillClass(transPct)
+                          }`}
+                          style={{ width: 58 }}
+                        >
+                          {formatBigNumber(detail.transaction_count, 0)}
+                        </span>
+                        <span
+                          className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
+                            itemsPct === null ? "bg-gray-100 text-gray-400" : directionalPillClass(itemsPct)
+                          }`}
+                          style={{ width: 58 }}
+                        >
+                          {formatBigNumber(detail.total_items, 0)}
+                        </span>
                         {hasAmount && (
                           <span
                             className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
@@ -310,22 +322,6 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
                             {formatCurrency2(Math.abs(detail.amount))}
                           </span>
                         )}
-                        <span
-                          className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
-                            transPct === null ? "bg-gray-100 text-gray-400" : directionalPillClass(transPct)
-                          }`}
-                          style={{ width: 58 }}
-                        >
-                          {transPct === null ? "—" : formatPct(transPct)}
-                        </span>
-                        <span
-                          className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
-                            itemsPct === null ? "bg-gray-100 text-gray-400" : directionalPillClass(itemsPct)
-                          }`}
-                          style={{ width: 58 }}
-                        >
-                          {itemsPct === null ? "—" : formatPct(itemsPct)}
-                        </span>
                         {hasAmount && (
                           <span
                             className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
@@ -333,7 +329,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
                             }`}
                             style={{ width: 58 }}
                           >
-                            {avgPct === null ? "—" : formatPct(avgPct)}
+                            {formatCurrency2(Math.abs(detail.average_dollars))}
                           </span>
                         )}
                       </div>

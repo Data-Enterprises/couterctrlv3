@@ -461,7 +461,7 @@ const SalesMobile = () => {
   const activeStyle = (dbOption: DashboardOption) => {
     return ctx.dashboardOption === dbOption
       ? "text-orange-500"
-      : "text-content/60";
+      : "text-content/85";
   };
 
   const handleDashboardSelect = (option: DashboardOption) => {

@@ -108,7 +108,11 @@ const SalesBar = ({ barData }: SalesBarProps) => {
                 <text
                   textAnchor={"middle"}
                   transform={`translate(${textX},${textY + 2})`}
-                  style={{ fontSize: 10.5, fontWeight: "bolder", fontFamily: "Arial" }}
+                  style={{
+                    fontSize: 10.5,
+                    fontWeight: "bolder",
+                    fontFamily: "Arial",
+                  }}
                 >
                   <tspan x={0} dy={0}>
                     {dow}
@@ -126,7 +130,7 @@ const SalesBar = ({ barData }: SalesBarProps) => {
         tooltip={({ value, data }) => {
           const dow = new Date(data.date).toDateString().split(" ")[0];
           return (
-            <div className="p-2 bg-white shadow-lg rounded text-sm text-nowrap">
+            <div className="p-2 bg-custom-white shadow-lg rounded text-sm text-nowrap">
               <strong>
                 {dow} {formatCurrency2(value)}
               </strong>

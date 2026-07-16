@@ -17,16 +17,21 @@ import {
   type UniqueSub,
 } from "../../../features/ordersSlice";
 import type { AllOrderResp, AvailableOrderResp, JsonError, Store } from "../../../interfaces";
-import { getCogs, getERet, ordersCols } from "..";
+import { getCogs, getERet } from "..";
 import { formatGoliathDate } from "../../../utils";
 import SearchCard from "../../../components/SearchCard";
-import ExportModal from "../../../components/modals/ExportModal";
 import BottomSheet from "../../../components/BottomSheet";
 import OrdersAvailableScreen from "./OrdersAvailableScreen";
 import OrdersListScreen from "./OrdersListScreen";
 import OrdersLineItemsScreen from "./OrdersLineItemsScreen";
+import OrdersExportSheet from "./OrdersExportSheet";
 
 type MobileStep = "available" | "list";
+
+const fmtExportDate = (iso: string) => {
+  const [y, m, d] = iso.split("T")[0].split("-");
+  return `${m}/${d}/${y}`;
+};
 
 const OrdersMobile = () => {
   const ctx = useOrdersCtx();
@@ -112,13 +117,13 @@ const OrdersMobile = () => {
       .finally(() => ctx.dispatch(setLoadingAvailableOrders(false)));
   };
 
-  const handleSelectStore = (order_date: string, order_type: string, storeid: number) => {
-    ctx.dispatch(setSelectedOrderKey({ order_date, order_date_end: order_date, order_type, storeids: [storeid] }));
+  const fetchOrderDetails = (start_date: string, end_date: string, order_type: string, storeids: number[]) => {
+    ctx.dispatch(setSelectedOrderKey({ order_date: start_date, order_date_end: end_date, order_type, storeids }));
     ctx.dispatch(setSelectedOrder(null));
     ctx.dispatch(setAllOrders([]));
 
     ctx.dispatch(setLoadingAllOrders(true));
-    getAllOrders(ctx.url, ctx.token, order_date, order_date, [storeid])
+    getAllOrders(ctx.url, ctx.token, start_date, end_date, storeids)
       .then((resp) => {
         const j: AllOrderResp = resp.data;
         if (j.error === 0) {
@@ -151,7 +156,7 @@ const OrdersMobile = () => {
           const filtered = ordersWERet.filter((o) => o.order_type === order_type);
           const ids = Array.from(new Set(filtered.map((o) => o.order_id)));
           if (ids.length === 1) {
-            ctx.dispatch(setSelectedOrder({ storeid, orderId: ids[0] }));
+            ctx.dispatch(setSelectedOrder({ storeid: storeids[0], orderId: ids[0] }));
             setSheetOpen(true);
           } else {
             setStep("list");
@@ -162,12 +167,28 @@ const OrdersMobile = () => {
       .finally(() => ctx.dispatch(setLoadingAllOrders(false)));
   };
 
+  const handleSelectStore = (order_date: string, order_type: string, storeid: number) => {
+    fetchOrderDetails(order_date, order_date, order_type, [storeid]);
+  };
+
+  // No date filter selected → span the whole search range instead of one day.
+  const handleSelectAllStores = (order_date: string, order_type: string, storeids: number[]) => {
+    if (order_date) {
+      fetchOrderDetails(order_date, order_date, order_type, storeids);
+    } else {
+      fetchOrderDetails(formatGoliathDate(ctx.startDate), formatGoliathDate(ctx.endDate), order_type, storeids);
+    }
+  };
+
   const handleSelectOrderId = (id: number | null) => {
     if (id === null) {
       ctx.dispatch(setSelectedOrder(null));
       return;
     }
-    const storeid = ctx.selectedOrderKey?.storeids[0];
+    // Look the storeid up from the order itself rather than assuming
+    // storeids[0] — with "select all stores", an order can belong to any
+    // store in the selection, not just the first one.
+    const storeid = ctx.allOrders.find((o) => o.order_id === id)?.storeid ?? ctx.selectedOrderKey?.storeids[0];
     if (storeid !== undefined) {
       ctx.dispatch(setSelectedOrder({ storeid, orderId: id }));
       setSheetOpen(true);
@@ -185,18 +206,40 @@ const OrdersMobile = () => {
     setStep("available");
   };
 
+  // ── Export sheet data — mirrors desktop's OrderReportPanel.tsx computations ──
+  const storeNames = ctx.selectedOrderKey
+    ? ctx.selectedOrderKey.storeids.map(
+        (id) => ctx.assignedStores.find((s) => s.storeid === id)?.store_name ?? `Store ${id}`,
+      )
+    : [];
+
+  const exportDateLabel = ctx.selectedOrderKey
+    ? ctx.selectedOrderKey.order_date === ctx.selectedOrderKey.order_date_end
+      ? fmtExportDate(ctx.selectedOrderKey.order_date)
+      : `${fmtExportDate(ctx.selectedOrderKey.order_date)} – ${fmtExportDate(ctx.selectedOrderKey.order_date_end)}`
+    : "";
+
+  const filteredOrders = ctx.selectedOrderKey
+    ? ctx.allOrders.filter((o) => o.order_type === ctx.selectedOrderKey!.order_type)
+    : ctx.allOrders;
+
+  const selectedOrderItems = ctx.selectedOrder !== null
+    ? filteredOrders.filter((o) => o.order_id === ctx.selectedOrder!.orderId && o.storeid === ctx.selectedOrder!.storeid)
+    : [];
+
   return (
     <div className="h-[calc(100dvh-3rem)] overflow-hidden flex flex-col bg-custom-white">
-      <ExportModal
-        isOpen={ctx.ordersExportModalOpen}
-        data={
-          ctx.selectedOrder !== null
-            ? ctx.allOrders.filter((o) => o.order_id === ctx.selectedOrder!.orderId && o.storeid === ctx.selectedOrder!.storeid)
-            : []
-        }
-        columns={ordersCols}
-        onClose={() => ctx.dispatch(setOrdersExportModalOpen(false))}
-      />
+      {ctx.ordersExportModalOpen && ctx.selectedOrderKey && (
+        <OrdersExportSheet
+          onClose={() => ctx.dispatch(setOrdersExportModalOpen(false))}
+          storeNames={storeNames}
+          orderType={ctx.selectedOrderKey.order_type}
+          dateLabel={exportDateLabel}
+          allOrders={filteredOrders}
+          selectedOrderItems={selectedOrderItems}
+          selectedOrder={ctx.selectedOrder}
+        />
+      )}
 
       {!hasData && !ctx.loadingAvailableOrders && (
         <SearchCard
@@ -220,6 +263,7 @@ const OrdersMobile = () => {
               startDate={ctx.startDate}
               endDate={ctx.endDate}
               onSelectStore={handleSelectStore}
+              onSelectAllStores={handleSelectAllStores}
               onOpenSearch={handleReset}
             />
           )}
@@ -232,6 +276,7 @@ const OrdersMobile = () => {
               assignedStores={ctx.assignedStores}
               onBack={() => setStep("available")}
               onSelectOrderId={handleSelectOrderId}
+              onExport={() => ctx.dispatch(setOrdersExportModalOpen(true))}
             />
           )}
         </div>
@@ -243,6 +288,7 @@ const OrdersMobile = () => {
             orders={ctx.allOrders}
             selectedKey={ctx.selectedOrderKey}
             selectedOrderId={ctx.selectedOrder.orderId}
+            selectedStoreId={ctx.selectedOrder.storeid}
             assignedStores={ctx.assignedStores}
             onExport={() => ctx.dispatch(setOrdersExportModalOpen(true))}
           />

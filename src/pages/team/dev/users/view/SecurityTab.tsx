@@ -28,7 +28,9 @@ const SecurityTab = () => {
           toast.warn("Error setting temporary password: " + j.msg);
         }
       })
-      .catch((err: JsonError) => toast.error("Error setting temp password: " + err.message));
+      .catch((err: JsonError) =>
+        toast.error("Error setting temp password: " + err.message),
+      );
   };
 
   const resetSecurity = () => {
@@ -36,12 +38,16 @@ const SecurityTab = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          toast.success("User will be prompted to reset security question at next login");
+          toast.success(
+            "User will be prompted to reset security question at next login",
+          );
         } else {
           toast.warn("Error resetting security question: " + j.msg);
         }
       })
-      .catch((err: JsonError) => toast.error("Error resetting security question: " + err.message));
+      .catch((err: JsonError) =>
+        toast.error("Error resetting security question: " + err.message),
+      );
   };
 
   return (
@@ -49,12 +55,23 @@ const SecurityTab = () => {
       <div className="p-2.5 bg-gray-50 rounded-lg mb-4">
         <ul className="text-[11px] text-content/70 list-disc pl-4 space-y-0.5">
           <li>The temporary password must be confirmed before submitting</li>
-          <li>Reset security prompts the user to reset their security question upon next login</li>
+          <li>
+            Reset security prompts the user to reset their security question
+            upon next login
+          </li>
         </ul>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-4">
-        <PasswordInput label="Password" name="password" text={pw} setText={setPw} leftCompare={pw} rightCompare={confirmPw} className="py-1.5" />
+        <PasswordInput
+          label="Password"
+          name="password"
+          text={pw}
+          setText={setPw}
+          leftCompare={pw}
+          rightCompare={confirmPw}
+          className="py-1.5"
+        />
         <PasswordInput
           label="Confirm password"
           name="confirm_password"
@@ -70,11 +87,14 @@ const SecurityTab = () => {
         <button
           onClick={resetPassword}
           disabled={!canResetPW}
-          className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-white ${canResetPW ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85" : "bg-gray-300 cursor-not-allowed"}`}
+          className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white ${canResetPW ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85" : "bg-gray-300 cursor-not-allowed"}`}
         >
           Reset password
         </button>
-        <button onClick={resetSecurity} className="text-[12px] font-medium px-4 py-1.5 rounded-md bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 text-white">
+        <button
+          onClick={resetSecurity}
+          className="text-[12px] font-medium px-4 py-1.5 rounded-md bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 text-custom-white"
+        >
           Reset security
         </button>
       </div>

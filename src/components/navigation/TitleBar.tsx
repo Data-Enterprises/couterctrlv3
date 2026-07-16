@@ -99,7 +99,7 @@ const NavSheet = ({
       <div className="absolute inset-0 bg-black/25" onClick={slideDown} />
       <div
         ref={sheetRef}
-        className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl"
+        className="absolute bottom-0 left-0 right-0 bg-custom-white rounded-t-2xl"
         style={{ boxShadow: "0 -4px 24px rgba(0,0,0,0.12)" }}
       >
         <div
@@ -233,14 +233,14 @@ const TitleBar = () => {
     <div className="relative flex items-stretch">
       <button
         onClick={() => setAvatarOpen((o) => !o)}
-        className={`flex items-center gap-2 px-3 hover:bg-white/8 transition-colors h-full ${context.isDesktop ? "border-l border-white/10" : ""}`}
+        className={`flex items-center gap-2 px-3 hover:bg-custom-white/8 transition-colors h-full ${context.isDesktop ? "border-l border-white/10" : ""}`}
       >
-        <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center text-white text-[11px] font-semibold flex-shrink-0">
+        <div className="w-7 h-7 rounded-full bg-custom-white/15 flex items-center justify-center text-custom-white text-[11px] font-semibold flex-shrink-0">
           {(user.firstName?.[0] ?? "").toUpperCase()}
           {(user.lastName?.[0] ?? "").toUpperCase()}
         </div>
         <ChevronDownIcon
-          className={`h-3.5 w-3.5 text-white/50 transition-transform duration-200 ${avatarOpen ? "rotate-180" : ""}`}
+          className={`h-3.5 w-3.5 text-custom-white/50 transition-transform duration-200 ${avatarOpen ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -251,7 +251,7 @@ const TitleBar = () => {
             onClick={() => setAvatarOpen(false)}
           />
           <div
-            className="absolute right-0 top-full mt-1 z-50 w-52 bg-white border border-gray-200 rounded-md overflow-hidden"
+            className="absolute right-0 top-full mt-1 z-50 w-52 bg-custom-white border border-gray-200 rounded-md overflow-hidden"
             style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
           >
             <div className="px-4 py-3 border-b border-gray-100">
@@ -285,13 +285,13 @@ const TitleBar = () => {
       {/* Title bar */}
       <div
         data-testid="title-bar"
-        className="h-12 w-full flex items-stretch bg-[#1e2a4a] text-white select-none relative z-50"
+        className="h-12 w-full flex items-stretch bg-[#1e2a4a] text-custom-white select-none relative z-50"
       >
         {/* Logo + page title */}
         <div
           className={`flex items-center gap-2.5 px-3 flex-shrink-0 min-w-[173px] ${context.isDesktop ? "border-r border-white/10" : ""}`}
         >
-          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-custom-white rounded-lg flex items-center justify-center flex-shrink-0">
             <img
               src={logo}
               alt="Logo"
@@ -299,11 +299,11 @@ const TitleBar = () => {
             />
           </div>
           <div className="flex flex-col justify-center leading-none">
-            <span className="text-[13px] font-medium text-white">
+            <span className="text-[13px] font-medium text-custom-white">
               {activePage?.name ?? "CounterCtrl"}
             </span>
             {activePage && (
-              <span className="text-[9px] text-white/70 mt-0.5">
+              <span className="text-[9px] text-custom-white/70 mt-0.5">
                 CounterCtrl
               </span>
             )}
@@ -329,8 +329,8 @@ const TitleBar = () => {
                   <button
                     className={`flex items-center gap-1.5 px-3 text-[12px] font-medium transition-colors rounded-md my-1.5 ${
                       isActive
-                        ? "bg-white/12 text-white"
-                        : "text-white/55 hover:text-white hover:bg-white/8"
+                        ? "bg-custom-white/12 text-custom-white"
+                        : "text-custom-white/55 hover:text-custom-white hover:bg-custom-white/8"
                     }`}
                   >
                     <cat.icon className="h-3.5 w-3.5" />
@@ -349,7 +349,7 @@ const TitleBar = () => {
                     style={{ minWidth: 170 }}
                   >
                     <div
-                      className="mt-1 bg-white border border-gray-200 rounded-md overflow-hidden"
+                      className="mt-1 bg-custom-white border border-gray-200 rounded-md overflow-hidden"
                       style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
                     >
                       {visiblePages.map((page) => (
@@ -392,12 +392,12 @@ const TitleBar = () => {
               title={context.devMode ? "Switch to LIVE" : "Switch to PREVIEW"}
             >
               <span
-                className={`px-2.5 py-1 transition-colors ${!context.devMode ? "bg-white text-[#1e2a4a]" : "text-white/40"}`}
+                className={`px-2.5 py-1 transition-colors ${!context.devMode ? "bg-custom-white text-[#1e2a4a]" : "text-custom-white/40"}`}
               >
                 LIVE
               </span>
               <span
-                className={`px-2.5 py-1 transition-colors ${context.devMode ? "bg-emerald-500 text-white" : "text-white/40"}`}
+                className={`px-2.5 py-1 transition-colors ${context.devMode ? "bg-emerald-500 text-custom-white" : "text-custom-white/40"}`}
               >
                 PREVIEW
               </span>
@@ -436,7 +436,7 @@ const TitleBar = () => {
 
           {/* Bottom tab bar */}
           <div
-            className="fixed left-0 right-0 bottom-0 z-50 bg-white border-t border-gray-200 flex"
+            className="fixed left-0 right-0 bottom-0 z-50 bg-custom-white border-t border-gray-200 flex"
             style={{ height: 56 }}
           >
             {visibleCategories.map((cat) => {

@@ -32,23 +32,23 @@ const MarginDayCardOverview = ({ margin }: MarginDayCardOverviewProps) => {
       </div>
       <div className="grid grid-cols-[1.2fr_0.9fr_0.9fr_1.2fr_0.8fr] gap-x-2">
         <div>
-          <div className="text-content/60">Sales</div>
+          <div className="text-content/85">Sales</div>
           <div className="font-medium">{formatCurrency2(margin.sales)}</div>
         </div>
         <div>
-          <div className="text-content/60">Qty</div>
+          <div className="text-content/85">Qty</div>
           <div className="font-medium">{formatBigNumber(margin.qty, 0)}</div>
         </div>
         <div>
-          <div className="text-content/60">Tax</div>
+          <div className="text-content/85">Tax</div>
           <div className="font-medium">{formatCurrency2(margin.tax)}</div>
         </div>
         <div>
-          <div className="text-content/60">COGS</div>
+          <div className="text-content/85">COGS</div>
           <div className="font-medium">{formatCurrency2(margin.cogs)}</div>
         </div>
         <div>
-          <div className="text-content/60">GPM</div>
+          <div className="text-content/85">GPM</div>
           <div className="font-medium">{margin.gpm}</div>
         </div>
       </div>

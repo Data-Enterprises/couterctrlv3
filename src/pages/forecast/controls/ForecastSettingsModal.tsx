@@ -8,7 +8,11 @@ interface ForecastSettingsModalProps extends WizardProps {
   onClose: () => void;
 }
 
-const ForecastSettingsModal = ({ isOpen, onClose, ...wizardProps }: ForecastSettingsModalProps) => {
+const ForecastSettingsModal = ({
+  isOpen,
+  onClose,
+  ...wizardProps
+}: ForecastSettingsModalProps) => {
   const { initialRowData, isLoading } = useAppSelector((s) => s.forecast);
 
   // Close the modal once a new search completes successfully
@@ -25,11 +29,11 @@ const ForecastSettingsModal = ({ isOpen, onClose, ...wizardProps }: ForecastSett
       modalClassName="bg-custom-white w-[65%] max-w-3xl"
     >
       <div className="bg-custom-white rounded-xl overflow-hidden">
-        <div className="bg-blue-500 text-white text-[13px] font-medium px-4 py-2 flex items-center justify-between">
+        <div className="bg-blue-500 text-custom-white text-[13px] font-medium px-4 py-2 flex items-center justify-between">
           <span>Forecast Settings</span>
           <button
             onClick={onClose}
-            className="text-white/70 hover:text-white text-lg leading-none"
+            className="text-custom-white/70 hover:text-custom-white text-lg leading-none"
           >
             ×
           </button>

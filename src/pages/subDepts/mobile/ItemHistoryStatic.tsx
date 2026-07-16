@@ -234,15 +234,15 @@ const ItemHistoryStatic = ({ showClose = true }: ItemHistoryStaticProps) => {
           <div className="font-medium text-[14px]">Totals Summary</div>
           <div className="grid grid-cols-3  w-[75%]">
             <div>
-              <div className="font-medium text-content/60">Total Sales:</div>
+              <div className="font-medium text-content/85">Total Sales:</div>
               <div className="">{formatCurrency2(totalSales)}</div>
             </div>
             <div>
-              <div className="font-medium text-content/60">Total Qty:</div>
+              <div className="font-medium text-content/85">Total Qty:</div>
               <div className="">{formatBigNumber(totalQty, 0)}</div>
             </div>
             <div>
-              <div className="font-medium text-content/60">Ext Cost:</div>
+              <div className="font-medium text-content/85">Ext Cost:</div>
               <div className="">{formatCurrency2(totalExtendedCost)}</div>
             </div>
           </div>
@@ -253,27 +253,27 @@ const ItemHistoryStatic = ({ showClose = true }: ItemHistoryStaticProps) => {
           <div className="font-medium text-[14px]">Sales</div>
           <div className="grid grid-cols-3  w-[75%]">
             <div>
-              <div className="font-medium text-content/60">Min Sales:</div>
+              <div className="font-medium text-content/85">Min Sales:</div>
               <div className="">{formatCurrency2(minSales)}</div>
             </div>
             <div>
-              <div className="font-medium text-content/60">Max Sales:</div>
+              <div className="font-medium text-content/85">Max Sales:</div>
               <div className="">{formatCurrency2(maxSales)}</div>
             </div>
             <div>
-              <div className="font-medium text-content/60">Sales Range:</div>
+              <div className="font-medium text-content/85">Sales Range:</div>
               <div className="">{formatCurrency2(maxSales - minSales)}</div>
             </div>
             <div className="">
-              <div className="font-medium text-content/60">Median</div>
+              <div className="font-medium text-content/85">Median</div>
               <div className="">{formatCurrency2(salesMedian)}</div>
             </div>
             <div className="">
-              <div className="font-medium text-content/60">Average</div>
+              <div className="font-medium text-content/85">Average</div>
               <div className="">{formatCurrency2(salesAvg)}</div>
             </div>
             <div className="">
-              <div className="font-medium text-content/60">Most Freq.</div>
+              <div className="font-medium text-content/85">Most Freq.</div>
               <div className="">{formatCurrency2(salesMode)}</div>
             </div>
           </div>
@@ -283,27 +283,27 @@ const ItemHistoryStatic = ({ showClose = true }: ItemHistoryStaticProps) => {
         <div className="font-medium text-[14px]">Quantities</div>
         <div className="grid grid-cols-3  w-[75%] mb-1 pb-1">
           <div>
-            <div className="font-medium text-content/60">Min Qty:</div>
+            <div className="font-medium text-content/85">Min Qty:</div>
             <div className="">{formatBigNumber(minQty, 0)}</div>
           </div>
           <div>
-            <div className="font-medium text-content/60">Max Qty:</div>
+            <div className="font-medium text-content/85">Max Qty:</div>
             <div className="">{formatBigNumber(maxQty, 0)}</div>
           </div>
           <div>
-            <div className="font-medium text-content/60">Qty Range:</div>
+            <div className="font-medium text-content/85">Qty Range:</div>
             <div className="">{formatBigNumber(maxQty - minQty, 0)}</div>
           </div>
           <div className="">
-            <div className="font-medium text-content/60">Median</div>
+            <div className="font-medium text-content/85">Median</div>
             <div className="">{formatBigNumber(qtyMedian, 0)}</div>
           </div>
           <div className="">
-            <div className="font-medium text-content/60">Average</div>
+            <div className="font-medium text-content/85">Average</div>
             <div className="">{formatBigNumber(qtyAvg, 2)}</div>
           </div>
           <div className="">
-            <div className="font-medium text-content/60">Most Freq.</div>
+            <div className="font-medium text-content/85">Most Freq.</div>
             <div className="">{formatBigNumber(qtyMode, 0)}</div>
           </div>
         </div>
@@ -313,7 +313,7 @@ const ItemHistoryStatic = ({ showClose = true }: ItemHistoryStaticProps) => {
           <div className="font-medium text-[14px]">
             Prices - {groupedByPrice.length}
           </div>
-          <div className="grid grid-cols-5  text-content/60 font-medium">
+          <div className="grid grid-cols-5  text-content/85 font-medium">
             <div>Price</div>
             <div>Sales</div>
             <div>Qty</div>
@@ -338,7 +338,7 @@ const ItemHistoryStatic = ({ showClose = true }: ItemHistoryStaticProps) => {
           <div className="font-medium text-[14px]">
             Case Costs - {groupedByCost.length}
           </div>
-          <div className="grid grid-cols-5  text-content/60 font-medium">
+          <div className="grid grid-cols-5  text-content/85 font-medium">
             <div>Cost</div>
             <div>Sales</div>
             <div>Qty</div>
@@ -363,7 +363,7 @@ const ItemHistoryStatic = ({ showClose = true }: ItemHistoryStaticProps) => {
           <div className="font-medium text-[14px]">
             Unique Qty - {groupedByQty.length}
           </div>
-          <div className="grid grid-cols-5  text-content/60 font-medium">
+          <div className="grid grid-cols-5  text-content/85 font-medium">
             <div>Qty</div>
             <div>Sales</div>
             <div>Price</div>

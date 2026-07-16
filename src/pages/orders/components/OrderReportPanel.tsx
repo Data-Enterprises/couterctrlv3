@@ -168,7 +168,7 @@ const DescCell = ({ text }: { text: string }) => {
       </div>
       {hovered && (
         <div className="absolute left-0 top-full mt-1 z-50 bg-[#1e2a4a] rounded-lg shadow-lg px-2.5 py-1.5 whitespace-nowrap pointer-events-none">
-          <span className="text-[9px] text-white">{text}</span>
+          <span className="text-[9px] text-custom-white">{text}</span>
         </div>
       )}
     </div>
@@ -232,7 +232,7 @@ const StoreLabel = ({ names }: { names: string[] }) => {
       {hovered && (
         <div className="absolute left-0 top-full mt-1 z-50 bg-[#1e2a4a] rounded-lg shadow-lg px-2.5 py-1.5 flex flex-col gap-0.5 whitespace-nowrap">
           {names.map((n) => (
-            <span key={n} className="text-[9px] text-white leading-relaxed">
+            <span key={n} className="text-[9px] text-custom-white leading-relaxed">
               {n}
             </span>
           ))}
@@ -384,15 +384,15 @@ const OrderReportPanel = ({
         <div className="flex items-end gap-3 min-h-[26px]">
           {selectedKey ? (
             <>
-              <span className="text-white font-medium text-[13px] flex-shrink-0">
+              <span className="text-custom-white font-medium text-[13px] flex-shrink-0">
                 <StoreLabel names={storeNames} /> — {selectedKey.order_type}
               </span>
-              <span className="text-white text-[10px] flex-shrink-0">
+              <span className="text-custom-white text-[10px] flex-shrink-0">
                 {dateLabel}
               </span>
             </>
           ) : (
-            <span className="text-white font-medium text-[13px]">
+            <span className="text-custom-white font-medium text-[13px]">
               Order Report
             </span>
           )}
@@ -401,7 +401,7 @@ const OrderReportPanel = ({
             <button
               onClick={() => setExportOpen(true)}
               title="Export CSV"
-              className="text-white/60 hover:text-white transition-colors flex-shrink-0"
+              className="text-custom-white/60 hover:text-custom-white transition-colors flex-shrink-0"
             >
               <ArrowDownTrayIcon className="w-4 h-4" />
             </button>
@@ -479,7 +479,7 @@ const OrderReportPanel = ({
                       key={`${storeid}-${orderId}`}
                       onClick={() => onSelectOrder(storeid, orderId)}
                       className={`w-full flex flex-col gap-2 rounded-lg border border-[#1e2a4a]/20 p-2 text-left transition-colors ${
-                        isSel ? "bg-white" : "bg-custom-white hover:bg-gray-50"
+                        isSel ? "bg-custom-white" : "bg-custom-white hover:bg-gray-50"
                       }`}
                       style={
                         isSel
@@ -587,7 +587,10 @@ const OrderReportPanel = ({
                         <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content">
                           #
                         </th>
-                        <th className="text-left px-3 py-2">
+                        <th
+                          className="text-left px-3 py-2"
+                          style={{ width: "6%" }}
+                        >
                           <ColFilter
                             label="UPC"
                             active={!!appliedUpc}
@@ -609,7 +612,7 @@ const OrderReportPanel = ({
                         </th>
                         <th
                           className="text-left px-3 py-2"
-                          style={{ width: "18%" }}
+                          style={{ width: "26%" }}
                         >
                           <ColFilter
                             label="Description"
@@ -632,7 +635,7 @@ const OrderReportPanel = ({
                         </th>
                         <th
                           className="text-left px-3 py-2 whitespace-nowrap"
-                          style={{ width: "11.4%" }}
+                          style={{ width: "8.4%" }}
                         >
                           <ColFilter
                             label="Sub dept"
@@ -673,39 +676,39 @@ const OrderReportPanel = ({
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="bg-custom-white">
                       {visibleOrderItems.map((o) => (
                         <tr
                           key={`${o.storeid}-${o.line_number}`}
-                          className="hover:bg-gray-50 transition-colors"
+                          className="border-b border-b-[#1e2a4a]/15 hover:bg-gray-50 transition-colors"
                         >
-                          <td className="px-3 py-1.5 text-right tabular-nums text-content">
+                          <td className="px-3 py-2 text-right tabular-nums text-content">
                             {o.line_number}
                           </td>
-                          <td className="px-3 py-1.5 tabular-nums text-content whitespace-nowrap">
+                          <td className="px-3 py-2 tabular-nums text-content whitespace-nowrap">
                             {o.product_code}
                           </td>
-                          <td className="px-3 py-1.5 font-medium text-content max-w-0 cursor-default">
+                          <td className="px-3 py-2 font-medium text-content max-w-0 cursor-default">
                             <DescCell text={o.description} />
                           </td>
-                          <td className="px-3 py-1.5 text-content whitespace-nowrap">
+                          <td className="px-3 py-2 text-content whitespace-nowrap">
                             {o.sub_department_description}
                           </td>
-                          <td className="px-3 py-1.5 text-right tabular-nums text-content">
+                          <td className="px-3 py-2 text-right tabular-nums text-content">
                             {o.qty}
                           </td>
-                          <td className="px-3 py-1.5 text-right tabular-nums text-content">
+                          <td className="px-3 py-2 text-right tabular-nums text-content">
                             {o.casesize > 0
                               ? formatCurrency2(o.base_cost / o.casesize)
                               : "—"}
                           </td>
-                          <td className="px-3 py-1.5 text-right tabular-nums text-content">
+                          <td className="px-3 py-2 text-right tabular-nums text-content">
                             {formatCurrency2(o.cogs)}
                           </td>
-                          <td className="px-3 py-1.5 text-right tabular-nums text-content">
+                          <td className="px-3 py-2 text-right tabular-nums text-content">
                             {formatCurrency2(o.active_retail_price)}
                           </td>
-                          <td className="px-3 py-1.5 text-right tabular-nums font-semibold text-content">
+                          <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
                             {formatCurrency2(o.e_ret)}
                           </td>
                         </tr>
