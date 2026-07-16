@@ -809,7 +809,6 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
     ? (rawRows.find((r) => r.productCode === selectedUpc) ?? null)
     : null;
 
-    console.log(selectedItem)
   const selectedDetail = useMemo(
     () =>
       selectedUpc
