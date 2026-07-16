@@ -104,7 +104,7 @@ const CashierListMobile = ({ onBack, onSelectCashier }: Props) => {
         style={{ gridTemplateColumns: stdCols ? "repeat(4, 1fr)" : "repeat(2, 1fr)" }}
       >
         <KpiCell label="Trans"      value={detail ? detail.transaction_count.toLocaleString() : "—"}          pct={detail && trend ? trendPct(detail.transaction_count, trend.transaction_count) : undefined} baseline={trend ? trend.transaction_count.toLocaleString() : undefined} />
-        <KpiCell label="Items"      value={detail ? detail.total_items.toLocaleString() : "—"}                pct={detail && trend ? trendPct(detail.total_items, trend.total_items) : undefined} baseline={trend ? trend.total_items.toLocaleString() : undefined} />
+        <KpiCell label="Qty"        value={detail ? detail.total_items.toLocaleString() : "—"}                pct={detail && trend ? trendPct(detail.total_items, trend.total_items) : undefined} baseline={trend ? trend.total_items.toLocaleString() : undefined} />
         {stdCols && <KpiCell label="Total"      value={detail ? formatCurrency2(detail.amount) : "—"}          pct={detail && trend ? trendPct(detail.amount, trend.amount, true) : undefined} baseline={trend ? formatCurrency2(Math.abs(trend.amount)) : undefined} />}
         {stdCols && <KpiCell label="Avg ticket" value={detail ? formatCurrency2(detail.average_dollars) : "—"} pct={detail && trend ? trendPct(detail.average_dollars, trend.average_dollars, true) : undefined} baseline={trend ? formatCurrency2(Math.abs(trend.average_dollars)) : undefined} last />}
 
@@ -148,11 +148,11 @@ const CashierListMobile = ({ onBack, onSelectCashier }: Props) => {
           const metrics = noSale
             ? [
                 { label: "Trans", value: g.trans.value.toLocaleString(),               isPass: g.trans.isPass },
-                { label: "Items",   value: g.qty.value.toLocaleString(),                 isPass: g.qty.isPass },
+                { label: "Qty",     value: g.qty.value.toLocaleString(),                 isPass: g.qty.isPass },
               ]
             : [
                 { label: "Trans", value: g.trans.value.toLocaleString(),               isPass: g.trans.isPass },
-                { label: "Items",   value: g.qty.value.toLocaleString(),                 isPass: g.qty.isPass },
+                { label: "Qty",     value: g.qty.value.toLocaleString(),                 isPass: g.qty.isPass },
                 { label: "Total", value: formatCurrency2(Math.abs(g.sales.value)),     isPass: g.sales.isPass },
                 { label: "Avg $", value: formatCurrency2(Math.abs(g.avgTicket.value)), isPass: g.avgTicket.isPass },
               ];

@@ -14,7 +14,7 @@ import type {
 } from "../../../interfaces";
 import { formatCurrency2 } from "../../../utils";
 import BottomSheet from "../../../components/BottomSheet";
-import Transaction, { type TransactionHandle } from "../Transaction";
+import Transaction from "../Transaction";
 import TrendBadge from "./components/TrendBadge";
 // import SelectFilter from "../../../components/filters/SelectFilter";
 // import ThresholdFilter from "../../../components/filters/ThresholdFilter";
@@ -59,7 +59,6 @@ const TransactionsMobile = ({ onBack }: Props) => {
   const [sortCol, setSortCol] = useState<SortCol | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("none");
   const receiptCloseRef = useRef<(() => void) | null>(null);
-  const transactionRef = useRef<TransactionHandle>(null);
 
   const storeName =
     assignedStores.find((s) => s.storeid === lp.selectedStoreId)?.store_name ??
@@ -268,7 +267,7 @@ const TransactionsMobile = ({ onBack }: Props) => {
                 avg: Math.round(cashierGrade.trans.avg).toLocaleString(),
               },
               {
-                label: "Items",
+                label: "Qty",
                 value: cashierGrade.qty.value.toLocaleString(),
                 pct: cashierGrade.qty.pct,
                 avg: Math.round(cashierGrade.qty.avg).toLocaleString(),
@@ -306,7 +305,7 @@ const TransactionsMobile = ({ onBack }: Props) => {
                 <div className="text-[10px] text-content/85 mt-0.5">
                   vs {avg}
                 </div>
-                <TrendBadge pct={pct} suffix="avg" />
+                <TrendBadge pct={pct} />
               </div>
             ))}
           </div>
@@ -363,7 +362,7 @@ const TransactionsMobile = ({ onBack }: Props) => {
         </div>
         {(["date", "qty", "total"] as SortCol[]).map((col) => {
           const label =
-            col === "date" ? "Date" : col === "qty" ? "Items" : "Total";
+            col === "date" ? "Date" : col === "qty" ? "Qty" : "Total";
           const isActive = sortCol === col && sortDir !== "none";
           const arrow = isActive ? (sortDir === "desc" ? " ▼" : " ▲") : "";
           return (
@@ -443,23 +442,7 @@ const TransactionsMobile = ({ onBack }: Props) => {
                 No line items found.
               </div>
             ) : (
-              <>
-                <div className="flex-shrink-0 flex items-center justify-end gap-1.5 px-4 py-2 border-b border-gray-100 bg-custom-white">
-                  <button
-                    onClick={() => transactionRef.current?.email()}
-                    className="flex items-center gap-1 text-[10px] font-medium bg-[#1e2a4a] text-custom-white rounded px-2 py-1"
-                  >
-                    Email
-                  </button>
-                  <button
-                    onClick={() => transactionRef.current?.export()}
-                    className="flex items-center gap-1 text-[10px] font-medium bg-[#1e2a4a] text-custom-white rounded px-2 py-1"
-                  >
-                    CSV
-                  </button>
-                </div>
-                <Transaction ref={transactionRef} trans={receipt} />
-              </>
+              <Transaction trans={receipt} />
             )}
           </div>
         </BottomSheet>

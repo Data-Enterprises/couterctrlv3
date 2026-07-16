@@ -5,6 +5,7 @@ import {
 import { useAppSelector } from "../../../../hooks";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import UpcItemList from "./UpcItemList";
+import PriceOptStorePicker from "../modules/priceOpt/PriceOptStorePicker";
 
 interface Props {
   onReSearch: () => void;
@@ -71,6 +72,7 @@ const UpcLeftPanel = ({ onReSearch }: Props) => {
       </div>
 
       <div className="flex-1 bg-custom-white flex flex-col min-h-0 overflow-hidden">
+        {ctx.activeTab === "priceOpt" && ctx.searchType === "Group" && <PriceOptStorePicker />}
         <UpcItemList />
       </div>
     </div>

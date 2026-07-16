@@ -5,6 +5,7 @@ import {
   setDevTrendLoaded,
   setDevTrendLoading,
   setDevTrendMode,
+  setDevTrendPeriods,
   setDevUpcTrends,
   setDevTopFiveTrends,
   setDevBottomFiveTrends,
@@ -15,40 +16,45 @@ import { getTrendDetect } from "../../../../../api/upc";
 import type { UpcTrend, UpcItem } from "../../../../../interfaces";
 
 const MODES: UpcDevTrendMode[] = ["Totals", "Mean", "Volatility"];
+const WINDOW_OPTIONS = [30, 60, 90, 120, 180, 365];
 
 const TrendTab = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
 
+  const fetchTrends = async (periods: number) => {
+    dispatch(setDevTrendLoading(true));
+    const upcParam = ctx.upcs.join(",");
+    const upcItemsMap = new Map<string, UpcItem>();
+
+    const res = await getTrendDetect(ctx.url, ctx.token, ctx.storeids, ctx.startDate, ctx.endDate, periods, upcParam);
+    const j = res.data;
+    if (j.error === 0 && j.trends?.length > 0) {
+      dispatch(setDevUpcTrends(j.trends));
+      dispatch(setDevTopFiveTrends(j.top_5));
+      dispatch(setDevBottomFiveTrends(j.bottom_5));
+      for (const item of j.trends as UpcTrend[]) {
+        upcItemsMap.set(item.product_code, {
+          product_code: item.product_code,
+          description: item.product_description,
+        });
+      }
+    }
+
+    if (upcItemsMap.size) dispatch(setDevUpcItems(Array.from(upcItemsMap.values())));
+    dispatch(setDevTrendLoaded(true));
+    dispatch(setDevTrendLoading(false));
+  };
+
   useEffect(() => {
     if (ctx.trendLoaded || ctx.trendLoading || !ctx.upcs.length || !ctx.storeids) return;
-
-    const load = async () => {
-      dispatch(setDevTrendLoading(true));
-      const upcParam = ctx.upcs.join(",");
-      const upcItemsMap = new Map<string, UpcItem>();
-
-      const res = await getTrendDetect(ctx.url, ctx.token, ctx.storeids, ctx.startDate, ctx.endDate, ctx.trendPeriods, upcParam);
-      const j = res.data;
-      if (j.error === 0 && j.trends?.length > 0) {
-        dispatch(setDevUpcTrends(j.trends));
-        dispatch(setDevTopFiveTrends(j.top_5));
-        dispatch(setDevBottomFiveTrends(j.bottom_5));
-        for (const item of j.trends as UpcTrend[]) {
-          upcItemsMap.set(item.product_code, {
-            product_code: item.product_code,
-            description: item.product_description,
-          });
-        }
-      }
-
-      if (upcItemsMap.size) dispatch(setDevUpcItems(Array.from(upcItemsMap.values())));
-      dispatch(setDevTrendLoaded(true));
-      dispatch(setDevTrendLoading(false));
-    };
-
-    load();
+    fetchTrends(ctx.trendPeriods);
   }, []);
+
+  const handleWindowChange = (periods: number) => {
+    dispatch(setDevTrendPeriods(periods));
+    fetchTrends(periods);
+  };
 
   const filtered = useMemo(() => {
     const src = ctx.selectedUpcs.length > 0
@@ -94,20 +100,35 @@ const TrendTab = () => {
 
   return (
     <div className="flex flex-col min-h-0 flex-1">
-      <div className="flex items-center gap-1 px-3 py-2 border-b border-gray-100 flex-shrink-0">
-        {MODES.map((m) => (
-          <button
-            key={m}
-            onClick={() => dispatch(setDevTrendMode(m))}
-            className={`px-3 py-1 rounded text-[10px] font-medium transition-colors ${
-              ctx.trendMode === m
-                ? "bg-[#1e2a4a] text-custom-white"
-                : "text-content/50 hover:text-content/80 hover:bg-gray-100"
-            }`}
+      <div className="flex items-center justify-between gap-1 px-3 py-2 border-b border-gray-100 flex-shrink-0">
+        <div className="flex items-center gap-1">
+          {MODES.map((m) => (
+            <button
+              key={m}
+              onClick={() => dispatch(setDevTrendMode(m))}
+              className={`px-3 py-1 rounded text-[10px] font-medium transition-colors ${
+                ctx.trendMode === m
+                  ? "bg-[#1e2a4a] text-custom-white"
+                  : "text-content/50 hover:text-content/80 hover:bg-gray-100"
+              }`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+        <label className="flex items-center gap-1.5 text-[10px] text-content">
+          Window
+          <select
+            value={ctx.trendPeriods}
+            onChange={(e) => handleWindowChange(Number(e.target.value))}
+            className="text-[10px] pl-1.5 pr-4 py-1 rounded border border-content/20 bg-custom-white"
+            style={{ outline: "none", boxShadow: "none" }}
           >
-            {m}
-          </button>
-        ))}
+            {WINDOW_OPTIONS.map((d) => (
+              <option key={d} value={d}>{d}d</option>
+            ))}
+          </select>
+        </label>
       </div>
 
       <div className="flex-1 overflow-auto thin-scrollbar min-h-0">

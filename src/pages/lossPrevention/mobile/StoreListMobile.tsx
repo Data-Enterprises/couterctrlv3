@@ -260,9 +260,9 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
 
           const gradedMetrics = [
             { label: "Trans", value: d.transaction_count.toLocaleString(), isPass: bTrans !== null ? d.transaction_count <= bTrans : null },
-            { label: "Items", value: d.total_items.toLocaleString(), isPass: bItems !== null ? d.total_items <= bItems : null },
+            { label: "Qty", value: d.total_items.toLocaleString(), isPass: bItems !== null ? d.total_items <= bItems : null },
             ...(!noSale ? [
-              { label: "Total", value: formatCurrency2(Math.abs(d.amount)), isPass: bAmount !== null ? Math.abs(d.amount) <= bAmount : null },
+              { label: "Total $", value: formatCurrency2(Math.abs(d.amount)), isPass: bAmount !== null ? Math.abs(d.amount) <= bAmount : null },
               { label: "Avg $", value: formatCurrency2(Math.abs(d.average_dollars)), isPass: bAvg !== null ? Math.abs(d.average_dollars) <= bAvg : null },
             ] : []),
           ];

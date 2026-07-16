@@ -14,8 +14,10 @@ const UpcKpiStrip = () => {
         return getSalesCompKpis(ctx.salesComp, ctx.salesCompLY, ctx.selectedUpcs, ctx.endDate);
       case "forecast":
         return getForecastKpis(ctx.forecastQtyData, ctx.selectedUpcs);
-      case "priceOpt":
-        return getPriceOptKpis(ctx.optBestPrices, ctx.selectedUpcs);
+      case "priceOpt": {
+        const resolvedStoreId = ctx.searchType === "Store" ? ctx.selectedStore.storeid : ctx.priceOptStoreId;
+        return getPriceOptKpis(ctx.optBestPrices, ctx.optBestPricesByUpc, ctx.selectedUpcs, ctx.currentPriceCost, resolvedStoreId);
+      }
       case "trend":
         return getTrendKpis(ctx.upcTrends, ctx.selectedUpcs);
       case "association":

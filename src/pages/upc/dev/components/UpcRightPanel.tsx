@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../hooks";
-import { setDevActiveTab, type UpcDevTab } from "../../../../features/upcDevSlice";
+import { setDevActiveTab, UPC_DEV_TABS } from "../../../../features/upcDevSlice";
 
 import UpcKpiStrip from "./UpcKpiStrip";
 import UpcExportModal from "./UpcExportModal";
@@ -12,20 +12,12 @@ import PriceOptTab from "../modules/priceOpt/PriceOptTab";
 import TrendTab from "../modules/trend/TrendTab";
 import AssociationTab from "../modules/association/AssociationTab";
 
-const TABS: { id: UpcDevTab; label: string }[] = [
-  { id: "salesComp", label: "Sales Comp" },
-
-  { id: "priceOpt", label: "Price Opt" },
-  { id: "trend", label: "Trend" },
-  { id: "association", label: "Association" },
-];
-
 const UpcRightPanel = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
   const [exportOpen, setExportOpen] = useState(false);
 
-  const activeTabLabel = TABS.find((t) => t.id === ctx.activeTab)?.label ?? "";
+  const activeTabLabel = UPC_DEV_TABS.find((t) => t.id === ctx.activeTab)?.label ?? "";
 
   return (
     <div className="flex-1 min-w-0 shadow-lg">
@@ -56,7 +48,7 @@ const UpcRightPanel = () => {
         {/* Tabs — above the KPI strip, since the strip's content is now
             tab-contextual rather than one fixed shape */}
         <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0 overflow-x-auto thin-scrollbar">
-          {TABS.map((tab) => (
+          {UPC_DEV_TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => dispatch(setDevActiveTab(tab.id))}

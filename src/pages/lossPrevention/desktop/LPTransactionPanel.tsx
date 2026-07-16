@@ -2,7 +2,6 @@ import { useMemo, useState, useRef, useEffect } from "react";
 import {
   MagnifyingGlassIcon,
   ArrowDownTrayIcon,
-  EnvelopeIcon,
 } from "@heroicons/react/20/solid";
 import LPExportModal from "./LPExportModal";
 import { useAppSelector, useAppDispatch, useStoreName } from "../../../hooks";
@@ -18,7 +17,7 @@ import type {
 } from "../../../interfaces";
 import { formatCurrency2 } from "../../../utils";
 import SelectFilter from "../../../components/filters/SelectFilter";
-import Transaction, { type TransactionHandle } from "../Transaction";
+import Transaction from "../Transaction";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import EmptyPrompt from "../../../components/EmptyPrompt";
 import type { ThresholdValue } from "../../../components/filters/ThresholdFilter";
@@ -275,7 +274,6 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
   const [selectedOverview, setSelectedOverview] =
     useState<TransactionOverview | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
-  const transactionRef = useRef<TransactionHandle>(null);
   const [cashierSevFilter, setCashierSevFilter] = useState<CashierSeverity | "all">("all");
   const [draftTransId, setDraftTransId] = useState("");
   const [draftQty, setDraftQty] = useState<ThresholdValue | null>(null);
@@ -425,7 +423,7 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
           useAbs: false,
         },
         {
-          label: "Items",
+          label: "Qty",
           value: String(detail.total_items),
           baselineStr: bItems !== null ? String(Math.round(bItems)) : undefined,
           current: detail.total_items,
@@ -464,7 +462,7 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
           avg: selectedGrade.trans.avg,
         },
         {
-          label: "Items",
+          label: "Qty",
           value: String(selectedGrade.qty.value),
           baselineStr:
             selectedGrade.qty.avg > 0
@@ -637,7 +635,7 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
                         gridTemplateColumns: "1fr 0.42fr 0.42fr 0.58fr",
                       }}
                     >
-                      {(["Cashier", "Trans", "Items", "Total"] as const).map(
+                      {(["Cashier", "Trans", "Qty", "Total"] as const).map(
                         (h, i) => (
                           <div
                             key={h}
@@ -728,22 +726,6 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
                     >
                       ← Back
                     </button>
-                    <div className="ml-auto flex gap-2">
-                      <button
-                        onClick={() => transactionRef.current?.email()}
-                        className="text-content hover:text-[#1e2a4a] transition-colors"
-                        title="Email"
-                      >
-                        <EnvelopeIcon className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => transactionRef.current?.export()}
-                        className="text-content hover:text-[#1e2a4a] transition-colors"
-                        title="Export CSV"
-                      >
-                        <ArrowDownTrayIcon className="w-4 h-4" />
-                      </button>
-                    </div>
                   </div>
                   {/* Transaction component fills remaining space */}
                   <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
@@ -752,7 +734,7 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
                         <LoadingIndicator message="Fetching transaction…" />
                       </div>
                     ) : receiptData ? (
-                      <Transaction ref={transactionRef} trans={receiptData} />
+                      <Transaction trans={receiptData} />
                     ) : null}
                   </div>
                 </>
@@ -819,7 +801,7 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
                           </div>
                           <div className="px-3 py-2 flex justify-end">
                             <ColFilter
-                              label="Items"
+                              label="Qty"
                               active={!!appliedQty}
                               appliedDisplay={fmtThreshold(appliedQty)}
                               align="right"
