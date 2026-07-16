@@ -41,7 +41,7 @@ const ComparisonCard = ({
         >
           {diff === 0
             ? "No change"
-            : `${isUp ? "+" : ""}${formatVal(diff)} (${pct.toFixed(1)}%)`}
+            : `${isUp ? "+" : ""}${formatVal(diff)} (${pct.toFixed(2)}%)`}
         </div>
       </div>
 

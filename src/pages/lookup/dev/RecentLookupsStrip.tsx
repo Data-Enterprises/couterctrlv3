@@ -29,7 +29,7 @@ const RecentLookupsStrip = ({ onSelect, variant = "cards" }: RecentLookupsStripP
             >
               <span className="text-[12px] font-medium text-content truncate">{r.description}</span>
               <span className={`text-[11px] font-semibold tabular-nums flex-shrink-0 ${marginColor(r.marginPct)}`}>
-                {r.marginPct !== null ? `${r.marginPct.toFixed(1)}%` : "-"}
+                {r.marginPct !== null ? `${r.marginPct.toFixed(2)}%` : "-"}
               </span>
             </button>
           ))}
@@ -52,7 +52,7 @@ const RecentLookupsStrip = ({ onSelect, variant = "cards" }: RecentLookupsStripP
           >
             <div className="text-[11px] font-medium truncate">{r.description}</div>
             <div className={`text-[11px] font-semibold tabular-nums mt-0.5 ${marginColor(r.marginPct)}`}>
-              {r.marginPct !== null ? `${r.marginPct.toFixed(1)}% mgn` : "-"}
+              {r.marginPct !== null ? `${r.marginPct.toFixed(2)}% mgn` : "-"}
             </div>
           </button>
         ))}

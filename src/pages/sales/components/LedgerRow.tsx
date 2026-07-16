@@ -2,6 +2,7 @@ import { formatCurrencyCompact } from "../../../utils";
 import { useStoreName } from "../../../hooks";
 import { severityDotClass } from "./utils";
 import type { Severity } from "../../../utils/severity";
+import type { GradingMetric } from "../../../features/salesLedgerSlice";
 
 export type { Severity };
 
@@ -50,10 +51,11 @@ export type StoreSelection = {
 interface LedgerRowProps {
   row: LedgerRowData;
   isSelected: boolean;
+  gradingMetric: GradingMetric;
   onClick: (selection: StoreSelection) => void;
 }
 
-const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
+const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
 
 const deltaPillClass = (pct: number) =>
   pct >= 0
@@ -71,8 +73,11 @@ const DeltaPill = ({ has, pct }: { has: boolean; pct: number }) => (
   </span>
 );
 
-const LedgerRow = ({ row, isSelected, onClick }: LedgerRowProps) => {
+const LedgerRow = ({ row, isSelected, gradingMetric, onClick }: LedgerRowProps) => {
   const storeName = useStoreName(row.storeid, row.store_name);
+  const isQty = gradingMetric === "qty";
+  const fmtMetric = (dollars: number, qty: number) =>
+    isQty ? qty.toLocaleString() : formatCurrencyCompact(dollars);
   const sortedDays = [...row.days].sort((a, b) =>
     a.sale_date.localeCompare(b.sale_date),
   );
@@ -112,11 +117,11 @@ const LedgerRow = ({ row, isSelected, onClick }: LedgerRowProps) => {
         <div className="text-[12px] text-content/85 truncate">
           LW{" "}
           <span className="font-semibold">
-            {row.hasLW ? formatCurrencyCompact(row.lwTotal) : "—"}
+            {row.hasLW ? fmtMetric(row.lwTotal, row.lwQty) : "—"}
           </span>{" "}
           · LY{" "}
           <span className="font-semibold">
-            {row.hasLY ? formatCurrencyCompact(row.lyTotal) : "—"}
+            {row.hasLY ? fmtMetric(row.lyTotal, row.lyQty) : "—"}
           </span>
         </div>
       </div>
@@ -125,7 +130,7 @@ const LedgerRow = ({ row, isSelected, onClick }: LedgerRowProps) => {
           className="text-[13px] font-semibold text-content flex-shrink-0 pl-2.5"
           style={{ width: 64 }}
         >
-          {formatCurrencyCompact(row.twTotal)}
+          {fmtMetric(row.twTotal, row.twQty)}
         </span>
         <DeltaPill has={row.hasLW} pct={row.vsLWPct} />
         <DeltaPill has={row.hasLY} pct={row.vsLYPct} />

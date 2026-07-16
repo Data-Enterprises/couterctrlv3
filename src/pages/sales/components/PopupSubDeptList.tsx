@@ -15,6 +15,7 @@ import type { GradingMetric } from "../../../features/salesLedgerSlice";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import {
   formatCurrency2,
+  formatBigNumber,
   addDays,
   formatGoliathDate,
   sameWeekDayLastYear,
@@ -45,6 +46,8 @@ type DeptRow = {
   hasLY: boolean;
   vsLWPct: number;
   vsLYPct: number;
+  vsLWQtyPct: number;
+  vsLYQtyPct: number;
   qty: number;
   lwQty: number;
   lyQty: number;
@@ -104,9 +107,25 @@ const aggregateByCode = (
   return map;
 };
 
-const deptSeverity = (r: DeptRow, threshold: number): Severity => {
+const deptSeverity = (
+  r: DeptRow,
+  threshold: number,
+  metric: GradingMetric,
+): Severity => {
   // Rounded before grading — see itemSeverity below for why.
-  const pct = Math.round((r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0) * 10) / 10;
+  const primaryPct =
+    metric === "qty"
+      ? r.hasLY
+        ? r.vsLYQtyPct
+        : r.hasLW
+          ? r.vsLWQtyPct
+          : 0
+      : r.hasLY
+        ? r.vsLYPct
+        : r.hasLW
+          ? r.vsLWPct
+          : 0;
+  const pct = Math.round(primaryPct * 10) / 10;
   if (pct < -threshold) return "critical";
   if (pct < 0) return "watch";
   return "healthy";
@@ -145,18 +164,22 @@ const itemSeverity = (
 const getCta = (
   row: DeptRow,
   threshold: number,
+  metric: GradingMetric,
 ): { text: string; severity: Severity } => {
-  const sev = deptSeverity(row, threshold);
+  const sev = deptSeverity(row, threshold, metric);
+  const isQty = metric === "qty";
+  const lwPct = isQty ? row.vsLWQtyPct : row.vsLWPct;
+  const lyPct = isQty ? row.vsLYQtyPct : row.vsLYPct;
   const primaryPeriod = row.hasLY ? "LY" : "LW";
-  const primaryPct = row.hasLY ? row.vsLYPct : row.vsLWPct;
-  const pctStr = `${Math.abs(primaryPct).toFixed(1)}%`;
+  const primaryPct = row.hasLY ? lyPct : lwPct;
+  const pctStr = `${Math.abs(primaryPct).toFixed(2)}%`;
 
   if (sev === "critical") {
     const secondaryNote =
       row.hasLY && row.hasLW
-        ? row.vsLWPct < 0
-          ? ` LW also down ${Math.abs(row.vsLWPct).toFixed(1)}% — trend is consistent.`
-          : ` LW is up ${row.vsLWPct.toFixed(1)}% — decline may be seasonal vs last year.`
+        ? lwPct < 0
+          ? ` LW also down ${Math.abs(lwPct).toFixed(2)}% — trend is consistent.`
+          : ` LW is up ${lwPct.toFixed(2)}% — decline may be seasonal vs last year.`
         : "";
     return {
       severity: "critical",
@@ -166,7 +189,7 @@ const getCta = (
   if (sev === "watch") {
     const secondaryNote =
       row.hasLY && row.hasLW
-        ? row.vsLWPct >= 0
+        ? lwPct >= 0
           ? ` Recovering vs LW — may be stabilizing.`
           : ` LW also soft — monitor for a second consecutive week.`
         : "";
@@ -177,7 +200,7 @@ const getCta = (
   }
   const secondaryHealthNote =
     row.hasLY && row.hasLW
-      ? row.vsLWPct < 0
+      ? lwPct < 0
         ? ` LW is softer — watch for a developing trend.`
         : ` LW also positive.`
       : "";
@@ -219,6 +242,7 @@ const PopupSubDeptList = ({
   const gradingMetric = useAppSelector(
     (state) => state.salesLedger.gradingMetric,
   );
+  const isQty = gradingMetric === "qty";
   const selectedId = useAppSelector(
     (state) => state.salesLedger.selectedSubDeptId,
   );
@@ -551,6 +575,8 @@ const PopupSubDeptList = ({
         const ly = lyMap[numId];
         const lwNet = lw?.net ?? 0;
         const lyNet = ly?.net ?? 0;
+        const lwQty = lw?.qty ?? 0;
+        const lyQty = ly?.qty ?? 0;
         return {
           id: numId,
           desc: r.desc,
@@ -561,9 +587,11 @@ const PopupSubDeptList = ({
           hasLY: lyNet > 0,
           vsLWPct: lwNet ? ((r.net - lwNet) / lwNet) * 100 : 0,
           vsLYPct: lyNet ? ((r.net - lyNet) / lyNet) * 100 : 0,
+          vsLWQtyPct: lwQty ? ((r.qty - lwQty) / lwQty) * 100 : 0,
+          vsLYQtyPct: lyQty ? ((r.qty - lyQty) / lyQty) * 100 : 0,
           qty: r.qty,
-          lwQty: lw?.qty ?? 0,
-          lyQty: ly?.qty ?? 0,
+          lwQty,
+          lyQty,
           digital: r.digital,
           lyDigital: ly?.digital ?? 0,
           elecInstore: r.elecInstore,
@@ -577,28 +605,33 @@ const PopupSubDeptList = ({
       .sort((a, b) => {
         const rank = { critical: 0, watch: 1, healthy: 2 } as const;
         const rankDiff =
-          rank[deptSeverity(a, threshold)] - rank[deptSeverity(b, threshold)];
+          rank[deptSeverity(a, threshold, gradingMetric)] -
+          rank[deptSeverity(b, threshold, gradingMetric)];
         if (rankDiff !== 0) return rankDiff;
-        return (
-          (a.hasLY ? a.vsLYPct : a.vsLWPct) - (b.hasLY ? b.vsLYPct : b.vsLWPct)
-        );
+        const aPct = isQty
+          ? (a.hasLY ? a.vsLYQtyPct : a.vsLWQtyPct)
+          : (a.hasLY ? a.vsLYPct : a.vsLWPct);
+        const bPct = isQty
+          ? (b.hasLY ? b.vsLYQtyPct : b.vsLWQtyPct)
+          : (b.hasLY ? b.vsLYPct : b.vsLWPct);
+        return aPct - bPct;
       });
-  }, [subSales, subSalesWk2, subSalesWk3]);
+  }, [subSales, subSalesWk2, subSalesWk3, threshold, gradingMetric, isQty]);
 
   const critCount = rows.filter(
-    (r) => deptSeverity(r, threshold) === "critical",
+    (r) => deptSeverity(r, threshold, gradingMetric) === "critical",
   ).length;
   const watchCount = rows.filter(
-    (r) => deptSeverity(r, threshold) === "watch",
+    (r) => deptSeverity(r, threshold, gradingMetric) === "watch",
   ).length;
   const healthyCount = rows.filter(
-    (r) => deptSeverity(r, threshold) === "healthy",
+    (r) => deptSeverity(r, threshold, gradingMetric) === "healthy",
   ).length;
 
   const visible =
     sevFilter === "all"
       ? rows
-      : rows.filter((r) => deptSeverity(r, threshold) === sevFilter);
+      : rows.filter((r) => deptSeverity(r, threshold, gradingMetric) === sevFilter);
 
   const handleDeptSortClick = (column: DeptSortColumn) => {
     setDeptSort((prev) => {
@@ -608,7 +641,11 @@ const PopupSubDeptList = ({
     });
   };
   const deptSortValue = (row: DeptRow, column: DeptSortColumn) =>
-    column === "ty" ? row.tw : column === "vsLW" ? row.vsLWPct : row.vsLYPct;
+    column === "ty"
+      ? (isQty ? row.qty : row.tw)
+      : column === "vsLW"
+        ? (isQty ? row.vsLWQtyPct : row.vsLWPct)
+        : (isQty ? row.vsLYQtyPct : row.vsLYPct);
   const sortedVisible = deptSort
     ? [...visible].sort((a, b) => {
         const diff = deptSortValue(a, deptSort.column) - deptSortValue(b, deptSort.column);
@@ -620,7 +657,7 @@ const PopupSubDeptList = ({
     selectedId !== null
       ? (rows.find((r) => r.id === selectedId) ?? null)
       : null;
-  const cta = selected ? getCta(selected, threshold) : null;
+  const cta = selected ? getCta(selected, threshold, gradingMetric) : null;
 
   const baseItems = useMemo(
     () =>
@@ -825,7 +862,9 @@ const PopupSubDeptList = ({
 
           <div className="overflow-y-auto thin-scrollbar flex-1">
             {sortedVisible.map((r) => {
-              const sev = deptSeverity(r, threshold);
+              const sev = deptSeverity(r, threshold, gradingMetric);
+              const rowVsLWPct = isQty ? r.vsLWQtyPct : r.vsLWPct;
+              const rowVsLYPct = isQty ? r.vsLYQtyPct : r.vsLYPct;
               const isSel = selectedId === r.id;
               return (
                 <button
@@ -851,23 +890,23 @@ const PopupSubDeptList = ({
                       className="text-[12px] font-semibold text-content flex-shrink-0 pl-2.5 text-right"
                       style={{ width: 64 }}
                     >
-                      {formatCurrency2(r.tw)}
+                      {isQty ? formatBigNumber(r.qty, 0) : formatCurrency2(r.tw)}
                     </span>
                     <span
                       className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
-                        r.hasLW ? pillClass(r.vsLWPct, threshold) : "bg-gray-100 text-gray-400"
+                        r.hasLW ? pillClass(rowVsLWPct, threshold) : "bg-gray-100 text-gray-400"
                       }`}
                       style={{ width: 58 }}
                     >
-                      {r.hasLW ? formatPct(r.vsLWPct) : "—"}
+                      {r.hasLW ? formatPct(rowVsLWPct) : "—"}
                     </span>
                     <span
                       className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
-                        r.hasLY ? pillClass(r.vsLYPct, threshold) : "bg-gray-100 text-gray-400"
+                        r.hasLY ? pillClass(rowVsLYPct, threshold) : "bg-gray-100 text-gray-400"
                       }`}
                       style={{ width: 58 }}
                     >
-                      {r.hasLY ? formatPct(r.vsLYPct) : "—"}
+                      {r.hasLY ? formatPct(rowVsLYPct) : "—"}
                     </span>
                   </div>
                 </button>
@@ -1162,26 +1201,58 @@ const PopupSubDeptList = ({
                             <div className="flex items-start gap-[14px]">
                               <div className="flex-shrink-0 pl-2.5" style={{ width: 64 }}>
                                 <div className="text-[13px] font-semibold text-content">
-                                  {item.hasTY === false ? "—" : formatCurrency2(item.tyNet)}
+                                  {item.hasTY === false
+                                    ? "—"
+                                    : isQty
+                                      ? item.tyQty.toLocaleString()
+                                      : formatCurrency2(item.tyNet)}
                                 </div>
                                 <div className="text-[10px] text-content">
-                                  {item.hasTY === false ? "" : `${item.tyQty.toLocaleString()} u`}
+                                  {item.hasTY === false
+                                    ? ""
+                                    : isQty
+                                      ? formatCurrency2(item.tyNet)
+                                      : `${item.tyQty.toLocaleString()} u`}
                                 </div>
                               </div>
                               <div className="flex-shrink-0" style={{ width: 64 }}>
                                 <div className="text-[13px] font-semibold text-content">
-                                  {item.lwNet !== null ? formatCurrency2(item.lwNet) : "—"}
+                                  {isQty
+                                    ? item.lwQty !== null
+                                      ? item.lwQty.toLocaleString()
+                                      : "—"
+                                    : item.lwNet !== null
+                                      ? formatCurrency2(item.lwNet)
+                                      : "—"}
                                 </div>
                                 <div className="text-[10px] text-content">
-                                  {item.lwQty !== null ? `${item.lwQty.toLocaleString()} u` : ""}
+                                  {isQty
+                                    ? item.lwNet !== null
+                                      ? formatCurrency2(item.lwNet)
+                                      : ""
+                                    : item.lwQty !== null
+                                      ? `${item.lwQty.toLocaleString()} u`
+                                      : ""}
                                 </div>
                               </div>
                               <div className="flex-shrink-0" style={{ width: 64 }}>
                                 <div className="text-[13px] font-semibold text-content">
-                                  {item.lyNet !== null ? formatCurrency2(item.lyNet) : "—"}
+                                  {isQty
+                                    ? item.lyQty !== null
+                                      ? item.lyQty.toLocaleString()
+                                      : "—"
+                                    : item.lyNet !== null
+                                      ? formatCurrency2(item.lyNet)
+                                      : "—"}
                                 </div>
                                 <div className="text-[10px] text-content">
-                                  {item.lyQty !== null ? `${item.lyQty.toLocaleString()} u` : ""}
+                                  {isQty
+                                    ? item.lyNet !== null
+                                      ? formatCurrency2(item.lyNet)
+                                      : ""
+                                    : item.lyQty !== null
+                                      ? `${item.lyQty.toLocaleString()} u`
+                                      : ""}
                                 </div>
                               </div>
                             </div>

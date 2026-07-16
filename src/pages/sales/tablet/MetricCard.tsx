@@ -39,7 +39,7 @@ const MetricCard = ({
           <div className={`mt-1 text-xs font-medium ${diffColor}`}>
             {diff === 0
               ? "No change"
-              : `${diff > 0 ? "+" : ""}${formatVal(diff)} (${pct.toFixed(1)}%)`}
+              : `${diff > 0 ? "+" : ""}${formatVal(diff)} (${pct.toFixed(2)}%)`}
           </div>
         </div>
       </div>

@@ -501,6 +501,7 @@ const SalesLedger = () => {
                     key={row.storeid}
                     row={row}
                     isSelected={selection?.storeId === row.storeid}
+                    gradingMetric={gradingMetric}
                     onClick={(s) => dispatch(setLedgerSelection(s))}
                   />
                 ))}

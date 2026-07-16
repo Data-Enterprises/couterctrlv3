@@ -51,14 +51,14 @@ const getCta = (
   const sev = catSeverity(row, threshold);
   const primaryPeriod = row.hasLY ? "LY" : "LW";
   const primaryPct = row.hasLY ? row.vsLYPct : row.vsLWPct;
-  const pctStr = `${Math.abs(primaryPct).toFixed(1)}%`;
+  const pctStr = `${Math.abs(primaryPct).toFixed(2)}%`;
 
   if (sev === "critical") {
     const secondaryNote =
       row.hasLY && row.hasLW
         ? row.vsLWPct < 0
-          ? ` LW also down ${Math.abs(row.vsLWPct).toFixed(1)}% — trend is consistent.`
-          : ` LW is up ${row.vsLWPct.toFixed(1)}% — decline may be seasonal vs last year.`
+          ? ` LW also down ${Math.abs(row.vsLWPct).toFixed(2)}% — trend is consistent.`
+          : ` LW is up ${row.vsLWPct.toFixed(2)}% — decline may be seasonal vs last year.`
         : "";
     return {
       severity: "critical",

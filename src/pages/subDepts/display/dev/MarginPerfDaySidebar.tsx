@@ -8,8 +8,8 @@ import { getHolidayName } from "../../../../utils/holidays";
 import { StarIcon } from "@heroicons/react/20/solid";
 import type { SubDeptMargin } from "../../../../interfaces";
 
-const fmtPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
-const fmtPts = (pts: number) => `${pts >= 0 ? "+" : ""}${pts.toFixed(1)} pts`;
+const fmtPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
+const fmtPts = (pts: number) => `${pts >= 0 ? "+" : ""}${pts.toFixed(2)} pts`;
 
 const agg = (rows: SubDeptMargin[]) => {
   const sales = rows.reduce((acc, m) => acc + (m.total_sales - m.total_tax), 0);
@@ -47,7 +47,7 @@ const MarginPerfDaySidebar = () => {
   const weekLw = useMemo(() => agg(ctx.weekTwoMargins), [ctx.weekTwoMargins]);
 
   const primaryValue = (a: { sales: number; marginPct: number }) =>
-    gradingMetric === "margin" ? `${a.marginPct.toFixed(1)}%` : formatCurrency2(a.sales);
+    gradingMetric === "margin" ? `${a.marginPct.toFixed(2)}%` : formatCurrency2(a.sales);
 
   const weekHasLY = weekLy.sales > 0;
   const weekHasLW = weekLw.sales > 0;

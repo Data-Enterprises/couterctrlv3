@@ -121,7 +121,7 @@ const SubTrendCardTablet = ({
             className={`rounded-full px-2.5 py-1 text-[12px] font-semibold ${salesDiff > 0 ? "bg-emerald-100 text-emerald-700" : salesDiff < 0 ? "bg-red-100 text-red-700" : "bg-gray-100 text-content"}`}
           >
             {salesDiff > 0 ? "+" : ""}
-            {formatCurrency2(salesDiff)} ({salesPct.toFixed(1)}%)
+            {formatCurrency2(salesDiff)} ({salesPct.toFixed(2)}%)
           </div>
         </div>
       </div>

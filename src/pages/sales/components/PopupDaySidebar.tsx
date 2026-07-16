@@ -1,28 +1,34 @@
 import type { DayDot } from "./LedgerRow";
 import { getHolidayName } from "../../../utils/holidays";
-import { formatCurrency2 } from "../../../utils";
+import { formatCurrency2, formatBigNumber } from "../../../utils";
 import { computeDayMatchedTotals } from "../shared/ledgerUtils";
+import type { GradingMetric } from "../../../features/salesLedgerSlice";
 import { StarIcon } from "@heroicons/react/20/solid";
 
 interface PopupDaySidebarProps {
   days: DayDot[];
   selectedDate: string | null;
+  gradingMetric: GradingMetric;
   onSelect: (date: string | null) => void;
 }
 
-const fmtPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
+const fmtPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
 
 const PopupDaySidebar = ({
   days,
   selectedDate,
+  gradingMetric,
   onSelect,
 }: PopupDaySidebarProps) => {
+  const isQty = gradingMetric === "qty";
+  const fmtMetric = (dollars: number, qty: number) =>
+    isQty ? formatBigNumber(qty, 0) : formatCurrency2(dollars);
   const sorted = [...days].sort((a, b) =>
     a.sale_date.localeCompare(b.sale_date),
   );
 
-  const weekTotals = computeDayMatchedTotals(sorted);
-  const weekTw = weekTotals.twTotal;
+  const weekTotals = computeDayMatchedTotals(sorted, gradingMetric);
+  const weekTw = isQty ? weekTotals.twQty : weekTotals.twTotal;
   const weekHasLY = weekTotals.hasLY;
   const weekHasLW = weekTotals.hasLW;
   const weekDisplayPct = weekHasLY
@@ -64,7 +70,7 @@ const PopupDaySidebar = ({
             {weekRange}
           </div>
           <div className="text-[12px] font-bold text-content">
-            {formatCurrency2(weekTw)}
+            {isQty ? formatBigNumber(weekTw, 0) : formatCurrency2(weekTw)}
           </div>
           <div
             className={`text-[11px] font-semibold ${weekDisplayPct === null ? "text-content" : weekIsNeg ? "text-severity_critical_text" : "text-severity_healthy_text"}`}
@@ -83,14 +89,24 @@ const PopupDaySidebar = ({
         const dayName = date.toLocaleDateString("en-US", { weekday: "long" });
         const dateNum = `${date.getMonth() + 1}/${date.getDate()}`;
         const isSelected = selectedDate === dateStr;
-        const hasLY = d.lyNet !== null && d.lyNet > 0;
-        const hasLW = d.lwNet !== null && d.lwNet > 0;
-        const vsLYPct =
-          hasLY && d.lyNet !== null
+        const hasLY = isQty
+          ? d.lyQty !== null && d.lyQty > 0
+          : d.lyNet !== null && d.lyNet > 0;
+        const hasLW = isQty
+          ? d.lwQty !== null && d.lwQty > 0
+          : d.lwNet !== null && d.lwNet > 0;
+        const vsLYPct = isQty
+          ? hasLY && d.lyQty !== null
+            ? ((d.twQty - d.lyQty) / d.lyQty) * 100
+            : null
+          : hasLY && d.lyNet !== null
             ? ((d.twNet - d.lyNet) / d.lyNet) * 100
             : null;
-        const vsLWPct =
-          hasLW && d.lwNet !== null
+        const vsLWPct = isQty
+          ? hasLW && d.lwQty !== null
+            ? ((d.twQty - d.lwQty) / d.lwQty) * 100
+            : null
+          : hasLW && d.lwNet !== null
             ? ((d.twNet - d.lwNet) / d.lwNet) * 100
             : null;
         const displayPct = vsLYPct ?? vsLWPct;
@@ -124,7 +140,7 @@ const PopupDaySidebar = ({
                 {dateNum}
               </div>
               <div className="text-[12px] font-bold text-content mt-1">
-                {formatCurrency2(d.twNet)}
+                {fmtMetric(d.twNet, d.twQty)}
               </div>
               <div
                 className={`text-[11px] font-semibold ${displayPct === null ? "text-content" : isNeg ? "text-severity_critical_text" : "text-severity_healthy_text"}`}

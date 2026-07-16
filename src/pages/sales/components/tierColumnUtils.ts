@@ -36,4 +36,4 @@ export const SEVERITY_CONFIG = {
   },
 } as const;
 
-export const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
+export const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;

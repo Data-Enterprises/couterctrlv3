@@ -111,7 +111,7 @@ const TrendBadge = ({
           : "bg-severity_healthy_bg text-severity_healthy_text"
       }`}
     >
-      {pct !== 0 && (isUp ? "▲" : "▼")} {Math.abs(pct).toFixed(1)}%
+      {pct !== 0 && (isUp ? "▲" : "▼")} {Math.abs(pct).toFixed(2)}%
     </span>
   );
 };
@@ -137,7 +137,7 @@ const AvgBadge = ({
           : "bg-severity_healthy_bg text-severity_healthy_text"
       }`}
     >
-      {pct !== 0 && (isUp ? "▲" : "▼")} {Math.abs(pct).toFixed(1)}%
+      {pct !== 0 && (isUp ? "▲" : "▼")} {Math.abs(pct).toFixed(2)}%
     </span>
   );
 };

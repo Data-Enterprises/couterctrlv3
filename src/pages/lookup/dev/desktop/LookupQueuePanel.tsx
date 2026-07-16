@@ -140,7 +140,7 @@ const LookupQueuePanel = ({
                     style={{ color: isNegative ? "#991b1b" : "#059669" }}
                   >
                     {item.marginPct !== null && item.marginPct !== undefined
-                      ? `${item.marginPct.toFixed(1)}%`
+                      ? `${item.marginPct.toFixed(2)}%`
                       : "-"}
                   </span>
                 </div>

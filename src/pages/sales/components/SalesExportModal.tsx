@@ -75,7 +75,7 @@ const buildSummaryCsv = (days: DayDot[]) => {
 
 const SEV_LABEL: Record<ItemSev, string> = { critical: "Critical", watch: "Watch", healthy: "Healthy" };
 
-const fmtPctRaw = (pct: number | null) => pct === null ? "" : `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
+const fmtPctRaw = (pct: number | null) => pct === null ? "" : `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
 
 const buildItemsCsv = (items: ExportSubDeptItem[], sevs: Set<ItemSev>) => {
   const filtered = items.filter((i) => sevs.has(i.sev));

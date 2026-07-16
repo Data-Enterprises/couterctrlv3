@@ -15,7 +15,7 @@ import {
 } from "../../../../features/subMarginSlice";
 import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
 import TextFilter from "../../../../components/filters/TextFilter";
-import { severityDotClass, pillClass, formatPct, type SevFilter } from "../../../../utils/severity";
+import { severityDotClass, pillClass, type SevFilter } from "../../../../utils/severity";
 import type { SubDeptMargin } from "../../../../interfaces";
 
 interface Props {
@@ -181,7 +181,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
               <span className="text-[14px] font-semibold text-custom-white">
                 {gradingMetric === "margin"
                   ? avgMarginPct !== null
-                    ? `${avgMarginPct.toFixed(1)}%`
+                    ? `${avgMarginPct.toFixed(2)}%`
                     : "—"
                   : formatCurrency2(totalTySales)}
               </span>
@@ -195,8 +195,8 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
                 >
                   LW{" "}
                   {gradingMetric === "margin"
-                    ? `${avgLwDelta! >= 0 ? "+" : ""}${avgLwDelta!.toFixed(1)} pts`
-                    : formatPct(vsLWSalesPct!)}
+                    ? `${avgLwDelta! >= 0 ? "+" : ""}${avgLwDelta!.toFixed(2)} pts`
+                    : `${vsLWSalesPct! >= 0 ? "+" : ""}${vsLWSalesPct!.toFixed(2)}%`}
                 </span>
               )}
               {totalLySales > 0 && (gradingMetric === "margin" ? avgDelta : vsLYSalesPct) !== null && (
@@ -209,8 +209,8 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
                 >
                   LY{" "}
                   {gradingMetric === "margin"
-                    ? `${avgDelta! >= 0 ? "+" : ""}${avgDelta!.toFixed(1)} pts`
-                    : formatPct(vsLYSalesPct!)}
+                    ? `${avgDelta! >= 0 ? "+" : ""}${avgDelta!.toFixed(2)} pts`
+                    : `${vsLYSalesPct! >= 0 ? "+" : ""}${vsLYSalesPct!.toFixed(2)}%`}
                 </span>
               )}
             </>
@@ -398,18 +398,18 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
 
                   const tyValue =
                     gradingMetric === "margin"
-                      ? `${grade.tyMarginPct.toFixed(1)}%`
+                      ? `${grade.tyMarginPct.toFixed(2)}%`
                       : formatCurrency2(grade.tySales);
                   const lwPct = gradingMetric === "margin" ? grade.lwPtsDelta : grade.vsLWSalesPct;
                   const lyPct = gradingMetric === "margin" ? grade.ptsDelta : grade.vsLYSalesPct;
                   const lwDisplay =
                     gradingMetric === "margin"
-                      ? `${lwPct >= 0 ? "+" : ""}${lwPct.toFixed(1)} pts`
-                      : formatPct(lwPct);
+                      ? `${lwPct >= 0 ? "+" : ""}${lwPct.toFixed(2)} pts`
+                      : `${lwPct >= 0 ? "+" : ""}${lwPct.toFixed(2)}%`;
                   const lyDisplay =
                     gradingMetric === "margin"
-                      ? `${lyPct >= 0 ? "+" : ""}${lyPct.toFixed(1)} pts`
-                      : formatPct(lyPct);
+                      ? `${lyPct >= 0 ? "+" : ""}${lyPct.toFixed(2)} pts`
+                      : `${lyPct >= 0 ? "+" : ""}${lyPct.toFixed(2)}%`;
 
                   return (
                     <button

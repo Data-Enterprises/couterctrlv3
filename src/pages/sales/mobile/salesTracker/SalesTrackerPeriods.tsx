@@ -152,7 +152,7 @@ const SalesTrackerPeriods = () => {
                       <div
                         className={`absolute bottom-1 flex items-center justify-center text-[10px] font-bold ${changeTextColor(totals.percentChange, 0)}`}
                       >
-                        {totals.percentChange.toFixed(1)}%
+                        {totals.percentChange.toFixed(2)}%
                       </div>
                     </div>
 

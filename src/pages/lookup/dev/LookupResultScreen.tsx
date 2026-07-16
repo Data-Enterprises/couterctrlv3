@@ -101,7 +101,7 @@ const LookupResultScreen = ({
               className={`text-[16px] font-bold mt-0.5 tabular-nums ${isNegative ? "text-red-800" : "text-emerald-800"}`}
             >
               {margin.marginPct !== null
-                ? `${margin.marginPct.toFixed(1)}%`
+                ? `${margin.marginPct.toFixed(2)}%`
                 : "-"}
             </div>
             <button

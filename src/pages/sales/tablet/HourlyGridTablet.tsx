@@ -251,7 +251,7 @@ const HourlyGridTablet = () => {
                   >
                     {salesDiff > 0 ? "+" : ""}
                     {formatCurrency2(salesDiff)}{" "}
-                    {lySales !== 0 ? `(${salesPct.toFixed(1)}%)` : ""}
+                    {lySales !== 0 ? `(${salesPct.toFixed(2)}%)` : ""}
                   </span>
                 </div>
               </div>

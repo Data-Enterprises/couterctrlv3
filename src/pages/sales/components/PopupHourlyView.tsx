@@ -4,7 +4,8 @@ import {
   setSelectedHour,
   setHourlyThreshold,
 } from "../../../features/salesLedgerSlice";
-import { formatCurrency2, addDays, sameWeekDayLastYear } from "../../../utils";
+import { formatCurrency2, formatBigNumber, addDays, sameWeekDayLastYear } from "../../../utils";
+import type { GradingMetric } from "../../../features/salesLedgerSlice";
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
@@ -37,6 +38,8 @@ type HourRow = {
   lyQty: number;
   vsLWPct: number;
   vsLYPct: number;
+  vsLWQtyPct: number;
+  vsLYQtyPct: number;
   hasLW: boolean;
   hasLY: boolean;
 };
@@ -44,12 +47,28 @@ type HourRow = {
 type HourSortColumn = "ty" | "vsLW" | "vsLY";
 type HourSortState = { column: HourSortColumn; direction: "desc" | "asc" } | null;
 
-const hourSeverity = (r: HourRow, threshold: number): Severity => {
+const hourSeverity = (
+  r: HourRow,
+  threshold: number,
+  metric: GradingMetric,
+): Severity => {
   // Rounded before grading — the underlying totals are sums of individual
   // line items, so floating-point noise can leave a value like
   // -0.0000000001% even when the displayed dollars are identical, misgrading
   // what should be "healthy" as "watch".
-  const pct = Math.round((r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0) * 10) / 10;
+  const primaryPct =
+    metric === "qty"
+      ? r.hasLY
+        ? r.vsLYQtyPct
+        : r.hasLW
+          ? r.vsLWQtyPct
+          : 0
+      : r.hasLY
+        ? r.vsLYPct
+        : r.hasLW
+          ? r.vsLWPct
+          : 0;
+  const pct = Math.round(primaryPct * 10) / 10;
   if (pct < -threshold) return "critical";
   if (pct < 0) return "watch";
   return "healthy";
@@ -58,11 +77,14 @@ const hourSeverity = (r: HourRow, threshold: number): Severity => {
 const getCta = (
   row: HourRow,
   threshold: number,
+  metric: GradingMetric,
 ): { text: string; severity: Severity } => {
-  const sev = hourSeverity(row, threshold);
+  const sev = hourSeverity(row, threshold, metric);
+  const lwPct = metric === "qty" ? row.vsLWQtyPct : row.vsLWPct;
+  const lyPct = metric === "qty" ? row.vsLYQtyPct : row.vsLYPct;
   const primaryPeriod = row.hasLY ? "LY" : "LW";
-  const primaryPct = row.hasLY ? row.vsLYPct : row.vsLWPct;
-  const pctStr = `${Math.abs(primaryPct).toFixed(1)}%`;
+  const primaryPct = row.hasLY ? lyPct : lwPct;
+  const pctStr = `${Math.abs(primaryPct).toFixed(2)}%`;
   const avgBasket = row.trans > 0 ? row.tw / row.trans : 0;
   const refTrans = row.hasLY ? row.lyTrans : row.lwTrans;
   const refBasket = row.hasLY
@@ -83,7 +105,7 @@ const getCta = (
     if (isTrafficLoss && !isSpendDrop)
       return {
         severity: "critical",
-        text: `Down ${pctStr} vs ${primaryPeriod} — traffic loss is the driver. Transactions down ${Math.abs(transDrop!).toFixed(1)}% while basket is holding. Check staffing and flow.`,
+        text: `Down ${pctStr} vs ${primaryPeriod} — traffic loss is the driver. Transactions down ${Math.abs(transDrop!).toFixed(2)}% while basket is holding. Check staffing and flow.`,
       };
     if (isSpendDrop && !isTrafficLoss)
       return {
@@ -98,7 +120,7 @@ const getCta = (
   if (sev === "watch") {
     const secondaryNote =
       row.hasLY && row.hasLW
-        ? row.vsLWPct >= 0
+        ? lwPct >= 0
           ? ` Recovering vs LW — may be stabilizing.`
           : ` LW also soft — monitor before escalating.`
         : "";
@@ -109,7 +131,7 @@ const getCta = (
   }
   const secondaryHealthNote =
     row.hasLY && row.hasLW
-      ? row.vsLWPct < 0
+      ? lwPct < 0
         ? ` LW is softer — watch for a developing trend.`
         : ` LW also positive.`
       : "";
@@ -137,6 +159,8 @@ const PopupHourlyView = ({
   );
   const rawThreshold = useAppSelector((s) => s.salesLedger.hourlyThreshold);
   const selectedHour = useAppSelector((s) => s.salesLedger.selectedHour);
+  const gradingMetric = useAppSelector((s) => s.salesLedger.gradingMetric);
+  const isQty = gradingMetric === "qty";
   const dispatch = useAppDispatch();
 
   // Grading should never move rows around on its own when the threshold input
@@ -238,6 +262,9 @@ const PopupHourlyView = ({
         const tw = twMap[h]?.net ?? 0;
         const lw = lwMap[h]?.net ?? 0;
         const ly = lyMap[h]?.net ?? 0;
+        const qty = twMap[h]?.qty ?? 0;
+        const lwQty = lwMap[h]?.qty ?? 0;
+        const lyQty = lyMap[h]?.qty ?? 0;
         return {
           hour: h,
           tw,
@@ -246,42 +273,50 @@ const PopupHourlyView = ({
           trans: twMap[h]?.trans ?? 0,
           lwTrans: lwMap[h]?.trans ?? 0,
           lyTrans: lyMap[h]?.trans ?? 0,
-          qty: twMap[h]?.qty ?? 0,
-          lwQty: lwMap[h]?.qty ?? 0,
-          lyQty: lyMap[h]?.qty ?? 0,
+          qty,
+          lwQty,
+          lyQty,
           hasLW: lw > 0,
           hasLY: ly > 0,
           vsLWPct: lw ? ((tw - lw) / lw) * 100 : 0,
           vsLYPct: ly ? ((tw - ly) / ly) * 100 : 0,
+          vsLWQtyPct: lwQty ? ((qty - lwQty) / lwQty) * 100 : 0,
+          vsLYQtyPct: lyQty ? ((qty - lyQty) / lyQty) * 100 : 0,
         };
       })
       .sort((a, b) => {
         const rank = { critical: 0, watch: 1, healthy: 2 } as const;
         const rankDiff =
-          rank[hourSeverity(a, threshold)] - rank[hourSeverity(b, threshold)];
+          rank[hourSeverity(a, threshold, gradingMetric)] -
+          rank[hourSeverity(b, threshold, gradingMetric)];
         if (rankDiff !== 0) return rankDiff;
-        const aPct = a.hasLY ? a.vsLYPct : a.vsLWPct;
-        const bPct = b.hasLY ? b.vsLYPct : b.vsLWPct;
+        const aPct = isQty
+          ? (a.hasLY ? a.vsLYQtyPct : a.vsLWQtyPct)
+          : (a.hasLY ? a.vsLYPct : a.vsLWPct);
+        const bPct = isQty
+          ? (b.hasLY ? b.vsLYQtyPct : b.vsLWQtyPct)
+          : (b.hasLY ? b.vsLYPct : b.vsLWPct);
         return aPct - bPct;
       });
-  }, [hourlySales, hourlySalesLastWeek, hourlySalesLastYear]);
+  }, [hourlySales, hourlySalesLastWeek, hourlySalesLastYear, threshold, gradingMetric, isQty]);
 
   const critCount = hours.filter(
-    (h) => hourSeverity(h, threshold) === "critical",
+    (h) => hourSeverity(h, threshold, gradingMetric) === "critical",
   ).length;
   const watchCount = hours.filter(
-    (h) => hourSeverity(h, threshold) === "watch",
+    (h) => hourSeverity(h, threshold, gradingMetric) === "watch",
   ).length;
   const healthyCount = hours.filter(
-    (h) => hourSeverity(h, threshold) === "healthy",
+    (h) => hourSeverity(h, threshold, gradingMetric) === "healthy",
   ).length;
 
   const visible = hours.filter((h) => {
     if (sevFilter === "critical")
-      return hourSeverity(h, threshold) === "critical";
-    if (sevFilter === "watch") return hourSeverity(h, threshold) === "watch";
+      return hourSeverity(h, threshold, gradingMetric) === "critical";
+    if (sevFilter === "watch")
+      return hourSeverity(h, threshold, gradingMetric) === "watch";
     if (sevFilter === "healthy")
-      return hourSeverity(h, threshold) === "healthy";
+      return hourSeverity(h, threshold, gradingMetric) === "healthy";
     return true;
   });
 
@@ -293,7 +328,11 @@ const PopupHourlyView = ({
     });
   };
   const hourSortValue = (row: HourRow, column: HourSortColumn) =>
-    column === "ty" ? row.tw : column === "vsLW" ? row.vsLWPct : row.vsLYPct;
+    column === "ty"
+      ? (isQty ? row.qty : row.tw)
+      : column === "vsLW"
+        ? (isQty ? row.vsLWQtyPct : row.vsLWPct)
+        : (isQty ? row.vsLYQtyPct : row.vsLYPct);
   const sortedVisible = hourSort
     ? [...visible].sort((a, b) => {
         const diff = hourSortValue(a, hourSort.column) - hourSortValue(b, hourSort.column);
@@ -305,7 +344,7 @@ const PopupHourlyView = ({
     selectedHour !== null
       ? (hours.find((h) => h.hour === selectedHour) ?? null)
       : null;
-  const cta = selected ? getCta(selected, threshold) : null;
+  const cta = selected ? getCta(selected, threshold, gradingMetric) : null;
 
   const avgBasket =
     selected && selected.trans > 0 ? selected.tw / selected.trans : 0;
@@ -434,7 +473,9 @@ const PopupHourlyView = ({
         {/* Signal list */}
         <div className="overflow-y-auto thin-scrollbar flex-1">
           {sortedVisible.map((r) => {
-            const sev = hourSeverity(r, threshold);
+            const sev = hourSeverity(r, threshold, gradingMetric);
+            const rowVsLWPct = isQty ? r.vsLWQtyPct : r.vsLWPct;
+            const rowVsLYPct = isQty ? r.vsLYQtyPct : r.vsLYPct;
             const isSel = selectedHour === r.hour;
             return (
               <button
@@ -455,23 +496,23 @@ const PopupHourlyView = ({
                     className="text-[12px] font-semibold text-content flex-shrink-0 pl-2.5 text-right"
                     style={{ width: 64 }}
                   >
-                    {formatCurrency2(r.tw)}
+                    {isQty ? formatBigNumber(r.qty, 0) : formatCurrency2(r.tw)}
                   </span>
                   <span
                     className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
-                      r.hasLW ? pillClass(r.vsLWPct, threshold) : "bg-gray-100 text-gray-400"
+                      r.hasLW ? pillClass(rowVsLWPct, threshold) : "bg-gray-100 text-gray-400"
                     }`}
                     style={{ width: 58 }}
                   >
-                    {r.hasLW ? formatPct(r.vsLWPct) : "—"}
+                    {r.hasLW ? formatPct(rowVsLWPct) : "—"}
                   </span>
                   <span
                     className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
-                      r.hasLY ? pillClass(r.vsLYPct, threshold) : "bg-gray-100 text-gray-400"
+                      r.hasLY ? pillClass(rowVsLYPct, threshold) : "bg-gray-100 text-gray-400"
                     }`}
                     style={{ width: 58 }}
                   >
-                    {r.hasLY ? formatPct(r.vsLYPct) : "—"}
+                    {r.hasLY ? formatPct(rowVsLYPct) : "—"}
                   </span>
                 </div>
               </button>

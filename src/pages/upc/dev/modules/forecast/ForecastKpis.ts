@@ -48,8 +48,8 @@ export function getForecastKpis(forecastQtyData: UpcForecastData[], selectedUpcs
     historicalExpected > 0 ? ((totalForecast - historicalExpected) / historicalExpected) * 100 : null;
   const vsValue =
     vsPct === null ? "—"
-    : vsPct > 0 ? `+${vsPct.toFixed(1)}%`
-    : `${vsPct.toFixed(1)}%`;
+    : vsPct > 0 ? `+${vsPct.toFixed(2)}%`
+    : `${vsPct.toFixed(2)}%`;
   const vsSub = vsPct !== null ? (vsPct >= 0 ? "above expected" : "below expected") : undefined;
 
   // Top item: UPC with highest 7-day forecast total

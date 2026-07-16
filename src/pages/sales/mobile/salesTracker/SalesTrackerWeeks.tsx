@@ -208,7 +208,7 @@ const SalesTrackerWeeks = () => {
                       <div
                         className={`absolute bottom-1 flex items-center justify-center text-[10px] font-bold ${changeTextColor(totalsWithMissing.percentChange, 0)}`}
                       >
-                        {totalsWithMissing.percentChange.toFixed(1)}%
+                        {totalsWithMissing.percentChange.toFixed(2)}%
                       </div>
                     </div>
 
