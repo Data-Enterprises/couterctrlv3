@@ -2,7 +2,7 @@ import { calculateCogs } from "../..";
 import type { SubDeptGrade, MarginTier } from "../../../../features/subMarginSlice";
 import SevBadge from "../../../sales/mobile/components/SevBadge";
 
-const fmt1 = (n: number) => n.toFixed(1);
+const fmt1 = (n: number) => n.toFixed(2);
 const fmtPts = (n: number) => `${n >= 0 ? "+" : ""}${fmt1(n)} pts`;
 
 interface Props {

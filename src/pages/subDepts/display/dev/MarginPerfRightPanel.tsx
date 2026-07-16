@@ -14,7 +14,7 @@ import MarginPerfItemsTable from "./MarginPerfItemsTable";
 import SubDeptCostGrid from "../widgets/SubDeptCostGrid";
 import MarginPerfExportModal from "./MarginPerfExportModal";
 import MarginPerfDaySidebar from "./MarginPerfDaySidebar";
-import { severityHeaderBgClass, pillClass, formatPct } from "../../../../utils/severity";
+import { severityHeaderBgClass, pillClass } from "../../../../utils/severity";
 
 const MarginPerfRightPanel = () => {
   const ctx = useSubMarginCtx();
@@ -235,12 +235,12 @@ const MarginPerfRightPanel = () => {
               </span>
               {gradingMetric === "margin" && lwMarginDelta !== null && (
                 <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(lwMarginDelta, gradingThreshold)}`}>
-                  {lwMarginDelta >= 0 ? "+" : ""}{lwMarginDelta.toFixed(1)} pts
+                  {lwMarginDelta >= 0 ? "+" : ""}{lwMarginDelta.toFixed(2)} pts
                 </span>
               )}
               {gradingMetric === "sales" && lwSalesDelta !== null && (
                 <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(lwSalesDelta, gradingThreshold)}`}>
-                  {formatPct(lwSalesDelta)}
+                  {lwSalesDelta >= 0 ? "+" : ""}{lwSalesDelta.toFixed(2)}%
                 </span>
               )}
             </div>
@@ -256,12 +256,12 @@ const MarginPerfRightPanel = () => {
               </span>
               {gradingMetric === "margin" && marginDelta !== null && (
                 <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(marginDelta, gradingThreshold)}`}>
-                  {marginDelta >= 0 ? "+" : ""}{marginDelta.toFixed(1)} pts
+                  {marginDelta >= 0 ? "+" : ""}{marginDelta.toFixed(2)} pts
                 </span>
               )}
               {gradingMetric === "sales" && salesDelta !== null && (
                 <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(salesDelta, gradingThreshold)}`}>
-                  {formatPct(salesDelta)}
+                  {salesDelta >= 0 ? "+" : ""}{salesDelta.toFixed(2)}%
                 </span>
               )}
             </div>

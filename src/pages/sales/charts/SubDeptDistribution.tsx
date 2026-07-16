@@ -82,7 +82,7 @@ const SubDeptDistribution = () => {
                 ${formatBigNumber(row.net, 0)}
               </span>
               <span className="text-[11px] text-gray-400 w-10 text-right shrink-0">
-                {pct.toFixed(1)}%
+                {pct.toFixed(2)}%
               </span>
             </div>
           );

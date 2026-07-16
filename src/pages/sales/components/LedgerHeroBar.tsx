@@ -14,7 +14,7 @@ interface LedgerHeroBarProps {
 
 const formatPct = (pct: number) => {
   const sign = pct >= 0 ? "+" : "";
-  return `${sign}${pct.toFixed(1)}%`;
+  return `${sign}${pct.toFixed(2)}%`;
 };
 
 const LedgerHeroBar = ({

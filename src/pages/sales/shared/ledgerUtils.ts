@@ -82,7 +82,7 @@ export type HourRow = {
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
 
-export const formatPct = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`;
+export const formatPct = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
 
 export const fmtDate = (d: string) =>
   new Date(d + "T12:00:00").toLocaleDateString("en-US", {

@@ -59,7 +59,7 @@ const computeCogs = (records: SubDeptMargin[]) =>
 const computeMarginPct = (net: number, cogs: number) =>
   net > 0 ? ((net - cogs) / net) * 100 : 0;
 
-const fmt1 = (n: number) => n.toFixed(1);
+const fmt1 = (n: number) => n.toFixed(2);
 const fmtPts = (n: number) => `${n >= 0 ? "+" : ""}${fmt1(n)} pts`;
 
 const SubDeptReportMobile = ({ onBack }: Props) => {

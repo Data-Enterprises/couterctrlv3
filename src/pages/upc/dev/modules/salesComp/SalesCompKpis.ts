@@ -69,7 +69,7 @@ export function getSalesCompKpis(
     },
     {
       label: "vs LY",
-      value: vsLYPct === null ? "—" : `${vsLYPct >= 0 ? "▲" : "▼"} ${Math.abs(vsLYPct).toFixed(1)}%`,
+      value: vsLYPct === null ? "—" : `${vsLYPct >= 0 ? "▲" : "▼"} ${Math.abs(vsLYPct).toFixed(2)}%`,
       sub: hasLY ? `${formatCurrency2(totalSalesLY)} LY` : "no LY data",
       variant: vsLYPct === null ? undefined : vsLYPct >= 0 ? "up" : "down",
     },

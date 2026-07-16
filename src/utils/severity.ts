@@ -3,7 +3,7 @@ export type Severity = "critical" | "watch" | "healthy";
 export type SevFilter = "all" | Severity;
 
 export const formatPct = (pct: number) =>
-  `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
+  `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
 
 export const pillClass = (pct: number | null, threshold: number) => {
   if (pct === null) return "bg-gray-100 text-gray-500";

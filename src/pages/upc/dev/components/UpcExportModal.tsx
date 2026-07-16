@@ -85,8 +85,8 @@ const UpcExportModal = ({ onClose }: Props) => {
             s.desc,
             String(Math.round(s.periodTotal)),
             s.hasLY ? String(Math.round(s.lyPeriodTotal)) : "",
-            s.vsLYPct === null ? "" : s.vsLYPct.toFixed(1),
-            s.wowPct === null ? "" : s.wowPct.toFixed(1),
+            s.vsLYPct === null ? "" : s.vsLYPct.toFixed(2),
+            s.wowPct === null ? "" : s.wowPct.toFixed(2),
             DAY_SHORT[s.peakIdx],
             s.hasLY ? (s.peakShifted ? "Yes" : "No") : "",
           ]);

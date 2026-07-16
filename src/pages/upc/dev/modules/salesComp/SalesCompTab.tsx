@@ -271,11 +271,11 @@ const SalesCompTab = () => {
                         <span className="text-[12px] text-content/30">—</span>
                       ) : u.wowPct > 1 ? (
                         <span className="text-[12px] font-semibold px-1 py-px rounded" style={{ background: "#eaf3de", color: "#3b6d11" }}>
-                          ▲{u.wowPct.toFixed(1)}%
+                          ▲{u.wowPct.toFixed(2)}%
                         </span>
                       ) : u.wowPct < -1 ? (
                         <span className="text-[12px] font-semibold px-1 py-px rounded" style={{ background: "#fcebeb", color: "#a32d2d" }}>
-                          ▼{Math.abs(u.wowPct).toFixed(1)}%
+                          ▼{Math.abs(u.wowPct).toFixed(2)}%
                         </span>
                       ) : (
                         <span className="text-[12px] text-content/40 border border-gray-200 px-1 py-px rounded">flat</span>

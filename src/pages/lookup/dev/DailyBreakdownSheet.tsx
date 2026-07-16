@@ -116,7 +116,7 @@ const DailyBreakdownSheet = ({ description, buckets, onClose }: DailyBreakdownSh
                     !b.hasSale ? "text-content/85" : isNegative ? "text-red-700" : "text-emerald-700"
                   }`}
                 >
-                  {pct !== null ? `${pct.toFixed(1)}%` : "—"}
+                  {pct !== null ? `${pct.toFixed(2)}%` : "—"}
                 </span>
               ) : (
                 <span className={`text-right tabular-nums font-medium ${b.hasSale ? "text-content" : "text-content/85"}`}>

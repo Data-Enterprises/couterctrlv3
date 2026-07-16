@@ -31,6 +31,7 @@ import {
   formatGoliathDate,
   sameWeekDayLastYear,
   formatCurrency2,
+  formatBigNumber,
 } from "../../../utils";
 import { computeDayMatchedTotals /*, getWeeklyDataGaps, getWeeklyGapCount */ } from "../shared/ledgerUtils";
 import { ArrowDownTrayIcon /*, ExclamationTriangleIcon */ } from "@heroicons/react/20/solid";
@@ -76,7 +77,9 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
     exportSubDeptItems,
     exportSubDeptName,
     lastFetchedStoreId,
+    gradingMetric,
   } = useAppSelector((state) => state.salesLedger);
+  const isQty = gradingMetric === "qty";
   // const { weeklySales, weeklySalesLastWeek, weeklySalesLastYear } =
   //   useSalesState();
 
@@ -178,31 +181,63 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   // agrees with the left panel and day strip — the TW side of each
   // comparison is restricted to just the days with a genuine LW/LY match,
   // same as buildLedgerRows/PopupDaySidebar. A single selected day has no
-  // aggregation to do, but its lwNet/lyNet can still be null (no match).
-  const weekTotals = computeDayMatchedTotals(sortedDays);
-  const headerTwTotal = activeDay ? activeDay.twNet : weekTotals.twTotal;
-  const headerLwTotal = activeDay ? activeDay.lwNet : weekTotals.lwTotal;
-  const headerLyTotal = activeDay ? activeDay.lyNet : weekTotals.lyTotal;
+  // aggregation to do, but its lwNet/lyNet (or lwQty/lyQty) can still be
+  // null (no match). Every figure below follows gradingMetric — Sales
+  // shows dollars, Qty shows units — same toggle as the left panel.
+  const weekTotals = computeDayMatchedTotals(sortedDays, gradingMetric);
+  const headerTwTotal = activeDay
+    ? isQty
+      ? activeDay.twQty
+      : activeDay.twNet
+    : isQty
+      ? weekTotals.twQty
+      : weekTotals.twTotal;
+  const headerLwTotal = activeDay
+    ? isQty
+      ? activeDay.lwQty
+      : activeDay.lwNet
+    : isQty
+      ? weekTotals.lwQty
+      : weekTotals.lwTotal;
+  const headerLyTotal = activeDay
+    ? isQty
+      ? activeDay.lyQty
+      : activeDay.lyNet
+    : isQty
+      ? weekTotals.lyQty
+      : weekTotals.lyTotal;
   const headerHasLW = activeDay
-    ? activeDay.lwNet !== null && activeDay.lwNet > 0
+    ? isQty
+      ? activeDay.lwQty !== null && activeDay.lwQty > 0
+      : activeDay.lwNet !== null && activeDay.lwNet > 0
     : weekTotals.hasLW;
   const headerHasLY = activeDay
-    ? activeDay.lyNet !== null && activeDay.lyNet > 0
+    ? isQty
+      ? activeDay.lyQty !== null && activeDay.lyQty > 0
+      : activeDay.lyNet !== null && activeDay.lyNet > 0
     : weekTotals.hasLY;
   const headerVsLWPct = activeDay
     ? headerHasLW
-      ? ((activeDay.twNet - (activeDay.lwNet as number)) /
-          (activeDay.lwNet as number)) *
-        100
+      ? isQty
+        ? ((activeDay.twQty - (activeDay.lwQty as number)) /
+            (activeDay.lwQty as number)) *
+          100
+        : ((activeDay.twNet - (activeDay.lwNet as number)) /
+            (activeDay.lwNet as number)) *
+          100
       : null
     : weekTotals.hasLW
       ? weekTotals.vsLWPct
       : null;
   const headerVsLYPct = activeDay
     ? headerHasLY
-      ? ((activeDay.twNet - (activeDay.lyNet as number)) /
-          (activeDay.lyNet as number)) *
-        100
+      ? isQty
+        ? ((activeDay.twQty - (activeDay.lyQty as number)) /
+            (activeDay.lyQty as number)) *
+          100
+        : ((activeDay.twNet - (activeDay.lyNet as number)) /
+            (activeDay.lyNet as number)) *
+          100
       : null
     : weekTotals.hasLY
       ? weekTotals.vsLYPct
@@ -489,11 +524,11 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
       <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
         <div className="px-4 pt-2.5 text-center">
           <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-            TY Net Sales
+            {isQty ? "TY Qty" : "TY Net Sales"}
           </div>
           <div className="text-[10px] font-bold text-content mb-0.5">{twDateLabel}</div>
           <div className="text-[14px] font-bold text-content">
-            {formatCurrency2(headerTwTotal)}
+            {isQty ? formatBigNumber(headerTwTotal, 0) : formatCurrency2(headerTwTotal)}
           </div>
         </div>
         <div className="px-4 pt-2.5 text-center">
@@ -503,7 +538,11 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           <div className="text-[10px] font-bold text-content mb-0.5">{lwDateLabel}</div>
           <div className="flex items-baseline justify-center gap-2">
             <span className="text-[14px] font-bold text-content">
-              {headerLwTotal !== null ? formatCurrency2(headerLwTotal) : "—"}
+              {headerLwTotal !== null
+                ? isQty
+                  ? formatBigNumber(headerLwTotal, 0)
+                  : formatCurrency2(headerLwTotal)
+                : "—"}
             </span>
             {headerVsLWPct !== null && (
               <span
@@ -521,7 +560,11 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           <div className="text-[10px] font-bold text-content mb-0.5">{lyDateLabel}</div>
           <div className="flex items-baseline justify-center gap-2">
             <span className="text-[14px] font-bold text-content">
-              {headerLyTotal !== null ? formatCurrency2(headerLyTotal) : "—"}
+              {headerLyTotal !== null
+                ? isQty
+                  ? formatBigNumber(headerLyTotal, 0)
+                  : formatCurrency2(headerLyTotal)
+                : "—"}
             </span>
             {headerVsLYPct !== null && (
               <span
@@ -539,6 +582,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
         <PopupDaySidebar
           days={selection.days}
           selectedDate={selectedDate}
+          gradingMetric={gradingMetric}
           onSelect={(date) => dispatch(setLedgerSelectedDate(date))}
         />
       </div>

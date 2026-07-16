@@ -71,7 +71,7 @@ const LookupReportPanel = ({
               className={`text-[14px] font-bold tabular-nums mt-0.5 ${isNegative ? "text-red-800" : "text-emerald-800"}`}
             >
               {margin.marginPct !== null
-                ? `${margin.marginPct.toFixed(1)}%`
+                ? `${margin.marginPct.toFixed(2)}%`
                 : "-"}
             </div>
           </div>
@@ -224,7 +224,7 @@ const LookupReportPanel = ({
                         : "text-emerald-700"
                   }`}
                 >
-                  {pct !== null ? `${pct.toFixed(1)}%` : "—"}
+                  {pct !== null ? `${pct.toFixed(2)}%` : "—"}
                 </span>
               </div>
             );
