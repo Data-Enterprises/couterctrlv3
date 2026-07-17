@@ -87,7 +87,7 @@ interface ItemMarginRow {
 
 // Only the metrics a View preset can rank by — these are the only sortCol
 // values reachable now that the flat multi-column table is gone.
-type SortCol = "contribution" | "salesTrend" | "qty" | "cogs" | "marginTrend";
+type SortCol = "contribution" | "salesTrend" | "qty" | "cogs" | "marginTrend" | "marginPct";
 type RowMetricKey = "contribution" | "sales" | "qty" | "cogs" | "margin";
 
 interface ViewPreset {
@@ -99,6 +99,7 @@ interface ViewPreset {
 const VIEW_PRESETS: ViewPreset[] = [
   { label: "Margin Decliners", col: "marginTrend", dir: "asc" },
   { label: "Margin Gainers", col: "marginTrend", dir: "desc" },
+  { label: "Lowest Margin", col: "marginPct", dir: "asc" },
   { label: "Top Contribution", col: "contribution", dir: "desc" },
   { label: "Sales Gainers", col: "salesTrend", dir: "desc" },
   { label: "Sales Decliners", col: "salesTrend", dir: "asc" },
@@ -870,6 +871,10 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
         case "marginTrend":
           av = a.marginTrendPct ?? -999;
           bv = b.marginTrendPct ?? -999;
+          break;
+        case "marginPct":
+          av = a.tyMarginPct;
+          bv = b.tyMarginPct;
           break;
         case "qty":
           av = a.qty;
