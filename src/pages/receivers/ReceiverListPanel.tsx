@@ -17,6 +17,8 @@ import { formatDate } from "../../utils";
 import type { JsonError, ReceiverDetailsResponse } from "../../interfaces";
 import SelectFilter from "../../components/filters/SelectFilter";
 import FilterBar from "../../components/filters/FilterBar";
+import InfoPopover from "../../components/InfoPopover";
+import { RECEIVERS_INFO } from "./receiversInfo";
 
 const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
   const toast = useToast();
@@ -102,7 +104,7 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
   );
 
   const storeName = useStoreName(Number(state.storeid));
-  const [legendHover, setLegendHover] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
   const hasFilters = !!vendorFilter || !!dateFilter;
 
   return (
@@ -150,50 +152,21 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
             </span>
           )}
           <div className="flex-1" />
-          <div
-            className="relative flex-shrink-0"
-            onMouseEnter={() => setLegendHover(true)}
-            onMouseLeave={() => setLegendHover(false)}
-          >
-            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/50 hover:text-custom-white hover:border-white/40 transition-colors">
+          <div className="relative flex-shrink-0">
+            <button
+              onClick={() => setInfoOpen((prev) => !prev)}
+              title="About this view"
+              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/50 hover:text-custom-white hover:border-white/40 transition-colors"
+            >
               <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
             </button>
-            {legendHover && (
-              <div
-                className="absolute right-0 top-full mt-1.5 z-50 bg-[#1e2a4a] border border-white/15 rounded-lg shadow-lg px-3 py-2.5 flex flex-col gap-2"
-                style={{ minWidth: 230 }}
-              >
-                {[
-                  {
-                    color: "#60a5fa",
-                    label: `${grouped.length} vendor${grouped.length !== 1 ? "s" : ""}`,
-                    desc: "Distinct vendors returned for the selected store and date range",
-                  },
-                  {
-                    color: "#a78bfa",
-                    label: "Vendor ID filter",
-                    desc: "Exact match — shows only receivers from the selected vendor",
-                  },
-                  {
-                    color: "#34d399",
-                    label: "Date filter",
-                    desc: "Exact match — shows only receivers on the selected invoice date",
-                  },
-                ].map(({ color, label, desc }) => (
-                  <div key={label} className="flex items-start gap-2">
-                    <div
-                      className="w-[7px] h-[7px] rounded-full flex-shrink-0 mt-[3px]"
-                      style={{ background: color }}
-                    />
-                    <span className="text-[11px] text-custom-white leading-snug">
-                      <span className="text-custom-white font-medium">
-                        {label}
-                      </span>{" "}
-                      — {desc}
-                    </span>
-                  </div>
-                ))}
-              </div>
+            {infoOpen && (
+              <InfoPopover
+                title={RECEIVERS_INFO.title}
+                purpose={RECEIVERS_INFO.purpose}
+                glossary={RECEIVERS_INFO.glossary}
+                onClose={() => setInfoOpen(false)}
+              />
             )}
           </div>
         </div>

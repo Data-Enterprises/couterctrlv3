@@ -67,7 +67,7 @@ export const navigation: Navigation[] = [
   },
   {
     name: "Team",
-    href: "organization",
+    href: "team",
     icon: BuildingOfficeIcon,
     mobile: false,
     children: [],
@@ -362,8 +362,8 @@ export const categories: NavCategory[] = [
         isVisible: true,
       },
       {
-        name: "Organization",
-        href: "organization",
+        name: "Team",
+        href: "team",
         icon: BuildingOfficeIcon,
         mobile: false,
         children: [],

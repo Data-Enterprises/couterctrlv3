@@ -25,7 +25,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/" element={<App />}>
                 <Route index element={<Home />} />
                 <Route path="sales" element={<SalesPage />} />
-                <Route path="organization" element={<OrganizationPage />} />
+                <Route path="team" element={<OrganizationPage />} />
                 <Route path="loss-prevention" element={<LossPreventionPage />} />
                 <Route path="groups" element={<GroupsPage />} />
                 <Route path="settings" element={<Settings />} />

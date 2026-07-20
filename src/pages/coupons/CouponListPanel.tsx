@@ -1,7 +1,12 @@
 import { useState, useMemo } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import {
+  MagnifyingGlassIcon,
+  QuestionMarkCircleIcon,
+} from "@heroicons/react/20/solid";
 import { useAppSelector, useStoreName } from "../../hooks";
 import { formatCurrency2 } from "../../utils";
+import InfoPopover from "../../components/InfoPopover";
+import { COUPONS_INFO } from "./couponsInfo";
 
 interface CouponListPanelProps {
   selectedKey: string;
@@ -25,6 +30,7 @@ const CouponListPanel = ({
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
 
   const [query, setQuery] = useState("");
+  const [infoOpen, setInfoOpen] = useState(false);
 
   const storeName = useStoreName(Number(search.lastStore));
   const isGroup = search.type === "Group";
@@ -152,6 +158,26 @@ const CouponListPanel = ({
                 {m === "amount" ? "Amt" : "Qty"}
               </button>
             ))}
+          </div>
+
+          <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
+
+          <div className="relative flex-shrink-0">
+            <button
+              onClick={() => setInfoOpen((prev) => !prev)}
+              title="About this view"
+              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/50 hover:text-custom-white hover:border-white/40 transition-colors"
+            >
+              <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
+            </button>
+            {infoOpen && (
+              <InfoPopover
+                title={COUPONS_INFO.title}
+                purpose={COUPONS_INFO.purpose}
+                glossary={COUPONS_INFO.glossary}
+                onClose={() => setInfoOpen(false)}
+              />
+            )}
           </div>
         </div>
       </div>

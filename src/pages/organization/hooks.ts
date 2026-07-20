@@ -10,6 +10,7 @@ export const useOrganizationCtx = () => {
   );
   const {
     users,
+    inactiveUsers,
     userInfo,
     refresh,
     selectedUserId,
@@ -38,6 +39,7 @@ export const useOrganizationCtx = () => {
     userLevel,
     companies,
     users,
+    inactiveUsers,
     userInfo,
     refresh,
     selectedUserId,

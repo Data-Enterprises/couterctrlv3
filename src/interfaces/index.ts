@@ -860,7 +860,9 @@ export interface UsersJsonResp {
   error: number;
   success: boolean;
   msg: string;
+  users_count: number;
   users: User[];
+  inactive_users: User[];
 }
 
 export type AdminOption = {

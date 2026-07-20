@@ -5,12 +5,13 @@ import type { JsonError, User, UserLevelJsonResp } from "../../interfaces";
 import { getAllUsers } from "../../api/user";
 import { getUserLevels } from "../../api/team";
 import {
+  setInactiveUsers,
   setRefresh as setUsersRefresh,
   setUserLevels,
   setUsers,
 } from "../../features/usersSlice";
 import TeamTablet from "../team/tabletComps/TeamTablet";
-import TeamLegacy from "../team/TeamLegacy";
+// import TeamLegacy from "../team/TeamLegacy";
 import Users from "./users/Users";
 import BaseGroups from "./baseGroups/BaseGroups";
 import StoresDirectory from "./stores/StoresDirectory";
@@ -28,6 +29,15 @@ const Organization = () => {
   const ctx = useOrganizationCtx();
   const [tab, setTab] = useState<Tab>("users");
 
+  // usersSlice is shared with the legacy Team page (no forked slice), so
+  // switching Live -> Preview mounts this component with whatever
+  // refresh/users state legacy last left behind — often refresh:false,
+  // which would skip the fetch below entirely and show stale/legacy-shaped
+  // data (e.g. missing inactive_users). Force a fresh fetch on every mount.
+  useEffect(() => {
+    ctx.dispatch(setUsersRefresh(true));
+  }, []);
+
   useEffect(() => {
     if (!ctx.refresh) return;
     getAllUsers(ctx.url, ctx.token)
@@ -35,17 +45,34 @@ const Organization = () => {
         const j = resp.data;
         if (j.error === 0) {
           const companyIds = ctx.companies.map((c) => c.company);
-          const filtered = [...j.users].filter((u: User) => {
-            const isDcrUser = u.companies.find(
-              (c) => c.company === 5 && c.name === "DCR",
-            );
-            if (isDcrUser) return false;
-            return u.companies.some((c) => companyIds.includes(c.company));
-          });
+          const scopeToOwnCompanies = (list: User[]) =>
+            list.filter((u: User) => {
+              const isDcrUser = u.companies.find(
+                (c) => c.company === 5 && c.name === "DCR",
+              );
+              if (isDcrUser) return false;
+              return u.companies.some((c) => companyIds.includes(c.company));
+            });
           const isDcrUser = ctx.companies.find(
             (c) => c.company === 5 && c.name === "DCR",
           );
-          ctx.dispatch(setUsers(isDcrUser ? j.users : filtered));
+          // Inactive users seeded for testing carry an @example.com email —
+          // strip those out so the Inactive list only shows real accounts.
+          const realInactiveUsers = j.inactive_users.filter(
+            (u: User) => !u.email?.toLowerCase().endsWith("@example.com"),
+          );
+          // in place to double check the api is working so we don't mess with live users
+          // const realInactiveUsers = j.inactive_users;
+          ctx.dispatch(
+            setUsers(isDcrUser ? j.users : scopeToOwnCompanies(j.users)),
+          );
+          ctx.dispatch(
+            setInactiveUsers(
+              isDcrUser
+                ? realInactiveUsers
+                : scopeToOwnCompanies(realInactiveUsers),
+            ),
+          );
         }
       })
       .catch((err: JsonError) =>
@@ -61,14 +88,14 @@ const Organization = () => {
   }, [ctx.refresh]);
 
   if (ctx.isTablet) return <TeamTablet />;
-  if (!ctx.isDesktop) return <TeamLegacy />;
+  // if (!ctx.isDesktop) return <TeamLegacy />;
 
   return (
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
       <div className="w-fit max-w-[95vw] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start">
         <div className="bg-[#1e2a4a] px-3 py-2 flex-shrink-0 flex items-center gap-3">
           <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
-            Organization
+            Team Management
           </span>
         </div>
 

@@ -221,11 +221,7 @@ export const checkUsername = async (
   return json;
 };
 
-export const checkEmail = async (
-  url: string,
-  token: string,
-  email: string,
-) => {
+export const checkEmail = async (url: string, token: string, email: string) => {
   const json = await axios({
     method: "GET",
     headers: {
@@ -235,6 +231,21 @@ export const checkEmail = async (
     url: url + "users/is_email_available",
     params: {
       email,
+    },
+  });
+  return json;
+};
+
+export const reactivateUser = async (url: string, token: string, username: string) => {
+  const json = await axios({
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "users/reactivate_user",
+    data: {
+      username,
     },
   });
   return json;

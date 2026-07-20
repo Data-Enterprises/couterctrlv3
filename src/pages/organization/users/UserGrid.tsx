@@ -1,5 +1,10 @@
 import { useMemo, useState } from "react";
-import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/20/solid";
+import {
+  PencilIcon,
+  TrashIcon,
+  PlusIcon,
+  ArrowPathIcon,
+} from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
@@ -8,7 +13,7 @@ import {
   setSelectedUserId,
   setSelectedUserInfo,
 } from "../../../features/usersSlice";
-import { deleteUser } from "../../../api/team";
+import { deleteUser, reactivateUser } from "../../../api/team";
 import type { JsonError, User } from "../../../interfaces";
 import { roles } from "../constants";
 import SelectFilter from "../../../components/filters/SelectFilter";
@@ -19,6 +24,8 @@ import ConfirmModal from "../../../components/ConfirmModal";
 interface UserGridProps {
   onOpenCreate: () => void;
 }
+
+const NO_COMPANY_VALUE = "none";
 
 const formatDate = (dateStr: string | null) => {
   if (!dateStr) return "N/A";
@@ -32,10 +39,11 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   const [companyFilter, setCompanyFilter] = useState("");
   const [levelFilter, setLevelFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
-  const [noCompanyOnly, setNoCompanyOnly] = useState(false);
   const [searchType, setSearchType] = useState<"name" | "email">("name");
   const [searchText, setSearchText] = useState("");
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [statusFilter, setStatusFilter] = useState("");
+  const showInactive = statusFilter === "inactive";
 
   const isOutranked = (lvl: number) => lvl > ctx.userLevel;
 
@@ -44,13 +52,16 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   const renderLvlText = (lvl: number) =>
     ctx.userLevels.find((l) => l.id === lvl)?.name ?? "N/A";
 
+  const sourceUsers = showInactive ? ctx.inactiveUsers : ctx.users;
+
   const filtered = useMemo(() => {
-    return ctx.users.filter((u) => {
-      const companyCheck = noCompanyOnly
-        ? u.companies.length === 0
-        : companyFilter
-          ? u.companies.some((c) => c.company === Number(companyFilter))
-          : true;
+    return sourceUsers.filter((u) => {
+      const companyCheck =
+        companyFilter === NO_COMPANY_VALUE
+          ? u.companies.length === 0
+          : companyFilter
+            ? u.companies.some((c) => c.company === Number(companyFilter))
+            : true;
       const levelCheck = levelFilter
         ? u.user_level === Number(levelFilter)
         : true;
@@ -65,9 +76,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
       return companyCheck && levelCheck && roleCheck && textCheck;
     });
   }, [
-    ctx.users,
+    sourceUsers,
     companyFilter,
-    noCompanyOnly,
     levelFilter,
     roleFilter,
     searchType,
@@ -75,8 +85,19 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   ]);
 
   const noCompanyCount = useMemo(
-    () => ctx.users.filter((u) => u.companies.length === 0).length,
-    [ctx.users],
+    () => sourceUsers.filter((u) => u.companies.length === 0).length,
+    [sourceUsers],
+  );
+
+  const companyOptions = useMemo(
+    () => [
+      { value: NO_COMPANY_VALUE, label: `No company (${noCompanyCount})` },
+      ...ctx.companies.map((c) => ({
+        value: String(c.company),
+        label: c.name,
+      })),
+    ],
+    [ctx.companies, noCompanyCount],
   );
 
   const handleEdit = (u: User) => {
@@ -103,35 +124,41 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
       );
   };
 
+  const handleReactivate = (u: User) => {
+    reactivateUser(ctx.url, ctx.token, u.username)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          toast.success("User reactivated successfully");
+          ctx.dispatch(setRefresh(true));
+        } else {
+          toast.warn("Error reactivating user: " + j.msg);
+        }
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error reactivating user: " + err.message),
+      );
+  };
+
   return (
     <div className="flex-1 flex flex-col min-h-0 p-4 w-[900px]">
       <div className="flex flex-nowrap items-center gap-2 mb-3">
         <SelectFilter
-          options={ctx.companies.map((c) => ({
-            value: String(c.company),
-            label: c.name,
-          }))}
+          options={companyOptions}
           value={companyFilter}
-          onChange={(v) => {
-            setCompanyFilter(v);
-            setNoCompanyOnly(false);
-          }}
+          onChange={setCompanyFilter}
           placeholder="All companies"
           className="w-[150px] flex-shrink-0"
         />
-        <button
-          onClick={() => {
-            setNoCompanyOnly((v) => !v);
-            setCompanyFilter("");
-          }}
-          className={`text-[10.5px] font-medium px-2.5 py-1 rounded-full flex-shrink-0 whitespace-nowrap ${
-            noCompanyOnly
-              ? "bg-[#1e2a4a] text-custom-white"
-              : "bg-custom-white border border-gray-200 text-content"
-          }`}
-        >
-          No company ({noCompanyCount})
-        </button>
+        <SelectFilter
+          options={[
+            { value: "inactive", label: `Inactive (${ctx.inactiveUsers.length})` },
+          ]}
+          value={statusFilter}
+          onChange={setStatusFilter}
+          placeholder="Active"
+          className="w-[110px] flex-shrink-0"
+        />
         <SelectFilter
           options={ctx.userLevels.map((l) => ({
             value: String(l.id),
@@ -177,7 +204,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
           className="flex items-center gap-1 text-[11.5px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 flex-shrink-0"
         >
           <PlusIcon className="w-3.5 h-3.5" />
-          New user
+          New
         </button>
       </div>
 
@@ -208,6 +235,12 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                     <span className="text-[10px] italic text-content/40">
                       Unauthorized
                     </span>
+                  ) : showInactive ? (
+                    <IconButton
+                      icon={ArrowPathIcon}
+                      title="Reactivate"
+                      onClick={() => handleReactivate(u)}
+                    />
                   ) : (
                     <>
                       <IconButton

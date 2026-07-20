@@ -145,7 +145,6 @@ const LedgerHeader = ({
               purpose={SALES_LEDGER_INFO.purpose}
               glossary={SALES_LEDGER_INFO.glossary}
               onClose={() => setInfoOpen(false)}
-              className="w-[495px]"
             />
           )}
         </div>
