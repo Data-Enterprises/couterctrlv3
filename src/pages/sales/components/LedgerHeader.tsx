@@ -12,6 +12,8 @@ import {
   QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
+import InfoPopover from "../../../components/InfoPopover";
+import { SALES_LEDGER_INFO } from "../salesInfo";
 
 interface LedgerHeaderProps {
   weekLabel: string;
@@ -39,7 +41,7 @@ const LedgerHeader = ({
 }: LedgerHeaderProps) => {
   const dispatch = useAppDispatch();
   const threshold = useAppSelector((s) => s.salesLedger.threshold);
-  const [legendHover, setLegendHover] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
 
   const isQty = gradingMetric === "qty";
 
@@ -128,65 +130,23 @@ const LedgerHeader = ({
 
         <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
 
-        {/* Legend tooltip */}
-        <div
-          className="relative flex-shrink-0"
-          onMouseEnter={() => setLegendHover(true)}
-          onMouseLeave={() => setLegendHover(false)}
-        >
-          <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/75 hover:text-custom-white hover:border-custom-white/40 transition-colors">
+        {/* About this view */}
+        <div className="relative flex-shrink-0">
+          <button
+            onClick={() => setInfoOpen((prev) => !prev)}
+            title="About this view"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/75 hover:text-custom-white hover:border-custom-white/40 transition-colors"
+          >
             <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
           </button>
-          {legendHover && (
-            <div
-              className="absolute right-0 top-full mt-1.5 z-50 bg-[#1e2a4a] border border-custom-white/15 rounded-lg shadow-lg px-3 py-2.5 flex flex-col gap-1.5"
-              style={{ minWidth: 210 }}
-            >
-              {[
-                {
-                  color: "#fca5a5",
-                  label: threshold
-                    ? `Critical — >${threshold.amount}% below LY`
-                    : "Critical",
-                },
-                {
-                  color: "#fcd34d",
-                  label: threshold
-                    ? `Watch — 0–${threshold.amount}% below LY`
-                    : "Watch",
-                },
-                { color: "#6ee7b7", label: "Healthy — at or above LY" },
-              ].map(({ color, label }) => (
-                <div key={label} className="flex items-start gap-2">
-                  <div
-                    className="w-2.5 h-2.5 rounded-[2px] flex-shrink-0 mt-[3px]"
-                    style={{ background: color }}
-                  />
-                  <div className="text-[12px] flex justify-between flex-1 text-custom-white">
-                    <div>{label.split("—")[0]}</div>
-                    <div>{label.split("—")[1]}</div>
-                  </div>
-                </div>
-              ))}
-              <div className="h-px bg-custom-white/10 my-0.5" />
-              <div className="text-[11px] font-semibold uppercase tracking-wide text-custom-white">
-                Metric graded
-              </div>
-              {[
-                { label: "Sales", active: !isQty },
-                { label: "Quantity", active: isQty },
-              ].map(({ label, active }) => (
-                <div key={label} className="flex items-center gap-1.5">
-                  <span className="text-custom-white text-[11px]">·</span>
-                  <span className="text-[12px] text-custom-white">{label}</span>
-                  {active && (
-                    <span className="text-[11.5px] text-custom-white font-medium">
-                      selected
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
+          {infoOpen && (
+            <InfoPopover
+              title={SALES_LEDGER_INFO.title}
+              purpose={SALES_LEDGER_INFO.purpose}
+              glossary={SALES_LEDGER_INFO.glossary}
+              onClose={() => setInfoOpen(false)}
+              className="w-[495px]"
+            />
           )}
         </div>
       </div>

@@ -52,7 +52,7 @@ const InfoPopover = ({ title, purpose, glossary, onClose, className }: InfoPopov
         <p className="text-[11px] text-custom-white/85 leading-relaxed">{purpose}</p>
       </div>
 
-      <div className="px-3.5 py-2.5 flex flex-col gap-2.5 max-h-[260px] overflow-y-auto thin-scrollbar">
+      <div className="px-3.5 py-2.5 flex flex-col gap-2.5 max-h-[400px] overflow-y-auto thin-scrollbar">
         {glossary.map((entry) => (
           <div key={entry.term}>
             <div className="text-[11px] font-semibold text-custom-white">{entry.term}</div>
