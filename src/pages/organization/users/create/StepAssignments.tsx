@@ -187,7 +187,7 @@ const StepAssignments = ({
         placeholder="Search base groups…"
         className="mb-1.5"
       />
-      <div className="border border-gray-100 rounded-lg overflow-y-auto max-h-[280px] mb-4">
+      <div className="border border-gray-100 rounded-lg overflow-y-auto max-h-[200px] mb-4 thin-scrollbar">
         {(activeCompany ? companyGroups[activeCompany] : [])
           ?.filter((g) => g.name.toLowerCase().includes(groupSearch.toLowerCase()))
           .map((group) => {
@@ -243,7 +243,7 @@ const StepAssignments = ({
                     }
                     className="mb-1.5"
                   />
-                  <div className="max-h-40 overflow-y-auto thin-scrollbar">
+                  <div className="max-h-36 overflow-y-auto thin-scrollbar">
                     {filteredStores.map((s) => {
                       const isSelected = inGroup.some(
                         (sel) => sel.storeid === s.storeid,
@@ -301,22 +301,24 @@ const StepAssignments = ({
             Clear all
           </button>
         </div>
-        {rollup.map((r) => (
-          <div
-            key={r.groupId}
-            className="flex justify-between text-[11.5px] text-content/70 py-0.5"
-          >
-            <span>
-              {r.groupName}{" "}
-              <span className="text-content/40">
-                · {companyName(r.companyId ?? 0)}
+        <div className="max-h-[150px] overflow-y-auto thin-scrollbar grid grid-cols-2 gap-x-4 gap-y-1.5">
+          {rollup.map((r) => (
+            <div
+              key={r.groupId}
+              className="flex justify-between text-[12px] text-content/85 py-1 bg- px-2 rounded-lg shadow-sm shadow-content/15"
+            >
+              <div>
+                {r.groupName}{" "}
+                <div className="text-content/40">
+                 {companyName(r.companyId ?? 0)}
+                </div>
+              </div>
+              <span>
+                {r.count}/{r.total}
               </span>
-            </span>
-            <span>
-              {r.count}/{r.total}
-            </span>
-          </div>
-        ))}
+            </div>
+          ))}
+        </div>
         {rollup.length === 0 && (
           <div className="text-[11.5px] text-content/50">
             Nothing selected yet

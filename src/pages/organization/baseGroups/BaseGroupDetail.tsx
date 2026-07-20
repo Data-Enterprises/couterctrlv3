@@ -10,8 +10,8 @@ import {
   unAssignStoreToBaseGroup,
 } from "../../../api/baseGroups";
 import AssignPanel from "../components/AssignPanel";
-import IconButton from "../components/IconButton";
-import ConfirmModal from "../components/ConfirmModal";
+import IconButton from "../../../components/IconButton";
+import ConfirmModal from "../../../components/ConfirmModal";
 import BaseGroupUsersTab from "./BaseGroupUsersTab";
 import type { StoreSplit } from "../types";
 

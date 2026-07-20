@@ -6,8 +6,8 @@ interface ConfirmModalProps {
   onCancel: () => void;
 }
 
-// Shared delete-confirmation modal — used by both the Users grid and Base
-// Groups detail, so the destructive-action pattern stays identical everywhere.
+// Shared delete-confirmation modal — used across grid-style admin pages
+// (Organization, Admin) so the destructive-action pattern stays identical.
 const ConfirmModal = ({
   title,
   message,

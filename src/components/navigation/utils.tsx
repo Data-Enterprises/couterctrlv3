@@ -66,7 +66,7 @@ export const navigation: Navigation[] = [
     isVisible: true,
   },
   {
-    name: "Organization",
+    name: "Team",
     href: "organization",
     icon: BuildingOfficeIcon,
     mobile: false,

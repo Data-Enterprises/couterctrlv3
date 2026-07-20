@@ -12,13 +12,12 @@ export const defaultComp: Company = {
   zip: 0,
 };
 
-export type AdminForm = "create" | "update" | "delete" | "store_activity";
+export type AdminForm = "companies" | "store_activity" | "new_store_name";
 
 interface AdminPageState {
   companies: Company[];
   companyForm: Company;
   refresh: boolean;
-  deleteCompanyModalOpen: boolean;
   companyStoresActivity: StoreWithActivity[];
   filteredStoresActivity: StoreWithActivity[];
   isLoadingStoreActivity: boolean;
@@ -30,12 +29,11 @@ const initialState: AdminPageState = {
   companies: [],
   companyForm: defaultComp,
   refresh: true,
-  deleteCompanyModalOpen: false,
   companyStoresActivity: [],
   filteredStoresActivity: [],
   isLoadingStoreActivity: false,
   storeNameFilter: "",
-  adminForm: "create",
+  adminForm: "companies",
 };
 
 const adminPageSlice = createSlice({
@@ -63,9 +61,6 @@ const adminPageSlice = createSlice({
     },
     setRefresh: (state, action: PayloadAction<boolean>) => {
       state.refresh = action.payload;
-    },
-    setDeleteCompanyModalOpen: (state, action: PayloadAction<boolean>) => {
-      state.deleteCompanyModalOpen = action.payload;
     },
     setAdminForm: (state, action: PayloadAction<AdminForm>) => {
       state.adminForm = action.payload;
@@ -99,7 +94,6 @@ export const {
   setCompanyForm,
   resetCompanyForm,
   setRefresh,
-  setDeleteCompanyModalOpen,
   setAdminForm,
   setCompanyStoresActivity,
   setFilteredCompanyStoresActivity,

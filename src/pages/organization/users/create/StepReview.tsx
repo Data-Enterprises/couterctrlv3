@@ -113,13 +113,15 @@ const StepReview = ({
             Edit
           </button>
         </div>
-        <div className="flex justify-between text-[12px] py-1 border-t border-gray-100">
-          <span className="text-content/70">Role</span>
-          <span className="text-content">{roleLabel}</span>
-        </div>
-        <div className="flex justify-between text-[12px] py-1 border-t border-gray-100">
-          <span className="text-content/70">Level</span>
-          <span className="text-content">{levelLabel}</span>
+        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-100">
+          <div>
+            <div className="text-[10px] text-content/50">Role</div>
+            <div className="text-[12px] text-content">{roleLabel}</div>
+          </div>
+          <div>
+            <div className="text-[10px] text-content/50">Level</div>
+            <div className="text-[12px] text-content">{levelLabel}</div>
+          </div>
         </div>
       </div>
 
@@ -135,13 +137,19 @@ const StepReview = ({
             Edit
           </button>
         </div>
-        <div className="flex justify-between text-[12px] py-1 border-t border-gray-100">
-          <span className="text-content/70">Username</span>
-          <span className="text-content">{ctx.userInfo.username}</span>
-        </div>
-        <div className="flex justify-between text-[12px] py-1 border-t border-gray-100">
-          <span className="text-content/70">Email</span>
-          <span className="text-content">{ctx.userInfo.email}</span>
+        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-100">
+          <div>
+            <div className="text-[10px] text-content/50">Username</div>
+            <div className="text-[12px] text-content">
+              {ctx.userInfo.username}
+            </div>
+          </div>
+          <div>
+            <div className="text-[10px] text-content/50">Email</div>
+            <div className="text-[12px] text-content truncate">
+              {ctx.userInfo.email}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -157,20 +165,22 @@ const StepReview = ({
             Edit
           </button>
         </div>
-        {rollup.map((r) => (
-          <div
-            key={r.groupId}
-            className="flex justify-between text-[12px] py-1 border-t border-gray-100"
-          >
-            <span className="text-content/70">
-              {r.groupName}{" "}
-              <span className="text-content/40">
-                · {companyName(r.companyId ?? 0)}
+        <div className="max-h-[180px] overflow-y-auto thin-scrollbar">
+          {rollup.map((r) => (
+            <div
+              key={r.groupId}
+              className="flex justify-between text-[12px] py-1 border-t border-gray-100"
+            >
+              <span className="text-content/70">
+                {r.groupName}{" "}
+                <span className="text-content/40">
+                  · {companyName(r.companyId ?? 0)}
+                </span>
               </span>
-            </span>
-            <span className="text-content">{r.count}</span>
-          </div>
-        ))}
+              <span className="text-content">{r.count}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="pt-4 border-t border-gray-100">

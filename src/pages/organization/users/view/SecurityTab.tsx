@@ -52,7 +52,7 @@ const SecurityTab = () => {
 
   return (
     <div className="max-w-[440px]">
-      <div className="p-2.5 bg-gray-50 rounded-lg mb-4">
+      <div className="p-2.5 bg-gray-50 rounded-lg">
         <ul className="text-[11px] text-content/70 list-disc pl-4 space-y-0.5">
           <li>The temporary password must be confirmed before submitting</li>
           <li>
@@ -62,7 +62,7 @@ const SecurityTab = () => {
         </ul>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="grid grid-cols-2 gap-3 mb-2">
         <PasswordInput
           label="Password"
           name="password"
@@ -83,7 +83,7 @@ const SecurityTab = () => {
         />
       </div>
 
-      <div className="flex gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <button
           onClick={resetPassword}
           disabled={!canResetPW}

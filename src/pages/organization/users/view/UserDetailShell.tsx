@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { KeyIcon } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { getBGAssignedToUserSplit } from "../../../../api/baseGroups";
 import { setAllSelectedBaseGroups } from "../../../../features/baseGroupSlice";
 import type { JsonError } from "../../../../interfaces";
 import { roles } from "../../constants";
+import IconButton from "../../../../components/IconButton";
 import BasicInfoTab from "./BasicInfoTab";
 import CompaniesTab from "./CompaniesTab";
 import BaseGroupsTab from "./BaseGroupsTab";
@@ -16,7 +18,6 @@ const TABS = [
   { id: 2, label: "Companies" },
   { id: 3, label: "Base groups" },
   { id: 4, label: "Stores" },
-  { id: 5, label: "Password & security" },
 ];
 
 interface UserDetailShellProps {
@@ -27,6 +28,7 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
   const [tab, setTab] = useState(1);
+  const [securityOpen, setSecurityOpen] = useState(false);
 
   const targetUser = ctx.users.find((u) => u.id === ctx.selectedUserId);
   const outranked = targetUser ? targetUser.user_level > ctx.userLevel : false;
@@ -60,8 +62,6 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
         return <BaseGroupsTab />;
       case 4:
         return <StoresTab />;
-      case 5:
-        return <SecurityTab />;
       default:
         return null;
     }
@@ -77,7 +77,7 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
         <div className="w-11 h-11 rounded-full bg-[#1e2a4a] text-custom-white flex items-center justify-center text-[15px] font-medium flex-shrink-0">
           {initials}
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <div className="text-[15px] font-medium text-content">
             {ctx.userInfo.first_name} {ctx.userInfo.last_name}
           </div>
@@ -93,6 +93,11 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
             </span>
           </div>
         </div>
+        <IconButton
+          icon={KeyIcon}
+          title="Password & security"
+          onClick={() => setSecurityOpen(true)}
+        />
       </div>
 
       <div className="flex border-b border-gray-100 mb-4 flex-shrink-0">
@@ -110,6 +115,25 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
       </div>
 
       <div className="flex-1 overflow-y-auto thin-scrollbar">{renderTab()}</div>
+
+      {securityOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35">
+          <div className="bg-custom-white rounded-xl p-5 w-[480px] shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div className="text-[14px] font-medium text-content">
+                Password & security
+              </div>
+              <button
+                onClick={() => setSecurityOpen(false)}
+                className="text-[11px] text-content/60"
+              >
+                Close
+              </button>
+            </div>
+            <SecurityTab />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

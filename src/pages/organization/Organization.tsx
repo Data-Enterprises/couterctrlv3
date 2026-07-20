@@ -13,8 +13,15 @@ import TeamTablet from "../team/tabletComps/TeamTablet";
 import TeamLegacy from "../team/TeamLegacy";
 import Users from "./users/Users";
 import BaseGroups from "./baseGroups/BaseGroups";
+import StoresDirectory from "./stores/StoresDirectory";
 
-type Tab = "users" | "baseGroups";
+type Tab = "users" | "baseGroups" | "stores";
+
+const TAB_LABELS: Record<Tab, string> = {
+  users: "Users",
+  baseGroups: "Base Groups",
+  stores: "Stores",
+};
 
 const Organization = () => {
   const toast = useToast();
@@ -66,7 +73,7 @@ const Organization = () => {
         </div>
 
         <div className="flex border-b border-gray-100 flex-shrink-0">
-          {(["users", "baseGroups"] as Tab[]).map((t) => (
+          {(["users", "baseGroups", "stores"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -76,13 +83,14 @@ const Organization = () => {
                   : "border-transparent text-content"
               }`}
             >
-              {t === "users" ? "Users" : "Base Groups"}
+              {TAB_LABELS[t]}
             </button>
           ))}
         </div>
 
         {tab === "users" && <Users />}
         {tab === "baseGroups" && <BaseGroups />}
+        {tab === "stores" && <StoresDirectory />}
       </div>
     </div>
   );

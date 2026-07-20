@@ -13,8 +13,8 @@ import type { JsonError, User } from "../../../interfaces";
 import { roles } from "../constants";
 import SelectFilter from "../../../components/filters/SelectFilter";
 import TextFilter from "../../../components/filters/TextFilter";
-import IconButton from "../components/IconButton";
-import ConfirmModal from "../components/ConfirmModal";
+import IconButton from "../../../components/IconButton";
+import ConfirmModal from "../../../components/ConfirmModal";
 
 interface UserGridProps {
   onOpenCreate: () => void;
