@@ -11,6 +11,7 @@ import {
   setDevUpcItems,
   setDevUpcCount,
   setDevStoreids,
+  clearDevUpcData,
 } from "../../../features/upcDevSlice";
 import { getSalesComp } from "../../../api/upc";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
@@ -71,6 +72,11 @@ const UpcListDev = () => {
     if (!storeids) return;
 
     setReSearchOpen(false);
+    // Wipe every tab's fetched/derived state before the new search's results
+    // start coming in — otherwise a re-search leaves stale selections and
+    // stale tab data (Price Opt/Trend/Association) sitting around mixed in
+    // with the new UPC list.
+    dispatch(clearDevUpcData());
     dispatch(setDevStoreids(storeids));
     dispatch(setDevIsLoading(true));
 

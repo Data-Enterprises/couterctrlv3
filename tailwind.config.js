@@ -192,6 +192,10 @@ export default {
           "90%": [{ transform: "translateX(5%)" }],
           "100%": { transform: "translateX(0)", opacity: 1 },
         },
+        slidedown: {
+          "0%": { transform: "translateY(-8px)", opacity: 0 },
+          "100%": { transform: "translateY(0)", opacity: 1 },
+        },
       },
 
       animation: {
@@ -211,6 +215,7 @@ export default {
         fillLeft: "fillLeft 0.5s ease-in-out forwards",
         slideleft: "slideleft 0.5s ease-in-out forwards",
         slideright: "slideright 0.5s ease-in-out forwards",
+        slidedown: "slidedown 0.15s ease-out forwards",
       },
       textShadow: {
         custom: "1px 1px 4px var(--tw-shadow-color)",

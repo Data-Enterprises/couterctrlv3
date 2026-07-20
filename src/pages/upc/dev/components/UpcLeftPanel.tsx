@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   MagnifyingGlassIcon,
   QuestionMarkCircleIcon,
@@ -6,6 +7,7 @@ import { useAppSelector } from "../../../../hooks";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import UpcItemList from "./UpcItemList";
 import PriceOptStorePicker from "../modules/priceOpt/PriceOptStorePicker";
+import ModuleInfoPopover from "./ModuleInfoPopover";
 
 interface Props {
   onReSearch: () => void;
@@ -14,6 +16,7 @@ interface Props {
 const UpcLeftPanel = ({ onReSearch }: Props) => {
   const ctx = useUpcDevCtx();
   const searchState = useAppSelector((s) => s.search);
+  const [infoOpen, setInfoOpen] = useState(false);
 
   const locationLabel =
     searchState.type === "Store"
@@ -29,7 +32,7 @@ const UpcLeftPanel = ({ onReSearch }: Props) => {
   return (
     <div className="w-[300px] flex-shrink-0 shadow-lg flex flex-col overflow-hidden rounded-xl">
       {/* 2-row navy header */}
-      <div className="bg-[#1e2a4a] rounded-t-xl px-3 pt-1 pb-2.5 flex flex-col gap-0 flex-shrink-0">
+      <div className="bg-[#1e2a4a] rounded-t-xl px-3 pt-1 pb-2.5 flex flex-col gap-0 flex-shrink-0 relative">
         {/* Row 1: title + UPC count */}
         <div className="flex items-start justify-between">
           <div>
@@ -62,6 +65,7 @@ const UpcLeftPanel = ({ onReSearch }: Props) => {
           </span>
 
           <button
+            onClick={() => setInfoOpen((prev) => !prev)}
             title="About this view"
             className="flex items-center justify-center w-[22px] h-[22px] rounded border text-custom-white hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
             style={{ borderColor: "rgb(var(--color-custom-white) / 0.20)" }}
@@ -69,6 +73,8 @@ const UpcLeftPanel = ({ onReSearch }: Props) => {
             <QuestionMarkCircleIcon className="w-3 h-3" />
           </button>
         </div>
+
+        {infoOpen && <ModuleInfoPopover tab={ctx.activeTab} onClose={() => setInfoOpen(false)} />}
       </div>
 
       <div className="flex-1 bg-custom-white flex flex-col min-h-0 overflow-hidden">

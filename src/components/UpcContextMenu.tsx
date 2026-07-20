@@ -12,12 +12,13 @@ interface UpcContextMenuProps {
   upc: string;
   allUpcs: string[];
   severityUpcs?: SeverityUpcs;
+  extraActions?: { label: string; onClick: () => void }[];
   onClose: () => void;
 }
 
 const copyToClipboard = (upcs: string[]) => navigator.clipboard.writeText(upcs.join(", "));
 
-const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, onClose }: UpcContextMenuProps) => {
+const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, extraActions, onClose }: UpcContextMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,6 +40,12 @@ const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, onClose }: UpcContex
       { label: "Copy watch UPCs", count: severityUpcs.watch.length, disabled: severityUpcs.watch.length === 0, onClick: () => copyToClipboard(severityUpcs.watch) },
       { label: "Copy healthy UPCs", count: severityUpcs.healthy.length, disabled: severityUpcs.healthy.length === 0, onClick: () => copyToClipboard(severityUpcs.healthy) },
     );
+  }
+
+  if (extraActions) {
+    for (const action of extraActions) {
+      items.push({ label: action.label, count: null, disabled: false, onClick: action.onClick });
+    }
   }
 
   return (

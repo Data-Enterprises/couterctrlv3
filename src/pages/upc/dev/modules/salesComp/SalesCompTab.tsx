@@ -145,7 +145,7 @@ const SalesCompTab = () => {
 
   if (!filtered.length) {
     return (
-      <div className="flex items-center justify-center h-full text-[11px] text-content/30">
+      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
         No sales comparison data
       </div>
     );
@@ -165,7 +165,7 @@ const SalesCompTab = () => {
                 className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${
                   compareMode === key
                     ? "bg-[#1e2a4a] text-custom-white"
-                    : "bg-custom-white text-content/50 hover:text-content/70"
+                    : "bg-custom-white text-content/85 hover:text-content"
                 }`}
               >
                 {label}
@@ -183,7 +183,7 @@ const SalesCompTab = () => {
                 className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${
                   heatMode === mode
                     ? "bg-[#1e2a4a] text-custom-white"
-                    : "bg-custom-white text-content/50 hover:text-content/70"
+                    : "bg-custom-white text-content/85 hover:text-content"
                 }`}
               >
                 {mode === "global" ? "Global" : "Per item"}
@@ -230,8 +230,8 @@ const SalesCompTab = () => {
                   >
                     <td className="pl-2">
                       {isOpen
-                        ? <ChevronDownIcon className="w-3 h-3 text-content/40" />
-                        : <ChevronRightIcon className="w-3 h-3 text-content/30" />}
+                        ? <ChevronDownIcon className="w-3 h-3 text-content/85" />
+                        : <ChevronRightIcon className="w-3 h-3 text-content/85" />}
                     </td>
                     <td className="px-2 py-1.5">
                       <div className="text-[12px] font-medium text-content truncate leading-tight">{u.desc}</div>
@@ -255,7 +255,7 @@ const SalesCompTab = () => {
                     </td>
                     <td className="py-1.5 pr-2 text-right">
                       {u.vsLYPct === null ? (
-                        <span className="text-[12px] text-content/30">—</span>
+                        <span className="text-[12px] text-content/85">—</span>
                       ) : (
                         <span
                           className={`text-[12px] font-semibold px-1 py-px rounded ${
@@ -268,7 +268,7 @@ const SalesCompTab = () => {
                     </td>
                     <td className="py-1.5 pr-2 text-right">
                       {u.wowPct === null ? (
-                        <span className="text-[12px] text-content/30">—</span>
+                        <span className="text-[12px] text-content/85">—</span>
                       ) : u.wowPct > 1 ? (
                         <span className="text-[12px] font-semibold px-1 py-px rounded" style={{ background: "#eaf3de", color: "#3b6d11" }}>
                           ▲{u.wowPct.toFixed(2)}%
@@ -278,7 +278,7 @@ const SalesCompTab = () => {
                           ▼{Math.abs(u.wowPct).toFixed(2)}%
                         </span>
                       ) : (
-                        <span className="text-[12px] text-content/40 border border-gray-200 px-1 py-px rounded">flat</span>
+                        <span className="text-[12px] text-content/85 border border-gray-200 px-1 py-px rounded">flat</span>
                       )}
                     </td>
                     <td className="py-1.5 pr-1.5">
@@ -290,7 +290,7 @@ const SalesCompTab = () => {
                       ? u.dayDeltaPcts.map((pct, di) => (
                           <td key={di} className="py-1.5 pr-1.5 text-right tabular-nums text-[12px]">
                             {pct === null ? (
-                              <span className="text-content/30">—</span>
+                              <span className="text-content/85">—</span>
                             ) : (
                               <span className={pct >= 0 ? "text-severity_healthy_text font-medium" : "text-severity_critical_text font-medium"}>
                                 {pct >= 0 ? "▲" : "▼"}{Math.abs(pct).toFixed(0)}%
@@ -373,7 +373,7 @@ const SalesCompTab = () => {
               </td>
               <td className="py-1.5 pr-2 text-right">
                 {footerVsLYPct === null ? (
-                  <span className="text-[10px] text-content/30">—</span>
+                  <span className="text-[10px] text-content/85">—</span>
                 ) : (
                   <span className={`text-[10px] font-semibold ${footerVsLYPct >= 0 ? "text-severity_healthy_text" : "text-severity_critical_text"}`}>
                     {footerVsLYPct >= 0 ? "▲" : "▼"}{Math.abs(footerVsLYPct).toFixed(0)}%
@@ -391,7 +391,7 @@ const SalesCompTab = () => {
           </tbody>
         </table>
       </div>
-      <div className="px-3 py-1.5 text-[10px] text-content/40 italic flex-shrink-0">
+      <div className="px-3 py-1.5 text-[10px] text-content/85 italic flex-shrink-0">
         {dayTotalsLY.some((v) => v > 0)
           ? "LY rows show same calendar weeks, prior year. Peak day shift shown in red when changed vs LY."
           : "No LY data available for the selected UPCs — showing TY only."}

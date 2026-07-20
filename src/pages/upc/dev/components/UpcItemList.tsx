@@ -52,13 +52,13 @@ const UpcItemList = () => {
         <div className="flex gap-2">
           <button
             onClick={handleSelectAll}
-            className="text-[9px] text-[#1e2a4a] font-medium hover:underline"
+            className="text-[10px] text-[#1e2a4a] font-medium hover:underline"
           >
             All
           </button>
           <button
             onClick={handleDeselectAll}
-            className="text-[9px] text-[#1e2a4a] hover:text-content/60"
+            className="text-[10px] text-[#1e2a4a] hover:text-content/85"
           >
             None
           </button>
@@ -68,7 +68,7 @@ const UpcItemList = () => {
       {/* list */}
       <div className="flex-1 overflow-y-auto thin-scrollbar min-h-0">
         {visible.length === 0 ? (
-          <div className="flex items-center justify-center h-16 text-[10px] text-content/30">
+          <div className="flex items-center justify-center h-16 text-[10px] text-content/85">
             {ctx.filterText ? "No matches" : "No items"}
           </div>
         ) : (

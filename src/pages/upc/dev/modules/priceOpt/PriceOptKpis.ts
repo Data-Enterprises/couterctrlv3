@@ -2,7 +2,7 @@ import { formatCurrency2 } from "../../../../../utils";
 import type { UpcPriceOpt } from "../../../../../interfaces";
 import type { UpcCurrentPriceCost } from "../../../../../features/upcDevSlice";
 import type { KpiCell } from "../../types";
-import { pricePoints, isOverpriced, elasticityFromPoints, computeProfitAtRisk } from "./priceOptStats";
+import { pricePoints, bestPriceByProfit, isOverpriced, elasticityFromPoints, computeProfitAtRisk } from "./priceOptStats";
 
 export function getPriceOptKpis(
   optBestPrices: UpcPriceOpt[],
@@ -39,10 +39,11 @@ function storeModeKpis(
     const currentPrice = cpc?.currentPrice ?? null;
     const currentCost = cpc?.currentCost ?? null;
     const points = pricePoints(bestPrices, row.product_code);
+    const best = bestPriceByProfit(points, currentCost, row.price, row.total_qty, row.total_revenue);
 
-    if (isOverpriced(currentPrice, row.price)) {
+    if (isOverpriced(currentPrice, best.price)) {
       overpricedCount++;
-      const risk = computeProfitAtRisk(currentPrice, currentCost, row.price, row.total_qty, points);
+      const risk = computeProfitAtRisk(currentPrice, currentCost, best.price, best.qty, points);
       if (risk.status === "ok") {
         totalProfitAtRisk += risk.profitAtRisk;
         totalUnitsSuppressed += risk.unitsSuppressed;

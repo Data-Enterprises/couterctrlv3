@@ -3,6 +3,8 @@ import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import type { UpcDevTab } from "../../../../features/upcDevSlice";
 import { computeUpcSalesCompStats, DAYS, DAY_SHORT } from "../modules/salesComp/salesCompStats";
+import { getTrendStatus } from "../modules/trend/trendStats";
+import { pricePoints, bestPriceByProfit, getStatus, computeProfitAtRisk, elasticityFromPoints } from "../modules/priceOpt/priceOptStats";
 
 interface Props {
   onClose: () => void;
@@ -31,8 +33,9 @@ const PRESETS: Record<UpcDevTab, Preset[]> = {
   ],
   trend: [
     { id: "all", label: "All trends" },
-    { id: "up", label: "Trending up" },
-    { id: "down", label: "Declining" },
+    { id: "growing", label: "Growing" },
+    { id: "declining", label: "Declining" },
+    { id: "reduced-availability", label: "Reduced availability" },
   ],
   association: [
     { id: "all", label: "All levels" },
@@ -116,32 +119,79 @@ const UpcExportModal = ({ onClose }: Props) => {
         break;
       }
       case "priceOpt": {
+        const resolvedStoreId = ctx.searchType === "Store" ? ctx.selectedStore.storeid : ctx.priceOptStoreId;
+        const hasStore = resolvedStoreId !== null;
         const data = ctx.optBestPricesByUpc.filter((o) => sel === "all" || isSelected(o.product_code));
-        const headers = ["UPC", "Description", "Price", "Total Qty", "Total Revenue", "Total Weight"];
-        const rows = data.map((o) => [o.product_code, o.product_description, String(o.price), String(o.total_qty), String(o.total_revenue), String(o.total_weight)]);
-        download(toBlobCsv(headers, rows), `price_opt_${sel}.csv`);
+
+        if (hasStore) {
+          const headers = ["UPC", "Description", "Current Price", "Current Cost", "Best Price", "Status", "Profit Impact", "Units Suppressed", "Elasticity"];
+          const rows = data.map((row) => {
+            const points = pricePoints(ctx.optBestPrices, row.product_code);
+            const cpc = ctx.currentPriceCost[`${resolvedStoreId}:${row.product_code}`];
+            const currentPrice = cpc?.currentPrice ?? null;
+            const currentCost = cpc?.currentCost ?? null;
+            const best = bestPriceByProfit(points, currentCost, row.price, row.total_qty, row.total_revenue);
+            const status = getStatus(points, currentPrice, currentCost, true, best.price);
+            const risk = computeProfitAtRisk(currentPrice, currentCost, best.price, best.qty, points);
+            const elasticity = elasticityFromPoints(points);
+            return [
+              row.product_code,
+              row.product_description,
+              currentPrice !== null ? String(currentPrice) : "",
+              currentCost !== null ? String(currentCost) : "",
+              String(best.price),
+              status,
+              risk.status === "ok" ? risk.profitAtRisk.toFixed(2) : "",
+              risk.status === "ok" ? String(risk.unitsSuppressed) : "",
+              elasticity !== null ? elasticity.toFixed(2) : "",
+            ];
+          });
+          download(toBlobCsv(headers, rows), `price_opt_${sel}.csv`);
+        } else {
+          const headers = ["UPC", "Description", "Best Price", "Best Revenue", "Best Qty", "Elasticity", "Price Points"];
+          const rows = data.map((row) => {
+            const points = pricePoints(ctx.optBestPrices, row.product_code);
+            const elasticity = elasticityFromPoints(points);
+            return [
+              row.product_code,
+              row.product_description,
+              String(row.price),
+              String(row.total_revenue),
+              String(row.total_qty),
+              elasticity !== null ? elasticity.toFixed(2) : "",
+              String(points.length),
+            ];
+          });
+          download(toBlobCsv(headers, rows), `price_opt_${sel}.csv`);
+        }
         break;
       }
       case "trend": {
         const src = ctx.upcTrends.filter((t) => {
           if (!isSelected(t.product_code)) return false;
-          if (sel === "up") return t.slope_change > 0;
-          if (sel === "down") return t.slope_change < 0;
-          return true;
+          if (sel === "all") return true;
+          const status = getTrendStatus(t);
+          if (sel === "declining") return status === "declining" || status === "accelerating";
+          return status === sel;
         });
-        const headers = ["UPC", "Description", "Trend Date", "Slope Before", "Slope After", "Slope Change", "Mean Before", "Mean After", "Pct Change Mean", "Impact Units"];
-        const rows = src.map((t) => [t.product_code, t.product_description, t.trend_date, String(t.slope_before), String(t.slope_after), String(t.slope_change), String(t.mean_before), String(t.mean_after), String(t.pct_change_mean), String(t.impact_units)]);
+        const headers = ["UPC", "Description", "Status", "Slope Before", "Slope After", "Slope Change", "Confidence", "Mean Before", "Mean After", "Pct Change Mean", "Impact Units"];
+        const rows = src.map((t) => [t.product_code, t.product_description, getTrendStatus(t), String(t.slope_before), String(t.slope_after), String(t.slope_change), String(t["r2-after"]), String(t.mean_before), String(t.mean_after), String(t.pct_change_mean), String(t.impact_units)]);
         download(toBlobCsv(headers, rows), `trends_${sel}.csv`);
         break;
       }
       case "association": {
         const headers = ["Level", "UPC", "Description", "Qty"];
-        const rows: string[][] = [];
-        ctx.itemAssociations.forEach((level, li) => {
-          level.forEach((item) => {
-            rows.push([String(li + 1), item.product_code, item.product_description, String(item.qty)]);
-          });
-        });
+        const mainUpcs = ctx.selectedUpcs.length > 0 ? ctx.selectedUpcs : ctx.upcs;
+        const upcItemsMap = new Map(ctx.upcItems.map((i) => [i.product_code, i.description]));
+        const rows: string[][] = [
+          ...mainUpcs.map((code) => ["Main", code, upcItemsMap.get(code) ?? code, ""]),
+          ...ctx.level1Items.map((item) => ["Level 1", item.product_code, item.product_description, String(item.qty)]),
+          ...ctx.level2Items.map((item) => ["Level 2", item.product_code, item.product_description, String(item.qty)]),
+          ...ctx.level3Items.map((item) => ["Level 3", item.product_code, item.product_description, String(item.qty)]),
+          ...(ctx.singleSearchUpc
+            ? ctx.singleSearchItems.map((item) => [`Search: ${ctx.singleSearchUpc}`, item.product_code, item.product_description, String(item.qty)])
+            : []),
+        ];
         download(toBlobCsv(headers, rows), "associations.csv");
         break;
       }
@@ -177,7 +227,7 @@ const UpcExportModal = ({ onClose }: Props) => {
           {/* shape — sales comp only: what the rows represent */}
           {ctx.activeTab === "salesComp" && (
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-wide text-content/50 mb-2">
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2">
                 Export shape
               </div>
               <div className="flex flex-col gap-1.5">
@@ -189,7 +239,7 @@ const UpcExportModal = ({ onClose }: Props) => {
                       onChange={() => setExportShape(s.id)}
                       className="accent-[#1e2a4a]"
                     />
-                    <span className="text-[11px] text-content/80">{s.label}</span>
+                    <span className="text-[11px] text-content/85">{s.label}</span>
                   </label>
                 ))}
               </div>
@@ -198,7 +248,7 @@ const UpcExportModal = ({ onClose }: Props) => {
 
           {/* presets — scope: which UPCs */}
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/50 mb-2">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2">
               Export type
             </div>
             <div className="flex flex-col gap-1.5">
@@ -210,14 +260,14 @@ const UpcExportModal = ({ onClose }: Props) => {
                     onChange={() => setSelectedPreset(p.id)}
                     className="accent-[#1e2a4a]"
                   />
-                  <span className="text-[11px] text-content/80">{p.label}</span>
+                  <span className="text-[11px] text-content/85">{p.label}</span>
                 </label>
               ))}
             </div>
           </div>
 
           {ctx.selectedUpcs.length > 0 && (
-            <div className="text-[10px] text-content/40 bg-gray-50 rounded px-3 py-2">
+            <div className="text-[10px] text-content/85 bg-gray-50 rounded px-3 py-2">
               {ctx.selectedUpcs.length} UPC{ctx.selectedUpcs.length !== 1 ? "s" : ""} selected — "Selected UPCs" presets will use this filter.
             </div>
           )}

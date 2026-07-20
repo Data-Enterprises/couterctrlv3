@@ -22,7 +22,6 @@ export const UPC_DEV_TABS: { id: UpcDevTab; label: string }[] = [
 
 export type UpcDevDisplayMode = "code" | "desc";
 export type UpcDevShowMode = "all" | "selected";
-export type UpcDevTrendMode = "Totals" | "Mean" | "Volatility";
 
 export type ItemAssociate = {
   product_code: string;
@@ -46,6 +45,12 @@ interface UpcDevState {
   activeTab: UpcDevTab;
   dataLoaded: boolean;
   isLoading: boolean;
+  // Bumped every time clearDevUpcData runs (i.e. every new search). The
+  // Price Opt/Trend/Association tabs key their initial-fetch effect on this
+  // so a re-search reliably triggers a refetch even when it wouldn't
+  // otherwise change any of that effect's own dependencies (e.g. same store,
+  // same UPCs, just re-run).
+  searchVersion: number;
   upcCount: number;
   upcItems: UpcItem[];
   selectedUpcs: string[];
@@ -77,17 +82,25 @@ interface UpcDevState {
   // Trend
   trendLoaded: boolean;
   trendLoading: boolean;
-  trendMode: UpcDevTrendMode;
   upcTrends: UpcTrend[];
   topFiveTrends: UpcTrend[];
   bottomFiveTrends: UpcTrend[];
-  // Association
+  // Association — bounded Main -> Level 1 -> Level 2 -> Level 3 cascade,
+  // plus a standalone single-UPC search. Each level keeps its own items/
+  // loading/selection so a change at one level can clear everything
+  // downstream without touching the level being refetched itself.
   associationLoaded: boolean;
-  associationLoading: boolean;
-  itemAssociations: ItemAssociate[][];
-  selectedAssociationUpcParam: string[];
-  reQueryAssociations: boolean;
-  singleItemAssociations: ItemAssociate[];
+  level1Items: ItemAssociate[];
+  level1Loading: boolean;
+  level1Selected: string[];
+  level2Items: ItemAssociate[];
+  level2Loading: boolean;
+  level2Selected: string[];
+  level3Items: ItemAssociate[];
+  level3Loading: boolean;
+  singleSearchUpc: string;
+  singleSearchItems: ItemAssociate[];
+  singleSearchLoading: boolean;
 }
 
 const initialState: UpcDevState = {
@@ -98,6 +111,7 @@ const initialState: UpcDevState = {
   activeTab: "salesComp",
   dataLoaded: false,
   isLoading: false,
+  searchVersion: 0,
   upcCount: 0,
   upcItems: [],
   selectedUpcs: [],
@@ -125,17 +139,22 @@ const initialState: UpcDevState = {
   // Trend
   trendLoaded: false,
   trendLoading: false,
-  trendMode: "Totals",
   upcTrends: [],
   topFiveTrends: [],
   bottomFiveTrends: [],
   // Association
   associationLoaded: false,
-  associationLoading: false,
-  itemAssociations: [],
-  selectedAssociationUpcParam: [],
-  reQueryAssociations: false,
-  singleItemAssociations: [],
+  level1Items: [],
+  level1Loading: false,
+  level1Selected: [],
+  level2Items: [],
+  level2Loading: false,
+  level2Selected: [],
+  level3Items: [],
+  level3Loading: false,
+  singleSearchUpc: "",
+  singleSearchItems: [],
+  singleSearchLoading: false,
 };
 
 const upcDevSlice = createSlice({
@@ -258,9 +277,6 @@ const upcDevSlice = createSlice({
     setDevTrendLoading(state, action: PayloadAction<boolean>) {
       state.trendLoading = action.payload;
     },
-    setDevTrendMode(state, action: PayloadAction<UpcDevTrendMode>) {
-      state.trendMode = action.payload;
-    },
     setDevUpcTrends(state, action: PayloadAction<UpcTrend[]>) {
       state.upcTrends = action.payload;
     },
@@ -274,42 +290,75 @@ const upcDevSlice = createSlice({
     setDevAssociationLoaded(state, action: PayloadAction<boolean>) {
       state.associationLoaded = action.payload;
     },
-    setDevAssociationLoading(state, action: PayloadAction<boolean>) {
-      state.associationLoading = action.payload;
+    setDevLevel1Items(state, action: PayloadAction<ItemAssociate[]>) {
+      state.level1Items = action.payload;
     },
-    setDevItemAssociations(state, action: PayloadAction<ItemAssociate[][]>) {
-      state.itemAssociations = action.payload;
+    setDevLevel1Loading(state, action: PayloadAction<boolean>) {
+      state.level1Loading = action.payload;
     },
-    addDevAssociationLevel(state, action: PayloadAction<ItemAssociate[]>) {
-      state.itemAssociations = [...state.itemAssociations, action.payload];
+    toggleDevLevel1Selected(state, action: PayloadAction<string>) {
+      const pc = action.payload;
+      state.level1Selected = state.level1Selected.includes(pc)
+        ? state.level1Selected.filter((u) => u !== pc)
+        : [...state.level1Selected, pc];
     },
-    truncateDevAssociationLevels(state, action: PayloadAction<number>) {
-      state.itemAssociations = state.itemAssociations.slice(0, action.payload);
+    setDevLevel2Items(state, action: PayloadAction<ItemAssociate[]>) {
+      state.level2Items = action.payload;
     },
-    addDevAssocUpcParam(state, action: PayloadAction<string>) {
-      if (!state.selectedAssociationUpcParam.includes(action.payload)) {
-        state.selectedAssociationUpcParam = [...state.selectedAssociationUpcParam, action.payload];
-      }
+    setDevLevel2Loading(state, action: PayloadAction<boolean>) {
+      state.level2Loading = action.payload;
     },
-    removeDevAssocUpcParam(state, action: PayloadAction<string>) {
-      state.selectedAssociationUpcParam = state.selectedAssociationUpcParam.filter(
-        (u) => u !== action.payload,
-      );
+    toggleDevLevel2Selected(state, action: PayloadAction<string>) {
+      const pc = action.payload;
+      state.level2Selected = state.level2Selected.includes(pc)
+        ? state.level2Selected.filter((u) => u !== pc)
+        : [...state.level2Selected, pc];
     },
-    setDevReQueryAssociations(state, action: PayloadAction<boolean>) {
-      state.reQueryAssociations = action.payload;
+    setDevLevel3Items(state, action: PayloadAction<ItemAssociate[]>) {
+      state.level3Items = action.payload;
     },
-    setDevSingleItemAssociations(state, action: PayloadAction<ItemAssociate[]>) {
-      state.singleItemAssociations = action.payload;
+    setDevLevel3Loading(state, action: PayloadAction<boolean>) {
+      state.level3Loading = action.payload;
+    },
+    // Main changed — level 1 refetches itself (not cleared here), but
+    // everything that depended on a level-1 selection is now invalid.
+    resetDevAssociationLevels1To3(state) {
+      state.level1Selected = [];
+      state.level2Items = [];
+      state.level2Selected = [];
+      state.level3Items = [];
+    },
+    // Level 1 selection changed — level 2 refetches itself, level 3 (which
+    // depended on a level-2 selection) is invalid.
+    resetDevAssociationLevels2To3(state) {
+      state.level2Selected = [];
+      state.level3Items = [];
+    },
+    setDevSingleSearchUpc(state, action: PayloadAction<string>) {
+      state.singleSearchUpc = action.payload;
+    },
+    setDevSingleSearchItems(state, action: PayloadAction<ItemAssociate[]>) {
+      state.singleSearchItems = action.payload;
+    },
+    setDevSingleSearchLoading(state, action: PayloadAction<boolean>) {
+      state.singleSearchLoading = action.payload;
     },
     resetDevAssociations(state) {
-      state.itemAssociations = [];
-      state.selectedAssociationUpcParam = [];
-      state.singleItemAssociations = [];
-      state.reQueryAssociations = false;
       state.associationLoaded = false;
+      state.level1Items = [];
+      state.level1Loading = false;
+      state.level1Selected = [];
+      state.level2Items = [];
+      state.level2Loading = false;
+      state.level2Selected = [];
+      state.level3Items = [];
+      state.level3Loading = false;
+      state.singleSearchUpc = "";
+      state.singleSearchItems = [];
+      state.singleSearchLoading = false;
     },
     clearDevUpcData(state) {
+      state.searchVersion += 1;
       state.dataLoaded = false;
       state.upcItems = [];
       state.selectedUpcs = [];
@@ -335,11 +384,17 @@ const upcDevSlice = createSlice({
       state.topFiveTrends = [];
       state.bottomFiveTrends = [];
       state.associationLoaded = false;
-      state.associationLoading = false;
-      state.itemAssociations = [];
-      state.selectedAssociationUpcParam = [];
-      state.reQueryAssociations = false;
-      state.singleItemAssociations = [];
+      state.level1Items = [];
+      state.level1Loading = false;
+      state.level1Selected = [];
+      state.level2Items = [];
+      state.level2Loading = false;
+      state.level2Selected = [];
+      state.level3Items = [];
+      state.level3Loading = false;
+      state.singleSearchUpc = "";
+      state.singleSearchItems = [];
+      state.singleSearchLoading = false;
     },
     resetDevUpcState: () => initialState,
   },
@@ -380,19 +435,23 @@ export const {
   setDevCurrentPriceCost,
   setDevTrendLoaded,
   setDevTrendLoading,
-  setDevTrendMode,
   setDevUpcTrends,
   setDevTopFiveTrends,
   setDevBottomFiveTrends,
   setDevAssociationLoaded,
-  setDevAssociationLoading,
-  setDevItemAssociations,
-  addDevAssociationLevel,
-  truncateDevAssociationLevels,
-  addDevAssocUpcParam,
-  removeDevAssocUpcParam,
-  setDevReQueryAssociations,
-  setDevSingleItemAssociations,
+  setDevLevel1Items,
+  setDevLevel1Loading,
+  toggleDevLevel1Selected,
+  setDevLevel2Items,
+  setDevLevel2Loading,
+  toggleDevLevel2Selected,
+  setDevLevel3Items,
+  setDevLevel3Loading,
+  resetDevAssociationLevels1To3,
+  resetDevAssociationLevels2To3,
+  setDevSingleSearchUpc,
+  setDevSingleSearchItems,
+  setDevSingleSearchLoading,
   resetDevAssociations,
   clearDevUpcData,
   resetDevUpcState,
