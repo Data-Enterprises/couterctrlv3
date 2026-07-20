@@ -91,6 +91,7 @@ const BaseGroupsTab = () => {
         ))}
       </div>
       <AssignPanel
+        key={ctx.userCompany?.company}
         leftTitle="Unassigned"
         rightTitle="Assigned"
         leftItems={ctx.inactiveBaseGroups.map((bg) => ({
@@ -103,6 +104,7 @@ const BaseGroupsTab = () => {
         }))}
         onAssign={submitAssign}
         onUnassign={submitUnassign}
+        assignAllScope="global"
       />
     </div>
   );

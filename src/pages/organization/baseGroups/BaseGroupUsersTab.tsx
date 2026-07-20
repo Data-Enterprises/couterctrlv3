@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useOrganizationCtx } from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
@@ -36,27 +36,33 @@ const BaseGroupUsersTab = ({ group }: Props) => {
       u.user_level <= ctx.userLevel,
   );
 
-  const fetchStatus = (userid: number) => {
+  // Tracks which group the in-flight lookups below belong to, so a response
+  // that resolves after the user has already switched to a different group
+  // doesn't get written into the new group's (just-reset) status map.
+  const activeGroupId = useRef(group.id);
+
+  const fetchStatus = (userid: number, forGroupId: number) => {
     getBaseGroupsAssignedToUser(ctx.url, ctx.token, userid)
       .then((resp) => {
+        if (activeGroupId.current !== forGroupId) return;
         const j: BaseGroupJsonResp = resp.data;
         if (j.error === 0) {
-          const has = j.active.some((bg) => bg.id === group.id);
+          const has = j.active.some((bg) => bg.id === forGroupId);
           setStatusByUser((prev) => ({ ...prev, [userid]: has }));
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
   };
 
+  // Reset and fetch together in one effect — splitting the reset into its
+  // own effect let the fetch effect's closure see stale (pre-reset)
+  // statusByUser from the previous group and skip users who happened to
+  // share the same id, permanently stalling their lookup.
   useEffect(() => {
+    activeGroupId.current = group.id;
     setStatusByUser({});
-  }, [group.id]);
-
-  useEffect(() => {
-    candidates.forEach((u) => {
-      if (!(u.id in statusByUser)) fetchStatus(u.id);
-    });
-  }, [candidates.map((u) => u.id).join(","), group.id]);
+    candidates.forEach((u) => fetchStatus(u.id, group.id));
+  }, [group.id, candidates.map((u) => u.id).join(",")]);
 
   const resolvedCount = candidates.filter((u) => u.id in statusByUser).length;
   const pendingCount = candidates.length - resolvedCount;

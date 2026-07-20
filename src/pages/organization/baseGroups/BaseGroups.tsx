@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PlusIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -113,7 +113,14 @@ const BaseGroups = () => {
         ctx.companies.some((uc) => uc.company === c.id),
       );
 
+  // Guards against the search-triggered "expand every company" effect below
+  // firing a duplicate request for a company whose first request is still
+  // in flight (e.g. clearing and re-typing a search quickly).
+  const fetchingGroups = useRef<Set<number>>(new Set());
+
   const fetchGroups = (companyId: number) => {
+    if (fetchingGroups.current.has(companyId)) return;
+    fetchingGroups.current.add(companyId);
     getBaseGroups(ctx.url, ctx.token, companyId)
       .then((resp) => {
         const j = resp.data;
@@ -121,7 +128,8 @@ const BaseGroups = () => {
           setCompanyGroups((prev) => ({ ...prev, [companyId]: j.groups }));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => fetchingGroups.current.delete(companyId));
   };
 
   const fetchStores = (groupId: number) => {
@@ -164,6 +172,21 @@ const BaseGroups = () => {
     setSelectedGroup(null);
   };
 
+  const handleGroupRenamed = (newName: string) => {
+    if (!selectedGroup) return;
+    setSelectedGroup({ ...selectedGroup, name: newName });
+    setCompanyGroups((prev) => {
+      const groups = prev[selectedGroup.company];
+      if (!groups) return prev;
+      return {
+        ...prev,
+        [selectedGroup.company]: groups.map((g) =>
+          g.id === selectedGroup.id ? { ...g, name: newName } : g,
+        ),
+      };
+    });
+  };
+
   const handleCreateGroup = (name: string, companyId: number) => {
     if (!name.trim()) {
       toast.error("Base group name is required");
@@ -171,6 +194,13 @@ const BaseGroups = () => {
     }
     if (!companyId) {
       toast.error("Choose a company");
+      return;
+    }
+    const existing = companyGroups[companyId];
+    if (
+      existing?.some((g) => g.name.toLowerCase() === name.trim().toLowerCase())
+    ) {
+      toast.error("A base group with that name already exists");
       return;
     }
     createBaseGroup(ctx.url, ctx.token, name, companyId)
@@ -311,6 +341,7 @@ const BaseGroups = () => {
             stores={groupStores[selectedGroup.id]}
             onRefetchStores={() => fetchStores(selectedGroup.id)}
             onDeleted={handleGroupDeleted}
+            onRenamed={handleGroupRenamed}
           />
         )}
       </div>

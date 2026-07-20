@@ -21,6 +21,7 @@ interface Props {
   stores: StoreSplit | undefined;
   onRefetchStores: () => void;
   onDeleted: () => void;
+  onRenamed: (newName: string) => void;
 }
 
 const BaseGroupDetail = ({
@@ -29,6 +30,7 @@ const BaseGroupDetail = ({
   stores,
   onRefetchStores,
   onDeleted,
+  onRenamed,
 }: Props) => {
   const ctx = useOrganizationCtx();
   const toast = useToast();
@@ -59,6 +61,7 @@ const BaseGroupDetail = ({
         if (j.error === 0) {
           toast.success("Base group updated");
           setEditing(false);
+          onRenamed(nameDraft.trim());
         } else {
           toast.error(j.msg || "Could not update base group");
         }

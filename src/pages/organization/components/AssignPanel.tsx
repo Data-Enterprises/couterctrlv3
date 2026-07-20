@@ -14,6 +14,11 @@ interface AssignPanelProps {
   rightItems: AssignPanelItem[];
   onAssign: (ids: number[]) => void;
   onUnassign: (ids: number[]) => void;
+  // "filtered" (default) scopes Assign all/Unassign all to whatever the search
+  // box currently shows — matches legacy's Stores assign flow. Companies and
+  // Base Groups tabs pass "global" since legacy's assign_all/unassign_all
+  // there always recomputed from the full unfiltered list, ignoring search.
+  assignAllScope?: "filtered" | "global";
 }
 
 // Shared staged dual-column assign/unassign control — used by the create-user
@@ -26,6 +31,7 @@ const AssignPanel = ({
   rightItems,
   onAssign,
   onUnassign,
+  assignAllScope = "filtered",
 }: AssignPanelProps) => {
   const [leftFilter, setLeftFilter] = useState("");
   const [rightFilter, setRightFilter] = useState("");
@@ -112,8 +118,14 @@ const AssignPanel = ({
             Assign
           </button>
           <button
-            onClick={() => handleAssign(filteredLeft.map((i) => i.id))}
-            disabled={filteredLeft.length === 0}
+            onClick={() =>
+              handleAssign(
+                (assignAllScope === "global" ? leftItems : filteredLeft).map(
+                  (i) => i.id,
+                ),
+              )
+            }
+            disabled={leftItems.length === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             Assign all
@@ -166,8 +178,14 @@ const AssignPanel = ({
             Unassign
           </button>
           <button
-            onClick={() => handleUnassign(filteredRight.map((i) => i.id))}
-            disabled={filteredRight.length === 0}
+            onClick={() =>
+              handleUnassign(
+                (assignAllScope === "global" ? rightItems : filteredRight).map(
+                  (i) => i.id,
+                ),
+              )
+            }
+            disabled={rightItems.length === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-red-600 hover:bg-red-600/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             Unassign all

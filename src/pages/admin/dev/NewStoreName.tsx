@@ -28,15 +28,24 @@ const NewStoreName = () => {
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [newName, setNewName] = useState("");
 
+  // The backend can return stores with a null store_name/store_number
+  // despite the Store type claiming string — filter those out same as
+  // legacy NewStoreNameForm.tsx did, or search/rename below can throw on
+  // a null .toLowerCase() call.
+  const validOnly = (list: Store[]) =>
+    list.filter((s) => s.store_number !== null && s.store_name !== null);
+
   const fetchStores = () => {
     getUserStores(context.url, context.token, context.userid)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
           setStores({
-            assigned: j.assigned_stores,
-            unassigned: j.unassigned_stores,
+            assigned: validOnly(j.assigned_stores),
+            unassigned: validOnly(j.unassigned_stores),
           });
+        } else {
+          toast.error(j.msg || "Error fetching stores");
         }
       })
       .catch((err: JsonError) => toast.error(err.message));

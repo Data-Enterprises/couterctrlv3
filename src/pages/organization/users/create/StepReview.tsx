@@ -9,6 +9,7 @@ interface StepReviewProps {
   companyGroups: Record<number, CompanyBaseGroup[]>;
   onSubmit: () => void;
   onEditStep: (step: number) => void;
+  canSubmit: boolean;
 }
 
 const StepReview = ({
@@ -16,6 +17,7 @@ const StepReview = ({
   companyGroups,
   onSubmit,
   onEditStep,
+  canSubmit,
 }: StepReviewProps) => {
   const ctx = useOrganizationCtx();
 
@@ -186,10 +188,21 @@ const StepReview = ({
       <div className="pt-4 border-t border-gray-100">
         <button
           onClick={onSubmit}
-          className="w-full text-[13px] font-medium py-2.5 rounded-lg text-custom-white bg-[#1e2a4a] hover:bg-[#1e2a4a]/85"
+          disabled={!canSubmit}
+          className={`w-full text-[13px] font-medium py-2.5 rounded-lg text-custom-white ${
+            canSubmit
+              ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85"
+              : "bg-gray-300 cursor-not-allowed"
+          }`}
         >
           Create user
         </button>
+        {!canSubmit && (
+          <div className="text-[11px] text-red-600 text-center mt-2">
+            Finish the User info and Assignments steps before creating this
+            user
+          </div>
+        )}
       </div>
     </div>
   );

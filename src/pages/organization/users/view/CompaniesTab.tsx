@@ -41,6 +41,7 @@ const CompaniesTab = () => {
       rightItems={active.map((c) => ({ id: c.company, label: c.name }))}
       onAssign={handleAssign}
       onUnassign={handleUnassign}
+      assignAllScope="global"
     />
   );
 };

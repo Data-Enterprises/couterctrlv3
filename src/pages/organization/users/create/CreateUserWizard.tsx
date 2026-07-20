@@ -31,6 +31,7 @@ const CreateUserWizard = ({ onComplete }: CreateUserWizardProps) => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
   const [step, setStep] = useState(1);
+  const [maxStep, setMaxStep] = useState(1);
   const [selectedStores, setSelectedStores] = useState<SelectableStore[]>([]);
   const [companyGroups, setCompanyGroups] = useState<
     Record<number, CompanyBaseGroup[]>
@@ -40,7 +41,32 @@ const CreateUserWizard = ({ onComplete }: CreateUserWizardProps) => {
     ctx.dispatch(resetUserInfo());
   }, []);
 
+  const goToStep = (id: number) => {
+    if (id <= maxStep) setStep(id);
+  };
+
+  const advanceTo = (id: number) => {
+    setMaxStep((prev) => Math.max(prev, id));
+    setStep(id);
+  };
+
+  // Mirrors StepUserInfo's own canContinue check — re-verified here so the
+  // final submit can't fire with an incomplete user (e.g. if the stepper rail
+  // is used to jump straight to Review without visiting step 1/2 first).
+  const userInfoValid =
+    ctx.userInfo.username.trim() !== "" &&
+    ctx.userInfo.email.trim() !== "" &&
+    ctx.userInfo.first_name.trim() !== "" &&
+    ctx.userInfo.last_name.trim() !== "" &&
+    ctx.userInfo.password.length > 0 &&
+    ctx.userInfo.password === ctx.userInfo.confirm_password &&
+    ctx.userInfo.role > 0 &&
+    ctx.userInfo.user_level > 0;
+  const assignmentsValid = selectedStores.length > 0;
+  const canSubmit = userInfoValid && assignmentsValid;
+
   const handleSubmit = async () => {
+    if (!canSubmit) return;
     let usernameResp;
     try {
       usernameResp = await checkUsername(
@@ -148,7 +174,7 @@ const CreateUserWizard = ({ onComplete }: CreateUserWizardProps) => {
   const renderStep = () => {
     switch (step) {
       case 1:
-        return <StepUserInfo onContinue={() => setStep(2)} />;
+        return <StepUserInfo onContinue={() => advanceTo(2)} />;
       case 2:
         return (
           <StepAssignments
@@ -156,7 +182,7 @@ const CreateUserWizard = ({ onComplete }: CreateUserWizardProps) => {
             onChange={setSelectedStores}
             companyGroups={companyGroups}
             onCompanyGroupsChange={setCompanyGroups}
-            onContinue={() => setStep(3)}
+            onContinue={() => advanceTo(3)}
           />
         );
       case 3:
@@ -165,7 +191,8 @@ const CreateUserWizard = ({ onComplete }: CreateUserWizardProps) => {
             selectedStores={selectedStores}
             companyGroups={companyGroups}
             onSubmit={handleSubmit}
-            onEditStep={setStep}
+            onEditStep={goToStep}
+            canSubmit={canSubmit}
           />
         );
       default:
@@ -179,7 +206,7 @@ const CreateUserWizard = ({ onComplete }: CreateUserWizardProps) => {
         steps={STEPS}
         current={step}
         completed={completed}
-        onStepClick={setStep}
+        onStepClick={goToStep}
       />
       <div className="flex-1 min-w-0 p-4 overflow-y-auto thin-scrollbar">
         {renderStep()}

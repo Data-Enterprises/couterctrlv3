@@ -16,24 +16,15 @@ export const useOrganizationCtx = () => {
     selectedUserForm,
     userLevels,
     userCompanyIds,
-    isDeletingUser,
-    userFilterText,
-    userFilterType,
-    selectedCompanyId,
     availableUsernameText,
     usernameTextColor,
     availableEmailText,
     emailTextColor,
     selectedUserStores,
   } = useAppSelector((state) => state.users);
-  const {
-    baseGroups,
-    selectedBaseGroups,
-    company,
-    activeBaseGroups,
-    inactiveBaseGroups,
-    userCompany,
-  } = useAppSelector((state) => state.baseGroup);
+  const { activeBaseGroups, inactiveBaseGroups, userCompany } = useAppSelector(
+    (state) => state.baseGroup,
+  );
   const { companies: companyRecords, refresh: companiesRefresh } =
     useAppSelector((state) => state.organization);
 
@@ -53,18 +44,11 @@ export const useOrganizationCtx = () => {
     selectedUserForm,
     userLevels,
     userCompanyIds,
-    isDeletingUser,
-    userFilterText,
-    userFilterType,
-    selectedCompanyId,
     availableUsernameText,
     usernameTextColor,
     availableEmailText,
     emailTextColor,
     selectedUserStores,
-    baseGroups,
-    selectedBaseGroups,
-    company,
     activeBaseGroups,
     inactiveBaseGroups,
     userCompany,

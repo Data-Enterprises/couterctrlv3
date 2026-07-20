@@ -23,6 +23,8 @@ const StoresDirectory = () => {
         const j = resp.data;
         if (j.error === 0) {
           setStores([...j.assigned_stores, ...j.unassigned_stores]);
+        } else {
+          toast.error(j.msg || "Error fetching stores");
         }
       })
       .catch((err: JsonError) => toast.error(err.message));
