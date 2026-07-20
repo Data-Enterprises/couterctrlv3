@@ -1,25 +1,25 @@
 import { useEffect } from "react";
-import { useTeamCtx } from "../../hooks";
-import { useToast } from "../../../../../components/toasts/hooks/useToast";
+import { useOrganizationCtx } from "../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
 import {
   assignBaseGroupToUser,
   deleteUserBaseGroupLink,
   getBaseGroupsAssignedToUser,
-} from "../../../../../api/team";
+} from "../../../../api/team";
 import {
   setUserBaseGroups,
   setUserCompany,
-} from "../../../../../features/baseGroupSlice";
+} from "../../../../features/baseGroupSlice";
 import type {
   BaseGroupJsonResp,
   JsonError,
   UserCompany,
-} from "../../../../../interfaces";
-import AssignPanel from "../AssignPanel";
+} from "../../../../interfaces";
+import AssignPanel from "../../components/AssignPanel";
 
 const BaseGroupsTab = () => {
   const toast = useToast();
-  const ctx = useTeamCtx();
+  const ctx = useOrganizationCtx();
 
   const targetUser = ctx.users.find((u) => u.id === ctx.selectedUserId);
   const userCompanies = targetUser?.companies ?? [];

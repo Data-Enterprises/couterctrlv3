@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { useTeamCtx } from "../../hooks";
-import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import { setTempPassword } from "../../../../../api/security";
-import { resetUserSecurityQuestion } from "../../../../../api/team";
-import { setRefresh } from "../../../../../features/usersSlice";
-import type { JsonError } from "../../../../../interfaces";
-import PasswordInput from "../../../../../components/inputs/PasswordInput";
+import { useOrganizationCtx } from "../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { setTempPassword } from "../../../../api/security";
+import { resetUserSecurityQuestion } from "../../../../api/team";
+import { setRefresh } from "../../../../features/usersSlice";
+import type { JsonError } from "../../../../interfaces";
+import PasswordInput from "../../../../components/inputs/PasswordInput";
 
 const SecurityTab = () => {
   const toast = useToast();
-  const ctx = useTeamCtx();
+  const ctx = useOrganizationCtx();
   const [pw, setPw] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
 

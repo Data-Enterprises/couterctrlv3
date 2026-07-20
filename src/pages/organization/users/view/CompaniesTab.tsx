@@ -1,13 +1,13 @@
-import { useTeamCtx } from "../../hooks";
-import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import { setRefresh, setUserCompanyIds } from "../../../../../features/usersSlice";
-import { assignUserToCompany } from "../../../../../api/user";
-import type { JsonError, UserCompany } from "../../../../../interfaces";
-import AssignPanel from "../AssignPanel";
+import { useOrganizationCtx } from "../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { setRefresh, setUserCompanyIds } from "../../../../features/usersSlice";
+import { assignUserToCompany } from "../../../../api/user";
+import type { JsonError, UserCompany } from "../../../../interfaces";
+import AssignPanel from "../../components/AssignPanel";
 
 const CompaniesTab = () => {
   const toast = useToast();
-  const ctx = useTeamCtx();
+  const ctx = useOrganizationCtx();
 
   const active = ctx.companies.filter((c) => ctx.userCompanyIds.includes(c.company));
   const inactive = ctx.companies.filter((c) => !ctx.userCompanyIds.includes(c.company));

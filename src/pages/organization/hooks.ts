@@ -1,16 +1,19 @@
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../hooks";
 
-export const useTeamCtx = () => {
+export const useOrganizationCtx = () => {
   const dispatch = useAppDispatch();
-  const { url, token, isDesktop, isTablet } = useAppSelector((state) => state.app);
-  const { userid, userLevel, companies } = useAppSelector((state) => state.user);
+  const { url, token, isDesktop, isTablet } = useAppSelector(
+    (state) => state.app,
+  );
+  const { userid, userLevel, companies } = useAppSelector(
+    (state) => state.user,
+  );
   const {
     users,
     userInfo,
     refresh,
     selectedUserId,
     selectedUserForm,
-    selectedForm,
     userLevels,
     userCompanyIds,
     isDeletingUser,
@@ -27,14 +30,12 @@ export const useTeamCtx = () => {
     baseGroups,
     selectedBaseGroups,
     company,
-    storesWithBGID,
-    selectedNewUserStores,
     activeBaseGroups,
     inactiveBaseGroups,
-    bgIdsToAssign,
-    bgIdsToUnassign,
     userCompany,
   } = useAppSelector((state) => state.baseGroup);
+  const { companies: companyRecords, refresh: companiesRefresh } =
+    useAppSelector((state) => state.organization);
 
   return {
     dispatch,
@@ -50,7 +51,6 @@ export const useTeamCtx = () => {
     refresh,
     selectedUserId,
     selectedUserForm,
-    selectedForm,
     userLevels,
     userCompanyIds,
     isDeletingUser,
@@ -65,12 +65,10 @@ export const useTeamCtx = () => {
     baseGroups,
     selectedBaseGroups,
     company,
-    storesWithBGID,
-    selectedNewUserStores,
     activeBaseGroups,
     inactiveBaseGroups,
-    bgIdsToAssign,
-    bgIdsToUnassign,
     userCompany,
+    companyRecords,
+    companiesRefresh,
   };
 };

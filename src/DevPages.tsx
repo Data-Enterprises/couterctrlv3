@@ -18,7 +18,7 @@ import Admin from "./pages/admin/dev/Admin.tsx";
 import AdminLegacy from "./pages/admin/AdminLegacy.tsx";
 import Groups from "./pages/groups/dev/Groups.tsx";
 import GroupsLegacy from "./pages/groups/GroupsLegacy.tsx";
-import Team from "./pages/team/dev/Team.tsx";
+import OrganizationDev from "./pages/organization/Organization.tsx";
 import TeamLegacy from "./pages/team/TeamLegacy.tsx";
 import TitleBar from "./components/navigation/TitleBar.tsx";
 import TitleBarLegacy from "./components/navigation/TitleBarLegacy.tsx";
@@ -67,7 +67,7 @@ export const ReceiversPage = () => {
 };
 
 export const UpcPage = () => {
-  return <UpcList />;
+  // return <UpcList />;
   const devMode = useAppSelector((s) => s.app.devMode);
   return devMode ? <UpcListDev /> : <UpcList />;
 };
@@ -87,8 +87,7 @@ export const GroupsPage = () => {
   return devMode ? <Groups /> : <GroupsLegacy />;
 };
 
-export const TeamPage = () => {
-  return <TeamLegacy />;
+export const OrganizationPage = () => {
   const devMode = useAppSelector((s) => s.app.devMode);
-  return devMode ? <Team /> : <TeamLegacy />;
+  return devMode ? <OrganizationDev /> : <TeamLegacy />;
 };

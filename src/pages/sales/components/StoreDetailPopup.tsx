@@ -465,7 +465,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           {selection.storeName}
         </p>
         <span className="text-custom-white text-[13px] font-bold justify-self-center">
-          Weekly Sales Report · {staticTwDate}
+          Sales Performance · {staticTwDate}
         </span>
         <div className="flex items-center gap-3 justify-self-end">
           {/* {!loading && gapCount > 0 && (

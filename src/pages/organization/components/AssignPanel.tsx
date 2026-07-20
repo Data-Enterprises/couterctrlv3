@@ -1,5 +1,5 @@
 import { useState } from "react";
-import TextFilter from "../../../../components/filters/TextFilter";
+import TextFilter from "../../../components/filters/TextFilter";
 
 interface AssignPanelItem {
   id: number;
@@ -16,6 +16,9 @@ interface AssignPanelProps {
   onUnassign: (ids: number[]) => void;
 }
 
+// Shared staged dual-column assign/unassign control — used by the create-user
+// wizard's Assignments step, the user profile's Companies/Base groups/Stores
+// tabs, and a base group's Assign stores panel.
 const AssignPanel = ({
   leftTitle,
   rightTitle,
@@ -68,13 +71,14 @@ const AssignPanel = ({
         <div className="text-[9px] font-bold uppercase tracking-wide text-content mb-1.5">
           {leftTitle} ({leftItems.length})
         </div>
-        <TextFilter
-          value={leftFilter}
-          onChange={setLeftFilter}
-          placeholder="Search…"
-          className="mb-1.5"
-        />
-        <div className="max-h-60 overflow-y-auto thin-scrollbar border border-gray-100 rounded-lg">
+        <div className="mb-1.5">
+          <TextFilter
+            value={leftFilter}
+            onChange={setLeftFilter}
+            placeholder="Search…"
+          />
+        </div>
+        <div className="h-[17.8rem] overflow-y-auto thin-scrollbar border border-gray-100">
           {filteredLeft.map((item) => (
             <div
               key={item.id}
@@ -121,13 +125,14 @@ const AssignPanel = ({
         <div className="text-[9px] font-bold uppercase tracking-wide text-content mb-1.5">
           {rightTitle} ({rightItems.length})
         </div>
-        <TextFilter
-          value={rightFilter}
-          onChange={setRightFilter}
-          placeholder="Search…"
-          className="mb-1.5"
-        />
-        <div className="max-h-60 overflow-y-auto thin-scrollbar border border-gray-100 rounded-lg">
+        <div className="mb-1.5">
+          <TextFilter
+            value={rightFilter}
+            onChange={setRightFilter}
+            placeholder="Search…"
+          />
+        </div>
+        <div className="h-[17.8rem] overflow-y-auto thin-scrollbar border border-gray-100">
           {filteredRight.map((item) => (
             <div
               key={item.id}

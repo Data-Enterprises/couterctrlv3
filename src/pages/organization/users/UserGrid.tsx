@@ -1,20 +1,23 @@
 import { useMemo, useState } from "react";
-import { useTeamCtx } from "../hooks";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/20/solid";
+import { useOrganizationCtx } from "../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   setRefresh,
   setSelectedUserForm,
   setSelectedUserId,
   setSelectedUserInfo,
-} from "../../../../features/usersSlice";
-import { deleteUser } from "../../../../api/team";
-import type { JsonError, User } from "../../../../interfaces";
-import { roles } from "../..";
-import SelectFilter from "../../../../components/filters/SelectFilter";
-import TextFilter from "../../../../components/filters/TextFilter";
+} from "../../../features/usersSlice";
+import { deleteUser } from "../../../api/team";
+import type { JsonError, User } from "../../../interfaces";
+import { roles } from "../constants";
+import SelectFilter from "../../../components/filters/SelectFilter";
+import TextFilter from "../../../components/filters/TextFilter";
+import IconButton from "../components/IconButton";
+import ConfirmModal from "../components/ConfirmModal";
 
 interface UserGridProps {
-  mode: "info" | "delete";
+  onOpenCreate: () => void;
 }
 
 const formatDate = (dateStr: string | null) => {
@@ -23,12 +26,13 @@ const formatDate = (dateStr: string | null) => {
   return `${split[1]}/${split[2]}/${split[0]}`;
 };
 
-const UserGrid = ({ mode }: UserGridProps) => {
+const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   const toast = useToast();
-  const ctx = useTeamCtx();
+  const ctx = useOrganizationCtx();
   const [companyFilter, setCompanyFilter] = useState("");
   const [levelFilter, setLevelFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
+  const [noCompanyOnly, setNoCompanyOnly] = useState(false);
   const [searchType, setSearchType] = useState<"name" | "email">("name");
   const [searchText, setSearchText] = useState("");
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
@@ -42,9 +46,11 @@ const UserGrid = ({ mode }: UserGridProps) => {
 
   const filtered = useMemo(() => {
     return ctx.users.filter((u) => {
-      const companyCheck = companyFilter
-        ? u.companies.some((c) => c.company === Number(companyFilter))
-        : true;
+      const companyCheck = noCompanyOnly
+        ? u.companies.length === 0
+        : companyFilter
+          ? u.companies.some((c) => c.company === Number(companyFilter))
+          : true;
       const levelCheck = levelFilter
         ? u.user_level === Number(levelFilter)
         : true;
@@ -61,20 +67,22 @@ const UserGrid = ({ mode }: UserGridProps) => {
   }, [
     ctx.users,
     companyFilter,
+    noCompanyOnly,
     levelFilter,
     roleFilter,
     searchType,
     searchText,
   ]);
 
-  const handleActionClick = (u: User) => {
-    if (mode === "info") {
-      ctx.dispatch(setSelectedUserId(u.id));
-      ctx.dispatch(setSelectedUserInfo(u));
-      ctx.dispatch(setSelectedUserForm("user_info"));
-    } else {
-      setDeletingUser(u);
-    }
+  const noCompanyCount = useMemo(
+    () => ctx.users.filter((u) => u.companies.length === 0).length,
+    [ctx.users],
+  );
+
+  const handleEdit = (u: User) => {
+    ctx.dispatch(setSelectedUserId(u.id));
+    ctx.dispatch(setSelectedUserInfo(u));
+    ctx.dispatch(setSelectedUserForm("user_info"));
   };
 
   const handleDeleteConfirm = () => {
@@ -96,18 +104,34 @@ const UserGrid = ({ mode }: UserGridProps) => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 p-4">
-      <div className="flex flex-wrap items-center gap-2 mb-3">
+    <div className="flex-1 flex flex-col min-h-0 p-4 w-[900px]">
+      <div className="flex flex-nowrap items-center gap-2 mb-3">
         <SelectFilter
           options={ctx.companies.map((c) => ({
             value: String(c.company),
             label: c.name,
           }))}
           value={companyFilter}
-          onChange={setCompanyFilter}
+          onChange={(v) => {
+            setCompanyFilter(v);
+            setNoCompanyOnly(false);
+          }}
           placeholder="All companies"
-          className="w-[150px]"
+          className="w-[150px] flex-shrink-0"
         />
+        <button
+          onClick={() => {
+            setNoCompanyOnly((v) => !v);
+            setCompanyFilter("");
+          }}
+          className={`text-[10.5px] font-medium px-2.5 py-1 rounded-full flex-shrink-0 whitespace-nowrap ${
+            noCompanyOnly
+              ? "bg-[#1e2a4a] text-custom-white"
+              : "bg-custom-white border border-gray-200 text-content"
+          }`}
+        >
+          No company ({noCompanyCount})
+        </button>
         <SelectFilter
           options={ctx.userLevels.map((l) => ({
             value: String(l.id),
@@ -116,7 +140,7 @@ const UserGrid = ({ mode }: UserGridProps) => {
           value={levelFilter}
           onChange={setLevelFilter}
           placeholder="All levels"
-          className="w-[130px]"
+          className="w-[130px] flex-shrink-0"
         />
         <SelectFilter
           options={roles.map((r) => ({
@@ -126,9 +150,8 @@ const UserGrid = ({ mode }: UserGridProps) => {
           value={roleFilter}
           onChange={setRoleFilter}
           placeholder="All roles"
-          className="w-[120px]"
+          className="w-[120px] flex-shrink-0"
         />
-        <div className="w-px h-4 bg-gray-200" />
         <div className="flex rounded overflow-hidden flex-shrink-0">
           <button
             onClick={() => setSearchType("name")}
@@ -147,18 +170,25 @@ const UserGrid = ({ mode }: UserGridProps) => {
           value={searchText}
           onChange={setSearchText}
           placeholder="Search…"
-          className="min-w-[140px]"
+          className="flex-1 min-w-[100px]"
         />
+        <button
+          onClick={onOpenCreate}
+          className="flex items-center gap-1 text-[11.5px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 flex-shrink-0"
+        >
+          <PlusIcon className="w-3.5 h-3.5" />
+          New user
+        </button>
       </div>
 
       <div className="border border-gray-100 rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col">
-        <div className="grid grid-cols-[16%_11%_33%_14%_14%_12%] px-3 py-2 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0">
+        <div className="grid grid-cols-[16%_34%_14%_12%_14%_10%] px-3 py-2 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0">
           <div>Username</div>
-          <div>Last visit</div>
           <div>Email</div>
-          <div>Level</div>
           <div>Role</div>
-          <div className="text-right">Action</div>
+          <div>Level</div>
+          <div>Last visited</div>
+          <div></div>
         </div>
         <div className="max-h-96 overflow-y-auto thin-scrollbar">
           {filtered.map((u) => {
@@ -166,25 +196,32 @@ const UserGrid = ({ mode }: UserGridProps) => {
             return (
               <div
                 key={u.id}
-                className={`grid grid-cols-[16%_11%_33%_14%_14%_12%] px-3 py-2 text-[12px] items-center border-b border-gray-100 ${outranked ? "bg-gray-50 text-content/40" : "text-content"}`}
+                className={`grid grid-cols-[16%_34%_14%_12%_14%_10%] px-3 py-2 text-[12px] items-center border-b border-gray-100 ${outranked ? "bg-gray-50 text-content/40" : "text-content"}`}
               >
                 <div className="truncate">{u.username}</div>
-                <div>{formatDate(u.last_visit)}</div>
                 <div className="truncate">{u.email}</div>
-                <div>{renderLvlText(u.user_level)}</div>
                 <div>{renderRoleText(u.role)}</div>
-                <div className="text-right">
+                <div>{renderLvlText(u.user_level)}</div>
+                <div>{formatDate(u.last_visit)}</div>
+                <div className="flex items-center justify-end gap-1">
                   {outranked ? (
                     <span className="text-[10px] italic text-content/40">
                       Unauthorized
                     </span>
                   ) : (
-                    <button
-                      onClick={() => handleActionClick(u)}
-                      className={`text-[11px] font-medium px-3 py-1 rounded-md text-custom-white ${mode === "info" ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85" : "bg-red-600 hover:bg-red-600/85"}`}
-                    >
-                      {mode === "info" ? "View info" : "Delete"}
-                    </button>
+                    <>
+                      <IconButton
+                        icon={PencilIcon}
+                        title="Edit"
+                        onClick={() => handleEdit(u)}
+                      />
+                      <IconButton
+                        icon={TrashIcon}
+                        title="Delete"
+                        variant="danger"
+                        onClick={() => setDeletingUser(u)}
+                      />
+                    </>
                   )}
                 </div>
               </div>
@@ -198,26 +235,13 @@ const UserGrid = ({ mode }: UserGridProps) => {
         </div>
       </div>
 
-      {mode === "delete" && deletingUser && (
-        <div className="border border-red-300 bg-red-50 rounded-lg px-3.5 py-3 mt-3">
-          <div className="text-[12px] text-red-800 mb-2.5">
-            Delete {deletingUser.username}? This can't be undone.
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleDeleteConfirm}
-              className="text-[12px] font-medium px-3.5 py-1.5 rounded-md bg-red-600 hover:bg-red-600/85 text-custom-white transition-colors"
-            >
-              Yes, delete
-            </button>
-            <button
-              onClick={() => setDeletingUser(null)}
-              className="text-[12px] font-medium px-3.5 py-1.5 rounded-md bg-custom-white border border-gray-200 text-content transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+      {deletingUser && (
+        <ConfirmModal
+          title={`Delete ${deletingUser.username}?`}
+          message="This can't be undone."
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setDeletingUser(null)}
+        />
       )}
     </div>
   );

@@ -1,16 +1,16 @@
 import { useEffect } from "react";
-import { useTeamCtx } from "../../hooks";
-import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import { getUserStores } from "../../../../../api/user";
-import { assignUserToStore, unassignUserFromStore } from "../../../../../api/team";
-import { setRefresh, setSelectedUserStores, setStoresAssignedForUser, setStoresUnassignedForUser } from "../../../../../features/usersSlice";
-import { setRefreshStores } from "../../../../../features/userSlice";
-import type { JsonError, Store } from "../../../../../interfaces";
-import AssignPanel from "../AssignPanel";
+import { useOrganizationCtx } from "../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { getUserStores } from "../../../../api/user";
+import { assignUserToStore, unassignUserFromStore } from "../../../../api/team";
+import { setRefresh, setSelectedUserStores, setStoresAssignedForUser, setStoresUnassignedForUser } from "../../../../features/usersSlice";
+import { setRefreshStores } from "../../../../features/userSlice";
+import type { JsonError, Store } from "../../../../interfaces";
+import AssignPanel from "../../components/AssignPanel";
 
 const StoresTab = () => {
   const toast = useToast();
-  const ctx = useTeamCtx();
+  const ctx = useOrganizationCtx();
 
   const getStores = (userid: number) => {
     const filterNulls = (arr: Store[]) => arr.filter((store) => store.store_name !== null);

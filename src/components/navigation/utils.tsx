@@ -12,6 +12,7 @@ import {
   ChartBarSquareIcon,
   CircleStackIcon,
   Cog6ToothIcon,
+  BuildingOfficeIcon,
 } from "@heroicons/react/16/solid";
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
@@ -65,9 +66,9 @@ export const navigation: Navigation[] = [
     isVisible: true,
   },
   {
-    name: "Team",
-    href: "team",
-    icon: UsersIcon,
+    name: "Organization",
+    href: "organization",
+    icon: BuildingOfficeIcon,
     mobile: false,
     children: [],
     childOpen: false,
@@ -139,7 +140,7 @@ export const navigation: Navigation[] = [
     childOpen: false,
     userLevels: ["9"],
     isHovering: false,
-    isVisible: true,
+    isVisible: false,
   },
   {
     name: "Receivers",
@@ -361,9 +362,9 @@ export const categories: NavCategory[] = [
         isVisible: true,
       },
       {
-        name: "Team",
-        href: "team",
-        icon: UsersIcon,
+        name: "Organization",
+        href: "organization",
+        icon: BuildingOfficeIcon,
         mobile: false,
         children: [],
         childOpen: false,

@@ -1,15 +1,15 @@
-import { useTeamCtx } from "../../hooks";
-import { useToast } from "../../../../../components/toasts/hooks/useToast";
+import { useOrganizationCtx } from "../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
 import {
   setAvailableEmailDetails,
   setAvailableUsernameDetails,
   setUserInfo,
-} from "../../../../../features/usersSlice";
-import { checkEmail, checkUsername } from "../../../../../api/team";
-import type { JsonError } from "../../../../../interfaces";
-import { roles } from "../../..";
-import Input from "../../../../../components/inputs/Input";
-import PasswordInput from "../../../../../components/inputs/PasswordInput";
+} from "../../../../features/usersSlice";
+import { checkEmail, checkUsername } from "../../../../api/team";
+import type { JsonError } from "../../../../interfaces";
+import { roles } from "../../constants";
+import Input from "../../../../components/inputs/Input";
+import PasswordInput from "../../../../components/inputs/PasswordInput";
 
 interface StepUserInfoProps {
   onContinue: () => void;
@@ -17,7 +17,7 @@ interface StepUserInfoProps {
 
 const StepUserInfo = ({ onContinue }: StepUserInfoProps) => {
   const toast = useToast();
-  const ctx = useTeamCtx();
+  const ctx = useOrganizationCtx();
 
   const availableLevels = ctx.userLevels.filter((l) => l.id <= ctx.userLevel);
 
@@ -76,46 +76,66 @@ const StepUserInfo = ({ onContinue }: StepUserInfoProps) => {
     ctx.userInfo.user_level > 0;
 
   return (
-    <div className="max-w-[440px]">
-      <div className="mb-3">
-        <div className="text-[11px] font-medium text-content mb-1">Role</div>
-        <div className="flex flex-wrap gap-1.5">
-          {roles.map((r) => (
-            <button
-              key={r.value}
-              onClick={() =>
-                ctx.dispatch(
-                  setUserInfo({ key: "role", value: Number(r.value) }),
-                )
-              }
-              className={`text-[11px] px-3 py-1 rounded-full ${ctx.userInfo.role === Number(r.value) ? "bg-[#1e2a4a] text-custom-white" : "bg-custom-white border border-gray-200 text-content"}`}
-            >
-              {r.label}
-            </button>
-          ))}
+    <div className="min-w-[500px] max-w-[500px]">
+      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/60 mb-1.5">
+        Authorization
+      </div>
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div>
+          <label className="text-[11px] font-medium text-content mb-1 block">
+            Role
+          </label>
+          <select
+            value={ctx.userInfo.role || ""}
+            onChange={(e) =>
+              ctx.dispatch(
+                setUserInfo({ key: "role", value: Number(e.target.value) }),
+              )
+            }
+            className="basic-input w-full bg-custom-white py-1.5 text-[13px]"
+          >
+            <option value="" disabled>
+              Select role
+            </option>
+            {roles.map((r) => (
+              <option key={r.value} value={r.value}>
+                {r.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="text-[11px] font-medium text-content mb-1 block">
+            Level
+          </label>
+          <select
+            value={ctx.userInfo.user_level || ""}
+            onChange={(e) =>
+              ctx.dispatch(
+                setUserInfo({
+                  key: "user_level",
+                  value: Number(e.target.value),
+                }),
+              )
+            }
+            className="basic-input w-full bg-custom-white py-1.5 text-[13px]"
+          >
+            <option value="" disabled>
+              Select level
+            </option>
+            {availableLevels.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      <div className="mb-4">
-        <div className="text-[11px] font-medium text-content mb-1">
-          User level
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {availableLevels.map((l) => (
-            <button
-              key={l.id}
-              onClick={() =>
-                ctx.dispatch(setUserInfo({ key: "user_level", value: l.id }))
-              }
-              className={`text-[11px] px-3 py-1 rounded-full ${ctx.userInfo.user_level === l.id ? "bg-[#1e2a4a] text-custom-white" : "bg-custom-white border border-gray-200 text-content"}`}
-            >
-              {l.name}
-            </button>
-          ))}
-        </div>
+      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/60 mb-1.5">
+        Identity
       </div>
-
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-2 gap-3 mb-4">
         <Input
           label="Username"
           value={ctx.userInfo.username}
@@ -139,7 +159,11 @@ const StepUserInfo = ({ onContinue }: StepUserInfoProps) => {
           textColor={ctx.emailTextColor}
         />
       </div>
-      <div className="grid grid-cols-2 gap-3 mb-3">
+
+      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/60 mb-1.5">
+        Name
+      </div>
+      <div className="grid grid-cols-2 gap-3 mb-4">
         <Input
           label="First name"
           value={ctx.userInfo.first_name}
@@ -156,6 +180,10 @@ const StepUserInfo = ({ onContinue }: StepUserInfoProps) => {
           }
           className="py-1.5 text-[13px]"
         />
+      </div>
+
+      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/60 mb-1.5">
+        Security
       </div>
       <div className="grid grid-cols-2 gap-3 mb-5">
         <PasswordInput

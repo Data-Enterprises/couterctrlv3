@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { useTeamCtx } from "../../hooks";
-import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import { getBGAssignedToUserSplit } from "../../../../../api/baseGroups";
-import { setAllSelectedBaseGroups } from "../../../../../features/baseGroupSlice";
-import type { JsonError } from "../../../../../interfaces";
-import { roles } from "../../..";
+import { useOrganizationCtx } from "../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { getBGAssignedToUserSplit } from "../../../../api/baseGroups";
+import { setAllSelectedBaseGroups } from "../../../../features/baseGroupSlice";
+import type { JsonError } from "../../../../interfaces";
+import { roles } from "../../constants";
 import BasicInfoTab from "./BasicInfoTab";
 import CompaniesTab from "./CompaniesTab";
 import BaseGroupsTab from "./BaseGroupsTab";
@@ -25,7 +25,7 @@ interface UserDetailShellProps {
 
 const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
   const toast = useToast();
-  const ctx = useTeamCtx();
+  const ctx = useOrganizationCtx();
   const [tab, setTab] = useState(1);
 
   const targetUser = ctx.users.find((u) => u.id === ctx.selectedUserId);
@@ -48,8 +48,7 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
 
   const roleLabel = roles.find((r) => r.value == ctx.userInfo.role)?.label ?? "";
   const levelLabel = ctx.userLevels.find((l) => l.id === ctx.userInfo.user_level)?.name ?? "";
-  const companyNames = targetUser.companies.map((c) => c.name).join(", ");
-  const bgNames = ctx.selectedBaseGroups.map((bg) => bg.name).join(", ");
+  const initials = `${ctx.userInfo.first_name?.charAt(0) ?? ""}${ctx.userInfo.last_name?.charAt(0) ?? ""}`;
 
   const renderTab = () => {
     switch (tab) {
@@ -69,44 +68,29 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 p-4">
+    <div className="flex-1 flex flex-col min-h-0 p-4 w-[640px]">
       <button onClick={onBack} className="text-[11px] text-content/60 mb-3 self-start">
         ← Back to users
       </button>
 
-      <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg mb-4">
-        <div className="w-10 h-10 rounded-full bg-[#1e2a4a] text-custom-white flex items-center justify-center text-[13px] font-semibold flex-shrink-0">
-          {ctx.userInfo.first_name?.charAt(0)}
-          {ctx.userInfo.last_name?.charAt(0)}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-11 h-11 rounded-full bg-[#1e2a4a] text-custom-white flex items-center justify-center text-[15px] font-medium flex-shrink-0">
+          {initials}
         </div>
-        <div className="grid grid-cols-3 gap-x-5 gap-y-1 text-[12px] flex-1">
-          <div>
-            <span className="text-content/60">Name</span>
-            <div className="font-medium text-content">
-              {ctx.userInfo.first_name} {ctx.userInfo.last_name}
-            </div>
+        <div>
+          <div className="text-[15px] font-medium text-content">
+            {ctx.userInfo.first_name} {ctx.userInfo.last_name}
           </div>
-          <div>
-            <span className="text-content/60">Username</span>
-            <div className="font-medium text-content">{ctx.userInfo.username}</div>
+          <div className="text-[11.5px] text-content/60">
+            {ctx.userInfo.username} · {ctx.userInfo.email}
           </div>
-          <div>
-            <span className="text-content/60">Email</span>
-            <div className="font-medium text-content">{ctx.userInfo.email}</div>
-          </div>
-          <div>
-            <span className="text-content/60">Company</span>
-            <div className="font-medium text-content truncate">{companyNames}</div>
-          </div>
-          <div>
-            <span className="text-content/60">Base groups</span>
-            <div className="font-medium text-content truncate">{bgNames || "—"}</div>
-          </div>
-          <div>
-            <span className="text-content/60">Role · Level</span>
-            <div className="font-medium text-content">
-              {roleLabel}, {levelLabel}
-            </div>
+          <div className="flex gap-1.5 mt-1.5">
+            <span className="text-[10.5px] font-medium px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700">
+              {roleLabel}
+            </span>
+            <span className="text-[10.5px] font-medium px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700">
+              {levelLabel}
+            </span>
           </div>
         </div>
       </div>

@@ -32,7 +32,7 @@ const PasswordInput = ({
   const showMsg = () => {
     if (name === "confirm_password" && text.length > 0) {
       if (leftCompare !== rightCompare) {
-        return "- Passwords do not match";
+        return "- No match";
       } else if (leftCompare === rightCompare) {
         return "- Passwords Match";
       }
