@@ -351,7 +351,7 @@ export const categories: NavCategory[] = [
     icon: Cog6ToothIcon,
     pages: [
       {
-        name: "User Groups",
+        name: "Store Groups",
         href: "groups",
         icon: GroupsIcon,
         mobile: true,

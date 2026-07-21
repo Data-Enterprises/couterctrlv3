@@ -4,10 +4,18 @@ import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { setTempPassword } from "../../../../api/security";
 import { resetUserSecurityQuestion } from "../../../../api/team";
 import { setRefresh } from "../../../../features/usersSlice";
-import type { JsonError } from "../../../../interfaces";
+import type { JsonError, User } from "../../../../interfaces";
 import PasswordInput from "../../../../components/inputs/PasswordInput";
 
-const SecurityTab = () => {
+interface SecurityTabProps {
+  user: User;
+}
+
+// Takes the target user as a prop rather than reading ctx.selectedUserId/
+// ctx.userInfo — this is opened directly from the Users grid row action now,
+// not from within the edit-user detail view, so there's no "currently
+// selected for editing" state to piggyback on.
+const SecurityTab = ({ user }: SecurityTabProps) => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
   const [pw, setPw] = useState("");
@@ -16,7 +24,7 @@ const SecurityTab = () => {
   const canResetPW = pw.length > 0 && confirmPw.length > 0 && pw === confirmPw;
 
   const resetPassword = () => {
-    setTempPassword(ctx.url, ctx.token, ctx.userInfo.username, pw)
+    setTempPassword(ctx.url, ctx.token, user.username, pw)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
@@ -34,7 +42,7 @@ const SecurityTab = () => {
   };
 
   const resetSecurity = () => {
-    resetUserSecurityQuestion(ctx.url, ctx.token, ctx.selectedUserId)
+    resetUserSecurityQuestion(ctx.url, ctx.token, user.id)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {

@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/16/solid";
 import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
-import { addDays } from "../../../../../utils";
+import { addDays, formatCurrency2 } from "../../../../../utils";
 import { computeUpcSalesCompStats, rowTotal, DAYS, DAY_SHORT } from "./salesCompStats";
 
 const HEAT: { bg: string; color: string }[] = [
@@ -29,10 +29,6 @@ function fmtWeekRange(weekStart: string): string {
   const startStr = start.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   const endStr = end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   return `${startStr} - ${endStr}`;
-}
-
-function fmt(n: number): string {
-  return "$" + Math.round(n).toLocaleString("en-US");
 }
 
 function fmtSmall(n: number): string {
@@ -71,10 +67,9 @@ function Sparkline({ weekTotals }: { weekTotals: number[] }) {
 }
 
 type HeatMode = "global" | "per-item";
-type CompareMode = "ty-only" | "ty-vs-ly" | "yoy-delta";
+type CompareMode = "ty-vs-ly" | "yoy-delta";
 
 const COMPARE_MODES: { key: CompareMode; label: string }[] = [
-  { key: "ty-only", label: "TY only" },
   { key: "ty-vs-ly", label: "TY vs LY" },
   { key: "yoy-delta", label: "YoY delta" },
 ];
@@ -203,7 +198,7 @@ const SalesCompTab = () => {
             <col style={{ width: 64 }} />
             <col style={{ width: 64 }} />
             <col style={{ width: 60 }} />
-            {DAYS.map((_, i) => <col key={i} style={{ width: 58 }} />)}
+            {DAYS.map((_, i) => <col key={i} style={{ width: 76 }} />)}
           </colgroup>
           <thead>
             <tr className="sticky top-0 bg-gray-50 z-10">
@@ -306,7 +301,7 @@ const SalesCompTab = () => {
                               className="py-1.5 pr-1.5 text-right tabular-nums text-[12px]"
                               style={{ background: hs.bg, color: hs.color }}
                             >
-                              {val > 0 ? fmtSmall(val) : "—"}
+                              {val > 0 ? formatCurrency2(val) : "—"}
                             </td>
                           );
                         })}
@@ -330,7 +325,7 @@ const SalesCompTab = () => {
                             className="py-1 pr-1.5 text-right tabular-nums text-[12px]"
                             style={{ background: hs.bg, color: hs.color, opacity: 0.85 }}
                           >
-                            {val > 0 ? fmtSmall(val) : "—"}
+                            {val > 0 ? formatCurrency2(val) : "—"}
                           </td>
                         );
                       })}
@@ -344,7 +339,7 @@ const SalesCompTab = () => {
                         <td />
                         <td className="pl-5 pr-2 py-1 text-[11px] text-content truncate text-right">{fmtWeekRange(week)}</td>
                         <td className="py-1 pr-2 text-right tabular-nums text-[11px] font-semibold text-content">
-                          {fmt(wt)}
+                          {formatCurrency2(wt)}
                         </td>
                         <td />
                         <td />
@@ -353,7 +348,7 @@ const SalesCompTab = () => {
                           const val = row[d] ?? 0;
                           return (
                             <td key={d} className="py-1 pr-1.5 text-right tabular-nums text-[11px] text-content">
-                              {val > 0 ? fmt(val) : "—"}
+                              {val > 0 ? formatCurrency2(val) : "—"}
                             </td>
                           );
                         })}

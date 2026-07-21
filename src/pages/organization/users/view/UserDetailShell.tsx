@@ -1,17 +1,14 @@
 import { useEffect, useState } from "react";
-import { KeyIcon } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { getBGAssignedToUserSplit } from "../../../../api/baseGroups";
 import { setAllSelectedBaseGroups } from "../../../../features/baseGroupSlice";
 import type { JsonError } from "../../../../interfaces";
 import { roles } from "../../constants";
-import IconButton from "../../../../components/IconButton";
 import BasicInfoTab from "./BasicInfoTab";
 import CompaniesTab from "./CompaniesTab";
 import BaseGroupsTab from "./BaseGroupsTab";
 import StoresTab from "./StoresTab";
-import SecurityTab from "./SecurityTab";
 
 const TABS = [
   { id: 1, label: "Basic info" },
@@ -28,7 +25,6 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
   const [tab, setTab] = useState(1);
-  const [securityOpen, setSecurityOpen] = useState(false);
 
   const targetUser = ctx.users.find((u) => u.id === ctx.selectedUserId);
   const outranked = targetUser ? targetUser.user_level > ctx.userLevel : false;
@@ -93,11 +89,6 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
             </span>
           </div>
         </div>
-        <IconButton
-          icon={KeyIcon}
-          title="Password & security"
-          onClick={() => setSecurityOpen(true)}
-        />
       </div>
 
       <div className="flex border-b border-gray-100 mb-4 flex-shrink-0">
@@ -115,25 +106,6 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
       </div>
 
       <div className="flex-1 overflow-y-auto thin-scrollbar">{renderTab()}</div>
-
-      {securityOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35">
-          <div className="bg-custom-white rounded-xl p-5 w-[480px] shadow-2xl">
-            <div className="flex items-center justify-between">
-              <div className="text-[14px] font-medium text-content">
-                Password & security
-              </div>
-              <button
-                onClick={() => setSecurityOpen(false)}
-                className="text-[11px] text-content/60"
-              >
-                Close
-              </button>
-            </div>
-            <SecurityTab />
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -4,6 +4,7 @@ import {
   TrashIcon,
   PlusIcon,
   ArrowPathIcon,
+  KeyIcon,
 } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -20,6 +21,7 @@ import SelectFilter from "../../../components/filters/SelectFilter";
 import TextFilter from "../../../components/filters/TextFilter";
 import IconButton from "../../../components/IconButton";
 import ConfirmModal from "../../../components/ConfirmModal";
+import SecurityTab from "./view/SecurityTab";
 
 interface UserGridProps {
   onOpenCreate: () => void;
@@ -42,6 +44,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   const [searchType, setSearchType] = useState<"name" | "email">("name");
   const [searchText, setSearchText] = useState("");
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [securityUser, setSecurityUser] = useState<User | null>(null);
   const [statusFilter, setStatusFilter] = useState("");
   const showInactive = statusFilter === "inactive";
 
@@ -209,7 +212,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
       </div>
 
       <div className="border border-gray-100 rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col">
-        <div className="grid grid-cols-[16%_34%_14%_12%_14%_10%] px-3 py-2 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0">
+        <div className="grid grid-cols-[16%_32%_14%_12%_14%_12%] px-3 py-2 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0">
           <div>Username</div>
           <div>Email</div>
           <div>Role</div>
@@ -223,7 +226,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
             return (
               <div
                 key={u.id}
-                className={`grid grid-cols-[16%_34%_14%_12%_14%_10%] px-3 py-2 text-[12px] items-center border-b border-gray-100 ${outranked ? "bg-gray-50 text-content/40" : "text-content"}`}
+                className={`grid grid-cols-[16%_32%_14%_12%_14%_12%] px-3 py-2 text-[12px] items-center border-b border-gray-100 ${outranked ? "bg-gray-50 text-content/40" : "text-content"}`}
               >
                 <div className="truncate">{u.username}</div>
                 <div className="truncate">{u.email}</div>
@@ -247,6 +250,11 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                         icon={PencilIcon}
                         title="Edit"
                         onClick={() => handleEdit(u)}
+                      />
+                      <IconButton
+                        icon={KeyIcon}
+                        title="Password & security"
+                        onClick={() => setSecurityUser(u)}
                       />
                       <IconButton
                         icon={TrashIcon}
@@ -275,6 +283,25 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
           onConfirm={handleDeleteConfirm}
           onCancel={() => setDeletingUser(null)}
         />
+      )}
+
+      {securityUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35">
+          <div className="bg-custom-white rounded-xl p-5 w-[480px] shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div className="text-[14px] font-medium text-content">
+                Password & security — {securityUser.username}
+              </div>
+              <button
+                onClick={() => setSecurityUser(null)}
+                className="text-[11px] text-content/60"
+              >
+                Close
+              </button>
+            </div>
+            <SecurityTab user={securityUser} />
+          </div>
+        </div>
       )}
     </div>
   );

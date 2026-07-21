@@ -25,7 +25,7 @@ const GroupsList = ({
   onOpenCreate,
 }: GroupsListProps) => {
   return (
-    <div className="w-72 border-r border-gray-100 flex-shrink-0 flex flex-col">
+    <div className="w-72 border-r border-gray-100 flex-shrink-0 flex flex-col bg-gray-50">
       <div className="p-2.5 border-b border-gray-100 flex gap-1.5">
         <TextFilter
           value={search}

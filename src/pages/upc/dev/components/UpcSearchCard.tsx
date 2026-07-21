@@ -70,6 +70,28 @@ const UpcSearchCard = ({ onSearch }: Props) => {
           </p>
         </div>
 
+        {/* landing tab */}
+        <div>
+          <label className="block text-[12px] font-medium text-content mb-1">
+            Open to
+          </label>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {UPC_DEV_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => dispatch(setDevActiveTab(tab.id))}
+                className={`px-2.5 py-1 text-[11px] font-medium rounded border transition-colors ${
+                  ctx.activeTab === tab.id
+                    ? "bg-[#1e2a4a] border-[#1e2a4a] text-custom-white"
+                    : "border-content/20 text-content/85 hover:text-content hover:border-content/35"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* store / group */}
         <StorePicker />
 
@@ -137,28 +159,6 @@ const UpcSearchCard = ({ onSearch }: Props) => {
               ))}
             </div>
           )}
-        </div>
-
-        {/* landing tab */}
-        <div>
-          <label className="block text-[12px] font-medium text-content mb-1">
-            Open to
-          </label>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {UPC_DEV_TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => dispatch(setDevActiveTab(tab.id))}
-                className={`px-2.5 py-1 text-[11px] font-medium rounded border transition-colors ${
-                  ctx.activeTab === tab.id
-                    ? "bg-[#1e2a4a] border-[#1e2a4a] text-custom-white"
-                    : "border-content/20 text-content/85 hover:text-content hover:border-content/35"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* run */}
