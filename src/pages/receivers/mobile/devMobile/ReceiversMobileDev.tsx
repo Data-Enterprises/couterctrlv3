@@ -8,10 +8,9 @@ import { getReceiversList } from "../../../../api/receivers";
 import type { ReceiverListResponse, JsonError } from "../../../../interfaces";
 import SingleStoreSearchCard from "../../../../components/SingleStoreSearchCard";
 import DatePickers from "../../../../components/datePickers/DatePickers";
-import RcvVendorList from "./RcvVendorList";
 import RcvReceiverList from "./RcvReceiverList";
 
-type Screen = "entry" | "vendors" | "receivers";
+type Screen = "entry" | "list";
 
 const fmtSearchDate = (mdy: string) => {
   const [m, d, y] = mdy.split("/");
@@ -29,7 +28,6 @@ const ReceiversMobileDev = () => {
   const { startDate, endDate } = useAppSelector((s) => s.search);
 
   const [screen, setScreen] = useState<Screen>("entry");
-  const [selectedVendorId, setSelectedVendorId] = useState<string | null>(null);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -60,7 +58,7 @@ const ReceiversMobileDev = () => {
         } else if (j.recievers.length > 0) {
           dispatch(actions.setReceiversList(j.recievers));
           dispatch(actions.setListGridData(j.recievers));
-          setScreen("vendors");
+          setScreen("list");
         } else {
           dispatch(actions.setNoReceivers(true));
         }
@@ -79,47 +77,16 @@ const ReceiversMobileDev = () => {
   const hasData = rcv.list.length > 0;
 
   const handleBackToResults = () => {
-    setSelectedVendorId(null);
-    setScreen("vendors");
+    setScreen("list");
   };
 
-  const vendorReceivers = useMemo(
-    () => rcv.list.filter((r) => r.vendorid === selectedVendorId),
-    [rcv.list, selectedVendorId],
-  );
-
-  const selectedVendorName = useMemo(
-    () => rcv.list.find((r) => r.vendorid === selectedVendorId)?.vendor_name ?? "",
-    [rcv.list, selectedVendorId],
-  );
-
-  if (screen === "vendors") {
-    return (
-      <RcvVendorList
-        list={rcv.list}
-        storeName={storeName}
-        dateRangeLabel={dateRangeLabel}
-        onSelect={(vendorId) => {
-          setSelectedVendorId(vendorId);
-          setScreen("receivers");
-        }}
-        onSearch={handleOpenSearch}
-      />
-    );
-  }
-
-  if (screen === "receivers") {
+  if (screen === "list") {
     return (
       <RcvReceiverList
-        receivers={vendorReceivers}
-        vendorName={selectedVendorName}
+        receivers={rcv.list}
         storeName={storeName}
         dateRangeLabel={dateRangeLabel}
         storeid={rcv.storeid}
-        onBack={() => {
-          setSelectedVendorId(null);
-          setScreen("vendors");
-        }}
         onSearch={handleOpenSearch}
       />
     );

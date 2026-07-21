@@ -176,43 +176,43 @@ const ReceiverDetailPanel = () => {
             <table className="w-full border-collapse text-[12px]">
               <thead>
                 <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
-                  <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70">
                     #
                   </th>
-                  <th className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70">
+                  <th className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70">
                     UPC
                   </th>
                   <th
-                    className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70"
+                    className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70"
                     style={{ width: "22%" }}
                   >
                     Description
                   </th>
-                  <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70">
                     Cases
                   </th>
-                  <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70">
                     Units
                   </th>
-                  <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 whitespace-nowrap">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70 whitespace-nowrap">
                     U Cost
                   </th>
-                  <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 whitespace-nowrap">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70 whitespace-nowrap">
                     Ext Cost
                   </th>
-                  <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70">
                     Retail
                   </th>
-                  <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70 whitespace-nowrap">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70 whitespace-nowrap">
                     Ext Retail
                   </th>
-                  <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70">
                     GM
                   </th>
-                  <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70">
                     Free
                   </th>
-                  <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content/70">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70">
                     Return
                   </th>
                 </tr>

@@ -32,7 +32,7 @@ const PasswordInput = ({
   const showMsg = () => {
     if (name === "confirm_password" && text.length > 0) {
       if (leftCompare !== rightCompare) {
-        return "- Passwords do not match";
+        return "- No match";
       } else if (leftCompare === rightCompare) {
         return "- Passwords Match";
       }
@@ -100,7 +100,7 @@ const PasswordInput = ({
 
   return (
     <div className="relative">
-      <label htmlFor={name} className="text-[13px] font-medium ml-0.5 flex gap-1">
+      <label htmlFor={name} className="text-[11.5px] font-medium ml-0.5 flex gap-1">
         {label}
         <div
           data-testid={`text-input-${name}-message`}

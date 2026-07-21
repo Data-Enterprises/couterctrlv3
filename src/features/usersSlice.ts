@@ -55,6 +55,7 @@ type UserFilterType = "name" | "email";
 
 interface UsersState {
   users: User[];
+  inactiveUsers: User[];
   userInfo: UserData;
   baseGroups: BaseGroup[];
   refresh: boolean;
@@ -82,6 +83,7 @@ interface UsersState {
 
 const initialState: UsersState = {
   users: [],
+  inactiveUsers: [],
   userInfo: defaultInfo,
   baseGroups: [],
   refresh: true,
@@ -116,6 +118,9 @@ export const usersSlice = createSlice({
   reducers: {
     setUsers: (state, action: PayloadAction<User[]>) => {
       state.users = action.payload;
+    },
+    setInactiveUsers: (state, action: PayloadAction<User[]>) => {
+      state.inactiveUsers = action.payload;
     },
     setUserInfo: (state, action: PayloadAction<FormUpdate>) => {
       const { key, value } = action.payload;
@@ -293,6 +298,7 @@ export const usersSlice = createSlice({
 
 export const {
   setUsers,
+  setInactiveUsers,
   setUserInfo,
   setSelectedUserInfo,
   resetUserInfo,

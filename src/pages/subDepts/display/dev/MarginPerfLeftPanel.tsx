@@ -17,6 +17,8 @@ import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
 import TextFilter from "../../../../components/filters/TextFilter";
 import { severityDotClass, pillClass, type SevFilter } from "../../../../utils/severity";
 import type { SubDeptMargin } from "../../../../interfaces";
+import InfoPopover from "../../../../components/InfoPopover";
+import { SUB_DEPT_MARGINS_INFO } from "../../subDeptMarginsInfo";
 
 interface Props {
   onSearchOpen: () => void;
@@ -60,7 +62,7 @@ const Sparkline = ({ values, stroke }: { values: number[]; stroke: string }) => 
 const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
-  const [legendHover, setLegendHover] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [subDeptFilter, setSubDeptFilter] = useState("");
 
@@ -150,19 +152,6 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
   const visibleRows = [...textFilteredRows].sort(
     (a, b) => SEV_RANK[a.tier] - SEV_RANK[b.tier],
   );
-
-  const tooltipTiers =
-    gradingMetric === "margin"
-      ? [
-          { color: "#fca5a5", label: `Critical — >${gradingThreshold}pts below LY (or LW if no LY)` },
-          { color: "#fcd34d", label: `Watch — 0–${gradingThreshold}pts below LY (or LW if no LY)` },
-          { color: "#6ee7b7", label: "Healthy — at or above LY (or LW if no LY)" },
-        ]
-      : [
-          { color: "#fca5a5", label: `Critical — >${gradingThreshold}% below LY (or LW if no LY)` },
-          { color: "#fcd34d", label: `Watch — 0–${gradingThreshold}% below LY (or LW if no LY)` },
-          { color: "#6ee7b7", label: "Healthy — at or above LY (or LW if no LY)" },
-        ];
 
   return (
     <div
@@ -265,43 +254,21 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
             />
           </div>
 
-          <div
-            className="relative flex-shrink-0"
-            onMouseEnter={() => setLegendHover(true)}
-            onMouseLeave={() => setLegendHover(false)}
-          >
-            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/75 hover:text-custom-white hover:border-custom-white/40 transition-colors">
+          <div className="relative flex-shrink-0">
+            <button
+              onClick={() => setInfoOpen((prev) => !prev)}
+              title="About this view"
+              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/75 hover:text-custom-white hover:border-custom-white/40 transition-colors"
+            >
               <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
             </button>
-            {legendHover && (
-              <div
-                className="absolute right-0 top-full mt-1.5 z-50 bg-[#1e2a4a] border border-custom-white/15 rounded-lg shadow-lg px-3 py-2.5 flex flex-col gap-1.5"
-                style={{ minWidth: 210 }}
-              >
-                {tooltipTiers.map(({ color, label }) => (
-                  <div key={label} className="flex items-start gap-2">
-                    <div className="w-[7px] h-[7px] rounded-[2px] flex-shrink-0 mt-[3px]" style={{ background: color }} />
-                    <span className="text-[11px] text-custom-white leading-snug">{label}</span>
-                  </div>
-                ))}
-                <div className="h-px bg-custom-white/10 my-0.5" />
-                <div className="text-[9px] text-custom-white leading-snug mb-0.5">
-                  The selected metric drives sub dept grading and all comparisons in the right panel.
-                </div>
-                <div className="h-px bg-custom-white/10 my-0.5" />
-                <div className="text-[9px] font-semibold uppercase tracking-wide text-custom-white">
-                  Metric graded
-                </div>
-                {([{ label: "Margin", key: "margin" }, { label: "Sales", key: "sales" }] as { label: string; key: GradingMetric }[]).map(({ label, key }) => (
-                  <div key={key} className="flex items-center gap-1.5">
-                    <span className="text-custom-white text-[10px]">·</span>
-                    <span className="text-[10px] text-custom-white">{label}</span>
-                    {gradingMetric === key && (
-                      <span className="text-[9px] text-custom-white">selected</span>
-                    )}
-                  </div>
-                ))}
-              </div>
+            {infoOpen && (
+              <InfoPopover
+                title={SUB_DEPT_MARGINS_INFO.title}
+                purpose={SUB_DEPT_MARGINS_INFO.purpose}
+                glossary={SUB_DEPT_MARGINS_INFO.glossary}
+                onClose={() => setInfoOpen(false)}
+              />
             )}
           </div>
         </div>

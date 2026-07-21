@@ -20,8 +20,17 @@ const UpcKpiStrip = () => {
       }
       case "trend":
         return getTrendKpis(ctx.upcTrends, ctx.selectedUpcs);
-      case "association":
-        return getAssociationKpis(ctx.itemAssociations, ctx.upcs);
+      case "association": {
+        const mainCount = ctx.selectedUpcs.length > 0 ? ctx.selectedUpcs.length : ctx.upcs.length;
+        return getAssociationKpis(
+          mainCount,
+          ctx.level1Items,
+          ctx.level2Items,
+          ctx.level3Items,
+          ctx.singleSearchUpc,
+          ctx.singleSearchItems,
+        );
+      }
     }
   })();
 

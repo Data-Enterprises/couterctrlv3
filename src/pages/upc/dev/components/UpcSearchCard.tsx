@@ -65,9 +65,31 @@ const UpcSearchCard = ({ onSearch }: Props) => {
         {/* title */}
         <div>
           <h2 className="text-base font-semibold text-content">UPC List</h2>
-          <p className="text-[12px] text-content/50">
+          <p className="text-[12px] text-content/85">
             Sales comp · Forecast · Price opt · Trend · Association
           </p>
+        </div>
+
+        {/* landing tab */}
+        <div>
+          <label className="block text-[12px] font-medium text-content mb-1">
+            Open to
+          </label>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {UPC_DEV_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => dispatch(setDevActiveTab(tab.id))}
+                className={`px-2.5 py-1 text-[11px] font-medium rounded border transition-colors ${
+                  ctx.activeTab === tab.id
+                    ? "bg-[#1e2a4a] border-[#1e2a4a] text-custom-white"
+                    : "border-content/20 text-content/85 hover:text-content hover:border-content/35"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* store / group */}
@@ -78,7 +100,7 @@ const UpcSearchCard = ({ onSearch }: Props) => {
 
         {/* UPC input */}
         <div>
-          <label className="block text-[12px] font-medium text-content/70 mb-1">
+          <label className="block text-[12px] font-medium text-content/85 mb-1">
             UPCs
           </label>
           <textarea
@@ -92,13 +114,13 @@ const UpcSearchCard = ({ onSearch }: Props) => {
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             <button
               onClick={handleParseText}
-              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/60 hover:text-content/80 hover:border-content/35 transition-colors"
+              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/85 hover:text-content hover:border-content/35 transition-colors"
             >
               Add
             </button>
             <button
               onClick={() => fileRef.current?.click()}
-              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/60 hover:text-content/80 hover:border-content/35 transition-colors"
+              className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/85 hover:text-content hover:border-content/35 transition-colors"
             >
               Upload CSV
             </button>
@@ -124,12 +146,12 @@ const UpcSearchCard = ({ onSearch }: Props) => {
               {ctx.upcs.map((upc) => (
                 <span
                   key={upc}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium bg-[#1e2a4a]/10 text-[#1e2a4a]"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#1e2a4a]/10 text-[#1e2a4a]"
                 >
                   {upc}
                   <button
                     onClick={() => dispatch(removeDevUpc(upc))}
-                    className="text-[#1e2a4a]/50 hover:text-[#1e2a4a] transition-colors leading-none"
+                    className="text-[#1e2a4a]/85 hover:text-[#1e2a4a] transition-colors leading-none"
                   >
                     ×
                   </button>
@@ -137,28 +159,6 @@ const UpcSearchCard = ({ onSearch }: Props) => {
               ))}
             </div>
           )}
-        </div>
-
-        {/* landing tab */}
-        <div>
-          <label className="block text-[12px] font-medium text-content mb-1">
-            Open to
-          </label>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {UPC_DEV_TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => dispatch(setDevActiveTab(tab.id))}
-                className={`px-2.5 py-1 text-[11px] font-medium rounded border transition-colors ${
-                  ctx.activeTab === tab.id
-                    ? "bg-[#1e2a4a] border-[#1e2a4a] text-custom-white"
-                    : "border-content/20 text-content/60 hover:text-content/80 hover:border-content/35"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* run */}

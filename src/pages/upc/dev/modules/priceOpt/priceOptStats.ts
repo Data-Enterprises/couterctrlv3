@@ -24,6 +24,34 @@ export function isOverpriced(currentPrice: number | null, bestPrice: number): bo
   return currentPrice !== null && currentPrice > bestPrice;
 }
 
+export type BestPrice = { price: number; qty: number; revenue: number; profit: number; byProfit: boolean };
+
+// The price point with the highest total historical gross profit — not the
+// API's revenue-based pick — since a price with more volume can win on
+// total profit even at a smaller per-unit margin, and that's exactly the
+// case worth surfacing. Only computable once current cost is known; falls
+// back to the API's own best price (by revenue) when it isn't, e.g. Group
+// mode before a store's picked.
+export function bestPriceByProfit(
+  points: PricePoint[],
+  currentCost: number | null,
+  fallbackPrice: number,
+  fallbackQty: number,
+  fallbackRevenue: number,
+): BestPrice {
+  if (currentCost === null || points.length === 0) {
+    return { price: fallbackPrice, qty: fallbackQty, revenue: fallbackRevenue, profit: 0, byProfit: false };
+  }
+  let best: BestPrice | null = null;
+  for (const p of points) {
+    const profit = (p.price - currentCost) * p.qty;
+    if (!best || profit > best.profit) {
+      best = { price: p.price, qty: p.qty, revenue: p.revenue, profit, byProfit: true };
+    }
+  }
+  return best!;
+}
+
 // No date field anywhere in this data, so there's no real "before/after" —
 // elasticity is taken between the highest and lowest observed price points,
 // which is well-defined regardless of how many price points exist and works

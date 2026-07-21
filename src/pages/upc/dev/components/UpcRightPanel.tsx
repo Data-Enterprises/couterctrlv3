@@ -22,22 +22,15 @@ const UpcRightPanel = () => {
   return (
     <div className="flex-1 min-w-0 shadow-lg">
       <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
-
         {/* 1-row navy header */}
         <div className="flex-shrink-0 px-4 py-3 flex items-start justify-between bg-[#1e2a4a]">
           <div>
             <div className="text-[13px] font-semibold text-custom-white leading-tight">
               {activeTabLabel}
             </div>
-            <div className="text-[10px] mt-0.5" style={{ color: "rgb(var(--color-custom-white) / 0.50)" }}>
-              {ctx.selectedUpcs.length > 0
-                ? `${ctx.selectedUpcs.length} of ${ctx.upcItems.length} selected`
-                : "Select UPCs to view report"}
-            </div>
           </div>
           <button
-            className="flex items-center justify-center w-[22px] h-[22px] rounded border text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors"
-            style={{ borderColor: "rgb(var(--color-custom-white) / 0.20)" }}
+            className="flex items-center justify-center w-[22px] h-[22px] rounded border text-custom-white/40 border-custom-white/40 hover:text-custom-white hover:border-custom-white/85 transition-colors"
             onClick={() => setExportOpen(true)}
             title="Export"
           >
@@ -70,21 +63,55 @@ const UpcRightPanel = () => {
         <div className="flex-1 overflow-hidden flex flex-col min-h-0 relative">
           {ctx.selectedUpcs.length === 0 && (
             <div className="absolute inset-0 z-10 bg-custom-white flex flex-col items-center justify-center gap-2">
-              <div className="text-[11px] font-medium text-content/40">No UPCs selected</div>
-              <div className="text-[10px] text-content/30">Select one or more items from the left panel</div>
+              <div className="text-[11px] font-medium text-content/85">
+                No UPCs selected
+              </div>
+              <div className="text-[10px] text-content/85">
+                Select one or more items from the left panel
+              </div>
             </div>
           )}
-          <div className={ctx.activeTab === "salesComp" ? "flex flex-col flex-1 min-h-0" : "hidden"}><SalesCompTab /></div>
+          <div
+            className={
+              ctx.activeTab === "salesComp"
+                ? "flex flex-col flex-1 min-h-0"
+                : "hidden"
+            }
+          >
+            <SalesCompTab />
+          </div>
 
-          <div className={ctx.activeTab === "priceOpt" ? "flex flex-col flex-1 min-h-0" : "hidden"}><PriceOptTab /></div>
-          <div className={ctx.activeTab === "trend" ? "flex flex-col flex-1 min-h-0" : "hidden"}><TrendTab /></div>
-          <div className={ctx.activeTab === "association" ? "flex flex-col flex-1 min-h-0" : "hidden"}><AssociationTab /></div>
+          <div
+            className={
+              ctx.activeTab === "priceOpt"
+                ? "flex flex-col flex-1 min-h-0"
+                : "hidden"
+            }
+          >
+            <PriceOptTab />
+          </div>
+          <div
+            className={
+              ctx.activeTab === "trend"
+                ? "flex flex-col flex-1 min-h-0"
+                : "hidden"
+            }
+          >
+            <TrendTab />
+          </div>
+          <div
+            className={
+              ctx.activeTab === "association"
+                ? "flex flex-col flex-1 min-h-0"
+                : "hidden"
+            }
+          >
+            <AssociationTab />
+          </div>
         </div>
       </div>
 
-      {exportOpen && (
-        <UpcExportModal onClose={() => setExportOpen(false)} />
-      )}
+      {exportOpen && <UpcExportModal onClose={() => setExportOpen(false)} />}
     </div>
   );
 };

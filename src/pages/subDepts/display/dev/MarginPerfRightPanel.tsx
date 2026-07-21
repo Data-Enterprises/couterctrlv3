@@ -199,7 +199,7 @@ const MarginPerfRightPanel = () => {
             {subDeptName}
           </p>
           <span className="text-custom-white text-[13px] font-bold justify-self-center">
-            Weekly Margin Report{dateRange ? ` · ${dateRange}` : ""}
+            Margin Performance{dateRange ? ` · ${dateRange}` : ""}
           </span>
           <div className="flex items-center gap-2 justify-self-end">
             <button

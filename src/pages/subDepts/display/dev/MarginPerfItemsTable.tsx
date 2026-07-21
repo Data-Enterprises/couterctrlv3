@@ -87,7 +87,7 @@ interface ItemMarginRow {
 
 // Only the metrics a View preset can rank by — these are the only sortCol
 // values reachable now that the flat multi-column table is gone.
-type SortCol = "contribution" | "salesTrend" | "qty" | "cogs" | "marginTrend";
+type SortCol = "contribution" | "salesTrend" | "qty" | "cogs" | "marginTrend" | "marginPct";
 type RowMetricKey = "contribution" | "sales" | "qty" | "cogs" | "margin";
 
 interface ViewPreset {
@@ -99,6 +99,7 @@ interface ViewPreset {
 const VIEW_PRESETS: ViewPreset[] = [
   { label: "Margin Decliners", col: "marginTrend", dir: "asc" },
   { label: "Margin Gainers", col: "marginTrend", dir: "desc" },
+  { label: "Lowest Margin", col: "marginPct", dir: "asc" },
   { label: "Top Contribution", col: "contribution", dir: "desc" },
   { label: "Sales Gainers", col: "salesTrend", dir: "desc" },
   { label: "Sales Decliners", col: "salesTrend", dir: "asc" },
@@ -311,6 +312,8 @@ const buildRows = (
 
   const rows: ItemMarginRow[] = [];
   for (const [upc, ty] of tyMap) {
+    if (!upc || upc === "0") continue;
+
     const netSales = ty.grossSales - ty.tax;
     const tyMarginPct =
       netSales > 0 ? ((netSales - ty.cogs) / netSales) * 100 : 0;
@@ -684,8 +687,42 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
   // MarginPerfRightPanel already read it (this tab is dev-only).
   const gradingMetric = useAppSelector((s) => s.subMargin.gradingMetric);
 
+  // The left list's TY/LW/LY figures always reflect the Margin/Sales toggle
+  // in the left panel (gradingMetric) — the View dropdown only controls sort
+  // order (see displayData below) and must never change what's displayed.
+  const activeMetric: RowMetricKey =
+    gradingMetric === "margin" ? "margin" : "sales";
+
   const [sortCol, setSortCol] = useState<SortCol>("marginTrend");
   const [sortDir, setSortDir] = useState<"desc" | "asc">("asc");
+  // Clicking a TY/LW/LY column header sorts directly by that figure (same
+  // interaction as the store list in dev Sales — click cycles desc → asc →
+  // off) and takes priority over the View dropdown's preset sort while set.
+  const [colSort, setColSort] = useState<{
+    col: "ty" | "lw" | "ly";
+    dir: "desc" | "asc";
+  } | null>(null);
+  const handleColSortClick = (col: "ty" | "lw" | "ly") => {
+    setColSort((prev) => {
+      if (prev?.col !== col) return { col, dir: "desc" };
+      if (prev.dir === "desc") return { col, dir: "asc" };
+      return null;
+    });
+  };
+  const getColSortValue = (item: ItemMarginRow, col: "ty" | "lw" | "ly") => {
+    if (activeMetric === "margin") {
+      return col === "ty"
+        ? item.tyMarginPct
+        : col === "lw"
+          ? (item.lwMarginPct ?? -999)
+          : (item.lyMarginPct ?? -999);
+    }
+    return col === "ty"
+      ? item.grossSales
+      : col === "lw"
+        ? (item.lwGrossSales ?? -999)
+        : (item.lyGrossSales ?? -999);
+  };
   const [draftDesc, setDraftDesc] = useState("");
   const [appliedDesc, setAppliedDesc] = useState("");
   const [draftUpc, setDraftUpc] = useState("");
@@ -852,6 +889,11 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
     }
 
     data.sort((a, b) => {
+      if (colSort) {
+        const av = getColSortValue(a, colSort.col);
+        const bv = getColSortValue(b, colSort.col);
+        return colSort.dir === "asc" ? av - bv : bv - av;
+      }
       if (sevFilter === "all") {
         const ra = SEV_RANK[getItemSeverity(a, thresholdAmt, gradingMetric)];
         const rb = SEV_RANK[getItemSeverity(b, thresholdAmt, gradingMetric)];
@@ -871,6 +913,10 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
           av = a.marginTrendPct ?? -999;
           bv = b.marginTrendPct ?? -999;
           break;
+        case "marginPct":
+          av = a.tyMarginPct;
+          bv = b.tyMarginPct;
+          break;
         case "qty":
           av = a.qty;
           bv = b.qty;
@@ -888,6 +934,8 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
     rawRows,
     sortCol,
     sortDir,
+    colSort,
+    activeMetric,
     appliedDesc,
     appliedUpc,
     sevFilter,
@@ -904,12 +952,6 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
     if (ref === null) return null;
     return Math.round((ty - ref) * 10) / 10;
   };
-
-  // The left list's TY/LW/LY figures always reflect the Margin/Sales toggle
-  // in the left panel (gradingMetric) — the View dropdown only controls sort
-  // order (see displayData below) and must never change what's displayed.
-  const activeMetric: RowMetricKey =
-    gradingMetric === "margin" ? "margin" : "sales";
 
   // Returns the metric's own raw LW/LY figure for display (never a delta —
   // showing "$18.61" as a delta reads as if that were the actual LY value,
@@ -1097,6 +1139,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
                 if (preset) {
                   setSortCol(preset.col);
                   setSortDir(preset.dir);
+                  setColSort(null);
                 }
               }}
               placeholder="View"
@@ -1148,24 +1191,45 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
               </ColFilter>
             </span>
             <div className="flex items-center gap-[10px]">
-              <span
-                className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
+              <button
+                onClick={() => handleColSortClick("ty")}
+                className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
                 style={{ width: 76 }}
               >
                 TY
-              </span>
-              <span
-                className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
+                {colSort?.col === "ty" &&
+                  (colSort.dir === "desc" ? (
+                    <ChevronDownIcon className="w-3 h-3" />
+                  ) : (
+                    <ChevronUpIcon className="w-3 h-3" />
+                  ))}
+              </button>
+              <button
+                onClick={() => handleColSortClick("lw")}
+                className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
                 style={{ width: 68 }}
               >
                 LW
-              </span>
-              <span
-                className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
+                {colSort?.col === "lw" &&
+                  (colSort.dir === "desc" ? (
+                    <ChevronDownIcon className="w-3 h-3" />
+                  ) : (
+                    <ChevronUpIcon className="w-3 h-3" />
+                  ))}
+              </button>
+              <button
+                onClick={() => handleColSortClick("ly")}
+                className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
                 style={{ width: 68 }}
               >
                 LY
-              </span>
+                {colSort?.col === "ly" &&
+                  (colSort.dir === "desc" ? (
+                    <ChevronDownIcon className="w-3 h-3" />
+                  ) : (
+                    <ChevronUpIcon className="w-3 h-3" />
+                  ))}
+              </button>
             </div>
           </div>
 

@@ -7,6 +7,8 @@ import type { Severity, SevFilter } from "../../../utils/severity";
 import { severityDotClass } from "../../../utils/severity";
 import { isNoDollarType, storeSeverity, directionalPillClass, weekRangeLabel } from "../gradingUtils";
 import TextFilter from "../../../components/filters/TextFilter";
+import InfoPopover from "../../../components/InfoPopover";
+import { LP_INFO } from "../lpInfo";
 
 const SEV_RANK: Record<Severity, number> = { critical: 0, watch: 1, healthy: 2 };
 
@@ -21,7 +23,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
   const cashier = useAppSelector((s) => s.lossPrevention);
   const search = useAppSelector((s) => s.search);
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
-  const [legendHover, setLegendHover] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [storeFilter, setStoreFilter] = useState("");
 
@@ -131,43 +133,21 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
           </button>
           <div className="flex-1" />
           <span className="text-[9px] font-medium uppercase tracking-wide text-custom-white/35 flex-shrink-0">Exception activity vs baseline</span>
-          <div className="relative flex-shrink-0" onMouseEnter={() => setLegendHover(true)} onMouseLeave={() => setLegendHover(false)}>
-            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/50 hover:text-custom-white hover:border-custom-white/40 transition-colors">
+          <div className="relative flex-shrink-0">
+            <button
+              onClick={() => setInfoOpen((prev) => !prev)}
+              title="About this view"
+              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/50 hover:text-custom-white hover:border-custom-white/40 transition-colors"
+            >
               <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
             </button>
-            {legendHover && (
-              <div className="absolute right-0 top-full mt-1.5 z-50 bg-[#1e2a4a] border border-custom-white/15 rounded-lg shadow-lg px-3 py-2.5 flex flex-col gap-1.5" style={{ minWidth: 230 }}>
-                {(isNoDollarType(selectedSaleType) ? [
-                  { color: "#fca5a5", label: "Critical — neither metric at or below baseline" },
-                  { color: "#fcd34d", label: "Watch — 1 metric at or below baseline" },
-                  { color: "#6ee7b7", label: "Healthy — both metrics at or below baseline" },
-                ] : [
-                  { color: "#fca5a5", label: "Critical — fewer than 2 metrics at or below baseline" },
-                  { color: "#fcd34d", label: "Watch — exactly 2 metrics at or below baseline" },
-                  { color: "#6ee7b7", label: "Healthy — 3 or more metrics at or below baseline" },
-                ]).map(({ color, label }) => (
-                  <div key={label} className="flex items-start gap-2">
-                    <div className="w-[7px] h-[7px] rounded-[2px] flex-shrink-0 mt-[3px]" style={{ background: color }} />
-                    <span className="text-[11px] text-custom-white/90 leading-snug">{label}</span>
-                  </div>
-                ))}
-                <div className="h-px bg-custom-white/10 my-0.5" />
-                <div className="text-[9px] text-custom-white/50 leading-snug">Baseline = avg per week over the prior 2 weeks</div>
-                <div className="h-px bg-custom-white/10 my-0.5" />
-                <div className="text-[9px] font-semibold uppercase tracking-wide text-custom-white/35">Metrics graded</div>
-                <div className="flex flex-col gap-1">
-                  {(isNoDollarType(selectedSaleType) ? [
-                    "Transaction count", "Total items",
-                  ] : [
-                    "Transaction count", "Total items", "Exception amount", "Average dollars",
-                  ]).map((m) => (
-                    <div key={m} className="flex items-center gap-1.5">
-                      <span className="text-custom-white/30 text-[10px]">·</span>
-                      <span className="text-[10px] text-custom-white/90">{m}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            {infoOpen && (
+              <InfoPopover
+                title={LP_INFO.title}
+                purpose={LP_INFO.purpose}
+                glossary={LP_INFO.glossary}
+                onClose={() => setInfoOpen(false)}
+              />
             )}
           </div>
         </div>

@@ -30,6 +30,8 @@ const fmtDate = (iso: string) => {
   return `${m}/${d}/${y}`;
 };
 
+const padStoreNumber = (n: string | number) => String(n).padStart(3, "0");
+
 const MAX_CHIPS = 3;
 
 const colFilterInputStyle: React.CSSProperties = {
@@ -478,7 +480,7 @@ const OrderReportPanel = ({
                     <button
                       key={`${storeid}-${orderId}`}
                       onClick={() => onSelectOrder(storeid, orderId)}
-                      className={`w-full flex flex-col gap-2 rounded-lg border border-[#1e2a4a]/20 p-2 text-left transition-colors ${
+                      className={`w-full flex flex-col gap-1 rounded-lg border border-[#1e2a4a]/20 p-2 text-left transition-colors ${
                         isSel ? "bg-custom-white" : "bg-custom-white hover:bg-gray-50"
                       }`}
                       style={
@@ -498,12 +500,12 @@ const OrderReportPanel = ({
                         )}
                       </div>
                       {storeNames.length > 1 && (
-                        <span className="text-[10px] text-content truncate">
+                        <span className="text-[11px] text-content truncate font-medium">
                           {assignedStores.find((s) => s.storeid === storeid)
                             ?.store_name ?? `Store ${storeid}`}
                         </span>
                       )}
-                      <div className="flex flex-col gap-0.5">
+                      <div className="flex flex-col gap-1">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-[12px] text-content">
                             Invoice total
@@ -546,51 +548,63 @@ const OrderReportPanel = ({
               />
             ) : (
               <>
-                <div className="grid grid-cols-4 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
-                  <div className="px-4 pt-2.5 text-center">
+                <div className="grid grid-cols-5 divide-x divide-[#1e2a4a]/15 border-b border-gray-100 bg-custom-white flex-shrink-0">
+                  <div className="px-4 pt-2.5 pb-2 text-center min-w-0">
+                    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+                      Store #
+                    </div>
+                    <div className="text-[13px] font-bold text-content truncate">
+                      {padStoreNumber(
+                        assignedStores.find(
+                          (s) => s.storeid === selectedOrder?.storeid,
+                        )?.store_number ?? (selectedOrder?.storeid ?? ""),
+                      )}
+                    </div>
+                  </div>
+                  <div className="px-4 pt-2.5 pb-2 text-center">
                     <div className="text-[10px] font-bold uppercase tracking-wide text-content">
                       Order
                     </div>
-                    <div className="text-[14px] font-bold text-content">
+                    <div className="text-[13px] font-bold text-content">
                       #{selectedOrder?.orderId}
                     </div>
                   </div>
-                  <div className="px-4 pt-2.5 text-center">
+                  <div className="px-4 pt-2.5 pb-2 text-center">
                     <div className="text-[10px] font-bold uppercase tracking-wide text-content">
                       Items
                     </div>
-                    <div className="text-[14px] font-bold text-content">
+                    <div className="text-[13px] font-bold text-content">
                       {orderItems.length}
                     </div>
                   </div>
-                  <div className="px-4 pt-2.5 text-center">
+                  <div className="px-4 pt-2.5 pb-2 text-center">
                     <div className="text-[10px] font-bold uppercase tracking-wide text-content">
                       Ext retail
                     </div>
-                    <div className="text-[14px] font-bold text-content">
+                    <div className="text-[13px] font-bold text-content">
                       {formatCurrency2(selectedExtRetail)}
                     </div>
                   </div>
-                  <div className="px-4 pt-2.5 text-center">
+                  <div className="px-4 pt-2.5 pb-2 text-center">
                     <div className="text-[10px] font-bold uppercase tracking-wide text-content">
                       Ext cost
                     </div>
-                    <div className="text-[14px] font-bold text-content">
+                    <div className="text-[13px] font-bold text-content">
                       {formatCurrency2(selectedCost)}
                     </div>
                   </div>
                 </div>
                 <div className="flex-1 overflow-auto thin-scrollbar">
-                  <table className="w-full border-collapse text-[12px]">
+                  <table className="min-w-full border-collapse text-[12px]">
                     <thead>
-                      <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
-                        <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content">
-                          #
-                        </th>
+                      <tr className="sticky top-0 bg-[#f4f4f6] border-b border-gray-100 z-10">
                         <th
-                          className="text-left px-3 py-2"
-                          style={{ width: "6%" }}
+                          className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                          style={{ width: 60 }}
                         >
+                          Seq #
+                        </th>
+                        <th className="text-left px-3 py-2" style={{ width: 100 }}>
                           <ColFilter
                             label="UPC"
                             active={!!appliedUpc}
@@ -610,10 +624,7 @@ const OrderReportPanel = ({
                             />
                           </ColFilter>
                         </th>
-                        <th
-                          className="text-left px-3 py-2"
-                          style={{ width: "26%" }}
-                        >
+                        <th className="text-left px-3 py-2" style={{ width: 220 }}>
                           <ColFilter
                             label="Description"
                             active={!!appliedDesc}
@@ -635,7 +646,7 @@ const OrderReportPanel = ({
                         </th>
                         <th
                           className="text-left px-3 py-2 whitespace-nowrap"
-                          style={{ width: "8.4%" }}
+                          style={{ width: 120 }}
                         >
                           <ColFilter
                             label="Sub dept"
@@ -658,21 +669,51 @@ const OrderReportPanel = ({
                         </th>
                         <th
                           className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content"
-                          style={{ width: "5.7%" }}
+                          style={{ width: 60 }}
                         >
                           Qty
                         </th>
-                        <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap">
-                          Unit cost
+                        <th
+                          className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                          style={{ width: 80 }}
+                        >
+                          Cost
                         </th>
-                        <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap">
+                        <th
+                          className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                          style={{ width: 90 }}
+                        >
                           Ext cost
                         </th>
-                        <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content">
+                        <th
+                          className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content"
+                          style={{ width: 80 }}
+                        >
                           Retail
                         </th>
-                        <th className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap">
+                        <th
+                          className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                          style={{ width: 90 }}
+                        >
                           Ext retail
+                        </th>
+                        <th
+                          className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                          style={{ width: 90 }}
+                        >
+                          Profit
+                        </th>
+                        <th
+                          className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                          style={{ width: 70 }}
+                        >
+                          Margin
+                        </th>
+                        <th
+                          className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                          style={{ width: 70 }}
+                        >
+                          Weight
                         </th>
                       </tr>
                     </thead>
@@ -682,7 +723,7 @@ const OrderReportPanel = ({
                           key={`${o.storeid}-${o.line_number}`}
                           className="border-b border-b-[#1e2a4a]/15 hover:bg-gray-50 transition-colors"
                         >
-                          <td className="px-3 py-2 text-right tabular-nums text-content">
+                          <td className="px-3 py-2 tabular-nums text-content">
                             {o.line_number}
                           </td>
                           <td className="px-3 py-2 tabular-nums text-content whitespace-nowrap">
@@ -710,6 +751,17 @@ const OrderReportPanel = ({
                           </td>
                           <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
                             {formatCurrency2(o.e_ret)}
+                          </td>
+                          <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
+                            {formatCurrency2(o.e_ret - o.cogs)}
+                          </td>
+                          <td className="px-3 py-2 text-right tabular-nums text-content">
+                            {o.e_ret > 0
+                              ? `${(((o.e_ret - o.cogs) / o.e_ret) * 100).toFixed(1)}%`
+                              : "—"}
+                          </td>
+                          <td className="px-3 py-2 text-right tabular-nums text-content">
+                            {o.weight ?? "—"}
                           </td>
                         </tr>
                       ))}

@@ -8,6 +8,8 @@ import FilterBar from "../../../components/filters/FilterBar";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import TextFilter from "../../../components/filters/TextFilter";
 import SelectFilter, { type SelectFilterOption } from "../../../components/filters/SelectFilter";
+import InfoPopover from "../../../components/InfoPopover";
+import { ORDERS_INFO } from "../ordersInfo";
 
 interface Props {
   cards: GroupedOrderCard[];
@@ -50,7 +52,7 @@ const AvailableOrdersPanel = ({
     return withYear ? `${+m}/${+d}/${y}` : `${+m}/${+d}`;
   };
   const dateLabel = `${fmtRangePart(startDate)} – ${fmtRangePart(endDate, true)}`;
-  const [legendHover, setLegendHover] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
   const [activeType, setActiveType] = useState("all");
   const [storeFilter, setStoreFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
@@ -140,40 +142,21 @@ const isSelected = (order_date: string, order_type: string, storeid: number) => 
             <span className="text-[11px] font-medium text-custom-white truncate">{selectedStore.store_name}</span>
           )}
           <div className="flex-1" />
-          <div className="relative flex-shrink-0" onMouseEnter={() => setLegendHover(true)} onMouseLeave={() => setLegendHover(false)}>
-            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/50 hover:text-custom-white hover:border-white/40 transition-colors">
+          <div className="relative flex-shrink-0">
+            <button
+              onClick={() => setInfoOpen((prev) => !prev)}
+              title="About this view"
+              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/50 hover:text-custom-white hover:border-white/40 transition-colors"
+            >
               <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
             </button>
-            {legendHover && (
-              <div className="absolute right-0 top-full mt-1.5 z-50 bg-[#1e2a4a] border border-white/15 rounded-lg shadow-lg px-3 py-2.5 flex flex-col gap-2" style={{ minWidth: 220 }}>
-                {[
-                  { color: "#60a5fa", label: "Types", desc: "Distinct order types (e.g. DAM, DMG, INV, PER)" },
-                  { color: "#a78bfa", label: "Orders", desc: "Total store-level order entries, not individual line items" },
-                ].map(({ color, label, desc }) => (
-                  <div key={label} className="flex items-start gap-2">
-                    <div className="w-[7px] h-[7px] rounded-full flex-shrink-0 mt-[3px]" style={{ background: color }} />
-                    <span className="text-[11px] text-custom-white leading-snug">
-                      <span className="text-custom-white font-medium">{label}</span> — {desc}
-                    </span>
-                  </div>
-                ))}
-                {groupStores.length > 0 && (
-                  <>
-                    <div className="h-px bg-custom-white" />
-                    <div className="text-[9px] font-semibold uppercase tracking-wide text-custom-white">
-                      {selectedGroup?.group_name ?? "Group"} stores
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      {groupStores.map((s) => (
-                        <div key={s.storeid} className="flex items-center gap-1.5">
-                          <span className="text-custom-white text-[10px]">·</span>
-                          <span className="text-[10px] text-custom-white">{s.store_name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
+            {infoOpen && (
+              <InfoPopover
+                title={ORDERS_INFO.title}
+                purpose={ORDERS_INFO.purpose}
+                glossary={ORDERS_INFO.glossary}
+                onClose={() => setInfoOpen(false)}
+              />
             )}
           </div>
         </div>

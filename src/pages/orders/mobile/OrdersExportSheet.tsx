@@ -105,6 +105,9 @@ const OrdersExportSheet = ({
       ["rev", { fn: "sum", enabled: false }],
       ["active_retail_price", { fn: "avg", enabled: false }],
       ["net_cost", { fn: "sum", enabled: false }],
+      ["profit", { fn: "sum", enabled: false }],
+      ["margin", { fn: "avg", enabled: false }],
+      ["weight", { fn: "sum", enabled: false }],
     ]),
   );
 
@@ -131,7 +134,22 @@ const OrdersExportSheet = ({
       return n;
     });
 
-  const flatRows = useMemo<AggRow[]>(() => customFilteredOrders.map((o) => ({ ...o }) as unknown as AggRow), [customFilteredOrders]);
+  // Profit/Margin/Edited aren't raw AllOrder fields, so they're computed
+  // here before aggregation — mirrors desktop's OrdersExportModal.tsx.
+  const flatRows = useMemo<AggRow[]>(
+    () =>
+      customFilteredOrders.map((o) => {
+        const profit = o.e_ret - o.cogs;
+        const margin = o.e_ret > 0 ? (profit / o.e_ret) * 100 : 0;
+        return {
+          ...o,
+          profit,
+          margin,
+          edited_label: o.edited ? "Yes" : "No",
+        } as unknown as AggRow;
+      }),
+    [customFilteredOrders],
+  );
 
   const { aggRows, columns } = useMemo(() => {
     const activeDims = DIMS.filter((d) => groupBy.has(d.key));
