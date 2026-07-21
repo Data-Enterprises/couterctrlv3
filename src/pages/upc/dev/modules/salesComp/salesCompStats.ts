@@ -4,8 +4,16 @@ import type { UpcSalesComp } from "../../../../../interfaces";
 export const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;
 export const DAY_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
-export function rowTotal(row: UpcSalesComp): number {
+function rowTotal(row: UpcSalesComp): number {
   return DAYS.reduce((acc, d) => acc + (row[d] ?? 0), 0);
+}
+
+export function fmtWeekRange(weekStart: string): string {
+  const start = new Date(weekStart);
+  const end = addDays(weekStart, 6);
+  const startStr = start.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const endStr = end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return `${startStr} - ${endStr}`;
 }
 
 // A trailing week whose 7-day span hasn't fully elapsed within the query
@@ -31,6 +39,15 @@ export type UpcSalesCompStats = {
   lyPeriodTotal: number;
   vsLYPct: number | null;
   peakShifted: boolean;
+  // Day-of-week % change vs LY, and this item's own peak-day scale for
+  // heat coloring — both derived once here so the list, detail panel, and
+  // export summary all read the same numbers.
+  dayDeltaPcts: (number | null)[];
+  rowMax: number;
+  // Total ÷ count of individual (week, weekday) cells that actually had a
+  // sale — a true per-active-day average, not the day-of-week-slot
+  // approximation the aggregate KPI strip uses across the whole selection.
+  avgDaily: number;
 };
 
 // Per-UPC Total / vs LY / WoW / Peak day — shared by the table, the KPI
@@ -83,9 +100,21 @@ export function computeUpcSalesCompStats(
     const vsLYPct = hasLY && lyPeriodTotal > 0 ? ((periodTotal - lyPeriodTotal) / lyPeriodTotal) * 100 : null;
     const peakShifted = hasLY && lyPeakIdx !== peakIdx;
 
+    const dayDeltaPcts = DAYS.map((_, di) =>
+      hasLY && lyDayAvgs[di] > 0 ? ((dayAvgs[di] - lyDayAvgs[di]) / lyDayAvgs[di]) * 100 : null,
+    );
+    const rowMax = Math.max(...dayAvgs, 1);
+
+    const activeDayCount = weekRows.reduce(
+      (count, { row }) => count + DAYS.filter((d) => (row[d] ?? 0) > 0).length,
+      0,
+    );
+    const avgDaily = activeDayCount > 0 ? periodTotal / activeDayCount : 0;
+
     return {
       code, desc, dayAvgs, peakIdx, periodTotal, weekTotals, weekRows, wowPct,
       hasLY, lyDayAvgs, lyPeakIdx, lyPeriodTotal, vsLYPct, peakShifted,
+      dayDeltaPcts, rowMax, avgDaily,
     };
   });
 }
