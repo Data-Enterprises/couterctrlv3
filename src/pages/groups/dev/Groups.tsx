@@ -157,7 +157,7 @@ const Groups = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center bg-[#dee6f0]">
+    <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center bg-bkg">
       <div className="w-fit max-w-[95vw] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start">
         <div className="bg-[#1e2a4a] px-3 py-2 flex-shrink-0 flex items-center gap-3">
           <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">

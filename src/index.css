@@ -67,8 +67,8 @@ body {
 @layer base {
   :root {
     /* The main theme for now... */
-    --color-bkg: 240 245 250;
-    --color-custom-white: 247 250 252;
+    --color-bkg: 228 233 239;
+    --color-custom-white: 244 247 248;
     --color-row-selected: 239 241 242;
     --color-row-selected-border: 138 155 176;
     --color-severity-critical-bg: 235 216 216;

@@ -1,9 +1,5 @@
-import { useState } from "react";
-import {
-  ChevronLeftIcon,
-  MagnifyingGlassIcon,
-  ArrowDownTrayIcon,
-} from "@heroicons/react/20/solid";
+import { useMemo, useState } from "react";
+import { MagnifyingGlassIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import { useAppSelector } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { getReceiverDetails } from "../../../../api/receivers";
@@ -20,11 +16,9 @@ import { rowsToCsv, downloadCsv, fmtNum } from "../../../../utils/csvExport";
 
 interface Props {
   receivers: ReceiverListItem[];
-  vendorName: string;
   storeName: string;
   dateRangeLabel: string;
   storeid: number;
-  onBack: () => void;
   onSearch: () => void;
 }
 
@@ -49,18 +43,21 @@ const gmColor = (gm: number) => {
   return "text-red-500";
 };
 
+// Date → Invoice collapsible list, mirroring the desktop dev ReceiverListPanel
+// layout — replaces the old two-screen Vendor-list → Receiver-list drill-down
+// with a single screen grouped by date, tapping an invoice opens the same
+// line-items BottomSheet directly.
 const RcvReceiverList = ({
   receivers,
-  vendorName,
   storeName,
   dateRangeLabel,
   storeid,
-  onBack,
   onSearch,
 }: Props) => {
   const toast = useToast();
   const { url, token } = useAppSelector((s) => s.app);
 
+  const [openDates, setOpenDates] = useState<Set<string>>(new Set());
   const [selectedReceiver, setSelectedReceiver] =
     useState<ReceiverListItem | null>(null);
   const [details, setDetails] = useState<ReceiverDetailsItem[]>([]);
@@ -68,7 +65,32 @@ const RcvReceiverList = ({
   const [loadingDetails, setLoadingDetails] = useState(false);
 
   const totalItems = receivers.reduce((s, r) => s + r.items, 0);
+  const uniqueVendors = new Set(receivers.map((r) => r.vendorid)).size;
   const uniqueOperators = new Set(receivers.map((r) => r.cashier_number)).size;
+
+  const toggleDate = (key: string) =>
+    setOpenDates((prev) => {
+      const s = new Set(prev);
+      s.has(key) ? s.delete(key) : s.add(key);
+      return s;
+    });
+
+  const grouped = useMemo(() => {
+    const dateMap = new Map<string, ReceiverListItem[]>();
+    receivers.forEach((r) => {
+      const dKey = r.invoice_date.split("T")[0];
+      if (!dateMap.has(dKey)) dateMap.set(dKey, []);
+      dateMap.get(dKey)!.push(r);
+    });
+    return Array.from(dateMap.entries())
+      .map(([date, items]) => ({
+        date,
+        items: [...items].sort((a, b) =>
+          b.invoice_date.localeCompare(a.invoice_date),
+        ),
+      }))
+      .sort((a, b) => b.date.localeCompare(a.date));
+  }, [receivers]);
 
   const handleReceiverTap = (receiver: ReceiverListItem) => {
     setSelectedReceiver(receiver);
@@ -148,20 +170,12 @@ const RcvReceiverList = ({
         style={{ background: "#1e2a4a" }}
       >
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-1.5 min-w-0">
-            <button
-              onClick={onBack}
-              className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0 mt-0.5"
-            >
-              <ChevronLeftIcon className="w-4 h-4" />
-            </button>
-            <div className="min-w-0">
-              <div className="text-[13px] font-semibold text-custom-white truncate">
-                {vendorName}
-              </div>
-              <div className="text-[10px] mt-0.5 text-custom-white/85">
-                {storeName} · {dateRangeLabel}
-              </div>
+          <div className="min-w-0">
+            <div className="text-[13px] font-semibold text-custom-white truncate">
+              {storeName}
+            </div>
+            <div className="text-[10px] mt-0.5 text-custom-white/85">
+              {dateRangeLabel}
             </div>
           </div>
           <button
@@ -177,8 +191,8 @@ const RcvReceiverList = ({
         {[
           { label: "Receivers", value: String(receivers.length) },
           { label: "Items", value: String(totalItems) },
+          { label: "Vendors", value: String(uniqueVendors) },
           { label: "Operators", value: String(uniqueOperators) },
-          { label: "Vendor ID", value: receivers[0]?.vendorid ?? "—" },
         ].map(({ label, value }) => (
           <div
             key={label}
@@ -194,35 +208,64 @@ const RcvReceiverList = ({
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        {receivers.map((r) => (
-          <button
-            key={`${r.invoiceid}-${r.invoice_date}`}
-            onClick={() => handleReceiverTap(r)}
-            className="w-full flex items-center px-3 py-2.5 bg-custom-white border-b border-gray-100 text-left active:bg-gray-50 gap-3"
-          >
-            <div className="flex-1 min-w-0">
-              <div className="text-[12px] font-medium text-content">
-                {fmtDate(r.invoice_date)}
-                <span className="ml-2 text-[11px] text-content font-semibold">
-                  #{r.invoiceid}
+      <div className="flex-1 overflow-y-auto divide-y divide-[#1e2a4a]/15 pb-14">
+        {grouped.map((group) => {
+          const isOpen = openDates.has(group.date);
+          return (
+            <div key={group.date}>
+              <button
+                onClick={() => toggleDate(group.date)}
+                className="w-full flex items-center justify-between px-3 py-2.5 bg-custom-white text-left active:bg-gray-50 gap-3"
+              >
+                <span className="text-[12px] font-medium text-content">
+                  {fmtDate(group.date)}
                 </span>
-              </div>
-              <div className="text-[10px] text-content mt-0.5">
-                {r.cashier_name} · {r.items} items
-              </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="text-[10px] text-content/85 tabular-nums">
+                    {group.items.length}{" "}
+                    {group.items.length === 1 ? "invoice" : "invoices"}
+                  </span>
+                  <svg
+                    className="w-4 h-4 text-content/85 transition-transform"
+                    style={{
+                      transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+                    }}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </div>
+              </button>
+
+              {isOpen && (
+                <div className="bg-gray-50 divide-y divide-[#1e2a4a]/15">
+                  {group.items.map((r) => (
+                    <button
+                      key={`${r.invoiceid}-${r.invoice_date}`}
+                      onClick={() => handleReceiverTap(r)}
+                      className="w-full flex items-center pl-6 pr-3 py-2.5 text-left active:bg-gray-100 gap-3"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[12px] font-medium text-content truncate">
+                          #{r.invoiceid}
+                          <span className="ml-2 text-[11px] text-content/85 truncate">
+                            {r.vendor_name}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-content/85 mt-0.5">
+                          {r.items} items
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            <svg
-              className="w-4 h-4 text-content/85 flex-shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <path d="M9 18l6-6-6-6" />
-            </svg>
-          </button>
-        ))}
+          );
+        })}
       </div>
 
       {selectedReceiver && (
