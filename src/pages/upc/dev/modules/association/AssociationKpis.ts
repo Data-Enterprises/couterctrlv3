@@ -1,23 +1,21 @@
-import type { ItemAssociate } from "../../../../../features/upcDevSlice";
+import type { AssociationResult } from "../../../../../features/upcDevSlice";
 import type { KpiCell } from "../../types";
 
 export function getAssociationKpis(
-  mainCount: number,
-  level1Items: ItemAssociate[],
-  level2Items: ItemAssociate[],
-  level3Items: ItemAssociate[],
-  singleSearchUpc: string,
-  singleSearchItems: ItemAssociate[],
+  seedCount: number,
+  seedData: AssociationResult | null,
+  rerootUpc: string | null,
+  rerootData: AssociationResult | null,
+  rerootLabel: string,
 ): KpiCell[] {
+  const active = rerootUpc ? rerootData : seedData;
+  const departmentCount = active ? new Set(active.items.map((i) => i.sub_department)).size : 0;
+
   return [
-    { label: "Main UPCs", value: String(mainCount) },
-    { label: "Level 1", value: String(level1Items.length), sub: "associations" },
-    { label: "Level 2", value: level2Items.length ? String(level2Items.length) : "—", sub: "associations" },
-    { label: "Level 3", value: level3Items.length ? String(level3Items.length) : "—", sub: "associations" },
-    {
-      label: "UPC search",
-      value: singleSearchUpc || "—",
-      sub: singleSearchUpc ? `${singleSearchItems.length} found` : undefined,
-    },
+    { label: "Seed UPCs", value: String(seedCount) },
+    { label: "Baskets", value: active ? active.totalBaskets.toLocaleString() : "—" },
+    { label: "Associations", value: active ? String(active.items.length) : "—", sub: "found" },
+    { label: "Departments", value: active ? String(departmentCount) : "—" },
+    { label: "Viewing", value: rerootUpc ? rerootLabel : "Seed set" },
   ];
 }

@@ -180,17 +180,25 @@ const UpcExportModal = ({ onClose }: Props) => {
         break;
       }
       case "association": {
-        const headers = ["Level", "UPC", "Description", "Qty"];
-        const mainUpcs = ctx.selectedUpcs.length > 0 ? ctx.selectedUpcs : ctx.upcs;
+        const headers = [
+          "Type", "UPC", "Description", "Department", "Qty", "Basket Count", "Attach Rate %", "Revenue", "Avg Price", "In Seed Set",
+        ];
+        const seedUpcs = ctx.selectedUpcs.length > 0 ? ctx.selectedUpcs : ctx.upcs;
         const upcItemsMap = new Map(ctx.upcItems.map((i) => [i.product_code, i.description]));
         const rows: string[][] = [
-          ...mainUpcs.map((code) => ["Main", code, upcItemsMap.get(code) ?? code, ""]),
-          ...ctx.level1Items.map((item) => ["Level 1", item.product_code, item.product_description, String(item.qty)]),
-          ...ctx.level2Items.map((item) => ["Level 2", item.product_code, item.product_description, String(item.qty)]),
-          ...ctx.level3Items.map((item) => ["Level 3", item.product_code, item.product_description, String(item.qty)]),
-          ...(ctx.singleSearchUpc
-            ? ctx.singleSearchItems.map((item) => [`Search: ${ctx.singleSearchUpc}`, item.product_code, item.product_description, String(item.qty)])
-            : []),
+          ...seedUpcs.map((code) => ["Seed", code, upcItemsMap.get(code) ?? code, "", "", "", "", "", "", "Yes"]),
+          ...(ctx.associationSeedData?.items ?? []).map((item) => [
+            "Association",
+            item.product_code,
+            item.product_description,
+            item.sub_department_description,
+            String(item.qty),
+            String(item.basket_count),
+            item.attach_rate.toFixed(2),
+            item.revenue.toFixed(2),
+            item.avg_price.toFixed(2),
+            item.is_seed ? "Yes" : "No",
+          ]),
         ];
         download(toBlobCsv(headers, rows), "associations.csv");
         break;

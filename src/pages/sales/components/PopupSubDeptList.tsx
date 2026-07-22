@@ -90,13 +90,17 @@ const aggregateByCode = (
     { desc: string; net: number; qty: number; weight: number }
   >();
   for (const item of items) {
-    const ex = map.get(item.product_code);
+    // product_code is typed as string but the API doesn't always send it as
+    // one (numeric UPCs come back as a JSON number on some queries) — coerce
+    // here so every downstream .toLowerCase()/string usage is safe.
+    const code = String(item.product_code);
+    const ex = map.get(code);
     if (ex) {
       ex.net += item.total_sales - item.total_tax;
       ex.qty += item.qty;
       ex.weight += item.weight;
     } else {
-      map.set(item.product_code, {
+      map.set(code, {
         desc: item.product_description,
         net: item.total_sales - item.total_tax,
         qty: item.qty,
@@ -714,7 +718,8 @@ const PopupSubDeptList = ({
     ? visibleItems.filter((i) => {
         const q = itemTextFilter.trim().toLowerCase();
         return (
-          i.upc.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q)
+          String(i.upc).toLowerCase().includes(q) ||
+          String(i.desc).toLowerCase().includes(q)
         );
       })
     : visibleItems;

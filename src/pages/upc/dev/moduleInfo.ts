@@ -51,8 +51,9 @@ export const MODULE_INFO: Partial<Record<UpcDevTab, ModuleInfo>> = {
     title: "Association",
     purpose: "Shows what else gets bought alongside your selected items, for cross-merchandising or understanding a purchase pattern.",
     glossary: [
-      { term: "Main → Level 1 → Level 2 → Level 3", desc: "Each level shows what's commonly bought with whatever's checked in the level before it; caps at 3 levels deep." },
-      { term: "UPC Search", desc: "Look up any single item's associations directly; also reachable by right-clicking any item anywhere." },
+      { term: "Seed UPCs", desc: "The checked items feeding the search; uncheck any to narrow the basket set and refetch." },
+      { term: "Attach rate", desc: "The share of baskets containing your seed items that also contained this product." },
+      { term: "Exploring", desc: "Click any companion to re-root the panel around it and see its own associations; also reachable by right-clicking any item anywhere. The back link returns to your seed view instantly, no refetch." },
     ],
   },
 };

@@ -23,10 +23,22 @@ export const UPC_DEV_TABS: { id: UpcDevTab; label: string }[] = [
 export type UpcDevDisplayMode = "code" | "desc";
 export type UpcDevShowMode = "all" | "selected";
 
-export type ItemAssociate = {
+export type AssociationItem = {
   product_code: string;
   product_description: string;
+  sub_department: number;
+  sub_department_description: string;
   qty: number;
+  basket_count: number;
+  revenue: number;
+  avg_price: number;
+  attach_rate: number;
+  is_seed: boolean;
+};
+
+export type AssociationResult = {
+  totalBaskets: number;
+  items: AssociationItem[];
 };
 
 // Price Opt — current price/cost derived from the most recent Item Lookup
@@ -93,22 +105,22 @@ interface UpcDevState {
   upcTrends: UpcTrend[];
   topFiveTrends: UpcTrend[];
   bottomFiveTrends: UpcTrend[];
-  // Association — bounded Main -> Level 1 -> Level 2 -> Level 3 cascade,
-  // plus a standalone single-UPC search. Each level keeps its own items/
-  // loading/selection so a change at one level can clear everything
-  // downstream without touching the level being refetched itself.
-  associationLoaded: boolean;
-  level1Items: ItemAssociate[];
-  level1Loading: boolean;
-  level1Selected: string[];
-  level2Items: ItemAssociate[];
-  level2Loading: boolean;
-  level2Selected: string[];
-  level3Items: ItemAssociate[];
-  level3Loading: boolean;
-  singleSearchUpc: string;
-  singleSearchItems: ItemAssociate[];
-  singleSearchLoading: boolean;
+  // Association — one re-rootable panel over the seed UPC set (upcs/
+  // selectedUpcs), keyed on the seed set itself so revisiting a re-rooted
+  // item under an unchanged seed set never refetches. associationSeedKey is
+  // a sorted/joined snapshot of whichever UPCs fed the last seed fetch.
+  associationSeedKey: string;
+  associationSeedLoaded: boolean;
+  associationSeedLoading: boolean;
+  associationSeedData: AssociationResult | null;
+  associationRerootUpc: string | null;
+  associationRerootCache: Record<string, AssociationResult>;
+  associationRerootLoading: boolean;
+  // Snapshot of associationSeedData taken right before a seed-set change
+  // triggers a refetch, so the detail panel can diff old vs new and flag
+  // what moved. Cleared once acknowledged/superseded by the next change.
+  associationPrevSeedData: AssociationResult | null;
+  associationSeedChangeNote: string | null;
 }
 
 const initialState: UpcDevState = {
@@ -152,18 +164,15 @@ const initialState: UpcDevState = {
   topFiveTrends: [],
   bottomFiveTrends: [],
   // Association
-  associationLoaded: false,
-  level1Items: [],
-  level1Loading: false,
-  level1Selected: [],
-  level2Items: [],
-  level2Loading: false,
-  level2Selected: [],
-  level3Items: [],
-  level3Loading: false,
-  singleSearchUpc: "",
-  singleSearchItems: [],
-  singleSearchLoading: false,
+  associationSeedKey: "",
+  associationSeedLoaded: false,
+  associationSeedLoading: false,
+  associationSeedData: null,
+  associationRerootUpc: null,
+  associationRerootCache: {},
+  associationRerootLoading: false,
+  associationPrevSeedData: null,
+  associationSeedChangeNote: null,
 };
 
 const upcDevSlice = createSlice({
@@ -299,75 +308,49 @@ const upcDevSlice = createSlice({
       state.bottomFiveTrends = action.payload;
     },
     // Association
-    setDevAssociationLoaded(state, action: PayloadAction<boolean>) {
-      state.associationLoaded = action.payload;
+    setDevAssociationSeedKey(state, action: PayloadAction<string>) {
+      state.associationSeedKey = action.payload;
     },
-    setDevLevel1Items(state, action: PayloadAction<ItemAssociate[]>) {
-      state.level1Items = action.payload;
+    setDevAssociationSeedLoaded(state, action: PayloadAction<boolean>) {
+      state.associationSeedLoaded = action.payload;
     },
-    setDevLevel1Loading(state, action: PayloadAction<boolean>) {
-      state.level1Loading = action.payload;
+    setDevAssociationSeedLoading(state, action: PayloadAction<boolean>) {
+      state.associationSeedLoading = action.payload;
     },
-    toggleDevLevel1Selected(state, action: PayloadAction<string>) {
-      const pc = action.payload;
-      state.level1Selected = state.level1Selected.includes(pc)
-        ? state.level1Selected.filter((u) => u !== pc)
-        : [...state.level1Selected, pc];
+    setDevAssociationSeedData(state, action: PayloadAction<AssociationResult | null>) {
+      state.associationSeedData = action.payload;
     },
-    setDevLevel2Items(state, action: PayloadAction<ItemAssociate[]>) {
-      state.level2Items = action.payload;
+    setDevAssociationRerootUpc(state, action: PayloadAction<string | null>) {
+      state.associationRerootUpc = action.payload;
     },
-    setDevLevel2Loading(state, action: PayloadAction<boolean>) {
-      state.level2Loading = action.payload;
+    setDevAssociationRerootLoading(state, action: PayloadAction<boolean>) {
+      state.associationRerootLoading = action.payload;
     },
-    toggleDevLevel2Selected(state, action: PayloadAction<string>) {
-      const pc = action.payload;
-      state.level2Selected = state.level2Selected.includes(pc)
-        ? state.level2Selected.filter((u) => u !== pc)
-        : [...state.level2Selected, pc];
+    setDevAssociationRerootCacheEntry(
+      state,
+      action: PayloadAction<{ upc: string; result: AssociationResult }>,
+    ) {
+      state.associationRerootCache[action.payload.upc] = action.payload.result;
     },
-    setDevLevel3Items(state, action: PayloadAction<ItemAssociate[]>) {
-      state.level3Items = action.payload;
+    clearDevAssociationRerootCache(state) {
+      state.associationRerootCache = {};
     },
-    setDevLevel3Loading(state, action: PayloadAction<boolean>) {
-      state.level3Loading = action.payload;
+    setDevAssociationPrevSeedData(state, action: PayloadAction<AssociationResult | null>) {
+      state.associationPrevSeedData = action.payload;
     },
-    // Main changed — level 1 refetches itself (not cleared here), but
-    // everything that depended on a level-1 selection is now invalid.
-    resetDevAssociationLevels1To3(state) {
-      state.level1Selected = [];
-      state.level2Items = [];
-      state.level2Selected = [];
-      state.level3Items = [];
-    },
-    // Level 1 selection changed — level 2 refetches itself, level 3 (which
-    // depended on a level-2 selection) is invalid.
-    resetDevAssociationLevels2To3(state) {
-      state.level2Selected = [];
-      state.level3Items = [];
-    },
-    setDevSingleSearchUpc(state, action: PayloadAction<string>) {
-      state.singleSearchUpc = action.payload;
-    },
-    setDevSingleSearchItems(state, action: PayloadAction<ItemAssociate[]>) {
-      state.singleSearchItems = action.payload;
-    },
-    setDevSingleSearchLoading(state, action: PayloadAction<boolean>) {
-      state.singleSearchLoading = action.payload;
+    setDevAssociationSeedChangeNote(state, action: PayloadAction<string | null>) {
+      state.associationSeedChangeNote = action.payload;
     },
     resetDevAssociations(state) {
-      state.associationLoaded = false;
-      state.level1Items = [];
-      state.level1Loading = false;
-      state.level1Selected = [];
-      state.level2Items = [];
-      state.level2Loading = false;
-      state.level2Selected = [];
-      state.level3Items = [];
-      state.level3Loading = false;
-      state.singleSearchUpc = "";
-      state.singleSearchItems = [];
-      state.singleSearchLoading = false;
+      state.associationSeedKey = "";
+      state.associationSeedLoaded = false;
+      state.associationSeedLoading = false;
+      state.associationSeedData = null;
+      state.associationRerootUpc = null;
+      state.associationRerootCache = {};
+      state.associationRerootLoading = false;
+      state.associationPrevSeedData = null;
+      state.associationSeedChangeNote = null;
     },
     clearDevUpcData(state) {
       state.searchVersion += 1;
@@ -395,18 +378,15 @@ const upcDevSlice = createSlice({
       state.upcTrends = [];
       state.topFiveTrends = [];
       state.bottomFiveTrends = [];
-      state.associationLoaded = false;
-      state.level1Items = [];
-      state.level1Loading = false;
-      state.level1Selected = [];
-      state.level2Items = [];
-      state.level2Loading = false;
-      state.level2Selected = [];
-      state.level3Items = [];
-      state.level3Loading = false;
-      state.singleSearchUpc = "";
-      state.singleSearchItems = [];
-      state.singleSearchLoading = false;
+      state.associationSeedKey = "";
+      state.associationSeedLoaded = false;
+      state.associationSeedLoading = false;
+      state.associationSeedData = null;
+      state.associationRerootUpc = null;
+      state.associationRerootCache = {};
+      state.associationRerootLoading = false;
+      state.associationPrevSeedData = null;
+      state.associationSeedChangeNote = null;
     },
     resetDevUpcState: () => initialState,
   },
@@ -451,20 +431,16 @@ export const {
   setDevUpcTrends,
   setDevTopFiveTrends,
   setDevBottomFiveTrends,
-  setDevAssociationLoaded,
-  setDevLevel1Items,
-  setDevLevel1Loading,
-  toggleDevLevel1Selected,
-  setDevLevel2Items,
-  setDevLevel2Loading,
-  toggleDevLevel2Selected,
-  setDevLevel3Items,
-  setDevLevel3Loading,
-  resetDevAssociationLevels1To3,
-  resetDevAssociationLevels2To3,
-  setDevSingleSearchUpc,
-  setDevSingleSearchItems,
-  setDevSingleSearchLoading,
+  setDevAssociationSeedKey,
+  setDevAssociationSeedLoaded,
+  setDevAssociationSeedLoading,
+  setDevAssociationSeedData,
+  setDevAssociationRerootUpc,
+  setDevAssociationRerootLoading,
+  setDevAssociationRerootCacheEntry,
+  clearDevAssociationRerootCache,
+  setDevAssociationPrevSeedData,
+  setDevAssociationSeedChangeNote,
   resetDevAssociations,
   clearDevUpcData,
   resetDevUpcState,
