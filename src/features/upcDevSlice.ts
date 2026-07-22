@@ -79,6 +79,14 @@ interface UpcDevState {
   // Session-scoped cache, keyed `${storeid}:${product_code}` — never
   // cleared on re-search, only refetched when a key is missing.
   currentPriceCost: Record<string, UpcCurrentPriceCost>;
+  // Group search only — once a store is picked, the selected item's price
+  // history is re-fetched scoped to just that store (getPriceOpt called
+  // again with a single-store storeids param) so Best price/Elasticity/
+  // Profit at risk reflect that store's own demand, not a blend across
+  // every store in the group. Store search never needs this: its initial
+  // optBestPrices fetch is already single-store scoped. Same key shape and
+  // never-cleared-on-re-search convention as currentPriceCost.
+  storeScopedPriceOpt: Record<string, UpcPriceOpt[]>;
   // Trend
   trendLoaded: boolean;
   trendLoading: boolean;
@@ -136,6 +144,7 @@ const initialState: UpcDevState = {
   optBestPricesByUpc: [],
   priceOptStoreId: null,
   currentPriceCost: {},
+  storeScopedPriceOpt: {},
   // Trend
   trendLoaded: false,
   trendLoading: false,
@@ -269,6 +278,9 @@ const upcDevSlice = createSlice({
     },
     setDevCurrentPriceCost(state, action: PayloadAction<{ key: string; data: UpcCurrentPriceCost }>) {
       state.currentPriceCost[action.payload.key] = action.payload.data;
+    },
+    setDevStoreScopedPriceOpt(state, action: PayloadAction<{ key: string; rows: UpcPriceOpt[] }>) {
+      state.storeScopedPriceOpt[action.payload.key] = action.payload.rows;
     },
     // Trend
     setDevTrendLoaded(state, action: PayloadAction<boolean>) {
@@ -433,6 +445,7 @@ export const {
   setDevOptBestPricesByUpc,
   setDevPriceOptStoreId,
   setDevCurrentPriceCost,
+  setDevStoreScopedPriceOpt,
   setDevTrendLoaded,
   setDevTrendLoading,
   setDevUpcTrends,
