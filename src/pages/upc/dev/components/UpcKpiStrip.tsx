@@ -38,7 +38,10 @@ const UpcKpiStrip = () => {
   })();
 
   return (
-    <div className="grid grid-cols-5 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+    <div
+      className="grid divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0"
+      style={{ gridTemplateColumns: `repeat(${kpis.length}, 1fr)` }}
+    >
       {kpis.map((kpi, i) => (
         <div key={i} className="px-4 pt-2.5 pb-2.5 text-center">
           <div className="text-[10px] font-bold uppercase tracking-wide text-content">

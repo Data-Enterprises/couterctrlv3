@@ -55,7 +55,7 @@ const AssociationLeftPanel = ({
 
   return (
     <div className="w-[340px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">
-      <div className="px-2.5 py-1.5 bg-gray-50 border-b border-gray-100">
+      <div className="px-2.5 py-1.5 bg-gray-100 border-b border-[#1e2a4a]/15">
         <span className="text-[10px] font-bold uppercase tracking-wide text-content">Seed UPCs</span>
       </div>
       {seedUpcs.map((code) => (

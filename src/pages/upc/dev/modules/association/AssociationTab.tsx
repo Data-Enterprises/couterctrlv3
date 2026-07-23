@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../../hooks";
 import {
-  setDevAllSelectedUpcs,
   setDevAssociationSeedKey,
   setDevAssociationSeedLoaded,
   setDevAssociationSeedLoading,
@@ -11,14 +10,12 @@ import {
   setDevAssociationRerootLoading,
   setDevAssociationRerootCacheEntry,
   clearDevAssociationRerootCache,
-  setDevAssociationPrevSeedData,
   type AssociationItem,
   type AssociationResult,
 } from "../../../../../features/upcDevSlice";
 import { getItemAssociation } from "../../../../../api/upc";
-import { getDisplayItems, computeAttachRateDeltas } from "./associationStats";
 import AssociationLeftPanel from "./AssociationLeftPanel";
-import AssociationDetailPanel, { type AssociationDeltaContext } from "./AssociationDetailPanel";
+import AssociationDetailPanel from "./AssociationDetailPanel";
 import UpcContextMenu from "../../../../../components/UpcContextMenu";
 
 const LIMIT = 20;
@@ -59,7 +56,6 @@ const AssociationTab = () => {
   }, [ctx.upcItems, ctx.associationSeedData, ctx.associationRerootCache]);
 
   const seedUpcs = ctx.selectedUpcs.length > 0 ? ctx.selectedUpcs : ctx.upcs;
-  const prevSeedUpcsRef = useRef<string[]>([]);
 
   const fetchSeed = async (upcsToQuery: string[]) => {
     dispatch(setDevAssociationSeedLoading(true));
@@ -78,28 +74,18 @@ const AssociationTab = () => {
     }
   };
 
-  // Materializes selectedUpcs to the full list on first entry (so every
-  // checkbox toggle afterward is a simple, unambiguous membership change),
-  // then fetches whenever the effective seed set actually changes — content,
-  // not just length, is what buildSeedKey compares against
-  // associationSeedKey below, so an unrelated re-render never refetches.
+  // Fetches whenever the effective seed set actually changes — content, not
+  // just length, is what buildSeedKey compares against associationSeedKey
+  // below, so an unrelated re-render never refetches. Nothing here forces a
+  // default selection — an empty ctx.selectedUpcs means "no narrowing yet,"
+  // same as every other tab, and seedUpcs already falls back to the full
+  // upcs list for that case; the user picks what to check, not this effect.
   useEffect(() => {
     if (!ctx.upcs.length || !ctx.storeids) return;
-    if (ctx.selectedUpcs.length === 0) {
-      dispatch(setDevAllSelectedUpcs(ctx.upcs));
-      return;
-    }
 
     const key = buildSeedKey(seedUpcs);
     if (ctx.associationSeedLoaded && key === ctx.associationSeedKey) return;
 
-    // Snapshot the outgoing seed result whenever this is a genuine change
-    // (not the first load) so the detail panel can flag which companions'
-    // attach rates shifted once the new fetch lands.
-    const isChange = ctx.associationSeedLoaded && ctx.associationSeedData !== null;
-    dispatch(setDevAssociationPrevSeedData(isChange ? ctx.associationSeedData : null));
-
-    prevSeedUpcsRef.current = seedUpcs;
     dispatch(setDevAssociationSeedKey(key));
     dispatch(setDevAssociationRerootUpc(null));
     dispatch(clearDevAssociationRerootCache());
@@ -164,17 +150,6 @@ const AssociationTab = () => {
 
   const activeResult: AssociationResult | null = rerootUpc ? rerootResult : ctx.associationSeedData;
 
-  const deltaContext: AssociationDeltaContext | null =
-    !rerootUpc && ctx.associationPrevSeedData
-      ? {
-          prevSeedCount: prevSeedUpcsRef.current.length,
-          deltas: computeAttachRateDeltas(
-            getDisplayItems(ctx.associationPrevSeedData.items),
-            getDisplayItems(ctx.associationSeedData.items),
-          ),
-        }
-      : null;
-
   const allVisibleUpcs = [
     ...ctx.upcs,
     ...(ctx.associationSeedData?.items.map((i) => i.product_code) ?? []),
@@ -202,7 +177,6 @@ const AssociationTab = () => {
           isReroot={Boolean(rerootUpc)}
           rerootUpc={rerootUpc}
           prevTotalBaskets={rerootUpc ? ctx.associationSeedData?.totalBaskets : undefined}
-          deltaContext={deltaContext}
           onReroot={rerootTo}
           onContextMenu={openContextMenu}
         />
