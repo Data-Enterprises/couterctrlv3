@@ -78,14 +78,19 @@ const StepAssignments = ({
     if (!companyGroups[companyId]) fetchGroupsForCompany(companyId);
   };
 
+  // A store record can come back with a null store_name — filter those out
+  // before they reach the search below, same fix as StoresDirectory.tsx.
+  const validOnly = (list: Store[]) => list.filter((s) => s.store_name != null);
+
   const fetchStoresForGroup = (groupId: number): Promise<Store[]> => {
     if (groupStores[groupId]) return Promise.resolve(groupStores[groupId]);
     return getAllStoresInBaseGroup(ctx.url, ctx.token, groupId)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          setGroupStores((prev) => ({ ...prev, [groupId]: j.assigned_stores }));
-          return j.assigned_stores as Store[];
+          const valid = validOnly(j.assigned_stores);
+          setGroupStores((prev) => ({ ...prev, [groupId]: valid }));
+          return valid;
         }
         return [];
       })

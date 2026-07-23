@@ -479,9 +479,12 @@ export type UpcTrend = {
   "r2-before": number;
   "r2-after": number;
   impact_units: number;
-  sparkline: number[];
-  tooltip: string;
-  rank: number;
+  // Not reliably present on every row from the live endpoint despite being
+  // typed as required here before — confirmed via a runtime crash when a
+  // row arrived without it. Treat all three as possibly absent.
+  sparkline?: number[];
+  tooltip?: string;
+  rank?: number;
 };
 
 export type Handlers = {

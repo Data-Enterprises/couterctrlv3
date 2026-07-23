@@ -81,11 +81,11 @@ const TrendModal = () => {
           <div className="col-span-2 border-b border-content/20 py-1">
             <div className="gap-1 flex">
               <div className="font-medium">Before:</div>
-              <div>{trend.tooltip.split(". ")[0].replace("Before:", "")}</div>
+              <div>{(trend.tooltip ?? "").split(". ")[0]?.replace("Before:", "")}</div>
             </div>
             <div className="flex gap-1">
               <div className="font-medium">After:</div>
-              <div>{trend.tooltip.split(". ")[1].replace("After:", "")}</div>
+              <div>{(trend.tooltip ?? "").split(". ")[1]?.replace("After:", "")}</div>
             </div>
           </div>
 

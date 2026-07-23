@@ -21,14 +21,17 @@ const UpcKpiStrip = () => {
       case "trend":
         return getTrendKpis(ctx.upcTrends, ctx.selectedUpcs);
       case "association": {
-        const mainCount = ctx.selectedUpcs.length > 0 ? ctx.selectedUpcs.length : ctx.upcs.length;
+        const seedCount = ctx.selectedUpcs.length > 0 ? ctx.selectedUpcs.length : ctx.upcs.length;
+        const upcItemsMap = new Map(ctx.upcItems.map((i) => [i.product_code, i.description]));
+        const rerootLabel = ctx.associationRerootUpc
+          ? (upcItemsMap.get(ctx.associationRerootUpc) ?? ctx.associationRerootUpc)
+          : "";
         return getAssociationKpis(
-          mainCount,
-          ctx.level1Items,
-          ctx.level2Items,
-          ctx.level3Items,
-          ctx.singleSearchUpc,
-          ctx.singleSearchItems,
+          seedCount,
+          ctx.associationSeedData,
+          ctx.associationRerootUpc,
+          ctx.associationRerootUpc ? ctx.associationRerootCache[ctx.associationRerootUpc] ?? null : null,
+          rerootLabel,
         );
       }
     }

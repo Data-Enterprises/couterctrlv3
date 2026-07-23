@@ -1,4 +1,5 @@
 import type { UpcPriceOpt } from "../../../../../interfaces";
+import type { UpcCurrentPriceCost } from "../../../../../features/upcDevSlice";
 
 export type PricePoint = { price: number; qty: number; revenue: number };
 
@@ -123,4 +124,69 @@ export function computeProfitAtRisk(
     profitAtBest,
     unitsSuppressed: bestQty - atCurrent.qty,
   };
+}
+
+export type PriceOptRowSummary = {
+  code: string;
+  desc: string;
+  points: PricePoint[];
+  bestPrice: number;
+  bestQty: number;
+  bestRevenue: number;
+  elasticity: number | null;
+  // False until this item has actually been opened (and, in Group search,
+  // a store picked) — current price/cost are fetched lazily per selected
+  // item, never batched for the whole list. Every row starts unchecked.
+  isChecked: boolean;
+  currentPrice: number | null;
+  currentCost: number | null;
+  status: PriceOptStatus | null;
+  risk: ProfitAtRisk | null;
+};
+
+// Single source of truth for a row's numbers, shared by the left list and
+// the detail panel so they can never drift out of sync. `ownBestPrices` is
+// whatever price-point source is already correctly scoped without a fetch —
+// the initial batch in Store search (already single-store), or the
+// group-wide batch in Group search before a store's picked. `storeScopedRows`
+// is only ever set in Group search, once the selected item's price history
+// has been re-fetched scoped to the one picked store.
+export function computePriceOptRowSummary(
+  row: UpcPriceOpt,
+  ownBestPrices: UpcPriceOpt[],
+  cpc: UpcCurrentPriceCost | undefined,
+  storeScopedRows: UpcPriceOpt[] | undefined,
+  hasStoreResolved: boolean,
+): PriceOptRowSummary {
+  const isChecked = cpc !== undefined;
+  const source = storeScopedRows ?? ownBestPrices;
+  const points = pricePoints(source, row.product_code);
+  const currentPrice = cpc?.currentPrice ?? null;
+  const currentCost = cpc?.currentCost ?? null;
+  const best = bestPriceByProfit(
+    points,
+    isChecked ? currentCost : null,
+    row.price,
+    row.total_qty,
+    row.total_revenue,
+  );
+  const elasticity = elasticityFromPoints(points);
+
+  const base = {
+    code: row.product_code,
+    desc: row.product_description,
+    points,
+    bestPrice: best.price,
+    bestQty: best.qty,
+    bestRevenue: best.revenue,
+    elasticity,
+  };
+
+  if (!isChecked) {
+    return { ...base, isChecked: false, currentPrice: null, currentCost: null, status: null, risk: null };
+  }
+
+  const status = getStatus(points, currentPrice, currentCost, hasStoreResolved, best.price);
+  const risk = computeProfitAtRisk(currentPrice, currentCost, best.price, best.qty, points);
+  return { ...base, isChecked: true, currentPrice, currentCost, status, risk };
 }
