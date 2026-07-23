@@ -4,6 +4,7 @@ import { formatCurrency2 } from "../../../../../utils";
 import type { AssociationItem } from "../../../../../features/upcDevSlice";
 import ColFilter from "../../components/ColFilter";
 import { colFilterInputStyle } from "../../components/colFilterInputStyle";
+import { sortByAttachRateDesc } from "./associationStats";
 
 interface Props {
   items: AssociationItem[];
@@ -42,7 +43,7 @@ const AssociationItemsTable = ({ items, onReroot, onContextMenu }: Props) => {
     const filtered = appliedDesc
       ? items.filter((i) => i.product_description.toLowerCase().includes(appliedDesc.toLowerCase()))
       : items;
-    if (!colSort) return [...filtered].sort((a, b) => b.attach_rate - a.attach_rate);
+    if (!colSort) return sortByAttachRateDesc(filtered);
     const { col, dir } = colSort;
     return [...filtered].sort((a, b) =>
       dir === "desc" ? getSortValue(b, col) - getSortValue(a, col) : getSortValue(a, col) - getSortValue(b, col),
@@ -108,9 +109,9 @@ const AssociationItemsTable = ({ items, onReroot, onContextMenu }: Props) => {
         </button>
         <span className="text-right">Attach</span>
       </div>
-      {sorted.map((item) => (
+      {sorted.map((item, idx) => (
         <div
-          key={item.product_code}
+          key={idx}
           onClick={() => onReroot(item.product_code)}
           onContextMenu={(e) => onContextMenu(e, item.product_code)}
           className="grid gap-1.5 items-center px-2 py-[7px] border-b border-[#1e2a4a]/15 last:border-b-0 cursor-pointer even:bg-row_stripe hover:bg-gray-50"

@@ -1,10 +1,16 @@
 import { useState } from "react";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
-import type { UpcDevTab } from "../../../../features/upcDevSlice";
+import type { UpcDevTab, AssociationItem } from "../../../../features/upcDevSlice";
 import { computeUpcSalesCompStats, DAYS, DAY_SHORT } from "../modules/salesComp/salesCompStats";
 import { getTrendStatus } from "../modules/trend/trendStats";
-import { pricePoints, bestPriceByProfit, getStatus, computeProfitAtRisk, elasticityFromPoints } from "../modules/priceOpt/priceOptStats";
+import { pricePoints, elasticityFromPoints } from "../modules/priceOpt/priceOptStats";
+import {
+  getDisplayItems,
+  getDepartmentBreakdown,
+  getQueryDepartments,
+  splitDeptBreakdown,
+} from "../modules/association/associationStats";
 
 interface Props {
   onClose: () => void;
@@ -38,7 +44,10 @@ const PRESETS: Record<UpcDevTab, Preset[]> = {
     { id: "reduced-availability", label: "Reduced availability" },
   ],
   association: [
-    { id: "all", label: "All levels" },
+    { id: "companions", label: "Companions (current view)" },
+    { id: "seed", label: "Seed items" },
+    { id: "full", label: "Full export (seed + companions)" },
+    { id: "depts", label: "Department rollup" },
   ],
 };
 
@@ -119,51 +128,22 @@ const UpcExportModal = ({ onClose }: Props) => {
         break;
       }
       case "priceOpt": {
-        const resolvedStoreId = ctx.searchType === "Store" ? ctx.selectedStore.storeid : ctx.priceOptStoreId;
-        const hasStore = resolvedStoreId !== null;
         const data = ctx.optBestPricesByUpc.filter((o) => sel === "all" || isSelected(o.product_code));
-
-        if (hasStore) {
-          const headers = ["UPC", "Description", "Current Price", "Current Cost", "Best Price", "Status", "Profit Impact", "Units Suppressed", "Elasticity"];
-          const rows = data.map((row) => {
-            const points = pricePoints(ctx.optBestPrices, row.product_code);
-            const cpc = ctx.currentPriceCost[`${resolvedStoreId}:${row.product_code}`];
-            const currentPrice = cpc?.currentPrice ?? null;
-            const currentCost = cpc?.currentCost ?? null;
-            const best = bestPriceByProfit(points, currentCost, row.price, row.total_qty, row.total_revenue);
-            const status = getStatus(points, currentPrice, currentCost, true, best.price);
-            const risk = computeProfitAtRisk(currentPrice, currentCost, best.price, best.qty, points);
-            const elasticity = elasticityFromPoints(points);
-            return [
-              row.product_code,
-              row.product_description,
-              currentPrice !== null ? String(currentPrice) : "",
-              currentCost !== null ? String(currentCost) : "",
-              String(best.price),
-              status,
-              risk.status === "ok" ? risk.profitAtRisk.toFixed(2) : "",
-              risk.status === "ok" ? String(risk.unitsSuppressed) : "",
-              elasticity !== null ? elasticity.toFixed(2) : "",
-            ];
-          });
-          download(toBlobCsv(headers, rows), `price_opt_${sel}.csv`);
-        } else {
-          const headers = ["UPC", "Description", "Best Price", "Best Revenue", "Best Qty", "Elasticity", "Price Points"];
-          const rows = data.map((row) => {
-            const points = pricePoints(ctx.optBestPrices, row.product_code);
-            const elasticity = elasticityFromPoints(points);
-            return [
-              row.product_code,
-              row.product_description,
-              String(row.price),
-              String(row.total_revenue),
-              String(row.total_qty),
-              elasticity !== null ? elasticity.toFixed(2) : "",
-              String(points.length),
-            ];
-          });
-          download(toBlobCsv(headers, rows), `price_opt_${sel}.csv`);
-        }
+        const headers = ["UPC", "Description", "Best Price", "Best Revenue", "Best Qty", "Elasticity", "Price Points"];
+        const rows = data.map((row) => {
+          const points = pricePoints(ctx.optBestPrices, row.product_code);
+          const elasticity = elasticityFromPoints(points);
+          return [
+            row.product_code,
+            row.product_description,
+            String(row.price),
+            String(row.total_revenue),
+            String(row.total_qty),
+            elasticity !== null ? elasticity.toFixed(2) : "",
+            String(points.length),
+          ];
+        });
+        download(toBlobCsv(headers, rows), `price_opt_${sel}.csv`);
         break;
       }
       case "trend": {
@@ -180,27 +160,54 @@ const UpcExportModal = ({ onClose }: Props) => {
         break;
       }
       case "association": {
-        const headers = [
-          "Type", "UPC", "Description", "Department", "Qty", "Basket Count", "Attach Rate %", "Revenue", "Avg Price", "In Seed Set",
+        // Current view is reroot-aware: once re-rooted, "companions" and
+        // "department rollup" reflect the reroot target's own result, same
+        // as the on-screen grid/CTA do — not the stale seed-level fetch.
+        // Seed items stay tied to the original seed set regardless of
+        // reroot state, matching the left panel's own persistent list.
+        const rerootUpc = ctx.associationRerootUpc;
+        const rerootResult = rerootUpc ? ctx.associationRerootCache[rerootUpc] : null;
+        const activeResult = rerootUpc ? rerootResult : ctx.associationSeedData;
+        const activeItems = activeResult ? getDisplayItems(activeResult.items, rerootUpc) : [];
+        const seedItems = (ctx.associationSeedData?.items ?? []).filter((i) => i.is_seed);
+        const rerootTargetItem = rerootUpc ? rerootResult?.items.find((i) => i.is_seed) : undefined;
+
+        const itemFields = (item: AssociationItem) => [
+          item.product_code,
+          item.product_description,
+          item.sub_department_description,
+          String(item.qty),
+          String(item.basket_count),
+          item.revenue.toFixed(2),
+          item.avg_price.toFixed(2),
+          item.attach_rate.toFixed(2),
         ];
-        const seedUpcs = ctx.selectedUpcs.length > 0 ? ctx.selectedUpcs : ctx.upcs;
-        const upcItemsMap = new Map(ctx.upcItems.map((i) => [i.product_code, i.description]));
-        const rows: string[][] = [
-          ...seedUpcs.map((code) => ["Seed", code, upcItemsMap.get(code) ?? code, "", "", "", "", "", "", "Yes"]),
-          ...(ctx.associationSeedData?.items ?? []).map((item) => [
-            "Association",
-            item.product_code,
-            item.product_description,
-            item.sub_department_description,
-            String(item.qty),
-            String(item.basket_count),
-            item.attach_rate.toFixed(2),
-            item.revenue.toFixed(2),
-            item.avg_price.toFixed(2),
-            item.is_seed ? "Yes" : "No",
-          ]),
-        ];
-        download(toBlobCsv(headers, rows), "associations.csv");
+        const ITEM_HEADERS = ["UPC", "Description", "Sub Dept", "Qty", "Basket Count", "Revenue", "Avg Price", "Attach Rate %"];
+
+        if (sel === "companions") {
+          const rows = activeItems.map((item) => itemFields(item));
+          download(toBlobCsv(ITEM_HEADERS, rows), "association_companions.csv");
+        } else if (sel === "seed") {
+          const rows = seedItems.map((item) => itemFields(item));
+          download(toBlobCsv(ITEM_HEADERS, rows), "association_seed_items.csv");
+        } else if (sel === "full") {
+          const headers = ["Type", ...ITEM_HEADERS];
+          const rows: string[][] = [
+            ...seedItems.map((item) => ["Seed", ...itemFields(item)]),
+            ...(rerootTargetItem ? [["Reroot Target", ...itemFields(rerootTargetItem)]] : []),
+            ...activeItems.map((item) => [rerootUpc ? "Reroot Companion" : "Companion", ...itemFields(item)]),
+          ];
+          download(toBlobCsv(headers, rows), "association_full.csv");
+        } else if (sel === "depts") {
+          const queryDepartments = activeResult ? getQueryDepartments(activeResult.items) : new Set<number>();
+          const { cross, same } = splitDeptBreakdown(getDepartmentBreakdown(activeItems), queryDepartments);
+          const headers = ["Group", "Sub Dept", "Item Count", "Revenue"];
+          const rows: string[][] = [
+            ...cross.map((d) => ["Cross Sub Dept", d.label, String(d.count), d.revenue.toFixed(2)]),
+            ...same.map((d) => ["Same as seed", d.label, String(d.count), d.revenue.toFixed(2)]),
+          ];
+          download(toBlobCsv(headers, rows), "association_department_rollup.csv");
+        }
         break;
       }
     }

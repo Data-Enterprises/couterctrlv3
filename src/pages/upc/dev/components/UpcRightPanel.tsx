@@ -30,11 +30,11 @@ const UpcRightPanel = () => {
             </div>
           </div>
           <button
-            className="flex items-center justify-center w-[22px] h-[22px] rounded border text-custom-white/40 border-custom-white/40 hover:text-custom-white hover:border-custom-white/85 transition-colors"
+            className="text-custom-white transition-colors"
             onClick={() => setExportOpen(true)}
             title="Export"
           >
-            <ArrowDownTrayIcon className="h-3.5 w-3.5" />
+            <ArrowDownTrayIcon className="w-4 h-4" />
           </button>
         </div>
 

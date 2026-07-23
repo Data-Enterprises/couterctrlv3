@@ -3,7 +3,17 @@ import CtaInsightStrip from "../../components/CtaInsightStrip";
 import KpiTileGrid from "../../components/KpiTileGrid";
 import type { KpiCell } from "../../types";
 import type { AssociationResult } from "../../../../../features/upcDevSlice";
-import { getDisplayItems, getDepartmentBreakdown, getQueryDepartments } from "./associationStats";
+import {
+  getDisplayItems,
+  getDepartmentBreakdown,
+  getQueryDepartments,
+  splitDeptBreakdown,
+  sumGroupRevenue,
+  getTotalRevenue,
+  getAvgRevenuePerBasket,
+  getTopCompanion,
+  getWeightedAvgAttachRate,
+} from "./associationStats";
 import AssociationItemsTable from "./AssociationItemsTable";
 
 interface Props {
@@ -26,20 +36,16 @@ const AssociationDetailPanel = ({
   onContextMenu,
 }: Props) => {
   const items = getDisplayItems(result.items, rerootUpc);
-  const topCompanion = [...items].sort((a, b) => b.attach_rate - a.attach_rate)[0];
-  const totalRevenue = items.reduce((sum, i) => sum + i.revenue, 0);
-  // A mean across all qualifying baskets, not a per-basket attribution —
-  // individual baskets vary a lot (some $0, some well above this), so the
-  // label has to read as an average, not an exact figure.
-  const avgRevenuePerBasket = result.totalBaskets > 0 ? totalRevenue / result.totalBaskets : 0;
-  const avgAttachRate = items.length > 0 ? items.reduce((sum, i) => sum + i.attach_rate, 0) / items.length : 0;
+  const topCompanion = getTopCompanion(items);
+  const totalRevenue = getTotalRevenue(items);
+  const avgRevenuePerBasket = getAvgRevenuePerBasket(totalRevenue, result.totalBaskets);
+  const avgAttachRate = getWeightedAvgAttachRate(items);
 
   const deptBreakdown = getDepartmentBreakdown(items);
   const queryDepartments = getQueryDepartments(result.items);
-  const crossDepts = deptBreakdown.filter((d) => !queryDepartments.has(d.deptId));
-  const sameDepts = deptBreakdown.filter((d) => queryDepartments.has(d.deptId));
-  const crossRevenue = crossDepts.reduce((sum, d) => sum + d.revenue, 0);
-  const sameRevenue = sameDepts.reduce((sum, d) => sum + d.revenue, 0);
+  const { cross: crossDepts, same: sameDepts } = splitDeptBreakdown(deptBreakdown, queryDepartments);
+  const crossRevenue = sumGroupRevenue(crossDepts);
+  const sameRevenue = sumGroupRevenue(sameDepts);
 
   const DEPT_TONE = {
     cross: {
@@ -128,6 +134,11 @@ const AssociationDetailPanel = ({
       <div className="flex-shrink-0">
         <CtaInsightStrip title={title} insight={insight} tone="muted" />
         <KpiTileGrid items={kpis} />
+        {items.length > 0 && (
+          <div className="px-4 pt-2 text-[10px] font-medium text-content/85">
+            Showing top {items.length} association{items.length === 1 ? "" : "s"} by strength
+          </div>
+        )}
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-2 pb-3.5">

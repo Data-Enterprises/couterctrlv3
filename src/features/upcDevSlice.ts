@@ -41,14 +41,6 @@ export type AssociationResult = {
   items: AssociationItem[];
 };
 
-// Price Opt — current price/cost derived from the most recent Item Lookup
-// history row for a UPC at one specific store. Keyed by `${storeid}:${product_code}`.
-export type UpcCurrentPriceCost = {
-  product_code: string;
-  currentPrice: number | null;
-  currentCost: number | null;
-};
-
 interface UpcDevState {
   upcs: string[];
   upcText: string;
@@ -85,20 +77,6 @@ interface UpcDevState {
   priceOptLoading: boolean;
   optBestPrices: UpcPriceOpt[];
   optBestPricesByUpc: UpcPriceOpt[];
-  // Group search only — store picked to unlock current price/cost. Store
-  // search always has a single store already, no picker needed.
-  priceOptStoreId: number | null;
-  // Session-scoped cache, keyed `${storeid}:${product_code}` — never
-  // cleared on re-search, only refetched when a key is missing.
-  currentPriceCost: Record<string, UpcCurrentPriceCost>;
-  // Group search only — once a store is picked, the selected item's price
-  // history is re-fetched scoped to just that store (getPriceOpt called
-  // again with a single-store storeids param) so Best price/Elasticity/
-  // Profit at risk reflect that store's own demand, not a blend across
-  // every store in the group. Store search never needs this: its initial
-  // optBestPrices fetch is already single-store scoped. Same key shape and
-  // never-cleared-on-re-search convention as currentPriceCost.
-  storeScopedPriceOpt: Record<string, UpcPriceOpt[]>;
   // Trend
   trendLoaded: boolean;
   trendLoading: boolean;
@@ -149,9 +127,6 @@ const initialState: UpcDevState = {
   priceOptLoading: false,
   optBestPrices: [],
   optBestPricesByUpc: [],
-  priceOptStoreId: null,
-  currentPriceCost: {},
-  storeScopedPriceOpt: {},
   // Trend
   trendLoaded: false,
   trendLoading: false,
@@ -275,15 +250,6 @@ const upcDevSlice = createSlice({
     setDevOptBestPricesByUpc(state, action: PayloadAction<UpcPriceOpt[]>) {
       state.optBestPricesByUpc = action.payload;
     },
-    setDevPriceOptStoreId(state, action: PayloadAction<number | null>) {
-      state.priceOptStoreId = action.payload;
-    },
-    setDevCurrentPriceCost(state, action: PayloadAction<{ key: string; data: UpcCurrentPriceCost }>) {
-      state.currentPriceCost[action.payload.key] = action.payload.data;
-    },
-    setDevStoreScopedPriceOpt(state, action: PayloadAction<{ key: string; rows: UpcPriceOpt[] }>) {
-      state.storeScopedPriceOpt[action.payload.key] = action.payload.rows;
-    },
     // Trend
     setDevTrendLoaded(state, action: PayloadAction<boolean>) {
       state.trendLoaded = action.payload;
@@ -357,7 +323,6 @@ const upcDevSlice = createSlice({
       state.priceOptLoading = false;
       state.optBestPrices = [];
       state.optBestPricesByUpc = [];
-      state.priceOptStoreId = null;
       state.trendLoaded = false;
       state.trendLoading = false;
       state.upcTrends = [];
@@ -406,9 +371,6 @@ export const {
   setDevPriceOptLoading,
   setDevOptBestPrices,
   setDevOptBestPricesByUpc,
-  setDevPriceOptStoreId,
-  setDevCurrentPriceCost,
-  setDevStoreScopedPriceOpt,
   setDevTrendLoaded,
   setDevTrendLoading,
   setDevUpcTrends,

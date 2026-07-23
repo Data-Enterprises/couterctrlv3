@@ -18,7 +18,7 @@ import AssociationLeftPanel from "./AssociationLeftPanel";
 import AssociationDetailPanel from "./AssociationDetailPanel";
 import UpcContextMenu from "../../../../../components/UpcContextMenu";
 
-const LIMIT = 100;
+const LIMIT = 25;
 
 const fmtDate = (d: string) => {
   const [m, day, y] = d.split("/");
@@ -55,15 +55,17 @@ const AssociationTab = () => {
     return map;
   }, [ctx.upcItems, ctx.associationSeedData, ctx.associationRerootCache]);
 
-  // Sub department per seed item, keyed off the fetch's own is_seed rows —
+  // The seed item's own record, keyed off the fetch's own is_seed rows —
   // only available once a seed fetch has actually run, same as upcItemsMap.
-  // Lets the left panel show what department each seed UPC belongs to, so
-  // the CTA insight's "Same as seed" breakdown is checkable against
-  // something visible instead of taken on faith.
-  const seedDeptMap = useMemo(() => {
-    const map = new Map<string, string>();
+  // Lets the left panel show each seed UPC's own revenue and sub department,
+  // matching the other 3 modules' left-column rows (a right-aligned value
+  // plus a right-aligned secondary fact), and makes the CTA insight's "Same
+  // as seed" breakdown checkable against something visible instead of taken
+  // on faith.
+  const seedItemsMap = useMemo(() => {
+    const map = new Map<string, AssociationItem>();
     for (const item of ctx.associationSeedData?.items ?? []) {
-      if (item.is_seed) map.set(item.product_code, item.sub_department_description);
+      if (item.is_seed) map.set(item.product_code, item);
     }
     return map;
   }, [ctx.associationSeedData]);
@@ -183,7 +185,7 @@ const AssociationTab = () => {
       <AssociationLeftPanel
         selectedUpcs={ctx.selectedUpcs}
         upcItemsMap={upcItemsMap}
-        seedDeptMap={seedDeptMap}
+        seedItemsMap={seedItemsMap}
         rerootUpc={rerootUpc}
         rerootDescription={rerootUpc ? (upcItemsMap.get(rerootUpc) ?? rerootUpc) : ""}
         onBackToSeed={backToSeed}
