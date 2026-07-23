@@ -15,7 +15,7 @@ interface Props {
 const KpiTileGrid = ({ items }: Props) => {
   return (
     <div
-      className="grid divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 leading-snug"
+      className="grid divide-x divide-[#1e2a4a]/15 border-b border-gray-100 bg-gray-50 leading-snug"
       style={{ gridTemplateColumns: `repeat(${items.length}, 1fr)` }}
     >
       {items.map((kpi) => (

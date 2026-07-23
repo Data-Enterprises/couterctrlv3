@@ -100,17 +100,20 @@ const UpcSearchCard = ({ onSearch }: Props) => {
 
         {/* UPC input */}
         <div>
-          <label className="block text-[12px] font-medium text-content/85 mb-1">
+          <label className="text-[11px] font-medium text-content/85 ml-0.5">
             UPCs
           </label>
           <textarea
             value={ctx.upcText}
             onChange={(e) => dispatch(setDevUpcText(e.target.value))}
             placeholder="Paste UPCs, comma or newline separated…"
-            rows={3}
-            className="basic-input w-full text-[13px] resize-none"
+            rows={4}
+            className="basic-input bg-custom-white w-full mt-1 py-2 px-2.5 text-[13px] resize-none"
             style={{ outline: "none", boxShadow: "none" }}
           />
+          <p className="text-[10.5px] text-content/85 mt-1">
+            Separate multiple UPCs with commas or new lines
+          </p>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             <button
               onClick={handleParseText}

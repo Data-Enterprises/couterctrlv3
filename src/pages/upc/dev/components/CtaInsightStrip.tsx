@@ -11,7 +11,7 @@ export type CtaTone = "up" | "down" | "flat" | "muted";
 
 interface Props {
   title: string;
-  insight: string;
+  insight: React.ReactNode;
   tone: CtaTone;
 }
 
@@ -76,7 +76,7 @@ const CtaInsightStrip = ({ title, insight, tone }: Props) => {
       </button>
       {open && (
         <div className={`absolute top-full left-0 right-0 z-20 px-4 py-2.5 border-b shadow-lg ${c.bg} ${c.border}`}>
-          <span className={`text-[11px] leading-relaxed ${c.text}`}>{insight}</span>
+          <div className={`text-[12px] leading-relaxed ${c.text}`}>{insight}</div>
         </div>
       )}
     </div>

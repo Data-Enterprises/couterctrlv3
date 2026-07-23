@@ -45,9 +45,9 @@ const TrendLeftList = ({ rows, selectedCode, onSelect }: Props) => {
                 {Math.abs(Math.round(t.impact_units)).toLocaleString()}
               </span>
             </div>
-            <div className="flex items-center justify-between gap-2 mt-0.5">
-              <span className="text-[10px] text-content/85 font-mono truncate">{t.product_code}</span>
-              <span className={`text-[10.5px] flex-shrink-0 ${TONE_TEXT[phrase.tone]}`}>{phrase.text}</span>
+            <div className="flex items-center justify-between gap-2 mt-0.5 font-medium">
+              <span className="text-[11px] text-content/85 truncate">{t.product_code}</span>
+              <span className={`text-[11px] flex-shrink-0 ${TONE_TEXT[phrase.tone]}`}>{phrase.text}</span>
             </div>
           </button>
         );

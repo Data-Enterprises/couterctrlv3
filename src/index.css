@@ -71,6 +71,9 @@ body {
     --color-custom-white: 244 247 248;
     --color-row-selected: 239 241 242;
     --color-row-selected-border: 138 155 176;
+    /* Alternating-row (zebra-stripe) background for dense grids/tables app-
+       wide — one place to retune every grid's stripe at once. */
+    --color-row-stripe: 236 237 239;
     --color-severity-critical-bg: 235 216 216;
     --color-severity-critical-text: 147 16 16;
     --color-severity-watch-bg: 236 224 205;

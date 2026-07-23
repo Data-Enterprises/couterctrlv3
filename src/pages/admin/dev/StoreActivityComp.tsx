@@ -97,12 +97,6 @@ const StoreActivityComp = ({
       )}
 
       <div className="flex flex-col flex-shrink-0">
-        <CompanyPicker
-          companies={context.companies}
-          mode="select"
-          selectedId={context.companyForm.id}
-          onSelect={handleCompanySelect}
-        />
         <div
           className="border-r border-gray-100 p-3 flex-shrink-0"
           style={{ width: "220px" }}
@@ -120,6 +114,12 @@ const StoreActivityComp = ({
             Search
           </button>
         </div>
+        <CompanyPicker
+          companies={context.companies}
+          mode="select"
+          selectedId={context.companyForm.id}
+          onSelect={handleCompanySelect}
+        />
       </div>
 
       <div className="flex-1 min-w-0 flex flex-col">

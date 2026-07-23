@@ -6,13 +6,9 @@ import {
   setDevPriceOptLoading,
   setDevOptBestPrices,
   setDevOptBestPricesByUpc,
-  setDevCurrentPriceCost,
-  setDevStoreScopedPriceOpt,
   setDevUpcItems,
 } from "../../../../../features/upcDevSlice";
 import { getPriceOpt } from "../../../../../api/upc";
-import { getItemLookupSingleStore } from "../../../../../api/itemLookup";
-import type { ItemLookupHistory } from "../../../../../features/itemLookupSlice";
 import type { UpcItem } from "../../../../../interfaces";
 import { computePriceOptRowSummary } from "./priceOptStats";
 import PriceOptLeftList from "./PriceOptLeftList";
@@ -23,12 +19,11 @@ const PriceOptTab = () => {
   const dispatch = useAppDispatch();
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
 
-  // Initial fetch: historical price/qty/revenue for every UPC in the search,
-  // scoped to ctx.storeids (a single store in Store search, every group
-  // member in Group search). This is the one batch fetch that's still worth
-  // doing eagerly — it's the source for "Best price" on every list row
-  // without needing a per-item lookup. Current price/cost never comes from
-  // here; that's always a separate, lazy, per-selected-item fetch below.
+  // The one fetch this tab needs: historical price/qty/revenue for every
+  // UPC in the search, scoped to ctx.storeids (a single store in Store
+  // search, every group member in Group search — no per-store re-scoping,
+  // that data is what we have). No current price or cost anywhere in this
+  // data, so there's nothing else to fetch.
   useEffect(() => {
     if (ctx.priceOptLoaded || ctx.priceOptLoading || !ctx.upcs.length || !ctx.storeids) return;
 
@@ -58,20 +53,13 @@ const PriceOptTab = () => {
     load();
   }, [ctx.searchVersion]);
 
-  const resolvedStoreId = ctx.searchType === "Store" ? ctx.selectedStore.storeid : ctx.priceOptStoreId;
-
   const rows = useMemo(() => {
     const src = ctx.selectedUpcs.length > 0
       ? ctx.optBestPricesByUpc.filter((o) => ctx.selectedUpcs.includes(o.product_code))
       : ctx.optBestPricesByUpc;
 
-    return src.map((row) => {
-      const key = resolvedStoreId !== null ? `${resolvedStoreId}:${row.product_code}` : "";
-      const cpc = resolvedStoreId !== null ? ctx.currentPriceCost[key] : undefined;
-      const storeScopedRows = resolvedStoreId !== null ? ctx.storeScopedPriceOpt[key] : undefined;
-      return computePriceOptRowSummary(row, ctx.optBestPrices, cpc, storeScopedRows, resolvedStoreId !== null);
-    });
-  }, [ctx.optBestPricesByUpc, ctx.optBestPrices, ctx.selectedUpcs, ctx.currentPriceCost, ctx.storeScopedPriceOpt, resolvedStoreId]);
+    return src.map((row) => computePriceOptRowSummary(row, ctx.optBestPrices));
+  }, [ctx.optBestPricesByUpc, ctx.optBestPrices, ctx.selectedUpcs]);
 
   // Keep the detail panel pointed at a valid item — same pattern as Sales
   // Comp: default to the first row, re-pick if the current selection drops
@@ -85,58 +73,6 @@ const PriceOptTab = () => {
       setSelectedCode(rows[0].code);
     }
   }, [rows, selectedCode]);
-
-  // Lazy current price/cost — only for whichever item is actually selected,
-  // never batched for the whole list. Fires immediately once a store's
-  // known (Store search: always; Group search: once picked).
-  useEffect(() => {
-    if (!selectedCode || resolvedStoreId === null) return;
-    const key = `${resolvedStoreId}:${selectedCode}`;
-    if (ctx.currentPriceCost[key]) return;
-
-    const fetchCurrent = async () => {
-      const res = await getItemLookupSingleStore(ctx.url, ctx.token, selectedCode, resolvedStoreId);
-      const history = (res.data?.history ?? []) as ItemLookupHistory[];
-      const last = history[history.length - 1];
-      dispatch(
-        setDevCurrentPriceCost({
-          key,
-          data: {
-            product_code: selectedCode,
-            currentPrice: last ? last.price : null,
-            currentCost: last ? last.casecost : null,
-          },
-        }),
-      );
-    };
-    fetchCurrent();
-  }, [selectedCode, resolvedStoreId, ctx.currentPriceCost]);
-
-  // Lazy store-scoped price history — Group search only. Store search's
-  // initial batch is already single-store scoped, so there's nothing to
-  // re-fetch. Re-runs the exact same getPriceOpt call, just narrowed to the
-  // one picked store and the one selected item, so Best price/Elasticity/
-  // Profit at risk reflect this store's own demand instead of a blend
-  // across the whole group.
-  useEffect(() => {
-    if (ctx.searchType !== "Group" || !selectedCode || resolvedStoreId === null) return;
-    const key = `${resolvedStoreId}:${selectedCode}`;
-    if (ctx.storeScopedPriceOpt[key]) return;
-
-    const fetchStoreScoped = async () => {
-      const res = await getPriceOpt(
-        ctx.url,
-        ctx.token,
-        String(resolvedStoreId),
-        ctx.startDate,
-        ctx.endDate,
-        selectedCode,
-      );
-      const j = res.data;
-      dispatch(setDevStoreScopedPriceOpt({ key, rows: j.error === 0 ? (j.best_prices ?? []) : [] }));
-    };
-    fetchStoreScoped();
-  }, [selectedCode, resolvedStoreId, ctx.searchType, ctx.storeScopedPriceOpt]);
 
   if (ctx.priceOptLoading) {
     return (
@@ -167,9 +103,7 @@ const PriceOptTab = () => {
   return (
     <div className="flex-1 overflow-hidden flex min-h-0">
       <PriceOptLeftList rows={rows} selectedCode={selectedCode} onSelect={setSelectedCode} />
-      {selectedSummary && (
-        <PriceOptDetailPanel summary={selectedSummary} isGroupSearch={ctx.searchType === "Group"} />
-      )}
+      {selectedSummary && <PriceOptDetailPanel summary={selectedSummary} />}
     </div>
   );
 };

@@ -721,7 +721,7 @@ const OrderReportPanel = ({
                       {visibleOrderItems.map((o) => (
                         <tr
                           key={`${o.storeid}-${o.line_number}`}
-                          className="border-b border-b-[#1e2a4a]/15 hover:bg-gray-50 transition-colors"
+                          className="border-b border-b-[#1e2a4a]/15 even:bg-row_stripe hover:bg-gray-50 transition-colors"
                         >
                           <td className="px-3 py-2 tabular-nums text-content">
                             {o.line_number}

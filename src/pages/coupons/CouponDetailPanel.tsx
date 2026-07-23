@@ -1089,13 +1089,13 @@ const CouponDetailPanel = ({
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-[#1e2a4a]/5">
-                          {aggCouponRows.map((agg) => {
+                          {aggCouponRows.map((agg, idx) => {
                             const isExp = expandedCoupons.has(agg.product_code);
                             return (
                               <>
                                 <tr
                                   key={agg.product_code}
-                                  className="cursor-pointer hover:bg-gray-50 transition-colors"
+                                  className={`cursor-pointer hover:bg-gray-50 transition-colors ${idx % 2 === 1 ? "bg-row_stripe" : ""}`}
                                   onClick={() => toggleCoupon(agg.product_code)}
                                 >
                                   <td className="px-3 py-2 whitespace-nowrap tabular-nums">
