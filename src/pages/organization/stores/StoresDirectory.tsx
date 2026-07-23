@@ -17,12 +17,19 @@ const StoresDirectory = () => {
   const [stores, setStores] = useState<Store[] | null>(null);
   const [search, setSearch] = useState("");
 
+  // The stores endpoint can return a store with a null store_name/
+  // store_number (e.g. a not-yet-fully-configured store record) — filter
+  // those out rather than letting them reach the search below, same fix as
+  // NewStoreName.tsx/StoresTab.tsx.
+  const validOnly = (list: Store[]) =>
+    list.filter((s) => s.store_name != null && s.store_number != null);
+
   useEffect(() => {
     getUserStores(ctx.url, ctx.token, ctx.userid)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          setStores([...j.assigned_stores, ...j.unassigned_stores]);
+          setStores(validOnly([...j.assigned_stores, ...j.unassigned_stores]));
         } else {
           toast.error(j.msg || "Error fetching stores");
         }

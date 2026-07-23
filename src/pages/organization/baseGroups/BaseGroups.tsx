@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { PlusIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import type { CompanyBaseGroup, JsonError } from "../../../interfaces";
+import type { CompanyBaseGroup, JsonError, Store } from "../../../interfaces";
 import { getCompanies } from "../../../api/company";
 import { getBaseGroups, getAllStoresInBaseGroup, createBaseGroup } from "../../../api/baseGroups";
 import { setCompanies, setRefresh } from "../../../features/organizationSlice";
@@ -132,6 +132,11 @@ const BaseGroups = () => {
       .finally(() => fetchingGroups.current.delete(companyId));
   };
 
+  // A store record can come back with a null store_name — filter those out
+  // before they reach BaseGroupDetail's search (AssignPanel), same fix as
+  // StoresDirectory.tsx/NewStoreName.tsx.
+  const validOnly = (list: Store[]) => list.filter((s) => s.store_name != null);
+
   const fetchStores = (groupId: number) => {
     getAllStoresInBaseGroup(ctx.url, ctx.token, groupId)
       .then((resp) => {
@@ -140,8 +145,8 @@ const BaseGroups = () => {
           setGroupStores((prev) => ({
             ...prev,
             [groupId]: {
-              assigned: j.assigned_stores,
-              unassigned: j.unassigned_stores,
+              assigned: validOnly(j.assigned_stores),
+              unassigned: validOnly(j.unassigned_stores),
             },
           }));
         }

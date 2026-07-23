@@ -3,8 +3,6 @@ import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../../hooks";
 import {
   setDevAllSelectedUpcs,
-  toggleDevSelectedUpc,
-  setDevUpcItems,
   setDevAssociationSeedKey,
   setDevAssociationSeedLoaded,
   setDevAssociationSeedLoading,
@@ -14,12 +12,11 @@ import {
   setDevAssociationRerootCacheEntry,
   clearDevAssociationRerootCache,
   setDevAssociationPrevSeedData,
-  setDevAssociationSeedChangeNote,
   type AssociationItem,
   type AssociationResult,
 } from "../../../../../features/upcDevSlice";
 import { getItemAssociation } from "../../../../../api/upc";
-import { excludeCurrentUpc, computeAttachRateDeltas, disappearedItems } from "./associationStats";
+import { getDisplayItems, computeAttachRateDeltas } from "./associationStats";
 import AssociationLeftPanel from "./AssociationLeftPanel";
 import AssociationDetailPanel, { type AssociationDeltaContext } from "./AssociationDetailPanel";
 import UpcContextMenu from "../../../../../components/UpcContextMenu";
@@ -41,17 +38,28 @@ const AssociationTab = () => {
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
   const storeidsArr = useMemo(() => ctx.storeids.split(",").map(Number).filter(Boolean), [ctx.storeids]);
-  const upcItemsMap = useMemo(
-    () => new Map(ctx.upcItems.map((i) => [i.product_code, i.description])),
-    [ctx.upcItems],
-  );
+
+  // Local-only description lookup — deliberately never dispatched into the
+  // shared ctx.upcItems map. Association's companions are basket-discovered,
+  // not part of the actual workbook search, and the page-level "UPC Upload"
+  // left panel renders straight off ctx.upcItems with no cross-check against
+  // ctx.upcs — writing companion descriptions there would leak them into
+  // that list. Every AssociationItem already carries its own
+  // product_description, so this only needs to cover the one case that
+  // doesn't have one in scope on its own: naming the current re-root target.
+  const upcItemsMap = useMemo(() => {
+    const map = new Map(ctx.upcItems.map((i) => [i.product_code, i.description]));
+    for (const item of ctx.associationSeedData?.items ?? []) {
+      map.set(item.product_code, item.product_description);
+    }
+    for (const cached of Object.values(ctx.associationRerootCache)) {
+      for (const item of cached.items) map.set(item.product_code, item.product_description);
+    }
+    return map;
+  }, [ctx.upcItems, ctx.associationSeedData, ctx.associationRerootCache]);
 
   const seedUpcs = ctx.selectedUpcs.length > 0 ? ctx.selectedUpcs : ctx.upcs;
   const prevSeedUpcsRef = useRef<string[]>([]);
-
-  const rememberDescriptions = (items: AssociationItem[]) => {
-    dispatch(setDevUpcItems(items.map((i) => ({ product_code: i.product_code, description: i.product_description }))));
-  };
 
   const fetchSeed = async (upcsToQuery: string[]) => {
     dispatch(setDevAssociationSeedLoading(true));
@@ -62,7 +70,6 @@ const AssociationTab = () => {
       );
       if (res.data.error === 0) {
         const items: AssociationItem[] = res.data.items ?? [];
-        rememberDescriptions(items);
         dispatch(setDevAssociationSeedData({ totalBaskets: res.data.total_baskets, items }));
       }
     } finally {
@@ -86,23 +93,11 @@ const AssociationTab = () => {
     const key = buildSeedKey(seedUpcs);
     if (ctx.associationSeedLoaded && key === ctx.associationSeedKey) return;
 
+    // Snapshot the outgoing seed result whenever this is a genuine change
+    // (not the first load) so the detail panel can flag which companions'
+    // attach rates shifted once the new fetch lands.
     const isChange = ctx.associationSeedLoaded && ctx.associationSeedData !== null;
-    if (isChange) {
-      const prevUpcs = prevSeedUpcsRef.current;
-      const removed = prevUpcs.filter((u) => !seedUpcs.includes(u));
-      const added = seedUpcs.filter((u) => !prevUpcs.includes(u));
-      const describe = (u: string) => upcItemsMap.get(u) ?? u;
-      const note = removed.length
-        ? `You removed ${describe(removed[0])}${removed.length > 1 ? ` (+${removed.length - 1} more)` : ""} from your seed set`
-        : added.length
-          ? `You added ${describe(added[0])}${added.length > 1 ? ` (+${added.length - 1} more)` : ""} to your seed set`
-          : "Your seed set changed";
-      dispatch(setDevAssociationPrevSeedData(ctx.associationSeedData));
-      dispatch(setDevAssociationSeedChangeNote(note));
-    } else {
-      dispatch(setDevAssociationPrevSeedData(null));
-      dispatch(setDevAssociationSeedChangeNote(null));
-    }
+    dispatch(setDevAssociationPrevSeedData(isChange ? ctx.associationSeedData : null));
 
     prevSeedUpcsRef.current = seedUpcs;
     dispatch(setDevAssociationSeedKey(key));
@@ -125,7 +120,6 @@ const AssociationTab = () => {
       );
       if (res.data.error === 0) {
         const items: AssociationItem[] = res.data.items ?? [];
-        rememberDescriptions(items);
         const result: AssociationResult = { totalBaskets: res.data.total_baskets, items };
         dispatch(setDevAssociationRerootCacheEntry({ upc, result }));
       }
@@ -168,19 +162,16 @@ const AssociationTab = () => {
   const rerootUpc = ctx.associationRerootUpc;
   const rerootResult = rerootUpc ? ctx.associationRerootCache[rerootUpc] : null;
 
-  const activeResult: AssociationResult | null = rerootUpc
-    ? rerootResult
-      ? { totalBaskets: rerootResult.totalBaskets, items: excludeCurrentUpc(rerootResult.items, rerootUpc) }
-      : null
-    : ctx.associationSeedData;
+  const activeResult: AssociationResult | null = rerootUpc ? rerootResult : ctx.associationSeedData;
 
   const deltaContext: AssociationDeltaContext | null =
-    !rerootUpc && ctx.associationPrevSeedData && ctx.associationSeedChangeNote
+    !rerootUpc && ctx.associationPrevSeedData
       ? {
           prevSeedCount: prevSeedUpcsRef.current.length,
-          changeNote: ctx.associationSeedChangeNote,
-          deltas: computeAttachRateDeltas(ctx.associationPrevSeedData.items, ctx.associationSeedData.items),
-          disappeared: disappearedItems(ctx.associationPrevSeedData.items, ctx.associationSeedData.items),
+          deltas: computeAttachRateDeltas(
+            getDisplayItems(ctx.associationPrevSeedData.items),
+            getDisplayItems(ctx.associationSeedData.items),
+          ),
         }
       : null;
 
@@ -197,7 +188,6 @@ const AssociationTab = () => {
         upcItemsMap={upcItemsMap}
         rerootUpc={rerootUpc}
         rerootDescription={rerootUpc ? (upcItemsMap.get(rerootUpc) ?? rerootUpc) : ""}
-        onToggleUpc={(code) => dispatch(toggleDevSelectedUpc(code))}
         onBackToSeed={backToSeed}
       />
 
@@ -210,6 +200,7 @@ const AssociationTab = () => {
           result={activeResult}
           title={rerootUpc ? (upcItemsMap.get(rerootUpc) ?? rerootUpc) : `${seedUpcs.length} seed items`}
           isReroot={Boolean(rerootUpc)}
+          rerootUpc={rerootUpc}
           prevTotalBaskets={rerootUpc ? ctx.associationSeedData?.totalBaskets : undefined}
           deltaContext={deltaContext}
           onReroot={rerootTo}

@@ -120,7 +120,6 @@ interface UpcDevState {
   // triggers a refetch, so the detail panel can diff old vs new and flag
   // what moved. Cleared once acknowledged/superseded by the next change.
   associationPrevSeedData: AssociationResult | null;
-  associationSeedChangeNote: string | null;
 }
 
 const initialState: UpcDevState = {
@@ -172,7 +171,6 @@ const initialState: UpcDevState = {
   associationRerootCache: {},
   associationRerootLoading: false,
   associationPrevSeedData: null,
-  associationSeedChangeNote: null,
 };
 
 const upcDevSlice = createSlice({
@@ -338,9 +336,6 @@ const upcDevSlice = createSlice({
     setDevAssociationPrevSeedData(state, action: PayloadAction<AssociationResult | null>) {
       state.associationPrevSeedData = action.payload;
     },
-    setDevAssociationSeedChangeNote(state, action: PayloadAction<string | null>) {
-      state.associationSeedChangeNote = action.payload;
-    },
     resetDevAssociations(state) {
       state.associationSeedKey = "";
       state.associationSeedLoaded = false;
@@ -350,7 +345,6 @@ const upcDevSlice = createSlice({
       state.associationRerootCache = {};
       state.associationRerootLoading = false;
       state.associationPrevSeedData = null;
-      state.associationSeedChangeNote = null;
     },
     clearDevUpcData(state) {
       state.searchVersion += 1;
@@ -386,7 +380,6 @@ const upcDevSlice = createSlice({
       state.associationRerootCache = {};
       state.associationRerootLoading = false;
       state.associationPrevSeedData = null;
-      state.associationSeedChangeNote = null;
     },
     resetDevUpcState: () => initialState,
   },
@@ -440,7 +433,6 @@ export const {
   setDevAssociationRerootCacheEntry,
   clearDevAssociationRerootCache,
   setDevAssociationPrevSeedData,
-  setDevAssociationSeedChangeNote,
   resetDevAssociations,
   clearDevUpcData,
   resetDevUpcState,
