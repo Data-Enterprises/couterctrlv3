@@ -1,30 +1,49 @@
 import { formatCurrency2 } from "../../../../../utils";
 import type { AssociationResult } from "../../../../../features/upcDevSlice";
 import type { KpiCell } from "../../types";
-import { getDisplayItems } from "./associationStats";
+import { getDisplayItems, getQueryDepartments, getDepartmentBreakdown } from "./associationStats";
 
-// Deliberately just 3 tiles, not the usual 5 — Baskets/Departments/
-// Companions-found already live in the per-view KpiTileGrid just below this
-// strip (see AssociationDetailPanel.tsx), and repeating the same numbers up
-// here read as a second, redundant grid rather than new information.
-// UpcKpiStrip's column count is dynamic, so returning fewer tiles doesn't
-// leave empty grid cells. Total revenue is the one genuinely new fact this
-// level can add — the dollar weight of the active view's companions, which
-// the per-view strip doesn't otherwise surface as a single number.
+// 5 tiles, ordered by impact: dollar scale first, then the specific dollar
+// opportunity to act on, then volume, then the two department-flavored
+// tiles grouped together at the end (how many are cross-department, which
+// department shows up most) since they're both categorical context rather
+// than a headline finding. "Viewing" and "Seed UPCs" were both cut once
+// something else already displayed the same fact — the left column's own
+// header already names what's being viewed and lists every seed UPC.
 export function getAssociationKpis(
-  seedCount: number,
   seedData: AssociationResult | null,
   rerootUpc: string | null,
   rerootData: AssociationResult | null,
-  rerootLabel: string,
 ): KpiCell[] {
   const active = rerootUpc ? rerootData : seedData;
   const items = active ? getDisplayItems(active.items, rerootUpc) : [];
   const totalRevenue = items.reduce((sum, i) => sum + i.revenue, 0);
+  const totalUnits = items.reduce((sum, i) => sum + i.qty, 0);
+  const topRevenueItem = active ? [...items].sort((a, b) => b.revenue - a.revenue)[0] : undefined;
+  const queryDepartments = active ? getQueryDepartments(active.items) : new Set<number>();
+  const crossDeptCount = items.filter((i) => !queryDepartments.has(i.sub_department)).length;
+
+  const topDept = getDepartmentBreakdown(items)[0];
 
   return [
-    { label: "Seed UPCs", value: String(seedCount) },
-    { label: "Viewing", value: rerootUpc ? rerootLabel : "Seed set" },
     { label: "Total revenue", value: active ? formatCurrency2(totalRevenue) : "—", sub: "companions" },
+    {
+      label: "Top revenue",
+      value: topRevenueItem?.product_description ?? "—",
+      sub: topRevenueItem ? formatCurrency2(topRevenueItem.revenue) : undefined,
+      subVariant: topRevenueItem ? "neutral" : undefined,
+    },
+    { label: "Total units", value: active ? totalUnits.toLocaleString() : "—" },
+    {
+      label: "Cross Sub Dept",
+      value: active ? String(crossDeptCount) : "—",
+      sub: active ? "items" : undefined,
+    },
+    {
+      label: "Top Sub Dept",
+      value: topDept?.label ?? "—",
+      sub: topDept ? `${topDept.count} items` : undefined,
+      subVariant: topDept ? "neutral" : undefined,
+    },
   ];
 }

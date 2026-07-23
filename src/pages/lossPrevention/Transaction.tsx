@@ -162,7 +162,7 @@ const Transaction = ({ trans }: TransactionProps) => {
           const displayNet = item.net_sales;
           const stamps = !context.isMobile ? renderStamps(item) : null;
           return (
-            <div key={i} className="grid gap-1 py-1.5 border-b border-b-[#1e2a4a]/15 items-center" style={{ gridTemplateColumns: "84px 1fr 28px 62px 55px" }}>
+            <div key={i} className="grid gap-1 py-1.5 border-b border-b-[#1e2a4a]/15 items-center even:bg-row_stripe" style={{ gridTemplateColumns: "84px 1fr 28px 62px 55px" }}>
               <div className="text-[10px] text-content truncate">{item.product_code || "—"}</div>
               <div className="text-[10px] font-medium text-content truncate">
                 {item.product_description}

@@ -185,7 +185,7 @@ const LookupReportPanel = ({
             return (
               <div
                 key={b.date}
-                className={`grid grid-cols-7 px-2 py-2 text-[12px] border-b border-gray-50 ${b.hasSale ? "" : "bg-gray-50/60"}`}
+                className={`grid grid-cols-7 px-2 py-2 text-[12px] border-b border-gray-50 ${b.hasSale ? "even:bg-row_stripe" : "bg-gray-50/60"}`}
               >
                 <span className={b.hasSale ? "text-content" : "text-gray-400"}>
                   {b.label}

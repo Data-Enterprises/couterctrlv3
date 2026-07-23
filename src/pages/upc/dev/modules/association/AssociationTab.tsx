@@ -18,7 +18,7 @@ import AssociationLeftPanel from "./AssociationLeftPanel";
 import AssociationDetailPanel from "./AssociationDetailPanel";
 import UpcContextMenu from "../../../../../components/UpcContextMenu";
 
-const LIMIT = 20;
+const LIMIT = 100;
 
 const fmtDate = (d: string) => {
   const [m, day, y] = d.split("/");
@@ -55,7 +55,21 @@ const AssociationTab = () => {
     return map;
   }, [ctx.upcItems, ctx.associationSeedData, ctx.associationRerootCache]);
 
-  const seedUpcs = ctx.selectedUpcs.length > 0 ? ctx.selectedUpcs : ctx.upcs;
+  // Sub department per seed item, keyed off the fetch's own is_seed rows —
+  // only available once a seed fetch has actually run, same as upcItemsMap.
+  // Lets the left panel show what department each seed UPC belongs to, so
+  // the CTA insight's "Same as seed" breakdown is checkable against
+  // something visible instead of taken on faith.
+  const seedDeptMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const item of ctx.associationSeedData?.items ?? []) {
+      if (item.is_seed) map.set(item.product_code, item.sub_department_description);
+    }
+    return map;
+  }, [ctx.associationSeedData]);
+
+  const hasSelection = ctx.selectedUpcs.length > 0;
+  const seedUpcs = ctx.selectedUpcs;
 
   const fetchSeed = async (upcsToQuery: string[]) => {
     dispatch(setDevAssociationSeedLoading(true));
@@ -76,12 +90,13 @@ const AssociationTab = () => {
 
   // Fetches whenever the effective seed set actually changes — content, not
   // just length, is what buildSeedKey compares against associationSeedKey
-  // below, so an unrelated re-render never refetches. Nothing here forces a
-  // default selection — an empty ctx.selectedUpcs means "no narrowing yet,"
-  // same as every other tab, and seedUpcs already falls back to the full
-  // upcs list for that case; the user picks what to check, not this effect.
+  // below, so an unrelated re-render never refetches. Unlike every other
+  // tab, Association never falls back to the full upcs list as an implicit
+  // default seed: showing KPIs/CTA copy framed around "your seed items"
+  // before the user has actually picked any doesn't read sensibly, so this
+  // stays idle until hasSelection is true — the user picks what to check.
   useEffect(() => {
-    if (!ctx.upcs.length || !ctx.storeids) return;
+    if (!hasSelection || !ctx.storeids) return;
 
     const key = buildSeedKey(seedUpcs);
     if (ctx.associationSeedLoaded && key === ctx.associationSeedKey) return;
@@ -93,7 +108,7 @@ const AssociationTab = () => {
     // ctx.searchVersion: a re-search with the exact same UPCs/store wouldn't
     // otherwise change buildSeedKey's output, so it's needed to force a
     // refetch the same way every other tab's initial-fetch effect does.
-  }, [ctx.upcs.length, ctx.selectedUpcs.length, ctx.storeids, ctx.searchVersion]);
+  }, [hasSelection, ctx.selectedUpcs.length, ctx.storeids, ctx.searchVersion]);
 
   const rerootTo = async (upc: string) => {
     dispatch(setDevAssociationRerootUpc(upc));
@@ -129,6 +144,14 @@ const AssociationTab = () => {
     );
   }
 
+  if (!hasSelection) {
+    return (
+      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
+        Select UPCs to see associations
+      </div>
+    );
+  }
+
   if (ctx.associationSeedLoading && !ctx.associationSeedLoaded) {
     return (
       <div className="flex items-center justify-center h-full text-[11px] text-content/85">
@@ -158,9 +181,9 @@ const AssociationTab = () => {
   return (
     <div className="flex-1 overflow-hidden flex min-h-0">
       <AssociationLeftPanel
-        upcs={ctx.upcs}
         selectedUpcs={ctx.selectedUpcs}
         upcItemsMap={upcItemsMap}
+        seedDeptMap={seedDeptMap}
         rerootUpc={rerootUpc}
         rerootDescription={rerootUpc ? (upcItemsMap.get(rerootUpc) ?? rerootUpc) : ""}
         onBackToSeed={backToSeed}

@@ -20,20 +20,12 @@ const UpcKpiStrip = () => {
       }
       case "trend":
         return getTrendKpis(ctx.upcTrends, ctx.selectedUpcs);
-      case "association": {
-        const seedCount = ctx.selectedUpcs.length > 0 ? ctx.selectedUpcs.length : ctx.upcs.length;
-        const upcItemsMap = new Map(ctx.upcItems.map((i) => [i.product_code, i.description]));
-        const rerootLabel = ctx.associationRerootUpc
-          ? (upcItemsMap.get(ctx.associationRerootUpc) ?? ctx.associationRerootUpc)
-          : "";
+      case "association":
         return getAssociationKpis(
-          seedCount,
           ctx.associationSeedData,
           ctx.associationRerootUpc,
           ctx.associationRerootUpc ? ctx.associationRerootCache[ctx.associationRerootUpc] ?? null : null,
-          rerootLabel,
         );
-      }
     }
   })();
 
