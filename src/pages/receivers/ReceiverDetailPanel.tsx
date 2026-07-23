@@ -119,8 +119,8 @@ const ReceiverDetailPanel = () => {
         <>
           {/* KPI strip */}
           {totals && (
-            <div className="grid grid-cols-6 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
-              <div className="px-4 pt-2.5 text-center">
+            <div className="grid grid-cols-6 divide-x divide-[#1e2a4a]/15 border-b border-[#1e2a4a]/15 bg-gray-50 flex-shrink-0">
+              <div className="px-4 py-2 text-center">
                 <div className="text-[10px] font-bold uppercase tracking-wide text-content">
                   Cases
                 </div>
@@ -128,7 +128,7 @@ const ReceiverDetailPanel = () => {
                   {totals.cases}
                 </div>
               </div>
-              <div className="px-4 pt-2.5 text-center">
+              <div className="px-4 py-2 text-center">
                 <div className="text-[10px] font-bold uppercase tracking-wide text-content">
                   Units
                 </div>
@@ -136,7 +136,7 @@ const ReceiverDetailPanel = () => {
                   {totals.units}
                 </div>
               </div>
-              <div className="px-4 pt-2.5 text-center">
+              <div className="px-4 py-2 text-center">
                 <div className="text-[10px] font-bold uppercase tracking-wide text-content">
                   U Cost
                 </div>
@@ -144,7 +144,7 @@ const ReceiverDetailPanel = () => {
                   {formatCurrency2(totals.ucost)}
                 </div>
               </div>
-              <div className="px-4 pt-2.5 text-center">
+              <div className="px-4 py-2 text-center">
                 <div className="text-[10px] font-bold uppercase tracking-wide text-content">
                   Ext Cost
                 </div>
@@ -152,7 +152,7 @@ const ReceiverDetailPanel = () => {
                   {formatCurrency2(totals.ext_cost)}
                 </div>
               </div>
-              <div className="px-4 pt-2.5 text-center">
+              <div className="px-4 py-2 text-center">
                 <div className="text-[10px] font-bold uppercase tracking-wide text-content">
                   Retail
                 </div>
@@ -160,7 +160,7 @@ const ReceiverDetailPanel = () => {
                   {formatCurrency2(totals.retail)}
                 </div>
               </div>
-              <div className="px-4 pt-2.5 text-center">
+              <div className="px-4 py-2 text-center">
                 <div className="text-[10px] font-bold uppercase tracking-wide text-content">
                   Ext Retail
                 </div>
@@ -176,92 +176,122 @@ const ReceiverDetailPanel = () => {
             <table className="w-full border-collapse text-[12px]">
               <thead>
                 <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
-                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
                     #
                   </th>
-                  <th className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70">
+                  <th className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
                     UPC
                   </th>
                   <th
-                    className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70"
+                    className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85"
                     style={{ width: "22%" }}
                   >
                     Description
                   </th>
-                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
                     Cases
                   </th>
-                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
                     Units
                   </th>
-                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70 whitespace-nowrap">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85 whitespace-nowrap">
                     U Cost
                   </th>
-                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70 whitespace-nowrap">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85 whitespace-nowrap">
                     Ext Cost
                   </th>
-                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
                     Retail
                   </th>
-                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70 whitespace-nowrap">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85 whitespace-nowrap">
                     Ext Retail
                   </th>
-                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
                     GM
                   </th>
-                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
                     Free
                   </th>
-                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/70">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
                     Return
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1e2a4a]/15">
+              <tbody className="divide-y divide-[#1e2a4a]/15 text-[13px]">
                 {state.details.map((item) => (
                   <tr
                     key={item.line_number}
                     className="even:bg-row_stripe hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-3 py-2 text-right tabular-nums text-content/70">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
                       {item.line_number}
                     </td>
-                    <td className="px-3 py-2 tabular-nums text-content/70 whitespace-nowrap">
+                    <td className="px-3 py-2 tabular-nums text-content/85 whitespace-nowrap">
                       {item.product_code}
                     </td>
-                    <td className="px-3 py-2 font-medium text-content truncate max-w-0">
+                    <td className="px-3 py-2 font-medium text-content/85 truncate max-w-0">
                       {item.product_description}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content/70">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
                       {item.cases}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content/70">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
                       {item.units}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content/70">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
                       {formatCurrency2(item.ucost)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
                       {formatCurrency2(item.ext_cost)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content/70">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
                       {formatCurrency2(item.retail)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
+                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content/85">
                       {formatCurrency2(item.ext_retail)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content/70">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
                       {formatBigNumber(item.gm, 2)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content/70">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
                       {item.free}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content/70">
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
                       {item.return}
                     </td>
                   </tr>
                 ))}
               </tbody>
+              {totals && (
+                <tfoot>
+                  <tr className="sticky bottom-0 bg-gray-50 border-t-2 border-content/70 font-bold text-[14px]">
+                    <td className="px-3 py-2"></td>
+                    <td className="px-3 py-2"></td>
+                    <td className="px-3 py-2 text-right text-content/85">Totals</td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {totals.cases}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {totals.units}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {formatCurrency2(totals.ucost)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {formatCurrency2(totals.ext_cost)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {formatCurrency2(totals.retail)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {formatCurrency2(totals.ext_retail)}
+                    </td>
+                    <td className="px-3 py-2"></td>
+                    <td className="px-3 py-2"></td>
+                    <td className="px-3 py-2"></td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
         </>

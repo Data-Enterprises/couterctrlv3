@@ -123,8 +123,8 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
           <div className="flex-1" />
           {state.listGridData.length > 0 && (
             <div className="flex items-baseline gap-1 flex-shrink-0">
-              <span className="text-custom-white text-[10px] uppercase tracking-wide">
-                Records
+              <span className="text-custom-white text-[10px] font-semibold uppercase tracking-wide">
+                Total
               </span>
               <span className="text-[13px] font-medium text-custom-white">
                 {state.listGridData.length}
@@ -235,7 +235,7 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
                       <div>Item count</div>
                       <div>Vendor</div>
                     </div>
-                    <div className="">
+                    <div className="divide-y divide-[#1e2a4a]/15">
                       {group.items.map((item) => {
                         const isSel =
                           state.selectedInvoice === item.invoiceid.toString();
@@ -248,7 +248,7 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
                                 formatDate(item.invoice_date),
                               )
                             }
-                            className={`w-full border-y borde-y-[#1e2a4a]/10 grid grid-cols-[60px_70px_1fr] items-center gap-2 pl-6 pr-3 py-2 text-left transition-colors ${
+                            className={`w-full grid grid-cols-[60px_70px_1fr] items-center gap-2 pl-6 pr-3 py-2 text-left transition-colors ${
                               isSel ? "bg-custom-white" : "hover:bg-gray-50"
                             }`}
                             style={

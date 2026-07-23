@@ -40,7 +40,11 @@ interface MetricSelection {
 
 // ─── Preset builder ───────────────────────────────────────────────────────────
 
-const buildDetailsCsv = (details: ReceiverDetailsItem[], label: string) => {
+const buildDetailsCsv = (
+  details: ReceiverDetailsItem[],
+  label: string,
+  totals: ReceiverDetailsTotals | null,
+) => {
   const headers = [
     "Line #",
     "UPC",
@@ -69,6 +73,23 @@ const buildDetailsCsv = (details: ReceiverDetailsItem[], label: string) => {
     d.free,
     d.return,
   ]);
+  if (totals) {
+    rows.push([]);
+    rows.push([
+      "",
+      "",
+      "TOTALS",
+      totals.cases,
+      totals.units,
+      fmtNum(totals.ucost),
+      fmtNum(totals.ext_cost),
+      fmtNum(totals.retail),
+      fmtNum(totals.ext_retail),
+      "",
+      "",
+      "",
+    ]);
+  }
   return `${label}\n${rowsToCsv(headers, rows)}`;
 };
 
@@ -194,7 +215,7 @@ const ReceiversExportModal = ({
     const label = `${vendorName} — Invoice ${invoiceId} (Ref #${referenceNumber})`;
     const safeName = vendorName.replace(/[^a-z0-9]/gi, "_");
     downloadCsv(
-      buildDetailsCsv(details, label),
+      buildDetailsCsv(details, label, totals),
       `${safeName}_${invoiceId}.csv`,
     );
     onClose();
