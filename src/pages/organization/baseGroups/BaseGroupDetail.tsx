@@ -9,10 +9,12 @@ import {
   assignStoreToBaseGroup,
   unAssignStoreToBaseGroup,
 } from "../../../api/baseGroups";
+import { setBaseGroupExportOpen } from "../../../features/organizationSlice";
 import AssignPanel from "../components/AssignPanel";
 import IconButton from "../../../components/IconButton";
 import ConfirmModal from "../../../components/ConfirmModal";
 import BaseGroupUsersTab from "./BaseGroupUsersTab";
+import BaseGroupExportModal from "./BaseGroupExportModal";
 import type { StoreSplit } from "../types";
 
 interface Props {
@@ -44,6 +46,7 @@ const BaseGroupDetail = ({
     setNameDraft(group.name);
     setConfirmDelete(false);
     setSubTab("stores");
+    ctx.dispatch(setBaseGroupExportOpen(false));
   }, [group.id, group.name]);
 
   const handleSave = () => {
@@ -176,6 +179,16 @@ const BaseGroupDetail = ({
         ))}
 
       {subTab === "users" && <BaseGroupUsersTab group={group} />}
+
+      {ctx.baseGroupExportOpen && (
+        <BaseGroupExportModal
+          onClose={() => ctx.dispatch(setBaseGroupExportOpen(false))}
+          groupName={group.name}
+          companyName={companyName}
+          assigned={assigned}
+          unassigned={unassigned}
+        />
+      )}
 
       {confirmDelete && (
         <ConfirmModal

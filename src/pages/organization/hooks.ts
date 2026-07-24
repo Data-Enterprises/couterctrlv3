@@ -26,8 +26,13 @@ export const useOrganizationCtx = () => {
   const { activeBaseGroups, inactiveBaseGroups, userCompany } = useAppSelector(
     (state) => state.baseGroup,
   );
-  const { companies: companyRecords, refresh: companiesRefresh } =
-    useAppSelector((state) => state.organization);
+  const {
+    companies: companyRecords,
+    refresh: companiesRefresh,
+    usersExportOpen,
+    baseGroupExportOpen,
+    storesExportOpen,
+  } = useAppSelector((state) => state.organization);
 
   return {
     dispatch,
@@ -56,5 +61,8 @@ export const useOrganizationCtx = () => {
     userCompany,
     companyRecords,
     companiesRefresh,
+    usersExportOpen,
+    baseGroupExportOpen,
+    storesExportOpen,
   };
 };

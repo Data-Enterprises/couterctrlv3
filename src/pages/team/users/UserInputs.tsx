@@ -137,7 +137,7 @@ const UserInputs = () => {
         {roles.map((r, i) => (
           <div
             key={i}
-            className={`px-2 py-0.5 rounded-full ${userInfo.role === Number(r.value) ? "bg-[rgb(30,45,80)] text-custom-white" : "text-content/85 bg-content/10"} cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white`}
+            className={`px-2 py-0.5 rounded-full ${userInfo.role === Number(r.value) ? "bg-[rgb(30,45,80)] text-custom-white" : "text-content bg-custom-white border border-gray-300"} cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white`}
             onClick={() => handleRoleSelect(r.value as string)}
           >
             {r.label}
@@ -153,8 +153,8 @@ const UserInputs = () => {
         {userLevels.map((l, i) => (
           <div
             key={i}
-            className={`${l.id > user.userLevel ? "hidden" : ""} 
-              px-2 py-0.5 rounded-full ${userInfo.user_level === l.id ? "bg-[rgb(30,45,80)] text-custom-white" : "text-content/85 bg-content/10"} 
+            className={`${l.id > user.userLevel ? "hidden" : ""}
+              px-2 py-0.5 rounded-full ${userInfo.user_level === l.id ? "bg-[rgb(30,45,80)] text-custom-white" : "text-content bg-custom-white border border-gray-300"}
               cursor-pointer transition-all duration-200 hover:bg-[rgb(30,45,80)]/75 hover:text-custom-white`}
             onClick={() => handleUserLvlSelect(l.id)}
           >

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "./hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type { JsonError, User, UserLevelJsonResp } from "../../interfaces";
@@ -10,6 +11,11 @@ import {
   setUserLevels,
   setUsers,
 } from "../../features/usersSlice";
+import {
+  setUsersExportOpen,
+  setBaseGroupExportOpen,
+  setStoresExportOpen,
+} from "../../features/organizationSlice";
 import TeamTablet from "../team/tabletComps/TeamTablet";
 // import TeamLegacy from "../team/TeamLegacy";
 import Users from "./users/Users";
@@ -95,8 +101,20 @@ const Organization = () => {
       <div className="w-fit max-w-[95vw] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start">
         <div className="bg-[#1e2a4a] px-3 py-2 flex-shrink-0 flex items-center gap-3">
           <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
-            Team Management
+            User Management
           </span>
+          <div className="flex-1" />
+          <button
+            onClick={() => {
+              if (tab === "users") ctx.dispatch(setUsersExportOpen(true));
+              else if (tab === "baseGroups") ctx.dispatch(setBaseGroupExportOpen(true));
+              else ctx.dispatch(setStoresExportOpen(true));
+            }}
+            title="Export CSV"
+            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-white/20 text-custom-white/60 hover:text-custom-white hover:border-white/40 transition-colors flex-shrink-0"
+          >
+            <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+          </button>
         </div>
 
         <div className="flex border-b border-gray-100 flex-shrink-0">

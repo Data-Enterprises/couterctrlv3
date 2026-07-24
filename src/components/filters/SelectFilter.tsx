@@ -50,13 +50,22 @@ const SelectFilter = ({ options, value, onChange, placeholder = "All", className
       <button
         ref={btnRef}
         onClick={handleOpen}
-        className="w-full flex items-center justify-between rounded pl-1.5 pr-1 py-0.5 text-[10px] text-content outline-none cursor-pointer border-0"
-        style={{ background: "rgba(30,42,74,0.06)", boxShadow: "inset 0 1px 3px rgba(30,42,74,0.1)", height: 24 }}
+        className={`w-full flex items-center justify-between rounded pl-1.5 pr-1 py-0.5 text-[12px] text-content outline-none cursor-pointer bg-custom-white border transition-colors ${
+          open
+            ? "border-[#1e2a4a]"
+            : "border-[#1e2a4a]/75 hover:border-[#1e2a4a]/50"
+        }`}
+        style={{
+          height: 24,
+          boxShadow: open
+            ? "0 1px 4px rgba(30,42,74,0.18)"
+            : "0 1px 2px rgba(30,42,74,0.08)",
+        }}
       >
-        <span className={value ? "text-content" : "text-content/40"} style={{ fontSize: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <span className={value ? "text-content" : "text-content/85"} style={{ fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {label}
         </span>
-        <ChevronDownIcon className="w-3 h-3 text-content/40 flex-shrink-0 ml-1" />
+        <ChevronDownIcon className="w-3 h-3 text-[#1e2a4a]/60 flex-shrink-0 ml-1" />
       </button>
 
       {open && rect && (
@@ -81,7 +90,7 @@ const SelectFilter = ({ options, value, onChange, placeholder = "All", className
         >
           <button
             onClick={() => handleSelect("")}
-            className="w-full text-left px-3 py-2 text-[11px] hover:bg-gray-50 transition-colors"
+            className="w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 transition-colors"
             style={{ color: value === "" ? "#1e2a4a" : "rgba(30,42,74,0.45)", fontWeight: value === "" ? 600 : 400 }}
           >
             {placeholder}
@@ -90,7 +99,7 @@ const SelectFilter = ({ options, value, onChange, placeholder = "All", className
             <button
               key={o.value}
               onClick={() => handleSelect(o.value)}
-              className="w-full text-left px-3 py-2 text-[11px] hover:bg-gray-50 transition-colors"
+              className="w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 transition-colors"
               style={{ color: "#1e2a4a", fontWeight: value === o.value ? 600 : 400, background: value === o.value ? "rgba(30,42,74,0.04)" : undefined }}
             >
               {o.label}

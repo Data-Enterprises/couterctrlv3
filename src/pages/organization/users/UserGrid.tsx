@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   PencilIcon,
   TrashIcon,
@@ -14,6 +14,7 @@ import {
   setSelectedUserId,
   setSelectedUserInfo,
 } from "../../../features/usersSlice";
+import { setUsersExportOpen } from "../../../features/organizationSlice";
 import { deleteUser, reactivateUser } from "../../../api/team";
 import type { JsonError, User } from "../../../interfaces";
 import { roles } from "../constants";
@@ -22,6 +23,7 @@ import TextFilter from "../../../components/filters/TextFilter";
 import IconButton from "../../../components/IconButton";
 import ConfirmModal from "../../../components/ConfirmModal";
 import SecurityTab from "./view/SecurityTab";
+import UsersExportModal from "./UsersExportModal";
 
 interface UserGridProps {
   onOpenCreate: () => void;
@@ -41,12 +43,19 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   const [companyFilter, setCompanyFilter] = useState("");
   const [levelFilter, setLevelFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
-  const [searchType, setSearchType] = useState<"name" | "email">("name");
   const [searchText, setSearchText] = useState("");
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [securityUser, setSecurityUser] = useState<User | null>(null);
   const [statusFilter, setStatusFilter] = useState("");
   const showInactive = statusFilter === "inactive";
+
+  // The Users tab's grid/create/detail sub-views aren't visible to
+  // Organization.tsx's header, so a stale usersExportOpen flag left set from
+  // a prior visit (e.g. header click while viewing Create/Detail) would
+  // otherwise pop the modal open the instant this grid remounts.
+  useEffect(() => {
+    ctx.dispatch(setUsersExportOpen(false));
+  }, []);
 
   const isOutranked = (lvl: number) => lvl > ctx.userLevel;
 
@@ -70,12 +79,15 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         : true;
       const roleCheck = roleFilter ? u.role === Number(roleFilter) : true;
       const lowerText = searchText.toLowerCase();
+      const firstName = (u.first_name ?? "").toLowerCase();
+      const lastName = (u.last_name ?? "").toLowerCase();
+      const fullName = `${firstName} ${lastName}`;
       const textCheck =
         searchText.trim() === ""
           ? true
-          : searchType === "name"
-            ? u.username.toLowerCase().includes(lowerText)
-            : (u.email ?? "").toLowerCase().includes(lowerText);
+          : firstName.includes(lowerText) ||
+            lastName.includes(lowerText) ||
+            fullName.includes(lowerText);
       return companyCheck && levelCheck && roleCheck && textCheck;
     });
   }, [
@@ -83,7 +95,6 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     companyFilter,
     levelFilter,
     roleFilter,
-    searchType,
     searchText,
   ]);
 
@@ -144,7 +155,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 p-4 w-[900px]">
+    <div className="flex-1 flex flex-col min-h-0 p-4 w-[1080px]">
       <div className="flex flex-nowrap items-center gap-2 mb-3">
         <SelectFilter
           options={companyOptions}
@@ -182,24 +193,10 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
           placeholder="All roles"
           className="w-[120px] flex-shrink-0"
         />
-        <div className="flex rounded overflow-hidden flex-shrink-0">
-          <button
-            onClick={() => setSearchType("name")}
-            className={`text-[10px] px-2.5 py-1 ${searchType === "name" ? "bg-[#1e2a4a] text-custom-white" : "bg-custom-white border border-gray-200 text-content"}`}
-          >
-            Username
-          </button>
-          <button
-            onClick={() => setSearchType("email")}
-            className={`text-[10px] px-2.5 py-1 ${searchType === "email" ? "bg-[#1e2a4a] text-custom-white" : "bg-custom-white border border-gray-200 text-content"}`}
-          >
-            Email
-          </button>
-        </div>
         <TextFilter
           value={searchText}
           onChange={setSearchText}
-          placeholder="Search…"
+          placeholder="Search name or username…"
           className="flex-1 min-w-[100px]"
         />
         <button
@@ -211,24 +208,38 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         </button>
       </div>
 
+      {ctx.usersExportOpen && (
+        <UsersExportModal
+          onClose={() => ctx.dispatch(setUsersExportOpen(false))}
+          allUsers={sourceUsers}
+          filteredUsers={filtered}
+          userLevels={ctx.userLevels}
+          scopeLabel={showInactive ? "Inactive users" : "Active users"}
+        />
+      )}
+
       <div className="border border-gray-100 rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col">
-        <div className="grid grid-cols-[16%_32%_14%_12%_14%_12%] px-3 py-2 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0">
+        <div className="grid grid-cols-[12%_12%_12%_22%_11%_10%_11%_10%] px-3 py-2 bg-gray-50 text-[10px] font-semibold uppercase tracking-wide text-content flex-shrink-0">
           <div>Username</div>
+          <div>First name</div>
+          <div>Last name</div>
           <div>Email</div>
           <div>Role</div>
           <div>Level</div>
           <div>Last visited</div>
           <div></div>
         </div>
-        <div className="max-h-96 overflow-y-auto thin-scrollbar">
+        <div className="max-h-96 overflow-y-auto thin-scrollbar divide-y divide-[#1e2a4a]/15">
           {filtered.map((u) => {
             const outranked = isOutranked(u.user_level);
             return (
               <div
                 key={u.id}
-                className={`grid grid-cols-[16%_32%_14%_12%_14%_12%] px-3 py-2 text-[12px] items-center border-b border-gray-100 ${outranked ? "bg-gray-50 text-content/40" : "text-content"}`}
+                className={`grid grid-cols-[12%_12%_12%_22%_11%_10%_11%_10%] px-3 py-2 text-[13px] items-center transition-colors ${outranked ? "bg-gray-50 text-content/40" : "text-content even:bg-row_stripe hover:bg-gray-50"}`}
               >
                 <div className="truncate">{u.username}</div>
+                <div className="truncate">{u.first_name || "—"}</div>
+                <div className="truncate">{u.last_name || "—"}</div>
                 <div className="truncate">{u.email}</div>
                 <div>{renderRoleText(u.role)}</div>
                 <div>{renderLvlText(u.user_level)}</div>

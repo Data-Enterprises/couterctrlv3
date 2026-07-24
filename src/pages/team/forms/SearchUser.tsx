@@ -62,7 +62,13 @@ const SearchUser = () => {
           return user.email.toLowerCase().includes(lowerText);
         }
 
-        const textCheck = user.username.toLowerCase().includes(lowerText);
+        const firstName = (user.first_name ?? "").toLowerCase();
+        const lastName = (user.last_name ?? "").toLowerCase();
+        const fullName = `${firstName} ${lastName}`;
+        const textCheck =
+          firstName.includes(lowerText) ||
+          lastName.includes(lowerText) ||
+          fullName.includes(lowerText);
         const companyCheck = selectedCompanyId
           ? user.companies.some((c) => c.company === selectedCompanyId)
           : true;

@@ -3,7 +3,9 @@ import { useOrganizationCtx } from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getUserStores } from "../../../api/user";
 import type { JsonError, Store } from "../../../interfaces";
+import { setStoresExportOpen } from "../../../features/organizationSlice";
 import TextFilter from "../../../components/filters/TextFilter";
+import StoresExportModal from "./StoresExportModal";
 
 // Read-only store directory — company/base-group assignment already lives on
 // the Users profile and Base Groups tabs, so this is just browse/search.
@@ -58,6 +60,14 @@ const StoresDirectory = () => {
         }
         className="mb-3"
       />
+
+      {ctx.storesExportOpen && stores && (
+        <StoresExportModal
+          onClose={() => ctx.dispatch(setStoresExportOpen(false))}
+          allStores={stores}
+          filteredStores={filtered}
+        />
+      )}
 
       <div className="border border-gray-100 rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col">
         <div className="grid grid-cols-[14%_14%_36%_14%_22%] px-3 py-2 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0">

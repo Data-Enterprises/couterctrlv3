@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import { store } from "./store";
 import { Provider } from "react-redux";
-import { BrowserRouter, Routes, Route } from "react-router";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { ToastProvider } from "./components/toasts/ToastProvider.tsx";
 // Pages
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
@@ -25,7 +25,8 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/" element={<App />}>
                 <Route index element={<Home />} />
                 <Route path="sales" element={<SalesPage />} />
-                <Route path="team" element={<OrganizationPage />} />
+                <Route path="user-management" element={<OrganizationPage />} />
+                <Route path="team" element={<Navigate to="/user-management" replace />} />
                 <Route path="loss-prevention" element={<LossPreventionPage />} />
                 <Route path="groups" element={<GroupsPage />} />
                 <Route path="settings" element={<Settings />} />

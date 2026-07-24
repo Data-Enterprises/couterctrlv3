@@ -1,0 +1,144 @@
+import { useState } from "react";
+import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import type { Store } from "../../../interfaces";
+import { rowsToCsv, downloadCsv } from "../../../utils/csvExport";
+
+interface BaseGroupExportModalProps {
+  onClose: () => void;
+  groupName: string;
+  companyName: string;
+  assigned: Store[];
+  unassigned: Store[];
+}
+
+type ExportDataset = "assigned" | "unassigned";
+
+const buildStoresCsv = (stores: Store[], label: string) => {
+  const headers = ["Store ID", "Store #", "Store Name"];
+  const rows = stores.map((s) => [s.storeid, s.store_number, s.store_name]);
+  return `${label}\n${rowsToCsv(headers, rows)}`;
+};
+
+const BaseGroupExportModal = ({
+  onClose,
+  groupName,
+  companyName,
+  assigned,
+  unassigned,
+}: BaseGroupExportModalProps) => {
+  const [selected, setSelected] = useState<Set<ExportDataset>>(() => new Set());
+
+  const handleDownload = () => {
+    const sections: string[] = [];
+    if (selected.has("assigned"))
+      sections.push(buildStoresCsv(assigned, `Assigned Stores — ${groupName}`));
+    if (selected.has("unassigned"))
+      sections.push(buildStoresCsv(unassigned, `Unassigned Stores — ${groupName}`));
+    if (!sections.length) return;
+    const safeName = `${companyName}_${groupName}`.replace(/[^a-z0-9]/gi, "_");
+    downloadCsv(sections.join("\n\n"), `${safeName}_stores.csv`);
+    onClose();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-custom-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
+          <div>
+            <p className="text-custom-white text-[13px] font-semibold">Export CSV</p>
+            <p className="text-custom-white text-[10px] mt-0.5">
+              {companyName} — {groupName}
+            </p>
+          </div>
+          <div />
+          <button
+            onClick={onClose}
+            className="text-custom-white/60 hover:text-custom-white transition-colors justify-self-end"
+          >
+            <XMarkIcon className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="px-4 pt-4 pb-2 space-y-3">
+          <p className="text-[11px] text-content uppercase tracking-wide font-medium">
+            Select data to include
+          </p>
+
+          <label
+            className={`flex items-start gap-3 ${assigned.length ? "cursor-pointer" : "opacity-40 cursor-not-allowed"} group`}
+          >
+            <input
+              type="checkbox"
+              checked={selected.has("assigned")}
+              disabled={!assigned.length}
+              onChange={() =>
+                setSelected((p) => {
+                  const n = new Set(p);
+                  n.has("assigned") ? n.delete("assigned") : n.add("assigned");
+                  return n;
+                })
+              }
+              className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+            />
+            <div>
+              <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">
+                Assigned stores
+              </p>
+              <p className="text-[12px] text-content mt-0.5">
+                {assigned.length ? `${assigned.length} stores in ${groupName}` : "No stores assigned yet"}
+              </p>
+            </div>
+          </label>
+
+          <label
+            className={`flex items-start gap-3 ${unassigned.length ? "cursor-pointer" : "opacity-40 cursor-not-allowed"} group`}
+          >
+            <input
+              type="checkbox"
+              checked={selected.has("unassigned")}
+              disabled={!unassigned.length}
+              onChange={() =>
+                setSelected((p) => {
+                  const n = new Set(p);
+                  n.has("unassigned") ? n.delete("unassigned") : n.add("unassigned");
+                  return n;
+                })
+              }
+              className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+            />
+            <div>
+              <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">
+                Unassigned stores
+              </p>
+              <p className="text-[12px] text-content mt-0.5">
+                {unassigned.length ? `${unassigned.length} stores not in ${groupName}` : "None remaining"}
+              </p>
+            </div>
+          </label>
+        </div>
+
+        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-2">
+          <button onClick={onClose} className="text-[12px] text-content transition-colors">
+            Cancel
+          </button>
+          <button
+            onClick={handleDownload}
+            disabled={selected.size === 0}
+            className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+          >
+            <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+            Download CSV
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default BaseGroupExportModal;
