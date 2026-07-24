@@ -39,7 +39,7 @@ const TitleBarLegacy = () => {
           <div>Welcome {user.firstName}</div>
         </div>
         <div className="flex items-center h-full gap-2 pr-2">
-          {user.role === 9 && (
+          {user.role === 9 || user.userLevel === 2 ? (
             <button
               onClick={() => dispatch(toggleDevMode())}
               className="flex items-center gap-0 rounded-full overflow-hidden border border-content/20 text-[10px] font-bold select-none"
@@ -56,7 +56,7 @@ const TitleBarLegacy = () => {
                 PREVIEW
               </span>
             </button>
-          )}
+          ) : null}
           {context.isDesktop && (
             <div className="flex items-center px-6 ml-4 border-l-2 relative">
               <div className="text-[12px] md:text-sm font-medium">
