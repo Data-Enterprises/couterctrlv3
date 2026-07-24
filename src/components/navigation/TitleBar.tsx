@@ -384,7 +384,7 @@ const TitleBar = () => {
         <div className="flex-1" />
 
         {/* DEV/PROD toggle — programmer/admin only */}
-        {user.role === 9 || user.userLevel === 2 ? (
+        {user.role === 9 || user.userLevel >= 2 ? (
           <div className="flex items-center px-3 border-r border-white/10">
             <button
               onClick={() => dispatch(toggleDevMode())}

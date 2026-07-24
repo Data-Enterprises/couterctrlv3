@@ -87,7 +87,7 @@ const Login = () => {
           dispatch(setSecurityQuestionId(j.security_question_id));
           dispatch(setCompanies(j.companies));
           setUseImpersonation(0);
-          if (j.role === 9) {
+          if (j.role === 9  || j.user_level >= 2) {
             login(import.meta.env.VITE_API_URL_DEV, state.username, state.password, 0)
               .then((devResp) => {
                 if (devResp.data.error === 0) {
