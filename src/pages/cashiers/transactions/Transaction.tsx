@@ -45,7 +45,10 @@ const Transaction = ({ trans }: Props) => {
     const t = trans.filter(
       (t) =>
         t.sale_type.toLowerCase() !== "tender" &&
-        t.product_description.toLowerCase() !== "ewic",
+        // product_description is typed string but comes back null for
+        // unmapped UPCs — the exception explorer surfaces those deliberately,
+        // so this has to tolerate them rather than throw.
+        (t.product_description ?? "").toLowerCase() !== "ewic",
     );
     totalTax = t.reduce(
       (acc, cur) =>

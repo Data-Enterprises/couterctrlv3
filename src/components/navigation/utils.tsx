@@ -284,6 +284,17 @@ export const categories: NavCategory[] = [
         isVisible: true,
       },
       {
+        name: "Cashiers",
+        href: "cashiers",
+        icon: MagnifyingGlassCircleIcon,
+        mobile: true,
+        children: [],
+        childOpen: false,
+        userLevels: ["*"],
+        isHovering: false,
+        isVisible: true,
+      },
+      {
         name: "Upc List",
         href: "upc-upload",
         icon: UpcListIcon,
