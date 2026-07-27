@@ -10,6 +10,8 @@ export interface UsersGridFilters {
   levelFilter: string;
   roleFilter: string;
   searchText: string;
+  usernameFilter: string;
+  emailFilter: string;
 }
 
 const defaultUsersGridFilters: UsersGridFilters = {
@@ -18,6 +20,8 @@ const defaultUsersGridFilters: UsersGridFilters = {
   levelFilter: "",
   roleFilter: "",
   searchText: "",
+  usernameFilter: "",
+  emailFilter: "",
 };
 
 interface OrganizationState {

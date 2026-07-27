@@ -31,6 +31,8 @@ import IconButton from "../../../components/IconButton";
 import ConfirmModal from "../../../components/ConfirmModal";
 import SecurityTab from "./view/SecurityTab";
 import UsersExportModal from "./UsersExportModal";
+import ColFilter from "../../upc/dev/components/ColFilter";
+import { colFilterInputStyle } from "../../upc/dev/components/colFilterInputStyle";
 
 interface UserGridProps {
   onOpenCreate: () => void;
@@ -50,8 +52,15 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   // The filter bar persists in organizationSlice (not local useState) so
   // switching to Create/Detail and back — or navigating away entirely —
   // doesn't wipe out selections the admin already made.
-  const { companyFilter, statusFilter, levelFilter, roleFilter, searchText } =
-    ctx.usersGridFilters;
+  const {
+    companyFilter,
+    statusFilter,
+    levelFilter,
+    roleFilter,
+    searchText,
+    usernameFilter,
+    emailFilter,
+  } = ctx.usersGridFilters;
   const setCompanyFilter = (v: string) =>
     ctx.dispatch(setUsersGridFilter({ companyFilter: v }));
   const setStatusFilter = (v: string) =>
@@ -62,8 +71,18 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     ctx.dispatch(setUsersGridFilter({ roleFilter: v }));
   const setSearchText = (v: string) =>
     ctx.dispatch(setUsersGridFilter({ searchText: v }));
+  const setUsernameFilter = (v: string) =>
+    ctx.dispatch(setUsersGridFilter({ usernameFilter: v }));
+  const setEmailFilter = (v: string) =>
+    ctx.dispatch(setUsersGridFilter({ emailFilter: v }));
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [securityUser, setSecurityUser] = useState<User | null>(null);
+  // Draft text for the Username/Email column-header filters — matches the
+  // draft/applied split used by every other ColFilter consumer in the app
+  // (e.g. AssociationItemsTable.tsx's draftDesc/appliedDesc): typing doesn't
+  // filter live, only committing via ColFilter's Apply button does.
+  const [draftUsernameFilter, setDraftUsernameFilter] = useState(usernameFilter);
+  const [draftEmailFilter, setDraftEmailFilter] = useState(emailFilter);
   const showInactive = statusFilter === "inactive";
 
   // The Users tab's grid/create/detail sub-views aren't visible to
@@ -105,7 +124,15 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
           : firstName.includes(lowerText) ||
             lastName.includes(lowerText) ||
             fullName.includes(lowerText);
-      return companyCheck && levelCheck && roleCheck && textCheck;
+      const usernameCheck = usernameFilter.trim()
+        ? u.username.toLowerCase().includes(usernameFilter.trim().toLowerCase())
+        : true;
+      const emailCheck = emailFilter.trim()
+        ? (u.email ?? "").toLowerCase().includes(emailFilter.trim().toLowerCase())
+        : true;
+      return (
+        companyCheck && levelCheck && roleCheck && textCheck && usernameCheck && emailCheck
+      );
     });
   }, [
     sourceUsers,
@@ -113,6 +140,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     levelFilter,
     roleFilter,
     searchText,
+    usernameFilter,
+    emailFilter,
   ]);
 
   const noCompanyCount = useMemo(
@@ -298,7 +327,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         <TextFilter
           value={searchText}
           onChange={setSearchText}
-          placeholder="Search name or username…"
+          placeholder="Search name"
           className="flex-1 min-w-[100px]"
         />
         <button
@@ -322,10 +351,42 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
 
       <div className="border border-gray-100 rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col">
         <div className="grid grid-cols-[12%_12%_12%_22%_11%_10%_11%_10%] px-3 py-2 bg-gray-50 text-[10px] font-semibold uppercase tracking-wide text-content flex-shrink-0">
-          <div>Username</div>
+          <ColFilter
+            label="Username"
+            active={!!usernameFilter}
+            onApply={() => setUsernameFilter(draftUsernameFilter)}
+            onClear={() => {
+              setUsernameFilter("");
+              setDraftUsernameFilter("");
+            }}
+          >
+            <input
+              autoFocus
+              style={colFilterInputStyle}
+              placeholder="Search username…"
+              value={draftUsernameFilter}
+              onChange={(e) => setDraftUsernameFilter(e.target.value)}
+            />
+          </ColFilter>
           <div>First name</div>
           <div>Last name</div>
-          <div>Email</div>
+          <ColFilter
+            label="Email"
+            active={!!emailFilter}
+            onApply={() => setEmailFilter(draftEmailFilter)}
+            onClear={() => {
+              setEmailFilter("");
+              setDraftEmailFilter("");
+            }}
+          >
+            <input
+              autoFocus
+              style={colFilterInputStyle}
+              placeholder="Search email…"
+              value={draftEmailFilter}
+              onChange={(e) => setDraftEmailFilter(e.target.value)}
+            />
+          </ColFilter>
           <div>Role</div>
           <div>Level</div>
           <div>Last visited</div>
