@@ -22,6 +22,7 @@ export const useOrganizationCtx = () => {
     availableEmailText,
     emailTextColor,
     selectedUserStores,
+    duplicateSource,
   } = useAppSelector((state) => state.users);
   const { activeBaseGroups, inactiveBaseGroups, userCompany } = useAppSelector(
     (state) => state.baseGroup,
@@ -32,6 +33,7 @@ export const useOrganizationCtx = () => {
     usersExportOpen,
     baseGroupExportOpen,
     storesExportOpen,
+    usersGridFilters,
   } = useAppSelector((state) => state.organization);
 
   return {
@@ -56,6 +58,7 @@ export const useOrganizationCtx = () => {
     availableEmailText,
     emailTextColor,
     selectedUserStores,
+    duplicateSource,
     activeBaseGroups,
     inactiveBaseGroups,
     userCompany,
@@ -64,5 +67,6 @@ export const useOrganizationCtx = () => {
     usersExportOpen,
     baseGroupExportOpen,
     storesExportOpen,
+    usersGridFilters,
   };
 };

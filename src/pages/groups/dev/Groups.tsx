@@ -165,7 +165,7 @@ const Groups = () => {
           </span>
         </div>
 
-        <div className="flex min-h-0 max-h-[520px] w-[820px]">
+        <div className="flex min-h-[520px] max-h-[520px] w-[820px]">
           <GroupsList
             groups={filteredGroups}
             totalCount={ctx.groups.length}

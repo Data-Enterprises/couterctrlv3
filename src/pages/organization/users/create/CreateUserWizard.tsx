@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import { useOrganizationCtx } from "../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { resetUserInfo, setRefresh } from "../../../../features/usersSlice";
+import {
+  resetUserInfo,
+  setRefresh,
+  setUserInfo,
+  clearDuplicateSource,
+} from "../../../../features/usersSlice";
 import {
   assignBaseGroupToUser,
   assignUserToStore,
@@ -25,21 +30,63 @@ const STEPS = [
 
 interface CreateUserWizardProps {
   onComplete: () => void;
+  onCancel: () => void;
 }
 
-const CreateUserWizard = ({ onComplete }: CreateUserWizardProps) => {
+const CreateUserWizard = ({ onComplete, onCancel }: CreateUserWizardProps) => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
   const [step, setStep] = useState(1);
   const [maxStep, setMaxStep] = useState(1);
+  const [completedSteps, setCompletedSteps] = useState<Set<number>>(
+    new Set(),
+  );
   const [selectedStores, setSelectedStores] = useState<SelectableStore[]>([]);
   const [companyGroups, setCompanyGroups] = useState<
     Record<number, CompanyBaseGroup[]>
   >({});
+  // Authoritative company/base-group ids from a duplicated user — kept
+  // separate from selectedStores because a duplicated base group with none
+  // of its stores selected would otherwise never surface in the ids derived
+  // from selectedStores at submit time.
+  const [duplicatedCompanyIds, setDuplicatedCompanyIds] = useState<number[]>(
+    [],
+  );
+  const [duplicatedBaseGroupIds, setDuplicatedBaseGroupIds] = useState<
+    number[]
+  >([]);
 
   useEffect(() => {
     ctx.dispatch(resetUserInfo());
+
+    const source = ctx.duplicateSource;
+    if (source) {
+      ctx.dispatch(setUserInfo({ key: "role", value: source.role }));
+      ctx.dispatch(
+        setUserInfo({ key: "user_level", value: source.user_level }),
+      );
+      setSelectedStores(source.stores);
+      setCompanyGroups(
+        source.groups.reduce<Record<number, CompanyBaseGroup[]>>(
+          (acc, g) => {
+            acc[g.company] = [...(acc[g.company] ?? []), g];
+            return acc;
+          },
+          {},
+        ),
+      );
+      setDuplicatedCompanyIds(source.companyIds);
+      setDuplicatedBaseGroupIds(source.baseGroupIds);
+      setMaxStep(3);
+      setCompletedSteps(new Set([2, 3]));
+      ctx.dispatch(clearDuplicateSource());
+    }
   }, []);
+
+  const handleCancel = () => {
+    ctx.dispatch(resetUserInfo());
+    onCancel();
+  };
 
   const goToStep = (id: number) => {
     if (id <= maxStep) setStep(id);
@@ -47,6 +94,7 @@ const CreateUserWizard = ({ onComplete }: CreateUserWizardProps) => {
 
   const advanceTo = (id: number) => {
     setMaxStep((prev) => Math.max(prev, id));
+    setCompletedSteps((prev) => new Set(prev).add(id - 1));
     setStep(id);
   };
 
@@ -112,10 +160,16 @@ const CreateUserWizard = ({ onComplete }: CreateUserWizardProps) => {
 
     const userid = createResp.data.new_userid;
     const companyIds = Array.from(
-      new Set(selectedStores.map((s) => s.company)),
+      new Set([
+        ...selectedStores.map((s) => s.company),
+        ...duplicatedCompanyIds,
+      ]),
     );
     const bgIds = Array.from(
-      new Set(selectedStores.map((s) => s.base_group)),
+      new Set([
+        ...selectedStores.map((s) => s.base_group),
+        ...duplicatedBaseGroupIds,
+      ]),
     );
     const storeIds = selectedStores.map((s) => s.storeid);
 
@@ -169,8 +223,6 @@ const CreateUserWizard = ({ onComplete }: CreateUserWizardProps) => {
     }
   };
 
-  const completed = new Set(Array.from({ length: step - 1 }, (_, i) => i + 1));
-
   const renderStep = () => {
     switch (step) {
       case 1:
@@ -201,15 +253,23 @@ const CreateUserWizard = ({ onComplete }: CreateUserWizardProps) => {
   };
 
   return (
-    <div className="flex flex-1 min-h-0 w-[700px]">
-      <Stepper
-        steps={STEPS}
-        current={step}
-        completed={completed}
-        onStepClick={goToStep}
-      />
-      <div className="flex-1 min-w-0 p-4 overflow-y-auto thin-scrollbar">
-        {renderStep()}
+    <div className={`flex flex-1 flex-col min-h-0 ${step === 2 ? "w-[1080px]" : "w-[700px]"}`}>
+      <button
+        onClick={handleCancel}
+        className="text-[11px] text-content/60 m-4 mb-0 self-start"
+      >
+        ← Back to users
+      </button>
+      <div className="flex flex-1 min-h-0">
+        <Stepper
+          steps={STEPS}
+          current={step}
+          completed={completedSteps}
+          onStepClick={goToStep}
+        />
+        <div className="flex-1 min-w-0 p-4 overflow-y-auto thin-scrollbar">
+          {renderStep()}
+        </div>
       </div>
     </div>
   );

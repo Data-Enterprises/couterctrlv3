@@ -29,7 +29,12 @@ const Users = () => {
   }
 
   if (view === "create") {
-    return <CreateUserWizard onComplete={() => setView("grid")} />;
+    return (
+      <CreateUserWizard
+        onComplete={() => setView("grid")}
+        onCancel={() => setView("grid")}
+      />
+    );
   }
 
   return <UserGrid onOpenCreate={() => setView("create")} />;

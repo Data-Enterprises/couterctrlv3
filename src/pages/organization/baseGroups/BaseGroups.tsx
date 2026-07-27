@@ -93,8 +93,22 @@ const BaseGroups = () => {
   const [search, setSearch] = useState("");
   const [showNewGroupModal, setShowNewGroupModal] = useState(false);
 
+  // DCR support staff need visibility across every client company, so (and
+  // only so) they can fetch the full company directory. isDcrUser is derived
+  // from ctx.companies — the login endpoint's own, already-scoped list — so
+  // checking it never itself leaks anything; it just decides whether the
+  // broader fetch below fires at all. Everyone else's companies come
+  // straight from ctx.companies, with no separate all-companies request —
+  // getBaseGroups/getAllStoresInBaseGroup take a bare companyId with no
+  // server-side ownership check, so handing a non-DCR client ids for
+  // companies they aren't assigned to would let them pull another company's
+  // base groups/stores just by id.
+  const isDcrUser = ctx.companies.some(
+    (c) => c.company === 5 && c.name === "DCR",
+  );
+
   useEffect(() => {
-    if (!ctx.companiesRefresh) return;
+    if (!isDcrUser || !ctx.companiesRefresh) return;
     getCompanies(ctx.url, ctx.token)
       .then((resp) => {
         const j = resp.data;
@@ -102,16 +116,11 @@ const BaseGroups = () => {
       })
       .catch((err: JsonError) => toast.error(err.message));
     ctx.dispatch(setRefresh(false));
-  }, [ctx.companiesRefresh]);
+  }, [isDcrUser, ctx.companiesRefresh]);
 
-  const isDcrUser = ctx.companies.some(
-    (c) => c.company === 5 && c.name === "DCR",
-  );
   const visibleCompanies = isDcrUser
     ? ctx.companyRecords
-    : ctx.companyRecords.filter((c) =>
-        ctx.companies.some((uc) => uc.company === c.id),
-      );
+    : ctx.companies.map((c) => ({ id: c.company, name: c.name }));
 
   // Guards against the search-triggered "expand every company" effect below
   // firing a duplicate request for a company whose first request is still

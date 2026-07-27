@@ -5,6 +5,7 @@ import {
   PlusIcon,
   ArrowPathIcon,
   KeyIcon,
+  DocumentDuplicateIcon,
 } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -13,10 +14,16 @@ import {
   setSelectedUserForm,
   setSelectedUserId,
   setSelectedUserInfo,
+  setDuplicateSource,
 } from "../../../features/usersSlice";
-import { setUsersExportOpen } from "../../../features/organizationSlice";
-import { deleteUser, reactivateUser } from "../../../api/team";
-import type { JsonError, User } from "../../../interfaces";
+import {
+  setUsersExportOpen,
+  setUsersGridFilter,
+} from "../../../features/organizationSlice";
+import { deleteUser, reactivateUser, getBaseGroupsAssignedToUser } from "../../../api/team";
+import { getUserStores } from "../../../api/user";
+import { getAllStoresInBaseGroup } from "../../../api/baseGroups";
+import type { BaseGroupJsonResp, JsonError, Store, User } from "../../../interfaces";
 import { roles } from "../constants";
 import SelectFilter from "../../../components/filters/SelectFilter";
 import TextFilter from "../../../components/filters/TextFilter";
@@ -40,13 +47,23 @@ const formatDate = (dateStr: string | null) => {
 const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
-  const [companyFilter, setCompanyFilter] = useState("");
-  const [levelFilter, setLevelFilter] = useState("");
-  const [roleFilter, setRoleFilter] = useState("");
-  const [searchText, setSearchText] = useState("");
+  // The filter bar persists in organizationSlice (not local useState) so
+  // switching to Create/Detail and back — or navigating away entirely —
+  // doesn't wipe out selections the admin already made.
+  const { companyFilter, statusFilter, levelFilter, roleFilter, searchText } =
+    ctx.usersGridFilters;
+  const setCompanyFilter = (v: string) =>
+    ctx.dispatch(setUsersGridFilter({ companyFilter: v }));
+  const setStatusFilter = (v: string) =>
+    ctx.dispatch(setUsersGridFilter({ statusFilter: v }));
+  const setLevelFilter = (v: string) =>
+    ctx.dispatch(setUsersGridFilter({ levelFilter: v }));
+  const setRoleFilter = (v: string) =>
+    ctx.dispatch(setUsersGridFilter({ roleFilter: v }));
+  const setSearchText = (v: string) =>
+    ctx.dispatch(setUsersGridFilter({ searchText: v }));
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [securityUser, setSecurityUser] = useState<User | null>(null);
-  const [statusFilter, setStatusFilter] = useState("");
   const showInactive = statusFilter === "inactive";
 
   // The Users tab's grid/create/detail sub-views aren't visible to
@@ -118,6 +135,91 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     ctx.dispatch(setSelectedUserId(u.id));
     ctx.dispatch(setSelectedUserInfo(u));
     ctx.dispatch(setSelectedUserForm("user_info"));
+  };
+
+  // Duplicate: fetch the source user's base groups + stores (not present on
+  // the grid row itself), stash them for the create wizard to pre-fill, then
+  // open it. Only role/level/company/base-group/store data copies — identity
+  // fields (name/username/email/password) always stay blank.
+  const handleDuplicate = async (u: User) => {
+    try {
+      const [bgResp, storesResp] = await Promise.all([
+        getBaseGroupsAssignedToUser(ctx.url, ctx.token, u.id),
+        getUserStores(ctx.url, ctx.token, u.id),
+      ]);
+      const bgJson: BaseGroupJsonResp = bgResp.data;
+      const storesJson = storesResp.data;
+      if (bgJson.error !== 0 || storesJson.error !== 0) {
+        toast.error("Could not load this user's assignments to duplicate");
+        return;
+      }
+
+      const groups = bgJson.active.map((g) => ({
+        id: g.id,
+        name: g.name,
+        company: g.company,
+      }));
+      const assignedStores: Store[] = storesJson.assigned_stores.filter(
+        (s: Store) => s.store_name != null,
+      );
+
+      // A company can have more than one base group, so tagging a store by
+      // "first group in the same company" silently merged every group's
+      // stores into whichever group happened to match first — cross-
+      // reference each group's own store roster against the source user's
+      // assigned stores to find which group(s) each store actually belongs
+      // to. A store can legitimately land under more than one group.
+      const rosterResults = await Promise.all(
+        groups.map((g) =>
+          getAllStoresInBaseGroup(ctx.url, ctx.token, g.id).then((resp) => ({
+            groupId: g.id,
+            storeIds: new Set(
+              (resp.data.assigned_stores as Store[]).map((s) => s.storeid),
+            ),
+          })),
+        ),
+      );
+
+      const taggedStores: (Store & { base_group: number })[] = [];
+      const taggedStoreIds = new Set<number>();
+      assignedStores.forEach((store) => {
+        const matches = rosterResults.filter((r) =>
+          r.storeIds.has(store.storeid),
+        );
+        matches.forEach((m) =>
+          taggedStores.push({ ...store, base_group: m.groupId }),
+        );
+        if (matches.length > 0) taggedStoreIds.add(store.storeid);
+      });
+
+      // A store assigned to the user directly (outside any of their groups)
+      // has no group to nest under in this wizard's store-picker model —
+      // fall back to the first group in that store's own company so it
+      // still submits, rather than silently dropping it.
+      assignedStores.forEach((store) => {
+        if (taggedStoreIds.has(store.storeid)) return;
+        const fallbackGroup = groups.find((g) => g.company === store.company);
+        if (fallbackGroup) {
+          taggedStores.push({ ...store, base_group: fallbackGroup.id });
+        }
+      });
+
+      ctx.dispatch(
+        setDuplicateSource({
+          role: u.role ?? 0,
+          user_level: u.user_level,
+          companyIds: u.companies.map((c) => c.company),
+          baseGroupIds: groups.map((g) => g.id),
+          groups,
+          stores: taggedStores,
+        }),
+      );
+      onOpenCreate();
+    } catch (err) {
+      toast.error(
+        "Error duplicating user's setup: " + (err as JsonError).message,
+      );
+    }
   };
 
   const handleDeleteConfirm = () => {
@@ -261,6 +363,11 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                         icon={PencilIcon}
                         title="Edit"
                         onClick={() => handleEdit(u)}
+                      />
+                      <IconButton
+                        icon={DocumentDuplicateIcon}
+                        title="Duplicate"
+                        onClick={() => handleDuplicate(u)}
                       />
                       <IconButton
                         icon={KeyIcon}
