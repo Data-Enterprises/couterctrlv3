@@ -236,8 +236,8 @@ const StepAssignments = ({
   };
 
   return (
-    <div className="w-full flex flex-col">
-      <div className="flex border border-gray-100 rounded-lg overflow-hidden h-[440px]">
+    <div className="w-full h-full flex flex-col min-h-0">
+      <div className="flex-1 min-h-0 flex border border-gray-100 rounded-lg overflow-hidden">
         {/* Companies */}
         <div className="flex flex-col border-r border-gray-100 flex-shrink-0" style={{ width: 220 }}>
           <div className="px-3 py-2.5 border-b border-gray-100 flex-shrink-0">

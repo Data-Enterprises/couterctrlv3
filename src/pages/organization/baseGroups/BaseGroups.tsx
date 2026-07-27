@@ -254,7 +254,7 @@ const BaseGroups = () => {
     visibleCompanies.find((c) => c.id === id)?.name ?? "";
 
   return (
-    <div className="flex-1 flex min-h-0 w-[860px]">
+    <div className="flex-1 flex min-h-0 w-full">
       <div className="w-72 border-r border-gray-100 flex-shrink-0 flex flex-col">
         <div className="p-2.5 border-b border-gray-100 flex gap-1.5">
           <TextFilter
@@ -273,7 +273,7 @@ const BaseGroups = () => {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto max-h-[480px] p-2 space-y-1.5 thin-scrollbar">
+        <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1.5 thin-scrollbar">
           {visibleCompanies.length === 0 && (
             <div className="p-3 text-[11px] text-content">No companies</div>
           )}
@@ -343,7 +343,7 @@ const BaseGroups = () => {
         </div>
       </div>
 
-      <div className="flex-1 min-w-0 overflow-y-auto p-4 min-h-[520px] max-h-[520px]">
+      <div className="flex-1 min-w-0 overflow-y-auto p-4">
         {!selectedGroup ? (
           <div className="flex items-center justify-center h-full text-[12px] text-content">
             Select a base group

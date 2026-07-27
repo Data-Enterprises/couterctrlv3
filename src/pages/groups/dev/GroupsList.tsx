@@ -25,7 +25,7 @@ const GroupsList = ({
   onOpenCreate,
 }: GroupsListProps) => {
   return (
-    <div className="w-72 border-r border-gray-100 flex-shrink-0 flex flex-col bg-gray-50">
+    <div className="w-72 border-r border-gray-100 flex-shrink-0 flex flex-col min-h-0 bg-gray-50">
       <div className="p-2.5 border-b border-gray-100 flex gap-1.5">
         <TextFilter
           value={search}
@@ -43,7 +43,7 @@ const GroupsList = ({
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto max-h-[480px] thin-scrollbar">
+      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
         {groups.length === 0 && (
           <div className="p-4 text-[11px] text-content text-center">
             {totalCount === 0 ? "No groups yet" : "No groups match"}

@@ -257,7 +257,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 p-4 w-[1080px]">
+    <div className="flex-1 flex flex-col min-h-0 p-4 w-full">
       <div className="flex flex-nowrap items-center gap-2 mb-3">
         <SelectFilter
           options={companyOptions}
@@ -331,13 +331,13 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
           <div>Last visited</div>
           <div></div>
         </div>
-        <div className="max-h-96 overflow-y-auto thin-scrollbar divide-y divide-[#1e2a4a]/15">
+        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-[#1e2a4a]/15">
           {filtered.map((u) => {
             const outranked = isOutranked(u.user_level);
             return (
               <div
                 key={u.id}
-                className={`grid grid-cols-[12%_12%_12%_22%_11%_10%_11%_10%] px-3 py-2 text-[13px] items-center transition-colors ${outranked ? "bg-gray-50 text-content/40" : "text-content even:bg-row_stripe hover:bg-gray-50"}`}
+                className={`grid grid-cols-[12%_12%_12%_22%_11%_10%_11%_10%] px-3 py-2 text-[13px] items-center transition-colors [content-visibility:auto] [contain-intrinsic-size:0_40px] ${outranked ? "bg-gray-50 text-content/40" : "text-content even:bg-row_stripe hover:bg-gray-50"}`}
               >
                 <div className="truncate">{u.username}</div>
                 <div className="truncate">{u.first_name || "—"}</div>

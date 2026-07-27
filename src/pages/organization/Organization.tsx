@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "./hooks";
+import { useResizableBox } from "../../hooks/useResizableBox";
+import ResizeHandle from "../../components/ResizeHandle";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type { JsonError, User, UserLevelJsonResp } from "../../interfaces";
 import { getAllUsers } from "../../api/user";
@@ -34,6 +36,15 @@ const Organization = () => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
   const [tab, setTab] = useState<Tab>("users");
+  const { width, height, boxRef, handleProps } = useResizableBox({
+    storageKey: "organization-panel-size",
+    defaultWidth: 1080,
+    defaultHeight: 640,
+    minWidth: 700,
+    maxWidth: 1600,
+    minHeight: 450,
+    maxHeight: 950,
+  });
 
   // usersSlice is shared with the legacy Team page (no forked slice), so
   // switching Live -> Preview mounts this component with whatever
@@ -98,7 +109,11 @@ const Organization = () => {
 
   return (
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
-      <div className="w-fit max-w-[95vw] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start">
+      <div
+        ref={boxRef}
+        className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start"
+        style={{ width, height }}
+      >
         <div className="bg-[#1e2a4a] px-3 py-2 flex-shrink-0 flex items-center gap-3">
           <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
             User Management
@@ -133,9 +148,13 @@ const Organization = () => {
           ))}
         </div>
 
-        {tab === "users" && <Users />}
-        {tab === "baseGroups" && <BaseGroups />}
-        {tab === "stores" && <StoresDirectory />}
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+          {tab === "users" && <Users />}
+          {tab === "baseGroups" && <BaseGroups />}
+          {tab === "stores" && <StoresDirectory />}
+        </div>
+
+        <ResizeHandle {...handleProps} />
       </div>
     </div>
   );

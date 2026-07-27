@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAppDispatch } from "../../../hooks";
 import { useAdminPageCtx } from "./hooks";
+import { useResizableBox } from "../../../hooks/useResizableBox";
+import ResizeHandle from "../../../components/ResizeHandle";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { setAdminForm, setCompanies } from "../../../features/adminPageSlice";
 import type { AdminForm } from "../../../features/adminPageSlice";
@@ -22,6 +24,15 @@ const Admin = () => {
   const dispatch = useAppDispatch();
   const context = useAdminPageCtx();
   const [exportOpen, setExportOpen] = useState(false);
+  const { width, height, boxRef, handleProps } = useResizableBox({
+    storageKey: "admin-panel-size",
+    defaultWidth: 820,
+    defaultHeight: 640,
+    minWidth: 600,
+    maxWidth: 1600,
+    minHeight: 450,
+    maxHeight: 950,
+  });
 
   useEffect(() => {
     if (context.refresh) {
@@ -58,7 +69,11 @@ const Admin = () => {
 
   return (
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
-      <div className="max-w-[95vw] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start">
+      <div
+        ref={boxRef}
+        className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start"
+        style={{ width, height }}
+      >
         <div className="bg-[#1e2a4a] px-3 py-2 flex-shrink-0 flex items-center gap-3">
           <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
             Admin
@@ -107,7 +122,11 @@ const Admin = () => {
           ))}
         </div>
 
-        {renderActiveTab()}
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+          {renderActiveTab()}
+        </div>
+
+        <ResizeHandle {...handleProps} />
       </div>
     </div>
   );

@@ -253,7 +253,7 @@ const CreateUserWizard = ({ onComplete, onCancel }: CreateUserWizardProps) => {
   };
 
   return (
-    <div className={`flex flex-1 flex-col min-h-0 ${step === 2 ? "w-[1080px]" : "w-[700px]"}`}>
+    <div className="flex flex-1 flex-col min-h-0 w-full">
       <button
         onClick={handleCancel}
         className="text-[11px] text-content/60 m-4 mb-0 self-start"
@@ -267,7 +267,7 @@ const CreateUserWizard = ({ onComplete, onCancel }: CreateUserWizardProps) => {
           completed={completedSteps}
           onStepClick={goToStep}
         />
-        <div className="flex-1 min-w-0 p-4 overflow-y-auto thin-scrollbar">
+        <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-y-auto thin-scrollbar p-4">
           {renderStep()}
         </div>
       </div>

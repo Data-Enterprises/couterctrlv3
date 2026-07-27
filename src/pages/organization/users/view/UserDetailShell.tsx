@@ -64,7 +64,7 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 p-4 w-[640px]">
+    <div className="flex-1 flex flex-col min-h-0 p-4 w-full">
       <button onClick={onBack} className="text-[11px] text-content/60 mb-3 self-start">
         ← Back to users
       </button>
@@ -105,7 +105,7 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto thin-scrollbar">{renderTab()}</div>
+      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">{renderTab()}</div>
     </div>
   );
 };

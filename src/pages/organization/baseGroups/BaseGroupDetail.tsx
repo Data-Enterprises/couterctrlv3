@@ -160,7 +160,7 @@ const BaseGroupDetail = ({
         (!stores ? (
           <div className="text-[11.5px] text-content/60">Loading…</div>
         ) : (
-          <div className="max-w-[560px]">
+          <div className="w-full">
             <AssignPanel
               leftTitle="Unassigned"
               rightTitle="Assigned"
