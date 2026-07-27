@@ -30,6 +30,10 @@ export const defaultNumberFilter: NumberFilter = {
 
 export type RiskLevel = "Low" | "Medium" | "High" | "Very High" | "";
 
+// Which dimension the exception explorer groups its signal list by. Same
+// fetched line-item set is re-sliced client-side for all four.
+export type ExplorerLens = "store" | "cashier" | "item" | "terminal" | "hour";
+
 interface CashiersState {
   storeCards: StoreCard[];
   filteredStoreCards: StoreCard[];
@@ -85,6 +89,22 @@ interface CashiersState {
   transTotalQtyFilter: NumberFilter;
   transUpcFilter: string;
   transDescFilter: string;
+
+  // exception explorer (dev desktop) — kept separate from the transList
+  // fields above, which the mobile view and its own drill-down still own.
+  explorerSaleTypes: string[];
+  explorerException: string;
+  // What the loaded rows were actually fetched for. Kept apart from
+  // explorerException (the dropdown) so changing the dropdown in the re-search
+  // overlay without running it can't silently filter the current results away.
+  explorerFetchedException: string;
+  explorerAllRows: TransactionListItem[];
+  explorerLens: ExplorerLens;
+  explorerSignalKey: string;
+  explorerLoading: boolean;
+  explorerMessage: string;
+  explorerScopeLabel: string;
+  explorerSearched: boolean;
 }
 
 const initialState: CashiersState = {
@@ -137,6 +157,16 @@ const initialState: CashiersState = {
   transOverviews: [],
   filteredTransOverviews: [],
   transactionLoadingMessage: "",
+  explorerSaleTypes: [],
+  explorerException: "",
+  explorerFetchedException: "",
+  explorerAllRows: [],
+  explorerLens: "store",
+  explorerSignalKey: "",
+  explorerLoading: false,
+  explorerMessage: "",
+  explorerScopeLabel: "",
+  explorerSearched: false,
 };
 
 const cashiersSlice = createSlice({
@@ -361,6 +391,39 @@ const cashiersSlice = createSlice({
       state.transTotalQtyFilter = defaultNumberFilter;
       state.applyTransFilters = false;
     },
+    setExplorerSaleTypes: (state, action: PayloadAction<string[]>) => {
+      state.explorerSaleTypes = action.payload;
+    },
+    setExplorerException: (state, action: PayloadAction<string>) => {
+      state.explorerException = action.payload;
+    },
+    setExplorerLens: (state, action: PayloadAction<ExplorerLens>) => {
+      state.explorerLens = action.payload;
+      // Signal keys aren't comparable across lenses (a cashier number means
+      // nothing to the item lens), so the selection has to clear on switch.
+      state.explorerSignalKey = "";
+    },
+    setExplorerSignalKey: (state, action: PayloadAction<string>) => {
+      state.explorerSignalKey = action.payload;
+    },
+    setExplorerLoading: (state, action: PayloadAction<boolean>) => {
+      state.explorerLoading = action.payload;
+    },
+    setExplorerMessage: (state, action: PayloadAction<string>) => {
+      state.explorerMessage = action.payload;
+    },
+    setExplorerScopeLabel: (state, action: PayloadAction<string>) => {
+      state.explorerScopeLabel = action.payload;
+    },
+    setExplorerRows: (
+      state,
+      action: PayloadAction<{ rows: TransactionListItem[]; exception: string }>,
+    ) => {
+      state.explorerAllRows = action.payload.rows;
+      state.explorerFetchedException = action.payload.exception;
+      state.explorerSignalKey = "";
+      state.explorerSearched = true;
+    },
     resetCashierState: () => initialState,
   },
 });
@@ -412,5 +475,13 @@ export const {
   setTransTotalQtyFilter,
   setFilteredTransOverviews,
   setTransactionLoadingMessage,
+  setExplorerSaleTypes,
+  setExplorerException,
+  setExplorerLens,
+  setExplorerSignalKey,
+  setExplorerLoading,
+  setExplorerMessage,
+  setExplorerScopeLabel,
+  setExplorerRows,
 } = cashiersSlice.actions;
 export default cashiersSlice.reducer;
