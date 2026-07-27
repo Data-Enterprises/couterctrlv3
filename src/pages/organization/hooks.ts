@@ -22,12 +22,19 @@ export const useOrganizationCtx = () => {
     availableEmailText,
     emailTextColor,
     selectedUserStores,
+    duplicateSource,
   } = useAppSelector((state) => state.users);
   const { activeBaseGroups, inactiveBaseGroups, userCompany } = useAppSelector(
     (state) => state.baseGroup,
   );
-  const { companies: companyRecords, refresh: companiesRefresh } =
-    useAppSelector((state) => state.organization);
+  const {
+    companies: companyRecords,
+    refresh: companiesRefresh,
+    usersExportOpen,
+    baseGroupExportOpen,
+    storesExportOpen,
+    usersGridFilters,
+  } = useAppSelector((state) => state.organization);
 
   return {
     dispatch,
@@ -51,10 +58,15 @@ export const useOrganizationCtx = () => {
     availableEmailText,
     emailTextColor,
     selectedUserStores,
+    duplicateSource,
     activeBaseGroups,
     inactiveBaseGroups,
     userCompany,
     companyRecords,
     companiesRefresh,
+    usersExportOpen,
+    baseGroupExportOpen,
+    storesExportOpen,
+    usersGridFilters,
   };
 };

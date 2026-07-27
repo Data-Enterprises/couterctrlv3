@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useResizableBox } from "../../../hooks/useResizableBox";
+import ResizeHandle from "../../../components/ResizeHandle";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type { JsonError } from "../../../interfaces";
 import {
@@ -72,6 +74,15 @@ const Groups = () => {
   const [selectedGroup, setSelectedGroupLocal] = useState<Group | null>(null);
   const [search, setSearch] = useState("");
   const [showNewGroupModal, setShowNewGroupModal] = useState(false);
+  const { width, height, boxRef, handleProps } = useResizableBox({
+    storageKey: "groups-panel-size",
+    defaultWidth: 820,
+    defaultHeight: 560,
+    minWidth: 600,
+    maxWidth: 1600,
+    minHeight: 420,
+    maxHeight: 950,
+  });
 
   // These two effects only matter for the isTablet/isMobile fallback below —
   // GroupsTablet/GroupsMobile still switch their own internal view off the
@@ -158,14 +169,18 @@ const Groups = () => {
 
   return (
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center bg-bkg">
-      <div className="w-fit max-w-[95vw] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start">
+      <div
+        ref={boxRef}
+        className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start"
+        style={{ width, height }}
+      >
         <div className="bg-[#1e2a4a] px-3 py-2 flex-shrink-0 flex items-center gap-3">
           <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
             Store Groups
           </span>
         </div>
 
-        <div className="flex min-h-0 max-h-[520px] w-[820px]">
+        <div className="flex flex-1 min-h-0 w-full">
           <GroupsList
             groups={filteredGroups}
             totalCount={ctx.groups.length}
@@ -194,6 +209,8 @@ const Groups = () => {
             onClose={() => setShowNewGroupModal(false)}
           />
         )}
+
+        <ResizeHandle {...handleProps} />
       </div>
     </div>
   );

@@ -100,8 +100,8 @@ const NewStoreName = () => {
   };
 
   return (
-    <div className="flex-1 flex min-h-0 w-[820px]">
-      <div className="w-[320px] border-r border-gray-100 flex-shrink-0 flex flex-col p-3">
+    <div className="flex-1 flex min-h-0 w-full">
+      <div className="w-[320px] border-r border-gray-100 flex-shrink-0 flex flex-col min-h-0 p-3">
         <SelectFilter
           options={context.companies.map((c) => ({
             value: String(c.id),
@@ -127,15 +127,16 @@ const NewStoreName = () => {
             </button>
           ))}
         </div>
-        <TextFilter
-          value={search}
-          onChange={setSearch}
-          placeholder={
-            stores ? `Search ${filteredStores.length} stores…` : "Search stores…"
-          }
-          className="mb-2"
-        />
-        <div className="max-h-[420px] overflow-y-auto thin-scrollbar border border-gray-100 rounded-lg">
+        <div className="flex-shrink-0 mb-2">
+          <TextFilter
+            value={search}
+            onChange={setSearch}
+            placeholder={
+              stores ? `Search ${filteredStores.length} stores…` : "Search stores…"
+            }
+          />
+        </div>
+        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar border border-gray-100 rounded-lg">
           {!stores && (
             <div className="flex items-center justify-center py-8 text-[12px] text-content">
               Loading…

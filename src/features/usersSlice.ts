@@ -53,6 +53,19 @@ type BaseGroupOption = "create" | "update" | "delete" | "assign_to_user" | "";
 type StoreFormOption = "assign" | "info" | "bg_assign" | "";
 type UserFilterType = "name" | "email";
 
+// Everything the create-wizard needs to pre-fill from a "Duplicate user"
+// click — role/level plus company/base-group/store assignments. Identity
+// fields (name/username/email/password) are deliberately excluded; those
+// always stay blank for the admin to fill in.
+export interface DuplicateSource {
+  role: number;
+  user_level: number;
+  companyIds: number[];
+  baseGroupIds: number[];
+  groups: { id: number; name: string; company: number }[];
+  stores: (Store & { base_group: number })[];
+}
+
 interface UsersState {
   users: User[];
   inactiveUsers: User[];
@@ -79,6 +92,7 @@ interface UsersState {
   bgOption: BaseGroupOption;
   storesOption: StoreFormOption;
   userFilterType: UserFilterType;
+  duplicateSource: DuplicateSource | null;
 }
 
 const initialState: UsersState = {
@@ -110,6 +124,7 @@ const initialState: UsersState = {
   bgOption: "",
   storesOption: "",
   userFilterType: "name",
+  duplicateSource: null,
 };
 
 export const usersSlice = createSlice({
@@ -292,6 +307,12 @@ export const usersSlice = createSlice({
     setUserFilterType: (state, action: PayloadAction<UserFilterType>) => {
       state.userFilterType = action.payload;
     },
+    setDuplicateSource: (state, action: PayloadAction<DuplicateSource>) => {
+      state.duplicateSource = action.payload;
+    },
+    clearDuplicateSource: (state) => {
+      state.duplicateSource = null;
+    },
     resetUsersSlice: () => initialState,
   },
 });
@@ -325,5 +346,7 @@ export const {
   setBGOption,
   setStoresFormOption,
   setUserFilterType,
+  setDuplicateSource,
+  clearDuplicateSource,
 } = usersSlice.actions;
 export default usersSlice.reducer;

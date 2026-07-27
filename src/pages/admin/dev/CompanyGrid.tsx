@@ -68,7 +68,7 @@ const CompanyGrid = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 p-4 w-[820px]">
+    <div className="flex-1 flex flex-col min-h-0 p-4 w-full">
       <div className="flex items-center gap-2 mb-3">
         <TextFilter
           value={search}
@@ -94,11 +94,11 @@ const CompanyGrid = () => {
           <div>Contact email</div>
           <div></div>
         </div>
-        <div className="max-h-96 overflow-y-auto thin-scrollbar">
+        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-[#1e2a4a]/15">
           {filtered.map((c) => (
             <div
               key={c.id}
-              className="grid grid-cols-[22%_18%_10%_16%_24%_10%] px-3 py-2 text-[12px] items-center border-b border-gray-100 text-content"
+              className="grid grid-cols-[22%_18%_10%_16%_24%_10%] px-3 py-2 text-[12px] items-center text-content even:bg-row_stripe hover:bg-gray-50"
             >
               <div className="truncate">{c.name}</div>
               <div className="truncate">{c.city}</div>

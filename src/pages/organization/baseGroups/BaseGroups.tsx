@@ -93,8 +93,22 @@ const BaseGroups = () => {
   const [search, setSearch] = useState("");
   const [showNewGroupModal, setShowNewGroupModal] = useState(false);
 
+  // DCR support staff need visibility across every client company, so (and
+  // only so) they can fetch the full company directory. isDcrUser is derived
+  // from ctx.companies — the login endpoint's own, already-scoped list — so
+  // checking it never itself leaks anything; it just decides whether the
+  // broader fetch below fires at all. Everyone else's companies come
+  // straight from ctx.companies, with no separate all-companies request —
+  // getBaseGroups/getAllStoresInBaseGroup take a bare companyId with no
+  // server-side ownership check, so handing a non-DCR client ids for
+  // companies they aren't assigned to would let them pull another company's
+  // base groups/stores just by id.
+  const isDcrUser = ctx.companies.some(
+    (c) => c.company === 5 && c.name === "DCR",
+  );
+
   useEffect(() => {
-    if (!ctx.companiesRefresh) return;
+    if (!isDcrUser || !ctx.companiesRefresh) return;
     getCompanies(ctx.url, ctx.token)
       .then((resp) => {
         const j = resp.data;
@@ -102,16 +116,11 @@ const BaseGroups = () => {
       })
       .catch((err: JsonError) => toast.error(err.message));
     ctx.dispatch(setRefresh(false));
-  }, [ctx.companiesRefresh]);
+  }, [isDcrUser, ctx.companiesRefresh]);
 
-  const isDcrUser = ctx.companies.some(
-    (c) => c.company === 5 && c.name === "DCR",
-  );
   const visibleCompanies = isDcrUser
     ? ctx.companyRecords
-    : ctx.companyRecords.filter((c) =>
-        ctx.companies.some((uc) => uc.company === c.id),
-      );
+    : ctx.companies.map((c) => ({ id: c.company, name: c.name }));
 
   // Guards against the search-triggered "expand every company" effect below
   // firing a duplicate request for a company whose first request is still
@@ -245,7 +254,7 @@ const BaseGroups = () => {
     visibleCompanies.find((c) => c.id === id)?.name ?? "";
 
   return (
-    <div className="flex-1 flex min-h-0 w-[860px]">
+    <div className="flex-1 flex min-h-0 w-full">
       <div className="w-72 border-r border-gray-100 flex-shrink-0 flex flex-col">
         <div className="p-2.5 border-b border-gray-100 flex gap-1.5">
           <TextFilter
@@ -264,7 +273,7 @@ const BaseGroups = () => {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto max-h-[480px] p-2 space-y-1.5 thin-scrollbar">
+        <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1.5 thin-scrollbar">
           {visibleCompanies.length === 0 && (
             <div className="p-3 text-[11px] text-content">No companies</div>
           )}
@@ -334,7 +343,7 @@ const BaseGroups = () => {
         </div>
       </div>
 
-      <div className="flex-1 min-w-0 overflow-y-auto p-4 min-h-[520px] max-h-[520px]">
+      <div className="flex-1 min-w-0 overflow-y-auto p-4">
         {!selectedGroup ? (
           <div className="flex items-center justify-center h-full text-[12px] text-content">
             Select a base group

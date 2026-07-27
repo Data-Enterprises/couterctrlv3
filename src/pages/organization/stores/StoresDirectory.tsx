@@ -3,7 +3,9 @@ import { useOrganizationCtx } from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getUserStores } from "../../../api/user";
 import type { JsonError, Store } from "../../../interfaces";
+import { setStoresExportOpen } from "../../../features/organizationSlice";
 import TextFilter from "../../../components/filters/TextFilter";
+import StoresExportModal from "./StoresExportModal";
 
 // Read-only store directory — company/base-group assignment already lives on
 // the Users profile and Base Groups tabs, so this is just browse/search.
@@ -49,15 +51,24 @@ const StoresDirectory = () => {
   }, [stores, search]);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 p-4 w-[760px]">
-      <TextFilter
-        value={search}
-        onChange={setSearch}
-        placeholder={
-          stores ? `Search ${stores.length} stores…` : "Search stores…"
-        }
-        className="mb-3"
-      />
+    <div className="flex-1 flex flex-col min-h-0 p-4 w-full">
+      <div className="flex-shrink-0 mb-3">
+        <TextFilter
+          value={search}
+          onChange={setSearch}
+          placeholder={
+            stores ? `Search ${stores.length} stores…` : "Search stores…"
+          }
+        />
+      </div>
+
+      {ctx.storesExportOpen && stores && (
+        <StoresExportModal
+          onClose={() => ctx.dispatch(setStoresExportOpen(false))}
+          allStores={stores}
+          filteredStores={filtered}
+        />
+      )}
 
       <div className="border border-gray-100 rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col">
         <div className="grid grid-cols-[14%_14%_36%_14%_22%] px-3 py-2 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0">
@@ -67,7 +78,7 @@ const StoresDirectory = () => {
           <div>Company ID</div>
           <div>Company name</div>
         </div>
-        <div className="max-h-[480px] overflow-y-auto thin-scrollbar divide-y divide-[#1e2a4a]/15">
+        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-[#1e2a4a]/15">
           {!stores && (
             <div className="flex items-center justify-center py-8 text-[12px] text-content">
               Loading…
@@ -77,7 +88,7 @@ const StoresDirectory = () => {
             filtered.map((s) => (
               <div
                 key={s.storeid}
-                className="grid grid-cols-[14%_14%_36%_14%_22%] px-3 py-2 text-[12px] items-center border-b border-gray-100 text-content"
+                className="grid grid-cols-[14%_14%_36%_14%_22%] px-3 py-2 text-[12px] items-center text-content even:bg-row_stripe hover:bg-gray-50"
               >
                 <div className="truncate">{s.storeid}</div>
                 <div className="truncate">{s.store_number}</div>

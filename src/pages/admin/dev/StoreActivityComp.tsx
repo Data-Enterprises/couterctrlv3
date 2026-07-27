@@ -87,7 +87,7 @@ const StoreActivityComp = ({
   };
 
   return (
-    <div className="flex flex-1 min-h-0 w-[820px]">
+    <div className="flex flex-1 min-h-0 w-full">
       {exportOpen && (
         <StoreActivityExportModal
           onClose={() => setExportOpen(false)}
@@ -122,7 +122,7 @@ const StoreActivityComp = ({
         />
       </div>
 
-      <div className="flex-1 min-w-0 flex flex-col">
+      <div className="flex-1 min-w-0 min-h-0 flex flex-col">
         {!hasData && !context.isLoadingStoreActivity ? (
           <div className="min-h-[260px] p-5">
             <EmptyPrompt
@@ -163,11 +163,11 @@ const StoreActivityComp = ({
               <div className="text-right">Active</div>
               <div className="text-right">Missing</div>
             </div>
-            <div className="max-h-96 overflow-y-auto thin-scrollbar">
+            <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-[#1e2a4a]/15">
               {context.filteredStoresActivity.map((s) => (
                 <div
                   key={s.storeid}
-                  className="grid grid-cols-[0.6fr_2fr_1fr_1fr_1fr] px-4 py-2 text-[12px] text-content border-b border-gray-100"
+                  className="grid grid-cols-[0.6fr_2fr_1fr_1fr_1fr] px-4 py-2 text-[12px] text-content even:bg-row_stripe hover:bg-gray-50"
                 >
                   <div>{s.storeid}</div>
                   <div className="truncate">{s.store_name}</div>

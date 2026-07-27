@@ -120,7 +120,7 @@ const BaseGroupUsersTab = ({ group }: Props) => {
   const assigned = candidates.filter((u) => statusByUser[u.id] === true);
 
   return (
-    <div className="max-w-[560px]">
+    <div className="w-full">
       {pendingCount > 0 && (
         <div className="text-[10.5px] text-content/50 mb-2">
           Resolving {pendingCount} more user{pendingCount === 1 ? "" : "s"}…
