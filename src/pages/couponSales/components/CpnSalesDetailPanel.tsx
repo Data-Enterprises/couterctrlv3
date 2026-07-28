@@ -14,6 +14,7 @@ import {
 import TextFilter from "../../../components/filters/TextFilter";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getCashierTransaction } from "../../../api/lossPrevention";
+import CpnSalesDayCards from "./CpnSalesDayCards";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import { setTransactionDrillDown } from "../../../features/lossPreventionSlice";
 import {
@@ -25,6 +26,7 @@ import {
   sectionKeyOf,
   totalsFor,
   type CouponTransaction,
+  type GradingOptions,
 } from "../shared/couponGrading";
 import type { CouponTier } from "../../../features/couponSalesSlice";
 import type {
@@ -40,13 +42,11 @@ type TxSortCol = "count" | "amount";
 
 const TABS: { key: CouponBreakdown; label: string }[] = [
   { key: "subdept", label: "Sub Dept" },
-  { key: "date", label: "Date" },
   { key: "cashier", label: "Cashier" },
 ];
 
 const SECTION_COL_LABEL: Record<CouponBreakdown, string> = {
   subdept: "Sub Dept",
-  date: "Date",
   cashier: "Cashier",
 };
 
@@ -58,15 +58,61 @@ interface Props {
    *  and Sales' detail popup both announce the selection. */
   storeTier: CouponTier;
   rangeLabel: string;
+  /** Flat-dollar outlier threshold — still used directly for transaction
+   *  grading, which has no baseline. */
   threshold: number;
+  /** Full grading config for the breakdown rows: dollar threshold, trend
+   *  threshold, and the store-scoped baseline. */
+  grading: GradingOptions;
 }
 
-const Kpi = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex flex-col items-center justify-center px-3 py-2 flex-1 min-w-0">
-    <span className="text-[10px] font-bold uppercase tracking-wide text-content">
-      {label}
+/** Percentage move against the baseline, styled like LP's TrendBadge. Up is
+ *  the bad direction here — coupons growing past the store's own norm. */
+const TrendBadge = ({ pct }: { pct: number | null }) => {
+  if (pct === null) return null;
+  const isUp = pct > 0;
+  return (
+    <span
+      className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
+        isUp
+          ? "bg-severity_critical_bg text-severity_critical_text"
+          : "bg-severity_healthy_bg text-severity_healthy_text"
+      }`}
+    >
+      {pct !== 0 && (isUp ? "▲" : "▼")} {Math.abs(pct).toFixed(2)}%
     </span>
-    <span className="text-[16px] font-semibold text-content mt-0.5">{value}</span>
+  );
+};
+
+/** Mirrors LP's StripCell: label, the baseline figure, then the value with its
+ *  trend badge beside it. */
+const Kpi = ({
+  label,
+  value,
+  baselineValue,
+  trendPct,
+}: {
+  label: string;
+  value: string;
+  baselineValue?: string;
+  trendPct?: number | null;
+}) => (
+  <div className="px-4 pt-2.5 pb-2 text-center">
+    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+      {label}
+    </div>
+    {baselineValue !== undefined && (
+      <div
+        className="text-[10px] font-bold text-content mb-0.5"
+        title="Same figure over the prior 2 weeks"
+      >
+        Baseline {baselineValue}
+      </div>
+    )}
+    <div className="flex items-baseline justify-center gap-2">
+      <span className="text-[14px] font-bold text-content">{value}</span>
+      <TrendBadge pct={trendPct ?? null} />
+    </div>
   </div>
 );
 
@@ -76,6 +122,7 @@ const CpnSalesDetailPanel = ({
   storeTier,
   rangeLabel,
   threshold,
+  grading,
 }: Props) => {
   const dispatch = useAppDispatch();
   const toast = useToast();
@@ -85,6 +132,11 @@ const CpnSalesDetailPanel = ({
   // Coupons' own selectedSaleId — it's view state for one pane, not something
   // a re-search or another panel needs to read.
   const [openSaleId, setOpenSaleId] = useState("");
+
+  // Which day of the week the panel is scoped to; "" is the whole week. Local
+  // like the section filter — it's a view control on this panel, not page
+  // state another component reads.
+  const [selectedDay, setSelectedDay] = useState("");
 
   // Fetches the whole receipt from LP's endpoint and renders it in place. The
   // coupons/ payload only carries the coupon lines, so on its own it can't
@@ -186,20 +238,62 @@ const CpnSalesDetailPanel = ({
     dispatch(setTransactionDrillDown([]));
   }, [breakdown, selectedSectionKey, selectedStoreKey, dispatch]);
 
+  // A day filter from one store means nothing on the next one, so it resets
+  // with the store — but NOT with the breakdown tab, where narrowing to a day
+  // and then switching between sub dept / cashier is the point.
+  useEffect(() => {
+    setSelectedDay("");
+  }, [selectedStoreKey]);
+
   // Local like LP's cashier filter — it's a view control on one column, not
   // page state worth persisting across selections.
   const [sectionTierFilter, setSectionTierFilter] = useState<CouponTierFilter>("all");
   const sectionSort = useTriStateSort<SectionSortCol>();
   const txSort = useTriStateSort<TxSortCol>();
 
-  const totals = useMemo(() => totalsFor(storeCoupons), [storeCoupons]);
+  // Everything beneath the day strip reads this, so picking a day narrows the
+  // KPIs, the breakdown rows and the transactions in one move.
+  const dayCoupons = useMemo(
+    () =>
+      selectedDay === ""
+        ? storeCoupons
+        : storeCoupons.filter((c) => c.sale_date.split("T")[0] === selectedDay),
+    [storeCoupons, selectedDay],
+  );
 
+  const totals = useMemo(() => totalsFor(dayCoupons), [dayCoupons]);
+
+  // The same figures over the baseline window, for the strip.
+  //
+  // Amount, coupons and transactions are TOTALS over two weeks against one, so
+  // they're halved to read as a comparable week — the same convention LP's
+  // strip uses. The average is NOT halved: it is already per-coupon, and
+  // halving it would invent a 50% drop on every store.
+  const baselineTotals = useMemo(() => {
+    const rows = grading.baseline ?? [];
+    if (rows.length === 0) return null;
+    const t = totalsFor(rows);
+    return {
+      amount: t.amount / 2,
+      lines: t.lines / 2,
+      transactions: t.transactions / 2,
+      avgAmount: t.avgAmount,
+    };
+  }, [grading.baseline]);
+
+  const pctVs = (now: number, base: number | undefined) =>
+    base === undefined || base === 0 ? null : ((now - base) / base) * 100;
+
+  // Grading a single day still compares against the whole baseline window for
+  // that group — the day strip is where day-vs-same-weekday lives, and doing
+  // it here too would compare one day against one weekday twice over.
   const sectionRows = useMemo(
-    () => buildBreakdownRows(storeCoupons, threshold, breakdown),
-    [storeCoupons, threshold, breakdown],
+    () => buildBreakdownRows(dayCoupons, grading, breakdown),
+    [dayCoupons, grading, breakdown],
   );
 
   const critCount = sectionRows.filter((r) => r.tier === "critical").length;
+  const watchCount = sectionRows.filter((r) => r.tier === "watch").length;
   const okCount = sectionRows.filter((r) => r.tier === "ok").length;
 
   const visibleSections = useMemo(() => {
@@ -225,11 +319,11 @@ const CpnSalesDetailPanel = ({
   const scopedCoupons = useMemo(
     () =>
       selectedSectionKey === null
-        ? storeCoupons
-        : storeCoupons.filter(
+        ? dayCoupons
+        : dayCoupons.filter(
             (c) => sectionKeyOf(c, breakdown) === selectedSectionKey,
           ),
-    [storeCoupons, breakdown, selectedSectionKey],
+    [dayCoupons, breakdown, selectedSectionKey],
   );
 
   const transactions = useMemo(
@@ -268,11 +362,50 @@ const CpnSalesDetailPanel = ({
 
       {/* ── KPI strip ──────────────────────────────────────────────────── */}
       <div className="flex-shrink-0 grid grid-cols-4 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50">
-        <Kpi label="Amount" value={formatCurrency2(totals.amount)} />
-        <Kpi label="Coupons" value={formatBigNumber(totals.lines, 0)} />
-        <Kpi label="Avg coupon" value={formatCurrency2(totals.avgAmount)} />
-        <Kpi label="Trans" value={formatBigNumber(totals.transactions, 0)} />
+        <Kpi
+          label="Amount"
+          value={formatCurrency2(totals.amount)}
+          baselineValue={
+            baselineTotals ? formatCurrency2(baselineTotals.amount) : undefined
+          }
+          trendPct={pctVs(totals.amount, baselineTotals?.amount)}
+        />
+        <Kpi
+          label="Coupons"
+          value={formatBigNumber(totals.lines, 0)}
+          baselineValue={
+            baselineTotals ? formatBigNumber(baselineTotals.lines, 0) : undefined
+          }
+          trendPct={pctVs(totals.lines, baselineTotals?.lines)}
+        />
+        <Kpi
+          label="Avg coupon"
+          value={formatCurrency2(totals.avgAmount)}
+          baselineValue={
+            baselineTotals ? formatCurrency2(baselineTotals.avgAmount) : undefined
+          }
+          trendPct={pctVs(totals.avgAmount, baselineTotals?.avgAmount)}
+        />
+        <Kpi
+          label="Trans"
+          value={formatBigNumber(totals.transactions, 0)}
+          baselineValue={
+            baselineTotals
+              ? formatBigNumber(baselineTotals.transactions, 0)
+              : undefined
+          }
+          trendPct={pctVs(totals.transactions, baselineTotals?.transactions)}
+        />
       </div>
+
+      {/* ── Day of week — narrows everything below to one day, graded
+             against the same weekday in the baseline weeks ──────────────── */}
+      <CpnSalesDayCards
+        coupons={storeCoupons}
+        baseline={grading.baseline ?? []}
+        selectedDay={selectedDay}
+        onSelect={setSelectedDay}
+      />
 
       {/* ── Breakdown tabs — choose what the left column lists ─────────── */}
       <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
@@ -314,6 +447,19 @@ const CpnSalesDetailPanel = ({
             >
               Crit ({critCount})
             </button>
+            {/* Avg $ is a two-tier question, so Watch has nothing to count. */}
+            {grading.metric === "trend" && (
+            <button
+              onClick={() => setSectionTierFilter((f) => (f === "watch" ? "all" : "watch"))}
+              className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
+                sectionTierFilter === "watch"
+                  ? "ring-2 ring-severity_watch_text/40 shadow-sm"
+                  : ""
+              }`}
+            >
+              Watch ({watchCount})
+            </button>
+            )}
             <button
               onClick={() => setSectionTierFilter((f) => (f === "ok" ? "all" : "ok"))}
               className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${

@@ -6,15 +6,32 @@ import type { CouponItem } from "../interfaces";
  *  the line or it isn't. So this is a two-tier scheme rather than the shared
  *  critical/watch/healthy Severity, which would leave a permanently empty
  *  "watch" bucket in the filter row. */
-export type CouponTier = "critical" | "ok";
+/** Trend tiers, mirroring LP. "ungraded" is a group with no baseline activity
+ *  to compare against — a new store or cashier is unknown, not healthy. */
+export type CouponTier = "critical" | "watch" | "ok" | "ungraded";
 
 export type CouponTierFilter = "all" | CouponTier;
 
 /** Which breakdown the right panel is showing beneath the selected store. */
-export type CouponBreakdown = "subdept" | "date" | "cashier";
+/** Date is deliberately absent: the day-of-week strip above the tabs is
+ *  where per-day analysis lives now, and a Date tab listing the same seven
+ *  days underneath it was the same cut twice. buildDateRows survives for the
+ *  export preset, which still offers a row per day. */
+export type CouponBreakdown = "subdept" | "cashier";
 
 /** Dollars. Deliberately not a percentage — see couponGrading.ts. */
+/** Which question the page is grading on. Trend compares each group against
+ *  its own prior two weeks; Avg $ compares the average coupon against a flat
+ *  dollar threshold with no baseline in play. They answer different things —
+ *  a store steady at $8 is flat to Trend and obvious to Avg $ — so the toggle
+ *  picks one rather than blending them. */
+export type CouponMetric = "trend" | "avg";
+
 export const COUPON_THRESHOLD_DEFAULT = 3;
+
+/** Percentage rise in the average coupon, versus the store's own prior two
+ *  weeks, that tips a row into critical. */
+export const COUPON_TREND_THRESHOLD_DEFAULT = 10;
 
 interface CouponSalesState {
   /** Raw response for the current search. Every rollup on the page derives
@@ -22,6 +39,9 @@ interface CouponSalesState {
    *  sub department, cashier, date and transaction, so no tab needs its own
    *  fetch. */
   coupons: CouponItem[];
+  /** The two weeks before the searched week (end-20..end-7). Grading compares
+   *  each group's average coupon against its own average here. */
+  baselineCoupons: CouponItem[];
   isFetching: boolean;
   hasSearched: boolean;
   noCouponsFound: boolean;
@@ -29,6 +49,9 @@ interface CouponSalesState {
   /** null while the numeric input is being cleared; the page keeps grading
    *  against the last valid amount so rows don't reshuffle mid-edit. */
   threshold: number | null;
+  /** Percentage, same null-while-editing rule as threshold. */
+  trendThreshold: number | null;
+  metric: CouponMetric;
 
   /** `storeid__store_number` — co-located stores share a storeid, so the
    *  number is part of the key. See utils/storeIdentity. */
@@ -45,10 +68,13 @@ interface CouponSalesState {
 
 const initialState: CouponSalesState = {
   coupons: [],
+  baselineCoupons: [],
   isFetching: false,
   hasSearched: false,
   noCouponsFound: false,
   threshold: COUPON_THRESHOLD_DEFAULT,
+  trendThreshold: COUPON_TREND_THRESHOLD_DEFAULT,
+  metric: "trend",
   selectedStoreKey: null,
   breakdown: "subdept",
   selectedSectionKey: null,
@@ -65,6 +91,9 @@ const couponSalesSlice = createSlice({
     setCouponSalesData: (state, action: PayloadAction<CouponItem[]>) => {
       state.coupons = action.payload;
     },
+    setCouponBaseline: (state, action: PayloadAction<CouponItem[]>) => {
+      state.baselineCoupons = action.payload;
+    },
     setCouponSalesFetching: (state, action: PayloadAction<boolean>) => {
       state.isFetching = action.payload;
     },
@@ -76,6 +105,12 @@ const couponSalesSlice = createSlice({
     },
     setCouponThreshold: (state, action: PayloadAction<number | null>) => {
       state.threshold = action.payload;
+    },
+    setCouponTrendThreshold: (state, action: PayloadAction<number | null>) => {
+      state.trendThreshold = action.payload;
+    },
+    setCouponMetric: (state, action: PayloadAction<CouponMetric>) => {
+      state.metric = action.payload;
     },
     setSelectedCouponStore: (state, action: PayloadAction<string | null>) => {
       state.selectedStoreKey = action.payload;
@@ -124,10 +159,13 @@ const couponSalesSlice = createSlice({
 
 export const {
   setCouponSalesData,
+  setCouponBaseline,
   setCouponSalesFetching,
   setCouponSalesHasSearched,
   setNoCouponSalesFound,
   setCouponThreshold,
+  setCouponTrendThreshold,
+  setCouponMetric,
   setSelectedCouponStore,
   setCouponBreakdown,
   setSelectedCouponSection,

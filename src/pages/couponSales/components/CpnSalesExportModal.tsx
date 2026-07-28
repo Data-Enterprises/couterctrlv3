@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from "../../../hooks";
 import {
   setCouponExportOpen,
   COUPON_THRESHOLD_DEFAULT,
+  COUPON_TREND_THRESHOLD_DEFAULT,
 } from "../../../features/couponSalesSlice";
 import {
   aggregateRows,
@@ -56,6 +57,29 @@ const CpnSalesExportModal = ({ storeCoupons }: Props) => {
   );
 
   const source = scope === "all" ? allCoupons : storeCoupons;
+
+  const rawTrendThreshold = useAppSelector((s) => s.couponSales.trendThreshold);
+  const metric = useAppSelector((s) => s.couponSales.metric);
+  const baselineCoupons = useAppSelector((s) => s.couponSales.baselineCoupons);
+  // Scope selection drives the baseline the same way it drives the source, so
+  // an all-stores export grades against the all-stores baseline.
+  const grading = useMemo(
+    () => ({
+      metric,
+      threshold,
+      trendThreshold: rawTrendThreshold ?? COUPON_TREND_THRESHOLD_DEFAULT,
+      baseline:
+        scope === "all"
+          ? baselineCoupons
+          : baselineCoupons.filter((c) =>
+              storeCoupons.some(
+                (sc) =>
+                  sc.storeid === c.storeid && sc.store_number === c.store_number,
+              ),
+            ),
+    }),
+    [metric, threshold, rawTrendThreshold, baselineCoupons, scope, storeCoupons],
+  );
 
   const close = () => dispatch(setCouponExportOpen(false));
 
@@ -151,7 +175,7 @@ const CpnSalesExportModal = ({ storeCoupons }: Props) => {
         ? PRESET_OPTIONS.filter((p) => presets.has(p.key))
             .map(
               (p) =>
-                `${p.label}\n${buildCouponPresetCsv(p.key, source, threshold, assignedStores, groupStores)}`,
+                `${p.label}\n${buildCouponPresetCsv(p.key, source, grading, assignedStores, groupStores)}`,
             )
             .join("\n\n")
         : customCsv();

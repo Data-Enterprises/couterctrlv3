@@ -1,4 +1,5 @@
 import type { CouponItem } from "../../../interfaces";
+import type { GradingOptions } from "./couponGrading";
 import type { Store } from "../../../interfaces";
 import { fmtNum, rowsToCsv } from "../../../utils/csvExport";
 import {
@@ -33,7 +34,18 @@ export const PRESET_OPTIONS: { key: CouponPreset; label: string; desc: string }[
 /** Graded rollups all share a shape, so they share a writer. The threshold is
  *  written into the file — a grade is meaningless without the number it was
  *  graded against, and the reader won't have the slider in front of them. */
-const gradedCsv = (rows: CouponRow[], labelHeader: string, threshold: number) => {
+const TIER_LABEL: Record<CouponRow["tier"], string> = {
+  critical: "Critical",
+  watch: "Watch",
+  ok: "OK",
+  ungraded: "Ungraded",
+};
+
+const gradedCsv = (
+  rows: CouponRow[],
+  labelHeader: string,
+  opts: GradingOptions,
+) => {
   const headers = [
     labelHeader,
     "Amount",
@@ -41,7 +53,10 @@ const gradedCsv = (rows: CouponRow[], labelHeader: string, threshold: number) =>
     "Coupons",
     "Transactions",
     "Avg Coupon",
+    "Baseline Avg",
+    "Trend %",
     "Grade",
+    "Over $ Threshold",
   ];
   const data = rows.map((r) => [
     r.label,
@@ -50,30 +65,33 @@ const gradedCsv = (rows: CouponRow[], labelHeader: string, threshold: number) =>
     r.lines,
     r.transactions,
     fmtNum(r.avgAmount),
-    r.tier === "critical" ? "Critical" : "OK",
+    r.avgBaseline === null ? "" : fmtNum(r.avgBaseline),
+    r.trendPct === null ? "" : fmtNum(r.trendPct),
+    TIER_LABEL[r.tier],
+    r.isOutlier ? "Yes" : "No",
   ]);
-  return `Graded on average coupon over $${fmtNum(threshold)}\n${rowsToCsv(headers, data)}`;
+  return `Graded on average coupon vs prior 2 weeks, critical over +${fmtNum(opts.trendThreshold)}% — outlier flag at $${fmtNum(opts.threshold)}\n${rowsToCsv(headers, data)}`;
 };
 
 export const buildCouponPresetCsv = (
   preset: CouponPreset,
   coupons: CouponItem[],
-  threshold: number,
+  opts: GradingOptions,
   assignedStores: Store[] = [],
   groupStores: Store[] = [],
 ): string => {
   if (preset === "stores")
     return gradedCsv(
-      buildStoreRows(coupons, threshold, assignedStores, groupStores),
+      buildStoreRows(coupons, opts, assignedStores, groupStores),
       "Store",
-      threshold,
+      opts,
     );
   if (preset === "subdept")
-    return gradedCsv(buildSubDeptRows(coupons, threshold), "Sub Dept", threshold);
+    return gradedCsv(buildSubDeptRows(coupons, opts), "Sub Dept", opts);
   if (preset === "date")
-    return gradedCsv(buildDateRows(coupons, threshold), "Date", threshold);
+    return gradedCsv(buildDateRows(coupons, opts), "Date", opts);
   if (preset === "cashier")
-    return gradedCsv(buildCashierRows(coupons, threshold), "Cashier", threshold);
+    return gradedCsv(buildCashierRows(coupons, opts), "Cashier", opts);
 
   if (preset === "transactions") {
     const headers = [
@@ -88,7 +106,7 @@ export const buildCouponPresetCsv = (
       "Avg Coupon",
       "Grade",
     ];
-    const data = buildTransactions(coupons, threshold).map((t) => [
+    const data = buildTransactions(coupons, opts.threshold).map((t) => [
       t.sale_id,
       t.sale_date,
       t.cashier_number,
@@ -100,7 +118,7 @@ export const buildCouponPresetCsv = (
       fmtNum(t.avgAmount),
       t.tier === "critical" ? "Critical" : "OK",
     ]);
-    return `Graded on average coupon over $${fmtNum(threshold)}\n${rowsToCsv(headers, data)}`;
+    return `Transactions flagged when the average coupon is over $${fmtNum(opts.threshold)}\n${rowsToCsv(headers, data)}`;
   }
 
   // Raw lines — no grading, since a single coupon line has no average.
