@@ -35,7 +35,10 @@ const MobileDeptDataView = () => {
     dispatch(actions.setMobileMainView("overview"));
     dispatch(setUpcCode(""));
     dispatch(actions.setSelectedWeekDay(""));
-    if (isResetting) dispatch(actions.setSelectedSubDeptId(0));
+    // null, not 0 — 0 is a real sub department id, so resetting to it leaves
+    // SubDeptMobileView's `!= null` guard true and keeps this view mounted
+    // with no data. See selectedSubDeptId in subMarginSlice.
+    if (isResetting) dispatch(actions.setSelectedSubDeptId(null));
   };
 
   const handleScanView = () => {

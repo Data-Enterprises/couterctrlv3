@@ -1,11 +1,15 @@
 import { useState } from "react";
 
 interface Props {
-  id?:string;
+  id?: string;
   onClick: () => void;
+  // Positioning is the caller's business — the default matches the original
+  // label-above-input layout, but anything that changes the input's height
+  // needs to center the icon against the input itself instead.
+  className?: string;
 }
 
-const Eye = ({ onClick, id= "" }: Props) => {
+const Eye = ({ onClick, id = "", className = "right-1.5 top-[28px]" }: Props) => {
   const [active, setActive] = useState(false);
 
   const handleClick = () => {
@@ -16,7 +20,7 @@ const Eye = ({ onClick, id= "" }: Props) => {
     <svg
       data-testid={`eye-icon-${id}`}
       onClick={handleClick}
-      className={`size-6 absolute right-1.5 top-[28px] cursor-pointer tranistion-all duration-300 ${
+      className={`size-6 absolute cursor-pointer transition-all duration-300 ${className} ${
         active ? "fill-blue-500" : "fill-content"
       }`}
       xmlns="http://www.w3.org/2000/svg"

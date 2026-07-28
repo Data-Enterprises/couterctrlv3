@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { applyStoreNumberToName, scopeToStoreNumber, storeNumbersIn } from "../../../../utils/storeIdentity";
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector, useStoreName } from "../../../../hooks";
 import { useReceiversState } from "../../hooks/useReceiversState";
@@ -41,7 +42,20 @@ const ReceiversMobileDev = () => {
     return `${fmtSearchDate(startDate)} – ${fmtSearchDate(endDate)}, ${endDate.split("/")[2]}`;
   }, [startDate, endDate]);
 
-  const storeName = useStoreName(rcv.storeid, "");
+  const resolvedStoreName = useStoreName(rcv.storeid, "");
+  // Co-located stores resolve to one assignedStores record — rewrite the
+  // embedded number to the location on screen. See utils/storeIdentity.
+  const storeName = applyStoreNumberToName(
+    resolvedStoreName,
+    rcv.selectedStoreNumber ?? "",
+    rcv.selectedStoreNumber ? rcv.availableStoreNumbers : [],
+  );
+
+  // Fetched by storeid, so a co-located storeid returns both locations mixed
+  // together. The full response stays in rcv.list; this is what's displayed.
+  const visibleReceivers = rcv.selectedStoreNumber
+    ? scopeToStoreNumber(rcv.list, rcv.selectedStoreNumber)
+    : rcv.list;
 
   const handleSearch = () => {
     if (!rcv.storeid) {
@@ -56,8 +70,16 @@ const ReceiversMobileDev = () => {
         if (j.error !== 0) {
           toast.warn(j.msg ?? "Failed to load receivers");
         } else if (j.recievers.length > 0) {
+          const numbers = storeNumbersIn(j.recievers);
+          dispatch(actions.setAvailableStoreNumbers(numbers));
+          const scope = numbers.length > 1 ? numbers[0] : null;
+          dispatch(actions.setSelectedStoreNumber(scope));
           dispatch(actions.setReceiversList(j.recievers));
-          dispatch(actions.setListGridData(j.recievers));
+          dispatch(
+            actions.setListGridData(
+              scope ? scopeToStoreNumber(j.recievers, scope) : j.recievers,
+            ),
+          );
           setScreen("list");
         } else {
           dispatch(actions.setNoReceivers(true));
@@ -83,11 +105,21 @@ const ReceiversMobileDev = () => {
   if (screen === "list") {
     return (
       <RcvReceiverList
-        receivers={rcv.list}
+        receivers={visibleReceivers}
         storeName={storeName}
         dateRangeLabel={dateRangeLabel}
         storeid={rcv.storeid}
         onSearch={handleOpenSearch}
+        storeNumbers={rcv.availableStoreNumbers}
+        selectedStoreNumber={rcv.selectedStoreNumber}
+        onStoreNumberChange={(n) => {
+          dispatch(actions.setSelectedStoreNumber(n));
+          dispatch(
+            actions.setListGridData(
+              n ? scopeToStoreNumber(rcv.list, n) : rcv.list,
+            ),
+          );
+        }}
       />
     );
   }

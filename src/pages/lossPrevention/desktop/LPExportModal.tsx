@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import ResizableModalShell from "../../../components/modals/ResizableModalShell";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type { TransactionOverview } from "../../../interfaces";
 import type { CashierGrade, CashierSeverity } from "../gradingUtils";
@@ -262,14 +263,12 @@ const LPExportModal = ({
   const canCustomDownload = columns.length > 0 && aggRows.length > 0;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onClick={onClose}
+    <ResizableModalShell
+      onClose={onClose}
+      storageKey="export-modal:lp"
+      defaultWidth={760}
+      defaultHeight={640}
     >
-      <div
-        className={`bg-custom-white rounded-xl shadow-xl w-full overflow-hidden transition-all duration-200 ${mode === "custom" ? "max-w-2xl" : "max-w-lg"}`}
-        onClick={(e) => e.stopPropagation()}
-      >
         {/* Header */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
           <div>
@@ -512,8 +511,7 @@ const LPExportModal = ({
             </div>
           </>
         )}
-      </div>
-    </div>
+    </ResizableModalShell>
   );
 };
 

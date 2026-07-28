@@ -109,15 +109,24 @@ const PasswordInput = ({
           {showMsg()}
         </div>
       </label>
-      <input
-        data-testid={`text-input-${name}`}
-        name={name}
-        type={inputType}
-        value={text}
-        onChange={handleTextChange}
-        className={`basic-input focus:border bg-custom-white ${className}`}
-      />
-      <Eye id={name} onClick={handleEncryptionToggle} />
+      {/* Own positioning context so the eye centers against the input rather
+          than a fixed offset from the label — callers pass their own padding
+          (py-1.5 etc), which changes the input's height. */}
+      <div className="relative">
+        <input
+          data-testid={`text-input-${name}`}
+          name={name}
+          type={inputType}
+          value={text}
+          onChange={handleTextChange}
+          className={`basic-input focus:border bg-custom-white ${className}`}
+        />
+        <Eye
+          id={name}
+          onClick={handleEncryptionToggle}
+          className="right-1.5 top-1/2 -translate-y-1/2"
+        />
+      </div>
       <div className="h-1 w-[97%] mx-auto rounded-full bg-content/10 mt-1 ">
         <div
           data-testid="pw-strength-bar"

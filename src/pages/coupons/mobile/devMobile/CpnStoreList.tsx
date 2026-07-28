@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
+import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
 import { MagnifyingGlassIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import { formatCurrency2 } from "../../../../utils";
 import type { CouponItem } from "../../../../interfaces";
 import CpnExportSheet from "./CpnExportSheet";
+import { sumCouponAmount } from "../../../../utils/couponValue";
 
 interface Props {
   coupons: CouponItem[];
@@ -10,23 +12,43 @@ interface Props {
   dateRangeLabel: string;
   sortMetric: "amount" | "qty";
   onSortMetric: (v: "amount" | "qty") => void;
-  onSelect: (storeId: number) => void;
+  onSelect: (storeId: number, storeNumber: string) => void;
   onSearch: () => void;
 }
 
 const CpnStoreList = ({ coupons, groupName, dateRangeLabel, sortMetric, onSortMetric, onSelect, onSearch }: Props) => {
   const [exportOpen, setExportOpen] = useState(false);
-  const totalAmount = coupons.reduce((s, c) => s + c.coupon_amount, 0);
+  const totalAmount = sumCouponAmount(coupons);
   const avgPerCoupon = coupons.length > 0 ? totalAmount / coupons.length : 0;
   const uniqueProducts = new Set(coupons.map((c) => c.product_code)).size;
 
   const stores = useMemo(() => {
-    const map = new Map<number, { name: string; count: number; total: number }>();
+    // Keyed on storeid + store_number — see utils/storeIdentity.
+    const numbersById = numbersByStoreId(coupons, (c) => c.storeid, (c) => c.store_number);
+    const map = new Map<string, { storeId: number; storeNumber: string; name: string; rows: CouponItem[] }>();
     coupons.forEach((c) => {
-      const cur = map.get(c.storeid) ?? { name: c.store_name, count: 0, total: 0 };
-      map.set(c.storeid, { ...cur, count: cur.count + 1, total: cur.total + c.coupon_amount });
+      const key = `${c.storeid}__${c.store_number}`;
+      // Rows collected first, then totalled — a running sum can't dedupe the
+      // transaction-level coupon fallback. See utils/couponValue.
+      const cur = map.get(key);
+      if (cur) {
+        cur.rows.push(c);
+        return;
+      }
+      map.set(key, {
+        storeId: c.storeid,
+        storeNumber: c.store_number,
+        name: applyStoreNumberToName(c.store_name, c.store_number, numbersById[c.storeid] ?? []),
+        rows: [c],
+      });
     });
-    const rows = Array.from(map.entries()).map(([id, data]) => ({ storeId: id, ...data }));
+    const rows = Array.from(map.values()).map((v) => ({
+      storeId: v.storeId,
+      storeNumber: v.storeNumber,
+      name: v.name,
+      count: v.rows.length,
+      total: sumCouponAmount(v.rows),
+    }));
     return sortMetric === "qty" ? rows.sort((a, b) => b.count - a.count) : rows.sort((a, b) => b.total - a.total);
   }, [coupons, sortMetric]);
 
@@ -92,10 +114,10 @@ const CpnStoreList = ({ coupons, groupName, dateRangeLabel, sortMetric, onSortMe
       </div>
 
       <div className="flex-1 overflow-y-auto bg-gray-50">
-        {stores.map(({ storeId, name, count, total }) => (
+        {stores.map(({ storeId, storeNumber, name, count, total }) => (
           <button
-            key={storeId}
-            onClick={() => onSelect(storeId)}
+            key={`${storeId}__${storeNumber}`}
+            onClick={() => onSelect(storeId, storeNumber)}
             className="w-full flex items-center px-3 py-2.5 bg-custom-white border-b border-gray-100 text-left active:bg-gray-50 gap-3"
           >
             <span className="text-[12px] font-medium text-content flex-1 truncate">{name}</span>

@@ -235,7 +235,10 @@ const SubDeptMarginsDev = () => {
   // locations; the other then scopes against the same answer instead of
   // racing it and deriving half the page combined and half scoped.
   const discoveredRef = useRef(false);
-  const discoverLocations = (rows: { store_number: string }[]) => {
+  const discoverLocations = (
+    rows: { store_number: string }[],
+    preferredNumber?: string | null,
+  ) => {
     if (discoveredRef.current || rows.length === 0) return;
     discoveredRef.current = true;
     const numbers = storeNumbersIn(rows);
@@ -243,8 +246,14 @@ const SubDeptMarginsDev = () => {
     // Default to the first location rather than the combined view — that's
     // what lines this page up with Sales, which has no combined row at all.
     if (numbers.length > 1) {
-      scopeRef.current = numbers[0];
-      dispatch(setSelectedStoreNumber(numbers[0]));
+      const wanted =
+        preferredNumber === null
+          ? null
+          : preferredNumber !== undefined && numbers.includes(preferredNumber)
+            ? preferredNumber
+            : numbers[0];
+      scopeRef.current = wanted;
+      dispatch(setSelectedStoreNumber(wanted));
     }
   };
 
@@ -261,6 +270,14 @@ const SubDeptMarginsDev = () => {
   const handleStoreNumberChange = (storeNumber: string | null) => {
     scopeRef.current = storeNumber;
     dispatch(setSelectedStoreNumber(storeNumber));
+    // rawRef is component-local, so a remount (route change, hot reload) empties
+    // it while Redux still holds the results. Deriving from an empty cache would
+    // overwrite Redux with an empty list and strand the user on the entry card,
+    // so refetch instead — keeping the location just picked.
+    if (rawRef.current.subSales.ty.length === 0) {
+      handleSearch(storeNumber);
+      return;
+    }
     // The previously selected sub dept may not trade at this location.
     dispatch(actions.setSelectedSubDeptId(null));
     dispatch(resetSubDeptGrades());
@@ -303,7 +320,9 @@ const SubDeptMarginsDev = () => {
     }
   };
 
-  const handleSearch = () => {
+  // preferredNumber keeps the user's chosen location across a forced refetch;
+  // omitted on a fresh search, which defaults to the first location.
+  const handleSearch = (preferredNumber?: string | null) => {
     dispatch(actions.requerySubDeptMargins());
     dispatch(actions.setLoadingSubDepts(true));
     setNotice(undefined);
@@ -339,7 +358,7 @@ const SubDeptMarginsDev = () => {
           lw: rows(lw),
           ly: rows(ly),
         };
-        discoverLocations(rawRef.current.weekly.tw);
+        discoverLocations(rawRef.current.weekly.tw, preferredNumber);
         dispatch(
           setStoreSalesTotals(
             computeStoreDayMatched(
@@ -382,7 +401,7 @@ const SubDeptMarginsDev = () => {
           lw: lwResp?.data?.error === 0 ? lwResp.data.subs : [],
           ly: lyResp?.data?.error === 0 ? lyResp.data.subs : [],
         };
-        discoverLocations(j.subs);
+        discoverLocations(j.subs, preferredNumber);
         const salesTy = aggSubDeptSales(scoped(rawRef.current.subSales.ty));
         const salesLw = aggSubDeptSales(scoped(rawRef.current.subSales.lw));
         const salesLy = aggSubDeptSales(scoped(rawRef.current.subSales.ly));
@@ -617,12 +636,14 @@ const SubDeptMarginsDev = () => {
   return (
     <div className="w-full p-4 select-none min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
       <ExportModal
+        resizable
         isOpen={sm.openExportModal}
         columns={itemCols}
         data={sm.filteredItemGridData}
         onClose={handleClose}
       />
       <ExportModal
+        resizable
         isOpen={sm.openCostExportModal}
         columns={costCols}
         data={sm.filteredCostGridData}

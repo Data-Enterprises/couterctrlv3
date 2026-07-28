@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
+import { applyStoreNumberToName } from "../../utils/storeIdentity";
 import {
   ArrowDownTrayIcon,
   ArrowLeftIcon,
@@ -6,6 +7,7 @@ import {
   ChevronRightIcon,
   ChevronDownIcon,
 } from "@heroicons/react/20/solid";
+import { couponValueOf, sumCouponAmount } from "../../utils/couponValue";
 import { useAppSelector, useAppDispatch, useStoreName } from "../../hooks";
 import { formatCurrency2, formatDate } from "../../utils";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
@@ -197,10 +199,25 @@ const CouponDetailPanel = ({
   const [appliedAmount, setAppliedAmount] = useState<ThresholdValue | null>(
     null,
   );
+  // selectedKey is `storeid__store_number` — co-located stores share an id, so
+  // the number is what identifies the location. See utils/storeIdentity.
+  const [selectedStoreId, selectedStoreNumber] = selectedKey
+    ? selectedKey.split("__")
+    : ["", ""];
   const selectedStoreName =
     isGroup && selectedKey
-      ? (assignedStores.find((s) => s.storeid === Number(selectedKey))
-          ?.store_name ?? selectedKey)
+      ? applyStoreNumberToName(
+          assignedStores.find((s) => s.storeid === Number(selectedStoreId))
+            ?.store_name ?? selectedKey,
+          selectedStoreNumber,
+          [
+            ...new Set(
+              state.coupons
+                .filter((c) => String(c.storeid) === selectedStoreId)
+                .map((c) => c.store_number),
+            ),
+          ],
+        )
       : "";
 
   const fmtRangePart = (mdy: string, withYear = false) => {
@@ -211,8 +228,12 @@ const CouponDetailPanel = ({
 
   const visibleRows = useMemo(() => {
     if (!selectedKey) return state.coupons;
-    return state.coupons.filter((c) => String(c.storeid) === selectedKey);
-  }, [state.coupons, selectedKey]);
+    return state.coupons.filter(
+      (c) =>
+        String(c.storeid) === selectedStoreId &&
+        c.store_number === selectedStoreNumber,
+    );
+  }, [state.coupons, selectedKey, selectedStoreId, selectedStoreNumber]);
 
   // Reset selection when scope or tab changes
   useEffect(() => {
@@ -255,7 +276,7 @@ const CouponDetailPanel = ({
           key,
           label,
           count: rs.length,
-          total: rs.reduce((s, r) => s + r.coupon_amount, 0),
+          total: sumCouponAmount(rs),
           rows: rs,
         }),
       );
@@ -328,7 +349,7 @@ const CouponDetailPanel = ({
       if (appliedSubDept && r.sub_department_description !== appliedSubDept)
         return false;
       if (appliedAmount) {
-        const amt = r.coupon_amount;
+        const amt = couponValueOf(r);
         if (appliedAmount.op === "gt" && !(amt > appliedAmount.amount))
           return false;
         if (appliedAmount.op === "lt" && !(amt < appliedAmount.amount))
@@ -379,11 +400,11 @@ const CouponDetailPanel = ({
       }
       const agg = map.get(key)!;
       agg.count++;
-      agg.total += r.coupon_amount;
+      agg.total += couponValueOf(r);
       const existing = agg.uses.find((u) => u.sale_id === r.sale_id);
       if (existing) {
         existing.count++;
-        existing.amount += r.coupon_amount;
+        existing.amount += couponValueOf(r);
       } else {
         agg.uses.push({
           sale_id: r.sale_id,
@@ -393,7 +414,7 @@ const CouponDetailPanel = ({
           store_number: r.store_number,
           terminal: r.terminal,
           count: 1,
-          amount: r.coupon_amount,
+          amount: couponValueOf(r),
           row: r,
         });
       }
@@ -415,7 +436,7 @@ const CouponDetailPanel = ({
 
   // Top KPI strip — scoped to selected store (or all stores if none selected)
   const totalCoupons = visibleRows.length;
-  const totalAmount = visibleRows.reduce((s, c) => s + c.coupon_amount, 0);
+  const totalAmount = sumCouponAmount(visibleRows);
   const avgPerCoupon = totalCoupons > 0 ? totalAmount / totalCoupons : 0;
   const uniqueProducts = new Set(visibleRows.map((c) => c.product_code)).size;
   const uniqueSubDepts = new Set(
@@ -425,7 +446,7 @@ const CouponDetailPanel = ({
 
   // Inner KPI strip — scoped to the selected section's rows
   const secCoupons = gridRows.length;
-  const secAmount = gridRows.reduce((s, c) => s + c.coupon_amount, 0);
+  const secAmount = sumCouponAmount(gridRows);
   const secAvg = secCoupons > 0 ? secAmount / secCoupons : 0;
   const secProducts = new Set(gridRows.map((c) => c.product_code)).size;
 
@@ -499,7 +520,7 @@ const CouponDetailPanel = ({
       item.qty ?? "",
       item.sale_type ?? "",
       item.is_coupon === 1 ? "" : (item.total_sales ?? ""),
-      item.is_coupon === 1 ? (item.coupon_amount ?? "") : "",
+      item.is_coupon === 1 ? couponValueOf(item) : "",
     ]);
     const csv = [
       headers.join(","),
@@ -532,7 +553,7 @@ const CouponDetailPanel = ({
     0,
   );
   const txCoupons = couponLines.reduce(
-    (s: number, r: any) => s + (r.coupon_amount ?? 0),
+    (s: number, r: any) => s + couponValueOf(r),
     0,
   );
   const txTax = saleLines.reduce(
@@ -868,7 +889,7 @@ const CouponDetailPanel = ({
                                   >
                                     {formatCurrency2(
                                       isCpn
-                                        ? item.coupon_amount
+                                        ? couponValueOf(item)
                                         : item.total_sales,
                                     )}
                                   </td>

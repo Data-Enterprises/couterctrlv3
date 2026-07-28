@@ -1,4 +1,5 @@
 import { useMemo, useState, useRef, useEffect } from "react";
+import LPDayCards from "./LPDayCards";
 import {
   MagnifyingGlassIcon,
   ArrowDownTrayIcon,
@@ -581,6 +582,16 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
               ))}
             </div>
           )}
+
+          {/* Day-of-week strip — filters the transaction list and grades each
+              day against the same weekday in the two baseline weeks. */}
+          <LPDayCards
+            overviews={transOverviews}
+            baseline={cashier.baselineOverviews}
+            selectedDate={saleDateFilter}
+            onSelect={(d) => dispatch(setSaleDateFilter(d))}
+            hasAmount={!isNoDollar}
+          />
 
           {/* Split body */}
           <div className="flex flex-1 min-h-0">

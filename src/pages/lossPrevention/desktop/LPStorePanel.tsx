@@ -8,6 +8,7 @@ import type { Severity, SevFilter } from "../../../utils/severity";
 import { severityDotClass } from "../../../utils/severity";
 import { isNoDollarType, storeSeverity, directionalPillClass, weekRangeLabel } from "../gradingUtils";
 import TextFilter from "../../../components/filters/TextFilter";
+import SelectFilter from "../../../components/filters/SelectFilter";
 import InfoPopover from "../../../components/InfoPopover";
 import { LP_INFO } from "../lpInfo";
 
@@ -18,9 +19,12 @@ interface Props {
   onSaleTypeSelect: (saleType: string) => void;
   onStoreSelect: (detail: CashierDetails) => void;
   onOpenSearch: () => void;
+  /** null = whole week. Fetches that day's per-store totals plus the same
+   *  weekday from both baseline weeks — see handleDaySelect in LPDesktop. */
+  onDaySelect: (day: string | null) => void;
 }
 
-const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }: Props) => {
+const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, onDaySelect }: Props) => {
   const cashier = useAppSelector((s) => s.lossPrevention);
   const search = useAppSelector((s) => s.search);
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
@@ -31,13 +35,35 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
   const {
     saleTypes, selectedSaleType, cashierDetails, baselineDetails,
     selectedStoreId, selectedStoreNumber,
+    selectedDay, dayDetails, dayBaselineDetails, loadingDay,
   } = cashier;
+
+  // With a day selected the rows and their baseline both come from that day's
+  // fetch; the baseline is the same weekday from both baseline weeks summed,
+  // so the /2 below still reads as "average of the matched days".
+  const activeDetails = selectedDay ? dayDetails : cashierDetails;
+  const activeBaseline = selectedDay ? dayBaselineDetails : baselineDetails;
+
+  // The seven days of the searched week, newest first.
+  const dayOptions = useMemo(() => {
+    const [m, d, y] = search.singleDate.split("/").map(Number);
+    const end = new Date(y, m - 1, d);
+    return Array.from({ length: 7 }, (_, i) => {
+      const dt = new Date(y, m - 1, d - i);
+      return {
+        value: `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`,
+        label: dt.toLocaleDateString("en-US", { weekday: "short", month: "numeric", day: "numeric" }),
+      };
+    }).filter(() => !Number.isNaN(end.getTime()));
+  }, [search.singleDate]);
 
   const dateLabel = weekRangeLabel(search.singleDate);
 
-  const totalSales  = cashierDetails.reduce((acc, d) => acc + Math.abs(d.amount), 0);
-  const totalTrans  = cashierDetails.reduce((acc, d) => acc + d.transaction_count, 0);
-  const totalItems  = cashierDetails.reduce((acc, d) => acc + d.total_items, 0);
+  // Header totals follow the filter — week totals beside day-scoped rows would
+  // read as though the rows didn't add up.
+  const totalSales  = activeDetails.reduce((acc, d) => acc + Math.abs(d.amount), 0);
+  const totalTrans  = activeDetails.reduce((acc, d) => acc + d.transaction_count, 0);
+  const totalItems  = activeDetails.reduce((acc, d) => acc + d.total_items, 0);
 
   const hasAmount = !isNoDollarType(selectedSaleType);
 
@@ -45,21 +71,21 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
   // co-located locations that the name alone can't tell apart.
   const numbersByStoreId = useMemo(
     () =>
-      cashierDetails.reduce((acc: Record<number, string[]>, d) => {
+      activeDetails.reduce((acc: Record<number, string[]>, d) => {
         const nums = (acc[d.storeid] ??= []);
         if (!nums.includes(d.store_number)) nums.push(d.store_number);
         return acc;
       }, {}),
-    [cashierDetails],
+    [activeDetails],
   );
 
   const graded = useMemo(
     () =>
-      cashierDetails.map((detail) => {
+      activeDetails.map((detail) => {
         // storeid + store_number, not storeid alone: co-located stores share
         // an id, and matching on the id would hand both rows whichever
         // sibling's baseline happened to come back first.
-        const b = baselineDetails.find(
+        const b = activeBaseline.find(
           (x) =>
             x.storeid === detail.storeid &&
             x.store_number === detail.store_number,
@@ -93,7 +119,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
             detail.store_number,
             numbersByStoreId[detail.storeid] ?? [],
           ),
-          sev: storeSeverity(detail, baselineDetails, selectedSaleType),
+          sev: storeSeverity(detail, activeBaseline, selectedSaleType),
           transPct,
           itemsPct,
           amountPct,
@@ -101,8 +127,8 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
         };
       }),
     [
-      cashierDetails,
-      baselineDetails,
+      activeDetails,
+      activeBaseline,
       selectedSaleType,
       assignedStores,
       numbersByStoreId,
@@ -134,7 +160,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
         <div className="flex items-center gap-2 min-h-[24px]">
           <span className="text-[13px] font-semibold text-custom-white flex-shrink-0">{dateLabel}</span>
           <div className="flex-1" />
-          {cashierDetails.length > 0 && (
+          {activeDetails.length > 0 && (
             <>
               <div className="flex items-baseline gap-1 flex-shrink-0">
                 <span className="text-[10px] uppercase tracking-wide text-custom-white/45">Sales</span>
@@ -230,19 +256,30 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
             OK ({healthyCount})
           </button>
         </div>
-        <TextFilter
-          value={storeFilter}
-          onChange={setStoreFilter}
-          placeholder="Filter by store…"
-          className="max-w-[180px]"
-        />
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {/* Day filter — narrows the rows to one day and re-bases their
+              grading to the same weekday in the baseline weeks. */}
+          <SelectFilter
+            options={dayOptions}
+            value={selectedDay ?? ""}
+            onChange={(v) => onDaySelect(v || null)}
+            placeholder="Whole week"
+            className="max-w-[150px]"
+          />
+          <TextFilter
+            value={storeFilter}
+            onChange={setStoreFilter}
+            placeholder="Filter by store…"
+            className="max-w-[180px]"
+          />
+        </div>
       </div>
 
       {/* Unified store list — sorted critical → watch → healthy */}
       <div className="flex-1 min-h-0 flex flex-col">
-        {loading && cashierDetails.length === 0 ? (
+        {(loading || loadingDay) && activeDetails.length === 0 ? (
           <div className="flex-1 flex items-center justify-center text-[11px] text-content/40">Loading…</div>
-        ) : cashierDetails.length === 0 ? (
+        ) : activeDetails.length === 0 ? (
           <div className="flex-1 flex items-center justify-center text-[11px] text-content/40">
             {selectedSaleType ? "No stores found" : "Select an exception type"}
           </div>

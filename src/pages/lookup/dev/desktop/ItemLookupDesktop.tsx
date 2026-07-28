@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
 import { useAppSelector, useStoreName } from "../../../../hooks";
 import LookupDesktopEntry from "./LookupDesktopEntry";
 import LookupQueuePanel from "./LookupQueuePanel";
@@ -9,8 +10,23 @@ import { buildDayBuckets, computeMargin, computeTrend, findGaps } from "../looku
 
 const ItemLookupDesktop = () => {
   const { selectedStore } = useAppSelector((s) => s.item);
-  const storeName = useStoreName(selectedStore);
-  const { queue, selectedUpc, setSelectedUpc, runBatch } = useLookupQueue();
+  const resolvedStoreName = useStoreName(selectedStore);
+  const {
+    queue,
+    selectedUpc,
+    setSelectedUpc,
+    runBatch,
+    availableStoreNumbers,
+    selectedStoreNumber,
+    applyStoreScope,
+  } = useLookupQueue();
+  // Co-located stores resolve to one assignedStores record, so the name embeds
+  // only one of the numbers — rewrite it to the location on screen.
+  const storeName = applyStoreNumberToName(
+    resolvedStoreName,
+    selectedStoreNumber ?? "",
+    selectedStoreNumber ? availableStoreNumbers : [],
+  );
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
 
@@ -50,6 +66,9 @@ const ItemLookupDesktop = () => {
         selectedUpc={selectedUpc}
         onSelect={setSelectedUpc}
         onOpenSearch={() => setSearchModalOpen(true)}
+        storeNumbers={availableStoreNumbers}
+        selectedStoreNumber={selectedStoreNumber}
+        onStoreNumberChange={applyStoreScope}
       />
 
       {selectedItem?.history ? (

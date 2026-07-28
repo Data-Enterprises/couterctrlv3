@@ -1,4 +1,5 @@
 import { useAppSelector, useAppDispatch } from "../../hooks";
+import { scopeToStoreNumber, storeNumbersIn } from "../../utils/storeIdentity";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { getReceiversList } from "../../api/receivers";
 import type { JsonError, ReceiverListResponse } from "../../interfaces";
@@ -10,6 +11,8 @@ import {
   setNoReceivers,
   setReceiverDetails,
   setReceiversList,
+  setAvailableStoreNumbers,
+  setSelectedStoreNumber,
   setRecMobileStage,
   setReducedVendors,
   setStoreId,
@@ -54,8 +57,18 @@ const Receivers = () => {
         if (j.error !== 0) {
           toast.warn(j.msg ?? "Failed to load receivers");
         } else if (j.recievers.length > 0) {
+          // Fetched by storeid, so a co-located storeid returns both locations
+          // mixed together. Discover them and default to the first, matching
+          // how Sub Dept Margins presents the same situation.
+          const numbers = storeNumbersIn(j.recievers);
+          dispatch(setAvailableStoreNumbers(numbers));
+          const scope = numbers.length > 1 ? numbers[0] : null;
+          dispatch(setSelectedStoreNumber(scope));
+          const rows = scope
+            ? scopeToStoreNumber(j.recievers, scope)
+            : j.recievers;
           dispatch(setReceiversList(j.recievers));
-          dispatch(setListGridData(j.recievers));
+          dispatch(setListGridData(rows));
 
           if (isMobile) {
             dispatch(setRecMobileStage(2));

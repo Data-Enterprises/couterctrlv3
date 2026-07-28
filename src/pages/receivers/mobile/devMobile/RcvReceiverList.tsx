@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import LocationTabs from "../../../../components/filters/LocationTabs";
 import { MagnifyingGlassIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import { useAppSelector } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
@@ -20,6 +21,9 @@ interface Props {
   dateRangeLabel: string;
   storeid: number;
   onSearch: () => void;
+  storeNumbers: string[];
+  selectedStoreNumber: string | null;
+  onStoreNumberChange: (storeNumber: string | null) => void;
 }
 
 const fmtDate = (dateStr: string) => {
@@ -50,6 +54,9 @@ const gmColor = (gm: number) => {
 const RcvReceiverList = ({
   receivers,
   storeName,
+  storeNumbers,
+  selectedStoreNumber,
+  onStoreNumberChange,
   dateRangeLabel,
   storeid,
   onSearch,
@@ -207,6 +214,13 @@ const RcvReceiverList = ({
           </div>
         ))}
       </div>
+
+      <LocationTabs
+        numbers={storeNumbers}
+        selected={selectedStoreNumber}
+        onChange={onStoreNumberChange}
+        variant="bare"
+      />
 
       <div className="flex-1 overflow-y-auto divide-y divide-[#1e2a4a]/15 pb-14">
         {grouped.map((group) => {

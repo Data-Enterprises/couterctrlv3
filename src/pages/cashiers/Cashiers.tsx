@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import CashiersExportModal from "./explorer/CashiersExportModal";
 import { ArrowDownTrayIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { useCashierCtx } from ".";
 import { useAppSelector } from "../../hooks";
@@ -59,6 +60,7 @@ const Cashiers = () => {
   } = useAppSelector((state) => state.cashier);
 
   const [searchOpen, setSearchOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [signalSearch, setSignalSearch] = useState("");
   const [truncated, setTruncated] = useState(0);
   // Distinguishes "preflight ran and found nothing" from "preflight hasn't run
@@ -262,7 +264,7 @@ const Cashiers = () => {
           <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
             Cashiers
           </span>
-          <span className="text-custom-white/60 text-[11px] truncate">
+          <span className="text-custom-white/85 text-[12px] truncate">
             {explorerScopeLabel} · {ctx.startDate} – {ctx.endDate} ·{" "}
             {explorerFetchedException}
           </span>
@@ -280,9 +282,7 @@ const Cashiers = () => {
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
           <button
-            onClick={() =>
-              toast.warn("Export for this view isn't wired up yet")
-            }
+            onClick={() => setExportOpen(true)}
             title="Export CSV"
             className="w-[20px] h-[20px] flex items-center justify-center rounded border border-white/20 text-custom-white/60 hover:text-custom-white hover:border-white/40 transition-colors flex-shrink-0"
           >
@@ -300,7 +300,7 @@ const Cashiers = () => {
             { label: "Items", value: totals.items.toLocaleString() },
           ].map((kpi) => (
             <div key={kpi.label} className="px-3 py-2 border-r border-gray-100 last:border-r-0">
-              <div className="text-[11px] text-content/70">{kpi.label}</div>
+              <div className="text-[11px] text-content/85">{kpi.label}</div>
               <div className="text-[16px] font-medium text-content">
                 {kpi.value}
               </div>
@@ -349,6 +349,19 @@ const Cashiers = () => {
           </div>
         )}
       </div>
+
+      {exportOpen && (
+        <CashiersExportModal
+          onClose={() => setExportOpen(false)}
+          scopeLabel={explorerScopeLabel}
+          exception={explorerFetchedException}
+          dateRange={`${ctx.startDate} – ${ctx.endDate}`}
+          lens={explorerLens}
+          signals={visibleSignals}
+          exceptionRows={exceptionRows}
+          transactionLengths={transactionLengths}
+        />
+      )}
 
       {searchOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35">

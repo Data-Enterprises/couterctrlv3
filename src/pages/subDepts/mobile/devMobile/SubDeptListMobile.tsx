@@ -10,17 +10,21 @@ import { fmtDate } from "../../../sales/shared/ledgerUtils";
 import { getTier } from "../..";
 import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
 import SevChips from "../../../sales/mobile/components/SevChips";
+import LocationTabs from "../../../../components/filters/LocationTabs";
 import SubDeptRowMobile from "./SubDeptRowMobile";
 import type { GradingProgress } from "./SubDeptMarginsMobile";
 
 interface Props {
   onSearch: () => void;
   gradingProgress: GradingProgress;
+  /** Re-presents the cached search as one co-located location, or all of them
+   *  combined when null. No refetch — see SubDeptMarginsMobile. */
+  onStoreNumberChange: (storeNumber: string | null) => void;
 }
 
 const TIER_ORDER: Record<MarginTier, number> = { critical: 0, watch: 1, healthy: 2 };
 
-const SubDeptListMobile = ({ onSearch, gradingProgress }: Props) => {
+const SubDeptListMobile = ({ onSearch, gradingProgress, onStoreNumberChange }: Props) => {
   const dispatch = useAppDispatch();
   const ctx = useSubMarginCtx();
   const params = useParams();
@@ -29,6 +33,8 @@ const SubDeptListMobile = ({ onSearch, gradingProgress }: Props) => {
 
   const subDeptGrades = useAppSelector((s) => s.subMargin.subDeptGrades);
   const loadingGrades = useAppSelector((s) => s.subMargin.loadingGrades);
+  const availableStoreNumbers = useAppSelector((s) => s.subMargin.availableStoreNumbers);
+  const selectedStoreNumber = useAppSelector((s) => s.subMargin.selectedStoreNumber);
   const rawGradingThreshold = useAppSelector((s) => s.subMargin.gradingThreshold);
   const gradingMetric = useAppSelector((s) => s.subMargin.gradingMetric);
 
@@ -118,6 +124,12 @@ const SubDeptListMobile = ({ onSearch, gradingProgress }: Props) => {
         </div>
       )}
 
+      <LocationTabs
+        numbers={availableStoreNumbers}
+        selected={selectedStoreNumber}
+        onChange={onStoreNumberChange}
+        variant="bare"
+      />
       <SevChips active={sevFilter} counts={counts} onChange={setSevFilter} />
 
       <div className="flex-1 overflow-y-auto">

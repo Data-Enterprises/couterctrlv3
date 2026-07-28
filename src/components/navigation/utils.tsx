@@ -266,6 +266,18 @@ export const categories: NavCategory[] = [
         isHovering: false,
         isVisible: true,
       },
+      {
+        name: "Coupon Sales",
+        href: "coupon-sales",
+        icon: CouponIcon,
+        // Desktop only for now — the Data-category Coupons page covers mobile.
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: ["*"],
+        isHovering: false,
+        isVisible: true,
+      },
     ],
   },
   {

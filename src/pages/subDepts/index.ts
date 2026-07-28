@@ -26,6 +26,49 @@ export const getGradeDelta = (
   return hasLY ? vsLY : vsLW;
 };
 
+/**
+ * Per-day TY vs its comparison period, for the mobile day strips.
+ *
+ * Uses the same fallback as getGradeDelta: last year when the sub dept has LY
+ * data, otherwise last week. Without this the strip compared against LY only,
+ * so any store missing LY rendered every day greyed out — even though the row
+ * beside it was graded, correctly, against LW.
+ *
+ * Reference days are paired by position, matching how the strips already
+ * aligned TY to LY (the periods are the same length).
+ */
+export const buildDayComparisons = (
+  grade: SubDeptGrade,
+): { date: string; isUp: boolean; hasRef: boolean }[] => {
+  const datesOf = (rows: SubDeptMargin[]) =>
+    [...new Set(rows.map((r) => r.sale_date))].sort();
+  const net = (rows: SubDeptMargin[]) =>
+    rows.reduce((s, m) => s + (m.total_sales - m.total_tax), 0);
+  const cogs = (rows: SubDeptMargin[]) =>
+    rows.reduce(
+      (s, m) => s + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight),
+      0,
+    );
+  const pct = (n: number, c: number) => (n > 0 ? ((n - c) / n) * 100 : 0);
+
+  const hasLY = grade.lySales > 0 || grade.lyMarginPct > 0;
+  const refRows = hasLY ? grade.lyWeekOneMargins : grade.lwWeekOneMargins;
+  const refDates = datesOf(refRows);
+
+  return datesOf(grade.tyWeekOneMargins).map((date, i) => {
+    const tyDay = grade.tyWeekOneMargins.filter((m) => m.sale_date === date);
+    const refDay = refDates[i]
+      ? refRows.filter((m) => m.sale_date === refDates[i])
+      : [];
+    const refNet = net(refDay);
+    return {
+      date,
+      isUp: pct(net(tyDay), cogs(tyDay)) >= pct(refNet, cogs(refDay)),
+      hasRef: refNet > 0,
+    };
+  });
+};
+
 export const getTier = (grade: SubDeptGrade, threshold: number, metric: GradingMetric): MarginTier => {
   const delta = getGradeDelta(grade, metric);
   if (delta >= 0) return "healthy";

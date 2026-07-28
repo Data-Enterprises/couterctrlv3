@@ -10,7 +10,7 @@ interface Props {
   loading: boolean;
   startDate: string;
   endDate: string;
-  onSelectStore: (order_date: string, order_type: string, storeid: number) => void;
+  onSelectStore: (order_date: string, order_type: string, storeid: number, storenumber: string) => void;
   onSelectAllStores: (order_date: string, order_type: string, storeids: number[]) => void;
   onOpenSearch: () => void;
 }
@@ -198,8 +198,8 @@ const OrdersAvailableScreen = ({
                       const sel = isSelected(dateGroup.order_date, card.order_type, store.storeid);
                       return (
                         <button
-                          key={`${dateGroup.order_date}-${store.storeid}`}
-                          onClick={() => onSelectStore(dateGroup.order_date, card.order_type, store.storeid)}
+                          key={`${dateGroup.order_date}-${store.storeid}__${store.storenumber}`}
+                          onClick={() => onSelectStore(dateGroup.order_date, card.order_type, store.storeid, store.storenumber)}
                           style={sel ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
                           className={`w-full flex items-center justify-between pl-6 pr-4 py-2.5 text-left transition-colors ${
                             sel ? "bg-custom-white" : "hover:bg-gray-50"

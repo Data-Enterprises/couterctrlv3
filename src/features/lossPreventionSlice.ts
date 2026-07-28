@@ -52,6 +52,17 @@ export interface LossPreventionState {
   // store_numbers (see utils/storeIdentity), and selecting on the id would
   // highlight both rows and load the wrong one's transactions.
   selectedStoreNumber: string;
+  // Day-of-week filter for the store list. cashiers/ aggregates per store over
+  // the whole range and its baseline (trend) carries no date at all, so a
+  // single day can't be derived client-side — it is fetched on demand.
+  /** YYYY-MM-DD, or null for the whole week. */
+  selectedDay: string | null;
+  /** Per-store totals for selectedDay. */
+  dayDetails: CashierDetails[];
+  /** The same weekday from the two baseline weeks, summed per store — so the
+   *  existing "divide the baseline by 2" grading math applies unchanged. */
+  dayBaselineDetails: CashierDetails[];
+  loadingDay: boolean;
   noRowsReturned: boolean;
   noTransMsg: boolean;
   transIdFilter: string;
@@ -94,6 +105,10 @@ const initialState: LossPreventionState = {
   transactionDrillDown: [],
   selectedStoreId: 0,
   selectedStoreNumber: "",
+  selectedDay: null,
+  dayDetails: [],
+  dayBaselineDetails: [],
+  loadingDay: false,
   noRowsReturned: false,
   noTransMsg: false,
   transIdFilter: "",
@@ -210,6 +225,18 @@ export const lossPreventionSlice = createSlice({
     setSelectedStoreNumber: (state, action: PayloadAction<string>) => {
       state.selectedStoreNumber = action.payload;
     },
+    setSelectedDay: (state, action: PayloadAction<string | null>) => {
+      state.selectedDay = action.payload;
+    },
+    setDayDetails: (state, action: PayloadAction<CashierDetails[]>) => {
+      state.dayDetails = action.payload;
+    },
+    setDayBaselineDetails: (state, action: PayloadAction<CashierDetails[]>) => {
+      state.dayBaselineDetails = action.payload;
+    },
+    setLoadingDay: (state, action: PayloadAction<boolean>) => {
+      state.loadingDay = action.payload;
+    },
     toggleNoTransMsg: (state, action: PayloadAction<boolean>) => {
       state.noTransMsg = action.payload;
     },
@@ -315,6 +342,10 @@ export const {
   setTransactionDrillDown,
   setSelectedStoreId,
   setSelectedStoreNumber,
+  setSelectedDay,
+  setDayDetails,
+  setDayBaselineDetails,
+  setLoadingDay,
   toggleNoTransMsg,
   resetCashierSlice,
   setTransIdFilter,

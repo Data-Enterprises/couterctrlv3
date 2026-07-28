@@ -5,6 +5,7 @@ import {
   QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
 import type { QueueItem } from "../../../../features/itemLookupSlice";
+import LocationTabs from "../../../../components/filters/LocationTabs";
 import InfoPopover from "../../../../components/InfoPopover";
 import { LOOKUP_INFO } from "../lookupInfo";
 
@@ -14,6 +15,9 @@ interface LookupQueuePanelProps {
   selectedUpc: string | null;
   onSelect: (upc: string) => void;
   onOpenSearch: () => void;
+  storeNumbers: string[];
+  selectedStoreNumber: string | null;
+  onStoreNumberChange: (storeNumber: string | null) => void;
 }
 
 const fmtRangeDate = (d: Date) =>
@@ -25,6 +29,9 @@ const LookupQueuePanel = ({
   selectedUpc,
   onSelect,
   onOpenSearch,
+  storeNumbers,
+  selectedStoreNumber,
+  onStoreNumberChange,
 }: LookupQueuePanelProps) => {
   const [infoOpen, setInfoOpen] = useState(false);
   const loadedCount = queue.filter(
@@ -97,6 +104,12 @@ const LookupQueuePanel = ({
           </div>
         </div>
       </div>
+
+      <LocationTabs
+        numbers={storeNumbers}
+        selected={selectedStoreNumber}
+        onChange={onStoreNumberChange}
+      />
 
       <div className="flex-1 overflow-y-auto thin-scrollbar">
         {queue.map((item) => {

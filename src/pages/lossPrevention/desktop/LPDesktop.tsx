@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useApiContext } from "../../hooks";
@@ -22,6 +22,10 @@ import {
   setSelectedSaleType,
   setSelectedStoreId,
   setSelectedStoreNumber,
+  setSelectedDay,
+  setDayDetails,
+  setDayBaselineDetails,
+  setLoadingDay,
   setSaleTypes,
   setTransList,
   setTransModalOpen,
@@ -75,6 +79,11 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
     const panels = cashier.saleTypes;
     dispatch(setSelectedStoreId(0));
     dispatch(setSelectedStoreNumber(""));
+    // Day data is per sale type, so it can't carry across a type change.
+    dayCache.current = {};
+    dispatch(setSelectedDay(null));
+    dispatch(setDayDetails([]));
+    dispatch(setDayBaselineDetails([]));
     dispatch(setCashierTrends([]));
     dispatch(setCashierDetails([]));
     dispatch(reQuery());
@@ -206,6 +215,96 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
         dispatch(setFetchingCashierTransactions(false));
         dispatch(setTransactionLoadingMessage(""));
       });
+  };
+
+  // Day filter for the store list.
+  //
+  // cashiers/ returns one aggregated row per store for the whole range, and its
+  // baseline ("trend") carries no date, so a single day can't be sliced out of
+  // what's already loaded — it needs its own calls. Three per day: the day
+  // itself, plus the same weekday in each of the two baseline weeks (D-7, D-14,
+  // both of which fall inside the existing lpBaseStart..lpBaseEnd window).
+  //
+  // The two baseline days are summed per store, so LPStorePanel's existing
+  // "divide the baseline by 2" grading applies unchanged — one day now against
+  // the average of the same weekday twice.
+  const dayCache = useRef<
+    Record<string, { details: CashierDetails[]; baseline: CashierDetails[] }>
+  >({});
+
+  const shiftDays = (iso: string, delta: number) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    const dt = new Date(y, m - 1, d + delta);
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+  };
+
+  const sumByStore = (rows: CashierDetails[]): CashierDetails[] => {
+    const map = new Map<string, CashierDetails>();
+    for (const r of rows) {
+      const key = `${r.storeid}__${r.store_number}`;
+      const cur = map.get(key);
+      if (!cur) {
+        map.set(key, { ...r });
+        continue;
+      }
+      cur.transaction_count += r.transaction_count;
+      cur.total_items += r.total_items;
+      cur.amount += r.amount;
+      cur.qty += r.qty;
+      cur.weight += r.weight;
+      cur.cashier_count = Math.max(cur.cashier_count, r.cashier_count);
+      // Averages are re-derived rather than added — adding two means is wrong.
+      cur.average_dollars =
+        cur.transaction_count > 0 ? cur.amount / cur.transaction_count : 0;
+      cur.average_qty =
+        cur.transaction_count > 0 ? cur.qty / cur.transaction_count : 0;
+      cur.avg_item_amount =
+        cur.total_items > 0 ? cur.amount / cur.total_items : 0;
+      cur.avg_item_qty = cur.total_items > 0 ? cur.qty / cur.total_items : 0;
+    }
+    return [...map.values()];
+  };
+
+  const handleDaySelect = (day: string | null) => {
+    dispatch(setSelectedDay(day));
+    if (!day) {
+      dispatch(setDayDetails([]));
+      dispatch(setDayBaselineDetails([]));
+      return;
+    }
+    const cached = dayCache.current[day];
+    if (cached) {
+      dispatch(setDayDetails(cached.details));
+      dispatch(setDayBaselineDetails(cached.baseline));
+      return;
+    }
+    const saleType = cashier.selectedSaleType;
+    const fetchDay = (d: string) =>
+      getCashierDetails(
+        url,
+        token,
+        d,
+        d,
+        // Must mirror the week-level call — hardcoding 0 here silently returned
+        // nothing for group searches, where searchValue is a group id.
+        params.useGroups,
+        params.searchValue,
+        params.singleStore,
+        [saleType],
+      )
+        .then((r) => (r.data.error === 0 ? (r.data.sales as CashierDetails[]) : []))
+        .catch(() => [] as CashierDetails[]);
+
+    dispatch(setLoadingDay(true));
+    Promise.all([fetchDay(day), fetchDay(shiftDays(day, -7)), fetchDay(shiftDays(day, -14))])
+      .then(([today, lastWeek, twoWeeks]) => {
+        const details = today;
+        const baseline = sumByStore([...lastWeek, ...twoWeeks]);
+        dayCache.current[day] = { details, baseline };
+        dispatch(setDayDetails(details));
+        dispatch(setDayBaselineDetails(baseline));
+      })
+      .finally(() => dispatch(setLoadingDay(false)));
   };
 
   const handleStoreSelect = (detail: CashierDetails) => {
@@ -378,6 +477,7 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
       {/* <DescModal open={descModalOpen} onClose={() => setDescModalOpen(false)} handleSubmit={handleDescriptionSubmit} /> */}
       <LPStorePanel
         loading={loading}
+        onDaySelect={handleDaySelect}
         onSaleTypeSelect={handleSaleTypeSelect}
         onStoreSelect={handleStoreSelect}
         onOpenSearch={() => setSearchModalOpen(true)}

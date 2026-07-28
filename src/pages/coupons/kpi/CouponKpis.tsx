@@ -6,13 +6,14 @@ import {
   ShoppingBagIcon,
 } from "@heroicons/react/24/solid";
 import { formatCurrency2 } from "../../../utils";
+import { sumCouponAmount } from "../../../utils/couponValue";
 
 const CouponKpis = () => {
   const { gridCoupons } = useAppSelector((state) => state.couponLegacy);
   const { isTablet } = useAppSelector((state) => state.app);
 
   const totalCoupons = gridCoupons.length;
-  const totalAmount = gridCoupons.reduce((sum, c) => sum + c.coupon_amount, 0);
+  const totalAmount = sumCouponAmount(gridCoupons);
   const avgCpnAmount = totalCoupons > 0 ? totalAmount / totalCoupons : 0;
   const customerIdCount = new Set(
     gridCoupons.filter((c) => c.customer_id).map((c) => c.customer_id)

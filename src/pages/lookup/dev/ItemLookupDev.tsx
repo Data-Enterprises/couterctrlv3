@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { applyStoreNumberToName, scopeToStoreNumber, storeNumbersIn } from "../../../utils/storeIdentity";
 import { useAppDispatch, useAppSelector, useStoreName } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getItemLookupSingleStore } from "../../../api/itemLookup";
@@ -13,6 +14,9 @@ import {
   reQueryUpc,
   setSelectedStore,
   addRecentLookup,
+  setLookupStoreNumbers,
+  setLookupSelectedStoreNumber,
+  type ItemLookupHistory,
 } from "../../../features/itemLookupSlice";
 import { setError } from "../../../features/itemScanSlice";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
@@ -37,7 +41,46 @@ const ItemLookupDev = () => {
     daysSold,
   } = useAppSelector((s) => s.item);
   const [isLoading, setIsLoading] = useState(false);
-  const storeName = useStoreName(selectedStore);
+  const resolvedStoreName = useStoreName(selectedStore);
+  const availableStoreNumbers = useAppSelector((s) => s.item.availableStoreNumbers);
+  const selectedStoreNumber = useAppSelector((s) => s.item.selectedStoreNumber);
+  // Co-located stores resolve to one assignedStores record — rewrite the
+  // embedded number to the location on screen. See utils/storeIdentity.
+  const storeName = applyStoreNumberToName(
+    resolvedStoreName,
+    selectedStoreNumber ?? "",
+    selectedStoreNumber ? availableStoreNumbers : [],
+  );
+
+  // Full unscoped history, so switching locations re-derives without refetching.
+  const rawHistoryRef = useRef<ItemLookupHistory[]>([]);
+
+  // The lookup is by storeid, so its history covers both locations. Every
+  // headline figure is derived from those rows, so scoping re-derives all.
+  const applyScope = (history: ItemLookupHistory[], storeNumber: string | null) => {
+    const rows = storeNumber ? scopeToStoreNumber(history, storeNumber) : history;
+    const totalSales = rows.reduce((acc, h) => acc + h.total_sales, 0);
+    const totalQty = rows.reduce((acc, h) => acc + h.qty, 0);
+    dispatch(setItemLookupHistory(rows));
+    dispatch(
+      setHistoryMetrics({
+        totalSales,
+        totalQty,
+        avgPrice: totalQty > 0 ? totalSales / totalQty : 0,
+        daysSold: new Set(rows.map((h) => h.sale_date.split("T")[0])).size,
+      }),
+    );
+    return { rows, totalSales, totalQty };
+  };
+
+  const handleStoreNumberChange = (storeNumber: string | null) => {
+    dispatch(setLookupSelectedStoreNumber(storeNumber));
+    // rawHistoryRef is component-local and empties on remount. Re-deriving from
+    // an empty cache would zero out the metrics on screen, so leave the current
+    // view alone rather than blanking it.
+    if (rawHistoryRef.current.length === 0) return;
+    applyScope(rawHistoryRef.current, storeNumber);
+  };
 
   useEffect(() => {
     if (!selectedStore && assignedStores.length) {
@@ -55,21 +98,22 @@ const ItemLookupDev = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error == 0) {
-          dispatch(setItemLookupHistory(j.history));
-          dispatch(
-            setHistoryMetrics({
-              totalSales: j.total_sales,
-              totalQty: j.total_qty,
-              avgPrice: j.average_price,
-              daysSold: j.days_sold,
-            }),
-          );
+          rawHistoryRef.current = j.history;
+          const numbers = storeNumbersIn(j.history);
+          dispatch(setLookupStoreNumbers(numbers));
+          const scope = numbers.length > 1 ? numbers[0] : null;
+          dispatch(setLookupSelectedStoreNumber(scope));
+          const scopedResult = applyScope(j.history, scope);
           dispatch(setProductCode(j.product_code));
           dispatch(setDescription(j.description));
           dispatch(setCategoryDescription(j.category_description));
           dispatch(setItemsLoaded(true));
 
-          const margin = computeMargin(j.history, j.total_sales, j.total_qty);
+          const margin = computeMargin(
+            scopedResult.rows,
+            scopedResult.totalSales,
+            scopedResult.totalQty,
+          );
           dispatch(
             addRecentLookup({
               productCode: j.product_code,
@@ -113,6 +157,9 @@ const ItemLookupDev = () => {
     <div className="relative">
       {isLoading && <LoadingIndicator message="Looking up item..." />}
       <LookupResultScreen
+        storeNumbers={availableStoreNumbers}
+        selectedStoreNumber={selectedStoreNumber}
+        onStoreNumberChange={handleStoreNumberChange}
         description={description}
         productCode={productCode}
         categoryDescription={categoryDescription}

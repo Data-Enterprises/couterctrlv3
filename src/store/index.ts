@@ -22,6 +22,7 @@ import priceSimReducer from "../features/priceSimSlice";
 import upcUploadReducer from "../features/upcUploadSlice";
 import receiversReducer from "../features/receiversSlice";
 import couponReducer from "../features/couponSlice";
+import couponSalesReducer from "../features/couponSalesSlice";
 import couponLegacyReducer from "../features/couponLegacySlice";
 import reportBuilderReducer from "../features/reportBuilderSlice";
 import adminReducer from "../features/adminSlice.ts";
@@ -70,6 +71,7 @@ export const setupStore = () =>
       receivers: receiversReducer,
       receiversLegacy: receiversLegacyReducer,
       coupons: couponReducer,
+      couponSales: couponSalesReducer,
       couponLegacy: couponLegacyReducer,
       reportBuilder: reportBuilderReducer,
       admin: adminReducer,

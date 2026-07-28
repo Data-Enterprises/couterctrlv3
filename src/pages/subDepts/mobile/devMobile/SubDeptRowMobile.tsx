@@ -1,4 +1,4 @@
-import { calculateCogs } from "../..";
+import { buildDayComparisons } from "../..";
 import type { SubDeptGrade, MarginTier } from "../../../../features/subMarginSlice";
 import SevBadge from "../../../sales/mobile/components/SevBadge";
 
@@ -25,25 +25,15 @@ const SubDeptRowMobile = ({ desc, grade, tier, onClick }: Props) => {
     );
   }
 
-  // Build 7-day mini strip: green/red vs LY margin
-  const tyDates = [...new Set(grade.tyWeekOneMargins.map((m) => m.sale_date))].sort();
-  const lyDates = [...new Set(grade.lyWeekOneMargins.map((m) => m.sale_date))].sort();
-
-  const dayStrip = tyDates.map((date, i) => {
-    const tyDay = grade.tyWeekOneMargins.filter((m) => m.sale_date === date);
-    const lyDay = lyDates[i] ? grade.lyWeekOneMargins.filter((m) => m.sale_date === lyDates[i]) : [];
-
-    const tyNet = tyDay.reduce((s, m) => s + (m.total_sales - m.total_tax), 0);
-    const tyCogs = tyDay.reduce((s, m) => s + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight), 0);
-    const lyNet = lyDay.reduce((s, m) => s + (m.total_sales - m.total_tax), 0);
-    const lyCogs = lyDay.reduce((s, m) => s + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight), 0);
-    const tyM = tyNet > 0 ? ((tyNet - tyCogs) / tyNet) * 100 : 0;
-    const lyM = lyNet > 0 ? ((lyNet - lyCogs) / lyNet) * 100 : 0;
-    const label = new Date(date.split("T")[0] + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" }).slice(0, 1);
-    const hasRef = lyNet > 0;
-
-    return { label, isUp: tyM >= lyM, hasRef };
-  });
+  // 7-day mini strip: green/red vs the sub dept's comparison period (LY, or
+  // LW when there's no LY) — same fallback the row's own grade uses.
+  const dayStrip = buildDayComparisons(grade).map(({ date, isUp, hasRef }) => ({
+    label: new Date(date.split("T")[0] + "T12:00:00")
+      .toLocaleDateString("en-US", { weekday: "short" })
+      .slice(0, 1),
+    isUp,
+    hasRef,
+  }));
 
   return (
     <button

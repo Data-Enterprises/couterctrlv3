@@ -9,6 +9,7 @@ import { useAppDispatch } from "../../../hooks";
 import { useCouponContext } from "..";
 import { getCashierTransaction } from "../../../api/lossPrevention";
 import { useToast } from "../../../components/toasts/hooks/useToast";
+import { couponValueOf } from "../../../utils/couponValue";
 import {
   setTransactionDrillDown,
   setTransModalOpen,
@@ -111,7 +112,7 @@ const CpnCard = ({ c }: CpnCardProps) => {
         </div>
         <div className="bg-bkg rounded-md shadow-md p-1.5">
           <div className="text-content/85">Amount:</div>
-          <div className="font-medium">{formatCurrency2(c.coupon_amount)}</div>
+          <div className="font-medium">{formatCurrency2(couponValueOf(c))}</div>
         </div>
         <div className="bg-bkg rounded-md shadow-md p-1.5">
           <div className="text-content/85">Trans #:</div>

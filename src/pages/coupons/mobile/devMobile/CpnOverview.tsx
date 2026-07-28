@@ -4,6 +4,7 @@ import { formatCurrency2 } from "../../../../utils";
 import type { CouponItem } from "../../../../interfaces";
 import type { GroupTab } from "./CouponsMobileDev";
 import CpnExportSheet from "./CpnExportSheet";
+import { sumCouponAmount } from "../../../../utils/couponValue";
 
 interface Props {
   coupons: CouponItem[];
@@ -40,7 +41,7 @@ const CpnOverview = ({
 }: Props) => {
   const [exportOpen, setExportOpen] = useState(false);
 
-  const totalAmount = coupons.reduce((s, c) => s + c.coupon_amount, 0);
+  const totalAmount = sumCouponAmount(coupons);
   const avgPerCoupon = coupons.length > 0 ? totalAmount / coupons.length : 0;
   const uniqueProducts = new Set(coupons.map((c) => c.product_code)).size;
 
@@ -50,13 +51,24 @@ const CpnOverview = ({
       getLabel: (c: CouponItem) => string,
       chrono = false,
     ) => {
-      const map = new Map<string, { label: string; count: number; total: number }>();
+      // Rows collected first, then totalled — a running sum can't dedupe the
+      // transaction-level coupon fallback. See utils/couponValue.
+      const map = new Map<string, { label: string; rows: CouponItem[] }>();
       coupons.forEach((c) => {
         const k = getKey(c);
-        const cur = map.get(k) ?? { label: getLabel(c), count: 0, total: 0 };
-        map.set(k, { ...cur, count: cur.count + 1, total: cur.total + c.coupon_amount });
+        const cur = map.get(k);
+        if (cur) {
+          cur.rows.push(c);
+          return;
+        }
+        map.set(k, { label: getLabel(c), rows: [c] });
       });
-      const rows = Array.from(map.entries()).map(([key, data]) => ({ key, ...data }));
+      const rows = Array.from(map.entries()).map(([key, data]) => ({
+        key,
+        label: data.label,
+        count: data.rows.length,
+        total: sumCouponAmount(data.rows),
+      }));
       if (chrono) return rows.sort((a, b) => a.key.localeCompare(b.key));
       return sortMetric === "qty"
         ? rows.sort((a, b) => b.count - a.count)

@@ -17,7 +17,7 @@ interface Props {
   loading: boolean;
   startDate: string;
   endDate: string;
-  onSelectStore: (order_date: string, order_type: string, storeid: number) => void;
+  onSelectStore: (order_date: string, order_type: string, storeid: number, storenumber: string) => void;
   onSelectAllStores: (order_date: string, order_type: string, storeids: number[]) => void;
   onOpenSearch: () => void;
   onReset: () => void;
@@ -63,8 +63,10 @@ const AvailableOrdersPanel = ({
   const toggleType = (type: string) =>
     setOpenTypes((prev) => { const s = new Set(prev); s.has(type) ? s.delete(type) : s.add(type); return s; });
 
-const isSelected = (order_date: string, order_type: string, storeid: number) => {
+const isSelected = (order_date: string, order_type: string, storeid: number, storenumber: string) => {
     if (!selectedKey || selectedKey.order_type !== order_type || !selectedKey.storeids.includes(storeid)) return false;
+    // storenumbers null = select-all, which covers every location under the id.
+    if (selectedKey.storenumbers && !selectedKey.storenumbers.includes(storenumber)) return false;
     const d = order_date.split("T")[0];
     return d >= selectedKey.order_date.split("T")[0] && d <= selectedKey.order_date_end.split("T")[0];
   };
@@ -256,11 +258,11 @@ const isSelected = (order_date: string, order_type: string, storeid: number) => 
                 <div className="divide-y divide-gray-100">
                   {card.dates.flatMap((dateGroup) =>
                     dateGroup.stores.map((store) => {
-                      const sel = isSelected(dateGroup.order_date, card.order_type, store.storeid);
+                      const sel = isSelected(dateGroup.order_date, card.order_type, store.storeid, store.storenumber);
                       return (
                         <button
-                          key={`${dateGroup.order_date}-${store.storeid}`}
-                          onClick={() => onSelectStore(dateGroup.order_date, card.order_type, store.storeid)}
+                          key={`${dateGroup.order_date}-${store.storeid}__${store.storenumber}`}
+                          onClick={() => onSelectStore(dateGroup.order_date, card.order_type, store.storeid, store.storenumber)}
                           style={sel ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
                           className={`w-full flex items-center justify-between pl-6 pr-3 py-2 text-left transition-colors ${
                             sel ? "bg-custom-white" : "hover:bg-gray-50"

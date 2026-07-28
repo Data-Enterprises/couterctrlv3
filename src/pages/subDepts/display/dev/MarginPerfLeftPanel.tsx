@@ -15,6 +15,7 @@ import {
   type GradingMetric,
 } from "../../../../features/subMarginSlice";
 import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
+import LocationTabs from "../../../../components/filters/LocationTabs";
 import TextFilter from "../../../../components/filters/TextFilter";
 import { severityDotClass, pillClass, type SevFilter } from "../../../../utils/severity";
 import type { SubDeptMargin } from "../../../../interfaces";
@@ -321,34 +322,11 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
         </div>
       </div>
 
-      {/* Location tabs — only for the handful of storeids that carry more than
-          one store_number. Absent for every ordinary store, so the header sits
-          directly on the tier chips as before. */}
-      {availableStoreNumbers.length > 1 && (
-        <div className="flex items-center bg-custom-white border-x border-b border-gray-100">
-          {[...availableStoreNumbers, null].map((num) => {
-            const active = selectedStoreNumber === num;
-            return (
-              <button
-                key={num ?? "both"}
-                onClick={() => onStoreNumberChange(num)}
-                title={
-                  num
-                    ? `Location ${num}`
-                    : "Every location under this store id, combined"
-                }
-                className={`px-3 py-1.5 text-[12px] font-medium border-b-2 transition-colors ${
-                  active
-                    ? "border-[#1e2a4a] text-content"
-                    : "border-transparent text-content/60 hover:text-content"
-                }`}
-              >
-                {num ?? "Both"}
-              </button>
-            );
-          })}
-        </div>
-      )}
+      <LocationTabs
+        numbers={availableStoreNumbers}
+        selected={selectedStoreNumber}
+        onChange={onStoreNumberChange}
+      />
 
       {/* Tier filter chips + text filter */}
       <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-gray-100">

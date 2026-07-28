@@ -36,7 +36,11 @@ export const formatGoliathDate = (date: string) => {
   return `${year}-${addZero(month)}-${addZero(day)}`;
 };
 
+// Intl renders NaN as the literal "NaN" — a division by a zero denominator
+// (an average with no rows behind it) would otherwise surface as "$NaN" on
+// screen. Show N/A instead: the value is unknown, not zero.
 export const formatCurrency2 = (x: number) => {
+  if (!Number.isFinite(x)) return "N/A";
   const format = (num: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -47,6 +51,7 @@ export const formatCurrency2 = (x: number) => {
 };
 
 export const formatCurrencyCompact = (x: number) => {
+  if (!Number.isFinite(x)) return "N/A";
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -60,6 +65,7 @@ export const formatBigNumber = (
   decimals: number = 2,
   locale: string = "en-US"
 ): string => {
+  if (!Number.isFinite(value)) return "N/A";
   const options: Intl.NumberFormatOptions = {};
   options.minimumFractionDigits = decimals;
   return new Intl.NumberFormat(locale, options).format(value);

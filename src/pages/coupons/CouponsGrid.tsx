@@ -16,6 +16,7 @@ import {
 import type { JsonError, TransactionListItem } from "../../interfaces";
 import { formatCurrency2 } from "../../utils";
 import { formatDate } from "../sales/tracker";
+import { couponValueOf } from "../../utils/couponValue";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const CouponsGrid = () => {
@@ -136,7 +137,7 @@ const CouponsGrid = () => {
               <div className="truncate">{formatDate(c.sale_date)}</div>
               <div className="truncate">{c.sale_id}</div>
               <div className="text-right tabular-nums pr-1">
-                {formatCurrency2(c.coupon_amount)}
+                {formatCurrency2(couponValueOf(c))}
               </div>
               <div className="truncate">{c.product_code ? c.product_code.split(".")[0] : ""}</div>
               <div className="truncate">{c.cashier_name}</div>

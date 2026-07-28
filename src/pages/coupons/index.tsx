@@ -2,6 +2,7 @@ import { useAppSelector } from "../../hooks";
 import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
 import type { CouponItem } from "../../interfaces";
 import { formatCurrency2, formatDate } from "../../utils";
+import { couponValueOf } from "../../utils/couponValue";
 
 export const useCouponContext = () => {
   const devMode = useAppSelector((state) => state.app.devMode);
@@ -101,6 +102,12 @@ export const cols: (ColDef<CouponItem> | ColGroupDef<CouponItem>)[] = [
     flex: 0.9,
     ...defaultOptions,
     headerStyle: { borderRight: "1px solid white" },
+    // coupon_amount can be null with the figure in store_coupon/vendor_coupon
+    // — resolved per row so the cell shows the value rather than N/A. That
+    // fallback is transaction-level, so summing this column across the lines
+    // of one sale overstates it; the KPI strip is the authority on totals.
+    valueGetter: (params) =>
+      params.data ? couponValueOf(params.data) : null,
     valueFormatter: (params) => formatCurrency2(params.value),
   },
   {

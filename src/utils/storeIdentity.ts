@@ -21,9 +21,19 @@
 export const scopeToStoreNumber = <T extends { store_number: string }>(
   rows: T[],
   storeNumber: string,
+): T[] => scopeRowsToStore(rows, storeNumber, (r) => r.store_number);
+
+/**
+ * Same as scopeToStoreNumber, for row types that spell the field differently
+ * (Orders' AllOrder uses `storenumber`, no underscore).
+ */
+export const scopeRowsToStore = <T>(
+  rows: T[],
+  storeNumber: string,
+  getNumber: (row: T) => string,
 ): T[] => {
-  if (new Set(rows.map((r) => r.store_number)).size < 2) return rows;
-  return rows.filter((r) => r.store_number === storeNumber);
+  if (new Set(rows.map(getNumber)).size < 2) return rows;
+  return rows.filter((r) => getNumber(r) === storeNumber);
 };
 
 /**
@@ -62,3 +72,18 @@ export const applyStoreNumberToName = (
  *  Length > 1 means the storeid is co-located. */
 export const storeNumbersIn = (rows: { store_number: string }[]): string[] =>
   [...new Set(rows.map((r) => r.store_number))].sort();
+
+/** storeid -> every store_number returned under it. Entries with more than one
+ *  number are co-located. Feeds applyStoreNumberToName, which needs the full
+ *  set per id to know which digits in a name are the store number. */
+export const numbersByStoreId = <T>(
+  rows: T[],
+  getId: (row: T) => number,
+  getNumber: (row: T) => string,
+): Record<number, string[]> =>
+  rows.reduce((acc: Record<number, string[]>, row) => {
+    const nums = (acc[getId(row)] ??= []);
+    const n = getNumber(row);
+    if (!nums.includes(n)) nums.push(n);
+    return acc;
+  }, {});

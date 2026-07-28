@@ -25,6 +25,12 @@ export type Operator = { cashier_name: string; cashier_number: number };
 
 interface ReceiversState {
   storeid: number;
+  // Co-located stores: one storeid, two physical locations. The list is fetched
+  // by storeid and comes back with both mixed together, so the page discovers
+  // the numbers and lets the user scope to one. See utils/storeIdentity.
+  availableStoreNumbers: string[];
+  /** null = every location combined. */
+  selectedStoreNumber: string | null;
   list: ReceiverListItem[];
   listGridData: ReceiverListItem[];
   details: ReceiverDetailsItem[];
@@ -55,6 +61,8 @@ interface ReceiversState {
 
 export const initialState: ReceiversState = {
   storeid: 0,
+  availableStoreNumbers: [],
+  selectedStoreNumber: null,
   list: [],
   details: [],
   vendorIdFilter: "",
@@ -89,6 +97,12 @@ export const receiversSlice = createSlice({
   reducers: {
     setStoreId: (state, action: PayloadAction<number>) => {
       state.storeid = action.payload;
+    },
+    setAvailableStoreNumbers: (state, action: PayloadAction<string[]>) => {
+      state.availableStoreNumbers = action.payload;
+    },
+    setSelectedStoreNumber: (state, action: PayloadAction<string | null>) => {
+      state.selectedStoreNumber = action.payload;
     },
     setReceiversList: (state, action: PayloadAction<ReceiverListItem[]>) => {
       state.list = action.payload;
@@ -248,6 +262,8 @@ export const receiversSlice = createSlice({
 export const {
   setStoreId,
   setReceiversList,
+  setAvailableStoreNumbers,
+  setSelectedStoreNumber,
   setReceiverDetails,
   setIsFetchingList,
   setIsFetchingDetails,

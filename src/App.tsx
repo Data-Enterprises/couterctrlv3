@@ -9,8 +9,7 @@ import { Outlet } from "react-router";
 import Login from "./pages/home/Login";
 import { NavSwitch } from "./DevPages";
 import UserDataLoader from "./components/UserDataLoader";
-import SecurityQuestion from "./pages/home/SecurityQuestion";
-import ResetPassword from "./pages/home/ResetPassword";
+import AccountSetupModal from "./components/accountSetup/AccountSetupModal";
 import { getUserStores } from "./api/user";
 import type { JsonError, Store } from "./interfaces";
 import { setAllAvailableStores } from "./features/storeSlice";
@@ -89,9 +88,9 @@ const App = () => {
             data-testid="outlet-container"
             className={`${containerStyle} bg-bkg ${!context.devMode && nav.isNavOpen ? "opacity-20 pointer-events-none" : "opacity-100"} transition-all duration-300`}
           >
-            {/* ResetPassword and SecurityQuestion are only modals that render when the user is prompted, otherwise they are hidden */}
-            <ResetPassword />
-            <SecurityQuestion />
+            {/* Renders only when the login response says the user still owes a
+                password change and/or a security question — otherwise null. */}
+            <AccountSetupModal />
             <Outlet />
           </div>
         </div>
