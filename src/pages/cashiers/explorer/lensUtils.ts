@@ -1,3 +1,4 @@
+import { applyStoreNumberToName, numbersByStoreId } from "../../../utils/storeIdentity";
 import type { TransactionListItem } from "../../../interfaces";
 import type { ExplorerLens } from "../../../features/cashiersSlice";
 
@@ -126,7 +127,9 @@ const spreadFor = (
 const groupKeyFor = (lens: ExplorerLens, row: TransactionListItem): string | null => {
   switch (lens) {
     case "store":
-      return String(row.storeid);
+      // storeid + store_number — a few storeids cover two physical locations,
+      // and grouping on the id alone merges them. See utils/storeIdentity.
+      return `${row.storeid}__${row.store_number}`;
     case "cashier":
       return String(row.cashier_number);
     case "item":
@@ -150,13 +153,15 @@ const labelsFor = (
   row: TransactionListItem,
   key: string,
   resolveStoreName: StoreNameResolver,
+  numbersForStoreId: string[],
 ) => {
   switch (lens) {
     case "store":
       return {
-        label: resolveStoreName(
-          row.storeid,
-          row.store_name || `Store ${row.storeid}`,
+        label: applyStoreNumberToName(
+          resolveStoreName(row.storeid, row.store_name || `Store ${row.storeid}`),
+          row.store_number,
+          numbersForStoreId,
         ),
         sublabel: row.store_number ? `#${row.store_number}` : "",
       };
@@ -186,6 +191,13 @@ export const buildSignals = (
   lens: ExplorerLens,
   resolveStoreName: StoreNameResolver,
 ): Signal[] => {
+  // storeid -> its store_numbers, so co-located locations can be labelled
+  // apart (their names resolve by storeid and are identical).
+  const numbersById = numbersByStoreId(
+    exceptionRows,
+    (r) => r.storeid,
+    (r) => r.store_number,
+  );
   const groups = new Map<string, TransactionListItem[]>();
   exceptionRows.forEach((row) => {
     const key = groupKeyFor(lens, row);
@@ -201,7 +213,7 @@ export const buildSignals = (
     const { spread, spreadLabel } = spreadFor(lens, rows, cashiers);
     signals.push({
       key,
-      ...labelsFor(lens, rows[0], key, resolveStoreName),
+      ...labelsFor(lens, rows[0], key, resolveStoreName, numbersById[rows[0].storeid] ?? []),
       count: rows.length,
       amount: rows.reduce((sum, r) => sum + (r.total_sales ?? 0), 0),
       transactions: distinct(rows, (r) => r.sale_id),

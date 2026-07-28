@@ -152,7 +152,7 @@ const SignalDetail = ({
           </div>
 
           <div
-            className={`grid ${GRID_COLS} px-4 py-1.5 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0`}
+            className={`grid ${GRID_COLS} px-4 py-1.5 bg-gray-50 text-[10px] font-bold uppercase tracking-wide text-content flex-shrink-0`}
           >
             {(
               [
@@ -168,7 +168,7 @@ const SignalDetail = ({
                 <button
                   key={label}
                   onClick={() => handleSort(col)}
-                  className={`flex items-center gap-0.5 uppercase tracking-wide text-content/80 hover:text-content transition-colors ${align}`}
+                  className={`flex items-center gap-0.5 uppercase tracking-wide text-content/85 hover:text-content transition-colors ${align}`}
                 >
                   {label}
                   {sort?.col === col &&
@@ -191,7 +191,7 @@ const SignalDetail = ({
               <button
                 key={t.saleId}
                 onClick={() => setOpenTransaction(t.saleId)}
-                className={`w-full text-left grid ${GRID_COLS} px-4 py-2 text-[11.5px] text-content items-center transition-colors even:bg-row_stripe hover:bg-gray-50`}
+                className={`w-full text-left grid ${GRID_COLS} px-4 py-2 text-[12px] text-content items-center transition-colors even:bg-row_stripe hover:bg-gray-50`}
               >
                 <div className="truncate">
                   {t.saleDate} · {formatClock(t.startTime)}

@@ -18,6 +18,7 @@ import type { Severity } from "./LedgerRow";
 import HourTrendChart from "./HourTrendChart";
 import { formatPct, pillClass, chipClass, CTA_SEVERITY_CLASSES, severityDotClass, type SevFilter } from "./utils";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
+import ThresholdSlider from "../../../components/filters/ThresholdSlider";
 
 const ampm = (h: number) =>
   h === 0 ? "12 AM" : h < 12 ? `${h} AM` : h === 12 ? "12 PM" : `${h - 12} PM`;
@@ -407,6 +408,13 @@ const PopupHourlyView = ({
                 ref={threshPopRef}
                 className="absolute top-full left-0 mt-1 p-1.5 rounded-md border border-gray-200 bg-custom-white shadow-lg z-20"
               >
+                <div className="flex items-center gap-2">
+                <ThresholdSlider
+                  value={rawThreshold}
+                  onChange={(v) => dispatch(setHourlyThreshold(v))}
+                  ariaLabel="Hourly grading threshold, percent"
+                  className="w-[92px] flex-shrink-0"
+                />
                 <ThresholdFilter
                   value={
                     rawThreshold === null ? null : { op: "gt", amount: rawThreshold }
@@ -416,6 +424,7 @@ const PopupHourlyView = ({
                   suffix="%"
                   inputWidth={40}
                 />
+                </div>
               </div>
             )}
           </div>

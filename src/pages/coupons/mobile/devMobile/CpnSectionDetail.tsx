@@ -13,6 +13,7 @@ import { getCashierTransaction } from "../../../../api/lossPrevention";
 import { setTransactionDrillDown } from "../../../../features/lossPreventionSlice";
 import type { CouponItem, JsonError } from "../../../../interfaces";
 import BottomSheet from "../../../../components/BottomSheet";
+import { couponValueOf, sumCouponAmount } from "../../../../utils/couponValue";
 
 interface Props {
   coupons: CouponItem[];
@@ -60,7 +61,7 @@ const CpnSectionDetail = ({
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [selectedSaleId, setSelectedSaleId] = useState("");
 
-  const totalAmount = coupons.reduce((s, c) => s + c.coupon_amount, 0);
+  const totalAmount = sumCouponAmount(coupons);
   const avgPerCoupon = coupons.length > 0 ? totalAmount / coupons.length : 0;
   const uniqueProducts = new Set(coupons.map((c) => c.product_code)).size;
 
@@ -81,10 +82,10 @@ const CpnSectionDetail = ({
       }
       const agg = map.get(key)!;
       agg.count++;
-      agg.total += c.coupon_amount;
+      agg.total += couponValueOf(c);
       const existing = agg.uses.find((u) => u.sale_id === c.sale_id);
       if (existing) {
-        existing.amount += c.coupon_amount;
+        existing.amount += couponValueOf(c);
       } else {
         agg.uses.push({
           sale_id: c.sale_id,
@@ -92,7 +93,7 @@ const CpnSectionDetail = ({
           cashier_name: c.cashier_name,
           terminal: c.terminal,
           storeid: c.storeid,
-          amount: c.coupon_amount,
+          amount: couponValueOf(c),
           row: c,
         });
       }
@@ -149,7 +150,7 @@ const CpnSectionDetail = ({
           r.qty > 0 ? r.qty : "",
           isCpn ? "" : (r.total_sales ?? 0).toFixed(2),
           isCpn ? "Coupon" : isTender ? "Tender" : "Sale",
-          isCpn ? (r.coupon_amount ?? 0).toFixed(2) : "",
+          isCpn ? couponValueOf(r).toFixed(2) : "",
         ];
       }),
       [],
@@ -186,7 +187,7 @@ const CpnSectionDetail = ({
     0,
   );
   const txCoupons = couponLines.reduce(
-    (s: number, r: any) => s + (r.coupon_amount ?? 0),
+    (s: number, r: any) => s + couponValueOf(r),
     0,
   );
   const txTax = saleLines.reduce(
@@ -402,7 +403,7 @@ const CpnSectionDetail = ({
                         }`}
                       >
                         {formatCurrency2(
-                          isCpn ? item.coupon_amount : item.total_sales,
+                          isCpn ? couponValueOf(item) : item.total_sales,
                         )}
                       </span>
                       <div className="flex justify-end">

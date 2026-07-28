@@ -174,7 +174,7 @@ const SmDevRightPanel = () => {
     : [];
 
   // No sub dept selected yet
-  if (!ctx.selectedSubDeptId) {
+  if (ctx.selectedSubDeptId == null) {
     return (
       <div className="flex-1 min-w-0 shadow-lg">
         <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full items-center justify-center gap-2">

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import ResizableModalShell from "../../../../components/modals/ResizableModalShell";
 import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import { computeMargin } from "../lookupMetrics";
 import type { DayBucket } from "../lookupMetrics";
@@ -225,14 +226,12 @@ const LookupExportModal = ({
       : activeCols.length > 0;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-      onClick={onClose}
+    <ResizableModalShell
+      onClose={onClose}
+      storageKey="export-modal:item-lookup"
+      defaultWidth={760}
+      defaultHeight={640}
     >
-      <div
-        className={`bg-custom-white rounded-xl shadow-xl w-full overflow-hidden transition-all duration-200 ${mode === "custom" ? "max-w-2xl" : "max-w-lg"}`}
-        onClick={(e) => e.stopPropagation()}
-      >
         <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
           <p className="text-custom-white text-[13px] font-semibold">
             Export CSV
@@ -459,8 +458,7 @@ const LookupExportModal = ({
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </ResizableModalShell>
   );
 };
 

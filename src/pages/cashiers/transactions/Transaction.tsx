@@ -218,8 +218,8 @@ const Transaction = ({ trans }: Props) => {
       <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-4 pt-3 relative">
         {/* Column headers */}
         <div
-          className="grid gap-1 pb-1.5 border-b border-gray-100 mb-1"
-          style={{ gridTemplateColumns: "80px 1fr 28px 62px 55px" }}
+          className="grid gap-2 pb-1.5 border-b border-gray-100 mb-1"
+          style={{ gridTemplateColumns: "84px minmax(0, 1fr) 46px 80px 92px" }}
         >
           {["UPC", "Description", "Qty", "Net", "Type"].map((h, i) => (
             <div
@@ -239,8 +239,8 @@ const Transaction = ({ trans }: Props) => {
           return (
             <div
               key={i}
-              className="grid gap-1 py-1.5 border-b border-gray-50 items-center"
-              style={{ gridTemplateColumns: "80px 1fr 28px 62px 55px" }}
+              className="grid gap-2 py-1.5 border-b border-gray-50 items-center"
+              style={{ gridTemplateColumns: "84px minmax(0, 1fr) 46px 80px 92px" }}
             >
               <div className="text-[9px] text-content/65 truncate">
                 {item.product_code || "—"}

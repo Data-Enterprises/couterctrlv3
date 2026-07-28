@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { applyStoreNumberToName, numbersByStoreId } from "../../utils/storeIdentity";
+import { sumCouponAmount } from "../../utils/couponValue";
 import {
   MagnifyingGlassIcon,
   QuestionMarkCircleIcon,
@@ -42,41 +44,50 @@ const CouponListPanel = ({
   const dateLabel = `${fmtRangePart(search.startDate)} – ${fmtRangePart(search.endDate, true)}`;
 
   const totalAmount = useMemo(
-    () => state.coupons.reduce((s, c) => s + c.coupon_amount, 0),
+    () => sumCouponAmount(state.coupons),
     [state.coupons],
   );
 
   // All modes: flat store list sorted by amount desc
   const storeItems = useMemo(() => {
-    const map = new Map<
-      string,
-      { name: string; count: number; total: number }
-    >();
+    // Keyed on storeid + store_number, not storeid alone — a few storeids
+    // cover two physical locations. See utils/storeIdentity.
+    const numbersById = numbersByStoreId(
+      state.coupons,
+      (c) => c.storeid,
+      (c) => c.store_number,
+    );
+    // Rows are collected per store first, then totalled with
+    // sumCouponAmount — a running `total + c.coupon_amount` can't dedupe the
+    // transaction-level fallback. See utils/couponValue.
+    const map = new Map<string, { name: string; rows: typeof state.coupons }>();
     state.coupons.forEach((c) => {
-      const id = String(c.storeid);
-      const cur = map.get(id) ?? {
-        name:
+      const id = `${c.storeid}__${c.store_number}`;
+      const cur = map.get(id);
+      if (cur) {
+        cur.rows.push(c);
+        return;
+      }
+      map.set(id, {
+        name: applyStoreNumberToName(
           assignedStores.find((s) => s.storeid === Number(c.storeid))
             ?.store_name ??
-          groupStores.find((s) => s.storeid === Number(c.storeid))
-            ?.store_name ??
-          storeName ??
-          id,
-        count: 0,
-        total: 0,
-      };
-      map.set(id, {
-        ...cur,
-        count: cur.count + 1,
-        total: cur.total + c.coupon_amount,
+            groupStores.find((s) => s.storeid === Number(c.storeid))
+              ?.store_name ??
+            storeName ??
+            String(c.storeid),
+          c.store_number,
+          numbersById[c.storeid] ?? [],
+        ),
+        rows: [c],
       });
     });
     return Array.from(map.entries())
-      .map(([id, { name, count, total }]) => ({
+      .map(([id, { name, rows }]) => ({
         key: id,
         label: name,
-        count,
-        total,
+        count: rows.length,
+        total: sumCouponAmount(rows),
       }))
       .sort((a, b) =>
         sortMetric === "qty" ? b.count - a.count : b.total - a.total,

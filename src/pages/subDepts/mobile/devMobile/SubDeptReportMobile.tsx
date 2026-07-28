@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/20/solid";
 import { useAppSelector } from "../../../../hooks";
 import { useSubMarginCtx, useParams } from "../../hooks";
-import { calculateCogs } from "../..";
+import { calculateCogs, hasNoUsableCost, buildDayComparisons } from "../..";
 import { formatCurrency2 } from "../../../../utils";
 import type { MarginTier } from "../../../../features/subMarginSlice";
 import type { SevFilter } from "../../../../features/salesLedgerSlice";
@@ -93,37 +93,29 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
     return `${base} bg-emerald-100 text-emerald-800`;
   };
 
-  const grade = subDeptGrades[ctx.selectedSubDeptId];
+  const grade =
+    ctx.selectedSubDeptId != null
+      ? subDeptGrades[ctx.selectedSubDeptId]
+      : undefined;
   const subDept = ctx.subDepts.find((sd) => sd.id === ctx.selectedSubDeptId);
 
   // Day strip: 7 TY dates, compare margin vs same-index LY date
+  // Compared against LY, or LW when the sub dept has no LY — the same
+  // fallback the grade itself uses. See buildDayComparisons.
   const dayStrip = useMemo(() => {
     if (!grade) return [];
-    const tyDates = [
-      ...new Set(grade.tyWeekOneMargins.map((m) => m.sale_date)),
-    ].sort();
-    const lyDates = [
-      ...new Set(grade.lyWeekOneMargins.map((m) => m.sale_date)),
-    ].sort();
-    return tyDates.map((date, i) => {
-      const tyDay = grade.tyWeekOneMargins.filter((m) => m.sale_date === date);
-      const lyDay = lyDates[i]
-        ? grade.lyWeekOneMargins.filter((m) => m.sale_date === lyDates[i])
-        : [];
-      const tyNet = computeNet(tyDay);
-      const tyCogs = computeCogs(tyDay);
-      const lyNet = computeNet(lyDay);
-      const lyCogs = computeCogs(lyDay);
-      const tyM = computeMarginPct(tyNet, tyCogs);
-      const lyM = computeMarginPct(lyNet, lyCogs);
+    return buildDayComparisons(grade).map(({ date, isUp, hasRef }) => {
       const d = new Date(date.split("T")[0] + "T12:00:00");
-      const weekday = d.toLocaleDateString("en-US", { weekday: "short" });
-      const dateStr = d.toLocaleDateString("en-US", {
-        month: "numeric",
-        day: "numeric",
-      });
-      const hasRef = lyNet > 0;
-      return { date, weekday, dateStr, isUp: tyM >= lyM, hasRef };
+      return {
+        date,
+        weekday: d.toLocaleDateString("en-US", { weekday: "short" }),
+        dateStr: d.toLocaleDateString("en-US", {
+          month: "numeric",
+          day: "numeric",
+        }),
+        isUp,
+        hasRef,
+      };
     });
   }, [grade]);
 
@@ -254,10 +246,7 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
           delta < -itemThreshold ? "critical" : delta < 0 ? "watch" : "healthy";
 
         const firstTy = ty[0];
-        const noCost = firstTy
-          ? firstTy.case_size === 0 ||
-            (firstTy.net_cost === 0 && firstTy.cost === 0)
-          : false;
+        const noCost = firstTy ? hasNoUsableCost(firstTy) : false;
 
         return {
           product_code: code,

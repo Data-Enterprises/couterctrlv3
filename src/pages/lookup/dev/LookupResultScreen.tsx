@@ -8,6 +8,7 @@ import { formatCurrency2 } from "../../../utils";
 import type { MarginResult, DayBucket, TrendResult } from "./lookupMetrics";
 import { computeActiveGap } from "./lookupMetrics";
 import RecentLookupsStrip from "./RecentLookupsStrip";
+import LocationTabs from "../../../components/filters/LocationTabs";
 import DailyBreakdownSheet from "./DailyBreakdownSheet";
 
 interface LookupResultScreenProps {
@@ -15,6 +16,9 @@ interface LookupResultScreenProps {
   productCode: string;
   categoryDescription: string;
   storeName: string;
+  storeNumbers: string[];
+  selectedStoreNumber: string | null;
+  onStoreNumberChange: (storeNumber: string | null) => void;
   onBack: () => void;
   onSelectRecent: (productCode: string) => void;
   margin: MarginResult;
@@ -30,6 +34,9 @@ const LookupResultScreen = ({
   productCode,
   categoryDescription,
   storeName,
+  storeNumbers,
+  selectedStoreNumber,
+  onStoreNumberChange,
   onBack,
   onSelectRecent,
   margin,
@@ -70,6 +77,13 @@ const LookupResultScreen = ({
           </div>
         </div>
       </div>
+
+      <LocationTabs
+        numbers={storeNumbers}
+        selected={selectedStoreNumber}
+        onChange={onStoreNumberChange}
+        variant="bare"
+      />
 
       <div className="p-3.5">
         <div className="bg-content/5 rounded-xl p-3.5">

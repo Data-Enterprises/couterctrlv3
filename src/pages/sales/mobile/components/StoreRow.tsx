@@ -1,4 +1,4 @@
-﻿import { formatPct } from "../../shared/ledgerUtils";
+﻿import { formatPct, applyStoreNumberToName } from "../../shared/ledgerUtils";
 import { formatCurrency2 } from "../../../../utils";
 import type { LedgerRowData } from "../../components/LedgerRow";
 import SevBadge from "./SevBadge";
@@ -10,6 +10,12 @@ interface StoreRowProps {
 
 const StoreRow = ({ row, onClick }: StoreRowProps) => {
   const sortedDays = [...row.days].sort((a, b) => a.sale_date.localeCompare(b.sale_date));
+  // Co-located stores share a name — swap the embedded number for this row's.
+  const displayName = applyStoreNumberToName(
+    row.store_name,
+    row.store_number,
+    row.storeNumbersForId,
+  );
 
   return (
     <button
@@ -18,7 +24,7 @@ const StoreRow = ({ row, onClick }: StoreRowProps) => {
     >
       <SevBadge sev={row.severity} />
       <div className="flex-1 min-w-0">
-        <div className="text-[12px] font-medium text-content truncate mb-1.5">{row.store_name}</div>
+        <div className="text-[12px] font-medium text-content truncate mb-1.5">{displayName}</div>
         <div className="grid grid-cols-3 mb-1.5">
           <div className="px-1.5 py-1">
             <div className="text-[10px] text-content/85 uppercase tracking-wide">TY</div>

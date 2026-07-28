@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ResizableModalShell from "../../../components/modals/ResizableModalShell";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type { Store } from "../../../interfaces";
 import { rowsToCsv, downloadCsv } from "../../../utils/csvExport";
@@ -38,14 +39,12 @@ const StoresExportModal = ({ onClose, allStores, filteredStores }: StoresExportM
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onClick={onClose}
+    <ResizableModalShell
+      onClose={onClose}
+      storageKey="export-modal:org-stores"
+      defaultWidth={560}
+      defaultHeight={560}
     >
-      <div
-        className="bg-custom-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
         <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
           <div>
             <p className="text-custom-white text-[13px] font-semibold">Export CSV</p>
@@ -128,8 +127,7 @@ const StoresExportModal = ({ onClose, allStores, filteredStores }: StoresExportM
             Download CSV
           </button>
         </div>
-      </div>
-    </div>
+    </ResizableModalShell>
   );
 };
 

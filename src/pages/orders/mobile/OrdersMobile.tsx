@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { applyStoreNumberToName, numbersByStoreId } from "../../../utils/storeIdentity";
 import { useOrdersCtx } from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getAllOrders, getAvailableOrders } from "../../../api/orders";
@@ -86,13 +87,22 @@ const OrdersMobile = () => {
           );
           ctx.dispatch(setAvailableOrders(j.orders));
 
-          const typeMap = new Map<string, Map<string, Map<number, number>>>();
+          // Keyed on storeid + storenumber — see Orders.tsx and
+          // utils/storeIdentity for why the id alone isn't a location.
+          const numbersById = numbersByStoreId(j.orders, (o) => o.storeid, (o) => o.storenumber);
+          const typeMap = new Map<
+            string,
+            Map<string, Map<string, { storeid: number; storenumber: string; frequency: number }>>
+          >();
           for (const o of j.orders) {
             if (!typeMap.has(o.order_type)) typeMap.set(o.order_type, new Map());
             const dateMap = typeMap.get(o.order_type)!;
             if (!dateMap.has(o.order_date)) dateMap.set(o.order_date, new Map());
             const storeMap = dateMap.get(o.order_date)!;
-            storeMap.set(o.storeid, (storeMap.get(o.storeid) ?? 0) + 1);
+            const key = `${o.storeid}__${o.storenumber}`;
+            const entry = storeMap.get(key);
+            if (entry) entry.frequency += 1;
+            else storeMap.set(key, { storeid: o.storeid, storenumber: o.storenumber, frequency: 1 });
           }
 
           const cards: GroupedOrderCard[] = Array.from(typeMap.entries())
@@ -103,9 +113,18 @@ const OrdersMobile = () => {
                 .sort(([a], [b]) => b.localeCompare(a))
                 .map(([order_date, storeMap]) => ({
                   order_date,
-                  stores: Array.from(storeMap.entries()).map(([storeid, frequency]) => {
+                  stores: Array.from(storeMap.values()).map(({ storeid, storenumber, frequency }) => {
                     const assigned = ctx.assignedStores.find((s) => s.storeid === storeid);
-                    return { storeid, store_name: assigned?.store_name ?? String(storeid), frequency };
+                    return {
+                      storeid,
+                      storenumber,
+                      store_name: applyStoreNumberToName(
+                        assigned?.store_name ?? String(storeid),
+                        storenumber,
+                        numbersById[storeid] ?? [],
+                      ),
+                      frequency,
+                    };
                   }),
                 })),
             }));
@@ -117,8 +136,8 @@ const OrdersMobile = () => {
       .finally(() => ctx.dispatch(setLoadingAvailableOrders(false)));
   };
 
-  const fetchOrderDetails = (start_date: string, end_date: string, order_type: string, storeids: number[]) => {
-    ctx.dispatch(setSelectedOrderKey({ order_date: start_date, order_date_end: end_date, order_type, storeids }));
+  const fetchOrderDetails = (start_date: string, end_date: string, order_type: string, storeids: number[], storenumbers: string[] | null = null) => {
+    ctx.dispatch(setSelectedOrderKey({ order_date: start_date, order_date_end: end_date, order_type, storeids, storenumbers }));
     ctx.dispatch(setSelectedOrder(null));
     ctx.dispatch(setAllOrders([]));
 
@@ -127,7 +146,11 @@ const OrdersMobile = () => {
       .then((resp) => {
         const j: AllOrderResp = resp.data;
         if (j.error === 0) {
-          const ordersWERet = j.orders.map((o) => {
+          // Fetched by storeid — a co-located storeid returns both locations.
+          const scopedOrders = storenumbers
+            ? j.orders.filter((o) => storenumbers.includes(o.storenumber))
+            : j.orders;
+          const ordersWERet = scopedOrders.map((o) => {
             const base_cost = o.base_cost ?? 0;
             const net_cost = o.net_cost ?? 0;
             const weight = o.weight ?? 0;
@@ -156,7 +179,12 @@ const OrdersMobile = () => {
           const filtered = ordersWERet.filter((o) => o.order_type === order_type);
           const ids = Array.from(new Set(filtered.map((o) => o.order_id)));
           if (ids.length === 1) {
-            ctx.dispatch(setSelectedOrder({ storeid: storeids[0], orderId: ids[0] }));
+            const first = filtered.find((o) => o.order_id === ids[0]);
+            ctx.dispatch(setSelectedOrder({
+              storeid: first?.storeid ?? storeids[0],
+              storenumber: first?.storenumber ?? "",
+              orderId: ids[0],
+            }));
             setSheetOpen(true);
           } else {
             setStep("list");
@@ -167,8 +195,8 @@ const OrdersMobile = () => {
       .finally(() => ctx.dispatch(setLoadingAllOrders(false)));
   };
 
-  const handleSelectStore = (order_date: string, order_type: string, storeid: number) => {
-    fetchOrderDetails(order_date, order_date, order_type, [storeid]);
+  const handleSelectStore = (order_date: string, order_type: string, storeid: number, storenumber: string) => {
+    fetchOrderDetails(order_date, order_date, order_type, [storeid], [storenumber]);
   };
 
   // No date filter selected → span the whole search range instead of one day.
@@ -188,9 +216,10 @@ const OrdersMobile = () => {
     // Look the storeid up from the order itself rather than assuming
     // storeids[0] — with "select all stores", an order can belong to any
     // store in the selection, not just the first one.
-    const storeid = ctx.allOrders.find((o) => o.order_id === id)?.storeid ?? ctx.selectedOrderKey?.storeids[0];
+    const row = ctx.allOrders.find((o) => o.order_id === id);
+    const storeid = row?.storeid ?? ctx.selectedOrderKey?.storeids[0];
     if (storeid !== undefined) {
-      ctx.dispatch(setSelectedOrder({ storeid, orderId: id }));
+      ctx.dispatch(setSelectedOrder({ storeid, storenumber: row?.storenumber ?? "", orderId: id }));
       setSheetOpen(true);
     }
   };

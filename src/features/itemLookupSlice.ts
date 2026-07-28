@@ -43,6 +43,8 @@ export interface QueueItem {
   productCode?: string;
   description?: string;
   categoryDescription?: string;
+  // Full unscoped history as returned. Kept intact so switching between
+  // co-located locations can re-derive the totals below without refetching.
   history?: ItemLookupHistory[];
   totalSales?: number;
   totalQty?: number;
@@ -78,6 +80,11 @@ interface ItemLookupState {
   viewDaily: boolean;
   lookupQueue: QueueItem[];
   lookupSelectedUpc: string | null;
+  // Co-located stores: one storeid, two physical locations. The lookup is by
+  // storeid, so its history covers both. See utils/storeIdentity.
+  availableStoreNumbers: string[];
+  /** null = every location combined. */
+  selectedStoreNumber: string | null;
 }
 
 const initialState: ItemLookupState = {
@@ -107,6 +114,8 @@ const initialState: ItemLookupState = {
   viewDaily: false,
   lookupQueue: [],
   lookupSelectedUpc: null,
+  availableStoreNumbers: [],
+  selectedStoreNumber: null,
 };
 
 interface ItemsPayload {
@@ -251,6 +260,12 @@ const itemLookupSlice = createSlice({
     setLookupSelectedUpc: (state, action: PayloadAction<string | null>) => {
       state.lookupSelectedUpc = action.payload;
     },
+    setLookupStoreNumbers: (state, action: PayloadAction<string[]>) => {
+      state.availableStoreNumbers = action.payload;
+    },
+    setLookupSelectedStoreNumber: (state, action: PayloadAction<string | null>) => {
+      state.selectedStoreNumber = action.payload;
+    },
   },
 });
 
@@ -274,6 +289,8 @@ export const {
   setLookupQueue,
   updateLookupQueueItem,
   setLookupSelectedUpc,
+  setLookupStoreNumbers,
+  setLookupSelectedStoreNumber,
 } = itemLookupSlice.actions;
 
 export default itemLookupSlice.reducer;

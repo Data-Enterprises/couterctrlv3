@@ -21,7 +21,7 @@ interface Props {
   selectedKey: SelectedOrderKey;
   selectedOrder: SelectedOrder;
   assignedStores: Store[];
-  onSelectOrder: (storeid: number, orderId: number | null) => void;
+  onSelectOrder: (storeid: number, storenumber: string, orderId: number | null) => void;
   onExport: () => void;
 }
 
@@ -310,14 +310,19 @@ const OrderReportPanel = ({
     : filteredOrders;
 
   const uniqueOrderKeys = useMemo(() => {
-    const map = new Map<string, { storeid: number; orderId: number }>();
+    // storenumber is part of the key — a co-located storeid can return two
+    // locations at once, and they are separate stores, not one.
+    const map = new Map<string, { storeid: number; storenumber: string; orderId: number }>();
     subFilteredOrders.forEach((o) => {
-      const key = `${o.storeid}:${o.order_id}`;
+      const key = `${o.storeid}__${o.storenumber}:${o.order_id}`;
       if (!map.has(key))
-        map.set(key, { storeid: o.storeid, orderId: o.order_id });
+        map.set(key, { storeid: o.storeid, storenumber: o.storenumber, orderId: o.order_id });
     });
     return Array.from(map.values()).sort(
-      (a, b) => a.orderId - b.orderId || a.storeid - b.storeid,
+      (a, b) =>
+        a.orderId - b.orderId ||
+        a.storeid - b.storeid ||
+        a.storenumber.localeCompare(b.storenumber),
     );
   }, [subFilteredOrders]);
 
@@ -327,7 +332,8 @@ const OrderReportPanel = ({
           ...filteredOrders.filter(
             (o) =>
               o.order_id === selectedOrder.orderId &&
-              o.storeid === selectedOrder.storeid,
+              o.storeid === selectedOrder.storeid &&
+              o.storenumber === selectedOrder.storenumber,
           ),
         ].sort((a, b) => a.line_number - b.line_number)
       : [];
@@ -444,7 +450,7 @@ const OrderReportPanel = ({
                   value={subDeptFilter}
                   onChange={(v) => {
                     setSubDeptFilter(v);
-                    onSelectOrder(0, null);
+                    onSelectOrder(0, "", null);
                   }}
                   placeholder="All sub depts"
                   className="flex-1 min-w-0"
@@ -457,13 +463,13 @@ const OrderReportPanel = ({
                   No orders found
                 </div>
               ) : (
-                uniqueOrderKeys.map(({ storeid, orderId }) => {
-                  const items = subFilteredOrders.filter(
-                    (o) => o.order_id === orderId && o.storeid === storeid,
-                  );
-                  const allItems = filteredOrders.filter(
-                    (o) => o.order_id === orderId && o.storeid === storeid,
-                  );
+                uniqueOrderKeys.map(({ storeid, storenumber, orderId }) => {
+                  const sameOrder = (o: { order_id: number; storeid: number; storenumber: string }) =>
+                    o.order_id === orderId &&
+                    o.storeid === storeid &&
+                    o.storenumber === storenumber;
+                  const items = subFilteredOrders.filter(sameOrder);
+                  const allItems = filteredOrders.filter(sameOrder);
                   const eRet = items.reduce((s, o) => s + (o.e_ret ?? 0), 0);
                   const eCost = items.reduce((s, o) => s + (o.cogs ?? 0), 0);
                   const subDepts = Array.from(
@@ -475,11 +481,12 @@ const OrderReportPanel = ({
                   );
                   const isSel =
                     selectedOrder?.orderId === orderId &&
-                    selectedOrder?.storeid === storeid;
+                    selectedOrder?.storeid === storeid &&
+                    selectedOrder?.storenumber === storenumber;
                   return (
                     <button
-                      key={`${storeid}-${orderId}`}
-                      onClick={() => onSelectOrder(storeid, orderId)}
+                      key={`${storeid}__${storenumber}-${orderId}`}
+                      onClick={() => onSelectOrder(storeid, storenumber, orderId)}
                       className={`w-full flex flex-col gap-1 rounded-lg border border-[#1e2a4a]/20 p-2 text-left transition-colors ${
                         isSel ? "bg-custom-white" : "bg-custom-white hover:bg-gray-50"
                       }`}

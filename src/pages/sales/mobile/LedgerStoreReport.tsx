@@ -50,6 +50,8 @@ import {
   BADGE_COLOR,
   SEVERITY_RANK,
   computeDayMatchedTotals,
+  scopeToStoreNumber,
+  applyStoreNumberToName,
   // getWeeklyDataGaps,
   // getWeeklyGapCount,
   type DeptRow,
@@ -250,18 +252,20 @@ const LedgerStoreReport = () => {
             1,
           ),
         ]);
-        if (s1.data.error === 0) dispatch(setRawSubs(s1.data.subs));
-        if (s2.data.error === 0) dispatch(setRawLWSubs(s2.data.subs));
-        if (s3.data.error === 0) dispatch(setRawLYSubs(s3.data.subs));
-        if (h1.data.error === 0) dispatch(setRawHourly(h1.data.subs));
-        if (h2.data.error === 0) dispatch(setRawLWHourly(h2.data.subs));
-        if (h3.data.error === 0) dispatch(setRawLYHourly(h3.data.subs));
+        const scope = <T extends { store_number: string }>(rows: T[]) =>
+          scopeToStoreNumber(rows, selection.storeNumber);
+        if (s1.data.error === 0) dispatch(setRawSubs(scope(s1.data.subs)));
+        if (s2.data.error === 0) dispatch(setRawLWSubs(scope(s2.data.subs)));
+        if (s3.data.error === 0) dispatch(setRawLYSubs(scope(s3.data.subs)));
+        if (h1.data.error === 0) dispatch(setRawHourly(scope(h1.data.subs)));
+        if (h2.data.error === 0) dispatch(setRawLWHourly(scope(h2.data.subs)));
+        if (h3.data.error === 0) dispatch(setRawLYHourly(scope(h3.data.subs)));
       } finally {
         dispatch(setReportLoading(false));
       }
     };
     run();
-  }, [selection?.storeId]);
+  }, [selection?.storeId, selection?.storeNumber]);
 
   // Reset item filter when a new sheet opens
   useEffect(() => {
@@ -326,11 +330,17 @@ const LedgerStoreReport = () => {
         ]);
         if (cancelled) return;
         const tyItems: SubDeptMargin[] =
-          tyR.data?.error === 0 ? tyR.data.subs : [];
+          tyR.data?.error === 0
+            ? scopeToStoreNumber(tyR.data.subs, selection.storeNumber)
+            : [];
         let lwItems: SubDeptMargin[] =
-          lwR.data?.error === 0 ? lwR.data.subs : [];
+          lwR.data?.error === 0
+            ? scopeToStoreNumber(lwR.data.subs, selection.storeNumber)
+            : [];
         let lyItems: SubDeptMargin[] =
-          lyR.data?.error === 0 ? lyR.data.subs : [];
+          lyR.data?.error === 0
+            ? scopeToStoreNumber(lyR.data.subs, selection.storeNumber)
+            : [];
 
         // Whole-week case: the fetched LW/LY rows can include days that
         // don't actually correspond to any day in this TW week — filter down
@@ -685,7 +695,11 @@ const LedgerStoreReport = () => {
           </button>
           <div className="flex-1 min-w-0">
             <div className="text-custom-white font-semibold text-[13px]">
-              {selection.storeName}
+              {applyStoreNumberToName(
+                selection.storeName,
+                selection.storeNumber,
+                selection.storeNumbersForId,
+              )}
             </div>
             <div className="text-custom-white/85 text-[11px]">
               Weekly Sales Report

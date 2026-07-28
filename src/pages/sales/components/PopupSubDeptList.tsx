@@ -13,6 +13,7 @@ import {
 } from "../../../features/salesLedgerSlice";
 import type { GradingMetric } from "../../../features/salesLedgerSlice";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
+import ThresholdSlider from "../../../components/filters/ThresholdSlider";
 import {
   formatCurrency2,
   formatBigNumber,
@@ -21,6 +22,7 @@ import {
   sameWeekDayLastYear,
 } from "../../../utils";
 import { getSubMargins } from "../../../api/subMargins";
+import { scopeToStoreNumber } from "../shared/ledgerUtils";
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
@@ -219,6 +221,10 @@ interface PopupSubDeptListProps {
   lwDateLabel: string;
   lyDateLabel: string;
   storeId: number;
+  // Items are fetched by storeid, which for co-located stores returns both
+  // locations — scoped down to this number so the item list agrees with the
+  // dept rows above it.
+  storeNumber: string;
   selectedDate: string | null;
   // The full 7 calendar days of the searched week (see StoreDetailPopup) —
   // used to build the exact LW/LY match set so the item list's whole-week
@@ -231,6 +237,7 @@ const PopupSubDeptList = ({
   lwDateLabel,
   lyDateLabel,
   storeId,
+  storeNumber,
   selectedDate,
   twRealDates,
 }: PopupSubDeptListProps) => {
@@ -323,13 +330,19 @@ const PopupSubDeptList = ({
     if (selectedId === null) {
       dispatch(setSelectedSubDeptItems([]));
       dispatch(setInactiveSubDeptItems([]));
+      // The cache key below means "these items are already in Redux", so it
+      // has to be cleared alongside the items it refers to. Leaving it set
+      // made re-selecting the same sub dept match the key and skip the
+      // refetch, leaving the list permanently empty until something else
+      // changed the key.
+      dispatch(setLastFetchedItemsKey(null));
       return;
     }
 
     // Remounting with items already fetched for this exact store+sub
     // dept+day (e.g. navigating away and back) shouldn't refire the
     // request — Redux still has it, only the component tree was torn down.
-    const itemsKey = `${storeId}_${selectedId}_${selectedDate ?? "all"}`;
+    const itemsKey = `${storeId}__${storeNumber}_${selectedId}_${selectedDate ?? "all"}`;
     if (lastFetchedItemsKey === itemsKey) return;
 
     const twEnd = formatGoliathDate(search.singleDate);
@@ -397,11 +410,17 @@ const PopupSubDeptList = ({
         if (cancelled) return;
 
         const tyItems: SubDeptMargin[] =
-          tyResp.data?.error === 0 ? tyResp.data.subs : [];
+          tyResp.data?.error === 0
+            ? scopeToStoreNumber(tyResp.data.subs, storeNumber)
+            : [];
         let lwItems: SubDeptMargin[] =
-          lwResp.data?.error === 0 ? lwResp.data.subs : [];
+          lwResp.data?.error === 0
+            ? scopeToStoreNumber(lwResp.data.subs, storeNumber)
+            : [];
         let lyItems: SubDeptMargin[] =
-          lyResp.data?.error === 0 ? lyResp.data.subs : [];
+          lyResp.data?.error === 0
+            ? scopeToStoreNumber(lyResp.data.subs, storeNumber)
+            : [];
 
         // Whole-week case: the fetched LW/LY rows can include days that
         // don't actually correspond to any day in this TW week — filter down
@@ -492,6 +511,7 @@ const PopupSubDeptList = ({
     context.url,
     context.token,
     storeId,
+    storeNumber,
   ]);
 
   const rows = useMemo((): DeptRow[] => {
@@ -803,15 +823,23 @@ const PopupSubDeptList = ({
                   ref={threshPopRef}
                   className="absolute top-full left-0 mt-1 p-1.5 rounded-md border border-gray-200 bg-custom-white shadow-lg z-20"
                 >
-                  <ThresholdFilter
-                    value={
-                      rawThreshold === null ? null : { op: "gt", amount: rawThreshold }
-                    }
-                    onChange={(v) => dispatch(setSubDeptThreshold(v?.amount ?? null))}
-                    showOp={false}
-                    suffix="%"
-                    inputWidth={40}
-                  />
+                  <div className="flex items-center gap-2">
+                    <ThresholdSlider
+                      value={rawThreshold}
+                      onChange={(v) => dispatch(setSubDeptThreshold(v))}
+                      ariaLabel="Sub dept grading threshold, percent"
+                      className="w-[92px] flex-shrink-0"
+                    />
+                    <ThresholdFilter
+                      value={
+                        rawThreshold === null ? null : { op: "gt", amount: rawThreshold }
+                      }
+                      onChange={(v) => dispatch(setSubDeptThreshold(v?.amount ?? null))}
+                      showOp={false}
+                      suffix="%"
+                      inputWidth={40}
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -1084,17 +1112,25 @@ const PopupSubDeptList = ({
                             ref={itemThreshPopRef}
                             className="absolute top-full left-0 mt-1 p-1.5 rounded-md border border-gray-200 bg-custom-white shadow-lg z-20"
                           >
-                            <ThresholdFilter
-                              value={
-                                rawItemThreshold === null
-                                  ? null
-                                  : { op: "gt", amount: rawItemThreshold }
-                              }
-                              onChange={(v) => dispatch(setItemThreshold(v?.amount ?? null))}
-                              showOp={false}
-                              suffix="%"
-                              inputWidth={40}
-                            />
+                            <div className="flex items-center gap-2">
+                              <ThresholdSlider
+                                value={rawItemThreshold}
+                                onChange={(v) => dispatch(setItemThreshold(v))}
+                                ariaLabel="Item grading threshold, percent"
+                                className="w-[92px] flex-shrink-0"
+                              />
+                              <ThresholdFilter
+                                value={
+                                  rawItemThreshold === null
+                                    ? null
+                                    : { op: "gt", amount: rawItemThreshold }
+                                }
+                                onChange={(v) => dispatch(setItemThreshold(v?.amount ?? null))}
+                                showOp={false}
+                                suffix="%"
+                                inputWidth={40}
+                              />
+                            </div>
                           </div>
                         )}
                       </div>

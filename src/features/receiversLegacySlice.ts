@@ -25,6 +25,10 @@ export type Operator = { cashier_name: string; cashier_number: number };
 
 interface ReceiversState {
   storeid: number;
+  // Kept in step with receiversSlice so the shared mobile components can read
+  // and dispatch against either slice. See utils/storeIdentity.
+  availableStoreNumbers: string[];
+  selectedStoreNumber: string | null;
   list: ReceiverListItem[];
   listGridData: ReceiverListItem[];
   details: ReceiverDetailsItem[];
@@ -55,6 +59,8 @@ interface ReceiversState {
 
 export const initialState: ReceiversState = {
   storeid: 0,
+  availableStoreNumbers: [],
+  selectedStoreNumber: null,
   list: [],
   details: [],
   vendorIdFilter: "",
@@ -89,6 +95,12 @@ export const receiversSlice = createSlice({
   reducers: {
     setStoreId: (state, action: PayloadAction<number>) => {
       state.storeid = action.payload;
+    },
+    setAvailableStoreNumbers: (state, action: PayloadAction<string[]>) => {
+      state.availableStoreNumbers = action.payload;
+    },
+    setSelectedStoreNumber: (state, action: PayloadAction<string | null>) => {
+      state.selectedStoreNumber = action.payload;
     },
     setReceiversList: (state, action: PayloadAction<ReceiverListItem[]>) => {
       state.list = action.payload;
@@ -248,6 +260,8 @@ export const receiversSlice = createSlice({
 export const {
   setStoreId,
   setReceiversList,
+  setAvailableStoreNumbers,
+  setSelectedStoreNumber,
   setReceiverDetails,
   setIsFetchingList,
   setIsFetchingDetails,

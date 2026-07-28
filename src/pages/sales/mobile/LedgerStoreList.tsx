@@ -81,6 +81,7 @@ const LedgerStoreList = () => {
         storeId: row.storeid,
         storeName: row.store_name,
         storeNumber: row.store_number,
+        storeNumbersForId: row.storeNumbersForId,
         start: sorted[0]?.sale_date.split("T")[0] ?? "",
         end: sorted[sorted.length - 1]?.sale_date.split("T")[0] ?? "",
         mode: "weekly",
@@ -152,13 +153,25 @@ const LedgerStoreList = () => {
         style={{ paddingBottom: "env(safe-area-inset-bottom, 16px)" }}
       >
         {critRows.map((r) => (
-          <StoreRow key={r.storeid} row={r} onClick={handleSelectStore} />
+          <StoreRow
+            key={`${r.storeid}__${r.store_number}`}
+            row={r}
+            onClick={handleSelectStore}
+          />
         ))}
         {watchRows.map((r) => (
-          <StoreRow key={r.storeid} row={r} onClick={handleSelectStore} />
+          <StoreRow
+            key={`${r.storeid}__${r.store_number}`}
+            row={r}
+            onClick={handleSelectStore}
+          />
         ))}
         {healthyRows.map((r) => (
-          <StoreRow key={r.storeid} row={r} onClick={handleSelectStore} />
+          <StoreRow
+            key={`${r.storeid}__${r.store_number}`}
+            row={r}
+            onClick={handleSelectStore}
+          />
         ))}
         {filtered.length === 0 && (
           <div className="flex items-center justify-center py-16 text-[12px] text-content/85">

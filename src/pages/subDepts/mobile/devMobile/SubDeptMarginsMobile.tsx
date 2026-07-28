@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { scopeToStoreNumber, storeNumbersIn } from "../../../../utils/storeIdentity";
 import { useSubMarginCtx, useParams } from "../../hooks";
-import { useAppDispatch } from "../../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { getSubDepts, getSubMargins } from "../../../../api/subMargins";
-import { setDates, calculateCogs, getLYDate } from "../..";
+import { setDates, calculateCogs, hasNoUsableCost, getLYDate } from "../..";
 import type {
   JsonError,
   SubDept,
+  SubSale,
   SubSalesJsonResp,
   SubMarginsJsonResp,
   SubDeptMargin,
@@ -15,8 +17,12 @@ import type {
 import {
   setSubDeptGrade,
   setLoadingGrades,
+  setAvailableStoreNumbers,
+  setSelectedStoreNumber,
+  resetSubDeptGrades,
   type SubDeptGrade,
 } from "../../../../features/subMarginSlice";
+import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import SingleStoreSearchCard from "../../../../components/SingleStoreSearchCard";
 import SingleDatePicker from "../../../../components/datePickers/SingleDatePicker";
 import SubDeptListMobile from "./SubDeptListMobile";
@@ -132,7 +138,7 @@ const computeSubDeptGrade = (
   for (const m of tyMargins) {
     if (!seen.has(m.product_code)) {
       seen.add(m.product_code);
-      if (m.case_size === 0 || (m.net_cost === 0 && m.cost === 0))
+      if (hasNoUsableCost(m))
         noCostCount++;
     }
   }
@@ -169,6 +175,62 @@ const SubDeptMarginsMobile = () => {
     total: 0,
   });
   const [notice, setNotice] = useState<string | undefined>(undefined);
+  // Re-search opens the entry card rather than refetching the current store
+  // and date on the spot — the whole point is to pick different ones. Data
+  // is left intact so "Back to results" can return without a fetch, matching
+  // Receivers mobile.
+  const [showSearch, setShowSearch] = useState(false);
+
+  // Raw responses for the current search, so switching co-located locations
+  // re-derives instantly instead of refetching 1 + 3xN calls.
+  const rawRef = useRef<{
+    subSales: SubSale[];
+    margins: Record<number, { ty: SubDeptMargin[]; ly: SubDeptMargin[]; lw: SubDeptMargin[] }>;
+  }>({ subSales: [], margins: {} });
+  const selectedStoreNumber = useAppSelector((s) => s.subMargin.selectedStoreNumber);
+  const scopeRef = useRef<string | null>(selectedStoreNumber);
+  scopeRef.current = selectedStoreNumber;
+  const scoped = <T extends { store_number: string }>(rows: T[]): T[] =>
+    scopeRef.current ? scopeToStoreNumber(rows, scopeRef.current) : rows;
+
+  // Re-present the cached search as a different location. No network.
+  //
+  // rawRef is component-local, so anything that remounts this component (route
+  // change, hot reload) empties it while Redux still holds the results. Without
+  // this guard the switch would derive an empty list from the empty cache and
+  // overwrite Redux with it, dropping the user on the entry card with nothing
+  // to go back to. On a cold cache, refetch instead — keeping the location the
+  // user just picked.
+  const handleStoreNumberChange = (storeNumber: string | null) => {
+    scopeRef.current = storeNumber;
+    dispatch(setSelectedStoreNumber(storeNumber));
+    if (rawRef.current.subSales.length === 0) {
+      handleSearch(storeNumber);
+      return;
+    }
+    dispatch(actions.setSelectedSubDeptId(null));
+    dispatch(resetSubDeptGrades());
+    const raw = rawRef.current;
+    const subDepts = scoped(raw.subSales)
+      .reduce((acc: SubDept[], curr) => {
+        if (!acc.some((sd) => sd.id === curr.sub_department)) {
+          acc.push({ id: curr.sub_department, desc: curr.sub_department_description });
+        }
+        return acc;
+      }, [])
+      .sort((a, b) => a.id - b.id);
+    dispatch(actions.setSubDepts(subDepts));
+    for (const sd of subDepts) {
+      const m = raw.margins[sd.id];
+      if (!m) continue;
+      dispatch(
+        setSubDeptGrade({
+          id: sd.id,
+          grade: computeSubDeptGrade(scoped(m.ty), scoped(m.ly), scoped(m.lw)),
+        }),
+      );
+    }
+  };
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -177,11 +239,15 @@ const SubDeptMarginsMobile = () => {
     };
   }, []);
 
-  const handleSearch = () => {
+  // preferredNumber keeps the user's chosen location across a forced refetch;
+  // omitted on a fresh search, which defaults to the first location.
+  const handleSearch = (preferredNumber?: string | null) => {
     dispatch(actions.requerySubDeptMargins());
     dispatch(actions.setLoadingSubDepts(true));
     setGradingProgress({ completed: 0, total: 0 });
     setNotice(undefined);
+    rawRef.current = { subSales: [], margins: {} };
+    scopeRef.current = null;
 
     getSubDepts(
       ctx.url,
@@ -198,12 +264,28 @@ const SubDeptMarginsMobile = () => {
           setNotice("No sub departments came back for this search");
           return;
         }
-        const subDepts = j.subs
+        rawRef.current.subSales = j.subs;
+        // Co-located stores share a storeid and this is fetched by storeid, so
+        // the response covers both locations. Default to the first, matching
+        // desktop. See utils/storeIdentity.
+        const numbers = storeNumbersIn(j.subs);
+        dispatch(setAvailableStoreNumbers(numbers));
+        if (numbers.length > 1) {
+          const wanted =
+            preferredNumber !== undefined && preferredNumber !== null &&
+            numbers.includes(preferredNumber)
+              ? preferredNumber
+              : preferredNumber === null
+                ? null
+                : numbers[0];
+          scopeRef.current = wanted;
+          dispatch(setSelectedStoreNumber(wanted));
+        }
+        // No sub_department !== 0 filter — kept in step with desktop and with
+        // Sales, which doesn't exclude it either.
+        const subDepts = scoped(j.subs)
           .reduce((acc: SubDept[], curr) => {
-            if (
-              curr.sub_department !== 0 &&
-              !acc.some((s) => s.id === curr.sub_department)
-            ) {
+            if (!acc.some((s) => s.id === curr.sub_department)) {
               acc.push({
                 id: curr.sub_department,
                 desc: curr.sub_department_description,
@@ -215,7 +297,21 @@ const SubDeptMarginsMobile = () => {
 
         dispatch(actions.setSubDepts(subDepts));
 
-        const total = subDepts.length;
+        // Fetch margins for the union of both locations so switching never
+        // needs data we didn't request; only the display list is scoped.
+        const allSubDepts = j.subs
+          .reduce((acc: SubDept[], curr) => {
+            if (!acc.some((sd) => sd.id === curr.sub_department)) {
+              acc.push({
+                id: curr.sub_department,
+                desc: curr.sub_department_description,
+              });
+            }
+            return acc;
+          }, [])
+          .sort((a, b) => a.id - b.id);
+
+        const total = allSubDepts.length;
         if (total === 0) {
           setNotice("No sub departments came back for this search.");
           return;
@@ -225,7 +321,7 @@ const SubDeptMarginsMobile = () => {
         setGradingProgress({ completed: 0, total });
         let completed = 0;
 
-        for (const sd of subDepts) {
+        for (const sd of allSubDepts) {
           Promise.all([
             fetchAllPages(
               ctx.url,
@@ -259,10 +355,18 @@ const SubDeptMarginsMobile = () => {
             ),
           ])
             .then(([tyData, lyData, lwData]) => {
+              rawRef.current.margins[sd.id] = { ty: tyData, ly: lyData, lw: lwData };
+              // A dept that only trades at the other location has nothing to
+              // show under the current scope.
+              if (!subDepts.some((d) => d.id === sd.id)) return;
               dispatch(
                 setSubDeptGrade({
                   id: sd.id,
-                  grade: computeSubDeptGrade(tyData, lyData, lwData),
+                  grade: computeSubDeptGrade(
+                    scoped(tyData),
+                    scoped(lyData),
+                    scoped(lwData),
+                  ),
                 }),
               );
             })
@@ -280,19 +384,23 @@ const SubDeptMarginsMobile = () => {
       .finally(() => dispatch(actions.setLoadingSubDepts(false)));
   };
 
-  if (ctx.selectedSubDeptId > 0) {
+  if (ctx.selectedSubDeptId != null) {
     return (
       <SubDeptReportMobile
-        onBack={() => dispatch(actions.setSelectedSubDeptId(0))}
+        // null, not 0 — 0 is a real sub department id, so resetting to it
+        // leaves this guard true and re-renders the report for a dept that
+        // has no grade (blank screen). See selectedSubDeptId in subMarginSlice.
+        onBack={() => dispatch(actions.setSelectedSubDeptId(null))}
       />
     );
   }
 
-  if (ctx.subDepts.length > 0) {
+  if (ctx.subDepts.length > 0 && !showSearch) {
     return (
       <SubDeptListMobile
-        onSearch={handleSearch}
+        onSearch={() => setShowSearch(true)}
         gradingProgress={gradingProgress}
+        onStoreNumberChange={handleStoreNumberChange}
       />
     );
   }
@@ -307,11 +415,27 @@ const SubDeptMarginsMobile = () => {
           stores={ctx.assignedStores}
           selectedStoreId={ctx.searchValue}
           onStoreSelect={(id) => dispatch(actions.setSearchValue(id))}
-          onSearch={handleSearch}
+          onSearch={() => {
+            setShowSearch(false);
+            handleSearch();
+          }}
           loading={ctx.loadingSubDepts}
           datePicker={<SingleDatePicker />}
           notice={notice}
-        />
+        >
+          {ctx.subDepts.length > 0 && (
+            <button
+              onClick={() => setShowSearch(false)}
+              className="w-full py-2.5 flex items-center justify-center gap-1.5 transition-colors"
+              style={{ background: "rgba(30,42,74,0.07)", borderRadius: 10 }}
+            >
+              <ArrowLeftIcon className="w-4 h-4 text-[#1e2a4a]" />
+              <span className="text-[#1e2a4a] font-semibold text-[13px] underline underline-offset-2">
+                Back to results
+              </span>
+            </button>
+          )}
+        </SingleStoreSearchCard>
       </div>
     </div>
   );

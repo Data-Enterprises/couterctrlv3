@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { ChevronLeftIcon } from "@heroicons/react/20/solid";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { applyStoreNumberToName } from "../../../utils/storeIdentity";
 import { useLPState } from "../hooks/useLPState";
 import { useLPActions } from "../hooks/useLPActions";
 import { gradeAllCashiers } from "../gradingUtils";
@@ -52,8 +53,12 @@ const CashierListMobile = ({ onBack, onSelectCashier }: Props) => {
   //   avgTicket: grades[0].avgTicket.avg,
   // } : null;
 
-  const detail = lp.cashierDetails.find((d) => d.storeid === lp.selectedStoreId) ?? null;
-  const trend  = lp.cashierTrends.find((t) => t.storeid === lp.selectedStoreId) ?? null;
+  // storeid + store_number — co-located stores share an id, so matching on the
+  // id alone can resolve to the sibling location. See utils/storeIdentity.
+  const isSelectedStore = (r: { storeid: number; store_number: string }) =>
+    r.storeid === lp.selectedStoreId && r.store_number === lp.selectedStoreNumber;
+  const detail = lp.cashierDetails.find(isSelectedStore) ?? null;
+  const trend  = lp.cashierTrends.find(isSelectedStore) ?? null;
 
   const trendPct = (current: number, trendVal: number, useAbs = false) => {
     const c = useAbs ? Math.abs(current) : current;
@@ -61,7 +66,11 @@ const CashierListMobile = ({ onBack, onSelectCashier }: Props) => {
     return t !== 0 ? ((c - t) / t) * 100 : undefined;
   };
 
-  const storeName = assignedStores.find((s) => s.storeid === lp.selectedStoreId)?.store_name ?? String(lp.selectedStoreId);
+  const storeName = applyStoreNumberToName(
+    assignedStores.find((s) => s.storeid === lp.selectedStoreId)?.store_name ?? String(lp.selectedStoreId),
+    lp.selectedStoreNumber,
+    [...new Set(lp.cashierDetails.filter((d) => d.storeid === lp.selectedStoreId).map((d) => d.store_number))],
+  );
 
   const counts = useMemo(() => ({
     all:      grades.length,

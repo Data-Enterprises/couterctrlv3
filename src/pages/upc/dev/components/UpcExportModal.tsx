@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ResizableModalShell from "../../../../components/modals/ResizableModalShell";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import type { UpcDevTab, AssociationItem } from "../../../../features/upcDevSlice";
@@ -215,16 +216,12 @@ const UpcExportModal = ({ onClose }: Props) => {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: "rgba(0,0,0,0.35)" }}
-      onClick={onClose}
+    <ResizableModalShell
+      onClose={onClose}
+      storageKey="export-modal:upc"
+      defaultWidth={440}
+      defaultHeight={520}
     >
-      <div
-        className="bg-custom-white rounded-xl shadow-xl overflow-hidden"
-        style={{ width: 360 }}
-        onClick={(e) => e.stopPropagation()}
-      >
         {/* header */}
         <div className="bg-[#1e2a4a] px-5 py-3 flex items-center justify-between">
           <div>
@@ -296,8 +293,7 @@ const UpcExportModal = ({ onClose }: Props) => {
             Download CSV
           </button>
         </div>
-      </div>
-    </div>
+    </ResizableModalShell>
   );
 };
 

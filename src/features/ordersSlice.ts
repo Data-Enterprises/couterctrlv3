@@ -10,6 +10,9 @@ export type UniqueSub = {
 
 export type GroupedOrderStore = {
   storeid: number;
+  // A few storeids cover two physical locations; storenumber is what tells
+  // them apart, so it is part of this row's identity. See utils/storeIdentity.
+  storenumber: string;
   store_name: string;
   frequency: number;
 };
@@ -29,10 +32,14 @@ export type SelectedOrderKey = {
   order_date_end: string;
   order_type: string;
   storeids: number[];
+  // Which locations within those storeids. null = every location (the
+  // select-all-stores path, where both siblings are wanted anyway).
+  storenumbers: string[] | null;
 } | null;
 
 export type SelectedOrder = {
   storeid: number;
+  storenumber: string;
   orderId: number;
 } | null;
 

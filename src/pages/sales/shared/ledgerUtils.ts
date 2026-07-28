@@ -12,6 +12,59 @@ import type { GradingMetric } from "../../../features/salesLedgerSlice";
 
 export const SEVERITY_RANK = { critical: 0, watch: 1, healthy: 2 } as const;
 
+// Co-located-store helpers live in utils/storeIdentity — Sub Dept Margins needs
+// the identical behaviour, and the two pages have to agree on these stores.
+// Re-exported so the many Sales call sites keep their existing import.
+export {
+  scopeToStoreNumber,
+  applyStoreNumberToName,
+} from "../../../utils/storeIdentity";
+
+// The comparison a row is graded on: last year when we have it, else last
+// week. Rounded before grading — see itemSeverity in PopupSubDeptList for why.
+export const ledgerGradePct = (row: {
+  hasLY: boolean;
+  hasLW: boolean;
+  vsLYPct: number;
+  vsLWPct: number;
+}) =>
+  Math.round((row.hasLY ? row.vsLYPct : row.hasLW ? row.vsLWPct : 0) * 10) / 10;
+
+export const ledgerSeverity = (pct: number, threshold: number): Severity => {
+  if (pct < -threshold) return "critical";
+  if (pct < 0) return "watch";
+  return "healthy";
+};
+
+export const sortLedgerRows = (rows: LedgerRowData[]): LedgerRowData[] =>
+  [...rows].sort((a, b) => {
+    const rankDiff = SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity];
+    if (rankDiff !== 0) return rankDiff;
+    const aPct = a.hasLY ? a.vsLYPct : a.vsLWPct;
+    const bPct = b.hasLY ? b.vsLYPct : b.vsLWPct;
+    return aPct - bPct;
+  });
+
+// Re-grade already-built rows against a new threshold. The expensive part of
+// buildLedgerRows (regrouping and day-matching every store across TW/LW/LY) is
+// threshold-independent — only severity and the resulting sort order change.
+// Splitting them lets the threshold move continuously without redoing the
+// aggregation, which is what makes a drag-to-set control viable.
+// Rows whose severity didn't change keep their exact object reference. A 1%
+// nudge typically flips only a handful of stores, so memoized row components
+// can skip re-rendering the rest — spreading every row unconditionally would
+// hand all of them new identities and defeat that.
+export const regradeLedgerRows = (
+  rows: LedgerRowData[],
+  threshold: number,
+): LedgerRowData[] =>
+  sortLedgerRows(
+    rows.map((r) => {
+      const severity = ledgerSeverity(ledgerGradePct(r), threshold);
+      return severity === r.severity ? r : { ...r, severity };
+    }),
+  );
+
 export const BADGE_BG: Record<Severity, string> = {
   critical: "#fee2e2",
   watch: "#fef3c7",
@@ -314,14 +367,41 @@ export const buildLedgerRows = (
   threshold: number = 9,
   gradingMetric: GradingMetric = "sales",
 ): LedgerRowData[] => {
-  const storeIds = [...new Set(tw.map((d) => d.storeid))];
-  return storeIds
-    .map((id) => {
-      const twRows = tw.filter((d) => d.storeid === id);
-      const lwRows = lw.filter((d) => d.storeid === id);
-      const lyRows = ly.filter((d) => d.storeid === id);
+  // Some storeids come back carrying more than one store_number — genuinely
+  // separate locations that were never given their own storeid (e.g. 685
+  // returns both "369" and "370", with wildly different tax rates and basket
+  // profiles). Keying on storeid alone merged them into one row, doubled every
+  // date in the day strip, and double-counted the LW/LY baseline because each
+  // duplicate TY day re-found the same LW row.
+  //
+  // Keying on storeid + store_number separates them. Stores with a single
+  // number are unaffected — they produce exactly the same single row as before.
+  const numbersByStore = tw.reduce((acc: Record<number, Set<string>>, d) => {
+    (acc[d.storeid] ??= new Set()).add(d.store_number);
+    return acc;
+  }, {});
+
+  const keys = [
+    ...new Map(
+      tw.map((d) => [`${d.storeid}__${d.store_number}`, d]),
+    ).values(),
+  ];
+
+  const rows = keys
+    .map((keyRow) => {
+      const id = keyRow.storeid;
+      const num = keyRow.store_number;
+      const sameStore = (d: WeeklySale) =>
+        d.storeid === id && d.store_number === num;
+      const twRows = tw.filter(sameStore);
+      const lwRows = lw.filter(sameStore);
+      const lyRows = ly.filter(sameStore);
       const ref = twRows[0];
+      // assignedStores is keyed by storeid only, so a co-located pair resolves
+      // to the same name for both — the store_number is what tells them apart
+      // until the store master gives 370 its own record.
       const assigned = assignedStores.find((s) => s.storeid === id);
+      const storeNumbersForId = [...(numbersByStore[id] ?? [num])];
       const twQty = twRows.reduce((acc, r) => acc + r.qty, 0);
 
       // The LW/LY fetch ranges can end up not lining up 1:1 with the current
@@ -367,17 +447,17 @@ export const buildLedgerRows = (
         vsLYPct,
         vsLYDollar,
       } = computeDayMatchedTotals(days, gradingMetric);
-      const severity: LedgerRowData["severity"] = (() => {
-        // Rounded before grading — see itemSeverity in PopupSubDeptList for why.
-        const pct = Math.round((hasLY ? vsLYPct : hasLW ? vsLWPct : 0) * 10) / 10;
-        if (pct < -threshold) return "critical";
-        if (pct < 0) return "watch";
-        return "healthy";
-      })();
+      const severity = ledgerSeverity(
+        ledgerGradePct({ hasLY, hasLW, vsLYPct, vsLWPct }),
+        threshold,
+      );
       return {
         storeid: id,
         store_name: assigned?.store_name ?? ref.store_name,
-        store_number: assigned?.store_number ?? ref.store_number,
+        // Must be the grouping key, not assigned.store_number — that resolves
+        // by storeid and would label both co-located rows with the same number.
+        store_number: num,
+        storeNumbersForId,
         twTotal,
         lwTotal,
         lyTotal,
@@ -392,14 +472,8 @@ export const buildLedgerRows = (
         severity,
         days,
       };
-    })
-    .sort((a, b) => {
-      const rankDiff = SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity];
-      if (rankDiff !== 0) return rankDiff;
-      const aPct = a.hasLY ? a.vsLYPct : a.vsLWPct;
-      const bPct = b.hasLY ? b.vsLYPct : b.vsLWPct;
-      return aPct - bPct;
     });
+  return sortLedgerRows(rows);
 };
 
 // ─── Aggregators ──────────────────────────────────────────────────────────────

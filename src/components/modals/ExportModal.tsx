@@ -1,5 +1,6 @@
 import type { ColDef } from "ag-grid-community";
 import Modal from "../../components/Modal";
+import ResizableModalShell from "./ResizableModalShell";
 import { useState } from "react";
 import { formatDate } from "../../utils";
 import { exportData } from "../../utils/export";
@@ -10,6 +11,10 @@ interface ExportModalProps<T extends Record<string, any>> {
   onClose: () => void;
   data: T[];
   columns: ColDef<T>[];
+  /** Dev-only opt-in. This modal is shared with the legacy Orders, Sub Dept
+   *  Margins, Coupons and Store Activity pages, so resizing has to be asked
+   *  for rather than applied to every consumer. */
+  resizable?: boolean;
 }
 
 const ExportModal = <T extends Record<string, any>>({
@@ -17,6 +22,7 @@ const ExportModal = <T extends Record<string, any>>({
   onClose,
   data,
   columns,
+  resizable = false,
 }: ExportModalProps<T>) => {
   const toast = useToast();
   const [fileName, setFileName] = useState<string>("");
@@ -50,12 +56,8 @@ const ExportModal = <T extends Record<string, any>>({
     onClose();
   };
 
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      modalClassName="bg-custom-white md:w-1/4 text-sm"
-    >
+  const body = (
+    <>
       <label htmlFor="filename" className="underline">File Name</label>
       <input
         data-testid="export-modal-filename-input"
@@ -84,6 +86,33 @@ const ExportModal = <T extends Record<string, any>>({
       <div className="text-content/60 text-center text-sm translate-y-2">
         *file extension will be added automatically on submit
       </div>
+    </>
+  );
+
+  if (!isOpen) return null;
+
+  if (resizable) {
+    return (
+      <ResizableModalShell
+        onClose={onClose}
+        storageKey="export-modal:shared"
+        defaultWidth={460}
+        defaultHeight={340}
+        minWidth={360}
+        minHeight={260}
+      >
+        <div className="p-4 text-sm overflow-y-auto">{body}</div>
+      </ResizableModalShell>
+    );
+  }
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      modalClassName="bg-custom-white md:w-1/4 text-sm"
+    >
+      {body}
     </Modal>
   );
 };

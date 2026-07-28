@@ -1,10 +1,15 @@
 import type { CouponItem } from "../../interfaces";
 import { fmtNum, rowsToCsv } from "../../utils/csvExport";
+import { withResolvedCouponAmount } from "../../utils/couponValue";
 import type { AggFn } from "../../utils/csvExport";
 
 export const buildPresetCsv = (rows: CouponItem[], label: string) => {
+  // coupon_amount can be null with the figure in store_coupon/vendor_coupon,
+  // and that fallback is transaction-level — resolved here so a reader summing
+  // the column gets the same total the page shows. See utils/couponValue.
+  const resolved = withResolvedCouponAmount(rows);
   const headers = ["Store #", "Store", "Date", "Trans", "Cpn Type", "Cpn Amt", "UPC", "Description", "Cashier #", "Cashier", "Customer ID", "Sub Dept"];
-  const data = rows.map((r) => [
+  const data = resolved.map((r) => [
     r.store_number,
     r.store_name,
     r.sale_date.split("T")[0],

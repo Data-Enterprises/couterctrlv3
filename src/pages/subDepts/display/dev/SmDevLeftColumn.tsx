@@ -23,7 +23,7 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
   const [legendHover, setLegendHover] = useState(false);
-  const hasSubDept = ctx.selectedSubDeptId > 0;
+  const hasSubDept = ctx.selectedSubDeptId != null;
 
   const storeName =
     ctx.assignedStores.find((s) => s.storeid === ctx.searchValue)?.store_name ??
@@ -183,7 +183,7 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
       <div className="px-3 py-2 border-b border-gray-100 bg-gray-50/60 flex items-center gap-2 flex-shrink-0">
         <SelectFilter
           options={subDeptOptions}
-          value={ctx.selectedSubDeptId > 0 ? String(ctx.selectedSubDeptId) : ""}
+          value={ctx.selectedSubDeptId != null ? String(ctx.selectedSubDeptId) : ""}
           onChange={handleSubDeptChange}
           placeholder="Select sub department"
           className="flex-1"

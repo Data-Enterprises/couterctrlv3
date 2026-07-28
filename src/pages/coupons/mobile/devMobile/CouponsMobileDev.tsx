@@ -33,6 +33,8 @@ const CouponsMobileDev = () => {
 
   const [screen, setScreen] = useState<Screen>("entry");
   const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
+  // Co-located stores share a storeid — the number is what picks the location.
+  const [selectedStoreNumber, setSelectedStoreNumber] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<GroupTab>("subdept");
   const [selectedSection, setSelectedSection] = useState<{ key: string; label: string } | null>(null);
   const [sortMetric, setSortMetric] = useState<"amount" | "qty">("amount");
@@ -81,14 +83,19 @@ const CouponsMobileDev = () => {
     dispatch(actions.resetCoupons());
     setScreen("entry");
     setSelectedStoreId(null);
+    setSelectedStoreNumber(null);
     setSelectedSection(null);
     setSelectedTab("subdept");
   };
 
   const filteredCoupons = useMemo<CouponItem[]>(() => {
     if (selectedStoreId === null) return ctx.coupons;
-    return ctx.coupons.filter((c) => c.storeid === selectedStoreId);
-  }, [ctx.coupons, selectedStoreId]);
+    return ctx.coupons.filter(
+      (c) =>
+        c.storeid === selectedStoreId &&
+        (selectedStoreNumber === null || c.store_number === selectedStoreNumber),
+    );
+  }, [ctx.coupons, selectedStoreId, selectedStoreNumber]);
 
   const sectionCoupons = useMemo<CouponItem[]>(() => {
     if (!selectedSection) return filteredCoupons;
@@ -124,8 +131,9 @@ const CouponsMobileDev = () => {
         dateRangeLabel={dateRangeLabel}
         sortMetric={sortMetric}
         onSortMetric={setSortMetric}
-        onSelect={(storeId) => {
+        onSelect={(storeId, storeNumber) => {
           setSelectedStoreId(storeId);
+          setSelectedStoreNumber(storeNumber);
           setScreen("overview");
         }}
         onSearch={handleReset}

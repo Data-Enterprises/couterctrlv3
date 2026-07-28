@@ -12,8 +12,12 @@ import {
   setSelectedInvoice,
   setReceiverDetails,
   setTotals,
+  setSelectedStoreNumber,
+  setListGridData,
 } from "../../features/receiversSlice";
 import { formatDate } from "../../utils";
+import { applyStoreNumberToName, scopeToStoreNumber } from "../../utils/storeIdentity";
+import LocationTabs from "../../components/filters/LocationTabs";
 import type { JsonError, ReceiverDetailsResponse } from "../../interfaces";
 import SelectFilter from "../../components/filters/SelectFilter";
 import FilterBar from "../../components/filters/FilterBar";
@@ -98,7 +102,26 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
     [state.list],
   );
 
-  const storeName = useStoreName(Number(state.storeid));
+  // Co-located stores share one assignedStores record, so the resolved name
+  // embeds only one of the two numbers — rewrite it to the location on screen.
+  const resolvedStoreName = useStoreName(Number(state.storeid));
+  const storeName = state.selectedStoreNumber
+    ? applyStoreNumberToName(
+        resolvedStoreName,
+        state.selectedStoreNumber,
+        state.availableStoreNumbers,
+      )
+    : resolvedStoreName;
+
+  // No refetch — the full response is already in state.list.
+  const handleStoreNumberChange = (storeNumber: string | null) => {
+    dispatch(setSelectedStoreNumber(storeNumber));
+    dispatch(
+      setListGridData(
+        storeNumber ? scopeToStoreNumber(state.list, storeNumber) : state.list,
+      ),
+    );
+  };
   const [infoOpen, setInfoOpen] = useState(false);
   const hasFilters = !!vendorFilter || !!dateFilter;
 
@@ -166,6 +189,12 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
           </div>
         </div>
       </div>
+
+      <LocationTabs
+        numbers={state.availableStoreNumbers}
+        selected={state.selectedStoreNumber}
+        onChange={handleStoreNumberChange}
+      />
 
       <FilterBar>
         <SelectFilter

@@ -3,6 +3,7 @@ import type { LedgerRowData, StoreSelection } from "./LedgerRow";
 import { SEVERITY_CONFIG, formatPct, type SeverityKey } from "./tierColumnUtils";
 import type { GradingMetric } from "../../../features/salesLedgerSlice";
 import { useStoreName } from "../../../hooks";
+import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import UniversalTierColumn from "../../../components/TierColumn";
 
 const StoreRowItem = ({
@@ -18,7 +19,12 @@ const StoreRowItem = ({
   gradingMetric: GradingMetric;
   onClick: () => void;
 }) => {
-  const storeName = useStoreName(row.storeid, row.store_name);
+  const resolved = useStoreName(row.storeid, row.store_name);
+  const storeName = applyStoreNumberToName(
+    resolved,
+    row.store_number,
+    row.storeNumbersForId,
+  );
   return (
     <button
       onClick={onClick}
@@ -75,6 +81,7 @@ const TierColumn = ({
       storeId: row.storeid,
       storeName: row.store_name,
       storeNumber: row.store_number,
+      storeNumbersForId: row.storeNumbersForId,
       start: weekStart,
       end: weekEnd,
       mode: "weekly",
@@ -89,7 +96,7 @@ const TierColumn = ({
         {rows.length > 0
           ? rows.map((row) => (
               <StoreRowItem
-                key={row.storeid}
+                key={`${row.storeid}__${row.store_number}`}
                 row={row}
                 isSel={row.storeid === selectedStoreId}
                 shadowColor={cfg.shadowColor}

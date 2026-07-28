@@ -10,6 +10,9 @@ export type UniqueSub = {
 
 export type GroupedOrderStore = {
   storeid: number;
+  // A few storeids cover two physical locations; storenumber is what tells
+  // them apart, so it is part of this row's identity. See utils/storeIdentity.
+  storenumber: string;
   store_name: string;
   frequency: number;
 };

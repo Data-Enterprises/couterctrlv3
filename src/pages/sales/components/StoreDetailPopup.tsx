@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+﻿import { useState, useEffect, memo } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 // import { useSalesState } from "../hooks/useSalesState";
 import { getSubs, getHourly /* , getCats */ } from "../../../api/sales";
@@ -23,7 +23,7 @@ import {
   // setRawLWCats,
   // setRawLYCats,
   // setCategoryThreshold,
-  setLastFetchedStoreId,
+  setLastFetchedStoreKey,
   clearPopupSelections,
 } from "../../../features/salesLedgerSlice";
 import {
@@ -33,7 +33,8 @@ import {
   formatCurrency2,
   formatBigNumber,
 } from "../../../utils";
-import { computeDayMatchedTotals /*, getWeeklyDataGaps, getWeeklyGapCount */ } from "../shared/ledgerUtils";
+import { computeDayMatchedTotals, scopeToStoreNumber, applyStoreNumberToName /*, getWeeklyDataGaps, getWeeklyGapCount */ } from "../shared/ledgerUtils";
+import { useStoreName } from "../../../hooks";
 import { ArrowDownTrayIcon /*, ExclamationTriangleIcon */ } from "@heroicons/react/20/solid";
 import PopupDaySidebar from "./PopupDaySidebar";
 import PopupSubDeptList from "./PopupSubDeptList";
@@ -76,7 +77,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
     rawLYHourly,
     exportSubDeptItems,
     exportSubDeptName,
-    lastFetchedStoreId,
+    lastFetchedStoreKey,
     gradingMetric,
   } = useAppSelector((state) => state.salesLedger);
   const isQty = gradingMetric === "qty";
@@ -243,14 +244,29 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
       ? weekTotals.vsLYPct
       : null;
 
+  // Matches the left-hand row: resolved via assignedStores, then — for
+  // co-located stores only — the embedded number swapped to this location's.
+  const resolvedStoreName = useStoreName(
+    selection.storeId,
+    selection.storeName,
+  );
+  const headerStoreName = applyStoreNumberToName(
+    resolvedStoreName,
+    selection.storeNumber,
+    selection.storeNumbersForId,
+  );
+
   const THRESHOLD = 9;
 
   useEffect(() => {
     // Remounting with data already fetched for this exact store (e.g.
     // navigating away and back) shouldn't refire the request — Redux still
     // has it, only the component tree was torn down.
-    if (lastFetchedStoreId === selection.storeId) return;
+    const storeKey = `${selection.storeId}__${selection.storeNumber}`;
+    if (lastFetchedStoreKey === storeKey) return;
     dispatch(clearPopupSelections());
+    const scopeToStore = <T extends { store_number: string }>(rows: T[]) =>
+      scopeToStoreNumber(rows, selection.storeNumber);
     const fetch = async () => {
       setLoading(true);
       try {
@@ -318,34 +334,52 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           ),
         ]);
         dispatch(
-          setRawSubs(subsResp.data.error === 0 ? subsResp.data.subs : []),
+          setRawSubs(
+            subsResp.data.error === 0 ? scopeToStore(subsResp.data.subs) : [],
+          ),
         );
         dispatch(
-          setRawLWSubs(lwSubsResp.data.error === 0 ? lwSubsResp.data.subs : []),
+          setRawLWSubs(
+            lwSubsResp.data.error === 0
+              ? scopeToStore(lwSubsResp.data.subs)
+              : [],
+          ),
         );
         dispatch(
-          setRawLYSubs(lySubsResp.data.error === 0 ? lySubsResp.data.subs : []),
+          setRawLYSubs(
+            lySubsResp.data.error === 0
+              ? scopeToStore(lySubsResp.data.subs)
+              : [],
+          ),
         );
         dispatch(
-          setRawHourly(hourlyResp.data.error === 0 ? hourlyResp.data.subs : []),
+          setRawHourly(
+            hourlyResp.data.error === 0
+              ? scopeToStore(hourlyResp.data.subs)
+              : [],
+          ),
         );
         dispatch(
           setRawLWHourly(
-            lwHourlyResp.data.error === 0 ? lwHourlyResp.data.subs : [],
+            lwHourlyResp.data.error === 0
+              ? scopeToStore(lwHourlyResp.data.subs)
+              : [],
           ),
         );
         dispatch(
           setRawLYHourly(
-            lyHourlyResp.data.error === 0 ? lyHourlyResp.data.subs : [],
+            lyHourlyResp.data.error === 0
+              ? scopeToStore(lyHourlyResp.data.subs)
+              : [],
           ),
         );
-        dispatch(setLastFetchedStoreId(selection.storeId));
+        dispatch(setLastFetchedStoreKey(storeKey));
       } finally {
         setLoading(false);
       }
     };
     fetch();
-  }, [selection.storeId]);
+  }, [selection.storeId, selection.storeNumber]);
 
   // Category tab disabled for now — cat_sales fetch commented out alongside it.
   // // Category data can run into hundreds of rows per store, so it's fetched
@@ -462,7 +496,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
       <div className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${severityHeaderBgClass[selection.severity]}`}>
         {showFlames && <GhostFlames />}
         <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start">
-          {selection.storeName}
+          {headerStoreName}
         </p>
         <span className="text-custom-white text-[13px] font-bold justify-self-center">
           Sales Performance · {staticTwDate}
@@ -616,6 +650,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
             lwDateLabel={lwDateLabel}
             lyDateLabel={lyDateLabel}
             storeId={selection.storeId}
+            storeNumber={selection.storeNumber}
             selectedDate={selectedDate}
             twRealDates={twRealDates}
           />
@@ -643,4 +678,8 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   );
 };
 
-export default StoreDetailPopup;
+// This panel grades off its own thresholds (subDept/item/hourly/category), not
+// the store-row threshold in the header — so it has no reason to re-render when
+// that one changes. Without this it re-rendered on every drag frame purely
+// because SalesLedger re-rendered above it.
+export default memo(StoreDetailPopup);

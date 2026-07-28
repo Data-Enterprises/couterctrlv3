@@ -46,7 +46,10 @@ interface SalesLedgerState {
   // Tracks which store the raw data below was fetched for, so remounting
   // StoreDetailPopup (e.g. after navigating away and back) with the same
   // selection doesn't re-fire the fetch — it just reuses what's already here.
-  lastFetchedStoreId: number | null;
+  // Keyed on storeid + store_number, not storeid alone: co-located stores
+  // share one id, and keying on the id would serve the first one's data to
+  // the second.
+  lastFetchedStoreKey: string | null;
 
   // Raw API data (shared desktop + mobile)
   rawSubs: SubSale[];
@@ -106,7 +109,7 @@ const initialState: SalesLedgerState = {
   ledgerLoading: false,
   reportLoading: false,
   top10Loading: false,
-  lastFetchedStoreId: null,
+  lastFetchedStoreKey: null,
   rawSubs: [],
   rawLWSubs: [],
   rawLYSubs: [],
@@ -166,8 +169,8 @@ const salesLedgerSlice = createSlice({
     setTop10Loading: (state, action: PayloadAction<boolean>) => {
       state.top10Loading = action.payload;
     },
-    setLastFetchedStoreId: (state, action: PayloadAction<number | null>) => {
-      state.lastFetchedStoreId = action.payload;
+    setLastFetchedStoreKey: (state, action: PayloadAction<string | null>) => {
+      state.lastFetchedStoreKey = action.payload;
     },
     setRawSubs: (state, action: PayloadAction<SubSale[]>) => {
       state.rawSubs = action.payload;
@@ -277,7 +280,7 @@ const salesLedgerSlice = createSlice({
     reQueryLedger: (state) => {
       state.selection = null;
       state.selectedDate = null;
-      state.lastFetchedStoreId = null;
+      state.lastFetchedStoreKey = null;
       state.rawSubs = [];
       state.rawLWSubs = [];
       state.rawLYSubs = [];
@@ -333,7 +336,7 @@ export const {
   setLedgerLoading,
   setReportLoading,
   setTop10Loading,
-  setLastFetchedStoreId,
+  setLastFetchedStoreKey,
   setRawSubs,
   setRawLWSubs,
   setRawLYSubs,
