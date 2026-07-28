@@ -3,6 +3,7 @@ import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useApiContext } from "../../hooks";
+import { applyStoreNumberToName, scopeToStoreNumber } from "../../../utils/storeIdentity";
 import { getCashierDetails, getCashierTable, getTransactionList } from "../../../api/lossPrevention";
 import { useLPState } from "../hooks/useLPState";
 import { useLPActions } from "../hooks/useLPActions";
@@ -60,10 +61,11 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
     fetchDetails(saleType);
   };
 
-  const handleStoreClick = (storeid: number) => {
+  const handleStoreClick = (storeid: number, storeNumber: string) => {
     if (lp.fetchingCashierTransactions) return;
     dispatch(actions.reQuery());
     dispatch(actions.setSelectedStoreId(storeid));
+    dispatch(actions.setSelectedStoreNumber(storeNumber));
     dispatch(actions.setTransactionLoadingMessage("Loading cashiers…"));
     dispatch(actions.setFetchingCashierTransactions(true));
     dispatch(actions.setTransList([]));
@@ -84,7 +86,9 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          const transactions = [...j.transactions];
+          // Fetched by storeid, which for co-located stores returns both
+          // locations — narrow to the one that was tapped.
+          const transactions = scopeToStoreNumber([...j.transactions], storeNumber);
           const allTrans = transactions.filter((item: any) => item.sale_type === saleType);
 
           const doFetch = (saleIds: string[]) => {
@@ -99,7 +103,7 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
               getCashierTable(params.url, params.token, start, end, 0, storeid, 1, [saleType], page, lp.searchString)
                 .then((r2) => {
                   if (r2.data.error === 0) {
-                    allTrans.push(...r2.data.transactions.filter((t: any) => t.sale_type === saleType));
+                    allTrans.push(...scopeToStoreNumber(r2.data.transactions, storeNumber).filter((t: any) => t.sale_type === saleType));
                     pages.find((p) => p.page === page)!.fetched = true;
                     if (pages.every((p) => p.fetched)) doFetch(Array.from(new Set(allTrans.map((t: any) => t.sale_id))));
                   }
@@ -117,11 +121,11 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          const baseTrans = j.transactions.filter((t: any) => t.sale_type === saleType);
+          const baseTrans = scopeToStoreNumber(j.transactions, storeNumber).filter((t: any) => t.sale_type === saleType);
           const fetchPages = j.total_pages > 1
             ? Array.from({ length: j.total_pages - 1 }, (_, i) =>
                 getCashierTable(params.url, params.token, baseStart, baseEnd, 0, storeid, 1, [saleType], i + 2, lp.searchString)
-                  .then((r) => r.data.error === 0 ? r.data.transactions.filter((t: any) => t.sale_type === saleType) : [])
+                  .then((r) => r.data.error === 0 ? scopeToStoreNumber(r.data.transactions, storeNumber).filter((t: any) => t.sale_type === saleType) : [])
               )
             : [];
           Promise.all(fetchPages).then((pages) => {
@@ -184,10 +188,27 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
       .finally(() => { dispatch(actions.setFetchingCashierTransactions(false)); dispatch(actions.setTransactionLoadingMessage("")); });
   };
 
+  // storeid -> every store_number returned under it.
+  const numbersByStoreId = useMemo(
+    () =>
+      lp.cashierDetails.reduce((acc: Record<number, string[]>, d) => {
+        const nums = (acc[d.storeid] ??= []);
+        if (!nums.includes(d.store_number)) nums.push(d.store_number);
+        return acc;
+      }, {}),
+    [lp.cashierDetails],
+  );
+
   const storesWithSev = useMemo(() => {
     return lp.cashierDetails.map((d) => {
-      const trend = lp.cashierTrends.find((t) => t.storeid === d.storeid);
-      const baseline = lp.baselineDetails.find((b) => b.storeid === d.storeid);
+      // storeid + store_number: co-located stores share an id, so matching on
+      // the id alone gives both rows the same sibling's trend and baseline.
+      const trend = lp.cashierTrends.find(
+        (t) => t.storeid === d.storeid && t.store_number === d.store_number,
+      );
+      const baseline = lp.baselineDetails.find(
+        (b) => b.storeid === d.storeid && b.store_number === d.store_number,
+      );
       const sev = storeSeverity(d, lp.baselineDetails, lp.selectedSaleType);
       return { ...d, sev, trend, baseline };
     });
@@ -250,7 +271,13 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
           <div className="flex items-center justify-center py-16 text-[12px] text-content/85">No exceptions found.</div>
         )}
         {!lp.loadingCashierDetails && !lp.noTransMsg && visible.map((d) => {
-          const storeName = assignedStores.find((s) => s.storeid === d.storeid)?.store_name ?? d.store_name;
+          // assignedStores resolves by storeid, so co-located locations share
+          // a name — rewrite the embedded number to this row's own.
+          const storeName = applyStoreNumberToName(
+            assignedStores.find((s) => s.storeid === d.storeid)?.store_name ?? d.store_name,
+            d.store_number,
+            numbersByStoreId[d.storeid] ?? [],
+          );
           const isLoading = lp.fetchingCashierTransactions && lp.selectedStoreId === d.storeid;
           const b = d.baseline;
           const bTrans  = b ? b.transaction_count / 2 : null;
@@ -269,8 +296,8 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
 
           return (
             <button
-              key={d.storeid}
-              onClick={() => handleStoreClick(d.storeid)}
+              key={`${d.storeid}__${d.store_number}`}
+              onClick={() => handleStoreClick(d.storeid, d.store_number)}
               disabled={lp.fetchingCashierTransactions}
               className="w-full px-4 py-3 border-b border-gray-100 text-left hover:bg-gray-50 active:bg-gray-100 transition-colors"
             >

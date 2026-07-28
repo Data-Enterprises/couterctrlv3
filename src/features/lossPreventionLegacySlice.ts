@@ -47,6 +47,9 @@ export interface LossPreventionState {
   selectedPriceTypes: string[];
   fetchingCashierTransactions: boolean;
   selectedStoreId: number;
+  // Kept in step with lossPreventionSlice so the shared mobile components can
+  // dispatch against either slice. See utils/storeIdentity.
+  selectedStoreNumber: string;
   noRowsReturned: boolean;
   noTransMsg: boolean;
   transIdFilter: string;
@@ -87,6 +90,7 @@ const initialState: LossPreventionState = {
   fetchingCashierTransactions: false,
   transactionDrillDown: [],
   selectedStoreId: 0,
+  selectedStoreNumber: "",
   noRowsReturned: false,
   noTransMsg: false,
   transIdFilter: "",
@@ -197,6 +201,9 @@ export const lossPreventionSlice = createSlice({
     setSelectedStoreId: (state, action: PayloadAction<number>) => {
       state.selectedStoreId = action.payload;
     },
+    setSelectedStoreNumber: (state, action: PayloadAction<string>) => {
+      state.selectedStoreNumber = action.payload;
+    },
     toggleNoTransMsg: (state, action: PayloadAction<boolean>) => {
       state.noTransMsg = action.payload;
     },
@@ -300,6 +307,7 @@ export const {
   setFetchingCashierTransactions,
   setTransactionDrillDown,
   setSelectedStoreId,
+  setSelectedStoreNumber,
   toggleNoTransMsg,
   resetCashierSlice,
   setTransIdFilter,

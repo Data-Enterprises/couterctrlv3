@@ -3,6 +3,7 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useApiContext } from "../../hooks";
 import { formatGoliathDate } from "../../../utils";
+import { scopeToStoreNumber } from "../../../utils/storeIdentity";
 import {
   getCashierDetails,
   getCashierTable,
@@ -20,6 +21,7 @@ import {
   setSelectedSaleIds,
   setSelectedSaleType,
   setSelectedStoreId,
+  setSelectedStoreNumber,
   setSaleTypes,
   setTransList,
   setTransModalOpen,
@@ -72,6 +74,7 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
     // }
     const panels = cashier.saleTypes;
     dispatch(setSelectedStoreId(0));
+    dispatch(setSelectedStoreNumber(""));
     dispatch(setCashierTrends([]));
     dispatch(setCashierDetails([]));
     dispatch(reQuery());
@@ -206,11 +209,19 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
   };
 
   const handleStoreSelect = (detail: CashierDetails) => {
-    if (cashier.selectedStoreId === detail.storeid) return;
+    // Both halves of the key — co-located stores share a storeid, so the id
+    // alone would treat a click on the sibling as a click on the current row
+    // and bail out without loading anything.
+    if (
+      cashier.selectedStoreId === detail.storeid &&
+      cashier.selectedStoreNumber === detail.store_number
+    )
+      return;
 
     dispatch(reQuery());
     dispatch(setTransactionLoadingMessage("Loading Cashiers..."));
     dispatch(setSelectedStoreId(detail.storeid));
+    dispatch(setSelectedStoreNumber(detail.store_number));
     dispatch(setSelectedCashierDetails(detail));
     dispatch(setFetchingCashierTransactions(true));
     dispatch(setTransList([]));
@@ -232,7 +243,12 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          const transactions = [...j.transactions];
+          // Fetched by storeid, which for co-located stores returns both
+          // locations — narrow to the one that was clicked.
+          const transactions = scopeToStoreNumber(
+            [...j.transactions],
+            detail.store_number,
+          );
           const allTrans = transactions.filter((item) => item.sale_type === saleType);
 
           if (j.total_pages > 1) {
@@ -245,7 +261,12 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
                 .then((resp) => {
                   const j = resp.data;
                   if (j.error === 0) {
-                    allTrans.push(...j.transactions.filter((t: any) => t.sale_type === saleType));
+                    allTrans.push(
+                      ...scopeToStoreNumber(
+                        j.transactions,
+                        detail.store_number,
+                      ).filter((t: any) => t.sale_type === saleType),
+                    );
                   }
                 })
                 .catch((err: JsonError) => toast.error(err.message))

@@ -35,12 +35,15 @@ const CashierSalesMobile = () => {
     } else {
       // find the trend here and its index => pass both into the card
       // => card will take care of the rest
+      // storeid + store_number — id alone can pick the co-located sibling.
       const details = lp.cashierDetails.filter(
-        (d) => d.storeid === lp.selectedStoreId,
+        (d) =>
+          d.storeid === lp.selectedStoreId &&
+          d.store_number === lp.selectedStoreNumber,
       )[0];
       dispatch(actions.setSelectedCashierDetails(details));
     }
-  }, [lp.selectedStoreId]);
+  }, [lp.selectedStoreId, lp.selectedStoreNumber]);
 
   const handleStoreClicked = (storeid: number) => {
     if (lp.selectedStoreId === storeid) return;

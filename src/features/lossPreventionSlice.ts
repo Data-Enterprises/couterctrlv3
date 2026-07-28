@@ -48,6 +48,10 @@ export interface LossPreventionState {
   selectedPriceTypes: string[];
   fetchingCashierTransactions: boolean;
   selectedStoreId: number;
+  // storeid alone doesn't identify a location — a few storeids carry two
+  // store_numbers (see utils/storeIdentity), and selecting on the id would
+  // highlight both rows and load the wrong one's transactions.
+  selectedStoreNumber: string;
   noRowsReturned: boolean;
   noTransMsg: boolean;
   transIdFilter: string;
@@ -89,6 +93,7 @@ const initialState: LossPreventionState = {
   fetchingCashierTransactions: false,
   transactionDrillDown: [],
   selectedStoreId: 0,
+  selectedStoreNumber: "",
   noRowsReturned: false,
   noTransMsg: false,
   transIdFilter: "",
@@ -202,6 +207,9 @@ export const lossPreventionSlice = createSlice({
     setSelectedStoreId: (state, action: PayloadAction<number>) => {
       state.selectedStoreId = action.payload;
     },
+    setSelectedStoreNumber: (state, action: PayloadAction<string>) => {
+      state.selectedStoreNumber = action.payload;
+    },
     toggleNoTransMsg: (state, action: PayloadAction<boolean>) => {
       state.noTransMsg = action.payload;
     },
@@ -306,6 +314,7 @@ export const {
   setFetchingCashierTransactions,
   setTransactionDrillDown,
   setSelectedStoreId,
+  setSelectedStoreNumber,
   toggleNoTransMsg,
   resetCashierSlice,
   setTransIdFilter,

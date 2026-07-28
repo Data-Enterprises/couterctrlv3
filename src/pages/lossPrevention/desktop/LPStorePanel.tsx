@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { MagnifyingGlassIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import { formatCurrency2, formatBigNumber, getStoreName } from "../../../utils";
+import { applyStoreNumberToName } from "../../../utils/storeIdentity";
 import { useAppSelector } from "../../../hooks";
 import type { CashierDetails } from "../../../interfaces";
 import type { Severity, SevFilter } from "../../../utils/severity";
@@ -29,7 +30,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
 
   const {
     saleTypes, selectedSaleType, cashierDetails, baselineDetails,
-    selectedStoreId,
+    selectedStoreId, selectedStoreNumber,
   } = cashier;
 
   const dateLabel = weekRangeLabel(search.singleDate);
@@ -40,10 +41,29 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
 
   const hasAmount = !isNoDollarType(selectedSaleType);
 
+  // storeid -> every store_number returned under it. More than one means
+  // co-located locations that the name alone can't tell apart.
+  const numbersByStoreId = useMemo(
+    () =>
+      cashierDetails.reduce((acc: Record<number, string[]>, d) => {
+        const nums = (acc[d.storeid] ??= []);
+        if (!nums.includes(d.store_number)) nums.push(d.store_number);
+        return acc;
+      }, {}),
+    [cashierDetails],
+  );
+
   const graded = useMemo(
     () =>
       cashierDetails.map((detail) => {
-        const b = baselineDetails.find((x) => x.storeid === detail.storeid);
+        // storeid + store_number, not storeid alone: co-located stores share
+        // an id, and matching on the id would hand both rows whichever
+        // sibling's baseline happened to come back first.
+        const b = baselineDetails.find(
+          (x) =>
+            x.storeid === detail.storeid &&
+            x.store_number === detail.store_number,
+        );
         const bTrans = b ? b.transaction_count / 2 : null;
         const bItems = b ? b.total_items / 2 : null;
         const bAmount = b ? Math.abs(b.amount) / 2 : null;
@@ -66,7 +86,13 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
             : null;
         return {
           detail,
-          name: getStoreName(assignedStores, detail.storeid, detail.store_name),
+          // getStoreName resolves by storeid, so co-located rows come back with
+          // the identical name — rewrite the embedded number to this row's.
+          name: applyStoreNumberToName(
+            getStoreName(assignedStores, detail.storeid, detail.store_name),
+            detail.store_number,
+            numbersByStoreId[detail.storeid] ?? [],
+          ),
           sev: storeSeverity(detail, baselineDetails, selectedSaleType),
           transPct,
           itemsPct,
@@ -74,7 +100,13 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
           avgPct,
         };
       }),
-    [cashierDetails, baselineDetails, selectedSaleType, assignedStores],
+    [
+      cashierDetails,
+      baselineDetails,
+      selectedSaleType,
+      assignedStores,
+      numbersByStoreId,
+    ],
   );
 
   const criticalCount = graded.filter((g) => g.sev === "critical").length;
@@ -260,10 +292,12 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch }
                 </div>
               ) : (
                 visibleStores.map(({ detail, name, sev, transPct, itemsPct, amountPct, avgPct }) => {
-                  const isSel = detail.storeid === selectedStoreId;
+                  const isSel =
+                    detail.storeid === selectedStoreId &&
+                    detail.store_number === selectedStoreNumber;
                   return (
                     <button
-                      key={detail.storeid}
+                      key={`${detail.storeid}__${detail.store_number}`}
                       onClick={() => onStoreSelect(detail)}
                       className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-[#1e2a4a]/15 ${
                         isSel
