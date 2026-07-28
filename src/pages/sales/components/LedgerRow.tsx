@@ -1,6 +1,8 @@
+import { memo } from "react";
 import { formatCurrencyCompact } from "../../../utils";
 import { useStoreName } from "../../../hooks";
 import { severityDotClass } from "./utils";
+import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import type { Severity } from "../../../utils/severity";
 import type { GradingMetric } from "../../../features/salesLedgerSlice";
 
@@ -22,6 +24,12 @@ export type LedgerRowData = {
   storeid: number;
   store_name: string;
   store_number: string;
+  /** Every store_number this storeid returned. Length > 1 means co-located
+   * stores sharing one id — the name resolves by storeid and is identical for
+   * both, so the number is what tells them apart. Feeds
+   * applyStoreNumberToName, which needs the full set to know which digits in
+   * the name are the store number. */
+  storeNumbersForId: string[];
   twTotal: number;
   lwTotal: number;
   lyTotal: number;
@@ -41,6 +49,9 @@ export type StoreSelection = {
   storeId: number;
   storeName: string;
   storeNumber: string;
+  /** Mirrors LedgerRowData.storeNumbersForId — lets the detail panel label
+   * which of the co-located locations it's showing. */
+  storeNumbersForId: string[];
   start: string;
   end: string;
   mode: "weekly" | "daily";
@@ -75,6 +86,12 @@ const DeltaPill = ({ has, pct }: { has: boolean; pct: number }) => (
 
 const LedgerRow = ({ row, isSelected, gradingMetric, onClick }: LedgerRowProps) => {
   const storeName = useStoreName(row.storeid, row.store_name);
+  // No-op unless this storeid is co-located; see applyStoreNumberToName.
+  const displayName = applyStoreNumberToName(
+    storeName,
+    row.store_number,
+    row.storeNumbersForId,
+  );
   const isQty = gradingMetric === "qty";
   const fmtMetric = (dollars: number, qty: number) =>
     isQty ? qty.toLocaleString() : formatCurrencyCompact(dollars);
@@ -90,6 +107,7 @@ const LedgerRow = ({ row, isSelected, gradingMetric, onClick }: LedgerRowProps) 
       storeId: row.storeid,
       storeName: row.store_name,
       storeNumber: row.store_number,
+      storeNumbersForId: row.storeNumbersForId,
       start: weekStart,
       end: weekEnd,
       mode: "weekly",
@@ -112,7 +130,7 @@ const LedgerRow = ({ row, isSelected, gradingMetric, onClick }: LedgerRowProps) 
       />
       <div className="min-w-0 flex-1">
         <div className="text-[13px] font-medium text-content truncate">
-          {storeName}
+          {displayName}
         </div>
         <div className="text-[12px] text-content/85 truncate">
           LW{" "}
@@ -139,4 +157,8 @@ const LedgerRow = ({ row, isSelected, gradingMetric, onClick }: LedgerRowProps) 
   );
 };
 
-export default LedgerRow;
+// Dragging the threshold slider re-grades on every frame. regradeLedgerRows
+// preserves the object reference of any row whose severity didn't change, so
+// memoizing here means only the few rows that actually flipped re-render
+// instead of all ~390 — each of which otherwise re-sorts its own days array.
+export default memo(LedgerRow);

@@ -52,7 +52,10 @@ interface SubMarginState {
   weekFourMarginsLY: SubDeptMargin[];
   weekFourMarginsLW: SubDeptMargin[];
   filteredMargins: SubDeptMargin[];
-  selectedSubDeptId: number;
+  // null = nothing selected. Must not be 0 — sub_department 0 is a real
+  // department id in the data, and using it as the sentinel made it
+  // unselectable.
+  selectedSubDeptId: number | null;
   subDeptFitlerText: string;
   loadingSubDepts: boolean;
   loadingMargins: boolean;
@@ -117,7 +120,7 @@ const initialState: SubMarginState = {
   weekFourMarginsLY: [],
   weekFourMarginsLW: [],
   filteredMargins: [],
-  selectedSubDeptId: 0,
+  selectedSubDeptId: null,
   subDeptFitlerText: "",
   loadingSubDepts: false,
   loadingMargins: false,
@@ -181,7 +184,7 @@ const subMarginSlice = createSlice({
     setFilteredMargins: (state, action: PayloadAction<SubDeptMargin[]>) => {
       state.filteredMargins = action.payload;
     },
-    setSelectedSubDeptId: (state, action: PayloadAction<number>) => {
+    setSelectedSubDeptId: (state, action: PayloadAction<number | null>) => {
       state.selectedSubDeptId = action.payload;
     },
     setWeekTrendMargins: (
@@ -248,7 +251,7 @@ const subMarginSlice = createSlice({
       state.weekThreeMarginsLY = [];
       state.weekFourMarginsLY = [];
       state.filteredMargins = [];
-      state.selectedSubDeptId = 0;
+      state.selectedSubDeptId = null;
       state.subDeptFitlerText = "";
       state.selectedWeek = 0;
       state.selectedWeekDay = "";

@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type { SubDeptMargin } from "../../../../interfaces";
-import { calculateCogs } from "../..";
+import { calculateCogs, hasNoUsableCost } from "../..";
 import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
 import type { AggFn, AggRow } from "../../../../utils/csvExport";
 
@@ -134,7 +134,7 @@ const buildNoCostCsv = (margins: SubDeptMargin[]) => {
   const seen = new Set<string>();
   const rows: (string | number)[][] = [];
   for (const m of margins) {
-    if (!seen.has(m.product_code) && (m.case_size === 0 || (m.net_cost === 0 && m.cost === 0))) {
+    if (!seen.has(m.product_code) && hasNoUsableCost(m)) {
       seen.add(m.product_code);
       rows.push([m.product_code, m.product_description, m.qty, fmtNum(m.cost, 4), fmtNum(m.net_cost, 4), m.case_size]);
     }

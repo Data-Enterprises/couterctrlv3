@@ -21,6 +21,17 @@ export type ThreshOperator = ">" | "<" | "=" | "";
 export type MarginTier = "critical" | "watch" | "healthy";
 export type GradingMetric = "margin" | "sales";
 
+/** Store-level totals from sales/weekly, day-matched — the same figure and
+ * method the Sales page header uses, so the two headers agree. Summing sub
+ * departments is a different quantity and won't reconcile. */
+export type StoreSalesTotals = {
+  tySales: number;
+  lwSales: number;
+  lySales: number;
+  vsLWSalesPct: number;
+  vsLYSalesPct: number;
+};
+
 export type SubDeptGrade = {
   tyMarginPct: number;
   lyMarginPct: number;
@@ -72,7 +83,10 @@ interface SubMarginState {
   weekFourMarginsLY: SubDeptMargin[];
   weekFourMarginsLW: SubDeptMargin[];
   filteredMargins: SubDeptMargin[];
-  selectedSubDeptId: number;
+  // null = nothing selected. Must not be 0 — sub_department 0 is a real
+  // department id in the data, and using it as the sentinel made it
+  // unselectable.
+  selectedSubDeptId: number | null;
   // Tracks which sub dept + date range + search the week 2-4 trend data
   // below was fetched for, so remounting SubDeptMarginsDev (e.g. after
   // navigating away and back) doesn't blank and re-fire those fetches.
@@ -114,6 +128,17 @@ interface SubMarginState {
   gradingThreshold: number | null;
   gradingMetric: GradingMetric;
   loadingGrades: boolean;
+  storeSalesTotals: StoreSalesTotals | null;
+
+  // Co-located stores: one storeid, two physical locations. The endpoints are
+  // queried by storeid and return both combined, so the page discovers the
+  // numbers from the response and lets the user scope to one.
+  // See utils/storeIdentity.
+  /** Every store_number the current search returned. Length < 2 = ordinary
+   *  store, and the location switcher stays hidden. */
+  availableStoreNumbers: string[];
+  /** Which location is being shown. null = all of them combined. */
+  selectedStoreNumber: string | null;
 
   scannedUpc: string;
   pause: boolean;
@@ -146,7 +171,7 @@ const initialState: SubMarginState = {
   weekFourMarginsLY: [],
   weekFourMarginsLW: [],
   filteredMargins: [],
-  selectedSubDeptId: 0,
+  selectedSubDeptId: null,
   lastFetchedTrendKey: null,
   subDeptFitlerText: "",
   loadingSubDepts: false,
@@ -177,6 +202,9 @@ const initialState: SubMarginState = {
   gradingThreshold: 9,
   gradingMetric: "margin",
   loadingGrades: false,
+  storeSalesTotals: null,
+  availableStoreNumbers: [],
+  selectedStoreNumber: null,
   scannedUpc: "",
   pause: true,
   scannedItemHistory: [],
@@ -215,7 +243,7 @@ const subMarginSlice = createSlice({
     setFilteredMargins: (state, action: PayloadAction<SubDeptMargin[]>) => {
       state.filteredMargins = action.payload;
     },
-    setSelectedSubDeptId: (state, action: PayloadAction<number>) => {
+    setSelectedSubDeptId: (state, action: PayloadAction<number | null>) => {
       state.selectedSubDeptId = action.payload;
     },
     setLastFetchedTrendKey: (state, action: PayloadAction<string | null>) => {
@@ -282,6 +310,12 @@ const subMarginSlice = createSlice({
     setSubDeptGrade(state, action: PayloadAction<{ id: number; grade: SubDeptGrade }>) {
       state.subDeptGrades[action.payload.id] = action.payload.grade;
     },
+    // Switching co-located locations re-grades from cached raw data. The
+    // grades map is keyed by sub dept id, so it has to be emptied first —
+    // otherwise depts that only exist at the other location linger in the list.
+    resetSubDeptGrades(state) {
+      state.subDeptGrades = {};
+    },
     setGradingThreshold(state, action: PayloadAction<number | null>) {
       state.gradingThreshold = action.payload;
     },
@@ -290,6 +324,15 @@ const subMarginSlice = createSlice({
     },
     setLoadingGrades(state, action: PayloadAction<boolean>) {
       state.loadingGrades = action.payload;
+    },
+    setStoreSalesTotals(state, action: PayloadAction<StoreSalesTotals | null>) {
+      state.storeSalesTotals = action.payload;
+    },
+    setAvailableStoreNumbers(state, action: PayloadAction<string[]>) {
+      state.availableStoreNumbers = action.payload;
+    },
+    setSelectedStoreNumber(state, action: PayloadAction<string | null>) {
+      state.selectedStoreNumber = action.payload;
     },
     requerySubDeptMargins: (state) => {
       state.subDepts = [];
@@ -304,7 +347,7 @@ const subMarginSlice = createSlice({
       state.weekFourMarginsLY = [];
       state.weekFourMarginsLW = [];
       state.filteredMargins = [];
-      state.selectedSubDeptId = 0;
+      state.selectedSubDeptId = null;
       state.lastFetchedTrendKey = null;
       state.subDeptFitlerText = "";
       state.selectedWeek = 0;
@@ -323,6 +366,10 @@ const subMarginSlice = createSlice({
       state.viewDaily = false;
       state.subDeptGrades = {};
       state.loadingGrades = false;
+      // Rediscovered from each new search's response, not carried over — a
+      // different store won't have the same locations, or any.
+      state.availableStoreNumbers = [];
+      state.selectedStoreNumber = null;
     },
     setSelectedWeek: (state, action: PayloadAction<MarginWeek>) => {
       state.selectedWeek = action.payload;
@@ -521,6 +568,10 @@ export const {
   setGradingThreshold,
   setGradingMetric,
   setLoadingGrades,
+  setStoreSalesTotals,
+  setAvailableStoreNumbers,
+  setSelectedStoreNumber,
+  resetSubDeptGrades,
   setFilteredMargins,
   setLoadingMargins,
   setLoadingSubDepts,

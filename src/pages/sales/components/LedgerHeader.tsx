@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import {
   setThreshold,
@@ -12,8 +12,11 @@ import {
   QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
+import ThresholdSlider from "../../../components/filters/ThresholdSlider";
 import InfoPopover from "../../../components/InfoPopover";
 import { SALES_LEDGER_INFO } from "../salesInfo";
+
+const THRESHOLD_DEFAULT = 9;
 
 interface LedgerHeaderProps {
   weekLabel: string;
@@ -44,6 +47,14 @@ const LedgerHeader = ({
   const [infoOpen, setInfoOpen] = useState(false);
 
   const isQty = gradingMetric === "qty";
+
+  // Clearing the numeric input dispatches null, and SalesLedger deliberately
+  // keeps grading against the last valid amount so rows don't reshuffle. The
+  // slider has to hold that same position or it would show a value nothing is
+  // actually graded against.
+  const lastValidRef = useRef<number>(threshold?.amount ?? THRESHOLD_DEFAULT);
+  if (threshold?.amount != null) lastValidRef.current = threshold.amount;
+
 
   return (
     <div className="bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
@@ -113,11 +124,22 @@ const LedgerHeader = ({
 
         <div className="flex-1" />
 
-        {/* Threshold */}
+        {/* Threshold — slider for exploring, numeric input for committing to
+            an exact figure. Both write the same value; the slider is capped at
+            a range that's meaningful for grading rather than 0-100. */}
         <div className="flex items-center gap-1.5 flex-shrink-0">
           <span className="text-[11px] text-custom-white font-medium">
             Store Threshold
           </span>
+          <ThresholdSlider
+            value={lastValidRef.current}
+            onChange={(amount) =>
+              dispatch(setThreshold({ op: threshold?.op ?? "gt", amount }))
+            }
+            variant="dark"
+            ariaLabel="Store grading threshold, percent"
+            className="w-[104px] flex-shrink-0"
+          />
           <ThresholdFilter
             value={threshold}
             onChange={(v) => dispatch(setThreshold(v))}

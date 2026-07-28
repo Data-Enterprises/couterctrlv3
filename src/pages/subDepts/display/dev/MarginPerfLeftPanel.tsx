@@ -4,7 +4,8 @@ import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
 import { formatDate } from "../widgets";
 import { formatCurrency2 } from "../../../../utils";
-import { setDates, getTier } from "../..";
+import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
+import { setDates, getTier, getGradeDelta } from "../..";
 import {
   setGradingThreshold,
   setGradingMetric,
@@ -22,6 +23,9 @@ import { SUB_DEPT_MARGINS_INFO } from "../../subDeptMarginsInfo";
 
 interface Props {
   onSearchOpen: () => void;
+  /** Re-presents the cached search as one co-located location, or all of them
+   *  combined when null. No refetch — see SubDeptMarginsDev. */
+  onStoreNumberChange: (storeNumber: string | null) => void;
 }
 
 const SEV_RANK: Record<MarginTier, number> = { critical: 0, watch: 1, healthy: 2 };
@@ -59,7 +63,7 @@ const Sparkline = ({ values, stroke }: { values: number[]; stroke: string }) => 
   );
 };
 
-const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
+const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
   const [infoOpen, setInfoOpen] = useState(false);
@@ -77,8 +81,26 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
   if (rawGradingThreshold != null) gradingThresholdRef.current = rawGradingThreshold;
   const gradingThreshold = gradingThresholdRef.current;
   const loadingGrades = useAppSelector((s) => s.subMargin.loadingGrades);
+  const storeSalesTotals = useAppSelector((s) => s.subMargin.storeSalesTotals);
 
-  const storeName = ctx.assignedStores.find((s) => s.storeid === ctx.searchValue)?.store_name ?? "";
+  const availableStoreNumbers = useAppSelector(
+    (s) => s.subMargin.availableStoreNumbers,
+  );
+  const selectedStoreNumber = useAppSelector(
+    (s) => s.subMargin.selectedStoreNumber,
+  );
+  // Co-located stores (one storeid, two locations) resolve to a single
+  // assignedStores record, so the name embeds only one of the two numbers —
+  // rewrite it to whichever location is on screen. Same helper Sales uses, so
+  // both pages label these stores identically.
+  const rawStoreName = ctx.assignedStores.find((s) => s.storeid === ctx.searchValue)?.store_name ?? "";
+  const storeName = selectedStoreNumber
+    ? applyStoreNumberToName(
+        rawStoreName,
+        selectedStoreNumber,
+        availableStoreNumbers,
+      )
+    : rawStoreName;
 
   const periodEnd = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 0)) : "";
   const periodStart = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 6)) : "";
@@ -118,11 +140,27 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
   const avgDelta = grades.length
     ? grades.reduce((acc, g) => acc + g.grade.ptsDelta, 0) / grades.length
     : null;
-  const totalTySales = grades.reduce((acc, g) => acc + g.grade.tySales, 0);
-  const totalLySales = grades.reduce((acc, g) => acc + g.grade.lySales, 0);
-  const totalLwSales = grades.reduce((acc, g) => acc + g.grade.lwSales, 0);
-  const vsLYSalesPct = totalLySales > 0 ? ((totalTySales - totalLySales) / totalLySales) * 100 : null;
-  const vsLWSalesPct = totalLwSales > 0 ? ((totalTySales - totalLwSales) / totalLwSales) * 100 : null;
+  // Store-level figures come from sales/weekly (day-matched), matching the
+  // Sales page header exactly. Summing the sub-dept grades is a different
+  // quantity — it also compared a partial TY week against a full LW one — so
+  // it's only the fallback if the weekly fetch didn't land.
+  const totalTySales =
+    storeSalesTotals?.tySales ??
+    grades.reduce((acc, g) => acc + g.grade.tySales, 0);
+  const totalLySales =
+    storeSalesTotals?.lySales ??
+    grades.reduce((acc, g) => acc + g.grade.lySales, 0);
+  const totalLwSales =
+    storeSalesTotals?.lwSales ??
+    grades.reduce((acc, g) => acc + g.grade.lwSales, 0);
+  const vsLYSalesPct =
+    storeSalesTotals && storeSalesTotals.lySales > 0
+      ? storeSalesTotals.vsLYSalesPct
+      : totalLySales > 0 ? ((totalTySales - totalLySales) / totalLySales) * 100 : null;
+  const vsLWSalesPct =
+    storeSalesTotals && storeSalesTotals.lwSales > 0
+      ? storeSalesTotals.vsLWSalesPct
+      : totalLwSales > 0 ? ((totalTySales - totalLwSales) / totalLwSales) * 100 : null;
   const avgLwDelta = grades.length
     ? grades.reduce((acc, g) => acc + g.grade.lwPtsDelta, 0) / grades.length
     : null;
@@ -149,9 +187,18 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
         r.name.toLowerCase().includes(subDeptFilter.toLowerCase()),
       )
     : sevFilteredRows;
-  const visibleRows = [...textFilteredRows].sort(
-    (a, b) => SEV_RANK[a.tier] - SEV_RANK[b.tier],
-  );
+  // Severity rank, then worst-performing first — the same ordering Sales uses
+  // for its sub-dept list. Without the second comparator this fell back to
+  // sub_department id inside each tier, so the two pages listed the same
+  // departments in different orders and looked like they disagreed.
+  const visibleRows = [...textFilteredRows].sort((a, b) => {
+    const rankDiff = SEV_RANK[a.tier] - SEV_RANK[b.tier];
+    if (rankDiff !== 0) return rankDiff;
+    return (
+      getGradeDelta(a.grade, gradingMetric) -
+      getGradeDelta(b.grade, gradingMetric)
+    );
+  });
 
   return (
     <div
@@ -273,6 +320,35 @@ const MarginPerfLeftPanel = ({ onSearchOpen }: Props) => {
           </div>
         </div>
       </div>
+
+      {/* Location tabs — only for the handful of storeids that carry more than
+          one store_number. Absent for every ordinary store, so the header sits
+          directly on the tier chips as before. */}
+      {availableStoreNumbers.length > 1 && (
+        <div className="flex items-center bg-custom-white border-x border-b border-gray-100">
+          {[...availableStoreNumbers, null].map((num) => {
+            const active = selectedStoreNumber === num;
+            return (
+              <button
+                key={num ?? "both"}
+                onClick={() => onStoreNumberChange(num)}
+                title={
+                  num
+                    ? `Location ${num}`
+                    : "Every location under this store id, combined"
+                }
+                className={`px-3 py-1.5 text-[12px] font-medium border-b-2 transition-colors ${
+                  active
+                    ? "border-[#1e2a4a] text-content"
+                    : "border-transparent text-content/60 hover:text-content"
+                }`}
+              >
+                {num ?? "Both"}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Tier filter chips + text filter */}
       <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-gray-100">

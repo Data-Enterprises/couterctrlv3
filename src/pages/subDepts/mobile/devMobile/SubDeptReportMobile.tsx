@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/20/solid";
 import { useAppSelector } from "../../../../hooks";
 import { useSubMarginCtx, useParams } from "../../hooks";
-import { calculateCogs } from "../..";
+import { calculateCogs, hasNoUsableCost } from "../..";
 import { formatCurrency2 } from "../../../../utils";
 import type { MarginTier } from "../../../../features/subMarginSlice";
 import type { SevFilter } from "../../../../features/salesLedgerSlice";
@@ -93,7 +93,10 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
     return `${base} bg-emerald-100 text-emerald-800`;
   };
 
-  const grade = subDeptGrades[ctx.selectedSubDeptId];
+  const grade =
+    ctx.selectedSubDeptId != null
+      ? subDeptGrades[ctx.selectedSubDeptId]
+      : undefined;
   const subDept = ctx.subDepts.find((sd) => sd.id === ctx.selectedSubDeptId);
 
   // Day strip: 7 TY dates, compare margin vs same-index LY date
@@ -254,10 +257,7 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
           delta < -itemThreshold ? "critical" : delta < 0 ? "watch" : "healthy";
 
         const firstTy = ty[0];
-        const noCost = firstTy
-          ? firstTy.case_size === 0 ||
-            (firstTy.net_cost === 0 && firstTy.cost === 0)
-          : false;
+        const noCost = firstTy ? hasNoUsableCost(firstTy) : false;
 
         return {
           product_code: code,

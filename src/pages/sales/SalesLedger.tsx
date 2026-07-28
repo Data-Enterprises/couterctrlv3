@@ -1,10 +1,10 @@
 import { useSalesState } from "./hooks/useSalesState";
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { getWeekly, getHourly } from "../../api/sales";
 import { getStoresAssignedToUserGroup } from "../../api/groups";
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../utils";
-import { buildLedgerRows } from "./shared/ledgerUtils";
+import { buildLedgerRows, regradeLedgerRows } from "./shared/ledgerUtils";
 import type { Store } from "../../interfaces";
 import {
   setWeeklySales,
@@ -71,6 +71,9 @@ const SalesLedger = () => {
   if (threshold?.amount != null) {
     lastValidThresholdRef.current = threshold.amount;
   }
+  // Snapshot the ref into a render-scoped value — a ref's .current isn't a
+  // sound memo dependency, and this is already resolved by the time it's read.
+  const activeThreshold = lastValidThresholdRef.current;
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [fetchFailed, setFetchFailed] = useState(false);
@@ -85,6 +88,19 @@ const SalesLedger = () => {
       return null;
     });
   };
+
+  // Stable identity — an inline arrow here would be a new prop on every
+  // render and would defeat the memo on LedgerRow entirely.
+  const handleRowClick = useCallback(
+    (s: Parameters<typeof setLedgerSelection>[0]) =>
+      dispatch(setLedgerSelection(s)),
+    [dispatch],
+  );
+
+  const handlePopupClose = useCallback(
+    () => dispatch(setLedgerSelection(null)),
+    [dispatch],
+  );
 
   const resetToEntry = () => {
     dispatch(reQuery());
@@ -302,13 +318,34 @@ const SalesLedger = () => {
     }
   };
 
-  const ledgerRows = buildLedgerRows(
-    weeklySales,
-    weeklySalesLastWeek,
-    weeklySalesLastYear,
-    assignedStores,
-    lastValidThresholdRef.current,
-    gradingMetric,
+  // Regrouping every store across TW/LW/LY is the expensive half and doesn't
+  // depend on the threshold, so it's memoized on the data alone. The threshold
+  // then only drives the cheap re-grade below — which is what lets the
+  // threshold move continuously without rebuilding all of this per frame.
+  // (Mobile's LedgerStoreList already memoized this; desktop was rebuilding it
+  // on every render.)
+  const baseLedgerRows = useMemo(
+    () =>
+      buildLedgerRows(
+        weeklySales,
+        weeklySalesLastWeek,
+        weeklySalesLastYear,
+        assignedStores,
+        activeThreshold,
+        gradingMetric,
+      ),
+    [
+      weeklySales,
+      weeklySalesLastWeek,
+      weeklySalesLastYear,
+      assignedStores,
+      gradingMetric,
+    ],
+  );
+
+  const ledgerRows = useMemo(
+    () => regradeLedgerRows(baseLedgerRows, activeThreshold),
+    [baseLedgerRows, activeThreshold],
   );
 
   const criticalRows = ledgerRows.filter((r) => r.severity === "critical");
@@ -498,11 +535,16 @@ const SalesLedger = () => {
               <div className="flex-1 overflow-y-auto thin-scrollbar">
                 {visibleRows.map((row) => (
                   <LedgerRow
-                    key={row.storeid}
+                    key={`${row.storeid}__${row.store_number}`}
                     row={row}
-                    isSelected={selection?.storeId === row.storeid}
+                    isSelected={
+                      // storeNumber too — co-located stores share a storeid,
+                      // and id alone would highlight both rows at once.
+                      selection?.storeId === row.storeid &&
+                      selection?.storeNumber === row.store_number
+                    }
                     gradingMetric={gradingMetric}
-                    onClick={(s) => dispatch(setLedgerSelection(s))}
+                    onClick={handleRowClick}
                   />
                 ))}
               </div>
@@ -515,10 +557,7 @@ const SalesLedger = () => {
             style={{ flexBasis: "52%" }}
           >
             {selection !== null ? (
-              <StoreDetailPopup
-                selection={selection}
-                onClose={() => dispatch(setLedgerSelection(null))}
-              />
+              <StoreDetailPopup selection={selection} onClose={handlePopupClose} />
             ) : (
               <EmptyPrompt
                 title="No store selected"

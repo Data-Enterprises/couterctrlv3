@@ -4,7 +4,7 @@ import { useAppDispatch } from "../../../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { getSubDepts, getSubMargins } from "../../../../api/subMargins";
-import { setDates, calculateCogs, getLYDate } from "../..";
+import { setDates, calculateCogs, hasNoUsableCost, getLYDate } from "../..";
 import type {
   JsonError,
   SubDept,
@@ -132,7 +132,7 @@ const computeSubDeptGrade = (
   for (const m of tyMargins) {
     if (!seen.has(m.product_code)) {
       seen.add(m.product_code);
-      if (m.case_size === 0 || (m.net_cost === 0 && m.cost === 0))
+      if (hasNoUsableCost(m))
         noCostCount++;
     }
   }
@@ -198,12 +198,11 @@ const SubDeptMarginsMobile = () => {
           setNotice("No sub departments came back for this search");
           return;
         }
+        // No sub_department !== 0 filter — kept in step with desktop and with
+        // Sales, which doesn't exclude it either.
         const subDepts = j.subs
           .reduce((acc: SubDept[], curr) => {
-            if (
-              curr.sub_department !== 0 &&
-              !acc.some((s) => s.id === curr.sub_department)
-            ) {
+            if (!acc.some((s) => s.id === curr.sub_department)) {
               acc.push({
                 id: curr.sub_department,
                 desc: curr.sub_department_description,
@@ -280,7 +279,7 @@ const SubDeptMarginsMobile = () => {
       .finally(() => dispatch(actions.setLoadingSubDepts(false)));
   };
 
-  if (ctx.selectedSubDeptId > 0) {
+  if (ctx.selectedSubDeptId != null) {
     return (
       <SubDeptReportMobile
         onBack={() => dispatch(actions.setSelectedSubDeptId(0))}

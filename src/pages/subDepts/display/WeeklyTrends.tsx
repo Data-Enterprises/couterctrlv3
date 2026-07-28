@@ -76,10 +76,12 @@ const WeeklyTrends = () => {
   };
 
   const getData = (start: string, end: string, week: number) => {
+    const subDeptId = ctx.selectedSubDeptId;
+    if (subDeptId == null) return;
     getSubMargins(
       ctx.url,
       ctx.token,
-      ctx.selectedSubDeptId,
+      subDeptId,
       start,
       end,
       params.useGroups,
@@ -105,7 +107,7 @@ const WeeklyTrends = () => {
               getSubMargins(
                 ctx.url,
                 ctx.token,
-                ctx.selectedSubDeptId,
+                subDeptId,
                 start,
                 end,
                 params.useGroups,

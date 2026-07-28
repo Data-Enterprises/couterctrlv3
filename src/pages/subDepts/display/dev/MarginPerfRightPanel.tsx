@@ -4,8 +4,16 @@ import { useSubMarginCtx } from "../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
 import { formatDate } from "../widgets";
 import { formatCurrency2, addDays } from "../../../../utils";
+import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
 import { gpm } from "../../../../functions";
-import { calculateCogs, setDates, getLYDate, getTier } from "../..";
+import {
+  calculateCogs,
+  hasNoUsableCost,
+  matchedCounterpartRows,
+  setDates,
+  getLYDate,
+  getTier,
+} from "../..";
 import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import type { SubDeptCost, SubDeptMargin } from "../../../../interfaces";
 
@@ -24,7 +32,22 @@ const MarginPerfRightPanel = () => {
   const gradingMetric = useAppSelector((s) => s.subMargin.gradingMetric);
   const subDeptGrades = useAppSelector((s) => s.subMargin.subDeptGrades);
   const subDeptName = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId)?.desc ?? "";
-  const storeName = useStoreName(ctx.searchValue);
+  const availableStoreNumbers = useAppSelector(
+    (s) => s.subMargin.availableStoreNumbers,
+  );
+  const selectedStoreNumber = useAppSelector(
+    (s) => s.subMargin.selectedStoreNumber,
+  );
+  // Matches the left panel: for co-located stores the resolved name embeds the
+  // sibling's number, so rewrite it to the location currently on screen.
+  const resolvedStoreName = useStoreName(ctx.searchValue);
+  const storeName = selectedStoreNumber
+    ? applyStoreNumberToName(
+        resolvedStoreName,
+        selectedStoreNumber,
+        availableStoreNumbers,
+      )
+    : resolvedStoreName;
 
   // Grading should never move rows around on its own when the threshold
   // input is cleared — keep grading against the last valid amount so
@@ -85,15 +108,23 @@ const MarginPerfRightPanel = () => {
     return computeKpis(src);
   }, [ctx.selectedWeekDay, ctx.weekOneMargins]);
 
+  // Whole-week LW/LY are scoped to the days that actually pair with a TY day.
+  // Without this the panel summed a partial current week against a full prior
+  // week — the left-hand grades are day-matched, so the two disagreed.
+  // A single selected day is already matched by definition.
   const lwKpis = useMemo(() => {
-    const src = selectedLwDate ? byDate(ctx.weekTwoMargins, selectedLwDate) : ctx.weekTwoMargins;
+    const src = selectedLwDate
+      ? byDate(ctx.weekTwoMargins, selectedLwDate)
+      : matchedCounterpartRows(ctx.weekOneMargins, ctx.weekTwoMargins, "lw");
     return computeKpis(src);
-  }, [selectedLwDate, ctx.weekTwoMargins]);
+  }, [selectedLwDate, ctx.weekTwoMargins, ctx.weekOneMargins]);
 
   const lyKpis = useMemo(() => {
-    const src = selectedLyDate ? byDate(ctx.weekOneMarginsLY, selectedLyDate) : ctx.weekOneMarginsLY;
+    const src = selectedLyDate
+      ? byDate(ctx.weekOneMarginsLY, selectedLyDate)
+      : matchedCounterpartRows(ctx.weekOneMargins, ctx.weekOneMarginsLY, "ly");
     return computeKpis(src);
-  }, [selectedLyDate, ctx.weekOneMarginsLY]);
+  }, [selectedLyDate, ctx.weekOneMarginsLY, ctx.weekOneMargins]);
 
   const noCostCount = useMemo(() => {
     const seen = new Set<string>();
@@ -101,7 +132,7 @@ const MarginPerfRightPanel = () => {
     for (const m of ctx.weekOneMargins) {
       if (!seen.has(m.product_code)) {
         seen.add(m.product_code);
-        if (m.case_size === 0 || (m.net_cost === 0 && m.cost === 0)) count++;
+        if (hasNoUsableCost(m)) count++;
       }
     }
     return count;
@@ -116,12 +147,29 @@ const MarginPerfRightPanel = () => {
     ? ((tyKpis.sales - lwKpis.sales) / Math.abs(lwKpis.sales)) * 100
     : null;
 
+  // Sales-metric KPIs read the grade, which is built from sub_sales — the
+  // endpoint Sales itself uses and the one with the correct ring filter — so
+  // these figures match the Sales page exactly. Margin-metric KPIs keep using
+  // the subs/subs-derived values above, since that's the only source with cost.
+  // Only whole-period: a selected single day has no sub_sales breakdown here,
+  // so day view still falls back to the subs-derived numbers.
+  const salesKpis =
+    gradingMetric === "sales" && selectedGrade && !ctx.selectedWeekDay
+      ? {
+          ty: selectedGrade.tySales,
+          lw: selectedGrade.lwSales,
+          ly: selectedGrade.lySales,
+          vsLw: selectedGrade.lwSales > 0 ? selectedGrade.vsLWSalesPct : null,
+          vsLy: selectedGrade.lySales > 0 ? selectedGrade.vsLYSalesPct : null,
+        }
+      : null;
+
   const [exportOpen, setExportOpen] = useState(false);
 
   const handleNoCostTab = () => {
     const fmtDate = (dte: string) => dte.split("T")[0];
     const noCostItems = ctx.weekOneMargins.filter(
-      (m) => m.case_size === 0 || (m.net_cost === 0 && m.cost === 0),
+      (m) => hasNoUsableCost(m),
     );
     const costData: SubDeptCost[] = noCostItems.reduce((acc: SubDeptCost[], curr) => {
       const found = acc.find((i) => i.product_code === curr.product_code);
@@ -168,7 +216,7 @@ const MarginPerfRightPanel = () => {
     dispatch(actions.setSubDeptGridView("cost"));
   };
 
-  if (!ctx.selectedSubDeptId) {
+  if (ctx.selectedSubDeptId == null) {
     return (
       <div className="flex-1 min-w-0 shadow-lg">
         <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full items-center justify-center gap-2">
@@ -221,7 +269,9 @@ const MarginPerfRightPanel = () => {
             </div>
             <div className="text-[10px] font-bold text-content mb-0.5">{kpiTyLabel}</div>
             <div className="text-[14px] font-bold text-content">
-              {tyKpis ? gradingMetric === "margin" ? tyKpis.margin : formatCurrency2(tyKpis.sales) : "—"}
+              {salesKpis
+                ? formatCurrency2(salesKpis.ty)
+                : tyKpis ? gradingMetric === "margin" ? tyKpis.margin : formatCurrency2(tyKpis.sales) : "—"}
             </div>
           </div>
 
@@ -231,16 +281,18 @@ const MarginPerfRightPanel = () => {
             <div className="text-[10px] font-bold text-content mb-0.5">{kpiLwLabel}</div>
             <div className="flex items-baseline justify-center gap-2">
               <span className="text-[14px] font-bold text-content">
-                {lwKpis ? gradingMetric === "margin" ? lwKpis.margin : formatCurrency2(lwKpis.sales) : "—"}
+                {salesKpis
+                  ? formatCurrency2(salesKpis.lw)
+                  : lwKpis ? gradingMetric === "margin" ? lwKpis.margin : formatCurrency2(lwKpis.sales) : "—"}
               </span>
               {gradingMetric === "margin" && lwMarginDelta !== null && (
                 <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(lwMarginDelta, gradingThreshold)}`}>
                   {lwMarginDelta >= 0 ? "+" : ""}{lwMarginDelta.toFixed(2)} pts
                 </span>
               )}
-              {gradingMetric === "sales" && lwSalesDelta !== null && (
-                <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(lwSalesDelta, gradingThreshold)}`}>
-                  {lwSalesDelta >= 0 ? "+" : ""}{lwSalesDelta.toFixed(2)}%
+              {gradingMetric === "sales" && (salesKpis?.vsLw ?? lwSalesDelta) !== null && (
+                <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass((salesKpis?.vsLw ?? lwSalesDelta)!, gradingThreshold)}`}>
+                  {(salesKpis?.vsLw ?? lwSalesDelta)! >= 0 ? "+" : ""}{(salesKpis?.vsLw ?? lwSalesDelta)!.toFixed(2)}%
                 </span>
               )}
             </div>
@@ -252,16 +304,18 @@ const MarginPerfRightPanel = () => {
             <div className="text-[10px] font-bold text-content mb-0.5">{kpiLyLabel}</div>
             <div className="flex items-baseline justify-center gap-2">
               <span className="text-[14px] font-bold text-content">
-                {lyKpis ? gradingMetric === "margin" ? lyKpis.margin : formatCurrency2(lyKpis.sales) : "—"}
+                {salesKpis
+                  ? formatCurrency2(salesKpis.ly)
+                  : lyKpis ? gradingMetric === "margin" ? lyKpis.margin : formatCurrency2(lyKpis.sales) : "—"}
               </span>
               {gradingMetric === "margin" && marginDelta !== null && (
                 <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(marginDelta, gradingThreshold)}`}>
                   {marginDelta >= 0 ? "+" : ""}{marginDelta.toFixed(2)} pts
                 </span>
               )}
-              {gradingMetric === "sales" && salesDelta !== null && (
-                <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(salesDelta, gradingThreshold)}`}>
-                  {salesDelta >= 0 ? "+" : ""}{salesDelta.toFixed(2)}%
+              {gradingMetric === "sales" && (salesKpis?.vsLy ?? salesDelta) !== null && (
+                <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass((salesKpis?.vsLy ?? salesDelta)!, gradingThreshold)}`}>
+                  {(salesKpis?.vsLy ?? salesDelta)! >= 0 ? "+" : ""}{(salesKpis?.vsLy ?? salesDelta)!.toFixed(2)}%
                 </span>
               )}
             </div>

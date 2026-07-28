@@ -145,7 +145,7 @@ const Transaction = ({ trans }: TransactionProps) => {
       </div>
 
       {/* Column headers */}
-      <div className="flex-shrink-0 grid gap-1 px-4 py-1.5 bg-gray-100 border-b border-gray-100" style={{ gridTemplateColumns: "84px 1fr 28px 62px 55px" }}>
+      <div className="flex-shrink-0 grid gap-2 px-4 py-1.5 bg-gray-100 border-b border-gray-100" style={{ gridTemplateColumns: "84px minmax(0, 1fr) 46px 80px 92px" }}>
         {["UPC", "Description", "Qty", "Net", "Type"].map((h, i) => (
           <div key={h} className="text-[9px] font-semibold uppercase tracking-wide text-content" style={{ textAlign: i >= 2 ? "right" : "left" }}>
             {h}
@@ -162,7 +162,7 @@ const Transaction = ({ trans }: TransactionProps) => {
           const displayNet = item.net_sales;
           const stamps = !context.isMobile ? renderStamps(item) : null;
           return (
-            <div key={i} className="grid gap-1 py-1.5 border-b border-b-[#1e2a4a]/15 items-center even:bg-row_stripe" style={{ gridTemplateColumns: "84px 1fr 28px 62px 55px" }}>
+            <div key={i} className="grid gap-2 py-1.5 border-b border-b-[#1e2a4a]/15 items-center even:bg-row_stripe" style={{ gridTemplateColumns: "84px minmax(0, 1fr) 46px 80px 92px" }}>
               <div className="text-[10px] text-content truncate">{item.product_code || "—"}</div>
               <div className="text-[10px] font-medium text-content truncate">
                 {item.product_description}

@@ -43,11 +43,15 @@ const SmDevWeekList = () => {
     setWeekLoadingLY((prev) => ({ ...prev, [week]: val }));
 
   const getData = (start: string, end: string, week: number) => {
+    // Captured once — narrowing is lost inside the nested pagination
+    // callbacks below.
+    const subDeptId = ctx.selectedSubDeptId;
+    if (subDeptId == null) return;
     setLoading(week, true);
     getSubMargins(
       ctx.url,
       ctx.token,
-      ctx.selectedSubDeptId,
+      subDeptId,
       start,
       end,
       params.useGroups,
@@ -67,7 +71,7 @@ const SmDevWeekList = () => {
               getSubMargins(
                 ctx.url,
                 ctx.token,
-                ctx.selectedSubDeptId,
+                subDeptId,
                 start,
                 end,
                 params.useGroups,
@@ -106,11 +110,13 @@ const SmDevWeekList = () => {
   };
 
   const getDataLY = (start: string, end: string, week: number) => {
+    const subDeptId = ctx.selectedSubDeptId;
+    if (subDeptId == null) return;
     setLoadingLY(week, true);
     getSubMargins(
       ctx.url,
       ctx.token,
-      ctx.selectedSubDeptId,
+      subDeptId,
       start,
       end,
       params.useGroups,
@@ -130,7 +136,7 @@ const SmDevWeekList = () => {
               getSubMargins(
                 ctx.url,
                 ctx.token,
-                ctx.selectedSubDeptId,
+                subDeptId,
                 start,
                 end,
                 params.useGroups,
@@ -173,7 +179,7 @@ const SmDevWeekList = () => {
 
   // Auto-fetch all 4 TW weeks + all 4 LY weeks when sub dept is selected
   useEffect(() => {
-    if (!ctx.selectedSubDeptId) return;
+    if (ctx.selectedSubDeptId == null) return;
     // TW weeks
     if (!ctx.weekOneMargins.length) getData(params.start, params.end, 1);
     if (!ctx.weekTwoMargins.length) {

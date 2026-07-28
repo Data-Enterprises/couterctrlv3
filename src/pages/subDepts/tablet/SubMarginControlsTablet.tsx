@@ -53,14 +53,14 @@ const SubMarginControlsTablet = () => {
   };
 
   const resetBtnActive = () => {
-    if (ctx.selectedSubDeptId && ctx.margins.length) {
+    if (ctx.selectedSubDeptId != null && ctx.margins.length) {
       return "";
     }
     return "opacity-50 pointer-events-none";
   };
 
   const exportBtnActive = () => {
-    if (ctx.selectedSubDeptId && ctx.margins.length) {
+    if (ctx.selectedSubDeptId != null && ctx.margins.length) {
       return "";
     }
     return "opacity-50 pointer-events-none";
@@ -119,7 +119,7 @@ const SubMarginControlsTablet = () => {
         </div>
       </div>
       <SubDeptsTablet />
-      {ctx.selectedSubDeptId > 0 ? <WeeklyTrendsTablet /> : null}
+      {ctx.selectedSubDeptId != null ? <WeeklyTrendsTablet /> : null}
     </div>
   );
 };
