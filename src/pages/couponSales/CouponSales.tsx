@@ -193,6 +193,7 @@ const CouponSales = () => {
           buttonLabel="Load Coupon Sales"
           onSearch={getData}
           loading={isFetching}
+          loadingMessage="Finding coupon sales..."
           notice={
             hasSearched && noCouponsFound
               ? "No coupons came back for this search."
@@ -226,6 +227,7 @@ const CouponSales = () => {
                 getData();
               }}
               loading={isFetching}
+              loadingMessage="Finding coupon sales..."
             />
           </div>
         </div>

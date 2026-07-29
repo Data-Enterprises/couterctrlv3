@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import { useApiContext } from "../../hooks";
 import { formatGoliathDate } from "../../../utils";
 import { scopeToStoreNumber } from "../../../utils/storeIdentity";
@@ -12,7 +13,6 @@ import {
 } from "../../../api/lossPrevention";
 import {
   reQuery,
-  resetCashierSlice,
   setCashierDetails,
   setCashierTrends,
   setCashiers,
@@ -39,6 +39,7 @@ import {
 } from "../../../features/lossPreventionSlice";
 import type { CashierDetails, JsonError, TransactionListItem, TransactionOverview, UniqueCashier } from "../../../interfaces";
 import { chunkSales } from "..";
+import { pickDefaultSaleType } from "../gradingUtils";
 import SearchCard from "../../../components/SearchCard";
 // import DescModal from "../components/DescModal"; // Description logic commented out
 import LPStorePanel from "./LPStorePanel";
@@ -59,13 +60,9 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   useEffect(() => {
-    // Skip Description/Tender — they're excluded from the tab list, so
-    // auto-selecting one of them would land on a type with no visible tab.
-    const firstVisible = cashier.saleTypes.find(
-      (st) => st.sale_type !== "Description" && st.sale_type !== "Tender",
-    );
-    if (firstVisible && !cashier.selectedSaleType && cashier.cashierDetails.length === 0) {
-      handleSaleTypeSelect(firstVisible.sale_type);
+    const preferred = pickDefaultSaleType(cashier.saleTypes);
+    if (preferred && !cashier.selectedSaleType && cashier.cashierDetails.length === 0) {
+      handleSaleTypeSelect(preferred.sale_type);
     }
   }, [cashier.saleTypes]);
   // const [descModalOpen, setDescModalOpen] = useState(false);
@@ -450,6 +447,18 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
     dispatch(setTransModalOpen(true));
   };
 
+  // Checked before the entry card, matching Sales / Sub Dept Margins / Coupon
+  // Sales: the Performance pages drop the card entirely for a full-page
+  // indicator while their first fetch runs. On failure loadingSaleTypes goes
+  // false with saleTypes still empty, so this falls straight back to the card.
+  if (cashier.loadingSaleTypes) {
+    return (
+      <div className="w-full h-[calc(100vh-3rem)] relative">
+        <LoadingIndicator message="Loading exception types..." />
+      </div>
+    );
+  }
+
   if (!cashier.saleTypes.length) {
     return (
       <div className="h-[calc(100vh-3rem)] overflow-hidden flex items-center justify-center bg-bkg">
@@ -460,7 +469,8 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
             buttonLabel="Load exceptions"
             singleDate={true}
             onSearch={getSaleTypes}
-            loading={false}
+            loading={cashier.loadingSaleTypes}
+            loadingMessage="Finding exception types..."
             notice={
               cashier.noSaleTypesFound
                 ? "No sale types came back for this search."
@@ -497,7 +507,7 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
               description="Select a store and date to find exception activity."
               buttonLabel="Load exceptions"
               singleDate={true}
-              onSearch={() => { setSearchModalOpen(false); dispatch(resetCashierSlice()); getSaleTypes(); }}
+              onSearch={() => { setSearchModalOpen(false); getSaleTypes(); }}
               loading={false}
             />
           </div>

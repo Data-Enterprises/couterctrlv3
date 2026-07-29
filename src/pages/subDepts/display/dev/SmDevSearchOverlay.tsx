@@ -29,6 +29,7 @@ const SmDevSearchOverlay = ({ onSearch, onClose }: Props) => {
           onStoreSelect={(id) => dispatch(actions.setSearchValue(id))}
           onSearch={onSearch}
           loading={ctx.loadingSubDepts}
+          loadingMessage="Finding sub dept margins..."
           datePicker={<SingleDatePicker />}
         />
       </div>

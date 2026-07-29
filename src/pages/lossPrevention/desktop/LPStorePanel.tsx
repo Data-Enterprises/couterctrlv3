@@ -10,6 +10,7 @@ import { isNoDollarType, storeSeverity, directionalPillClass, weekRangeLabel } f
 import TextFilter from "../../../components/filters/TextFilter";
 import SelectFilter from "../../../components/filters/SelectFilter";
 import InfoPopover from "../../../components/InfoPopover";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import { LP_INFO } from "../lpInfo";
 
 const SEV_RANK: Record<Severity, number> = { critical: 0, watch: 1, healthy: 2 };
@@ -278,7 +279,11 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
       {/* Unified store list — sorted critical → watch → healthy */}
       <div className="flex-1 min-h-0 flex flex-col">
         {(loading || loadingDay) && activeDetails.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center text-[11px] text-content/40">Loading…</div>
+          // Bare text read as a stalled panel when switching sale types — the
+          // animated pill is the same signal the rest of the app uses.
+          <div className="flex-1 relative">
+            <LoadingIndicator message="Loading stores..." />
+          </div>
         ) : activeDetails.length === 0 ? (
           <div className="flex-1 flex items-center justify-center text-[11px] text-content/40">
             {selectedSaleType ? "No stores found" : "Select an exception type"}

@@ -15,6 +15,7 @@ const LedgerEntryCard = ({ onSearch, loading, notice }: LedgerEntryCardProps) =>
       singleDate
       onSearch={onSearch}
       loading={loading}
+      loadingMessage="Finding sales..."
       notice={notice}
     />
   );

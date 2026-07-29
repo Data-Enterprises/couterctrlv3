@@ -13,7 +13,12 @@ import SevChips from "../../sales/mobile/components/SevChips";
 import SevBadge from "../../sales/mobile/components/SevBadge";
 import type { SevFilter } from "../../../features/salesLedgerSlice";
 import SelectFilter from "../../../components/filters/SelectFilter";
-import { storeSeverity, isNoDollarType, weekRangeLabel } from "../gradingUtils";
+import {
+  storeSeverity,
+  isNoDollarType,
+  weekRangeLabel,
+  pickDefaultSaleType,
+} from "../gradingUtils";
 import MetricChip from "./components/MetricChip";
 
 interface Props {
@@ -52,8 +57,11 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
   };
 
   useEffect(() => {
-    if (lp.saleTypes.length > 0 && !lp.selectedSaleType && lp.cashierDetails.length === 0) {
-      fetchDetails(lp.saleTypes[0].sale_type);
+    // Same landing-tab rule as desktop — saleTypes[0] is Backup, which is
+    // almost always empty. See pickDefaultSaleType.
+    const preferred = pickDefaultSaleType(lp.saleTypes);
+    if (preferred && !lp.selectedSaleType && lp.cashierDetails.length === 0) {
+      fetchDetails(preferred.sale_type);
     }
   }, [lp.saleTypes]);
 

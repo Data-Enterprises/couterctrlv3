@@ -32,6 +32,9 @@ export interface LossPreventionState {
   transList: TransactionListItem[];
   transactionDrillDown: TransactionListItem[][];
   saleTypes: SaleType[];
+  /** The cashiers/preflight call is in flight. Without this the search card
+   *  sat inert while it ran, which read as a dead button. */
+  loadingSaleTypes: boolean;
   noSaleTypesFound: boolean;
   selectedSaleType: string;
   selectedSaleIds: string[];
@@ -82,6 +85,7 @@ const initialState: LossPreventionState = {
   baselineDetails: [],
   cashierTransactions: [],
   saleTypes: [],
+  loadingSaleTypes: false,
   noSaleTypesFound: false,
   selectedSaleType: "",
   transModalOpen: false,
@@ -146,6 +150,9 @@ export const lossPreventionSlice = createSlice({
     },
     setSaleTypes: (state, action: PayloadAction<SaleType[]>) => {
       state.saleTypes = action.payload;
+    },
+    setLoadingSaleTypes: (state, action: PayloadAction<boolean>) => {
+      state.loadingSaleTypes = action.payload;
     },
     setNoSaleTypesFound: (state, action: PayloadAction<boolean>) => {
       state.noSaleTypesFound = action.payload;
@@ -321,6 +328,7 @@ export const {
   setCashierTrends,
   setCashierTransactions,
   setSaleTypes,
+  setLoadingSaleTypes,
   setNoSaleTypesFound,
   setSelectedSaleType,
   setTransModalOpen,

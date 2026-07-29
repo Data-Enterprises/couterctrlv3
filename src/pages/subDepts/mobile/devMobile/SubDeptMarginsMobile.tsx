@@ -420,6 +420,7 @@ const SubDeptMarginsMobile = () => {
             handleSearch();
           }}
           loading={ctx.loadingSubDepts}
+          loadingMessage="Finding sub dept margins..."
           datePicker={<SingleDatePicker />}
           notice={notice}
         >

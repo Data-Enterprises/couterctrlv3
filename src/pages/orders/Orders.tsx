@@ -214,6 +214,7 @@ const Orders = () => {
         buttonLabel="Find orders"
         onSearch={handleSearch}
         loading={ctx.loadingAvailableOrders}
+        loadingMessage="Finding orders..."
         notice={notice}
       />
     );
@@ -276,6 +277,7 @@ const Orders = () => {
               buttonLabel="Find orders"
               onSearch={() => { setSearchModalOpen(false); handleSearch(); }}
               loading={ctx.loadingAvailableOrders}
+              loadingMessage="Finding orders..."
             />
           </div>
         </div>

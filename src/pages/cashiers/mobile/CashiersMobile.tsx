@@ -90,7 +90,8 @@ const CashiersMobile = () => {
         description="Select a store or group and date range to view cashier exception activity."
         buttonLabel="Load exceptions"
         onSearch={getSCards}
-        loading={false}
+        loading={ctx.loadingStores}
+        loadingMessage="Finding cashier activity..."
       />
     );
   }
@@ -145,7 +146,8 @@ const CashiersMobile = () => {
               description="Select a store or group and date range to view cashier exception activity."
               buttonLabel="Load exceptions"
               onSearch={() => { setSearchModalOpen(false); getSCards(); }}
-              loading={false}
+              loading={ctx.loadingStores}
+              loadingMessage="Finding cashier activity..."
             />
           </div>
         </div>

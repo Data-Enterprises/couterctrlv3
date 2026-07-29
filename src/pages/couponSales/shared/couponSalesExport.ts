@@ -8,6 +8,7 @@ import {
   buildSubDeptRows,
   buildDateRows,
   buildCashierRows,
+  buildItemRows,
   buildTransactions,
   type CouponRow,
 } from "./couponGrading";
@@ -19,6 +20,7 @@ export type CouponPreset =
   | "subdept"
   | "date"
   | "cashier"
+  | "item"
   | "transactions"
   | "lines";
 
@@ -27,6 +29,7 @@ export const PRESET_OPTIONS: { key: CouponPreset; label: string; desc: string }[
   { key: "subdept", label: "Sub dept grades", desc: "One row per sub department" },
   { key: "date", label: "Date grades", desc: "One row per day" },
   { key: "cashier", label: "Cashier grades", desc: "One row per cashier" },
+  { key: "item", label: "Item grades", desc: "One row per item" },
   { key: "transactions", label: "Transactions", desc: "One row per transaction" },
   { key: "lines", label: "Coupon lines", desc: "Every raw coupon line" },
 ];
@@ -92,6 +95,8 @@ export const buildCouponPresetCsv = (
     return gradedCsv(buildDateRows(coupons, opts), "Date", opts);
   if (preset === "cashier")
     return gradedCsv(buildCashierRows(coupons, opts), "Cashier", opts);
+  if (preset === "item")
+    return gradedCsv(buildItemRows(coupons, opts), "Item", opts);
 
   if (preset === "transactions") {
     const headers = [

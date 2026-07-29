@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { useAppDispatch } from "../../../hooks";
 import { useAppSelector } from "../../../hooks";
-import { resetCashierSlice } from "../../../features/lossPreventionSlice";
 import SearchCard from "../../../components/SearchCard";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import StoreListMobile from "./StoreListMobile";
 import CashierListMobile from "./CashierListMobile";
 import TransactionsMobile from "./TransactionsMobile";
@@ -14,15 +13,15 @@ interface Props {
 }
 
 const LpMobile = ({ getSaleTypes }: Props) => {
-  const dispatch = useAppDispatch();
-  const { saleTypes, noSaleTypesFound } = useAppSelector((state) => state.lossPrevention);
+  const { saleTypes, noSaleTypesFound, loadingSaleTypes } = useAppSelector(
+    (state) => state.lossPrevention,
+  );
   const [screen, setScreen] = useState<Screen>("stores");
   const [showSearch, setShowSearch] = useState(false);
 
   const handleSearch = () => {
     setScreen("stores");
     setShowSearch(false);
-    dispatch(resetCashierSlice());
     getSaleTypes();
   };
 
@@ -35,6 +34,17 @@ const LpMobile = ({ getSaleTypes }: Props) => {
 
   const hasData = saleTypes.length > 0;
 
+  // Checked first: with the reset moved to the response, a re-search keeps
+  // the previous sale types in state, so without this the stale panels
+  // would sit there looking interactive while the new fetch runs.
+  if (loadingSaleTypes) {
+    return (
+      <div className="h-[calc(100dvh-3rem)] relative bg-custom-white">
+        <LoadingIndicator message="Loading exception types..." />
+      </div>
+    );
+  }
+
   // Entry screen — full-page SearchCard until exception data has loaded
   if (saleTypes.length === 0 || showSearch) {
     return (
@@ -46,7 +56,8 @@ const LpMobile = ({ getSaleTypes }: Props) => {
           buttonLabel="Load exceptions"
           singleDate
           onSearch={handleSearch}
-          loading={false}
+          loading={loadingSaleTypes}
+          loadingMessage="Finding exception types..."
           onBack={hasData ? () => setShowSearch(false) : undefined}
           notice={
             noSaleTypesFound

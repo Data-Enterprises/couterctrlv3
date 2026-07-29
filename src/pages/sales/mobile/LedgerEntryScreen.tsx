@@ -23,6 +23,7 @@ const LedgerEntryScreen = ({ onSearch, loading }: LedgerEntryScreenProps) => {
       singleDate
       onSearch={onSearch}
       loading={loading}
+      loadingMessage="Finding sales..."
       onBack={handleBack}
       backLabel="Back to results"
     />
