@@ -351,12 +351,31 @@ export const buildCashierRows = (coupons: CouponItem[], opts: GradingOptions) =>
     c.cashier_name || "Unknown cashier",
   );
 
+// Keyed on the product code, NOT the description — unlike sub dept and cashier
+// above, two items sharing a description are genuinely different items (sizes,
+// pack counts), so collapsing them would hide the one that moved.
+//
+// The rounding looks odd but is deliberate: it mirrors CouponDetailPanel's item
+// aggregation exactly. Product codes come back in inconsistent numeric forms,
+// and if the two pages normalise differently their item counts drift apart —
+// the same trap subDeptKeyOf documents.
+export const itemKeyOf = (c: CouponItem): string =>
+  c.product_code != null
+    ? String(Math.round(Number(c.product_code)))
+    : c.product_description;
+
+export const buildItemRows = (coupons: CouponItem[], opts: GradingOptions) =>
+  buildRows(coupons, opts, itemKeyOf, (c) =>
+    c.product_description || c.product_code || "Unknown item",
+  );
+
 export const buildBreakdownRows = (
   coupons: CouponItem[],
   opts: GradingOptions,
   breakdown: CouponBreakdown,
 ): CouponRow[] => {
   if (breakdown === "cashier") return buildCashierRows(coupons, opts);
+  if (breakdown === "item") return buildItemRows(coupons, opts);
   return buildSubDeptRows(coupons, opts);
 };
 
@@ -367,6 +386,7 @@ export const sectionKeyOf = (
   breakdown: CouponBreakdown,
 ): string => {
   if (breakdown === "cashier") return cashierKeyOf(c);
+  if (breakdown === "item") return itemKeyOf(c);
   return subDeptKeyOf(c);
 };
 

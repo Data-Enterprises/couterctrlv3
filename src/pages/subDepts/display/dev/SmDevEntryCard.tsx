@@ -25,6 +25,7 @@ const SmDevEntryCard = ({ onSearch, notice }: Props) => {
         onStoreSelect={(id) => dispatch(actions.setSearchValue(id))}
         onSearch={onSearch}
         loading={ctx.loadingSubDepts}
+        loadingMessage="Finding sub dept margins..."
         datePicker={<SingleDatePicker />}
         notice={notice}
       />

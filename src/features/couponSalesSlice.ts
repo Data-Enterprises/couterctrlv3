@@ -17,7 +17,7 @@ export type CouponTierFilter = "all" | CouponTier;
  *  where per-day analysis lives now, and a Date tab listing the same seven
  *  days underneath it was the same cut twice. buildDateRows survives for the
  *  export preset, which still offers a row per day. */
-export type CouponBreakdown = "subdept" | "cashier";
+export type CouponBreakdown = "subdept" | "cashier" | "item";
 
 /** Dollars. Deliberately not a percentage — see couponGrading.ts. */
 /** Which question the page is grading on. Trend compares each group against

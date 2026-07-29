@@ -47,6 +47,9 @@ const Coupons = () => {
         .catch(() => {});
     }
     dispatch(setIsFetching(true));
+    // Cleared on every search: leaving it set means a later failure shows
+    // this notice describing the *previous* search alongside the error toast.
+    dispatch(setNoCouponsFound(false));
     const useGroups = context.type === "Group" ? 1 : 0;
     const singleStore = context.type === "Store" ? 1 : 0;
     const searchValue = context.type === "Group" ? context.lastGroup : context.lastStore;
@@ -90,6 +93,7 @@ const Coupons = () => {
           buttonLabel="Load Coupons"
           onSearch={getData}
           loading={context.isFetching}
+          loadingMessage="Finding coupons..."
           notice={
             context.noCouponsFound
               ? "No coupons came back for this search."
@@ -116,6 +120,7 @@ const Coupons = () => {
               buttonLabel="Load Coupons"
               onSearch={() => { setSearchModalOpen(false); getData(); }}
               loading={context.isFetching}
+              loadingMessage="Finding coupons..."
             />
           </div>
         </div>

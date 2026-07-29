@@ -51,6 +51,9 @@ const Receivers = () => {
     }
     dispatch(reQuery());
     dispatch(setIsFetchingList(true));
+    // Cleared on every search: leaving it set means a later failure shows
+    // this notice describing the *previous* search alongside the error toast.
+    dispatch(setNoReceivers(false));
     getReceiversList(url, token, state.storeid, startDate, endDate)
       .then((resp) => {
         const j: ReceiverListResponse = resp.data;
@@ -159,6 +162,8 @@ const Receivers = () => {
           selectedStoreId={state.storeid}
           onStoreSelect={setSelectedStore}
           onSearch={getReceivers}
+          loading={state.isFetchingList}
+          loadingMessage="Finding receivers..."
           datePicker={<DatePickers showBtn={false} handleQuery={getReceivers} />}
         />
       </div>
@@ -181,6 +186,8 @@ const Receivers = () => {
               selectedStoreId={state.storeid}
               onStoreSelect={setSelectedStore}
               onSearch={() => { setSearchModalOpen(false); getReceivers(); }}
+              loading={state.isFetchingList}
+              loadingMessage="Finding receivers..."
               datePicker={<DatePickers showBtn={false} handleQuery={() => { setSearchModalOpen(false); getReceivers(); }} />}
             />
           </div>

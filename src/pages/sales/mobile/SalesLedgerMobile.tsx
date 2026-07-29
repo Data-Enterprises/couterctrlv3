@@ -119,6 +119,7 @@ const SalesLedgerMobile = () => {
           singleDate
           onSearch={fetchLedger}
           loading={ledgerLoading}
+          loadingMessage="Finding sales..."
           onBack={hasData ? () => dispatch(setHasSearched(true)) : undefined}
           notice={
             hasSearched

@@ -278,6 +278,7 @@ const OrdersMobile = () => {
           buttonLabel="Find orders"
           onSearch={handleSearch}
           loading={ctx.loadingAvailableOrders}
+          loadingMessage="Finding orders..."
           notice={notice}
         />
       )}

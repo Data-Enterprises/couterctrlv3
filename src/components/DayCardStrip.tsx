@@ -34,8 +34,9 @@ interface DayCardStripProps {
   /** "" means all week. */
   selected: string;
   onSelect: (iso: string) => void;
-  /** Suffix on the delta, naming the comparison. "Baseline" matches LP's
-   *  KPI strip, which spells it out rather than abbreviating. */
+  /** Optional suffix on the delta, naming the comparison. Off by default —
+   *  the cards are already under a baseline-graded panel, so spelling it out
+   *  on every card was noise. */
   deltaSuffix?: string;
   higherIsWorse?: boolean;
 }
@@ -48,7 +49,7 @@ const DayCardStrip = ({
   weekDelta,
   selected,
   onSelect,
-  deltaSuffix = "Baseline",
+  deltaSuffix = "",
   higherIsWorse = true,
 }: DayCardStripProps) => {
   if (days.length === 0) return null;
@@ -60,7 +61,9 @@ const DayCardStrip = ({
   };
 
   const deltaText = (delta: number | null) =>
-    delta === null ? "—" : `${delta > 0 ? "▲" : "▼"} ${fmtPct(delta)} ${deltaSuffix}`;
+    delta === null
+      ? "—"
+      : `${delta > 0 ? "▲" : "▼"} ${fmtPct(delta)}${deltaSuffix ? ` ${deltaSuffix}` : ""}`;
 
   const md = (iso: string) => {
     const d = new Date(iso + "T12:00:00");

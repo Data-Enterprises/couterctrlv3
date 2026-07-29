@@ -64,6 +64,9 @@ const ReceiversMobileDev = () => {
     }
     dispatch(actions.reQuery());
     dispatch(actions.setIsFetchingList(true));
+    // Cleared on every search: leaving it set means a later failure shows
+    // this notice describing the *previous* search alongside the error toast.
+    dispatch(actions.setNoReceivers(false));
     getReceiversList(url, token, rcv.storeid, startDate, endDate)
       .then((resp) => {
         const j: ReceiverListResponse = resp.data;
@@ -136,6 +139,7 @@ const ReceiversMobileDev = () => {
           onStoreSelect={(id) => dispatch(actions.setStoreId(id))}
           onSearch={handleSearch}
           loading={rcv.isFetchingList}
+          loadingMessage="Finding receivers..."
           datePicker={<DatePickers showBtn={false} handleQuery={handleSearch} />}
           notice={
             rcv.noReceivers

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import SingleSelect from "./SingleSelect";
+import EntryCardLoading from "./loading/EntryCardLoading";
 import type { Store } from "../interfaces";
 
 interface SingleStoreSearchCardProps {
@@ -14,6 +15,8 @@ interface SingleStoreSearchCardProps {
   datePicker: ReactNode;
   children?: ReactNode;
   notice?: string;
+  /** Shown while the search runs. Worth naming what is being fetched. */
+  loadingMessage?: string;
 }
 
 const SingleStoreSearchCard = ({
@@ -28,6 +31,7 @@ const SingleStoreSearchCard = ({
   datePicker,
   children,
   notice,
+  loadingMessage = "Loading...",
 }: SingleStoreSearchCardProps) => {
   const storeName =
     stores.find((s) => s.storeid === selectedStoreId)?.store_name ?? "";
@@ -39,34 +43,48 @@ const SingleStoreSearchCard = ({
         <p className="text-[12px] text-content/50 mt-1">{description}</p>
       </div>
 
-      {notice && (
-        <div className="px-2.5 py-2 rounded-lg bg-amber-50 text-[11.5px] text-amber-900 leading-snug">
-          {notice}
+      {/* Form stays mounted but unpainted while the search runs — holds the
+          card's height, and the spinner replaces it rather than sitting over
+          a form you can still half see. Matches SearchCard. */}
+      <div className="relative flex flex-col gap-3">
+        <div
+          className="flex flex-col gap-3"
+          style={loading ? { visibility: "hidden" } : undefined}
+        >
+          {notice && (
+            <div className="px-2.5 py-2 rounded-lg bg-amber-50 text-[11.5px] text-amber-900 leading-snug">
+              {notice}
+            </div>
+          )}
+
+          <SingleSelect
+            label="Select Store"
+            data={stores}
+            displayKey="store_name"
+            valueKey="storeid"
+            onSelect={(id) => onStoreSelect(Number(id))}
+            defaultQuery={selectedStoreId > 0 ? storeName : ""}
+            innerClass="text-[13px] py-1"
+            listClass="text-[13px]"
+          />
+
+          {datePicker}
+
+          <button
+            onClick={onSearch}
+            disabled={selectedStoreId === 0 || loading}
+            className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
+          >
+            {buttonLabel}
+          </button>
+
+          {children}
         </div>
-      )}
 
-      <SingleSelect
-        label="Select Store"
-        data={stores}
-        displayKey="store_name"
-        valueKey="storeid"
-        onSelect={(id) => onStoreSelect(Number(id))}
-        defaultQuery={selectedStoreId > 0 ? storeName : ""}
-        innerClass="text-[13px] py-1"
-        listClass="text-[13px]"
-      />
-
-      {datePicker}
-
-      <button
-        onClick={onSearch}
-        disabled={selectedStoreId === 0 || loading}
-        className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
-      >
-        {loading ? "Loading..." : buttonLabel}
-      </button>
-
-      {children}
+        {loading && (
+          <EntryCardLoading message={loadingMessage} context={storeName} />
+        )}
+      </div>
     </div>
   );
 };

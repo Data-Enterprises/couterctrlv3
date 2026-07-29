@@ -287,7 +287,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 p-4 w-full">
-      <div className="flex flex-nowrap items-center gap-2 mb-3">
+      <div className="flex flex-wrap items-center gap-2 mb-3">
         <SelectFilter
           options={companyOptions}
           value={companyFilter}
@@ -349,109 +349,114 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         />
       )}
 
-      <div className="border border-gray-100 rounded-lg overflow-hidden flex-1 min-h-0 flex flex-col">
-        <div className="grid grid-cols-[12%_12%_12%_22%_11%_10%_11%_10%] px-3 py-2 bg-gray-50 text-[10px] font-semibold uppercase tracking-wide text-content flex-shrink-0">
-          <ColFilter
-            label="Username"
-            active={!!usernameFilter}
-            onApply={() => setUsernameFilter(draftUsernameFilter)}
-            onClear={() => {
-              setUsernameFilter("");
-              setDraftUsernameFilter("");
-            }}
-          >
-            <input
-              autoFocus
-              style={colFilterInputStyle}
-              placeholder="Search username…"
-              value={draftUsernameFilter}
-              onChange={(e) => setDraftUsernameFilter(e.target.value)}
-            />
-          </ColFilter>
-          <div>First name</div>
-          <div>Last name</div>
-          <ColFilter
-            label="Email"
-            active={!!emailFilter}
-            onApply={() => setEmailFilter(draftEmailFilter)}
-            onClear={() => {
-              setEmailFilter("");
-              setDraftEmailFilter("");
-            }}
-          >
-            <input
-              autoFocus
-              style={colFilterInputStyle}
-              placeholder="Search email…"
-              value={draftEmailFilter}
-              onChange={(e) => setDraftEmailFilter(e.target.value)}
-            />
-          </ColFilter>
-          <div>Role</div>
-          <div>Level</div>
-          <div>Last visited</div>
-          <div></div>
-        </div>
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-[#1e2a4a]/15">
-          {filtered.map((u) => {
-            const outranked = isOutranked(u.user_level);
-            return (
-              <div
-                key={u.id}
-                className={`grid grid-cols-[12%_12%_12%_22%_11%_10%_11%_10%] px-3 py-2 text-[13px] items-center transition-colors [content-visibility:auto] [contain-intrinsic-size:0_40px] ${outranked ? "bg-gray-50 text-content/40" : "text-content even:bg-row_stripe hover:bg-gray-50"}`}
-              >
-                <div className="truncate">{u.username}</div>
-                <div className="truncate">{u.first_name || "—"}</div>
-                <div className="truncate">{u.last_name || "—"}</div>
-                <div className="truncate">{u.email}</div>
-                <div>{renderRoleText(u.role)}</div>
-                <div>{renderLvlText(u.user_level)}</div>
-                <div>{formatDate(u.last_visit)}</div>
-                <div className="flex items-center justify-end gap-1">
-                  {outranked ? (
-                    <span className="text-[10px] italic text-content/40">
-                      Unauthorized
-                    </span>
-                  ) : showInactive ? (
-                    <IconButton
-                      icon={ArrowPathIcon}
-                      title="Reactivate"
-                      onClick={() => handleReactivate(u)}
-                    />
-                  ) : (
-                    <>
+      <div className="border border-gray-100 rounded-lg overflow-x-auto thin-scrollbar flex-1 min-h-0 flex flex-col">
+        {/* min-w floors the columns: narrower than this the card scrolls
+            rather than crushing cells into each other. Header and rows are
+            separate grids, so they must share one scroller to stay aligned. */}
+        <div className="min-w-[900px] flex-1 min-h-0 flex flex-col">
+          <div className="grid grid-cols-[12%_12%_12%_22%_11%_10%_11%_7rem] px-3 py-2 bg-gray-50 text-[10px] font-semibold uppercase tracking-wide text-content flex-shrink-0">
+            <ColFilter
+              label="Username"
+              active={!!usernameFilter}
+              onApply={() => setUsernameFilter(draftUsernameFilter)}
+              onClear={() => {
+                setUsernameFilter("");
+                setDraftUsernameFilter("");
+              }}
+            >
+              <input
+                autoFocus
+                style={colFilterInputStyle}
+                placeholder="Search username…"
+                value={draftUsernameFilter}
+                onChange={(e) => setDraftUsernameFilter(e.target.value)}
+              />
+            </ColFilter>
+            <div>First name</div>
+            <div>Last name</div>
+            <ColFilter
+              label="Email"
+              active={!!emailFilter}
+              onApply={() => setEmailFilter(draftEmailFilter)}
+              onClear={() => {
+                setEmailFilter("");
+                setDraftEmailFilter("");
+              }}
+            >
+              <input
+                autoFocus
+                style={colFilterInputStyle}
+                placeholder="Search email…"
+                value={draftEmailFilter}
+                onChange={(e) => setDraftEmailFilter(e.target.value)}
+              />
+            </ColFilter>
+            <div>Role</div>
+            <div>Level</div>
+            <div>Last visited</div>
+            <div></div>
+          </div>
+          <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-[#1e2a4a]/15">
+            {filtered.map((u) => {
+              const outranked = isOutranked(u.user_level);
+              return (
+                <div
+                  key={u.id}
+                  className={`grid grid-cols-[12%_12%_12%_22%_11%_10%_11%_7rem] px-3 py-2 text-[13px] items-center transition-colors [content-visibility:auto] [contain-intrinsic-size:0_40px] ${outranked ? "bg-gray-50 text-content/40" : "text-content even:bg-row_stripe hover:bg-gray-50"}`}
+                >
+                  <div className="truncate">{u.username}</div>
+                  <div className="truncate">{u.first_name || "—"}</div>
+                  <div className="truncate">{u.last_name || "—"}</div>
+                  <div className="truncate">{u.email}</div>
+                  <div className="truncate">{renderRoleText(u.role)}</div>
+                  <div className="truncate">{renderLvlText(u.user_level)}</div>
+                  <div className="truncate">{formatDate(u.last_visit)}</div>
+                  <div className="flex items-center justify-end gap-1">
+                    {outranked ? (
+                      <span className="text-[10px] italic text-content/40">
+                        Unauthorized
+                      </span>
+                    ) : showInactive ? (
                       <IconButton
-                        icon={PencilIcon}
-                        title="Edit"
-                        onClick={() => handleEdit(u)}
+                        icon={ArrowPathIcon}
+                        title="Reactivate"
+                        onClick={() => handleReactivate(u)}
                       />
-                      <IconButton
-                        icon={DocumentDuplicateIcon}
-                        title="Duplicate"
-                        onClick={() => handleDuplicate(u)}
-                      />
-                      <IconButton
-                        icon={KeyIcon}
-                        title="Password & security"
-                        onClick={() => setSecurityUser(u)}
-                      />
-                      <IconButton
-                        icon={TrashIcon}
-                        title="Delete"
-                        variant="danger"
-                        onClick={() => setDeletingUser(u)}
-                      />
-                    </>
-                  )}
+                    ) : (
+                      <>
+                        <IconButton
+                          icon={PencilIcon}
+                          title="Edit"
+                          onClick={() => handleEdit(u)}
+                        />
+                        <IconButton
+                          icon={DocumentDuplicateIcon}
+                          title="Duplicate"
+                          onClick={() => handleDuplicate(u)}
+                        />
+                        <IconButton
+                          icon={KeyIcon}
+                          title="Password & security"
+                          onClick={() => setSecurityUser(u)}
+                        />
+                        <IconButton
+                          icon={TrashIcon}
+                          title="Delete"
+                          variant="danger"
+                          onClick={() => setDeletingUser(u)}
+                        />
+                      </>
+                    )}
+                  </div>
                 </div>
+              );
+            })}
+            {filtered.length === 0 && (
+              <div className="flex items-center justify-center py-8 text-[12px] text-content">
+                No users found
               </div>
-            );
-          })}
-          {filtered.length === 0 && (
-            <div className="flex items-center justify-center py-8 text-[12px] text-content">
-              No users found
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
