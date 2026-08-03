@@ -1,0 +1,509 @@
+{
+  "title": "Privacy Policy",
+  "last_updated": "August 3, 2026",
+  "company": {
+    "product_name": "CounterCtrl Cloud",
+    "legal_relationship": "A Data Enterprises, Inc. Company",
+    "website": "www.counterctrlcloud.com",
+    "contact_email": "webinfo@dcrpos.com"
+  },
+  "introduction": [
+    "Your privacy is important to us. This Privacy Policy describes how CounterCtrl Cloud, a Data Enterprises, Inc. company (“CounterCtrl Cloud,” “Company,” “we,” “us,” or “our”), collects, uses, stores, and shares personal information.",
+    "This Privacy Policy applies to counterctrlcloud.com and all other websites, applications, platforms, products, services, and tools operated by CounterCtrl Cloud where this Privacy Policy appears or is linked. Collectively, these are referred to as the “Services.”",
+    "By creating an account, providing information to us, accessing the Services, or continuing to use the Services, you acknowledge that you have read and understood this Privacy Policy.",
+    "IF YOU DO NOT AGREE WITH THIS PRIVACY POLICY OR OUR PRACTICES, YOU MAY NOT ACCESS OR USE THE SERVICES.",
+    "This Privacy Policy may change from time to time. Your continued use of the Services after changes are posted constitutes your acceptance of those changes. We encourage you to review this Privacy Policy periodically."
+  ],
+  "sections": [
+    {
+      "id": 1,
+      "title": "Personal Information We Collect",
+      "content": [
+        "We may collect personal information that identifies, relates to, describes, or could reasonably be associated with an individual, consumer, household, business user, or account.",
+        "Certain personal information is required to provide the Services. If you do not provide the requested information, we may be unable to create your account, authenticate your access, provide certain features, respond to requests, or deliver our products and services."
+      ],
+      "categories": [
+        {
+          "category": "Category A: Identifiers",
+          "collected": true,
+          "examples": [
+            "Name",
+            "Postal address",
+            "Email address",
+            "Internet Protocol address",
+            "Online identifier",
+            "Account username",
+            "Login credentials",
+            "Customer or user identification number"
+          ]
+        },
+        {
+          "category": "Category B: Customer Records Information",
+          "collected": true,
+          "examples": [
+            "Name",
+            "Business address",
+            "Mailing address",
+            "Telephone number",
+            "Email address",
+            "Customer account information",
+            "Contact information"
+          ]
+        },
+        {
+          "category": "Category C: Protected Classification Information",
+          "collected": false,
+          "examples": [
+            "Age",
+            "Race",
+            "Religion",
+            "National origin",
+            "Citizenship",
+            "Marital status",
+            "Medical condition",
+            "Disability",
+            "Sex",
+            "Gender identity",
+            "Sexual orientation",
+            "Veteran status",
+            "Genetic information"
+          ]
+        },
+        {
+          "category": "Category D: Commercial Information",
+          "collected": true,
+          "examples": [
+            "Products or services purchased",
+            "Products or services considered",
+            "Subscription information",
+            "Customer service history",
+            "Transaction history",
+            "Service usage history"
+          ]
+        },
+        {
+          "category": "Category E: Biometric Information",
+          "collected": false,
+          "examples": []
+        },
+        {
+          "category": "Category F: Internet or Electronic Network Activity",
+          "collected": true,
+          "examples": [
+            "Browsing activity",
+            "Search activity",
+            "Login history",
+            "Device information",
+            "Browser type",
+            "Operating system",
+            "Pages or features accessed",
+            "Interactions with the Services",
+            "Application usage",
+            "Session information",
+            "System and application logs"
+          ]
+        },
+        {
+          "category": "Category G: Precise Geolocation Information",
+          "collected": false,
+          "examples": [
+            "General location information derived from an IP address may be collected for security, analytics, or service delivery purposes."
+          ]
+        },
+        {
+          "category": "Category H: Audio, Electronic, Visual, or Similar Information",
+          "collected": false,
+          "examples": []
+        },
+        {
+          "category": "Category I: Professional or Employment-Related Information",
+          "collected": true,
+          "examples": [
+            "Employer or company name",
+            "Job title",
+            "Department",
+            "Business role",
+            "Professional contact information",
+            "Employment information submitted through a job application"
+          ]
+        },
+        {
+          "category": "Category J: Education Information",
+          "collected": false,
+          "examples": []
+        },
+        {
+          "category": "Category K: Sensitive Personal Information",
+          "collected": false,
+          "examples": [
+            "We do not intentionally collect Social Security numbers, financial account credentials, health information, precise geolocation, biometric identifiers, or government-issued identification numbers through the ordinary operation of the Services."
+          ]
+        },
+        {
+          "category": "Category L: Inferences",
+          "collected": false,
+          "examples": [
+            "We do not intentionally create consumer profiles reflecting psychological characteristics, personal preferences, intelligence, abilities, or similar personal traits."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Business and Customer Data",
+      "content": [
+        "CounterCtrl Cloud is a business analytics, reporting, data management, and operational intelligence platform.",
+        "Customers may provide or make available business information through the Services. This may include sales information, store information, product information, transaction data, invoice information, operational records, employee identifiers, cashier information, customer identifiers, or other business data.",
+        "Our customers are responsible for determining what data is submitted to the Services and for ensuring that they have the legal authority to collect, use, and provide that data.",
+        "When we process business or customer data on behalf of a customer, we generally act as a service provider or data processor. The customer remains responsible for its data collection practices, notices, permissions, and responses to requests from individuals whose information may be contained in customer data."
+      ],
+      "uses": [
+        "Provide the Services",
+        "Maintain and support customer accounts",
+        "Process and analyze customer information",
+        "Generate reports, analytics, dashboards, forecasts, and operational insights",
+        "Protect the security and integrity of the Services",
+        "Comply with contractual and legal obligations",
+        "Improve the performance and functionality of the Services"
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Cookies and Other Tracking Technologies",
+      "content": [
+        "Cookies are small text files stored by an internet browser on a computer or device."
+      ],
+      "purposes": [
+        "Authenticate users",
+        "Maintain secure sessions",
+        "Remember preferences",
+        "Understand how the Services are used",
+        "Measure performance",
+        "Diagnose technical issues",
+        "Improve functionality",
+        "Protect against unauthorized activity"
+      ],
+      "cookie_types": [
+        {
+          "name": "Essential Cookies",
+          "description": "These cookies are necessary for the core operation and security of the Services. They may support authentication, account access, session management, security, and access to protected areas."
+        },
+        {
+          "name": "Performance and Functionality Cookies",
+          "description": "These cookies help improve the performance and functionality of the Services. They may remember user preferences and previously selected settings."
+        },
+        {
+          "name": "Analytics and Customization Cookies",
+          "description": "These cookies help us understand how the Services are accessed and used.",
+          "information_collected": [
+            "Page URL",
+            "Page title",
+            "Browser type",
+            "Device type",
+            "Operating system",
+            "Referring website",
+            "Language",
+            "IP address",
+            "Interaction information",
+            "Application performance information"
+          ]
+        }
+      ],
+      "management": "You may configure your browser to reject or remove certain cookies. Some Services or features may not function correctly when cookies are disabled. Essential cookies cannot be rejected because they are necessary to provide secure access to the Services."
+    },
+    {
+      "id": 4,
+      "title": "Do Not Track",
+      "content": [
+        "Some browsers and devices offer a “Do Not Track” setting that signals a preference regarding online tracking.",
+        "There is currently no universally accepted standard for responding to these signals. At this time, our Services do not respond to Do Not Track browser signals.",
+        "If applicable laws require us to recognize a particular tracking preference signal, we will update our practices and this Privacy Policy accordingly."
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Promotional Communications",
+      "content": [
+        "We may use your contact information to send you information about CounterCtrl Cloud products and services, product updates, new features, training opportunities, events, promotions, service announcements, and related Data Enterprises, Inc. products and services.",
+        "We do not sell personal information to organizations outside Data Enterprises, Inc. for their independent marketing purposes.",
+        "Even after opting out of promotional communications, you may continue to receive transactional, account, security, support, billing, or service-related communications."
+      ],
+      "opt_out_methods": [
+        "Use the unsubscribe link included in an email",
+        "Reply “STOP” to an eligible text message",
+        "Contact us using the information in the How to Contact Us section"
+      ]
+    },
+    {
+      "id": 6,
+      "title": "How Personal Information Is Collected",
+      "methods": [
+        "Directly from you",
+        "Through account registration",
+        "Through forms or support requests",
+        "Through communications by telephone, email, text message, or other methods",
+        "Through your use of the Services",
+        "From your employer or organization",
+        "From an authorized account administrator",
+        "From customers that provide data to the Services",
+        "From service providers and business partners",
+        "From cookies and analytics technologies",
+        "Through automated monitoring of our websites, applications, networks, systems, and communications platforms"
+      ]
+    },
+    {
+      "id": 7,
+      "title": "How and Why We Use Personal Information",
+      "purposes": [
+        {
+          "name": "Providing the Services",
+          "uses": [
+            "Create and administer accounts",
+            "Authenticate users",
+            "Provide access to authorized features",
+            "Process customer data",
+            "Generate analytics and reports",
+            "Deliver products and services",
+            "Respond to support requests",
+            "Communicate with users and customers"
+          ],
+          "reason": "We process this information to perform our agreements with customers and provide requested products and services."
+        },
+        {
+          "name": "Security and Fraud Prevention",
+          "uses": [
+            "Protect accounts",
+            "Detect unauthorized access",
+            "Prevent fraud",
+            "Investigate suspicious activity",
+            "Monitor system security",
+            "Protect our customers, Company, systems, and Services"
+          ]
+        },
+        {
+          "name": "Business Operations",
+          "uses": [
+            "Maintain customer records",
+            "Improve operational efficiency",
+            "Conduct training and quality control",
+            "Manage customer relationships",
+            "Administer billing and subscriptions",
+            "Maintain business records",
+            "Enforce our policies and agreements"
+          ]
+        },
+        {
+          "name": "Product Improvement and Analytics",
+          "uses": [
+            "Analyze application usage",
+            "Improve existing features",
+            "Develop new features",
+            "Measure product performance",
+            "Diagnose technical issues",
+            "Understand customer needs",
+            "Improve the user experience"
+          ]
+        },
+        {
+          "name": "Legal and Regulatory Compliance",
+          "uses": [
+            "Comply with applicable laws",
+            "Respond to lawful requests",
+            "Maintain legally required records",
+            "Establish or defend legal claims",
+            "Enforce contractual obligations"
+          ]
+        },
+        {
+          "name": "Marketing",
+          "uses": [
+            "Market products and services to existing customers",
+            "Market products and services to former customers",
+            "Communicate with individuals or organizations that have expressed interest in our services",
+            "Communicate with potential business customers"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Aggregated and De-Identified Information",
+      "content": [
+        "We may aggregate, anonymize, or de-identify information so that it no longer reasonably identifies an individual, customer, store, or organization.",
+        "Aggregated and de-identified information is not treated as personal information under this Privacy Policy when it cannot reasonably be used to identify an individual.",
+        "We will not attempt to re-identify information that has been properly de-identified unless permitted or required by law."
+      ],
+      "uses": [
+        "Generate industry benchmarks",
+        "Analyze geographic or market trends",
+        "Understand how the Services are used",
+        "Conduct validation studies",
+        "Create statistical reports",
+        "Improve our products and services",
+        "Develop new analytics and functionality"
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Who We Share Personal Information With",
+      "recipients": [
+        {
+          "name": "Data Enterprises, Inc. Affiliates",
+          "description": "CounterCtrl Cloud is a Data Enterprises, Inc. company. Information may be shared with Data Enterprises, Inc. and its affiliated operations when necessary to provide, administer, support, secure, or improve the Services."
+        },
+        {
+          "name": "Business Partners",
+          "description": "We may disclose information to companies with which we partner to provide services, integrations, customer support, product features, promotions, or other activities described in this Privacy Policy."
+        },
+        {
+          "name": "Service Providers",
+          "description": "We may share information with third parties that provide business, professional, hosting, cloud infrastructure, security, technical, payment, communication, customer support, or administrative services on our behalf."
+        },
+        {
+          "name": "Analytics Providers",
+          "description": "We may share limited information with providers that help us understand usage, measure performance, diagnose issues, and improve the Services."
+        },
+        {
+          "name": "Marketing and Advertising Partners",
+          "description": "We may share limited personal information with marketing service providers that assist us in delivering and measuring business communications. We do not sell personal information to third parties for their independent marketing purposes."
+        },
+        {
+          "name": "Government and Public Authorities",
+          "description": "We may disclose information when required or permitted by law, including in response to subpoenas, court orders, investigative demands, law enforcement requests, regulatory requests, or other lawful governmental requests."
+        },
+        {
+          "name": "Business Transactions",
+          "description": "We may disclose or transfer information in connection with a merger, acquisition, financing transaction, sale of assets, corporate restructuring, bankruptcy, receivership, or transfer of all or part of our business."
+        }
+      ],
+      "additional_disclosures": [
+        "Protect our operations",
+        "Protect the operations of our affiliates",
+        "Investigate fraud",
+        "Prevent illegal activity",
+        "Protect our rights or property",
+        "Protect the privacy or safety of customers, users, employees, or others",
+        "Enforce our agreements",
+        "Pursue available remedies",
+        "Limit damages"
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Data Retention",
+      "content": [
+        "We retain personal information while you maintain an account, your organization remains a customer, we provide products or services, or the information is needed for an authorized business purpose.",
+        "Retention periods may vary based on the type of information, the sensitivity of the information, the purpose for which it was collected, contractual requirements, customer instructions, and applicable law.",
+        "Customer data may be retained according to the applicable customer agreement, service order, data retention configuration, or documented customer instructions."
+      ],
+      "retention_reasons": [
+        "Respond to questions, complaints, or claims",
+        "Maintain business and transaction records",
+        "Demonstrate compliance with contractual obligations",
+        "Improve security",
+        "Detect and prevent fraud",
+        "Resolve disputes",
+        "Enforce agreements",
+        "Comply with legal or regulatory obligations"
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Children and the Services",
+      "content": [
+        "The Services are intended for business use and are not directed to children.",
+        "You may not create an account or use the Services if you are under 18 years of age unless your use is specifically authorized by your employer, educational institution, parent, or legal guardian and permitted by applicable law.",
+        "We do not knowingly collect personal information directly from children under 13. If we learn that we have collected personal information directly from a child under 13 without appropriate authorization, we will take reasonable steps to delete the information."
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Keeping Personal Information Secure",
+      "content": [
+        "We use reasonable and appropriate administrative, technical, and physical safeguards designed to protect information from unauthorized access, unauthorized use, loss, misuse, alteration, disclosure, or destruction.",
+        "Our security practices may include access controls, authentication procedures, monitoring, encryption, network protections, employee training, secure development practices, and vendor management procedures.",
+        "No system can be guaranteed to be completely secure. Internet transmissions are not always secure and we cannot guarantee that information, searches, files, or communications will never be accessed, disclosed, altered, or destroyed.",
+        "Users are responsible for protecting their account credentials and promptly notifying us of suspected unauthorized account activity."
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Where Personal Information Is Stored",
+      "locations": [
+        "At Data Enterprises, Inc. offices",
+        "In cloud-hosted environments",
+        "At third-party data centers",
+        "By authorized service providers",
+        "By representatives and agents supporting our operations"
+      ],
+      "content": [
+        "Customer information may be stored in the United States or in another location used by our authorized service providers."
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Users Outside the United States",
+      "content": [
+        "CounterCtrl Cloud and Data Enterprises, Inc. are headquartered in the United States and use service providers located in the United States.",
+        "The Services are primarily intended for customers and users in the United States.",
+        "When you access the Services from outside the United States, your personal information may be transferred to, stored in, or processed in the United States or another jurisdiction where we or our service providers operate.",
+        "Privacy laws in those jurisdictions may differ from the laws in your location. By using the Services and providing information to us, you acknowledge that your information may be processed in these jurisdictions as described in this Privacy Policy."
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Third-Party Websites and Services",
+      "content": [
+        "The Services may contain links to third-party websites, applications, integrations, or services.",
+        "We do not control and are not responsible for the privacy, security, products, services, content, or data practices of third parties.",
+        "A link to a third-party service does not constitute an endorsement of that service.",
+        "We encourage you to review the privacy policy and terms of any third-party service before providing it with personal information.",
+        "Questions, complaints, claims, or concerns regarding a third-party service should be directed to the operator of that service."
+      ]
+    },
+    {
+      "id": 16,
+      "title": "Your Privacy Choices and Rights",
+      "content": [
+        "Depending on your location, you may have rights regarding your personal information.",
+        "These rights may be subject to legal exceptions and verification requirements.",
+        "When personal information is processed by CounterCtrl Cloud on behalf of a customer, you may need to submit your request directly to that customer. We may assist the customer with responding to the request as required by contract or law.",
+        "We will not unlawfully discriminate against you for exercising an applicable privacy right."
+      ],
+      "rights": [
+        "Request access to personal information",
+        "Request correction of inaccurate information",
+        "Request deletion of certain information",
+        "Request information about how personal information is used",
+        "Request information about categories of third parties receiving information",
+        "Opt out of certain marketing communications",
+        "Restrict or object to certain processing",
+        "Receive a copy of certain information",
+        "Appeal a decision regarding a privacy request"
+      ]
+    },
+    {
+      "id": 17,
+      "title": "Changes to This Privacy Policy",
+      "content": [
+        "This Privacy Policy was published on the Last Updated date shown above.",
+        "We may modify this Privacy Policy from time to time to reflect changes in our Services, business practices, technology, applicable laws, or regulatory requirements.",
+        "Changes will be posted on this page with an updated revision date.",
+        "When required by law, we may provide additional notice through the Services, by email, or through another appropriate communication method."
+      ]
+    },
+    {
+      "id": 18,
+      "title": "How to Contact Us",
+      "contact": {
+        "company": "CounterCtrl Cloud",
+        "relationship": "A Data Enterprises, Inc. Company",
+        "website": "www.counterctrlcloud.com",
+        "email": "webinfo@dcrpos.com"
+      },
+      "content": [
+        "Please contact us with questions about this Privacy Policy, our privacy practices, or personal information associated with you."
+      ]
+    }
+  ]
+}

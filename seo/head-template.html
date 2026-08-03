@@ -1,0 +1,31 @@
+<!-- ─────────────────────────────────────────────────────────────────────────────
+     Per-page <head> template. Copy for each marketing page; replace {{TOKENS}}.
+     Values for each URL are in seo/page-map.csv.
+     ───────────────────────────────────────────────────────────────────────────── -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>{{TITLE_TAG}}</title>                        <!-- 50-60 chars, primary query near the front -->
+<meta name="description" content="{{META_DESC}}">  <!-- 150-160 chars, written for a human -->
+<link rel="canonical" href="{{BASE}}{{PATH}}">
+
+<!-- login page only: -->
+<!-- <meta name="robots" content="noindex,follow"> -->
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CounterCtrl Cloud">
+<meta property="og:title" content="{{TITLE_TAG}}">
+<meta property="og:description" content="{{META_DESC}}">
+<meta property="og:url" content="{{BASE}}{{PATH}}">
+<meta property="og:image" content="{{BASE}}/og-counterctrl.png">   <!-- 1200x630, must exist -->
+<meta name="twitter:card" content="summary_large_image">
+
+<meta name="theme-color" content="#0F2440">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<!-- Organization on every page; add SoftwareApplication on / and FAQPage on /grocery-analytics -->
+<script type="application/ld+json">{{ORGANIZATION_JSONLD}}</script>

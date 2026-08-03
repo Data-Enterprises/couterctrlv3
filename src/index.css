@@ -64,16 +64,163 @@ body {
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Portal slide art
+
+   The four SVG illustrations ship with animation hooks — `.sweep`, `.dash`,
+   `.pin`, `.card`, the last two carrying staggered inline animationDelay
+   values. The handoff's <style> block was never ported, so all 45 of those
+   hooks were inert. This is the missing half.
+
+   Scoping note: the illustrations' own <svg> elements are aria-hidden, so
+   `[aria-hidden="true"]` alone would match every one of them and pause
+   everything permanently. The carousel slide is identified by
+   aria-roledescription instead.
+   --------------------------------------------------------------------------- */
+
+/* Radar sweep.
+   `.sweep`'s parent is already translated to the radar centre and its wedge
+   path starts at M0 0, so the pivot is the element's own local origin —
+   `0 0`, not the centre's viewBox coordinates. Naming those coordinates here
+   instead double-applies the translate and sends the wedge into orbit. */
+@keyframes portal-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sweep {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  animation: portal-sweep 8s linear infinite;
+}
+
+/* Connector lines. Every dashed line in the set is `2 6`, a period of 8, so
+   travelling exactly -8 loops seamlessly. */
+@keyframes portal-dash {
+  to {
+    stroke-dashoffset: -8;
+  }
+}
+
+.dash {
+  animation: portal-dash 1.4s linear infinite;
+}
+
+/* Map pins: the stroked ring expands and fades, like a ping spreading from
+   the location. The delay is inherited from the `.pin` group so the inline
+   0s / 0.5s / 1s stagger drives it without being repeated here. */
+@keyframes portal-ping {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.5;
+  }
+  70%,
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+.pin ellipse:nth-of-type(2) {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: portal-ping 2.8s ease-out infinite;
+  animation-delay: inherit;
+}
+
+/* Grade cards enter once, in sequence. `both` holds the start state through
+   the delay so nothing flashes in at full opacity first. */
+@keyframes portal-card {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.card {
+  animation: portal-card 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Off-screen slides shouldn't animate. Pausing rather than disabling means a
+   card entrance is still waiting to play when its slide first comes up. */
+[aria-roledescription="slide"][aria-hidden="true"] .sweep,
+[aria-roledescription="slide"][aria-hidden="true"] .dash,
+[aria-roledescription="slide"][aria-hidden="true"] .pin ellipse,
+[aria-roledescription="slide"][aria-hidden="true"] .card {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sweep,
+  .dash,
+  .pin ellipse,
+  .card {
+    animation: none;
+  }
+}
+
 @layer base {
   :root {
     /* The main theme for now... */
     --color-bkg: 228 233 239;
     --color-custom-white: 244 247 248;
+    /* Row selection — the neutral highlight used by grids and lists app-wide. */
     --color-row-selected: 239 241 242;
     --color-row-selected-border: 138 155 176;
+    /* "This filter is narrowing the list" — deliberately louder than
+       row-selected, because an empty filter and an applied one have to be
+       told apart at a glance or a shortened list reads as "no data". Blue-600
+       based rather than navy, which sits too close to the body text to
+       register as a highlight; the fill is a light tint so text-content stays
+       legible on top, and the border is blue-600 itself, the same blue every
+       selection glow in the app already uses (rgba(37,99,235,...)). */
+    --color-filter-active: 219 234 254;
+    --color-filter-active-border: 37 99 235;
     /* Alternating-row (zebra-stripe) background for dense grids/tables app-
        wide — one place to retune every grid's stripe at once. */
     --color-row-stripe: 236 237 239;
+    /* ── Brand (public portal) ──────────────────────────────────────────
+       From the 2026-07-31 design handoff. Lives here rather than in the
+       login page so there is still exactly one place colour is defined.
+
+       brand-green is the portal's accent — CTAs, rules, eyebrows, focus
+       rings. It is deliberately NOT severity-healthy green: that one grades
+       data, and per the design direction red/green stay reserved for delta
+       flags. Two different jobs, so two different tokens.
+
+       brand-navy is the handoff's #0F2440, a shade deeper than the app
+       chrome's #1e2a4a. Kept distinct rather than collapsed into one so the
+       marketing front door and the authenticated shell can diverge without
+       one silently restyling the other. */
+    --color-brand-green: 30 158 82;
+    --color-brand-green-dark: 23 128 63;
+    /* Darkest green, for text on a tinted fill. Added in the Aug 2026 handoff
+       revision: white on brand-green is only 3.4:1, on green-dark 5.0:1. */
+    --color-brand-green-darker: 17 99 48;
+    --color-brand-green-tint: 234 247 239;
+    --color-brand-navy: 15 36 64;
+    --color-brand-navy-hover: 27 58 99;
+    --color-brand-slate: 90 108 132;
+    /* Small mono labels (timestamps, fact keys, panel footers). The first
+       handoff used #94A3B8 / #8D9CB0 here — measured at 2.5–2.8:1, below the
+       4.5:1 AA floor. The Aug 2026 revision replaced both with this single
+       value. Do not reintroduce the lighter greys. */
+    --color-brand-slate-2: 100 116 139;
+    /* Input placeholders. Was #A3B0C2 at 2.2:1 — the worst offender. */
+    --color-brand-placeholder: 110 127 150;
+    --color-brand-line: 220 229 239;
+    --color-brand-line-2: 200 213 228;
+    --color-brand-paper: 250 252 254;
+    /* Error/validation. Distinct from severity-critical, which grades data —
+       these dress form errors and the Critical marketing chip. */
+    --color-brand-danger: 176 22 57;
+    --color-brand-danger-bg: 253 242 245;
+    --color-brand-danger-line: 245 194 206;
     --color-severity-critical-bg: 235 216 216;
     --color-severity-critical-text: 147 16 16;
     --color-severity-watch-bg: 236 224 205;

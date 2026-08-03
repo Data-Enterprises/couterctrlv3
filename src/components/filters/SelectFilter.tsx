@@ -22,6 +22,9 @@ const SelectFilter = ({ options, value, onChange, placeholder = "All", className
 
   const selected = options.find((o) => o.value === value);
   const label = selected?.label ?? placeholder;
+  // Matches TextFilter: the filter_active tokens plus a ring mark a filter
+  // that's narrowing the list. See TextFilter for why this isn't row_selected.
+  const isActive = value !== "";
 
   const handleOpen = () => {
     if (btnRef.current) setRect(btnRef.current.getBoundingClientRect());
@@ -50,22 +53,30 @@ const SelectFilter = ({ options, value, onChange, placeholder = "All", className
       <button
         ref={btnRef}
         onClick={handleOpen}
-        className={`w-full flex items-center justify-between rounded pl-1.5 pr-1 py-0.5 text-[12px] text-content outline-none cursor-pointer bg-custom-white border transition-colors ${
+        className={`w-full flex items-center justify-between rounded pl-1.5 pr-1 py-0.5 text-[12px] text-content outline-none cursor-pointer border transition-colors ${
           open
-            ? "border-[#1e2a4a]"
-            : "border-[#1e2a4a]/75 hover:border-[#1e2a4a]/50"
+            ? "bg-custom-white border-[#1e2a4a]"
+            : isActive
+              ? "bg-filter_active border-filter_active_border ring-2 ring-filter_active_border/30"
+              : "bg-custom-white border-[#1e2a4a]/75 hover:border-[#1e2a4a]/50"
         }`}
         style={{
           height: 24,
-          boxShadow: open
-            ? "0 1px 4px rgba(30,42,74,0.18)"
-            : "0 1px 2px rgba(30,42,74,0.08)",
+          boxShadow:
+            open || isActive
+              ? "0 1px 4px rgba(30,42,74,0.18)"
+              : "0 1px 2px rgba(30,42,74,0.08)",
         }}
       >
-        <span className={value ? "text-content" : "text-content/85"} style={{ fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <span
+          className={isActive ? "text-content font-medium" : "text-content/85"}
+          style={{ fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+        >
           {label}
         </span>
-        <ChevronDownIcon className="w-3 h-3 text-[#1e2a4a]/60 flex-shrink-0 ml-1" />
+        <ChevronDownIcon
+          className={`w-3 h-3 flex-shrink-0 ml-1 ${isActive ? "text-filter_active_border" : "text-[#1e2a4a]/60"}`}
+        />
       </button>
 
       {open && rect && (

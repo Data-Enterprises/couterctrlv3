@@ -4,6 +4,12 @@ import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 interface Props {
   label: string;
   active: boolean;
+  /** What the filter is currently set to. When given, the header shows the
+   *  value itself instead of the generic active dot — a column filtered to
+   *  "bruce" reads as such without reopening the popover. Omit to keep the
+   *  dot, which is right where the value is a range or a set rather than a
+   *  word (see AssociationItemsTable). */
+  activeValue?: string;
   align?: "left" | "right";
   onApply: () => void;
   onClear?: () => void;
@@ -15,7 +21,7 @@ interface Props {
 // and others — centralized here instead of adding a 7th copy. Label toggles
 // an absolutely-positioned popover holding whatever filter control is passed
 // as children (typically a text input), with built-in Apply/Clear.
-const ColFilter = ({ label, active, align = "left", onApply, onClear, children }: Props) => {
+const ColFilter = ({ label, active, activeValue, align = "left", onApply, onClear, children }: Props) => {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -32,12 +38,22 @@ const ColFilter = ({ label, active, align = "left", onApply, onClear, children }
     <div ref={wrapRef} className="relative flex items-center gap-1 min-w-0">
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide transition-colors select-none flex-shrink-0 ${
+        className={`flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide transition-colors select-none min-w-0 ${
           active ? "text-[#1e2a4a]" : "text-content"
         }`}
       >
         {label}
-        {active && <span className="w-1 h-1 rounded-full bg-[#1e2a4a] flex-shrink-0" />}
+        {active &&
+          (activeValue ? (
+            <span
+              title={activeValue}
+              className="normal-case tracking-normal font-medium text-[#1e2a4a] truncate min-w-0"
+            >
+              {activeValue}
+            </span>
+          ) : (
+            <span className="w-1 h-1 rounded-full bg-[#1e2a4a] flex-shrink-0" />
+          ))}
       </button>
       {open && <div className="fixed inset-0 z-[199]" onClick={() => setOpen(false)} />}
       {open && (

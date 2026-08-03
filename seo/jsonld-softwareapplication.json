@@ -1,0 +1,24 @@
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "CounterCtrl Cloud",
+  "applicationCategory": "BusinessApplication",
+  "applicationSubCategory": "Retail Analytics",
+  "operatingSystem": "Web, iOS, Android",
+  "url": "https://counterctrl.cloud",
+  "description": "CounterCtrl Cloud reads overnight POS transaction data and grades every location, category and item against thresholds you set. Five modules: Sales, Loss Prevention, Orders, Weekly Performance and Coupons.",
+  "featureList": [
+    "Nightly sales, margin and item movement reporting",
+    "Loss prevention exception reporting ranked by exposure",
+    "Multi-store and multi-banner rollups",
+    "Role-scoped access from store floor to C-suite",
+    "Mobile reporting for store and department managers"
+  ],
+  "audience": {
+    "@type": "BusinessAudience",
+    "audienceType": "Grocery and retail operators, from single-location owners to corporate banners"
+  },
+  "provider": { "@type": "Organization", "name": "DCR POS", "url": "https://counterctrl.cloud" },
+  "_comment_offers": "Add an Offer block only if pricing is public. Omitting it is fine; a fake price is not.",
+  "_comment_rating": "Do NOT add aggregateRating without real, verifiable reviews. Google issues manual actions for fabricated review markup."
+}

@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { login } from "../../api/login";
 import type { JsonError } from "../../interfaces";
-import logo from "../../assets/dcr_counterctrl-logo.png";
 
 import {
   setIsMobile,
@@ -28,10 +27,44 @@ import {
   setCompanies,
 } from "../../features/userSlice";
 import ForgotPassword from "./forgot/ForgotPassword";
-import LoadingIndicator from "../../components/loading/LoadingIndicator";
 
+import SignInRail from "./portal/SignInRail";
+import Stage from "./portal/Stage";
+import AboutPanel from "./portal/about/AboutPanel";
+import FieldNotesPanel from "./portal/fieldNotes/FieldNotesPanel";
+import WalkthroughPanel from "./portal/walkthrough/WalkthroughPanel";
+import TermsPanel from "./portal/terms/TermsPanel";
+import PrivacyPanel from "./portal/privacy/PrivacyPanel";
+import { getBlogs, getBlogFile } from "../../api/portal";
+import { POSTS, toPosts, type Post } from "../../content/posts";
+
+const VERSION = "Last updated 8/3/2026 @ 4:38 PM CST";
+
+/** PLACEHOLDER: `/html_pages/` only exists on the dev API today, and this page
+ *  runs before sign-in — `context.url` is always VITE_API_URL_PROD here, since
+ *  devMode can't be toggled until a session exists. Swap this for `context.url`
+ *  once the endpoint ships to prod. */
+const BLOG_API = import.meta.env.VITE_API_URL_DEV;
+
+/**
+ * Public portal — sign-in rail plus the marketing stage, per the 2026-07-31
+ * design handoff (since removed from the repo — see git history, and
+ * handoff-DEV-NOTES.md / handoff-PORTAL-README.md at the root).
+ *
+ * The authentication path below is unchanged from the pre-redesign page: the
+ * impersonation credentials, the second dev-token login, every success
+ * dispatch and the device-detection effect are all carried over verbatim.
+ * Only the presentation was replaced.
+ *
+ * Four slide-over panels are wired through `handleNavigate` — About, Field
+ * Notes, Book a walkthrough, and Terms and Conditions. The first three open
+ * from the stage; Terms opens from the rail's footer. Articles are read inside
+ * the Field Notes panel; there are deliberately no per-article routes.
+ *
+ * The handoff also shipped a Support panel. It was dropped from the nav here;
+ * its components still exist under portal/support/ but nothing mounts them.
+ */
 const Login = () => {
-  // const group = useAppSelector((state) => state.group);
   const state = useAppSelector((state) => state.user);
   const context = useAppSelector((state) => state.app);
   const dispatch = useAppDispatch();
@@ -51,23 +84,63 @@ const Login = () => {
     dispatch(setIsDesktop(!isMobile && !isTablet));
   }, []);
 
-  const handleSubmit = (
-    e:
-      | React.KeyboardEvent<HTMLInputElement>
-      | React.MouseEvent<HTMLButtonElement>,
-  ) => {
+  /** Field Notes content. Starts as the copy bundled with the build so the
+   *  panel is populated the instant it opens, then swaps to the bucket's copy
+   *  if that fetch succeeds — a new post appears without a deploy, and a
+   *  failure leaves the panel intact rather than empty.
+   *
+   *  Fetched on first open rather than on mount, per DEV-HANDOFF §2 — most
+   *  visitors here are signing in and never open the panel, and this payload
+   *  has no business on the login page's critical path. */
+  const [posts, setPosts] = useState<Post[]>(POSTS);
+  const blogsRequested = useRef(false);
+
+  const loadBlogs = () => {
+    if (blogsRequested.current) return;
+    blogsRequested.current = true;
+    // Two hops: the endpoint lists the bucket's objects and their public URLs,
+    // then the content is fetched from S3 directly. Returning the inner promise
+    // keeps both hops inside the one catch below.
+    getBlogs(BLOG_API)
+      .then((resp) => {
+        const file = resp.data?.files?.find((f) => f.filename === "posts.json");
+        if (!file) return;
+        return getBlogFile(file.url).then((r) => {
+          const incoming = toPosts(r.data);
+          if (incoming.length) setPosts(incoming);
+        });
+      })
+      .catch(() => { /* bundled copy stands; never blank out the panel */ });
+  };
+
+  /** Sign-in failures now render in the rail's alert region rather than a
+   *  toast — a locked-out user needs the reason to persist while they retype. */
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [invalidField, setInvalidField] =
+    useState<"username" | "password" | null>(null);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setAuthError(null);
+    setInvalidField(null);
+
+    // Field-level checks first, matching the handoff's submit handler.
+    if (!state.username.trim()) {
+      setInvalidField("username");
+      setAuthError("Enter your username.");
+      return;
+    }
+    if (!state.password) {
+      setInvalidField("password");
+      setAuthError("Enter your password.");
+      return;
+    }
+
     if (state.username == "otkim" && state.password == "!@#6Mikto6!@#") {
       setUseImpersonation(1);
       return;
     }
     handleLogin();
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSubmit(e);
-    }
   };
 
   const handleLogin = () => {
@@ -87,7 +160,7 @@ const Login = () => {
           dispatch(setSecurityQuestionId(j.security_question_id));
           dispatch(setCompanies(j.companies));
           setUseImpersonation(0);
-          if (j.role === 9  || j.user_level >= 2) {
+          if (j.role === 9 || j.user_level >= 2) {
             login(import.meta.env.VITE_API_URL_DEV, state.username, state.password, 0)
               .then((devResp) => {
                 if (devResp.data.error === 0) {
@@ -98,13 +171,15 @@ const Login = () => {
           }
         } else {
           dispatch(setFetchingCredentials(false));
-          toast.warn(
-            "Invalid credentials, make sure your password and username are correct",
+          setAuthError(
+            "That username and password don't match. Check them and try again.",
           );
+          dispatch(setPassword(""));
         }
       })
       .catch((err: JsonError) => {
         toast.error(`Login failed: ${err.message}`);
+        setAuthError("We couldn't reach the server. Try again in a moment.");
         dispatch(setFetchingCredentials(false));
       });
   };
@@ -117,146 +192,83 @@ const Login = () => {
     }
   };
 
+  /** Which slide-over is up, and the button that opened it — the panel hands
+   *  focus back there on close. Only one can be open at a time, which is also
+   *  what makes About's "Book a walkthrough" a clean swap rather than a stack. */
+  const [panel, setPanel] = useState<
+    "about" | "notes" | "demo" | "terms" | "privacy" | null
+  >(null);
+  const [panelTrigger, setPanelTrigger] = useState<HTMLElement | null>(null);
+
+  const handleNavigate = (key: string, trigger: HTMLElement) => {
+    setPanelTrigger(trigger);
+    if (key === "about") setPanel("about");
+    else if (key === "notes") {
+      loadBlogs();
+      setPanel("notes");
+    } else if (key === "demo") setPanel("demo");
+    else if (key === "terms") setPanel("terms");
+    else if (key === "privacy") setPanel("privacy");
+  };
+
   return (
-    <div data-testid="login-page" className="flex min-h-full justify-center">
-      <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
-        <div className="mx-auto w-full max-w-sm lg:w-96">
-          <div className="select-none">
-            <img className="h-50 w-auto" src={logo} alt="Mikto" />
-            <h2 className="mt-4 md:mt-8 text-2xl/9 font-bold tracking-tight text-center">
-              Sign in to your account
-            </h2>
-          </div>
+    <div
+      data-testid="login-page"
+      className="font-body text-brand_navy bg-bkg grid h-dvh overflow-hidden grid-cols-[clamp(400px,29%,452px)_1fr] portal_stack:h-auto portal_stack:min-h-dvh portal_stack:overflow-visible portal_stack:grid-cols-1"
+    >
+      <SignInRail
+        username={state.username}
+        password={state.password}
+        onUsernameChange={(v) => dispatch(setUsername(v))}
+        onPasswordChange={(v) => dispatch(setPassword(v))}
+        onSubmit={handleSubmit}
+        loading={context.fetchingCredentials}
+        onForgot={() => dispatch(setForgotPassword(true))}
+        error={authError}
+        invalidField={invalidField}
+        showImpersonate={!!useImpersonation}
+        onImpersonate={handleImpersonate}
+        version={VERSION}
+        onTerms={(t) => handleNavigate("terms", t)}
+        onPrivacy={(t) => handleNavigate("privacy", t)}
+      />
 
-          <div className={`${context.isMobile ? "mt-3 mb-4" : "mt-6"}`}>
-            <div>
-              <div
-                className={`${context.isMobile ? "space-y-3" : "space-y-2"}`}
-              >
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm/6 font-medium select-none"
-                  >
-                    Username
-                  </label>
-                  <div>
-                    <input
-                      data-testid="username"
-                      name="username"
-                      autoComplete="off"
-                      required
-                      value={state.username}
-                      className="basic-input bg-custom-white focus:border"
-                      onChange={(e) => dispatch(setUsername(e.target.value))}
-                    />
-                  </div>
-                </div>
+      <Stage onNavigate={handleNavigate} paused={panel !== null} />
 
-                <div>
-                  <label
-                    htmlFor="password"
-                    className="block text-sm/6 font-medium select-none"
-                  >
-                    Password
-                  </label>
-                  <div>
-                    <input
-                      data-testid="password"
-                      name="password"
-                      type="password"
-                      autoComplete="off"
-                      value={state.password}
-                      required
-                      className="basic-input bg-custom-white focus:border"
-                      onKeyDown={handleKeyPress}
-                      onChange={(e) => dispatch(setPassword(e.target.value))}
-                    />
-                  </div>
-                </div>
+      <AboutPanel
+        open={panel === "about"}
+        onClose={() => setPanel(null)}
+        // About's footer CTA carries .js-demo in the static build, so it
+        // opens Walkthrough rather than closing — a panel-to-panel handoff.
+        onBookWalkthrough={() => setPanel("demo")}
+        returnFocusTo={panelTrigger}
+      />
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <input
-                      id="remember-me"
-                      name="remember-me"
-                      type="checkbox"
-                      className="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                    />
-                    <label
-                      htmlFor="remember-me"
-                      className="ml-3 block text-sm/6 font-medium select-none"
-                      draggable={false}
-                    >
-                      Remember me
-                    </label>
-                  </div>
+      <FieldNotesPanel
+        posts={posts}
+        open={panel === "notes"}
+        onClose={() => setPanel(null)}
+        returnFocusTo={panelTrigger}
+      />
 
-                  <div
-                    data-testid="login-forgot-password"
-                    className="text-right text-sm/6 select-none"
-                    onClick={() => dispatch(setForgotPassword(true))}
-                  >
-                    <a
-                      href="#"
-                      className="font-semibold text-accent-1 transition-all duration-600"
-                      draggable={false}
-                    >
-                      Forgot password?
-                    </a>
-                  </div>
-                </div>
+      <WalkthroughPanel
+        open={panel === "demo"}
+        onClose={() => setPanel(null)}
+        returnFocusTo={panelTrigger}
+      />
 
-                {useImpersonation ? (
-                  <div className="row justify-content-center">
-                    <div className="bg-bkg">
-                      <input
-                        data-testid="impersonate-checkbox"
-                        type="checkbox"
-                        style={{ opacity: "1", visibility: "visible" }}
-                        className="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                        onChange={handleImpersonate}
-                        id="check1"
-                      />
-                      <label className="px-2" htmlFor="check1">
-                        Impersonate User
-                      </label>
-                    </div>
-                  </div>
-                ) : null}
+      <TermsPanel
+        open={panel === "terms"}
+        onClose={() => setPanel(null)}
+        returnFocusTo={panelTrigger}
+      />
 
-                <div className="relative">
-                  <button
-                    data-testid="sign-in"
-                    onClick={handleSubmit}
-                    type="submit"
-                    className="w-full btn-themeBlue"
-                  >
-                    Sign in
-                  </button>
-                  {context.fetchingCredentials ? (
-                    <LoadingIndicator
-                      message="Verifying credentials..."
-                      className="mt-16"
-                    />
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* TODO: Update this before pushing to publish */}
-        <div className="absolute bottom-1 left-0 text-[13px] pl-2 select-none">
-          Last Updated 7/29/2026 @ 1:07 PM CST
-        </div>
-      </div>
-      <div className="relative hidden w-0 flex-1 lg:block">
-        <img
-          className="absolute inset-0 size-full object-cover"
-          src="dashboard.jpg"
-          alt=""
-        />
-      </div>
+      <PrivacyPanel
+        open={panel === "privacy"}
+        onClose={() => setPanel(null)}
+        returnFocusTo={panelTrigger}
+      />
+
       <ForgotPassword />
     </div>
   );

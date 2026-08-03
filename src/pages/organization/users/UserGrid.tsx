@@ -358,6 +358,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
             <ColFilter
               label="Username"
               active={!!usernameFilter}
+              activeValue={usernameFilter}
               onApply={() => setUsernameFilter(draftUsernameFilter)}
               onClear={() => {
                 setUsernameFilter("");
@@ -377,6 +378,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
             <ColFilter
               label="Email"
               active={!!emailFilter}
+              activeValue={emailFilter}
               onApply={() => setEmailFilter(draftEmailFilter)}
               onClear={() => {
                 setEmailFilter("");

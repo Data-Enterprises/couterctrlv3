@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.vite
 *.local
 coverage
 
@@ -29,3 +30,5 @@ coverage
 Jason_meeting_notes.txt
 counterctrl_meeting_talking_points.txt
 TODO.md
+handoff-DEV-NOTES.md
+handoff-PORTAL-README.md
