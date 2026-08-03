@@ -1,0 +1,21 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "DCR POS",
+  "legalName": "DCR — A Data Enterprises Company",
+  "url": "https://counterctrl.cloud",
+  "logo": "https://counterctrl.cloud/assets/logo.png",
+  "_comment_foundingDate": "VERIFY. Derived from the '65 years of POS sales and support' claim. Competitors check this.",
+  "foundingDate": "1961",
+  "description": "DCR sells and supports point of sale systems for grocery and retail operators, and builds CounterCtrl Cloud, an analytics platform for multi-location retailers.",
+  "sameAs": [
+    "_TODO: LinkedIn company URL",
+    "_TODO: any other verified profiles"
+  ],
+  "contactPoint": [{
+    "@type": "ContactPoint",
+    "contactType": "customer support",
+    "url": "https://counterctrl.cloud/support",
+    "availableLanguage": "English"
+  }]
+}

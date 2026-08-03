@@ -1,0 +1,27 @@
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "_comment": "Put this on /grocery-analytics. Every answer here MUST also appear as visible text on the page — invisible FAQ markup is a policy violation.",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is CounterCtrl Cloud?",
+      "acceptedAnswer": { "@type": "Answer", "text": "CounterCtrl Cloud reads your overnight POS transaction data, compares every location, category and item against last week and last year, and hands your team the handful of numbers that actually need attention." }
+    },
+    {
+      "@type": "Question",
+      "name": "Who uses CounterCtrl Cloud?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Store managers, department managers, customer service, pricing coordinators and receiving/DSD staff in the store; marketing, sales, pricing, store operations and loss prevention at the office. Everyone works from the same nightly load, scoped to what their role covers." }
+    },
+    {
+      "@type": "Question",
+      "name": "How is it different from a standard POS report?",
+      "acceptedAnswer": { "@type": "Answer", "text": "CounterCtrl does not go live until its numbers reconcile against the reports your team already trusts. You set what \"off\" looks like, and every location, category and item is graded against that threshold rather than listed in full." }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it work with my POS?",
+      "acceptedAnswer": { "@type": "Answer", "text": "_TODO: answer accurately. There are two ingestion paths depending on whether the site runs a DCR-supported POS. See the About panel copy for the existing wording." }
+    }
+  ]
+}

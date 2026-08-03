@@ -12,6 +12,28 @@ export default {
       screens: {
         print: { raw: "print" },
         screen: { raw: "screen" },
+        // Public-portal breakpoints, mirroring the design handoff's media
+        // queries exactly. Named rather than written as arbitrary variants so
+        // the intent survives: `portal_stack` is where the two-column layout
+        // collapses, not just "900px".
+        portal_wide: { max: "1320px" }, // art narrows, copy widens
+        portal_mid: { max: "1080px" }, // art falls behind the copy
+        portal_stack: { max: "900px" }, // single column
+        portal_narrow: { max: "460px" }, // phone
+        // Height matters as much as width here: the stage is a full-viewport
+        // layout with fixed vertical offsets, so a short laptop window clips
+        // before a narrow one does.
+        portal_short: { raw: "(max-height: 820px)" },
+        portal_shorter: { raw: "(max-height: 700px)" },
+      },
+      // Public-portal typefaces (see src/fonts.css). The authenticated app
+      // deliberately stays on the default system stack — these are opt-in per
+      // element via font-display / font-body / font-mono, never a global
+      // default, so nothing behind sign-in restyles itself.
+      fontFamily: {
+        display: ['"Plus Jakarta Sans"', "ui-sans-serif", "system-ui", "sans-serif"],
+        body: ['"Inter"', "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ['"IBM Plex Mono"', "ui-monospace", "SFMono-Regular", "monospace"],
       },
       colors: {
         accent: {
@@ -32,6 +54,27 @@ export default {
         filter_active: "rgb(var(--color-filter-active) / <alpha-value>)",
         filter_active_border:
           "rgb(var(--color-filter-active-border) / <alpha-value>)",
+        brand_green: "rgb(var(--color-brand-green) / <alpha-value>)",
+        brand_green_dark:
+          "rgb(var(--color-brand-green-dark) / <alpha-value>)",
+        brand_green_darker:
+          "rgb(var(--color-brand-green-darker) / <alpha-value>)",
+        brand_green_tint:
+          "rgb(var(--color-brand-green-tint) / <alpha-value>)",
+        brand_navy: "rgb(var(--color-brand-navy) / <alpha-value>)",
+        brand_navy_hover:
+          "rgb(var(--color-brand-navy-hover) / <alpha-value>)",
+        brand_slate: "rgb(var(--color-brand-slate) / <alpha-value>)",
+        brand_slate_2: "rgb(var(--color-brand-slate-2) / <alpha-value>)",
+        brand_placeholder:
+          "rgb(var(--color-brand-placeholder) / <alpha-value>)",
+        brand_line: "rgb(var(--color-brand-line) / <alpha-value>)",
+        brand_line_2: "rgb(var(--color-brand-line-2) / <alpha-value>)",
+        brand_paper: "rgb(var(--color-brand-paper) / <alpha-value>)",
+        brand_danger: "rgb(var(--color-brand-danger) / <alpha-value>)",
+        brand_danger_bg: "rgb(var(--color-brand-danger-bg) / <alpha-value>)",
+        brand_danger_line:
+          "rgb(var(--color-brand-danger-line) / <alpha-value>)",
         row_stripe: "rgb(var(--color-row-stripe) / <alpha-value>)",
         severity_critical_bg:
           "rgb(var(--color-severity-critical-bg) / <alpha-value>)",

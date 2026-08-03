@@ -84,6 +84,43 @@ body {
     /* Alternating-row (zebra-stripe) background for dense grids/tables app-
        wide — one place to retune every grid's stripe at once. */
     --color-row-stripe: 236 237 239;
+    /* ── Brand (public portal) ──────────────────────────────────────────
+       From the 2026-07-31 design handoff. Lives here rather than in the
+       login page so there is still exactly one place colour is defined.
+
+       brand-green is the portal's accent — CTAs, rules, eyebrows, focus
+       rings. It is deliberately NOT severity-healthy green: that one grades
+       data, and per the design direction red/green stay reserved for delta
+       flags. Two different jobs, so two different tokens.
+
+       brand-navy is the handoff's #0F2440, a shade deeper than the app
+       chrome's #1e2a4a. Kept distinct rather than collapsed into one so the
+       marketing front door and the authenticated shell can diverge without
+       one silently restyling the other. */
+    --color-brand-green: 30 158 82;
+    --color-brand-green-dark: 23 128 63;
+    /* Darkest green, for text on a tinted fill. Added in the Aug 2026 handoff
+       revision: white on brand-green is only 3.4:1, on green-dark 5.0:1. */
+    --color-brand-green-darker: 17 99 48;
+    --color-brand-green-tint: 234 247 239;
+    --color-brand-navy: 15 36 64;
+    --color-brand-navy-hover: 27 58 99;
+    --color-brand-slate: 90 108 132;
+    /* Small mono labels (timestamps, fact keys, panel footers). The first
+       handoff used #94A3B8 / #8D9CB0 here — measured at 2.5–2.8:1, below the
+       4.5:1 AA floor. The Aug 2026 revision replaced both with this single
+       value. Do not reintroduce the lighter greys. */
+    --color-brand-slate-2: 100 116 139;
+    /* Input placeholders. Was #A3B0C2 at 2.2:1 — the worst offender. */
+    --color-brand-placeholder: 110 127 150;
+    --color-brand-line: 220 229 239;
+    --color-brand-line-2: 200 213 228;
+    --color-brand-paper: 250 252 254;
+    /* Error/validation. Distinct from severity-critical, which grades data —
+       these dress form errors and the Critical marketing chip. */
+    --color-brand-danger: 176 22 57;
+    --color-brand-danger-bg: 253 242 245;
+    --color-brand-danger-line: 245 194 206;
     --color-severity-critical-bg: 235 216 216;
     --color-severity-critical-text: 147 16 16;
     --color-severity-watch-bg: 236 224 205;
