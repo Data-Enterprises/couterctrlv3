@@ -106,6 +106,33 @@ img{max-width:100%;height:auto;border-radius:12px;display:block}
   border-radius:14px}
 .cta-box h2{margin-top:0}
 
+.legal h2{font-size:17px;margin-top:0}
+.legal .num{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--green-d);margin-right:6px}
+.l-sec{margin:28px 0;padding-top:24px;border-top:1px solid var(--line)}
+.notice{font-size:12.5px;line-height:1.6;font-weight:600;color:var(--navy);
+  background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:16px 0}
+.l-list{margin-top:14px}
+.l-list ul{list-style:none;margin:0;padding:0}
+.l-list li{position:relative;font-size:13.8px;line-height:1.6;color:var(--slate);
+  padding:3px 0 3px 16px}
+.l-list li::before{content:"";position:absolute;left:0;top:11px;width:6px;height:6px;
+  border-radius:50%;background:var(--line-2)}
+.l-list.muted li{color:#8494a8}
+.l-list.muted li::before{background:var(--line)}
+.l-block{border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-top:14px}
+.l-block-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:0}
+.badge{flex:none;font-family:"IBM Plex Mono",monospace;font-size:9px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;border-radius:999px;padding:4px 10px;
+  color:var(--green-d);background:var(--green-t);border:1px solid var(--green-t)}
+.badge.no{color:#64748B;background:var(--paper);border-color:var(--line)}
+.l-subs{margin:16px 0 0}
+.l-subs dt{font-weight:700;font-size:13.5px;margin-top:14px}
+.l-subs dd{margin:4px 0 0;font-size:13.8px;line-height:1.6;color:var(--slate)}
+.l-contact{font-style:normal;margin-top:16px;border:1px solid var(--line);
+  border-radius:10px;padding:16px 18px;font-size:13.8px;line-height:1.7;color:var(--slate)}
+.l-copy{margin-top:32px;padding-top:20px;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--slate)}
+
 .site-ft{border-top:1px solid var(--line);background:var(--paper);padding:28px 24px;
   font-size:13.5px;color:var(--slate)}
 .site-ft p{max-width:760px;margin:0 auto 8px}
