@@ -51,6 +51,8 @@ const BLOG_DIR = "field-notes";
 const ARCHIVE = "field-notes.html";
 const ABOUT = "about.html";
 const WALKTHROUGH = "walkthrough.html";
+const TERMS = "terms.html";
+const PRIVACY = "privacy-policy.html";
 
 /** Images for these pages are copied unhashed. Kept out of /assets/ so they
  *  can't be confused with Vite's fingerprinted build output. */
@@ -101,6 +103,19 @@ const plain = (s) => decode(String(s).replace(/<[^>]+>/g, "")).trim();
 const iso = (slug) =>
   (slug.match(/^(\d{4}-\d{2}-\d{2})/) || [])[1] ||
   new Date().toISOString().slice(0, 10);
+
+/** "prohibited_actions" → "Prohibited actions". Both legal documents group
+ *  lists under descriptive keys but supply no lead-in sentence, so a bare list
+ *  reads as orphaned. Title-casing the key names it without inventing legal
+ *  wording. Mirrors shared/legalText.ts on the app side. */
+const listLabel = (k) => k.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
+
+/** A run of prose written entirely in capitals — the convention both documents
+ *  use for the clauses they most want read. */
+const isShouted = (t) => {
+  const letters = String(t).replace(/[^A-Za-z]/g, "");
+  return letters.length > 24 && letters === letters.toUpperCase();
+};
 
 const write = async (path, body) => {
   await mkdir(dirname(path), { recursive: true });
@@ -553,6 +568,186 @@ ${script}`;
   );
 
   track(url, today, "0.9");
+}
+
+/* ---- legal pages ----------------------------------------------------- */
+
+/** Shared renderers for the two legal documents. Both arrive as JSON with
+ *  unlabelled lists and all-caps clauses, and both are rendered verbatim —
+ *  the only text added is a heading per list, derived from its own key. */
+const notice = (t) => `  <p class="notice">${esc(plain(t))}</p>`;
+
+const bullets = (label, items, muted) =>
+  `  <div class="l-list${muted ? " muted" : ""}">
+${label ? `    <p class="kicker">${esc(label)}</p>` : ""}
+    <ul>
+${items.map((i) => `      <li>${esc(plain(i))}</li>`).join("\n")}
+    </ul>
+  </div>`;
+
+const legalPara = (t) =>
+  isShouted(t) ? notice(t) : `  <p>${esc(plain(t))}</p>`;
+
+async function buildTerms() {
+  const doc = JSON.parse(
+    await readFile(join(ROOT, "src/content/terms.json"), "utf8"),
+  );
+  const url = `${BASE}/${TERMS}`;
+  const STRUCTURAL = new Set([
+    "number", "title", "paragraphs", "uppercase_notice", "subsections", "contact",
+  ]);
+
+  const section = (sec) => {
+    const lists = Object.keys(sec).filter(
+      (k) => !STRUCTURAL.has(k) && Array.isArray(sec[k]),
+    );
+    const c = sec.contact;
+    return `<section class="l-sec">
+  <h2><span class="num">${sec.number}.</span> ${esc(plain(sec.title))}</h2>
+${sec.uppercase_notice ? notice(sec.uppercase_notice) : ""}
+${(sec.paragraphs || []).map(legalPara).join("\n")}
+${lists.map((k) => bullets(listLabel(k), sec[k], false)).join("\n")}
+${
+  sec.subsections
+    ? `  <dl class="l-subs">
+${sec.subsections.map((x) => `    <dt><span class="num">(${esc(x.id)})</span> ${esc(plain(x.title))}</dt>\n    <dd>${esc(plain(x.text))}</dd>`).join("\n")}
+  </dl>`
+    : ""
+}
+${
+  c
+    ? `  <address class="l-contact">
+    <strong>${esc(c.legal_name)}</strong><br>${esc(c.brand_name)}<br>
+    ${esc(c.street)}<br>${esc(c.city_state_zip)}<br>
+    Toll free <a href="tel:${c.toll_free.replace(/[^\d+]/g, "")}">${esc(c.toll_free)}</a><br>
+    Local <a href="tel:${c.local.replace(/[^\d+]/g, "")}">${esc(c.local)}</a><br>
+    <a href="mailto:${esc(c.email)}">${esc(c.email)}</a><br>
+    <a href="${esc(c.website)}">${esc(c.website)}</a>
+  </address>`
+    : ""
+}
+</section>`;
+  };
+
+  const body = `
+${nav}
+<main class="legal">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> › <span>${esc(doc.title)}</span></nav>
+  <h1>${esc(doc.title)}</h1>
+  <p class="kicker">Last updated ${esc(doc.last_updated)}</p>
+${doc.introduction.map(legalPara).join("\n")}
+${notice(doc.acceptance_notice)}
+  <p>Your use of the Site is also governed by our <a href="/${PRIVACY}">Privacy Policy</a>.</p>
+${doc.sections.map(section).join("\n")}
+  <p class="l-copy">${esc(plain(doc.copyright))}</p>
+</main>
+${foot}`;
+
+  await write(
+    join(OUT, TERMS),
+    head({
+      title: `${doc.title} — ${SITE}`,
+      description: `${doc.title} governing access to and use of ${SITE}, a product of ${doc.company.legal_name}.`,
+      canonical: url,
+      jsonld: {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: doc.title,
+        url,
+        publisher: orgJsonLd,
+        dateModified: doc.last_updated,
+      },
+    }) + body,
+  );
+
+  track(url, doc.last_updated, "0.3");
+  return doc.sections.length;
+}
+
+async function buildPrivacy() {
+  const doc = JSON.parse(
+    await readFile(join(ROOT, "src/content/privacy.json"), "utf8"),
+  );
+  const url = `${BASE}/${PRIVACY}`;
+  const STRUCTURAL = new Set(["id", "title", "content", "management", "contact"]);
+
+  /** `collected: false` means the examples beneath are things NOT gathered.
+   *  Rendered without that badge the list says the opposite of the document. */
+  const block = (b) => {
+    const title = b.name ?? b.category ?? "";
+    const text = b.description ?? b.reason;
+    const items = b.examples ?? b.uses ?? b.information_collected;
+    const stated = typeof b.collected === "boolean";
+    const no = b.collected === false;
+    return `    <div class="l-block">
+      <p class="l-block-hd"><strong>${esc(plain(title))}</strong>${stated ? `<span class="badge${no ? " no" : ""}">${no ? "Not collected" : "Collected"}</span>` : ""}</p>
+${text ? `      <p>${esc(plain(text))}</p>` : ""}
+${items && items.length ? bullets(null, items, no) : ""}
+    </div>`;
+  };
+
+  const section = (sec) => {
+    const extras = Object.keys(sec).filter(
+      (k) => !STRUCTURAL.has(k) && Array.isArray(sec[k]) && sec[k].length,
+    );
+    const c = sec.contact;
+    return `<section class="l-sec">
+  <h2><span class="num">${sec.id}.</span> ${esc(plain(sec.title))}</h2>
+${(sec.content || []).map(legalPara).join("\n")}
+${extras
+  .map((k) =>
+    typeof sec[k][0] === "string"
+      ? bullets(listLabel(k), sec[k], false)
+      : `  <div class="l-list">
+    <p class="kicker">${esc(listLabel(k))}</p>
+${sec[k].map(block).join("\n")}
+  </div>`,
+  )
+  .join("\n")}
+${sec.management ? `  <p>${esc(plain(sec.management))}</p>` : ""}
+${
+  c
+    ? `  <address class="l-contact">
+    <strong>${esc(c.company)}</strong><br>${esc(c.relationship)}<br>
+    <a href="mailto:${esc(c.email)}">${esc(c.email)}</a><br>
+    <a href="https://${esc(c.website.replace(/^https?:\/\//, ""))}">${esc(c.website)}</a>
+  </address>`
+    : ""
+}
+</section>`;
+  };
+
+  const body = `
+${nav}
+<main class="legal">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> › <span>${esc(doc.title)}</span></nav>
+  <h1>${esc(doc.title)}</h1>
+  <p class="kicker">Last updated ${esc(doc.last_updated)}</p>
+${doc.introduction.map(legalPara).join("\n")}
+${doc.sections.map(section).join("\n")}
+  <p>See also our <a href="/${TERMS}">Terms and Conditions</a>.</p>
+</main>
+${foot}`;
+
+  await write(
+    join(OUT, PRIVACY),
+    head({
+      title: `${doc.title} — ${SITE}`,
+      description: `How ${SITE}, ${doc.company.legal_relationship.toLowerCase()}, collects, uses, stores and shares personal information.`,
+      canonical: url,
+      jsonld: {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: doc.title,
+        url,
+        publisher: orgJsonLd,
+        dateModified: doc.last_updated,
+      },
+    }) + body,
+  );
+
+  track(url, today, "0.3");
+  return doc.sections.length;
 }
 
 /* ---- stylesheet ------------------------------------------------------ */
