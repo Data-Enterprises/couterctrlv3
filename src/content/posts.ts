@@ -2,13 +2,10 @@ import raw from "./posts.json";
 
 /** Field Notes articles.
  *
- *  `posts.json` beside this file is a copy of the Aug 2026 handoff's
- *  `posts.json` — the 333 KB inline `POSTS` array pulled out of the document
- *  (DEV-HANDOFF §2), with its images rewritten to real files.
- *
- *  It lives in src/ deliberately. Importing straight from `counterctrl-handoff/`
- *  would make the app's build depend on a delivery folder that can be deleted
- *  once the port is done. To take new content, overwrite this copy.
+ *  Two sources, on purpose. `posts.json` beside this file ships with the build
+ *  and renders instantly; Login then fetches the bucket's copy and replaces it
+ *  if that succeeds. So a new post published to the bucket appears without a
+ *  deploy, and a failed fetch still leaves a populated panel.
  *
  *  The wire format uses single-letter keys — that array was authored to be
  *  small, not readable. They are expanded once here so no component ever has
@@ -39,13 +36,14 @@ export interface Post {
   body: string[];
 }
 
-/* Vite resolves and fingerprints every hero at build time. A glob keeps this
-   to one line instead of 13 imports, and a post referencing a missing file
-   surfaces as a null hero rather than a broken <img>.
+/* Hero images are still bundled, matched to a post by filename. The bucket's
+   `im` values are serving paths (/assets/post-*.webp) rather than URLs, so
+   only the filename is meaningful — the bundler decides the real URL.
 
-   The JSON's `im` is an absolute serving path (/assets/post-*.webp) from the
-   static build, so only the filename is meaningful here — the bundler decides
-   the real URL. */
+   This is the one piece of blog content the build still carries. Once the 13
+   images are in the bucket and `im` carries a full URL, the branch below
+   short-circuits and this glob can go. A post whose image isn't bundled gets
+   a null hero and renders without art, rather than a broken <img>. */
 const HEROES = import.meta.glob<string>("../assets/portal/blog/*.webp", {
   eager: true,
   import: "default",
@@ -53,13 +51,15 @@ const HEROES = import.meta.glob<string>("../assets/portal/blog/*.webp", {
 
 const heroUrl = (im: string | undefined): string | null => {
   if (!im) return null;
+  // Once images move to the bucket, `im` arrives as a full URL — use it as-is.
+  if (/^https?:\/\//i.test(im)) return im;
   const file = im.split("/").pop();
   if (!file) return null;
   const match = Object.entries(HEROES).find(([path]) => path.endsWith(`/${file}`));
   return match ? match[1] : null;
 };
 
-export const POSTS: Post[] = (raw as RawPost[]).map((p) => ({
+const expand = (p: RawPost): Post => ({
   slug: p.s,
   title: p.t,
   dek: p.k,
@@ -68,13 +68,39 @@ export const POSTS: Post[] = (raw as RawPost[]).map((p) => ({
   date: p.d,
   hero: heroUrl(p.im),
   body: p.b,
-}));
+});
+
+/** The copy that ships with the build. Rendered immediately, then replaced if
+ *  the bucket fetch succeeds — so the panel is never empty. */
+export const POSTS: Post[] = (raw as RawPost[]).map(expand);
+
+const isRawPost = (v: unknown): v is RawPost => {
+  const p = v as RawPost;
+  return (
+    !!p && typeof p.s === "string" && typeof p.t === "string" && Array.isArray(p.b)
+  );
+};
+
+/** Normalise the bucket's `posts.json` into `Post[]`.
+ *
+ *  Deliberately tolerant: it accepts a bare array or `{ posts: [...] }`, and
+ *  skips entries missing the fields the panel reads rather than rendering a
+ *  broken row. `[]` means nothing usable came back, which the caller surfaces
+ *  as the empty state. */
+export const toPosts = (data: unknown): Post[] => {
+  const arr: unknown[] = Array.isArray(data)
+    ? data
+    : Array.isArray((data as { posts?: unknown } | null)?.posts)
+      ? (data as { posts: unknown[] }).posts
+      : [];
+  return arr.filter(isRawPost).map(expand);
+};
 
 /** Posts are newest-first, so the *newer* neighbour is the LOWER index and the
  *  *older* one is higher. The static build inlined this as `POSTS[n-1]` /
  *  `POSTS[n+1]`, which reads backwards at a glance and is easy to invert —
  *  hence naming it once here instead of at each call site. */
-export const neighbours = (index: number) => ({
-  newer: index > 0 ? POSTS[index - 1] : undefined,
-  older: index < POSTS.length - 1 ? POSTS[index + 1] : undefined,
+export const neighbours = (posts: Post[], index: number) => ({
+  newer: index > 0 ? posts[index - 1] : undefined,
+  older: index < posts.length - 1 ? posts[index + 1] : undefined,
 });

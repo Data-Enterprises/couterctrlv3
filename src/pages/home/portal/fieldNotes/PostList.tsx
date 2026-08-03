@@ -1,6 +1,7 @@
-import { POSTS, type Post } from "../../../../content/posts";
+import { type Post } from "../../../../content/posts";
 
 interface Props {
+  posts: Post[];
   onSelect: (post: Post, index: number) => void;
 }
 
@@ -9,9 +10,9 @@ interface Props {
  *  Posts with artwork get an 82x60 thumbnail and lay out horizontally; the
  *  four without one fall back to a plain stacked row, matching `.note-item`
  *  vs `.note-item.has-im` in the static build. */
-const PostList = ({ onSelect }: Props) => (
+const PostList = ({ posts, onSelect }: Props) => (
   <div>
-    {POSTS.map((post, i) => (
+    {posts.map((post, i) => (
       <button
         key={post.slug}
         onClick={() => onSelect(post, i)}

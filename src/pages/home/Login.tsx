@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { login } from "../../api/login";
@@ -33,8 +33,16 @@ import Stage from "./portal/Stage";
 import AboutPanel from "./portal/about/AboutPanel";
 import FieldNotesPanel from "./portal/fieldNotes/FieldNotesPanel";
 import WalkthroughPanel from "./portal/walkthrough/WalkthroughPanel";
+import { getBlogs, getBlogFile } from "../../api/portal";
+import { POSTS, toPosts, type Post } from "../../content/posts";
 
-const VERSION = "CounterCtrl Cloud · v2026.08";
+const VERSION = "CounterCtrl Cloud · Last updated 8/3/2026 @ 1:35 PM CST";
+
+/** PLACEHOLDER: `/html_pages/` only exists on the dev API today, and this page
+ *  runs before sign-in — `context.url` is always VITE_API_URL_PROD here, since
+ *  devMode can't be toggled until a session exists. Swap this for `context.url`
+ *  once the endpoint ships to prod. */
+const BLOG_API = import.meta.env.VITE_API_URL_DEV;
 
 /**
  * Public portal — sign-in rail plus the marketing stage, per the 2026-07-31
@@ -72,6 +80,35 @@ const Login = () => {
     dispatch(setIsTablet(isTablet));
     dispatch(setIsDesktop(!isMobile && !isTablet));
   }, []);
+
+  /** Field Notes content. Starts as the copy bundled with the build so the
+   *  panel is populated the instant it opens, then swaps to the bucket's copy
+   *  if that fetch succeeds — a new post appears without a deploy, and a
+   *  failure leaves the panel intact rather than empty.
+   *
+   *  Fetched on first open rather than on mount, per DEV-HANDOFF §2 — most
+   *  visitors here are signing in and never open the panel, and this payload
+   *  has no business on the login page's critical path. */
+  const [posts, setPosts] = useState<Post[]>(POSTS);
+  const blogsRequested = useRef(false);
+
+  const loadBlogs = () => {
+    if (blogsRequested.current) return;
+    blogsRequested.current = true;
+    // Two hops: the endpoint lists the bucket's objects and their public URLs,
+    // then the content is fetched from S3 directly. Returning the inner promise
+    // keeps both hops inside the one catch below.
+    getBlogs(BLOG_API)
+      .then((resp) => {
+        const file = resp.data?.files?.find((f) => f.filename === "posts.json");
+        if (!file) return;
+        return getBlogFile(file.url).then((r) => {
+          const incoming = toPosts(r.data);
+          if (incoming.length) setPosts(incoming);
+        });
+      })
+      .catch(() => { /* bundled copy stands; never blank out the panel */ });
+  };
 
   /** Sign-in failures now render in the rail's alert region rather than a
    *  toast — a locked-out user needs the reason to persist while they retype. */
@@ -163,8 +200,10 @@ const Login = () => {
   const handleNavigate = (key: string, trigger: HTMLElement) => {
     setPanelTrigger(trigger);
     if (key === "about") setPanel("about");
-    else if (key === "notes") setPanel("notes");
-    else if (key === "demo") setPanel("demo");
+    else if (key === "notes") {
+      loadBlogs();
+      setPanel("notes");
+    } else if (key === "demo") setPanel("demo");
   };
 
   return (
@@ -199,6 +238,7 @@ const Login = () => {
       />
 
       <FieldNotesPanel
+        posts={posts}
         open={panel === "notes"}
         onClose={() => setPanel(null)}
         returnFocusTo={panelTrigger}

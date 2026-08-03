@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import PortalPanel from "../shared/PortalPanel";
 import PostList from "./PostList";
 import ArticleView from "./ArticleView";
-import { POSTS, neighbours, type Post } from "../../../../content/posts";
+import { neighbours, type Post } from "../../../../content/posts";
 
 interface Props {
+  /** Owned by Login — the bundled copy until the bucket fetch replaces it. */
+  posts: Post[];
   open: boolean;
   onClose: () => void;
   returnFocusTo?: HTMLElement | null;
@@ -22,12 +24,14 @@ interface Props {
  *   - the body scrolls back to top on every mode change
  *   - closing resets to the list, so reopening never lands mid-article
  */
-const FieldNotesPanel = ({ open, onClose, returnFocusTo }: Props) => {
+const FieldNotesPanel = ({ posts, open, onClose, returnFocusTo }: Props) => {
   const [reading, setReading] = useState<number | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
 
-  const post: Post | null = reading === null ? null : POSTS[reading];
-  const { newer, older } = neighbours(reading ?? 0);
+  // `posts` can be swapped out by the fetch while an article is open, so the
+  // index may no longer resolve — fall back to the list rather than crash.
+  const post: Post | null = reading === null ? null : (posts[reading] ?? null);
+  const { newer, older } = neighbours(posts, reading ?? 0);
 
   // Match the static build: `closeNotes()` calls `renderList()`, so the panel
   // is always back at the index next time it opens.
@@ -96,7 +100,7 @@ const FieldNotesPanel = ({ open, onClose, returnFocusTo }: Props) => {
             }
           />
         ) : (
-          <PostList onSelect={(_p, i) => setReading(i)} />
+          <PostList posts={posts} onSelect={(_p, i) => setReading(i)} />
         )}
       </div>
     </PortalPanel>

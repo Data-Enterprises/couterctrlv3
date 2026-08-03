@@ -1,4 +1,3 @@
-import { useAppSelector } from "../../../../hooks";
 import { requestWalkthrough } from "../../../../api/portal";
 import PortalPanel from "../shared/PortalPanel";
 import PortalForm, { type PortalFormValues } from "../shared/PortalForm";
@@ -12,10 +11,8 @@ interface Props {
 }
 
 const WalkthroughPanel = ({ open, onClose, returnFocusTo }: Props) => {
-  const url = useAppSelector((s) => s.app.url);
-
   const submit = async (v: PortalFormValues) => {
-    await requestWalkthrough(url, {
+    await requestWalkthrough(import.meta.env.VITE_API_URL_DEV, {
       name: v.name,
       company: v.company,
       email: v.email,
