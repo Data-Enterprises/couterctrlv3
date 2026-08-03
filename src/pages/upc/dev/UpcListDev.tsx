@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useUpcDevCtx } from "./hooks/useUpcDevCtx";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -29,6 +29,15 @@ const UpcListDev = () => {
   const toast = useToast();
   const searchState = useAppSelector((s) => s.search);
   const [reSearchOpen, setReSearchOpen] = useState(false);
+
+  useEffect(() => {
+    if (!reSearchOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setReSearchOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [reSearchOpen]);
 
   const resolveStoreids = async (): Promise<string | null> => {
     if (searchState.type === "Store") {
@@ -163,11 +172,17 @@ const UpcListDev = () => {
 
       {reSearchOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/40"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
           onClick={() => setReSearchOpen(false)}
         >
-          <div onClick={(e) => e.stopPropagation()}>
-            <UpcSearchCard onSearch={handleSearch} />
+          {/* Wrapper only shrink-wraps the card — the backdrop does the
+              centering. If this spanned the viewport its stopPropagation
+              would eat every backdrop click. Matches SmDevSearchOverlay. */}
+          <div className="mx-4" onClick={(e) => e.stopPropagation()}>
+            <UpcSearchCard
+              onSearch={handleSearch}
+              onClose={() => setReSearchOpen(false)}
+            />
           </div>
         </div>
       )}

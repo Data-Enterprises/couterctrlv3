@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo, Fragment } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import {
   MagnifyingGlassIcon,
   MinusCircleIcon,
@@ -14,6 +14,7 @@ import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
 import { calculateCogs, getLYDate } from "../..";
+import { severityDotClass } from "../../../../utils/severity";
 import { formatCurrency2, addDays } from "../../../../utils";
 import type { SubDeptMargin } from "../../../../interfaces";
 import type { GradingMetric } from "../../../../features/subMarginSlice";
@@ -490,28 +491,6 @@ const dayTrend = (val: DayOfWeekValue): number | null => {
   return null;
 };
 
-const bestWorstDay = (
-  dayOfWeek: Record<string, DayOfWeekValue>,
-): { best: string | null; worst: string | null } => {
-  let best: string | null = null;
-  let worst: string | null = null;
-  let bestPct = -Infinity;
-  let worstPct = Infinity;
-  for (const wd of WEEKDAY_ORDER) {
-    const pct = dayTrend(dayOfWeek[wd]);
-    if (pct === null) continue;
-    if (pct > bestPct) {
-      bestPct = pct;
-      best = wd;
-    }
-    if (pct < worstPct) {
-      worstPct = pct;
-      worst = wd;
-    }
-  }
-  return { best, worst };
-};
-
 // A metric's change counts as "flat" (muted, not colored) below this
 // magnitude — mirrors the reference mock's flat-vs-colored delta treatment.
 const FLAT_PTS_EPSILON = 0.15;
@@ -650,6 +629,19 @@ const SEV_PILL_CLASSES: Record<Severity, string> = {
 // One graded cell in the report-card table — a metric's change vs one
 // period, rendered as a Crit/Watch/OK pill same as the item's overall
 // severity, so the table reads like a set of subject grades.
+// Severity colouring for every delta in the card. Colour-only, no pill: the
+// row already carries a severity dot, and pills repeated across the lead card,
+// the supporting table and six day rows added far more colour than signal.
+const deltaTextClass = (pct: number, threshold: number) =>
+  pct < -threshold
+    ? "text-severity_critical_text"
+    : pct < 0
+      ? "text-severity_watch_text"
+      : "text-severity_healthy_text";
+
+const fmtDelta = (pct: number, isPts: boolean) =>
+  `${pct >= 0 ? "+" : ""}${pct.toFixed(isPts ? 2 : 0)}${isPts ? "pt" : "%"}`;
+
 const GradeCell = ({
   pct,
   threshold,
@@ -660,16 +652,10 @@ const GradeCell = ({
   isPts: boolean;
 }) => {
   if (pct === null)
-    return (
-      <span className="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">
-        —
-      </span>
-    );
-  const sev: GradedSeverity =
-    pct < -threshold ? "critical" : pct < 0 ? "watch" : "healthy";
+    return <span className="text-[13px] font-semibold text-gray-400">—</span>;
   return (
     <span
-      className={`text-[10.5px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${SEV_PILL_CLASSES[sev]}`}
+      className={`text-[13px] font-semibold whitespace-nowrap ${deltaTextClass(pct, threshold)}`}
     >
       {isPts
         ? `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}pt`
@@ -852,13 +838,6 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
         ? buildItemDetail(selectedUpc, tyMargins, lwMargins, lyMargins)
         : null,
     [selectedUpc, tyMargins, lwMargins, lyMargins],
-  );
-  const bestWorst = useMemo(
-    () =>
-      selectedDetail
-        ? bestWorstDay(selectedDetail.dayOfWeek)
-        : { best: null, worst: null },
-    [selectedDetail],
   );
   const selectedInsight = useMemo(
     () =>
@@ -1054,6 +1033,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
         };
       });
 
+
   return (
     <>
       <div
@@ -1063,7 +1043,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
         {/* ── Left: item list ── */}
         <div
           className="flex flex-col border-r border-gray-100 min-w-0"
-          style={{ width: "50%", flexShrink: 0 }}
+          style={{ width: "47%", flexShrink: 0 }}
         >
           {/* Severity chips + threshold + view */}
           <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border-b border-gray-100 flex-shrink-0">
@@ -1387,159 +1367,217 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
                 </div>
               )}
 
+              {/* Metric cards. reportRows is already ordered by the active
+                  grading metric, so [0] is whatever the page is grading on —
+                  it takes the tinted lead card and the rest support it. A flat
+                  2x2 gave qty the same weight as margin, which is wrong on a
+                  page about margin. */}
               <div className="px-4 py-2.5 border-b border-gray-100">
-                <div className="grid gap-2 items-center grid-cols-[5%_30%_30%_30%]">
-                  <span />
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-content text-right">
-                    This year
-                  </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-content text-right">
-                    vs LW
-                  </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-content text-right">
-                    vs LY
-                  </span>
-
-                  {reportRows.map((row) => (
-                    <Fragment key={row.key}>
-                      <span className="text-[12px] font-semibold text-content py-1 border-t border-gray-100">
-                        {row.label}
-                      </span>
-                      <span className="text-[12px] font-medium text-content text-right py-1 border-t border-gray-100">
-                        {row.ty}
-                      </span>
-                      <div className="flex items-center justify-end gap-1 py-1 border-t border-gray-100">
-                        <span className="text-[12px] text-content font-medium whitespace-nowrap">
-                          {row.lwDisplay ?? "—"}
-                        </span>
-                        <GradeCell
-                          pct={row.lw}
-                          threshold={thresholdAmt}
-                          isPts={row.isPts}
-                        />
+                {/* 40/60 rather than an even split — the supporting table has
+                    four columns to fit and the lead card only needs room for
+                    one number. */}
+                <div className="grid grid-cols-[40%_1fr] gap-2">
+                  {reportRows.length > 0 && (
+                    <div className="rounded-md border border-[#1e2a4a]/15 shadow-sm bg-gray-50 p-2.5 text-center flex flex-col justify-center">
+                      <div className="text-[11px] font-semibold text-content">
+                        {reportRows[0].label}
                       </div>
-                      <div className="flex items-center justify-end gap-1 py-1 border-t border-gray-100">
-                        <span className="text-[12px] text-content font-medium whitespace-nowrap">
-                          {row.lyDisplay ?? "—"}
-                        </span>
-                        <GradeCell
-                          pct={row.ly}
-                          threshold={thresholdAmt}
-                          isPts={row.isPts}
-                        />
+                      <div className="text-[18px] font-semibold text-content leading-tight">
+                        {reportRows[0].ty}
                       </div>
-                    </Fragment>
-                  ))}
-                </div>
+                      <div className="grid grid-cols-2 gap-1.5 mt-1.5 pt-1.5 border-t border-gray-200">
+                        {(["lw", "ly"] as const).map((side) => (
+                          <div key={side}>
+                            <div className="text-[11px] font-semibold uppercase tracking-wide text-content">
+                              vs {side === "lw" ? "LW" : "LY"}
+                            </div>
+                            <div className="text-[12px] font-semibold text-content">
+                              {(side === "lw"
+                                ? reportRows[0].lwDisplay
+                                : reportRows[0].lyDisplay) ?? "—"}
+                            </div>
+                            <div className="flex justify-center mt-0.5">
+                              <GradeCell
+                                pct={
+                                  side === "lw"
+                                    ? reportRows[0].lw
+                                    : reportRows[0].ly
+                                }
+                                threshold={thresholdAmt}
+                                isPts={reportRows[0].isPts}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100">
-                  <span
-                    className={`text-[12px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${
-                      selectedItem.tyMarginPct > 0
-                        ? "bg-severity_healthy_bg text-severity_healthy_text"
-                        : selectedItem.tyMarginPct < 0
-                          ? "bg-severity_critical_bg text-severity_critical_text"
-                          : "bg-severity_watch_bg text-severity_watch_text"
-                    }`}
-                  >
-                    {selectedItem.tyMarginPct > 0
-                      ? "Still profitable"
-                      : selectedItem.tyMarginPct < 0
-                        ? "Losing money"
-                        : "Break-even"}
-                  </span>
-                  <span className="text-[12.5px] text-content">
-                    {selectedItem.tyMarginPct.toFixed(2)}% margin
-                    {(ptsDelta(
-                      selectedItem.tyMarginPct,
-                      selectedItem.lwMarginPct,
-                    ) ?? 0) < 0 ||
-                    (ptsDelta(
-                      selectedItem.tyMarginPct,
-                      selectedItem.lyMarginPct,
-                    ) ?? 0) < 0
-                      ? ", trending down"
-                      : ""}
-                  </span>
+                  {/* Supporting metrics share one set of column headers.
+                      Three separate tiles repeated "LW"/"LY" six times and
+                      broke the vertical delta scan the original table had —
+                      the lead metric earns a self-contained card, these earn
+                      being comparable to each other. Prior values live in the
+                      title attribute; the lead card still shows them inline. */}
+                  <div className="rounded-md border border-[#1e2a4a]/15 shadow-sm bg-gray-50 px-2.5 py-1 flex flex-col justify-center">
+                    <div className="grid grid-cols-[1fr_56px_55px_55px] gap-1.5 pb-0.5 text-[11px] font-semibold uppercase tracking-wide text-content">
+                      <span />
+                      <span className="text-right">TY</span>
+                      <span className="text-right">LW</span>
+                      <span className="text-right">LY</span>
+                    </div>
+                    {reportRows.slice(1).map((row) => (
+                      <div
+                        key={row.key}
+                        className="grid grid-cols-[1fr_56px_55px_55px] gap-1.5 items-center py-1 border-t border-gray-200 text-[11.5px]"
+                      >
+                        <span className="font-semibold text-content truncate">
+                          {row.label}
+                        </span>
+                        <span className="text-[12px] font-semibold text-content text-right">
+                          {row.ty}
+                        </span>
+                        <span
+                          title={`Last week: ${row.lwDisplay ?? "no data"}`}
+                          className={`text-[12px] text-right font-semibold ${
+                            row.lw !== null
+                              ? deltaTextClass(row.lw, thresholdAmt)
+                              : "text-content"
+                          }`}
+                        >
+                          {row.lw !== null ? fmtDelta(row.lw, row.isPts) : "—"}
+                        </span>
+                        <span
+                          title={`Last year: ${row.lyDisplay ?? "no data"}`}
+                          className={`text-[12px] text-right font-semibold ${
+                            row.ly !== null
+                              ? deltaTextClass(row.ly, thresholdAmt)
+                              : "text-content"
+                          }`}
+                        >
+                          {row.ly !== null ? fmtDelta(row.ly, row.isPts) : "—"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
+              <div className="border-t border-[#1e2a4a]/15 shadow-sm mx-4" />
 
               {selectedDetail && (
                 <div className="px-4 py-2.5">
-                  <div className="text-[9px] font-semibold uppercase tracking-wide text-content mb-1.5">
-                    Day trend
+                  {/* Day trend, ranked worst-first — the same ordering every
+                      other list on this page uses. Ranking is why there's no
+                      "best day / worst day" caption underneath any more: the
+                      order is the answer. Both baselines are shown rather than
+                      one silently-chosen delta. */}
+                  <div className="grid grid-cols-[10px_34px_1fr_58px_68px_68px] gap-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-content">
+                    <span />
+                    <span>Day</span>
+                    <span />
+                    <span className="text-right">TY</span>
+                    <span className="text-right">vs LW</span>
+                    <span className="text-right">vs LY</span>
                   </div>
-                  <div className="grid grid-cols-4 gap-2">
-                    {WEEKDAY_ORDER.map((wd) => {
-                      const val = selectedDetail.dayOfWeek[wd];
-                      if (val.ty === null) {
-                        return (
-                          <div
-                            key={wd}
-                            className="text-center rounded-md px-2 py-1.5 border bg-gray-50 border-gray-200"
-                          >
-                            <div className="text-[10px] text-content mb-1">
-                              {wd}
+                  {(() => {
+                    const pctOf = (ty: number, ref: number | null) =>
+                      ref !== null && ref > 0 ? ((ty - ref) / ref) * 100 : null;
+
+                    const sold = WEEKDAY_ORDER.filter(
+                      (wd) => selectedDetail.dayOfWeek[wd].ty !== null,
+                    ).map((wd) => {
+                      const v = selectedDetail.dayOfWeek[wd];
+                      return {
+                        wd,
+                        ty: v.ty as number,
+                        lw: pctOf(v.ty as number, v.lw),
+                        ly: pctOf(v.ty as number, v.ly),
+                        rank: dayTrend(v),
+                      };
+                    });
+                    const quiet = WEEKDAY_ORDER.filter(
+                      (wd) => selectedDetail.dayOfWeek[wd].ty === null,
+                    );
+
+                    // Worst first; days with no baseline at all sort last —
+                    // unknown isn't the same as bad.
+                    const ranked = [...sold].sort((a, b) => {
+                      if (a.rank === null && b.rank === null)
+                        return b.ty - a.ty;
+                      if (a.rank === null) return 1;
+                      if (b.rank === null) return -1;
+                      return a.rank - b.rank;
+                    });
+                    const maxTy = Math.max(...sold.map((d) => d.ty), 0);
+
+                    return (
+                      <>
+                        {ranked.map((d) => {
+                          const sev: GradedSeverity | null =
+                            d.rank === null
+                              ? null
+                              : d.rank < -thresholdAmt
+                                ? "critical"
+                                : d.rank < 0
+                                  ? "watch"
+                                  : "healthy";
+                          return (
+                            <div
+                              key={d.wd}
+                              className="grid grid-cols-[10px_34px_1fr_58px_68px_68px] gap-2 items-center py-1 border-t border-gray-100"
+                            >
+                              <span
+                                className={`w-2 h-2 rounded-full ${
+                                  sev === null
+                                    ? "bg-gray-300"
+                                    : severityDotClass[sev]
+                                }`}
+                              />
+                              <span className="text-[12px] font-semibold text-content">
+                                {d.wd}
+                              </span>
+                              {/* Neutral track so every row shares a visible
+                                  100% reference — without it the bars float in
+                                  an unbounded column and you have to hunt for
+                                  the longest one to read the scale. The fill
+                                  stays neutral too: length carries dollars, and
+                                  the dot is the only thing asserting a grade. */}
+                              <span className="h-[12px] w-full rounded-full bg-[#1e2a4a]/15 block overflow-hidden">
+                                <span
+                                  className="h-full rounded-full bg-[#1e2a4a]/85 block"
+                                  style={{
+                                    width: `${maxTy > 0 ? (d.ty / maxTy) * 100 : 0}%`,
+                                  }}
+                                />
+                              </span>
+                              <span className="text-[12px] font-semibold text-content text-right">
+                                {formatCurrency2(d.ty)}
+                              </span>
+                              <span className="flex justify-end">
+                                <GradeCell
+                                  pct={d.lw}
+                                  threshold={thresholdAmt}
+                                  isPts={false}
+                                />
+                              </span>
+                              <span className="flex justify-end">
+                                <GradeCell
+                                  pct={d.ly}
+                                  threshold={thresholdAmt}
+                                  isPts={false}
+                                />
+                              </span>
                             </div>
-                            <div className="text-[13px] text-content">—</div>
+                          );
+                        })}
+                        {quiet.length > 0 && (
+                          <div className="py-1.5 border-t border-gray-100 text-[12px] font-medium text-content">
+                            {quiet.join(", ")} — no sales
                           </div>
-                        );
-                      }
-                      const pct = dayTrend(val);
-                      const isBest = wd === bestWorst.best;
-                      const isWorst =
-                        wd === bestWorst.worst &&
-                        bestWorst.worst !== bestWorst.best;
-                      const flat =
-                        pct !== null && Math.abs(pct) < FLAT_PCT_EPSILON;
-                      return (
-                        <div
-                          key={wd}
-                          className={`text-center rounded-md px-2 py-2 border ${
-                            isBest
-                              ? "bg-severity_healthy_bg border-severity_healthy_text/40"
-                              : isWorst
-                                ? "bg-severity_critical_bg border-severity_critical_text/40"
-                                : "bg-gray-50 border-gray-200"
-                          }`}
-                        >
-                          <div className="text-[10px] text-content mb-1">
-                            {wd}
-                          </div>
-                          <div className="text-[13px] font-semibold text-content">
-                            {formatCurrency2(val.ty)}
-                          </div>
-                          <div
-                            className="text-[10.5px] font-medium text-content mt-0.5"
-                            style={
-                              pct !== null && !flat
-                                ? { color: pct >= 0 ? "#16a34a" : "#ef4444" }
-                                : undefined
-                            }
-                          >
-                            {pct === null
-                              ? "—"
-                              : flat
-                                ? "flat"
-                                : `${pct >= 0 ? "+" : ""}${pct.toFixed(0)}%`}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {(bestWorst.best ||
-                    (bestWorst.worst &&
-                      bestWorst.worst !== bestWorst.best)) && (
-                    <div className="flex gap-4 mt-2 text-[10.5px] text-content">
-                      {bestWorst.best && (
-                        <span>Best day — {bestWorst.best}</span>
-                      )}
-                      {bestWorst.worst &&
-                        bestWorst.worst !== bestWorst.best && (
-                          <span>Worst day — {bestWorst.worst}</span>
                         )}
-                    </div>
-                  )}
+                      </>
+                    );
+                  })()}
                 </div>
               )}
             </>

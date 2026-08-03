@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { XMarkIcon } from "@heroicons/react/20/solid";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../hooks";
 import {
@@ -16,6 +17,12 @@ import DatePickers from "../../../../components/datePickers/DatePickers";
 
 interface Props {
   onSearch: () => void;
+  /** Passed only when the card is a re-search overlay, not the full-page
+   *  landing state. Two effects: it shows a close button, and it drops the
+   *  card's own full-viewport centering — that centering is what made the
+   *  overlay untappable, since the wrapper covering the whole screen
+   *  swallowed every backdrop click. In overlay mode the backdrop centers. */
+  onClose?: () => void;
 }
 
 const parseUpcs = (text: string): string[] =>
@@ -24,7 +31,7 @@ const parseUpcs = (text: string): string[] =>
     .map((u) => u.trim())
     .filter((u) => u.length > 0 && /^\d+$/.test(u));
 
-const UpcSearchCard = ({ onSearch }: Props) => {
+const UpcSearchCard = ({ onSearch, onClose }: Props) => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
   const toast = useToast();
@@ -59,15 +66,32 @@ const UpcSearchCard = ({ onSearch }: Props) => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-3rem)] overflow-hidden mx-4 pb-12 md:pb-8">
+    <div
+      className={
+        onClose
+          ? "w-full max-w-sm"
+          : "flex items-center justify-center min-h-[calc(100vh-3rem)] overflow-hidden mx-4 pb-12 md:pb-8"
+      }
+    >
       <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-2">
 
         {/* title */}
-        <div>
-          <h2 className="text-base font-semibold text-content">UPC List</h2>
-          <p className="text-[12px] text-content/85">
-            Sales comp · Forecast · Price opt · Trend · Association
-          </p>
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <h2 className="text-base font-semibold text-content">UPC List</h2>
+            <p className="text-[12px] text-content/85">
+              Sales comp · Forecast · Price opt · Trend · Association
+            </p>
+          </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              aria-label="Close search"
+              className="flex-shrink-0 -mt-1 -mr-1 p-1 rounded text-content/60 hover:text-content hover:bg-[#1e2a4a]/10 transition-colors"
+            >
+              <XMarkIcon className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         {/* landing tab */}

@@ -69,8 +69,18 @@ body {
     /* The main theme for now... */
     --color-bkg: 228 233 239;
     --color-custom-white: 244 247 248;
+    /* Row selection — the neutral highlight used by grids and lists app-wide. */
     --color-row-selected: 239 241 242;
     --color-row-selected-border: 138 155 176;
+    /* "This filter is narrowing the list" — deliberately louder than
+       row-selected, because an empty filter and an applied one have to be
+       told apart at a glance or a shortened list reads as "no data". Blue-600
+       based rather than navy, which sits too close to the body text to
+       register as a highlight; the fill is a light tint so text-content stays
+       legible on top, and the border is blue-600 itself, the same blue every
+       selection glow in the app already uses (rgba(37,99,235,...)). */
+    --color-filter-active: 219 234 254;
+    --color-filter-active-border: 37 99 235;
     /* Alternating-row (zebra-stripe) background for dense grids/tables app-
        wide — one place to retune every grid's stripe at once. */
     --color-row-stripe: 236 237 239;

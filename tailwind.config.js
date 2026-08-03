@@ -29,6 +29,9 @@ export default {
         row_selected: "rgb(var(--color-row-selected) / <alpha-value>)",
         row_selected_border:
           "rgb(var(--color-row-selected-border) / <alpha-value>)",
+        filter_active: "rgb(var(--color-filter-active) / <alpha-value>)",
+        filter_active_border:
+          "rgb(var(--color-filter-active-border) / <alpha-value>)",
         row_stripe: "rgb(var(--color-row-stripe) / <alpha-value>)",
         severity_critical_bg:
           "rgb(var(--color-severity-critical-bg) / <alpha-value>)",
