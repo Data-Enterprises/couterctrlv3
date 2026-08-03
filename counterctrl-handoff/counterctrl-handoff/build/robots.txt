@@ -1,8 +1,0 @@
-User-agent: *
-Allow: /
-
-# the login page has no search value and shouldn't compete with the marketing home
-Disallow: /login
-Disallow: /api/
-
-Sitemap: https://counterctrl.cloud/sitemap.xml

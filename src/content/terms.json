@@ -1,0 +1,445 @@
+{
+  "document_type": "terms_and_conditions",
+  "title": "Terms and Conditions",
+  "last_updated": "2026-08-03",
+  "company": {
+    "legal_name": "Data Enterprises, Inc.",
+    "brand_name": "CounterCtrl Cloud",
+    "website": "https://www.counterctrlcloud.com/",
+    "address": {
+      "street": "942 Woodland Street",
+      "city": "Nashville",
+      "state": "TN",
+      "postal_code": "37206",
+      "country": "United States"
+    },
+    "phone": {
+      "toll_free": "1-888-429-4493",
+      "local": "(615) 227-6978"
+    },
+    "email": "webinfo@dcrpos.com"
+  },
+  "privacy_policy_url": "https://www.counterctrlcloud.com/privacy-policy/",
+  "introduction": [
+    "Data Enterprises, Inc. (Company, DCR, we, us or our) is pleased you have visited our CounterCtrl Cloud website at https://www.counterctrlcloud.com/ (the Site).",
+    "CounterCtrl Cloud is a product and service owned and operated by Data Enterprises, Inc.",
+    "This Terms and Conditions Agreement (the Agreement) specifies the terms and conditions governing access to and use of the Site and any other websites, applications, platforms, tools, mobile sites or mobile applications where this Agreement appears or is linked, including access to CounterCtrl Cloud services.",
+    "By accessing or using the Site or providing information to us, whether through correspondence, the Site or another method, you accept and agree to be bound by this Agreement.",
+    "When using the Site or CounterCtrl Cloud services, you may also be subject to posted guidelines, policies, subscription agreements or rules applicable to those services, which may be posted or modified from time to time (Additional Terms). All Additional Terms are incorporated into this Agreement by reference."
+  ],
+  "acceptance_notice": "PLEASE REVIEW THIS AGREEMENT CAREFULLY. ACCESSING OR USING THE SITE CONSTITUTES ACCEPTANCE OF THIS AGREEMENT. IF YOU DO NOT AGREE WITH THIS AGREEMENT OR OUR PRACTICES, PLEASE DO NOT USE THE SITE.",
+  "sections": [
+    {
+      "number": 1,
+      "title": "Modifications",
+      "paragraphs": [
+        "This Agreement was published on the Last Updated date shown above.",
+        "We may change this Agreement from time to time by updating this page. Unless otherwise stated, modifications will become effective when posted.",
+        "Please review this Agreement periodically to determine whether changes have been made. Your continued use of the Site following the posting of changes constitutes acceptance of the updated Agreement."
+      ]
+    },
+    {
+      "number": 2,
+      "title": "Discontinuation or Suspension of the Site",
+      "paragraphs": [
+        "We may, at any time and without liability, modify, suspend or discontinue, temporarily or permanently, all or any portion of the Site, including access through third-party links, with or without notice.",
+        "Subscription services and paid CounterCtrl Cloud services may also be governed by a separate order form, subscription agreement, service agreement or statement of work."
+      ],
+      "items": [
+        "Add, modify or waive fees associated with our services",
+        "Offer certain features or opportunities to some or all users",
+        "Modify, remove or discontinue content, links, pages, tools or services",
+        "Restrict or refuse access to the Site or services"
+      ]
+    },
+    {
+      "number": 3,
+      "title": "Intended Audience",
+      "paragraphs": [
+        "The Site is intended for adults and authorized business users only.",
+        "The Site is not intended for children under the age of 18."
+      ]
+    },
+    {
+      "number": 4,
+      "title": "Privacy",
+      "paragraphs": [
+        "Your use of the Site is also governed by the CounterCtrl Cloud Privacy Policy.",
+        "Please review the Privacy Policy at https://www.counterctrlcloud.com/privacy-policy/.",
+        "If this page uses a different website address, the Privacy Policy linked from the CounterCtrl Cloud website will control."
+      ]
+    },
+    {
+      "number": 5,
+      "title": "Use of Information",
+      "paragraphs": [
+        "Information submitted through the Site is governed by our Privacy Policy.",
+        "You must obtain permission from any individual identified or referred to in information submitted through the Site when such permission is legally required.",
+        "This includes obtaining permission from a parent or guardian when information relating to a person under the age of 18 is submitted.",
+        "Company reserves the right, and you authorize us, to use information concerning your use of the Site and information provided by you in a manner consistent with our Privacy Policy.",
+        "Company owns and will continue to own all rights, title and interest in aggregated or de-identified data and any statistical information, benchmarking, comparisons, analytics or analyses developed from performance and usage data generated through use of the Site or CounterCtrl Cloud services.",
+        "Such aggregated or de-identified data will not reasonably identify an individual customer or person."
+      ],
+      "representations": [
+        "Is accurate and complete",
+        "Does not violate the rights of another person or organization",
+        "Will be maintained and updated when necessary",
+        "Is provided with all required permissions and authorizations"
+      ]
+    },
+    {
+      "number": 6,
+      "title": "Alerts and Notifications",
+      "paragraphs": [
+        "You may receive notifications, alerts, emails, text messages or other communications relating to the Site or CounterCtrl Cloud services in accordance with our Privacy Policy.",
+        "We may also send communications promoting certain products or services.",
+        "When you receive promotional emails, you may opt out by following the unsubscribe instructions included in the communication.",
+        "Service-related, account, billing, maintenance and security communications may not be subject to marketing opt-out preferences."
+      ]
+    },
+    {
+      "number": 7,
+      "title": "Ownership",
+      "paragraphs": [
+        "All content included on the Site is and will remain the property of Company or its content suppliers and is protected by applicable copyright, patent, trademark and other intellectual-property laws.",
+        "Copying, redistribution, publication or use of Site content is prohibited except as expressly permitted by this Agreement or another written agreement with Company.",
+        "You do not acquire ownership rights or any other interest in Company content through your use of the Site.",
+        "Customers retain ownership of their own data submitted to CounterCtrl Cloud, subject to any licenses or data-processing rights included in an applicable subscription agreement, service agreement or data-processing agreement."
+      ],
+      "protected_property": [
+        "The CounterCtrl Cloud name",
+        "Logos and branding",
+        "Website content",
+        "Software",
+        "Dashboards",
+        "Graphics",
+        "Reports and templates",
+        "Data-processing methods",
+        "Platform features",
+        "Documentation",
+        "User-interface designs"
+      ]
+    },
+    {
+      "number": 8,
+      "title": "Feedback",
+      "paragraphs": [
+        "If you provide suggestions, ideas, proposals, comments, feedback or other information relating to the Site or CounterCtrl Cloud services (Feedback), you grant Company a worldwide, royalty-free, fully paid, non-exclusive, perpetual, irrevocable, transferable and sublicensable license to reproduce, distribute, display, adapt, modify and otherwise use that Feedback for any lawful business purpose.",
+        "You acknowledge that Feedback is not confidential and that providing Feedback does not create a fiduciary or other obligation on behalf of Company.",
+        "Company will not publicly disclose confidential customer data merely because it was submitted in connection with Feedback."
+      ],
+      "representations": [
+        "You have the right to provide the Feedback",
+        "The Feedback does not violate another party's rights",
+        "The Feedback is accurate to the best of your knowledge",
+        "The Feedback is not fraudulent or unlawful"
+      ]
+    },
+    {
+      "number": 9,
+      "title": "Site Use",
+      "paragraphs": [
+        "Subject to the limitations and restrictions contained in this Agreement, Company grants you a limited, revocable and non-exclusive license to use the Site for lawful personal or business purposes.",
+        "Use of the Site remains subject to Company's discretion, and Company may terminate or restrict access at any time.",
+        "Access to paid CounterCtrl Cloud services may be governed by a separate subscription agreement, proposal, order form or service agreement."
+      ],
+      "prohibited_license_uses": [
+        "Republish or distribute the Site",
+        "Assign or sublicense access",
+        "Sell access to the Site",
+        "Prepare derivative works",
+        "Copy or commercialize Site content",
+        "Use the Site to create a competing product or service"
+      ]
+    },
+    {
+      "number": 10,
+      "title": "Unacceptable Use",
+      "paragraphs": [
+        "Spam, chain emails, advertising solicitations and similar unauthorized communications are prohibited.",
+        "We reserve the right to investigate suspected violations and may cooperate with law enforcement authorities when appropriate.",
+        "You understand that data and electronic communications may be accessed by unauthorized third parties when transmitted over the internet.",
+        "You are responsible for maintaining appropriate safeguards, security protocols and software on devices and systems used to access the Site."
+      ],
+      "prohibited_actions": [
+        "Transfer, license, assign or distribute the Site",
+        "Translate, reverse engineer, decompile or disassemble the Site",
+        "Modify, duplicate or copy the Site or portions of the Site",
+        "Sell, rent, lease, transfer or exploit the Site",
+        "Copy the features, functions, appearance, materials or graphics of the Site",
+        "Interfere with the integrity, security or performance of the Site",
+        "Access the Site primarily to monitor its availability, performance or functionality for competitive purposes",
+        "Use the Site to develop or improve a competing service",
+        "Send unsolicited commercial messages to email addresses provided on the Site"
+      ],
+      "subsections": [
+        {
+          "id": "a",
+          "title": "Unlawful Use",
+          "text": "Use or access the Site for any unlawful purpose or any purpose prohibited by this Agreement."
+        },
+        {
+          "id": "b",
+          "title": "Service Interference",
+          "text": "Use the Site in a manner that could damage, disable, overburden or impair the servers, systems or networks supporting the Site."
+        },
+        {
+          "id": "c",
+          "title": "Interference With Other Users",
+          "text": "Interfere with another person's use or enjoyment of the Site."
+        },
+        {
+          "id": "d",
+          "title": "Unauthorized Access",
+          "text": "Attempt to gain unauthorized access to information, accounts, computer systems, datasets or networks through hacking, password mining or another unauthorized method."
+        },
+        {
+          "id": "e",
+          "title": "Harmful Software",
+          "text": "Upload, post, transmit or otherwise make available any virus, worm, Trojan horse, spyware, time bomb, malicious code or other file or program designed to damage, disrupt, intercept, monitor or impair a computer system, network, software, hardware, data or information."
+        },
+        {
+          "id": "f",
+          "title": "Objectionable Content",
+          "text": "Post or transmit content that is obscene, indecent, pornographic, violent, defamatory, threatening, harassing, abusive, hateful or otherwise objectionable."
+        },
+        {
+          "id": "g",
+          "title": "Harassment or Discrimination",
+          "text": "Use the Site to harass, degrade or intimidate an individual or group based on religion, gender, sexual orientation, race, ethnicity, age, disability or another characteristic protected by applicable law."
+        },
+        {
+          "id": "h",
+          "title": "Spam Links",
+          "text": "Post content containing spam links or unauthorized advertising."
+        },
+        {
+          "id": "i",
+          "title": "Impersonation",
+          "text": "Impersonate another person, business or organization, including Company, its affiliates, employees or agents."
+        },
+        {
+          "id": "j",
+          "title": "Policy Violations",
+          "text": "Violate any policy posted on the Site or any applicable third-party platform."
+        },
+        {
+          "id": "k",
+          "title": "Automated Collection",
+          "text": "Use any robot, spider, scraper, site-search application, retrieval tool or other automated or manual method to retrieve, index, scrape, data mine or collect Site content without our prior written consent."
+        }
+      ]
+    },
+    {
+      "number": 11,
+      "title": "Compliance With Laws",
+      "paragraphs": [
+        "You may use the Site only for lawful purposes.",
+        "You agree to comply with all applicable local, state, national and international laws, statutes, regulations, ordinances and rules relating to your use of the Site.",
+        "You agree not to export or re-export technical data, software, content or materials in violation of applicable laws.",
+        "You further agree that information provided by you will be truthful and accurate to the best of your knowledge."
+      ],
+      "areas": [
+        "Data privacy",
+        "Information security",
+        "Intellectual property",
+        "Export controls",
+        "Trade restrictions",
+        "Electronic communications",
+        "Employee and customer information",
+        "Retail and business operations"
+      ]
+    },
+    {
+      "number": 12,
+      "title": "Non-United States Use and Restrictions",
+      "paragraphs": [
+        "Company controls and operates the Site from the United States.",
+        "Information submitted through the Site may be processed and stored within the United States.",
+        "We do not represent that the Site is appropriate or available for use in every country or jurisdiction.",
+        "By accessing the Site, you represent that you are not located in or ordinarily resident in a country subject to applicable United States trade embargoes or restrictions and that you are not listed on a United States government list of prohibited or restricted parties."
+      ]
+    },
+    {
+      "number": 13,
+      "title": "Third-Party Websites",
+      "paragraphs": [
+        "The Site may contain links to third-party websites.",
+        "These links are provided for convenience and informational purposes and do not necessarily constitute a referral, endorsement, warranty or approval of the third party.",
+        "You should review the privacy policies and terms of any third-party website before providing information.",
+        "Questions or complaints regarding a third-party website should be directed to the operator of that website."
+      ],
+      "company_does_not_control": [
+        "The information you provide to that third party",
+        "How that information is used or disclosed",
+        "The third party's content",
+        "The third party's security practices",
+        "The third party's products or services",
+        "The availability of the third-party website"
+      ]
+    },
+    {
+      "number": 14,
+      "title": "Indemnification",
+      "paragraphs": [
+        "To the fullest extent permitted by applicable law, you agree to indemnify, defend and hold harmless Company, its partners, employees, affiliates, successors and assigns from claims, demands, causes of action, liabilities, damages, judgments, awards, losses, costs, expenses and reasonable attorneys' fees arising out of or relating to the matters listed below."
+      ],
+      "covered_matters": [
+        "Your violation of this Agreement",
+        "Your use or inability to use the Site",
+        "Your misuse of the Site or services",
+        "Information or content provided by you",
+        "Your violation of another party's rights",
+        "Other activities conducted through your account or access to the Site"
+      ]
+    },
+    {
+      "number": 15,
+      "title": "Disclaimer",
+      "uppercase_notice": "THE INFORMATION AND SERVICES AVAILABLE THROUGH THE SITE ARE PROVIDED ON AN AS IS AND AS AVAILABLE BASIS. YOU AGREE THAT YOUR USE OF THE SITE IS AT YOUR SOLE RISK.",
+      "paragraphs": [
+        "Company disclaims all warranties to the maximum extent permitted by law.",
+        "Your sole and exclusive remedy relating to your use of the public Site is to discontinue using the Site.",
+        "Separate warranties or service commitments relating to paid CounterCtrl Cloud services will apply only when expressly included in a written agreement with Company."
+      ],
+      "disclaimed_warranties": [
+        "Express warranties",
+        "Statutory warranties",
+        "Implied warranties of merchantability",
+        "Fitness for a particular purpose",
+        "Title",
+        "Non-infringement"
+      ],
+      "no_warranty_that": [
+        "The Site will always be available",
+        "The Site will be uninterrupted or error-free",
+        "Information provided through the Site will always be accurate or complete",
+        "Every defect will be corrected",
+        "Third-party services will remain available",
+        "The Site will meet every user requirement"
+      ]
+    },
+    {
+      "number": 16,
+      "title": "Limitation of Liability",
+      "uppercase_notice": "TO THE MAXIMUM EXTENT PERMITTED BY LAW, COMPANY WILL NOT BE LIABLE FOR DIRECT, INDIRECT, INCIDENTAL, CONSEQUENTIAL, SPECIAL, EXEMPLARY, PUNITIVE OR OTHER DAMAGES ARISING FROM OR RELATING TO THE PUBLIC SITE, YOUR USE OF THE SITE OR SITE CONTENT.",
+      "paragraphs": [
+        "Your sole remedy for dissatisfaction with the public Site or its content is to stop using the Site.",
+        "These limitations apply even if a limited remedy fails of its essential purpose.",
+        "Some laws may not allow the exclusion of certain warranties or limitations on certain damages. If those laws apply, the exclusions or limitations that directly conflict with those laws may not apply to you.",
+        "If the foregoing exclusion of liability is determined to be invalid or unenforceable, Company's total liability arising in connection with the public Site will not exceed fifty dollars ($50).",
+        "Any liability relating to paid CounterCtrl Cloud subscription services may instead be governed by the applicable written subscription agreement, service agreement, order form or statement of work."
+      ],
+      "covered_damages": [
+        "Loss of business",
+        "Lost profits",
+        "Lost data",
+        "Business interruption",
+        "Litigation",
+        "Reliance on Site content",
+        "Third-party websites",
+        "Viruses or malicious software",
+        "Unauthorized third-party access",
+        "Inability to access the Site"
+      ]
+    },
+    {
+      "number": 17,
+      "title": "Termination",
+      "paragraphs": [
+        "Company may terminate this Agreement, the Site or any portion of the Site at any time, with or without notice and for any lawful reason.",
+        "Provisions that by their nature are intended to survive termination will remain in effect.",
+        "Termination of paid CounterCtrl Cloud services and the handling of customer data following termination may also be governed by a separate written agreement."
+      ],
+      "effects": [
+        "Your right to use the Site will immediately end",
+        "We may deactivate or delete associated Site materials",
+        "We will have no obligation to provide continued access to public Site materials",
+        "Termination will not eliminate fees or obligations already owed",
+        "Company may pursue any other available legal remedies"
+      ]
+    },
+    {
+      "number": 18,
+      "title": "Applicable Law and Jurisdiction",
+      "paragraphs": [
+        "You agree that the laws of the State of Tennessee, without regard to conflict-of-law principles, will govern this Agreement and any dispute arising between you and Company or its affiliates.",
+        "The parties consent to the exclusive jurisdiction and venue of the applicable state and federal courts located in Davidson County, Tennessee.",
+        "Regardless of any statute or law to the contrary, any claim or cause of action arising from or relating to the Site must be filed within one year after the claim or cause of action arose or it will be permanently barred, to the extent permitted by law."
+      ]
+    },
+    {
+      "number": 19,
+      "title": "Notices",
+      "paragraphs": [
+        "You may provide notice to Company using the contact information in Section 24.",
+        "Notices sent by first-class mail will be considered received five days after mailing.",
+        "Any notice of material breach must clearly describe the breach and the specific contractual obligation that was allegedly violated."
+      ],
+      "delivery_methods": [
+        "A notification posted on the Site",
+        "Email sent to the address associated with your account",
+        "Written communication sent by first-class or prepaid mail",
+        "Another reasonable electronic communication method"
+      ]
+    },
+    {
+      "number": 20,
+      "title": "Severability",
+      "paragraphs": [
+        "If any provision of this Agreement is determined by a court of competent jurisdiction to be invalid or unenforceable, the provision will be limited or removed to the minimum extent necessary.",
+        "The remaining provisions will continue in full force and effect."
+      ]
+    },
+    {
+      "number": 21,
+      "title": "Waiver",
+      "paragraphs": [
+        "Company's failure to exercise or enforce any right or provision of this Agreement does not constitute a waiver of that right or provision.",
+        "Any waiver by Company must be in writing and signed by an authorized representative of Company."
+      ]
+    },
+    {
+      "number": 22,
+      "title": "Relationship of the Parties",
+      "paragraphs": [
+        "Nothing in this Agreement or your use of the Site creates a partnership, joint venture, employment relationship or agency relationship between you and Company.",
+        "Neither party has authority to create or assume an obligation on behalf of the other party unless expressly authorized in writing.",
+        "Each party remains an independent contractor responsible for its own actions."
+      ]
+    },
+    {
+      "number": 23,
+      "title": "Entire Agreement",
+      "paragraphs": [
+        "This Agreement constitutes the entire agreement governing your use of the public Site and replaces prior or contemporaneous communications and proposals concerning the Site.",
+        "If a signed written agreement conflicts with this Agreement, the signed agreement will control to the extent of the conflict."
+      ],
+      "additional_terms": [
+        "The CounterCtrl Cloud Privacy Policy",
+        "Subscription agreements",
+        "Order forms",
+        "Proposals",
+        "Statements of work",
+        "Data-processing agreements",
+        "Security agreements",
+        "Other posted policies or guidelines"
+      ]
+    },
+    {
+      "number": 24,
+      "title": "Contact Information",
+      "contact": {
+        "legal_name": "Data Enterprises, Inc.",
+        "brand_name": "CounterCtrl Cloud",
+        "street": "942 Woodland Street",
+        "city_state_zip": "Nashville, TN 37206",
+        "toll_free": "1-888-429-4493",
+        "local": "(615) 227-6978",
+        "website": "https://www.counterctrlcloud.com/",
+        "email": "webinfo@dcrpos.com"
+      }
+    }
+  ],
+  "copyright": "Copyright © 2026 Data Enterprises, Inc. CounterCtrl Cloud and its related names, logos, software and services are owned and operated by Data Enterprises, Inc. All rights reserved."
+}

@@ -1,5 +1,6 @@
 /** Slide 1 illustration, ported verbatim from the design handoff
- *  (counterctrl-site/index.html). Attributes were converted to JSX and
+ *  (Jul 2026, since removed from the repo — see git history). Attributes
+ *  were converted to JSX and
  *  every internal id namespaced `a1-*` — gradient and filter ids are
  *  global to the document, so six illustrations sharing generic ids
  *  would cross-contaminate each other's fills. Purely decorative. */
@@ -143,7 +144,7 @@ const SlideArt1 = () => (
         fontSize="12"
         fill="#5A6C84"
       >
-        412 locations, nightly
+        100x locations, nightly
       </text>
       <polyline
         points="234,289 258,279 282,282 306,287 330,278 354,283 378,285 402,278 426,285"

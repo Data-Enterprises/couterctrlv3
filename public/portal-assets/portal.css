@@ -1,0 +1,118 @@
+:root{
+  --green:#1E9E52; --green-d:#17803F; --green-t:#EAF7EF;
+  --navy:#0F2440; --navy-2:#1B3A63; --slate:#5A6C84;
+  --line:#DCE5EF; --line-2:#C8D5E4; --bg:#F4F7FB; --paper:#FAFCFE;
+  --danger:#B01639; --danger-bg:#FDF2F5; --danger-line:#F5C2CE;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--navy);
+  font:16px/1.65 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased}
+main{max-width:760px;margin:0 auto;padding:40px 24px 72px}
+h1,h2{font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif;
+  letter-spacing:-.022em;line-height:1.22;text-wrap:balance;margin:0 0 14px}
+h1{font-size:clamp(28px,4vw,38px);font-weight:800}
+h2{font-size:22px;font-weight:700;margin-top:8px}
+p{margin:0 0 16px}
+a{color:var(--green-d)}
+img{max-width:100%;height:auto;border-radius:12px;display:block}
+
+.site-hd{display:flex;align-items:center;justify-content:space-between;gap:24px;
+  flex-wrap:wrap;padding:16px 24px;background:var(--paper);border-bottom:1px solid var(--line)}
+.site-logo{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:16px;
+  color:var(--navy);text-decoration:none;letter-spacing:-.02em}
+.site-hd nav{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.site-hd nav a{font-size:14px;color:var(--slate);text-decoration:none}
+.site-hd nav a:hover{color:var(--navy)}
+.site-hd nav a.cta,.cta{background:var(--navy);color:#fff;text-decoration:none;
+  padding:9px 16px;border-radius:8px;font-weight:600;font-size:14px;display:inline-block}
+.site-hd nav a.cta:hover,.cta:hover{background:var(--navy-2)}
+
+.kicker,.crumbs,.post-meta,.pl-meta,.chip{font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--green-d)}
+.crumbs{margin-bottom:20px;color:var(--slate)}
+.crumbs a{color:var(--slate)}
+.kicker{margin:0 0 8px}
+.lede{font-size:18px;line-height:1.6;color:var(--slate);margin-bottom:32px}
+
+.post-meta{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.post-dek{font-size:17px;color:var(--slate);margin-bottom:24px}
+.post-img{margin:0 0 28px;border:1px solid var(--line)}
+.post-body p{font-size:16.5px}
+.post-nav{display:grid;gap:10px;margin:40px 0 0;padding-top:24px;border-top:1px solid var(--line)}
+.np{display:block;border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+  text-decoration:none;color:var(--navy);background:var(--paper)}
+.np:hover{border-color:var(--green)}
+.np span{display:block;font-family:"IBM Plex Mono",monospace;font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--green-d);margin-bottom:4px}
+
+.cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+.chip{background:var(--green-t);border-radius:999px;padding:5px 11px}
+.post-list{list-style:none;margin:0;padding:0}
+.post-list li{border-bottom:1px solid var(--line)}
+.post-list a{display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:start;
+  padding:18px 0;text-decoration:none;color:inherit}
+.post-list a:not(:has(img)){grid-template-columns:1fr}
+.post-list img{border:1px solid var(--line);border-radius:8px;margin-top:3px}
+.pl-body{min-width:0}
+.pl-meta{display:block}
+.pl-title{font-family:"Plus Jakarta Sans",sans-serif;font-weight:700;font-size:17px;
+  display:block;margin:6px 0 4px;letter-spacing:-.02em;color:var(--navy)}
+.post-list a:hover .pl-title{color:var(--green-d)}
+.pl-dek{font-size:14px;color:var(--slate);display:block}
+
+.about-sec{margin:40px 0;padding-top:32px;border-top:1px solid var(--line)}
+.about-img{margin:20px 0;border:1px solid var(--line)}
+.about-defs{margin:20px 0 0}
+.about-defs dt{font-weight:600;margin-top:14px}
+.about-defs dd{margin:2px 0 0;color:var(--slate)}
+.about-defs dt.key{color:var(--green-d)}
+.about-steps{counter-reset:s;list-style:none;margin:20px 0 0;padding:0}
+.about-steps li{counter-increment:s;position:relative;padding:0 0 0 40px;margin-bottom:16px}
+.about-steps li::before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:1px;
+  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--green-d)}
+.about-steps li.key{background:var(--green-t);border-left:3px solid var(--green);
+  padding:12px 14px 12px 40px;margin-left:-14px}
+.about-steps li.key::before{left:14px;top:13px}
+.about-steps strong{display:block}
+.about-steps span{color:var(--slate)}
+.about-facts{display:grid;grid-template-columns:auto 1fr;gap:6px 20px;margin:36px 0 0;
+  padding-top:24px;border-top:1px solid var(--line);font-size:14px}
+.about-facts dt{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--slate)}
+.about-facts dd{margin:0}
+
+.wt-form{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:8px 0 0}
+.field{display:flex;flex-direction:column;min-width:0}
+.field.wide{grid-column:1/-1}
+.field label{font-size:12.5px;font-weight:600;margin-bottom:7px}
+.req{color:var(--green-d)}
+.wt-form input,.wt-form select,.wt-form textarea{width:100%;padding:10px 12px;
+  font:14px/1.5 Inter,system-ui,sans-serif;color:var(--navy);background:#fff;
+  border:1px solid var(--line-2);border-radius:8px;outline:none}
+.wt-form input:focus,.wt-form select:focus,.wt-form textarea:focus{
+  border-color:var(--green);box-shadow:0 0 0 3.5px rgba(30,158,82,.15)}
+.wt-form textarea{resize:vertical;line-height:1.6}
+.wt-form button{grid-column:1/-1;margin-top:6px;padding:13px 18px;border:0;border-radius:8px;
+  background:var(--navy);color:#fff;cursor:pointer;font-family:"Plus Jakarta Sans",sans-serif;
+  font-weight:600;font-size:15px}
+.wt-form button:hover{background:var(--navy-2)}
+.form-msg{margin-top:16px;font-size:14px;color:var(--slate)}
+.form-msg.ok{color:var(--green-d)}
+.form-msg.err{color:var(--danger);background:var(--danger-bg);border:1px solid var(--danger-line);
+  border-radius:8px;padding:10px 14px}
+
+.cta-box{margin:44px 0 0;padding:26px;background:var(--green-t);border:1px solid var(--line);
+  border-radius:14px}
+.cta-box h2{margin-top:0}
+
+.site-ft{border-top:1px solid var(--line);background:var(--paper);padding:28px 24px;
+  font-size:13.5px;color:var(--slate)}
+.site-ft p{max-width:760px;margin:0 auto 8px}
+.site-ft a{color:var(--slate)}
+
+@media (max-width:620px){
+  .wt-form{grid-template-columns:1fr}
+  .post-list a{grid-template-columns:1fr}
+  main{padding:28px 18px 56px}
+}

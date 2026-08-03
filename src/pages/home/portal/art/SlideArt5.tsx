@@ -1,5 +1,6 @@
 /** Slide 5 illustration, ported verbatim from the design handoff
- *  (counterctrl-site/index.html). Attributes were converted to JSX and
+ *  (Jul 2026, since removed from the repo — see git history). Attributes
+ *  were converted to JSX and
  *  every internal id namespaced `a5-*` — gradient and filter ids are
  *  global to the document, so six illustrations sharing generic ids
  *  would cross-contaminate each other's fills. Purely decorative. */
@@ -315,7 +316,7 @@ const SlideArt5 = () => (
         letterSpacing="-1"
         fill="#0F2440"
       >
-        412
+        100x
       </text>
     </g>
     <line

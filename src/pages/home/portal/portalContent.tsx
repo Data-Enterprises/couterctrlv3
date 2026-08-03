@@ -44,7 +44,7 @@ export const SLIDES: PortalSlide[] = [
       { text: "short list", em: true },
       { text: " worth looking at." },
     ],
-    sub: "Your sales come in overnight. CounterCtrl reads them, compares every location, category and item to last week and last year, and hands your team the handful of numbers that actually need attention.",
+    sub: "Your sales come in overnight. CounterCtrl reads them, compares every location, department and item to last week and last year, and hands your team the handful of numbers that actually need attention.",
     chips: [n("All in one place"), n("Ready by morning"), n("Down to the item")],
     art: <SlideArt1 />,
   },
@@ -67,7 +67,7 @@ export const SLIDES: PortalSlide[] = [
       { text: "find you", em: true },
       { text: ", not the other way around." },
     ],
-    sub: "Every location, category and item is scored against a threshold you control. Anything outside it rises to the top, so nobody reads a forty-page report looking for the one line that matters.",
+    sub: "Every location, department and item is scored against a threshold you control. Anything outside it rises to the top, so nobody reads a forty-page report looking for the one line that matters.",
     chips: [
       { text: "Critical", tone: "critical" },
       { text: "Watch", tone: "watch" },

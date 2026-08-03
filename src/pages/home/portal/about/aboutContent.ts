@@ -23,6 +23,12 @@ export interface AboutSection {
   listKind?: AboutListKind;
   items?: AboutItem[];
   image?: { src: string; alt: string };
+  /** Renders the kicker + heading as a toggle so the body can be folded away.
+   *  Every section sets it today; it stays per-section so a future one can opt
+   *  out without touching the component. `startClosed` decides initial state —
+   *  all six currently open, so the panel reads the same on arrival. */
+  collapsible?: boolean;
+  startClosed?: boolean;
 }
 
 export const ABOUT_MISSION = {
@@ -35,6 +41,7 @@ export const ABOUT_MISSION = {
 export const ABOUT_SECTIONS: AboutSection[] = [
   {
     id: "what",
+    collapsible: true,
     kicker: "What CounterCtrl Cloud is",
     heading: "Five modules. One set of definitions.",
     paras: [
@@ -42,10 +49,10 @@ export const ABOUT_SECTIONS: AboutSection[] = [
     ],
     listKind: "plain",
     items: [
-      { term: "Sales", desc: "Store, department and item performance, with this week, last week and last year built into every view." },
+      { term: "Weekly Sales Performance", desc: "Store, department and item performance, with this week, last week and last year built into every view." },
       { term: "Loss Prevention", desc: "Register activity analyzed at item and cashier level, surfacing patterns instead of listing exceptions." },
       { term: "Orders", desc: "What was ordered against what actually arrived, with the variance surfaced rather than discovered later." },
-      { term: "Weekly Performance", desc: "The rhythm your team already runs — without the hours of assembly that precede the meeting." },
+      { term: "UPC Search & Analysis", desc: "Follow a single item wherever it goes: movement, margin, price changes and promotions across every store, so you can answer the question rather than requisition a report." },
       { term: "Coupons", desc: "Redemption reconciled against real unit movement, so a promotion's impact is visible rather than assumed." },
     ],
   },
@@ -53,6 +60,7 @@ export const ABOUT_SECTIONS: AboutSection[] = [
     // Was carousel slide 4 until the Aug 2026 revision cut the carousel to
     // four. The argument survives here, where there is room for it.
     id: "depth",
+    collapsible: true,
     kicker: "How far it goes",
     heading: "From the whole week to a single receipt.",
     paras: [
@@ -62,6 +70,7 @@ export const ABOUT_SECTIONS: AboutSection[] = [
   },
   {
     id: "data",
+    collapsible: true,
     kicker: "Getting your data in",
     heading: "Two ways in, depending on your POS.",
     paras: [
@@ -78,6 +87,7 @@ export const ABOUT_SECTIONS: AboutSection[] = [
   },
   {
     id: "who",
+    collapsible: true,
     kicker: "Who we are",
     heading: "We come from the store, not the software industry.",
     paras: [
@@ -87,6 +97,7 @@ export const ABOUT_SECTIONS: AboutSection[] = [
   },
   {
     id: "how",
+    collapsible: true,
     kicker: "How we work",
     heading: "Three principles we hold ourselves to.",
     paras: [],
@@ -99,6 +110,7 @@ export const ABOUT_SECTIONS: AboutSection[] = [
   },
   {
     id: "start",
+    collapsible: true,
     kicker: "Getting started",
     heading: "Trust first, features second.",
     paras: [],
@@ -120,4 +132,4 @@ export const ABOUT_FACTS = [
   { k: "Status", v: "In production, onboarding more locations" },
 ];
 
-export const ABOUT_FOOTER = "© 2026 DCR POS · A Data Enterprises Company";
+export const ABOUT_FOOTER = "© 2026 CounterCtrl Cloud";

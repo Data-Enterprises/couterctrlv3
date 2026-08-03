@@ -59,15 +59,30 @@ const heroUrl = (im: string | undefined): string | null => {
   return match ? match[1] : null;
 };
 
+/* The authored copy carries a few HTML entities — "Orders &amp; Coupons",
+   "P&amp;L" — because it was written for a build that injected it via
+   innerHTML. JSX escapes instead, so those render literally unless decoded
+   here. Handles the five entities actually present; anything else stays as
+   written rather than being guessed at. */
+const ENTITIES: Record<string, string> = {
+  "&amp;": "&",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&quot;": '"',
+  "&#39;": "'",
+};
+
+const decode = (s: string) => s.replace(/&(amp|lt|gt|quot|#39);/g, (m) => ENTITIES[m]);
+
 const expand = (p: RawPost): Post => ({
   slug: p.s,
-  title: p.t,
-  dek: p.k,
-  category: p.c,
-  author: p.a,
+  title: decode(p.t),
+  dek: decode(p.k),
+  category: decode(p.c),
+  author: decode(p.a),
   date: p.d,
   hero: heroUrl(p.im),
-  body: p.b,
+  body: p.b.map(decode),
 });
 
 /** The copy that ships with the build. Rendered immediately, then replaced if

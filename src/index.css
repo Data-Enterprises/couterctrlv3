@@ -64,6 +64,106 @@ body {
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Portal slide art
+
+   The four SVG illustrations ship with animation hooks — `.sweep`, `.dash`,
+   `.pin`, `.card`, the last two carrying staggered inline animationDelay
+   values. The handoff's <style> block was never ported, so all 45 of those
+   hooks were inert. This is the missing half.
+
+   Scoping note: the illustrations' own <svg> elements are aria-hidden, so
+   `[aria-hidden="true"]` alone would match every one of them and pause
+   everything permanently. The carousel slide is identified by
+   aria-roledescription instead.
+   --------------------------------------------------------------------------- */
+
+/* Radar sweep.
+   `.sweep`'s parent is already translated to the radar centre and its wedge
+   path starts at M0 0, so the pivot is the element's own local origin —
+   `0 0`, not the centre's viewBox coordinates. Naming those coordinates here
+   instead double-applies the translate and sends the wedge into orbit. */
+@keyframes portal-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sweep {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  animation: portal-sweep 8s linear infinite;
+}
+
+/* Connector lines. Every dashed line in the set is `2 6`, a period of 8, so
+   travelling exactly -8 loops seamlessly. */
+@keyframes portal-dash {
+  to {
+    stroke-dashoffset: -8;
+  }
+}
+
+.dash {
+  animation: portal-dash 1.4s linear infinite;
+}
+
+/* Map pins: the stroked ring expands and fades, like a ping spreading from
+   the location. The delay is inherited from the `.pin` group so the inline
+   0s / 0.5s / 1s stagger drives it without being repeated here. */
+@keyframes portal-ping {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.5;
+  }
+  70%,
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+.pin ellipse:nth-of-type(2) {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: portal-ping 2.8s ease-out infinite;
+  animation-delay: inherit;
+}
+
+/* Grade cards enter once, in sequence. `both` holds the start state through
+   the delay so nothing flashes in at full opacity first. */
+@keyframes portal-card {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.card {
+  animation: portal-card 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Off-screen slides shouldn't animate. Pausing rather than disabling means a
+   card entrance is still waiting to play when its slide first comes up. */
+[aria-roledescription="slide"][aria-hidden="true"] .sweep,
+[aria-roledescription="slide"][aria-hidden="true"] .dash,
+[aria-roledescription="slide"][aria-hidden="true"] .pin ellipse,
+[aria-roledescription="slide"][aria-hidden="true"] .card {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sweep,
+  .dash,
+  .pin ellipse,
+  .card {
+    animation: none;
+  }
+}
+
 @layer base {
   :root {
     /* The main theme for now... */

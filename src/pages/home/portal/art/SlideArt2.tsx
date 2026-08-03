@@ -1,5 +1,6 @@
 /** Slide 2 illustration, ported verbatim from the design handoff
- *  (counterctrl-site/index.html). Attributes were converted to JSX and
+ *  (Jul 2026, since removed from the repo — see git history). Attributes
+ *  were converted to JSX and
  *  every internal id namespaced `a2-*` — gradient and filter ids are
  *  global to the document, so six illustrations sharing generic ids
  *  would cross-contaminate each other's fills. Purely decorative. */

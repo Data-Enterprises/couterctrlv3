@@ -21,6 +21,10 @@ interface Props {
   showImpersonate: boolean;
   onImpersonate: (e: React.ChangeEvent<HTMLInputElement>) => void;
   version: string;
+  /** Opens the Terms panel. Passes its own element up so focus returns
+   *  here on close, same contract as the stage buttons. */
+  onTerms: (trigger: HTMLElement) => void;
+  onPrivacy: (trigger: HTMLElement) => void;
 }
 
 /** The `.gate` — fixed left rail of the portal.
@@ -50,6 +54,8 @@ const SignInRail = ({
   showImpersonate,
   onImpersonate,
   version,
+  onTerms,
+  onPrivacy,
 }: Props) => (
   <section className="relative bg-custom-white flex flex-col overflow-hidden h-dvh border-r border-brand_line portal_stack:h-auto portal_stack:overflow-visible portal_stack:border-r-0 portal_stack:border-b">
     <div className="flex-1 min-h-0 flex flex-col justify-center px-[46px] py-8 w-full max-w-[430px] mx-auto portal_short:py-6 portal_stack:px-[26px] portal_stack:pt-[34px] portal_stack:pb-[26px]">
@@ -166,6 +172,25 @@ const SignInRail = ({
       <span className="block font-mono text-[9.5px] tracking-[0.1em] uppercase text-brand_slate_2">
         {version}
       </span>
+      <div className="flex items-center gap-2.5 mt-1.5 font-mono text-[9.5px] tracking-[0.1em] uppercase text-brand_slate_2">
+        <button
+          type="button"
+          onClick={(e) => onTerms(e.currentTarget)}
+          className="hover:text-brand_green_dark hover:underline cursor-pointer"
+        >
+          Terms &amp; Conditions
+        </button>
+        <span aria-hidden="true" className="text-brand_line_2">
+          ·
+        </span>
+        <button
+          type="button"
+          onClick={(e) => onPrivacy(e.currentTarget)}
+          className="hover:text-brand_green_dark hover:underline cursor-pointer"
+        >
+          Privacy Policy
+        </button>
+      </div>
     </div>
   </section>
 );

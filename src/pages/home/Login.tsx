@@ -33,10 +33,12 @@ import Stage from "./portal/Stage";
 import AboutPanel from "./portal/about/AboutPanel";
 import FieldNotesPanel from "./portal/fieldNotes/FieldNotesPanel";
 import WalkthroughPanel from "./portal/walkthrough/WalkthroughPanel";
+import TermsPanel from "./portal/terms/TermsPanel";
+import PrivacyPanel from "./portal/privacy/PrivacyPanel";
 import { getBlogs, getBlogFile } from "../../api/portal";
 import { POSTS, toPosts, type Post } from "../../content/posts";
 
-const VERSION = "CounterCtrl Cloud · Last updated 8/3/2026 @ 1:35 PM CST";
+const VERSION = "Last updated 8/3/2026 @ 1:35 PM CST";
 
 /** PLACEHOLDER: `/html_pages/` only exists on the dev API today, and this page
  *  runs before sign-in — `context.url` is always VITE_API_URL_PROD here, since
@@ -46,17 +48,18 @@ const BLOG_API = import.meta.env.VITE_API_URL_DEV;
 
 /**
  * Public portal — sign-in rail plus the marketing stage, per the 2026-07-31
- * design handoff (`counterctrl-site/`).
+ * design handoff (since removed from the repo — see git history, and
+ * handoff-DEV-NOTES.md / handoff-PORTAL-README.md at the root).
  *
  * The authentication path below is unchanged from the pre-redesign page: the
  * impersonation credentials, the second dev-token login, every success
  * dispatch and the device-detection effect are all carried over verbatim.
  * Only the presentation was replaced.
  *
- * Three slide-over panels are wired through `handleNavigate` — About, Field
- * Notes and Book a walkthrough. Articles are read inside the Field Notes
- * panel; there are deliberately no per-article routes. The walkthrough form
- * POSTs to a placeholder path; see src/api/portal.ts.
+ * Four slide-over panels are wired through `handleNavigate` — About, Field
+ * Notes, Book a walkthrough, and Terms and Conditions. The first three open
+ * from the stage; Terms opens from the rail's footer. Articles are read inside
+ * the Field Notes panel; there are deliberately no per-article routes.
  *
  * The handoff also shipped a Support panel. It was dropped from the nav here;
  * its components still exist under portal/support/ but nothing mounts them.
@@ -193,7 +196,7 @@ const Login = () => {
    *  focus back there on close. Only one can be open at a time, which is also
    *  what makes About's "Book a walkthrough" a clean swap rather than a stack. */
   const [panel, setPanel] = useState<
-    "about" | "notes" | "demo" | null
+    "about" | "notes" | "demo" | "terms" | "privacy" | null
   >(null);
   const [panelTrigger, setPanelTrigger] = useState<HTMLElement | null>(null);
 
@@ -204,6 +207,8 @@ const Login = () => {
       loadBlogs();
       setPanel("notes");
     } else if (key === "demo") setPanel("demo");
+    else if (key === "terms") setPanel("terms");
+    else if (key === "privacy") setPanel("privacy");
   };
 
   return (
@@ -224,6 +229,8 @@ const Login = () => {
         showImpersonate={!!useImpersonation}
         onImpersonate={handleImpersonate}
         version={VERSION}
+        onTerms={(t) => handleNavigate("terms", t)}
+        onPrivacy={(t) => handleNavigate("privacy", t)}
       />
 
       <Stage onNavigate={handleNavigate} paused={panel !== null} />
@@ -246,6 +253,18 @@ const Login = () => {
 
       <WalkthroughPanel
         open={panel === "demo"}
+        onClose={() => setPanel(null)}
+        returnFocusTo={panelTrigger}
+      />
+
+      <TermsPanel
+        open={panel === "terms"}
+        onClose={() => setPanel(null)}
+        returnFocusTo={panelTrigger}
+      />
+
+      <PrivacyPanel
+        open={panel === "privacy"}
         onClose={() => setPanel(null)}
         returnFocusTo={panelTrigger}
       />

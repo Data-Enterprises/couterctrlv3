@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book a walkthrough — CounterCtrl Cloud</title>
+<meta name="description" content="We'll run CounterCtrl against a slice of your own data and walk your team through what it surfaces. Usually about thirty minutes. Tell us a little and we'l">
+<link rel="canonical" href="https://www.counterctrlcloud.com/walkthrough.html">
+<link rel="icon" href="/favicon.ico">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CounterCtrl Cloud">
+<meta property="og:title" content="Book a walkthrough — CounterCtrl Cloud">
+<meta property="og:description" content="We'll run CounterCtrl against a slice of your own data and walk your team through what it surfaces. Usually about thirty minutes. Tell us a little and we'l">
+<meta property="og:url" content="https://www.counterctrlcloud.com/walkthrough.html">
+
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="stylesheet" href="/portal-assets/portal.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  "name": "Book a walkthrough",
+  "url": "https://www.counterctrlcloud.com/walkthrough.html",
+  "mainEntity": {
+    "@type": "Organization",
+    "name": "DCR POS",
+    "url": "https://www.counterctrlcloud.com"
+  }
+}
+</script>
+</head>
+<body>
+
+<header class="site-hd">
+  <a class="site-logo" href="/">CounterCtrl Cloud</a>
+  <nav aria-label="Main">
+    <a href="/field-notes.html">Field Notes</a>
+    <a href="/about.html">About</a>
+    <a href="/">Sign in</a>
+    <a class="cta" href="/walkthrough.html">Book a walkthrough</a>
+  </nav>
+</header>
+<main>
+<article class="walkthrough">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> › <span>Book a walkthrough</span></nav>
+  <p class="kicker">CounterCtrl Cloud</p>
+  <h1>Book a walkthrough</h1>
+  <p class="lede">We'll run CounterCtrl against a slice of your own data and walk your team through what it surfaces. Usually about thirty minutes. Tell us a little and we'll follow up within one business day.</p>
+  <noscript><p class="form-msg err">This form needs JavaScript to send. Email us instead and we'll get straight back to you.</p></noscript>
+  <form id="wt" class="wt-form">
+    <div class="field">
+      <label for="name">Your name <span class="req">*</span></label>
+      <input id="name" name="name" type="text" placeholder="Jane Whitaker" required>
+    </div>
+    <div class="field">
+      <label for="company">Company <span class="req">*</span></label>
+      <input id="company" name="company" type="text" placeholder="Whitaker Markets" required>
+    </div>
+    <div class="field">
+      <label for="email">Work email <span class="req">*</span></label>
+      <input id="email" name="email" type="email" placeholder="jane@whitakermarkets.com" required>
+    </div>
+    <div class="field">
+      <label for="phone">Phone</label>
+      <input id="phone" name="phone" type="tel" placeholder="Optional">
+    </div>
+    <div class="field">
+      <label for="role">Your role</label>
+      <select id="role" name="role">
+        <option value="">Select one</option>
+        <option value="Owner or executive">Owner or executive</option>
+        <option value="District or regional manager">District or regional manager</option>
+        <option value="Store manager">Store manager</option>
+        <option value="Merchandising or category">Merchandising or category</option>
+        <option value="Loss prevention">Loss prevention</option>
+        <option value="IT">IT</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="locations">Locations</label>
+      <select id="locations" name="locations">
+        <option value="">Select one</option>
+        <option value="1 – 5">1 – 5</option>
+        <option value="6 – 20">6 – 20</option>
+        <option value="21 – 50">21 – 50</option>
+        <option value="More than 50">More than 50</option>
+      </select>
+    </div>
+    <div class="field wide">
+      <label for="pos_system">What POS system do you run?</label>
+      <input id="pos_system" name="pos_system" type="text" placeholder="We work with most — this just helps us prepare">
+    </div>
+    <div class="field wide">
+      <label for="interest">What would you most like to see?</label>
+      <select id="interest" name="interest">
+        <option value="">Select one</option>
+        <option value="Sales performance across locations">Sales performance across locations</option>
+        <option value="Loss prevention and register exceptions">Loss prevention and register exceptions</option>
+        <option value="Margin and pricing trends">Margin and pricing trends</option>
+        <option value="Orders and receiving variance">Orders and receiving variance</option>
+        <option value="Coupons and promotions">Coupons and promotions</option>
+        <option value="Not sure yet — show me the whole thing">Not sure yet — show me the whole thing</option>
+      </select>
+    </div>
+    <div class="field wide">
+      <label for="notes">Anything else we should know?</label>
+      <textarea id="notes" name="notes" rows="4" placeholder="What's costing your team the most time right now?"></textarea>
+    </div>
+    <button type="submit">Request a walkthrough</button>
+  </form>
+  <p id="wtMsg" class="form-msg" role="status"></p>
+</article>
+</main>
+
+<footer class="site-ft">
+  <p>&copy; 2026 DCR POS — a Data Enterprises company.
+     <!-- VERIFY before this ranks for anything: SEO-IMPLEMENTATION.md flags
+          "65 years" / founding year 1961, "hundreds of locations", and the
+          single-store-to-corporate-banner range as unconfirmed. --></p>
+  <p><a href="/">Sign in</a> · <a href="/field-notes.html">Field Notes</a> · <a href="/sitemap.xml">Sitemap</a></p>
+</footer>
+</body>
+</html>
+
+<script>
+(function () {
+  var f = document.getElementById('wt'), msg = document.getElementById('wtMsg');
+  f.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var data = {};
+    new FormData(f).forEach(function (v, k) { if (String(v).trim()) data[k] = v; });
+    msg.textContent = 'Sending…'; msg.className = 'form-msg';
+    fetch("https://dev-api.counterctrlcloud.com/contact/walkthrough", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(function (r) {
+      if (!r.ok) throw new Error(r.status);
+      f.hidden = true;
+      msg.textContent = "We'll be in touch within one business day to find a time that works for your team.";
+      msg.className = 'form-msg ok';
+    }).catch(function () {
+      msg.textContent = "That didn't send — something went wrong on our end. Try again, or email us directly.";
+      msg.className = 'form-msg err';
+    });
+  });
+})();
+</script>
