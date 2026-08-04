@@ -1274,6 +1274,24 @@ export type CatSalesHourly = CatSalesBase & {
   basket_size_qty: number;
 };
 
+/** One item, one day, within a category — `categories/cats`.
+ *
+ *  Field-for-field a `SubDeptMargin` with the grouping column swapped: both
+ *  endpoints select the same columns from the same table. That is what lets the
+ *  Categories item report reuse the Sub Dept Margins maths in
+ *  `src/utils/itemMargins.ts` rather than reimplement it.
+ *
+ *  `margin` is present but must not be consumed — it is computed server-side as
+ *  `sum(total_sales) - avg(calculated_cost)`, never multiplied by qty and
+ *  denominated on tax-inclusive sales. Use `calculateCogs` instead. */
+export type CatItem = Omit<
+  SubDeptMargin,
+  "sub_department" | "sub_department_description"
+> & {
+  category: number;
+  category_description: string;
+};
+
 export interface CatSalesResponse<T> {
   error: number;
   success: boolean;

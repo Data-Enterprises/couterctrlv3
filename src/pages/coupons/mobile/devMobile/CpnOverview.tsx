@@ -1,5 +1,9 @@
 import { useMemo, useState } from "react";
-import { MagnifyingGlassIcon, ChevronLeftIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import {
+  MagnifyingGlassIcon,
+  ChevronLeftIcon,
+  ArrowDownTrayIcon,
+} from "@heroicons/react/20/solid";
 import { formatCurrency2 } from "../../../../utils";
 import type { CouponItem } from "../../../../interfaces";
 import type { GroupTab } from "./CouponsMobileDev";
@@ -84,11 +88,14 @@ const CpnOverview = ({
       return build(
         (c) => c.sale_date.split("T")[0],
         (c) =>
-          new Date(c.sale_date.split("T")[0] + "T12:00:00").toLocaleDateString("en-US", {
-            weekday: "short",
-            month: "numeric",
-            day: "numeric",
-          }),
+          new Date(c.sale_date.split("T")[0] + "T12:00:00").toLocaleDateString(
+            "en-US",
+            {
+              weekday: "short",
+              month: "numeric",
+              day: "numeric",
+            },
+          ),
         true,
       );
     return build(
@@ -99,7 +106,10 @@ const CpnOverview = ({
 
   return (
     <div className="flex flex-col h-[calc(100dvh-3rem)] overflow-hidden">
-      <div className="flex-shrink-0 px-3 pt-2 pb-2.5" style={{ background: "#1e2a4a" }}>
+      <div
+        className="flex-shrink-0 px-3 pt-2 pb-2.5"
+        style={{ background: "#1e2a4a" }}
+      >
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-1.5 min-w-0">
             <button
@@ -109,7 +119,9 @@ const CpnOverview = ({
               <ChevronLeftIcon className="w-4 h-4" />
             </button>
             <div className="min-w-0">
-              <div className="text-[13px] font-semibold text-custom-white truncate">{storeName}</div>
+              <div className="text-[13px] font-semibold text-custom-white truncate">
+                {storeName}
+              </div>
               <div className="text-[10px] mt-0.5 text-custom-white/85">
                 {dateRangeLabel}
               </div>
@@ -122,7 +134,9 @@ const CpnOverview = ({
                   key={m}
                   onClick={() => onSortMetric(m)}
                   className={`px-2 py-1 text-[10px] font-medium ${
-                    sortMetric === m ? "bg-custom-white/20 text-custom-white" : "text-custom-white/85"
+                    sortMetric === m
+                      ? "bg-custom-white/20 text-custom-white"
+                      : "text-custom-white/85"
                   }`}
                 >
                   {m === "amount" ? "Amt" : "Qty"}
@@ -145,7 +159,7 @@ const CpnOverview = ({
             )}
           </div>
         </div>
-        {/* <div className="flex items-baseline gap-3 mt-2 pt-1.5 border-t border-white/[0.08]">
+        {/* <div className="flex items-baseline gap-3 mt-2 pt-1.5 border-t border-custom-white/[0.08]">
           <div className="flex items-baseline gap-1.5">
             <span className="text-[10px] uppercase tracking-wide text-custom-white/85">Records</span>
             <span className="text-[12px] font-semibold text-custom-white">{coupons.length}</span>
@@ -162,9 +176,16 @@ const CpnOverview = ({
           { label: "Avg", value: formatCurrency2(avgPerCoupon) },
           { label: "Products", value: String(uniqueProducts) },
         ].map(({ label, value }) => (
-          <div key={label} className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0">
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">{label}</div>
-            <div className="text-[12px] font-bold text-content mt-0.5 tabular-nums">{value}</div>
+          <div
+            key={label}
+            className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0"
+          >
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
+              {label}
+            </div>
+            <div className="text-[12px] font-bold text-content mt-0.5 tabular-nums">
+              {value}
+            </div>
           </div>
         ))}
       </div>
@@ -194,8 +215,12 @@ const CpnOverview = ({
             onClick={() => onSectionSelect(key, label)}
             className="w-full flex items-center px-3 py-2.5 bg-custom-white border-b border-gray-100 text-left active:bg-gray-50 gap-3"
           >
-            <span className="text-[12px] font-medium text-content flex-1 truncate">{label}</span>
-            <span className="text-[10px] text-content/85 flex-shrink-0">{count}</span>
+            <span className="text-[12px] font-medium text-content flex-1 truncate">
+              {label}
+            </span>
+            <span className="text-[10px] text-content/85 flex-shrink-0">
+              {count}
+            </span>
             <span className="text-[11px] font-semibold text-content flex-shrink-0 tabular-nums">
               {formatCurrency2(total)}
             </span>

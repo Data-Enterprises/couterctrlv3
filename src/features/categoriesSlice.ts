@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { CategoryMetric, CategoryRow, CategoryTier } from "../pages/categories/categoriesUtils";
-import type { CatSalesHourly } from "../interfaces";
+import type { CatItem, CatSalesHourly } from "../interfaces";
 
 /** Categories (Performance).
  *
@@ -17,6 +17,11 @@ import type { CatSalesHourly } from "../interfaces";
  *  noise band of a normal week and a fall nobody would argue about; the user
  *  moves it from the panel header. */
 export const CATEGORY_THRESHOLD_DEFAULT = 15;
+
+/** Item-level default. Tighter than the category one: a single UPC moving 9%
+ *  is worth a look, whereas a whole category needs to move further before it
+ *  means anything. */
+export const ITEM_THRESHOLD_DEFAULT = 9;
 
 interface CategoriesState {
   rows: CategoryRow[];
@@ -46,6 +51,20 @@ interface CategoriesState {
    *  year. Fetched on demand; see loadHourly in Categories.tsx. */
   hourly: { tw: CatSalesHourly[]; lw: CatSalesHourly[]; ly: CatSalesHourly[] };
   loadingHourly: boolean;
+
+  /** Item-level rows for the open category, all three periods. Unlike `rows`
+   *  these are kept raw: the item report re-derives from them whenever the day
+   *  selection or the metric toggle changes, so folding them once up front
+   *  would throw away exactly what the panel needs. One category's week is ~120
+   *  rows, not the ~12,000 the category totals would have cost. */
+  items: { tw: CatItem[]; lw: CatItem[]; ly: CatItem[] };
+  loadingItems: boolean;
+  /** Items grade against their own threshold, not the category one — a decline
+   *  that matters for a whole category is a different size from one that matters
+   *  for a single UPC inside it. Lives here rather than in the table so the
+   *  export grades exactly what the screen is showing. Null while mid-edit,
+   *  same rule as the category threshold. */
+  itemThreshold: number | null;
 }
 
 const initialState: CategoriesState = {
@@ -64,6 +83,9 @@ const initialState: CategoriesState = {
   selectedCategory: null,
   hourly: { tw: [], lw: [], ly: [] },
   loadingHourly: false,
+  items: { tw: [], lw: [], ly: [] },
+  loadingItems: false,
+  itemThreshold: ITEM_THRESHOLD_DEFAULT,
 };
 
 const categoriesSlice = createSlice({
@@ -104,9 +126,10 @@ const categoriesSlice = createSlice({
     },
     setSelectedCategory: (state, action: PayloadAction<number | null>) => {
       state.selectedCategory = action.payload;
-      // Hourly belongs to whichever category is open; leaving the old rows
-      // would show the previous category's hours under the new heading.
+      // Hourly and items both belong to whichever category is open; leaving the
+      // old rows would show the previous category's data under the new heading.
       state.hourly = { tw: [], lw: [], ly: [] };
+      state.items = { tw: [], lw: [], ly: [] };
     },
     setHourly: (
       state,
@@ -117,6 +140,18 @@ const categoriesSlice = createSlice({
     setLoadingHourly: (state, action: PayloadAction<boolean>) => {
       state.loadingHourly = action.payload;
     },
+    setItems: (
+      state,
+      action: PayloadAction<{ tw: CatItem[]; lw: CatItem[]; ly: CatItem[] }>,
+    ) => {
+      state.items = action.payload;
+    },
+    setLoadingItems: (state, action: PayloadAction<boolean>) => {
+      state.loadingItems = action.payload;
+    },
+    setItemThreshold: (state, action: PayloadAction<number | null>) => {
+      state.itemThreshold = action.payload;
+    },
     /** New search — clear results and selection but keep the user's display
      *  preferences. Re-picking a metric and threshold after every search would
      *  be an irritation, and neither depends on which store is loaded. */
@@ -125,6 +160,7 @@ const categoriesSlice = createSlice({
       state.selectedCategory = null;
       state.selectedDay = null;
       state.hourly = { tw: [], lw: [], ly: [] };
+      state.items = { tw: [], lw: [], ly: [] };
       state.textFilter = "";
       state.tierFilter = "all";
     },
@@ -145,6 +181,9 @@ export const {
   setSelectedCategory,
   setHourly,
   setLoadingHourly,
+  setItems,
+  setLoadingItems,
+  setItemThreshold,
   reQuery,
 } = categoriesSlice.actions;
 

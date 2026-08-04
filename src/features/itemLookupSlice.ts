@@ -27,6 +27,10 @@ export interface ItemLookupHistory {
   store_number: string;
   storeid: number;
   total_sales: number;
+  /** Pounds sold on a scale item. Not returned by /itemlookup today — /subs
+   *  selects the same column from the same table, so this is here ready for
+   *  when it's added. Until then pricedUnits() derives it. */
+  weight?: number;
 }
 
 export interface RecentLookup {

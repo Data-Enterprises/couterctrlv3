@@ -85,7 +85,7 @@ const LookupReportPanel = ({
           </div>
           <div className="px-4 pt-2.5 text-center">
             <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-              Avg sold at
+              Avg sold at / {margin.weighed ? "lb" : "unit"}
             </div>
             <div
               className={`text-[14px] font-bold tabular-nums mt-0.5 ${isNegative ? "text-red-800" : "text-content"}`}
@@ -95,10 +95,10 @@ const LookupReportPanel = ({
           </div>
           <div className="px-4 pt-2.5 text-center">
             <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-              Case cost
+              Cost / {margin.weighed ? "lb" : "unit"}
             </div>
             <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
-              {formatCurrency2(margin.caseCost)}
+              {formatCurrency2(margin.unitCost)}
             </div>
           </div>
           <div className="px-4 pt-2.5 text-center">
@@ -173,8 +173,8 @@ const LookupReportPanel = ({
             <span>Date</span>
             <span className="text-right">Qty</span>
             <span className="text-right">Revenue</span>
-            <span className="text-right">Case cost</span>
-            <span className="text-right">Cost</span>
+            <span className="text-right">Cost of goods</span>
+            <span className="text-right">Cost / unit</span>
             <span className="text-right">List price</span>
             <span className="text-right">Margin</span>
           </div>

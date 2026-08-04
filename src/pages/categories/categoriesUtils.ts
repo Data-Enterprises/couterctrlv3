@@ -297,17 +297,24 @@ export const categoryDelta = (
  * that case, which the LP info popover already flags as misleading — an
  * absence of comparison data is not a clean bill of health.
  */
+/** Delta → tier. Split out from getTier so anything holding a percentage that
+ *  isn't a whole-week row — a single day in the export, say — grades on the
+ *  same boundaries rather than a second copy of them. */
+export const tierOfDelta = (
+  delta: number | null,
+  threshold: number,
+): CategoryTier => {
+  if (delta === null) return "ungraded";
+  if (delta < -threshold) return "critical";
+  if (delta < 0) return "watch";
+  return "healthy";
+};
+
 export const getTier = (
   row: CategoryRow,
   threshold: number,
   metric: CategoryMetric,
-): CategoryTier => {
-  const delta = categoryDelta(row, metric);
-  if (delta === null) return "ungraded";
-  if (delta >= 0) return "healthy";
-  if (delta < -threshold) return "critical";
-  return "watch";
-};
+): CategoryTier => tierOfDelta(categoryDelta(row, metric), threshold);
 
 /** Critical first, then by size within a tier — a 30% fall on a large category
  *  matters more than the same percentage on a rounding error. */

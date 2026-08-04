@@ -230,7 +230,7 @@ const TitleBar = () => {
     <div className="relative flex items-stretch">
       <button
         onClick={() => setAvatarOpen((o) => !o)}
-        className={`flex items-center gap-2 px-3 hover:bg-custom-white/8 transition-colors h-full ${context.isDesktop ? "border-l border-white/10" : ""}`}
+        className={`flex items-center gap-2 px-3 hover:bg-custom-white/8 transition-colors h-full ${context.isDesktop ? "border-l border-custom-white/10" : ""}`}
       >
         <div className="w-7 h-7 rounded-full bg-custom-white/15 flex items-center justify-center text-custom-white text-[11px] font-semibold flex-shrink-0">
           {(user.firstName?.[0] ?? "").toUpperCase()}
@@ -296,9 +296,7 @@ const TitleBar = () => {
         className="h-12 w-full flex items-stretch bg-[#1e2a4a] text-custom-white select-none relative z-50"
       >
         {/* Logo + page title */}
-        <div
-          className={`flex items-center p-1 flex-shrink-0 `}
-        >
+        <div className={`flex items-center p-1 flex-shrink-0 `}>
           {/* The wordmark is dark navy on transparent, so it needs the white
               backing to read against the #1e2a4a bar. The pill fills the block
               the page title used to share; `object-contain` lets the image use
@@ -387,10 +385,10 @@ const TitleBar = () => {
 
         {/* DEV/PROD toggle — programmer/admin only */}
         {user.role === 9 || user.userLevel >= 2 ? (
-          <div className="flex items-center px-3 border-r border-white/10">
+          <div className="flex items-center px-3 border-r border-custom-white/10">
             <button
               onClick={() => dispatch(toggleDevMode())}
-              className="flex items-center gap-0 rounded-full overflow-hidden border border-white/20 text-[10px] font-bold select-none"
+              className="flex items-center gap-0 rounded-full overflow-hidden border border-custom-white/20 text-[10px] font-bold select-none"
               title={context.devMode ? "Switch to LIVE" : "Switch to PREVIEW"}
             >
               <span

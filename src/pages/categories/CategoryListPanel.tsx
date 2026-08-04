@@ -201,7 +201,7 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
   return (
     <div
       className="flex flex-col min-w-0 shadow-lg"
-      style={{ flexBasis: "38%", flexShrink: 0 }}
+      style={{ flexBasis: "35%", flexShrink: 0 }}
     >
       {/* Navy header — 2-row canonical pattern */}
       <div className="bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">

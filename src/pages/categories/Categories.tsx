@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
@@ -13,9 +13,15 @@ import {
   setRange,
   setHourly,
   setLoadingHourly,
+  setItems,
+  setLoadingItems,
   reQuery,
 } from "../../features/categoriesSlice";
-import { fetchAllPeriods, fetchHourlyPeriods } from "./categoriesData";
+import {
+  fetchAllPeriods,
+  fetchHourlyPeriods,
+  fetchCatItemPeriods,
+} from "./categoriesData";
 import { buildCategoryRows } from "./categoriesUtils";
 import CategoryListPanel from "./CategoryListPanel";
 import CategoryDetailPanel from "./CategoryDetailPanel";
@@ -110,6 +116,52 @@ const Categories = () => {
       dispatch(setLoadingHourly(false));
     }
   };
+
+  /** Item rows for the open category — all three periods, since every figure in
+   *  the item report is graded against last week and last year.
+   *
+   *  Unlike the hourly drill-down this runs on selection rather than behind a
+   *  tab: it's one page per period, and the items *are* the report. */
+  useEffect(() => {
+    const category = cats.selectedCategory;
+    if (category === null || !cats.twStart || !cats.twEnd) return;
+
+    // Clicking down the list faster than the network responds would otherwise
+    // let an earlier, slower period land after a later one and render under the
+    // wrong category.
+    let cancelled = false;
+    dispatch(setLoadingItems(true));
+
+    (async () => {
+      try {
+        const rows = await fetchCatItemPeriods(
+          { url: context.url, token: context.token, storeid: cats.storeid },
+          cats.twStart,
+          cats.twEnd,
+          category,
+        );
+        if (!cancelled) dispatch(setItems(rows));
+      } catch {
+        if (!cancelled) toast.error("Couldn't load items for that category.");
+      } finally {
+        if (!cancelled) dispatch(setLoadingItems(false));
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // toast is deliberately absent: useToast returns a fresh object per render,
+    // so listing it would refetch every render.
+  }, [
+    dispatch,
+    cats.selectedCategory,
+    cats.twStart,
+    cats.twEnd,
+    cats.storeid,
+    context.url,
+    context.token,
+  ]);
 
   const entry = (
     <SingleStoreSearchCard

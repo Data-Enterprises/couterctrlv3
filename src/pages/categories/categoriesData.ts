@@ -1,6 +1,12 @@
 import { getCats } from "../../api/sales";
+import { getCatItems } from "../../api/cats";
 import { fetchAllPages, pageCount } from "../../utils/paging";
-import type { CatSalesDaily, CatSalesHourly, CatSalesResponse } from "../../interfaces";
+import type {
+  CatItem,
+  CatSalesDaily,
+  CatSalesHourly,
+  CatSalesResponse,
+} from "../../interfaces";
 import { LW_OFFSET, LY_OFFSET, shiftIso } from "./categoriesUtils";
 
 /** Fetching for the Categories page.
@@ -115,6 +121,69 @@ export const fetchAllPeriods = async (
   ]);
 
   return { tw, lw, ly, twDates: datesInRange(ranges.tw.start, ranges.tw.end) };
+};
+
+/**
+ * Item rows for one category, one period — `categories/cats`.
+ *
+ * Unlike the category totals above, this endpoint takes a category parameter,
+ * so the filtering happens server-side and one category's week comes back in a
+ * single page (120 rows for a busy soft-drink category).
+ */
+export const fetchCatItems = async (
+  scope: CategoryScope,
+  range: PeriodRange,
+  category: number,
+): Promise<CatItem[]> => {
+  const call = (page: number) =>
+    getCatItems(
+      scope.url,
+      scope.token,
+      category,
+      range.start,
+      range.end,
+      USE_GROUPS,
+      scope.storeid, // searchValue
+      SINGLE_STORE,
+      page,
+    );
+
+  const first = await call(1);
+  const body = first.data as CatSalesResponse<CatItem>;
+  if (body.error !== 0) return [];
+
+  return fetchAllPages(body, body.subs ?? [], async (page) => {
+    try {
+      const resp = await call(page);
+      const j = resp.data as CatSalesResponse<CatItem>;
+      return j.error === 0 ? (j.subs ?? []) : [];
+    } catch {
+      return [];
+    }
+  });
+};
+
+/**
+ * Item rows across all three periods.
+ *
+ * All three are needed because the item report grades every row against last
+ * week and last year — a margin figure with nothing to compare it to is just a
+ * number. Cheap enough to run on category select: one page per period, against
+ * the ten-per-period the category totals cost.
+ */
+export const fetchCatItemPeriods = async (
+  scope: CategoryScope,
+  twStart: string,
+  twEnd: string,
+  category: number,
+) => {
+  const ranges = periodRanges(twStart, twEnd);
+  const [tw, lw, ly] = await Promise.all([
+    fetchCatItems(scope, ranges.tw, category),
+    fetchCatItems(scope, ranges.lw, category),
+    fetchCatItems(scope, ranges.ly, category),
+  ]);
+  return { tw, lw, ly };
 };
 
 /**

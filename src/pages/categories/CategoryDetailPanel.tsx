@@ -9,6 +9,9 @@ import {
   severityHeaderBgClass,
   type Severity,
 } from "../../utils/severity";
+import DayCardStrip, { type DayCardEntry } from "../../components/DayCardStrip";
+import CategoryItemsTable from "./CategoryItemsTable";
+import CategoryExportModal from "./CategoryExportModal";
 import { fmtDayLabel, fmtRangeLabel } from "../../utils/dateLabels";
 import ThresholdSlider from "../../components/filters/ThresholdSlider";
 import ThresholdFilter from "../../components/filters/ThresholdFilter";
@@ -16,6 +19,7 @@ import {
   setSelectedDay,
   setThreshold,
   CATEGORY_THRESHOLD_DEFAULT,
+  ITEM_THRESHOLD_DEFAULT,
 } from "../../features/categoriesSlice";
 import {
   getTier,
@@ -27,7 +31,7 @@ import {
   type CategoryTier,
 } from "./categoriesUtils";
 
-type Tab = "days" | "hours";
+type Tab = "items" | "hours";
 
 /** Ungraded has no severity colour of its own, so the header falls back to the
  *  navy every other panel uses rather than borrowing a verdict colour. */
@@ -114,9 +118,10 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
   const cats = useAppSelector((s) => s.categories);
   const { rows, metric, threshold, selectedCategory, selectedDay, hourly, loadingHourly } = cats;
 
-  const [tab, setTab] = useState<Tab>("days");
+  const [tab, setTab] = useState<Tab>("items");
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
   const [sevFilter, setSevFilter] = useState<Severity | "all">("all");
+  const [exportOpen, setExportOpen] = useState(false);
   const [threshOpen, setThreshOpen] = useState(false);
   const threshRef = useRef<HTMLDivElement>(null);
 
@@ -222,18 +227,49 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
     ? fmtDayLabel(shiftIso(selectedDay, LY_OFFSET))
     : fmtRangeLabel(shiftIso(cats.twStart, LY_OFFSET), shiftIso(cats.twEnd, LY_OFFSET));
 
-  /* ── Left column rows, filtered by severity chip ───────────────────────── */
+  /* ── Day strip ─────────────────────────────────────────────────────────── */
 
-  const dayList = row.days.map((d) => {
+  /** The week's days, graded. Promoted out of the old Days tab into a strip of
+   *  its own: the day is a scope for everything below it — KPI strip, items and
+   *  hours alike — not one view among several. Same move Sub Dept Margins made
+   *  with its day sidebar, and the same shared card component.
+   *
+   *  No deltaSuffix — the component leaves it off by default, so which baseline
+   *  a card is graded against goes in the hover title instead. */
+  const dayCards: DayCardEntry[] = row.days.map((d) => {
     const l = dayLw(d);
     const y = dayLy(d);
     const lp = l === null || l === 0 ? null : pctChange(dayTw(d), l);
     const yp = y === null || y === 0 ? null : pctChange(dayTw(d), y);
-    const primary = yp ?? lp;
-    return { key: d.date, label: fmtDayLabel(d.date), value: dayTw(d), lp, yp, sev: tierOf(primary, activeThreshold) };
+    return {
+      iso: d.date,
+      value: fmt(dayTw(d)),
+      delta: yp ?? lp,
+      deltaTitle:
+        yp !== null
+          ? `vs last year: ${fmt(y as number)}`
+          : lp !== null
+            ? `vs last week: ${fmt(l as number)}`
+            : "No baseline",
+    };
   });
 
-  const hourList = hourRows.map((h) => ({
+  // The strip is always the whole week, never the selected day — the leading
+  // card is what clears the selection.
+  const weekLwValue = row.hasLW ? (isQty ? row.lwQty : row.lwNet) : null;
+  const weekLyValue = row.hasLY ? (isQty ? row.lyQty : row.lyNet) : null;
+  const weekLwPct =
+    weekLwValue === null || weekLwValue === 0
+      ? null
+      : pctChange(isQty ? row.twQtyForLW : row.twNetForLW, weekLwValue);
+  const weekLyPct =
+    weekLyValue === null || weekLyValue === 0
+      ? null
+      : pctChange(isQty ? row.twQtyForLY : row.twNetForLY, weekLyValue);
+
+  /* ── Hour rows, filtered by severity chip ──────────────────────────────── */
+
+  const list = hourRows.map((h) => ({
     key: String(h.hour),
     label: formatHour(h.hour),
     value: h.tw,
@@ -242,18 +278,12 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
     sev: tierOf(h.lyPct ?? h.lwPct, activeThreshold),
   }));
 
-  const list = tab === "days" ? dayList : hourList;
   const shown = sevFilter === "all" ? list : list.filter((r) => r.sev === sevFilter);
   const count = (s: Severity) => list.filter((r) => r.sev === s).length;
 
-  const selectedKey = tab === "days" ? selectedDay : selectedHour === null ? null : String(selectedHour);
-  const pick = (key: string) => {
-    if (tab === "days") {
-      dispatch(setSelectedDay(key === selectedDay ? null : key));
-    } else {
-      setSelectedHour(Number(key) === selectedHour ? null : Number(key));
-    }
-  };
+  const selectedKey = selectedHour === null ? null : String(selectedHour);
+  const pick = (key: string) =>
+    setSelectedHour(Number(key) === selectedHour ? null : Number(key));
 
   const sevChip = (sev: Severity, label: string) => (
     <button
@@ -269,29 +299,6 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
   /* ── Report column for the current selection ───────────────────────────── */
 
   const report = (() => {
-    if (tab === "days") {
-      if (!activeDay) return null;
-      const d = activeDay.detail;
-      const coupons = d.elecInstore + d.elecStore + d.digital + d.storeCoupon;
-      return {
-        title: fmtDayLabel(activeDay.date),
-        stats: [
-          ["Gross sales", formatCurrency2(d.gross)],
-          ["Net sales", formatCurrency2(d.net)],
-          ["Tax", formatCurrency2(d.tax)],
-          ["Units", formatBigNumber(d.qty, 0)],
-          ["Weight", d.weight ? formatBigNumber(d.weight, 0) : "—"],
-          ["Avg price / unit", d.qty > 0 ? formatCurrency2(d.net / d.qty) : "—"],
-        ] as [string, string][],
-        coupons: [
-          ["Electronic in-store", formatCurrency2(d.elecInstore)],
-          ["Electronic store", formatCurrency2(d.elecStore)],
-          ["Digital", formatCurrency2(d.digital)],
-          ["Store coupon", formatCurrency2(d.storeCoupon)],
-          ["Total", formatCurrency2(coupons)],
-        ] as [string, string][],
-      };
-    }
     const h = hourRows.find((x) => x.hour === selectedHour);
     if (!h?.detail) return null;
     const dt = h.detail;
@@ -305,12 +312,29 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
         ["Avg basket", isQty ? formatBigNumber(dt.basket / Math.max(dt.n, 1), 0) : formatCurrency2(dt.basket / Math.max(dt.n, 1))],
         ["Avg item price", formatCurrency2(dt.avgPrice / Math.max(dt.n, 1))],
       ] as [string, string][],
-      coupons: null,
     };
   })();
 
   return (
     <div className="flex-1 min-w-0 shadow-lg bg-custom-white rounded-xl overflow-hidden flex flex-col">
+      {exportOpen && (
+        <CategoryExportModal
+          onClose={() => setExportOpen(false)}
+          storeName={cats.storeName}
+          categoryName={row.description ?? "Uncategorized"}
+          // The week, not twLabel — twLabel narrows to the selected day, and the
+          // modal needs the week to label its "All week" option.
+          dateRange={fmtRangeLabel(cats.twStart, cats.twEnd)}
+          rows={rows}
+          items={cats.items}
+          hourly={hourly}
+          metric={metric}
+          threshold={activeThreshold}
+          itemThreshold={cats.itemThreshold ?? ITEM_THRESHOLD_DEFAULT}
+          weekDates={row.days.map((d) => d.date)}
+          selectedDay={selectedDay}
+        />
+      )}
       {/* Title bar — tinted to the selected category's severity */}
       <div
         className={`grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${headerBg(tier)}`}
@@ -322,6 +346,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
           Category Performance · {twLabel}
         </span>
         <button
+          onClick={() => setExportOpen(true)}
           className="justify-self-end w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors"
           title="Export"
         >
@@ -353,9 +378,21 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
         />
       </div>
 
+      {/* Day strip — the shared Performance-page card strip. Sales/qty rising is
+          good here, so higherIsWorse is off; LP and Coupon Sales want the
+          opposite and that's exactly what the flag is for. */}
+      <DayCardStrip
+        days={dayCards}
+        weekValue={fmt(isQty ? row.twQty : row.twNet)}
+        weekDelta={weekLyPct ?? weekLwPct}
+        selected={selectedDay ?? ""}
+        onSelect={(iso) => dispatch(setSelectedDay(iso === "" ? null : iso))}
+        higherIsWorse={false}
+      />
+
       {/* Tabs */}
       <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
-        {(["days", "hours"] as const).map((k) => (
+        {(["items", "hours"] as const).map((k) => (
           <button
             key={k}
             onClick={() => {
@@ -369,7 +406,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
                 : "border-transparent text-content/70 hover:text-content/80"
             }`}
           >
-            {k === "days" ? "Days" : "Hours"}
+            {k === "items" ? "Items" : "Hours"}
           </button>
         ))}
         <div className="flex-1" />
@@ -380,8 +417,10 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
         )}
       </div>
 
+      {tab === "items" && <CategoryItemsTable />}
+
       {/* Two-column: graded list left, report right */}
-      <div className="flex-1 min-h-0 flex">
+      <div className={`flex-1 min-h-0 flex ${tab === "items" ? "hidden" : ""}`}>
         <div
           className="flex flex-col border-r border-gray-100 min-h-0"
           style={{ width: "36.5%" }}
@@ -421,14 +460,14 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
           </div>
 
           <div className="overflow-y-auto thin-scrollbar flex-1">
-            {tab === "hours" && loadingHourly ? (
+            {loadingHourly ? (
               <div className="flex items-center justify-center gap-2 h-24">
                 <div className="w-3.5 h-3.5 border-2 border-gray-200 border-t-[#1e2a4a] rounded-full animate-spin" />
                 <span className="text-[11px] text-content">Loading hours…</span>
               </div>
             ) : shown.length === 0 ? (
               <div className="flex items-center justify-center h-24 text-[11px] text-content/40">
-                {tab === "hours" ? "No hourly rows" : "None this week"}
+                No hourly rows
               </div>
             ) : (
               shown.map((r) => (
@@ -463,7 +502,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
         <div className="flex-1 min-w-0 flex flex-col min-h-0">
           {!report ? (
             <div className="flex-1 flex items-center justify-center text-[11px] text-content/40">
-              Select a {tab === "days" ? "day" : "hour"} to see its report
+              Select an hour to see its report
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto thin-scrollbar">
@@ -473,18 +512,6 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
               {report.stats.map(([label, value]) => (
                 <Stat key={label} label={label} value={value} />
               ))}
-              {report.coupons && (
-                <>
-                  <div className="px-3 py-1.5 border-b border-gray-100 bg-gray-50">
-                    <span className="text-[10px] font-bold uppercase tracking-wide text-content/70">
-                      Coupons
-                    </span>
-                  </div>
-                  {report.coupons.map(([label, value]) => (
-                    <Stat key={label} label={label} value={value} />
-                  ))}
-                </>
-              )}
             </div>
           )}
         </div>

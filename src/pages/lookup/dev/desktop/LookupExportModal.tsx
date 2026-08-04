@@ -39,7 +39,7 @@ const BATCH_COLS: { key: BatchColKey; label: string; defaultOn: boolean }[] = [
   { key: "marginPct", label: "Margin %", defaultOn: true },
   { key: "avgSoldAt", label: "Avg sold at", defaultOn: false },
   { key: "listPrice", label: "List price", defaultOn: false },
-  { key: "caseCost", label: "Case cost", defaultOn: false },
+  { key: "caseCost", label: "Cost / unit", defaultOn: false },
   { key: "totalQty", label: "Total units", defaultOn: false },
   { key: "daysSold", label: "Days sold", defaultOn: false },
 ];
@@ -49,7 +49,7 @@ const DAILY_COLS: { key: DailyColKey; label: string; defaultOn: boolean }[] = [
   { key: "qty", label: "Qty", defaultOn: true },
   { key: "revenue", label: "Revenue", defaultOn: true },
   { key: "cost", label: "Cost", defaultOn: false },
-  { key: "caseCost", label: "Case cost", defaultOn: false },
+  { key: "caseCost", label: "Cost / unit", defaultOn: false },
   { key: "listPrice", label: "List price", defaultOn: false },
   { key: "marginPct", label: "Margin %", defaultOn: true },
 ];
@@ -82,7 +82,7 @@ const buildBatchRows = (queue: QueueItem[]): BatchRow[] =>
         marginPct: margin.marginPct,
         avgSoldAt: margin.avgSoldAt,
         listPrice: margin.listPrice,
-        caseCost: margin.caseCost,
+        caseCost: margin.unitCost,
         totalQty: q.totalQty ?? 0,
         daysSold: q.daysSold ?? 0,
       };

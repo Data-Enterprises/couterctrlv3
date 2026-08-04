@@ -59,14 +59,14 @@ const Toast = ({ toast, onClick }: ToastCmpProps) => {
       <div className="flex w-full">
         {useIcon ? (
           <div
-            className={`flex rounded-l-lg toast-${type} h-[57px] place-items-center justify-center px-4 border-r border-white`}
+            className={`flex rounded-l-lg toast-${type} h-[57px] place-items-center justify-center px-4 border-r border-custom-white`}
           >
             {getIcon()}
           </div>
         ) : null}
         <div className="flex flex-col w-full">
           <div
-            className={`uppercase border-b border-white pl-2 toast-${type} rounded-tr-lg w-full`}
+            className={`uppercase border-b border-custom-white pl-2 toast-${type} rounded-tr-lg w-full`}
           >
             {type}
           </div>

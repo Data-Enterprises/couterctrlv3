@@ -6,7 +6,7 @@ import { QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
  * The "?" button in a navy panel header.
  *
  * Eleven panels had drifted into four different versions of this — some with
- * raw `border-white`, some at /50 opacity instead of /75, one with a smaller
+ * raw `border-custom-white`, some at /50 opacity instead of /75, one with a smaller
  * icon and no border colour at all. The styling lives here so there's one to
  * change.
  *
