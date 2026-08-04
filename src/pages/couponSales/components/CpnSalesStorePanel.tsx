@@ -1,5 +1,6 @@
+import InfoButton from "../../../components/InfoButton";
 import { useMemo, useRef, useState } from "react";
-import { MagnifyingGlassIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
+import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { formatCurrency2, formatBigNumber } from "../../../utils";
 import {
@@ -216,13 +217,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
           {/* About this view — sits after the threshold, matching Sales and
               Sub Dept Margins. */}
           <div className="relative flex-shrink-0">
-            <button
-              onClick={() => setInfoOpen((o) => !o)}
-              title="About this view"
-              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/75 hover:text-custom-white hover:border-custom-white/40 transition-colors"
-            >
-              <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
-            </button>
+            <InfoButton onClick={() => setInfoOpen((o) => !o)} />
             {infoOpen && (
               <InfoPopover
                 title={COUPON_SALES_INFO.title}

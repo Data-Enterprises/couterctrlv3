@@ -1,3 +1,4 @@
+import InfoButton from "../../../components/InfoButton";
 import { useState, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import {
@@ -9,7 +10,6 @@ import { formatCurrencyCompact, formatBigNumber } from "../../../utils";
 import { formatPct } from "./tierColumnUtils";
 import {
   MagnifyingGlassIcon,
-  QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import ThresholdSlider from "../../../components/filters/ThresholdSlider";
@@ -154,13 +154,7 @@ const LedgerHeader = ({
 
         {/* About this view */}
         <div className="relative flex-shrink-0">
-          <button
-            onClick={() => setInfoOpen((prev) => !prev)}
-            title="About this view"
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/75 hover:text-custom-white hover:border-custom-white/40 transition-colors"
-          >
-            <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
-          </button>
+          <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
           {infoOpen && (
             <InfoPopover
               title={SALES_LEDGER_INFO.title}

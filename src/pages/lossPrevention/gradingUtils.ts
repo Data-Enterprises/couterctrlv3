@@ -288,21 +288,66 @@ export const gradeCashier = (
 
 const SEVERITY_RANK: Record<CashierSeverity, number> = { critical: 0, watch: 1, ok: 2, ungraded: 3 };
 
+/** YYYY-MM-DD → weekday index, parsed as UTC so the day can't shift by one for
+ *  anyone west of Greenwich. */
+export const weekdayOf = (isoDate: string): number => {
+  const [y, m, d] = isoDate.split("T")[0].split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+};
+
+/**
+ * Narrow a baseline to the same weekday as the selected day, and report how
+ * many of that weekday it actually contains.
+ *
+ * Refund volume is wildly weekday-dependent — a Saturday out-trades a Tuesday
+ * by a mile — so a single Thursday has to be judged against the *other
+ * Thursdays* in the baseline, not against a flat daily average. Comparing a
+ * Saturday to an average day would flag every Saturday and excuse every
+ * Tuesday.
+ *
+ * The divisor is counted from the data rather than assumed to be 2: a store
+ * closed on one of those days, or a short baseline window, should divide by
+ * what is actually there. Zero matches leaves the cashier ungraded, which
+ * gradeCashier already handles — a missing baseline is not a zero baseline.
+ */
+export const matchWeekday = (
+  baselineOverviews: TransactionOverview[],
+  isoDate: string,
+): { overviews: TransactionOverview[]; periods: number } => {
+  const target = weekdayOf(isoDate);
+  const overviews = baselineOverviews.filter(
+    (o) => weekdayOf(o.sale_date) === target,
+  );
+  const periods = new Set(overviews.map((o) => o.sale_date.split("T")[0])).size;
+  return { overviews, periods };
+};
+
 /**
  * currentOverviews: 7-day window (singleDate - 6 → singleDate)
  * baselineOverviews: prior 2-week window (singleDate - 20 → singleDate - 7)
+ * baselinePeriods: how many current-length periods the baseline spans, so the
+ *   two sides are on the same scale. 2 for the default week view; for a single
+ *   day it is the number of matching weekdays found — see matchWeekday.
  */
 export const gradeAllCashiers = (
   currentOverviews: TransactionOverview[],
   baselineOverviews: TransactionOverview[],
   cashiers: UniqueCashier[],
   saleType: string,
+  baselinePeriods = 2,
 ): CashierGrade[] => {
   const currentStats  = buildCashierStats(currentOverviews, cashiers);
   const baselineStats = buildCashierStats(baselineOverviews, []);
   const baselineMap   = new Map(baselineStats.map((s) => [s.cashier_number, s]));
 
   return currentStats
-    .map((s) => gradeCashier(s, baselineMap.get(s.cashier_number) ?? null, 2, saleType))
+    .map((s) =>
+      gradeCashier(
+        s,
+        baselineMap.get(s.cashier_number) ?? null,
+        Math.max(baselinePeriods, 1),
+        saleType,
+      ),
+    )
     .sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity]);
 };

@@ -11,6 +11,7 @@ import ErrorBoundary from "./components/ErrorBoundary.tsx";
 import App from "./App.tsx";
 import Home from "./pages/home/Home.tsx";
 import CouponSales from "./pages/couponSales/CouponSales.tsx";
+import Categories from "./pages/categories/Categories.tsx";
 import { SalesPage, LossPreventionPage, OrdersPage, CouponsPage, ReceiversPage, CashiersPage, UpcPage, ItemLookupPage, AdminPage, GroupsPage, OrganizationPage } from "./DevPages.tsx";
 import Settings from "./pages/settings/Settings.tsx";
 import Forecasting from "./pages/forecast/Forecasting.tsx";
@@ -40,6 +41,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="receivers" element={<ReceiversPage />} />
                 <Route path="coupons" element={<CouponsPage />} />
                 <Route path="coupon-sales" element={<CouponSales />} />
+                <Route path="categories" element={<Categories />} />
                 <Route path="admin" element={<AdminPage />} />
                 <Route path="sub-dept-margins" element={<SubDeptMargins />} />
                 <Route path="cashiers" element={<CashiersPage />} />

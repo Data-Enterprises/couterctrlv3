@@ -1,5 +1,6 @@
+import InfoButton from "../../../../components/InfoButton";
 import { useRef, useState } from "react";
-import { MagnifyingGlassIcon, QuestionMarkCircleIcon } from "@heroicons/react/16/solid";
+import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
 import { formatDate } from "../widgets";
@@ -303,13 +304,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
           </div>
 
           <div className="relative flex-shrink-0">
-            <button
-              onClick={() => setInfoOpen((prev) => !prev)}
-              title="About this view"
-              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/75 hover:text-custom-white hover:border-custom-white/40 transition-colors"
-            >
-              <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
-            </button>
+            <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
             {infoOpen && (
               <InfoPopover
                 title={SUB_DEPT_MARGINS_INFO.title}

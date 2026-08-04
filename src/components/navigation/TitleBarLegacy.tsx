@@ -1,4 +1,4 @@
-import logo from "../../assets/dcr_counterctrl-favicon_32.png";
+import logo from "../../assets/portal/logo.webp";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { setIsNavOpen } from "../../features/navSlice";
@@ -17,7 +17,7 @@ const TitleBarLegacy = () => {
   const width = context.isDesktop ? "w-[202px]" : "";
   const welcomeWidth = context.isDesktop
     ? "w-[calc(100vw-12rem)]"
-    : "w-[calc(100vw-3rem)]";
+    : "w-[calc(100vw-8.2rem)]";
 
   return (
     <div
@@ -29,15 +29,23 @@ const TitleBarLegacy = () => {
         className={`${width} flex items-center shadow shadow-content/10 border-r cursor-pointer hover:bg-blue-200 transition-all duration-300`}
         onClick={toggleNav}
       >
-        <img src={logo} alt="Logo" className="h-8 w-8 m-2 inline-block" />
-        {context.isDesktop && <div className="font-medium">CounterCtrl</div>}
+        {/* The wordmark already reads "CounterCtrl Cloud", so the adjacent
+            text label is gone — it was also too wide to fit alongside it in
+            the 202px logo area. */}
+        <img
+          src={logo}
+          alt="CounterCtrl Cloud"
+          className="h-7 w-auto m-2 block"
+        />
       </div>
       <div
-        className={`shadow shadow-content/10 ${welcomeWidth} flex justify-between`}
+        className={`shadow shadow-content/10 ${welcomeWidth} flex justify-end`}
       >
-        <div className="ml-4 text-[12px] md:text-sm flex items-center justify-between font-medium w-full relative">
-          <div>Welcome {user.firstName}</div>
-        </div>
+        {context.isDesktop ? (
+          <div className="ml-4 text-[12px] md:text-sm flex items-center justify-between font-medium w-full relative">
+            <div>Welcome {user.firstName}</div>
+          </div>
+        ) : null}
         <div className="flex items-center h-full gap-2 pr-2">
           {user.role === 9 || user.userLevel >= 2 ? (
             <button

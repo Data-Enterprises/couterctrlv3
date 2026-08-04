@@ -1,7 +1,7 @@
+import InfoButton from "../../../../components/InfoButton";
 import { useState } from "react";
 import {
   MagnifyingGlassIcon,
-  QuestionMarkCircleIcon,
 } from "@heroicons/react/16/solid";
 import { useAppDispatch } from "../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
@@ -113,9 +113,9 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
         </div>
 
         {/* Row 2: search icon + store name | ? icon */}
-        <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-white/[0.08]">
+        <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
           <button
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/60 hover:text-custom-white hover:border-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
             onClick={onSearchOpen}
             title="Search"
           >
@@ -140,12 +140,10 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
             onMouseEnter={() => setLegendHover(true)}
             onMouseLeave={() => setLegendHover(false)}
           >
-            <button className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/50 hover:text-custom-white hover:border-white/40 transition-colors">
-              <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
-            </button>
+            <InfoButton title="Metric legend" />
             {legendHover && (
               <div
-                className="absolute right-0 top-full mt-1.5 z-50 bg-[#1e2a4a] border border-white/15 rounded-lg shadow-lg px-3 py-2.5 flex flex-col gap-1.5"
+                className="absolute right-0 top-full mt-1.5 z-50 bg-[#1e2a4a] border border-custom-white/15 rounded-lg shadow-lg px-3 py-2.5 flex flex-col gap-1.5"
                 style={{ minWidth: 220 }}
               >
                 <div className="text-[9px] font-semibold uppercase tracking-wide text-custom-white/35">
