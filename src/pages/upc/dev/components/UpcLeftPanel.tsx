@@ -1,7 +1,7 @@
+import InfoButton from "../../../../components/InfoButton";
 import { useState } from "react";
 import {
   MagnifyingGlassIcon,
-  QuestionMarkCircleIcon,
 } from "@heroicons/react/16/solid";
 import { useAppSelector } from "../../../../hooks";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
@@ -63,14 +63,7 @@ const UpcLeftPanel = ({ onReSearch }: Props) => {
             {locationLabel}
           </span>
 
-          <button
-            onClick={() => setInfoOpen((prev) => !prev)}
-            title="About this view"
-            className="flex items-center justify-center w-[22px] h-[22px] rounded border text-custom-white hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
-            style={{ borderColor: "rgb(var(--color-custom-white) / 0.20)" }}
-          >
-            <QuestionMarkCircleIcon className="w-3 h-3" />
-          </button>
+          <InfoButton onClick={() => setInfoOpen((prev) => !prev)} className="flex-shrink-0" />
         </div>
 
         {infoOpen && <ModuleInfoPopover tab={ctx.activeTab} onClose={() => setInfoOpen(false)} />}

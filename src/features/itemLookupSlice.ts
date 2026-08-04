@@ -27,6 +27,28 @@ export interface ItemLookupHistory {
   store_number: string;
   storeid: number;
   total_sales: number;
+  /** Pounds sold on a scale item, 0 on an each-priced one. This — not `qty`,
+   *  which counts rings — is what COGS multiplies by. */
+  weight: number;
+  /** Cost after vendor allowance, per CASE. `casecost` is per unit, so the two
+   *  are in different units and must not be compared directly. See
+   *  `rowUnitCost` for how it gets brought down to a unit. */
+  net_cost: number;
+  /** List/invoice cost, per CASE. Optional until the endpoint adds it — with
+   *  it, `net_cost` can be converted to a per-unit figure without `case_size`
+   *  (see `rowUnitCost`). */
+  cost?: number;
+  /** Cost of one unit after vendor allowance, falling back to list cost when
+   *  there's no allowance — the figure Sub Dept Margins costs against.
+   *
+   *  Optional because it lands with the next endpoint deploy; `rowCogs` falls
+   *  back to `casecost` until then, so the two releases don't have to be
+   *  coordinated. Once it's live this can lose the `?`. */
+  unit_cost?: number;
+  /** Server-side COGS: `unit_cost` x weight-or-qty. Not consumed — we compute
+   *  our own so the figure survives this field being absent — but typed so the
+   *  payload is documented in one place. */
+  cogs?: number;
 }
 
 export interface RecentLookup {

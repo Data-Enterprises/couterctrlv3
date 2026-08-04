@@ -147,10 +147,10 @@ const LookupResultScreen = ({
             </div>
             <div>
               <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
-                Case cost
+                Cost / unit
               </div>
               <div className="text-[13px] font-semibold tabular-nums mt-0.5">
-                {formatCurrency2(margin.caseCost)}
+                {formatCurrency2(margin.unitCost)}
               </div>
             </div>
           </div>

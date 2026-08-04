@@ -1,11 +1,18 @@
 import { useMemo, useState } from "react";
 import CashiersExportModal from "./explorer/CashiersExportModal";
-import { ArrowDownTrayIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import {
+  ArrowDownTrayIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/20/solid";
 import { useCashierCtx } from ".";
 import { useAppSelector } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { formatGoliathDate, formatCurrency2, getStoreName } from "../../utils";
-import { getSaleTypes, getCashierTable, getTransactionList } from "../../api/lossPrevention";
+import {
+  getSaleTypes,
+  getCashierTable,
+  getTransactionList,
+} from "../../api/lossPrevention";
 import type { JsonError, TransactionListItem } from "../../interfaces";
 import type { ExplorerLens } from "../../features/cashiersSlice";
 import {
@@ -23,7 +30,11 @@ import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import ExplorerSearch from "./explorer/ExplorerSearch";
 import LensPanel from "./explorer/LensPanel";
 import SignalDetail from "./explorer/SignalDetail";
-import { buildTransactionLengths, buildSignals, buildTotals } from "./explorer/lensUtils";
+import {
+  buildTransactionLengths,
+  buildSignals,
+  buildTotals,
+} from "./explorer/lensUtils";
 import CashiersMobile from "./mobile/CashiersMobile";
 
 // LP grades against "the prior 2 weeks" (see lossPrevention/lpInfo.ts), so the
@@ -91,7 +102,15 @@ const Cashiers = () => {
     ctx.dispatch(setExplorerSaleTypes([]));
     ctx.dispatch(setExplorerException(""));
 
-    getSaleTypes(ctx.url, ctx.token, start, end, useGroups, searchValue, singleStore)
+    getSaleTypes(
+      ctx.url,
+      ctx.token,
+      start,
+      end,
+      useGroups,
+      searchValue,
+      singleStore,
+    )
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
@@ -145,7 +164,15 @@ const Cashiers = () => {
 
     try {
       const firstResp = await getCashierTable(
-        ctx.url, ctx.token, start, end, useGroups, searchValue, singleStore, [exception], 1,
+        ctx.url,
+        ctx.token,
+        start,
+        end,
+        useGroups,
+        searchValue,
+        singleStore,
+        [exception],
+        1,
       );
       const first = firstResp.data;
       if (first.error !== 0) {
@@ -159,7 +186,15 @@ const Cashiers = () => {
         first.transactions as { sale_id: string }[],
         (page) =>
           getCashierTable(
-            ctx.url, ctx.token, start, end, useGroups, searchValue, singleStore, [exception], page,
+            ctx.url,
+            ctx.token,
+            start,
+            end,
+            useGroups,
+            searchValue,
+            singleStore,
+            [exception],
+            page,
           ).then((r) => (r.data.error === 0 ? r.data.transactions : [])),
       );
 
@@ -174,7 +209,13 @@ const Cashiers = () => {
       }
 
       ctx.dispatch(setExplorerMessage("Loading receipts…"));
-      const listResp = await getTransactionList(ctx.url, ctx.token, saleIds, 1, exception);
+      const listResp = await getTransactionList(
+        ctx.url,
+        ctx.token,
+        saleIds,
+        1,
+        exception,
+      );
       const list = listResp.data;
       if (list.error !== 0) {
         toast.warn(list.msg || "Could not load transactions");
@@ -210,7 +251,8 @@ const Cashiers = () => {
   // transaction_list hands back whole receipts, so the signal maths has to run
   // on just the lines matching the exception the user picked.
   const exceptionRows = useMemo(
-    () => explorerAllRows.filter((r) => r.sale_type === explorerFetchedException),
+    () =>
+      explorerAllRows.filter((r) => r.sale_type === explorerFetchedException),
     [explorerAllRows, explorerFetchedException],
   );
 
@@ -229,7 +271,8 @@ const Cashiers = () => {
     const q = signalSearch.toLowerCase();
     return signals.filter(
       (s) =>
-        s.label.toLowerCase().includes(q) || s.sublabel.toLowerCase().includes(q),
+        s.label.toLowerCase().includes(q) ||
+        s.sublabel.toLowerCase().includes(q),
     );
   }, [signals, signalSearch]);
 
@@ -277,14 +320,14 @@ const Cashiers = () => {
           <button
             onClick={() => setSearchOpen(true)}
             title="New search"
-            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-white/20 text-custom-white/60 hover:text-custom-white hover:border-white/40 transition-colors flex-shrink-0"
+            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setExportOpen(true)}
             title="Export CSV"
-            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-white/20 text-custom-white/60 hover:text-custom-white hover:border-white/40 transition-colors flex-shrink-0"
+            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
           >
             <ArrowDownTrayIcon className="w-3.5 h-3.5" />
           </button>
@@ -292,14 +335,23 @@ const Cashiers = () => {
 
         <div className="grid grid-cols-6 border-b border-gray-100 flex-shrink-0">
           {[
-            { label: "Exception lines", value: totals.exceptions.toLocaleString() },
-            { label: "Transactions", value: totals.transactions.toLocaleString() },
+            {
+              label: "Exception lines",
+              value: totals.exceptions.toLocaleString(),
+            },
+            {
+              label: "Transactions",
+              value: totals.transactions.toLocaleString(),
+            },
             { label: "Amount", value: formatCurrency2(totals.amount) },
             { label: "Stores", value: totals.stores.toLocaleString() },
             { label: "Cashiers", value: totals.cashiers.toLocaleString() },
             { label: "Items", value: totals.items.toLocaleString() },
           ].map((kpi) => (
-            <div key={kpi.label} className="px-3 py-2 border-r border-gray-100 last:border-r-0">
+            <div
+              key={kpi.label}
+              className="px-3 py-2 border-r border-gray-100 last:border-r-0"
+            >
               <div className="text-[11px] text-content/85">{kpi.label}</div>
               <div className="text-[16px] font-medium text-content">
                 {kpi.value}
@@ -314,7 +366,8 @@ const Cashiers = () => {
           </div>
         ) : exceptionRows.length === 0 ? (
           <div className="flex-1 flex items-center justify-center text-[13px] font-medium text-content/60">
-            No {explorerFetchedException.toLowerCase()} transactions in this range
+            No {explorerFetchedException.toLowerCase()} transactions in this
+            range
           </div>
         ) : (
           <div className="flex-1 min-h-0 flex">

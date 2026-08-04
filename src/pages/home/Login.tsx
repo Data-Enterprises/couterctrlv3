@@ -38,7 +38,7 @@ import PrivacyPanel from "./portal/privacy/PrivacyPanel";
 import { getBlogs, getBlogFile } from "../../api/portal";
 import { POSTS, toPosts, type Post } from "../../content/posts";
 
-const VERSION = "Last updated 8/3/2026 @ 4:38 PM CST";
+const VERSION = "Last updated 8/4/2026 @ 5:11 PM CST";
 
 /** PLACEHOLDER: `/html_pages/` only exists on the dev API today, and this page
  *  runs before sign-in — `context.url` is always VITE_API_URL_PROD here, since

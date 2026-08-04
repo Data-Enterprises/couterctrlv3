@@ -122,11 +122,12 @@ const Organization = () => {
           <button
             onClick={() => {
               if (tab === "users") ctx.dispatch(setUsersExportOpen(true));
-              else if (tab === "baseGroups") ctx.dispatch(setBaseGroupExportOpen(true));
+              else if (tab === "baseGroups")
+                ctx.dispatch(setBaseGroupExportOpen(true));
               else ctx.dispatch(setStoresExportOpen(true));
             }}
             title="Export CSV"
-            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-white/20 text-custom-white/60 hover:text-custom-white hover:border-white/40 transition-colors flex-shrink-0"
+            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
           >
             <ArrowDownTrayIcon className="w-3.5 h-3.5" />
           </button>

@@ -235,7 +235,7 @@ function head({ title, description, canonical, image, type = "website", publishe
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${esc(canonical)}">
-<link rel="icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <meta property="og:type" content="${type}">
 <meta property="og:site_name" content="${SITE}">
 <meta property="og:title" content="${esc(title)}">
@@ -258,6 +258,8 @@ const nav = `
   <nav aria-label="Main">
     <a href="/${ARCHIVE}">Field Notes</a>
     <a href="/${ABOUT}">About</a>
+    <a class="secondary" href="/${TERMS}">Terms</a>
+    <a class="secondary" href="/${PRIVACY}">Privacy</a>
     <a href="/">Sign in</a>
     <a class="cta" href="/${WALKTHROUGH}">Book a walkthrough</a>
   </nav>
@@ -777,9 +779,13 @@ img{max-width:100%;height:auto;border-radius:12px;display:block}
   flex-wrap:wrap;padding:16px 24px;background:var(--paper);border-bottom:1px solid var(--line)}
 .site-logo{font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:16px;
   color:var(--navy);text-decoration:none;letter-spacing:-.02em}
-.site-hd nav{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.site-hd nav{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .site-hd nav a{font-size:14px;color:var(--slate);text-decoration:none}
 .site-hd nav a:hover{color:var(--navy)}
+/* legal links are required furniture, not navigation — present but quieter,
+   so they don't compete with Field Notes and About for attention */
+.site-hd nav a.secondary{font-size:13px;color:#8494a8}
+.site-hd nav a.secondary:hover{color:var(--navy)}
 .site-hd nav a.cta,.cta{background:var(--navy);color:#fff;text-decoration:none;
   padding:9px 16px;border-radius:8px;font-weight:600;font-size:14px;display:inline-block}
 .site-hd nav a.cta:hover,.cta:hover{background:var(--navy-2)}

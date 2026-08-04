@@ -1,5 +1,6 @@
+import InfoButton from "../../../components/InfoButton";
 import { useState, useMemo } from "react";
-import { MagnifyingGlassIcon, ChevronRightIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
+import { MagnifyingGlassIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import type { GroupedOrderCard, SelectedOrderKey } from "../../../features/ordersSlice";
 import type { Group } from "../../../features/groupSlice";
 import type { Store } from "../../../interfaces";
@@ -124,11 +125,11 @@ const isSelected = (order_date: string, order_type: string, storeid: number, sto
           <div className="flex-1" />
         </div>
         {/* Row 2: search + group name + legend */}
-        <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-white/[0.08]">
+        <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
           <button
             onClick={onOpenSearch}
             aria-label="New search"
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/60 hover:text-custom-white hover:border-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
@@ -145,13 +146,7 @@ const isSelected = (order_date: string, order_type: string, storeid: number, sto
           )}
           <div className="flex-1" />
           <div className="relative flex-shrink-0">
-            <button
-              onClick={() => setInfoOpen((prev) => !prev)}
-              title="About this view"
-              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/50 hover:text-custom-white hover:border-white/40 transition-colors"
-            >
-              <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
-            </button>
+            <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
             {infoOpen && (
               <InfoPopover
                 title={ORDERS_INFO.title}

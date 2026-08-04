@@ -13,11 +13,32 @@ import {
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
-import { calculateCogs, getLYDate } from "../..";
+import { getLYDate } from "../..";
 import { severityDotClass } from "../../../../utils/severity";
 import { formatCurrency2, addDays } from "../../../../utils";
+import {
+  buildItemRows,
+  buildItemDetail,
+  buildInsight,
+  getItemSeverity,
+  getRowMetric,
+  deltaTextClass,
+  fmtDelta,
+  dayTrend,
+  sortValue,
+  presetKey,
+  VIEW_PRESETS,
+  VIEW_OPTIONS,
+  SEV_RANK,
+  SEV_PILL_CLASSES,
+  WEEKDAY_ORDER,
+  type ItemMarginRow,
+  type ItemSeverity as Severity,
+  type RowMetricKey,
+  type SortCol,
+  type GradedSeverity,
+} from "../../../../utils/itemMargins";
 import type { SubDeptMargin } from "../../../../interfaces";
-import type { GradingMetric } from "../../../../features/subMarginSlice";
 import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
 import type { ThresholdValue } from "../../../../components/filters/ThresholdFilter";
 import SelectFilter from "../../../../components/filters/SelectFilter";
@@ -25,94 +46,7 @@ import UpcContextMenu from "../../../../components/UpcContextMenu";
 import SharedSeverityBadge from "../../../../components/SeverityBadge";
 import { chipClass, CTA_SEVERITY_CLASSES } from "../../../../utils/severity";
 
-type Severity = "critical" | "watch" | "healthy" | "ungraded";
 type SevFilter = "all" | Severity;
-// Default grouping when no severity chip is active — Ungraded always sinks
-// to the bottom regardless of which View preset is sorting within groups.
-const SEV_RANK: Record<Severity, number> = {
-  critical: 0,
-  watch: 1,
-  healthy: 2,
-  ungraded: 3,
-};
-// Graded-only subset (no "ungraded") — what CTA_SEVERITY_CLASSES and the
-// insight banner actually key off of, since an insight never fires ungraded.
-type GradedSeverity = "critical" | "watch" | "healthy";
-
-interface ItemMarginRow {
-  productCode: string;
-  description: string;
-  grossSales: number;
-  netSales: number;
-  tax: number;
-  qty: number;
-  cogs: number;
-  costFees: number;
-  tyMarginPct: number;
-  lwMarginPct: number | null;
-  lyMarginPct: number | null;
-  // Share of the whole sub dept's sales for that same period — null for
-  // LW/LY when the item had no sales that period, same "no data" convention
-  // as tyMarginPct/lwMarginPct above.
-  tyContributionPct: number;
-  lwContributionPct: number | null;
-  lyContributionPct: number | null;
-  // Whether the item had any sales at all in LW/LY — drives the "—" vs.
-  // graded-pill treatment for every vs-LW/vs-LY figure below.
-  hasLW: boolean;
-  hasLY: boolean;
-  // "Primary" % change vs LY, falling back to LW when there's no LY data —
-  // same preference order as getItemSeverity's margin trend. Used for the
-  // single-line trend badge in the item report's KPI strip.
-  salesTrendPct: number | null;
-  qtyTrendPct: number | null;
-  marginTrendPct: number | null;
-  // Separate (not "primary") vs LW / vs LY % change per metric — the left
-  // list shows both independently, same as the sub dept rows in dev Sales.
-  lwSalesPct: number | null;
-  lySalesPct: number | null;
-  lwQtyPct: number | null;
-  lyQtyPct: number | null;
-  lwCogsPct: number | null;
-  lyCogsPct: number | null;
-  // Raw LW/LY figures (native units, not a % change) — the left list's vs
-  // LW/vs LY columns display these directly per the selected View, coloring
-  // still comes from the *Pct fields above so grading stays threshold-based.
-  lwGrossSales: number | null;
-  lyGrossSales: number | null;
-  lwQty: number | null;
-  lyQty: number | null;
-  lwCogs: number | null;
-  lyCogs: number | null;
-}
-
-// Only the metrics a View preset can rank by — these are the only sortCol
-// values reachable now that the flat multi-column table is gone.
-type SortCol = "contribution" | "salesTrend" | "qty" | "cogs" | "marginTrend" | "marginPct";
-type RowMetricKey = "contribution" | "sales" | "qty" | "cogs" | "margin";
-
-interface ViewPreset {
-  label: string;
-  col: SortCol;
-  dir: "desc" | "asc";
-}
-
-const VIEW_PRESETS: ViewPreset[] = [
-  { label: "Margin Decliners", col: "marginTrend", dir: "asc" },
-  { label: "Margin Gainers", col: "marginTrend", dir: "desc" },
-  { label: "Lowest Margin", col: "marginPct", dir: "asc" },
-  { label: "Top Contribution", col: "contribution", dir: "desc" },
-  { label: "Sales Gainers", col: "salesTrend", dir: "desc" },
-  { label: "Sales Decliners", col: "salesTrend", dir: "asc" },
-  { label: "Highest Volume", col: "qty", dir: "desc" },
-  { label: "Highest COGS", col: "cogs", dir: "desc" },
-];
-
-const presetKey = (col: SortCol, dir: "desc" | "asc") => `${col}_${dir}`;
-const VIEW_OPTIONS = VIEW_PRESETS.map((p) => ({
-  label: p.label,
-  value: presetKey(p.col, p.dir),
-}));
 
 // "ungraded" has no shared SeverityBadge equivalent — small local adapter.
 const SeverityBadge = ({ severity }: { severity: Severity }) =>
@@ -123,29 +57,6 @@ const SeverityBadge = ({ severity }: { severity: Severity }) =>
   ) : (
     <SharedSeverityBadge severity={severity} />
   );
-
-// Grades on whichever metric is selected in the left panel's Margin/Sales
-// toggle (gradingMetric), same as getTier does for sub dept rows — so
-// switching that toggle re-grades the item list too, not just sub depts.
-const getItemSeverity = (
-  row: ItemMarginRow,
-  threshold: number,
-  gradingMetric: GradingMetric,
-): Severity => {
-  const raw =
-    gradingMetric === "sales"
-      ? row.salesTrendPct
-      : row.lyMarginPct !== null
-        ? row.tyMarginPct - row.lyMarginPct
-        : row.lwMarginPct !== null
-          ? row.tyMarginPct - row.lwMarginPct
-          : null;
-  if (raw === null) return "ungraded";
-  const delta = Math.round(raw * 10) / 10;
-  if (delta < -threshold) return "critical";
-  if (delta < 0) return "watch";
-  return "healthy";
-};
 
 interface ColFilterProps {
   label: string;
@@ -249,367 +160,6 @@ const colInputStyle: React.CSSProperties = {
   background: "rgba(30,42,74,0.03)",
 };
 
-const aggregateByUpc = (margins: SubDeptMargin[]) => {
-  const map = new Map<
-    string,
-    {
-      grossSales: number;
-      tax: number;
-      qty: number;
-      cogs: number;
-      costFees: number;
-      desc: string;
-      caseSize: number;
-      netCost: number;
-      cost: number;
-    }
-  >();
-  for (const m of margins) {
-    const cogs = calculateCogs(
-      m.net_cost,
-      m.cost,
-      m.case_size,
-      m.qty,
-      m.weight,
-    );
-    const ex = map.get(m.product_code);
-    if (!ex) {
-      map.set(m.product_code, {
-        grossSales: m.total_sales,
-        tax: m.total_tax,
-        qty: m.qty,
-        cogs,
-        costFees: m.cost_fees,
-        desc: m.product_description,
-        caseSize: m.case_size,
-        netCost: m.net_cost,
-        cost: m.cost,
-      });
-    } else {
-      ex.grossSales += m.total_sales;
-      ex.tax += m.total_tax;
-      ex.qty += m.qty;
-      ex.cogs += cogs;
-      ex.costFees += m.cost_fees;
-    }
-  }
-  return map;
-};
-
-const buildRows = (
-  tyMargins: SubDeptMargin[],
-  lwMargins: SubDeptMargin[],
-  lyMargins: SubDeptMargin[],
-): ItemMarginRow[] => {
-  const tyMap = aggregateByUpc(tyMargins);
-  const lwMap = aggregateByUpc(lwMargins);
-  const lyMap = aggregateByUpc(lyMargins);
-
-  // Sub dept-wide totals for the same three periods — each item's
-  // contribution % is its share of this, not of its own row.
-  const tyTotal = tyMargins.reduce((s, m) => s + m.total_sales, 0);
-  const lwTotal = lwMargins.reduce((s, m) => s + m.total_sales, 0);
-  const lyTotal = lyMargins.reduce((s, m) => s + m.total_sales, 0);
-
-  const rows: ItemMarginRow[] = [];
-  for (const [upc, ty] of tyMap) {
-    if (!upc || upc === "0") continue;
-
-    const netSales = ty.grossSales - ty.tax;
-    const tyMarginPct =
-      netSales > 0 ? ((netSales - ty.cogs) / netSales) * 100 : 0;
-
-    const lw = lwMap.get(upc);
-    const lwNet = lw ? lw.grossSales - lw.tax : 0;
-    const lwMarginPct =
-      lw && lwNet > 0 ? ((lwNet - lw.cogs) / lwNet) * 100 : null;
-
-    const ly = lyMap.get(upc);
-    const lyNet = ly ? ly.grossSales - ly.tax : 0;
-    const lyMarginPct =
-      ly && lyNet > 0 ? ((lyNet - ly.cogs) / lyNet) * 100 : null;
-
-    const salesTrendPct =
-      ly && ly.grossSales > 0
-        ? ((ty.grossSales - ly.grossSales) / ly.grossSales) * 100
-        : lw && lw.grossSales > 0
-          ? ((ty.grossSales - lw.grossSales) / lw.grossSales) * 100
-          : null;
-    const qtyTrendPct =
-      ly && ly.qty > 0
-        ? ((ty.qty - ly.qty) / ly.qty) * 100
-        : lw && lw.qty > 0
-          ? ((ty.qty - lw.qty) / lw.qty) * 100
-          : null;
-    const marginTrendPct =
-      lyMarginPct !== null
-        ? tyMarginPct - lyMarginPct
-        : lwMarginPct !== null
-          ? tyMarginPct - lwMarginPct
-          : null;
-
-    rows.push({
-      productCode: upc,
-      description: ty.desc,
-      grossSales: ty.grossSales,
-      netSales,
-      tax: ty.tax,
-      qty: ty.qty,
-      cogs: ty.cogs,
-      costFees: ty.costFees,
-      tyMarginPct,
-      lwMarginPct,
-      lyMarginPct,
-      tyContributionPct: tyTotal > 0 ? (ty.grossSales / tyTotal) * 100 : 0,
-      lwContributionPct:
-        lw && lwTotal > 0 ? (lw.grossSales / lwTotal) * 100 : null,
-      lyContributionPct:
-        ly && lyTotal > 0 ? (ly.grossSales / lyTotal) * 100 : null,
-      hasLW: !!lw,
-      hasLY: !!ly,
-      salesTrendPct,
-      qtyTrendPct,
-      marginTrendPct,
-      lwSalesPct:
-        lw && lw.grossSales > 0
-          ? ((ty.grossSales - lw.grossSales) / lw.grossSales) * 100
-          : null,
-      lySalesPct:
-        ly && ly.grossSales > 0
-          ? ((ty.grossSales - ly.grossSales) / ly.grossSales) * 100
-          : null,
-      lwQtyPct: lw && lw.qty > 0 ? ((ty.qty - lw.qty) / lw.qty) * 100 : null,
-      lyQtyPct: ly && ly.qty > 0 ? ((ty.qty - ly.qty) / ly.qty) * 100 : null,
-      lwCogsPct:
-        lw && lw.cogs > 0 ? ((ty.cogs - lw.cogs) / lw.cogs) * 100 : null,
-      lyCogsPct:
-        ly && ly.cogs > 0 ? ((ty.cogs - ly.cogs) / ly.cogs) * 100 : null,
-      lwGrossSales: lw ? lw.grossSales : null,
-      lyGrossSales: ly ? ly.grossSales : null,
-      lwQty: lw ? lw.qty : null,
-      lyQty: ly ? ly.qty : null,
-      lwCogs: lw ? lw.cogs : null,
-      lyCogs: ly ? ly.cogs : null,
-    });
-  }
-
-  return rows;
-};
-
-const WEEKDAY_ORDER = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-interface DayOfWeekValue {
-  ty: number | null;
-  lw: number | null;
-  ly: number | null;
-}
-
-interface ItemDetail {
-  // Dominant (highest-qty) unit price this period, TY vs LW vs LY — lets the
-  // insight below tell a price-point shift apart from a pure volume swing,
-  // against whichever period (LY preferred, LW fallback) is the basis.
-  tyDominantPrice: number | null;
-  lwDominantPrice: number | null;
-  lyDominantPrice: number | null;
-  dayOfWeek: Record<string, DayOfWeekValue>;
-}
-
-const weekdayOf = (m: SubDeptMargin): string =>
-  new Date(`${m.sale_date.split("T")[0]}T12:00:00`).toLocaleDateString(
-    "en-US",
-    { weekday: "short" },
-  );
-
-const weekdayTotals = (itemRows: SubDeptMargin[]): Map<string, number> => {
-  const byWeekday = new Map<string, number>();
-  for (const m of itemRows) {
-    const wd = weekdayOf(m);
-    byWeekday.set(wd, (byWeekday.get(wd) ?? 0) + (m.total_sales - m.total_tax));
-  }
-  return byWeekday;
-};
-
-const dominantPrice = (itemRows: SubDeptMargin[]): number | null => {
-  const byPrice = new Map<number, number>();
-  for (const m of itemRows) {
-    if (m.qty <= 0) continue;
-    const unitPrice = Math.round((m.total_sales / m.qty) * 100) / 100;
-    byPrice.set(unitPrice, (byPrice.get(unitPrice) ?? 0) + m.qty);
-  }
-  let best: number | null = null;
-  let bestQty = -Infinity;
-  for (const [price, qty] of byPrice) {
-    if (qty > bestQty) {
-      bestQty = qty;
-      best = price;
-    }
-  }
-  return best;
-};
-
-// Always scoped to the full week's margins for this UPC in each period,
-// regardless of any single-day selection elsewhere in the panel — a
-// day-of-week chart with only one day in it isn't useful.
-const buildItemDetail = (
-  productCode: string,
-  tyMargins: SubDeptMargin[],
-  lwMargins: SubDeptMargin[],
-  lyMargins: SubDeptMargin[],
-): ItemDetail => {
-  const tyRows = tyMargins.filter((m) => m.product_code === productCode);
-  const lwRows = lwMargins.filter((m) => m.product_code === productCode);
-  const lyRows = lyMargins.filter((m) => m.product_code === productCode);
-
-  const tyByWeekday = weekdayTotals(tyRows);
-  const lwByWeekday = weekdayTotals(lwRows);
-  const lyByWeekday = weekdayTotals(lyRows);
-
-  const dayOfWeek: Record<string, DayOfWeekValue> = {};
-  for (const wd of WEEKDAY_ORDER) {
-    dayOfWeek[wd] = {
-      ty: tyByWeekday.has(wd) ? tyByWeekday.get(wd)! : null,
-      lw: lwByWeekday.has(wd) ? lwByWeekday.get(wd)! : null,
-      ly: lyByWeekday.has(wd) ? lyByWeekday.get(wd)! : null,
-    };
-  }
-
-  return {
-    tyDominantPrice: dominantPrice(tyRows),
-    lwDominantPrice: dominantPrice(lwRows),
-    lyDominantPrice: dominantPrice(lyRows),
-    dayOfWeek,
-  };
-};
-
-// A day's "primary" trend — prefers LY, falls back to LW when there's no LY
-// figure for that weekday, same preference order as ItemMarginRow's
-// salesTrendPct/qtyTrendPct (and dev Sales/LP's trend badges generally).
-const dayTrend = (val: DayOfWeekValue): number | null => {
-  if (val.ty === null) return null;
-  if (val.ly !== null && val.ly > 0) return ((val.ty - val.ly) / val.ly) * 100;
-  if (val.lw !== null && val.lw > 0) return ((val.ty - val.lw) / val.lw) * 100;
-  return null;
-};
-
-// A metric's change counts as "flat" (muted, not colored) below this
-// magnitude — mirrors the reference mock's flat-vs-colored delta treatment.
-const FLAT_PTS_EPSILON = 0.15;
-const FLAT_PCT_EPSILON = 5;
-
-// Synthesizes why margin moved — a price point shift, a volume change, both,
-// or neither — for the top of the item report. Prefers LY as the comparison
-// basis, falling back to LW when there's no LY figure. Severity is graded on
-// whichever metric the left panel's Margin/Sales toggle selects — same basis
-// and delta as getItemSeverity — so the banner's severity always matches the
-// item's dot/grade everywhere else in the panel, in either mode.
-const buildInsight = (
-  item: ItemMarginRow,
-  detail: ItemDetail,
-  threshold: number,
-  gradingMetric: GradingMetric,
-): { headline: string; detail: string; sev: GradedSeverity } | null => {
-  const hasLY = item.lyMarginPct !== null;
-  const basisMarginPct = hasLY ? item.lyMarginPct : item.lwMarginPct;
-  if (basisMarginPct === null) return null;
-  const basisLabel = hasLY ? "LY" : "LW";
-  const marginDelta = Math.round((item.tyMarginPct - basisMarginPct) * 10) / 10;
-  const salesDelta =
-    item.salesTrendPct !== null
-      ? Math.round(item.salesTrendPct * 10) / 10
-      : null;
-  const gradedDelta = gradingMetric === "sales" ? salesDelta : marginDelta;
-  if (gradedDelta === null) return null;
-  const metricLabel = gradingMetric === "sales" ? "Sales" : "Margin";
-  const flatEpsilon =
-    gradingMetric === "sales" ? FLAT_PCT_EPSILON : FLAT_PTS_EPSILON;
-
-  const basisPrice = hasLY ? detail.lyDominantPrice : detail.lwDominantPrice;
-  const priceDeltaAmt =
-    detail.tyDominantPrice !== null && basisPrice !== null
-      ? Math.round((detail.tyDominantPrice - basisPrice) * 100) / 100
-      : null;
-  const priceChanged = priceDeltaAmt !== null && Math.abs(priceDeltaAmt) > 0.01;
-  const qtyChangePct = hasLY ? item.lyQtyPct : item.lwQtyPct;
-  const volumeChanged =
-    qtyChangePct !== null && Math.abs(qtyChangePct) >= FLAT_PCT_EPSILON;
-  const cogsChangePct = hasLY ? item.lyCogsPct : item.lwCogsPct;
-  const cogsChanged =
-    cogsChangePct !== null && Math.abs(cogsChangePct) >= FLAT_PCT_EPSILON;
-
-  const sev: GradedSeverity =
-    gradedDelta < -threshold
-      ? "critical"
-      : gradedDelta < 0
-        ? "watch"
-        : "healthy";
-
-  const headline = (() => {
-    if (sev === "critical") {
-      if (priceChanged && cogsChanged)
-        return `${metricLabel} in freefall — price and cost both moved`;
-      if (priceChanged)
-        return `${metricLabel} in freefall — price cut is the driver`;
-      if (volumeChanged) return `${metricLabel} in freefall — volume collapsed`;
-      return `${metricLabel} in freefall — cost spiked`;
-    }
-    if (sev === "watch") {
-      if (volumeChanged && !priceChanged)
-        return `${metricLabel} slipping — volume down`;
-      if (priceChanged) return `${metricLabel} slipping — price shifted`;
-      return `${metricLabel} slipping — check cost`;
-    }
-    if (Math.abs(gradedDelta) < flatEpsilon)
-      return `${metricLabel} held — investigate cost`;
-    return gradedDelta > 0
-      ? `${metricLabel} improving`
-      : `${metricLabel} holding steady`;
-  })();
-
-  const middleClause = (() => {
-    if (priceChanged && cogsChanged) {
-      return `Price ${priceDeltaAmt! < 0 ? "dropped" : "rose"} ${formatCurrency2(Math.abs(priceDeltaAmt!))} while COGS ${
-        cogsChangePct! >= 0 ? "rose" : "fell"
-      } ${Math.abs(cogsChangePct!).toFixed(0)}%`;
-    }
-    if (priceChanged) {
-      return `Price ${priceDeltaAmt! < 0 ? "dropped" : "rose"} ${formatCurrency2(Math.abs(priceDeltaAmt!))}${
-        volumeChanged
-          ? ` with qty ${qtyChangePct! < 0 ? "down" : "up"} ${Math.abs(qtyChangePct!).toFixed(0)}%`
-          : " with qty holding steady"
-      }`;
-    }
-    if (volumeChanged) {
-      return `Qty ${qtyChangePct! < 0 ? "dropped" : "rose"} ${Math.abs(qtyChangePct!).toFixed(0)}% with price held flat`;
-    }
-    if (cogsChanged) {
-      return `Cost ${cogsChangePct! >= 0 ? "rose" : "fell"} ${Math.abs(cogsChangePct!).toFixed(0)}% with price and volume flat`;
-    }
-    return "No price or volume change";
-  })();
-
-  const action =
-    sev === "critical"
-      ? "Immediate review needed"
-      : priceChanged
-        ? "Check pricing strategy"
-        : volumeChanged
-          ? "Check placement and promo status"
-          : cogsChanged
-            ? "Check vendor cost changes"
-            : "Cost may have shifted";
-
-  const deltaLabel =
-    gradingMetric === "sales"
-      ? `${gradedDelta >= 0 ? "+" : ""}${gradedDelta.toFixed(2)}%`
-      : `${gradedDelta >= 0 ? "+" : ""}${gradedDelta.toFixed(2)} pts`;
-
-  return {
-    headline,
-    detail: `${deltaLabel} vs ${basisLabel}. ${middleClause}. ${action}.`,
-    sev,
-  };
-};
-
 interface Props {
   tyMargins: SubDeptMargin[];
   lwMargins: SubDeptMargin[];
@@ -618,29 +168,6 @@ interface Props {
 
 const byDate = (src: SubDeptMargin[], dateStr: string) =>
   src.filter((m) => m.sale_date.split("T")[0] === dateStr);
-
-const SEV_PILL_CLASSES: Record<Severity, string> = {
-  critical: "bg-severity_critical_bg text-severity_critical_text",
-  watch: "bg-severity_watch_bg text-severity_watch_text",
-  healthy: "bg-severity_healthy_bg text-severity_healthy_text",
-  ungraded: "bg-gray-100 text-gray-500",
-};
-
-// One graded cell in the report-card table — a metric's change vs one
-// period, rendered as a Crit/Watch/OK pill same as the item's overall
-// severity, so the table reads like a set of subject grades.
-// Severity colouring for every delta in the card. Colour-only, no pill: the
-// row already carries a severity dot, and pills repeated across the lead card,
-// the supporting table and six day rows added far more colour than signal.
-const deltaTextClass = (pct: number, threshold: number) =>
-  pct < -threshold
-    ? "text-severity_critical_text"
-    : pct < 0
-      ? "text-severity_watch_text"
-      : "text-severity_healthy_text";
-
-const fmtDelta = (pct: number, isPts: boolean) =>
-  `${pct >= 0 ? "+" : ""}${pct.toFixed(isPts ? 2 : 0)}${isPts ? "pt" : "%"}`;
 
 const GradeCell = ({
   pct,
@@ -757,7 +284,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
 
   const rawRows = useMemo(
     () =>
-      buildRows(
+      buildItemRows(
         dayFilteredMargins.ty,
         dayFilteredMargins.lw,
         dayFilteredMargins.ly,
@@ -878,33 +405,8 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
         const rb = SEV_RANK[getItemSeverity(b, thresholdAmt, gradingMetric)];
         if (ra !== rb) return ra - rb;
       }
-      let av: number, bv: number;
-      switch (sortCol) {
-        case "contribution":
-          av = a.tyContributionPct;
-          bv = b.tyContributionPct;
-          break;
-        case "salesTrend":
-          av = a.salesTrendPct ?? -999;
-          bv = b.salesTrendPct ?? -999;
-          break;
-        case "marginTrend":
-          av = a.marginTrendPct ?? -999;
-          bv = b.marginTrendPct ?? -999;
-          break;
-        case "marginPct":
-          av = a.tyMarginPct;
-          bv = b.tyMarginPct;
-          break;
-        case "qty":
-          av = a.qty;
-          bv = b.qty;
-          break;
-        case "cogs":
-          av = a.cogs;
-          bv = b.cogs;
-          break;
-      }
+      const av = sortValue(a, sortCol);
+      const bv = sortValue(b, sortCol);
       return sortDir === "asc" ? av - bv : bv - av;
     });
 
@@ -925,79 +427,6 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
   const openCtxMenu = (e: React.MouseEvent, upc: string) => {
     e.preventDefault();
     setCtxMenu({ x: e.clientX, y: e.clientY, upc });
-  };
-
-  const ptsDelta = (ty: number, ref: number | null) => {
-    if (ref === null) return null;
-    return Math.round((ty - ref) * 10) / 10;
-  };
-
-  // Returns the metric's own raw LW/LY figure for display (never a delta —
-  // showing "$18.61" as a delta reads as if that were the actual LY value,
-  // which is exactly the confusion this replaced), plus a separate %-based
-  // color figure for grading — COGS is graded inverted (a cost increase is
-  // bad) even though its raw figure displays the same as sales/contribution.
-  const getRowMetric = (item: ItemMarginRow, key: RowMetricKey) => {
-    switch (key) {
-      case "contribution":
-        return {
-          tyDisplay: `${item.tyContributionPct.toFixed(2)}%`,
-          lwColorPct: ptsDelta(item.tyContributionPct, item.lwContributionPct),
-          lyColorPct: ptsDelta(item.tyContributionPct, item.lyContributionPct),
-          lwDisplay:
-            item.lwContributionPct !== null
-              ? `${item.lwContributionPct.toFixed(2)}%`
-              : null,
-          lyDisplay:
-            item.lyContributionPct !== null
-              ? `${item.lyContributionPct.toFixed(2)}%`
-              : null,
-        };
-      case "sales":
-        return {
-          tyDisplay: formatCurrency2(item.grossSales),
-          lwColorPct: item.lwSalesPct,
-          lyColorPct: item.lySalesPct,
-          lwDisplay:
-            item.lwGrossSales !== null
-              ? formatCurrency2(item.lwGrossSales)
-              : null,
-          lyDisplay:
-            item.lyGrossSales !== null
-              ? formatCurrency2(item.lyGrossSales)
-              : null,
-        };
-      case "qty":
-        return {
-          tyDisplay: String(item.qty),
-          lwColorPct: item.lwQtyPct,
-          lyColorPct: item.lyQtyPct,
-          lwDisplay: item.lwQty !== null ? String(item.lwQty) : null,
-          lyDisplay: item.lyQty !== null ? String(item.lyQty) : null,
-        };
-      case "cogs":
-        return {
-          tyDisplay: formatCurrency2(item.cogs),
-          lwColorPct: item.lwCogsPct !== null ? -item.lwCogsPct : null,
-          lyColorPct: item.lyCogsPct !== null ? -item.lyCogsPct : null,
-          lwDisplay: item.lwCogs !== null ? formatCurrency2(item.lwCogs) : null,
-          lyDisplay: item.lyCogs !== null ? formatCurrency2(item.lyCogs) : null,
-        };
-      case "margin":
-        return {
-          tyDisplay: `${item.tyMarginPct.toFixed(2)}%`,
-          lwColorPct: ptsDelta(item.tyMarginPct, item.lwMarginPct),
-          lyColorPct: ptsDelta(item.tyMarginPct, item.lyMarginPct),
-          lwDisplay:
-            item.lwMarginPct !== null
-              ? `${item.lwMarginPct.toFixed(2)}%`
-              : null,
-          lyDisplay:
-            item.lyMarginPct !== null
-              ? `${item.lyMarginPct.toFixed(2)}%`
-              : null,
-        };
-    }
   };
 
   // Item report row order — the graded metric (Margin or Sales, matching

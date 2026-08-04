@@ -44,6 +44,7 @@ import salesLedgerReducer from '../features/salesLedgerSlice';
 import salesLegacyReducer from '../features/salesLegacySlice';
 import upcDevReducer from '../features/upcDevSlice';
 import ticketsReducer from '../pages/tickets/ticketsSlice';
+import categoriesReducer from '../features/categoriesSlice';
 
 export const setupStore = () =>
   configureStore({
@@ -72,6 +73,7 @@ export const setupStore = () =>
       receiversLegacy: receiversLegacyReducer,
       coupons: couponReducer,
       couponSales: couponSalesReducer,
+      categories: categoriesReducer,
       couponLegacy: couponLegacyReducer,
       reportBuilder: reportBuilderReducer,
       admin: adminReducer,

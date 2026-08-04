@@ -1227,3 +1227,80 @@ export interface AllOrderResp {
   msg: string;
   orders: AllOrder[];
 }
+
+/* ── categories/cat_sales ──────────────────────────────────────────────────
+   One endpoint, three row shapes, chosen by the `consolidated` and
+   `displayHourly` flags. Fields common to all three sit in the base. */
+
+export interface CatSalesBase {
+  storeid: number;
+  store_name: string;
+  store_number: string;
+  category: number;
+  /** Null means the items in this bucket are uncategorized at the POS —
+   *  a data-quality signal in its own right, not a display gap. */
+  category_description: string | null;
+  total_sales: number;
+  net_sales: number;
+  total_tax: number;
+  qty: number;
+  weight: number;
+}
+
+export interface CatSalesCoupons {
+  elec_instore_coupons: number;
+  elec_store_coupons: number;
+  digital_coupons: number;
+  store_coupon: number;
+}
+
+/** consolidated=1, displayHourly=0 — one row per category, no dates. */
+export type CatSalesConsolidated = CatSalesBase & CatSalesCoupons;
+
+/** consolidated=0, displayHourly=0 — one row per category per day. The only
+ *  shape that carries sale_date, so the only one day-matching can use. */
+export type CatSalesDaily = CatSalesBase &
+  CatSalesCoupons & { sale_date: string };
+
+/** displayHourly=1 — one row per category per day per hour. Trades the coupon
+ *  columns for basket and average-item figures. */
+export type CatSalesHourly = CatSalesBase & {
+  sale_date: string;
+  hour: number;
+  sale_id: number;
+  avg_item_price: number;
+  avg_item_qty: number;
+  basket_size_sales: number;
+  basket_size_qty: number;
+};
+
+/** One item, one day, within a category — `categories/cats`.
+ *
+ *  Field-for-field a `SubDeptMargin` with the grouping column swapped: both
+ *  endpoints select the same columns from the same table. That is what lets the
+ *  Categories item report reuse the Sub Dept Margins maths in
+ *  `src/utils/itemMargins.ts` rather than reimplement it.
+ *
+ *  `margin` is present but must not be consumed — it is computed server-side as
+ *  `sum(total_sales) - avg(calculated_cost)`, never multiplied by qty and
+ *  denominated on tax-inclusive sales. Use `calculateCogs` instead. */
+export type CatItem = Omit<
+  SubDeptMargin,
+  "sub_department" | "sub_department_description"
+> & {
+  category: number;
+  category_description: string;
+};
+
+export interface CatSalesResponse<T> {
+  error: number;
+  success: boolean;
+  store_count: number;
+  total_records: number;
+  total_pages: number;
+  start_idx: number;
+  end_idx: number;
+  page_label: string;
+  page_size: number;
+  subs: T[];
+}

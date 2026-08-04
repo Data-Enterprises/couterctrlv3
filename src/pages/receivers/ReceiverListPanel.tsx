@@ -1,8 +1,8 @@
+import InfoButton from "../../components/InfoButton";
 import { useState, useMemo } from "react";
 import {
   MagnifyingGlassIcon,
   ChevronRightIcon,
-  QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
 import { useAppSelector, useAppDispatch, useStoreName } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
@@ -156,10 +156,10 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
           )}
         </div>
         {/* Row 2: re-search icon + store name */}
-        <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-white/[0.08]">
+        <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
           <button
             onClick={onOpenSearch}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/60 hover:text-custom-white hover:border-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
             aria-label="New search"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
@@ -171,13 +171,7 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
           )}
           <div className="flex-1" />
           <div className="relative flex-shrink-0">
-            <button
-              onClick={() => setInfoOpen((prev) => !prev)}
-              title="About this view"
-              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/50 hover:text-custom-white hover:border-white/40 transition-colors"
-            >
-              <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
-            </button>
+            <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
             {infoOpen && (
               <InfoPopover
                 title={RECEIVERS_INFO.title}

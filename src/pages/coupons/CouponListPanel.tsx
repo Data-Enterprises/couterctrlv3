@@ -1,9 +1,9 @@
+import InfoButton from "../../components/InfoButton";
 import { useState, useMemo } from "react";
 import { applyStoreNumberToName, numbersByStoreId } from "../../utils/storeIdentity";
 import { sumCouponAmount } from "../../utils/couponValue";
 import {
   MagnifyingGlassIcon,
-  QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
 import { useAppSelector, useStoreName } from "../../hooks";
 import { formatCurrency2 } from "../../utils";
@@ -129,10 +129,10 @@ const CouponListPanel = ({
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-white/[0.08]">
+        <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
           <button
             onClick={onOpenSearch}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/60 hover:text-custom-white hover:border-white/40 transition-colors flex-shrink-0"
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
             aria-label="New search"
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
@@ -174,13 +174,7 @@ const CouponListPanel = ({
           <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
 
           <div className="relative flex-shrink-0">
-            <button
-              onClick={() => setInfoOpen((prev) => !prev)}
-              title="About this view"
-              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-white/20 text-custom-white/50 hover:text-custom-white hover:border-white/40 transition-colors"
-            >
-              <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
-            </button>
+            <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
             {infoOpen && (
               <InfoPopover
                 title={COUPONS_INFO.title}

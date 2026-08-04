@@ -1,5 +1,6 @@
+import InfoButton from "../../../components/InfoButton";
 import { useMemo, useState } from "react";
-import { MagnifyingGlassIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
+import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { formatCurrency2, formatBigNumber, getStoreName } from "../../../utils";
 import { applyStoreNumberToName } from "../../../utils/storeIdentity";
 import { useAppSelector } from "../../../hooks";
@@ -193,13 +194,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
           <div className="flex-1" />
           <span className="text-[9px] font-medium uppercase tracking-wide text-custom-white/35 flex-shrink-0">Exception activity vs baseline</span>
           <div className="relative flex-shrink-0">
-            <button
-              onClick={() => setInfoOpen((prev) => !prev)}
-              title="About this view"
-              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/50 hover:text-custom-white hover:border-custom-white/40 transition-colors"
-            >
-              <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
-            </button>
+            <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
             {infoOpen && (
               <InfoPopover
                 title={LP_INFO.title}

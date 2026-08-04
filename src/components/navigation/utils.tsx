@@ -13,6 +13,7 @@ import {
   CircleStackIcon,
   Cog6ToothIcon,
   BuildingOfficeIcon,
+  Squares2X2Icon,
 } from "@heroicons/react/16/solid";
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
@@ -260,6 +261,19 @@ export const categories: NavCategory[] = [
         href: "sub-dept-margins",
         icon: CurrencyDollarIcon,
         mobile: true,
+        children: [],
+        childOpen: false,
+        userLevels: ["*"],
+        isHovering: false,
+        isVisible: true,
+      },
+      {
+        name: "Categories",
+        href: "categories",
+        icon: Squares2X2Icon,
+        // Desktop only until a mobile view exists — a 700-row graded list
+        // needs its own treatment rather than a squeezed desktop panel.
+        mobile: false,
         children: [],
         childOpen: false,
         userLevels: ["*"],

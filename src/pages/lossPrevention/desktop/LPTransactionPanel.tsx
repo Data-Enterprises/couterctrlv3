@@ -24,6 +24,7 @@ import EmptyPrompt from "../../../components/EmptyPrompt";
 import type { ThresholdValue } from "../../../components/filters/ThresholdFilter";
 import {
   gradeAllCashiers,
+  matchWeekday,
   isNoDollarType,
   storeSeverity,
   weekRangeLabel,
@@ -311,16 +312,52 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
 
   const isNoDollar = isNoDollarType(selectedSaleType);
 
-  const cashierGrades = useMemo(
-    () =>
-      gradeAllCashiers(
+  /** The cashier list follows the day strip, same as the transaction list.
+   *
+   *  Both sides of the comparison have to narrow together. Grading compares
+   *  totals against a baseline scaled by how many current-length periods it
+   *  spans, so a single day is judged against the *same weekday* in the
+   *  baseline — two Thursdays, not a flat daily average. Narrowing only the
+   *  current side would leave a day's totals measured against a week's, and
+   *  every cashier would pass no matter what they did.
+   *
+   *  The `cashiers` fallback is dropped on a day view: it back-fills anyone
+   *  missing from the overviews with their **week** totals, which would invent
+   *  a full week of activity for someone who never worked that day. The list
+   *  then shows exactly who rang that day, matching the transactions beside
+   *  it. */
+  const cashierGrades = useMemo(() => {
+    if (!saleDateFilter) {
+      return gradeAllCashiers(
         transOverviews,
         cashier.baselineOverviews,
         cashiers,
         selectedSaleType,
-      ),
-    [transOverviews, cashier.baselineOverviews, cashiers, selectedSaleType],
-  );
+      );
+    }
+
+    const dayOverviews = transOverviews.filter(
+      (o) => o.sale_date.split("T")[0] === saleDateFilter,
+    );
+    const { overviews: dayBaseline, periods } = matchWeekday(
+      cashier.baselineOverviews,
+      saleDateFilter,
+    );
+
+    return gradeAllCashiers(
+      dayOverviews,
+      dayBaseline,
+      [],
+      selectedSaleType,
+      periods,
+    );
+  }, [
+    transOverviews,
+    cashier.baselineOverviews,
+    cashiers,
+    selectedSaleType,
+    saleDateFilter,
+  ]);
 
   const selectedGrade =
     cashierGrades.find(

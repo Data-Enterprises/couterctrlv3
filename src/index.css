@@ -443,6 +443,17 @@ body {
     scrollbar-width: none; /* Firefox */
   }
 
+  /* Skips layout and paint for rows scrolled out of view. Categories can return
+     1100+ rows, and without this every threshold-slider tick repaints all of
+     them. contain-intrinsic-size is the placeholder height used while a row is
+     skipped. The `auto` keyword makes the browser reuse each row's real measured
+     height once it has been rendered, so the 57px is only an estimate for rows
+     not yet seen. Browsers without support just render normally. */
+  .list-row-skip {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 57px;
+  }
+
   .thin-scrollbar {
     scrollbar-width: thin; /* Firefox */
     scrollbar-color: #d1d5db transparent; /* Firefox: thumb track */

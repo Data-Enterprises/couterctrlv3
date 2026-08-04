@@ -106,7 +106,7 @@ const LedgerStoreList = () => {
           <button
             onClick={() => dispatch(setHasSearched(false))}
             aria-label="New search"
-            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-white/25 text-custom-white/85 hover:text-custom-white hover:border-white/45 transition-colors"
+            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-custom-white/25 text-custom-white/85 hover:text-custom-white hover:border-custom-white/45 transition-colors"
           >
             <MagnifyingGlassIcon className="w-4 h-4" />
           </button>
