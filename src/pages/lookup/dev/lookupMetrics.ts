@@ -4,42 +4,57 @@ import { calculateCogs } from "../../subDepts";
 /**
  * How many priced units a row represents.
  *
- * Revenue = price x units by definition, so `total_sales / price` gives the
- * units the customer was actually charged for — pounds on a scale item, eaches
- * otherwise. `qty` is the number of times the item was *rung*, which is the
- * same thing only for each-priced goods. Bananas ring 80 times for 162 lb, so
- * costing them by qty understates COGS by half.
+ * `qty` counts how many times the item was *rung*; `weight` is what the
+ * customer was actually charged for. They're the same thing only for
+ * each-priced goods. Bananas ring ~2.1 lb at a time, so costing them by qty
+ * understates COGS by more than half — 67.78% margin against a real 30.93%.
  *
- * Preference order:
- *   1. `weight` — correct and exact, but /itemlookup doesn't return it yet.
- *      Typed optional so it takes over automatically once the API adds it.
- *   2. derived units, but ONLY when they come out ABOVE qty.
- *   3. `qty` otherwise.
- *
- * The direction is the whole trick. `price` is the shelf price, not what the
- * item actually rang at, so a promoted item derives *fewer* units than it sold
- * — a 12-pack listed at $9.99 that rang at $6.99 derives 0.70, and costing it
- * as 0.70 of a case is nonsense. A scale item can only ever go the other way:
- * more pounds than scans. So treat above-qty as weight and below-qty as a
- * discount, and never let a markdown shrink the cost of goods.
- *
- * Known gap: a weighted item averaging under ~1.1 lb per scan falls back to
- * qty, which overstates cost. That understates margin rather than inflating
- * it, which is the safer direction — and the `weight` column removes the
- * guess entirely.
+ * `weight` comes back 0 on an each-priced item, which is the discriminator:
+ * no null handling, no heuristic. This used to derive pounds from
+ * `total_sales / price` because the column wasn't returned; that guess is gone
+ * along with the directional tolerance it needed to survive promoted items
+ * whose shelf price wasn't their ring price.
  */
-export const pricedUnits = (h: ItemLookupHistory): number => {
-  if (h.weight && h.weight > 0) return h.weight;
-  if (!h.price || h.price <= 0 || h.qty <= 0) return h.qty;
-  const derived = h.total_sales / h.price;
-  return derived > h.qty * 1.1 ? derived : h.qty;
+export const pricedUnits = (h: ItemLookupHistory): number =>
+  h.weight > 0 ? h.weight : h.qty;
+
+/**
+ * What one unit of this item cost — after the vendor's allowance where there is
+ * one, at list where there isn't. The figure Sub Dept Margins costs against,
+ * and the only way the two pages can agree on a promoted item.
+ *
+ * Three routes, best first, so this works against whatever the endpoint
+ * happens to be returning that day:
+ *
+ *   1. `unit_cost` — the server did it. Nothing to reconstruct.
+ *
+ *   2. `net_cost x casecost / cost`. `net_cost` and `cost` are both per CASE
+ *      while `casecost` is per unit, so `casecost / cost` is exactly
+ *      `1 / case_size` — which brings `net_cost` down to a unit without
+ *      `case_size` ever being returned. On 7800003538: 11.98 x 7.50 / 15 =
+ *      5.99, against the 7.50 `casecost` alone would have given.
+ *
+ *   3. `casecost` — list cost per unit. Correct for anything without an
+ *      allowance, and low-margin-biased for anything with one.
+ *
+ * There is deliberately no route from `net_cost` and `casecost` alone:
+ * `net_cost / casecost` is `case_size` only when cost equals net_cost, so
+ * dividing by it just returns `casecost` and quietly looks like it worked.
+ */
+export const rowUnitCost = (h: ItemLookupHistory): number => {
+  if (h.unit_cost && h.unit_cost > 0) return h.unit_cost;
+  // net_cost of 0 means no allowance, not free goods — fall through to list.
+  if (h.cost && h.cost > 0 && h.net_cost > 0 && h.casecost > 0) {
+    return (h.net_cost * h.casecost) / h.cost;
+  }
+  return h.casecost;
 };
 
 /** COGS for one lookup row, through the same helper Sub Dept Margins uses.
- *  `casecost` is already cost-per-unit (the SQL divides by case_size), so it
- *  goes in on the caseSize-0 path that treats the cost as per-unit. */
+ *  The cost is already per-unit, so it goes in on the caseSize-0 path that
+ *  treats it as such. */
 export const rowCogs = (h: ItemLookupHistory): number =>
-  calculateCogs(0, h.casecost, 0, h.qty, pricedUnits(h));
+  calculateCogs(0, rowUnitCost(h), 0, h.qty, pricedUnits(h));
 
 export interface DayBucket {
   date: string;
@@ -144,7 +159,7 @@ export const computeMargin = (
     totalUnits,
     weighed,
     listPrice: last ? last.price : 0,
-    unitCost: last ? last.casecost : 0,
+    unitCost: last ? rowUnitCost(last) : 0,
   };
 };
 

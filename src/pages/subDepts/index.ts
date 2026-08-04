@@ -297,6 +297,28 @@ export const hasNoUsableCost = (m: {
   cost: number;
 }): boolean => m.net_cost === 0 && m.cost === 0;
 
+/**
+ * Cost of goods for one item row. The canonical helper — Sub Dept Margins,
+ * Categories and Item Lookup all route through this, which is the only reason
+ * the three pages agree on a margin.
+ *
+ * Two things it gets right that are easy to get wrong independently:
+ *
+ *  - **netCost before cost.** `cost` is the list/invoice price; `net_cost` is
+ *    what was actually paid after a vendor allowance. Roughly half the items in
+ *    a given delivery carry an allowance and half don't, regardless of
+ *    `price_type` — so this isn't predictable from whether the item was on
+ *    promo. Costing a promoted item at list made 7800003538 read −12.95% on a
+ *    day it actually made +9.79%.
+ *
+ *  - **weight before qty.** On a scale item `qty` counts how many times the
+ *    item was *rung*, not how much was sold; bananas ring ~2.1 lb at a time.
+ *    Costing 4011 by qty read 67.78% against a real 30.93%.
+ *
+ * Callers pass per-CASE costs with the real `caseSize`. `/itemlookup` returns
+ * only per-unit costs, so it derives its own unit cost first and passes
+ * `caseSize = 0` — see `rowUnitCost` in pages/lookup/dev/lookupMetrics.ts.
+ */
 export const calculateCogs = (
   netCost: number,
   cost: number,
