@@ -1232,23 +1232,23 @@ const PopupSubDeptList = ({
                           >
                             <SeverityBadge severity={item.sev} showBackground={false} />
                             <div className="min-w-0 flex-1">
-                              <span className="text-[13px] font-medium text-content truncate block">
+                              <span className="text-[14px] font-medium text-content truncate block">
                                 {item.desc}
                               </span>
-                              <span className="text-[10px] text-content block">
+                              <span className="text-[11px] text-content block">
                                 {item.upc}
                               </span>
                             </div>
                             <div className="flex items-start gap-[14px]">
                               <div className="flex-shrink-0 pl-2.5" style={{ width: 64 }}>
-                                <div className="text-[13px] font-semibold text-content">
+                                <div className="text-[14px] font-semibold text-content">
                                   {item.hasTY === false
                                     ? "—"
                                     : isQty
                                       ? item.tyQty.toLocaleString()
                                       : formatCurrency2(item.tyNet)}
                                 </div>
-                                <div className="text-[10px] text-content">
+                                <div className="text-[11px] text-content">
                                   {item.hasTY === false
                                     ? ""
                                     : isQty
@@ -1257,7 +1257,7 @@ const PopupSubDeptList = ({
                                 </div>
                               </div>
                               <div className="flex-shrink-0" style={{ width: 64 }}>
-                                <div className="text-[13px] font-semibold text-content">
+                                <div className="text-[14px] font-semibold text-content">
                                   {isQty
                                     ? item.lwQty !== null
                                       ? item.lwQty.toLocaleString()
@@ -1266,7 +1266,7 @@ const PopupSubDeptList = ({
                                       ? formatCurrency2(item.lwNet)
                                       : "—"}
                                 </div>
-                                <div className="text-[10px] text-content">
+                                <div className="text-[11px] text-content">
                                   {isQty
                                     ? item.lwNet !== null
                                       ? formatCurrency2(item.lwNet)
@@ -1277,7 +1277,7 @@ const PopupSubDeptList = ({
                                 </div>
                               </div>
                               <div className="flex-shrink-0" style={{ width: 64 }}>
-                                <div className="text-[13px] font-semibold text-content">
+                                <div className="text-[14px] font-semibold text-content">
                                   {isQty
                                     ? item.lyQty !== null
                                       ? item.lyQty.toLocaleString()
@@ -1286,7 +1286,7 @@ const PopupSubDeptList = ({
                                       ? formatCurrency2(item.lyNet)
                                       : "—"}
                                 </div>
-                                <div className="text-[10px] text-content">
+                                <div className="text-[11px] text-content">
                                   {isQty
                                     ? item.lyNet !== null
                                       ? formatCurrency2(item.lyNet)

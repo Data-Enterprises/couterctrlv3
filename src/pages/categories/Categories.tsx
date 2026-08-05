@@ -77,9 +77,6 @@ const Categories = () => {
         { url: context.url, token: context.token, storeid: storeId },
         start,
         end,
-        // A ten-page store takes long enough that a bare spinner reads as a
-        // stall. Naming the work in progress costs nothing.
-        (pages) => dispatch(setLoadingMessage(`Loading categories… ${pages} pages`)),
       );
 
       const rows = buildCategoryRows(tw, lw, ly, twDates);

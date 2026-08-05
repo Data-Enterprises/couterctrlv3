@@ -8,7 +8,13 @@ import ThresholdFilter, {
   type ThresholdValue,
 } from "../../components/filters/ThresholdFilter";
 import InfoPopover from "../../components/InfoPopover";
-import { formatCurrency2, formatBigNumber } from "../../utils";
+import SortHeader, { PERF_SORT_HEADER } from "../../components/SortHeader";
+import { useTriStateSort } from "../../utils/useTriStateSort";
+import {
+  formatCurrency2,
+  formatCurrencyCompact,
+  formatBigNumber,
+} from "../../utils";
 import { fmtCompactRange } from "../../utils/dateLabels";
 import {
   severityDotClass,
@@ -55,6 +61,11 @@ const CHIP_ON: Record<Tier, string> = {
   ungraded: "ring-2 ring-gray-400/40 shadow-sm",
 };
 
+/** Sortable columns. With none active the list keeps its own worst-grade
+ *  -first order, which is the point of a Performance page — see
+ *  useTriStateSort. */
+type ListSortCol = "ty" | "lw" | "ly";
+
 interface Props {
   onSearchOpen: () => void;
 }
@@ -62,6 +73,7 @@ interface Props {
 const VendorListPanel = ({ onSearchOpen }: Props) => {
   const dispatch = useAppDispatch();
   const [infoOpen, setInfoOpen] = useState(false);
+  const { sort, handleSort, applySort } = useTriStateSort<ListSortCol>();
   const vend = useAppSelector((s) => s.vendors);
   const { rows, metric, threshold, tierFilter, textFilter, selectedVendor } = vend;
 
@@ -130,8 +142,20 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
         g.vendorId.toLowerCase().includes(q)
       );
     });
-    return sortGraded(filtered, (g) => (metric === "qty" ? g.twQty : g.twNet));
-  }, [graded, tierFilter, textFilter, metric]);
+    // applySort hands the rows straight back when nothing is sorted, so the
+    // grade order stays the default.
+    return applySort(
+      sortGraded(filtered, (g) => (metric === "qty" ? g.twQty : g.twNet)),
+      (g, col) =>
+        col === "ty"
+          ? metric === "qty"
+            ? g.twQty
+            : g.twNet
+          : col === "lw"
+            ? g.lwPct
+            : g.lyPct,
+    );
+  }, [graded, tierFilter, textFilter, metric, sort]);
 
   /** Header aggregates — the whole store's week, and how it moved. */
   const totals = useMemo(() => {
@@ -166,6 +190,11 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
 
   const fmt = (n: number) =>
     metric === "qty" ? formatBigNumber(n) : formatCurrency2(n);
+
+  /** The header total only — abbreviated ($1.2K) so a store-wide figure can't
+   *  crowd the pills beside it, matching Sales. Rows keep the exact amount. */
+  const fmtHeader = (n: number) =>
+    metric === "qty" ? formatBigNumber(n, 0) : formatCurrencyCompact(n);
 
   const dateRange =
     vend.twStart && vend.twEnd ? fmtCompactRange(vend.twStart, vend.twEnd) : "";
@@ -210,7 +239,7 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
           {graded.length > 0 && (
             <>
               <span className="text-[14px] font-semibold text-custom-white">
-                {fmt(totals.tw)}
+                {fmtHeader(totals.tw)}
               </span>
               {totals.lwPct !== null && (
                 <span
@@ -335,24 +364,30 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
             Vendor
           </span>
           <div className="flex items-center gap-[14px]">
-            <span
-              className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 pl-2.5 text-right"
-              style={{ width: 64 }}
-            >
-              TY
-            </span>
-            <span
-              className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
-              style={{ width: PCT_COL_W }}
-            >
-              vs LW
-            </span>
-            <span
-              className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
-              style={{ width: PCT_COL_W }}
-            >
-              vs LY
-            </span>
+            <SortHeader
+              col="ty"
+              label="TY"
+              sort={sort}
+              onSort={handleSort}
+              width={64}
+              className={`${PERF_SORT_HEADER} justify-end pl-2.5`}
+            />
+            <SortHeader
+              col="lw"
+              label="vs LW"
+              sort={sort}
+              onSort={handleSort}
+              width={PCT_COL_W}
+              className={`${PERF_SORT_HEADER} justify-center`}
+            />
+            <SortHeader
+              col="ly"
+              label="vs LY"
+              sort={sort}
+              onSort={handleSort}
+              width={PCT_COL_W}
+              className={`${PERF_SORT_HEADER} justify-center`}
+            />
           </div>
         </div>
 

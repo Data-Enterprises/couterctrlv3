@@ -674,28 +674,28 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
                   >
                     <SeverityBadge severity={sev} />
                     <div className="flex flex-col justify-center min-w-0 flex-1">
-                      <div className="text-[13px] font-medium text-content truncate">
+                      <div className="text-[14px] font-medium text-content truncate">
                         {item.description}
                       </div>
-                      <div className="text-[10px] text-content tabular-nums truncate">
+                      <div className="text-[11px] text-content tabular-nums truncate">
                         {item.productCode}
                       </div>
                     </div>
                     <div className="flex items-center gap-[10px]">
                       <span
-                        className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${SEV_PILL_CLASSES[sev]}`}
+                        className={`text-[14px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${SEV_PILL_CLASSES[sev]}`}
                         style={{ width: 76 }}
                       >
                         {metric.tyDisplay}
                       </span>
                       <span
-                        className="text-[12px] font-semibold text-content text-center flex-shrink-0 whitespace-nowrap"
+                        className="text-[13px] font-semibold text-content text-center flex-shrink-0 whitespace-nowrap"
                         style={{ width: 68 }}
                       >
                         {metric.lwDisplay ?? "—"}
                       </span>
                       <span
-                        className="text-[12px] font-semibold text-content text-center flex-shrink-0 whitespace-nowrap"
+                        className="text-[13px] font-semibold text-content text-center flex-shrink-0 whitespace-nowrap"
                         style={{ width: 68 }}
                       >
                         {metric.lyDisplay ?? "—"}

@@ -1,7 +1,7 @@
 import InfoButton from "../../../components/InfoButton";
 import { useMemo, useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import { formatCurrency2, formatBigNumber, getStoreName } from "../../../utils";
+import { formatCurrency2, formatBigNumber, getStoreName, formatCurrencyCompact } from "../../../utils";
 import { applyStoreNumberToName } from "../../../utils/storeIdentity";
 import { useAppSelector } from "../../../hooks";
 import type { CashierDetails } from "../../../interfaces";
@@ -13,6 +13,8 @@ import SelectFilter from "../../../components/filters/SelectFilter";
 import InfoPopover from "../../../components/InfoPopover";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import { LP_INFO } from "../lpInfo";
+import SortHeader, { PERF_SORT_HEADER } from "../../../components/SortHeader";
+import { useTriStateSort } from "../../../utils/useTriStateSort";
 
 const SEV_RANK: Record<Severity, number> = { critical: 0, watch: 1, healthy: 2 };
 
@@ -26,6 +28,10 @@ interface Props {
   onDaySelect: (day: string | null) => void;
 }
 
+/** Sortable columns. Total $ / Avg $ only render when the sale type carries
+ *  an amount, but naming them here costs nothing and keeps the union whole. */
+type LpSortCol = "trans" | "qty" | "amount" | "avg";
+
 const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, onDaySelect }: Props) => {
   const cashier = useAppSelector((s) => s.lossPrevention);
   const search = useAppSelector((s) => s.search);
@@ -33,6 +39,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
   const [infoOpen, setInfoOpen] = useState(false);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [storeFilter, setStoreFilter] = useState("");
+  const { sort, handleSort, applySort } = useTriStateSort<LpSortCol>();
 
   const {
     saleTypes, selectedSaleType, cashierDetails, baselineDetails,
@@ -150,8 +157,21 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
       )
     : sevFilteredStores;
 
-  const visibleStores = [...textFilteredStores].sort(
+  const gradeOrdered = [...textFilteredStores].sort(
     (a, b) => SEV_RANK[a.sev] - SEV_RANK[b.sev],
+  );
+
+  // Amounts are compared on magnitude, matching what the cells display —
+  // refunds and voids arrive negative, and sorting on the raw sign would put
+  // the biggest refunds at the bottom of a descending sort.
+  const visibleStores = applySort(gradeOrdered, ({ detail }, col) =>
+    col === "trans"
+      ? detail.transaction_count
+      : col === "qty"
+        ? detail.total_items
+        : col === "amount"
+          ? Math.abs(detail.amount)
+          : Math.abs(detail.average_dollars),
   );
 
   return (
@@ -166,7 +186,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
             <>
               <div className="flex items-baseline gap-1 flex-shrink-0">
                 <span className="text-[10px] uppercase tracking-wide text-custom-white/45">Sales</span>
-                <span className="text-[13px] font-medium text-custom-white">{formatCurrency2(totalSales)}</span>
+                <span className="text-[13px] font-medium text-custom-white">{formatCurrencyCompact(totalSales)}</span>
               </div>
               <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
               <div className="flex items-baseline gap-1 flex-shrink-0">
@@ -291,33 +311,41 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
                 Store
               </span>
               <div className="flex items-center gap-[14px]">
-                <span
-                  className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
-                  style={{ width: 58 }}
-                >
-                  Trans
-                </span>
-                <span
-                  className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
-                  style={{ width: 58 }}
-                >
-                  Qty
-                </span>
+                <SortHeader
+                  col="trans"
+                  label="Trans"
+                  sort={sort}
+                  onSort={handleSort}
+                  width={58}
+                  className={`${PERF_SORT_HEADER} justify-center`}
+                />
+                <SortHeader
+                  col="qty"
+                  label="Qty"
+                  sort={sort}
+                  onSort={handleSort}
+                  width={58}
+                  className={`${PERF_SORT_HEADER} justify-center`}
+                />
                 {hasAmount && (
-                  <span
-                    className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 pl-2.5 text-center"
-                    style={{ width: 64 }}
-                  >
-                    Total $
-                  </span>
+                  <SortHeader
+                    col="amount"
+                    label="Total $"
+                    sort={sort}
+                    onSort={handleSort}
+                    width={64}
+                    className={`${PERF_SORT_HEADER} justify-center pl-2.5`}
+                  />
                 )}
                 {hasAmount && (
-                  <span
-                    className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
-                    style={{ width: 58 }}
-                  >
-                    Avg $
-                  </span>
+                  <SortHeader
+                    col="avg"
+                    label="Avg $"
+                    sort={sort}
+                    onSort={handleSort}
+                    width={58}
+                    className={`${PERF_SORT_HEADER} justify-center`}
+                  />
                 )}
               </div>
             </div>

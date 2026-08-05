@@ -33,14 +33,14 @@ import EmptyPrompt from "../../components/EmptyPrompt";
 import LedgerEntryCard from "./components/LedgerEntryCard";
 import StoreDetailPopup from "./components/StoreDetailPopup";
 import LedgerHeader from "./components/LedgerHeader";
-import LedgerRow, { type LedgerRowData } from "./components/LedgerRow";
+import LedgerRow from "./components/LedgerRow";
+import SortHeader, { PERF_SORT_HEADER } from "../../components/SortHeader";
+import { useTriStateSort } from "../../utils/useTriStateSort";
 import { PCT_COL_W } from "./components/utils";
 import type { SevFilter } from "./components/utils";
 import TextFilter from "../../components/filters/TextFilter";
-import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
 
 type SortColumn = "ty" | "vsLW" | "vsLY";
-type SortState = { column: SortColumn; direction: "desc" | "asc" } | null;
 
 const SalesLedger = () => {
   const dispatch = useAppDispatch();
@@ -80,15 +80,7 @@ const SalesLedger = () => {
   const [fetchFailed, setFetchFailed] = useState(false);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [storeFilter, setStoreFilter] = useState("");
-  const [sort, setSort] = useState<SortState>(null);
-
-  const handleSortClick = (column: SortColumn) => {
-    setSort((prev) => {
-      if (prev?.column !== column) return { column, direction: "desc" };
-      if (prev.direction === "desc") return { column, direction: "asc" };
-      return null;
-    });
-  };
+  const { sort, handleSort, applySort } = useTriStateSort<SortColumn>();
 
   // Stable identity — an inline arrow here would be a new prop on every
   // render and would defeat the memo on LedgerRow entirely.
@@ -372,15 +364,9 @@ const SalesLedger = () => {
       })
     : sevFilteredRows;
 
-  const sortValue = (row: LedgerRowData, column: SortColumn) =>
-    column === "ty" ? row.twTotal : column === "vsLW" ? row.vsLWPct : row.vsLYPct;
-
-  const visibleRows = sort
-    ? [...textFilteredRows].sort((a, b) => {
-        const diff = sortValue(a, sort.column) - sortValue(b, sort.column);
-        return sort.direction === "desc" ? -diff : diff;
-      })
-    : textFilteredRows;
+  const visibleRows = applySort(textFilteredRows, (row, col) =>
+    col === "ty" ? row.twTotal : col === "vsLW" ? row.vsLWPct : row.vsLYPct,
+  );
 
   const heroTWTotal = ledgerRows.reduce((acc, r) => acc + r.twTotal, 0);
   const heroLYTotal = ledgerRows.reduce((acc, r) => acc + r.lyTotal, 0);
@@ -492,45 +478,30 @@ const SalesLedger = () => {
                   Store
                 </span>
                 <div className="flex items-center gap-[14px]">
-                  <button
-                    onClick={() => handleSortClick("ty")}
-                    className="flex items-center justify-end gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0 pl-2.5"
-                    style={{ width: 64 }}
-                  >
-                    TY
-                    {sort?.column === "ty" &&
-                      (sort.direction === "desc" ? (
-                        <ChevronDownIcon className="w-3 h-3" />
-                      ) : (
-                        <ChevronUpIcon className="w-3 h-3" />
-                      ))}
-                  </button>
-                  <button
-                    onClick={() => handleSortClick("vsLW")}
-                    className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
-                    style={{ width: PCT_COL_W }}
-                  >
-                    vs LW
-                    {sort?.column === "vsLW" &&
-                      (sort.direction === "desc" ? (
-                        <ChevronDownIcon className="w-3 h-3" />
-                      ) : (
-                        <ChevronUpIcon className="w-3 h-3" />
-                      ))}
-                  </button>
-                  <button
-                    onClick={() => handleSortClick("vsLY")}
-                    className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
-                    style={{ width: PCT_COL_W }}
-                  >
-                    vs LY
-                    {sort?.column === "vsLY" &&
-                      (sort.direction === "desc" ? (
-                        <ChevronDownIcon className="w-3 h-3" />
-                      ) : (
-                        <ChevronUpIcon className="w-3 h-3" />
-                      ))}
-                  </button>
+                  <SortHeader
+                    col="ty"
+                    label="TY"
+                    sort={sort}
+                    onSort={handleSort}
+                    width={64}
+                    className={`${PERF_SORT_HEADER} justify-end pl-2.5`}
+                  />
+                  <SortHeader
+                    col="vsLW"
+                    label="vs LW"
+                    sort={sort}
+                    onSort={handleSort}
+                    width={PCT_COL_W}
+                    className={`${PERF_SORT_HEADER} justify-center`}
+                  />
+                  <SortHeader
+                    col="vsLY"
+                    label="vs LY"
+                    sort={sort}
+                    onSort={handleSort}
+                    width={PCT_COL_W}
+                    className={`${PERF_SORT_HEADER} justify-center`}
+                  />
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto thin-scrollbar">

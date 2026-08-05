@@ -1,6 +1,6 @@
 import { getCats } from "../../api/sales";
 import { getCatItems } from "../../api/cats";
-import { fetchAllPages, pageCount } from "../../utils/paging";
+import { fetchAllPages } from "../../utils/paging";
 import type {
   CatItem,
   CatSalesDaily,
@@ -67,7 +67,6 @@ export const datesInRange = (start: string, end: string): string[] => {
 export const fetchPeriod = async (
   scope: CategoryScope,
   range: PeriodRange,
-  onPages?: (total: number) => void,
 ): Promise<CatSalesDaily[]> => {
   const call = (page: number) =>
     getCats(
@@ -87,8 +86,6 @@ export const fetchPeriod = async (
   const body = first.data as CatSalesResponse<CatSalesDaily>;
   if (body.error !== 0) return [];
 
-  onPages?.(pageCount(body));
-
   return fetchAllPages(body, body.subs ?? [], async (page) => {
     try {
       const resp = await call(page);
@@ -105,19 +102,13 @@ export const fetchAllPeriods = async (
   scope: CategoryScope,
   twStart: string,
   twEnd: string,
-  onPages?: (total: number) => void,
 ) => {
   const ranges = periodRanges(twStart, twEnd);
-  let pages = 0;
-  const track = (n: number) => {
-    pages += n;
-    onPages?.(pages);
-  };
 
   const [tw, lw, ly] = await Promise.all([
-    fetchPeriod(scope, ranges.tw, track),
-    fetchPeriod(scope, ranges.lw, track),
-    fetchPeriod(scope, ranges.ly, track),
+    fetchPeriod(scope, ranges.tw),
+    fetchPeriod(scope, ranges.lw),
+    fetchPeriod(scope, ranges.ly),
   ]);
 
   return { tw, lw, ly, twDates: datesInRange(ranges.tw.start, ranges.tw.end) };
