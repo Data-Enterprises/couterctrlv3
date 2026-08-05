@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { formatCurrencyCompact } from "../../../utils";
 import { useStoreName } from "../../../hooks";
-import { severityDotClass } from "./utils";
+import { severityDotClass, PCT_COL_W } from "./utils";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import type { Severity } from "../../../utils/severity";
 import type { GradingMetric } from "../../../features/salesLedgerSlice";
@@ -75,10 +75,10 @@ const deltaPillClass = (pct: number) =>
 
 const DeltaPill = ({ has, pct }: { has: boolean; pct: number }) => (
   <span
-    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
+    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
       has ? deltaPillClass(pct) : "bg-gray-100 text-gray-400"
     }`}
-    style={{ width: 58 }}
+    style={{ minWidth: PCT_COL_W }}
   >
     {has ? formatPct(pct) : "—"}
   </span>

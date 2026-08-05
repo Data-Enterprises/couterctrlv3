@@ -1,5 +1,5 @@
 import InfoButton from "../../components/InfoButton";
-import CategoryRow from "./CategoryRow";
+import VendorRow from "./VendorRow";
 import { useMemo, useState, useCallback } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../hooks";
@@ -23,22 +23,17 @@ import {
   formatPct,
   type Severity,
 } from "../../utils/severity";
-import { CATEGORIES_INFO } from "./categoriesInfo";
+import { pctChange, sortGraded, type Tier } from "../../utils/grading";
+import { VENDORS_INFO } from "./vendorsInfo";
 import {
   setTextFilter,
   setTierFilter,
-  setSelectedCategory,
+  setSelectedVendor,
   setMetric,
   setThreshold,
-  CATEGORY_THRESHOLD_DEFAULT,
-} from "../../features/categoriesSlice";
-import {
-  getTier,
-  categoryDelta,
-  pctChange,
-  sortGraded,
-  type CategoryTier,
-} from "./categoriesUtils";
+  VENDOR_THRESHOLD_DEFAULT,
+} from "../../features/vendorsSlice";
+import { getVendorTier, vendorDelta } from "./vendorsUtils";
 
 const TOGGLE_OPTS = [
   { key: "sales" as const, label: "Sales" },
@@ -47,20 +42,19 @@ const TOGGLE_OPTS = [
 
 /** Ungraded has no severity equivalent, so it falls back to the neutral dot
  *  rather than borrowing a colour that would imply a verdict. */
-const dotFor = (tier: CategoryTier) =>
+const dotFor = (tier: Tier) =>
   tier === "ungraded" ? "bg-gray-300" : severityDotClass[tier as Severity];
 
-/** Tier summary chips, in Sales' tinted-fill register rather than the solid
- *  `chipClass` fill the Data pages use. Written out in full because Tailwind
- *  scans source text and never sees a class assembled at runtime. */
-const CHIP_BASE: Record<CategoryTier, string> = {
+/** Written out in full because Tailwind scans source text and never sees a
+ *  class assembled at runtime. */
+const CHIP_BASE: Record<Tier, string> = {
   critical: "bg-severity_critical_bg text-severity_critical_text",
   watch: "bg-severity_watch_bg text-severity_watch_text",
   healthy: "bg-severity_healthy_bg text-severity_healthy_text",
   ungraded: "bg-gray-100 text-content/70",
 };
 
-const CHIP_ON: Record<CategoryTier, string> = {
+const CHIP_ON: Record<Tier, string> = {
   critical: "ring-2 ring-severity_critical_text/40 shadow-sm",
   watch: "ring-2 ring-severity_watch_text/40 shadow-sm",
   healthy: "ring-2 ring-severity_healthy_text/40 shadow-sm",
@@ -76,21 +70,19 @@ interface Props {
   onSearchOpen: () => void;
 }
 
-const CategoryListPanel = ({ onSearchOpen }: Props) => {
+const VendorListPanel = ({ onSearchOpen }: Props) => {
   const dispatch = useAppDispatch();
   const [infoOpen, setInfoOpen] = useState(false);
   const { sort, handleSort, applySort } = useTriStateSort<ListSortCol>();
-  const cats = useAppSelector((s) => s.categories);
-  const { rows, metric, threshold, tierFilter, textFilter, selectedCategory } = cats;
+  const vend = useAppSelector((s) => s.vendors);
+  const { rows, metric, threshold, tierFilter, textFilter, selectedVendor } = vend;
 
   // Null threshold means the input is mid-edit; grade against the default
   // rather than 0, which would make every decline critical as you type.
-  const activeThreshold = threshold ?? CATEGORY_THRESHOLD_DEFAULT;
+  const activeThreshold = threshold ?? VENDOR_THRESHOLD_DEFAULT;
 
-  // Same split Sales uses (SalesLedger.tsx:326). Everything that doesn't depend
-  // on the threshold — the deltas, the percentages, the formatted strings — is
-  // derived once from the data. Dragging the slider then only runs the cheap
-  // re-grade below instead of rebuilding all 1100 rows per frame.
+  // The expensive half, and the half that doesn't depend on the threshold.
+  // Dragging the slider then only runs the cheap re-grade below.
   const base = useMemo(
     () =>
       rows.map((r) => {
@@ -104,10 +96,9 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
         const f = (n: number) => (isQty ? formatBigNumber(n) : formatCurrency2(n));
         return {
           ...r,
-          delta: categoryDelta(r, metric),
+          delta: vendorDelta(r, metric),
           lwPct,
           lyPct,
-          label: r.description ?? `Category ${r.category}`,
           twText: f(isQty ? r.twQty : r.twNet),
           lwText: r.hasLW ? f(isQty ? r.lwQty : r.lwNet) : "—",
           lyText: r.hasLY ? f(isQty ? r.lyQty : r.lyNet) : "—",
@@ -119,12 +110,11 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
   );
 
   // The cheap half. Resolving the pill classes here rather than in the row is
-  // what lets CategoryRow's memo work: a row only re-renders when its own grade
-  // crosses the threshold, not because the threshold moved at all.
+  // what lets VendorRow's memo work.
   const graded = useMemo(
     () =>
       base.map((b) => {
-        const tier = getTier(b, activeThreshold, metric);
+        const tier = getVendorTier(b, activeThreshold, metric);
         return {
           ...b,
           tier,
@@ -147,29 +137,36 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
     const filtered = graded.filter((g) => {
       if (tierFilter !== "all" && g.tier !== tierFilter) return false;
       if (!q) return true;
-      const label = g.description ?? `category ${g.category}`;
-      return label.toLowerCase().includes(q) || String(g.category).includes(q);
+      return (
+        g.vendorName.toLowerCase().includes(q) ||
+        g.vendorId.toLowerCase().includes(q)
+      );
     });
     // applySort hands the rows straight back when nothing is sorted, so the
     // grade order stays the default.
-    return applySort(sortGraded(filtered, metric), (g, col) =>
-      col === "ty"
-        ? metric === "qty"
-          ? g.twQty
-          : g.twNet
-        : col === "lw"
-          ? g.lwPct
-          : g.lyPct,
+    return applySort(
+      sortGraded(filtered, (g) => (metric === "qty" ? g.twQty : g.twNet)),
+      (g, col) =>
+        col === "ty"
+          ? metric === "qty"
+            ? g.twQty
+            : g.twNet
+          : col === "lw"
+            ? g.lwPct
+            : g.lyPct,
     );
   }, [graded, tierFilter, textFilter, metric, sort]);
 
   /** Header aggregates — the whole store's week, and how it moved. */
   const totals = useMemo(() => {
-    const tw = graded.reduce((a, g) => a + (metric === "qty" ? g.twQty : g.twNet), 0);
-    const twLW = graded.reduce((a, g) => a + (metric === "qty" ? g.twQtyForLW : g.twNetForLW), 0);
-    const lw = graded.reduce((a, g) => a + (metric === "qty" ? g.lwQty : g.lwNet), 0);
-    const twLY = graded.reduce((a, g) => a + (metric === "qty" ? g.twQtyForLY : g.twNetForLY), 0);
-    const ly = graded.reduce((a, g) => a + (metric === "qty" ? g.lyQty : g.lyNet), 0);
+    const sum = (pick: (g: (typeof graded)[number]) => number) =>
+      graded.reduce((a, g) => a + pick(g), 0);
+    const isQty = metric === "qty";
+    const tw = sum((g) => (isQty ? g.twQty : g.twNet));
+    const twLW = sum((g) => (isQty ? g.twQtyForLW : g.twNetForLW));
+    const lw = sum((g) => (isQty ? g.lwQty : g.lwNet));
+    const twLY = sum((g) => (isQty ? g.twQtyForLY : g.twNetForLY));
+    const ly = sum((g) => (isQty ? g.lyQty : g.lyNet));
     return {
       tw,
       lwPct: lw > 0 ? pctChange(twLW, lw) : null,
@@ -177,11 +174,17 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
     };
   }, [graded, metric]);
 
-  const uncategorized = useMemo(() => {
-    const u = graded.filter((g) => g.uncategorized);
+  /** Coupon lines and anything else with no supplier. Surfaced rather than
+   *  hidden — a large bucket here is worth knowing about, and it explains why
+   *  the vendor rows don't sum to the header on their own. */
+  const noVendor = useMemo(() => {
+    const rows = graded.filter((g) => g.noVendor);
     return {
-      count: u.length,
-      value: u.reduce((a, g) => a + (metric === "qty" ? g.twQty : g.twNet), 0),
+      count: rows.length,
+      value: rows.reduce(
+        (a, g) => a + (metric === "qty" ? g.twQty : g.twNet),
+        0,
+      ),
     };
   }, [graded, metric]);
 
@@ -194,20 +197,20 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
     metric === "qty" ? formatBigNumber(n, 0) : formatCurrencyCompact(n);
 
   const dateRange =
-    cats.twStart && cats.twEnd ? fmtCompactRange(cats.twStart, cats.twEnd) : "";
+    vend.twStart && vend.twEnd ? fmtCompactRange(vend.twStart, vend.twEnd) : "";
 
   const threshValue: ThresholdValue | null =
     threshold === null ? null : { op: "lt", amount: threshold };
 
   // Stable identity — a fresh closure per render would break every row's memo.
   const handleSelect = useCallback(
-    (category: number, isSelected: boolean) =>
-      dispatch(setSelectedCategory(isSelected ? null : category)),
+    (vendorId: string, isSelected: boolean) =>
+      dispatch(setSelectedVendor(isSelected ? null : vendorId)),
     [dispatch],
   );
 
   /** Re-clicking the active chip clears the filter, so "all" needs no chip. */
-  const chip = (key: CategoryTier, label: string, n: number) => (
+  const chip = (key: Tier, label: string, n: number) => (
     <button
       key={key}
       onClick={() => dispatch(setTierFilter(tierFilter === key ? "all" : key))}
@@ -275,7 +278,7 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
           </button>
 
           <span className="text-[11px] font-medium text-custom-white truncate min-w-0">
-            {cats.storeName}
+            {vend.storeName}
           </span>
 
           <div className="flex-1" />
@@ -319,9 +322,9 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
             <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
             {infoOpen && (
               <InfoPopover
-                title={CATEGORIES_INFO.title}
-                purpose={CATEGORIES_INFO.purpose}
-                glossary={CATEGORIES_INFO.glossary}
+                title={VENDORS_INFO.title}
+                purpose={VENDORS_INFO.purpose}
+                glossary={VENDORS_INFO.glossary}
                 onClose={() => setInfoOpen(false)}
               />
             )}
@@ -340,17 +343,16 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
         <TextFilter
           value={textFilter}
           onChange={(v) => dispatch(setTextFilter(v))}
-          placeholder="Filter categories…"
+          placeholder="Filter vendors…"
           className="max-w-[230px]"
         />
       </div>
 
-      {uncategorized.count > 0 && (
+      {noVendor.count > 0 && (
         <div className="px-4 py-1.5 bg-custom-white border-x border-b border-gray-100 text-[11px] text-content/60 flex-shrink-0">
-          <span className="font-medium text-content">{fmt(uncategorized.value)}</span>{" "}
-          across {uncategorized.count} uncategorized{" "}
-          {uncategorized.count === 1 ? "bucket" : "buckets"} — items with no category
-          at the POS.
+          <span className="font-medium text-content">{fmt(noVendor.value)}</span> booked
+          without a vendor — coupon lines and anything else the POS records with no
+          supplier. Counted in the store total so the vendors below still add up.
         </div>
       )}
 
@@ -359,7 +361,7 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
         <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
           <span className="w-2.5 flex-shrink-0" />
           <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-1">
-            Category
+            Vendor
           </span>
           <div className="flex items-center gap-[14px]">
             <SortHeader
@@ -396,10 +398,10 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
             </div>
           ) : (
             visible.map((g) => (
-              <CategoryRow
-                key={g.category}
-                category={g.category}
-                label={g.label}
+              <VendorRow
+                key={g.vendorId}
+                vendorId={g.vendorId}
+                label={g.vendorName}
                 twText={g.twText}
                 lwText={g.lwText}
                 lyText={g.lyText}
@@ -408,7 +410,7 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
                 dotClass={g.dotClass}
                 lwPillClass={g.lwPillClass}
                 lyPillClass={g.lyPillClass}
-                isSelected={selectedCategory === g.category}
+                isSelected={selectedVendor === g.vendorId}
                 onSelect={handleSelect}
               />
             ))
@@ -419,4 +421,4 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
   );
 };
 
-export default CategoryListPanel;
+export default VendorListPanel;

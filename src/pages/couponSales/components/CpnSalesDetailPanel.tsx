@@ -34,8 +34,8 @@ import type {
   JsonError,
   TransactionListItem,
 } from "../../../interfaces";
-import SortHeader from "./SortHeader";
-import { useTriStateSort } from "../shared/useTriStateSort";
+import SortHeader from "../../../components/SortHeader";
+import { useTriStateSort } from "../../../utils/useTriStateSort";
 
 type SectionSortCol = "amount" | "trans" | "count" | "avg";
 type TxSortCol = "count" | "amount";
@@ -310,12 +310,15 @@ const CpnSalesDetailPanel = ({
     const filtered = q
       ? byTier.filter((r) => r.label.toLowerCase().includes(q))
       : byTier;
-    return sectionSort.applySort(filtered, (a, b, col) => {
-      if (col === "amount") return a.amount - b.amount;
-      if (col === "trans") return a.transactions - b.transactions;
-      if (col === "count") return a.lines - b.lines;
-      return a.avgAmount - b.avgAmount;
-    });
+    return sectionSort.applySort(filtered, (r, col) =>
+      col === "amount"
+        ? r.amount
+        : col === "trans"
+          ? r.transactions
+          : col === "count"
+            ? r.lines
+            : r.avgAmount,
+    );
   }, [sectionRows, sectionTierFilter, sectionFilter, sectionSort.sort]);
 
   // With nothing picked the right side shows every transaction in the store,
@@ -335,7 +338,7 @@ const CpnSalesDetailPanel = ({
     () =>
       txSort.applySort(
         buildTransactions(scopedCoupons, threshold),
-        (a, b, col) => (col === "amount" ? a.amount - b.amount : a.lines - b.lines),
+        (r, col) => (col === "amount" ? r.amount : r.lines),
       ),
     [scopedCoupons, threshold, txSort.sort],
   );
@@ -496,28 +499,28 @@ const CpnSalesDetailPanel = ({
                 label="Amount"
                 sort={sectionSort.sort}
                 onSort={sectionSort.handleSort}
-                className="px-2 py-1 text-[9px] font-bold justify-end"
+                className="px-2 py-1 text-[9px] font-bold justify-end uppercase tracking-wide text-content hover:underline"
               />
               <SortHeader
                 col="trans"
                 label="Trans"
                 sort={sectionSort.sort}
                 onSort={sectionSort.handleSort}
-                className="px-1.5 py-1 text-[9px] font-bold justify-end"
+                className="px-1.5 py-1 text-[9px] font-bold justify-end uppercase tracking-wide text-content hover:underline"
               />
               <SortHeader
                 col="count"
                 label="Count"
                 sort={sectionSort.sort}
                 onSort={sectionSort.handleSort}
-                className="px-1.5 py-1 text-[9px] font-bold justify-end"
+                className="px-1.5 py-1 text-[9px] font-bold justify-end uppercase tracking-wide text-content hover:underline"
               />
               <SortHeader
                 col="avg"
                 label="Avg"
                 sort={sectionSort.sort}
                 onSort={sectionSort.handleSort}
-                className="px-2 py-1 text-[9px] font-bold justify-end"
+                className="px-2 py-1 text-[9px] font-bold justify-end uppercase tracking-wide text-content hover:underline"
               />
             </div>
 
@@ -835,14 +838,14 @@ const CpnSalesDetailPanel = ({
                   label="Count"
                   sort={txSort.sort}
                   onSort={txSort.handleSort}
-                  className="px-3 py-1.5 text-[9px] font-bold justify-end"
+                  className="px-3 py-1.5 text-[9px] font-bold justify-end uppercase tracking-wide text-content hover:underline"
                 />
                 <SortHeader
                   col="amount"
                   label="Amount"
                   sort={txSort.sort}
                   onSort={txSort.handleSort}
-                  className="px-3 py-1.5 text-[9px] font-bold justify-end"
+                  className="px-3 py-1.5 text-[9px] font-bold justify-end uppercase tracking-wide text-content hover:underline"
                 />
               </div>
 
@@ -870,7 +873,7 @@ const CpnSalesDetailPanel = ({
                           <span className="block text-[12px] font-medium text-content truncate underline underline-offset-2 decoration-content/40">
                             #{t.sale_id}
                           </span>
-                          <span className="block text-[10px] text-content truncate">
+                          <span className="block text-[11px] text-content truncate">
                             {t.sale_date}
                             {t.terminal ? ` · Term ${t.terminal}` : ""}
                           </span>

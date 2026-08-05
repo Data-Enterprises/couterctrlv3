@@ -2,7 +2,7 @@ import InfoButton from "../../../components/InfoButton";
 import { useMemo, useRef, useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { formatCurrency2, formatBigNumber } from "../../../utils";
+import { formatCurrency2, formatBigNumber, formatCurrencyCompact } from "../../../utils";
 import {
   setCouponThreshold,
   setCouponTrendThreshold,
@@ -21,8 +21,8 @@ import TextFilter from "../../../components/filters/TextFilter";
 import InfoPopover from "../../../components/InfoPopover";
 import { COUPON_SALES_INFO } from "../couponSalesInfo";
 import { couponDotClass, couponPillClass, type CouponRow, type CouponTotals } from "../shared/couponGrading";
-import SortHeader from "./SortHeader";
-import { useTriStateSort } from "../shared/useTriStateSort";
+import SortHeader from "../../../components/SortHeader";
+import { useTriStateSort } from "../../../utils/useTriStateSort";
 
 const METRIC_OPTS: { key: CouponMetric; label: string }[] = [
   { key: "trend", label: "Trend" },
@@ -78,11 +78,9 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
       ? byTier.filter((r) => r.label.toLowerCase().includes(q))
       : byTier;
     // No sort selected leaves the grade order (worst first) intact.
-    return applySort(filtered, (a, b, col) => {
-      if (col === "amount") return a.amount - b.amount;
-      if (col === "trans") return a.transactions - b.transactions;
-      return a.lines - b.lines;
-    });
+    return applySort(filtered, (r, col) =>
+      col === "amount" ? r.amount : col === "trans" ? r.transactions : r.lines,
+    );
   }, [rows, tierFilter, storeFilter, sort]);
 
   const toggleTier = (tier: Exclude<CouponTierFilter, "all">) =>
@@ -102,7 +100,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
             <span className="text-[10px] uppercase tracking-wide text-custom-white/70">
               Amount{" "}
               <span className="text-[13px] font-semibold text-custom-white normal-case tracking-normal">
-                {formatCurrency2(totals.amount)}
+                {formatCurrencyCompact(totals.amount)}
               </span>
             </span>
             <span className="w-px h-3.5 bg-custom-white/20" />
@@ -289,21 +287,21 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
             label="Amount"
             sort={sort}
             onSort={handleSort}
-            className="text-[10px] font-bold justify-end w-[64px] flex-shrink-0"
+            className="text-[10px] font-bold justify-end w-[64px] flex-shrink-0 uppercase tracking-wide text-content hover:underline"
           />
           <SortHeader
             col="trans"
             label="Trans"
             sort={sort}
             onSort={handleSort}
-            className="text-[10px] font-bold justify-end w-[46px] flex-shrink-0"
+            className="text-[10px] font-bold justify-end w-[46px] flex-shrink-0 uppercase tracking-wide text-content hover:underline"
           />
           <SortHeader
             col="count"
             label="Count"
             sort={sort}
             onSort={handleSort}
-            className="text-[10px] font-bold justify-end w-[46px] flex-shrink-0"
+            className="text-[10px] font-bold justify-end w-[46px] flex-shrink-0 uppercase tracking-wide text-content hover:underline"
           />
           <span className="text-[10px] font-bold uppercase tracking-wide text-content text-center" style={{ width: 58 }}>
             Avg
@@ -378,8 +376,8 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
                     {formatBigNumber(row.lines, 0)}
                   </span>
                   <span
-                    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${couponPillClass[row.tier]}`}
-                    style={{ width: 58 }}
+                    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${couponPillClass[row.tier]}`}
+                    style={{ minWidth: 58 }}
                   >
                     {formatCurrency2(row.avgAmount)}
                   </span>

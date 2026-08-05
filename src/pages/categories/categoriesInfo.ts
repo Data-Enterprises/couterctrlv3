@@ -23,7 +23,7 @@ export const CATEGORIES_INFO: {
       desc: "Sold this week but has neither a last-week nor a last-year figure to compare against. Not a verdict — there is simply nothing to grade it on yet. The chip only appears when some exist.",
     },
     {
-      term: "Category Threshold",
+      term: "Threshold",
       desc: "How far a decline has to go before a category is flagged Critical. The Items tab has its own separate threshold, since a single UPC moving is a smaller thing than a whole category moving.",
     },
     {

@@ -237,7 +237,7 @@ const CouponSales = () => {
         {/* Left: graded store list */}
         <div
           className="flex flex-col min-w-0"
-          style={{ flexBasis: "38%", flexShrink: 0 }}
+          style={{ flexBasis: "40%", flexShrink: 0 }}
         >
           <CpnSalesStorePanel
             rows={storeRows}

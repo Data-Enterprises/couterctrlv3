@@ -4,7 +4,7 @@ import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
 import { formatDate } from "../widgets";
-import { formatCurrency2 } from "../../../../utils";
+import { formatCurrency2, formatCurrencyCompact } from "../../../../utils";
 import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
 import { setDates, getTier, getGradeDelta } from "../..";
 import {
@@ -18,10 +18,12 @@ import {
 import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
 import LocationTabs from "../../../../components/filters/LocationTabs";
 import TextFilter from "../../../../components/filters/TextFilter";
-import { severityDotClass, pillClass, type SevFilter } from "../../../../utils/severity";
+import { severityDotClass, pillClass, PCT_COL_W, type SevFilter } from "../../../../utils/severity";
 import type { SubDeptMargin } from "../../../../interfaces";
 import InfoPopover from "../../../../components/InfoPopover";
 import { SUB_DEPT_MARGINS_INFO } from "../../subDeptMarginsInfo";
+import SortHeader, { PERF_SORT_HEADER } from "../../../../components/SortHeader";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
 
 interface Props {
   onSearchOpen: () => void;
@@ -29,6 +31,9 @@ interface Props {
    *  combined when null. No refetch — see SubDeptMarginsDev. */
   onStoreNumberChange: (storeNumber: string | null) => void;
 }
+
+/** Sortable columns. Trend is a shape, not a figure, so it stays static. */
+type SdSortCol = "ty" | "lw" | "ly";
 
 const SEV_RANK: Record<MarginTier, number> = { critical: 0, watch: 1, healthy: 2 };
 
@@ -69,6 +74,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
   const [infoOpen, setInfoOpen] = useState(false);
+  const { sort, handleSort, applySort } = useTriStateSort<SdSortCol>();
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [subDeptFilter, setSubDeptFilter] = useState("");
 
@@ -193,7 +199,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
   // for its sub-dept list. Without the second comparator this fell back to
   // sub_department id inside each tier, so the two pages listed the same
   // departments in different orders and looked like they disagreed.
-  const visibleRows = [...textFilteredRows].sort((a, b) => {
+  const gradeOrdered = [...textFilteredRows].sort((a, b) => {
     const rankDiff = SEV_RANK[a.tier] - SEV_RANK[b.tier];
     if (rankDiff !== 0) return rankDiff;
     return (
@@ -201,6 +207,23 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
       getGradeDelta(b.grade, gradingMetric)
     );
   });
+
+  // Sorting follows the metric toggle: in margin mode the columns hold points,
+  // in sales mode dollars, and the sort has to read whichever is on screen.
+  const isMarginMode = gradingMetric === "margin";
+  const visibleRows = applySort(gradeOrdered, ({ grade }, col) =>
+    col === "ty"
+      ? isMarginMode
+        ? grade.tyMarginPct
+        : grade.tySales
+      : col === "lw"
+        ? isMarginMode
+          ? grade.lwPtsDelta
+          : grade.vsLWSalesPct
+        : isMarginMode
+          ? grade.ptsDelta
+          : grade.vsLYSalesPct,
+  );
 
   return (
     <div
@@ -221,7 +244,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
                   ? avgMarginPct !== null
                     ? `${avgMarginPct.toFixed(2)}%`
                     : "—"
-                  : formatCurrency2(totalTySales)}
+                  : formatCurrencyCompact(totalTySales)}
               </span>
               {(gradingMetric === "margin" ? avgLwDelta : vsLWSalesPct) !== null && (
                 <span
@@ -380,24 +403,30 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
                 >
                   Trend
                 </span>
-                <span
-                  className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 pl-2.5 text-right"
-                  style={{ width: 64 }}
-                >
-                  TY
-                </span>
-                <span
-                  className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
-                  style={{ width: 72 }}
-                >
-                  vs LW
-                </span>
-                <span
-                  className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
-                  style={{ width: 72 }}
-                >
-                  vs LY
-                </span>
+                <SortHeader
+                  col="ty"
+                  label="TY"
+                  sort={sort}
+                  onSort={handleSort}
+                  width={64}
+                  className={`${PERF_SORT_HEADER} justify-end pl-2.5`}
+                />
+                <SortHeader
+                  col="lw"
+                  label="vs LW"
+                  sort={sort}
+                  onSort={handleSort}
+                  width={PCT_COL_W}
+                  className={`${PERF_SORT_HEADER} justify-center`}
+                />
+                <SortHeader
+                  col="ly"
+                  label="vs LY"
+                  sort={sort}
+                  onSort={handleSort}
+                  width={PCT_COL_W}
+                  className={`${PERF_SORT_HEADER} justify-center`}
+                />
               </div>
             </div>
 
@@ -458,7 +487,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
                           className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
                             hasLW ? pillClass(lwPct, gradingThreshold) : "bg-gray-100 text-gray-400"
                           }`}
-                          style={{ width: 72 }}
+                          style={{ minWidth: PCT_COL_W }}
                         >
                           {hasLW ? lwDisplay : "—"}
                         </span>
@@ -466,7 +495,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
                           className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
                             hasLY ? pillClass(lyPct, gradingThreshold) : "bg-gray-100 text-gray-400"
                           }`}
-                          style={{ width: 72 }}
+                          style={{ minWidth: PCT_COL_W }}
                         >
                           {hasLY ? lyDisplay : "—"}
                         </span>

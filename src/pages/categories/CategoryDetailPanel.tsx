@@ -4,6 +4,7 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import { formatCurrency2, formatBigNumber } from "../../utils";
 import {
   pillClass,
+  PCT_COL_W,
   formatPct,
   chipClass,
   severityHeaderBgClass,
@@ -234,8 +235,9 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
    *  hours alike — not one view among several. Same move Sub Dept Margins made
    *  with its day sidebar, and the same shared card component.
    *
-   *  No deltaSuffix — the component leaves it off by default, so which baseline
-   *  a card is graded against goes in the hover title instead. */
+   *  Each card names its own baseline: a day with a last-year figure is graded
+   *  against LY, one without falls back to LW, and the card says which. The
+   *  hover title still carries the actual baseline value. */
   const dayCards: DayCardEntry[] = row.days.map((d) => {
     const l = dayLw(d);
     const y = dayLy(d);
@@ -245,6 +247,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
       iso: d.date,
       value: fmt(dayTw(d)),
       delta: yp ?? lp,
+      basis: yp !== null ? "LY" : lp !== null ? "LW" : undefined,
       deltaTitle:
         yp !== null
           ? `vs last year: ${fmt(y as number)}`
@@ -385,6 +388,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
         days={dayCards}
         weekValue={fmt(isQty ? row.twQty : row.twNet)}
         weekDelta={weekLyPct ?? weekLwPct}
+        weekDeltaBasis={weekLyPct !== null ? "LY" : weekLwPct !== null ? "LW" : undefined}
         selected={selectedDay ?? ""}
         onSelect={(iso) => dispatch(setSelectedDay(iso === "" ? null : iso))}
         higherIsWorse={false}
@@ -488,7 +492,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
                   </span>
                   <span
                     className={`text-[11px] font-semibold px-1.5 py-0.5 rounded text-center flex-shrink-0 whitespace-nowrap ${pillClass(r.yp ?? r.lp, activeThreshold)}`}
-                    style={{ width: 62 }}
+                    style={{ minWidth: PCT_COL_W }}
                   >
                     {r.yp ?? r.lp ? formatPct((r.yp ?? r.lp) as number) : "—"}
                   </span>

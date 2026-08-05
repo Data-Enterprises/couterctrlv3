@@ -256,10 +256,19 @@ export const getItemSeverity = (
 
 export const WEEKDAY_ORDER = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+/** One weekday's real figures for one period. Both are actuals — the day rows
+ *  show what sold, not a derived percentage. */
+export interface DayPeriodValue {
+  sales: number;
+  qty: number;
+}
+
+/** A weekday across the three periods. `null` means the item did not sell that
+ *  weekday in that period, which is not the same as zero. */
 export interface DayOfWeekValue {
-  ty: number | null;
-  lw: number | null;
-  ly: number | null;
+  ty: DayPeriodValue | null;
+  lw: DayPeriodValue | null;
+  ly: DayPeriodValue | null;
 }
 
 export interface ItemDetail {
@@ -276,11 +285,18 @@ const weekdayOf = (m: MarginSourceRow): string =>
     weekday: "short",
   });
 
-const weekdayTotals = (itemRows: MarginSourceRow[]): Map<string, number> => {
-  const byWeekday = new Map<string, number>();
+const weekdayTotals = (
+  itemRows: MarginSourceRow[],
+): Map<string, DayPeriodValue> => {
+  const byWeekday = new Map<string, DayPeriodValue>();
   for (const m of itemRows) {
     const wd = weekdayOf(m);
-    byWeekday.set(wd, (byWeekday.get(wd) ?? 0) + (m.total_sales - m.total_tax));
+    const cur = byWeekday.get(wd) ?? { sales: 0, qty: 0 };
+    cur.sales += m.total_sales - m.total_tax;
+    // Raw scan count, the same field buildItemRows totals — so a day's units
+    // add up to the item's own Qty rather than quietly disagreeing with it.
+    cur.qty += m.qty;
+    byWeekday.set(wd, cur);
   }
   return byWeekday;
 };
@@ -323,9 +339,9 @@ export const buildItemDetail = (
   const dayOfWeek: Record<string, DayOfWeekValue> = {};
   for (const wd of WEEKDAY_ORDER) {
     dayOfWeek[wd] = {
-      ty: tyByWeekday.has(wd) ? tyByWeekday.get(wd)! : null,
-      lw: lwByWeekday.has(wd) ? lwByWeekday.get(wd)! : null,
-      ly: lyByWeekday.has(wd) ? lyByWeekday.get(wd)! : null,
+      ty: tyByWeekday.get(wd) ?? null,
+      lw: lwByWeekday.get(wd) ?? null,
+      ly: lyByWeekday.get(wd) ?? null,
     };
   }
 
@@ -337,12 +353,25 @@ export const buildItemDetail = (
   };
 };
 
-/** A day's "primary" trend — prefers LY, falls back to LW, same preference
- *  order as the row-level trend fields. */
-export const dayTrend = (val: DayOfWeekValue): number | null => {
+/**
+ * A day's "primary" trend — prefers LY, falls back to LW, the same preference
+ * order as the row-level trend fields.
+ *
+ * Never rendered as a number any more: the day rows show actuals, and this only
+ * decides what colour the TY figure is printed in. It follows the page's metric
+ * toggle so a day row can't contradict the item list above it. Margin has no
+ * per-weekday equivalent, so a margin-graded page reads dollars here — the row
+ * shows dollars and units, and neither of them is a margin.
+ */
+export const dayTrend = (
+  val: DayOfWeekValue,
+  metric: ItemGradingMetric = "sales",
+): number | null => {
   if (val.ty === null) return null;
-  if (val.ly !== null && val.ly > 0) return ((val.ty - val.ly) / val.ly) * 100;
-  if (val.lw !== null && val.lw > 0) return ((val.ty - val.lw) / val.lw) * 100;
+  const of = (v: DayPeriodValue) => (metric === "qty" ? v.qty : v.sales);
+  const ty = of(val.ty);
+  if (val.ly !== null && of(val.ly) > 0) return ((ty - of(val.ly)) / of(val.ly)) * 100;
+  if (val.lw !== null && of(val.lw) > 0) return ((ty - of(val.lw)) / of(val.lw)) * 100;
   return null;
 };
 

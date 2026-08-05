@@ -33,7 +33,7 @@ import {
 import type { Severity } from "./LedgerRow";
 import type { SubDeptMargin } from "../../../interfaces";
 import UpcContextMenu from "../../../components/UpcContextMenu";
-import { formatPct, pillClass, chipClass, CTA_SEVERITY_CLASSES, severityDotClass, type SevFilter } from "./utils";
+import { formatPct, pillClass, chipClass, CTA_SEVERITY_CLASSES, severityDotClass, PCT_COL_W, type SevFilter } from "./utils";
 import SeverityBadge from "../../../components/SeverityBadge";
 import TextFilter from "../../../components/filters/TextFilter";
 import SelectFilter from "../../../components/filters/SelectFilter";
@@ -867,7 +867,7 @@ const PopupSubDeptList = ({
               <button
                 onClick={() => handleDeptSortClick("vsLW")}
                 className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
-                style={{ width: 58 }}
+                style={{ width: PCT_COL_W }}
               >
                 vs LW
                 {deptSort?.column === "vsLW" &&
@@ -880,7 +880,7 @@ const PopupSubDeptList = ({
               <button
                 onClick={() => handleDeptSortClick("vsLY")}
                 className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
-                style={{ width: 58 }}
+                style={{ width: PCT_COL_W }}
               >
                 vs LY
                 {deptSort?.column === "vsLY" &&
@@ -926,18 +926,18 @@ const PopupSubDeptList = ({
                       {isQty ? formatBigNumber(r.qty, 0) : formatCurrency2(r.tw)}
                     </span>
                     <span
-                      className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
+                      className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
                         r.hasLW ? pillClass(rowVsLWPct, threshold) : "bg-gray-100 text-gray-400"
                       }`}
-                      style={{ width: 58 }}
+                      style={{ minWidth: PCT_COL_W }}
                     >
                       {r.hasLW ? formatPct(rowVsLWPct) : "—"}
                     </span>
                     <span
-                      className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
+                      className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
                         r.hasLY ? pillClass(rowVsLYPct, threshold) : "bg-gray-100 text-gray-400"
                       }`}
-                      style={{ width: 58 }}
+                      style={{ minWidth: PCT_COL_W }}
                     >
                       {r.hasLY ? formatPct(rowVsLYPct) : "—"}
                     </span>
@@ -1235,7 +1235,7 @@ const PopupSubDeptList = ({
                               <span className="text-[13px] font-medium text-content truncate block">
                                 {item.desc}
                               </span>
-                              <span className="text-[10px] text-content block">
+                              <span className="text-[11px] text-content block">
                                 {item.upc}
                               </span>
                             </div>

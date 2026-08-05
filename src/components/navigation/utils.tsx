@@ -14,6 +14,7 @@ import {
   Cog6ToothIcon,
   BuildingOfficeIcon,
   Squares2X2Icon,
+  TruckIcon,
 } from "@heroicons/react/16/solid";
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
@@ -273,6 +274,18 @@ export const categories: NavCategory[] = [
         icon: Squares2X2Icon,
         // Desktop only until a mobile view exists — a 700-row graded list
         // needs its own treatment rather than a squeezed desktop panel.
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: ["*"],
+        isHovering: false,
+        isVisible: true,
+      },
+      {
+        name: "Vendors",
+        href: "vendors",
+        icon: TruckIcon,
+        // Desktop only until a mobile view exists, same as Categories.
         mobile: false,
         children: [],
         childOpen: false,

@@ -203,9 +203,9 @@ const CpnSalesExportModal = ({ storeCoupons }: Props) => {
   return (
     <ResizableModalShell
       onClose={close}
-      storageKey="export-modal:coupon-sales"
-      defaultWidth={760}
-      defaultHeight={640}
+      storageKey="export-modal:coupon-sales:v2"
+      defaultWidth={1140}
+      defaultHeight={960}
       closeOnBackdrop={false}
     >
         {/* Header */}

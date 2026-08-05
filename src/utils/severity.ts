@@ -5,6 +5,22 @@ export type SevFilter = "all" | Severity;
 export const formatPct = (pct: number) =>
   `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
 
+/**
+ * Width of a "vs LW" / "vs LY" comparison column — the header label and the
+ * pill beneath it both read from this, so the two can never drift apart.
+ *
+ * `formatPct` renders `[+|-]NN.NN%`, so the width is driven by how many
+ * integer digits a swing has. At 13px semibold a character costs roughly
+ * 6.6px plus the pill's 12px of horizontal padding, which puts a three-digit
+ * move (`+160.88%`) at about 65px — over the 58px these columns used to be
+ * pinned to, which is why they spilled outside their own background.
+ *
+ * Applied as `minWidth` on the pill rather than `width`: the column reserves
+ * this much so every row lines up, and a four-digit outlier grows its
+ * background instead of clipping it.
+ */
+export const PCT_COL_W = 72;
+
 export const pillClass = (pct: number | null, threshold: number) => {
   if (pct === null) return "bg-gray-100 text-gray-500";
   if (pct < -threshold) return "bg-severity_critical_bg text-severity_critical_text";

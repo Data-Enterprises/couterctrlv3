@@ -239,9 +239,9 @@ const ReceiversExportModal = ({
   return (
     <ResizableModalShell
       onClose={onClose}
-      storageKey="export-modal:receivers"
-      defaultWidth={760}
-      defaultHeight={640}
+      storageKey="export-modal:receivers:v2"
+      defaultWidth={1140}
+      defaultHeight={960}
     >
         {/* Header */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
