@@ -1,19 +1,19 @@
 import InfoButton from "../../components/InfoButton";
 import VendorRow from "./VendorRow";
-import { useMemo, useRef, useState, useCallback } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import TextFilter from "../../components/filters/TextFilter";
 import ThresholdFilter, {
   type ThresholdValue,
 } from "../../components/filters/ThresholdFilter";
-import ThresholdSlider from "../../components/filters/ThresholdSlider";
 import InfoPopover from "../../components/InfoPopover";
 import { formatCurrency2, formatBigNumber } from "../../utils";
 import { fmtCompactRange } from "../../utils/dateLabels";
 import {
   severityDotClass,
   pillClass,
+  PCT_COL_W,
   formatPct,
   type Severity,
 } from "../../utils/severity";
@@ -173,12 +173,6 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
   const threshValue: ThresholdValue | null =
     threshold === null ? null : { op: "lt", amount: threshold };
 
-  // Clearing the numeric input dispatches null and the page keeps grading
-  // against the last valid amount, so the slider has to hold that same
-  // position — otherwise it would show a figure nothing is graded against.
-  const lastValidRef = useRef<number>(threshold ?? VENDOR_THRESHOLD_DEFAULT);
-  if (threshold != null) lastValidRef.current = threshold;
-
   // Stable identity — a fresh closure per render would break every row's memo.
   const handleSelect = useCallback(
     (vendorId: string, isSelected: boolean) =>
@@ -282,18 +276,9 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
           <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
 
           {/* Threshold. The label stays generic so the Performance headers read
-              identically — the page already says what is being graded. Slider
-              for exploring, numeric input for an exact figure; both write the
-              same value. */}
+              identically — the page already says what is being graded. */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <span className="text-[11px] text-custom-white font-medium">Threshold</span>
-            <ThresholdSlider
-              value={lastValidRef.current}
-              onChange={(amount) => dispatch(setThreshold(amount))}
-              variant="dark"
-              ariaLabel="Vendor grading threshold, percent"
-              className="w-[104px] flex-shrink-0"
-            />
             <ThresholdFilter
               value={threshValue}
               onChange={(v) => dispatch(setThreshold(v?.amount ?? null))}
@@ -358,13 +343,13 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
             </span>
             <span
               className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
-              style={{ width: 58 }}
+              style={{ width: PCT_COL_W }}
             >
               vs LW
             </span>
             <span
               className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
-              style={{ width: 58 }}
+              style={{ width: PCT_COL_W }}
             >
               vs LY
             </span>

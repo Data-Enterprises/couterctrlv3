@@ -348,37 +348,37 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
                       </span>
                       <div className="flex items-center gap-[14px]">
                         <span
-                          className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
+                          className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
                             transPct === null ? "bg-gray-100 text-gray-400" : directionalPillClass(transPct)
                           }`}
-                          style={{ width: 58 }}
+                          style={{ minWidth: 58 }}
                         >
                           {formatBigNumber(detail.transaction_count, 0)}
                         </span>
                         <span
-                          className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
+                          className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
                             itemsPct === null ? "bg-gray-100 text-gray-400" : directionalPillClass(itemsPct)
                           }`}
-                          style={{ width: 58 }}
+                          style={{ minWidth: 58 }}
                         >
                           {formatBigNumber(detail.total_items, 0)}
                         </span>
                         {hasAmount && (
                           <span
-                            className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
+                            className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
                               amountPct === null ? "bg-gray-100 text-gray-400" : directionalPillClass(amountPct)
                             }`}
-                            style={{ width: 64 }}
+                            style={{ minWidth: 64 }}
                           >
                             {formatCurrency2(Math.abs(detail.amount))}
                           </span>
                         )}
                         {hasAmount && (
                           <span
-                            className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
+                            className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
                               avgPct === null ? "bg-gray-100 text-gray-400" : directionalPillClass(avgPct)
                             }`}
-                            style={{ width: 58 }}
+                            style={{ minWidth: 58 }}
                           >
                             {formatCurrency2(Math.abs(detail.average_dollars))}
                           </span>

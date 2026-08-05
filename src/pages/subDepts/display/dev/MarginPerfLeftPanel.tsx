@@ -18,7 +18,7 @@ import {
 import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
 import LocationTabs from "../../../../components/filters/LocationTabs";
 import TextFilter from "../../../../components/filters/TextFilter";
-import { severityDotClass, pillClass, type SevFilter } from "../../../../utils/severity";
+import { severityDotClass, pillClass, PCT_COL_W, type SevFilter } from "../../../../utils/severity";
 import type { SubDeptMargin } from "../../../../interfaces";
 import InfoPopover from "../../../../components/InfoPopover";
 import { SUB_DEPT_MARGINS_INFO } from "../../subDeptMarginsInfo";
@@ -388,13 +388,13 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
                 </span>
                 <span
                   className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
-                  style={{ width: 72 }}
+                  style={{ width: PCT_COL_W }}
                 >
                   vs LW
                 </span>
                 <span
                   className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
-                  style={{ width: 72 }}
+                  style={{ width: PCT_COL_W }}
                 >
                   vs LY
                 </span>
@@ -458,7 +458,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
                           className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
                             hasLW ? pillClass(lwPct, gradingThreshold) : "bg-gray-100 text-gray-400"
                           }`}
-                          style={{ width: 72 }}
+                          style={{ minWidth: PCT_COL_W }}
                         >
                           {hasLW ? lwDisplay : "—"}
                         </span>
@@ -466,7 +466,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
                           className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
                             hasLY ? pillClass(lyPct, gradingThreshold) : "bg-gray-100 text-gray-400"
                           }`}
-                          style={{ width: 72 }}
+                          style={{ minWidth: PCT_COL_W }}
                         >
                           {hasLY ? lyDisplay : "—"}
                         </span>

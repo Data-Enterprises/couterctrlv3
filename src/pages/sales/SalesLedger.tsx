@@ -34,6 +34,7 @@ import LedgerEntryCard from "./components/LedgerEntryCard";
 import StoreDetailPopup from "./components/StoreDetailPopup";
 import LedgerHeader from "./components/LedgerHeader";
 import LedgerRow, { type LedgerRowData } from "./components/LedgerRow";
+import { PCT_COL_W } from "./components/utils";
 import type { SevFilter } from "./components/utils";
 import TextFilter from "../../components/filters/TextFilter";
 import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
@@ -507,7 +508,7 @@ const SalesLedger = () => {
                   <button
                     onClick={() => handleSortClick("vsLW")}
                     className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
-                    style={{ width: 58 }}
+                    style={{ width: PCT_COL_W }}
                   >
                     vs LW
                     {sort?.column === "vsLW" &&
@@ -520,7 +521,7 @@ const SalesLedger = () => {
                   <button
                     onClick={() => handleSortClick("vsLY")}
                     className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
-                    style={{ width: 58 }}
+                    style={{ width: PCT_COL_W }}
                   >
                     vs LY
                     {sort?.column === "vsLY" &&

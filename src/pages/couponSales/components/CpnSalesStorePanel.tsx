@@ -378,8 +378,8 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
                     {formatBigNumber(row.lines, 0)}
                   </span>
                   <span
-                    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${couponPillClass[row.tier]}`}
-                    style={{ width: 58 }}
+                    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${couponPillClass[row.tier]}`}
+                    style={{ minWidth: 58 }}
                   >
                     {formatCurrency2(row.avgAmount)}
                   </span>

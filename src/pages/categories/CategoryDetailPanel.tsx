@@ -4,6 +4,7 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import { formatCurrency2, formatBigNumber } from "../../utils";
 import {
   pillClass,
+  PCT_COL_W,
   formatPct,
   chipClass,
   severityHeaderBgClass,
@@ -488,7 +489,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
                   </span>
                   <span
                     className={`text-[11px] font-semibold px-1.5 py-0.5 rounded text-center flex-shrink-0 whitespace-nowrap ${pillClass(r.yp ?? r.lp, activeThreshold)}`}
-                    style={{ width: 62 }}
+                    style={{ minWidth: PCT_COL_W }}
                   >
                     {r.yp ?? r.lp ? formatPct((r.yp ?? r.lp) as number) : "—"}
                   </span>

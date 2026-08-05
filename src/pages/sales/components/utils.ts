@@ -8,6 +8,7 @@ export {
   pillClass,
   CTA_SEVERITY_CLASSES,
   severityDotClass,
+  PCT_COL_W,
   severityHeaderBgClass,
   BADGE_BG,
   BADGE_COLOR,

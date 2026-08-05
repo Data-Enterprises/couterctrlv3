@@ -16,7 +16,7 @@ import {
 } from "@heroicons/react/20/solid";
 import type { Severity } from "./LedgerRow";
 import HourTrendChart from "./HourTrendChart";
-import { formatPct, pillClass, chipClass, CTA_SEVERITY_CLASSES, severityDotClass, type SevFilter } from "./utils";
+import { formatPct, pillClass, chipClass, CTA_SEVERITY_CLASSES, severityDotClass, PCT_COL_W, type SevFilter } from "./utils";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import ThresholdSlider from "../../../components/filters/ThresholdSlider";
 
@@ -453,7 +453,7 @@ const PopupHourlyView = ({
             <button
               onClick={() => handleHourSortClick("vsLW")}
               className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
-              style={{ width: 58 }}
+              style={{ width: PCT_COL_W }}
             >
               vs LW
               {hourSort?.column === "vsLW" &&
@@ -466,7 +466,7 @@ const PopupHourlyView = ({
             <button
               onClick={() => handleHourSortClick("vsLY")}
               className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
-              style={{ width: 58 }}
+              style={{ width: PCT_COL_W }}
             >
               vs LY
               {hourSort?.column === "vsLY" &&
@@ -508,18 +508,18 @@ const PopupHourlyView = ({
                     {isQty ? formatBigNumber(r.qty, 0) : formatCurrency2(r.tw)}
                   </span>
                   <span
-                    className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
+                    className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
                       r.hasLW ? pillClass(rowVsLWPct, threshold) : "bg-gray-100 text-gray-400"
                     }`}
-                    style={{ width: 58 }}
+                    style={{ minWidth: PCT_COL_W }}
                   >
                     {r.hasLW ? formatPct(rowVsLWPct) : "—"}
                   </span>
                   <span
-                    className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 ${
+                    className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
                       r.hasLY ? pillClass(rowVsLYPct, threshold) : "bg-gray-100 text-gray-400"
                     }`}
-                    style={{ width: 58 }}
+                    style={{ minWidth: PCT_COL_W }}
                   >
                     {r.hasLY ? formatPct(rowVsLYPct) : "—"}
                   </span>

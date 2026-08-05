@@ -1,4 +1,5 @@
 import { memo, useCallback } from "react";
+import { PCT_COL_W } from "../../utils/severity";
 
 /**
  * One row in the category list.
@@ -79,13 +80,13 @@ const CategoryRow = ({
         {/* An em dash, not 0% — no comparison period is not a flat week. */}
         <span
           className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${lwPillClass}`}
-          style={{ width: 58 }}
+          style={{ minWidth: PCT_COL_W }}
         >
           {lwPctText}
         </span>
         <span
           className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${lyPillClass}`}
-          style={{ width: 58 }}
+          style={{ minWidth: PCT_COL_W }}
         >
           {lyPctText}
         </span>
