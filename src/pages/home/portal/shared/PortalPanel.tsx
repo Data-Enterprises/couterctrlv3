@@ -13,6 +13,10 @@ interface Props {
   footer?: ReactNode;
   /** Restored on close, so keyboard users land back where they started. */
   returnFocusTo?: HTMLElement | null;
+  /** The scrolling body. Exposed so a panel with internal tabs can reset the
+   *  scroll position when the visitor switches — otherwise they land halfway
+   *  down a pane they have not read yet. Only Perspectives needs it. */
+  bodyRef?: React.Ref<HTMLDivElement>;
 }
 
 /** Shared chrome for all four portal slide-overs.
@@ -33,6 +37,7 @@ const PortalPanel = ({
   children,
   footer,
   returnFocusTo,
+  bodyRef,
 }: Props) => {
   const panelRef = useRef<HTMLElement>(null);
 
@@ -122,7 +127,9 @@ const PortalPanel = ({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto thin-scrollbar">{children}</div>
+        <div ref={bodyRef} className="flex-1 overflow-y-auto thin-scrollbar">
+          {children}
+        </div>
 
         {footer && (
           <div className="flex-none border-t border-brand_line bg-brand_paper px-8 py-[15px] flex items-center justify-between gap-4 flex-wrap font-mono text-[9.5px] tracking-[0.12em] uppercase text-brand_slate_2">

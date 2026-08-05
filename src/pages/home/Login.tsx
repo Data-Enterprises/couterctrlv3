@@ -35,6 +35,13 @@ import FieldNotesPanel from "./portal/fieldNotes/FieldNotesPanel";
 import WalkthroughPanel from "./portal/walkthrough/WalkthroughPanel";
 import TermsPanel from "./portal/terms/TermsPanel";
 import PrivacyPanel from "./portal/privacy/PrivacyPanel";
+import PerspectivesPanel from "./portal/perspectives/PerspectivesPanel";
+import {
+  readRememberedUsername,
+  saveRememberedUsername,
+  clearRememberedUsername,
+} from "./portal/rememberedUser";
+import type { SeatId } from "./portal/perspectives/perspectivesContent";
 import { getBlogs, getBlogFile } from "../../api/portal";
 import { POSTS, toPosts, type Post } from "../../content/posts";
 
@@ -115,6 +122,25 @@ const Login = () => {
 
   /** Sign-in failures now render in the rail's alert region rather than a
    *  toast — a locked-out user needs the reason to persist while they retype. */
+  /** "Remember me". Seeded from localStorage so the box reflects reality on
+   *  arrival rather than defaulting to off next to a prefilled username. */
+  const [remember, setRemember] = useState<boolean>(() => !!readRememberedUsername());
+
+  // Prefill on landing. Runs once; if nothing is stored this is a no-op and
+  // the field stays empty.
+  useEffect(() => {
+    const saved = readRememberedUsername();
+    if (saved) dispatch(setUsername(saved));
+    // Mount only — re-running would fight the user as they edit the field.
+  }, [dispatch]);
+
+  /** Unticking clears immediately, rather than waiting for a login that may
+   *  never come — on a shared terminal that wait is the whole problem. */
+  const handleRememberChange = (on: boolean) => {
+    setRemember(on);
+    if (!on) clearRememberedUsername();
+  };
+
   const [authError, setAuthError] = useState<string | null>(null);
   const [invalidField, setInvalidField] =
     useState<"username" | "password" | null>(null);
@@ -159,6 +185,9 @@ const Login = () => {
           dispatch(setResetPassword(j.password_change_needed));
           dispatch(setSecurityQuestionId(j.security_question_id));
           dispatch(setCompanies(j.companies));
+          // Saved here, not on change: only a username that actually signed in
+          // is worth prefilling next time.
+          if (remember) saveRememberedUsername(state.username);
           setUseImpersonation(0);
           if (j.role === 9 || j.user_level >= 2) {
             login(import.meta.env.VITE_API_URL_DEV, state.username, state.password, 0)
@@ -196,9 +225,21 @@ const Login = () => {
    *  focus back there on close. Only one can be open at a time, which is also
    *  what makes About's "Book a walkthrough" a clean swap rather than a stack. */
   const [panel, setPanel] = useState<
-    "about" | "notes" | "demo" | "terms" | "privacy" | null
+    "about" | "notes" | "demo" | "terms" | "privacy" | "perspectives" | null
   >(null);
   const [panelTrigger, setPanelTrigger] = useState<HTMLElement | null>(null);
+  /** Which Perspectives seat is showing. Lives here rather than in the panel
+   *  because the strip opens the panel and picks the seat in one click. */
+  const [seat, setSeat] = useState<SeatId>("exec");
+
+  /** Perspectives hands off to About and to Walkthrough. Unlike About's own
+   *  handoff, PERSPECTIVES-IMPLEMENTATION.md asks for the panel to close first
+   *  and the next one to open after the slide-out — 330ms, just past the 300ms
+   *  transform — so the two panels don't cross-fade their contents. */
+  const handoff = (next: "about" | "demo") => {
+    setPanel(null);
+    setTimeout(() => setPanel(next), 330);
+  };
 
   const handleNavigate = (key: string, trigger: HTMLElement) => {
     setPanelTrigger(trigger);
@@ -224,6 +265,8 @@ const Login = () => {
         onSubmit={handleSubmit}
         loading={context.fetchingCredentials}
         onForgot={() => dispatch(setForgotPassword(true))}
+        remember={remember}
+        onRememberChange={handleRememberChange}
         error={authError}
         invalidField={invalidField}
         showImpersonate={!!useImpersonation}
@@ -233,7 +276,25 @@ const Login = () => {
         onPrivacy={(t) => handleNavigate("privacy", t)}
       />
 
-      <Stage onNavigate={handleNavigate} paused={panel !== null} />
+      <Stage
+        onNavigate={handleNavigate}
+        onOpenPerspective={(s, trigger) => {
+          setPanelTrigger(trigger);
+          setSeat(s);
+          setPanel("perspectives");
+        }}
+        paused={panel !== null}
+      />
+
+      <PerspectivesPanel
+        open={panel === "perspectives"}
+        onClose={() => setPanel(null)}
+        seat={seat}
+        onSeatChange={setSeat}
+        onOpenAbout={() => handoff("about")}
+        onOpenWalkthrough={() => handoff("demo")}
+        returnFocusTo={panelTrigger}
+      />
 
       <AboutPanel
         open={panel === "about"}

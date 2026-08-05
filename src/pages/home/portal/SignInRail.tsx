@@ -25,6 +25,10 @@ interface Props {
    *  here on close, same contract as the stage buttons. */
   onTerms: (trigger: HTMLElement) => void;
   onPrivacy: (trigger: HTMLElement) => void;
+  /** "Remember me" — the username only, never the password. See
+   *  rememberedUser.ts for why. */
+  remember: boolean;
+  onRememberChange: (on: boolean) => void;
 }
 
 /** The `.gate` — fixed left rail of the portal.
@@ -49,6 +53,8 @@ const SignInRail = ({
   onSubmit,
   loading,
   onForgot,
+  remember,
+  onRememberChange,
   error,
   invalidField,
   showImpersonate,
@@ -115,8 +121,11 @@ const SignInRail = ({
         <div className="flex items-center justify-between mt-1 mb-[18px]">
           <label className="flex items-center gap-2 text-[13.5px] text-brand_slate cursor-pointer">
             <input
+              data-testid="remember-me"
               type="checkbox"
               name="remember"
+              checked={remember}
+              onChange={(e) => onRememberChange(e.target.checked)}
               className="w-[15px] h-[15px] accent-brand_green cursor-pointer"
             />
             {SIGN_IN_COPY.remember}
