@@ -8,6 +8,14 @@ interface UseResizableBoxOptions {
   maxWidth?: number;
   minHeight?: number;
   maxHeight?: number;
+  /**
+   * Which CSS property the drag writes. Consumers that render a fixed `height`
+   * leave this alone. ResizableModalShell renders `maxHeight` so its panels can
+   * size to their own content — and if the drag wrote `height` instead, the
+   * first mousemove would apply a property nothing had set and snap the panel
+   * from its content height to the stored one.
+   */
+  heightProperty?: "height" | "maxHeight";
 }
 
 interface Size {
@@ -30,6 +38,7 @@ export const useResizableBox = ({
   maxWidth = 1600,
   minHeight = 400,
   maxHeight = 1100,
+  heightProperty = "height",
 }: UseResizableBoxOptions) => {
   const [size, setSize] = useState<Size>(() => {
     try {
@@ -73,11 +82,11 @@ export const useResizableBox = ({
         // state once, on mouseup.
         if (boxRef.current) {
           boxRef.current.style.width = `${liveSize.current.width}px`;
-          boxRef.current.style.height = `${liveSize.current.height}px`;
+          boxRef.current.style[heightProperty] = `${liveSize.current.height}px`;
         }
       });
     },
-    [minWidth, maxWidth, minHeight, maxHeight],
+    [minWidth, maxWidth, minHeight, maxHeight, heightProperty],
   );
 
   const handleMouseUp = useCallback(() => {
@@ -116,8 +125,18 @@ export const useResizableBox = ({
 
   const onMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
-    dragStart.current = { x: e.clientX, y: e.clientY, width: size.width, height: size.height };
-    liveSize.current = size;
+    // Start from what is actually on screen, not from state. The two can
+    // disagree — a panel sized by its content under `maxHeight`, or one still
+    // sized by a CSS class before any drag has happened — and anchoring the
+    // drag to state makes the first mousemove jump by the whole difference.
+    // Measuring makes the very first drag behave exactly like every one after.
+    const rect = boxRef.current?.getBoundingClientRect();
+    const from = {
+      width: clamp(rect?.width ?? size.width, minWidth, maxWidth),
+      height: clamp(rect?.height ?? size.height, minHeight, maxHeight),
+    };
+    dragStart.current = { x: e.clientX, y: e.clientY, ...from };
+    liveSize.current = from;
     setIsResizing(true);
   };
 

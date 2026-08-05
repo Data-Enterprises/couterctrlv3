@@ -160,6 +160,7 @@ const VendorDetailPanel = () => {
       iso: d.date,
       value: fmt(dayTw(d)),
       delta: yp ?? lp,
+      basis: yp !== null ? "LY" : lp !== null ? "LW" : undefined,
       deltaTitle:
         yp !== null
           ? `vs last year: ${fmt(y as number)}`
@@ -244,6 +245,7 @@ const VendorDetailPanel = () => {
         days={dayCards}
         weekValue={fmt(isQty ? row.twQty : row.twNet)}
         weekDelta={weekLyPct ?? weekLwPct}
+        weekDeltaBasis={weekLyPct !== null ? "LY" : weekLwPct !== null ? "LW" : undefined}
         selected={selectedDay ?? ""}
         onSelect={(iso) => dispatch(setSelectedDay(iso === "" ? null : iso))}
         higherIsWorse={false}

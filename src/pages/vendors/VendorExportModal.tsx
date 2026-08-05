@@ -541,9 +541,9 @@ const VendorExportModal = ({
   return (
     <ResizableModalShell
       onClose={onClose}
-      storageKey="export-modal:vendors"
-      defaultWidth={760}
-      defaultHeight={640}
+      storageKey="export-modal:vendors:v2"
+      defaultWidth={1140}
+      defaultHeight={960}
     >
       <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
         <div>

@@ -61,6 +61,8 @@ const ResizableModalShell = ({
     maxWidth,
     minHeight,
     maxHeight,
+    // This panel renders maxHeight, so the drag has to move maxHeight too.
+    heightProperty: "maxHeight",
   });
 
   // Stays true for one frame past the end of a drag — long enough to absorb
@@ -92,7 +94,9 @@ const ResizableModalShell = ({
     >
       <div
         ref={boxRef}
-        style={{ width, maxHeight: height }}
+        // Never taller than the viewport it sits in — the backdrop's p-4 is
+        // the 2rem. Only ever reduces the chosen height, never raises it.
+        style={{ width, maxHeight: `min(${height}px, calc(100vh - 2rem))` }}
         className={`relative bg-custom-white rounded-xl shadow-xl overflow-hidden flex flex-col ${className}`}
         onClick={(e) => e.stopPropagation()}
       >

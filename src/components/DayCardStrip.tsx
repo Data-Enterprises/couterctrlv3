@@ -1,5 +1,6 @@
 import { StarIcon } from "@heroicons/react/20/solid";
 import { getHolidayName } from "../utils/holidays";
+import { formatPct } from "../utils/severity";
 
 /**
  * The day-of-week card strip used across the Performance pages — an "All Week"
@@ -24,6 +25,17 @@ export interface DayCardEntry {
   delta: number | null;
   /** Hover text for the delta, e.g. the baseline value behind it. */
   deltaTitle?: string;
+  /**
+   * Which baseline the delta is measured against — "LY" or "LW" — printed
+   * after the percentage so the card says what it is comparing to. Per-card
+   * rather than per-strip because a day can have a last-year figure while the
+   * day beside it only has last week.
+   *
+   * Left off by pages that grade against something else: LP and Coupon Sales
+   * compare each day to a rolling baseline of prior weeks, and labelling that
+   * "LY" would be false.
+   */
+  basis?: string;
 }
 
 interface DayCardStripProps {
@@ -34,14 +46,10 @@ interface DayCardStripProps {
   /** "" means all week. */
   selected: string;
   onSelect: (iso: string) => void;
-  /** Optional suffix on the delta, naming the comparison. Off by default —
-   *  the cards are already under a baseline-graded panel, so spelling it out
-   *  on every card was noise. */
-  deltaSuffix?: string;
+  /** Basis for the all-week card's delta, same contract as DayCardEntry. */
+  weekDeltaBasis?: string;
   higherIsWorse?: boolean;
 }
-
-const fmtPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
 
 const DayCardStrip = ({
   days,
@@ -49,7 +57,7 @@ const DayCardStrip = ({
   weekDelta,
   selected,
   onSelect,
-  deltaSuffix = "",
+  weekDeltaBasis,
   higherIsWorse = true,
 }: DayCardStripProps) => {
   if (days.length === 0) return null;
@@ -60,10 +68,10 @@ const DayCardStrip = ({
     return bad ? "text-severity_critical_text" : "text-severity_healthy_text";
   };
 
-  const deltaText = (delta: number | null) =>
+  const deltaText = (delta: number | null, basis?: string) =>
     delta === null
       ? "—"
-      : `${delta > 0 ? "▲" : "▼"} ${fmtPct(delta)}${deltaSuffix ? ` ${deltaSuffix}` : ""}`;
+      : `${delta > 0 ? "▲" : "▼"} ${formatPct(delta)}${basis ? ` ${basis}` : ""}`;
 
   const md = (iso: string) => {
     const d = new Date(iso + "T12:00:00");
@@ -91,12 +99,12 @@ const DayCardStrip = ({
           </div>
           <div className="text-[12px] font-bold text-content mt-1">{weekValue}</div>
           <div className={`text-[11px] font-semibold ${deltaClass(weekDelta)}`}>
-            {deltaText(weekDelta)}
+            {deltaText(weekDelta, weekDeltaBasis)}
           </div>
         </div>
       </button>
 
-      {days.map(({ iso, value, delta, deltaTitle }) => {
+      {days.map(({ iso, value, delta, deltaTitle, basis }) => {
         const date = new Date(iso + "T12:00:00");
         const holidayName = getHolidayName(iso);
         const isSelected = selected === iso;
@@ -127,7 +135,7 @@ const DayCardStrip = ({
                 className={`text-[11px] font-semibold ${deltaClass(delta)}`}
                 title={deltaTitle}
               >
-                {deltaText(delta)}
+                {deltaText(delta, basis)}
               </div>
             </div>
           </button>

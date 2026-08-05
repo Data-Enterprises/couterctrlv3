@@ -228,9 +228,9 @@ const LookupExportModal = ({
   return (
     <ResizableModalShell
       onClose={onClose}
-      storageKey="export-modal:item-lookup"
-      defaultWidth={760}
-      defaultHeight={640}
+      storageKey="export-modal:item-lookup:v2"
+      defaultWidth={1140}
+      defaultHeight={960}
     >
         <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
           <p className="text-custom-white text-[13px] font-semibold">

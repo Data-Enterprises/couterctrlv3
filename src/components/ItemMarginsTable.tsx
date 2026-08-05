@@ -7,7 +7,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
 } from "@heroicons/react/20/solid";
-import { formatCurrency2 } from "../utils";
+import { formatCurrency2, formatBigNumber } from "../utils";
 import {
   severityDotClass,
   chipClass,
@@ -25,6 +25,7 @@ import {
   SEV_RANK,
   SEV_PILL_CLASSES,
   WEEKDAY_ORDER,
+  type DayPeriodValue,
   type ItemMarginRow,
   type ItemSeverity,
   type GradedSeverity,
@@ -572,7 +573,7 @@ const ItemMarginsTable = ({
                   >
                     <SeverityBadge severity={sev} />
                     <div className="flex flex-col justify-center min-w-0 flex-1">
-                      <div className="text-[14px] font-medium text-content truncate">
+                      <div className="text-[13px] font-medium text-content truncate">
                         {item.description}
                       </div>
                       <div className="text-[11px] text-content tabular-nums truncate">
@@ -581,19 +582,19 @@ const ItemMarginsTable = ({
                     </div>
                     <div className="flex items-center gap-[10px]">
                       <span
-                        className={`text-[14px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${SEV_PILL_CLASSES[sev]}`}
+                        className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${SEV_PILL_CLASSES[sev]}`}
                         style={{ width: 76 }}
                       >
                         {m.tyDisplay}
                       </span>
                       <span
-                        className="text-[13px] font-semibold text-content text-center flex-shrink-0 whitespace-nowrap"
+                        className="text-[12px] font-semibold text-content text-center flex-shrink-0 whitespace-nowrap"
                         style={{ width: 68 }}
                       >
                         {m.lwDisplay ?? "—"}
                       </span>
                       <span
-                        className="text-[13px] font-semibold text-content text-center flex-shrink-0 whitespace-nowrap"
+                        className="text-[12px] font-semibold text-content text-center flex-shrink-0 whitespace-nowrap"
                         style={{ width: 68 }}
                       >
                         {m.lyDisplay ?? "—"}
@@ -782,47 +783,51 @@ const ItemMarginsTable = ({
                 <div className="px-4 py-2.5">
                   {/* Day trend, ranked worst-first — the ordering is the answer,
                       which is why there's no "best day / worst day" caption. */}
-                  <div className="grid grid-cols-[10px_34px_1fr_58px_68px_68px] gap-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-content">
+                  <div className="grid grid-cols-[10px_34px_1fr_81px_81px_81px] gap-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-content">
                     <span />
                     <span>Day</span>
                     <span />
                     <span className="text-right">TY</span>
-                    <span className="text-right">vs LW</span>
-                    <span className="text-right">vs LY</span>
+                    <span className="text-right">LW</span>
+                    <span className="text-right">LY</span>
                   </div>
                   {(() => {
-                    const pctOf = (ty: number, ref: number | null) =>
-                      ref !== null && ref > 0 ? ((ty - ref) / ref) * 100 : null;
+                    // Actuals, not deltas: every column prints what sold. The
+                    // comparison survives only as the colour on TY.
+                    const cell = (v: DayPeriodValue | null) =>
+                      v === null
+                        ? "\u2014"
+                        : `${formatCurrency2(v.sales)} | ${formatBigNumber(v.qty, 0)}`;
 
-                    const sold = WEEKDAY_ORDER.filter(
-                      (wd) => selectedDetail.dayOfWeek[wd].ty !== null,
-                    ).map((wd) => {
+                    const days = WEEKDAY_ORDER.map((wd) => {
                       const v = selectedDetail.dayOfWeek[wd];
                       return {
                         wd,
-                        ty: v.ty as number,
-                        lw: pctOf(v.ty as number, v.lw),
-                        ly: pctOf(v.ty as number, v.ly),
-                        rank: dayTrend(v),
+                        sold: v.ty !== null,
+                        ty: v.ty === null ? 0 : v.ty.sales,
+                        tyText: cell(v.ty),
+                        lwText: cell(v.lw),
+                        lyText: cell(v.ly),
+                        rank: dayTrend(v, gradingMetric),
                       };
                     });
-                    const quiet = WEEKDAY_ORDER.filter(
-                      (wd) => selectedDetail.dayOfWeek[wd].ty === null,
-                    );
 
                     // Worst first; days with no baseline sort last — unknown
                     // isn't the same as bad.
-                    const ranked = [...sold].sort((a, b) => {
+                    const ranked = [...days].sort((a, b) => {
                       if (a.rank === null && b.rank === null) return b.ty - a.ty;
                       if (a.rank === null) return 1;
                       if (b.rank === null) return -1;
                       return a.rank - b.rank;
                     });
-                    const maxTy = Math.max(...sold.map((d) => d.ty), 0);
+                    const maxTy = Math.max(...days.map((d) => d.ty), 0);
 
                     return (
                       <>
                         {ranked.map((d) => {
+                          // One grade, read twice: the dot carries it at a
+                          // glance down the column, the TY colour carries it
+                          // where the number actually is. No pill, no percentage.
                           const sev: GradedSeverity | null =
                             d.rank === null
                               ? null
@@ -831,10 +836,14 @@ const ItemMarginsTable = ({
                                 : d.rank < 0
                                   ? "watch"
                                   : "healthy";
+                          const tyClass =
+                            d.rank === null
+                              ? "text-content"
+                              : deltaTextClass(d.rank, thresholdAmt);
                           return (
                             <div
                               key={d.wd}
-                              className="grid grid-cols-[10px_34px_1fr_58px_68px_68px] gap-2 items-center py-1 border-t border-gray-100"
+                              className="grid grid-cols-[10px_34px_1fr_81px_81px_81px] gap-2 items-center py-2 border-t border-[#1e2a4a]/15"
                             >
                               <span
                                 className={`w-2 h-2 rounded-full ${
@@ -848,39 +857,34 @@ const ItemMarginsTable = ({
                                   100% reference; the fill stays neutral too —
                                   length carries dollars, the dot carries the
                                   grade. */}
-                              <span className="h-[12px] w-full rounded-full bg-[#1e2a4a]/15 block overflow-hidden">
-                                <span
-                                  className="h-full rounded-full bg-[#1e2a4a]/85 block"
-                                  style={{
-                                    width: `${maxTy > 0 ? (d.ty / maxTy) * 100 : 0}%`,
-                                  }}
-                                />
+                              {d.sold ? (
+                                <span className="h-[12px] w-full rounded-full bg-[#1e2a4a]/15 block overflow-hidden">
+                                  <span
+                                    className="h-full rounded-full bg-[#1e2a4a]/85 block"
+                                    style={{
+                                      width: `${maxTy > 0 ? (d.ty / maxTy) * 100 : 0}%`,
+                                    }}
+                                  />
+                                </span>
+                              ) : (
+                                <span className="text-[11px] font-medium uppercase tracking-wide text-content">
+                                  no sales
+                                </span>
+                              )}
+                              <span
+                                className={`text-[12px] font-semibold text-right tabular-nums ${tyClass}`}
+                              >
+                                {d.tyText}
                               </span>
-                              <span className="text-[12px] font-semibold text-content text-right">
-                                {formatCurrency2(d.ty)}
+                              <span className="text-[12px] font-semibold text-content text-right tabular-nums">
+                                {d.lwText}
                               </span>
-                              <span className="flex justify-end">
-                                <GradeCell
-                                  pct={d.lw}
-                                  threshold={thresholdAmt}
-                                  isPts={false}
-                                />
-                              </span>
-                              <span className="flex justify-end">
-                                <GradeCell
-                                  pct={d.ly}
-                                  threshold={thresholdAmt}
-                                  isPts={false}
-                                />
+                              <span className="text-[12px] font-semibold text-content text-right tabular-nums">
+                                {d.lyText}
                               </span>
                             </div>
                           );
                         })}
-                        {quiet.length > 0 && (
-                          <div className="py-1.5 border-t border-gray-100 text-[12px] font-medium text-content">
-                            {quiet.join(", ")} — no sales
-                          </div>
-                        )}
                       </>
                     );
                   })()}
