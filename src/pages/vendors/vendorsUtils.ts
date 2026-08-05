@@ -64,11 +64,6 @@ export interface VendorRow {
   hasLW: boolean;
   hasLY: boolean;
 
-  /** Reach — how much of the store this vendor touches. Shown beside the name
-   *  because a 20% fall means something different for a one-item supplier than
-   *  for the house wholesaler. */
-  itemCount: number;
-  subDeptCount: number;
 }
 
 /** Net of tax, matching Sub Dept Margins and the Item Lookup fix. `net_sales`
@@ -86,8 +81,6 @@ const empty = (): Bucket => ({ net: 0, qty: 0 });
 interface VendorAgg {
   name: string;
   byDate: Map<string, Bucket>;
-  items: Set<string>;
-  subDepts: Set<number>;
 }
 
 /** The endpoint types both vendor fields as strings and then sends the number 0
@@ -116,8 +109,6 @@ const collect = (rows: SubDeptMargin[]) => {
               ? name
               : rawId,
         byDate: new Map(),
-        items: new Set(),
-        subDepts: new Set(),
       };
       map.set(id, v);
     }
@@ -126,8 +117,6 @@ const collect = (rows: SubDeptMargin[]) => {
     b.net += netOf(m);
     b.qty += m.qty;
     v.byDate.set(d, b);
-    v.items.add(m.product_code);
-    v.subDepts.add(m.sub_department);
   }
   return map;
 };
@@ -206,8 +195,6 @@ export const buildVendorRows = (
       lwNet, lwQty, twNetForLW, twQtyForLW,
       lyNet, lyQty, twNetForLY, twQtyForLY,
       hasLW, hasLY,
-      itemCount: agg.items.size,
-      subDeptCount: agg.subDepts.size,
     });
   }
 

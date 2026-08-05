@@ -15,7 +15,7 @@ import type { SubDeptMargin, SubSale, SubSalesJsonResp } from "../../interfaces"
  *   subs/subs x (depts x 3 periods)  -> item rows carrying vendor_id
  *
  * Which makes this the most expensive Performance page to load, and why the
- * search card reports progress rather than showing a bare spinner.
+ * search names its two steps rather than showing one undifferentiated spinner.
  *
  * Two flags are fixed and never exposed: `useGroups: 0`, `singleStore: 1`.
  * Vendors is examined one store at a time, like Sub Dept Margins and
@@ -93,11 +93,10 @@ export const fetchPeriodRows = async (
   scope: VendorScope,
   range: PeriodRange,
   subDeptIds: number[],
-  onDept?: () => void,
 ): Promise<SubDeptMargin[]> => {
   const results = await Promise.all(
-    subDeptIds.map(async (id) => {
-      const rows = await fetchSubDeptRowsSafe(
+    subDeptIds.map((id) =>
+      fetchSubDeptRowsSafe(
         scope.url,
         scope.token,
         id,
@@ -106,10 +105,8 @@ export const fetchPeriodRows = async (
         USE_GROUPS,
         scope.storeid,
         SINGLE_STORE,
-      );
-      onDept?.();
-      return rows;
-    }),
+      ),
+    ),
   );
   return results.flat();
 };
@@ -125,23 +122,21 @@ export const fetchVendorPeriods = async (
   scope: VendorScope,
   twStart: string,
   twEnd: string,
-  onProgress?: (done: number, total: number) => void,
+  /** Fired once the department list is in and the row fetch begins. No counts:
+   *  the only number available here is departments x periods, which reads as a
+   *  vendor count and is not one. */
+  onRowsStart?: () => void,
 ) => {
   const ranges = periodRanges(twStart, twEnd);
   const subDeptIds = await fetchSubDeptIds(scope, ranges.tw);
   if (subDeptIds.length === 0) return { tw: [], lw: [], ly: [], subDeptIds };
 
-  const total = subDeptIds.length * 3;
-  let done = 0;
-  const tick = () => {
-    done += 1;
-    onProgress?.(done, total);
-  };
+  onRowsStart?.();
 
   const [tw, lw, ly] = await Promise.all([
-    fetchPeriodRows(scope, ranges.tw, subDeptIds, tick),
-    fetchPeriodRows(scope, ranges.lw, subDeptIds, tick),
-    fetchPeriodRows(scope, ranges.ly, subDeptIds, tick),
+    fetchPeriodRows(scope, ranges.tw, subDeptIds),
+    fetchPeriodRows(scope, ranges.lw, subDeptIds),
+    fetchPeriodRows(scope, ranges.ly, subDeptIds),
   ]);
 
   return { tw, lw, ly, subDeptIds };

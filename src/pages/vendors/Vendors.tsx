@@ -56,7 +56,7 @@ const Vendors = () => {
 
     dispatch(reQuery());
     dispatch(setLoading(true));
-    dispatch(setLoadingMessage("Finding sub departments…"));
+    dispatch(setLoadingMessage("Finding vendors…"));
     dispatch(setRange({ start, end }));
     dispatch(
       setStore({
@@ -70,11 +70,10 @@ const Vendors = () => {
         { url: context.url, token: context.token, storeid: storeId },
         start,
         end,
-        // Vendor lives on item rows, which arrive one department at a time —
-        // so this is departments x three periods. Naming the work in progress
-        // is the difference between a wait and a hang.
-        (done, total) =>
-          dispatch(setLoadingMessage(`Loading vendors… ${done} of ${total}`)),
+        // Two steps, not a counter. Vendor lives on item rows that arrive one
+        // department at a time, so any count here is departments x periods —
+        // which reads as a vendor count and isn't one.
+        () => dispatch(setLoadingMessage("Loading vendors…")),
       );
 
       if (subDeptIds.length === 0) {

@@ -23,7 +23,7 @@ export const VENDORS_INFO: {
       desc: "Sold this week but has neither a last-week nor a last-year figure to compare against. Not a verdict — there is simply nothing to grade it on yet. The chip only appears when some exist.",
     },
     {
-      term: "Vendor Threshold",
+      term: "Threshold",
       desc: "How far a decline has to go before a vendor is flagged Crit. The Items tab has its own separate threshold, since a single UPC moving is a smaller thing than a whole vendor moving.",
     },
     {
@@ -31,20 +31,12 @@ export const VENDORS_INFO: {
       desc: "Coupon (CPN) lines and anything else the POS books without a supplier. Kept in the list rather than dropped, so the vendors still add up to the store total — but it isn't a supplier, and a large bucket here is worth a look on its own.",
     },
     {
-      term: "Items · sub depts",
-      desc: "How much of the store a vendor touches. A 20% fall means something different for a one-item supplier than for the wholesaler behind half the shelves, and the count is what tells them apart.",
-    },
-    {
       term: "Day strip",
       desc: "Picking a day narrows everything below it — the KPIs, the items, the departments — to that day alone. Click the selected day again, or All Week, to go back to the full week.",
     },
     {
-      term: "Items tab",
-      desc: "Every UPC this vendor supplied, graded the same way the vendors are. Selecting one shows its margin, contribution and day-of-week pattern.",
-    },
-    {
-      term: "Sub departments tab",
-      desc: "Which departments this vendor reaches, and how each moved. A vendor can hold overall while quietly losing one department.",
+      term: "Items",
+      desc: "Every UPC this vendor supplied, graded the same way the vendors are. Selecting one shows its margin, contribution and day-of-week pattern. Department-level breakdowns live on Sub Dept Margins rather than being repeated here.",
     },
     {
       term: "Sales vs Qty",
@@ -64,7 +56,7 @@ export const VENDORS_INFO: {
     },
     {
       term: "Export",
-      desc: "Covers whatever the date pills are set to, so a single day exports that day. Vendors are always the full list; items and departments cover the open vendor only.",
+      desc: "Covers whatever the date pills are set to, so a single day exports that day. Vendors are always the full list; items cover the open vendor only.",
     },
   ],
 };

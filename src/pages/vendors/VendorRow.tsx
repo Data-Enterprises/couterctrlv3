@@ -12,9 +12,6 @@ import { memo, useCallback } from "react";
 interface VendorRowProps {
   vendorId: string;
   label: string;
-  /** "12 items · 4 sub depts" — reach, so a percentage can be weighed against
-   *  how much of the store it moved. */
-  reachText: string;
   /** Pre-formatted so the row does no work of its own. */
   twText: string;
   lwText: string;
@@ -33,7 +30,6 @@ interface VendorRowProps {
 const VendorRow = ({
   vendorId,
   label,
-  reachText,
   twText,
   lwText,
   lyText,
@@ -64,7 +60,7 @@ const VendorRow = ({
         <div className="text-[13px] font-medium text-content truncate">{label}</div>
         <div className="text-[12px] text-content/85 truncate">
           LW <span className="font-semibold">{lwText}</span> · LY{" "}
-          <span className="font-semibold">{lyText}</span> · {reachText}
+          <span className="font-semibold">{lyText}</span>
         </div>
       </div>
       <div className="flex items-center gap-[14px]">

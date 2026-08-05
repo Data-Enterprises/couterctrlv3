@@ -1,7 +1,7 @@
 import InfoButton from "../../components/InfoButton";
 import VendorRow from "./VendorRow";
 import { useMemo, useRef, useState, useCallback } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import TextFilter from "../../components/filters/TextFilter";
 import ThresholdFilter, {
@@ -92,9 +92,6 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
           lyText: r.hasLY ? f(isQty ? r.lyQty : r.lyNet) : "—",
           lwPctText: lwPct === null ? "—" : formatPct(lwPct),
           lyPctText: lyPct === null ? "—" : formatPct(lyPct),
-          reachText: `${r.itemCount} ${r.itemCount === 1 ? "item" : "items"} · ${
-            r.subDeptCount
-          } ${r.subDeptCount === 1 ? "dept" : "depts"}`,
         };
       }),
     [rows, metric],
@@ -209,34 +206,18 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
     >
       {/* Navy header — 2-row canonical pattern */}
       <div className="bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
-        {/* Row 1: date range + store | store total + vs LY/LW pills.
-            LY leads LW because it's the primary grading comparison. */}
+        {/* Row 1: date range | store total + vs LW/LY pills. Store name moved
+            down to row 2 beside the search button, matching Sub Dept Margins. */}
         <div className="flex items-center gap-2 min-h-[26px]">
           <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
             {dateRange}
           </span>
-          {vend.storeName && (
-            <span className="text-[11px] font-medium text-custom-white/75 truncate min-w-0">
-              {vend.storeName}
-            </span>
-          )}
           <div className="flex-1" />
           {graded.length > 0 && (
             <>
               <span className="text-[14px] font-semibold text-custom-white">
                 {fmt(totals.tw)}
               </span>
-              {totals.lyPct !== null && (
-                <span
-                  className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-                    totals.lyPct >= 0
-                      ? "bg-emerald-300/15 text-emerald-300"
-                      : "bg-red-300/15 text-red-300"
-                  }`}
-                >
-                  LY {formatPct(totals.lyPct)}
-                </span>
-              )}
               {totals.lwPct !== null && (
                 <span
                   className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
@@ -248,11 +229,22 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
                   LW {formatPct(totals.lwPct)}
                 </span>
               )}
+              {totals.lyPct !== null && (
+                <span
+                  className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
+                    totals.lyPct >= 0
+                      ? "bg-emerald-300/15 text-emerald-300"
+                      : "bg-red-300/15 text-red-300"
+                  }`}
+                >
+                  LY {formatPct(totals.lyPct)}
+                </span>
+              )}
             </>
           )}
         </div>
 
-        {/* Row 2: search + toggle left | threshold + legend right */}
+        {/* Row 2: search btn + store | metric toggle | threshold | help btn */}
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
           <button
             className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
@@ -262,7 +254,11 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
 
-          <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
+          <span className="text-[11px] font-medium text-custom-white truncate min-w-0">
+            {vend.storeName}
+          </span>
+
+          <div className="flex-1" />
 
           <div
             className="flex items-center flex-shrink-0 rounded overflow-hidden"
@@ -283,14 +279,14 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
             ))}
           </div>
 
-          <div className="flex-1" />
+          <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
 
-          {/* Slider for exploring, numeric input for committing to an exact
-              figure. Both write the same value. */}
+          {/* Threshold. The label stays generic so the Performance headers read
+              identically — the page already says what is being graded. Slider
+              for exploring, numeric input for an exact figure; both write the
+              same value. */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
-            <span className="text-[11px] text-custom-white font-medium">
-              Vendor Threshold
-            </span>
+            <span className="text-[11px] text-custom-white font-medium">Threshold</span>
             <ThresholdSlider
               value={lastValidRef.current}
               onChange={(amount) => dispatch(setThreshold(amount))}
@@ -308,9 +304,6 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
             />
           </div>
 
-          <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
-
-          {/* About this view */}
           <div className="relative flex-shrink-0">
             <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
             {infoOpen && (
@@ -389,7 +382,6 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
                 key={g.vendorId}
                 vendorId={g.vendorId}
                 label={g.vendorName}
-                reachText={g.reachText}
                 twText={g.twText}
                 lwText={g.lwText}
                 lyText={g.lyText}

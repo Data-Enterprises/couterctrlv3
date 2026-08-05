@@ -32,7 +32,7 @@ import { getVendorTier } from "./vendorsUtils";
  * selection.
  */
 
-type ExportPreset = "vendors" | "items" | "items_graded" | "depts";
+type ExportPreset = "vendors" | "items" | "items_graded";
 type ModalMode = "presets" | "custom";
 type CustomSource = "tw" | "lw" | "ly";
 type GradedSev = "critical" | "watch" | "healthy";
@@ -93,8 +93,6 @@ const buildVendorsCsv = (
     "Vendor ID",
     "Vendor",
     "Grade",
-    "Items",
-    "Sub depts",
     isQty ? "TY Qty" : "TY Net Sales",
     isQty ? "LW Qty" : "LW Net Sales",
     "vs LW %",
@@ -145,8 +143,6 @@ const buildVendorsCsv = (
       r.vendorId,
       r.vendorName,
       grade ?? "",
-      r.itemCount,
-      r.subDeptCount,
       fmtNum(tw),
       lw === null ? "" : fmtNum(lw),
       lwPct === null ? "" : fmtNum(lwPct),
@@ -248,49 +244,6 @@ const buildItemsGradedCsv = (
       fmtNum(r.tyContributionPct),
     ]);
   }
-  return rowsToCsv(headers, out);
-};
-
-/** Which departments the open vendor reaches, and how each moved. */
-const buildDeptsCsv = (
-  items: { tw: SubDeptMargin[]; lw: SubDeptMargin[]; ly: SubDeptMargin[] },
-  metric: VendorMetric,
-) => {
-  const isQty = metric === "qty";
-  const headers = [
-    "Sub department",
-    isQty ? "TY Qty" : "TY Net Sales",
-    isQty ? "LW Qty" : "LW Net Sales",
-    "vs LW %",
-    isQty ? "LY Qty" : "LY Net Sales",
-    "vs LY %",
-  ];
-  const agg = (src: SubDeptMargin[]) => {
-    const m = new Map<number, { desc: string; v: number }>();
-    for (const r of src) {
-      const cur = m.get(r.sub_department) ?? {
-        desc: r.sub_department_description,
-        v: 0,
-      };
-      cur.v += isQty ? r.qty : netSales(r);
-      m.set(r.sub_department, cur);
-    }
-    return m;
-  };
-  const tw = agg(items.tw), lw = agg(items.lw), ly = agg(items.ly);
-  const out = [...tw.entries()].map(([id, t]) => {
-    const l = lw.get(id), y = ly.get(id);
-    const lwPct = !l || l.v === 0 ? null : pctChange(t.v, l.v);
-    const lyPct = !y || y.v === 0 ? null : pctChange(t.v, y.v);
-    return [
-      t.desc || `Sub dept ${id}`,
-      fmtNum(t.v),
-      l ? fmtNum(l.v) : "",
-      lwPct === null ? "" : fmtNum(lwPct),
-      y ? fmtNum(y.v) : "",
-      lyPct === null ? "" : fmtNum(lyPct),
-    ];
-  });
   return rowsToCsv(headers, out);
 };
 
@@ -509,14 +462,6 @@ const VendorExportModal = ({
         : "Nothing from this vendor in the selected days",
       disabled: !hasItems,
     },
-    {
-      id: "depts",
-      label: "Sub departments",
-      description: hasItems
-        ? `Which departments ${vendorName} reaches, and how each moved`
-        : "Nothing from this vendor in the selected days",
-      disabled: !hasItems,
-    },
   ];
 
   const SEV_CHIP: { sev: GradedSev; label: string; activeClass: string }[] = [
@@ -546,8 +491,6 @@ const VendorExportModal = ({
       sections.push(
         `${title("Items Graded")}\n${buildItemsGradedCsv(scoped, itemThreshold, gradingMetric, itemSevs)}`,
       );
-    if (selected.has("depts"))
-      sections.push(`${title("Sub departments")}\n${buildDeptsCsv(scoped, metric)}`);
     if (!sections.length) return;
     downloadCsv(sections.join("\n\n"), `${safeName}_${fileDate}.csv`);
     onClose();

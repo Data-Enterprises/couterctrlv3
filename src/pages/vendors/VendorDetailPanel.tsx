@@ -5,17 +5,14 @@ import { formatCurrency2, formatBigNumber } from "../../utils";
 import {
   pillClass,
   formatPct,
-  severityDotClass,
   severityHeaderBgClass,
   type Severity,
 } from "../../utils/severity";
 import {
   LW_OFFSET,
   LY_OFFSET,
-  isoOf,
   shiftIso,
   pctChange,
-  tierOfDelta,
   type Tier,
 } from "../../utils/grading";
 import { fmtDayLabel, fmtRangeLabel } from "../../utils/dateLabels";
@@ -29,9 +26,6 @@ import {
   VENDOR_ITEM_THRESHOLD_DEFAULT,
 } from "../../features/vendorsSlice";
 import { getVendorTier, rowsForVendor } from "./vendorsUtils";
-import type { SubDeptMargin } from "../../interfaces";
-
-type Tab = "items" | "depts";
 
 /** Ungraded has no severity colour of its own, so the header falls back to the
  *  navy every other panel uses rather than borrowing a verdict colour. */
@@ -75,18 +69,12 @@ const Kpi = ({
   </div>
 );
 
-const byDate = (src: SubDeptMargin[], iso: string) =>
-  src.filter((m) => isoOf(m.sale_date) === iso);
-
-const netOf = (m: SubDeptMargin) => m.total_sales - m.total_tax;
-
 const VendorDetailPanel = () => {
   const dispatch = useAppDispatch();
   const vend = useAppSelector((s) => s.vendors);
   const { rows, raw, metric, threshold, selectedVendor, selectedDay, itemThreshold } =
     vend;
 
-  const [tab, setTab] = useState<Tab>("items");
   const [exportOpen, setExportOpen] = useState(false);
 
   const activeThreshold = threshold ?? VENDOR_THRESHOLD_DEFAULT;
@@ -98,8 +86,9 @@ const VendorDetailPanel = () => {
     [rows, selectedVendor],
   );
 
-  /** This vendor's item rows, all three periods. The Items tab and the Sub
-   *  departments tab both read from here. */
+  /** This vendor's item rows, all three periods — what the Items report and
+   *  the export both read from. Sub-department breakdowns deliberately live on
+   *  Sub Dept Margins rather than being repeated here. */
   const vendorRaw = useMemo(
     () =>
       selectedVendor
@@ -111,68 +100,6 @@ const VendorDetailPanel = () => {
         : { tw: [], lw: [], ly: [] },
     [raw, selectedVendor],
   );
-
-  /** Narrowed to the selected day, so the departments below agree with the KPI
-   *  strip above them. */
-  const scoped = useMemo(() => {
-    if (!selectedDay) return vendorRaw;
-    return {
-      tw: byDate(vendorRaw.tw, selectedDay),
-      lw: byDate(vendorRaw.lw, shiftIso(selectedDay, LW_OFFSET)),
-      ly: byDate(vendorRaw.ly, shiftIso(selectedDay, LY_OFFSET)),
-    };
-  }, [vendorRaw, selectedDay]);
-
-  /** Which departments this vendor reaches, graded. A vendor can hold overall
-   *  while quietly losing one department, which is the thing this tab is for. */
-  const deptRows = useMemo(() => {
-    const agg = (src: SubDeptMargin[]) => {
-      const m = new Map<number, { desc: string; net: number; qty: number }>();
-      for (const r of src) {
-        const cur = m.get(r.sub_department) ?? {
-          desc: r.sub_department_description,
-          net: 0,
-          qty: 0,
-        };
-        cur.net += netOf(r);
-        cur.qty += r.qty;
-        m.set(r.sub_department, cur);
-      }
-      return m;
-    };
-    const tw = agg(scoped.tw);
-    const lw = agg(scoped.lw);
-    const ly = agg(scoped.ly);
-
-    return [...tw.entries()]
-      .map(([id, t]) => {
-        const l = lw.get(id);
-        const y = ly.get(id);
-        const val = (b?: { net: number; qty: number }) =>
-          b ? (isQty ? b.qty : b.net) : null;
-        const twVal = isQty ? t.qty : t.net;
-        const lwVal = val(l);
-        const lyVal = val(y);
-        const lwPct = lwVal === null || lwVal === 0 ? null : pctChange(twVal, lwVal);
-        const lyPct = lyVal === null || lyVal === 0 ? null : pctChange(twVal, lyVal);
-        const primary = lyPct ?? lwPct;
-        return {
-          id,
-          desc: t.desc || `Sub dept ${id}`,
-          twVal,
-          lwVal,
-          lyVal,
-          lwPct,
-          lyPct,
-          tier: tierOfDelta(primary, activeThreshold),
-        };
-      })
-      .sort((a, b) => {
-        const rank = { critical: 0, watch: 1, healthy: 2, ungraded: 3 };
-        const d = rank[a.tier] - rank[b.tier];
-        return d !== 0 ? d : b.twVal - a.twVal;
-      });
-  }, [scoped, isQty, activeThreshold]);
 
   if (!row) {
     return (
@@ -322,125 +249,18 @@ const VendorDetailPanel = () => {
         higherIsWorse={false}
       />
 
-      {/* Tabs */}
-      <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
-        {(["items", "depts"] as const).map((k) => (
-          <button
-            key={k}
-            onClick={() => setTab(k)}
-            className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors ${
-              tab === k
-                ? "border-[#1e2a4a] text-content"
-                : "border-transparent text-content/70 hover:text-content/80"
-            }`}
-          >
-            {k === "items" ? "Items" : "Sub departments"}
-          </button>
-        ))}
-        <div className="flex-1" />
-        <span className="text-[10px] text-content/55 pr-1">
-          {row.itemCount} {row.itemCount === 1 ? "item" : "items"} ·{" "}
-          {row.subDeptCount} {row.subDeptCount === 1 ? "dept" : "depts"}
-        </span>
-      </div>
+      {/* Items are the only report here — the table brings its own toolbar,
+          so a one-tab strip above it would be decoration. Sub-department
+          breakdowns live on Sub Dept Margins, not repeated per vendor. */}
+      <ItemMarginsTable
+        items={vendorRaw}
+        gradingMetric={isQty ? "qty" : "sales"}
+        threshold={itemThreshold}
+        thresholdDefault={VENDOR_ITEM_THRESHOLD_DEFAULT}
+        onThresholdChange={(v) => dispatch(setItemThreshold(v))}
+        selectedDay={selectedDay}
+      />
 
-      {tab === "items" && (
-        <ItemMarginsTable
-          items={vendorRaw}
-          gradingMetric={isQty ? "qty" : "sales"}
-          threshold={itemThreshold}
-          thresholdDefault={VENDOR_ITEM_THRESHOLD_DEFAULT}
-          onThresholdChange={(v) => dispatch(setItemThreshold(v))}
-          selectedDay={selectedDay}
-        />
-      )}
-
-      {tab === "depts" && (
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
-          <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0 sticky top-0 bg-custom-white z-10">
-            <span className="w-2.5 flex-shrink-0" />
-            <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-1">
-              Sub department
-            </span>
-            <div className="flex items-center gap-[14px]">
-              <span
-                className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 text-right"
-                style={{ width: 64 }}
-              >
-                TY
-              </span>
-              <span
-                className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 text-center"
-                style={{ width: 58 }}
-              >
-                vs LW
-              </span>
-              <span
-                className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 text-center"
-                style={{ width: 58 }}
-              >
-                vs LY
-              </span>
-            </div>
-          </div>
-
-          {deptRows.length === 0 ? (
-            <div className="flex items-center justify-center h-24 text-[11px] text-content/40">
-              Nothing from this vendor in the selected range
-            </div>
-          ) : (
-            deptRows.map((d) => (
-              <div
-                key={d.id}
-                className="w-full flex items-center gap-2.5 p-3 text-left border-b border-b-[#1e2a4a]/15"
-              >
-                <span
-                  className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
-                    d.tier === "ungraded"
-                      ? "bg-gray-300"
-                      : severityDotClass[d.tier as Severity]
-                  }`}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="text-[13px] font-medium text-content truncate">
-                    {d.desc}
-                  </div>
-                  <div className="text-[12px] text-content/85 truncate">
-                    LW{" "}
-                    <span className="font-semibold">
-                      {d.lwVal === null ? "—" : fmt(d.lwVal)}
-                    </span>{" "}
-                    · LY{" "}
-                    <span className="font-semibold">
-                      {d.lyVal === null ? "—" : fmt(d.lyVal)}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-[14px]">
-                  <span
-                    className="text-[13px] font-semibold text-content flex-shrink-0 pl-2.5 text-right"
-                    style={{ width: 64 }}
-                  >
-                    {fmt(d.twVal)}
-                  </span>
-                  <span
-                    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${pillClass(d.lwPct, activeThreshold)}`}
-                    style={{ width: 58 }}
-                  >
-                    {d.lwPct === null ? "—" : formatPct(d.lwPct)}
-                  </span>
-                  <span
-                    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${pillClass(d.lyPct, activeThreshold)}`}
-                    style={{ width: 58 }}
-                  >
-                    {d.lyPct === null ? "—" : formatPct(d.lyPct)}
-                  </span>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
     </div>
   );
 };
